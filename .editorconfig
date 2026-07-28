@@ -1,0 +1,14 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{rs,py,toml,yaml,yml,json,md,txt,tsv,ps1,cmd,cpp,h,hpp,ipp,cmake,iss,manifest,def}]
+charset = utf-8
+
+[*.{png,ico,exe,dll,pdb,bin}]
+insert_final_newline = false
+trim_trailing_whitespace = false

@@ -1,0 +1,35 @@
+{
+  "files": [
+    "kaixin.ini",
+    "user_dict.sqlite",
+    "user_dict.sqlite.partial",
+    "user_dict.sqlite.previous",
+    "user_dict.sqlite.bak",
+    "user_dict.sqlite.lock",
+    "user_dict.sqlite.reset",
+    "ocr_history.sqlite",
+    "ocr_history.sqlite.write.tmp",
+    "runtime_events.sqlite",
+    "runtime_events.sqlite-wal",
+    "runtime_events.sqlite-shm",
+    "runtime_events.sqlite-journal",
+    "cedict_cache.sqlite",
+    "cedict_cache.sqlite-journal",
+    "clipboard_store.sqlite.tmp",
+    "clipboard_store.sqlite.write.tmp",
+    "clipboard_store.sqlite.lock",
+    "clipboard_store.sqlite-journal",
+    "engine_capability.dat",
+    "clipboard_manager_window.sqlite",
+    "clipboard_manager_window.sqlite-journal",
+    "install_user.log",
+    "install_language_list.log"
+  ],
+  "directories": [
+    "cache",
+    "logs"
+  ],
+  "registry_subkeys": [
+    "State"
+  ]
+}

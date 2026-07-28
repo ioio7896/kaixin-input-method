@@ -1,0 +1,48 @@
+name: Bug 报告
+description: 报告可复现的软件问题（安全漏洞请使用 Security 私密报告）
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: 请先移除日志、路径、截图中的真实输入、剪贴板和个人信息。
+  - type: input
+    id: version
+    attributes:
+      label: 开心输入法版本
+      placeholder: 例如 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本
+      placeholder: 例如 Windows 11 24H2 x64
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 请使用虚构文本复现，不要粘贴真实输入或剪贴板。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我已确认内容不含真实输入、剪贴板、证书、用户数据库或其他敏感信息。
+          required: true

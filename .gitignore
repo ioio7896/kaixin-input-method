@@ -1,0 +1,72 @@
+# Rust build outputs
+pinyin-ime/target/
+target/
+
+# CMake / Visual Studio build outputs
+tsf-tip/build*/
+build/
+build-*/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# Packaged artifacts
+dist/
+*.msi
+
+# Nested .NET / ShareX build outputs
+**/bin/
+**/obj/
+**/publish/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.venv*/
+venv/
+
+# Local dependency caches
+rocm-python-wheels-Windows/
+rocm-python-wheels-Windows.zip
+.cache/rime-benchmark/
+
+# Local/editor state
+.idea/
+.vs/
+.vscode/
+.agents/
+.claude/
+*.user
+*.suo
+
+# External font experiments
+HarmonyOS Sans/
+
+# Runtime logs and scratch files
+*.log
+*.tmp
+*.bak
+*.dmp
+kaixin-diagnostics-*/
+剪贴板文本.txt
+
+# Signing credentials and local environment files
+*.pfx
+*.p12
+*.pem
+*.key
+.env
+.env.*
+
+# Locally generated compliance reports
+docs/licenses/generated/
+
+# Redistributable rights must be verified before these large data files are tracked.
+# See docs/licenses/ for provenance, hashes, and release-blocking status.
+RapidOCR-3.9.0/python/rapidocr/models/*.onnx
+pinyin-ime/data/corpus.txt
+
+# Accidental command-output scratch file
+/--help

@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Rust dependency licenses</title></head>
+<body>
+<h1>Rust dependency licenses</h1>
+{{#each licenses}}
+<section>
+<h2>{{name}}</h2>
+<p>Used by:</p>
+<ul>{{#each used_by}}<li>{{crate.name}} {{crate.version}}</li>{{/each}}</ul>
+<pre>{{text}}</pre>
+</section>
+{{/each}}
+</body>
+</html>

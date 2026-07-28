@@ -1,0 +1,1154 @@
+# 开心输入法原生词库：世界国家及主要城市
+# 195 个国家（193 个联合国会员国＋巴勒斯坦、梵蒂冈）及每国 5 个代表性城市。
+# 城市为常用中文名称；格式：词语<TAB>全拼<TAB>权重。
+阿富汗	a fu han	180000
+喀布尔	ka bu er	65000
+坎大哈	kan da ha	65000
+赫拉特	he la te	65000
+马扎里沙里夫	ma zha li sha li fu	65000
+贾拉拉巴德	jia la la ba de	65000
+阿尔巴尼亚	a er ba ni ya	180000
+地拉那	di la na	65000
+都拉斯	dou la si	65000
+发罗拉	fa luo la	65000
+斯库台	si ku tai	65000
+爱尔巴桑	ai er ba sang	65000
+阿尔及利亚	a er ji li ya	180000
+阿尔及尔	a er ji er	65000
+奥兰	ao lan	65000
+君士坦丁	jun shi tan ding	65000
+安纳巴	an na ba	65000
+布利达	bu li da	65000
+安道尔	an dao er	180000
+安道尔城	an dao er cheng	65000
+埃斯卡尔德斯	ai si ka er de si	65000
+恩坎普	en kan pu	65000
+圣胡利娅	sheng hu li ya	65000
+拉马萨纳	la ma sa na	65000
+安哥拉	an ge la	180000
+罗安达	luo an da	65000
+万博	wan bo	65000
+洛比托	luo bi tuo	65000
+本格拉	ben ge la	65000
+卢班戈	lu ban ge	65000
+安提瓜和巴布达	an ti gua he ba bu da	180000
+圣约翰	sheng yue han	65000
+圣菲利普	sheng fei li pu	65000
+利伯塔	li bo ta	65000
+帕勒姆	pa lei mu	65000
+英格利什港	ying ge li shen gang	65000
+阿根廷	a gen ting	180000
+布宜诺斯艾利斯	bu yi nuo si ai li si	65000
+科尔多瓦	ke er duo wa	65000
+罗萨里奥	luo sa li ao	65000
+门多萨	men duo sa	65000
+拉普拉塔	la pu la ta	65000
+亚美尼亚	ya mei ni ya	180000
+埃里温	ai li wen	65000
+久姆里	jiu mu li	65000
+瓦纳佐尔	wa na zuo er	65000
+瓦加尔沙帕特	wa jia er sha pa te	65000
+赫拉兹丹	he la zi dan	65000
+澳大利亚	ao da li ya	180000
+堪培拉	kan pei la	65000
+悉尼	xi ni	65000
+墨尔本	mo er ben	65000
+布里斯班	bu li si ban	65000
+珀斯	po si	65000
+奥地利	ao di li	180000
+维也纳	wei ye na	65000
+格拉茨	ge la ci	65000
+林茨	lin ci	65000
+萨尔茨堡	sa er ci bao	65000
+因斯布鲁克	yin si bu lu ke	65000
+阿塞拜疆	a sai bai jiang	180000
+巴库	ba ku	65000
+占贾	zhan jia	65000
+苏姆盖特	su mu gai te	65000
+明盖恰乌尔	ming gai qia wu er	65000
+伦卡兰	lun ka lan	65000
+巴哈马	ba ha ma	180000
+拿骚	na sao	65000
+弗里波特	fu li bo te	65000
+西端	xi duan	65000
+马什港	ma shen gang	65000
+乔治敦	qiao zhi dun	65000
+巴林	ba lin	180000
+麦纳麦	mai na mai	65000
+里法	li fa	65000
+穆哈拉格	mu ha la ge	65000
+哈马德镇	ha ma de zhen	65000
+伊萨城	yi sa cheng	65000
+孟加拉国	meng jia la guo	180000
+达卡	da ka	65000
+吉大港	ji da gang	65000
+库尔纳	ku er na	65000
+拉杰沙希	la jie sha xi	65000
+锡尔赫特	xi er he te	65000
+巴巴多斯	ba ba duo si	180000
+布里奇敦	bu li qi dun	65000
+斯佩茨敦	si pei ci dun	65000
+奥伊斯廷斯	ao yi si ting si	65000
+霍尔敦	huo er dun	65000
+巴斯谢巴	ba si xie ba	65000
+白俄罗斯	bai e luo si	180000
+明斯克	ming si ke	65000
+戈梅利	ge mei li	65000
+莫吉廖夫	mo ji liao fu	65000
+维捷布斯克	wei jie bu si ke	65000
+格罗德诺	ge luo de nuo	65000
+比利时	bi li shi	180000
+布鲁塞尔	bu lu sai er	65000
+安特卫普	an te wei pu	65000
+根特	gen te	65000
+沙勒罗瓦	sha lei luo wa	65000
+列日	lie ri	65000
+伯利兹	bo li zi	180000
+贝尔莫潘	bei er mo pan	65000
+伯利兹城	bo li zi cheng	65000
+圣伊格纳西奥	sheng yi ge na xi ao	65000
+奥兰治沃克	ao lan zhi wo ke	65000
+丹格里加	dan ge li jia	65000
+贝宁	bei ning	180000
+波多诺伏	bo duo nuo fu	65000
+科托努	ke tuo nu	65000
+阿波美	a bo mei	65000
+帕拉库	pa la ku	65000
+朱古	zhu gu	65000
+不丹	bu dan	180000
+廷布	ting bu	65000
+辛布	xin bu	65000
+帕罗	pa luo	65000
+普那卡	pu na ka	65000
+贾卡尔	jia ka er	65000
+玻利维亚	bo li wei ya	180000
+苏克雷	su ke lei	65000
+拉巴斯	la ba si	65000
+圣克鲁斯	sheng ke lu si	65000
+科恰班巴	ke qia ban ba	65000
+奥鲁罗	ao lu luo	65000
+波斯尼亚和黑塞哥维那	bo si ni ya he hei sai ge wei na	180000
+萨拉热窝	sa la re wo	65000
+巴尼亚卢卡	ba ni ya lu ka	65000
+莫斯塔尔	mo si ta er	65000
+图兹拉	tu zi la	65000
+泽尼察	ze ni cha	65000
+博茨瓦纳	bo ci wa na	180000
+哈博罗内	ha bo luo nei	65000
+弗朗西斯敦	fu lang xi si dun	65000
+马翁	ma weng	65000
+卡萨内	ka sa nei	65000
+莫洛波洛莱	mo luo bo luo lai	65000
+巴西	ba xi	180000
+巴西利亚	ba xi li ya	65000
+圣保罗	sheng bao luo	65000
+里约热内卢	li yue re nei lu	65000
+萨尔瓦多	sa er wa duo	65000
+贝洛奥里藏特	bei luo ao li cang te	65000
+文莱	wen lai	180000
+斯里巴加湾市	si li ba jia wan shi	65000
+马来奕	ma lai yi	65000
+诗里亚	shi li ya	65000
+都东	dou dong	65000
+邦阿	bang a	65000
+保加利亚	bao jia li ya	180000
+索非亚	suo fei ya	65000
+普罗夫迪夫	pu luo fu di fu	65000
+瓦尔纳	wa er na	65000
+布尔加斯	bu er jia si	65000
+鲁塞	lu sai	65000
+布基纳法索	bu ji na fa suo	180000
+瓦加杜古	wa jia du gu	65000
+博博迪乌拉索	bo bo di wu la suo	65000
+库杜古	ku du gu	65000
+邦福拉	bang fu la	65000
+瓦希古亚	wa xi gu ya	65000
+布隆迪	bu long di	180000
+基特加	ji te jia	65000
+布琼布拉	bu qiong bu la	65000
+恩戈齐	en ge qi	65000
+鲁蒙盖	lu meng gai	65000
+穆因加	mu yin jia	65000
+佛得角	fu de jiao	180000
+普拉亚	pu la ya	65000
+明德卢	ming de lu	65000
+圣玛丽亚	sheng ma li ya	65000
+阿索马达	a suo ma da	65000
+埃斯帕戈斯	ai si pa ge si	65000
+柬埔寨	jian pu zhai	180000
+金边	jin bian	65000
+暹粒	xian li	65000
+马德望	ma de wang	65000
+西哈努克市	xi ha nu ke shi	65000
+磅湛	bang zhan	65000
+喀麦隆	ka mai long	180000
+雅温得	ya wen de	65000
+杜阿拉	du a la	65000
+巴门达	ba men da	65000
+巴富萨姆	ba fu sa mu	65000
+加鲁阿	jia lu a	65000
+加拿大	jia na da	180000
+渥太华	wo tai hua	65000
+多伦多	duo lun duo	65000
+蒙特利尔	meng te li er	65000
+温哥华	wen ge hua	65000
+卡尔加里	ka er jia li	65000
+中非共和国	zhong fei gong he guo	180000
+班吉	ban ji	65000
+贝贝拉蒂	bei bei la di	65000
+博阿尔	bo a er	65000
+班巴里	ban ba li	65000
+博桑戈阿	bo sang ge a	65000
+乍得	zha de	180000
+恩贾梅纳	en jia mei na	65000
+蒙杜	meng du	65000
+阿贝歇	a bei xie	65000
+萨尔	sa er	65000
+凯洛	kai luo	65000
+智利	zhi li	180000
+圣地亚哥	sheng di ya ge	65000
+瓦尔帕莱索	wa er pa lai suo	65000
+康塞普西翁	kang sai pu xi weng	65000
+安托法加斯塔	an tuo fa jia si ta	65000
+维尼亚德尔马	wei ni ya de er ma	65000
+中国	zhong guo	180000
+北京	bei jing	65000
+上海	shang hai	65000
+广州	guang zhou	65000
+深圳	shen zhen	65000
+成都	cheng du	65000
+哥伦比亚	ge lun bi ya	180000
+波哥大	bo ge da	65000
+麦德林	mai de lin	65000
+卡利	ka li	65000
+巴兰基亚	ba lan ji ya	65000
+卡塔赫纳	ka ta he na	65000
+科摩罗	ke mo luo	180000
+莫罗尼	mo luo ni	65000
+穆察穆杜	mu cha mu du	65000
+丰博尼	feng bo ni	65000
+多莫尼	duo mo ni	65000
+丰布尼	feng bu ni	65000
+刚果共和国	gang guo gong he guo	180000
+布拉柴维尔	bu la chai wei er	65000
+黑角	hei jiao	65000
+多利西	duo li xi	65000
+恩卡伊	en ka yi	65000
+韦索	wei suo	65000
+哥斯达黎加	ge si da li jia	180000
+圣何塞	sheng he sai	65000
+利蒙	li meng	65000
+阿拉胡埃拉	a la hu ai la	65000
+埃雷迪亚	ai lei di ya	65000
+卡塔戈	ka ta ge	65000
+科特迪瓦	ke te di wa	180000
+亚穆苏克罗	ya mu su ke luo	65000
+阿比让	a bi rang	65000
+布瓦凯	bu wa kai	65000
+达洛亚	da luo ya	65000
+科霍戈	ke huo ge	65000
+克罗地亚	ke luo di ya	180000
+萨格勒布	sa ge lei bu	65000
+斯普利特	si pu li te	65000
+里耶卡	li ye ka	65000
+奥西耶克	ao xi ye ke	65000
+扎达尔	zha da er	65000
+古巴	gu ba	180000
+哈瓦那	ha wa na	65000
+卡马圭	ka ma gui	65000
+奥尔金	ao er jin	65000
+圣克拉拉	sheng ke la la	65000
+塞浦路斯	sai pu lu si	180000
+尼科西亚	ni ke xi ya	65000
+利马索尔	li ma suo er	65000
+拉纳卡	la na ka	65000
+帕福斯	pa fu si	65000
+法马古斯塔	fa ma gu si ta	65000
+捷克	jie ke	180000
+布拉格	bu la ge	65000
+布尔诺	bu er nuo	65000
+俄斯特拉发	e si te la fa	65000
+比尔森	bi er sen	65000
+利贝雷茨	li bei lei ci	65000
+刚果民主共和国	gang guo min zhu gong he guo	180000
+金沙萨	jin sha sa	65000
+卢本巴希	lu ben ba xi	65000
+姆布吉马伊	mu bu ji ma yi	65000
+基桑加尼	ji sang jia ni	65000
+戈马	ge ma	65000
+丹麦	dan mai	180000
+哥本哈根	ge ben ha gen	65000
+奥胡斯	ao hu si	65000
+欧登塞	ou deng sai	65000
+奥尔堡	ao er bao	65000
+埃斯比约	ai si bi yue	65000
+吉布提	ji bu ti	180000
+吉布提市	ji bu ti shi	65000
+阿里萨比赫	a li sa bi he	65000
+塔朱拉	ta zhu la	65000
+奥博克	ao bo ke	65000
+迪基勒	di ji lei	65000
+多米尼克	duo mi ni ke	180000
+罗索	luo suo	65000
+朴次茅斯	pu ci mao si	65000
+马里戈特	ma li ge te	65000
+马奥	ma ao	65000
+拉普兰	la pu lan	65000
+多米尼加共和国	duo mi ni jia gong he guo	180000
+圣多明各	sheng duo ming ge	65000
+拉罗马纳	la luo ma na	65000
+普拉塔港	pu la ta gang	65000
+圣佩德罗德马科里斯	sheng pei de luo de ma ke li si	65000
+厄瓜多尔	e gua duo er	180000
+基多	ji duo	65000
+瓜亚基尔	gua ya ji er	65000
+昆卡	kun ka	65000
+曼塔	man ta	65000
+埃及	ai ji	180000
+开罗	kai luo	65000
+亚历山大	ya li shan da	65000
+吉萨	ji sa	65000
+塞得港	sai de gang	65000
+苏伊士	su yi shi	65000
+圣萨尔瓦多	sheng sa er wa duo	65000
+圣安娜	sheng an na	65000
+圣米格尔	sheng mi ge er	65000
+索亚潘戈	suo ya pan ge	65000
+圣特克拉	sheng te ke la	65000
+赤道几内亚	chi dao ji nei ya	180000
+马拉博	ma la bo	65000
+巴塔	ba ta	65000
+埃贝比因	ai bei bi yin	65000
+蒙戈莫	meng ge mo	65000
+卢巴	lu ba	65000
+厄立特里亚	e li te li ya	180000
+阿斯马拉	a si ma la	65000
+克伦	ke lun	65000
+马萨瓦	ma sa wa	65000
+阿萨布	a sa bu	65000
+门德费拉	men de fei la	65000
+爱沙尼亚	ai sha ni ya	180000
+塔林	ta lin	65000
+塔尔图	ta er tu	65000
+纳尔瓦	na er wa	65000
+派尔努	pai er nu	65000
+科特拉耶尔韦	ke te la ye er wei	65000
+斯威士兰	si wei shi lan	180000
+姆巴巴内	mu ba ba nei	65000
+曼齐尼	man qi ni	65000
+洛班巴	luo ban ba	65000
+西泰基	xi tai ji	65000
+恩赫兰加诺	en he lan jia nuo	65000
+埃塞俄比亚	ai sai e bi ya	180000
+亚的斯亚贝巴	ya de si ya bei ba	65000
+德雷达瓦	de lei da wa	65000
+贡德尔	gong de er	65000
+默克莱	mo ke lai	65000
+阿瓦萨	a wa sa	65000
+斐济	fei ji	180000
+苏瓦	su wa	65000
+楠迪	nan di	65000
+劳托卡	lao tuo ka	65000
+兰巴萨	lan ba sa	65000
+萨武萨武	sa wu sa wu	65000
+芬兰	fen lan	180000
+赫尔辛基	he er xin ji	65000
+埃斯波	ai si bo	65000
+坦佩雷	tan pei lei	65000
+万塔	wan ta	65000
+图尔库	tu er ku	65000
+法国	fa guo	180000
+巴黎	ba li	65000
+马赛	ma sai	65000
+里昂	li ang	65000
+图卢兹	tu lu zi	65000
+尼斯	ni si	65000
+加蓬	jia peng	180000
+利伯维尔	li bo wei er	65000
+让蒂尔港	rang di er gang	65000
+弗朗斯维尔	fu lang si wei er	65000
+奥耶姆	ao ye mu	65000
+兰巴雷内	lan ba lei nei	65000
+冈比亚	gang bi ya	180000
+班珠尔	ban zhu er	65000
+塞雷昆达	sai lei kun da	65000
+布里卡马	bu li ka ma	65000
+巴考	ba kao	65000
+法拉芬尼	fa la fen ni	65000
+格鲁吉亚	ge lu ji ya	180000
+第比利斯	di bi li si	65000
+巴统	ba tong	65000
+库塔伊西	ku ta yi xi	65000
+鲁斯塔维	lu si ta wei	65000
+哥里	ge li	65000
+德国	de guo	180000
+柏林	bo lin	65000
+汉堡	han bao	65000
+慕尼黑	mu ni hei	65000
+科隆	ke long	65000
+法兰克福	fa lan ke fu	65000
+加纳	jia na	180000
+阿克拉	a ke la	65000
+库马西	ku ma xi	65000
+塔马利	ta ma li	65000
+塔科拉迪	ta ke la di	65000
+海岸角	hai an jiao	65000
+希腊	xi la	180000
+雅典	ya dian	65000
+塞萨洛尼基	sai sa luo ni ji	65000
+帕特雷	pa te lei	65000
+伊拉克利翁	yi la ke li weng	65000
+拉里萨	la li sa	65000
+格林纳达	ge lin na da	180000
+圣乔治	sheng qiao zhi	65000
+格林维尔	ge lin wei er	65000
+古亚韦	gu ya wei	65000
+维多利亚	wei duo li ya	65000
+索图尔	suo tu er	65000
+危地马拉	wei di ma la	180000
+危地马拉城	wei di ma la cheng	65000
+克萨尔特南戈	ke sa er te nan ge	65000
+埃斯昆特拉	ai si kun te la	65000
+安提瓜危地马拉	an ti gua wei di ma la	65000
+巴里奥斯港	ba li ao si gang	65000
+几内亚	ji nei ya	180000
+科纳克里	ke na ke li	65000
+坎康	kan kang	65000
+恩泽雷科雷	en ze lei ke lei	65000
+金迪亚	jin di ya	65000
+拉贝	la bei	65000
+几内亚比绍	ji nei ya bi shao	180000
+比绍	bi shao	65000
+巴法塔	ba fa ta	65000
+加布	jia bu	65000
+卡谢乌	ka xie wu	65000
+博拉马	bo la ma	65000
+圭亚那	gui ya na	180000
+林登	lin deng	65000
+新阿姆斯特丹	xin a mu si te dan	65000
+安娜丽贾	an na li jia	65000
+巴蒂卡	ba di ka	65000
+海地	hai di	180000
+太子港	tai zi gang	65000
+海地角	hai di jiao	65000
+戈纳伊夫	ge na yi fu	65000
+莱凯	lai kai	65000
+雅克梅	ya ke mei	65000
+洪都拉斯	hong dou la si	180000
+特古西加尔巴	te gu xi jia er ba	65000
+圣佩德罗苏拉	sheng pei de luo su la	65000
+拉塞瓦	la sai wa	65000
+乔洛马	qiao luo ma	65000
+科马亚瓜	ke ma ya gua	65000
+匈牙利	xiong ya li	180000
+布达佩斯	bu da pei si	65000
+德布勒森	de bu lei sen	65000
+塞格德	sai ge de	65000
+米什科尔茨	mi shen ke er ci	65000
+佩奇	pei qi	65000
+冰岛	bing dao	180000
+雷克雅未克	lei ke ya wei ke	65000
+科帕沃于尔	ke pa wo yu er	65000
+哈布纳菲厄泽	ha bu na fei e ze	65000
+阿克雷里	a ke lei li	65000
+雷克雅内斯拜尔	lei ke ya nei si bai er	65000
+印度	yin du	180000
+新德里	xin de li	65000
+孟买	meng mai	65000
+德里	de li	65000
+班加罗尔	ban jia luo er	65000
+加尔各答	jia er ge da	65000
+印度尼西亚	yin du ni xi ya	180000
+雅加达	ya jia da	65000
+泗水	si shui	65000
+万隆	wan long	65000
+棉兰	mian lan	65000
+望加锡	wang jia xi	65000
+伊朗	yi lang	180000
+德黑兰	de hei lan	65000
+马什哈德	ma shen ha de	65000
+伊斯法罕	yi si fa han	65000
+设拉子	she la zi	65000
+大不里士	da bu li shi	65000
+伊拉克	yi la ke	180000
+巴格达	ba ge da	65000
+巴士拉	ba shi la	65000
+摩苏尔	mo su er	65000
+埃尔比勒	ai er bi lei	65000
+纳杰夫	na jie fu	65000
+爱尔兰	ai er lan	180000
+都柏林	dou bo lin	65000
+科克	ke ke	65000
+利默里克	li mo li ke	65000
+戈尔韦	ge er wei	65000
+沃特福德	wo te fu de	65000
+以色列	yi se lie	180000
+耶路撒冷	ye lu sa leng	65000
+特拉维夫	te la wei fu	65000
+海法	hai fa	65000
+里雄莱锡安	li xiong lai xi an	65000
+阿什杜德	a shen du de	65000
+意大利	yi da li	180000
+罗马	luo ma	65000
+米兰	mi lan	65000
+那不勒斯	na bu le si	65000
+都灵	dou ling	65000
+巴勒莫	ba lei mo	65000
+牙买加	ya mai jia	180000
+金斯敦	jin si dun	65000
+蒙特哥贝	meng te ge bei	65000
+西班牙镇	xi ban ya zhen	65000
+波特莫尔	bo te mo er	65000
+曼德维尔	man de wei er	65000
+日本	ri ben	180000
+东京	dong jing	65000
+大阪	da ban	65000
+京都	jing du	65000
+横滨	heng bin	65000
+名古屋	ming gu wu	65000
+约旦	yue dan	180000
+安曼	an man	65000
+扎尔卡	zha er ka	65000
+伊尔比德	yi er bi de	65000
+亚喀巴	ya ka ba	65000
+萨勒特	sa lei te	65000
+哈萨克斯坦	ha sa ke si tan	180000
+阿斯塔纳	a si ta na	65000
+阿拉木图	a la mu tu	65000
+奇姆肯特	qi mu ken te	65000
+卡拉干达	ka la gan da	65000
+阿克托别	a ke tuo bie	65000
+肯尼亚	ken ni ya	180000
+内罗毕	nei luo bi	65000
+蒙巴萨	meng ba sa	65000
+基苏木	ji su mu	65000
+纳库鲁	na ku lu	65000
+埃尔多雷特	ai er duo lei te	65000
+基里巴斯	ji li ba si	180000
+南塔拉瓦	nan ta la wa	65000
+贝蒂奥	bei di ao	65000
+拜里基	bai li ji	65000
+比肯尼比尤	bi ken ni bi you	65000
+塔比特韦亚	ta bi te wei ya	65000
+科威特	ke wei te	180000
+科威特城	ke wei te cheng	65000
+艾哈迈迪	ai ha mai di	65000
+哈瓦利	ha wa li	65000
+萨尔米亚	sa er mi ya	65000
+杰赫拉	jie he la	65000
+吉尔吉斯斯坦	ji er ji si si tan	180000
+比什凯克	bi shen kai ke	65000
+奥什	ao shen	65000
+卡拉科尔	ka la ke er	65000
+托克马克	tuo ke ma ke	65000
+老挝	lao wo	180000
+万象	wan xiang	65000
+琅勃拉邦	lang bo la bang	65000
+沙湾拿吉	sha wan na ji	65000
+巴色	ba se	65000
+他曲	ta qu	65000
+拉脱维亚	la tuo wei ya	180000
+里加	li jia	65000
+道加夫皮尔斯	dao jia fu pi er si	65000
+利耶帕亚	li ye pa ya	65000
+叶尔加瓦	ye er jia wa	65000
+尤尔马拉	you er ma la	65000
+黎巴嫩	li ba nen	180000
+贝鲁特	bei lu te	65000
+的黎波里	de li bo li	65000
+西顿	xi dun	65000
+扎赫勒	zha he lei	65000
+比布鲁斯	bi bu lu si	65000
+莱索托	lai suo tuo	180000
+马塞卢	ma sai lu	65000
+泰亚泰亚嫩	tai ya tai ya nen	65000
+马费滕	ma fei teng	65000
+霍洛霍洛	huo luo huo luo	65000
+布塔布泰	bu ta bu tai	65000
+利比里亚	li bi li ya	180000
+蒙罗维亚	meng luo wei ya	65000
+甘巴	gan ba	65000
+布坎南	bu kan nan	65000
+甘塔	gan ta	65000
+卡卡塔	ka ka ta	65000
+利比亚	li bi ya	180000
+班加西	ban jia xi	65000
+米苏拉塔	mi su la ta	65000
+塞卜哈	sai bo ha	65000
+扎维耶	zha wei ye	65000
+列支敦士登	lie zhi dun shi deng	180000
+瓦杜兹	wa du zi	65000
+沙恩	sha en	65000
+巴尔策斯	ba er ce si	65000
+特里森	te li sen	65000
+埃申	ai shen	65000
+立陶宛	li tao wan	180000
+维尔纽斯	wei er niu si	65000
+考纳斯	kao na si	65000
+克莱佩达	ke lai pei da	65000
+希奥利艾	xi ao li ai	65000
+帕涅韦日斯	pa nie wei ri si	65000
+卢森堡	lu sen bao	180000
+卢森堡市	lu sen bao shi	65000
+埃施	ai shi	65000
+迪弗当日	di fu dang ri	65000
+迪德朗日	di de lang ri	65000
+埃特尔布鲁克	ai te er bu lu ke	65000
+马达加斯加	ma da jia si jia	180000
+塔那那利佛	ta na na li fu	65000
+图阿马西纳	tu a ma xi na	65000
+安齐拉贝	an qi la bei	65000
+菲亚纳兰楚阿	fei ya na lan chu a	65000
+马哈赞加	ma ha zan jia	65000
+马拉维	ma la wei	180000
+利隆圭	li long gui	65000
+布兰太尔	bu lan tai er	65000
+姆祖祖	mu zu zu	65000
+松巴	song ba	65000
+卡松古	ka song gu	65000
+马来西亚	ma lai xi ya	180000
+吉隆坡	ji long po	65000
+乔治市	qiao zhi shi	65000
+新山	xin shan	65000
+怡保	yi bao	65000
+哥打基纳巴卢	ge da ji na ba lu	65000
+马尔代夫	ma er dai fu	180000
+马累	ma lei	65000
+阿杜城	a du cheng	65000
+富瓦穆拉	fu wa mu la	65000
+库尔胡德胡富希	ku er hu de hu fu xi	65000
+希塔杜	xi ta du	65000
+马里	ma li	180000
+巴马科	ba ma ke	65000
+锡卡索	xi ka suo	65000
+莫普提	mo pu ti	65000
+塞古	sai gu	65000
+卡伊	ka yi	65000
+马耳他	ma er ta	180000
+瓦莱塔	wa lai ta	65000
+比尔基卡拉	bi er ji ka la	65000
+莫斯塔	mo si ta	65000
+科尔米	ke er mi	65000
+斯利马	si li ma	65000
+马绍尔群岛	ma shao er qun dao	180000
+马朱罗	ma zhu luo	65000
+埃贝耶	ai bei ye	65000
+贾卢伊特	jia lu yi te	65000
+沃特杰	wo te jie	65000
+劳拉	lao la	65000
+毛里塔尼亚	mao li ta ni ya	180000
+努瓦克肖特	nu wa ke xiao te	65000
+努瓦迪布	nu wa di bu	65000
+基法	ji fa	65000
+阿塔尔	a ta er	65000
+毛里求斯	mao li qiu si	180000
+路易港	lu yi gang	65000
+博巴森罗斯希尔	bo ba sen luo si xi er	65000
+瓦科阿斯菲尼克斯	wa ke a si fei ni ke si	65000
+居尔皮普	ju er pi pu	65000
+四博尔纳	si bo er na	65000
+墨西哥	mo xi ge	180000
+墨西哥城	mo xi ge cheng	65000
+瓜达拉哈拉	gua da la ha la	65000
+蒙特雷	meng te lei	65000
+普埃布拉	pu ai bu la	65000
+蒂华纳	di hua na	65000
+密克罗尼西亚联邦	mi ke luo ni xi ya lian bang	180000
+帕利基尔	pa li ji er	65000
+韦诺	wei nuo	65000
+科洛尼亚	ke luo ni ya	65000
+托福尔	tuo fu er	65000
+摩尔多瓦	mo er duo wa	180000
+基希讷乌	ji xi ne wu	65000
+蒂拉斯波尔	di la si bo er	65000
+伯尔蒂	bo er di	65000
+宾杰里	bin jie li	65000
+雷布尼察	lei bu ni cha	65000
+摩纳哥	mo na ge	180000
+蒙特卡洛	meng te ka luo	65000
+拉康达明	la kang da ming	65000
+丰维耶	feng wei ye	65000
+莫内盖蒂	mo nei gai di	65000
+蒙古国	meng gu guo	180000
+乌兰巴托	wu lan ba tuo	65000
+额尔登特	e er deng te	65000
+达尔汗	da er han	65000
+乔巴山	qiao ba shan	65000
+乌列盖	wu lie gai	65000
+黑山	hei shan	180000
+波德戈里察	bo de ge li cha	65000
+尼克希奇	ni ke xi qi	65000
+布德瓦	bu de wa	65000
+巴尔	ba er	65000
+采蒂涅	cai di nie	65000
+摩洛哥	mo luo ge	180000
+拉巴特	la ba te	65000
+卡萨布兰卡	ka sa bu lan ka	65000
+马拉喀什	ma la ka shi	65000
+非斯	fei si	65000
+丹吉尔	dan ji er	65000
+莫桑比克	mo sang bi ke	180000
+马普托	ma pu tuo	65000
+马托拉	ma tuo la	65000
+贝拉	bei la	65000
+楠普拉	nan pu la	65000
+希莫尤	xi mo you	65000
+缅甸	mian dian	180000
+内比都	nei bi dou	65000
+仰光	yang guang	65000
+曼德勒	man de lei	65000
+毛淡棉	mao dan mian	65000
+勃固	bo gu	65000
+纳米比亚	na mi bi ya	180000
+温得和克	wen de he ke	65000
+沃尔维斯湾	wo er wei si wan	65000
+斯瓦科普蒙德	si wa ke pu meng de	65000
+奥沙卡蒂	ao sha ka di	65000
+龙杜	long du	65000
+瑙鲁	nao lu	180000
+亚伦	ya lun	65000
+阿纳巴尔	a na ba er	65000
+艾沃	ai wo	65000
+博	bo	65000
+梅嫩	mei nen	65000
+尼泊尔	ni po er	180000
+加德满都	jia de man dou	65000
+博卡拉	bo ka la	65000
+拉利特布尔	la li te bu er	65000
+巴拉特普尔	ba la te pu er	65000
+比拉特纳加尔	bi la te na jia er	65000
+荷兰	he lan	180000
+阿姆斯特丹	a mu si te dan	65000
+鹿特丹	lu te dan	65000
+海牙	hai ya	65000
+乌得勒支	wu de lei zhi	65000
+埃因霍温	ai yin huo wen	65000
+新西兰	xin xi lan	180000
+惠灵顿	hui ling dun	65000
+奥克兰	ao ke lan	65000
+基督城	ji du cheng	65000
+汉密尔顿	han mi er dun	65000
+达尼丁	da ni ding	65000
+尼加拉瓜	ni jia la gua	180000
+马那瓜	ma na gua	65000
+莱昂	lai ang	65000
+格拉纳达	ge la na da	65000
+马萨亚	ma sa ya	65000
+马塔加尔帕	ma ta jia er pa	65000
+尼日尔	ni ri er	180000
+尼亚美	ni ya mei	65000
+津德尔	jin de er	65000
+马拉迪	ma la di	65000
+阿加德兹	a jia de zi	65000
+塔瓦	ta wa	65000
+尼日利亚	ni ri li ya	180000
+阿布贾	a bu jia	65000
+拉各斯	la ge si	65000
+卡诺	ka nuo	65000
+伊巴丹	yi ba dan	65000
+哈科特港	ha ke te gang	65000
+朝鲜	chao xian	180000
+平壤	ping rang	65000
+咸兴	xian xing	65000
+清津	qing jin	65000
+南浦	nan pu	65000
+元山	yuan shan	65000
+北马其顿	bei ma qi dun	180000
+斯科普里	si ke pu li	65000
+比托拉	bi tuo la	65000
+库马诺沃	ku ma nuo wo	65000
+普里莱普	pu li lai pu	65000
+泰托沃	tai tuo wo	65000
+挪威	nuo wei	180000
+奥斯陆	ao si lu	65000
+卑尔根	bei er gen	65000
+特隆赫姆	te long he mu	65000
+斯塔万格	si ta wan ge	65000
+特罗姆瑟	te luo mu se	65000
+阿曼	a man	180000
+马斯喀特	ma si ka te	65000
+塞拉莱	sai la lai	65000
+苏哈尔	su ha er	65000
+尼兹瓦	ni zi wa	65000
+苏尔	su er	65000
+巴基斯坦	ba ji si tan	180000
+伊斯兰堡	yi si lan bao	65000
+卡拉奇	ka la qi	65000
+拉合尔	la he er	65000
+费萨拉巴德	fei sa la ba de	65000
+拉瓦尔品第	la wa er pin di	65000
+帕劳	pa lao	180000
+恩吉鲁穆德	en ji lu mu de	65000
+科罗尔	ke luo er	65000
+艾拉伊	ai la yi	65000
+梅云斯	mei yun si	65000
+克拉克拉贝德	ke la ke la bei de	65000
+巴勒斯坦	ba le si tan	180000
+拉姆安拉	la mu an la	65000
+加沙	jia sha	65000
+希伯伦	xi bo lun	65000
+纳布卢斯	na bu lu si	65000
+杰宁	jie ning	65000
+巴拿马	ba na ma	180000
+巴拿马城	ba na ma cheng	65000
+戴维	dai wei	65000
+奇特雷	qi te lei	65000
+巴布亚新几内亚	ba bu ya xin ji nei ya	180000
+莫尔兹比港	mo er zi bi gang	65000
+莱城	lai cheng	65000
+芒特哈根	mang te ha gen	65000
+马当	ma dang	65000
+戈罗卡	ge luo ka	65000
+巴拉圭	ba la gui	180000
+亚松森	ya song sen	65000
+东方市	dong fang shi	65000
+圣洛伦索	sheng luo lun suo	65000
+卢克	lu ke	65000
+恩卡纳西翁	en ka na xi weng	65000
+秘鲁	bi lu	180000
+利马	li ma	65000
+阿雷基帕	a lei ji pa	65000
+特鲁希略	te lu xi lve	65000
+库斯科	ku si ke	65000
+奇克拉约	qi ke la yue	65000
+菲律宾	fei lv bin	180000
+马尼拉	ma ni la	65000
+奎松城	kui song cheng	65000
+达沃	da wo	65000
+宿务	su wu	65000
+三宝颜	san bao yan	65000
+波兰	bo lan	180000
+华沙	hua sha	65000
+克拉科夫	ke la ke fu	65000
+罗兹	luo zi	65000
+弗罗茨瓦夫	fu luo ci wa fu	65000
+波兹南	bo zi nan	65000
+葡萄牙	pu tao ya	180000
+里斯本	li si ben	65000
+波尔图	bo er tu	65000
+布拉加	bu la jia	65000
+科英布拉	ke ying bu la	65000
+丰沙尔	feng sha er	65000
+卡塔尔	ka ta er	180000
+多哈	duo ha	65000
+赖扬	lai yang	65000
+沃克拉	wo ke la	65000
+豪尔	hao er	65000
+杜汉	du han	65000
+罗马尼亚	luo ma ni ya	180000
+布加勒斯特	bu jia lei si te	65000
+克卢日纳波卡	ke lu ri na bo ka	65000
+蒂米什瓦拉	di mi shen wa la	65000
+雅西	ya xi	65000
+康斯坦察	kang si tan cha	65000
+俄罗斯	e luo si	180000
+莫斯科	mo si ke	65000
+圣彼得堡	sheng bi de bao	65000
+新西伯利亚	xin xi bo li ya	65000
+叶卡捷琳堡	ye ka jie lin bao	65000
+喀山	ka shan	65000
+卢旺达	lu wang da	180000
+基加利	ji jia li	65000
+布塔雷	bu ta lei	65000
+吉塞尼	ji sai ni	65000
+鲁亨盖里	lu heng gai li	65000
+比温巴	bi wen ba	65000
+圣基茨和尼维斯	sheng ji ci he ni wei si	180000
+巴斯特尔	ba si te er	65000
+查尔斯敦	cha er si dun	65000
+桑迪角镇	sang di jiao zhen	65000
+卡扬	ka yang	65000
+迪耶普贝镇	di ye pu bei zhen	65000
+圣卢西亚	sheng lu xi ya	180000
+卡斯特里	ka si te li	65000
+旧堡	jiu bao	65000
+格罗斯伊斯勒	ge luo si yi si lei	65000
+苏弗里耶尔	su fu li ye er	65000
+丹纳利	dan na li	65000
+圣文森特和格林纳丁斯	sheng wen sen te he ge lin na ding si	180000
+巴鲁阿利	ba lu a li	65000
+沙托贝莱尔	sha tuo bei lai er	65000
+莱尤	lai you	65000
+萨摩亚	sa mo ya	180000
+阿皮亚	a pi ya	65000
+萨莱洛洛加	sa lai luo luo jia	65000
+瓦伊特莱	wa yi te lai	65000
+法莱乌拉	fa lai wu la	65000
+萨福图拉法伊	sa fu tu la fa yi	65000
+圣马力诺	sheng ma li nuo	180000
+塞拉瓦莱	sai la wa lai	65000
+博尔戈马焦雷	bo er ge ma jiao lei	65000
+多马尼亚诺	duo ma ni ya nuo	65000
+菲奥伦蒂诺	fei ao lun di nuo	65000
+圣多美和普林西比	sheng duo mei he pu lin xi bi	180000
+圣多美	sheng duo mei	65000
+圣安东尼奥	sheng an dong ni ao	65000
+内维斯	nei wei si	65000
+特林达德	te lin da de	65000
+桑塔纳	sang ta na	65000
+沙特阿拉伯	sha te a la bo	180000
+利雅得	li ya de	65000
+吉达	ji da	65000
+麦加	mai jia	65000
+麦地那	mai di na	65000
+达曼	da man	65000
+塞内加尔	sai nei jia er	180000
+达喀尔	da ka er	65000
+图巴	tu ba	65000
+捷斯	jie si	65000
+圣路易	sheng lu yi	65000
+考拉克	kao la ke	65000
+塞尔维亚	sai er wei ya	180000
+贝尔格莱德	bei er ge lai de	65000
+诺维萨德	nuo wei sa de	65000
+尼什	ni shen	65000
+克拉古耶瓦茨	ke la gu ye wa ci	65000
+苏博蒂察	su bo di cha	65000
+塞舌尔	sai she er	180000
+安塞布瓦洛	an sai bu wa luo	65000
+博瓦隆	bo wa long	65000
+安塞罗亚尔	an sai luo ya er	65000
+巴伊拉扎尔	ba yi la zha er	65000
+塞拉利昂	sai la li ang	180000
+弗里敦	fu li dun	65000
+博城	bo cheng	65000
+凯内马	kai nei ma	65000
+马克尼	ma ke ni	65000
+科伊杜	ke yi du	65000
+新加坡	xin jia po	180000
+裕廊东	yu lang dong	65000
+淡滨尼	dan bin ni	65000
+兀兰	wu lan	65000
+勿洛	wu luo	65000
+斯洛伐克	si luo fa ke	180000
+布拉迪斯拉发	bu la di si la fa	65000
+科希策	ke xi ce	65000
+普雷绍夫	pu lei shao fu	65000
+日利纳	ri li na	65000
+尼特拉	ni te la	65000
+斯洛文尼亚	si luo wen ni ya	180000
+卢布尔雅那	lu bu er ya na	65000
+马里博尔	ma li bo er	65000
+克拉尼	ke la ni	65000
+采列	cai lie	65000
+科佩尔	ke pei er	65000
+所罗门群岛	suo luo men qun dao	180000
+霍尼亚拉	huo ni ya la	65000
+吉佐	ji zuo	65000
+奥基	ao ji	65000
+蒙达	meng da	65000
+图拉吉	tu la ji	65000
+索马里	suo ma li	180000
+摩加迪沙	mo jia di sha	65000
+哈尔格萨	ha er ge sa	65000
+博萨索	bo sa suo	65000
+基斯马尤	ji si ma you	65000
+柏培拉	bai pei la	65000
+南非	nan fei	180000
+比勒陀利亚	bi le tuo li ya	65000
+约翰内斯堡	yue han nei si bao	65000
+开普敦	kai pu dun	65000
+德班	de ban	65000
+伊丽莎白港	yi li sha bai gang	65000
+韩国	han guo	180000
+首尔	shou er	65000
+釜山	fu shan	65000
+仁川	ren chuan	65000
+大邱	da qiu	65000
+大田	da tian	65000
+南苏丹	nan su dan	180000
+朱巴	zhu ba	65000
+瓦乌	wa wu	65000
+马拉卡勒	ma la ka lei	65000
+耶伊	ye yi	65000
+博尔	bo er	65000
+西班牙	xi ban ya	180000
+马德里	ma de li	65000
+巴塞罗那	ba sai luo na	65000
+瓦伦西亚	wa lun xi ya	65000
+塞维利亚	sai wei li ya	65000
+毕尔巴鄂	bi er ba e	65000
+斯里兰卡	si li lan ka	180000
+斯里贾亚瓦德纳普拉科特	si li jia ya wa de na pu la ke te	65000
+科伦坡	ke lun po	65000
+康提	kang ti	65000
+加勒	jia lei	65000
+贾夫纳	jia fu na	65000
+苏丹	su dan	180000
+喀土穆	ka tu mu	65000
+恩图曼	en tu man	65000
+苏丹港	su dan gang	65000
+尼亚拉	ni ya la	65000
+卡萨拉	ka sa la	65000
+苏里南	su li nan	180000
+帕拉马里博	pa la ma li bo	65000
+莱利多普	lai li duo pu	65000
+布罗科蓬多	bu luo ke peng duo	65000
+新尼克里	xin ni ke li	65000
+蒙戈	meng ge	65000
+瑞典	rui dian	180000
+斯德哥尔摩	si de ge er mo	65000
+哥德堡	ge de bao	65000
+马尔默	ma er mo	65000
+乌普萨拉	wu pu sa la	65000
+韦斯特罗斯	wei si te luo si	65000
+瑞士	rui shi	180000
+伯尔尼	bo er ni	65000
+苏黎世	su li shi	65000
+日内瓦	ri nei wa	65000
+巴塞尔	ba sai er	65000
+洛桑	luo sang	65000
+叙利亚	xu li ya	180000
+大马士革	da ma shi ge	65000
+阿勒颇	a lei po	65000
+霍姆斯	huo mu si	65000
+拉塔基亚	la ta ji ya	65000
+哈马	ha ma	65000
+塔吉克斯坦	ta ji ke si tan	180000
+杜尚别	du shang bie	65000
+苦盏	ku zhan	65000
+库洛布	ku luo bu	65000
+库尔干秋别	ku er gan qiu bie	65000
+伊斯塔拉夫尚	yi si ta la fu shang	65000
+坦桑尼亚	tan sang ni ya	180000
+多多马	duo duo ma	65000
+达累斯萨拉姆	da lei si sa la mu	65000
+姆万扎	mu wan zha	65000
+阿鲁沙	a lu sha	65000
+姆贝亚	mu bei ya	65000
+泰国	tai guo	180000
+曼谷	man gu	65000
+清迈	qing mai	65000
+芭堤雅	ba di ya	65000
+普吉	pu ji	65000
+呵叻	ke le	65000
+东帝汶	dong di wen	180000
+帝力	di li	65000
+包考	bao kao	65000
+马利亚纳	ma li ya na	65000
+苏艾	su ai	65000
+萨梅	sa mei	65000
+多哥	duo ge	180000
+洛美	luo mei	65000
+索科德	suo ke de	65000
+卡拉	ka la	65000
+阿塔帕梅	a ta pa mei	65000
+帕利梅	pa li mei	65000
+汤加	tang jia	180000
+努库阿洛法	nu ku a luo fa	65000
+涅亚富	nie ya fu	65000
+哈韦卢洛托	ha wei lu luo tuo	65000
+潘盖	pan gai	65000
+奥霍努阿	ao huo nu a	65000
+特立尼达和多巴哥	te li ni da he duo ba ge	180000
+西班牙港	xi ban ya gang	65000
+圣费尔南多	sheng fei er nan duo	65000
+查瓜纳斯	cha gua na si	65000
+阿里马	a li ma	65000
+斯卡伯勒	si ka bo lei	65000
+突尼斯	tu ni si	180000
+突尼斯市	tu ni si shi	65000
+斯法克斯	si fa ke si	65000
+苏塞	su sai	65000
+凯鲁万	kai lu wan	65000
+比塞大	bi sai da	65000
+土耳其	tu er qi	180000
+安卡拉	an ka la	65000
+伊斯坦布尔	yi si tan bu er	65000
+伊兹密尔	yi zi mi er	65000
+布尔萨	bu er sa	65000
+安塔利亚	an ta li ya	65000
+土库曼斯坦	tu ku man si tan	180000
+阿什哈巴德	a shen ha ba de	65000
+土库曼纳巴特	tu ku man na ba te	65000
+达绍古兹	da shao gu zi	65000
+马雷	ma lei	65000
+巴尔坎纳巴特	ba er kan na ba te	65000
+图瓦卢	tu wa lu	180000
+富纳富提	fu na fu ti	65000
+瓦伊阿库	wa yi a ku	65000
+阿绍	a shao	65000
+塔纳拉凯	ta na la kai	65000
+萨瓦韦	sa wa wei	65000
+乌干达	wu gan da	180000
+坎帕拉	kan pa la	65000
+恩德培	en de pei	65000
+金贾	jin jia	65000
+姆巴拉拉	mu ba la la	65000
+古卢	gu lu	65000
+乌克兰	wu ke lan	180000
+基辅	ji fu	65000
+哈尔科夫	ha er ke fu	65000
+敖德萨	ao de sa	65000
+第聂伯罗	di nie bo luo	65000
+利沃夫	li wo fu	65000
+阿联酋	a lian qiu	180000
+阿布扎比	a bu zha bi	65000
+迪拜	di bai	65000
+沙迦	sha jia	65000
+艾因	ai yin	65000
+阿治曼	a zhi man	65000
+英国	ying guo	180000
+伦敦	lun dun	65000
+伯明翰	bo ming han	65000
+曼彻斯特	man che si te	65000
+格拉斯哥	ge la si ge	65000
+利物浦	li wu pu	65000
+美国	mei guo	180000
+华盛顿	hua sheng dun	65000
+纽约	niu yue	65000
+洛杉矶	luo shan ji	65000
+芝加哥	zhi jia ge	65000
+休斯顿	xiu si dun	65000
+乌拉圭	wu la gui	180000
+蒙得维的亚	meng de wei de ya	65000
+萨尔托	sa er tuo	65000
+海岸城	hai an cheng	65000
+派桑杜	pai sang du	65000
+拉斯彼德拉斯	la si bi de la si	65000
+乌兹别克斯坦	wu zi bie ke si tan	180000
+塔什干	ta shi gan	65000
+撒马尔罕	sa ma er han	65000
+纳曼干	na man gan	65000
+安集延	an ji yan	65000
+布哈拉	bu ha la	65000
+瓦努阿图	wa nu a tu	180000
+维拉港	wei la gang	65000
+卢甘维尔	lu gan wei er	65000
+诺尔苏普	nuo er su pu	65000
+伊桑格尔	yi sang ge er	65000
+索拉	suo la	65000
+梵蒂冈	fan di gang	180000
+梵蒂冈城	fan di gang cheng	65000
+博尔戈皮奥	bo er ge pi ao	65000
+贝尔韦代雷	bei er wei dai lei	65000
+委内瑞拉	wei nei rui la	180000
+加拉加斯	jia la jia si	65000
+马拉开波	ma la kai bo	65000
+巴伦西亚	ba lun xi ya	65000
+巴基西梅托	ba ji xi mei tuo	65000
+圭亚那城	gui ya na cheng	65000
+越南	yue nan	180000
+河内	he nei	65000
+胡志明市	hu zhi ming shi	65000
+海防	hai fang	65000
+岘港	xian gang	65000
+芹苴	qin ju	65000
+也门	ye men	180000
+萨那	sa na	65000
+亚丁	ya ding	65000
+塔伊兹	ta yi zi	65000
+荷台达	he tai da	65000
+穆卡拉	mu ka la	65000
+赞比亚	zan bi ya	180000
+卢萨卡	lu sa ka	65000
+基特韦	ji te wei	65000
+恩多拉	en duo la	65000
+利文斯顿	li wen si dun	65000
+卡布韦	ka bu wei	65000
+津巴布韦	jin ba bu wei	180000
+哈拉雷	ha la lei	65000
+布拉瓦约	bu la wa yue	65000
+奇通圭扎	qi tong gui zha	65000
+穆塔雷	mu ta lei	65000
+圭鲁	gui lu	65000

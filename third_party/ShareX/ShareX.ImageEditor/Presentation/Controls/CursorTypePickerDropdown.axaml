@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="using:ShareX.ImageEditor.Presentation.Converters"
+             xmlns:theming="using:ShareX.ImageEditor.Presentation.Theming"
+             x:Class="ShareX.ImageEditor.Presentation.Controls.CursorTypePickerDropdown"
+             x:Name="CursorTypePickerDropdownRoot"
+             mc:Ignorable="d"
+             d:DesignWidth="180"
+             d:DesignHeight="40">
+    <UserControl.Resources>
+        <converters:CursorTypeDisplayNameConverter x:Key="CursorTypeDisplayName" />
+        <converters:CursorTypePreviewBitmapConverter x:Key="CursorTypePreviewBitmap" />
+    </UserControl.Resources>
+
+    <Grid HorizontalAlignment="Stretch">
+        <Button x:Name="DropdownButton"
+                Classes="editor-button"
+                Click="OnDropdownButtonClick"
+                Height="40"
+                MinWidth="{Binding MinWidth, ElementName=CursorTypePickerDropdownRoot}"
+                MaxWidth="{Binding MaxWidth, ElementName=CursorTypePickerDropdownRoot}"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding SelectedCursorType, ElementName=CursorTypePickerDropdownRoot, Converter={StaticResource CursorTypeDisplayName}}"
+                           Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
+                           FontSize="12"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Margin="0,0,6,0"/>
+
+                <Image Grid.Column="1"
+                       Width="24"
+                       Height="24"
+                       Margin="8,0,8,0"
+                       Source="{Binding SelectedCursorType, ElementName=CursorTypePickerDropdownRoot, Converter={StaticResource CursorTypePreviewBitmap}}"
+                       Stretch="Uniform"
+                       VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="2"
+                           Classes="dropdown-chevron"
+                           Classes.open="{Binding #CursorTypePopup.IsOpen}"
+                           Text="{x:Static theming:EditorIcons.ChevronDown}"
+                           FontFamily="{DynamicResource ShareX.FontFamily.Icon}"
+                           FontWeight="Normal"
+                           FontSize="10"
+                           Foreground="{DynamicResource ShareX.Brush.Text.Secondary}"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Button>
+
+        <Popup x:Name="CursorTypePopup"
+               PlacementTarget="{Binding #DropdownButton}"
+               Placement="Bottom"
+               IsLightDismissEnabled="True"
+               VerticalOffset="4">
+            <Border Classes="popup-border popup-surface"
+                    Classes.open="{Binding #CursorTypePopup.IsOpen}">
+                <ItemsControl ItemsSource="{Binding CursorTypeOptions, ElementName=CursorTypePickerDropdownRoot}"
+                              HorizontalAlignment="Stretch">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button MinWidth="136"
+                                    Height="32"
+                                    Padding="8,0"
+                                    Classes="picker-button"
+                                    Click="OnCursorTypeSelected"
+                                    CommandParameter="{Binding .}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    ToolTip.Tip="{Binding ., Converter={StaticResource CursorTypeDisplayName}}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding ., Converter={StaticResource CursorTypeDisplayName}}"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource ShareX.Brush.Text}"
+                                               VerticalAlignment="Center"/>
+
+                                    <Image Grid.Column="1"
+                                           Width="24"
+                                           Height="24"
+                                           Margin="8,0,0,0"
+                                           Source="{Binding ., Converter={StaticResource CursorTypePreviewBitmap}}"
+                                           Stretch="Uniform"
+                                           VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

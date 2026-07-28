@@ -1,0 +1,57 @@
+# case_id	category	input	expected
+date_shortcut	default	rq	@DATE
+time_shortcut	default	sj	@TIME
+number_reading	default	vv 123	一百二十三
+currency_upper	default	vv dx 123.45	壹佰贰拾叁元肆角伍分
+symbol_list	default	vv sym	，
+symbol_list_top	default	vv sym	@TOP5:：
+emoji_list	default	vv emoji	😀
+emoji_list_top	default	vv emoji	@TOP5:😎
+function_key	default	f1	F1
+markdown	default	vv md h1 项目计划	# 项目计划
+url_template	default	vv url openai	https://openai.com
+apostrophe_xian	default	xi'an	西安
+compact_xian	default	xian	@TOP4:先
+typo_beijing	default	bejing	北京
+jianpin_bj	default	bj	北京
+jianpin_sh	default	sh	上海
+jianpin_zg	default	zg	中国
+chat_abbrev_haode	default	hd	@TOP3:好的
+chat_abbrev_haole	default	hl	@TOP5:好了
+chat_abbrev_shide	default	sd	@TOP3:是的
+chat_abbrev_duile	default	dl	@TOP3:对了
+mixed_shanghai	default	shangh	上海
+mixed_shuru	default	shur	输入
+common_nihao	default	nihao	你好
+common_xiexie	default	xiexie	谢谢
+common_jintian	default	jintian	今天
+common_mingtian	default	mingtian	明天
+common_shurufa	default	shurufa	输入法
+common_kaixin	default	kaixin	开心
+full_anguan	default	anguan	暗管
+full_angui	default	angui	安规
+short_srf	default	srf	输入法
+sentence_nihaoshijie	default	nihaoshijie	你好世界
+lve_char	default	lve	略
+lve_phrase	default	jianlve	简略
+nue_char	default	nue	虐
+nue_phrase	default	baonue	暴虐
+lue_char	default	lue	略
+lue_phrase	default	jianlue	简略
+nve_phrase	default	baonve	暴虐
+rare_pou	default	jiepou	解剖
+rare_biang	default	biangbiang	𰻝𰻝
+rare_chua	default	chuachua	欻欻
+rare_zhei	default	zhei	这
+umlaut_lv	default	lv	@TOP3:率
+apostrophe_lve	default	jian'lve	简略
+heteronym_chongqing	default	chongqing	重庆
+poly_char_chong	default	chong	@TOP9:重
+poly_char_chang	default	chang	@TOP9:长
+poly_char_hang	default	hang	@TOP9:行
+poly_char_yue	default	yue	@TOP9:乐
+poly_char_zhao	default	zhao	@TOP9:着
+erhua_huar	default	huaer	花儿
+mixed_shurufa	default	shuruf	输入法
+typo_jintian	default	jntian	今天
+typo_mingtian	default	migtian	明天

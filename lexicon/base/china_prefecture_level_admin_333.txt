@@ -1,0 +1,339 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 中国 333 个地级行政区高优先级全拼词库
+# Generated from lexicon/ext/中国333个地级行政区_纯名单.txt.
+# 名称已去重并校正地名读音；置于 base 层以保证完整全拼时优先显示。
+# 格式：词语<TAB>拼音<TAB>权重
+阿坝藏族羌族自治州	a ba zang zu qiang zu zi zhi zhou	48000
+阿克苏地区	a ke su di qu	48000
+阿拉善盟	a la shan meng	58000
+阿勒泰地区	a le tai di qu	48000
+阿里地区	a li di qu	58000
+安康	an kang	65000
+安庆	an qing	65000
+鞍山	an shan	65000
+安顺	an shun	65000
+安阳	an yang	65000
+巴彦淖尔	ba yan nao er	58000
+巴音郭楞蒙古自治州	ba yin guo leng meng gu zi zhi zhou	48000
+巴中	ba zhong	65000
+白城	bai cheng	65000
+百色	bai se	65000
+白山	bai shan	65000
+白银	bai yin	65000
+保定	bao ding	65000
+宝鸡	bao ji	65000
+保山	bao shan	65000
+包头	bao tou	65000
+北海	bei hai	65000
+本溪	ben xi	65000
+蚌埠	beng bu	65000
+毕节	bi jie	65000
+滨州	bin zhou	65000
+博尔塔拉蒙古自治州	bo er ta la meng gu zi zhi zhou	48000
+亳州	bo zhou	65000
+沧州	cang zhou	65000
+长春	chang chun	65000
+常德	chang de	65000
+昌都	chang du	65000
+昌吉回族自治州	chang ji hui zu zi zhi zhou	48000
+长沙	chang sha	65000
+长治	chang zhi	65000
+常州	chang zhou	65000
+朝阳	chao yang	65000
+潮州	chao zhou	65000
+郴州	chen zhou	65000
+承德	cheng de	65000
+成都	cheng du	65000
+赤峰	chi feng	65000
+池州	chi zhou	65000
+崇左	chong zuo	65000
+楚雄彝族自治州	chu xiong yi zu zi zhi zhou	48000
+滁州	chu zhou	65000
+大理白族自治州	da li bai zu zi zhi zhou	48000
+大连	da lian	65000
+大庆	da qing	65000
+大同	da tong	65000
+大兴安岭地区	da xing an ling di qu	48000
+达州	da zhou	65000
+丹东	dan dong	65000
+儋州	dan zhou	65000
+德宏傣族景颇族自治州	de hong dai zu jing po zu zi zhi zhou	48000
+德阳	de yang	65000
+德州	de zhou	65000
+迪庆藏族自治州	di qing zang zu zi zhi zhou	48000
+定西	ding xi	65000
+东莞	dong guan	65000
+东营	dong ying	65000
+鄂尔多斯	e er duo si	58000
+鄂州	e zhou	65000
+恩施土家族苗族自治州	en shi tu jia zu miao zu zi zhi zhou	48000
+防城港	fang cheng gang	62000
+佛山	fo shan	65000
+抚顺	fu shun	65000
+阜新	fu xin	65000
+阜阳	fu yang	65000
+抚州	fu zhou	65000
+福州	fu zhou	65000
+甘南藏族自治州	gan nan zang zu zi zhi zhou	48000
+赣州	gan zhou	65000
+甘孜藏族自治州	gan zi zang zu zi zhi zhou	48000
+固原	gu yuan	65000
+广安	guang an	65000
+广元	guang yuan	65000
+广州	guang zhou	65000
+贵港	gui gang	65000
+桂林	gui lin	65000
+贵阳	gui yang	65000
+果洛藏族自治州	guo luo zang zu zi zhi zhou	48000
+哈尔滨	ha er bin	62000
+哈密	ha mi	65000
+海北藏族自治州	hai bei zang zu zi zhi zhou	48000
+海东	hai dong	65000
+海口	hai kou	65000
+海南藏族自治州	hai nan zang zu zi zhi zhou	48000
+海西蒙古族藏族自治州	hai xi meng gu zu zang zu zi zhi zhou	48000
+邯郸	han dan	65000
+汉中	han zhong	65000
+杭州	hang zhou	65000
+鹤壁	he bi	65000
+河池	he chi	65000
+合肥	he fei	65000
+鹤岗	he gang	65000
+和田地区	he tian di qu	58000
+河源	he yuan	65000
+菏泽	he ze	65000
+贺州	he zhou	65000
+黑河	hei he	65000
+衡水	heng shui	65000
+衡阳	heng yang	65000
+红河哈尼族彝族自治州	hong he ha ni zu yi zu zi zhi zhou	48000
+呼和浩特	hu he hao te	58000
+葫芦岛	hu lu dao	62000
+呼伦贝尔	hu lun bei er	58000
+湖州	hu zhou	65000
+淮安	huai an	65000
+淮北	huai bei	65000
+怀化	huai hua	65000
+淮南	huai nan	65000
+黄冈	huang gang	65000
+黄南藏族自治州	huang nan zang zu zi zhi zhou	48000
+黄山	huang shan	65000
+黄石	huang shi	65000
+惠州	hui zhou	65000
+吉安	ji an	65000
+吉林	ji lin	65000
+济南	ji nan	65000
+济宁	ji ning	65000
+鸡西	ji xi	65000
+佳木斯	jia mu si	62000
+嘉兴	jia xing	65000
+嘉峪关	jia yu guan	62000
+江门	jiang men	65000
+焦作	jiao zuo	65000
+揭阳	jie yang	65000
+金昌	jin chang	65000
+晋城	jin cheng	65000
+金华	jin hua	65000
+晋中	jin zhong	65000
+锦州	jin zhou	65000
+景德镇	jing de zhen	62000
+荆门	jing men	65000
+荆州	jing zhou	65000
+九江	jiu jiang	65000
+酒泉	jiu quan	65000
+喀什地区	ka shi di qu	58000
+开封	kai feng	65000
+克拉玛依	ke la ma yi	58000
+克孜勒苏柯尔克孜自治州	ke zi lei su ke er ke zi zi zhi zhou	48000
+昆明	kun ming	65000
+拉萨	la sa	65000
+来宾	lai bin	65000
+兰州	lan zhou	65000
+廊坊	lang fang	65000
+乐山	le shan	65000
+丽江	li jiang	65000
+丽水	li shui	65000
+连云港	lian yun gang	62000
+凉山彝族自治州	liang shan yi zu zi zhi zhou	48000
+聊城	liao cheng	65000
+辽阳	liao yang	65000
+辽源	liao yuan	65000
+临沧	lin cang	65000
+临汾	lin fen	65000
+临夏回族自治州	lin xia hui zu zi zhi zhou	48000
+临沂	lin yi	65000
+林芝	lin zhi	65000
+六盘水	liu pan shui	62000
+柳州	liu zhou	65000
+陇南	long nan	65000
+龙岩	long yan	65000
+娄底	lou di	65000
+六安	lu an	65000
+泸州	lu zhou	65000
+漯河	luo he	65000
+洛阳	luo yang	65000
+吕梁	lv liang	65000
+马鞍山	ma an shan	62000
+茂名	mao ming	65000
+眉山	mei shan	65000
+梅州	mei zhou	65000
+绵阳	mian yang	65000
+牡丹江	mu dan jiang	62000
+那曲	na qu	65000
+南昌	nan chang	65000
+南充	nan chong	65000
+南京	nan jing	65000
+南宁	nan ning	65000
+南平	nan ping	65000
+南通	nan tong	65000
+南阳	nan yang	65000
+内江	nei jiang	65000
+宁波	ning bo	65000
+宁德	ning de	65000
+怒江傈僳族自治州	nu jiang li su zu zi zhi zhou	48000
+盘锦	pan jin	65000
+攀枝花	pan zhi hua	62000
+平顶山	ping ding shan	62000
+平凉	ping liang	65000
+萍乡	ping xiang	65000
+普洱	pu er	65000
+莆田	pu tian	65000
+濮阳	pu yang	65000
+齐齐哈尔	qi qi ha er	58000
+七台河	qi tai he	62000
+黔东南苗族侗族自治州	qian dong nan miao zu dong zu zi zhi zhou	48000
+黔南布依族苗族自治州	qian nan bu yi zu miao zu zi zhi zhou	48000
+黔西南布依族苗族自治州	qian xi nan bu yi zu miao zu zi zhi zhou	48000
+秦皇岛	qin huang dao	62000
+钦州	qin zhou	65000
+青岛	qing dao	65000
+庆阳	qing yang	65000
+清远	qing yuan	65000
+曲靖	qu jing	65000
+衢州	qu zhou	65000
+泉州	quan zhou	65000
+日喀则	ri ka ze	62000
+日照	ri zhao	65000
+三门峡	san men xia	62000
+三明	san ming	65000
+三沙	san sha	65000
+三亚	san ya	65000
+山南	shan nan	65000
+汕头	shan tou	65000
+汕尾	shan wei	65000
+商洛	shang luo	65000
+商丘	shang qiu	65000
+上饶	shang rao	65000
+韶关	shao guan	65000
+绍兴	shao xing	65000
+邵阳	shao yang	65000
+沈阳	shen yang	65000
+深圳	shen zhen	65000
+石家庄	shi jia zhuang	62000
+十堰	shi yan	65000
+石嘴山	shi zui shan	62000
+双鸭山	shuang ya shan	62000
+朔州	shuo zhou	65000
+四平	si ping	65000
+松原	song yuan	65000
+宿迁	su qian	65000
+宿州	su zhou	65000
+苏州	su zhou	65000
+绥化	sui hua	65000
+遂宁	sui ning	65000
+随州	sui zhou	65000
+塔城地区	ta cheng di qu	58000
+泰安	tai an	65000
+太原	tai yuan	65000
+台州	tai zhou	65000
+泰州	tai zhou	65000
+唐山	tang shan	65000
+天水	tian shui	65000
+铁岭	tie ling	65000
+铜川	tong chuan	65000
+通化	tong hua	65000
+通辽	tong liao	65000
+铜陵	tong ling	65000
+铜仁	tong ren	65000
+吐鲁番	tu lu fan	62000
+潍坊	wei fang	65000
+威海	wei hai	65000
+渭南	wei nan	65000
+文山壮族苗族自治州	wen shan zhuang zu miao zu zi zhi zhou	48000
+温州	wen zhou	65000
+乌海	wu hai	65000
+武汉	wu han	65000
+芜湖	wu hu	65000
+乌兰察布	wu lan cha bu	58000
+乌鲁木齐	wu lu mu qi	58000
+武威	wu wei	65000
+无锡	wu xi	65000
+吴忠	wu zhong	65000
+梧州	wu zhou	65000
+西安	xi an	65000
+锡林郭勒盟	xi lin guo lei meng	48000
+西宁	xi ning	65000
+西双版纳傣族自治州	xi shuang ban na dai zu zi zhi zhou	48000
+厦门	xia men	65000
+咸宁	xian ning	65000
+咸阳	xian yang	65000
+湘潭	xiang tan	65000
+湘西土家族苗族自治州	xiang xi tu jia zu miao zu zi zhi zhou	48000
+襄阳	xiang yang	65000
+孝感	xiao gan	65000
+新乡	xin xiang	65000
+信阳	xin yang	65000
+新余	xin yu	65000
+忻州	xin zhou	65000
+兴安盟	xing an meng	62000
+邢台	xing tai	65000
+许昌	xu chang	65000
+徐州	xu zhou	65000
+宣城	xuan cheng	65000
+雅安	ya an	65000
+延安	yan an	65000
+延边朝鲜族自治州	yan bian chao xian zu zi zhi zhou	48000
+盐城	yan cheng	65000
+烟台	yan tai	65000
+阳江	yang jiang	65000
+阳泉	yang quan	65000
+扬州	yang zhou	65000
+宜宾	yi bin	65000
+宜昌	yi chang	65000
+伊春	yi chun	65000
+宜春	yi chun	65000
+伊犁哈萨克自治州	yi li ha sa ke zi zhi zhou	48000
+益阳	yi yang	65000
+银川	yin chuan	65000
+营口	ying kou	65000
+鹰潭	ying tan	65000
+永州	yong zhou	65000
+榆林	yu lin	65000
+玉林	yu lin	65000
+玉树藏族自治州	yu shu zang zu zi zhi zhou	48000
+玉溪	yu xi	65000
+岳阳	yue yang	65000
+运城	yun cheng	65000
+云浮	yun fu	65000
+枣庄	zao zhuang	65000
+湛江	zhan jiang	65000
+张家界	zhang jia jie	62000
+张家口	zhang jia kou	62000
+张掖	zhang ye	65000
+漳州	zhang zhou	65000
+肇庆	zhao qing	65000
+昭通	zhao tong	65000
+镇江	zhen jiang	65000
+郑州	zheng zhou	65000
+中山	zhong shan	65000
+中卫	zhong wei	65000
+周口	zhou kou	65000
+舟山	zhou shan	65000
+珠海	zhu hai	65000
+驻马店	zhu ma dian	62000
+株洲	zhu zhou	65000
+淄博	zi bo	65000
+自贡	zi gong	65000
+资阳	zi yang	65000
+遵义	zun yi	65000

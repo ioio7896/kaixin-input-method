@@ -1,0 +1,74 @@
+#[cfg(windows)]
+use windows_sys::Win32::Foundation::HANDLE;
+
+#[cfg(windows)]
+pub struct SingleInstanceGuard {
+    handle: HANDLE,
+}
+
+#[cfg(windows)]
+impl Drop for SingleInstanceGuard {
+    fn drop(&mut self) {
+        if self.handle != 0 {
+            unsafe {
+                let _ = windows_sys::Win32::Foundation::CloseHandle(self.handle);
+            }
+            self.handle = 0;
+        }
+    }
+}
+
+#[cfg(windows)]
+pub fn claim_or_activate_existing(
+    mutex_name: &str,
+    window_title: &str,
+) -> Result<Option<SingleInstanceGuard>, String> {
+    use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS};
+    use windows_sys::Win32::System::Threading::CreateMutexW;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        FindWindowW, SetForegroundWindow, ShowWindow, SW_RESTORE, SW_SHOW,
+    };
+
+    let mutex_name = wide(mutex_name);
+    let handle = unsafe { CreateMutexW(std::ptr::null(), 0, mutex_name.as_ptr()) };
+    if handle == 0 {
+        return Err(format!(
+            "create single-instance mutex failed: {}",
+            std::io::Error::last_os_error()
+        ));
+    }
+
+    if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
+        let title = wide(window_title);
+        let hwnd = unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) };
+        if hwnd != 0 {
+            unsafe {
+                let _ = ShowWindow(hwnd, SW_RESTORE);
+                let _ = ShowWindow(hwnd, SW_SHOW);
+                let _ = SetForegroundWindow(hwnd);
+            }
+        }
+        unsafe {
+            let _ = CloseHandle(handle);
+        }
+        return Ok(None);
+    }
+
+    Ok(Some(SingleInstanceGuard { handle }))
+}
+
+#[cfg(windows)]
+fn wide(text: &str) -> Vec<u16> {
+    text.encode_utf16().chain(std::iter::once(0)).collect()
+}
+
+#[cfg(not(windows))]
+pub struct SingleInstanceGuard;
+
+#[cfg(not(windows))]
+pub fn claim_or_activate_existing(
+    _mutex_name: &str,
+    _window_title: &str,
+) -> Result<Option<SingleInstanceGuard>, String> {
+    Ok(Some(SingleInstanceGuard))
+}

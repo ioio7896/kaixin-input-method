@@ -1,0 +1,42 @@
+#include "srf_tip.h"
+
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <chrono>
+#include <cstdlib>
+#include <deque>
+#include <cwctype>
+#include <cstdio>
+#include <cwchar>
+#include <dwmapi.h>
+#include <filesystem>
+#include <mutex>
+#include <new>
+#include <ole2.h>
+#include <string>
+#include <thread>
+#include <unordered_set>
+#include <vector>
+
+#include "candidate_ui.h"
+#include "candidate_overlay_client.h"
+#include "candidate_overlay_placement.h"
+#include "candidate_result_stability.h"
+#include "composition_sink.h"
+#include "guids.h"
+#include "ime_config.h"
+#include "key_sink.h"
+#include "pinyin_stub.h"
+#include "privacy_sensitive_context.h"
+#include "thread_mgr_sink.h"
+
+#include "srf_tip_parts/srf_tip_internal.ipp"
+#include "srf_tip_parts/srf_tip_lifecycle.ipp"
+#include "srf_tip_parts/srf_tip_candidates.ipp"
+#include "srf_tip_parts/srf_tip_display_attribute.ipp"
+#include "srf_tip_parts/srf_tip_ui_composition.ipp"
+#include "srf_tip_parts/srf_tip_modes_config.ipp"
+#include "srf_tip_parts/srf_tip_key_input.ipp"
+#include "srf_tip_parts/srf_tip_commit.ipp"
+#include "srf_tip_parts/srf_tip_deferred_refresh.ipp"

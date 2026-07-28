@@ -1,0 +1,8 @@
+# case_id	category	input	expected
+mixed2_shur_input	mixed2	shur	输入
+mixed3_shuruf_shurufa	mixed3	shuruf	输入法
+mixed3_srufa_shurufa	mixed3	srufa	输入法
+mixed2_shangh_shanghai	mixed2	shangh	上海
+mixed2_chongq_chongqing	mixed2	chongq	重庆
+mixed2_jint_jintian	mixed2	jint	@TOP3:今天
+mixed4_jisuanjwl_network	mixed4	jisuanjwl	计算机网络

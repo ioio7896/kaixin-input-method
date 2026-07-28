@@ -1,0 +1,40 @@
+name: Public repository checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-hygiene:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check repository hygiene and license records
+        run: python scripts/check_open_source_readiness.py
+      - name: Check Python syntax
+        run: python -m py_compile scripts/check_open_source_readiness.py
+
+  rust-licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: pinyin-ime/Cargo.toml
+          command: check
+          arguments: ""
+          command-arguments: licenses sources
+
+  source-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88.0
+      - name: Check the source-only Rust build
+        run: cargo check --manifest-path pinyin-ime/Cargo.toml --lib --locked

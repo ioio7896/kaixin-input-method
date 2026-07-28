@@ -1,0 +1,90 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭州商圈、园区和本地企业
+# Curated for local daily input; complete names rank above ambiguous short place names.
+# 格式：词条<TAB>拼音<TAB>词频。
+武林商圈	wu lin shang quan	10000
+湖滨商圈	hu bin shang quan	10000
+钱江新城	qian jiang xin cheng	10000
+钱江世纪城	qian jiang shi ji cheng	10000
+武林广场	wu lin guang chang	10000
+杭州大厦	hang zhou da sha	10000
+湖滨银泰	hu bin yin tai	10000
+杭州万象城	hang zhou wan xiang cheng	10000
+杭州来福士中心	hang zhou lai fu shi zhong xin	10000
+杭州嘉里中心	hang zhou jia li zhong xin	10000
+未来科技城	wei lai ke ji cheng	10000
+城西科创大走廊	cheng xi ke chuang da zou lang	10000
+梦想小镇	meng xiang xiao zhen	10000
+云栖小镇	yun qi xiao zhen	10000
+滨江物联网小镇	bin jiang wu lian wang xiao zhen	10000
+青山湖科技城	qing shan hu ke ji cheng	10000
+阿里巴巴	a li ba ba	10000
+阿里巴巴西溪园区	a li ba ba xi xi yuan qu	10000
+蚂蚁集团	ma yi ji tuan	10000
+网易	wang yi	10000
+海康威视	hai kang wei shi	10000
+大华股份	da hua gu fen	10000
+宇树科技	yu shu ke ji	10000
+深度求索	shen du qiu suo	10000
+杭州高新区	hang zhou gao xin qu	10000
+杭州经济技术开发区	hang zhou jing ji ji shu kai fa qu	10000
+吴山商圈	wu shan shang quan	10000
+钱江新城商圈	qian jiang xin cheng shang quan	10000
+城西商圈	cheng xi shang quan	10000
+滨江商圈	bin jiang shang quan	10000
+临平商圈	lin ping shang quan	10000
+杭州医药港	hang zhou yi yao gang	10000
+杭州大厦购物城	hang zhou da sha gou wu cheng	10000
+武林银泰	wu lin yin tai	10000
+城西银泰城	cheng xi yin tai cheng	10000
+杭州中心	hang zhou zhong xin	10000
+杭州解百	hang zhou jie bai	10000
+龙湖杭州滨江天街	long hu hang zhou bin jiang tian jie	10000
+龙湖杭州西溪天街	long hu hang zhou xi xi tian jie	10000
+龙湖杭州吾角天街	long hu hang zhou wu jiao tian jie	10000
+杭州大悦城	hang zhou da yue cheng	10000
+萧山万象汇	xiao shan wan xiang hui	10000
+临平万宝城	lin ping wan bao cheng	10000
+杭州奥特莱斯	hang zhou ao te lai si	10000
+阿里巴巴滨江园区	a li ba ba bin jiang yuan qu	10000
+蚂蚁集团总部	ma yi ji tuan zong bu	10000
+网易云音乐	wang yi yun yin yue	10000
+新华三	xin hua san	10000
+恒生电子	heng sheng dian zi	10000
+同花顺公司	tong hua shun gong si	10000
+老板电器	lao ban dian qi	10000
+吉利汽车	ji li qi che	10000
+娃哈哈	wa ha ha	10000
+华东医药	hua dong yi yao	10000
+泰格医药	tai ge yi yao	10000
+微医	wei yi	10000
+涂鸦智能	tu ya zhi neng	10000
+兑吧	dui ba	10000
+数梦工场	shu meng gong chang	10000
+杭银消费金融	hang yin xiao fei jin rong	10000
+杭州银行	hang zhou yin hang	10000
+财通证券	cai tong zheng quan	10000
+传化集团	chuan hua ji tuan	10000
+滨江集团	bin jiang ji tuan	10000
+广厦集团	guang sha ji tuan	10000
+华立集团	hua li ji tuan	10000
+春风动力	chun feng dong li	10000
+九阳股份	jiu yang gu fen	10000
+诺贝尔陶瓷	nuo bei er tao ci	10000
+海亮集团	hai liang ji tuan	10000
+零跑汽车	ling pao qi che	10000
+个推	ge tui	10000
+婚礼纪	hun li ji	10000
+杭州钢铁集团	hang zhou gang tie ji tuan	10000
+杭氧集团	hang yang ji tuan	10000
+杭州地铁集团	hang zhou di tie ji tuan	10000
+杭州商旅	hang zhou shang lv	10000
+杭州日报报业集团	hang zhou ri bao bao ye ji tuan	10000
+都市快报	du shi kuai bao	10000
+浙江广电集团	zhe jiang guang dian ji tuan	10000
+良渚新城	liang zhu xin cheng	10000
+丁兰新城	ding lan xin cheng	10000
+临空经济示范区	lin kong jing ji shi fan qu	10000
+下沙高教园区	xia sha gao jiao yuan qu	10000
+杭州跨境电商综试区	hang zhou kua jing dian shang zong shi qu	10000
