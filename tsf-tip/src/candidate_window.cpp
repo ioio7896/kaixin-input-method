@@ -37,14 +37,24 @@ HINSTANCE DllOrFallbackInstance() {
 constexpr wchar_t kCandidateWndClass[] = L"SRF_TSF_Candidate_Window";
 constexpr UINT_PTR kCandidatePaintTimerId = 73;
 constexpr UINT_PTR kCandidateHorizontalShrinkTimerId = 74;
-constexpr UINT_PTR kCandidateAutoHideTimerId = 75;
 constexpr UINT_PTR kCandidateEnvironmentRefreshTimerId = 76;
+constexpr UINT_PTR kCandidateAnimationTimerId = 77;
+constexpr UINT_PTR kCandidatePendingIndicatorTimerId = 78;
 constexpr ULONGLONG kCandidateMinImmediatePaintIntervalMs = 8;
 constexpr UINT kCandidateHorizontalShrinkDelayMs = 96;
-constexpr UINT kCandidateAutoHideDelayMs = 140;
 constexpr UINT kCandidateEnvironmentRefreshDelayMs = 80;
 constexpr UINT kCandidateEnvironmentPollMs = 500;
 constexpr ULONGLONG kCandidateStyleDeferMs = 30;
+constexpr UINT kCandidateAnimationFrameMs = 15;
+constexpr UINT kCandidatePendingIndicatorDelayMs = 80;
+constexpr int kCandidateShowAnimationMs = 90;
+constexpr int kCandidateSelectionAnimationMs = 80;
+constexpr int kCandidateHoverAnimationMs = 70;
+constexpr int kCandidatePressAnimationMs = 36;
+constexpr int kCandidatePageAnimationMs = 110;
+constexpr int kHorizontalPageBadgeMinWidth = 44;
+constexpr int kHorizontalPageBadgeGap = 6;
+constexpr int kHorizontalPageBadgePaddingY = 4;
 constexpr wchar_t kDefaultCandidateFontFace[] = L"Microsoft YaHei";
 constexpr int kPinMenuCommandNone = kSrfCandidateWindowMenuNone;
 constexpr int kPinMenuCommandPin = kSrfCandidateWindowMenuPin;
@@ -60,6 +70,39 @@ enum class CandidateWindowUpdateKind {
   Layout,
   Style,
 };
+
+std::wstring CandidatePageIndicatorText(UINT pageIndex, UINT totalPages) {
+  const UINT safeTotalPages = std::max(1u, totalPages);
+  const UINT safePageIndex = std::min(pageIndex, safeTotalPages - 1);
+  return std::to_wstring(safePageIndex + 1) + L"/" +
+         std::to_wstring(safeTotalPages);
+}
+
+float LinearAnimationProgress(ULONGLONG now, ULONGLONG start, int durationMs) {
+  if (durationMs <= 0 || now <= start) return durationMs <= 0 ? 1.0f : 0.0f;
+  return std::clamp(static_cast<float>(now - start) / static_cast<float>(durationMs), 0.0f, 1.0f);
+}
+
+float EaseOutCubic(float progress) {
+  const float inverse = 1.0f - std::clamp(progress, 0.0f, 1.0f);
+  return 1.0f - inverse * inverse * inverse;
+}
+
+float IndexTransitionWeight(size_t index, int from, int to, float progress) {
+  if (from == to) return static_cast<int>(index) == to ? 1.0f : 0.0f;
+  if (static_cast<int>(index) == from) return 1.0f - progress;
+  if (static_cast<int>(index) == to) return progress;
+  return 0.0f;
+}
+
+RECT InterpolateRect(const RECT& from, const RECT& to, float progress) {
+  auto interpolate = [progress](LONG a, LONG b) {
+    return static_cast<LONG>(
+        std::lround(static_cast<double>(a) + static_cast<double>(b - a) * progress));
+  };
+  return {interpolate(from.left, to.left), interpolate(from.top, to.top),
+          interpolate(from.right, to.right), interpolate(from.bottom, to.bottom)};
+}
 
 bool ShouldDeferImmediatePaint(CandidateWindowUpdateKind kind, bool windowVisible,
                                ULONGLONG lastShowTick, ULONGLONG showTick) {
@@ -679,6 +722,15 @@ bool PrimeCandidateRenderResources(HFONT titleFont, HFONT bodyFont, HFONT bodySt
 
 #include "candidate_window_parts/candidate_window_layout.ipp"
 
+int CandidateShadowMarginForStyle(const SrfUIStyle& style, UINT dpi) {
+  const CandidateColors colors = ResolveColors(style);
+  if (!colors.shadowEnabled || colors.shadowOpacity <= 0.001f || colors.shadowSize <= 0 ||
+      style.themeMode == SrfThemeMode::HighContrast) {
+    return 0;
+  }
+  return ScaleForDpi(std::clamp(colors.shadowSize, 0, 24), dpi);
+}
+
 int ResolveFontWeight(int value, int fallback, int minWeight = 300, int maxWeight = 800) {
   if (value <= 0) value = fallback;
   return std::clamp(value, minWeight, maxWeight);
@@ -1039,25 +1091,6 @@ void FillHeaderBackgroundClippedToRoundRect(HDC hdc, const RECT& rect,
   DeleteObject(clip);
 }
 
-void DrawRoundShadow(HDC hdc, const RECT& rect, int radius, int size, float opacity,
-                     int strokeWidth) {
-  if (!hdc || size <= 0 || opacity <= 0.001f) return;
-  (void)strokeWidth;
-  const int rectW = rect.right - rect.left;
-  const int rectH = rect.bottom - rect.top;
-  const int spread = std::max(1, size);
-  const int maxAlpha =
-      std::clamp(static_cast<int>(std::lround(opacity * 255.0f * 2.6f)), 1, 96);
-  SoftShadowCache& cache = GetSoftShadowCache();
-  if (!cache.Ensure(rectW, rectH, std::max(1, radius), spread, maxAlpha)) return;
-  BLENDFUNCTION blend = {};
-  blend.BlendOp = AC_SRC_OVER;
-  blend.SourceConstantAlpha = 255;
-  blend.AlphaFormat = AC_SRC_ALPHA;
-  AlphaBlend(hdc, rect.left - spread, rect.top - spread, cache.bitmapW, cache.bitmapH,
-             cache.memDc, 0, 0, cache.bitmapW, cache.bitmapH, blend);
-}
-
 bool CandidateWindowResourceStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
   return a.candidateFontSize == b.candidateFontSize &&
          a.candidateScalePercent == b.candidateScalePercent &&
@@ -1074,80 +1107,17 @@ bool CandidateWindowResourceStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b
 }
 
 bool CandidateWindowPaintStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
-  return a.candidateMaterial == b.candidateMaterial &&
-         a.themeMode == b.themeMode &&
-         a.skinLoaded == b.skinLoaded &&
-         a.skinWindowBg == b.skinWindowBg && a.skinWindowBgTo == b.skinWindowBgTo &&
-         a.skinHeaderBg == b.skinHeaderBg && a.skinHeaderBgTo == b.skinHeaderBgTo &&
-         a.skinBorder == b.skinBorder && a.skinDivider == b.skinDivider &&
-         a.skinText == b.skinText && a.skinMutedText == b.skinMutedText &&
-         a.skinBadgeBg == b.skinBadgeBg && a.skinBadgeBorder == b.skinBadgeBorder &&
-         a.skinBadgeText == b.skinBadgeText && a.skinHoverBg == b.skinHoverBg &&
-         a.skinHoverBorder == b.skinHoverBorder && a.skinItemBg == b.skinItemBg &&
-         a.skinItemBorder == b.skinItemBorder && a.skinSelectedBg == b.skinSelectedBg &&
-         a.skinSelectedBorder == b.skinSelectedBorder && a.skinPressedBg == b.skinPressedBg &&
-         a.skinPressedBorder == b.skinPressedBorder &&
-         a.skinSelectedText == b.skinSelectedText &&
-         a.skinSelectedMutedText == b.skinSelectedMutedText &&
-         a.skinChipBg == b.skinChipBg && a.skinChipBorder == b.skinChipBorder &&
-         a.skinChipText == b.skinChipText &&
-         a.skinChipActiveBg == b.skinChipActiveBg &&
-         a.skinChipActiveBorder == b.skinChipActiveBorder &&
-         a.skinChipActiveText == b.skinChipActiveText &&
-         a.skinSelectedOutline == b.skinSelectedOutline &&
-         a.skinSelectedAccentWidth == b.skinSelectedAccentWidth &&
-         a.skinSelectedRingOpacity == b.skinSelectedRingOpacity &&
-         a.skinSelectedIndicator == b.skinSelectedIndicator &&
-         a.skinBorderOpacity == b.skinBorderOpacity &&
-         a.skinDividerOpacity == b.skinDividerOpacity &&
-         a.skinShadowOpacity == b.skinShadowOpacity &&
-         a.skinShadowSize == b.skinShadowSize &&
-         a.skinShadowEnabled == b.skinShadowEnabled &&
-         a.skinCornerRadius == b.skinCornerRadius &&
-         a.skinHeaderCornerRadius == b.skinHeaderCornerRadius &&
-         a.skinRowCornerRadius == b.skinRowCornerRadius &&
-         a.skinBadgeCornerRadius == b.skinBadgeCornerRadius;
-}
-
-bool CandidateWindowStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
-  return a.inlinePreedit == b.inlinePreedit && a.enhancedPosition == b.enhancedPosition &&
-         a.pagingOnScroll == b.pagingOnScroll &&
-         a.candidateAbbreviateLength == b.candidateAbbreviateLength &&
-         a.candidateFontSize == b.candidateFontSize &&
-         a.candidateOpacity == b.candidateOpacity && a.candidateFontFile == b.candidateFontFile &&
-         a.candidateFontWeight == b.candidateFontWeight &&
-         a.candidateSelectedFontWeight == b.candidateSelectedFontWeight &&
-         a.candidateLabelFontWeight == b.candidateLabelFontWeight &&
-         a.candidateChipFontWeight == b.candidateChipFontWeight &&
-         a.candidateSkinFile == b.candidateSkinFile &&
-         a.candidateHorizontal == b.candidateHorizontal &&
-         a.candidatePageSize == b.candidatePageSize &&
-         a.candidateHorizontalCount == b.candidateHorizontalCount &&
-         a.candidateHorizontalCompact == b.candidateHorizontalCompact &&
-         a.showCandidateReading == b.showCandidateReading &&
-         a.showCandidateScore == b.showCandidateScore &&
-         a.highlightTypoCandidates == b.highlightTypoCandidates &&
-         a.showCandidateSource == b.showCandidateSource &&
-         a.showModeInCandidateHeader == b.showModeInCandidateHeader &&
-         a.candidateTopmost == b.candidateTopmost &&
-         a.candidateLeftClick == b.candidateLeftClick &&
-         a.candidateRightClick == b.candidateRightClick && a.themeMode == b.themeMode &&
-         a.candidateMaterial == b.candidateMaterial &&
-         a.candidateDensity == b.candidateDensity &&
-         a.candidateLayoutVariant == b.candidateLayoutVariant &&
-         a.candidateScalePercent == b.candidateScalePercent &&
-         a.candidateOverlayAnchor == b.candidateOverlayAnchor &&
-         a.candidateFullscreenPlacement == b.candidateFullscreenPlacement &&
-         a.skinWindowBg == b.skinWindowBg && a.skinWindowBgTo == b.skinWindowBgTo &&
-         a.skinHeaderBg == b.skinHeaderBg && a.skinHeaderBgTo == b.skinHeaderBgTo &&
-         a.skinBorder == b.skinBorder && a.skinDivider == b.skinDivider &&
-         a.skinText == b.skinText && a.skinMutedText == b.skinMutedText &&
-         a.skinBadgeBg == b.skinBadgeBg && a.skinBadgeBorder == b.skinBadgeBorder &&
-         a.skinBadgeText == b.skinBadgeText && a.skinHoverBg == b.skinHoverBg &&
-         a.skinHoverBorder == b.skinHoverBorder && a.skinItemBg == b.skinItemBg &&
-         a.skinItemBorder == b.skinItemBorder && a.skinSelectedBg == b.skinSelectedBg &&
-         a.skinSelectedBorder == b.skinSelectedBorder && a.skinPressedBg == b.skinPressedBg &&
-         a.skinPressedBorder == b.skinPressedBorder &&
+  return a.candidateMaterial == b.candidateMaterial && a.themeMode == b.themeMode &&
+         a.skinLoaded == b.skinLoaded && a.skinWindowBg == b.skinWindowBg &&
+         a.skinWindowBgTo == b.skinWindowBgTo && a.skinHeaderBg == b.skinHeaderBg &&
+         a.skinHeaderBgTo == b.skinHeaderBgTo && a.skinBorder == b.skinBorder &&
+         a.skinDivider == b.skinDivider && a.skinText == b.skinText &&
+         a.skinMutedText == b.skinMutedText && a.skinBadgeBg == b.skinBadgeBg &&
+         a.skinBadgeBorder == b.skinBadgeBorder && a.skinBadgeText == b.skinBadgeText &&
+         a.skinHoverBg == b.skinHoverBg && a.skinHoverBorder == b.skinHoverBorder &&
+         a.skinItemBg == b.skinItemBg && a.skinItemBorder == b.skinItemBorder &&
+         a.skinSelectedBg == b.skinSelectedBg && a.skinSelectedBorder == b.skinSelectedBorder &&
+         a.skinPressedBg == b.skinPressedBg && a.skinPressedBorder == b.skinPressedBorder &&
          a.skinSelectedText == b.skinSelectedText &&
          a.skinSelectedMutedText == b.skinSelectedMutedText && a.skinChipBg == b.skinChipBg &&
          a.skinChipBorder == b.skinChipBorder && a.skinChipText == b.skinChipText &&
@@ -1162,21 +1132,88 @@ bool CandidateWindowStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
          a.skinDividerOpacity == b.skinDividerOpacity &&
          a.skinShadowOpacity == b.skinShadowOpacity && a.skinShadowSize == b.skinShadowSize &&
          a.skinShadowEnabled == b.skinShadowEnabled &&
-         a.skinFontWeight == b.skinFontWeight &&
-         a.skinSelectedFontWeight == b.skinSelectedFontWeight &&
-         a.skinLabelFontWeight == b.skinLabelFontWeight &&
-         a.skinChipFontWeight == b.skinChipFontWeight &&
+         a.skinAnimationsEnabled == b.skinAnimationsEnabled &&
+         a.skinShowAnimationMs == b.skinShowAnimationMs &&
+         a.skinSelectionAnimationMs == b.skinSelectionAnimationMs &&
+         a.skinHoverAnimationMs == b.skinHoverAnimationMs &&
+         a.skinPressAnimationMs == b.skinPressAnimationMs &&
+         a.skinPageAnimationMs == b.skinPageAnimationMs &&
          a.skinCornerRadius == b.skinCornerRadius &&
          a.skinHeaderCornerRadius == b.skinHeaderCornerRadius &&
          a.skinRowCornerRadius == b.skinRowCornerRadius &&
-         a.skinBadgeCornerRadius == b.skinBadgeCornerRadius &&
-         a.skinOuterPadX == b.skinOuterPadX && a.skinOuterPadY == b.skinOuterPadY &&
-         a.skinHeaderPadX == b.skinHeaderPadX && a.skinHeaderPadY == b.skinHeaderPadY &&
-         a.skinHeaderGap == b.skinHeaderGap && a.skinItemGap == b.skinItemGap &&
-         a.skinItemPadX == b.skinItemPadX && a.skinItemPadY == b.skinItemPadY &&
-         a.skinLabelWidth == b.skinLabelWidth && a.skinLabelGap == b.skinLabelGap &&
-         a.skinCommentGap == b.skinCommentGap && a.skinMinWidth == b.skinMinWidth &&
-         a.skinPreferredWidth == b.skinPreferredWidth && a.skinMaxWidth == b.skinMaxWidth &&
+         a.skinBadgeCornerRadius == b.skinBadgeCornerRadius;
+}
+
+bool CandidateWindowStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
+  return a.inlinePreedit == b.inlinePreedit && a.enhancedPosition == b.enhancedPosition &&
+         a.pagingOnScroll == b.pagingOnScroll &&
+         a.candidateAbbreviateLength == b.candidateAbbreviateLength &&
+         a.candidateFontSize == b.candidateFontSize && a.candidateOpacity == b.candidateOpacity &&
+         a.candidateReduceMotion == b.candidateReduceMotion &&
+         a.candidateFontFile == b.candidateFontFile &&
+         a.candidateFontWeight == b.candidateFontWeight &&
+         a.candidateSelectedFontWeight == b.candidateSelectedFontWeight &&
+         a.candidateLabelFontWeight == b.candidateLabelFontWeight &&
+         a.candidateChipFontWeight == b.candidateChipFontWeight &&
+         a.candidateSkinFile == b.candidateSkinFile &&
+         a.candidateHorizontal == b.candidateHorizontal &&
+         a.candidatePageSize == b.candidatePageSize &&
+         a.candidateHorizontalCount == b.candidateHorizontalCount &&
+         a.candidateHorizontalCompact == b.candidateHorizontalCompact &&
+         a.showCandidateReading == b.showCandidateReading &&
+         a.showCandidateScore == b.showCandidateScore &&
+         a.highlightTypoCandidates == b.highlightTypoCandidates &&
+         a.showCandidateSource == b.showCandidateSource &&
+         a.showModeInCandidateHeader == b.showModeInCandidateHeader &&
+         a.candidateTopmost == b.candidateTopmost && a.candidateLeftClick == b.candidateLeftClick &&
+         a.candidateRightClick == b.candidateRightClick && a.themeMode == b.themeMode &&
+         a.candidateMaterial == b.candidateMaterial && a.candidateDensity == b.candidateDensity &&
+         a.candidateLayoutVariant == b.candidateLayoutVariant &&
+         a.candidateScalePercent == b.candidateScalePercent &&
+         a.candidateOverlayAnchor == b.candidateOverlayAnchor &&
+         a.candidateFullscreenPlacement == b.candidateFullscreenPlacement &&
+         a.skinWindowBg == b.skinWindowBg && a.skinWindowBgTo == b.skinWindowBgTo &&
+         a.skinHeaderBg == b.skinHeaderBg && a.skinHeaderBgTo == b.skinHeaderBgTo &&
+         a.skinBorder == b.skinBorder && a.skinDivider == b.skinDivider &&
+         a.skinText == b.skinText && a.skinMutedText == b.skinMutedText &&
+         a.skinBadgeBg == b.skinBadgeBg && a.skinBadgeBorder == b.skinBadgeBorder &&
+         a.skinBadgeText == b.skinBadgeText && a.skinHoverBg == b.skinHoverBg &&
+         a.skinHoverBorder == b.skinHoverBorder && a.skinItemBg == b.skinItemBg &&
+         a.skinItemBorder == b.skinItemBorder && a.skinSelectedBg == b.skinSelectedBg &&
+         a.skinSelectedBorder == b.skinSelectedBorder && a.skinPressedBg == b.skinPressedBg &&
+         a.skinPressedBorder == b.skinPressedBorder && a.skinSelectedText == b.skinSelectedText &&
+         a.skinSelectedMutedText == b.skinSelectedMutedText && a.skinChipBg == b.skinChipBg &&
+         a.skinChipBorder == b.skinChipBorder && a.skinChipText == b.skinChipText &&
+         a.skinChipActiveBg == b.skinChipActiveBg &&
+         a.skinChipActiveBorder == b.skinChipActiveBorder &&
+         a.skinChipActiveText == b.skinChipActiveText &&
+         a.skinSelectedOutline == b.skinSelectedOutline &&
+         a.skinSelectedAccentWidth == b.skinSelectedAccentWidth &&
+         a.skinSelectedRingOpacity == b.skinSelectedRingOpacity &&
+         a.skinSelectedIndicator == b.skinSelectedIndicator &&
+         a.skinBorderOpacity == b.skinBorderOpacity &&
+         a.skinDividerOpacity == b.skinDividerOpacity &&
+         a.skinShadowOpacity == b.skinShadowOpacity && a.skinShadowSize == b.skinShadowSize &&
+         a.skinShadowEnabled == b.skinShadowEnabled &&
+         a.skinAnimationsEnabled == b.skinAnimationsEnabled &&
+         a.skinShowAnimationMs == b.skinShowAnimationMs &&
+         a.skinSelectionAnimationMs == b.skinSelectionAnimationMs &&
+         a.skinHoverAnimationMs == b.skinHoverAnimationMs &&
+         a.skinPressAnimationMs == b.skinPressAnimationMs &&
+         a.skinPageAnimationMs == b.skinPageAnimationMs && a.skinFontWeight == b.skinFontWeight &&
+         a.skinSelectedFontWeight == b.skinSelectedFontWeight &&
+         a.skinLabelFontWeight == b.skinLabelFontWeight &&
+         a.skinChipFontWeight == b.skinChipFontWeight && a.skinCornerRadius == b.skinCornerRadius &&
+         a.skinHeaderCornerRadius == b.skinHeaderCornerRadius &&
+         a.skinRowCornerRadius == b.skinRowCornerRadius &&
+         a.skinBadgeCornerRadius == b.skinBadgeCornerRadius && a.skinOuterPadX == b.skinOuterPadX &&
+         a.skinOuterPadY == b.skinOuterPadY && a.skinHeaderPadX == b.skinHeaderPadX &&
+         a.skinHeaderPadY == b.skinHeaderPadY && a.skinHeaderGap == b.skinHeaderGap &&
+         a.skinItemGap == b.skinItemGap && a.skinItemPadX == b.skinItemPadX &&
+         a.skinItemPadY == b.skinItemPadY && a.skinLabelWidth == b.skinLabelWidth &&
+         a.skinLabelGap == b.skinLabelGap && a.skinCommentGap == b.skinCommentGap &&
+         a.skinMinWidth == b.skinMinWidth && a.skinPreferredWidth == b.skinPreferredWidth &&
+         a.skinMaxWidth == b.skinMaxWidth &&
          a.skinMinHorizontalCardWidth == b.skinMinHorizontalCardWidth &&
          a.skinMaxHorizontalCardWidth == b.skinMaxHorizontalCardWidth &&
          a.skinLoaded == b.skinLoaded;
@@ -1271,7 +1308,15 @@ CandidatePageLayoutMetrics BuildCandidatePageLayoutMetrics(const SrfUIStyle& sty
     return metrics;
   }
 
-  const int areaWidth = ResolveHorizontalCardsAreaWidth(style, anchorRect, layoutDpi);
+  const int fullAreaWidth =
+      ResolveHorizontalCardsAreaWidth(style, anchorRect, layoutDpi, false);
+  const int firstPageVisible =
+      ResolveHorizontalVisibleCountForItems(style, layoutDpi, fullAreaWidth, items, 0);
+  const bool reservePageIndicator =
+      firstPageVisible > 0 && static_cast<size_t>(firstPageVisible) < items.size();
+  const int areaWidth = reservePageIndicator
+                            ? ResolveHorizontalCardsAreaWidth(style, anchorRect, layoutDpi, true)
+                            : fullAreaWidth;
   size_t start = 0;
   while (start < items.size()) {
     metrics.pageStarts.push_back(static_cast<UINT>(start));
@@ -1316,6 +1361,7 @@ void CCandidateWindow::SetGameOverlay(bool enabled, bool fullscreen, HWND target
   if (!m_gameOverlay) CancelEnvironmentRefresh();
   if (m_gameOverlay && m_hwnd && GetCapture() == m_hwnd) ReleaseCapture();
   if (m_gameOverlay) {
+    CancelAnimations(true);
     m_hotIndex = -1;
     m_pressedIndex = -1;
     m_rightPressedIndex = -1;
@@ -1382,16 +1428,28 @@ void CCandidateWindow::SetStyle(const SrfUIStyle& style) {
     ReleaseItemPaintCaches();
   }
   if (fontChanged) m_fontsDirty = true;
-  if (opacityChanged) ApplyWindowOpacity();
+  if (!MotionEnabled() &&
+      (m_showAnimationActive || m_selectionAnimationActive || m_hoverAnimationActive ||
+       m_pressAnimationActive || m_pageAnimationActive)) {
+    CancelAnimations(true);
+  }
+  if (opacityChanged) {
+    ApplyWindowOpacity();
+    UpdateShadowWindow();
+  }
   if (topmostChanged && m_hwnd) {
-    SetWindowPos(m_hwnd, m_style.candidateTopmost ? HWND_TOPMOST : HWND_NOTOPMOST,
-                 0, 0, 0, 0,
+    SetWindowPos(m_hwnd, m_style.candidateTopmost ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
                  SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    if (m_shadowHwnd) {
+      SetWindowPos(m_shadowHwnd, m_hwnd, 0, 0, 0, 0,
+                   SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+    }
   }
   if (cornerRadiusChanged && m_hwnd) {
     RECT client = {};
     GetClientRect(m_hwnd, &client);
     ApplyWindowRegion(client.right - client.left, client.bottom - client.top, TRUE);
+    UpdateShadowWindow();
   }
   if (m_hwnd) InvalidateRect(m_hwnd, nullptr, FALSE);
 }
@@ -1418,7 +1476,6 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
                             const std::vector<std::wstring>& modeTags, bool interactive,
                             bool pendingVisual) {
   if (!EnsureWindow()) return;
-  CancelDeferredAutoHide();
   const bool wasVisible = IsWindowVisible(m_hwnd) != FALSE;
   const bool interactionChanged =
       m_interactive != interactive || m_pendingVisual != pendingVisual;
@@ -1452,6 +1509,9 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
     if (i < pageClipboardItems.size()) nextClipboard[i] = pageClipboardItems[i];
   }
   const UINT nextTotalPages = std::max(1u, totalPages);
+  // The window keeps a zero-based page index. Callers that expose a page
+  // number to users convert to 1-based only when formatting the badge.
+  const UINT nextPageIndex = std::min(pageIndex, nextTotalPages - 1);
   const UINT nextSelectedInPage =
       pageItems.empty() ? 0 : std::min(selectedInPage, static_cast<UINT>(pageItems.size() - 1));
   const bool selectionChangesClipboardLayout =
@@ -1461,7 +1521,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
       (m_title != title || m_items != pageItems || m_comments != nextComments ||
        m_labels != nextLabels || m_pinnedItems != nextPinned ||
        m_clipboardItems != nextClipboard ||
-       m_modeTags != modeTags || m_pageIndex != pageIndex ||
+       m_modeTags != modeTags || m_pageIndex != nextPageIndex ||
        m_totalPages != nextTotalPages || m_pinMenuIndex >= pageItems.size() ||
        m_pinMenuIndex != nextSelectedInPage)) {
     m_pinMenuVisible = false;
@@ -1483,7 +1543,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
       m_comments == nextComments &&
       m_labels == nextLabels && m_pinnedItems == nextPinned &&
       m_clipboardItems == nextClipboard &&
-      m_modeTags == modeTags && m_pageIndex == pageIndex && m_totalPages == nextTotalPages &&
+      m_modeTags == modeTags && m_pageIndex == nextPageIndex && m_totalPages == nextTotalPages &&
       m_interactive == interactive && m_pendingVisual == pendingVisual &&
       EqualRect(&m_anchorRect, &anchorRect) && m_dpi == nextDpi &&
       m_lastLayoutHorizontal == m_style.candidateHorizontal &&
@@ -1498,15 +1558,27 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
                    ? (m_pendingLayoutStyleUpdate ? CandidateWindowUpdateKind::Layout
                                                  : CandidateWindowUpdateKind::Style)
                    : CandidateWindowUpdateKind::Content);
+    if (updateKind == CandidateWindowUpdateKind::Content ||
+        updateKind == CandidateWindowUpdateKind::Layout ||
+        updateKind == CandidateWindowUpdateKind::Style) {
+      m_selectionAnimationActive = false;
+      m_pageAnimationActive = false;
+    }
     const ULONGLONG showTick = GetTickCount64();
     const bool deferImmediatePaint =
         ShouldDeferImmediatePaint(updateKind, wasVisible, m_lastShowTick, showTick);
     if (!deferImmediatePaint) m_lastShowTick = showTick;
     if (!IsWindowVisible(m_hwnd)) {
+      StartShowAnimation();
       ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+      ShowShadowWindow();
+    } else {
+      ShowShadowWindow();
     }
     ScheduleOverlayEnvironmentPoll();
     if (previousSelected != m_selectedInPage) {
+      StartSelectionAnimation(static_cast<int>(previousSelected),
+                              static_cast<int>(m_selectedInPage));
       if (!needsFullPaint) {
         InvalidateCandidateIndex(static_cast<int>(previousSelected));
         InvalidateCandidateIndex(static_cast<int>(m_selectedInPage));
@@ -1542,8 +1614,14 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
              m_dpi != nextDpi || m_lastLayoutHorizontal != m_style.candidateHorizontal ||
              m_lastLayoutVariant != m_style.candidateLayoutVariant) {
     updateKind = CandidateWindowUpdateKind::Layout;
-  } else if (sameInteractiveContext && m_pageIndex != pageIndex) {
+  } else if (sameInteractiveContext && m_pageIndex != nextPageIndex) {
     updateKind = CandidateWindowUpdateKind::Page;
+  }
+  if (updateKind == CandidateWindowUpdateKind::Content ||
+      updateKind == CandidateWindowUpdateKind::Layout ||
+      updateKind == CandidateWindowUpdateKind::Style) {
+    m_selectionAnimationActive = false;
+    m_pageAnimationActive = false;
   }
 
   const ULONGLONG showTick = GetTickCount64();
@@ -1561,10 +1639,14 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   const SIZE previousMeasuredClientSize = m_measuredClientSize;
   const std::vector<RECT> previousItemRects = m_itemRects;
   const UINT previousSelectedInPage = m_selectedInPage;
-  const bool staticLayerUnchanged =
-      m_style.candidateHorizontal ||
-      (m_title == title && m_modeTags == modeTags && m_pageIndex == pageIndex &&
-       m_totalPages == nextTotalPages);
+  const UINT previousPageIndex = m_pageIndex;
+  const bool staticLayerUnchanged = m_style.candidateHorizontal
+                                        ? (m_pageIndex == nextPageIndex &&
+                                           m_totalPages == nextTotalPages &&
+                                           m_pendingVisual == pendingVisual)
+                                        : (m_title == title && m_modeTags == modeTags &&
+                                           m_pageIndex == nextPageIndex &&
+                                           m_totalPages == nextTotalPages);
   std::vector<size_t> changedItemIndices;
   if (m_items.size() == pageItems.size() && m_comments.size() == nextComments.size() &&
       m_labels.size() == nextLabels.size() && m_clipboardItems.size() == nextClipboard.size()) {
@@ -1593,6 +1675,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   m_labels = std::move(nextLabels);
   m_pinnedItems = std::move(nextPinned);
   m_clipboardItems = std::move(nextClipboard);
+  UpdatePendingIndicatorTimer(pendingVisual);
   m_interactive = interactive;
   m_pendingVisual = pendingVisual;
   m_modeTags = modeTags;
@@ -1601,7 +1684,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
       selectionChangesClipboardLayout) {
     RebuildDisplayItems();
   }
-  m_pageIndex = pageIndex;
+  m_pageIndex = nextPageIndex;
   m_totalPages = nextTotalPages;
   m_anchorRect = anchorRect;
   m_hasAnchorRect = true;
@@ -1616,7 +1699,9 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   }
 
   const RECT work = PlacementAreaForAnchor(&anchorRect, m_fullscreenOverlayPlacement);
-  const int maxWidth = std::max(Scale(260), static_cast<int>((work.right - work.left) - Scale(20)));
+  const int screenInset = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+  const int maxWidth =
+      std::max(Scale(260), static_cast<int>((work.right - work.left) - screenInset * 2));
   m_measuredClientSize = MeasureClientSize(maxWidth, &m_itemRects);
   const SIZE naturalMeasuredClientSize = m_measuredClientSize;
   const std::vector<RECT> naturalItemRects = m_itemRects;
@@ -1675,7 +1760,21 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   } else {
     InvalidateRect(m_hwnd, nullptr, FALSE);
   }
-  ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+  if (!wasVisible) {
+    StartShowAnimation();
+    ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+    ShowShadowWindow();
+  } else {
+    ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
+    ShowShadowWindow();
+    if (updateKind == CandidateWindowUpdateKind::Page) {
+      StartPageAnimation(static_cast<int>(previousPageIndex), static_cast<int>(m_pageIndex));
+    } else if (previousSelectedInPage != m_selectedInPage &&
+               RectVectorEquals(previousItemRects, m_itemRects)) {
+      StartSelectionAnimation(static_cast<int>(previousSelectedInPage),
+                              static_cast<int>(m_selectedInPage));
+    }
+  }
   ScheduleOverlayEnvironmentPoll();
   if (!deferImmediatePaint) {
     FlushPendingInvalidates();
@@ -1688,8 +1787,9 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
 }
 
 void CCandidateWindow::Hide() {
-  CancelDeferredAutoHide();
   CancelEnvironmentRefresh();
+  CancelAnimations(false);
+  UpdatePendingIndicatorTimer(false);
   if (m_hwnd && m_paintTimerPending) {
     KillTimer(m_hwnd, kCandidatePaintTimerId);
     m_paintTimerPending = false;
@@ -1716,6 +1816,7 @@ void CCandidateWindow::Hide() {
   m_itemRects.clear();
   m_needsMeasure = true;
   if (m_hwnd) ShowWindow(m_hwnd, SW_HIDE);
+  HideShadowWindow();
 }
 
 bool CCandidateWindow::IsVisible() const {
@@ -1723,8 +1824,8 @@ bool CCandidateWindow::IsVisible() const {
 }
 
 bool CCandidateWindow::HasPendingPaint() const {
-  return m_hwnd && (m_paintTimerPending || m_hasPendingDirtyRgn || m_layoutDirty ||
-                    m_fullPaintDirty || m_staticPaintDirty);
+  return m_hwnd && (m_paintTimerPending || m_animationTimerPending || m_hasPendingDirtyRgn ||
+                    m_layoutDirty || m_fullPaintDirty || m_staticPaintDirty);
 }
 
 void CCandidateWindow::FlushPendingPaint() {
@@ -1760,6 +1861,7 @@ void CCandidateWindow::SetPresentationState(bool interactive, bool pendingVisual
     m_pinMenuBlockRect = {};
     m_pinMenuSourceRect = {};
   }
+  UpdatePendingIndicatorTimer(pendingVisual);
   m_interactive = interactive;
   m_pendingVisual = pendingVisual;
   ReleaseItemPaintCaches();
@@ -1780,6 +1882,10 @@ void CCandidateWindow::Destroy() {
     DestroyWindow(m_hwnd);
     m_hwnd = nullptr;
   }
+  if (m_shadowHwnd) {
+    DestroyWindow(m_shadowHwnd);
+    m_shadowHwnd = nullptr;
+  }
 }
 
 bool CCandidateWindow::EnsureWindow() {
@@ -1793,6 +1899,86 @@ bool CCandidateWindow::EnsureWindow() {
                            nullptr, nullptr, DllOrFallbackInstance(), this);
   ApplyWindowOpacity();
   return m_hwnd != nullptr;
+}
+
+bool CCandidateWindow::EnsureShadowWindow() {
+  if (m_shadowHwnd) return true;
+  const DWORD exStyle = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED | WS_EX_TRANSPARENT |
+                        (m_style.candidateTopmost ? WS_EX_TOPMOST : 0);
+  m_shadowHwnd = CreateWindowExW(exStyle, L"STATIC", L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr,
+                                 DllOrFallbackInstance(), nullptr);
+  return m_shadowHwnd != nullptr;
+}
+
+void CCandidateWindow::UpdateShadowWindow() {
+  if (!m_hwnd) return;
+  const CandidateColors colors = ResolveColors(m_style);
+  HIGHCONTRASTW highContrast = {};
+  highContrast.cbSize = sizeof(highContrast);
+  const bool systemHighContrast =
+      SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0) &&
+      (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+  if (!colors.shadowEnabled || colors.shadowSize <= 0 || colors.shadowOpacity <= 0.001f ||
+      m_style.themeMode == SrfThemeMode::HighContrast || systemHighContrast) {
+    HideShadowWindow();
+    return;
+  }
+  if (!EnsureShadowWindow()) return;
+
+  RECT windowRect = {};
+  if (!GetWindowRect(m_hwnd, &windowRect)) return;
+  const int width = windowRect.right - windowRect.left;
+  const int height = windowRect.bottom - windowRect.top;
+  if (width <= 0 || height <= 0) return;
+
+  const LayoutSpec spec = ResolveLayoutSpec(m_style);
+  const int radius = SnapGdiRadiusForDpi(
+      Scale(m_style.skinLoaded && m_style.skinCornerRadius >= 0 ? m_style.skinCornerRadius
+                                                                : spec.cornerRadius),
+      m_dpi);
+  const int spread = std::max(1, Scale(colors.shadowSize));
+  const int maxAlpha =
+      std::clamp(static_cast<int>(std::lround(colors.shadowOpacity * 255.0f * 2.6f)), 1, 96);
+  SoftShadowCache& cache = GetSoftShadowCache();
+  if (!cache.Ensure(width, height, std::max(1, radius), spread, maxAlpha)) {
+    HideShadowWindow();
+    return;
+  }
+
+  float showProgress = 1.0f;
+  if (m_showAnimationActive) {
+    showProgress = EaseOutCubic(
+        LinearAnimationProgress(GetTickCount64(), m_showAnimationStart, m_showAnimationDurationMs));
+  }
+  const UINT opacity = std::clamp(m_style.candidateOpacity, 70u, 100u);
+  const BYTE sourceAlpha = static_cast<BYTE>(
+      std::clamp(static_cast<int>(std::lround(255.0f * showProgress * opacity / 100.0f)), 0, 255));
+  POINT destination = {windowRect.left - spread, windowRect.top - spread};
+  SIZE size = {cache.bitmapW, cache.bitmapH};
+  POINT source = {};
+  BLENDFUNCTION blend = {};
+  blend.BlendOp = AC_SRC_OVER;
+  blend.SourceConstantAlpha = sourceAlpha;
+  blend.AlphaFormat = AC_SRC_ALPHA;
+  HDC screenDc = GetDC(nullptr);
+  const BOOL updated = UpdateLayeredWindow(m_shadowHwnd, screenDc, &destination, &size, cache.memDc,
+                                           &source, 0, &blend, ULW_ALPHA);
+  if (screenDc) ReleaseDC(nullptr, screenDc);
+  if (!updated) {
+    HideShadowWindow();
+    return;
+  }
+  SetWindowPos(m_shadowHwnd, m_hwnd, 0, 0, 0, 0,
+               SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+  if (IsWindowVisible(m_hwnd)) ShowWindow(m_shadowHwnd, SW_SHOWNOACTIVATE);
+}
+
+void CCandidateWindow::ShowShadowWindow() {
+  UpdateShadowWindow();
+}
+
+void CCandidateWindow::HideShadowWindow() {
+  if (m_shadowHwnd) ShowWindow(m_shadowHwnd, SW_HIDE);
 }
 
 void CCandidateWindow::ApplyMouseTransparency() {
@@ -1810,7 +1996,14 @@ void CCandidateWindow::ApplyMouseTransparency() {
 void CCandidateWindow::ApplyWindowOpacity() {
   if (!m_hwnd) return;
   const UINT opacity = std::clamp(m_style.candidateOpacity, 70u, 100u);
-  const BYTE alpha = static_cast<BYTE>(MulDiv(static_cast<int>(opacity), 255, 100));
+  float progress = 1.0f;
+  if (m_showAnimationActive) {
+    progress = EaseOutCubic(
+        LinearAnimationProgress(GetTickCount64(), m_showAnimationStart, m_showAnimationDurationMs));
+  }
+  const BYTE alpha = static_cast<BYTE>(std::clamp(
+      static_cast<int>(std::lround(MulDiv(static_cast<int>(opacity), 255, 100) * progress)), 0,
+      255));
   SetLayeredWindowAttributes(m_hwnd, 0, alpha, LWA_ALPHA);
 }
 
@@ -1972,6 +2165,9 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
   // Make horizontal layout more compact (measured in scaled pixels).
   const bool isHorizontal = m_style.candidateHorizontal;
   const bool clipboardMode = !isHorizontal && HasClipboardCandidateItems(m_clipboardItems);
+  const bool horizontalPageIndicator = isHorizontal && m_totalPages > 1;
+  const int horizontalPageIndicatorGap =
+      horizontalPageIndicator ? Scale(kHorizontalPageBadgeGap) : 0;
   if (clipboardMode) {
     minWidth = std::max(minWidth, Scale(420));
     preferredWidth = std::max(preferredWidth, Scale(560));
@@ -1993,8 +2189,7 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
   const int hBadgeGap = isHorizontal ? std::max(0, Scale(4) - compact1) : Scale(4);
 
   const bool showPageBadge = m_totalPages > 1;
-  const std::wstring pageText =
-      std::to_wstring(std::max(1u, m_pageIndex)) + L" / " + std::to_wstring(std::max(1u, m_totalPages));
+  const std::wstring pageText = CandidatePageIndicatorText(m_pageIndex, m_totalPages);
   const SIZE pageSize = showPageBadge ? MeasureSingleLine(screenDc, m_metaFont, pageText, m_dpi) : SIZE{};
   const SIZE titleSize = MeasureSingleLine(screenDc, m_titleFont, m_title, m_dpi);
   const int modeChipGap = Scale(4);
@@ -2008,8 +2203,16 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
   }
   if (modeChipWidth > 0) modeChipWidth -= modeChipGap;
   const int pageBadgeWidth =
-      showPageBadge ? std::max(Scale(44), static_cast<int>(pageSize.cx) + Scale(12)) : 0;
-  const int headerHeight = std::max(Scale(32), static_cast<int>(titleSize.cy) + headerPadY * 2);
+      showPageBadge ? std::max(Scale(kHorizontalPageBadgeMinWidth),
+                                static_cast<int>(pageSize.cx) + Scale(12))
+                    : 0;
+  const int horizontalPageIndicatorWidth = horizontalPageIndicator ? pageBadgeWidth : 0;
+  const int horizontalPageIndicatorHeight =
+      horizontalPageIndicator
+          ? std::max(hBadgeHeight, static_cast<int>(pageSize.cy) +
+                                       Scale(kHorizontalPageBadgePaddingY))
+          : 0;
+  const int headerHeight = std::max(Scale(30), static_cast<int>(titleSize.cy) + headerPadY * 2);
   const int headerRightExtras =
       modeChipWidth + (showPageBadge ? pageBadgeWidth + Scale(16) : 0);
   const int headerMinWidth =
@@ -2050,7 +2253,8 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
       desiredItemsWidth += std::max(rawItemW, Scale(36));
       if (i + 1 < visibleTarget) desiredItemsWidth += stripGap;
     }
-    const int desiredClientWidth = hOuterPadX * 2 + desiredItemsWidth;
+    const int desiredClientWidth = hOuterPadX * 2 + desiredItemsWidth +
+                                   horizontalPageIndicatorWidth + horizontalPageIndicatorGap;
     clientWidth = std::clamp(std::max(clientWidth, desiredClientWidth), minWidth, usableMaxWidth);
   }
   clientWidth = std::max(clientWidth, std::min(usableMaxWidth, headerMinWidth + (isHorizontal ? hOuterPadX : outerPadX) * 2));
@@ -2097,7 +2301,11 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
   rects.clear();
 
   const int areaLeft = isHorizontal ? hOuterPadX : outerPadX;
-  const int areaWidth = std::max(Scale(100), clientWidth - (isHorizontal ? hOuterPadX : outerPadX) * 2);
+  const int horizontalTrailingReserve =
+      horizontalPageIndicatorWidth + horizontalPageIndicatorGap;
+  const int areaWidth = std::max(
+      Scale(100), clientWidth - (isHorizontal ? hOuterPadX : outerPadX) * 2 -
+                       (isHorizontal ? horizontalTrailingReserve : 0));
   int y = isHorizontal ? hOuterPadY : (outerPadY + headerHeight + headerGap);
 
   if (!isHorizontal) {
@@ -2166,7 +2374,10 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
 
       if (totalWidth > areaWidth) {
         const int availableItemsWidth = std::max(Scale(36), areaWidth - usedGap * std::max(0, chosenN - 1));
-        const int minItemWidth = Scale(36);
+        // Keep long candidates readable. The old 36px floor made a five-item
+        // strip collapse into ellipses even though the paging policy had
+        // already selected a smaller page for narrow/long content.
+        const int minItemWidth = std::max(Scale(56), minHorizontalCardWidth);
         int currentItemsWidth = totalWidth - usedGap * std::max(0, chosenN - 1);
         while (currentItemsWidth > availableItemsWidth) {
           auto widest = std::max_element(itemWidths.begin(), itemWidths.end());
@@ -2209,14 +2420,18 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
       contentRight = std::max(contentRight, static_cast<int>(r.right));
     }
     clientWidth = std::clamp(
-        std::max({contentRight + hOuterPadX, minWidth}), minWidth,
+        std::max({contentRight + hOuterPadX + horizontalTrailingReserve, minWidth}), minWidth,
         usableMaxWidth);
   }
 
   ReleaseDC(m_hwnd ? m_hwnd : nullptr, screenDc);
-  const int contentBottom =
-      rects.empty() ? (isHorizontal ? hOuterPadY + Scale(30) : outerPadY + headerHeight)
-                    : static_cast<int>(rects.back().bottom);
+  const int contentBottom = rects.empty()
+                                ? (isHorizontal ? hOuterPadY + Scale(30)
+                                                : outerPadY + headerHeight)
+                                : (isHorizontal
+                                       ? std::max(static_cast<int>(rects.back().bottom),
+                                                  hOuterPadY + horizontalPageIndicatorHeight)
+                                       : static_cast<int>(rects.back().bottom));
   int finalBottom = contentBottom + (isHorizontal ? hOuterPadY : outerPadY);
   if (clipboardMode) {
     finalBottom += Scale(8) + Scale(28);
@@ -2237,7 +2452,7 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
 
 RECT CCandidateWindow::CalculateWindowRect(const RECT& anchorRect, SIZE content) {
   const RECT work = PlacementAreaForAnchor(&anchorRect, m_fullscreenOverlayPlacement);
-  const int screenMargin = Scale(10);
+  const int screenMargin = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
   const int gap = Scale(6);
   if (content.cx <= 0 || content.cy <= 0) {
     const int maxWidth =
@@ -2305,6 +2520,24 @@ void CCandidateWindow::ApplyWindowRegion(int width, int height, bool redraw) {
 }
 
 void CCandidateWindow::ApplyWindowRect(const RECT& rect) {
+  m_targetWindowRect = rect;
+  m_hasTargetWindowRect = true;
+  float showProgress = 1.0f;
+  if (m_showAnimationActive) {
+    showProgress = EaseOutCubic(
+        LinearAnimationProgress(GetTickCount64(), m_showAnimationStart, m_showAnimationDurationMs));
+  }
+  ApplyAnimatedWindowRect(showProgress);
+}
+
+void CCandidateWindow::ApplyAnimatedWindowRect(float showProgress) {
+  if (!m_hwnd || !m_hasTargetWindowRect) return;
+  RECT rect = m_targetWindowRect;
+  if (m_showAnimationActive) {
+    const int offsetY =
+        static_cast<int>(std::lround(static_cast<float>(Scale(2)) * (1.0f - showProgress)));
+    OffsetRect(&rect, 0, offsetY);
+  }
   const int w = std::max<int>(1, rect.right - rect.left);
   const int h = std::max<int>(1, rect.bottom - rect.top);
   RECT current = {};
@@ -2319,6 +2552,7 @@ void CCandidateWindow::ApplyWindowRect(const RECT& rect) {
   if (!rectUnchanged) {
     ApplyWindowRegion(w, h, false);
   }
+  UpdateShadowWindow();
 }
 
 void CCandidateWindow::ReleasePaintBuffer() {
@@ -2474,11 +2708,9 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
   const int hItemPadY = isHorizontal ? std::max(0, itemPadY - compact1) : itemPadY;
   const int hBadgeHeight = isHorizontal ? std::max(Scale(16), Scale(22) - compact2) : Scale(22);
   const int hBadgeGap = isHorizontal ? std::max(0, Scale(4) - compact1) : Scale(4);
+  const bool showHorizontalPageBadge = isHorizontal && m_totalPages > 1;
 
   auto drawStaticLayer = [&](HDC targetDc) {
-    if (colors.shadowEnabled && colors.shadowSize > 0 && colors.shadowOpacity > 0.001f) {
-      DrawRoundShadow(targetDc, client, radius, colors.shadowSize, colors.shadowOpacity, strokeWidth);
-    }
     FillBackgroundClippedToRoundRect(targetDc, client, colors, radius);
     const COLORREF borderColor = AlphaBlendColor(colors.border, colors.windowBg, colors.borderOpacity);
     DrawRoundRectBorderCached(targetDc, client, borderColor, radius, strokeWidth);
@@ -2488,13 +2720,13 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       std::wstring pageText;
       int pageBadgeWidth = 0;
       if (showPageBadge) {
-        pageText = std::to_wstring(std::max(1u, m_pageIndex)) + L"/" +
-                   std::to_wstring(std::max(1u, m_totalPages));
+        pageText = CandidatePageIndicatorText(m_pageIndex, m_totalPages);
         const SIZE pageTextSize = MeasureSingleLineCached(targetDc, m_metaFont, pageText);
-        pageBadgeWidth = std::max(Scale(44), static_cast<int>(pageTextSize.cx) + Scale(12));
+        pageBadgeWidth = std::max(Scale(kHorizontalPageBadgeMinWidth),
+                                   static_cast<int>(pageTextSize.cx) + Scale(12));
       }
       const SIZE titleSize = MeasureSingleLineCached(targetDc, m_titleFont, m_title);
-      const int headerHeight = std::max(Scale(32), static_cast<int>(titleSize.cy) + headerPadY * 2);
+      const int headerHeight = std::max(Scale(30), static_cast<int>(titleSize.cy) + headerPadY * 2);
 
       RECT headerRect = {outerPadX, outerPadY, client.right - outerPadX, outerPadY + headerHeight};
       FillHeaderBackgroundClippedToRoundRect(targetDc, headerRect, colors, headerRadius);
@@ -2577,6 +2809,50 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
                       footerRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS,
                       m_dpi);
       }
+    } else {
+      const std::wstring horizontalPageText =
+          CandidatePageIndicatorText(m_pageIndex, m_totalPages);
+      const SIZE horizontalPageTextSize =
+          showHorizontalPageBadge
+              ? MeasureSingleLineCached(targetDc, m_metaFont, horizontalPageText)
+              : SIZE{};
+      const int horizontalPageBadgeWidth =
+          showHorizontalPageBadge
+              ? std::max(Scale(kHorizontalPageBadgeMinWidth),
+                         static_cast<int>(horizontalPageTextSize.cx) + Scale(12))
+              : 0;
+      const int horizontalPageBadgeHeight =
+          showHorizontalPageBadge
+              ? std::max(hBadgeHeight, static_cast<int>(horizontalPageTextSize.cy) +
+                                           Scale(kHorizontalPageBadgePaddingY))
+              : 0;
+      // Horizontal mode intentionally stays compact, but a small trailing
+      // page badge makes additional candidates discoverable without adding a
+      // second row or a footer.
+      if (showHorizontalPageBadge) {
+        RECT pageRect = {client.right - hOuterPadX - horizontalPageBadgeWidth,
+                         hOuterPadY, client.right - hOuterPadX,
+                         hOuterPadY + horizontalPageBadgeHeight};
+        FillBorderedRoundRectCached(targetDc, pageRect, colors.badgeBg, colors.badgeBorder,
+                                    badgeRadius, strokeWidth);
+        DrawTextBlock(targetDc, m_metaFont, colors.badgeText, horizontalPageText, pageRect,
+                      DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+      }
+      const ULONGLONG now = GetTickCount64();
+      const bool showPendingIndicator =
+          m_pendingVisual && m_pendingVisualSince != 0 && now >= m_pendingVisualSince &&
+          now - m_pendingVisualSince >= kCandidatePendingIndicatorDelayMs;
+      if (showPendingIndicator) {
+        // A stale/pending snapshot remains readable and non-interactive. Show
+        // only a tiny accent dot after the async state changes; avoid dimming
+        // the whole strip and making fast typing feel sluggish.
+        const int dot = std::max(Scale(3), strokeWidth + 1);
+        const int right = client.right - hOuterPadX -
+                          (showHorizontalPageBadge ? horizontalPageBadgeWidth + Scale(6) : 0);
+        RECT dotRect = {right - dot, hOuterPadY + Scale(2), right,
+                        hOuterPadY + Scale(2) + dot};
+        FillSolidRect(targetDc, dotRect, colors.selectedBorder);
+      }
     }
   };
 
@@ -2601,6 +2877,43 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     m_itemPaintCaches.resize(m_itemRects.size());
   }
 
+  const ULONGLONG animationNow = GetTickCount64();
+  const float selectionProgress =
+      m_selectionAnimationActive
+          ? EaseOutCubic(LinearAnimationProgress(animationNow, m_selectionAnimationStart,
+                                                 m_selectionAnimationDurationMs))
+          : 1.0f;
+  const float hoverProgress =
+      m_hoverAnimationActive ? EaseOutCubic(LinearAnimationProgress(
+                                   animationNow, m_hoverAnimationStart, m_hoverAnimationDurationMs))
+                             : 1.0f;
+  const float pressProgress =
+      m_pressAnimationActive ? EaseOutCubic(LinearAnimationProgress(
+                                   animationNow, m_pressAnimationStart, m_pressAnimationDurationMs))
+                             : 1.0f;
+  const float pageProgress =
+      m_pageAnimationActive ? EaseOutCubic(LinearAnimationProgress(
+                                  animationNow, m_pageAnimationStart, m_pageAnimationDurationMs))
+                            : 1.0f;
+  const int pageOffsetX = m_pageAnimationActive
+                              ? static_cast<int>(std::lround(m_pageAnimationDirection * Scale(6) *
+                                                             (1.0f - pageProgress)))
+                              : 0;
+  const bool anyItemAnimation = m_selectionAnimationActive || m_hoverAnimationActive ||
+                                m_pressAnimationActive || m_pageAnimationActive;
+  const COLORREF accentColor =
+      colors.selectedOutline != CLR_INVALID ? colors.selectedOutline : colors.selectedBorder;
+  const int selectedAccentWidth = Scale(m_style.skinLoaded && m_style.skinSelectedAccentWidth >= 0
+                                            ? m_style.skinSelectedAccentWidth
+                                            : 3);
+  const float selectedRingOpacity = (m_style.skinLoaded && m_style.skinSelectedRingOpacity >= 0.0f)
+                                        ? m_style.skinSelectedRingOpacity
+                                        : 0.0f;
+  const std::wstring selectedIndicator =
+      (m_style.skinLoaded && !m_style.skinSelectedIndicator.empty())
+          ? m_style.skinSelectedIndicator
+          : std::wstring(DefaultCandidateSelectedIndicator(isHorizontal));
+
   for (size_t i = 0; i < m_itemRects.size(); ++i) {
     if (dirtyRect) {
       RECT tmp;
@@ -2609,47 +2922,59 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     const bool isSelected = static_cast<UINT>(i) == m_selectedInPage;
     const bool isPressed = static_cast<int>(i) == m_pressedIndex;
     const bool isHot = static_cast<int>(i) == m_hotIndex;
-    COLORREF itemFill = isPressed ? colors.pressedBg
-                                  : (isSelected ? colors.selectedBg
-                                                : (isHot ? colors.hoverBg : colors.itemBg));
-    COLORREF itemBorder = isPressed ? colors.pressedBorder
-                                    : (isSelected ? colors.selectedBorder
-                                                  : (isHot ? colors.hoverBorder : colors.itemBorder));
-    if (isHorizontal && !isSelected && !isPressed && !isHot) {
-      itemBorder = itemFill;
+    const float selectionWeight =
+        m_selectionAnimationActive
+            ? IndexTransitionWeight(i, m_selectionAnimationFrom, m_selectionAnimationTo,
+                                    selectionProgress)
+            : (isSelected ? 1.0f : 0.0f);
+    const float hoverWeight =
+        m_hoverAnimationActive
+            ? IndexTransitionWeight(i, m_hoverAnimationFrom, m_hoverAnimationTo, hoverProgress)
+            : (isHot ? 1.0f : 0.0f);
+    const float pressWeight =
+        m_pressAnimationActive
+            ? IndexTransitionWeight(i, m_pressAnimationFrom, m_pressAnimationTo, pressProgress)
+            : (isPressed ? 1.0f : 0.0f);
+    COLORREF itemFill = AlphaBlendColor(colors.hoverBg, colors.itemBg, hoverWeight);
+    itemFill = AlphaBlendColor(colors.selectedBg, itemFill, selectionWeight);
+    itemFill = AlphaBlendColor(colors.pressedBg, itemFill, pressWeight);
+    COLORREF normalBorder = isHorizontal ? colors.itemBg : colors.itemBorder;
+    COLORREF itemBorder = AlphaBlendColor(colors.hoverBorder, normalBorder, hoverWeight);
+    itemBorder = AlphaBlendColor(colors.selectedBorder, itemBorder, selectionWeight);
+    itemBorder = AlphaBlendColor(colors.pressedBorder, itemBorder, pressWeight);
+    COLORREF textColor = AlphaBlendColor(colors.selectedText, colors.text, selectionWeight);
+    COLORREF mutedColor =
+        AlphaBlendColor(colors.selectedMutedText, colors.mutedText, selectionWeight);
+    const COLORREF neutralBadgeFill = AlphaBlendColor(colors.badgeBg, colors.itemBg, 0.72f);
+    const COLORREF neutralBadgeBorder = AlphaBlendColor(colors.badgeBorder, colors.itemBg, 0.55f);
+    const COLORREF selectedBadgeFill =
+        m_style.skinLoaded ? accentColor : AlphaBlendColor(accentColor, colors.selectedBg, 0.14f);
+    const COLORREF selectedBadgeBorder =
+        m_style.skinLoaded ? accentColor : AlphaBlendColor(accentColor, colors.selectedBg, 0.36f);
+    COLORREF badgeFill = AlphaBlendColor(selectedBadgeFill, neutralBadgeFill, selectionWeight);
+    COLORREF badgeBorder =
+        AlphaBlendColor(selectedBadgeBorder, neutralBadgeBorder, selectionWeight);
+    COLORREF badgeText = AlphaBlendColor(colors.selectedText, colors.badgeText, selectionWeight);
+    if (m_pageAnimationActive) {
+      itemFill = AlphaBlendColor(itemFill, colors.windowBg, pageProgress);
+      itemBorder = AlphaBlendColor(itemBorder, colors.windowBg, pageProgress);
+      textColor = AlphaBlendColor(textColor, colors.windowBg, pageProgress);
+      mutedColor = AlphaBlendColor(mutedColor, colors.windowBg, pageProgress);
+      badgeFill = AlphaBlendColor(badgeFill, colors.windowBg, pageProgress);
+      badgeBorder = AlphaBlendColor(badgeBorder, colors.windowBg, pageProgress);
+      badgeText = AlphaBlendColor(badgeText, colors.windowBg, pageProgress);
     }
-    if (isHorizontal && isSelected) {
-      itemBorder = colors.selectedBorder;
-    }
-    const COLORREF accentColor =
-        colors.selectedOutline != CLR_INVALID ? colors.selectedOutline : colors.selectedBorder;
-    const int selectedAccentWidth =
-        Scale(m_style.skinLoaded && m_style.skinSelectedAccentWidth >= 0
-                  ? m_style.skinSelectedAccentWidth
-                  : 3);
-    const float selectedRingOpacity =
-        (m_style.skinLoaded && m_style.skinSelectedRingOpacity >= 0.0f)
-            ? m_style.skinSelectedRingOpacity
-            : 0.0f;
-    const std::wstring selectedIndicator =
-        (m_style.skinLoaded && !m_style.skinSelectedIndicator.empty())
-            ? m_style.skinSelectedIndicator
-            : L"left_bar";
-    const COLORREF textColor = isSelected ? colors.selectedText : colors.text;
-    const COLORREF mutedColor = isSelected ? colors.selectedMutedText : colors.mutedText;
-    const COLORREF badgeFill =
-        isSelected ? accentColor : AlphaBlendColor(colors.badgeBg, colors.itemBg, 0.72f);
-    const COLORREF badgeBorder =
-        isSelected ? accentColor : AlphaBlendColor(colors.badgeBorder, colors.itemBg, 0.55f);
-    const COLORREF badgeText =
-        isSelected ? EnsureReadableTextColor(colors.selectedBg, &badgeFill, 1, 4.2) : colors.badgeText;
+    const COLORREF visualAccentColor =
+        m_pageAnimationActive ? AlphaBlendColor(accentColor, colors.windowBg, pageProgress)
+                              : accentColor;
     HFONT bodyFontForState = isSelected && m_bodyStrongFont ? m_bodyStrongFont : m_bodyFont;
 
-    const RECT& srcRect = m_itemRects[i];
+    RECT srcRect = m_itemRects[i];
+    OffsetRect(&srcRect, pageOffsetX, 0);
     const int itemW = srcRect.right - srcRect.left;
     const int itemH = srcRect.bottom - srcRect.top;
 
-    const bool canUseCache = true;
+    const bool canUseCache = !anyItemAnimation;
     CandidateItemPaintCache& cache =
         m_itemPaintCaches[i][CandidateItemPaintStateSlot(isSelected, isHot, isPressed)];
     const bool cacheHit = canUseCache && cache.valid && cache.itemIndex == i &&
@@ -2682,27 +3007,31 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     if (m_style.candidateHorizontal) {
       const bool drawHorizontalCard =
           m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card ||
-          isSelected || isPressed || isHot;
+          selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
       if (drawHorizontalCard) {
         FillBorderedRoundRectCached(targetDc, rect, itemFill, itemBorder,
                                     std::max(Scale(4), itemRadius / 2), strokeWidth);
       }
-      if (isSelected && selectedIndicator == L"bottom_bar" && selectedAccentWidth > 0) {
+      if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+          selectedIndicator == L"bottom_bar" && selectedAccentWidth > 0) {
         const int accentH = std::min(selectedAccentWidth, std::max(1, itemH / 3));
         RECT accentRect = {rect.left + Scale(6), rect.bottom - accentH - Scale(1),
                            rect.right - Scale(6), rect.bottom - Scale(1)};
-        FillSolidRect(targetDc, accentRect, accentColor);
-      } else if (isSelected && selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
+        FillSolidRect(targetDc, accentRect, visualAccentColor);
+      } else if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+                 selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
         const int accentW = std::min(selectedAccentWidth, std::max(1, itemW / 3));
         RECT accentRect = {rect.left + Scale(2), rect.top + Scale(4),
                            rect.left + Scale(2) + accentW, rect.bottom - Scale(4)};
-        FillSolidRect(targetDc, accentRect, accentColor);
-      } else if (isSelected && selectedIndicator == L"outline") {
-        DrawRoundRectBorderCached(targetDc, rect, accentColor,
+        FillSolidRect(targetDc, accentRect, visualAccentColor);
+      } else if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+                 selectedIndicator == L"outline") {
+        DrawRoundRectBorderCached(targetDc, rect, visualAccentColor,
                                   std::max(Scale(4), itemRadius / 2), strokeWidth);
       }
-      if (isSelected && selectedRingOpacity > 0.001f) {
-        const COLORREF ringColor = AlphaBlendColor(accentColor, itemFill, selectedRingOpacity);
+      if (selectionWeight > 0.001f && selectedRingOpacity > 0.001f) {
+        const COLORREF ringColor =
+            AlphaBlendColor(visualAccentColor, itemFill, selectedRingOpacity * selectionWeight);
         RECT ringRect = {rect.left + strokeWidth, rect.top + strokeWidth,
                          rect.right - strokeWidth, rect.bottom - strokeWidth};
         DrawRoundRectBorderCached(targetDc, ringRect, ringColor,
@@ -2712,7 +3041,10 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       const std::wstring labelText = i < m_labels.size() ? m_labels[i] : std::wstring();
       const SIZE labelSize = MeasureLabelCached(targetDc, labelText, i);
       const int labelW = std::max(Scale(10), static_cast<int>(labelSize.cx));
-      const COLORREF inlineLabelColor = isSelected ? accentColor : colors.mutedText;
+      COLORREF inlineLabelColor = AlphaBlendColor(accentColor, colors.mutedText, selectionWeight);
+      if (m_pageAnimationActive) {
+        inlineLabelColor = AlphaBlendColor(inlineLabelColor, colors.windowBg, pageProgress);
+      }
       const int contentLeft = rect.left + hItemPadX;
       const int contentRight = std::max(contentLeft, static_cast<int>(rect.right) - hItemPadX);
       const int contentTop = rect.top + hItemPadY;
@@ -2751,24 +3083,26 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       }
     } else {
       const bool drawVerticalCard =
-          (!clipboardMode &&
-           m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card) ||
-          isSelected || isPressed || isHot;
+          (!clipboardMode && m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card) ||
+          selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
       if (drawVerticalCard) {
         FillBorderedRoundRectCached(targetDc, rect, itemFill, itemBorder, itemRadius, strokeWidth);
       }
 
-      if (isSelected && selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
+      if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+          selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
         const int accentW = selectedAccentWidth;
         const int marginY = Scale(4);
         RECT accentRect = {rect.left + Scale(3), rect.top + marginY,
                            rect.left + Scale(3) + accentW, rect.bottom - marginY};
-        FillSolidRect(targetDc, accentRect, accentColor);
-      } else if (isSelected && selectedIndicator == L"outline") {
-        DrawRoundRectBorderCached(targetDc, rect, accentColor, itemRadius, strokeWidth);
+        FillSolidRect(targetDc, accentRect, visualAccentColor);
+      } else if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+                 selectedIndicator == L"outline") {
+        DrawRoundRectBorderCached(targetDc, rect, visualAccentColor, itemRadius, strokeWidth);
       }
-      if (isSelected && selectedRingOpacity > 0.001f) {
-        const COLORREF ringColor = AlphaBlendColor(accentColor, itemFill, selectedRingOpacity);
+      if (selectionWeight > 0.001f && selectedRingOpacity > 0.001f) {
+        const COLORREF ringColor =
+            AlphaBlendColor(visualAccentColor, itemFill, selectedRingOpacity * selectionWeight);
         RECT ringRect = {rect.left + strokeWidth, rect.top + strokeWidth,
                          rect.right - strokeWidth, rect.bottom - strokeWidth};
         DrawRoundRectBorderCached(targetDc, ringRect, ringColor,
@@ -2851,6 +3185,35 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       cache.pressed = isPressed;
       cache.valid = true;
       BitBlt(memDc, srcRect.left, srcRect.top, itemW, itemH, cache.memDc, 0, 0, SRCCOPY);
+    }
+  }
+
+  if (m_selectionAnimationActive && m_selectionAnimationFrom >= 0 && m_selectionAnimationTo >= 0 &&
+      static_cast<size_t>(m_selectionAnimationFrom) < m_itemRects.size() &&
+      static_cast<size_t>(m_selectionAnimationTo) < m_itemRects.size() && selectedAccentWidth > 0 &&
+      selectedIndicator != L"none") {
+    const RECT indicatorRect = InterpolateRect(
+        m_itemRects[static_cast<size_t>(m_selectionAnimationFrom)],
+        m_itemRects[static_cast<size_t>(m_selectionAnimationTo)], selectionProgress);
+    if (selectedIndicator == L"bottom_bar") {
+      const int accentH =
+          std::min(selectedAccentWidth,
+                   std::max(1, static_cast<int>(indicatorRect.bottom - indicatorRect.top) / 3));
+      RECT accentRect = {indicatorRect.left + Scale(6), indicatorRect.bottom - accentH - Scale(1),
+                         indicatorRect.right - Scale(6), indicatorRect.bottom - Scale(1)};
+      FillSolidRect(memDc, accentRect, accentColor);
+    } else if (selectedIndicator == L"left_bar") {
+      const int accentW =
+          std::min(selectedAccentWidth,
+                   std::max(1, static_cast<int>(indicatorRect.right - indicatorRect.left) / 3));
+      const int insetX = isHorizontal ? Scale(2) : Scale(3);
+      RECT accentRect = {indicatorRect.left + insetX, indicatorRect.top + Scale(4),
+                         indicatorRect.left + insetX + accentW, indicatorRect.bottom - Scale(4)};
+      FillSolidRect(memDc, accentRect, accentColor);
+    } else if (selectedIndicator == L"outline") {
+      DrawRoundRectBorderCached(memDc, indicatorRect, accentColor,
+                                isHorizontal ? std::max(Scale(4), itemRadius / 2) : itemRadius,
+                                strokeWidth);
     }
   }
 
@@ -3011,7 +3374,9 @@ void CCandidateWindow::ShowPinMenu(UINT indexInPage) {
   m_staticPaintDirty = true;
   if (m_hasAnchorRect) {
     const RECT work = PlacementAreaForAnchor(&m_anchorRect, m_fullscreenOverlayPlacement);
-    const int maxWidth = std::max(Scale(260), static_cast<int>((work.right - work.left) - Scale(20)));
+    const int screenInset = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+    const int maxWidth =
+        std::max(Scale(260), static_cast<int>((work.right - work.left) - screenInset * 2));
     m_measuredClientSize = MeasureClientSize(maxWidth, &m_itemRects);
     const RECT rect = CalculateWindowRect(m_anchorRect, m_measuredClientSize);
     ApplyWindowRect(rect);
@@ -3052,7 +3417,9 @@ void CCandidateWindow::HidePinMenu() {
   m_staticPaintDirty = true;
   if (m_hwnd && m_hasAnchorRect) {
     const RECT work = PlacementAreaForAnchor(&m_anchorRect, m_fullscreenOverlayPlacement);
-    const int maxWidth = std::max(Scale(260), static_cast<int>((work.right - work.left) - Scale(20)));
+    const int screenInset = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+    const int maxWidth =
+        std::max(Scale(260), static_cast<int>((work.right - work.left) - screenInset * 2));
     m_measuredClientSize = MeasureClientSize(maxWidth, &m_itemRects);
     const RECT rect = CalculateWindowRect(m_anchorRect, m_measuredClientSize);
     ApplyWindowRect(rect);
@@ -3088,25 +3455,29 @@ void CCandidateWindow::FlushDeferredPaint() {
   FlushPendingPaint();
 }
 
-bool CCandidateWindow::ScheduleDeferredAutoHide() {
-  if (!m_hwnd || !IsWindowVisible(m_hwnd)) return false;
-  if (m_autoHideTimerPending) {
-    KillTimer(m_hwnd, kCandidateAutoHideTimerId);
-    m_autoHideTimerPending = false;
+void CCandidateWindow::UpdatePendingIndicatorTimer(bool pendingVisual) {
+  if (!pendingVisual) {
+    if (m_hwnd && m_pendingIndicatorTimerPending) {
+      KillTimer(m_hwnd, kCandidatePendingIndicatorTimerId);
+    }
+    m_pendingIndicatorTimerPending = false;
+    m_pendingVisualSince = 0;
+    return;
   }
-  if (SetTimer(m_hwnd, kCandidateAutoHideTimerId, kCandidateAutoHideDelayMs, nullptr)) {
-    m_autoHideTimerPending = true;
-    SrfTsfPerfLog(L"candidate-window.auto-hide.defer", L"activate-app=0");
-    return true;
-  }
-  return false;
-}
 
-void CCandidateWindow::CancelDeferredAutoHide() {
-  if (m_hwnd && m_autoHideTimerPending) {
-    KillTimer(m_hwnd, kCandidateAutoHideTimerId);
+  if (!m_pendingVisual) {
+    m_pendingVisualSince = GetTickCount64();
   }
-  m_autoHideTimerPending = false;
+  if (!m_hwnd || m_pendingIndicatorTimerPending) return;
+  const ULONGLONG now = GetTickCount64();
+  if (m_pendingVisualSince != 0 && now >= m_pendingVisualSince &&
+      now - m_pendingVisualSince >= kCandidatePendingIndicatorDelayMs) {
+    return;
+  }
+  if (SetTimer(m_hwnd, kCandidatePendingIndicatorTimerId,
+               kCandidatePendingIndicatorDelayMs, nullptr)) {
+    m_pendingIndicatorTimerPending = true;
+  }
 }
 
 void CCandidateWindow::ScheduleEnvironmentRefresh() {
@@ -3288,6 +3659,7 @@ void CCandidateWindow::UpdateHotIndex(int hotIndex) {
   if (m_hotIndex == hotIndex) return;
   const int previous = m_hotIndex;
   m_hotIndex = hotIndex;
+  StartHoverAnimation(previous, m_hotIndex);
   InvalidateCandidateIndex(previous);
   InvalidateCandidateIndex(m_hotIndex);
 }
@@ -3296,6 +3668,7 @@ void CCandidateWindow::UpdatePressedIndex(int pressedIndex) {
   if (m_pressedIndex == pressedIndex) return;
   const int previous = m_pressedIndex;
   m_pressedIndex = pressedIndex;
+  StartPressAnimation(previous, m_pressedIndex);
   InvalidateCandidateIndex(previous);
   InvalidateCandidateIndex(m_pressedIndex);
 }
@@ -3315,6 +3688,173 @@ void CCandidateWindow::BeginTrackMouseLeave() {
   tme.dwFlags = TME_LEAVE;
   tme.hwndTrack = m_hwnd;
   if (TrackMouseEvent(&tme)) m_trackingMouse = true;
+}
+
+bool CCandidateWindow::MotionEnabled() const {
+  BOOL clientAnimations = TRUE;
+  if (!SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &clientAnimations, 0)) {
+    clientAnimations = TRUE;
+  }
+  HIGHCONTRASTW highContrast = {};
+  highContrast.cbSize = sizeof(highContrast);
+  const bool systemHighContrast =
+      SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0) &&
+      (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+  return ShouldAnimateCandidateWindow(
+      m_style.candidateReduceMotion, clientAnimations != FALSE,
+      m_style.themeMode == SrfThemeMode::HighContrast || systemHighContrast, m_gameOverlay,
+      !m_style.skinLoaded || m_style.skinAnimationsEnabled);
+}
+
+int CCandidateWindow::ResolveAnimationDuration(int skinDuration, int fallbackMs) const {
+  return std::clamp(skinDuration >= 0 ? skinDuration : fallbackMs, 0, 240);
+}
+
+void CCandidateWindow::StartShowAnimation() {
+  const int duration =
+      ResolveAnimationDuration(m_style.skinShowAnimationMs, kCandidateShowAnimationMs);
+  if (!MotionEnabled() || duration <= 0 || !m_hasTargetWindowRect) {
+    m_showAnimationActive = false;
+    ApplyAnimatedWindowRect(1.0f);
+    ApplyWindowOpacity();
+    UpdateShadowWindow();
+    return;
+  }
+  m_showAnimationActive = true;
+  m_showAnimationStart = GetTickCount64();
+  m_showAnimationDurationMs = duration;
+  ApplyAnimatedWindowRect(0.0f);
+  ApplyWindowOpacity();
+  UpdateShadowWindow();
+  ScheduleAnimationFrame();
+}
+
+void CCandidateWindow::StartSelectionAnimation(int previousIndex, int nextIndex) {
+  const int duration =
+      ResolveAnimationDuration(m_style.skinSelectionAnimationMs, kCandidateSelectionAnimationMs);
+  if (!MotionEnabled() || duration <= 0 || previousIndex < 0 || nextIndex < 0 ||
+      previousIndex == nextIndex || static_cast<size_t>(previousIndex) >= m_itemRects.size() ||
+      static_cast<size_t>(nextIndex) >= m_itemRects.size()) {
+    m_selectionAnimationActive = false;
+    return;
+  }
+  m_selectionAnimationActive = true;
+  m_selectionAnimationFrom = previousIndex;
+  m_selectionAnimationTo = nextIndex;
+  m_selectionAnimationStart = GetTickCount64();
+  m_selectionAnimationDurationMs = duration;
+  ScheduleAnimationFrame();
+}
+
+void CCandidateWindow::StartHoverAnimation(int previousIndex, int nextIndex) {
+  const int duration =
+      ResolveAnimationDuration(m_style.skinHoverAnimationMs, kCandidateHoverAnimationMs);
+  if (!MotionEnabled() || duration <= 0 || previousIndex == nextIndex) {
+    m_hoverAnimationActive = false;
+    return;
+  }
+  m_hoverAnimationActive = true;
+  m_hoverAnimationFrom = previousIndex;
+  m_hoverAnimationTo = nextIndex;
+  m_hoverAnimationStart = GetTickCount64();
+  m_hoverAnimationDurationMs = duration;
+  ScheduleAnimationFrame();
+}
+
+void CCandidateWindow::StartPressAnimation(int previousIndex, int nextIndex) {
+  const int duration =
+      ResolveAnimationDuration(m_style.skinPressAnimationMs, kCandidatePressAnimationMs);
+  if (!MotionEnabled() || duration <= 0 || previousIndex == nextIndex) {
+    m_pressAnimationActive = false;
+    return;
+  }
+  m_pressAnimationActive = true;
+  m_pressAnimationFrom = previousIndex;
+  m_pressAnimationTo = nextIndex;
+  m_pressAnimationStart = GetTickCount64();
+  m_pressAnimationDurationMs = duration;
+  ScheduleAnimationFrame();
+}
+
+void CCandidateWindow::StartPageAnimation(int previousPage, int nextPage) {
+  const int duration =
+      ResolveAnimationDuration(m_style.skinPageAnimationMs, kCandidatePageAnimationMs);
+  if (!MotionEnabled() || duration <= 0 || previousPage == nextPage) {
+    m_pageAnimationActive = false;
+    return;
+  }
+  m_selectionAnimationActive = false;
+  m_pageAnimationActive = true;
+  m_pageAnimationDirection = nextPage > previousPage ? 1 : -1;
+  m_pageAnimationStart = GetTickCount64();
+  m_pageAnimationDurationMs = duration;
+  ScheduleAnimationFrame();
+}
+
+void CCandidateWindow::CancelAnimations(bool restoreWindowState) {
+  if (m_hwnd && m_animationTimerPending) {
+    KillTimer(m_hwnd, kCandidateAnimationTimerId);
+  }
+  m_animationTimerPending = false;
+  m_showAnimationActive = false;
+  m_selectionAnimationActive = false;
+  m_hoverAnimationActive = false;
+  m_pressAnimationActive = false;
+  m_pageAnimationActive = false;
+  if (restoreWindowState && m_hwnd) {
+    ApplyAnimatedWindowRect(1.0f);
+    ApplyWindowOpacity();
+    UpdateShadowWindow();
+  }
+}
+
+void CCandidateWindow::ScheduleAnimationFrame() {
+  if (!m_hwnd || m_animationTimerPending) return;
+  if (SetTimer(m_hwnd, kCandidateAnimationTimerId, kCandidateAnimationFrameMs, nullptr)) {
+    m_animationTimerPending = true;
+  }
+}
+
+void CCandidateWindow::AdvanceAnimations() {
+  if (!m_hwnd) return;
+  if (m_animationTimerPending) {
+    KillTimer(m_hwnd, kCandidateAnimationTimerId);
+    m_animationTimerPending = false;
+  }
+  const ULONGLONG now = GetTickCount64();
+  bool visualAnimation = false;
+  if (m_showAnimationActive) {
+    const float progress =
+        LinearAnimationProgress(now, m_showAnimationStart, m_showAnimationDurationMs);
+    ApplyAnimatedWindowRect(EaseOutCubic(progress));
+    ApplyWindowOpacity();
+    UpdateShadowWindow();
+    if (progress >= 1.0f) {
+      m_showAnimationActive = false;
+      ApplyAnimatedWindowRect(1.0f);
+      ApplyWindowOpacity();
+      UpdateShadowWindow();
+    }
+  }
+  auto advanceIndexAnimation = [now, &visualAnimation](bool& active, ULONGLONG start,
+                                                       int duration) {
+    if (!active) return;
+    visualAnimation = true;
+    if (LinearAnimationProgress(now, start, duration) >= 1.0f) active = false;
+  };
+  advanceIndexAnimation(m_selectionAnimationActive, m_selectionAnimationStart,
+                        m_selectionAnimationDurationMs);
+  advanceIndexAnimation(m_hoverAnimationActive, m_hoverAnimationStart, m_hoverAnimationDurationMs);
+  advanceIndexAnimation(m_pressAnimationActive, m_pressAnimationStart, m_pressAnimationDurationMs);
+  advanceIndexAnimation(m_pageAnimationActive, m_pageAnimationStart, m_pageAnimationDurationMs);
+  if (visualAnimation) {
+    InvalidateRect(m_hwnd, nullptr, FALSE);
+    UpdateWindow(m_hwnd);
+  }
+  if (m_showAnimationActive || m_selectionAnimationActive || m_hoverAnimationActive ||
+      m_pressAnimationActive || m_pageAnimationActive) {
+    ScheduleAnimationFrame();
+  }
 }
 
 ATOM CCandidateWindow::EnsureWindowClass() {
@@ -3354,33 +3894,31 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
     case WM_ERASEBKGND:
       return 1;
     case WM_TIMER:
+      if (wParam == kCandidateAnimationTimerId) {
+        self->AdvanceAnimations();
+        return 0;
+      }
       if (wParam == kCandidatePaintTimerId) {
         self->FlushDeferredPaint();
+        return 0;
+      }
+      if (wParam == kCandidatePendingIndicatorTimerId) {
+        self->m_pendingIndicatorTimerPending = false;
+        KillTimer(hwnd, kCandidatePendingIndicatorTimerId);
+        if (self->m_pendingVisual) {
+          self->m_staticPaintDirty = true;
+          InvalidateRect(hwnd, nullptr, FALSE);
+        }
         return 0;
       }
       if (wParam == kCandidateHorizontalShrinkTimerId) {
         self->FlushPendingHorizontalShrink();
         return 0;
       }
-      if (wParam == kCandidateAutoHideTimerId) {
-        self->m_autoHideTimerPending = false;
-        self->Hide();
-        SrfTsfDiagnosticLog(L"candidate-window.auto-hide", L"activate-app=0 deferred");
-        return 0;
-      }
       if (wParam == kCandidateEnvironmentRefreshTimerId) {
         self->FlushEnvironmentRefresh();
         return 0;
       }
-      break;
-    case WM_ACTIVATEAPP:
-      if (!wParam) {
-        if (!self->ScheduleDeferredAutoHide()) {
-          SrfTsfPerfLog(L"candidate-window.auto-hide.skip", L"activate-app=0");
-        }
-        return 0;
-      }
-      self->CancelDeferredAutoHide();
       break;
     case WM_DISPLAYCHANGE:
       self->ScheduleEnvironmentRefresh();

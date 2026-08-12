@@ -53,13 +53,21 @@ LRESULT CALLBACK CSrfTip::DeferredTimerWndProc(HWND hwnd, UINT msg, WPARAM wPara
 void CSrfTip::OnLearnCommitCompleted(unsigned long long requestId, bool succeeded) {
   const auto it = std::find_if(
       m_pendingLearnNotifications.begin(), m_pendingLearnNotifications.end(),
-      [requestId](const auto& pending) { return pending.first == requestId; });
+      [requestId](const auto& pending) { return pending.requestId == requestId; });
   if (it == m_pendingLearnNotifications.end()) return;
-  std::wstring phrase = std::move(it->second);
+  std::wstring reading = std::move(it->reading);
+  std::wstring phrase = std::move(it->phrase);
   m_pendingLearnNotifications.erase(it);
   if (!succeeded) {
     SrfTsfDiagnosticLog(L"composed-phrase.learn", L"engine did not confirm save");
     return;
+  }
+  // The user can start typing the same word again before the asynchronous
+  // composed-phrase write finishes.  The bridge cache is invalidated before
+  // this completion is posted; refresh an active matching composition so the
+  // learned phrase appears immediately instead of waiting for a third input.
+  if (m_status.composing && !m_reading.empty() && m_reading == reading) {
+    ScheduleDeferredCandidateRefresh(1);
   }
   if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
     ShowNotification(SrfNotificationKind::AppOptions,

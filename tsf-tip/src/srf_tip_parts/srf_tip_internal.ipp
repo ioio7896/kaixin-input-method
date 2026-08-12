@@ -7,6 +7,34 @@ namespace {
 constexpr ULONGLONG kTsfTraceLogMaxBytes = 1024ULL * 1024ULL;
 constexpr int kTsfTraceLogRotateKeep = 5;
 
+// Runtime circuit breaker for games that do not tolerate Unicode injection.
+// It is intentionally process-local: a new game build gets a fresh probe and
+// no user configuration is rewritten behind their back.
+std::mutex g_unicodeFallbackAppsMutex;
+std::unordered_set<std::wstring> g_unicodeFallbackApps;
+
+std::wstring UnicodeFallbackAppKey(const std::wstring& appName) {
+  std::wstring key = appName;
+  for (wchar_t& ch : key) {
+    if (ch >= L'A' && ch <= L'Z') ch = static_cast<wchar_t>(ch - L'A' + L'a');
+  }
+  return key;
+}
+
+bool IsUnicodeFallbackApp(const std::wstring& appName) {
+  if (appName.empty()) return false;
+  const std::wstring key = UnicodeFallbackAppKey(appName);
+  std::lock_guard<std::mutex> lock(g_unicodeFallbackAppsMutex);
+  return g_unicodeFallbackApps.find(key) != g_unicodeFallbackApps.end();
+}
+
+void MarkUnicodeFallbackApp(const std::wstring& appName) {
+  if (appName.empty()) return;
+  const std::wstring key = UnicodeFallbackAppKey(appName);
+  std::lock_guard<std::mutex> lock(g_unicodeFallbackAppsMutex);
+  g_unicodeFallbackApps.insert(key);
+}
+
 enum class SrfTsfLogLevel {
   Off = 0,
   Error = 1,
@@ -466,6 +494,7 @@ constexpr DWORD kRustModeLearningConservative = 0x10000;
 constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
 constexpr wchar_t kStateAsciiValue[] = L"AsciiMode";
 constexpr wchar_t kStateInputAsciiValue[] = L"InputAsciiMode";
+constexpr wchar_t kStateInputModeSourceValue[] = L"InputModeSource";
 constexpr wchar_t kStateFullShapeValue[] = L"FullShape";
 constexpr wchar_t kStateChinesePunctuationValue[] = L"ChinesePunctuation";
 constexpr wchar_t kStateInstallMaintenanceValue[] = L"InstallMaintenance";
@@ -523,14 +552,53 @@ bool WriteStateDwordValue(const wchar_t* name, DWORD value) {
   return wrote;
 }
 
-void PublishTrayInputStatus(bool asciiMode, bool fullShape, bool chinesePunctuation) {
+bool WriteStateStringValue(const wchar_t* name, const std::wstring& value) {
+  HKEY key = nullptr;
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
+                      &key, nullptr) != ERROR_SUCCESS) {
+    return false;
+  }
+  const DWORD byteCount = static_cast<DWORD>((value.size() + 1) * sizeof(wchar_t));
+  const bool wrote = RegSetValueExW(key, name, 0, REG_SZ,
+                                    reinterpret_cast<const BYTE*>(value.c_str()),
+                                    byteCount) == ERROR_SUCCESS;
+  RegCloseKey(key);
+  return wrote;
+}
+
+std::wstring ProcessNameForWindow(HWND hwnd, DWORD* processIdOut = nullptr) {
+  if (processIdOut) *processIdOut = 0;
+  if (!hwnd) return {};
+
+  DWORD processId = 0;
+  (void)GetWindowThreadProcessId(hwnd, &processId);
+  if (processIdOut) *processIdOut = processId;
+  if (processId == 0) return {};
+
+  HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
+  if (!process) return {};
+
+  std::wstring path(MAX_PATH, L'\0');
+  DWORD size = static_cast<DWORD>(path.size());
+  std::wstring name;
+  if (QueryFullProcessImageNameW(process, 0, path.data(), &size) && size > 0) {
+    path.resize(size);
+    name = std::move(path);
+  }
+  CloseHandle(process);
+  return name;
+}
+
+void PublishTrayInputStatus(bool asciiMode, bool fullShape, bool chinesePunctuation,
+                            const std::wstring& modeSource) {
   static bool initialized = false;
   static bool lastAsciiMode = false;
   static bool lastFullShape = false;
   static bool lastChinesePunctuation = true;
+  static std::wstring lastModeSource;
 
   if (initialized && lastAsciiMode == asciiMode && lastFullShape == fullShape &&
-      lastChinesePunctuation == chinesePunctuation) {
+      lastChinesePunctuation == chinesePunctuation && lastModeSource == modeSource) {
     return;
   }
 
@@ -538,13 +606,17 @@ void PublishTrayInputStatus(bool asciiMode, bool fullShape, bool chinesePunctuat
   const bool wroteFullShape = WriteStateDwordValue(kStateFullShapeValue, fullShape ? 1u : 0u);
   const bool wrotePunctuation =
       WriteStateDwordValue(kStateChinesePunctuationValue, chinesePunctuation ? 1u : 0u);
+  const bool wroteModeSource = WriteStateStringValue(kStateInputModeSourceValue, modeSource);
 
   initialized = true;
   lastAsciiMode = asciiMode;
   lastFullShape = fullShape;
   lastChinesePunctuation = chinesePunctuation;
+  lastModeSource = modeSource;
 
-  if (wroteAscii || wroteFullShape || wrotePunctuation) NotifyTrayStateChanged();
+  if (wroteAscii || wroteFullShape || wrotePunctuation || wroteModeSource) {
+    NotifyTrayStateChanged();
+  }
 }
 
 bool InstallMaintenanceActive() {
@@ -998,6 +1070,7 @@ HRESULT SendCtrlVPaste() {
 class ScopedOleClipboardRestore {
  public:
   ScopedOleClipboardRestore() {
+    original_sequence_ = GetClipboardSequenceNumber();
     IDataObject* previous = nullptr;
     if (SUCCEEDED(OleGetClipboard(&previous))) previous_ = previous;
   }
@@ -1011,9 +1084,27 @@ class ScopedOleClipboardRestore {
 
   bool HasData() const { return previous_ != nullptr; }
 
+  void MarkTemporaryClipboard(DWORD sequence = 0) {
+    temporary_sequence_ = sequence != 0 ? sequence : GetClipboardSequenceNumber();
+    temporary_sequence_valid_ = temporary_sequence_ != 0;
+  }
+
   HRESULT RestoreAfterPaste() {
     if (!previous_) return S_FALSE;
-    Sleep(120);
+    // Give the target a brief chance to consume Ctrl+V, but never restore over
+    // content copied by the user while the paste was in flight.
+    Sleep(60);
+    const DWORD current_sequence = GetClipboardSequenceNumber();
+    const DWORD expected_sequence =
+        temporary_sequence_valid_ ? temporary_sequence_ : original_sequence_;
+    if (expected_sequence != 0 && current_sequence != 0 &&
+        current_sequence != expected_sequence) {
+      SrfTsfDiagnosticLog(L"clipboard-paste.restore",
+                          L"status=skipped reason=clipboard_changed_during_paste");
+      previous_->Release();
+      previous_ = nullptr;
+      return S_FALSE;
+    }
     HRESULT hr = OleSetClipboard(previous_);
     if (SUCCEEDED(hr)) {
       HRESULT flushHr = OleFlushClipboard();
@@ -1026,6 +1117,9 @@ class ScopedOleClipboardRestore {
 
  private:
   IDataObject* previous_ = nullptr;
+  DWORD original_sequence_ = 0;
+  DWORD temporary_sequence_ = 0;
+  bool temporary_sequence_valid_ = false;
 };
 
 UINT TemporaryPasteClipboardFormat() {
@@ -1051,7 +1145,8 @@ HWND ClipboardOwnerWindow() {
   return owner;
 }
 
-HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text) {
+HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
+                                        DWORD* out_sequence = nullptr) {
   HWND owner = ClipboardOwnerWindow();
   if (!owner) owner = GetForegroundWindow();
   bool opened = false;
@@ -1111,12 +1206,18 @@ HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text) {
 
   if (memory) GlobalFree(memory);
   CloseClipboard();
+  if (out_sequence) *out_sequence = GetClipboardSequenceNumber();
+  // Let the clipboard owner publish both CF_UNICODETEXT and the temporary
+  // marker before the listener receives WM_CLIPBOARDUPDATE.
+  Sleep(10);
   return hr;
 }
 
 HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text) {
   ScopedOleClipboardRestore restore;
-  HRESULT hr = SetUnicodeClipboardTextForPaste(text);
+  DWORD temporary_sequence = 0;
+  HRESULT hr = SetUnicodeClipboardTextForPaste(text, &temporary_sequence);
+  if (SUCCEEDED(hr)) restore.MarkTemporaryClipboard(temporary_sequence);
   if (SUCCEEDED(hr)) hr = SendCtrlVPaste();
   if (restore.HasData()) {
     const HRESULT restoreHr = restore.RestoreAfterPaste();
@@ -1150,6 +1251,15 @@ HRESULT SendUnicodeTextInput(const std::wstring& text) {
   if (sent == inputs.size()) return S_OK;
   const DWORD err = GetLastError();
   return HRESULT_FROM_WIN32(err != 0 ? err : ERROR_GEN_FAILURE);
+}
+
+bool UnicodeInputTargetStillAlive(HWND hwnd, DWORD processId) {
+  if (!hwnd || processId == 0) return true;
+  if (!IsWindow(hwnd)) return false;
+  DWORD currentProcessId = 0;
+  (void)GetWindowThreadProcessId(hwnd, &currentProcessId);
+  if (currentProcessId != processId) return false;
+  return IsWindowVisible(hwnd) != FALSE;
 }
 
 bool IsNumpadPrintableVk(UINT vk) {
@@ -1243,7 +1353,8 @@ bool ParseClipboardQuickReading(const std::wstring& reading, UINT* outPage,
         split == std::wstring::npos ? rest : rest.substr(0, split);
     const std::wstring tail =
         split == std::wstring::npos ? L"" : TrimAsciiWhitespace(rest.substr(split + 1));
-    if (ParseClipboardQuickPageToken(first, &page)) {
+    if (!first.empty() && (first[0] == L'p' || first[0] == L'P') &&
+        ParseClipboardQuickPageToken(first, &page)) {
       filter = tail;
     } else {
       filter = rest;
@@ -2223,6 +2334,45 @@ class CEditSessionCancelFocus final : public ITfEditSession {
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
     m_tip->HandleFocusLossCancelEditSession(ec, m_generation, m_cancelSequence);
+    return S_OK;
+  }
+};
+
+class CEditSessionCompatibilityAsciiCleanup final : public ITfEditSession {
+  LONG m_cRef = 1;
+  CSrfTip* m_tip = nullptr;
+
+ public:
+  explicit CEditSessionCompatibilityAsciiCleanup(CSrfTip* tip) : m_tip(tip) {
+    if (m_tip) m_tip->AddRef();
+  }
+
+  ~CEditSessionCompatibilityAsciiCleanup() {
+    if (m_tip) m_tip->Release();
+  }
+
+  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
+    if (!ppv) return E_POINTER;
+    *ppv = nullptr;
+    if (riid == IID_IUnknown || riid == IID_ITfEditSession) {
+      *ppv = static_cast<ITfEditSession*>(this);
+      AddRef();
+      return S_OK;
+    }
+    return E_NOINTERFACE;
+  }
+
+  STDMETHODIMP_(ULONG) AddRef() override { return InterlockedIncrement(&m_cRef); }
+
+  STDMETHODIMP_(ULONG) Release() override {
+    const ULONG count = InterlockedDecrement(&m_cRef);
+    if (count == 0) delete this;
+    return count;
+  }
+
+  STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+    if (!m_tip) return E_FAIL;
+    m_tip->HandleCompatibilityAsciiCleanupEditSession(ec);
     return S_OK;
   }
 };

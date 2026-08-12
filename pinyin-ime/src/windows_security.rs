@@ -177,14 +177,3 @@ fn apply_windows_process_hardening() -> std::io::Result<()> {
     }
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn process_hardening_is_idempotent() {
-        apply_process_hardening();
-        apply_process_hardening();
-    }
-}

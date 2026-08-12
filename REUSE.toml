@@ -9,7 +9,6 @@ path = [
     "pinyin-ime/**",
     "scripts/**",
     "skins/**",
-    "tests/**",
     "tools/**",
     "tsf-tip/**",
 ]

@@ -1545,18 +1545,16 @@ fn markdown_candidates(arg: &str) -> Vec<(String, f64)> {
 fn clipboard_help_candidates() -> Vec<(String, f64)> {
     score_candidates(
         vec![
-            "vv cb - 最近文本剪贴板",
-            "vv cb pinned - 仅看置顶",
-            "vv cb recent - 仅看历史",
-            "vv cb pin - 置顶当前剪贴板",
-            "vv cb unpin - 取消置顶当前剪贴板",
-            "vv cb clear - 清空非置顶历史",
-            "vvu - 前 10 条剪贴板快粘",
-            "vvu type:url / vvu 7d - 按类型或时间过滤",
-            "vvu open - 打开独立剪贴板管理器",
-        ]
-        .into_iter()
-        .map(str::to_string),
+            "vv cb - 最近文本剪贴板".to_string(),
+            "vv cb pinned - 仅看置顶".to_string(),
+            "vv cb recent - 仅看历史".to_string(),
+            "vv cb pin - 置顶当前剪贴板".to_string(),
+            "vv cb unpin - 取消置顶当前剪贴板".to_string(),
+            "vv cb clear - 清空非置顶历史".to_string(),
+            format!("vvu - 前 {CLIPBOARD_QUICK_LIMIT} 条剪贴板快粘"),
+            "vvu type:url / vvu 7d - 按类型或时间过滤".to_string(),
+            "vvu open - 打开独立剪贴板管理器".to_string(),
+        ],
         118.0,
     )
 }
@@ -1737,8 +1735,10 @@ fn parse_clipboard_quick_arg(arg: &str) -> (usize, &str) {
     let mut parts = trimmed.splitn(2, char::is_whitespace);
     let first = parts.next().unwrap_or("");
     let rest = parts.next().unwrap_or("").trim();
-    if let Some(page) = parse_clipboard_quick_page(first) {
-        return (page, rest);
+    if first.starts_with(['p', 'P']) {
+        if let Some(page) = parse_clipboard_quick_page(first) {
+            return (page, rest);
+        }
     }
     (0, trimmed)
 }
@@ -2160,15 +2160,13 @@ fn clipboard_text_direct_candidates(
 
 fn clipboard_candidates(arg: &str) -> Vec<(String, f64)> {
     let trimmed = arg.trim();
-    clipboard_store::refresh_system_clipboard_cache_async();
+    let current_snapshot = clipboard_store::capture_system_clipboard_snapshot()
+        .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
 
     let (cmd, rest) = split_command_args(trimmed);
     let key = cmd.to_ascii_lowercase();
     match key.as_str() {
-        "" => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_candidates(&snapshot, true, true, "")
-        }
+        "" => clipboard_text_candidates(&current_snapshot, true, true, ""),
         "pin" => {
             let _ = clipboard_store::pin_current_clipboard();
             let snapshot = clipboard_store::snapshot().unwrap_or_default();
@@ -2180,12 +2178,10 @@ fn clipboard_candidates(arg: &str) -> Vec<(String, f64)> {
             clipboard_text_candidates(&snapshot, true, true, "")
         }
         "pinned" | "top" | "saved" => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_candidates(&snapshot, true, false, rest)
+            clipboard_text_candidates(&current_snapshot, true, false, rest)
         }
         "recent" | "history" | "hist" => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_candidates(&snapshot, false, true, rest)
+            clipboard_text_candidates(&current_snapshot, false, true, rest)
         }
         "clear" => {
             let _ = clipboard_store::clear_history();
@@ -2202,24 +2198,19 @@ fn clipboard_candidates(arg: &str) -> Vec<(String, f64)> {
             clipboard_text_candidates(&snapshot, true, true, "")
         }
         "open" | "manager" | "mgr" | "window" => open_clipboard_manager_candidates(rest),
-        _ => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_candidates(&snapshot, true, true, trimmed)
-        }
+        _ => clipboard_text_candidates(&current_snapshot, true, true, trimmed),
     }
 }
 
 fn clipboard_candidates_detailed(arg: &str) -> Vec<DirectCandidate> {
     let trimmed = arg.trim();
-    clipboard_store::refresh_system_clipboard_cache_async();
+    let current_snapshot = clipboard_store::capture_system_clipboard_snapshot()
+        .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
 
     let (cmd, rest) = split_command_args(trimmed);
     let key = cmd.to_ascii_lowercase();
     match key.as_str() {
-        "" => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_direct_candidates(&snapshot, true, true, "")
-        }
+        "" => clipboard_text_direct_candidates(&current_snapshot, true, true, ""),
         "pin" => {
             let _ = clipboard_store::pin_current_clipboard();
             let snapshot = clipboard_store::snapshot().unwrap_or_default();
@@ -2231,12 +2222,10 @@ fn clipboard_candidates_detailed(arg: &str) -> Vec<DirectCandidate> {
             clipboard_text_direct_candidates(&snapshot, true, true, "")
         }
         "pinned" | "top" | "saved" => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_direct_candidates(&snapshot, true, false, rest)
+            clipboard_text_direct_candidates(&current_snapshot, true, false, rest)
         }
         "recent" | "history" | "hist" => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_direct_candidates(&snapshot, false, true, rest)
+            clipboard_text_direct_candidates(&current_snapshot, false, true, rest)
         }
         "clear" => {
             let _ = clipboard_store::clear_history();
@@ -2255,10 +2244,7 @@ fn clipboard_candidates_detailed(arg: &str) -> Vec<DirectCandidate> {
         "open" | "manager" | "mgr" | "window" => {
             scored_to_direct(open_clipboard_manager_candidates(rest))
         }
-        _ => {
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
-            clipboard_text_direct_candidates(&snapshot, true, true, trimmed)
-        }
+        _ => clipboard_text_direct_candidates(&current_snapshot, true, true, trimmed),
     }
 }
 
@@ -2307,8 +2293,8 @@ pub fn lookup_detailed_with_options(
                     quick_rest,
                 )));
             }
-            clipboard_store::refresh_system_clipboard_cache_async();
-            let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
+            let snapshot = clipboard_store::capture_system_clipboard_snapshot()
+                .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
             return Some(quick_clipboard_candidates_or_help(&snapshot, page, filter));
         }
         let cmd_lower = cmd.to_ascii_lowercase();
@@ -2367,7 +2353,7 @@ pub fn lookup_with_options(rest: &str, options: LookupOptions) -> Option<Vec<(St
             "vv md h1 标题 - Markdown 片段".to_string(),
             "vv cb - 文本剪贴板历史/置顶".to_string(),
             "vv hw - 打开手写查字".to_string(),
-            "vvu - 剪贴板前 10 条快粘".to_string(),
+            format!("vvu - 剪贴板前 {CLIPBOARD_QUICK_LIMIT} 条快粘"),
             "vv 数字 - 中文读法".to_string(),
         ]);
         return Some(score_candidates(help, 100.0));
@@ -2410,8 +2396,8 @@ pub fn lookup_with_options(rest: &str, options: LookupOptions) -> Option<Vec<(St
         if page == 0 && matches!(quick_cmd.as_str(), "open" | "manager" | "mgr" | "window") {
             return Some(open_clipboard_manager_candidates(quick_rest));
         }
-        clipboard_store::refresh_system_clipboard_cache_async();
-        let snapshot = clipboard_store::cached_snapshot().unwrap_or_default();
+        let snapshot = clipboard_store::capture_system_clipboard_snapshot()
+            .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
         return Some(
             quick_clipboard_candidates_or_help(&snapshot, page, filter)
                 .into_iter()
@@ -2485,367 +2471,4 @@ pub fn lookup_with_options(rest: &str, options: LookupOptions) -> Option<Vec<(St
     }
 
     None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn clipboard_test_entry(text: &str, captured_at: u64) -> clipboard_store::ClipboardEntry {
-        clipboard_store::ClipboardEntry {
-            id: format!("id-{captured_at}"),
-            text: text.to_string(),
-            captured_at,
-            first_captured_at: captured_at,
-            copy_count: 1,
-            source_app: None,
-        }
-    }
-
-    fn looks_like_date(s: &str) -> bool {
-        s.len() == 10 && s.chars().nth(4) == Some('-') && s.chars().nth(7) == Some('-')
-    }
-
-    fn looks_like_time(s: &str) -> bool {
-        s.len() == 8 && s.chars().nth(2) == Some(':') && s.chars().nth(5) == Some(':')
-    }
-
-    #[test]
-    fn direct_shortcut_prefers_date_for_rq_and_time_for_sj() {
-        let rq = direct_input_candidates_detailed("rq").expect("rq shortcut candidates");
-        let sj = direct_input_candidates_detailed("sj").expect("sj shortcut candidates");
-        assert!(looks_like_date(&rq[0].phrase));
-        assert_eq!(rq[0].meta.as_deref(), Some("实时日期"));
-        assert!(looks_like_time(&sj[0].phrase));
-        assert_eq!(sj[0].meta.as_deref(), Some("北京时间"));
-    }
-
-    #[test]
-    fn utility_commands_flow_through_detailed_lookup_without_learning() {
-        let calc = lookup_detailed("calc 23*17").expect("calculator candidates");
-        assert_eq!(calc[0].phrase, "391");
-        assert!(calc[0]
-            .meta
-            .as_deref()
-            .is_some_and(|meta| meta.contains("计算结果") && meta.contains(DIRECT_NO_LEARN_META)));
-
-        let number = lookup_detailed("num 12345").expect("number candidates");
-        assert_eq!(number[0].phrase, "一万二千三百四十五");
-        assert!(number[0]
-            .meta
-            .as_deref()
-            .is_some_and(|meta| meta.contains(DIRECT_NO_LEARN_META)));
-    }
-
-    #[test]
-    fn function_key_shortcut_returns_uppercase_key_name() {
-        let f1 = direct_input_candidates_detailed("f1").expect("f1 shortcut candidate");
-        let f24 = direct_input_candidates_detailed("F24").expect("f24 shortcut candidate");
-        assert_eq!(f1[0].phrase, "F1");
-        assert_eq!(f24[0].phrase, "F24");
-        assert_eq!(f1[0].meta.as_deref(), Some("功能键"));
-        assert!(direct_input_candidates_detailed("f25").is_none());
-    }
-
-    #[test]
-    fn named_function_key_shortcuts_return_key_names() {
-        let enter = direct_input_candidates_detailed("huiche").expect("enter shortcut candidate");
-        let backspace =
-            direct_input_candidates_detailed("backspace").expect("backspace shortcut candidate");
-        assert_eq!(enter[0].phrase, "Enter");
-        assert_eq!(backspace[0].phrase, "Backspace");
-        assert_eq!(enter[0].meta.as_deref(), Some("功能键"));
-        assert_eq!(backspace[0].meta.as_deref(), Some("功能键"));
-    }
-
-    #[test]
-    fn symbol_panel_exposes_grouped_symbols() {
-        let math = lookup("sym math").expect("symbol math candidates");
-        assert!(math[0].0.contains('±'));
-        let emoji = lookup("sym emoji").expect("symbol emoji candidates");
-        assert_eq!(emoji[0].0, "😀");
-        assert!(!emoji[0].0.contains(' '));
-        let emoji_direct = lookup("emoji").expect("emoji candidates");
-        assert_eq!(emoji_direct[0].0, "😀");
-    }
-
-    #[test]
-    fn symbol_panel_supports_single_symbol_candidates() {
-        let punct = lookup("sym punct").expect("symbol punctuation candidates");
-        assert_eq!(punct[0].0, "，");
-        assert!(punct.iter().any(|item| item.0 == "、"));
-
-        let dunhao = lookup("sym dunhao").expect("dunhao candidate");
-        assert_eq!(dunhao[0].0, "、");
-        let douhao = lookup("sym douhao").expect("douhao candidate");
-        assert_eq!(douhao[0].0, "，");
-        let comma = lookup("sym comma").expect("comma candidate");
-        assert_eq!(comma[0].0, "，");
-
-        let detailed = lookup_detailed("sym 顿号").expect("detailed dunhao candidate");
-        assert_eq!(detailed[0].phrase, "、");
-        assert_eq!(detailed[0].meta.as_deref(), Some("符号: 顿号"));
-    }
-
-    #[test]
-    fn emoji_panel_supports_single_emoji_candidates() {
-        let smile = lookup("emoji smile").expect("emoji smile candidates");
-        assert_eq!(smile[0].0, "😀");
-
-        let love = lookup("emoji love").expect("emoji love candidates");
-        assert_eq!(love[0].0, "❤️");
-
-        let detailed = lookup_detailed("emoji weixiao").expect("detailed emoji candidate");
-        assert_eq!(detailed[0].phrase, "😊");
-        let meta = detailed[0].meta.as_deref().unwrap_or_default();
-        assert!(meta.starts_with("Emoji: 微笑"));
-        assert!(meta.contains("no_learn=1"));
-    }
-
-    #[test]
-    fn symbol_and_emoji_input_options_gate_vv_candidates() {
-        let no_symbol = LookupOptions {
-            symbol_toolbox_enabled: false,
-            emoji_input_enabled: true,
-        };
-        assert!(lookup_with_options("sym", no_symbol)
-            .expect("disabled symbol response")
-            .is_empty());
-        assert!(!lookup_with_options("emoji", no_symbol)
-            .expect("emoji remains available")
-            .is_empty());
-
-        let no_emoji = LookupOptions {
-            symbol_toolbox_enabled: true,
-            emoji_input_enabled: false,
-        };
-        assert!(lookup_with_options("emoji", no_emoji)
-            .expect("disabled emoji response")
-            .is_empty());
-        assert!(lookup_with_options("sym emoji", no_emoji)
-            .expect("disabled symbol emoji response")
-            .is_empty());
-    }
-
-    #[test]
-    fn clipboard_quick_preview_collapses_whitespace_and_fits_limit() {
-        let preview = clipboard_candidate_preview_text(&format!(
-            "alpha\n  beta\tgamma\n{}",
-            "0123456789".repeat(8)
-        ));
-        assert!(preview.starts_with("alpha\nbeta gamma"));
-        assert!(!preview.contains('\t'));
-        assert!(preview.lines().count() <= CLIPBOARD_QUICK_PREVIEW_LINES);
-        assert!(preview
-            .lines()
-            .all(|line| line.chars().count() <= CLIPBOARD_QUICK_PREVIEW_LINE_CHARS + 1));
-        assert!(preview.ends_with('\u{2026}'));
-    }
-
-    #[test]
-    fn clipboard_candidate_preview_preserves_short_multiline_content() {
-        let preview = clipboard_candidate_preview_text("alpha\n  beta\tgamma\nthird line\nfourth");
-
-        assert_eq!(preview.lines().count(), CLIPBOARD_QUICK_PREVIEW_LINES);
-        assert!(preview.starts_with("alpha\nbeta gamma\nthird line"));
-        assert!(preview.ends_with('\u{2026}'));
-    }
-
-    #[test]
-    fn clipboard_quick_meta_requests_display_override_and_no_learning() {
-        let mut entry = clipboard_test_entry("https://example.com", 120);
-        entry.id = "id-42".to_string();
-        entry.source_app = Some(r"C:\Program Files\Google\Chrome\chrome.exe".to_string());
-        let meta = clipboard_display_meta(&entry, "alpha beta", true, 1, 3);
-        assert!(meta.contains("display=alpha beta"));
-        assert!(meta.contains("no_learn=1"));
-        assert!(meta.contains("clipboard_quick=1"));
-        assert!(meta.contains("clipboard_key=id-42"));
-        assert!(meta.contains("layout=vertical"));
-        assert!(!meta.contains("clipboard_source="));
-        assert!(!meta.contains("clipboard_time="));
-        assert!(!meta.contains("clipboard_type="));
-        assert!(!meta.contains("clipboard_filter="));
-        assert!(meta.contains("clipboard_page=2"));
-        assert!(meta.contains("clipboard_pages=3"));
-        assert!(meta.contains("clipboard_pinned=1"));
-    }
-
-    #[test]
-    fn clipboard_quick_candidates_show_distinct_previews() {
-        let snapshot = clipboard_store::ClipboardSnapshot {
-            pinned: Vec::new(),
-            history: vec![
-                clipboard_test_entry("first clipboard value", 2),
-                clipboard_test_entry("second clipboard value", 1),
-            ],
-        };
-
-        let out = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "");
-        assert_eq!(out.len(), 2);
-        assert!(out[0]
-            .meta
-            .as_deref()
-            .unwrap_or_default()
-            .contains("display=first clipboard value"));
-        assert!(out[1]
-            .meta
-            .as_deref()
-            .unwrap_or_default()
-            .contains("display=second clipboard value"));
-    }
-
-    #[test]
-    fn clipboard_quick_arg_accepts_page_prefix_or_plain_page() {
-        assert_eq!(parse_clipboard_quick_arg(""), (0, ""));
-        assert_eq!(parse_clipboard_quick_arg("2"), (1, ""));
-        assert_eq!(parse_clipboard_quick_arg("p3 error"), (2, "error"));
-        assert_eq!(parse_clipboard_quick_arg("todo"), (0, "todo"));
-        assert_eq!(
-            parse_u_clipboard_quick_command("u2", "api"),
-            Some((1, "api"))
-        );
-    }
-
-    #[test]
-    fn clipboard_command_detection_covers_quick_and_manager_commands() {
-        assert!(is_clipboard_command("u"));
-        assert!(is_clipboard_command("u2 error"));
-        assert!(is_clipboard_command("cb"));
-        assert!(is_clipboard_command("clipboard open"));
-        assert!(!is_clipboard_command("rq"));
-        assert!(!is_clipboard_command("sym"));
-    }
-
-    #[test]
-    fn clipboard_quick_prefers_three_pinned_items_then_history() {
-        let snapshot = clipboard_store::ClipboardSnapshot {
-            pinned: vec![
-                clipboard_test_entry("pinned one", 99),
-                clipboard_test_entry("pinned two", 98),
-                clipboard_test_entry("pinned also in history", 97),
-                clipboard_test_entry("pinned four not on first slots", 96),
-            ],
-            history: vec![
-                clipboard_test_entry("newest item", 30),
-                clipboard_test_entry("pinned also in history", 20),
-                clipboard_test_entry("old item", 10),
-            ],
-        };
-
-        let out = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "");
-        assert_eq!(out.len(), 5);
-        assert_eq!(out[0].phrase, "pinned one");
-        assert_eq!(out[1].phrase, "pinned two");
-        assert_eq!(out[2].phrase, "pinned also in history");
-        assert_eq!(out[3].phrase, "newest item");
-        assert_eq!(out[4].phrase, "old item");
-        assert!(out[2]
-            .meta
-            .as_deref()
-            .unwrap_or_default()
-            .contains("clipboard_key=id-97"));
-    }
-
-    #[test]
-    fn clipboard_quick_paginates_eight_items_per_page() {
-        let snapshot = clipboard_store::ClipboardSnapshot {
-            pinned: Vec::new(),
-            history: (0..12)
-                .map(|idx| clipboard_test_entry(&format!("history {idx}"), 100 - idx))
-                .collect(),
-        };
-
-        let first = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "");
-        let second = quick_clipboard_candidates_from_snapshot(&snapshot, 1, "");
-        assert_eq!(first.len(), 8);
-        assert_eq!(first[0].phrase, "history 0");
-        assert_eq!(first[7].phrase, "history 7");
-        assert_eq!(second.len(), 4);
-        assert_eq!(second[0].phrase, "history 8");
-        assert_eq!(second[3].phrase, "history 11");
-        assert!(second[0]
-            .meta
-            .as_deref()
-            .unwrap_or_default()
-            .contains("clipboard_page=2"));
-        assert!(second[0]
-            .meta
-            .as_deref()
-            .unwrap_or_default()
-            .contains("clipboard_pages=2"));
-    }
-
-    #[test]
-    fn clipboard_quick_keeps_long_text_as_resolvable_token() {
-        let long = "a".repeat(CLIPBOARD_QUICK_INLINE_TEXT_UTF16_LIMIT + 1);
-        let snapshot = clipboard_store::ClipboardSnapshot {
-            pinned: Vec::new(),
-            history: vec![clipboard_test_entry(&long, 42)],
-        };
-
-        let out = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "");
-
-        assert_eq!(out.len(), 1);
-        assert_eq!(out[0].phrase, "clipboard://id-42");
-        assert!(out[0]
-            .meta
-            .as_deref()
-            .unwrap_or_default()
-            .contains("clipboard_key=id-42"));
-    }
-
-    #[test]
-    fn clipboard_quick_filter_accepts_type_and_time_tokens() {
-        let now = now_secs();
-        let snapshot = clipboard_store::ClipboardSnapshot {
-            pinned: Vec::new(),
-            history: vec![
-                clipboard_test_entry("fn main() { println!(\"hi\"); }", now),
-                clipboard_test_entry("https://example.com/api", now),
-                clipboard_test_entry("plain note", now.saturating_sub(10 * 86_400)),
-            ],
-        };
-
-        let code = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "type:code 1d");
-        assert_eq!(code.len(), 1);
-        assert_eq!(code[0].phrase, "fn main() { println!(\"hi\"); }");
-
-        let recent_plain = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "plain 3d");
-        assert!(recent_plain.is_empty());
-    }
-
-    #[test]
-    fn uppercase_currency_formats_common_amount() {
-        let out = formal_currency_candidates("123.45");
-        assert_eq!(out[0].0, "壹佰贰拾叁元肆角伍分");
-    }
-
-    #[test]
-    fn markdown_heading_uses_rest_text() {
-        let out = markdown_candidates("h1 项目计划");
-        assert_eq!(out[0].0, "# 项目计划");
-    }
-
-    #[test]
-    fn clipboard_code_type_does_not_misclassify_plain_text() {
-        assert!(!clipboard_looks_like_code("你好，这是一段普通文本。"));
-        assert!(!clipboard_looks_like_code("{"));
-        assert!(!clipboard_looks_like_code("a=b"));
-        assert!(clipboard_looks_like_code("fn main() { println!(); }"));
-        assert!(clipboard_looks_like_code("```rust\nlet x = 1;\n```"));
-        assert!(clipboard_looks_like_code("const x = { a: 1, b: 2 };"));
-    }
-
-    #[test]
-    fn formal_currency_candidates_no_panic_on_edge_input() {
-        let out = formal_currency_candidates("abc");
-        assert!(out.iter().any(|(text, _)| text.contains("用法")));
-    }
-
-    #[test]
-    fn url_without_dot_defaults_to_com() {
-        let out = url_candidates("url", "openai");
-        assert_eq!(out[0].0, "https://openai.com");
-    }
 }

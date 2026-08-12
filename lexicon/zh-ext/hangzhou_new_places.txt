@@ -1,0 +1,136 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭州新地名低频扩展词库
+# Generated from the Hangzhou new-place raw source.
+# 格式：词条<TAB>拼音<TAB>词频；新地名统一使用低万分制分数 175，避免挤占常用候选。
+长华街	chang hua jie	175
+八角亭街	ba jiao ting jie	175
+蒲帆巷	pu fan xiang	175
+康景路	kang jing lu	175
+将军亭弄	jiang jun ting long	175
+连铸弄	lian zhu long	175
+远志弄	yuan zhi long	175
+钱家浜街	qian jia bang jie	175
+荷塘街	he tang jie	175
+云棹巷	yun zhao xiang	175
+鼎运路	ding yun lu	175
+归运弄	gui yun long	175
+泓运弄	hong yun long	175
+宝运弄	bao yun long	175
+拱馨弄	gong xin long	175
+玉阶巷	yu jie xiang	175
+溪泰巷	xi tai xiang	175
+武林巷	wu lin xiang	175
+汇文巷	hui wen xiang	175
+榨河巷	zha he xiang	175
+嘉仁路	jia ren lu	175
+墩池路	dun chi lu	175
+花瑶巷	hua yao xiang	175
+揽溪巷	lan xi xiang	175
+振华路	zhen hua lu	175
+西园五路	xi yuan wu lu	175
+西园七路	xi yuan qi lu	175
+振中路	zhen zhong lu	175
+映翠路	ying cui lu	175
+汤堰路	tang yan lu	175
+井山坞路	jing shan wu lu	175
+晖虹街	hui hong jie	175
+方陆盛街	fang lu sheng jie	175
+新和路	xin he lu	175
+茗启街	ming qi jie	175
+晨朝路	chen zhao lu	175
+思学街	si xue jie	175
+宏达路	hong da lu	175
+平悦街	ping yue jie	175
+超东路	chao dong lu	175
+五洲路	wu zhou lu	175
+临璟弄	lin jing long	175
+石荡廊弄	shi dang lang long	175
+砚造街	yan zao jie	175
+琢月弄	zhuo yue long	175
+富振街	fu zhen jie	175
+映红街	ying hong jie	175
+藕舫路	ou fang lu	175
+运民路	yun min lu	175
+绿荫街	lv yin jie	175
+文苑路	wen yuan lu	175
+外塘路	wai tang lu	175
+芦塘路	lu tang lu	175
+塘锦街	tang jin jie	175
+蔡家埭街	cai jia dai jie	175
+长河圩街	chang he wei jie	175
+陈家湾路	chen jia wan lu	175
+晚宁巷	wan ning xiang	175
+丁韵巷	ding yun xiang	175
+汀和巷	ting he xiang	175
+东仁街	dong ren jie	175
+东竹弄	dong zhu long	175
+丰恒巷	feng heng xiang	175
+青畔巷	qing pan xiang	175
+文宁街	wen ning jie	175
+格物弄	ge wu long	175
+敬贤巷	jing xian xiang	175
+镜玄弄	jing xuan long	175
+羽宁路	yu ning lu	175
+翁梅街	weng mei jie	175
+翎湖街	ling hu jie	175
+瑞岚巷	rui lan xiang	175
+玄安路	xuan an lu	175
+鑫汇街	xin hui jie	175
+鑫业路	xin ye lu	175
+蕴芳弄	yun fang long	175
+连锦街	lian jin jie	175
+瑞宁路	rui ning lu	175
+家西路	jia xi lu	175
+羽澜街	yu lan jie	175
+芳甸弄	fang dian long	175
+鑫园路	xin yuan lu	175
+浦运大道	pu yun da dao	175
+浦临巷	pu lin xiang	175
+瑞登巷	rui deng xiang	175
+翠屏路	cui ping lu	175
+源胜街	yuan sheng jie	175
+浦茗巷	pu ming xiang	175
+梭山渡路	suo shan du lu	175
+里横山弄	li heng shan long	175
+横爿路	heng pan lu	175
+村前畈弄	cun qian fan long	175
+泉塘头弄	quan tang tou long	175
+红大山路	hong da shan lu	175
+东光畈路	dong guang fan lu	175
+巷里路	xiang li lu	175
+交界岭巷	jiao jie ling xiang	175
+红米山弄	hong mi shan long	175
+下村巷	xia cun xiang	175
+上三亩巷	shang san mu xiang	175
+夹弄里巷	jia long li xiang	175
+陆家岭巷	lu jia ling xiang	175
+苦竹垄巷	ku zhu long xiang	175
+石断桥巷	shi duan qiao xiang	175
+麻梗浦路	ma geng pu lu	175
+将军亭桥	jiang jun ting qiao	175
+走运桥	zou yun qiao	175
+沿山港桥	yan shang ang qiao	175
+清澜桥	qing lan qiao	175
+骆家塘南桥	luo jia tang nan qiao	175
+骆家塘北桥	luo jia tang bei qiao	175
+荆长桥	jing chang qiao	175
+墩仓桥	dun cang qiao	175
+紫莲桥	zi lian qiao	175
+庙桥头桥	miao qiao tou qiao	175
+联彩桥	lian cai qiao	175
+揽溪桥	lan xi qiao	175
+夏傅家桥	xia fu jia qiao	175
+茗启桥	ming qi qiao	175
+思学桥	si xue qiao	175
+栖鹭桥	qi lu qiao	175
+横山港桥	heng shang ang qiao	175
+翠屿桥	cui yu qiao	175
+莲济桥	lian ji qiao	175
+谋福桥	mou fu qiao	175
+巧渡桥	qiao du qiao	175
+邵家坝共富桥	shao jia ba gong fu qiao	175
+映栖桥	ying qi qiao	175
+望山桥	wang shan qiao	175
+望峰桥	wang feng qiao	175
+晨朝路隧道	chen zhao lu sui dao	175

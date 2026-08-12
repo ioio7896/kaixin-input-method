@@ -76,6 +76,14 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       committedMeta.noLearn || committedMeta.clipboardQuick || committedMeta.partialResult ||
       committedMeta.prefixPlaceholder || m_traditionalOutput || m_sensitiveInputActive ||
       ShouldForceAsciiForCompatibility() || ShouldSuppressLearningForPrivacy();
+  // A partial first page is unsafe for ordinary candidate-learning feedback,
+  // but an explicitly selected single character is still a valid step in the
+  // user's deliberate phrase composition.  Do not let the partial marker
+  // discard the whole composed phrase in that path.
+  const bool suppressPhraseComposeLearning =
+      committedMeta.noLearn || committedMeta.clipboardQuick || committedMeta.prefixPlaceholder ||
+      m_traditionalOutput || m_sensitiveInputActive || ShouldForceAsciiForCompatibility() ||
+      ShouldSuppressLearningForPrivacy();
   if (committedMeta.clipboardQuick) {
     if (m_candidateUi) m_candidateUi->End();
     if (ShouldSuppressClipboardForPrivacy()) {
@@ -125,7 +133,21 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       TryParseFunctionKeyToken(committed, &committedFunctionVk) && readingFunctionVk == committedFunctionVk;
 
   // 单字候选 + 至少两个完整音节：上屏一字并保留后续拼音（与引擎「前 7 多字 + 首音节单字」策略配套）。
-  if (committed.size() == 1 && pic) {
+  // ClipboardPaste has a full clipboard/OLE round trip per commit.  Do not
+  // enter the single-character continuation path in game mode: repeatedly
+  // selecting a long phrase would otherwise perform one expensive paste for
+  // every character and make the game input feel frozen.  The normal commit
+  // path still submits the selected character through the configured transport.
+  bool appGameProfile = false;
+  if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
+    appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
+  }
+  const bool gameCompatibilityActive =
+      appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
+      m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
+  const bool clipboardGameContinuation =
+      EffectiveCommitTransport() == SrfCommitTransport::ClipboardPaste && gameCompatibilityActive;
+  if (committed.size() == 1 && pic && !clipboardGameContinuation) {
     auto continueSingleCharCommit = [&](std::wstring restReading,
                                         const std::wstring* learnReading) -> HRESULT {
       if (m_candidateUi) m_candidateUi->End();
@@ -187,7 +209,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
         return hrIns;
       }
 
-      if (!suppressCandidateLearning) {
+      if (!suppressPhraseComposeLearning) {
         // 启动/继续“用户造词”累计：用最初 reading 作为 key，把逐字上屏的结果拼成一个整词写入用户词典。
         if (!m_userPhraseComposeActive) {
           std::wstring trimmedOrig = reading;
@@ -252,6 +274,10 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       SrfTsfDiagnosticLog(L"commit-candidate.single-char-continuation",
                           L"status=skipped reason=syllable_bounds_unavailable");
     }
+  }
+  if (committed.size() == 1 && pic && clipboardGameContinuation) {
+    SrfTsfDiagnosticLog(L"commit-candidate.single-char-continuation",
+                        L"status=skipped reason=clipboard_transport");
   }
 
   // 逐字续组词路径会在上面提前返回并保留候选 UI；其余提交都结束候选会话。
@@ -330,7 +356,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
 
   if (FAILED(hr) && EffectiveCommitTransport() != SrfCommitTransport::UnicodeSendInput) {
     bool appGameProfile = false;
-    const SrfAppOptions* appOptions = FindAppOptions(m_config, m_activeAppName);
+    const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName());
     if (appOptions && appOptions->hasGameProfile && appOptions->gameCompactProfile) {
       appGameProfile = true;
     }
@@ -386,12 +412,12 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   // 触发条件：逐字路径已累计过，且这次不是继续保留剩余 reading 的路径（到这里意味着 composition 将结束）。
   if (SUCCEEDED(hr) && m_userPhraseComposeActive) {
     // 把本次上屏也纳入最终词组（最后一步可能是单字或直接选中某个短语）。
-    if (!suppressCandidateLearning && !committed.empty()) {
+    if (!suppressPhraseComposeLearning && !committed.empty()) {
       m_userPhraseComposeCommitted += committed;
       if (m_userPhraseComposeCommitted.size() > 8) m_userPhraseComposeValid = false;
     }
     // 仅对 2 字及以上的“词组”做学习，避免覆盖单字学习策略。
-    if (!suppressCandidateLearning && m_userPhraseComposeValid &&
+    if (!suppressPhraseComposeLearning && m_userPhraseComposeValid &&
         m_userPhraseComposeCommitted.size() >= 2 && m_userPhraseComposeCommitted.size() <= 8 &&
         !m_userPhraseComposeOriginalReading.empty()) {
       if (EnsureDeferredTimerWindow()) {
@@ -403,7 +429,11 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
           if (m_pendingLearnNotifications.size() >= 64) {
             m_pendingLearnNotifications.erase(m_pendingLearnNotifications.begin());
           }
-          m_pendingLearnNotifications.emplace_back(requestId, m_userPhraseComposeCommitted);
+          PendingLearnNotification pending;
+          pending.requestId = requestId;
+          pending.reading = m_userPhraseComposeOriginalReading;
+          pending.phrase = m_userPhraseComposeCommitted;
+          m_pendingLearnNotifications.push_back(std::move(pending));
         }
       } else {
         // Learning must not depend on notification infrastructure being
@@ -593,7 +623,12 @@ void CSrfTip::ApplyCandidatePinChoice(size_t idx, bool pinned) {
   line += L", candidate=";
   line += ShortenForLog(candidate, 24);
   SrfTsfDiagnosticLog(L"candidate-pin-menu.apply", line.c_str());
-  SrfTip_SetCandidatePin(reading, candidate, pinned);
+  if (!SrfTip_SetCandidatePin(reading, candidate, pinned)) {
+    SrfTsfDiagnosticLog(L"candidate-pin-menu.apply-failed",
+                        (L"idx=" + std::to_wstring(idx) + L" pinned=" +
+                         (pinned ? L"1" : L"0") + L" reason=ipc-failed").c_str());
+    return;
+  }
 
   const std::wstring pinKey = CandidatePinStateKey(reading, candidate);
   if (pinned) {

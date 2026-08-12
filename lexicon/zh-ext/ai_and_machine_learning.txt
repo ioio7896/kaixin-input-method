@@ -1,0 +1,5003 @@
+# 开心输入法扩展词库：ai_and_machine_learning
+# 格式：词语<TAB>全拼或混合输入码<TAB>权重；混合实体保留 ASCII 大小写和符号。；第三列统一为 1-10000 万分制排序分数。
+# Source: wordfreq 中文频率排序 + 项目维护的现代技术实体与产品名称。
+生成式人工智能	sheng cheng shi ren gong zhi neng	8800
+大语言模型	da yu yan mo xing	8800
+多模态	duo mo tai	8800
+智能体	zhi neng ti	8800
+提示词	ti shi ci	8800
+文生图	wen sheng tu	8800
+文生视频	wen sheng shi pin	8800
+检索增强生成	jian suo zeng qiang sheng cheng	8800
+向量数据库	xiang liang shu ju ku	8800
+知识库问答	zhi shi ku wen da	8800
+云端推理	yun duan tui li	8800
+模型训练	mo xing xun lian	8800
+模型微调	mo xing wei diao	8800
+模型评测	mo xing ping ce	8800
+模型部署	mo xing bu shu	8800
+机器学习	ji qi xue xi	8800
+深度学习	shen du xue xi	8800
+强化学习	qiang hua xue xi	8800
+迁移学习	qian yi xue xi	8800
+联邦学习	lian bang xue xi	8800
+神经网络	shen jing wang luo	8800
+卷积神经网络	juan ji shen jing wang luo	8800
+循环神经网络	xun huan shen jing wang luo	8800
+生成对抗网络	sheng cheng dui kang wang luo	8800
+自然语言处理	zi ran yu yan chu li	8800
+计算机视觉	ji suan ji shi jue	8800
+语音识别	yu yin shi bie	8800
+语音合成	yu yin he cheng	8800
+图像识别	tu xiang shi bie	8800
+目标检测	mu biao jian ce	8800
+语义理解	yu yi li jie	8800
+文本分类	wen ben fen lei	8800
+情感分析	qing gan fen xi	8800
+问答系统	wen da xi tong	8800
+推荐系统	tui jian xi tong	8800
+搜索增强	sou suo zeng qiang	8800
+知识图谱	zhi shi tu pu	8800
+数据标注	shu ju biao zhu	8800
+训练数据	xun lian shu ju	8800
+推理服务	tui li fu wu	8800
+推理加速	tui li jia su	8800
+推理引擎	tui li yin qing	8800
+训练平台	xun lian ping tai	8800
+模型服务	mo xing fu wu	8800
+模型仓库	mo xing cang ku	8800
+模型权重	mo xing quan zhong	8800
+开源模型	kai yuan mo xing	8800
+基础模型	ji chu mo xing	8800
+预训练模型	yu xun lian mo xing	8800
+通用人工智能	tong yong ren gong zhi neng	8800
+人工智能应用	ren gong zhi neng ying yong	8800
+人工智能助手	ren gong zhi neng zhu shou	8800
+智能问答	zhi neng wen da	8800
+智能搜索	zhi neng sou suo	8800
+智能客服	zhi neng ke fu	8800
+智能推荐	zhi neng tui jian	8800
+智能驾驶	zhi neng jia shi	8800
+智能制造	zhi neng zhi zao	8800
+智能医疗	zhi neng yi liao	8800
+智能教育	zhi neng jiao yu	8800
+计算机智能	ji suan ji zhi neng	8800
+机器视觉	ji qi shi jue	8800
+大模型应用	da mo xing ying yong	8800
+大模型训练	da mo xing xun lian	8800
+大模型推理	da mo xing tui li	8800
+大模型评测	da mo xing ping ce	8800
+大模型安全	da mo xing an quan	8800
+大模型幻觉	da mo xing huan jue	8800
+上下文窗口	shang xia wen chuang kou	8800
+上下文学习	shang xia wen xue xi	8800
+长文本处理	zhang wen ben chu li	8800
+提示词工程	ti shi ci gong cheng	8800
+提示词模板	ti shi ci mu ban	8800
+提示词注入	ti shi ci zhu ru	8800
+提示词优化	ti shi ci you hua	8800
+思维链	si wei lian	8800
+思维链推理	si wei lian tui li	8800
+多轮对话	duo lun dui hua	8800
+对话模型	dui hua mo xing	8800
+聊天机器人	liao tian ji qi ren	8800
+数字人	shu zi ren	8800
+虚拟人	xu ni ren	8800
+语音助手	yu yin zhu shou	8800
+图像生成	tu xiang sheng cheng	8800
+图像编辑	tu xiang bian ji	8800
+视频生成	shi pin sheng cheng	8800
+三维生成	san wei sheng cheng	8800
+音乐生成	yin yue sheng cheng	8800
+代码生成	dai ma sheng cheng	8800
+代码补全	dai ma bu quan	8800
+自动编程	zi dong bian cheng	8800
+程序合成	cheng xu he cheng	8800
+检索增强	jian suo zeng qiang	8800
+知识增强	zhi shi zeng qiang	8800
+语料库	yu liao ku	8800
+训练语料	xun lian yu liao	8800
+特征工程	te zheng gong cheng	8800
+特征向量	te zheng xiang liang	8800
+向量检索	xiang liang jian suo	8800
+相似度搜索	xiang si du sou suo	8800
+模型蒸馏	mo xing zheng liu	8800
+模型剪枝	mo xing jian zhi	8800
+参数高效微调	can shu gao xiao wei diao	8800
+低秩适配	di zhi shi pei	8800
+监督学习	jian du xue xi	8800
+无监督学习	wu jian du xue xi	8800
+半监督学习	ban jian du xue xi	8800
+零样本学习	ling yang ben xue xi	8800
+少样本学习	shao yang ben xue xi	8800
+强化智能	qiang hua zhi neng	8800
+深度神经网络	shen du shen jing wang luo	8800
+注意力机制	zhu yi li ji zhi	8800
+自注意力	zi zhu yi li	8800
+变换器模型	bian huan qi mo xing	8800
+扩散模型	kuo san mo xing	8800
+语言模型	yu yan mo xing	8800
+视觉语言模型	shi jue yu yan mo xing	8800
+多模态模型	duo mo tai mo xing	8800
+端到端模型	duan dao duan mo xing	8800
+大规模预训练	da gui mo yu xun lian	8800
+模型可解释性	mo xing ke jie shi xing	8800
+算法偏见	suan fa pian jian	8800
+数据隐私	shu ju yin si	8800
+人工智能治理	ren gong zhi neng zhi li	8800
+人工智能伦理	ren gong zhi neng lun li	8800
+安全对齐	an quan dui qi	8800
+模型对齐	mo xing dui qi	8800
+内容审核	nei rong shen he	8800
+深度合成	shen du he cheng	8800
+合成数据	he cheng shu ju	8800
+人工智能芯片	ren gong zhi neng xin pian	8800
+算力中心	suan li zhong xin	8800
+算力网络	suan li wang luo	8800
+算力调度	suan li diao du	8800
+异构计算	yi gou ji suan	8800
+边缘智能	bian yuan zhi neng	8800
+端侧智能	duan ce zhi neng	8800
+AIGC	aigc	8800
+ChatGPT	chat gpt	8800
+DeepSeek	deep seek	8800
+OpenAI	open ai	8800
+Claude	claude	8800
+Gemini	gemini	8800
+GPU	gpu	8800
+人工智能	ren gong zhi neng	2048
+语言	yu yan	8292
+训练	xun lian	7870
+模型	mo xing	6264
+智能	zhi neng	5011
+神经	shen jing	4858
+生成	sheng cheng	4696
+视觉	shi jue	4683
+语音	yu yin	4081
+推理	tui li	2050
+神经病	shen jing bing	2049
+智能手机	zhi neng shou ji	2046
+语言学	yu yan xue	2045
+语言学家	yu yan xue jia	2043
+训练营	xun lian ying	2042
+神经元	shen jing yuan	2041
+训练班	xun lian ban	2039
+神经系统	shen jing xi tong	2038
+向量	xiang liang	2036
+官方语言	guan fang yu yan	2035
+训练有素	xun lian you su	2034
+视觉效果	shi jue xiao guo	2032
+神经质	shen jing zhi	2031
+训练场	xun lian chang	2029
+神经性	shen jing xing	2028
+发神经	fa shen jing	2027
+智能化	zhi neng hua	2025
+多种语言	duo zhong yu yan	2024
+共同语言	gong tong yu yan	2022
+语言表达	yu yan biao da	2021
+中枢神经	zhong shu shen jing	2020
+军事训练	jun shi xun lian	2018
+生成器	sheng cheng qi	2017
+汉语言	han yu yan	2015
+语言障碍	yu yan zhang ai	2014
+民族语言	min zu yu yan	2013
+神经外科	shen jing wai ke	2011
+智能型	zhi neng xing	2010
+脑神经	nao shen jing	2008
+自然语言	zi ran yu yan	2007
+训练团	xun lian tuan	2006
+视觉艺术	shi jue yi shu	2004
+神经细胞	shen jing xi bao	2003
+一个	yi ge	8799
+我们	wo men	8797
+中国	zhong guo	8796
+他们	ta men	8794
+没有	mei you	8793
+可以	ke yi	8792
+什么	shen me	8790
+这个	zhe ge	8789
+国家	guo jia	8787
+自己	zi ji	8786
+问题	wen ti	8785
+美国	mei guo	8783
+因为	yin wei	8782
+不是	bu shi	8780
+现在	xian zai	8779
+怎么	zen me	8778
+就是	jiu shi	8776
+已经	yi jing	8775
+这些	zhe xie	8773
+发展	fa zhan	8772
+开始	kai shi	8771
+这样	zhe yang	8769
+公司	gong si	8768
+政府	zheng fu	8766
+可能	ke neng	8765
+工作	gong zuo	8764
+社会	she hui	8762
+如果	ru guo	8761
+知道	zhi dao	8759
+进行	jin xing	8758
+世界	shi jie	8757
+日本	ri ben	8755
+不能	bu neng	8754
+计划	ji hua	8752
+成为	cheng wei	8751
+时间	shi jian	8750
+认为	ren wei	8748
+需要	xu yao	8747
+国际	guo ji	8745
+地区	di qu	8744
+时候	shi hou	8743
+使用	shi yong	8741
+经济	jing ji	8740
+活动	huo dong	8738
+但是	dan shi	8737
+历史	li shi	8736
+应该	ying gai	8734
+政治	zheng zhi	8733
+不会	bu hui	8731
+以及	yi ji	8730
+情况	qing kuang	8729
+真的	zhen de	8727
+组织	zu zhi	8726
+人民	ren min	8724
+其他	qi ta	8723
+发生	fa sheng	8722
+主要	zhu yao	8720
+地方	di fang	8719
+网站	wang zhan	8717
+香港	xiang gang	8716
+生活	sheng huo	8715
+这种	zhe zhong	8713
+你们	ni men	8712
+通过	tong guo	8710
+为了	wei le	8709
+同时	tong shi	8708
+必须	bi xu	8706
+所以	suo yi	8705
+所有	suo you	8703
+包括	bao kuo	8702
+发现	fa xian	8701
+还有	hai you	8699
+一些	yi xie	8698
+为什么	wei shen me	8696
+全国	quan guo	8695
+决定	jue ding	8694
+出现	chu xian	8692
+如何	ru he	8691
+还是	hai shi	8689
+一样	yi yang	8688
+企业	qi ye	8687
+其中	qi zhong	8685
+北京	bei jing	8684
+觉得	jue de	8682
+重要	zhong yao	8681
+影响	ying xiang	8680
+喜欢	xi huan	8678
+文化	wen hua	8677
+起来	qi lai	8675
+不过	bu guo	8674
+作为	zuo wei	8673
+学生	xue sheng	8671
+希望	xi wang	8670
+技术	ji shu	8668
+提供	ti gong	8667
+要求	yao qiu	8666
+那么	na me	8664
+一定	yi ding	8663
+不同	bu tong	8661
+电影	dian ying	8660
+不要	bu yao	8659
+关系	guan xi	8657
+只是	zhi shi	8656
+研究	yan jiu	8654
+这么	zhe me	8653
+出来	chu lai	8652
+根据	gen ju	8650
+系统	xi tong	8649
+任何	ren he	8647
+只有	zhi you	8646
+服务	fu wu	8645
+结果	jie guo	8643
+这里	zhe li	8642
+一起	yi qi	8640
+因此	yin ci	8639
+游戏	you xi	8638
+看到	kan dao	8636
+虽然	sui ran	8635
+中心	zhong xin	8633
+人们	ren men	8632
+今天	jin tian	8631
+代表	dai biao	8629
+支持	zhi chi	8628
+而且	er qie	8626
+一直	yi zhi	8625
+城市	cheng shi	8624
+市场	shi chang	8622
+最后	zui hou	8621
+继续	ji xu	8619
+东西	dong xi	8618
+之后	zhi hou	8617
+内容	nei rong	8615
+对于	dui yu	8614
+教育	jiao yu	8612
+特别	te bie	8611
+由于	you yu	8610
+获得	huo de	8608
+许多	xu duo	8607
+两个	liang ge	8605
+大学	da xue	8604
+学校	xue xiao	8603
+方式	fang shi	8601
+朋友	peng you	8600
+目前	mu qian	8598
+表示	biao shi	8597
+资料	zi liao	8596
+这是	zhe shi	8594
+一种	yi zhong	8593
+关于	guan yu	8591
+孩子	hai zi	8590
+安全	an quan	8589
+大家	da jia	8587
+运动	yun dong	8586
+部分	bu fen	8584
+很多	hen duo	8583
+非常	fei chang	8582
+台湾	tai wan	8580
+建设	jian she	8579
+新闻	xin wen	8577
+有人	you ren	8576
+自由	zi you	8575
+参加	can jia	8573
+当时	dang shi	8572
+过去	guo qu	8570
+那些	na xie	8569
+产品	chan pin	8568
+会议	hui yi	8566
+单位	dan wei	8565
+完全	wan quan	8563
+建立	jian li	8562
+得到	de dao	8561
+有关	you guan	8559
+生产	sheng chan	8558
+相关	xiang guan	8556
+国内	guo nei	8555
+委员会	wei yuan hui	8554
+然后	ran hou	8552
+选择	xuan ze	8551
+那个	na ge	8549
+一切	yi qie	8548
+一次	yi ci	8547
+人口	ren kou	8545
+无法	wu fa	8544
+管理	guan li	8542
+能够	neng gou	8541
+记者	ji zhe	8540
+进入	jin ru	8538
+领导	ling dao	8537
+上海	shang hai	8535
+个人	ge ren	8534
+一般	yi ban	8533
+完成	wan cheng	8531
+环境	huan jing	8530
+网络	wang luo	8528
+一点	yi dian	8527
+保护	bao hu	8526
+提出	ti chu	8524
+民主	min zhu	8523
+甚至	shen zhi	8521
+事件	shi jian	8520
+当然	dang ran	8519
+机构	ji gou	8517
+法律	fa lv	8516
+视频	shi pin	8514
+过程	guo cheng	8513
+准备	zhun bei	8512
+直接	zhi jie	8510
+设计	she ji	8509
+之间	zhi jian	8507
+事情	shi qing	8506
+人员	ren yuan	8505
+信息	xin xi	8503
+哪里	na li	8502
+存在	cun zai	8500
+学习	xue xi	8499
+总统	zong tong	8498
+成功	cheng gong	8496
+或者	huo zhe	8495
+战争	zhan zheng	8493
+报告	bao gao	8492
+最大	zui da	8491
+比较	bi jiao	8489
+照片	zhao pian	8488
+英国	ying guo	8486
+接受	jie shou	8485
+改变	gai bian	8484
+政策	zheng ce	8482
+方法	fang fa	8481
+时期	shi qi	8479
+正在	zheng zai	8478
+科技	ke ji	8477
+项目	xiang mu	8475
+一下	yi xia	8474
+不断	bu duan	8472
+以后	yi hou	8471
+合作	he zuo	8470
+故事	gu shi	8468
+方面	fang mian	8467
+有些	you xie	8465
+认识	ren shi	8464
+资源	zi yuan	8463
+集团	ji tuan	8461
+专业	zhuan ye	8460
+之前	zhi qian	8458
+任务	ren wu	8457
+原因	yuan yin	8456
+参与	can yu	8454
+女人	nv ren	8453
+小时	xiao shi	8451
+成立	cheng li	8450
+是否	shi fou	8449
+科学	ke xue	8447
+规定	gui ding	8446
+举行	ju xing	8444
+了解	liao jie	8443
+处理	chu li	8442
+多少	duo shao	8440
+感觉	gan jue	8439
+拥有	yong you	8437
+时代	shi dai	8436
+电话	dian hua	8435
+能力	neng li	8433
+艺术	yi shu	8432
+解决	jie jue	8430
+传统	chuan tong	8429
+全球	quan qiu	8428
+其实	qi shi	8426
+机会	ji hui	8425
+独立	du li	8423
+行为	xing wei	8422
+超过	chao guo	8421
+韩国	han guo	8419
+产生	chan sheng	8418
+人类	ren lei	8416
+分析	fen xi	8415
+各种	ge zhong	8414
+告诉	gao su	8412
+它们	ta men	8411
+手机	shou ji	8409
+投资	tou zi	8408
+期间	qi jian	8407
+法国	fa guo	8405
+目标	mu biao	8404
+真正	zhen zheng	8402
+调查	diao cha	8401
+世纪	shi ji	8400
+严重	yan zhong	8398
+增加	zeng jia	8397
+帮助	bang zhu	8395
+并且	bing qie	8394
+行动	xing dong	8393
+造成	zao cheng	8391
+作品	zuo pin	8390
+受到	shou dao	8388
+基础	ji chu	8387
+家庭	jia ting	8386
+工业	gong ye	8384
+相信	xiang xin	8383
+第一	di yi	8381
+负责	fu ze	8380
+具有	ju you	8379
+实现	shi xian	8377
+怎样	zen yang	8376
+控制	kong zhi	8374
+根本	gen ben	8373
+男人	nan ren	8371
+结束	jie shu	8370
+努力	nu li	8369
+只要	zhi yao	8367
+如此	ru ci	8366
+媒体	mei ti	8364
+才能	cai neng	8363
+整个	zheng ge	8362
+来自	lai zi	8360
+经过	jing guo	8359
+群众	qun zhong	8357
+选举	xuan ju	8356
+以下	yi xia	8355
+利用	li yong	8353
+制度	zhi du	8352
+我国	wo guo	8350
+欧洲	ou zhou	8349
+每个	mei ge	8348
+比赛	bi sai	8346
+表现	biao xian	8345
+达到	da dao	8343
+主席	zhu xi	8342
+以上	yi shang	8341
+以来	yi lai	8339
+几个	ji ge	8338
+办法	ban fa	8336
+图片	tu pian	8335
+年代	nian dai	8334
+开发	kai fa	8332
+成员	cheng yuan	8331
+未来	wei lai	8329
+革命	ge ming	8328
+价值	jia zhi	8327
+基本	ji ben	8325
+导致	dao zhi	8324
+注意	zhu yi	8322
+的话	de hua	8321
+离开	li kai	8320
+除了	chu le	8318
+加入	jia ru	8317
+反对	fan dui	8315
+发布	fa bu	8314
+属于	shu yu	8313
+建筑	jian zhu	8311
+形成	xing cheng	8310
+数据	shu ju	8308
+行政	xing zheng	8307
+银行	yin hang	8306
+音乐	yin yue	8304
+之一	zhi yi	8303
+变化	bian hua	8301
+增长	zeng zhang	8300
+官方	guan fang	8299
+德国	de guo	8297
+是不是	shi bu shi	8296
+显示	xian shi	8294
+经验	jing yan	8293
+专家	zhuan jia	8290
+价格	jia ge	8289
+医院	yi yuan	8287
+建议	jian yi	8286
+怎么样	zen me yang	8285
+指出	zhi chu	8283
+权利	quan li	8282
+条件	tiao jian	8280
+来说	lai shuo	8279
+标准	biao zhun	8278
+说明	shuo ming	8276
+这次	zhe ci	8275
+部门	bu men	8273
+可是	ke shi	8272
+改革	gai ge	8271
+母亲	mu qin	8269
+系列	xi lie	8268
+联系	lian xi	8266
+警察	jing cha	8265
+记录	ji lu	8264
+不仅	bu jin	8262
+人物	ren wu	8261
+别人	bie ren	8259
+后来	hou lai	8258
+女性	nv xing	8257
+意见	yi jian	8255
+执行	zhi xing	8254
+最高	zui gao	8252
+机关	ji guan	8251
+用户	yong hu	8250
+确定	que ding	8248
+解释	jie shi	8247
+中央	zhong yang	8245
+以前	yi qian	8244
+俄罗斯	e luo si	8243
+先生	xian sheng	8241
+关注	guan zhu	8240
+分别	fen bie	8238
+区域	qu yu	8237
+工程	gong cheng	8236
+父亲	fu qin	8234
+理论	li lun	8233
+简单	jian dan	8231
+结构	jie gou	8230
+综合	zong he	8229
+老师	lao shi	8227
+讨论	tao lun	8226
+证明	zheng ming	8224
+采用	cai yong	8223
+一位	yi wei	8222
+不到	bu dao	8220
+儿子	er zi	8219
+全部	quan bu	8217
+公开	gong kai	8216
+发表	fa biao	8215
+宣布	xuan bu	8213
+当地	dang di	8212
+最近	zui jin	8210
+社区	she qu	8209
+自然	zi ran	8208
+那里	na li	8206
+今年	jin nian	8205
+介绍	jie shao	8203
+以为	yi wei	8202
+功能	gong neng	8201
+坚持	jian chi	8199
+学院	xue yuan	8198
+意思	yi si	8196
+找到	zhao dao	8195
+提高	ti gao	8194
+范围	fan wei	8192
+例如	li ru	8191
+共同	gong tong	8189
+农业	nong ye	8188
+力量	li liang	8187
+取得	qu de	8185
+同样	tong yang	8184
+土地	tu di	8182
+实施	shi shi	8181
+旅游	lv you	8180
+正式	zheng shi	8178
+民族	min zu	8177
+组成	zu cheng	8175
+一天	yi tian	8174
+保证	bao zheng	8173
+健康	jian kang	8171
+大量	da liang	8170
+实际	shi ji	8168
+容易	rong yi	8167
+开放	kai fang	8166
+持续	chi xu	8164
+权力	quan li	8163
+永远	yong yuan	8161
+消息	xiao xi	8160
+然而	ran er	8159
+电视	dian shi	8157
+看看	kan kan	8156
+精神	jing shen	8154
+考虑	kao lv	8153
+重点	zhong dian	8152
+位于	wei yu	8150
+免费	mian fei	8149
+印度	yin du	8147
+变成	bian cheng	8146
+另外	ling wai	8145
+声音	sheng yin	8143
+女儿	nv er	8142
+妈妈	ma ma	8140
+应用	ying yong	8139
+想要	xiang yao	8138
+明白	ming bai	8136
+最终	zui zhong	8135
+汽车	qi che	8133
+相当	xiang dang	8132
+空间	kong jian	8131
+终于	zhong yu	8129
+美元	mei yuan	8128
+设备	she bei	8126
+足球	zu qiu	8125
+里面	li mian	8124
+领域	ling yu	8122
+产业	chan ye	8121
+作用	zuo yong	8119
+几乎	ji hu	8118
+分钟	fen zhong	8117
+十分	shi fen	8115
+回来	hui lai	8114
+意义	yi yi	8112
+文章	wen zhang	8111
+生命	sheng ming	8110
+面积	mian ji	8108
+亚洲	ya zhou	8107
+原来	yuan lai	8105
+名字	ming zi	8104
+唯一	wei yi	8103
+居民	ju min	8101
+所谓	suo wei	8100
+曾经	ceng jing	8098
+真是	zhen shi	8097
+结合	jie he	8096
+统一	tong yi	8094
+而是	er shi	8093
+肯定	ken ding	8091
+三个	san ge	8090
+人士	ren shi	8089
+军队	jun dui	8087
+大陆	da lu	8086
+官员	guan yuan	8084
+引起	yin qi	8083
+明显	ming xian	8082
+现场	xian chang	8080
+现象	xian xiang	8079
+目的	mu di	8077
+确实	que shi	8076
+稳定	wen ding	8075
+重新	chong xin	8073
+加强	jia qiang	8072
+强调	qiang diao	8070
+总是	zong shi	8069
+教师	jiao shi	8068
+模式	mo shi	8066
+死亡	si wang	8065
+职业	zhi ye	8063
+联合	lian he	8062
+西方	xi fang	8061
+也许	ye xu	8059
+军事	jun shi	8058
+宣传	xuan chuan	8056
+带来	dai lai	8055
+平台	ping tai	8054
+更加	geng jia	8052
+每天	mei tian	8051
+电子	dian zi	8049
+节目	jie mu	8048
+阅读	yue du	8047
+一年	yi nian	8045
+一条	yi tiao	8044
+事实	shi shi	8042
+公民	gong min	8041
+实行	shi xing	8040
+小说	xiao shuo	8038
+感到	gan dao	8037
+愿意	yuan yi	8035
+有没有	you mei you	8034
+来源	lai yuan	8033
+现代	xian dai	8031
+理解	li jie	8030
+知识	zhi shi	8028
+行业	hang ye	8027
+责任	ze ren	8026
+长期	chang qi	8024
+飞机	fei ji	8023
+下来	xia lai	8021
+保持	bao chi	8020
+内部	nei bu	8019
+农民	nong min	8017
+减少	jian shao	8016
+失去	shi qu	8014
+女孩	nv hai	8013
+形式	xing shi	8012
+报道	bao dao	8010
+攻击	gong ji	8009
+最好	zui hao	8007
+机场	ji chang	8006
+欢迎	huan ying	8005
+状态	zhuang tai	8003
+看见	kan jian	8002
+真实	zhen shi	8000
+经历	jing li	7999
+至少	zhi shao	7998
+规模	gui mo	7996
+进一步	jin yi bu	7995
+错误	cuo wu	7993
+交易	jiao yi	7992
+仍然	reng ran	7991
+动物	dong wu	7989
+反应	fan ying	7988
+只能	zhi neng	7986
+思想	si xiang	7985
+承认	cheng ren	7984
+担心	dan xin	7982
+此外	ci wai	7981
+清楚	qing chu	7979
+积极	ji ji	7978
+经常	jing chang	7977
+经营	jing ying	7975
+绝对	jue dui	7974
+苏联	su lian	7972
+谢谢	xie xie	7971
+身体	shen ti	7970
+那样	na yang	7968
+采取	cai qu	7967
+一名	yi ming	7965
+不想	bu xiang	7964
+体育	ti yu	7963
+农村	nong cun	7961
+分享	fen xiang	7960
+到底	dao di	7958
+同意	tong yi	7957
+和平	he ping	7956
+好像	hao xiang	7954
+尤其	you qi	7953
+尽管	jin guan	7951
+方案	fang an	7950
+每年	mei nian	7949
+第一次	di yi ci	7947
+观点	guan dian	7946
+青年	qing nian	7944
+公布	gong bu	7943
+创新	chuang xin	7942
+创造	chuang zao	7940
+协议	xie yi	7939
+即使	ji shi	7937
+在于	zai yu	7936
+外国	wai guo	7935
+她们	ta men	7933
+工具	gong ju	7932
+总理	zong li	7930
+无论	wu lun	7929
+晚上	wan shang	7928
+正常	zheng chang	7926
+类似	lei si	7925
+设立	she li	7923
+资金	zi jin	7922
+限制	xian zhi	7921
+一场	yi chang	7919
+不再	bu zai	7918
+交通	jiao tong	7916
+利益	li yi	7915
+制作	zhi zuo	7914
+加拿大	jia na da	7912
+压力	ya li	7911
+宪法	xian fa	7909
+方向	fang xiang	7908
+有点	you dian	7907
+电脑	dian nao	7905
+破坏	po huai	7904
+突然	tu ran	7902
+规律	gui lv	7901
+说话	shuo hua	7900
+部长	bu zhang	7898
+金融	jin rong	7897
+不了	bu liao	7895
+不错	bu cuo	7894
+中共	zhong gong	7893
+主任	zhu ren	7891
+举办	ju ban	7890
+交流	jiao liu	7888
+作者	zuo zhe	7887
+制造	zhi zao	7886
+医疗	yi liao	7884
+原则	yuan ze	7883
+同志	tong zhi	7881
+团体	tuan ti	7880
+委员	wei yuan	7879
+宗教	zong jiao	7877
+意识	yi shi	7876
+正确	zheng que	7874
+版本	ban ben	7873
+看来	kan lai	7872
+逐渐	zhu jian	7869
+销售	xiao shou	7867
+附近	fu jin	7866
+不少	bu shao	7865
+人数	ren shu	7863
+儿童	er tong	7862
+允许	yun xu	7860
+出版	chu ban	7859
+回到	hui dao	7858
+国务院	guo wu yuan	7856
+失败	shi bai	7855
+快乐	kuai le	7853
+战略	zhan lve	7852
+推动	tui dong	7851
+教授	jiao shou	7849
+有效	you xiao	7848
+程度	cheng du	7846
+编辑	bian ji	7845
+联盟	lian meng	7844
+质量	zhi liang	7842
+资本	zi ben	7841
+还要	hai yao	7839
+阶段	jie duan	7838
+业务	ye wu	7837
+今日	jin ri	7835
+体系	ti xi	7834
+全面	quan mian	7832
+协会	xie hui	7831
+双方	shuang fang	7830
+困难	kun nan	7828
+广告	guang gao	7827
+态度	tai du	7825
+政权	zheng quan	7824
+数字	shu zi	7823
+检查	jian cha	7821
+武器	wu qi	7820
+水平	shui ping	7818
+状况	zhuang kuang	7817
+申请	shen qing	7816
+第二	di er	7814
+调整	tiao zheng	7813
+购买	gou mai	7811
+身上	shen shang	7810
+需求	xu qiu	7809
+首先	shou xian	7807
+危险	wei xian	7806
+商业	shang ye	7804
+大会	da hui	7803
+妇女	fu nv	7802
+左右	zuo you	7800
+广场	guang chang	7799
+拒绝	ju jue	7797
+治疗	zhi liao	7796
+现实	xian shi	7795
+监督	jian du	7793
+网址	wang zhi	7792
+规划	gui hua	7790
+速度	su du	7789
+针对	zhen dui	7788
+面对	mian dui	7786
+主题	zhu ti	7785
+事业	shi ye	7783
+作家	zuo jia	7782
+再次	zai ci	7781
+创作	chuang zuo	7779
+及其	ji qi	7778
+发行	fa xing	7776
+召开	zhao kai	7775
+国外	guo wai	7774
+多年	duo nian	7772
+平均	ping jun	7771
+广州	guang zhou	7769
+数量	shu liang	7768
+文件	wen jian	7767
+明天	ming tian	7765
+评论	ping lun	7764
+软件	ruan jian	7762
+通常	tong chang	7761
+部队	bu dui	7760
+铁路	tie lu	7758
+难道	nan dao	7757
+不用	bu yong	7755
+不管	bu guan	7754
+似乎	si hu	7753
+兄弟	xiong di	7751
+公里	gong li	7750
+具体	ju ti	7748
+办公室	ban gong shi	7747
+妻子	qi zi	7746
+实在	shi zai	7744
+年轻	nian qing	7743
+开展	kai zhan	7741
+律师	lv shi	7740
+战斗	zhan dou	7739
+放弃	fang qi	7737
+父母	fu mu	7736
+称为	cheng wei	7734
+英语	ying yu	7733
+角色	jue se	7732
+记得	ji de	7730
+越来越	yue lai yue	7729
+过来	guo lai	7727
+重大	zhong da	7726
+于是	yu shi	7725
+人权	ren quan	7723
+促进	cu jin	7722
+关心	guan xin	7720
+其它	qi ta	7719
+前往	qian wang	7718
+医生	yi sheng	7716
+各国	ge guo	7715
+各地	ge di	7713
+回家	hui jia	7712
+广泛	guang fan	7711
+感谢	gan xie	7709
+直到	zhi dao	7708
+相同	xiang tong	7706
+维护	wei hu	7705
+论坛	lun tan	7704
+道路	dao lu	7702
+停止	ting zhi	7701
+先进	xian jin	7699
+公共	gong gong	7698
+共产党	gong chan dang	7697
+危机	wei ji	7695
+去年	qu nian	7694
+取消	qu xiao	7692
+地位	di wei	7691
+基地	ji di	7690
+多数	duo shu	7688
+寻找	xun zhao	7687
+工人	gong ren	7685
+广东	guang dong	7684
+影片	ying pian	7683
+成绩	cheng ji	7681
+批评	pi ping	7680
+担任	dan ren	7678
+按照	an zhao	7677
+改善	gai shan	7676
+效果	xiao guo	7674
+文学	wen xue	7673
+更新	geng xin	7671
+有限公司	you xian gong si	7670
+毕业	bi ye	7669
+统计	tong ji	7667
+风险	feng xian	7666
+下载	xia zai	7664
+丰富	feng fu	7663
+为何	wei he	7662
+位置	wei zhi	7660
+值得	zhi de	7659
+变得	bian de	7657
+回答	hui da	7656
+威胁	wei xie	7655
+必要	bi yao	7653
+恢复	hui fu	7652
+或许	huo xu	7650
+推出	tui chu	7649
+朝鲜	chao xian	7648
+统治	tong zhi	7646
+胜利	sheng li	7645
+设置	she zhi	7643
+随着	sui zhe	7642
+一家	yi jia	7641
+一部分	yi bu fen	7639
+主张	zhu zhang	7638
+伟大	wei da	7636
+团队	tuan dui	7635
+安排	an pai	7634
+怎么办	zen me ban	7632
+我要	wo yao	7631
+收入	shou ru	7629
+是因为	shi yin wei	7628
+普通	pu tong	7627
+有时	you shi	7625
+本来	ben lai	7624
+本身	ben shen	7622
+毛泽东	mao ze dong	7621
+规则	gui ze	7620
+贸易	mao yi	7618
+这位	zhe wei	7617
+面临	mian lin	7615
+一张	yi zhang	7614
+依据	yi ju	7613
+关键	guan jian	7611
+劳动	lao dong	7610
+发出	fa chu	7608
+合法	he fa	7607
+听到	ting dao	7606
+成长	cheng zhang	7604
+扩大	kuo da	7603
+推荐	tui jian	7601
+样子	yang zi	7600
+漂亮	piao liang	7599
+相对	xiang dui	7597
+秘密	mi mi	7596
+程序	cheng xu	7594
+运用	yun yong	7593
+适合	shi he	7592
+避免	bi mian	7590
+链接	lian jie	7589
+下午	xia wu	7587
+下去	xia qu	7586
+不可	bu ke	7585
+不够	bu gou	7583
+习惯	xi guan	7582
+书记	shu ji	7580
+公众	gong zhong	7579
+公园	gong yuan	7578
+分布	fen bu	7576
+地球	di qiu	7575
+大型	da xing	7573
+巨大	ju da	7572
+干部	gan bu	7571
+快速	kuai su	7569
+敌人	di ren	7568
+民众	min zhong	7566
+特色	te se	7565
+男子	nan zi	7564
+背景	bei jing	7562
+著名	zhu ming	7561
+见到	jian dao	7559
+认真	ren zhen	7558
+身份	shen fen	7557
+通知	tong zhi	7555
+专门	zhuan men	7554
+中学	zhong xue	7552
+互联网	hu lian wang	7551
+体现	ti xian	7550
+兴趣	xing qu	7548
+几天	ji tian	7547
+复杂	fu za	7545
+女子	nv zi	7544
+对方	dui fang	7543
+少数	shao shu	7541
+打开	da kai	7540
+指导	zhi dao	7538
+明确	ming que	7537
+来到	lai dao	7536
+比如	bi ru	7534
+法院	fa yuan	7533
+犯罪	fan zui	7531
+理由	li you	7530
+结婚	jie hun	7529
+缺乏	que fa	7527
+联合国	lian he guo	7526
+苹果	ping guo	7524
+表演	biao yan	7523
+计算	ji suan	7521
+货币	huo bi	7520
+邀请	yao qing	7519
+高兴	gao xing	7517
+不得	bu de	7516
+争取	zheng qu	7514
+传播	chuan bo	7513
+体制	ti zhi	7512
+南京	nan jing	7510
+否则	fou ze	7509
+基金	ji jin	7507
+学者	xue zhe	7506
+很大	hen da	7505
+很快	hen kuai	7503
+我会	wo hui	7502
+杂志	za zhi	7500
+材料	cai liao	7499
+核心	he xin	7498
+满足	man zu	7496
+特殊	te shu	7495
+电视台	dian shi tai	7493
+移民	yi min	7492
+类型	lei xing	7491
+进步	jin bu	7489
+连续	lian xu	7488
+鼓励	gu li	7486
+中华	zhong hua	7485
+人生	ren sheng	7484
+从事	cong shi	7482
+优秀	you xiu	7481
+刚刚	gang gang	7479
+制定	zhi ding	7478
+员工	yuan gong	7477
+因素	yin su	7475
+家里	jia li	7474
+强烈	qiang lie	7472
+手段	shou duan	7471
+挑战	tiao zhan	7470
+推进	tui jin	7468
+措施	cuo shi	7467
+整体	zheng ti	7465
+文明	wen ming	7464
+显然	xian ran	7463
+概念	gai nian	7461
+特点	te dian	7460
+看着	kan zhe	7458
+等等	deng deng	7457
+纽约	niu yue	7456
+美丽	mei li	7454
+老婆	lao po	7453
+老板	lao ban	7451
+英文	ying wen	7450
+警方	jing fang	7449
+访问	fang wen	7447
+评价	ping jia	7446
+贡献	gong xian	7444
+财产	cai chan	7443
+距离	ju li	7442
+那种	na zhong	7440
+重视	zhong shi	7439
+食品	shi pin	7437
+不好	bu hao	7436
+优势	you shi	7435
+伤害	shang hai	7433
+保障	bao zhang	7432
+出口	chu kou	7430
+加上	jia shang	7429
+博士	bo shi	7428
+害怕	hai pa	7426
+对象	dui xiang	7425
+感受	gan shou	7423
+投入	tou ru	7422
+最佳	zui jia	7421
+法规	fa gui	7419
+漫画	man hua	7418
+物质	wu zhi	7416
+生物	sheng wu	7415
+移动	yi dong	7414
+翻译	fan yi	7412
+英雄	ying xiong	7411
+表达	biao da	7409
+设施	she shi	7408
+队伍	dui wu	7407
+中文	zhong wen	7405
+人人	ren ren	7404
+开心	kai xin	7402
+更好	geng hao	7401
+最新	zui xin	7400
+案件	an jian	7398
+男性	nan xing	7397
+福利	fu li	7395
+自动	zi dong	7394
+证据	zheng ju	7393
+路线	lu xian	7391
+身边	shen bian	7390
+迅速	xun su	7388
+遇到	yu dao	7387
+高级	gao ji	7386
+一件	yi jian	7384
+一段	yi duan	7383
+万元	wan yuan	7381
+主义	zhu yi	7380
+享受	xiang shou	7379
+人才	ren cai	7377
+亿元	yi yuan	7376
+从而	cong er	7374
+估计	gu ji	7373
+冲突	chong tu	7372
+发挥	fa hui	7370
+受伤	shou shang	7369
+命令	ming ling	7367
+哪个	na ge	7366
+商品	shang pin	7365
+国民	guo min	7363
+国民党	guo min dang	7362
+境内	jing nei	7360
+大部分	da bu fen	7359
+学会	xue hui	7358
+当年	dang nian	7356
+文字	wen zi	7355
+海外	hai wai	7353
+消费	xiao fei	7352
+眼睛	yan jing	7351
+网友	wang you	7349
+至今	zhi jin	7348
+西班牙	xi ban ya	7346
+课程	ke cheng	7345
+资格	zi ge	7344
+超级	chao ji	7342
+难以	nan yi	7341
+首次	shou ci	7339
+之中	zhi zhong	7338
+修改	xiu gai	7337
+培训	pei xun	7335
+如今	ru jin	7334
+山东	shan dong	7332
+帝国	di guo	7331
+打击	da ji	7330
+推广	tui guang	7328
+提升	ti sheng	7327
+新加坡	xin jia po	7325
+机制	ji zhi	7324
+机器	ji qi	7323
+爆发	bao fa	7321
+留下	liu xia	7320
+社会主义	she hui zhu yi	7318
+竞争	jing zheng	7317
+第一个	di yi ge	7316
+紧张	jin zhang	7314
+纪念	ji nian	7313
+自身	zi shen	7311
+运行	yun xing	7310
+集中	ji zhong	7309
+面前	mian qian	7307
+食物	shi wu	7306
+不知	bu zhi	7304
+不足	bu zu	7303
+东京	dong jing	7302
+东北	dong bei	7300
+事务	shi wu	7299
+充满	chong man	7297
+出去	chu qu	7296
+区别	qu bie	7295
+反映	fan ying	7293
+名称	ming cheng	7292
+吸引	xi yin	7290
+哥哥	ge ge	7289
+处于	chu yu	7288
+娱乐	yu le	7286
+实验	shi yan	7285
+家人	jia ren	7283
+展开	zhan kai	7282
+形象	xing xiang	7281
+打算	da suan	7279
+支付	zhi fu	7278
+收到	shou dao	7276
+教学	jiao xue	7275
+斗争	dou zheng	7274
+昨天	zuo tian	7272
+机械	ji xie	7271
+澳门	ao men	7269
+用于	yong yu	7268
+符合	fu he	7267
+粮食	liang shi	7265
+给予	ji yu	7264
+维持	wei chi	7262
+观众	guan zhong	7261
+这件	zhe jian	7260
+非洲	fei zhou	7258
+上面	shang mian	7257
+两年	liang nian	7255
+发动	fa dong	7254
+同学	tong xue	7253
+团结	tuan jie	7251
+天津	tian jin	7250
+好好	hao hao	7248
+实际上	shi ji shang	7247
+客户	ke hu	7246
+小学	xiao xue	7244
+强大	qiang da	7243
+彻底	che di	7241
+想到	xiang dao	7240
+批准	pi zhun	7239
+早上	zao shang	7237
+武汉	wu han	7236
+比例	bi li	7234
+生态	sheng tai	7233
+观察	guan cha	7232
+规范	gui fan	7230
+运输	yun shu	7229
+降低	jiang di	7227
+非法	fei fa	7226
+风格	feng ge	7225
+中华人民共和国	zhong hua ren min gong he guo	7223
+使得	shi de	7222
+出发	chu fa	7220
+各个	ge ge	7219
+各位	ge wei	7218
+听说	ting shuo	7216
+培养	pei yang	7215
+天下	tian xia	7213
+完美	wan mei	7212
+并非	bing fei	7211
+心里	xin li	7209
+怀疑	huai yi	7208
+性质	xing zhi	7206
+想法	xiang fa	7205
+成本	cheng ben	7204
+描述	miao shu	7202
+操作	cao zuo	7201
+正是	zheng shi	7199
+注册	zhu ce	7198
+测试	ce shi	7197
+私人	si ren	7195
+网上	wang shang	7194
+考试	kao shi	7192
+而已	er yi	7191
+议员	yi yuan	7190
+资产	zi chan	7188
+一旦	yi dan	7187
+一项	yi xiang	7185
+从来	cong lai	7184
+升级	sheng ji	7183
+大约	da yue	7181
+完整	wan zheng	7180
+审查	shen cha	7178
+就业	jiu ye	7177
+情绪	qing xu	7176
+消失	xiao shi	7174
+深圳	shen zhen	7173
+游行	you xing	7171
+直播	zhi bo	7170
+确保	que bao	7169
+禁止	jin zhi	7167
+良好	liang hao	7166
+衣服	yi fu	7164
+领导人	ling dao ren	7163
+一步	yi bu	7162
+下面	xia mian	7160
+东方	dong fang	7159
+众多	zhong duo	7157
+依然	yi ran	7156
+公平	gong ping	7155
+包含	bao han	7153
+卫生	wei sheng	7152
+国王	guo wang	7150
+多么	duo me	7149
+太阳	tai yang	7148
+实践	shi jian	7146
+少女	shao nv	7145
+工厂	gong chang	7143
+心理	xin li	7142
+忘记	wang ji	7141
+或是	huo shi	7139
+投票	tou piao	7138
+接触	jie chu	7136
+放在	fang zai	7135
+日子	ri zi	7134
+构成	gou cheng	7132
+某些	mou xie	7131
+民间	min jian	7129
+爱情	ai qing	7128
+特征	te zheng	7127
+石油	shi you	7125
+立即	li ji	7124
+立法	li fa	7122
+自我	zi wo	7121
+道德	dao de	7120
+高度	gao du	7118
+一边	yi bian	7117
+三年	san nian	7115
+不敢	bu gan	7114
+严格	yan ge	7113
+几年	ji nian	7111
+大概	da gai	7110
+审判	shen pan	7108
+尊重	zun zhong	7107
+小姐	xiao jie	7106
+少年	shao nian	7104
+巴黎	ba li	7103
+平等	ping deng	7101
+引发	yin fa	7100
+当局	dang ju	7099
+普遍	pu bian	7097
+毕竟	bi jing	7096
+爸爸	ba ba	7094
+用来	yong lai	7093
+监狱	jian yu	7092
+联邦	lian bang	7090
+说法	shuo fa	7089
+读者	du zhe	7087
+费用	fei yong	7086
+违法	wei fa	7085
+酒店	jiu dian	7083
+代理	dai li	7082
+全世界	quan shi jie	7080
+共有	gong you	7079
+关闭	guan bi	7078
+冠军	guan jun	7076
+出席	chu xi	7075
+判断	pan duan	7073
+势力	shi li	7072
+后面	hou mian	7071
+品牌	pin pai	7069
+导演	dao yan	7068
+小组	xiao zu	7066
+就要	jiu yao	7065
+年度	nian du	7064
+广播	guang bo	7062
+拍摄	pai she	7061
+有个	you ge	7059
+正义	zheng yi	7058
+疯狂	feng kuang	7057
+趋势	qu shi	7055
+足够	zu gou	7054
+转移	zhuan yi	7052
+预算	yu suan	7051
+一份	yi fen	7050
+一句	yi ju	7048
+一部	yi bu	7047
+任何人	ren he ren	7045
+作出	zuo chu	7044
+做出	zuo chu	7043
+分类	fen lei	7041
+动作	dong zuo	7040
+协助	xie zhu	7038
+四个	si ge	7037
+城镇	cheng zhen	7036
+多个	duo ge	7034
+姐姐	jie jie	7033
+家族	jia zu	7031
+就算	jiu suan	7030
+市长	shi zhang	7029
+往往	wang wang	7027
+抗议	kang yi	7026
+损失	sun shi	7024
+时刻	shi ke	7023
+本人	ben ren	7022
+来看	lai kan	7020
+标志	biao zhi	7019
+梦想	meng xiang	7017
+痛苦	tong ku	7016
+的确	di que	7015
+确认	que ren	7013
+立场	li chang	7012
+网页	wang ye	7010
+进口	jin kou	7009
+重庆	chong qing	7008
+预测	yu ce	7006
+频道	pin dao	7005
+主动	zhu dong	7003
+之外	zhi wai	7002
+信号	xin hao	7001
+像是	xiang shi	6999
+刚才	gang cai	6998
+名单	ming dan	6996
+地震	di zhen	6995
+展示	zhan shi	6994
+年龄	nian ling	6992
+应当	ying dang	6991
+当中	dang zhong	6989
+微信	wei xin	6988
+成就	cheng jiu	6987
+接近	jie jin	6985
+森林	sen lin	6984
+江苏	jiang su	6982
+涉及	she ji	6981
+演员	yan yuan	6980
+补充	bu chong	6978
+贷款	dai kuan	6977
+遭到	zao dao	6975
+阻止	zu zhi	6974
+上帝	shang di	6973
+上述	shang shu	6971
+临时	lin shi	6970
+争议	zheng yi	6968
+人大	ren da	6967
+他人	ta ren	6966
+古代	gu dai	6964
+命运	ming yun	6963
+因而	yin er	6961
+地图	di tu	6960
+地点	di dian	6959
+声明	sheng ming	6957
+多次	duo ci	6956
+始终	shi zhong	6954
+实力	shi li	6953
+小孩	xiao hai	6952
+幸福	xing fu	6950
+广大	guang da	6949
+新疆	xin jiang	6947
+演出	yan chu	6946
+澳洲	ao zhou	6945
+照顾	zhao gu	6943
+百度	bai du	6942
+竟然	jing ran	6940
+股份	gu fen	6939
+西部	xi bu	6938
+角度	jiao du	6936
+试图	shi tu	6935
+采访	cai fang	6933
+随后	sui hou	6932
+颜色	yan se	6931
+丈夫	zhang fu	6929
+不行	bu xing	6928
+中间	zhong jian	6926
+交换	jiao huan	6925
+体验	ti yan	6924
+做到	zuo dao	6922
+别的	bie de	6921
+参考	can kao	6919
+基于	ji yu	6918
+大多数	da duo shu	6917
+天天	tian tian	6915
+巴西	ba xi	6914
+思考	si kao	6912
+恐怖	kong bu	6911
+授权	shou quan	6910
+播放	bo fang	6908
+有趣	you qu	6907
+武装	wu zhuang	6905
+爆炸	bao zha	6904
+第三	di san	6903
+等待	deng dai	6901
+组合	zu he	6900
+经典	jing dian	6898
+绿色	lv se	6897
+至于	zhi yu	6896
+计算机	ji suan ji	6894
+议会	yi hui	6893
+财富	cai fu	6891
+越南	yue nan	6890
+适应	shi ying	6889
+适当	shi dang	6887
+一只	yi zhi	6886
+一群	yi qun	6884
+事实上	shi shi shang	6883
+动力	dong li	6882
+南部	nan bu	6880
+即将	ji jiang	6879
+周年	zhou nian	6877
+咱们	zan men	6876
+对待	dui dai	6875
+尝试	chang shi	6873
+居住	ju zhu	6872
+房子	fang zi	6870
+报纸	bao zhi	6869
+指挥	zhi hui	6868
+方便	fang bian	6866
+既然	ji ran	6865
+泰国	tai guo	6863
+病毒	bing du	6862
+连结	lian jie	6861
+配合	pei he	6859
+首都	shou du	6858
+黑人	hei ren	6856
+上市	shang shi	6855
+中国共产党	zhong guo gong chan dang	6854
+之下	zhi xia	6852
+互相	hu xiang	6851
+人民币	ren min bi	6849
+令人	ling ren	6848
+会员	hui yuan	6847
+俱乐部	ju le bu	6845
+公路	gong lu	6844
+出生	chu sheng	6842
+十年	shi nian	6841
+司法	si fa	6840
+天气	tian qi	6838
+完善	wan shan	6837
+定义	ding yi	6835
+家长	jia zhang	6834
+建造	jian zao	6833
+当前	dang qian	6831
+意外	yi wai	6830
+感情	gan qing	6828
+承诺	cheng nuo	6827
+污染	wu ran	6826
+没什么	mei shen me	6824
+疾病	ji bing	6823
+究竟	jiu jing	6821
+答案	da an	6820
+红色	hong se	6819
+背后	bei hou	6817
+能源	neng yuan	6816
+自杀	zi sha	6814
+西藏	xi zang	6813
+讲话	jiang hua	6812
+详细	xiang xi	6810
+进去	jin qu	6809
+领袖	ling xiu	6807
+马上	ma shang	6806
+高中	gao zhong	6805
+下降	xia jiang	6803
+不久	bu jiu	6802
+东部	dong bu	6800
+两种	liang zhong	6799
+乡村	xiang cun	6798
+信仰	xin yang	6796
+先后	xian hou	6795
+决议	jue yi	6793
+原本	yuan ben	6792
+及时	ji shi	6791
+可怕	ke pa	6789
+合理	he li	6788
+地址	di zhi	6786
+增强	zeng qiang	6785
+大学生	da xue sheng	6784
+女生	nv sheng	6782
+如下	ru xia	6781
+妹妹	mei mei	6779
+尚未	shang wei	6778
+工资	gong zi	6777
+成果	cheng guo	6775
+所有人	suo you ren	6774
+掌握	zhang wo	6772
+收集	shou ji	6771
+暴力	bao li	6770
+期待	qi dai	6768
+生存	sheng cun	6767
+要是	yao shi	6765
+赢得	ying de	6764
+马来西亚	ma lai xi ya	6763
+为主	wei zhu	6761
+分子	fen zi	6760
+办理	ban li	6758
+动态	dong tai	6757
+发射	fa she	6756
+可爱	ke ai	6754
+启动	qi dong	6753
+在线	zai xian	6751
+地理	di li	6750
+外交	wai jiao	6749
+大小	da xiao	6747
+婚姻	hun yin	6746
+将军	jiang jun	6744
+总结	zong jie	6743
+成熟	cheng shu	6742
+政党	zheng dang	6740
+数学	shu xue	6739
+有着	you zhe	6737
+条例	tiao li	6736
+植物	zhi wu	6735
+深入	shen ru	6733
+现代化	xian dai hua	6732
+电力	dian li	6730
+看法	kan fa	6729
+科学家	ke xue jia	6728
+突破	tu po	6726
+简直	jian zhi	6725
+简称	jian cheng	6723
+航空	hang kong	6722
+讨厌	tao yan	6721
+证券	zheng quan	6719
+请求	qing qiu	6718
+财政	cai zheng	6716
+走向	zou xiang	6715
+达成	da cheng	6714
+这一	zhe yi	6712
+进来	jin lai	6711
+追求	zhui qiu	6709
+逻辑	luo ji	6708
+集体	ji ti	6707
+顺利	shun li	6705
+麻烦	ma fan	6704
+一座	yi zuo	6702
+云南	yun nan	6701
+人家	ren jia	6700
+伦敦	lun dun	6698
+党员	dang yuan	6697
+具备	ju bei	6695
+厉害	li hai	6694
+司机	si ji	6693
+周围	zhou wei	6691
+咨询	zi xun	6690
+多久	duo jiu	6688
+大众	da zhong	6687
+意大利	yi da li	6686
+提醒	ti xing	6684
+暂时	zan shi	6683
+沟通	gou tong	6681
+特定	te ding	6680
+策略	ce lve	6679
+菲律宾	fei lv bin	6677
+转变	zhuan bian	6676
+违反	wei fan	6674
+释放	shi fang	6673
+预计	yu ji	6671
+一半	yi ban	6670
+一致	yi zhi	6669
+传说	chuan shuo	6667
+全体	quan ti	6666
+刺激	ci ji	6664
+协调	xie tiao	6663
+哪些	na xie	6662
+哲学	zhe xue	6660
+四川	si chuan	6659
+国会	guo hui	6657
+士兵	shi bing	6656
+大多	da duo	6655
+奇怪	qi guai	6653
+差异	cha yi	6652
+市民	shi min	6650
+幸运	xing yun	6649
+承担	cheng dan	6648
+收购	shou gou	6646
+收费	shou fei	6645
+日常	ri chang	6643
+星期	xing qi	6642
+每次	mei ci	6641
+治理	zhi li	6639
+消费者	xiao fei zhe	6638
+理想	li xiang	6636
+看起来	kan qi lai	6635
+签署	qian shu	6634
+美女	mei nv	6632
+落实	luo shi	6631
+装备	zhuang bei	6629
+解放	jie fang	6628
+警告	jing gao	6627
+退出	tui chu	6625
+适用	shi yong	6624
+亿美元	yi mei yuan	6622
+以外	yi wai	6621
+作战	zuo zhan	6620
+俄国	e guo	6618
+保险	bao xian	6617
+全民	quan min	6615
+到处	dao chu	6614
+前进	qian jin	6613
+化学	hua xue	6611
+博物馆	bo wu guan	6610
+占领	zhan ling	6608
+发起	fa qi	6607
+同一	tong yi	6606
+年底	nian di	6604
+当选	dang xuan	6603
+心中	xin zhong	6601
+想起	xiang qi	6600
+提到	ti dao	6599
+摄影	she ying	6597
+日报	ri bao	6596
+明星	ming xing	6594
+法庭	fa ting	6593
+皇帝	huang di	6592
+相互	xiang hu	6590
+相应	xiang ying	6589
+立刻	li ke	6587
+结论	jie lun	6586
+表明	biao ming	6585
+记忆	ji yi	6583
+试验	shi yan	6582
+随时	sui shi	6580
+一生	yi sheng	6579
+主持	zhu chi	6578
+事故	shi gu	6576
+事物	shi wu	6575
+伊朗	yi lang	6573
+分为	fen wei	6572
+反而	fan er	6571
+坐在	zuo zai	6569
+大规模	da gui mo	6568
+安装	an zhuang	6566
+将会	jiang hui	6565
+希腊	xi la	6564
+年轻人	nian qing ren	6562
+总部	zong bu	6561
+改造	gai zao	6559
+更是	geng shi	6558
+本地	ben di	6557
+浙江	zhe jiang	6555
+海军	hai jun	6554
+热情	re qing	6552
+牺牲	xi sheng	6551
+睡觉	shui jiao	6550
+空气	kong qi	6548
+职务	zhi wu	6547
+股东	gu dong	6545
+街道	jie dao	6544
+袭击	xi ji	6543
+连接	lian jie	6541
+一片	yi pian	6540
+一系列	yi xi lie	6538
+两位	liang wei	6537
+仅仅	jin jin	6536
+公主	gong zhu	6534
+卫星	wei xing	6533
+固定	gu ding	6531
+垃圾	la ji	6530
+好看	hao kan	6529
+学术	xue shu	6527
+对外	dui wai	6526
+常常	chang chang	6524
+旅行	lv xing	6523
+有所	you suo	6522
+校长	xiao zhang	6520
+档案	dang an	6519
+欧盟	ou meng	6517
+此次	ci ci	6516
+满意	man yi	6515
+环保	huan bao	6513
+矛盾	mao dun	6512
+种种	zhong zhong	6510
+紧急	jin ji	6509
+美好	mei hao	6508
+谈判	tan pan	6506
+车辆	che liang	6505
+这场	zhe chang	6503
+阶级	jie ji	6502
+高速	gao su	6501
+黑暗	hei an	6499
+两人	liang ren	6498
+乌克兰	wu ke lan	6496
+今晚	jin wan	6495
+休息	xiu xi	6494
+优惠	you hui	6492
+供应	gong ying	6491
+信任	xin ren	6489
+充分	chong fen	6488
+剩下	sheng xia	6487
+发明	fa ming	6485
+呼吁	hu yu	6484
+回应	hui ying	6482
+大师	da shi	6481
+夫人	fu ren	6480
+奴隶	nu li	6478
+对话	dui hua	6477
+患者	huan zhe	6475
+情报	qing bao	6474
+房间	fang jian	6473
+执政	zhi zheng	6471
+指数	zhi shu	6470
+探索	tan suo	6468
+接着	jie zhe	6467
+搜索	sou suo	6466
+校园	xiao yuan	6464
+每日	mei ri	6463
+法官	fa guan	6461
+海洋	hai yang	6460
+独特	du te	6459
+登记	deng ji	6457
+真相	zhen xiang	6456
+而言	er yan	6454
+能量	neng liang	6453
+话题	hua ti	6452
+选手	xuan shou	6450
+飞行	fei xing	6449
+黄金	huang jin	6447
+上升	shang sheng	6446
+不该	bu gai	6445
+五年	wu nian	6443
+倾向	qing xiang	6442
+分配	fen pei	6440
+利润	li run	6439
+前面	qian mian	6438
+可见	ke jian	6436
+吃饭	chi fan	6435
+各自	ge zi	6433
+呈现	cheng xian	6432
+回去	hui qu	6431
+地铁	di tie	6429
+好处	hao chu	6428
+姑娘	gu niang	6426
+年间	nian jian	6425
+必然	bi ran	6424
+想象	xiang xiang	6422
+手术	shou shu	6421
+有限	you xian	6419
+河南	he nan	6418
+流行	liu xing	6417
+澳大利亚	ao da li ya	6415
+灵魂	ling hun	6414
+爱国	ai guo	6412
+电台	dian tai	6411
+知名	zhi ming	6410
+纪录	ji lu	6408
+纷纷	fen fen	6407
+群体	qun ti	6405
+股票	gu piao	6404
+自从	zi cong	6403
+荷兰	he lan	6401
+装置	zhuang zhi	6400
+观看	guan kan	6398
+证实	zheng shi	6397
+谈话	tan hua	6396
+资讯	zi xun	6394
+路上	lu shang	6393
+运作	yun zuo	6391
+进攻	jin gong	6390
+透过	tou guo	6389
+那时	na shi	6387
+预期	yu qi	6386
+一级	yi ji	6384
+一面	yi mian	6383
+不如	bu ru	6382
+不必	bu bi	6380
+不满	bu man	6379
+产量	chan liang	6377
+保留	bao liu	6376
+其他人	qi ta ren	6375
+加速	jia su	6373
+印象	yin xiang	6372
+可惜	ke xi	6370
+坚决	jian jue	6369
+将来	jiang lai	6368
+小心	xiao xin	6366
+慢慢	man man	6365
+成都	cheng du	6363
+排名	pai ming	6362
+本质	ben zhi	6361
+条约	tiao yue	6359
+游客	you ke	6358
+看过	kan guo	6356
+秘书	mi shu	6355
+约翰	yue han	6354
+罗马	luo ma	6352
+老人	lao ren	6351
+表面	biao mian	6349
+负责人	fu ze ren	6348
+逮捕	dai bu	6347
+万人	wan ren	6345
+交给	jiao gei	6344
+仪式	yi shi	6342
+共和国	gong he guo	6341
+兴奋	xing fen	6340
+到达	dao da	6338
+厕所	ce suo	6337
+发达	fa da	6335
+同事	tong shi	6334
+建成	jian cheng	6333
+弟弟	di di	6331
+形势	xing shi	6330
+彼此	bi ci	6328
+房屋	fang wu	6327
+手中	shou zhong	6326
+日期	ri qi	6324
+是从	shi cong	6323
+智慧	zhi hui	6321
+欣赏	xin shang	6320
+此时	ci shi	6319
+消灭	xiao mie	6317
+湖南	hu nan	6316
+熟悉	shu xi	6314
+现有	xian you	6313
+生长	sheng zhang	6312
+皮肤	pi fu	6310
+等级	deng ji	6309
+舞台	wu tai	6307
+著作	zhu zuo	6306
+观念	guan nian	6305
+评估	ping gu	6303
+象征	xiang zheng	6302
+重建	chong jian	6300
+领土	ling tu	6299
+黑色	hei se	6298
+上来	shang lai	6296
+不得不	bu de bu	6295
+主人	zhu ren	6293
+你好	ni hao	6292
+信心	xin xin	6291
+候选人	hou xuan ren	6289
+做好	zuo hao	6288
+决策	jue ce	6286
+创建	chuang jian	6285
+医学	yi xue	6284
+受害者	shou hai zhe	6282
+失望	shi wang	6281
+女士	nv shi	6279
+学科	xue ke	6278
+平衡	ping heng	6277
+很少	hen shao	6275
+得以	de yi	6274
+心情	xin qing	6272
+思维	si wei	6271
+推特	tui te	6270
+撤销	che xiao	6268
+旁边	pang bian	6267
+早就	zao jiu	6265
+气候	qi hou	6263
+浪费	lang fei	6261
+混乱	hun luan	6260
+相比	xiang bi	6258
+祖国	zu guo	6257
+等于	deng yu	6256
+经理	jing li	6254
+腐败	fu bai	6253
+视为	shi wei	6251
+认证	ren zheng	6250
+记载	ji zai	6249
+通讯	tong xun	6247
+防止	fang zhi	6246
+一个月	yi ge yue	6244
+一块	yi kuai	6243
+一路	yi lu	6242
+上传	shang chuan	6240
+上午	shang wu	6239
+不论	bu lun	6237
+两次	liang ci	6236
+保存	bao cun	6235
+冲击	chong ji	6233
+单独	dan du	6232
+原始	yuan shi	6230
+只会	zhi hui	6229
+各项	ge xiang	6228
+墨西哥	mo xi ge	6226
+大大	da da	6225
+寻求	xun qiu	6223
+常见	chang jian	6222
+庆祝	qing zhu	6221
+强化	qiang hua	6219
+战士	zhan shi	6218
+打电话	da dian hua	6216
+教堂	jiao tang	6215
+显得	xian de	6214
+最低	zui di	6212
+歌曲	ge qu	6211
+湖北	hu bei	6209
+激烈	ji lie	6208
+研发	yan fa	6207
+素质	su zhi	6205
+细节	xi jie	6204
+老公	lao gong	6202
+自行	zi xing	6201
+贫困	pin kun	6200
+超越	chao yue	6198
+轻松	qing song	6197
+途径	tu jing	6195
+金额	jin e	6194
+骗子	pian zi	6193
+一带	yi dai	6191
+一颗	yi ke	6190
+不但	bu dan	6188
+两天	liang tian	6187
+什么样	shen me yang	6186
+作业	zuo ye	6184
+再也	zai ye	6183
+准确	zhun que	6181
+叫做	jiao zuo	6180
+可怜	ke lian	6179
+品质	pin zhi	6177
+回忆	hui yi	6176
+头发	tou fa	6174
+宇宙	yu zhou	6173
+实验室	shi yan shi	6172
+广西	guang xi	6170
+当初	dang chu	6169
+当天	dang tian	6167
+批判	pi pan	6166
+毫无	hao wu	6165
+火车	huo che	6163
+男女	nan nv	6162
+相似	xiang si	6160
+相反	xiang fan	6159
+礼物	li wu	6158
+简介	jian jie	6156
+算是	suan shi	6155
+经费	jing fei	6153
+自治区	zi zhi qu	6152
+艺术家	yi shu jia	6151
+获取	huo qu	6149
+诗人	shi ren	6148
+赚钱	zhuan qian	6146
+起诉	qi su	6145
+退休	tui xiu	6144
+餐厅	can ting	6142
+为止	wei zhi	6141
+主管	zhu guan	6139
+享有	xiang you	6138
+人为	ren wei	6137
+典型	dian xing	6135
+加油	jia you	6134
+北部	bei bu	6132
+合适	he shi	6131
+后果	hou guo	6130
+听见	ting jian	6128
+咖啡	ka fei	6127
+图书馆	tu shu guan	6125
+外部	wai bu	6124
+子女	zi nv	6123
+对不起	dui bu qi	6121
+对手	dui shou	6120
+尽快	jin kuai	6118
+屁股	pi gu	6117
+年前	nian qian	6116
+强制	qiang zhi	6114
+循环	xun huan	6113
+怀孕	huai yun	6111
+感染	gan ran	6110
+拿到	na dao	6109
+整理	zheng li	6107
+早已	zao yi	6106
+杀人	sha ren	6104
+深刻	shen ke	6103
+炸弹	zha dan	6102
+生于	sheng yu	6100
+生日	sheng ri	6099
+男孩	nan hai	6097
+神秘	shen mi	6096
+第四	di si	6095
+见面	jian mian	6093
+运营	yun ying	6092
+金属	jin shu	6090
+随便	sui bian	6089
+障碍	zhang ai	6088
+五月	wu yue	6086
+以色列	yi se lie	6085
+企图	qi tu	6083
+到来	dao lai	6082
+周末	zhou mo	6081
+围绕	wei rao	6079
+地下	di xia	6078
+大道	da dao	6076
+天安门	tian an men	6075
+密码	mi ma	6074
+对付	dui fu	6072
+对抗	dui kang	6071
+对此	dui ci	6069
+干净	gan jing	6068
+待遇	dai yu	6067
+恐惧	kong ju	6065
+情形	qing xing	6064
+打破	da po	6062
+技能	ji neng	6061
+援助	yuan zhu	6060
+教会	jiao hui	6058
+某个	mou ge	6057
+歌手	ge shou	6055
+河北	he bei	6054
+留在	liu zai	6053
+突出	tu chu	6051
+答应	da ying	6050
+继承	ji cheng	6048
+职工	zhi gong	6047
+聪明	cong ming	6046
+脱离	tuo li	6044
+舆论	yu lun	6043
+药物	yao wu	6041
+该国	gai guo	6040
+转型	zhuan xing	6039
+遗憾	yi han	6037
+部落	bu luo	6036
+院长	yuan zhang	6034
+一周	yi zhou	6033
+一套	yi tao	6032
+之类	zhi lei	6030
+代码	dai ma	6029
+做法	zuo fa	6027
+写作	xie zuo	6026
+划分	hua fen	6025
+加工	jia gong	6023
+动画	dong hua	6022
+华人	hua ren	6020
+号码	hao ma	6019
+合同	he tong	6018
+名为	ming wei	6016
+在家	zai jia	6015
+多种	duo zhong	6013
+大使	da shi	6012
+大楼	da lou	6011
+居然	ju ran	6009
+工会	gong hui	6008
+带领	dai ling	6006
+帮忙	bang mang	6005
+异常	yi chang	6004
+微软	wei ruan	6002
+意味着	yi wei zhe	6001
+愤怒	fen nu	5999
+房地产	fang di chan	5998
+所在	suo zai	5997
+扩展	kuo zhan	5995
+拯救	zheng jiu	5994
+新型	xin xing	5992
+球队	qiu dui	5991
+生气	sheng qi	5990
+监管	jian guan	5988
+离婚	li hun	5987
+穆斯林	mu si lin	5985
+签订	qian ding	5984
+细胞	xi bao	5983
+自治	zi zhi	5981
+色彩	se cai	5980
+许可	xu ke	5978
+输入	shu ru	5977
+道歉	dao qian	5976
+部署	bu shu	5974
+阳光	yang guang	5973
+驾驶	jia shi	5971
+高校	gao xiao	5970
+不见	bu jian	5969
+个性	ge xing	5967
+主体	zhu ti	5966
+人体	ren ti	5964
+从未	cong wei	5963
+伙伴	huo ban	5962
+依法	yi fa	5960
+内地	nei di	5959
+出售	chu shou	5957
+分离	fen li	5956
+创业	chuang ye	5955
+初期	chu qi	5953
+南方	nan fang	5952
+博客	bo ke	5950
+叙利亚	xu li ya	5949
+和谐	he xie	5948
+地上	di shang	5946
+基督教	ji du jiao	5945
+夏天	xia tian	5943
+天堂	tian tang	5942
+失业	shi ye	5941
+奥运	ao yun	5939
+局长	ju zhang	5938
+市区	shi qu	5936
+性格	xing ge	5935
+懂得	dong de	5934
+指标	zhi biao	5932
+接下来	jie xia lai	5931
+提前	ti qian	5929
+改进	gai jin	5928
+教训	jiao xun	5927
+文献	wen xian	5925
+现金	xian jin	5924
+球员	qiu yuan	5922
+电视剧	dian shi ju	5921
+监控	jian kong	5920
+福建	fu jian	5918
+种族	zhong zu	5917
+质疑	zhi yi	5915
+进展	jin zhan	5914
+重复	chong fu	5913
+顾问	gu wen	5911
+不让	bu rang	5910
+与其	yu qi	5908
+书籍	shu ji	5907
+互动	hu dong	5906
+人工	ren gong	5904
+人性	ren xing	5903
+人群	ren qun	5901
+例子	li zi	5900
+全都	quan dou	5899
+内阁	nei ge	5897
+军人	jun ren	5896
+判决	pan jue	5894
+加以	jia yi	5893
+发言	fa yan	5892
+取代	qu dai	5890
+合并	he bing	5889
+名义	ming yi	5887
+味道	wei dao	5886
+回归	hui gui	5885
+土耳其	tu er qi	5883
+地面	di mian	5882
+大战	da zhan	5880
+大批	da pi	5879
+奋斗	fen dou	5878
+废除	fei chu	5876
+所说	suo shuo	5875
+摧毁	cui hui	5873
+支援	zhi yuan	5872
+改为	gai wei	5871
+效应	xiao ying	5869
+神经过敏	shen jing guo min	2001
+无限	wu xian	5868
+有时候	you shi hou	5866
+有权	you quan	5865
+杭州	hang zhou	5864
+极端	ji duan	5862
+深度	shen du	5861
+温度	wen du	5859
+王国	wang guo	5858
+舞蹈	wu dao	5857
+被捕	bei bu	5855
+被迫	bei po	5854
+边界	bian jie	5852
+进程	jin cheng	5851
+道理	dao li	5850
+邪恶	xie e	5848
+配置	pei zhi	5847
+上班	shang ban	5845
+两岸	liang an	5844
+义务	yi wu	5843
+公正	gong zheng	5841
+内心	nei xin	5840
+千万	qian wan	5838
+却是	que shi	5837
+反抗	fan kang	5836
+只不过	zhi bu guo	5834
+场所	chang suo	5833
+埃及	ai ji	5831
+外交部	wai jiao bu	5830
+天使	tian shi	5829
+天空	tian kong	5827
+导弹	dao dan	5826
+工程师	gong cheng shi	5824
+差不多	cha bu duo	5823
+引导	yin dao	5821
+引用	yin yong	5820
+扩张	kuo zhang	5819
+报导	bao dao	5817
+抵达	di da	5816
+最初	zui chu	5814
+服装	fu zhuang	5813
+检测	jian ce	5812
+法案	fa an	5810
+波兰	bo lan	5809
+物理	wu li	5807
+种子	zhong zi	5806
+缅甸	mian dian	5805
+聊天	liao tian	5803
+荣誉	rong yu	5802
+街头	jie tou	5800
+覆盖	fu gai	5799
+言论	yan lun	5798
+论文	lun wen	5796
+转化	zhuan hua	5795
+近期	jin qi	5793
+陆续	lu xu	5792
+难过	nan guo	5791
+顾客	gu ke	5789
+预防	yu fang	5788
+不幸	bu xing	5786
+主权	zhu quan	5785
+亲自	qin zi	5784
+付出	fu chu	5782
+代价	dai jia	5781
+优先	you xian	5779
+全市	quan shi	5778
+冒险	mao xian	5777
+加快	jia kuai	5775
+反正	fan zheng	5774
+否认	fou ren	5772
+商店	shang dian	5771
+外面	wai mian	5770
+失踪	shi zong	5768
+客观	ke guan	5767
+对比	dui bi	5765
+已有	yi you	5764
+床上	chuang shang	5763
+建国	jian guo	5761
+引进	yin jin	5760
+想着	xiang zhe	5758
+戏剧	xi ju	5757
+成人	cheng ren	5756
+所属	suo shu	5754
+损害	sun hai	5753
+早期	zao qi	5751
+最早	zui zao	5750
+极为	ji wei	5749
+某种	mou zhong	5747
+江西	jiang xi	5746
+玩家	wan jia	5744
+理念	li nian	5743
+白色	bai se	5742
+种植	zhong zhi	5740
+落后	luo hou	5739
+西安	xi an	5737
+读书	du shu	5736
+输出	shu chu	5735
+选民	xuan min	5733
+逐步	zhu bu	5732
+通信	tong xin	5730
+遭遇	zao yu	5729
+邓小平	deng xiao ping	5728
+镇压	zhen ya	5726
+长大	zhang da	5725
+陕西	shan xi	5723
+一把	yi ba	5722
+万美元	wan mei yuan	5721
+上涨	shang zhang	5719
+乘客	cheng ke	5718
+五个	wu ge	5716
+今后	jin hou	5715
+仔细	zi xi	5714
+传递	chuan di	5712
+似的	shi de	5711
+公告	gong gao	5709
+再度	zai du	5708
+再说	zai shuo	5707
+删除	shan chu	5705
+品种	pin zhong	5704
+商人	shang ren	5702
+四年	si nian	5701
+国防	guo fang	5700
+奖励	jiang li	5698
+婴儿	ying er	5697
+宝宝	bao bao	5695
+宣言	xuan yan	5694
+岛屿	dao yu	5693
+很难	hen nan	5691
+忽视	hu shi	5690
+性别	xing bie	5688
+惩罚	cheng fa	5687
+战役	zhan yi	5686
+指定	zhi ding	5684
+方针	fang zhen	5683
+日前	ri qian	5681
+曝光	bao guang	5680
+月份	yue fen	5679
+机器人	ji qi ren	5677
+权益	quan yi	5676
+查看	cha kan	5674
+正面	zheng mian	5673
+活跃	huo yue	5672
+演讲	yan jiang	5670
+电信	dian xin	5669
+画面	hua mian	5667
+股权	gu quan	5666
+药品	yao pin	5665
+认定	ren ding	5663
+负担	fu dan	5662
+轨道	gui dao	5660
+较为	jiao wei	5659
+还会	hai hui	5658
+都市	du shi	5656
+陷入	xian ru	5655
+页面	ye mian	5653
+不然	bu ran	5652
+专题	zhuan ti	5651
+世界杯	shi jie bei	5649
+住宅	zhu zhai	5648
+入侵	ru qin	5646
+公寓	gong yu	5645
+分裂	fen lie	5644
+天然	tian ran	5642
+封锁	feng suo	5641
+尸体	shi ti	5639
+工艺	gong yi	5638
+干嘛	gan ma	5637
+平民	ping min	5635
+并未	bing wei	5634
+幻想	huan xiang	5632
+总之	zong zhi	5631
+恐怕	kong pa	5630
+想想	xiang xiang	5628
+执法	zhi fa	5627
+摆脱	bai tuo	5625
+教练	jiao lian	5624
+整合	zheng he	5623
+无关	wu guan	5621
+没错	mei cuo	5620
+物资	wu zi	5618
+病人	bing ren	5617
+研究所	yan jiu suo	5616
+纳入	na ru	5614
+莫斯科	mo si ke	5613
+解除	jie chu	5611
+认同	ren tong	5610
+谋杀	mou sha	5609
+转向	zhuan xiang	5607
+边境	bian jing	5606
+近日	jin ri	5604
+迫害	po hai	5603
+除非	chu fei	5602
+一同	yi tong	5600
+不停	bu ting	5599
+两名	liang ming	5597
+主流	zhu liu	5596
+伊拉克	yi la ke	5595
+依赖	yi lai	5593
+便宜	pian yi	5592
+兴建	xing jian	5590
+其余	qi yu	5589
+勇气	yong qi	5588
+华盛顿	hua sheng dun	5586
+吸收	xi shou	5585
+在内	zai nei	5583
+外汇	wai hui	5582
+好多	hao duo	5581
+尽量	jin liang	5579
+屠杀	tu sha	5578
+布局	bu ju	5576
+平时	ping shi	5575
+开车	kai che	5574
+强迫	qiang po	5572
+形态	xing tai	5571
+得知	de zhi	5569
+心灵	xin ling	5568
+性能	xing neng	5567
+总会	zong hui	5565
+总裁	zong cai	5564
+抗日	kang ri	5562
+据说	ju shuo	5561
+效率	xiao lv	5560
+文物	wen wu	5558
+无数	wu shu	5557
+杀害	sha hai	5555
+此后	ci hou	5554
+没想到	mei xiang dao	5553
+活着	huo zhe	5551
+流动	liu dong	5550
+测量	ce liang	5548
+激动	ji dong	5547
+焦点	jiao dian	5546
+皇家	huang jia	5544
+眼前	yan qian	5543
+种类	zhong lei	5541
+竞选	jing xuan	5540
+精彩	jing cai	5539
+联络	lian luo	5537
+认可	ren ke	5536
+试试	shi shi	5534
+诞生	dan sheng	5533
+透露	tou lu	5532
+青岛	qing dao	5530
+一人	yi ren	5529
+主持人	zhu chi ren	5527
+事项	shi xiang	5526
+农场	nong chang	5525
+分开	fen kai	5523
+列为	lie wei	5522
+创立	chuang li	5520
+协定	xie ding	5519
+印尼	yin ni	5518
+哪儿	na er	5516
+场景	chang jing	5515
+大人	da ren	5513
+大幅	da fu	5512
+宝贝	bao bei	5511
+实体	shi ti	5509
+总体	zong ti	5508
+情感	qing gan	5506
+指控	zhi kong	5505
+提名	ti ming	5504
+放心	fang xin	5502
+无人	wu ren	5501
+无疑	wu yi	5499
+本书	ben shu	5498
+气氛	qi fen	5497
+洛杉矶	luo shan ji	5495
+消除	xiao chu	5494
+登陆	deng lu	5492
+秘书长	mi shu zhang	5491
+竞赛	jing sai	5490
+线路	xian lu	5488
+美军	mei jun	5487
+舒服	shu fu	5485
+赶紧	gan jin	5484
+转换	zhuan huan	5483
+遗址	yi zhi	5481
+遭受	zao shou	5480
+难民	nan min	5478
+一批	yi pi	5477
+上去	shang qu	5476
+东南亚	dong nan ya	5474
+个别	ge bie	5473
+主办	zhu ban	5471
+争论	zheng lun	5470
+从此	cong ci	5469
+依靠	yi kao	5467
+侵犯	qin fan	5466
+共享	gong xiang	5464
+前来	qian lai	5463
+北方	bei fang	5462
+十大	shi da	5460
+口号	kou hao	5459
+可靠	ke kao	5457
+各类	ge lei	5456
+回国	hui guo	5455
+国有	guo you	5453
+坦克	tan ke	5452
+基层	ji ceng	5450
+基本上	ji ben shang	5449
+太平洋	tai ping yang	5448
+巴基斯坦	ba ji si tan	5446
+当代	dang dai	5445
+当作	dang zuo	5443
+微博	wei bo	5442
+性感	xing gan	5441
+截至	jie zhi	5439
+最为	zui wei	5438
+标题	biao ti	5436
+检验	jian yan	5435
+社交	she jiao	5434
+空中	kong zhong	5432
+自主	zi zhu	5431
+蒙古	meng gu	5429
+蓝色	lan se	5428
+诉讼	su song	5427
+说出	shuo chu	5425
+说道	shuo dao	5424
+谴责	qian ze	5422
+贵族	gui zu	5421
+资助	zi zhu	5420
+赶快	gan kuai	5418
+辞职	ci zhi	5417
+还好	hai hao	5415
+这部	zhe bu	5414
+遵守	zun shou	5413
+那天	na tian	5411
+骄傲	jiao ao	5410
+一会	yi hui	5408
+下次	xia ci	5407
+专用	zhuan yong	5406
+他妈的	ta ma de	5404
+优质	you zhi	5403
+依照	yi zhao	5401
+假设	jia she	5400
+内战	nei zhan	5399
+动员	dong yuan	5397
+勇敢	yong gan	5396
+北京市	bei jing shi	5394
+单纯	dan chun	5393
+另一方面	ling yi fang mian	5392
+周期	zhou qi	5390
+喜爱	xi ai	5389
+多元	duo yuan	5387
+大选	da xuan	5386
+女友	nv you	5385
+好事	hao shi	5383
+小型	xiao xing	5382
+层面	ceng mian	5380
+山西	shan xi	5379
+差别	cha bie	5378
+延长	yan chang	5376
+悲剧	bei ju	5375
+愚蠢	yu chun	5373
+技巧	ji qiao	5372
+投诉	tou su	5371
+指示	zhi shi	5369
+推翻	tui fan	5368
+提议	ti yi	5366
+昨晚	zuo wan	5365
+本文	ben wen	5364
+村民	cun min	5362
+歧视	qi shi	5361
+混合	hun he	5359
+清理	qing li	5358
+现任	xian ren	5357
+百万	bai wan	5355
+秩序	zhi xu	5354
+篮球	lan qiu	5352
+网路	wang lu	5351
+职责	zhi ze	5350
+融资	rong zi	5348
+表情	biao qing	5347
+设计师	she ji shi	5345
+询问	xun wen	5344
+财务	cai wu	5343
+购物	gou wu	5341
+采购	cai gou	5340
+高层	gao ceng	5338
+一支	yi zhi	5337
+两者	liang zhe	5336
+主角	zhu jue	5334
+亲爱	qin ai	5333
+便是	bian shi	5331
+公务员	gong wu yuan	5330
+前后	qian hou	5329
+原理	yuan li	5327
+变态	bian tai	5326
+变革	bian ge	5324
+同性恋	tong xing lian	5323
+周边	zhou bian	5322
+女神	nv shen	5320
+岛上	dao shang	5319
+工作人员	gong zuo ren yuan	5317
+当今	dang jin	5316
+影响力	ying xiang li	5315
+揭露	jie lu	5313
+敏感	min gan	5312
+有机	you ji	5310
+物品	wu pin	5309
+特性	te xing	5308
+犹太人	you tai ren	5306
+百姓	bai xing	5305
+积累	ji lei	5303
+线上	xian shang	5302
+组建	zu jian	5301
+营业	ying ye	5299
+营销	ying xiao	5298
+记住	ji zhu	5296
+赋予	fu yu	5295
+边缘	bian yuan	5294
+返回	fan hui	5292
+那边	na bian	5291
+镜头	jing tou	5289
+门口	men kou	5288
+青少年	qing shao nian	5287
+一代	yi dai	5285
+一会儿	yi hui er	5284
+一方	yi fang	5282
+一篇	yi pian	5281
+一辆	yi liang	5280
+举报	ju bao	5278
+之所以	zhi suo yi	5277
+买卖	mai mai	5275
+以往	yi wang	5274
+优化	you hua	5273
+依旧	yi jiu	5271
+假如	jia ru	5270
+全新	quan xin	5268
+公斤	gong jin	5267
+决心	jue xin	5266
+决赛	jue sai	5264
+前提	qian ti	5263
+半岛	ban dao	5261
+即可	ji ke	5260
+发动机	fa dong ji	5259
+地狱	di yu	5257
+女王	nv wang	5256
+学位	xue wei	5254
+家中	jia zhong	5253
+局势	ju shi	5252
+开启	kai qi	5250
+微笑	wei xiao	5249
+愿望	yuan wang	5247
+支撑	zhi cheng	5246
+文艺	wen yi	5245
+施工	shi gong	5243
+旅客	lv ke	5242
+日益	ri yi	5240
+时尚	shi shang	5239
+极大	ji da	5238
+案例	an li	5236
+此事	ci shi	5235
+汉语	han yu	5233
+没事	mei shi	5232
+火箭	huo jian	5231
+玻璃	bo li	5229
+理性	li xing	5228
+瑞典	rui dian	5226
+祈祷	qi dao	5225
+第二次	di er ci	5224
+粉丝	fen si	5222
+绑架	bang jia	5221
+编制	bian zhi	5219
+苏州	su zhou	5218
+草案	cao an	5217
+西北	xi bei	5215
+近年来	jin nian lai	5214
+这份	zhe fen	5212
+送给	song gei	5211
+遗产	yi chan	5210
+金钱	jin qian	5208
+智能家居	zhi neng jia ju	2000
+长沙	chang sha	5207
+队长	dui zhang	5205
+饭店	fan dian	5204
+一大	yi da	5203
+一间	yi jian	5201
+中部	zhong bu	5200
+主导	zhu dao	5198
+代替	dai ti	5197
+任期	ren qi	5196
+会见	hui jian	5194
+入口	ru kou	5193
+创办	chuang ban	5191
+南非	nan fei	5190
+危害	wei hai	5189
+去世	qu shi	5187
+可能性	ke neng xing	5186
+大事	da shi	5184
+大臣	da chen	5183
+夫妇	fu fu	5182
+夫妻	fu qi	5180
+好友	hao you	5179
+如同	ru tong	5177
+定位	ding wei	5176
+局面	ju mian	5175
+展览	zhan lan	5173
+年纪	nian ji	5172
+恶心	e xin	5170
+成分	cheng fen	5169
+打败	da bai	5168
+抓住	zhua zhu	5166
+投资者	tou zi zhe	5165
+探讨	tan tao	5163
+播出	bo chu	5162
+故意	gu yi	5161
+旗下	qi xia	5159
+本国	ben guo	5158
+杀死	sha si	5156
+条款	tiao kuan	5155
+模拟	mo ni	5154
+模特	mo te	5152
+江泽民	jiang ze min	5151
+沉默	chen mo	5149
+短期	duan qi	5148
+穿着	chuan zhe	5147
+职位	zhi wei	5145
+能否	neng fou	5144
+若干	ruo gan	5142
+融合	rong he	5141
+行使	xing shi	5140
+讲述	jiang shu	5138
+请问	qing wen	5137
+账号	zhang hao	5135
+资本主义	zi ben zhu yi	5134
+跟着	gen zhe	5133
+运动员	yun dong yuan	5131
+这儿	zhe er	5130
+这项	zhe xiang	5128
+邻居	lin ju	5127
+阿拉伯	a la bo	5126
+首页	shou ye	5124
+黄色	huang se	5123
+一对	yi dui	5121
+一本	yi ben	5120
+上网	shang wang	5119
+个体	ge ti	5117
+伦理	lun li	5116
+佛教	fo jiao	5114
+协商	xie shang	5113
+参观	can guan	5112
+同步	tong bu	5110
+大赛	da sai	5109
+大连	da lian	5107
+太空	tai kong	5106
+定期	ding qi	5105
+审议	shen yi	5103
+家属	jia shu	5102
+密切	mi qie	5100
+展现	zhan xian	5099
+庞大	pang da	5098
+心态	xin tai	5096
+总额	zong e	5095
+我家	wo jia	5093
+我爱你	wo ai ni	5092
+战场	zhan chang	5091
+承受	cheng shou	5089
+新人	xin ren	5088
+日至	ri zhi	5086
+权威	quan wei	5085
+毫米	hao mi	5084
+流量	liu liang	5082
+灾难	zai nan	5081
+爷爷	ye ye	5079
+现状	xian zhuang	5078
+生意	sheng yi	5077
+白人	bai ren	5075
+百科	bai ke	5074
+石头	shi tou	5072
+管制	guan zhi	5071
+累计	lei ji	5070
+绝不	jue bu	5068
+美食	mei shi	5067
+耶稣	ye su	5065
+脑袋	nao dai	5064
+脸上	lian shang	5063
+行政区划	xing zheng qu hua	5061
+被告	bei gao	5060
+计画	ji hua	5058
+货物	huo wu	5057
+隐藏	yin cang	5056
+一辈子	yi bei zi	5054
+三天	san tian	5053
+上级	shang ji	5051
+严肃	yan su	5050
+元素	yuan su	5049
+关联	guan lian	5047
+几次	ji ci	5046
+出门	chu men	5044
+制裁	zhi cai	5043
+加州	jia zhou	5042
+劳动力	lao dong li	5040
+可用	ke yong	5039
+台北	tai bei	5037
+回顾	hui gu	5036
+声称	sheng cheng	5035
+外国人	wai guo ren	5033
+大桥	da qiao	5032
+大胆	da dan	5030
+奖金	jiang jin	5029
+女朋友	nv peng you	5028
+好吃	hao chi	5026
+安徽	an hui	5025
+年初	nian chu	5023
+延伸	yan shen	5022
+延续	yan xu	5021
+建筑物	jian zhu wu	5019
+打造	da zao	5018
+护士	hu shi	5016
+授予	shou yu	5015
+日记	ri ji	5014
+时报	shi bao	5012
+暂停	zan ting	5009
+游泳	you yong	5008
+留言	liu yan	5007
+目录	mu lu	5005
+研究生	yan jiu sheng	5004
+繁荣	fan rong	5002
+美术	mei shu	5001
+腾讯	teng xun	5000
+花园	hua yuan	4998
+装饰	zhuang shi	4997
+设有	she you	4995
+诗歌	shi ge	4994
+过度	guo du	4993
+这边	zhe bian	4991
+阿里	a li	4990
+靠近	kao jin	4988
+领先	ling xian	4987
+题材	ti cai	4986
+骑士	qi shi	4984
+一方面	yi fang mian	4983
+之内	zhi nei	4981
+习近平	xi jin ping	4980
+事儿	shi er	4979
+伊斯兰	yi si lan	4977
+住房	zhu fang	4976
+其次	qi ci	4974
+出于	chu yu	4973
+创意	chuang yi	4971
+初步	chu bu	4970
+剥夺	bo duo	4969
+友好	you hao	4967
+发言人	fa yan ren	4966
+含有	han you	4964
+回报	hui bao	4963
+地产	di chan	4962
+垄断	long duan	4960
+基因	ji yin	4959
+婚礼	hun li	4957
+学员	xue yuan	4956
+尊严	zun yan	4955
+岗位	gang wei	4953
+情节	qing jie	4952
+惊人	jing ren	4950
+感动	gan dong	4949
+手里	shou li	4948
+扮演	ban yan	4946
+抵制	di zhi	4945
+排除	pai chu	4943
+接到	jie dao	4942
+时光	shi guang	4941
+期望	qi wang	4939
+果然	guo ran	4938
+桥梁	qiao liang	4936
+正如	zheng ru	4935
+正当	zheng dang	4934
+没法	mei fa	4932
+海上	hai shang	4931
+温暖	wen nuan	4929
+玩具	wan ju	4928
+环节	huan jie	4927
+男朋友	nan peng you	4925
+经济学	jing ji xue	4924
+考察	kao cha	4922
+考核	kao he	4921
+节日	jie ri	4920
+西南	xi nan	4918
+辽宁	liao ning	4917
+这点	zhe dian	4915
+风暴	feng bao	4914
+上学	shang xue	4913
+任职	ren zhi	4911
+何时	he shi	4910
+全身	quan shen	4908
+再见	zai jian	4907
+凌晨	ling chen	4906
+函数	han shu	4904
+列车	lie che	4903
+办事	ban shi	4901
+包装	bao zhuang	4900
+医药	yi yao	4899
+单一	dan yi	4897
+参数	can shu	4896
+友谊	you yi	4894
+叙述	xu shu	4893
+号召	hao zhao	4892
+后期	hou qi	4890
+外界	wai jie	4889
+大声	da sheng	4887
+奥运会	ao yun hui	4886
+客人	ke ren	4885
+富有	fu you	4883
+对立	dui li	4882
+巴士	ba shi	4880
+形容	xing rong	4879
+愉快	yu kuai	4878
+手法	shou fa	4876
+指责	zhi ze	4875
+收益	shou yi	4873
+更为	geng wei	4872
+欧元	ou yuan	4871
+正好	zheng hao	4869
+残酷	can ku	4868
+流通	liu tong	4866
+渐渐	jian jian	4865
+热爱	re ai	4864
+男生	nan sheng	4862
+疫情	yi qing	4861
+直升机	zhi sheng ji	4859
+策划	ce hua	4857
+糟糕	zao gao	4855
+结局	jie ju	4854
+维修	wei xiu	4852
+自称	zi cheng	4851
+设定	she ding	4850
+诸多	zhu duo	4848
+账户	zhang hu	4847
+贯彻	guan che	4845
+车站	che zhan	4844
+选出	xuan chu	4843
+透明	tou ming	4841
+通报	tong bao	4840
+颁布	ban bu	4838
+饮食	yin shi	4837
+高等	gao deng	4836
+一道	yi dao	4834
+三国	san guo	4833
+下令	xia ling	4831
+不准	bu zhun	4830
+专辑	zhuan ji	4829
+世上	shi shang	4827
+丧失	sang shi	4826
+中东	zhong dong	4824
+人均	ren jun	4823
+以便	yi bian	4822
+任命	ren ming	4820
+传奇	chuan qi	4819
+传媒	chuan mei	4817
+保守	bao shou	4816
+公安	gong an	4815
+共识	gong shi	4813
+刑事	xing shi	4812
+初中	chu zhong	4810
+动手	dong shou	4809
+动机	dong ji	4808
+助理	zhu li	4806
+包围	bao wei	4805
+匿名	ni ming	4803
+发放	fa fang	4802
+只好	zhi hao	4801
+各界	ge jie	4799
+后者	hou zhe	4798
+命名	ming ming	4796
+地质	di zhi	4795
+大厅	da ting	4794
+大奖	da jiang	4792
+姓名	xing ming	4791
+差距	cha ju	4789
+带动	dai dong	4788
+度过	du guo	4787
+总数	zong shu	4785
+抗战	kang zhan	4784
+推行	tui xing	4782
+晚安	wan an	4781
+民国	min guo	4780
+水果	shui guo	4778
+河流	he liu	4777
+示威	shi wei	4775
+神话	shen hua	4774
+管辖	guan xia	4773
+要么	yao me	4771
+调节	tiao jie	4770
+轻易	qing yi	4768
+较大	jiao da	4767
+辅助	fu zhu	4766
+过于	guo yu	4764
+进而	jin er	4763
+远离	yuan li	4761
+迫使	po shi	4760
+阻碍	zu ai	4759
+集会	ji hui	4757
+青春	qing chun	4756
+面向	mian xiang	4754
+高速公路	gao su gong lu	4753
+黑龙江	hei long jiang	4752
+三星	san xing	4750
+上下	shang xia	4749
+人会	ren hui	4747
+信用	xin yong	4746
+债务	zhai wu	4745
+出身	chu shen	4743
+压迫	ya po	4742
+原料	yuan liao	4740
+发布会	fa bu hui	4739
+古老	gu lao	4738
+呼吸	hu xi	4736
+大力	da li	4735
+太太	tai tai	4733
+央视	yang shi	4732
+奇迹	qi ji	4731
+奶奶	nai nai	4729
+好奇	hao qi	4728
+实质	shi zhi	4726
+山区	shan qu	4725
+带有	dai you	4724
+干扰	gan rao	4722
+干涉	gan she	4721
+应付	ying fu	4719
+应对	ying dui	4718
+开设	kai she	4717
+强奸	qiang jian	4715
+控股	kong gu	4714
+政协	zheng xie	4712
+普及	pu ji	4711
+暴露	bao lu	4710
+替代	ti dai	4708
+检察院	jian cha yuan	4707
+欲望	yu wang	4705
+每周	mei zhou	4704
+毒品	du pin	4703
+法治	fa zhi	4701
+注重	zhu zhong	4700
+渴望	ke wang	4698
+演变	yan bian	4697
+症状	zheng zhuang	4694
+码头	ma tou	4693
+笑话	xiao hua	4691
+绝望	jue wang	4690
+职能	zhi neng	4689
+聚集	ju ji	4687
+色情	se qing	4686
+营养	ying yang	4684
+贵州	gui zhou	4682
+起义	qi yi	4680
+辐射	fu she	4679
+过渡	guo du	4677
+通用	tong yong	4676
+通道	tong dao	4675
+频率	pin lv	4673
+马克	ma ke	4672
+一度	yi du	4670
+中国政府	zhong guo zheng fu	4669
+丹麦	dan mai	4668
+为此	wei ci	4666
+之上	zhi shang	4665
+交往	jiao wang	4663
+人民政府	ren min zheng fu	4662
+修正	xiu zheng	4661
+匈牙利	xiong ya li	4659
+半年	ban nian	4658
+即便	ji bian	4656
+厨房	chu fang	4655
+同年	tong nian	4654
+商务	shang wu	4652
+图像	tu xiang	4651
+坚强	jian qiang	4649
+大门	da men	4648
+委托	wei tuo	4647
+对应	dui ying	4645
+射击	she ji	4644
+崩溃	beng kui	4642
+开幕	kai mu	4641
+当成	dang cheng	4640
+心脏	xin zang	4638
+惊讶	jing ya	4637
+意志	yi zhi	4635
+把握	ba wo	4634
+抛弃	pao qi	4633
+拿出	na chu	4631
+提交	ti jiao	4630
+旅馆	lv guan	4628
+死刑	si xing	4627
+毁灭	hui mie	4626
+渠道	qu dao	4624
+热烈	re lie	4623
+看待	kan dai	4621
+笔者	bi zhe	4620
+等到	deng dao	4619
+练习	lian xi	4617
+罪犯	zui fan	4616
+聚会	ju hui	4614
+艰难	jian nan	4613
+补偿	bu chang	4612
+要说	yao shuo	4610
+证书	zheng shu	4609
+说服	shuo fu	4607
+走出	zou chu	4606
+起点	qi dian	4605
+部份	bu fen	4603
+长江	chang jiang	4602
+阴谋	yin mou	4600
+随意	sui yi	4599
+露出	lu chu	4598
+首相	shou xiang	4596
+一体	yi ti	4595
+一日	yi ri	4593
+一时	yi shi	4592
+一款	yi kuan	4591
+三次	san ci	4589
+乐团	yue tuan	4588
+产值	chan zhi	4586
+低于	di yu	4585
+偶像	ou xiang	4584
+南北	nan bei	4582
+史上	shi shang	4581
+合成	he cheng	4579
+周恩来	zhou en lai	4578
+回头	hui tou	4577
+坚定	jian ding	4575
+处罚	chu fa	4574
+大街	da jie	4572
+封闭	feng bi	4571
+小镇	xiao zhen	4570
+往来	wang lai	4568
+抵抗	di kang	4567
+招生	zhao sheng	4565
+放下	fang xia	4564
+新华社	xin hua she	4563
+新鲜	xin xian	4561
+旗帜	qi zhi	4560
+时机	shi ji	4558
+有利	you li	4557
+有用	you yong	4556
+每月	mei yue	4554
+民主党	min zhu dang	4553
+浪漫	lang man	4551
+港口	gang kou	4550
+片段	pian duan	4549
+狮子	shi zi	4547
+画家	hua jia	4546
+称呼	cheng hu	4544
+空军	kong jun	4543
+签名	qian ming	4542
+罢了	ba le	4540
+老实	lao shi	4539
+董事	dong shi	4537
+论述	lun shu	4536
+谈论	tan lun	4535
+身分	shen fen	4533
+迎接	ying jie	4532
+这张	zhe zhang	4530
+送到	song dao	4529
+郑州	zheng zhou	4528
+队员	dui yuan	4526
+高潮	gao chao	4525
+不良	bu liang	4523
+不许	bu xu	4522
+与此同时	yu ci tong shi	4521
+中午	zhong wu	4519
+中期	zhong qi	4518
+产物	chan wu	4516
+人力	ren li	4515
+伤心	shang xin	4514
+体内	ti nei	4512
+供给	gong ji	4511
+偶尔	ou er	4509
+六月	liu yue	4508
+剧情	ju qing	4507
+化工	hua gong	4505
+厦门	xia men	4504
+发电	fa dian	4502
+各级	ge ji	4501
+国内外	guo nei wai	4500
+大哥	da ge	4498
+姐妹	jie mei	4497
+常务	chang wu	4495
+平安	ping an	4494
+开通	kai tong	4493
+影像	ying xiang	4491
+惊喜	jing xi	4490
+投降	tou xiang	4488
+报名	bao ming	4487
+无聊	wu liao	4486
+有力	you li	4484
+极其	ji qi	4483
+构造	gou zao	4481
+欧美	ou mei	4480
+死者	si zhe	4479
+清晰	qing xi	4477
+燃料	ran liao	4476
+留学	liu xue	4474
+疫苗	yi miao	4473
+确立	que li	4472
+神奇	shen qi	4470
+符号	fu hao	4469
+缓慢	huan man	4467
+罢工	ba gong	4466
+联赛	lian sai	4465
+自愿	zi yuan	4463
+葡萄牙	pu tao ya	4462
+虚拟	xu ni	4460
+补助	bu zhu	4459
+走进	zou jin	4458
+错过	cuo guo	4456
+风景	feng jing	4455
+饮料	yin liao	4453
+魅力	mei li	4452
+万岁	wan sui	4451
+不明	bu ming	4449
+不算	bu suan	4448
+专利	zhuan li	4446
+东亚	dong ya	4445
+东南	dong nan	4444
+之际	zhi ji	4442
+人间	ren jian	4441
+价值观	jia zhi guan	4439
+伊斯兰教	yi si lan jiao	4438
+众人	zhong ren	4437
+养殖	yang zhi	4435
+内蒙古	nei meng gu	4434
+出台	chu tai	4432
+击败	ji bai	4431
+制服	zhi fu	4430
+同情	tong qing	4428
+名叫	ming jiao	4427
+向前	xiang qian	4425
+告知	gao zhi	4424
+哈尔滨	ha er bin	4423
+四大	si da	4421
+场合	chang he	4420
+官方网站	guan fang wang zhan	4418
+封建	feng jian	4417
+小区	xiao qu	4416
+就让	jiu rang	4414
+干什么	gan shen me	4413
+干预	gan yu	4411
+当事人	dang shi ren	4410
+忽略	hu lve	4409
+截图	jie tu	4407
+所得	suo de	4406
+收藏	shou cang	4404
+放松	fang song	4403
+无辜	wu gu	4402
+月底	yue di	4400
+服务器	fu wu qi	4399
+本次	ben ci	4397
+永久	yong jiu	4396
+没关系	mei guan xi	4395
+沿海	yan hai	4393
+流传	liu chuan	4392
+济南	ji nan	4390
+海南	hai nan	4389
+淘汰	tao tai	4388
+添加	tian jia	4386
+潜力	qian li	4385
+激发	ji fa	4383
+王子	wang zi	4382
+瑞士	rui shi	4381
+由此	you ci	4379
+百年	bai nian	4378
+皇后	huang hou	4376
+相当于	xiang dang yu	4375
+看出	kan chu	4374
+真理	zhen li	4372
+硕士	shuo shi	4371
+科研	ke yan	4369
+终止	zhong zhi	4368
+美洲	mei zhou	4367
+花费	hua fei	4365
+解放军	jie fang jun	4364
+赔偿	pei chang	4362
+身为	shen wei	4361
+辛苦	xin ku	4360
+钢铁	gang tie	4358
+防御	fang yu	4357
+集合	ji he	4355
+面包	mian bao	4354
+予以	yu yi	4353
+二人	er ren	4351
+从前	cong qian	4350
+仪器	yi qi	4348
+侵略	qin lve	4347
+修复	xiu fu	4346
+别说	bie shuo	4344
+力度	li du	4343
+占据	zhan ju	4341
+印刷	yin shua	4340
+古典	gu dian	4339
+合格	he ge	4337
+圣经	sheng jing	4336
+多人	duo ren	4334
+大脑	da nao	4333
+子弹	zi dan	4332
+安静	an jing	4330
+家乡	jia xiang	4329
+导师	dao shi	4327
+尴尬	gan ga	4326
+尽力	jin li	4325
+层次	ceng ci	4323
+巩固	gong gu	4322
+常委	chang wei	4320
+引擎	yin qing	4319
+强度	qiang du	4318
+战胜	zhan sheng	4316
+手指	shou zhi	4315
+抱怨	bao yuan	4313
+接收	jie shou	4312
+描写	miao xie	4311
+擅长	shan chang	4309
+教育部	jiao yu bu	4308
+春天	chun tian	4306
+显著	xian zhu	4305
+有意	you yi	4304
+服从	fu cong	4302
+本土	ben tu	4301
+殖民	zhi min	4299
+气象	qi xiang	4298
+没用	mei yong	4297
+甘肃	gan su	4295
+生效	sheng xiao	4294
+电池	dian chi	4292
+男友	nan you	4291
+监视	jian shi	4290
+直至	zhi zhi	4288
+眼泪	yan lei	4287
+称号	cheng hao	4285
+约定	yue ding	4284
+编号	bian hao	4283
+网易	wang yi	4281
+罕见	han jian	4280
+自信	zi xin	4278
+般的	ban de	4277
+蔬菜	shu cai	4276
+街上	jie shang	4274
+车上	che shang	4273
+辩论	bian lun	4271
+这时	zhe shi	4270
+遇见	yu jian	4269
+配备	pei bei	4267
+酒吧	jiu ba	4266
+阿根廷	a gen ting	4264
+院校	yuan xiao	4263
+震惊	zhen jing	4262
+颁发	ban fa	4260
+预定	yu ding	4259
+频繁	pin fan	4257
+高清	gao qing	4256
+一声	yi sheng	4255
+一遍	yi bian	4253
+上次	shang ci	4252
+不愿	bu yuan	4250
+从不	cong bu	4249
+仓库	cang ku	4248
+任意	ren yi	4246
+公式	gong shi	4245
+六个	liu ge	4243
+军方	jun fang	4242
+农产品	nong chan pin	4241
+剧本	ju ben	4239
+功夫	gong fu	4238
+占有	zhan you	4236
+反击	fan ji	4235
+发育	fa yu	4234
+合约	he yue	4232
+姿势	zi shi	4231
+学历	xue li	4229
+官网	guan wang	4228
+家伙	jia huo	4227
+开枪	kai qiang	4225
+开玩笑	kai wan xiao	4224
+总书记	zong shu ji	4222
+总人口	zong ren kou	4221
+恶化	e hua	4220
+截止	jie zhi	4218
+手上	shou shang	4217
+教材	jiao cai	4215
+数据库	shu ju ku	4214
+新兴	xin xing	4213
+新浪	xin lang	4211
+无论如何	wu lun ru he	4210
+杰出	jie chu	4208
+树立	shu li	4207
+格式	ge shi	4206
+沈阳	shen yang	4204
+沙漠	sha mo	4203
+激励	ji li	4201
+热带	re dai	4200
+热门	re men	4199
+独自	du zi	4197
+甚么	shen me	4196
+癌症	ai zheng	4194
+相机	xiang ji	4193
+破产	po chan	4192
+神圣	shen sheng	4190
+称之为	cheng zhi wei	4189
+第二天	di er tian	4187
+签证	qian zheng	4186
+紧密	jin mi	4185
+级别	ji bie	4183
+纯粹	chun cui	4182
+缺少	que shao	4180
+网民	wang min	4179
+罪行	zui xing	4178
+考验	kao yan	4176
+自觉	zi jue	4175
+节奏	jie zou	4173
+董事会	dong shi hui	4172
+谎言	huang yan	4171
+赌场	du chang	4169
+赞成	zan cheng	4168
+辩护	bian hu	4166
+这家	zhe jia	4165
+违背	wei bei	4164
+造型	zao xing	4162
+阶层	jie ceng	4161
+一段时间	yi duan shi jian	4159
+三月	san yue	4158
+不仅仅	bu jin jin	4157
+不在乎	bu zai hu	4155
+主演	zhu yan	4154
+人大代表	ren da dai biao	4152
+以此	yi ci	4151
+企业家	qi ye jia	4150
+会长	hui zhang	4148
+体会	ti hui	4147
+使命	shi ming	4145
+保卫	bao wei	4144
+假装	jia zhuang	4143
+党委	dang wei	4141
+公约	gong yue	4140
+军官	jun guan	4138
+前者	qian zhe	4137
+原创	yuan chuang	4136
+发送	fa song	4134
+同一个	tong yi ge	4133
+同胞	tong bao	4131
+名人	ming ren	4130
+土壤	tu rang	4129
+城乡	cheng xiang	4127
+外资	wai zi	4126
+大厦	da sha	4124
+头脑	tou nao	4123
+审核	shen he	4121
+开会	kai hui	4120
+恋爱	lian ai	4119
+慈善	ci shan	4117
+我能	wo neng	4116
+报复	bao fu	4114
+招聘	zhao pin	4113
+提起	ti qi	4112
+救援	jiu yuan	4110
+新生	xin sheng	4109
+无效	wu xiao	4107
+有意思	you yi si	4106
+有钱	you qian	4105
+标签	biao qian	4103
+检察	jian cha	4102
+欺骗	qi pian	4100
+汉族	han zu	4099
+没收	mo shou	4098
+浏览	liu lan	4096
+潜在	qian zai	4095
+灾害	zai hai	4093
+物流	wu liu	4092
+王朝	wang chao	4091
+疑问	yi wen	4089
+穿越	chuan yue	4088
+第二个	di er ge	4086
+罚款	fa kuan	4085
+群岛	qun dao	4084
+行政区	xing zheng qu	4082
+赛季	sai ji	4079
+跟踪	gen zong	4078
+过分	guo fen	4077
+近代	jin dai	4075
+陆军	lu jun	4074
+随即	sui ji	4072
+顺序	shun xu	4071
+一根	yi gen	4070
+不利	bu li	4068
+不变	bu bian	4067
+中断	zhong duan	4065
+乐观	le guan	4064
+乔治	qiao zhi	4063
+亲戚	qin qi	4061
+优点	you dian	4060
+会谈	hui tan	4058
+促使	cu shi	4057
+克服	ke fu	4056
+全年	quan nian	4054
+全省	quan sheng	4053
+凶手	xiong shou	4051
+列入	lie ru	4050
+剥削	bo xue	4049
+医师	yi shi	4047
+南海	nan hai	4046
+双手	shuang shou	4044
+口味	kou wei	4043
+古巴	gu ba	4042
+后悔	hou hui	4040
+响应	xiang ying	4039
+四月	si yue	4037
+回收	hui shou	4036
+境外	jing wai	4035
+外围	wai wei	4033
+天安门广场	tian an men guang chang	4032
+季节	ji jie	4030
+孤独	gu du	4029
+屋顶	wu ding	4028
+属性	shu xing	4026
+工作者	gong zuo zhe	4025
+常用	chang yong	4023
+所在地	suo zai di	4022
+扩散	kuo san	4021
+持有	chi you	4019
+无比	wu bi	4018
+明年	ming nian	4016
+柬埔寨	jian pu zhai	4015
+殖民地	zhi min di	4014
+毕业生	bi ye sheng	4012
+气体	qi ti	4011
+治安	zhi an	4009
+海岸	hai an	4008
+版权	ban quan	4007
+眼中	yan zhong	4005
+瞬间	shun jian	4004
+示范	shi fan	4002
+超市	chao shi	4001
+足以	zu yi	4000
+身份证	shen fen zheng	3998
+进化	jin hua	3997
+邻近	lin jin	3995
+间谍	jian die	3994
+一台	yi tai	3993
+一线	yi xian	3991
+乐队	yue dui	3990
+二战	er zhan	3988
+修订	xiu ding	3987
+兴起	xing qi	3986
+冷静	leng jing	3984
+分手	fen shou	3983
+前线	qian xian	3981
+区分	qu fen	3980
+厂商	chang shang	3979
+变动	bian dong	3977
+喝酒	he jiu	3976
+地带	di dai	3974
+大致	da zhi	3973
+天地	tian di	3972
+好玩	hao wan	3970
+实用	shi yong	3969
+小女孩	xiao nv hai	3967
+州长	zhou zhang	3966
+录音	lu yin	3965
+总经理	zong jing li	3963
+恭喜	gong xi	3962
+护照	hu zhao	3960
+拓展	tuo zhan	3959
+排列	pai lie	3958
+提示	ti shi	3956
+无力	wu li	3955
+日语	ri yu	3953
+早晨	zao chen	3952
+最长	zui zhang	3951
+未能	wei neng	3949
+欢乐	huan le	3948
+汇率	hui lv	3946
+法令	fa ling	3945
+波动	bo dong	3944
+派出	pai chu	3942
+海滩	hai tan	3941
+清洁	qing jie	3939
+激情	ji qing	3938
+现今	xian jin	3937
+现行	xian xing	3935
+监察	jian cha	3934
+看不到	kan bu dao	3932
+类别	lei bie	3931
+纺织	fang zhi	3930
+终身	zhong shen	3928
+绘画	hui hua	3927
+老百姓	lao bai xing	3925
+肌肉	ji rou	3924
+自行车	zi xing che	3923
+航班	hang ban	3921
+舰队	jian dui	3920
+董事长	dong shi zhang	3918
+虐待	nve dai	3917
+血液	xue ye	3916
+补贴	bu tie	3914
+议题	yi ti	3913
+识别	shi bie	3911
+诊断	zhen duan	3910
+课题	ke ti	3909
+谨慎	jin shen	3907
+负面	fu mian	3906
+财经	cai jing	3904
+贫穷	pin qiong	3903
+跟随	gen sui	3902
+邮件	you jian	3900
+难度	nan du	3899
+难题	nan ti	3897
+骗局	pian ju	3896
+一行	yi xing	3895
+业绩	ye ji	3893
+之声	zhi sheng	3892
+介入	jie ru	3890
+他会	ta hui	3889
+假期	jia qi	3888
+做爱	zuo ai	3886
+先锋	xian feng	3885
+光明	guang ming	3883
+六年	liu nian	3882
+减轻	jian qing	3881
+办公	ban gong	3879
+反复	fan fu	3878
+否定	fou ding	3876
+国产	guo chan	3875
+在乎	zai hu	3874
+天主教	tian zhu jiao	3872
+好人	hao ren	3871
+宣告	xuan gao	3869
+寂寞	ji mo	3868
+尊敬	zun jing	3867
+小时候	xiao shi hou	3865
+平方千米	ping fang qian mi	3864
+开除	kai chu	3862
+引入	yin ru	3861
+当日	dang ri	3860
+录像	lu xiang	3858
+征服	zheng fu	3857
+成年	cheng nian	3855
+战术	zhan shu	3854
+手续	shou xu	3853
+抗争	kang zheng	3851
+折磨	zhe mo	3850
+报警	bao jing	3848
+披露	pi lu	3847
+指南	zhi nan	3846
+摄影师	she ying shi	3844
+更大	geng da	3843
+更换	geng huan	3841
+村庄	cun zhuang	3840
+步骤	bu zhou	3839
+派遣	pai qian	3837
+海拔	hai ba	3836
+燃烧	ran shao	3834
+特区	te qu	3833
+特权	te quan	3832
+独裁	du cai	3830
+眼镜	yan jing	3829
+研制	yan zhi	3827
+科学院	ke xue yuan	3826
+税收	shui shou	3825
+缺点	que dian	3823
+职权	zhi quan	3822
+脑子	nao zi	3820
+荣耀	rong yao	3819
+获奖	huo jiang	3818
+西亚	xi ya	3816
+讽刺	feng ci	3815
+跳舞	tiao wu	3813
+选票	xuan piao	3812
+配套	pei tao	3811
+钢琴	gang qin	3809
+阿富汗	a fu han	3808
+首席	shou xi	3806
+验证	yan zheng	3805
+高峰	gao feng	3804
+不顾	bu gu	3802
+也就是说	ye jiu shi shuo	3801
+从中	cong zhong	3799
+会计	kuai ji	3798
+例外	li wai	3797
+保罗	bao luo	3795
+入境	ru jing	3794
+公元	gong yuan	3792
+公车	gong che	3791
+出色	chu se	3790
+加盟	jia meng	3788
+十五	shi wu	3787
+十八	shi ba	3785
+司令	si ling	3784
+图书	tu shu	3783
+在意	zai yi	3781
+声援	sheng yuan	3780
+处置	chu zhi	3778
+宗旨	zong zhi	3777
+宣称	xuan cheng	3776
+封面	feng mian	3774
+希特勒	xi te lei	3773
+带走	dai zou	3771
+平静	ping jing	3770
+开辟	kai pi	3769
+形状	xing zhuang	3767
+影视	ying shi	3766
+总督	zong du	3764
+悲伤	bei shang	3763
+意图	yi tu	3762
+描绘	miao hui	3760
+携带	xie dai	3759
+撰写	zhuan xie	3757
+支出	zhi chu	3756
+收获	shou huo	3755
+新增	xin zeng	3753
+新娘	xin niang	3752
+查询	cha xun	3750
+模仿	mo fang	3749
+此刻	ci ke	3748
+此前	ci qian	3746
+法语	fa yu	3745
+活力	huo li	3743
+流域	liu yu	3742
+流程	liu cheng	3741
+玫瑰	mei gui	3739
+用途	yong tu	3738
+短片	duan pian	3736
+碰到	peng dao	3735
+穿过	chuan guo	3734
+第五	di wu	3732
+红军	hong jun	3731
+蒋介石	jiang jie shi	3729
+见解	jian jie	3728
+请愿	qing yuan	3727
+过后	guo hou	3725
+遥远	yao yuan	3724
+随机	sui ji	3722
+隔离	ge li	3721
+面试	mian shi	3720
+额外	e wai	3718
+一处	yi chu	3717
+三级	san ji	3715
+不怕	bu pa	3714
+专制	zhuan zhi	3713
+严厉	yan li	3711
+书写	shu xie	3710
+二级	er ji	3708
+人格	ren ge	3707
+人选	ren xuan	3706
+伤亡	shang wang	3704
+伴随	ban sui	3703
+保安	bao an	3701
+信念	xin nian	3700
+停留	ting liu	3699
+八年	ba nian	3697
+八月	ba yue	3696
+公益	gong yi	3694
+凤凰	feng huang	3693
+发声	fa sheng	3692
+台风	tai feng	3690
+国土	guo tu	3689
+大地	da di	3687
+大气	da qi	3686
+失误	shi wu	3685
+头上	tou shang	3683
+字母	zi mu	3682
+对面	dui mian	3680
+尺寸	chi cun	3679
+市委	shi wei	3678
+忍不住	ren bu zhu	3676
+志愿	zhi yuan	3675
+恶劣	e lie	3673
+情人	qing ren	3672
+抢劫	qiang jie	3671
+效力	xiao li	3669
+新建	xin jian	3668
+施行	shi xing	3666
+构建	gou jian	3665
+框架	kuang jia	3664
+模糊	mo hu	3662
+每当	mei dang	3661
+清醒	qing xing	3659
+火车站	huo che zhan	3658
+热点	re dian	3657
+率先	shuai xian	3655
+率领	shuai ling	3654
+登上	deng shang	3652
+目光	mu guang	3651
+研究员	yan jiu yuan	3650
+祝福	zhu fu	3648
+精力	jing li	3647
+营运	ying yun	3645
+解读	jie du	3644
+认知	ren zhi	3643
+资本家	zi ben jia	3641
+软体	ruan ti	3640
+这座	zhe zuo	3638
+锻炼	duan lian	3637
+驱动	qu dong	3636
+驱逐	qu zhu	3634
+骚扰	sao rao	3633
+魔法	mo fa	3631
+一组	yi zu	3630
+七月	qi yue	3629
+不安	bu an	3627
+专注	zhuan zhu	3626
+中有	zhong you	3624
+九月	jiu yue	3623
+从小	cong xiao	3622
+代表团	dai biao tuan	3620
+休闲	xiu xian	3619
+传达	chuan da	3617
+信用卡	xin yong ka	3616
+储存	chu cun	3615
+全力	quan li	3613
+兼职	jian zhi	3612
+内涵	nei han	3610
+利率	li lv	3609
+半个	ban ge	3608
+厘米	li mi	3606
+变更	bian geng	3605
+同性	tong xing	3603
+周刊	zhou kan	3602
+哈哈	ha ha	3601
+唱歌	chang ge	3599
+困境	kun jing	3598
+国旗	guo qi	3596
+国籍	guo ji	3595
+图案	tu an	3594
+在场	zai chang	3592
+地域	di yu	3591
+培育	pei yu	3589
+复制	fu zhi	3588
+奥地利	ao di li	3587
+完毕	wan bi	3585
+客气	ke qi	3584
+履行	lv xing	3582
+崇拜	chong bai	3581
+市政府	shi zheng fu	3580
+师傅	shi fu	3578
+弟子	di zi	3577
+意愿	yi yuan	3575
+所有权	suo you quan	3574
+抱歉	bao qian	3573
+指令	zhi ling	3571
+提案	ti an	3570
+改编	gai bian	3568
+数目	shu mu	3567
+死去	si qu	3566
+法制	fa zhi	3564
+海峡	hai xia	3563
+清单	qing dan	3561
+温柔	wen rou	3560
+灵活	ling huo	3559
+申报	shen bao	3557
+盈利	ying li	3556
+监测	jian ce	3554
+相处	xiang chu	3553
+相继	xiang ji	3552
+短暂	duan zan	3550
+穷人	qiong ren	3549
+窗口	chuang kou	3547
+管道	guan dao	3546
+罪名	zui ming	3545
+美国政府	mei guo zheng fu	3543
+考生	kao sheng	3542
+耐心	nai xin	3540
+股市	gu shi	3539
+要素	yao su	3538
+观测	guan ce	3536
+规格	gui ge	3535
+诱惑	you huo	3533
+起飞	qi fei	3532
+近年	jin nian	3531
+追踪	zhui zong	3529
+那儿	na er	3528
+鉴定	jian ding	3526
+阿姨	a yi	3525
+高手	gao shou	3524
+高考	gao kao	3522
+一分钟	yi fen zhong	3521
+一口	yi kou	3519
+万吨	wan dun	3518
+上诉	shang su	3517
+下列	xia lie	3515
+中医	zhong yi	3514
+乡镇	xiang zhen	3512
+事先	shi xian	3511
+体重	ti zhong	3510
+偷偷	tou tou	3508
+养老	yang lao	3507
+内外	nei wai	3505
+冬天	dong tian	3504
+出国	chu guo	3503
+出版社	chu ban she	3501
+分成	fen cheng	3500
+刚好	gang hao	3498
+协同	xie tong	3497
+单身	dan shen	3496
+印度尼西亚	yin du ni xi ya	3494
+参赛	can sai	3493
+后续	hou xu	3491
+含义	han yi	3490
+和尚	he shang	3489
+器官	qi guan	3487
+国营	guo ying	3486
+大队	da dui	3484
+天才	tian cai	3483
+媳妇	xi fu	3482
+实习	shi xi	3480
+宿舍	su she	3479
+崛起	jue qi	3477
+平常	ping chang	3476
+广东省	guang dong sheng	3475
+当下	dang xia	3473
+影音	ying yin	3472
+很棒	hen bang	3470
+快点	kuai dian	3469
+抑制	yi zhi	3468
+拍照	pai zhao	3466
+拥抱	yong bao	3465
+教室	jiao shi	3463
+新年	xin nian	3462
+暗示	an shi	3461
+未经	wei jing	3459
+柏林	bo lin	3458
+歌词	ge ci	3456
+武力	wu li	3455
+氛围	fen wei	3454
+爱尔兰	ai er lan	3452
+牛奶	niu nai	3451
+球迷	qiu mi	3449
+生产力	sheng chan li	3448
+约束	yue shu	3447
+纪录片	ji lu pian	3445
+肚子	du zi	3444
+蛋糕	dan gao	3442
+观光	guan guang	3441
+詹姆斯	zhan mu si	3440
+谣言	yao yan	3438
+身亡	shen wang	3437
+这句	zhe ju	3435
+逝世	shi shi	3434
+遵循	zun xun	3433
+重组	chong zu	3431
+野生	ye sheng	3430
+间接	jian jie	3428
+一刻	yi ke	3427
+一号	yi hao	3426
+一点点	yi dian dian	3424
+不易	bu yi	3423
+为期	wei qi	3421
+主力	zhu li	3420
+主编	zhu bian	3419
+亚马逊	ya ma xun	3417
+亨利	heng li	3416
+人心	ren xin	3414
+优良	you liang	3413
+伤口	shang kou	3412
+冬季	dong ji	3410
+创始人	chuang shi ren	3409
+判处	pan chu	3407
+十九	shi jiu	3406
+卡尔	ka er	3405
+原有	yuan you	3403
+参议员	can yi yuan	3402
+反思	fan si	3400
+听取	ting qu	3399
+商场	shang chang	3398
+困扰	kun rao	3396
+国语	guo yu	3395
+城堡	cheng bao	3393
+外来	wai lai	3392
+天然气	tian ran qi	3391
+好评	hao ping	3389
+存款	cun kuan	3388
+安置	an zhi	3386
+将领	jiang ling	3385
+尼亚	ni ya	3384
+工作室	gong zuo shi	3382
+市中心	shi zhong xin	3381
+帐号	zhang hao	3379
+幕后	mu hou	3378
+幼儿园	you er yuan	3377
+开口	kai kou	3375
+思路	si lu	3374
+性命	xing ming	3372
+想像	xiang xiang	3371
+拆除	chai chu	3370
+拿来	na lai	3368
+搜狐	sou hu	3367
+收回	shou hui	3365
+整天	zheng tian	3364
+整顿	zheng dun	3363
+无论是	wu lun shi	3361
+春节	chun jie	3360
+有名	you ming	3358
+本科	ben ke	3357
+架构	jia gou	3356
+标语	biao yu	3354
+次数	ci shu	3353
+水泥	shui ni	3351
+涉嫌	she xian	3350
+深化	shen hua	3349
+漫长	man chang	3347
+玉米	yu mi	3346
+理事	li shi	3344
+直辖市	zhi xia shi	3343
+筹备	chou bei	3342
+精确	jing que	3340
+精英	jing ying	3339
+纠纷	jiu fen	3337
+约会	yue hui	3336
+终结	zhong jie	3335
+老头	lao tou	3333
+职员	zhi yuan	3332
+脆弱	cui ruo	3330
+苏维埃	su wei ai	3329
+营造	ying zao	3328
+行程	xing cheng	3326
+裁决	cai jue	3325
+见证	jian zheng	3323
+贪污	tan wu	3322
+这才	zhe cai	3321
+途中	tu zhong	3319
+野蛮	ye man	3318
+高于	gao yu	3316
+一首	yi shou	3315
+三种	san zhong	3314
+专项	zhuan xiang	3312
+举动	ju dong	3311
+也好	ye hao	3309
+人文	ren wen	3308
+人气	ren qi	3307
+传输	chuan shu	3305
+作风	zuo feng	3304
+出卖	chu mai	3302
+加大	jia da	3301
+劳工	lao gong	3300
+单元	dan yuan	3298
+反动	fan dong	3297
+含量	han liang	3295
+城区	cheng qu	3294
+基督徒	ji du tu	3293
+基金会	ji jin hui	3291
+复兴	fu xing	3290
+夏季	xia ji	3288
+女孩子	nv hai zi	3287
+字幕	zi mu	3286
+孙子	sun zi	3284
+宁愿	ning yuan	3283
+安娜	an na	3281
+宠物	chong wu	3280
+局部	ju bu	3279
+差点	cha dian	3277
+彼得	bi de	3276
+打倒	da dao	3274
+拍卖	pai mai	3273
+接待	jie dai	3271
+提及	ti ji	3270
+提取	ti qu	3269
+操纵	cao zong	3267
+政变	zheng bian	3266
+故障	gu zhang	3264
+新西兰	xin xi lan	3263
+昆明	kun ming	3262
+最强	zui qiang	3260
+杀手	sha shou	3259
+极度	ji du	3257
+标记	biao ji	3256
+正规	zheng gui	3255
+残忍	can ren	3253
+消耗	xiao hao	3252
+清洗	qing xi	3250
+清除	qing chu	3249
+火灾	huo zai	3248
+灭亡	mie wang	3246
+烦恼	fan nao	3245
+特有	te you	3243
+生涯	sheng ya	3242
+生理	sheng li	3241
+省份	sheng fen	3239
+省级	sheng ji	3238
+社团	she tuan	3236
+稍微	shao wei	3235
+空调	kong tiao	3234
+简化	jian hua	3232
+算了	suan le	3231
+纳粹	na cui	3229
+缓解	huan jie	3228
+老大	lao da	3227
+老虎	lao hu	3225
+考古	kao gu	3224
+耳朵	er duo	3222
+自动化	zi dong hua	3221
+艺人	yi ren	3220
+裤子	ku zi	3218
+谈到	tan dao	3217
+赞同	zan tong	3215
+轰炸	hong zha	3214
+运转	yun zhuan	3213
+金沙	jin sha	3211
+鸡巴	ji ba	3210
+一一	yi yi	3208
+上周	shang zhou	3207
+上线	shang xian	3206
+上课	shang ke	3204
+不太	bu tai	3203
+中方	zhong fang	3201
+临床	lin chuang	3200
+习俗	xi su	3199
+交谈	jiao tan	3197
+亲人	qin ren	3196
+价钱	jia qian	3194
+便利	bian li	3193
+停车	ting che	3192
+共产主义	gong chan zhu yi	3190
+冲动	chong dong	3189
+分歧	fen qi	3187
+制造业	zhi zao ye	3186
+原谅	yuan liang	3185
+域名	yu ming	3183
+多名	duo ming	3182
+大都	da du	3180
+奥斯卡	ao si ka	3179
+妥协	tuo xie	3178
+存储	cun chu	3176
+完整版	wan zheng ban	3175
+实时	shi shi	3173
+审批	shen pi	3172
+审理	shen li	3171
+小子	xiao zi	3169
+平方公里	ping fang gong li	3168
+开头	kai tou	3166
+弹性	tan xing	3165
+总面积	zong mian ji	3164
+战斗机	zhan dou ji	3162
+担忧	dan you	3161
+提倡	ti chang	3159
+搜集	sou ji	3158
+搭配	da pei	3157
+改名	gai ming	3155
+无线	wu xian	3154
+日军	ri jun	3152
+景点	jing dian	3151
+机遇	ji yu	3150
+洪水	hong shui	3148
+滥用	lan yong	3147
+演唱会	yan chang hui	3145
+犹太	you tai	3144
+珍贵	zhen gui	3143
+白天	bai tian	3141
+真人	zhen ren	3140
+真心	zhen xin	3138
+眼光	yan guang	3137
+礼拜	li bai	3136
+纠正	jiu zheng	3134
+缺陷	que xian	3133
+美味	mei wei	3131
+联合会	lian he hui	3130
+联想	lian xiang	3129
+致命	zhi ming	3127
+舒适	shu shi	3126
+苏丹	su dan	3124
+融入	rong ru	3123
+访谈	fang tan	3122
+说完	shuo wan	3120
+转载	zhuan zai	3119
+通往	tong wang	3117
+那位	na wei	3116
+零售	ling shou	3115
+顶级	ding ji	3113
+一共	yi gong	3112
+一夜	yi ye	3110
+一架	yi jia	3109
+万一	wan yi	3108
+上演	shang yan	3106
+专栏	zhuan lan	3105
+中共中央	zhong gong zhong yang	3103
+乐趣	le qu	3102
+争夺	zheng duo	3101
+从来不	cong lai bu	3099
+仿佛	fang fu	3098
+储备	chu bei	3096
+党内	dang nei	3095
+共和	gong he	3094
+关税	guan shui	3092
+出租车	chu zu che	3091
+出自	chu zi	3089
+前景	qian jing	3088
+办学	ban xue	3087
+助手	zhu shou	3085
+北美	bei mei	3084
+十月	shi yue	3082
+发掘	fa jue	3081
+变迁	bian qian	3080
+吉林	ji lin	3078
+名誉	ming yu	3077
+启发	qi fa	3075
+启用	qi yong	3074
+善于	shan yu	3073
+四处	si chu	3071
+型号	xing hao	3070
+外贸	wai mao	3068
+夜晚	ye wan	3067
+大使馆	da shi guan	3066
+头部	tou bu	3064
+夸张	kua zhang	3063
+好不好	hao bu hao	3061
+娃娃	wa wa	3060
+左派	zuo pai	3059
+开工	kai gong	3057
+开门	kai men	3056
+想念	xiang nian	3054
+找出	zhao chu	3053
+拜托	bai tuo	3052
+挑选	tiao xuan	3050
+挣扎	zheng zha	3049
+排放	pai fang	3047
+提问	ti wen	3046
+日起	ri qi	3045
+春秋	chun qiu	3043
+普查	pu cha	3042
+某人	mou ren	3040
+此处	ci chu	3039
+武士	wu shi	3038
+比利时	bi li shi	3036
+气温	qi wen	3035
+水中	shui zhong	3033
+汇报	hui bao	3032
+海关	hai guan	3031
+涵盖	han gai	3029
+源于	yuan yu	3028
+火山	huo shan	3026
+爱上	ai shang	3025
+爱心	ai xin	3024
+牧师	mu shi	3022
+病例	bing li	3021
+眼里	yan li	3019
+社长	she zhang	3018
+笔记	bi ji	3017
+精灵	jing ling	3015
+线索	xian suo	3014
+编写	bian xie	3012
+虚假	xu jia	3011
+试点	shi dian	3010
+走上	zou shang	3008
+起源	qi yuan	3007
+身材	shen cai	3005
+运气	yun qi	3004
+连任	lian ren	3003
+遇上	yu shang	3001
+阐述	chan shu	3000
+隐私	yin si	2998
+预言	yu yan	2997
+领取	ling qu	2996
+首位	shou wei	2994
+首歌	shou ge	2993
+一向	yi xiang	2991
+一层	yi ceng	2990
+一是	yi shi	2989
+下跌	xia die	2987
+不当	bu dang	2986
+不止	bu zhi	2984
+世人	shi ren	2983
+东海	dong hai	2982
+中华民国	zhong hua min guo	2980
+五大	wu da	2979
+交友	jiao you	2977
+作物	zuo wu	2976
+使用者	shi yong zhe	2975
+侮辱	wu ru	2973
+健全	jian quan	2972
+先前	xian qian	2970
+光绪	guang xu	2969
+公交	gong jiao	2968
+几位	ji wei	2966
+分散	fen san	2965
+切实	qie shi	2963
+初级	chu ji	2962
+前期	qian qi	2961
+十二	shi er	2959
+千年	qian nian	2958
+受欢迎	shou huan ying	2956
+境界	jing jie	2955
+大国	da guo	2954
+好莱坞	hao lai wu	2952
+妓女	ji nv	2951
+宁波	ning bo	2949
+室内	shi nei	2948
+密度	mi du	2947
+帐户	zhang hu	2945
+平原	ping yuan	2944
+庆典	qing dian	2942
+座位	zuo wei	2941
+弥补	mi bu	2940
+征收	zheng shou	2938
+情侣	qing lv	2937
+感兴趣	gan xing qu	2935
+排队	pai dui	2934
+掩盖	yan gai	2933
+支持者	zhi chi zhe	2931
+效益	xiao yi	2930
+方言	fang yan	2928
+星期一	xing qi yi	2927
+昨日	zuo ri	2926
+暗杀	an sha	2924
+月亮	yue liang	2923
+期限	qi xian	2921
+极限	ji xian	2920
+格局	ge ju	2919
+海域	hai yu	2917
+深夜	shen ye	2916
+演唱	yan chang	2914
+爱好	ai hao	2913
+牙齿	ya chi	2912
+物体	wu ti	2910
+电梯	dian ti	2909
+登场	deng chang	2907
+积分	ji fen	2906
+简历	jian li	2905
+纪律	ji lv	2903
+绝大多数	jue da duo shu	2902
+编剧	bian ju	2900
+缩短	suo duan	2899
+脖子	bo zi	2898
+范畴	fan chou	2896
+解散	jie san	2895
+贝尔	bei er	2893
+赛事	sai shi	2892
+过滤	guo lv	2891
+远远	yuan yuan	2889
+部位	bu wei	2888
+重要性	zhong yao xing	2886
+重量	zhong liang	2885
+钱包	qian bao	2884
+防治	fang zhi	2882
+阴影	yin ying	2881
+预备	yu bei	2879
+鸡蛋	ji dan	2878
+一流	yi liu	2877
+一眼	yi yan	2875
+上台	shang tai	2874
+不肯	bu ken	2872
+丑闻	chou wen	2871
+世界各地	shi jie ge di	2870
+中华民族	zhong hua min zu	2868
+主场	zhu chang	2867
+二十	er shi	2865
+亚历山大	ya li shan da	2864
+会上	hui shang	2863
+伸出	shen chu	2861
+修建	xiu jian	2860
+借口	jie kou	2858
+光荣	guang rong	2857
+分支	fen zhi	2856
+分解	fen jie	2854
+列宁	lie ning	2853
+前途	qian tu	2851
+加剧	jia ju	2850
+卡拉	ka la	2849
+参议院	can yi yuan	2847
+双重	shuang chong	2846
+叔叔	shu shu	2844
+受不了	shou bu liao	2843
+可笑	ke xiao	2842
+同行	tong hang	2840
+哥伦比亚	ge lun bi ya	2839
+啤酒	pi jiu	2837
+处境	chu jing	2836
+太子	tai zi	2835
+契约	qi yue	2833
+宝贵	bao gui	2832
+屏幕	ping mu	2830
+带到	dai dao	2829
+庇护	bi hu	2828
+开创	kai chuang	2826
+开采	kai cai	2825
+强行	qiang xing	2823
+总监	zong jian	2822
+恶魔	e mo	2821
+打死	da si	2819
+控告	kong gao	2818
+推文	tui wen	2816
+撤离	che li	2815
+收拾	shou shi	2814
+政治家	zheng zhi jia	2812
+无知	wu zhi	2811
+景区	jing qu	2809
+曲线	qu xian	2808
+有助于	you zhu yu	2807
+未必	wei bi	2805
+检察官	jian cha guan	2804
+江南	jiang nan	2802
+法定	fa ding	2801
+深深	shen shen	2800
+清晨	qing chen	2798
+渔业	yu ye	2797
+演奏	yan zou	2795
+潮流	chao liu	2794
+物价	wu jia	2793
+猜测	cai ce	2791
+痕迹	hen ji	2790
+瞄准	miao zhun	2788
+研究院	yan jiu yuan	2787
+确切	que qie	2786
+福州	fu zhou	2784
+航线	hang xian	2783
+花钱	hua qian	2781
+苦难	ku nan	2780
+规矩	gui ju	2779
+视野	shi ye	2777
+词汇	ci hui	2776
+试着	shi zhe	2774
+诸如	zhu ru	2773
+车子	che zi	2772
+转让	zhuan rang	2770
+违规	wei gui	2769
+长春	chang chun	2767
+隐瞒	yin man	2766
+难得	nan de	2765
+题目	ti mu	2763
+鲜明	xian ming	2762
+一番	yi fan	2760
+一贯	yi guan	2759
+一阵	yi zhen	2758
+七个	qi ge	2756
+不成	bu cheng	2755
+中介	zhong jie	2753
+乐园	le yuan	2752
+亏损	kui sun	2751
+人事	ren shi	2749
+余额	yu e	2748
+侦探	zhen tan	2746
+信贷	xin dai	2745
+列表	lie biao	2744
+北大	bei da	2742
+十三	shi san	2741
+卡车	ka che	2739
+告别	gao bie	2738
+坏人	huai ren	2737
+多家	duo jia	2735
+大于	da yu	2734
+天赋	tian fu	2732
+学到	xue dao	2731
+守护	shou hu	2730
+导向	dao xiang	2728
+小孩子	xiao hai zi	2727
+尽可能	jin ke neng	2725
+工商	gong shang	2724
+带给	dai gei	2723
+常规	chang gui	2721
+帽子	mao zi	2720
+平面	ping mian	2718
+应有	ying you	2717
+德州	de zhou	2716
+志愿者	zhi yuan zhe	2714
+忠诚	zhong cheng	2713
+总共	zong gong	2711
+恶意	e yi	2710
+我刚	wo gang	2709
+扭曲	niu qu	2707
+拿下	na xia	2706
+捐款	juan kuan	2704
+故乡	gu xiang	2703
+教导	jiao dao	2702
+料理	liao li	2700
+旋转	xuan zhuan	2699
+无需	wu xu	2697
+既有	ji you	2696
+时常	shi chang	2695
+是非	shi fei	2693
+最小	zui xiao	2692
+有害	you hai	2690
+朝廷	chao ting	2689
+模样	mu yang	2688
+注入	zhu ru	2686
+渗透	shen tou	2685
+点击	dian ji	2683
+焦虑	jiao lv	2682
+现存	xian cun	2681
+白宫	bai gong	2679
+秘鲁	bi lu	2678
+竞争力	jing zheng li	2676
+老子	lao zi	2675
+致使	zhi shi	2674
+荣获	rong huo	2672
+觉醒	jue xing	2671
+讲座	jiang zuo	2669
+误解	wu jie	2668
+说不定	shuo bu ding	2667
+这块	zhe kuai	2665
+迷你	mi ni	2664
+选区	xuan qu	2662
+选拔	xuan ba	2661
+遗传	yi chuan	2660
+金牌	jin pai	2658
+钻石	zuan shi	2657
+销量	xiao liang	2655
+长城	chang cheng	2654
+长官	zhang guan	2653
+隶属	li shu	2651
+顺便	shun bian	2650
+飞行员	fei xing yuan	2648
+一股	yi gu	2647
+三大	san da	2646
+下属	xia shu	2644
+下滑	xia hua	2643
+不像	bu xiang	2641
+不及	bu ji	2640
+业余	ye yu	2639
+中山	zhong shan	2637
+主意	zhu yi	2636
+乃至	nai zhi	2634
+亲密	qin mi	2633
+仇恨	chou hen	2632
+倡导	chang dao	2630
+全文	quan wen	2629
+共同体	gong tong ti	2627
+凡是	fan shi	2626
+凭借	ping jie	2625
+出名	chu ming	2623
+刊登	kan deng	2622
+动漫	dong man	2620
+原先	yuan xian	2619
+又称	you cheng	2618
+召集	zhao ji	2616
+同期	tong qi	2615
+同盟	tong meng	2613
+周日	zhou ri	2612
+善良	shan liang	2611
+嘴里	zui li	2609
+回复	hui fu	2608
+场地	chang di	2606
+场面	chang mian	2605
+外观	wai guan	2604
+大卫	da wei	2602
+夺取	duo qu	2601
+好消息	hao xiao xi	2599
+富裕	fu yu	2598
+尺度	chi du	2597
+巧克力	qiao ke li	2595
+帅哥	shuai ge	2594
+幽默	you mo	2592
+广阔	guang kuo	2591
+底下	di xia	2590
+成交	cheng jiao	2588
+掠夺	lve duo	2587
+推测	tui ce	2585
+无奈	wu nai	2584
+无意	wu yi	2583
+星期六	xing qi liu	2581
+最快	zui kuai	2580
+有利于	you li yu	2578
+服饰	fu shi	2577
+机密	ji mi	2576
+来临	lai lin	2574
+棉花	mian hua	2573
+犯人	fan ren	2571
+环球	huan qiu	2570
+知识分子	zhi shi fen zi	2569
+签约	qian yue	2567
+结算	jie suan	2566
+缩小	suo xiao	2564
+罪恶	zui e	2563
+血腥	xue xing	2562
+言语	yan yu	2560
+设想	she xiang	2559
+评审	ping shen	2557
+诈骗	zha pian	2556
+诚信	cheng xin	2555
+资深	zi shen	2553
+走过	zou guo	2552
+起床	qi chuang	2550
+起码	qi ma	2549
+跨越	kua yue	2548
+迁移	qian yi	2546
+进球	jin qiu	2545
+选项	xuan xiang	2543
+闻名	wen ming	2542
+陌生	mo sheng	2541
+面貌	mian mao	2539
+马克思	ma ke si	2538
+骗人	pian ren	2536
+高温	gao wen	2535
+一个个	yi ge ge	2534
+一员	yi yuan	2532
+一顿	yi dun	2531
+中原	zhong yuan	2529
+二月	er yue	2528
+人民法院	ren min fa yuan	2527
+传送	chuan song	2525
+保健	bao jian	2524
+偶然	ou ran	2522
+公元前	gong yuan qian	2521
+公顷	gong qing	2520
+关怀	guan huai	2518
+军区	jun qu	2517
+几分钟	ji fen zhong	2515
+出租	chu zu	2514
+刑罚	xing fa	2513
+列出	lie chu	2511
+制约	zhi yue	2510
+北约	bei yue	2508
+午餐	wu can	2507
+压缩	ya suo	2506
+同比	tong bi	2504
+君主	jun zhu	2503
+喜剧	xi ju	2501
+四周	si zhou	2500
+基督	ji du	2499
+夜间	ye jian	2497
+失控	shi kong	2496
+姿态	zi tai	2494
+媒介	mei jie	2493
+嫁给	jia gei	2492
+孔子	kong zi	2490
+孤立	gu li	2489
+学说	xue shuo	2487
+学费	xue fei	2486
+安慰	an wei	2485
+容量	rong liang	2483
+山脉	shan mai	2482
+应急	ying ji	2480
+忽然	hu ran	2479
+怎么回事	zen me hui shi	2478
+性爱	xing ai	2476
+成效	cheng xiao	2475
+找个	zhao ge	2473
+拥护	yong hu	2472
+挖掘	wa jue	2471
+挪威	nuo wei	2469
+搞笑	gao xiao	2468
+操控	cao kong	2466
+支配	zhi pei	2465
+改称	gai cheng	2464
+救助	jiu zhu	2462
+无人机	wu ren ji	2461
+明明	ming ming	2459
+村落	cun luo	2458
+比起	bi qi	2457
+汉字	han zi	2455
+海湾	hai wan	2454
+煤炭	mei tan	2452
+电影院	dian ying yuan	2451
+眼神	yan shen	2450
+祖先	zu xian	2448
+经济学家	jing ji xue jia	2447
+致力于	zhi li yu	2445
+草原	cao yuan	2444
+获胜	huo sheng	2443
+评为	ping wei	2441
+调研	diao yan	2440
+起初	qi chu	2438
+辉煌	hui huang	2437
+迹象	ji xiang	2436
+逃避	tao bi	2434
+郊区	jiao qu	2433
+钥匙	yao shi	2431
+长度	chang du	2430
+防范	fang fan	2429
+附属	fu shu	2427
+雷达	lei da	2426
+食用	shi yong	2424
+首尔	shou er	2423
+高效	gao xiao	2421
+鲁迅	lu xun	2420
+一所	yi suo	2419
+七年	qi nian	2417
+三位	san wei	2416
+不好意思	bu hao yi si	2414
+不禁	bu jin	2413
+丛林	cong lin	2412
+东风	dong feng	2410
+中等	zhong deng	2409
+主播	zhu bo	2407
+交易所	jiao yi suo	2406
+侵害	qin hai	2405
+债券	zhai quan	2403
+元年	yuan nian	2402
+入学	ru xue	2400
+八个	ba ge	2399
+公尺	gong chi	2398
+制品	zhi pin	2396
+制订	zhi ding	2395
+剧场	ju chang	2393
+剧院	ju yuan	2392
+历程	li cheng	2391
+原住民	yuan zhu min	2389
+各方	ge fang	2388
+后代	hou dai	2386
+园区	yuan qu	2385
+地主	di zhu	2384
+处分	chu fen	2382
+大片	da pian	2381
+好运	hao yun	2379
+妨碍	fang ai	2378
+孕妇	yun fu	2377
+宏观	hong guan	2375
+客运	ke yun	2374
+寻常	xun chang	2372
+小小的	xiao xiao de	2371
+就此	jiu ci	2370
+布置	bu zhi	2368
+师父	shi fu	2367
+平方米	ping fang mi	2365
+开办	kai ban	2364
+总局	zong ju	2363
+担当	dan dang	2361
+拘留	ju liu	2360
+指挥官	zhi hui guan	2358
+振兴	zhen xing	2357
+捷克	jie ke	2356
+收取	shou qu	2354
+斯大林	si da lin	2353
+新闻网	xin wen wang	2351
+旨在	zhi zai	2350
+时时	shi shi	2349
+晚间	wan jian	2347
+期刊	qi kan	2346
+机动	ji dong	2344
+民意	min yi	2343
+民生	min sheng	2342
+永恒	yong heng	2340
+沙发	sha fa	2339
+洗澡	xi zao	2337
+温和	wen he	2336
+湖泊	hu po	2335
+生动	sheng dong	2333
+生育	sheng yu	2332
+电报	dian bao	2330
+留给	liu gei	2329
+监禁	jian jin	2328
+真诚	zhen cheng	2326
+礼貌	li mao	2325
+程式	cheng shi	2323
+第一位	di yi wei	2322
+细菌	xi jun	2321
+给出	gei chu	2319
+统治者	tong zhi zhe	2318
+聚焦	ju jiao	2316
+股价	gu jia	2315
+脾气	pi qi	2314
+船只	chuan zhi	2312
+芬兰	fen lan	2311
+英格兰	ying ge lan	2309
+解决方案	jie jue fang an	2308
+调教	tiao jiao	2307
+赞助	zan zhu	2305
+走路	zou lu	2304
+这话	zhe hua	2302
+醒来	xing lai	2301
+问问	wen wen	2300
+隧道	sui dao	2298
+鱼类	yu lei	2297
+黄河	huang he	2295
+鼻子	bi zi	2294
+一堆	yi dui	2293
+专区	zhuan qu	2291
+两家	liang jia	2290
+二十年	er shi nian	2288
+传来	chuan lai	2287
+做事	zuo shi	2286
+兑换	dui huan	2284
+全程	quan cheng	2283
+内裤	nei ku	2281
+准则	zhun ze	2280
+几十年	ji shi nian	2279
+刑法	xing fa	2277
+前夕	qian xi	2276
+勇士	yong shi	2274
+勉强	mian qiang	2273
+十一	shi yi	2272
+即时	ji shi	2270
+参选	can xuan	2269
+又名	you ming	2267
+名词	ming ci	2266
+周五	zhou wu	2265
+唱片	chang pian	2263
+嘲笑	chao xiao	2262
+回事	hui shi	2260
+墙上	qiang shang	2259
+外籍	wai ji	2258
+大火	da huo	2256
+奉献	feng xian	2255
+妹子	mei zi	2253
+孙中山	sun zhong shan	2252
+审计	shen ji	2251
+家园	jia yuan	2249
+年级	nian ji	2248
+度假	du jia	2246
+战机	zhan ji	2245
+手下	shou xia	2244
+扶贫	fu pin	2242
+排行榜	pai hang bang	2241
+政客	zheng ke	2239
+文革	wen ge	2238
+早餐	zao can	2237
+有罪	you zui	2235
+概率	gai lv	2234
+此举	ci ju	2232
+此类	ci lei	2231
+水准	shui zhun	2230
+沙滩	sha tan	2228
+法西斯	fa xi si	2227
+注意力	zhu yi li	2225
+海底	hai di	2224
+消防	xiao fang	2223
+漏洞	lou dong	2221
+火星	huo xing	2220
+爱好者	ai hao zhe	2218
+特务	te wu	2217
+目的地	mu di di	2216
+短缺	duan que	2214
+硬件	ying jian	2213
+罗斯	luo si	2211
+背叛	bei pan	2210
+脚步	jiao bu	2209
+膨胀	peng zhang	2207
+英国人	ying guo ren	2206
+记者会	ji zhe hui	2204
+论证	lun zheng	2203
+评选	ping xuan	2202
+语文	yu wen	2200
+豪华	hao hua	2199
+赌博	du bo	2197
+身高	shen gao	2196
+近来	jin lai	2195
+连线	lian xian	2193
+逃离	tao li	2192
+镜子	jing zi	2190
+长时间	zhang shi jian	2189
+陈述	chen shu	2188
+陕西省	shan xi sheng	2186
+预警	yu jing	2185
+饲养	si yang	2183
+高铁	gao tie	2182
+一手	yi shou	2181
+一杯	yi bei	2179
+上车	shang che	2178
+两侧	liang ce	2176
+中级	zhong ji	2175
+主义者	zhu yi zhe	2174
+主观	zhu guan	2172
+书店	shu dian	2171
+事务所	shi wu suo	2169
+以免	yi mian	2168
+倾斜	qing xie	2167
+全集	quan ji	2165
+刊物	kan wu	2164
+别墅	bie shu	2162
+动荡	dong dang	2161
+包裹	bao guo	2160
+压制	ya zhi	2158
+参见	can jian	2157
+受过	shou guo	2155
+囚犯	qiu fan	2154
+在外	zai wai	2153
+多样	duo yang	2151
+多项	duo xiang	2150
+威廉	wei lian	2148
+季度	ji du	2147
+官僚	guan liao	2146
+宾馆	bin guan	2144
+尚书	shang shu	2143
+弹药	dan yao	2141
+当做	dang zuo	2140
+录取	lu qu	2139
+很小	hen xiao	2137
+很长	hen zhang	2136
+得出	de chu	2134
+忍受	ren shou	2133
+改良	gai liang	2132
+数位	shu wei	2130
+无线电	wu xian dian	2129
+明朝	ming chao	2127
+景观	jing guan	2126
+月初	yue chu	2125
+未知	wei zhi	2123
+权限	quan xian	2122
+根据地	gen ju di	2120
+模范	mo fan	2119
+此地	ci di	2118
+法学	fa xue	2116
+注定	zhu ding	2115
+浏览器	liu lan qi	2113
+浴室	yu shi	2112
+潜艇	qian ting	2111
+煽动	shan dong	2109
+爱人	ai ren	2108
+现已	xian yi	2106
+理智	li zhi	2105
+用力	yong li	2104
+用品	yong pin	2102
+申诉	shen su	2101
+疼痛	teng tong	2099
+登录	deng lu	2098
+直径	zhi jing	2097
+童年	tong nian	2095
+笑容	xiao rong	2094
+自拍	zi pai	2092
+船长	chuan zhang	2091
+芝加哥	zhi jia ge	2090
+荒谬	huang miu	2088
+行李	xing li	2087
+裁判	cai pan	2085
+观赏	guan shang	2084
+迎来	ying lai	2083
+野兽	ye shou	2081
+长久	chang jiu	2080
+附加	fu jia	2078
+首要	shou yao	2077
+首领	shou ling	2076
+魔鬼	mo gui	2074
+一分	yi fen	2073
+一百	yi bai	2071
+一类	yi lei	2070
+上任	shang ren	2069
+不同于	bu tong yu	2067
+专访	zhuan fang	2066
+严峻	yan jun	2064
+中外	zhong wai	2063
+乐器	yue qi	2062
+事后	shi hou	2060
+人次	ren ci	2059
+付费	fu fei	2057
+停车场	ting che chang	2056
+健身	jian shen	2055
+党派	dang pai	2053
+冻结	dong jie	2052

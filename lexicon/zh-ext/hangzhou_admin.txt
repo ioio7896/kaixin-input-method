@@ -1,0 +1,305 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭州行政区划、街道乡镇及常用历史区划
+# Curated for local daily input; complete names rank above ambiguous short place names.
+# 格式：词条<TAB>拼音<TAB>词频。；第三列统一为 1-10000 万分制排序分数。
+上城区	shang cheng qu	6500
+杭州市上城区	hang zhou shi shang cheng qu	5667
+杭州上城	hang zhou shang cheng	4000
+上城区人民政府	shang cheng qu ren min zheng fu	3167
+上城区行政服务中心	shang cheng qu xing zheng fu wu zhong xin	2333
+上城区政务服务中心	shang cheng qu zheng wu fu wu zhong xin	2333
+拱墅区	gong shu qu	6500
+杭州市拱墅区	hang zhou shi gong shu qu	5667
+杭州拱墅	hang zhou gong shu	4000
+拱墅区人民政府	gong shu qu ren min zheng fu	3167
+拱墅区行政服务中心	gong shu qu xing zheng fu wu zhong xin	2333
+拱墅区政务服务中心	gong shu qu zheng wu fu wu zhong xin	2333
+西湖区	xi hu qu	6500
+杭州市西湖区	hang zhou shi xi hu qu	5667
+杭州西湖	hang zhou xi hu	4000
+西湖区人民政府	xi hu qu ren min zheng fu	3167
+西湖区行政服务中心	xi hu qu xing zheng fu wu zhong xin	2333
+西湖区政务服务中心	xi hu qu zheng wu fu wu zhong xin	2333
+滨江区	bin jiang qu	6500
+杭州市滨江区	hang zhou shi bin jiang qu	5667
+杭州滨江	hang zhou bin jiang	4000
+滨江区人民政府	bin jiang qu ren min zheng fu	3167
+滨江区行政服务中心	bin jiang qu xing zheng fu wu zhong xin	2333
+滨江区政务服务中心	bin jiang qu zheng wu fu wu zhong xin	2333
+萧山区	xiao shan qu	6500
+杭州市萧山区	hang zhou shi xiao shan qu	5667
+杭州萧山	hang zhou xiao shan	4000
+萧山区人民政府	xiao shan qu ren min zheng fu	3167
+萧山区行政服务中心	xiao shan qu xing zheng fu wu zhong xin	2333
+萧山区政务服务中心	xiao shan qu zheng wu fu wu zhong xin	2333
+余杭区	yu hang qu	6500
+杭州市余杭区	hang zhou shi yu hang qu	5667
+杭州余杭	hang zhou yu hang	4000
+余杭区人民政府	yu hang qu ren min zheng fu	3167
+余杭区行政服务中心	yu hang qu xing zheng fu wu zhong xin	2333
+余杭区政务服务中心	yu hang qu zheng wu fu wu zhong xin	2333
+临平区	lin ping qu	6500
+杭州市临平区	hang zhou shi lin ping qu	5667
+杭州临平	hang zhou lin ping	4000
+临平区人民政府	lin ping qu ren min zheng fu	3167
+临平区行政服务中心	lin ping qu xing zheng fu wu zhong xin	2333
+临平区政务服务中心	lin ping qu zheng wu fu wu zhong xin	2333
+钱塘区	qian tang qu	6500
+杭州市钱塘区	hang zhou shi qian tang qu	5667
+杭州钱塘	hang zhou qian tang	4000
+钱塘区人民政府	qian tang qu ren min zheng fu	3167
+钱塘区行政服务中心	qian tang qu xing zheng fu wu zhong xin	2333
+钱塘区政务服务中心	qian tang qu zheng wu fu wu zhong xin	2333
+富阳区	fu yang qu	6500
+杭州市富阳区	hang zhou shi fu yang qu	5667
+杭州富阳	hang zhou fu yang	4000
+富阳区人民政府	fu yang qu ren min zheng fu	3167
+富阳区行政服务中心	fu yang qu xing zheng fu wu zhong xin	2333
+富阳区政务服务中心	fu yang qu zheng wu fu wu zhong xin	2333
+临安区	lin an qu	6500
+杭州市临安区	hang zhou shi lin an qu	5667
+杭州临安	hang zhou lin an	4000
+临安区人民政府	lin an qu ren min zheng fu	3167
+临安区行政服务中心	lin an qu xing zheng fu wu zhong xin	2333
+临安区政务服务中心	lin an qu zheng wu fu wu zhong xin	2333
+桐庐县	tong lu xian	6500
+杭州市桐庐县	hang zhou shi tong lu xian	5667
+杭州桐庐	hang zhou tong lu	4000
+桐庐县人民政府	tong lu xian ren min zheng fu	3167
+桐庐县行政服务中心	tong lu xian xing zheng fu wu zhong xin	2333
+桐庐县政务服务中心	tong lu xian zheng wu fu wu zhong xin	2333
+淳安县	chun an xian	6500
+杭州市淳安县	hang zhou shi chun an xian	5667
+杭州淳安	hang zhou chun an	4000
+淳安县人民政府	chun an xian ren min zheng fu	3167
+淳安县行政服务中心	chun an xian xing zheng fu wu zhong xin	2333
+淳安县政务服务中心	chun an xian zheng wu fu wu zhong xin	2333
+建德市	jian de shi	6500
+杭州市建德市	hang zhou shi jian de shi	5667
+杭州建德	hang zhou jian de	4000
+建德市人民政府	jian de shi ren min zheng fu	3167
+建德市行政服务中心	jian de shi xing zheng fu wu zhong xin	2333
+建德市政务服务中心	jian de shi zheng wu fu wu zhong xin	2333
+湖滨街道	hu bin jie dao	4833
+清波街道	qing bo jie dao	4833
+小营街道	xiao ying jie dao	4833
+望江街道	wang jiang jie dao	4833
+南星街道	nan xing jie dao	4833
+紫阳街道	zi yang jie dao	4833
+闸弄口街道	zha nong kou jie dao	4833
+凯旋街道	kai xuan jie dao	4833
+采荷街道	cai he jie dao	4833
+四季青街道	si ji qing jie dao	4833
+彭埠街道	peng bu jie dao	4833
+笕桥街道	jian qiao jie dao	4833
+丁兰街道	ding lan jie dao	4833
+九堡街道	jiu bao jie dao	4833
+天水街道	tian shui jie dao	4833
+武林街道	wu lin jie dao	4833
+长庆街道	chang qing jie dao	4833
+潮鸣街道	chao ming jie dao	4833
+朝晖街道	zhao hui jie dao	4833
+文晖街道	wen hui jie dao	4833
+东新街道	dong xin jie dao	4833
+石桥街道	shi qiao jie dao	4833
+米市巷街道	mi shi xiang jie dao	4833
+湖墅街道	hu shu jie dao	4833
+小河街道	xiao he jie dao	4833
+和睦街道	he mu jie dao	4833
+拱宸桥街道	gong chen qiao jie dao	4833
+大关街道	da guan jie dao	4833
+上塘街道	shang tang jie dao	4833
+祥符街道	xiang fu jie dao	4833
+康桥街道	kang qiao jie dao	4833
+半山街道	ban shan jie dao	4833
+北山街道	bei shan jie dao	4833
+西溪街道	xi xi jie dao	4833
+灵隐街道	ling yin jie dao	4833
+翠苑街道	cui yuan jie dao	4833
+文新街道	wen xin jie dao	4833
+古荡街道	gu dang jie dao	4833
+留下街道	liu xia jie dao	4833
+转塘街道	zhuan tang jie dao	4833
+蒋村街道	jiang cun jie dao	4833
+三墩镇	san dun zhen	4833
+双浦镇	shuang pu zhen	4833
+西兴街道	xi xing jie dao	4833
+长河街道	chang he jie dao	4833
+浦沿街道	pu yan jie dao	4833
+城厢街道	cheng xiang jie dao	4833
+北干街道	bei gan jie dao	4833
+蜀山街道	shu shan jie dao	4833
+新塘街道	xin tang jie dao	4833
+靖江街道	jing jiang jie dao	4833
+南阳街道	nan yang jie dao	4833
+闻堰街道	wen yan jie dao	4833
+宁围街道	ning wei jie dao	4833
+盈丰街道	ying feng jie dao	4833
+新街街道	xin jie jie dao	4833
+楼塔镇	lou ta zhen	4833
+河上镇	he shang zhen	4833
+戴村镇	dai cun zhen	4833
+浦阳镇	pu yang zhen	4833
+进化镇	jin hua zhen	4833
+临浦镇	lin pu zhen	4833
+义桥镇	yi qiao zhen	4833
+所前镇	suo qian zhen	4833
+衙前镇	ya qian zhen	4833
+瓜沥镇	gua li zhen	4833
+益农镇	yi nong zhen	4833
+党湾镇	dang wan zhen	4833
+余杭街道	yu hang jie dao	4833
+仓前街道	cang qian jie dao	4833
+闲林街道	xian lin jie dao	4833
+五常街道	wu chang jie dao	4833
+中泰街道	zhong tai jie dao	4833
+仁和街道	ren he jie dao	4833
+良渚街道	liang zhu jie dao	4833
+瓶窑镇	ping yao zhen	4833
+径山镇	jing shan zhen	4833
+黄湖镇	huang hu zhen	4833
+鸬鸟镇	lu niao zhen	4833
+百丈镇	bai zhang zhen	4833
+临平街道	lin ping jie dao	4833
+东湖街道	dong hu jie dao	4833
+南苑街道	nan yuan jie dao	4833
+星桥街道	xing qiao jie dao	4833
+运河街道	yun he jie dao	4833
+乔司街道	qiao si jie dao	4833
+崇贤街道	chong xian jie dao	4833
+塘栖镇	tang qi zhen	4833
+下沙街道	xia sha jie dao	4833
+白杨街道	bai yang jie dao	4833
+河庄街道	he zhuang jie dao	4833
+义蓬街道	yi peng jie dao	4833
+新湾街道	xin wan jie dao	4833
+临江街道	lin jiang jie dao	4833
+前进街道	qian jin jie dao	4833
+富春街道	fu chun jie dao	4833
+春江街道	chun jiang jie dao	4833
+东洲街道	dong zhou jie dao	4833
+鹿山街道	lu shan jie dao	4833
+银湖街道	yin hu jie dao	4833
+新登镇	xin deng zhen	4833
+胥口镇	xu kou zhen	4833
+永昌镇	yong chang zhen	4833
+大源镇	da yuan zhen	4833
+灵桥镇	ling qiao zhen	4833
+里山镇	li shan zhen	4833
+常绿镇	chang lv zhen	4833
+场口镇	chang kou zhen	4833
+常安镇	chang an zhen	4833
+龙门镇	long men zhen	4833
+万市镇	wan shi zhen	4833
+洞桥镇	dong qiao zhen	4833
+渌渚镇	lu zhu zhen	4833
+新桐乡	xin tong xiang	4833
+上官乡	shang guan xiang	4833
+环山乡	huan shan xiang	4833
+湖源乡	hu yuan xiang	4833
+春建乡	chun jian xiang	4833
+渔山乡	yu shan xiang	4833
+锦城街道	jin cheng jie dao	4833
+玲珑街道	ling long jie dao	4833
+青山湖街道	qing shan hu jie dao	4833
+锦南街道	jin nan jie dao	4833
+锦北街道	jin bei jie dao	4833
+板桥镇	ban qiao zhen	4833
+高虹镇	gao hong zhen	4833
+太湖源镇	tai hu yuan zhen	4833
+於潜镇	yu qian zhen	4833
+天目山镇	tian mu shan zhen	4833
+太阳镇	tai yang zhen	4833
+潜川镇	qian chuan zhen	4833
+昌化镇	chang hua zhen	4833
+龙岗镇	long gang zhen	4833
+河桥镇	he qiao zhen	4833
+湍口镇	tuan kou zhen	4833
+清凉峰镇	qing liang feng zhen	4833
+岛石镇	dao shi zhen	4833
+桐君街道	tong jun jie dao	4833
+城南街道	cheng nan jie dao	4833
+旧县街道	jiu xian jie dao	4833
+凤川街道	feng chuan jie dao	4833
+富春江镇	fu chun jiang zhen	4833
+横村镇	heng cun zhen	4833
+分水镇	fen shui zhen	4833
+瑶琳镇	yao lin zhen	4833
+百江镇	bai jiang zhen	4833
+江南镇	jiang nan zhen	4833
+钟山乡	zhong shan xiang	4833
+新合乡	xin he xiang	4833
+合村乡	he cun xiang	4833
+莪山畲族乡	e shan she zu xiang	4833
+千岛湖镇	qian dao hu zhen	4833
+文昌镇	wen chang zhen	4833
+石林镇	shi lin zhen	4833
+临岐镇	lin qi zhen	4833
+威坪镇	wei ping zhen	4833
+姜家镇	jiang jia zhen	4833
+梓桐镇	zi tong zhen	4833
+汾口镇	fen kou zhen	4833
+中洲镇	zhong zhou zhen	4833
+大墅镇	da shu zhen	4833
+枫树岭镇	feng shu ling zhen	4833
+里商乡	li shang xiang	4833
+金峰乡	jin feng xiang	4833
+富文乡	fu wen xiang	4833
+左口乡	zuo kou xiang	4833
+屏门乡	ping men xiang	4833
+瑶山乡	yao shan xiang	4833
+王阜乡	wang fu xiang	4833
+宋村乡	song cun xiang	4833
+鸠坑乡	jiu keng xiang	4833
+浪川乡	lang chuan xiang	4833
+界首乡	jie shou xiang	4833
+安阳乡	an yang xiang	4833
+新安江街道	xin an jiang jie dao	4833
+更楼街道	geng lou jie dao	4833
+洋溪街道	yang xi jie dao	4833
+乾潭镇	qian tan zhen	4833
+梅城镇	mei cheng zhen	4833
+寿昌镇	shou chang zhen	4833
+下涯镇	xia ya zhen	4833
+大同镇	da tong zhen	4833
+航头镇	hang tou zhen	4833
+李家镇	li jia zhen	4833
+大洋镇	da yang zhen	4833
+莲花镇	lian hua zhen	4833
+三都镇	san dou zhen	4833
+杨村桥镇	yang cun qiao zhen	4833
+钦堂乡	qin tang xiang	4833
+上城区湖滨街道	shang cheng qu hu bin jie dao	1500
+上城区清波街道	shang cheng qu qing bo jie dao	1500
+上城区小营街道	shang cheng qu xiao ying jie dao	1500
+上城区望江街道	shang cheng qu wang jiang jie dao	1500
+上城区南星街道	shang cheng qu nan xing jie dao	1500
+上城区紫阳街道	shang cheng qu zi yang jie dao	1500
+上城区闸弄口街道	shang cheng qu zha nong kou jie dao	1500
+上城区凯旋街道	shang cheng qu kai xuan jie dao	1500
+上城区采荷街道	shang cheng qu cai he jie dao	1500
+上城区四季青街道	shang cheng qu si ji qing jie dao	1500
+上城区彭埠街道	shang cheng qu peng bu jie dao	1500
+上城区笕桥街道	shang cheng qu jian qiao jie dao	1500
+上城区丁兰街道	shang cheng qu ding lan jie dao	1500
+上城区九堡街道	shang cheng qu jiu bao jie dao	1500
+拱墅区天水街道	gong shu qu tian shui jie dao	1500
+拱墅区武林街道	gong shu qu wu lin jie dao	1500
+拱墅区长庆街道	gong shu qu chang qing jie dao	1500
+拱墅区潮鸣街道	gong shu qu chao ming jie dao	1500
+拱墅区朝晖街道	gong shu qu zhao hui jie dao	1500
+拱墅区文晖街道	gong shu qu wen hui jie dao	1500
+拱墅区东新街道	gong shu qu dong xin jie dao	1500
+拱墅区石桥街道	gong shu qu shi qiao jie dao	1500
+拱墅区米市巷街道	gong shu qu mi shi xiang jie dao	1500
+拱墅区湖墅街道	gong shu qu hu shu jie dao	1500
+拱墅区小河街道	gong shu qu xiao he jie dao	1500
+拱墅区和睦街道	gong shu qu he mu jie dao	1500
+拱墅区拱宸桥街道	gong shu qu gong chen qiao jie dao	1500
+拱墅区大关街道	gong shu qu da guan jie dao	1500
+拱墅区上塘街道	gong shu qu shang tang jie dao	1500
+拱墅区祥符街道	gong shu qu xiang fu jie dao	1500
+拱墅区康桥街道	gong shu qu kang qiao jie dao	1500
+拱墅区半山街道	gong shu qu ban shan jie dao	1500
+西湖区北山街道	xi hu qu bei shan jie dao	1500

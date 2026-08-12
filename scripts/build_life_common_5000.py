@@ -55,7 +55,7 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parents[1]
         / "lexicon"
-        / "base"
+        / "zh"
         / "life_common_2char_5000.txt",
     )
     parser.add_argument("--size", type=int, default=125_000)

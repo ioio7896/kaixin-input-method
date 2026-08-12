@@ -1,6 +1,7 @@
 # 开心输入法自维护多音词校正表
 # 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
-# 格式：词语<TAB>无声调拼音；长匹配优先，可用于更长词语中的子串。
+# 格式：词语<TAB>无声调拼音<TAB>可选作用范围；长匹配优先。
+# 作用范围为 substring（默认，可用于更长词语中的子串）或 exact（只校正完整词语）。
 银行	yin hang
 行业	hang ye
 行长	hang zhang

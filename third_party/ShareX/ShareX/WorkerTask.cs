@@ -727,6 +727,7 @@ namespace ShareX
                 return;
             }
 
+            string tempPath = null;
             try
             {
                 string directory = Path.GetDirectoryName(outputPath);
@@ -735,11 +736,17 @@ namespace ShareX
                     Directory.CreateDirectory(directory);
                 }
 
+                // Publish the completed image atomically. The tray observes the
+                // completion marker after this move, so it never decodes a
+                // partially written output file.
+                tempPath = outputPath + ".tmp-" + Guid.NewGuid().ToString("N");
                 using ImageData imageData = TaskHelpers.PrepareImage(Image, Info.TaskSettings);
-                if (!imageData.Write(outputPath))
+                if (!imageData.Write(tempPath))
                 {
                     throw new IOException("ShareX could not write the Kaixin output image.");
                 }
+                File.Move(tempPath, outputPath, true);
+                tempPath = null;
                 Info.FilePath = outputPath;
                 Info.FileName = Path.GetFileName(outputPath);
                 DebugHelper.WriteLine("Kaixin image saved to file: " + outputPath);
@@ -749,6 +756,19 @@ namespace ShareX
                 // Still publish the clipboard image. The tray owns a decoded
                 // copy and will fall back to saving the same destination.
                 DebugHelper.WriteException(e, "Kaixin image save failed.");
+            }
+            finally
+            {
+                if (!string.IsNullOrEmpty(tempPath))
+                {
+                    try
+                    {
+                        File.Delete(tempPath);
+                    }
+                    catch
+                    {
+                    }
+                }
             }
         }
 

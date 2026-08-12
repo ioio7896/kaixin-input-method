@@ -259,7 +259,7 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parents[1]
         / "lexicon"
-        / "base"
+        / "zh"
         / "world_countries_major_cities.txt",
     )
     args = parser.parse_args()

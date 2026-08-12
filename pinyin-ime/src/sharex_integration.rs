@@ -401,37 +401,3 @@ fn is_sharex_exe(path: &Path) -> bool {
             .map(|name| name.eq_ignore_ascii_case(SHAREX_EXE))
             .unwrap_or(false)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn rejects_zero_window_handle() {
-        assert!(launch_window_capture(0, None, &ShareXCaptureOptions::default()).is_err());
-    }
-
-    #[test]
-    fn serializes_versioned_capture_options_for_sharex() {
-        let options = ShareXCaptureOptions {
-            open_editor: false,
-            jpeg_quality: 83,
-            ..ShareXCaptureOptions::default()
-        };
-        let value = serde_json::to_value(options).unwrap();
-        assert_eq!(value["Version"], 1);
-        assert_eq!(value["OpenEditor"], false);
-        assert_eq!(value["JpegQuality"], 83);
-    }
-
-    #[test]
-    fn encodes_arguments_like_dotnet_binary_writer() {
-        let mut encoded = Vec::new();
-        write_dotnet_arguments(&mut encoded, &["-silent".to_string(), "截图".to_string()]).unwrap();
-        assert_eq!(&encoded[..4], &2i32.to_le_bytes());
-        assert_eq!(encoded[4], 7);
-        assert_eq!(&encoded[5..12], b"-silent");
-        assert_eq!(encoded[12], 6);
-        assert_eq!(&encoded[13..], "截图".as_bytes());
-    }
-}

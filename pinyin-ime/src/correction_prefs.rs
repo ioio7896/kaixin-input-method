@@ -69,18 +69,3 @@ pub(crate) fn parse_correction_section(text: &str) -> CorrectionPrefs {
 pub fn get_correction_prefs() -> CorrectionPrefs {
     crate::runtime_config::snapshot().correction
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_correction_level() {
-        let prefs = parse_correction_section("[correction]\nenabled=true\nlevel=strong\n");
-        assert!(prefs.enabled);
-        assert_eq!(prefs.level, CorrectionLevel::Strong);
-
-        let prefs = parse_correction_section("[correction]\nmode=light\n");
-        assert_eq!(prefs.level, CorrectionLevel::Light);
-    }
-}

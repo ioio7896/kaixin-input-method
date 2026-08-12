@@ -12,6 +12,7 @@ pub mod key {
     pub const CANDIDATE_LAYOUT_VARIANT: &str = "candidate_layout_variant";
     pub const CANDIDATE_VERTICAL_LAYOUT_VARIANT: &str = "candidate_vertical_layout_variant";
     pub const CANDIDATE_HORIZONTAL_LAYOUT_VARIANT: &str = "candidate_horizontal_layout_variant";
+    pub const CANDIDATE_REDUCE_MOTION: &str = "candidate_reduce_motion";
     pub const HIGHLIGHT_TYPO_CANDIDATES: &str = "highlight_typo_candidates";
     pub const SHOW_CANDIDATE_SOURCE: &str = "show_candidate_source";
     pub const LEARNING_SENSITIVITY: &str = "learning_sensitivity";

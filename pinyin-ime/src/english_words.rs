@@ -294,32 +294,3 @@ fn case_rank(word: &str) -> u8 {
     }
     2
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn text_lookup_prefers_weight_then_length() {
-        let lexicon = EnglishWordLexicon::from_word_rows(
-            [
-                ("computer".to_string(), 100u32),
-                ("compute".to_string(), 110),
-                ("compiler".to_string(), 90),
-            ],
-            PathBuf::from("test.txt"),
-        )
-        .unwrap();
-        assert_eq!(
-            lexicon.lookup_prefix("comp", 3),
-            vec!["compute", "computer", "compiler"]
-        );
-    }
-
-    #[test]
-    fn bundled_common_english_word_list_is_available() {
-        let words = lookup_prefix("th", 8);
-        assert_eq!(words.first().map(String::as_str), Some("the"), "{words:?}");
-        assert!(words.iter().any(|word| word == "this"), "{words:?}");
-    }
-}

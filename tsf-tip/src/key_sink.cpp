@@ -308,7 +308,6 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
     }
     m_pTip->ToggleImeOpen();
   } else if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_FULLSHAPE)) {
-    if (!hasReading) return S_OK;
     m_pTip->ToggleFullShape();
   } else if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_PUNCT)) {
     if (!hasReading) return S_OK;

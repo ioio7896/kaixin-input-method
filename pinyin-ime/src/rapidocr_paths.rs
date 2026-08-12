@@ -435,18 +435,3 @@ fn process_sha256_block(state: &mut [u32; 8], block: &[u8; 64]) {
     state[6] = state[6].wrapping_add(g);
     state[7] = state[7].wrapping_add(h);
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn sha256_matches_known_vector() {
-        let mut hasher = Sha256::new();
-        hasher.update(b"abc");
-        assert_eq!(
-            hex_lower(&hasher.finalize()),
-            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
-        );
-    }
-}

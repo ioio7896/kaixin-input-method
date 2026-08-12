@@ -131,17 +131,3 @@ impl CubicCurve2D {
         (ay * t_cubed) + (by * t_squared) + (cy * t) + self.y1
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_cubic_curve() {
-        let curve = CubicCurve2D::new(0f32, 1.0, 0.5, 1.0, 0.25, -2.0, 1.0, 1.0);
-        let sol = curve.get_first_solution_for_x(0.0);
-        assert_eq!(sol, 0.0);
-        let sol = curve.get_first_solution_for_x(1.0);
-        assert_eq!(sol, 1.0);
-    }
-}

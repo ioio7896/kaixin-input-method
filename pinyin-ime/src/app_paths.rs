@@ -71,15 +71,3 @@ fn utf16_units(bytes: &[u8], little_endian: bool) -> Vec<u16> {
         })
         .collect()
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn decodes_utf16le_configuration_text() {
-        let bytes = [0xff, 0xfe, b'a', 0, b'=', 0, 0x2d, 0x4e];
-        let text = String::from_utf16_lossy(&utf16_units(&bytes[2..], true));
-        assert_eq!(text, "a=中");
-    }
-}

@@ -1,10 +1,9 @@
 //! Native text lexicon loader and prebaked `lexicon.bin` support.
 
 use crate::text_encoding::read_text_file;
-use pinyin::ToPinyinMulti;
 use std::cell::RefCell;
 use std::cmp::Reverse;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fs;
 use std::io::{self, BufReader, BufWriter, Cursor, Read, Write};
 use std::path::{Path, PathBuf};
@@ -12,7 +11,7 @@ use std::sync::Arc;
 
 /// Packaged lexicon without a source-path digest.
 const PREBAKED_MAGIC: &[u8; 8] = b"SRFLX002";
-const PREBAKED_SCHEMA_VERSION: u32 = 7;
+const PREBAKED_SCHEMA_VERSION: u32 = 9;
 const PREBAKED_MIN_SUPPORTED_SCHEMA_VERSION: u32 = 5;
 
 const PREBAKED_MAX_STRING_BYTES: usize = 16_384;
@@ -21,13 +20,25 @@ const PREBAKED_MAX_ENTRIES_PER_KEY: usize = 65_536;
 const PREBAKED_MAX_DELETION_REFERENCES: usize = 24_000_000;
 const PREFIX_INDEX_TOP_K: usize = 48;
 const PREFIX_SCAN_MAX_KEYS: usize = 4096;
-const PREBAKED_PREFIX_MIN_KEYS: usize = 32;
+const PREBAKED_PREFIX_MIN_KEYS: usize = 16;
 const DELETION_INDEX_MAX_KEY_LEN: usize = 40;
 const DELETION_INDEX_MAX_KEYS_TO_BUILD: usize = 250_000;
 const MAX_HETERONYM_KEYS_PER_PHRASE: usize = 64;
 const MAX_MIXED_KEYS_PER_PHRASE: usize = 128;
 const MAX_MIXED_KEY_PHRASE_CHARS: usize = 4;
-const PREBAKED_ENTRIES_PER_KEY_TOP_K: usize = 64;
+/// All curated text lexicons use this normalized frequency scale.
+pub(crate) const MAX_LEXICON_FREQ: u64 = 10_000;
+/// Base contains both common words and a sizeable tail. Keep the direct mixed
+/// index focused on entries that can plausibly affect the interactive head;
+/// Core remains an explicit, always-indexed override layer.
+const MIXED_HOT_BASE_MIN_FREQ: u64 = MAX_LEXICON_FREQ * 35 / 100;
+/// Long phrases stay out of the mixed-initial index, but the most common
+/// explicit 5–7 character entries get a small full-pinyin/prefix hot index.
+const LONG_PHRASE_HOT_MIN_CHARS: usize = 5;
+const LONG_PHRASE_HOT_MAX_CHARS: usize = 7;
+const LONG_PHRASE_HOT_MIN_FREQ: u64 = MAX_LEXICON_FREQ * 60 / 100;
+const LONG_PHRASE_HOT_TOP_K: usize = 16;
+const PREBAKED_ENTRIES_PER_KEY_TOP_K: usize = 96;
 const STANDARD_LARGE_ENTRY_MAX_CHARS: usize = 3;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -48,7 +59,10 @@ impl LexiconBuildProfile {
 
     fn includes_path(self, path: &Path) -> bool {
         match self {
-            Self::Hot => path_component_eq(path, "core") || path_component_eq(path, "base"),
+            Self::Hot => matches!(
+                LexiconLayer::from_path(path),
+                LexiconLayer::Core | LexiconLayer::Base
+            ),
             Self::Full => true,
             // Standard scans `large`, but entry filtering keeps only short
             // phrases so common 3-char words are not missing from runtime.
@@ -58,7 +72,7 @@ impl LexiconBuildProfile {
 
     fn includes_entry(self, path: &Path, phrase: &str) -> bool {
         match self {
-            Self::Standard if path_component_eq(path, "large") => {
+            Self::Standard if LexiconLayer::from_path(path) == LexiconLayer::Large => {
                 lexicon_phrase_char_count(phrase) <= STANDARD_LARGE_ENTRY_MAX_CHARS
             }
             _ => true,
@@ -104,7 +118,14 @@ pub enum LexiconLayer {
 
 impl LexiconLayer {
     pub fn from_path(path: &Path) -> Self {
-        if path_component_eq(path, "core") {
+        if path_component_eq(path, "en") {
+            Self::En
+        } else if path_component_eq(path, "zh-ext") {
+            // Directory ownership is authoritative: optional/long-tail
+            // dictionaries under zh-ext must never inherit Core/Base status
+            // merely because they retain a legacy file name.
+            Self::Ext
+        } else if path_component_eq(path, "core") {
             Self::Core
         } else if path_component_eq(path, "base") {
             Self::Base
@@ -112,10 +133,31 @@ impl LexiconLayer {
             Self::Ext
         } else if path_component_eq(path, "large") {
             Self::Large
-        } else if path_component_eq(path, "en") {
-            Self::En
+        } else if path_component_eq(path, "zh") {
+            Self::from_flat_zh_file(path)
         } else {
             Self::Unknown
+        }
+    }
+
+    fn from_flat_zh_file(path: &Path) -> Self {
+        let name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("")
+            .to_ascii_lowercase();
+        if matches!(
+            name.as_str(),
+            "kaixin_explicit.txt" | "kaixin_polyphone.txt" | "kaixin_pronunciation_aliases.txt"
+        ) {
+            Self::Core
+        } else if name.contains("_tail_") || name.starts_with("large_") {
+            Self::Large
+        } else {
+            // The zh directory is the curated hot/base layer. New files added
+            // there should receive Base treatment without another hard-coded
+            // filename allow-list. Optional dictionaries belong in zh-ext.
+            Self::Base
         }
     }
 
@@ -219,6 +261,37 @@ pub fn mixed_pinyin_keys_for_phrase(phrase: &str) -> Vec<String> {
         syllable_options.push(options);
     }
 
+    mixed_pinyin_keys_from_options(syllable_options)
+}
+
+/// Generate partial-full/partial-initial keys from an explicit syllable code.
+///
+/// Unlike [`mixed_pinyin_keys_for_phrase`], this never guesses character
+/// readings. It is therefore suitable for the prebaked direct-hit index, where
+/// a false reading would become an exact match.
+pub fn mixed_pinyin_keys_for_code(code: &str) -> Vec<String> {
+    let syllable_options = explicit_pinyin_syllables(code)
+        .into_iter()
+        .map(|syllable| vec![syllable])
+        .collect();
+    mixed_pinyin_keys_from_options(syllable_options)
+}
+
+fn explicit_pinyin_syllables(code: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for part in code
+        .split(|ch: char| ch.is_whitespace() || matches!(ch, '\'' | '-' | '_'))
+        .filter(|part| !part.is_empty())
+    {
+        if !part.chars().all(|ch| ch.is_ascii_alphabetic()) {
+            return Vec::new();
+        }
+        out.push(part.to_ascii_lowercase());
+    }
+    out
+}
+
+fn mixed_pinyin_keys_from_options(syllable_options: Vec<Vec<String>>) -> Vec<String> {
     let len = syllable_options.len();
     if !(2..=MAX_MIXED_KEY_PHRASE_CHARS).contains(&len) {
         return Vec::new();
@@ -309,12 +382,8 @@ fn phrase_pinyin_keys(phrase: &str, first_letter_only: bool) -> Vec<String> {
 }
 
 fn pinyin_options_for_char(ch: char, first_letter_only: bool) -> Vec<String> {
-    let Some(multi) = ch.to_pinyin_multi() else {
-        return Vec::new();
-    };
     let mut out = Vec::new();
-    for py in multi {
-        let plain = py.plain().to_ascii_lowercase();
+    for plain in crate::dict::pinyin_plain_options(ch) {
         let option = if first_letter_only {
             let Some(first) = plain.chars().next() else {
                 continue;
@@ -498,17 +567,54 @@ enum LazyDeletionIndex {
     Ready(DeletionIndex),
 }
 
+/// A bounded HashMap with FIFO eviction: when full, the oldest 25% of entries
+/// are removed rather than the entire cache being cleared at once, avoiding
+/// periodic cache-hit cliffs during sustained typing.
+#[derive(Debug, Clone, Default)]
+struct FifoCache<V> {
+    map: HashMap<String, V>,
+    order: VecDeque<String>,
+}
+
+impl<V: Clone> FifoCache<V> {
+    fn get(&self, key: &str) -> Option<&V> {
+        self.map.get(key)
+    }
+
+    fn insert(&mut self, key: String, value: V, max_keys: usize) {
+        if self.map.len() >= max_keys {
+            let evict_count = (max_keys / 4).max(1);
+            for _ in 0..evict_count {
+                if let Some(old) = self.order.pop_front() {
+                    self.map.remove(&old);
+                }
+            }
+        }
+        // Remove old position if already present (re-insert = move to back)
+        if self.map.contains_key(&key) {
+            self.order.retain(|k| k != &key);
+        }
+        self.order.push_back(key.clone());
+        self.map.insert(key, value);
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 struct RuntimeIndexes {
     abbrev_delete: LazyDeletionIndex,
     pinyin_delete: LazyDeletionIndex,
-    abbrev_exact: HashMap<String, Arc<[ThuoclEntry]>>,
-    pinyin_exact: HashMap<String, Arc<[ThuoclEntry]>>,
-    hot_abbrev_exact: HashMap<String, Arc<[ThuoclEntry]>>,
-    hot_pinyin_exact: HashMap<String, Arc<[ThuoclEntry]>>,
+    abbrev_exact: FifoCache<Arc<[ThuoclEntry]>>,
+    pinyin_exact: FifoCache<Arc<[ThuoclEntry]>>,
+    hot_abbrev_exact: FifoCache<Arc<[ThuoclEntry]>>,
+    hot_pinyin_exact: FifoCache<Arc<[ThuoclEntry]>>,
+    mixed_hot_exact: FifoCache<Arc<[ThuoclEntry]>>,
 }
 
-const HOT_EXACT_TOP_K: usize = 24;
+// Keep a wider exact-abbreviation head for short, high-collision keys. The
+// interactive first page still truncates aggressively, but materializing a
+// wider head prevents everyday two-character phrases from disappearing
+// behind unrelated candidates (for example `sj`/`dt`).
+const HOT_EXACT_TOP_K: usize = 96;
 const HOT_EXACT_CACHE_MAX_KEYS: usize = 1024;
 const EXACT_CACHE_MAX_KEYS: usize = 2048;
 
@@ -668,11 +774,14 @@ fn deletion_forms(key: &str) -> Vec<String> {
     if chars.is_empty() {
         return Vec::new();
     }
+    // Allocate for: original + N deletions + (N-1) adjacent swaps
+    let capacity = 1 + chars.len() + chars.len().saturating_sub(1);
     let mut seen = HashSet::new();
-    let mut out = Vec::with_capacity(chars.len() + 1);
+    let mut out = Vec::with_capacity(capacity);
     if seen.insert(key.to_string()) {
         out.push(key.to_string());
     }
+    // Single-character deletions (edit distance 1)
     for skip in 0..chars.len() {
         let mut deleted = String::with_capacity(key.len());
         for (idx, ch) in chars.iter().enumerate() {
@@ -684,6 +793,22 @@ fn deletion_forms(key: &str) -> Vec<String> {
             out.push(deleted);
         }
     }
+    // Adjacent character swaps (Damerau-Levenshtein distance 1)
+    for pos in 0..chars.len().saturating_sub(1) {
+        let mut swapped = String::with_capacity(key.len());
+        for (idx, ch) in chars.iter().enumerate() {
+            if idx == pos {
+                swapped.push(chars[pos + 1]);
+            } else if idx == pos + 1 {
+                swapped.push(chars[pos]);
+            } else {
+                swapped.push(*ch);
+            }
+        }
+        if seen.insert(swapped.clone()) {
+            out.push(swapped);
+        }
+    }
     out
 }
 
@@ -691,6 +816,8 @@ fn deletion_forms(key: &str) -> Vec<String> {
 pub struct AbbrevLexicon {
     inner: BTreeMap<String, Vec<CompactEntry>>,
     pinyin_inner: BTreeMap<String, Vec<CompactEntry>>,
+    long_pinyin_hot_inner: BTreeMap<String, Vec<CompactEntry>>,
+    mixed_hot_inner: BTreeMap<String, Vec<CompactEntry>>,
     prefix_inner: HashMap<String, Vec<CompactEntry>>,
     pinyin_prefix_inner: HashMap<String, Vec<CompactEntry>>,
     phrases: Vec<Arc<str>>,
@@ -698,6 +825,9 @@ pub struct AbbrevLexicon {
     phrase_layer: Vec<LexiconLayer>,
     phrase_ids: Option<HashMap<Arc<str>, u32>>,
     runtime: RefCell<RuntimeIndexes>,
+    /// Build-time counter: number of Base entries skipped from mixed-hot index
+    /// because their frequency was below MIXED_HOT_BASE_MIN_FREQ.
+    pub mixed_hot_base_skipped: usize,
 }
 
 impl Default for AbbrevLexicon {
@@ -705,6 +835,8 @@ impl Default for AbbrevLexicon {
         Self {
             inner: BTreeMap::new(),
             pinyin_inner: BTreeMap::new(),
+            long_pinyin_hot_inner: BTreeMap::new(),
+            mixed_hot_inner: BTreeMap::new(),
             prefix_inner: HashMap::new(),
             pinyin_prefix_inner: HashMap::new(),
             phrases: Vec::new(),
@@ -712,6 +844,7 @@ impl Default for AbbrevLexicon {
             phrase_layer: Vec::new(),
             phrase_ids: Some(HashMap::new()),
             runtime: RefCell::new(RuntimeIndexes::default()),
+            mixed_hot_base_skipped: 0,
         }
     }
 }
@@ -721,6 +854,8 @@ impl Clone for AbbrevLexicon {
         Self {
             inner: self.inner.clone(),
             pinyin_inner: self.pinyin_inner.clone(),
+            long_pinyin_hot_inner: self.long_pinyin_hot_inner.clone(),
+            mixed_hot_inner: self.mixed_hot_inner.clone(),
             prefix_inner: self.prefix_inner.clone(),
             pinyin_prefix_inner: self.pinyin_prefix_inner.clone(),
             phrases: self.phrases.clone(),
@@ -728,6 +863,7 @@ impl Clone for AbbrevLexicon {
             phrase_layer: self.phrase_layer.clone(),
             phrase_ids: self.phrase_ids.clone(),
             runtime: RefCell::new(RuntimeIndexes::default()),
+            mixed_hot_base_skipped: self.mixed_hot_base_skipped,
         }
     }
 }
@@ -745,20 +881,27 @@ impl AbbrevLexicon {
             || self
                 .pinyin_inner
                 .values()
-                .any(|entries| entries.len() > limit);
+                .any(|entries| entries.len() > limit)
+            || self
+                .long_pinyin_hot_inner
+                .values()
+                .any(|entries| entries.len() > limit.min(LONG_PHRASE_HOT_TOP_K))
+            || self
+                .mixed_hot_inner
+                .values()
+                .any(|entries| entries.len() > limit.min(HOT_EXACT_TOP_K));
         trim_compact_map_entries(&mut self.inner, options.entries_per_key_limit);
         trim_compact_map_entries(&mut self.pinyin_inner, options.entries_per_key_limit);
+        trim_compact_map_entries(
+            &mut self.long_pinyin_hot_inner,
+            options.entries_per_key_limit.min(LONG_PHRASE_HOT_TOP_K),
+        );
+        trim_compact_map_entries(
+            &mut self.mixed_hot_inner,
+            options.entries_per_key_limit.min(HOT_EXACT_TOP_K),
+        );
         if entries_changed {
             self.mark_runtime_dirty();
-        }
-    }
-
-    #[cfg(test)]
-    pub(crate) fn has_prebaked_prefix_index(&self, pinyin: bool, prefix: &str) -> bool {
-        if pinyin {
-            self.pinyin_prefix_inner.contains_key(prefix)
-        } else {
-            self.prefix_inner.contains_key(prefix)
         }
     }
 
@@ -838,11 +981,45 @@ impl AbbrevLexicon {
             .and_then(normalize_pinyin_code)
             .map(|key| vec![key])
             .unwrap_or_else(|| pinyin_keys_for_phrase(&entry.phrase));
-        for key in pinyin_keys {
-            let v = self.pinyin_inner.entry(key).or_default();
+        for key in &pinyin_keys {
+            let v = self.pinyin_inner.entry(key.clone()).or_default();
             merge_compact_entry(v, phrase_id, entry.freq);
             trim_compact_entries(v, PREBAKED_ENTRIES_PER_KEY_TOP_K);
             inserted = true;
+        }
+        if should_index_long_phrase_hot(
+            source_layer,
+            entry.freq,
+            &entry.phrase,
+            entry.code.as_deref(),
+        ) {
+            for key in pinyin_keys {
+                let v = self.long_pinyin_hot_inner.entry(key).or_default();
+                merge_compact_entry(v, phrase_id, entry.freq);
+                trim_compact_entries(v, LONG_PHRASE_HOT_TOP_K);
+            }
+        }
+        if should_index_mixed_hot(source_layer, entry.freq) {
+            if let Some(code) = entry.code.as_deref() {
+                let phrase_char_count = lexicon_phrase_char_count(&entry.phrase);
+                let syllable_count = explicit_pinyin_syllables(code).len();
+                if (2..=MAX_MIXED_KEY_PHRASE_CHARS).contains(&phrase_char_count)
+                    && syllable_count == phrase_char_count
+                {
+                    for key in mixed_pinyin_keys_for_code(code) {
+                        let v = self.mixed_hot_inner.entry(key).or_default();
+                        merge_compact_entry(v, phrase_id, entry.freq);
+                        trim_compact_entries(v, HOT_EXACT_TOP_K);
+                    }
+                }
+            }
+        } else if source_layer == LexiconLayer::Base
+            && entry.code.is_some()
+            && (2..=MAX_MIXED_KEY_PHRASE_CHARS).contains(&lexicon_phrase_char_count(&entry.phrase))
+        {
+            // Track how many Base entries are skipped from mixed-hot due to
+            // frequency, so build logs can guide MIXED_HOT_BASE_MIN_FREQ tuning.
+            self.mixed_hot_base_skipped += 1;
         }
         self.mark_runtime_dirty();
         inserted
@@ -867,6 +1044,28 @@ impl AbbrevLexicon {
         self.lookup_hot_exact(pinyin_lower, true)
     }
 
+    /// Looks up an exact partial-full/partial-initial key for a curated hot
+    /// system phrase. The index is built only from explicit 2–4-syllable codes
+    /// in Core and sufficiently frequent Base entries.
+    pub(crate) fn lookup_mixed_hot(&self, mixed_lower: &str) -> Option<Arc<[ThuoclEntry]>> {
+        {
+            let runtime = self.runtime.borrow();
+            if let Some(entries) = runtime.mixed_hot_exact.get(mixed_lower) {
+                return Some(Arc::clone(entries));
+            }
+        }
+
+        let compact = self.mixed_hot_inner.get(mixed_lower)?;
+        let materialized = self.materialize_entries(&compact[..compact.len().min(HOT_EXACT_TOP_K)]);
+        let mut runtime = self.runtime.borrow_mut();
+        runtime.mixed_hot_exact.insert(
+            mixed_lower.to_string(),
+            Arc::clone(&materialized),
+            HOT_EXACT_CACHE_MAX_KEYS,
+        );
+        Some(materialized)
+    }
+
     pub fn prefix_flat(&self, prefix_lower: &str) -> Arc<[ThuoclEntry]> {
         if let Some(entries) = self.prefix_inner.get(prefix_lower) {
             return self.materialize_entries(entries);
@@ -878,7 +1077,12 @@ impl AbbrevLexicon {
         if let Some(entries) = self.pinyin_prefix_inner.get(prefix_lower) {
             return self.materialize_entries(entries);
         }
-        collect_prefix_entries(self, &self.pinyin_inner, prefix_lower)
+        collect_prefix_entries_with_extra(
+            self,
+            &self.pinyin_inner,
+            &self.long_pinyin_hot_inner,
+            prefix_lower,
+        )
     }
 
     /// Scores a prebaked pinyin-prefix head without materializing phrase strings.
@@ -896,6 +1100,20 @@ impl AbbrevLexicon {
         } else {
             for (scan_index, (key, entries)) in self
                 .pinyin_inner
+                .range(prefix_lower.to_string()..)
+                .take(DYNAMIC_PREFIX_KEY_SCAN_LIMIT)
+                .enumerate()
+            {
+                if scan_index % 4 == 0 && should_stop() {
+                    return None;
+                }
+                if !key.starts_with(prefix_lower) {
+                    break;
+                }
+                merge_prefix_top(&mut dynamic, entries);
+            }
+            for (scan_index, (key, entries)) in self
+                .long_pinyin_hot_inner
                 .range(prefix_lower.to_string()..)
                 .take(DYNAMIC_PREFIX_KEY_SCAN_LIMIT)
                 .enumerate()
@@ -1076,6 +1294,7 @@ impl AbbrevLexicon {
     }
 
     pub fn merge_from(&mut self, other: &AbbrevLexicon) {
+        let mut remapped_phrase_ids = Vec::with_capacity(other.phrases.len());
         for (idx, (phrase, freq)) in other
             .phrases
             .iter()
@@ -1091,7 +1310,31 @@ impl AbbrevLexicon {
                 },
                 source_layer,
             );
+            remapped_phrase_ids.push(self.phrase_id(phrase));
         }
+        for (key, entries) in &other.mixed_hot_inner {
+            let target = self.mixed_hot_inner.entry(key.clone()).or_default();
+            for entry in entries {
+                let Some(Some(phrase_id)) = remapped_phrase_ids.get(entry.phrase_id as usize)
+                else {
+                    continue;
+                };
+                merge_compact_entry(target, *phrase_id, entry.freq);
+            }
+            trim_compact_entries(target, HOT_EXACT_TOP_K);
+        }
+        for (key, entries) in &other.long_pinyin_hot_inner {
+            let target = self.long_pinyin_hot_inner.entry(key.clone()).or_default();
+            for entry in entries {
+                let Some(Some(phrase_id)) = remapped_phrase_ids.get(entry.phrase_id as usize)
+                else {
+                    continue;
+                };
+                merge_compact_entry(target, *phrase_id, entry.freq);
+            }
+            trim_compact_entries(target, LONG_PHRASE_HOT_TOP_K);
+        }
+        self.mark_runtime_dirty();
     }
 
     fn mark_runtime_dirty(&mut self) {
@@ -1201,12 +1444,12 @@ impl AbbrevLexicon {
             entries
                 .iter()
                 .filter_map(|entry| {
-                    self.resolve_phrase(entry.phrase_id)
-                        .map(|phrase| ThuoclEntry {
-                            phrase: phrase.to_string(),
-                            freq: entry.freq,
-                            code: None,
-                        })
+                    let phrase_id = entry.phrase_id as usize;
+                    self.phrases.get(phrase_id).map(|phrase| ThuoclEntry {
+                        phrase: phrase.to_string(),
+                        freq: entry.freq,
+                        code: None,
+                    })
                 })
                 .collect::<Vec<_>>(),
         )
@@ -1225,22 +1468,24 @@ impl AbbrevLexicon {
             }
         }
 
-        let map = if pinyin {
-            &self.pinyin_inner
+        let materialized = if pinyin {
+            let compact = self.merged_pinyin_entries(key, PREBAKED_ENTRIES_PER_KEY_TOP_K)?;
+            self.materialize_entries(&compact)
         } else {
-            &self.inner
+            let compact = self.inner.get(key)?;
+            self.materialize_entries(compact)
         };
-        let materialized = self.materialize_entries(map.get(key)?);
         let mut runtime = self.runtime.borrow_mut();
         let cache = if pinyin {
             &mut runtime.pinyin_exact
         } else {
             &mut runtime.abbrev_exact
         };
-        if cache.len() >= EXACT_CACHE_MAX_KEYS {
-            cache.clear();
-        }
-        cache.insert(key.to_string(), Arc::clone(&materialized));
+        cache.insert(
+            key.to_string(),
+            Arc::clone(&materialized),
+            EXACT_CACHE_MAX_KEYS,
+        );
         Some(materialized)
     }
 
@@ -1257,25 +1502,77 @@ impl AbbrevLexicon {
             }
         }
 
-        let map = if pinyin {
-            &self.pinyin_inner
+        let materialized = if pinyin {
+            let compact = self.merged_pinyin_entries(key, HOT_EXACT_TOP_K)?;
+            self.materialize_entries(&compact)
         } else {
-            &self.inner
+            let compact = self.inner.get(key)?;
+            self.materialize_entries(&compact[..compact.len().min(HOT_EXACT_TOP_K)])
         };
-        let compact = map.get(key)?;
-        let materialized = self.materialize_entries(&compact[..compact.len().min(HOT_EXACT_TOP_K)]);
         let mut runtime = self.runtime.borrow_mut();
         let cache = if pinyin {
             &mut runtime.hot_pinyin_exact
         } else {
             &mut runtime.hot_abbrev_exact
         };
-        if cache.len() >= HOT_EXACT_CACHE_MAX_KEYS {
-            cache.clear();
-        }
-        cache.insert(key.to_string(), Arc::clone(&materialized));
+        cache.insert(
+            key.to_string(),
+            Arc::clone(&materialized),
+            HOT_EXACT_CACHE_MAX_KEYS,
+        );
         Some(materialized)
     }
+
+    fn merged_pinyin_entries(&self, key: &str, limit: usize) -> Option<Vec<CompactEntry>> {
+        let regular = self.pinyin_inner.get(key);
+        let long_hot = self.long_pinyin_hot_inner.get(key);
+        if regular.is_none() && long_hot.is_none() {
+            return None;
+        }
+
+        let mut merged = Vec::with_capacity(limit.min(PREBAKED_ENTRIES_PER_KEY_TOP_K));
+        let regular_limit = if long_hot.is_some() {
+            limit.saturating_sub(LONG_PHRASE_HOT_TOP_K)
+        } else {
+            limit
+        };
+        if let Some(entries) = regular {
+            for entry in entries.iter().take(regular_limit) {
+                merge_compact_entry(&mut merged, entry.phrase_id, entry.freq);
+            }
+        }
+        if let Some(entries) = long_hot {
+            for entry in entries.iter().take(LONG_PHRASE_HOT_TOP_K.min(limit)) {
+                merge_compact_entry(&mut merged, entry.phrase_id, entry.freq);
+            }
+        }
+        trim_compact_entries(&mut merged, limit);
+        Some(merged)
+    }
+}
+
+fn should_index_mixed_hot(source_layer: LexiconLayer, freq: u64) -> bool {
+    source_layer == LexiconLayer::Core
+        || (source_layer == LexiconLayer::Base && freq >= MIXED_HOT_BASE_MIN_FREQ)
+}
+
+fn should_index_long_phrase_hot(
+    source_layer: LexiconLayer,
+    freq: u64,
+    phrase: &str,
+    code: Option<&str>,
+) -> bool {
+    let Some(code) = code else {
+        return false;
+    };
+    if !matches!(source_layer, LexiconLayer::Core | LexiconLayer::Base)
+        || !(LONG_PHRASE_HOT_MIN_CHARS..=LONG_PHRASE_HOT_MAX_CHARS)
+            .contains(&lexicon_phrase_char_count(phrase))
+        || explicit_pinyin_syllables(code).len() != lexicon_phrase_char_count(phrase)
+    {
+        return false;
+    }
+    source_layer == LexiconLayer::Core || freq >= LONG_PHRASE_HOT_MIN_FREQ
 }
 
 fn should_replace_phrase_layer(current: LexiconLayer, incoming: LexiconLayer) -> bool {
@@ -1292,8 +1589,49 @@ fn collect_prefix_entries(
     map: &BTreeMap<String, Vec<CompactEntry>>,
     prefix_lower: &str,
 ) -> Arc<[ThuoclEntry]> {
+    let top = collect_prefix_compact_entries(map, prefix_lower);
+    if top.is_empty() {
+        empty_arc_entries()
+    } else {
+        lexicon.materialize_entries(&top)
+    }
+}
+
+fn collect_prefix_entries_with_extra(
+    lexicon: &AbbrevLexicon,
+    map: &BTreeMap<String, Vec<CompactEntry>>,
+    extra: &BTreeMap<String, Vec<CompactEntry>>,
+    prefix_lower: &str,
+) -> Arc<[ThuoclEntry]> {
+    let mut top = collect_prefix_compact_entries(map, prefix_lower);
     if prefix_lower.is_empty() {
         return empty_arc_entries();
+    }
+    let start = prefix_lower.to_string();
+    let mut scanned_keys = 0usize;
+    for (key, entries) in extra.range(start..) {
+        if !key.starts_with(prefix_lower) {
+            break;
+        }
+        merge_prefix_top(&mut top, entries);
+        scanned_keys += 1;
+        if scanned_keys >= PREFIX_SCAN_MAX_KEYS {
+            break;
+        }
+    }
+    if top.is_empty() {
+        empty_arc_entries()
+    } else {
+        lexicon.materialize_entries(&top)
+    }
+}
+
+fn collect_prefix_compact_entries(
+    map: &BTreeMap<String, Vec<CompactEntry>>,
+    prefix_lower: &str,
+) -> Vec<CompactEntry> {
+    if prefix_lower.is_empty() {
+        return Vec::new();
     }
 
     let start = prefix_lower.to_string();
@@ -1310,11 +1648,7 @@ fn collect_prefix_entries(
         }
     }
 
-    if top.is_empty() {
-        empty_arc_entries()
-    } else {
-        lexicon.materialize_entries(&top)
-    }
+    top
 }
 
 fn approximate_lookup_scored_until(
@@ -1662,6 +1996,19 @@ fn build_prebaked_prefix_index(
     out
 }
 
+fn extend_prefix_index_with_long_hot(
+    index: &mut HashMap<String, Vec<CompactEntry>>,
+    long_hot: &BTreeMap<String, Vec<CompactEntry>>,
+) {
+    for (key, entries) in long_hot {
+        for (start, ch) in key.char_indices() {
+            let end = start + ch.len_utf8();
+            let prefix = key[..end].to_string();
+            merge_prefix_top(index.entry(prefix).or_default(), entries);
+        }
+    }
+}
+
 fn write_prefix_map<W: Write>(
     writer: &mut W,
     map: &HashMap<String, Vec<CompactEntry>>,
@@ -1728,6 +2075,18 @@ fn read_prefix_map<R: Read>(
 }
 
 fn write_compact_prebaked<W: Write>(writer: &mut W, lexicon: &AbbrevLexicon) -> io::Result<()> {
+    write_compact_prebaked_v7_fields(writer, lexicon)?;
+    write_compact_map(writer, &lexicon.mixed_hot_inner)?;
+    write_compact_map(writer, &lexicon.long_pinyin_hot_inner)?;
+    Ok(())
+}
+
+/// Fields shared with schema v7. Kept separate so compatibility tests can
+/// prove that current readers still accept already-packaged v7 dictionaries.
+fn write_compact_prebaked_v7_fields<W: Write>(
+    writer: &mut W,
+    lexicon: &AbbrevLexicon,
+) -> io::Result<()> {
     write_count(writer, lexicon.phrases.len())?;
     for (idx, (phrase, freq)) in lexicon
         .phrases
@@ -1751,7 +2110,8 @@ fn write_compact_prebaked<W: Write>(writer: &mut W, lexicon: &AbbrevLexicon) -> 
     write_compact_map(writer, &lexicon.inner)?;
     write_compact_map(writer, &lexicon.pinyin_inner)?;
     let prefix_inner = build_prebaked_prefix_index(&lexicon.inner);
-    let pinyin_prefix_inner = build_prebaked_prefix_index(&lexicon.pinyin_inner);
+    let mut pinyin_prefix_inner = build_prebaked_prefix_index(&lexicon.pinyin_inner);
+    extend_prefix_index_with_long_hot(&mut pinyin_prefix_inner, &lexicon.long_pinyin_hot_inner);
     write_prefix_map(writer, &prefix_inner)?;
     write_prefix_map(writer, &pinyin_prefix_inner)?;
     write_deletion_index(writer, &lexicon.inner)?;
@@ -1808,7 +2168,7 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
 
     let inner = read_compact_map(reader, &phrases, &phrase_freq)?;
     let pinyin_inner = read_compact_map(reader, &phrases, &phrase_freq)?;
-    let (prefix_inner, pinyin_prefix_inner) = if version >= 6 {
+    let (prefix_inner, mut pinyin_prefix_inner) = if version >= 6 {
         (
             read_prefix_map(reader, &phrases, &phrase_freq)?,
             read_prefix_map(reader, &phrases, &phrase_freq)?,
@@ -1826,10 +2186,23 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
     } else {
         RuntimeIndexes::default()
     };
+    let mixed_hot_inner = if version >= 8 {
+        read_compact_map(reader, &phrases, &phrase_freq)?
+    } else {
+        BTreeMap::new()
+    };
+    let long_pinyin_hot_inner = if version >= 9 {
+        read_compact_map(reader, &phrases, &phrase_freq)?
+    } else {
+        BTreeMap::new()
+    };
+    extend_prefix_index_with_long_hot(&mut pinyin_prefix_inner, &long_pinyin_hot_inner);
 
     Ok(AbbrevLexicon {
         inner,
         pinyin_inner,
+        long_pinyin_hot_inner,
+        mixed_hot_inner,
         prefix_inner,
         pinyin_prefix_inner,
         phrase_ids: Some(build_phrase_id_index(&phrases)),
@@ -1837,6 +2210,7 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
         phrase_freq,
         phrase_layer,
         runtime: RefCell::new(runtime),
+        mixed_hot_base_skipped: 0,
     })
 }
 
@@ -2001,6 +2375,8 @@ fn load_paths(
     let mut lex = AbbrevLexicon::default();
     let mut report = LoadReport::default();
     let calibrators = build_frequency_calibrators(paths, profile);
+    // Track the first file where each phrase was seen: phrase -> (path, code, freq)
+    let mut phrase_first_seen: HashMap<String, (PathBuf, Option<String>, u64)> = HashMap::new();
 
     for path in paths {
         let text = match read_text_file(path) {
@@ -2013,6 +2389,39 @@ fn load_paths(
         report.files_read += 1;
         for (line_no, line) in text.lines().enumerate() {
             report.lines_total += 1;
+            let parsed = parse_lexicon_entry_line(line);
+            // Detect duplicates across different files before indexing
+            if let Some(ref entry) = parsed {
+                if let Some((prev_path, prev_code, prev_freq)) =
+                    phrase_first_seen.get(&entry.phrase)
+                {
+                    if prev_path != path {
+                        let kind = classify_duplicate(
+                            prev_code.as_deref(),
+                            *prev_freq,
+                            entry.code.as_deref(),
+                            entry.freq,
+                            LexiconLayer::from_path(prev_path),
+                            LexiconLayer::from_path(path),
+                        );
+                        report.duplicates.push(DuplicateEntryReport {
+                            phrase: entry.phrase.clone(),
+                            file1: prev_path.clone(),
+                            pinyin1: prev_code.clone(),
+                            freq1: *prev_freq,
+                            file2: path.clone(),
+                            pinyin2: entry.code.clone(),
+                            freq2: entry.freq,
+                            conflict_kind: kind,
+                        });
+                    }
+                } else {
+                    phrase_first_seen.insert(
+                        entry.phrase.clone(),
+                        (path.clone(), entry.code.clone(), entry.freq),
+                    );
+                }
+            }
             index_entry(
                 &mut lex,
                 &mut report,
@@ -2021,12 +2430,57 @@ fn load_paths(
                 calibrators.get(path),
                 line_no + 1,
                 line,
-                parse_lexicon_entry_line(line),
+                parsed,
             );
         }
     }
 
+    // TXT loading is the fallback used when optional ext preferences are
+    // customized. Build the same bounded prefix heads that are embedded in a
+    // prebaked lexicon, so the first lookup after a reload does not scan the
+    // full BTreeMap for every newly typed prefix.
+    lex.prefix_inner = build_prebaked_prefix_index(&lex.inner);
+    lex.pinyin_prefix_inner = build_prebaked_prefix_index(&lex.pinyin_inner);
+    extend_prefix_index_with_long_hot(&mut lex.pinyin_prefix_inner, &lex.long_pinyin_hot_inner);
+
+    report.mixed_hot_base_skipped = lex.mixed_hot_base_skipped;
     Ok((lex, report))
+}
+
+/// Classify the severity of a duplicate entry found in two different source files.
+fn classify_duplicate(
+    code1: Option<&str>,
+    freq1: u64,
+    code2: Option<&str>,
+    freq2: u64,
+    layer1: LexiconLayer,
+    layer2: LexiconLayer,
+) -> DuplicateConflictKind {
+    // Pinyin mismatch: both entries have explicit codes that differ
+    if let (Some(c1), Some(c2)) = (code1, code2) {
+        let norm1 = normalize_pinyin_code(c1);
+        let norm2 = normalize_pinyin_code(c2);
+        if norm1.is_some() && norm2.is_some() && norm1 != norm2 {
+            return DuplicateConflictKind::PinyinMismatch;
+        }
+    }
+    // Weight divergence: one weight is >10x the other
+    let ratio = if freq1 >= freq2 {
+        freq1 as f64 / freq2.max(1) as f64
+    } else {
+        freq2 as f64 / freq1.max(1) as f64
+    };
+    if ratio > 10.0 {
+        return DuplicateConflictKind::WeightDivergent;
+    }
+    // Layer conflict: different priority layers disagree on the same phrase
+    if layer1.sort_order() != layer2.sort_order()
+        && layer1 != LexiconLayer::Unknown
+        && layer2 != LexiconLayer::Unknown
+    {
+        return DuplicateConflictKind::LayerConflict;
+    }
+    DuplicateConflictKind::LayerConflict // benign: same layer, same code, similar weight
 }
 
 /// Normalizes auxiliary-dictionary frequencies to the distribution used by the
@@ -2058,28 +2512,48 @@ impl SourceFrequencyCalibrator {
         // extremely common entries.
         let lower = source.partition_point(|&weight| weight < raw);
         let upper = source.partition_point(|&weight| weight <= raw);
-        let rank = lower + upper.saturating_sub(lower).saturating_sub(1) / 2;
+        let rank = (lower + upper.saturating_sub(lower).saturating_sub(1) / 2)
+            .min(source.len().saturating_sub(1));
         let index = if source.len() <= 1 || reference.len() <= 1 {
             0
         } else {
             rank.saturating_mul(reference.len() - 1) / (source.len() - 1)
         };
-        reference[index].max(1)
+        reference[index.min(reference.len().saturating_sub(1))].max(1)
     }
 }
 
 fn is_frequency_reference_source(path: &Path) -> bool {
-    path_component_eq(path, "base")
+    LexiconLayer::from_path(path) == LexiconLayer::Base
 }
 
 fn is_absolute_priority_source(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name.eq_ignore_ascii_case("kaixin_polyphone.txt"))
+    LexiconLayer::from_path(path) == LexiconLayer::Core
+        && path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| {
+                name.eq_ignore_ascii_case("kaixin_polyphone.txt")
+                    || name.eq_ignore_ascii_case("kaixin_pronunciation_aliases.txt")
+            })
+}
+
+fn is_unscaled_source(path: &Path) -> bool {
+    // Surnames and newly added local places are deliberately low-priority
+    // recall sources. Their lists use flat low weights, so percentile
+    // calibration would promote them into the same range as everyday words.
+    is_absolute_priority_source(path)
+        || path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| {
+                name.eq_ignore_ascii_case("chinese_surnames.txt")
+                    || name.eq_ignore_ascii_case("hangzhou_new_places.txt")
+            })
 }
 
 fn should_calibrate_source_frequency(path: &Path) -> bool {
-    !is_frequency_reference_source(path) && !is_absolute_priority_source(path)
+    !is_frequency_reference_source(path) && !is_unscaled_source(path)
 }
 
 fn collect_frequency_values(
@@ -2215,6 +2689,81 @@ pub fn load_dir_txt_with_profile_filtered_by_prefs(
     load_paths(&paths, profile)
 }
 
+impl LoadReport {
+    /// Write duplicate entries as CSV to `path`. Returns the number of rows written.
+    pub fn write_duplicate_csv(&self, path: &Path) -> io::Result<usize> {
+        let mut w = BufWriter::new(fs::File::create(path)?);
+        writeln!(
+            w,
+            "phrase,file1,pinyin1,freq1,file2,pinyin2,freq2,conflict_kind"
+        )?;
+        for d in &self.duplicates {
+            writeln!(
+                w,
+                "{},{},{},{},{},{},{},{}",
+                csv_escape(&d.phrase),
+                csv_escape(&d.file1.to_string_lossy()),
+                csv_escape(d.pinyin1.as_deref().unwrap_or("")),
+                d.freq1,
+                csv_escape(&d.file2.to_string_lossy()),
+                csv_escape(d.pinyin2.as_deref().unwrap_or("")),
+                d.freq2,
+                conflict_kind_label(d.conflict_kind),
+            )?;
+        }
+        Ok(self.duplicates.len())
+    }
+
+    /// Returns true if any duplicate has a pinyin mismatch — this should fail CI.
+    pub fn has_pinyin_conflicts(&self) -> bool {
+        self.duplicates
+            .iter()
+            .any(|d| d.conflict_kind == DuplicateConflictKind::PinyinMismatch)
+    }
+
+    pub fn pinyin_conflict_count(&self) -> usize {
+        self.duplicates
+            .iter()
+            .filter(|d| d.conflict_kind == DuplicateConflictKind::PinyinMismatch)
+            .count()
+    }
+}
+
+fn csv_escape(s: &str) -> String {
+    if s.contains(',') || s.contains('"') || s.contains('\n') {
+        format!("\"{}\"", s.replace('"', "\"\""))
+    } else {
+        s.to_string()
+    }
+}
+
+fn conflict_kind_label(kind: DuplicateConflictKind) -> &'static str {
+    match kind {
+        DuplicateConflictKind::PinyinMismatch => "拼音不一致",
+        DuplicateConflictKind::WeightDivergent => "权重相差>10x",
+        DuplicateConflictKind::LayerConflict => "层级冲突",
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DuplicateConflictKind {
+    PinyinMismatch,
+    WeightDivergent,
+    LayerConflict,
+}
+
+#[derive(Debug, Clone)]
+pub struct DuplicateEntryReport {
+    pub phrase: String,
+    pub file1: PathBuf,
+    pub pinyin1: Option<String>,
+    pub freq1: u64,
+    pub file2: PathBuf,
+    pub pinyin2: Option<String>,
+    pub freq2: u64,
+    pub conflict_kind: DuplicateConflictKind,
+}
+
 #[derive(Debug, Default)]
 pub struct LoadReport {
     pub files_read: usize,
@@ -2223,494 +2772,40 @@ pub struct LoadReport {
     pub entries_indexed: usize,
     pub lines_skipped_no_abbrev: usize,
     pub sample_skipped_lines: Vec<(PathBuf, usize, String)>,
+    pub duplicates: Vec<DuplicateEntryReport>,
+    pub mixed_hot_base_skipped: usize,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::io::Write;
-
-    #[test]
-    fn parse_line_tab_freq() {
-        let e = parse_line("信鸽\t220963").unwrap();
-        assert_eq!(e.phrase, "信鸽");
-        assert_eq!(e.freq, 220963);
-    }
-
-    #[test]
-    fn auxiliary_source_frequencies_are_normalized_to_base_distribution() {
-        let root = std::env::temp_dir().join(format!(
-            "pinyin-ime-frequency-calibration-{}",
-            std::process::id()
-        ));
-        let _ = fs::remove_dir_all(&root);
-        fs::create_dir_all(root.join("base")).unwrap();
-        fs::create_dir_all(root.join("core")).unwrap();
-        fs::create_dir_all(root.join("ext")).unwrap();
-        fs::write(
-            root.join("base/base.txt"),
-            "低频\tdi pin\t100\n中频\tzhong pin\t1000\n高频\tgao pin\t10000\n",
-        )
-        .unwrap();
-        fs::write(
-            root.join("ext/auxiliary.txt"),
-            "甲乙\tjia yi\t120000\n丙丁\tbing ding\t180000\n戊己\twu ji\t240000\n",
-        )
-        .unwrap();
-        fs::write(
-            root.join("core/kaixin_polyphone.txt"),
-            "优先\tyou xian\t120000\n",
-        )
-        .unwrap();
-
-        let (lexicon, _) = load_dir_txt(&root).unwrap();
-        assert_eq!(lexicon.phrase_frequency("甲乙"), 100);
-        assert_eq!(lexicon.phrase_frequency("丙丁"), 1000);
-        assert_eq!(lexicon.phrase_frequency("戊己"), 10000);
-        assert_eq!(lexicon.phrase_frequency("高频"), 10000);
-        assert_eq!(lexicon.phrase_frequency("优先"), 120000);
-
-        fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn parse_fallback_native_phrase_line() {
-        let e = parse_fallback_tabbed_line("北京\tbei jing\t999").unwrap();
-        assert_eq!(e.phrase, "北京");
-        assert_eq!(e.freq, 999);
-    }
-
-    #[test]
-    fn parse_unified_lexicon_entry_line_variants() {
-        let tab_freq = parse_lexicon_entry_line("\u{4fe1}\u{9e3d}\t220963").unwrap();
-        assert_eq!(tab_freq.phrase, "\u{4fe1}\u{9e3d}");
-        assert_eq!(tab_freq.freq, 220963);
-        assert_eq!(tab_freq.code, None);
-
-        let explicit = parse_lexicon_entry_line("\u{5317}\u{4eac}\tbei jing\t999").unwrap();
-        assert_eq!(explicit.phrase, "\u{5317}\u{4eac}");
-        assert_eq!(explicit.freq, 999);
-        assert_eq!(explicit.code.as_deref(), Some("bei jing"));
-
-        let spaced = parse_lexicon_entry_line("\u{4e0a}\u{6d77} shang hai 888").unwrap();
-        assert_eq!(spaced.phrase, "\u{4e0a}\u{6d77}");
-        assert_eq!(spaced.freq, 888);
-        assert_eq!(spaced.code.as_deref(), Some("shang hai"));
-
-        assert!(parse_lexicon_entry_line("name: base").is_none());
-        assert!(parse_lexicon_entry_line("README file for dictionaries").is_none());
-    }
-
-    #[test]
-    fn explicit_code_lve_indexes_phrase_pinyin_key() {
-        let mut lex = AbbrevLexicon::default();
-        let entry = parse_fallback_tabbed_line("\u{7b80}\u{7565}\tjian lve\t17915").unwrap();
-        assert!(lex.insert_parsed(entry));
-        assert!(lex.lookup_pinyin("jianlve").is_some_and(|entries| {
-            entries
-                .iter()
-                .any(|entry| entry.phrase == "\u{7b80}\u{7565}")
-        }));
-    }
-
-    #[test]
-    fn load_dir_clamps_zero_frequency() {
-        let dir = std::env::temp_dir().join("pinyin_ime_zero_frequency_test");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
-        let mut f = fs::File::create(dir.join("THUOCL_animal.txt")).unwrap();
-        writeln!(f, "\u{5c0f}\u{5c97}\t0").unwrap();
-
-        let (lex, rep) = load_dir_txt(&dir).unwrap();
-        assert_eq!(rep.entries_indexed, 1);
-        assert_eq!(lex.phrase_frequency("\u{5c0f}\u{5c97}"), 1);
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn standard_profile_keeps_short_large_entries_only() {
-        let dir = std::env::temp_dir().join("pinyin_ime_standard_large_short_test");
-        let large_dir = dir.join("large");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&large_dir).unwrap();
-        let mut f = fs::File::create(large_dir.join("external.txt")).unwrap();
-        writeln!(f, "\u{9b54}\u{529b}\u{9e1f}\t100").unwrap();
-        writeln!(f, "\u{83ab}\u{91cc}\u{5c3c}\u{5965}\t100").unwrap();
-
-        let (lex, rep) =
-            load_dir_txt_with_profile_default_enabled(&dir, LexiconBuildProfile::Standard).unwrap();
-        assert_eq!(rep.files_read, 1);
-        assert!(lex.lookup_pinyin("moliniao").is_some_and(|entries| entries
-            .iter()
-            .any(|entry| entry.phrase == "\u{9b54}\u{529b}\u{9e1f}")));
-        assert!(lex.lookup("mln").is_some_and(|entries| entries
-            .iter()
-            .any(|entry| entry.phrase == "\u{9b54}\u{529b}\u{9e1f}")));
-        assert!(!lex.lookup_pinyin("moliniao").is_some_and(|entries| entries
-            .iter()
-            .any(|entry| entry.phrase == "\u{83ab}\u{91cc}\u{5c3c}\u{5965}")));
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn abbrev_xin_ge() {
-        let k = abbrev_for_phrase("信鸽").unwrap();
-        assert_eq!(k, "xg");
-    }
-
-    #[test]
-    fn abbrev_tian_wai_you_tian() {
-        let k = abbrev_for_phrase("天外有天").unwrap();
-        assert_eq!(k, "twyt");
-    }
-
-    #[test]
-    fn pinyin_key_tian_wai_you_tian() {
-        let k = pinyin_key_for_phrase("天外有天").unwrap();
-        assert_eq!(k, "tianwaiyoutian");
-    }
-
-    #[test]
-    fn lexicon_indexes_heteronym_phrase_readings() {
-        let mut lex = AbbrevLexicon::default();
-        assert!(lex.insert_parsed(ThuoclEntry {
-            phrase: "重庆".into(),
-            freq: 88,
-            code: None,
-        }));
-
-        assert!(lex
-            .lookup_pinyin("chongqing")
-            .is_some_and(|entries| entries.iter().any(|entry| entry.phrase == "重庆")));
-        assert!(lex
-            .lookup("cq")
-            .is_some_and(|entries| entries.iter().any(|entry| entry.phrase == "重庆")));
-    }
-
-    #[test]
-    fn lexicon_sort_by_freq_same_key() {
-        let mut lex = AbbrevLexicon::default();
-        assert_eq!(
-            abbrev_for_phrase("兰州").unwrap(),
-            abbrev_for_phrase("兰舟").unwrap()
-        );
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "兰舟".into(),
-            freq: 500,
-            code: None,
-        });
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "兰州".into(),
-            freq: 100,
-            code: None,
-        });
-        let key = abbrev_for_phrase("兰州").unwrap();
-        let list = lex.lookup(&key).unwrap();
-        assert_eq!(list[0].phrase, "兰舟");
-        assert_eq!(list[0].freq, 500);
-        assert_eq!(list[1].phrase, "兰州");
-    }
-
-    #[test]
-    fn approximate_indexes_can_be_warmed_before_lookup() {
-        let mut lex = AbbrevLexicon::default();
-        assert!(lex.insert_parsed(ThuoclEntry {
-            phrase: "北京".into(),
-            freq: 100_000,
-            code: Some("bei jing".into()),
-        }));
-        assert!(matches!(
-            lex.runtime.borrow().abbrev_delete,
-            LazyDeletionIndex::Uninitialized
-        ));
-        assert!(matches!(
-            lex.runtime.borrow().pinyin_delete,
-            LazyDeletionIndex::Uninitialized
-        ));
-
-        lex.warmup_approx_indexes();
-
-        let runtime = lex.runtime.borrow();
-        assert!(matches!(
-            runtime.abbrev_delete,
-            LazyDeletionIndex::Ready(_) | LazyDeletionIndex::Disabled
-        ));
-        assert!(matches!(
-            runtime.pinyin_delete,
-            LazyDeletionIndex::Ready(_) | LazyDeletionIndex::Disabled
-        ));
-    }
-
-    #[test]
-    fn hot_exact_index_keeps_frequency_order_and_refreshes_after_mutation() {
-        let mut lex = AbbrevLexicon::default();
-        for (phrase, freq) in [("甲乙", 10), ("丙丁", 30), ("戊己", 20)] {
-            lex.insert_parsed(ThuoclEntry {
-                phrase: phrase.to_string(),
-                freq,
-                code: Some("jia yi".to_string()),
-            });
+/// Verify that every phrase in the `hot` lexicon exists in the `full` lexicon
+/// with the same frequency and a compatible source layer.  Returns the list of
+/// discrepancies (empty = valid).
+pub fn validate_hot_subset(hot: &AbbrevLexicon, full: &AbbrevLexicon) -> Vec<String> {
+    let mut mismatches = Vec::new();
+    for (idx, phrase) in hot.phrases.iter().enumerate() {
+        let hot_freq = hot.phrase_freq.get(idx).copied().unwrap_or(0);
+        let hot_layer = hot.phrase_layer.get(idx).copied().unwrap_or_default();
+        let full_freq = full.phrase_frequency(phrase);
+        let full_layer = full.phrase_layer(phrase);
+        if full_freq == 0 {
+            mismatches.push(format!(
+                "hot phrase '{}' (freq={}, layer={:?}) not in full lexicon",
+                phrase, hot_freq, hot_layer,
+            ));
+        } else if full_freq != hot_freq {
+            mismatches.push(format!(
+                "hot phrase '{}' freq mismatch: hot={}, full={}",
+                phrase, hot_freq, full_freq,
+            ));
         }
-
-        let first = lex.lookup_pinyin_hot("jiayi").unwrap();
-        assert_eq!(first[0].phrase, "丙丁");
-        assert_eq!(lex.runtime.borrow().hot_pinyin_exact.len(), 1);
-
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "新增".to_string(),
-            freq: 40,
-            code: Some("jia yi".to_string()),
-        });
-        let refreshed = lex.lookup_pinyin_hot("jiayi").unwrap();
-        assert_eq!(refreshed[0].phrase, "新增");
-    }
-
-    #[test]
-    fn exact_lookup_reuses_materialized_entries_and_refreshes_after_mutation() {
-        let mut lex = AbbrevLexicon::default();
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "输入法".to_string(),
-            freq: 30,
-            code: Some("shu ru fa".to_string()),
-        });
-
-        let abbrev_first = lex.lookup("srf").unwrap();
-        let abbrev_second = lex.lookup("srf").unwrap();
-        assert!(Arc::ptr_eq(&abbrev_first, &abbrev_second));
-
-        let pinyin_first = lex.lookup_pinyin("shurufa").unwrap();
-        let pinyin_second = lex.lookup_pinyin("shurufa").unwrap();
-        assert!(Arc::ptr_eq(&pinyin_first, &pinyin_second));
-
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "输入方式".to_string(),
-            freq: 40,
-            code: Some("shu ru fa".to_string()),
-        });
-        let refreshed = lex.lookup_pinyin("shurufa").unwrap();
-        assert!(!Arc::ptr_eq(&pinyin_first, &refreshed));
-        assert_eq!(refreshed[0].phrase, "输入方式");
-    }
-
-    #[test]
-    fn lexicon_merge_same_phrase_keeps_max_freq() {
-        let mut lex = AbbrevLexicon::default();
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "信鸽".into(),
-            freq: 10,
-            code: None,
-        });
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "信鸽".into(),
-            freq: 99,
-            code: None,
-        });
-        let list = lex.lookup("xg").unwrap();
-        assert_eq!(list.len(), 1);
-        assert_eq!(list[0].freq, 99);
-    }
-
-    #[test]
-    fn load_dir_smoke() {
-        let dir = std::env::temp_dir().join("pinyin_ime_thuocl_test");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
-        let mut f = fs::File::create(dir.join("a.txt")).unwrap();
-        writeln!(f, "信鸽\t10").unwrap();
-        writeln!(f, "黄蜂\t20").unwrap();
-
-        let (lex, rep) = load_dir_txt(&dir).unwrap();
-        assert_eq!(rep.files_read, 1);
-        assert!(rep.entries_indexed >= 2);
-        assert!(lex.lookup("xg").is_some());
-        assert!(lex.lookup_pinyin("xinge").is_some());
-        let pre = lex.prefix_flat("x");
-        assert!(!pre.is_empty());
-        let py = lex.prefix_pinyin_flat("xin");
-        assert!(!py.is_empty());
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn load_native_txt_from_nested_dir() {
-        let dir = std::env::temp_dir().join("pinyin_ime_native_nested_test");
-        let nested = dir.join("base");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&nested).unwrap();
-        let mut f = fs::File::create(nested.join("base.txt")).unwrap();
-        writeln!(f, "北京\tbei jing\t88").unwrap();
-
-        let (lex, rep) = load_dir_txt(&dir).unwrap();
-        assert_eq!(rep.files_read, 1);
-        assert!(rep.entries_indexed >= 1);
-        assert!(lex.lookup("bj").is_some());
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn load_dir_uses_native_txt_parser_and_skips_source_documents() {
-        let dir = std::env::temp_dir().join("pinyin_ime_unified_lexicon_parser_test");
-        let core_dir = dir.join("core");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&core_dir).unwrap();
-
-        let mut core = fs::File::create(core_dir.join("base.txt")).unwrap();
-        writeln!(core, "\u{660e}\u{5929}\tming tian\t888").unwrap();
-
-        let mut txt = fs::File::create(dir.join("custom.txt")).unwrap();
-        writeln!(txt, "\u{8f93}\u{5165}\u{6cd5}\tshu ru fa\t777").unwrap();
-
-        let mut readme = fs::File::create(dir.join("README_noise.txt")).unwrap();
-        writeln!(readme, "README file for dictionaries").unwrap();
-
-        let mut source_list = fs::File::create(dir.join("stations_纯名单.txt")).unwrap();
-        writeln!(source_list, "\u{6e90}\u{7d20}\u{6750}").unwrap();
-
-        let (lex, rep) = load_dir_txt(&dir).unwrap();
-        assert_eq!(rep.files_read, 2);
-        assert!(lex.lookup_pinyin("mingtian").is_some_and(|entries| entries
-            .iter()
-            .any(|entry| entry.phrase == "\u{660e}\u{5929}")));
-        assert!(lex.lookup_pinyin("shurufa").is_some_and(|entries| entries
-            .iter()
-            .any(|entry| entry.phrase == "\u{8f93}\u{5165}\u{6cd5}")));
-        assert!(
-            !lex.lookup_pinyin("yuansucai").is_some_and(|entries| entries
-                .iter()
-                .any(|entry| entry.phrase == "\u{6e90}\u{7d20}\u{6750}"))
-        );
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn load_utf16le_txt_with_bom() {
-        let dir = std::env::temp_dir().join("pinyin_ime_utf16_dict_test");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
-
-        let utf16le = [
-            0xFF, 0xFE, 0xE1, 0x4F, 0x3D, 0x9E, 0x09, 0x00, 0x31, 0x00, 0x30, 0x00, 0x0D, 0x00,
-            0x0A, 0x00,
-        ];
-        fs::write(dir.join("utf16.txt"), utf16le).unwrap();
-
-        let (lex, rep) = load_dir_txt(&dir).unwrap();
-        assert_eq!(rep.files_read, 1);
-        assert!(rep.entries_indexed >= 1);
-        assert_eq!(lex.lookup("xg").unwrap()[0].phrase, "信鸽");
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn prebaked_roundtrip_preserves_lookup() {
-        let dir = std::env::temp_dir().join("pinyin_ime_prebaked_test");
-        let bin = dir.join("lex.bin");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
-
-        let mut lex = AbbrevLexicon::default();
-        assert!(lex.insert_parsed(ThuoclEntry {
-            phrase: "北京".into(),
-            freq: 88,
-            code: None,
-        }));
-        assert!(lex.insert_parsed(ThuoclEntry {
-            phrase: "背景".into(),
-            freq: 12,
-            code: None,
-        }));
-
-        save_prebaked_lexicon(&bin, &lex).unwrap();
-        let loaded = load_prebaked_lexicon(&bin).unwrap();
-
-        assert_eq!(loaded.lookup("bj").unwrap()[0].phrase, "北京");
-        assert_eq!(loaded.lookup_pinyin("beijing").unwrap()[0].phrase, "北京");
-        assert_eq!(loaded.lookup("bj").unwrap()[0].freq, 88);
-        assert!(loaded.has_phrase_id_index());
-        assert!(matches!(
-            loaded.runtime.borrow().pinyin_delete,
-            LazyDeletionIndex::Ready(_)
-        ));
-        assert!(loaded
-            .approx_lookup_pinyin_scored("beijinh", 1, 4)
-            .iter()
-            .any(|(entry, distance)| entry.phrase == "北京" && *distance == 1));
-        let _ = fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn approximate_lookup_honors_an_internal_stop_before_lazy_index_build() {
-        let mut lex = AbbrevLexicon::default();
-        lex.insert_parsed(ThuoclEntry {
-            phrase: "北京".into(),
-            freq: 88,
-            code: Some("bei jing".into()),
-        });
-        let mut checks = 0usize;
-        let result = lex.approx_lookup_pinyin_scored_until("beijinh", 1, 4, || {
-            checks += 1;
-            true
-        });
-        assert!(result.is_empty());
-        assert!(checks > 0);
-        assert!(matches!(
-            lex.runtime.borrow().pinyin_delete,
-            LazyDeletionIndex::Uninitialized
-        ));
-    }
-
-    #[test]
-    fn prebaked_roundtrip_preserves_dense_prefix_index_and_invalidates_on_mutation() {
-        let dir = std::env::temp_dir().join("pinyin_ime_prebaked_prefix_test");
-        let bin = dir.join("lex.bin");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
-
-        let mut lex = AbbrevLexicon::default();
-        for idx in 0..PREBAKED_PREFIX_MIN_KEYS {
-            lex.insert_parsed(ThuoclEntry {
-                phrase: format!("词{idx}"),
-                freq: 10_000 - idx as u64,
-                code: Some(format!("sharedprefix{idx:02}")),
-            });
+        if full_layer.sort_order() > hot_layer.sort_order()
+            && hot_layer != LexiconLayer::Unknown
+            && full_layer != LexiconLayer::Unknown
+        {
+            mismatches.push(format!(
+                "hot phrase '{}' layer downgrade: hot={:?}, full={:?}",
+                phrase, hot_layer, full_layer,
+            ));
         }
-        let expected = lex.prefix_pinyin_flat("sharedprefix");
-        save_prebaked_lexicon(&bin, &lex).unwrap();
-        let mut loaded = load_prebaked_lexicon(&bin).unwrap();
-        assert!(loaded.pinyin_prefix_inner.contains_key("sharedprefix"));
-        assert_eq!(loaded.prefix_pinyin_flat("sharedprefix"), expected);
-
-        loaded.insert_parsed(ThuoclEntry {
-            phrase: "新增".into(),
-            freq: 99_999,
-            code: Some("sharedprefix99".into()),
-        });
-        assert!(loaded.pinyin_prefix_inner.is_empty());
-        assert_eq!(loaded.prefix_pinyin_flat("sharedprefix")[0].phrase, "新增");
-        let _ = fs::remove_dir_all(&dir);
     }
-
-    #[test]
-    fn prebaked_roundtrip_preserves_source_layer() {
-        let dir = std::env::temp_dir().join("pinyin_ime_prebaked_layer_test");
-        let bin = dir.join("lex.bin");
-        let _ = fs::remove_dir_all(&dir);
-        fs::create_dir_all(&dir).unwrap();
-
-        let mut lex = AbbrevLexicon::default();
-        assert!(lex.insert_parsed_with_layer(
-            ThuoclEntry {
-                phrase: "\u{5317}\u{4eac}".into(),
-                freq: 88,
-                code: Some("bei jing".into()),
-            },
-            LexiconLayer::Ext,
-        ));
-
-        save_prebaked_lexicon(&bin, &lex).unwrap();
-        let loaded = load_prebaked_lexicon(&bin).unwrap();
-
-        assert_eq!(loaded.phrase_layer("\u{5317}\u{4eac}"), LexiconLayer::Ext);
-        let _ = fs::remove_dir_all(&dir);
-    }
+    mismatches
 }

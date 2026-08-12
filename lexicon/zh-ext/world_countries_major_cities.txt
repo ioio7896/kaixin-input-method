@@ -1,0 +1,1154 @@
+# 开心输入法原生词库：世界国家及主要城市
+# 195 个国家（193 个联合国会员国＋巴勒斯坦、梵蒂冈）及每国 5 个代表性城市。
+# 城市为常用中文名称；格式：词语<TAB>全拼<TAB>权重。
+阿富汗	a fu han	5600
+喀布尔	ka bu er	3200
+坎大哈	kan da ha	3200
+赫拉特	he la te	3200
+马扎里沙里夫	ma zha li sha li fu	3200
+贾拉拉巴德	jia la la ba de	3200
+阿尔巴尼亚	a er ba ni ya	5600
+地拉那	di la na	3200
+都拉斯	dou la si	3200
+发罗拉	fa luo la	3200
+斯库台	si ku tai	3200
+爱尔巴桑	ai er ba sang	3200
+阿尔及利亚	a er ji li ya	5600
+阿尔及尔	a er ji er	3200
+奥兰	ao lan	3200
+君士坦丁	jun shi tan ding	3200
+安纳巴	an na ba	3200
+布利达	bu li da	3200
+安道尔	an dao er	5600
+安道尔城	an dao er cheng	3200
+埃斯卡尔德斯	ai si ka er de si	3200
+恩坎普	en kan pu	3200
+圣胡利娅	sheng hu li ya	3200
+拉马萨纳	la ma sa na	3200
+安哥拉	an ge la	5600
+罗安达	luo an da	3200
+万博	wan bo	3200
+洛比托	luo bi tuo	3200
+本格拉	ben ge la	3200
+卢班戈	lu ban ge	3200
+安提瓜和巴布达	an ti gua he ba bu da	5600
+圣约翰	sheng yue han	3200
+圣菲利普	sheng fei li pu	3200
+利伯塔	li bo ta	3200
+帕勒姆	pa lei mu	3200
+英格利什港	ying ge li shen gang	3200
+阿根廷	a gen ting	5600
+布宜诺斯艾利斯	bu yi nuo si ai li si	3200
+科尔多瓦	ke er duo wa	3200
+罗萨里奥	luo sa li ao	3200
+门多萨	men duo sa	3200
+拉普拉塔	la pu la ta	3200
+亚美尼亚	ya mei ni ya	5600
+埃里温	ai li wen	3200
+久姆里	jiu mu li	3200
+瓦纳佐尔	wa na zuo er	3200
+瓦加尔沙帕特	wa jia er sha pa te	3200
+赫拉兹丹	he la zi dan	3200
+澳大利亚	ao da li ya	5600
+堪培拉	kan pei la	3200
+悉尼	xi ni	3200
+墨尔本	mo er ben	3200
+布里斯班	bu li si ban	3200
+珀斯	po si	3200
+奥地利	ao di li	5600
+维也纳	wei ye na	3200
+格拉茨	ge la ci	3200
+林茨	lin ci	3200
+萨尔茨堡	sa er ci bao	3200
+因斯布鲁克	yin si bu lu ke	3200
+阿塞拜疆	a sai bai jiang	5600
+巴库	ba ku	3200
+占贾	zhan jia	3200
+苏姆盖特	su mu gai te	3200
+明盖恰乌尔	ming gai qia wu er	3200
+伦卡兰	lun ka lan	3200
+巴哈马	ba ha ma	5600
+拿骚	na sao	3200
+弗里波特	fu li bo te	3200
+西端	xi duan	3200
+马什港	ma shen gang	3200
+乔治敦	qiao zhi dun	3200
+巴林	ba lin	5600
+麦纳麦	mai na mai	3200
+里法	li fa	3200
+穆哈拉格	mu ha la ge	3200
+哈马德镇	ha ma de zhen	3200
+伊萨城	yi sa cheng	3200
+孟加拉国	meng jia la guo	5600
+达卡	da ka	3200
+吉大港	ji da gang	3200
+库尔纳	ku er na	3200
+拉杰沙希	la jie sha xi	3200
+锡尔赫特	xi er he te	3200
+巴巴多斯	ba ba duo si	5600
+布里奇敦	bu li qi dun	3200
+斯佩茨敦	si pei ci dun	3200
+奥伊斯廷斯	ao yi si ting si	3200
+霍尔敦	huo er dun	3200
+巴斯谢巴	ba si xie ba	3200
+白俄罗斯	bai e luo si	5600
+明斯克	ming si ke	3200
+戈梅利	ge mei li	3200
+莫吉廖夫	mo ji liao fu	3200
+维捷布斯克	wei jie bu si ke	3200
+格罗德诺	ge luo de nuo	3200
+比利时	bi li shi	5600
+布鲁塞尔	bu lu sai er	3200
+安特卫普	an te wei pu	3200
+根特	gen te	3200
+沙勒罗瓦	sha lei luo wa	3200
+列日	lie ri	3200
+伯利兹	bo li zi	5600
+贝尔莫潘	bei er mo pan	3200
+伯利兹城	bo li zi cheng	3200
+圣伊格纳西奥	sheng yi ge na xi ao	3200
+奥兰治沃克	ao lan zhi wo ke	3200
+丹格里加	dan ge li jia	3200
+贝宁	bei ning	5600
+波多诺伏	bo duo nuo fu	3200
+科托努	ke tuo nu	3200
+阿波美	a bo mei	3200
+帕拉库	pa la ku	3200
+朱古	zhu gu	3200
+不丹	bu dan	5600
+廷布	ting bu	3200
+辛布	xin bu	3200
+帕罗	pa luo	3200
+普那卡	pu na ka	3200
+贾卡尔	jia ka er	3200
+玻利维亚	bo li wei ya	5600
+苏克雷	su ke lei	3200
+拉巴斯	la ba si	3200
+圣克鲁斯	sheng ke lu si	3200
+科恰班巴	ke qia ban ba	3200
+奥鲁罗	ao lu luo	3200
+波斯尼亚和黑塞哥维那	bo si ni ya he hei sai ge wei na	5600
+萨拉热窝	sa la re wo	3200
+巴尼亚卢卡	ba ni ya lu ka	3200
+莫斯塔尔	mo si ta er	3200
+图兹拉	tu zi la	3200
+泽尼察	ze ni cha	3200
+博茨瓦纳	bo ci wa na	5600
+哈博罗内	ha bo luo nei	3200
+弗朗西斯敦	fu lang xi si dun	3200
+马翁	ma weng	3200
+卡萨内	ka sa nei	3200
+莫洛波洛莱	mo luo bo luo lai	3200
+巴西	ba xi	5600
+巴西利亚	ba xi li ya	3200
+圣保罗	sheng bao luo	3200
+里约热内卢	li yue re nei lu	3200
+萨尔瓦多	sa er wa duo	3200
+贝洛奥里藏特	bei luo ao li cang te	3200
+文莱	wen lai	5600
+斯里巴加湾市	si li ba jia wan shi	3200
+马来奕	ma lai yi	3200
+诗里亚	shi li ya	3200
+都东	dou dong	3200
+邦阿	bang a	3200
+保加利亚	bao jia li ya	5600
+索非亚	suo fei ya	3200
+普罗夫迪夫	pu luo fu di fu	3200
+瓦尔纳	wa er na	3200
+布尔加斯	bu er jia si	3200
+鲁塞	lu sai	3200
+布基纳法索	bu ji na fa suo	5600
+瓦加杜古	wa jia du gu	3200
+博博迪乌拉索	bo bo di wu la suo	3200
+库杜古	ku du gu	3200
+邦福拉	bang fu la	3200
+瓦希古亚	wa xi gu ya	3200
+布隆迪	bu long di	5600
+基特加	ji te jia	3200
+布琼布拉	bu qiong bu la	3200
+恩戈齐	en ge qi	3200
+鲁蒙盖	lu meng gai	3200
+穆因加	mu yin jia	3200
+佛得角	fu de jiao	5600
+普拉亚	pu la ya	3200
+明德卢	ming de lu	3200
+圣玛丽亚	sheng ma li ya	3200
+阿索马达	a suo ma da	3200
+埃斯帕戈斯	ai si pa ge si	3200
+柬埔寨	jian pu zhai	5600
+金边	jin bian	3200
+暹粒	xian li	3200
+马德望	ma de wang	3200
+西哈努克市	xi ha nu ke shi	3200
+磅湛	bang zhan	3200
+喀麦隆	ka mai long	5600
+雅温得	ya wen de	3200
+杜阿拉	du a la	3200
+巴门达	ba men da	3200
+巴富萨姆	ba fu sa mu	3200
+加鲁阿	jia lu a	3200
+加拿大	jia na da	5600
+渥太华	wo tai hua	3200
+多伦多	duo lun duo	3200
+蒙特利尔	meng te li er	3200
+温哥华	wen ge hua	3200
+卡尔加里	ka er jia li	3200
+中非共和国	zhong fei gong he guo	5600
+班吉	ban ji	3200
+贝贝拉蒂	bei bei la di	3200
+博阿尔	bo a er	3200
+班巴里	ban ba li	3200
+博桑戈阿	bo sang ge a	3200
+乍得	zha de	5600
+恩贾梅纳	en jia mei na	3200
+蒙杜	meng du	3200
+阿贝歇	a bei xie	3200
+萨尔	sa er	3200
+凯洛	kai luo	3200
+智利	zhi li	5600
+圣地亚哥	sheng di ya ge	3200
+瓦尔帕莱索	wa er pa lai suo	3200
+康塞普西翁	kang sai pu xi weng	3200
+安托法加斯塔	an tuo fa jia si ta	3200
+维尼亚德尔马	wei ni ya de er ma	3200
+中国	zhong guo	5600
+北京	bei jing	3200
+上海	shang hai	3200
+广州	guang zhou	3200
+深圳	shen zhen	3200
+成都	cheng du	3200
+哥伦比亚	ge lun bi ya	5600
+波哥大	bo ge da	3200
+麦德林	mai de lin	3200
+卡利	ka li	3200
+巴兰基亚	ba lan ji ya	3200
+卡塔赫纳	ka ta he na	3200
+科摩罗	ke mo luo	5600
+莫罗尼	mo luo ni	3200
+穆察穆杜	mu cha mu du	3200
+丰博尼	feng bo ni	3200
+多莫尼	duo mo ni	3200
+丰布尼	feng bu ni	3200
+刚果共和国	gang guo gong he guo	5600
+布拉柴维尔	bu la chai wei er	3200
+黑角	hei jiao	3200
+多利西	duo li xi	3200
+恩卡伊	en ka yi	3200
+韦索	wei suo	3200
+哥斯达黎加	ge si da li jia	5600
+圣何塞	sheng he sai	3200
+利蒙	li meng	3200
+阿拉胡埃拉	a la hu ai la	3200
+埃雷迪亚	ai lei di ya	3200
+卡塔戈	ka ta ge	3200
+科特迪瓦	ke te di wa	5600
+亚穆苏克罗	ya mu su ke luo	3200
+阿比让	a bi rang	3200
+布瓦凯	bu wa kai	3200
+达洛亚	da luo ya	3200
+科霍戈	ke huo ge	3200
+克罗地亚	ke luo di ya	5600
+萨格勒布	sa ge lei bu	3200
+斯普利特	si pu li te	3200
+里耶卡	li ye ka	3200
+奥西耶克	ao xi ye ke	3200
+扎达尔	zha da er	3200
+古巴	gu ba	5600
+哈瓦那	ha wa na	3200
+卡马圭	ka ma gui	3200
+奥尔金	ao er jin	3200
+圣克拉拉	sheng ke la la	3200
+塞浦路斯	sai pu lu si	5600
+尼科西亚	ni ke xi ya	3200
+利马索尔	li ma suo er	3200
+拉纳卡	la na ka	3200
+帕福斯	pa fu si	3200
+法马古斯塔	fa ma gu si ta	3200
+捷克	jie ke	5600
+布拉格	bu la ge	3200
+布尔诺	bu er nuo	3200
+俄斯特拉发	e si te la fa	3200
+比尔森	bi er sen	3200
+利贝雷茨	li bei lei ci	3200
+刚果民主共和国	gang guo min zhu gong he guo	5600
+金沙萨	jin sha sa	3200
+卢本巴希	lu ben ba xi	3200
+姆布吉马伊	mu bu ji ma yi	3200
+基桑加尼	ji sang jia ni	3200
+戈马	ge ma	3200
+丹麦	dan mai	5600
+哥本哈根	ge ben ha gen	3200
+奥胡斯	ao hu si	3200
+欧登塞	ou deng sai	3200
+奥尔堡	ao er bao	3200
+埃斯比约	ai si bi yue	3200
+吉布提	ji bu ti	5600
+吉布提市	ji bu ti shi	3200
+阿里萨比赫	a li sa bi he	3200
+塔朱拉	ta zhu la	3200
+奥博克	ao bo ke	3200
+迪基勒	di ji lei	3200
+多米尼克	duo mi ni ke	5600
+罗索	luo suo	3200
+朴次茅斯	pu ci mao si	3200
+马里戈特	ma li ge te	3200
+马奥	ma ao	3200
+拉普兰	la pu lan	3200
+多米尼加共和国	duo mi ni jia gong he guo	5600
+圣多明各	sheng duo ming ge	3200
+拉罗马纳	la luo ma na	3200
+普拉塔港	pu la ta gang	3200
+圣佩德罗德马科里斯	sheng pei de luo de ma ke li si	3200
+厄瓜多尔	e gua duo er	5600
+基多	ji duo	3200
+瓜亚基尔	gua ya ji er	3200
+昆卡	kun ka	3200
+曼塔	man ta	3200
+埃及	ai ji	5600
+开罗	kai luo	3200
+亚历山大	ya li shan da	3200
+吉萨	ji sa	3200
+塞得港	sai de gang	3200
+苏伊士	su yi shi	3200
+圣萨尔瓦多	sheng sa er wa duo	3200
+圣安娜	sheng an na	3200
+圣米格尔	sheng mi ge er	3200
+索亚潘戈	suo ya pan ge	3200
+圣特克拉	sheng te ke la	3200
+赤道几内亚	chi dao ji nei ya	5600
+马拉博	ma la bo	3200
+巴塔	ba ta	3200
+埃贝比因	ai bei bi yin	3200
+蒙戈莫	meng ge mo	3200
+卢巴	lu ba	3200
+厄立特里亚	e li te li ya	5600
+阿斯马拉	a si ma la	3200
+克伦	ke lun	3200
+马萨瓦	ma sa wa	3200
+阿萨布	a sa bu	3200
+门德费拉	men de fei la	3200
+爱沙尼亚	ai sha ni ya	5600
+塔林	ta lin	3200
+塔尔图	ta er tu	3200
+纳尔瓦	na er wa	3200
+派尔努	pai er nu	3200
+科特拉耶尔韦	ke te la ye er wei	3200
+斯威士兰	si wei shi lan	5600
+姆巴巴内	mu ba ba nei	3200
+曼齐尼	man qi ni	3200
+洛班巴	luo ban ba	3200
+西泰基	xi tai ji	3200
+恩赫兰加诺	en he lan jia nuo	3200
+埃塞俄比亚	ai sai e bi ya	5600
+亚的斯亚贝巴	ya de si ya bei ba	3200
+德雷达瓦	de lei da wa	3200
+贡德尔	gong de er	3200
+默克莱	mo ke lai	3200
+阿瓦萨	a wa sa	3200
+斐济	fei ji	5600
+苏瓦	su wa	3200
+楠迪	nan di	3200
+劳托卡	lao tuo ka	3200
+兰巴萨	lan ba sa	3200
+萨武萨武	sa wu sa wu	3200
+芬兰	fen lan	5600
+赫尔辛基	he er xin ji	3200
+埃斯波	ai si bo	3200
+坦佩雷	tan pei lei	3200
+万塔	wan ta	3200
+图尔库	tu er ku	3200
+法国	fa guo	5600
+巴黎	ba li	3200
+马赛	ma sai	3200
+里昂	li ang	3200
+图卢兹	tu lu zi	3200
+尼斯	ni si	3200
+加蓬	jia peng	5600
+利伯维尔	li bo wei er	3200
+让蒂尔港	rang di er gang	3200
+弗朗斯维尔	fu lang si wei er	3200
+奥耶姆	ao ye mu	3200
+兰巴雷内	lan ba lei nei	3200
+冈比亚	gang bi ya	5600
+班珠尔	ban zhu er	3200
+塞雷昆达	sai lei kun da	3200
+布里卡马	bu li ka ma	3200
+巴考	ba kao	3200
+法拉芬尼	fa la fen ni	3200
+格鲁吉亚	ge lu ji ya	5600
+第比利斯	di bi li si	3200
+巴统	ba tong	3200
+库塔伊西	ku ta yi xi	3200
+鲁斯塔维	lu si ta wei	3200
+哥里	ge li	3200
+德国	de guo	5600
+柏林	bo lin	3200
+汉堡	han bao	3200
+慕尼黑	mu ni hei	3200
+科隆	ke long	3200
+法兰克福	fa lan ke fu	3200
+加纳	jia na	5600
+阿克拉	a ke la	3200
+库马西	ku ma xi	3200
+塔马利	ta ma li	3200
+塔科拉迪	ta ke la di	3200
+海岸角	hai an jiao	3200
+希腊	xi la	5600
+雅典	ya dian	3200
+塞萨洛尼基	sai sa luo ni ji	3200
+帕特雷	pa te lei	3200
+伊拉克利翁	yi la ke li weng	3200
+拉里萨	la li sa	3200
+格林纳达	ge lin na da	5600
+圣乔治	sheng qiao zhi	3200
+格林维尔	ge lin wei er	3200
+古亚韦	gu ya wei	3200
+维多利亚	wei duo li ya	3200
+索图尔	suo tu er	3200
+危地马拉	wei di ma la	5600
+危地马拉城	wei di ma la cheng	3200
+克萨尔特南戈	ke sa er te nan ge	3200
+埃斯昆特拉	ai si kun te la	3200
+安提瓜危地马拉	an ti gua wei di ma la	3200
+巴里奥斯港	ba li ao si gang	3200
+几内亚	ji nei ya	5600
+科纳克里	ke na ke li	3200
+坎康	kan kang	3200
+恩泽雷科雷	en ze lei ke lei	3200
+金迪亚	jin di ya	3200
+拉贝	la bei	3200
+几内亚比绍	ji nei ya bi shao	5600
+比绍	bi shao	3200
+巴法塔	ba fa ta	3200
+加布	jia bu	3200
+卡谢乌	ka xie wu	3200
+博拉马	bo la ma	3200
+圭亚那	gui ya na	5600
+林登	lin deng	3200
+新阿姆斯特丹	xin a mu si te dan	3200
+安娜丽贾	an na li jia	3200
+巴蒂卡	ba di ka	3200
+海地	hai di	5600
+太子港	tai zi gang	3200
+海地角	hai di jiao	3200
+戈纳伊夫	ge na yi fu	3200
+莱凯	lai kai	3200
+雅克梅	ya ke mei	3200
+洪都拉斯	hong dou la si	5600
+特古西加尔巴	te gu xi jia er ba	3200
+圣佩德罗苏拉	sheng pei de luo su la	3200
+拉塞瓦	la sai wa	3200
+乔洛马	qiao luo ma	3200
+科马亚瓜	ke ma ya gua	3200
+匈牙利	xiong ya li	5600
+布达佩斯	bu da pei si	3200
+德布勒森	de bu lei sen	3200
+塞格德	sai ge de	3200
+米什科尔茨	mi shen ke er ci	3200
+佩奇	pei qi	3200
+冰岛	bing dao	5600
+雷克雅未克	lei ke ya wei ke	3200
+科帕沃于尔	ke pa wo yu er	3200
+哈布纳菲厄泽	ha bu na fei e ze	3200
+阿克雷里	a ke lei li	3200
+雷克雅内斯拜尔	lei ke ya nei si bai er	3200
+印度	yin du	5600
+新德里	xin de li	3200
+孟买	meng mai	3200
+德里	de li	3200
+班加罗尔	ban jia luo er	3200
+加尔各答	jia er ge da	3200
+印度尼西亚	yin du ni xi ya	5600
+雅加达	ya jia da	3200
+泗水	si shui	3200
+万隆	wan long	3200
+棉兰	mian lan	3200
+望加锡	wang jia xi	3200
+伊朗	yi lang	5600
+德黑兰	de hei lan	3200
+马什哈德	ma shen ha de	3200
+伊斯法罕	yi si fa han	3200
+设拉子	she la zi	3200
+大不里士	da bu li shi	3200
+伊拉克	yi la ke	5600
+巴格达	ba ge da	3200
+巴士拉	ba shi la	3200
+摩苏尔	mo su er	3200
+埃尔比勒	ai er bi lei	3200
+纳杰夫	na jie fu	3200
+爱尔兰	ai er lan	5600
+都柏林	dou bo lin	3200
+科克	ke ke	3200
+利默里克	li mo li ke	3200
+戈尔韦	ge er wei	3200
+沃特福德	wo te fu de	3200
+以色列	yi se lie	5600
+耶路撒冷	ye lu sa leng	3200
+特拉维夫	te la wei fu	3200
+海法	hai fa	3200
+里雄莱锡安	li xiong lai xi an	3200
+阿什杜德	a shen du de	3200
+意大利	yi da li	5600
+罗马	luo ma	3200
+米兰	mi lan	3200
+那不勒斯	na bu le si	3200
+都灵	dou ling	3200
+巴勒莫	ba lei mo	3200
+牙买加	ya mai jia	5600
+金斯敦	jin si dun	3200
+蒙特哥贝	meng te ge bei	3200
+西班牙镇	xi ban ya zhen	3200
+波特莫尔	bo te mo er	3200
+曼德维尔	man de wei er	3200
+日本	ri ben	5600
+东京	dong jing	3200
+大阪	da ban	3200
+京都	jing du	3200
+横滨	heng bin	3200
+名古屋	ming gu wu	3200
+约旦	yue dan	5600
+安曼	an man	3200
+扎尔卡	zha er ka	3200
+伊尔比德	yi er bi de	3200
+亚喀巴	ya ka ba	3200
+萨勒特	sa lei te	3200
+哈萨克斯坦	ha sa ke si tan	5600
+阿斯塔纳	a si ta na	3200
+阿拉木图	a la mu tu	3200
+奇姆肯特	qi mu ken te	3200
+卡拉干达	ka la gan da	3200
+阿克托别	a ke tuo bie	3200
+肯尼亚	ken ni ya	5600
+内罗毕	nei luo bi	3200
+蒙巴萨	meng ba sa	3200
+基苏木	ji su mu	3200
+纳库鲁	na ku lu	3200
+埃尔多雷特	ai er duo lei te	3200
+基里巴斯	ji li ba si	5600
+南塔拉瓦	nan ta la wa	3200
+贝蒂奥	bei di ao	3200
+拜里基	bai li ji	3200
+比肯尼比尤	bi ken ni bi you	3200
+塔比特韦亚	ta bi te wei ya	3200
+科威特	ke wei te	5600
+科威特城	ke wei te cheng	3200
+艾哈迈迪	ai ha mai di	3200
+哈瓦利	ha wa li	3200
+萨尔米亚	sa er mi ya	3200
+杰赫拉	jie he la	3200
+吉尔吉斯斯坦	ji er ji si si tan	5600
+比什凯克	bi shen kai ke	3200
+奥什	ao shen	3200
+卡拉科尔	ka la ke er	3200
+托克马克	tuo ke ma ke	3200
+老挝	lao wo	5600
+万象	wan xiang	3200
+琅勃拉邦	lang bo la bang	3200
+沙湾拿吉	sha wan na ji	3200
+巴色	ba se	3200
+他曲	ta qu	3200
+拉脱维亚	la tuo wei ya	5600
+里加	li jia	3200
+道加夫皮尔斯	dao jia fu pi er si	3200
+利耶帕亚	li ye pa ya	3200
+叶尔加瓦	ye er jia wa	3200
+尤尔马拉	you er ma la	3200
+黎巴嫩	li ba nen	5600
+贝鲁特	bei lu te	3200
+的黎波里	de li bo li	3200
+西顿	xi dun	3200
+扎赫勒	zha he lei	3200
+比布鲁斯	bi bu lu si	3200
+莱索托	lai suo tuo	5600
+马塞卢	ma sai lu	3200
+泰亚泰亚嫩	tai ya tai ya nen	3200
+马费滕	ma fei teng	3200
+霍洛霍洛	huo luo huo luo	3200
+布塔布泰	bu ta bu tai	3200
+利比里亚	li bi li ya	5600
+蒙罗维亚	meng luo wei ya	3200
+甘巴	gan ba	3200
+布坎南	bu kan nan	3200
+甘塔	gan ta	3200
+卡卡塔	ka ka ta	3200
+利比亚	li bi ya	5600
+班加西	ban jia xi	3200
+米苏拉塔	mi su la ta	3200
+塞卜哈	sai bo ha	3200
+扎维耶	zha wei ye	3200
+列支敦士登	lie zhi dun shi deng	5600
+瓦杜兹	wa du zi	3200
+沙恩	sha en	3200
+巴尔策斯	ba er ce si	3200
+特里森	te li sen	3200
+埃申	ai shen	3200
+立陶宛	li tao wan	5600
+维尔纽斯	wei er niu si	3200
+考纳斯	kao na si	3200
+克莱佩达	ke lai pei da	3200
+希奥利艾	xi ao li ai	3200
+帕涅韦日斯	pa nie wei ri si	3200
+卢森堡	lu sen bao	5600
+卢森堡市	lu sen bao shi	3200
+埃施	ai shi	3200
+迪弗当日	di fu dang ri	3200
+迪德朗日	di de lang ri	3200
+埃特尔布鲁克	ai te er bu lu ke	3200
+马达加斯加	ma da jia si jia	5600
+塔那那利佛	ta na na li fu	3200
+图阿马西纳	tu a ma xi na	3200
+安齐拉贝	an qi la bei	3200
+菲亚纳兰楚阿	fei ya na lan chu a	3200
+马哈赞加	ma ha zan jia	3200
+马拉维	ma la wei	5600
+利隆圭	li long gui	3200
+布兰太尔	bu lan tai er	3200
+姆祖祖	mu zu zu	3200
+松巴	song ba	3200
+卡松古	ka song gu	3200
+马来西亚	ma lai xi ya	5600
+吉隆坡	ji long po	3200
+乔治市	qiao zhi shi	3200
+新山	xin shan	3200
+怡保	yi bao	3200
+哥打基纳巴卢	ge da ji na ba lu	3200
+马尔代夫	ma er dai fu	5600
+马累	ma lei	3200
+阿杜城	a du cheng	3200
+富瓦穆拉	fu wa mu la	3200
+库尔胡德胡富希	ku er hu de hu fu xi	3200
+希塔杜	xi ta du	3200
+马里	ma li	5600
+巴马科	ba ma ke	3200
+锡卡索	xi ka suo	3200
+莫普提	mo pu ti	3200
+塞古	sai gu	3200
+卡伊	ka yi	3200
+马耳他	ma er ta	5600
+瓦莱塔	wa lai ta	3200
+比尔基卡拉	bi er ji ka la	3200
+莫斯塔	mo si ta	3200
+科尔米	ke er mi	3200
+斯利马	si li ma	3200
+马绍尔群岛	ma shao er qun dao	5600
+马朱罗	ma zhu luo	3200
+埃贝耶	ai bei ye	3200
+贾卢伊特	jia lu yi te	3200
+沃特杰	wo te jie	3200
+劳拉	lao la	3200
+毛里塔尼亚	mao li ta ni ya	5600
+努瓦克肖特	nu wa ke xiao te	3200
+努瓦迪布	nu wa di bu	3200
+基法	ji fa	3200
+阿塔尔	a ta er	3200
+毛里求斯	mao li qiu si	5600
+路易港	lu yi gang	3200
+博巴森罗斯希尔	bo ba sen luo si xi er	3200
+瓦科阿斯菲尼克斯	wa ke a si fei ni ke si	3200
+居尔皮普	ju er pi pu	3200
+四博尔纳	si bo er na	3200
+墨西哥	mo xi ge	5600
+墨西哥城	mo xi ge cheng	3200
+瓜达拉哈拉	gua da la ha la	3200
+蒙特雷	meng te lei	3200
+普埃布拉	pu ai bu la	3200
+蒂华纳	di hua na	3200
+密克罗尼西亚联邦	mi ke luo ni xi ya lian bang	5600
+帕利基尔	pa li ji er	3200
+韦诺	wei nuo	3200
+科洛尼亚	ke luo ni ya	3200
+托福尔	tuo fu er	3200
+摩尔多瓦	mo er duo wa	5600
+基希讷乌	ji xi ne wu	3200
+蒂拉斯波尔	di la si bo er	3200
+伯尔蒂	bo er di	3200
+宾杰里	bin jie li	3200
+雷布尼察	lei bu ni cha	3200
+摩纳哥	mo na ge	5600
+蒙特卡洛	meng te ka luo	3200
+拉康达明	la kang da ming	3200
+丰维耶	feng wei ye	3200
+莫内盖蒂	mo nei gai di	3200
+蒙古国	meng gu guo	5600
+乌兰巴托	wu lan ba tuo	3200
+额尔登特	e er deng te	3200
+达尔汗	da er han	3200
+乔巴山	qiao ba shan	3200
+乌列盖	wu lie gai	3200
+黑山	hei shan	5600
+波德戈里察	bo de ge li cha	3200
+尼克希奇	ni ke xi qi	3200
+布德瓦	bu de wa	3200
+巴尔	ba er	3200
+采蒂涅	cai di nie	3200
+摩洛哥	mo luo ge	5600
+拉巴特	la ba te	3200
+卡萨布兰卡	ka sa bu lan ka	3200
+马拉喀什	ma la ka shi	3200
+非斯	fei si	3200
+丹吉尔	dan ji er	3200
+莫桑比克	mo sang bi ke	5600
+马普托	ma pu tuo	3200
+马托拉	ma tuo la	3200
+贝拉	bei la	3200
+楠普拉	nan pu la	3200
+希莫尤	xi mo you	3200
+缅甸	mian dian	5600
+内比都	nei bi dou	3200
+仰光	yang guang	3200
+曼德勒	man de lei	3200
+毛淡棉	mao dan mian	3200
+勃固	bo gu	3200
+纳米比亚	na mi bi ya	5600
+温得和克	wen de he ke	3200
+沃尔维斯湾	wo er wei si wan	3200
+斯瓦科普蒙德	si wa ke pu meng de	3200
+奥沙卡蒂	ao sha ka di	3200
+龙杜	long du	3200
+瑙鲁	nao lu	5600
+亚伦	ya lun	3200
+阿纳巴尔	a na ba er	3200
+艾沃	ai wo	3200
+博	bo	3200
+梅嫩	mei nen	3200
+尼泊尔	ni po er	5600
+加德满都	jia de man dou	3200
+博卡拉	bo ka la	3200
+拉利特布尔	la li te bu er	3200
+巴拉特普尔	ba la te pu er	3200
+比拉特纳加尔	bi la te na jia er	3200
+荷兰	he lan	5600
+阿姆斯特丹	a mu si te dan	3200
+鹿特丹	lu te dan	3200
+海牙	hai ya	3200
+乌得勒支	wu de lei zhi	3200
+埃因霍温	ai yin huo wen	3200
+新西兰	xin xi lan	5600
+惠灵顿	hui ling dun	3200
+奥克兰	ao ke lan	3200
+基督城	ji du cheng	3200
+汉密尔顿	han mi er dun	3200
+达尼丁	da ni ding	3200
+尼加拉瓜	ni jia la gua	5600
+马那瓜	ma na gua	3200
+莱昂	lai ang	3200
+格拉纳达	ge la na da	3200
+马萨亚	ma sa ya	3200
+马塔加尔帕	ma ta jia er pa	3200
+尼日尔	ni ri er	5600
+尼亚美	ni ya mei	3200
+津德尔	jin de er	3200
+马拉迪	ma la di	3200
+阿加德兹	a jia de zi	3200
+塔瓦	ta wa	3200
+尼日利亚	ni ri li ya	5600
+阿布贾	a bu jia	3200
+拉各斯	la ge si	3200
+卡诺	ka nuo	3200
+伊巴丹	yi ba dan	3200
+哈科特港	ha ke te gang	3200
+朝鲜	chao xian	5600
+平壤	ping rang	3200
+咸兴	xian xing	3200
+清津	qing jin	3200
+南浦	nan pu	3200
+元山	yuan shan	3200
+北马其顿	bei ma qi dun	5600
+斯科普里	si ke pu li	3200
+比托拉	bi tuo la	3200
+库马诺沃	ku ma nuo wo	3200
+普里莱普	pu li lai pu	3200
+泰托沃	tai tuo wo	3200
+挪威	nuo wei	5600
+奥斯陆	ao si lu	3200
+卑尔根	bei er gen	3200
+特隆赫姆	te long he mu	3200
+斯塔万格	si ta wan ge	3200
+特罗姆瑟	te luo mu se	3200
+阿曼	a man	5600
+马斯喀特	ma si ka te	3200
+塞拉莱	sai la lai	3200
+苏哈尔	su ha er	3200
+尼兹瓦	ni zi wa	3200
+苏尔	su er	3200
+巴基斯坦	ba ji si tan	5600
+伊斯兰堡	yi si lan bao	3200
+卡拉奇	ka la qi	3200
+拉合尔	la he er	3200
+费萨拉巴德	fei sa la ba de	3200
+拉瓦尔品第	la wa er pin di	3200
+帕劳	pa lao	5600
+恩吉鲁穆德	en ji lu mu de	3200
+科罗尔	ke luo er	3200
+艾拉伊	ai la yi	3200
+梅云斯	mei yun si	3200
+克拉克拉贝德	ke la ke la bei de	3200
+巴勒斯坦	ba le si tan	5600
+拉姆安拉	la mu an la	3200
+加沙	jia sha	3200
+希伯伦	xi bo lun	3200
+纳布卢斯	na bu lu si	3200
+杰宁	jie ning	3200
+巴拿马	ba na ma	5600
+巴拿马城	ba na ma cheng	3200
+戴维	dai wei	3200
+奇特雷	qi te lei	3200
+巴布亚新几内亚	ba bu ya xin ji nei ya	5600
+莫尔兹比港	mo er zi bi gang	3200
+莱城	lai cheng	3200
+芒特哈根	mang te ha gen	3200
+马当	ma dang	3200
+戈罗卡	ge luo ka	3200
+巴拉圭	ba la gui	5600
+亚松森	ya song sen	3200
+东方市	dong fang shi	3200
+圣洛伦索	sheng luo lun suo	3200
+卢克	lu ke	3200
+恩卡纳西翁	en ka na xi weng	3200
+秘鲁	bi lu	5600
+利马	li ma	3200
+阿雷基帕	a lei ji pa	3200
+特鲁希略	te lu xi lve	3200
+库斯科	ku si ke	3200
+奇克拉约	qi ke la yue	3200
+菲律宾	fei lv bin	5600
+马尼拉	ma ni la	3200
+奎松城	kui song cheng	3200
+达沃	da wo	3200
+宿务	su wu	3200
+三宝颜	san bao yan	3200
+波兰	bo lan	5600
+华沙	hua sha	3200
+克拉科夫	ke la ke fu	3200
+罗兹	luo zi	3200
+弗罗茨瓦夫	fu luo ci wa fu	3200
+波兹南	bo zi nan	3200
+葡萄牙	pu tao ya	5600
+里斯本	li si ben	3200
+波尔图	bo er tu	3200
+布拉加	bu la jia	3200
+科英布拉	ke ying bu la	3200
+丰沙尔	feng sha er	3200
+卡塔尔	ka ta er	5600
+多哈	duo ha	3200
+赖扬	lai yang	3200
+沃克拉	wo ke la	3200
+豪尔	hao er	3200
+杜汉	du han	3200
+罗马尼亚	luo ma ni ya	5600
+布加勒斯特	bu jia lei si te	3200
+克卢日纳波卡	ke lu ri na bo ka	3200
+蒂米什瓦拉	di mi shen wa la	3200
+雅西	ya xi	3200
+康斯坦察	kang si tan cha	3200
+俄罗斯	e luo si	5600
+莫斯科	mo si ke	3200
+圣彼得堡	sheng bi de bao	3200
+新西伯利亚	xin xi bo li ya	3200
+叶卡捷琳堡	ye ka jie lin bao	3200
+喀山	ka shan	3200
+卢旺达	lu wang da	5600
+基加利	ji jia li	3200
+布塔雷	bu ta lei	3200
+吉塞尼	ji sai ni	3200
+鲁亨盖里	lu heng gai li	3200
+比温巴	bi wen ba	3200
+圣基茨和尼维斯	sheng ji ci he ni wei si	5600
+巴斯特尔	ba si te er	3200
+查尔斯敦	cha er si dun	3200
+桑迪角镇	sang di jiao zhen	3200
+卡扬	ka yang	3200
+迪耶普贝镇	di ye pu bei zhen	3200
+圣卢西亚	sheng lu xi ya	5600
+卡斯特里	ka si te li	3200
+旧堡	jiu bao	3200
+格罗斯伊斯勒	ge luo si yi si lei	3200
+苏弗里耶尔	su fu li ye er	3200
+丹纳利	dan na li	3200
+圣文森特和格林纳丁斯	sheng wen sen te he ge lin na ding si	5600
+巴鲁阿利	ba lu a li	3200
+沙托贝莱尔	sha tuo bei lai er	3200
+莱尤	lai you	3200
+萨摩亚	sa mo ya	5600
+阿皮亚	a pi ya	3200
+萨莱洛洛加	sa lai luo luo jia	3200
+瓦伊特莱	wa yi te lai	3200
+法莱乌拉	fa lai wu la	3200
+萨福图拉法伊	sa fu tu la fa yi	3200
+圣马力诺	sheng ma li nuo	5600
+塞拉瓦莱	sai la wa lai	3200
+博尔戈马焦雷	bo er ge ma jiao lei	3200
+多马尼亚诺	duo ma ni ya nuo	3200
+菲奥伦蒂诺	fei ao lun di nuo	3200
+圣多美和普林西比	sheng duo mei he pu lin xi bi	5600
+圣多美	sheng duo mei	3200
+圣安东尼奥	sheng an dong ni ao	3200
+内维斯	nei wei si	3200
+特林达德	te lin da de	3200
+桑塔纳	sang ta na	3200
+沙特阿拉伯	sha te a la bo	5600
+利雅得	li ya de	3200
+吉达	ji da	3200
+麦加	mai jia	3200
+麦地那	mai di na	3200
+达曼	da man	3200
+塞内加尔	sai nei jia er	5600
+达喀尔	da ka er	3200
+图巴	tu ba	3200
+捷斯	jie si	3200
+圣路易	sheng lu yi	3200
+考拉克	kao la ke	3200
+塞尔维亚	sai er wei ya	5600
+贝尔格莱德	bei er ge lai de	3200
+诺维萨德	nuo wei sa de	3200
+尼什	ni shen	3200
+克拉古耶瓦茨	ke la gu ye wa ci	3200
+苏博蒂察	su bo di cha	3200
+塞舌尔	sai she er	5600
+安塞布瓦洛	an sai bu wa luo	3200
+博瓦隆	bo wa long	3200
+安塞罗亚尔	an sai luo ya er	3200
+巴伊拉扎尔	ba yi la zha er	3200
+塞拉利昂	sai la li ang	5600
+弗里敦	fu li dun	3200
+博城	bo cheng	3200
+凯内马	kai nei ma	3200
+马克尼	ma ke ni	3200
+科伊杜	ke yi du	3200
+新加坡	xin jia po	5600
+裕廊东	yu lang dong	3200
+淡滨尼	dan bin ni	3200
+兀兰	wu lan	3200
+勿洛	wu luo	3200
+斯洛伐克	si luo fa ke	5600
+布拉迪斯拉发	bu la di si la fa	3200
+科希策	ke xi ce	3200
+普雷绍夫	pu lei shao fu	3200
+日利纳	ri li na	3200
+尼特拉	ni te la	3200
+斯洛文尼亚	si luo wen ni ya	5600
+卢布尔雅那	lu bu er ya na	3200
+马里博尔	ma li bo er	3200
+克拉尼	ke la ni	3200
+采列	cai lie	3200
+科佩尔	ke pei er	3200
+所罗门群岛	suo luo men qun dao	5600
+霍尼亚拉	huo ni ya la	3200
+吉佐	ji zuo	3200
+奥基	ao ji	3200
+蒙达	meng da	3200
+图拉吉	tu la ji	3200
+索马里	suo ma li	5600
+摩加迪沙	mo jia di sha	3200
+哈尔格萨	ha er ge sa	3200
+博萨索	bo sa suo	3200
+基斯马尤	ji si ma you	3200
+柏培拉	bai pei la	3200
+南非	nan fei	5600
+比勒陀利亚	bi le tuo li ya	3200
+约翰内斯堡	yue han nei si bao	3200
+开普敦	kai pu dun	3200
+德班	de ban	3200
+伊丽莎白港	yi li sha bai gang	3200
+韩国	han guo	5600
+首尔	shou er	3200
+釜山	fu shan	3200
+仁川	ren chuan	3200
+大邱	da qiu	3200
+大田	da tian	3200
+南苏丹	nan su dan	5600
+朱巴	zhu ba	3200
+瓦乌	wa wu	3200
+马拉卡勒	ma la ka lei	3200
+耶伊	ye yi	3200
+博尔	bo er	3200
+西班牙	xi ban ya	5600
+马德里	ma de li	3200
+巴塞罗那	ba sai luo na	3200
+瓦伦西亚	wa lun xi ya	3200
+塞维利亚	sai wei li ya	3200
+毕尔巴鄂	bi er ba e	3200
+斯里兰卡	si li lan ka	5600
+斯里贾亚瓦德纳普拉科特	si li jia ya wa de na pu la ke te	3200
+科伦坡	ke lun po	3200
+康提	kang ti	3200
+加勒	jia lei	3200
+贾夫纳	jia fu na	3200
+苏丹	su dan	5600
+喀土穆	ka tu mu	3200
+恩图曼	en tu man	3200
+苏丹港	su dan gang	3200
+尼亚拉	ni ya la	3200
+卡萨拉	ka sa la	3200
+苏里南	su li nan	5600
+帕拉马里博	pa la ma li bo	3200
+莱利多普	lai li duo pu	3200
+布罗科蓬多	bu luo ke peng duo	3200
+新尼克里	xin ni ke li	3200
+蒙戈	meng ge	3200
+瑞典	rui dian	5600
+斯德哥尔摩	si de ge er mo	3200
+哥德堡	ge de bao	3200
+马尔默	ma er mo	3200
+乌普萨拉	wu pu sa la	3200
+韦斯特罗斯	wei si te luo si	3200
+瑞士	rui shi	5600
+伯尔尼	bo er ni	3200
+苏黎世	su li shi	3200
+日内瓦	ri nei wa	3200
+巴塞尔	ba sai er	3200
+洛桑	luo sang	3200
+叙利亚	xu li ya	5600
+大马士革	da ma shi ge	3200
+阿勒颇	a lei po	3200
+霍姆斯	huo mu si	3200
+拉塔基亚	la ta ji ya	3200
+哈马	ha ma	3200
+塔吉克斯坦	ta ji ke si tan	5600
+杜尚别	du shang bie	3200
+苦盏	ku zhan	3200
+库洛布	ku luo bu	3200
+库尔干秋别	ku er gan qiu bie	3200
+伊斯塔拉夫尚	yi si ta la fu shang	3200
+坦桑尼亚	tan sang ni ya	5600
+多多马	duo duo ma	3200
+达累斯萨拉姆	da lei si sa la mu	3200
+姆万扎	mu wan zha	3200
+阿鲁沙	a lu sha	3200
+姆贝亚	mu bei ya	3200
+泰国	tai guo	5600
+曼谷	man gu	3200
+清迈	qing mai	3200
+芭堤雅	ba di ya	3200
+普吉	pu ji	3200
+呵叻	ke le	3200
+东帝汶	dong di wen	5600
+帝力	di li	3200
+包考	bao kao	3200
+马利亚纳	ma li ya na	3200
+苏艾	su ai	3200
+萨梅	sa mei	3200
+多哥	duo ge	5600
+洛美	luo mei	3200
+索科德	suo ke de	3200
+卡拉	ka la	3200
+阿塔帕梅	a ta pa mei	3200
+帕利梅	pa li mei	3200
+汤加	tang jia	5600
+努库阿洛法	nu ku a luo fa	3200
+涅亚富	nie ya fu	3200
+哈韦卢洛托	ha wei lu luo tuo	3200
+潘盖	pan gai	3200
+奥霍努阿	ao huo nu a	3200
+特立尼达和多巴哥	te li ni da he duo ba ge	5600
+西班牙港	xi ban ya gang	3200
+圣费尔南多	sheng fei er nan duo	3200
+查瓜纳斯	cha gua na si	3200
+阿里马	a li ma	3200
+斯卡伯勒	si ka bo lei	3200
+突尼斯	tu ni si	5600
+突尼斯市	tu ni si shi	3200
+斯法克斯	si fa ke si	3200
+苏塞	su sai	3200
+凯鲁万	kai lu wan	3200
+比塞大	bi sai da	3200
+土耳其	tu er qi	5600
+安卡拉	an ka la	3200
+伊斯坦布尔	yi si tan bu er	3200
+伊兹密尔	yi zi mi er	3200
+布尔萨	bu er sa	3200
+安塔利亚	an ta li ya	3200
+土库曼斯坦	tu ku man si tan	5600
+阿什哈巴德	a shen ha ba de	3200
+土库曼纳巴特	tu ku man na ba te	3200
+达绍古兹	da shao gu zi	3200
+马雷	ma lei	3200
+巴尔坎纳巴特	ba er kan na ba te	3200
+图瓦卢	tu wa lu	5600
+富纳富提	fu na fu ti	3200
+瓦伊阿库	wa yi a ku	3200
+阿绍	a shao	3200
+塔纳拉凯	ta na la kai	3200
+萨瓦韦	sa wa wei	3200
+乌干达	wu gan da	5600
+坎帕拉	kan pa la	3200
+恩德培	en de pei	3200
+金贾	jin jia	3200
+姆巴拉拉	mu ba la la	3200
+古卢	gu lu	3200
+乌克兰	wu ke lan	5600
+基辅	ji fu	3200
+哈尔科夫	ha er ke fu	3200
+敖德萨	ao de sa	3200
+第聂伯罗	di nie bo luo	3200
+利沃夫	li wo fu	3200
+阿联酋	a lian qiu	5600
+阿布扎比	a bu zha bi	3200
+迪拜	di bai	3200
+沙迦	sha jia	3200
+艾因	ai yin	3200
+阿治曼	a zhi man	3200
+英国	ying guo	5600
+伦敦	lun dun	3200
+伯明翰	bo ming han	3200
+曼彻斯特	man che si te	3200
+格拉斯哥	ge la si ge	3200
+利物浦	li wu pu	3200
+美国	mei guo	5600
+华盛顿	hua sheng dun	3200
+纽约	niu yue	3200
+洛杉矶	luo shan ji	3200
+芝加哥	zhi jia ge	3200
+休斯顿	xiu si dun	3200
+乌拉圭	wu la gui	5600
+蒙得维的亚	meng de wei de ya	3200
+萨尔托	sa er tuo	3200
+海岸城	hai an cheng	3200
+派桑杜	pai sang du	3200
+拉斯彼德拉斯	la si bi de la si	3200
+乌兹别克斯坦	wu zi bie ke si tan	5600
+塔什干	ta shi gan	3200
+撒马尔罕	sa ma er han	3200
+纳曼干	na man gan	3200
+安集延	an ji yan	3200
+布哈拉	bu ha la	3200
+瓦努阿图	wa nu a tu	5600
+维拉港	wei la gang	3200
+卢甘维尔	lu gan wei er	3200
+诺尔苏普	nuo er su pu	3200
+伊桑格尔	yi sang ge er	3200
+索拉	suo la	3200
+梵蒂冈	fan di gang	5600
+梵蒂冈城	fan di gang cheng	3200
+博尔戈皮奥	bo er ge pi ao	3200
+贝尔韦代雷	bei er wei dai lei	3200
+委内瑞拉	wei nei rui la	5600
+加拉加斯	jia la jia si	3200
+马拉开波	ma la kai bo	3200
+巴伦西亚	ba lun xi ya	3200
+巴基西梅托	ba ji xi mei tuo	3200
+圭亚那城	gui ya na cheng	3200
+越南	yue nan	5600
+河内	he nei	3200
+胡志明市	hu zhi ming shi	3200
+海防	hai fang	3200
+岘港	xian gang	3200
+芹苴	qin ju	3200
+也门	ye men	5600
+萨那	sa na	3200
+亚丁	ya ding	3200
+塔伊兹	ta yi zi	3200
+荷台达	he tai da	3200
+穆卡拉	mu ka la	3200
+赞比亚	zan bi ya	5600
+卢萨卡	lu sa ka	3200
+基特韦	ji te wei	3200
+恩多拉	en duo la	3200
+利文斯顿	li wen si dun	3200
+卡布韦	ka bu wei	3200
+津巴布韦	jin ba bu wei	5600
+哈拉雷	ha la lei	3200
+布拉瓦约	bu la wa yue	3200
+奇通圭扎	qi tong gui zha	3200
+穆塔雷	mu ta lei	3200
+圭鲁	gui lu	3200

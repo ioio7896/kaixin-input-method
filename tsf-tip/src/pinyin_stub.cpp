@@ -3088,6 +3088,11 @@ bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
         switch (request.kind) {
           case PendingLearnKind::Commit:
             if (RemoteLearnLocked(request.reading, request.committedText, request.flags, &error)) {
+              // The lookup cache may have been filled again while the async
+              // learn request was waiting in the queue.  Pruning only removes
+              // non-hot entries, so explicitly invalidate this reading to
+              // make the next lookup observe the updated user lexicon.
+              InvalidateLocalLookupCacheReading(request.reading);
               if (request.repeatCount > 0) --request.repeatCount;
               completed = request.repeatCount == 0;
               madeProgress = true;
@@ -3393,12 +3398,12 @@ void SrfTip_ResetLearningContext() {
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
 }
 
-void SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
-                            bool pinned) {
-  if (reading.empty() || committedText.empty()) return;
-  if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return;
+bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
+                          bool pinned) {
+  if (reading.empty() || committedText.empty()) return false;
+  if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return false;
   if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
-    return;
+    return false;
   }
   InvalidateLocalLookupCacheReading(reading);
   TouchEngineUseTime();
@@ -3406,16 +3411,16 @@ void SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& com
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
-    return;
+    return false;
   }
 
   std::wstring failureSnap;
   std::unique_lock<std::mutex> guard(g_mutex, std::try_to_lock);
-  if (!guard.owns_lock()) return;
-  if (!EnsureLoadedLocked()) return;
+  if (!guard.owns_lock()) return false;
+  if (!EnsureLoadedLocked()) return false;
   if (g_bridge.backend == EngineBackend::Remote) {
     std::wstring error;
-    if (RemoteSetCandidatePinLocked(reading, committedText, pinned, &error)) return;
+    if (RemoteSetCandidatePinLocked(reading, committedText, pinned, &error)) return true;
     SetFailureDetailLocked(error.empty() ? L"shared engine candidate pin failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
@@ -3423,6 +3428,7 @@ void SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& com
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
+  return false;
 }
 
 void SrfTip_ApplyCandidateAction(const std::wstring& reading,

@@ -66,8 +66,8 @@ void SrfTip_LearnSelectionFeedback(const std::wstring& reading,
                                    unsigned long page,
                                    const std::vector<std::wstring>& skippedCandidates = {});
 void SrfTip_ResetLearningContext();
-void SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
-                            bool pinned);
+bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
+                          bool pinned);
 void SrfTip_ApplyCandidateAction(const std::wstring& reading,
                                  const std::wstring& committedText,
                                  SrfCandidateAction action);

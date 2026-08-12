@@ -16,70 +16,75 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXT_FILES = {
-    "lexicon/base/china_prefecture_level_admin_333.txt": (
-        "7c42ec07dff26f8c678f5a79e3409bd9dc59f0335a1375b0a071cb382244b982",
+    "lexicon/zh/china_prefecture_level_admin_333.txt": (
+        "cf0c9a8322b253fa7b5218134238054ca947431bc43a47d3f2a526e17fb8ed67",
         333,
         3,
     ),
-    "lexicon/base/county_admin_short_names_2024.txt": (
-        "3a8b07c00ea23ccce40fc66be29f00bd6f6b3f68ab58641542e9dd44d5fb7ab6",
+    "lexicon/zh/county_admin_short_names_2024.txt": (
+        "e370c5f6d9c3d1465852a89c2e43095407491267a6f9afbc8d9288e873a7a3cd",
         2770,
         3,
     ),
-    "lexicon/base/hangzhou_metro_stations_262.txt": (
-        "d944295047ac351ef1b48a277fcd352e51a27ebfc4da5d747f184d80464cd919",
+    "lexicon/zh/hangzhou_metro_stations_262.txt": (
+        "c59fd37d8889097f7dfa46f5a0ea8ed147edafa671083f5eac5500d338d8321b",
         262,
         3,
     ),
-    "lexicon/ext/hangzhou_admin.txt": (
-        "ddc8aebc95b90b616ca94df1e5bdebdcd50756f9ecf9d67aedfdccc187fe0251",
+    "lexicon/zh/hangzhou_admin.txt": (
+        "082e70434a94ed31820657c8a673d44b801f4e5c1a9aa90add5503cf105fe463",
         300,
         3,
     ),
-    "lexicon/ext/hangzhou_business.txt": (
-        "98a841788c5faf9a37b78a60265faf6583928b3c645af080e6c9be4a768e87d1",
+    "lexicon/zh/hangzhou_business.txt": (
+        "bbf6c97ba7a70c210302521a422da5f02f70fb4e8ceacc3a653f7c1bd8864e2d",
         85,
         3,
     ),
-    "lexicon/ext/hangzhou_food_culture.txt": (
-        "dc5b1133ec375331242383f0ab784deaaf23fb862b081b5d7543253ad29764ce",
+    "lexicon/zh/hangzhou_food_culture.txt": (
+        "52fa56b9e6f6fcb4efe447fa13d2aa319353eb68a4bd6d7882aa35a2bd9691fe",
         75,
         3,
     ),
-    "lexicon/ext/hangzhou_landmarks_life.txt": (
-        "97f6d2ecb7ac93cc27e15fde821adc56b30a4cb87005fd49b90272fd40a7cbf6",
+    "lexicon/zh/hangzhou_landmarks_life.txt": (
+        "7b1758d0ccebaf53bcfe6bf3242b8e665edd0c005695f410779e0b0e4fd589c6",
         165,
         3,
     ),
-    "lexicon/ext/hangzhou_local_culture.txt": (
-        "208ee6393998fa371eccedea131b5fa168906c0fa8b768bd917f7880f808cc6f",
+    "lexicon/zh/hangzhou_local_culture.txt": (
+        "9244048090e2759942537d9c99fd46cb3fece27d33db709f3deaa60a9ae574f4",
         65,
         3,
     ),
-    "lexicon/ext/hangzhou_new_places.txt": (
-        "bbfb433ae79d2c9b12a423e5b78108a413224f2e625a125347c311078c05a5d3",
+    "lexicon/zh/hangzhou_new_places.txt": (
+        "c47fc6428fdc481d8389e5c0ce0657fb46fb782aad19c08fd22e07f8ad2b7e62",
         131,
         3,
     ),
-    "lexicon/ext/hangzhou_public_services.txt": (
-        "a6309880503dccbafaa5e135a004d6c6e70179b431f06e25e1174b9d18e39208",
+    "lexicon/zh/hangzhou_public_services.txt": (
+        "e25892eb12a1e83bc26e0e4e888e74258db28263a68a156edfc63df67a1b5dae",
         165,
         3,
     ),
-    "lexicon/ext/hangzhou_transport.txt": (
-        "0609c01c369e1ef9e6fcfa366a273d7e8d7ba8eca0791dffcdd34565d0d6dc39",
+    "lexicon/zh/hangzhou_transport.txt": (
+        "5a6032ad99f69af1ebab90e075b5eac1bdf7c44b9a3a3031528ed0226ca8952a",
         145,
         3,
     ),
     "data_sources/kaixin/common_phrases.tsv": (
-        "d4890760141edacfaa443d1ef6c250b75f6d7b9cfb73ae6914e473ead9d07328",
-        46,
+        "62dfdd47eaf3f9d18f216079f6ad7ba24f20ceac2d72f198d2761183429d71b3",
+        55,
         3,
     ),
     "data_sources/kaixin/polyphone_corrections.tsv": (
-        "b40830a7560d63feeaeeda79c2e5f15cdda35078100d918a543e7c2dff60be6d",
+        "89d7a621ef5befe38ef8ebcb84b956d663a0d80186ec8f51a97e9568307f2df3",
         145,
         2,
+    ),
+    "data_sources/kaixin/pronunciation_aliases.tsv": (
+        "b813f6c836e1bc1590cb51db2009b24bc6694dbf20f6f3c1ce7871eb16e89fc8",
+        27,
+        4,
     ),
 }
 SQLITE_FILE = "pinyin-ime/data/s2t_chars.sqlite"
@@ -135,6 +140,16 @@ def main() -> int:
                         raise ValueError
                 except ValueError:
                     fail(f"{relative}: data row {number} has an invalid weight")
+                    errors += 1
+            elif relative.endswith("pronunciation_aliases.tsv"):
+                try:
+                    if int(fields[2]) <= 0:
+                        raise ValueError
+                except ValueError:
+                    fail(f"{relative}: data row {number} has an invalid weight")
+                    errors += 1
+                if fields[3] not in {"primary", "alternate", "colloquial", "historical"}:
+                    fail(f"{relative}: data row {number} has an invalid pronunciation label")
                     errors += 1
 
     database = ROOT / SQLITE_FILE

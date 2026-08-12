@@ -21,6 +21,13 @@ dist/
 **/obj/
 **/publish/
 
+# The .NET rule above also matches Rust's source-tool convention. Keep the
+# three-character ranking evaluator versioned without exposing other local
+# src/bin helpers that predate this repository rule.
+!pinyin-ime/src/bin/
+pinyin-ime/src/bin/*
+!pinyin-ime/src/bin/phrase_len_eval.rs
+
 # Python caches
 __pycache__/
 *.py[cod]

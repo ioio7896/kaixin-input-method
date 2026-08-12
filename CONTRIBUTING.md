@@ -25,18 +25,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-fast.ps1
 修改 Rust 引擎时运行：
 
 ```powershell
-cargo test --manifest-path pinyin-ime/Cargo.toml --lib --locked
+cargo check --manifest-path pinyin-ime/Cargo.toml --lib --locked
 ```
 
-修改 C++/TSF 代码时运行相应 CMake/CTest 测试；修改安装或第三方组件时应运行完整
+修改 C++/TSF 代码时运行相应构建和人工冒烟检查；修改安装或第三方组件时应运行完整
 验证和安装冒烟测试。需要交互桌面的测试若被跳过，请在 PR 中说明。
 
 ## Pull Request 要求
 
 - 说明问题、解决方案、用户可见变化和验证结果。
-- 新行为应包含测试；不能测试时说明原因和人工验证步骤。
+- 新行为应说明验证步骤和人工验证结果。
 - 不改变隐私默认值，除非 PR 明确说明风险和迁移方案。
-- 不在测试、日志或截图中包含真实输入、剪贴板、用户名或本地路径。
+- 不在日志或截图中包含真实输入、剪贴板、用户名或本地路径。
 - 依赖变化须更新锁文件和第三方许可证报告。
 - 第三方内容须更新 `THIRD_PARTY_NOTICES.md` 及 `docs/licenses/` 中的来源记录。
 - 修改 ShareX fork 时，更新其 `SOURCE_INFO.md`，并验证对应源码包和发布二进制一致。

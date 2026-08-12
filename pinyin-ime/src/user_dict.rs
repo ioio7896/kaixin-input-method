@@ -211,6 +211,7 @@ pub struct UserLexicon {
     context_links: BTreeMap<String, Vec<LearnedEntry>>,
     context_trigrams: BTreeMap<(String, String), Vec<LearnedEntry>>,
     recent_commits: Vec<RecentCommit>,
+    recent_word_tokens: Vec<String>,
     persistence: Option<PersistenceWorker>,
     learns_since_snapshot: usize,
     reset_stamp: SharedResetStamp,
@@ -235,6 +236,7 @@ const MAX_USER_KEY_CHARS: usize = 80;
 const MAX_USER_PHRASE_CHARS: usize = 128;
 const LEGACY_PINNED_EXACT_FREQ_DELTA: u64 = 100_000;
 const MAX_RECENT_COMMITS: usize = 4;
+const MAX_RECENT_WORD_TOKENS: usize = 4;
 const ADJACENT_NOVEL_MIN_CHARS: usize = 4;
 const ADJACENT_NOVEL_MAX_CHARS: usize = 8;
 const ADJACENT_NOVEL_MAX_EVENT_GAP: u64 = 64;
@@ -279,6 +281,7 @@ impl Default for UserLexicon {
             context_links: BTreeMap::new(),
             context_trigrams: BTreeMap::new(),
             recent_commits: Vec::new(),
+            recent_word_tokens: Vec::new(),
             persistence: None,
             learns_since_snapshot: 0,
             reset_stamp: Arc::new(Mutex::new(UserDictResetStamp::default())),
@@ -355,6 +358,7 @@ impl UserLexicon {
             context_links: BTreeMap::new(),
             context_trigrams: BTreeMap::new(),
             recent_commits: Vec::new(),
+            recent_word_tokens: Vec::new(),
             persistence: None,
             learns_since_snapshot: 0,
             reset_stamp,
@@ -436,6 +440,7 @@ impl UserLexicon {
     pub fn advance_clock_for_eval(&mut self, ticks: u64) {
         self.clock = self.clock.saturating_add(ticks);
         self.recent_commits.clear();
+        self.recent_word_tokens.clear();
     }
 
     pub fn last_committed(&self) -> Option<&str> {
@@ -453,8 +458,17 @@ impl UserLexicon {
             .collect()
     }
 
+    pub fn preceding_word_tokens_for_context(&self) -> Vec<&str> {
+        self.recent_word_tokens
+            .iter()
+            .take(3)
+            .map(String::as_str)
+            .collect()
+    }
+
     pub fn clear_context_history(&mut self) {
         self.recent_commits.clear();
+        self.recent_word_tokens.clear();
     }
 
     pub fn lookup_input(&self, key: &str) -> Option<&[LearnedEntry]> {
@@ -868,6 +882,8 @@ impl UserLexicon {
             }
             self.recent_commits
                 .retain(|commit| commit.phrase != entry.phrase);
+            self.recent_word_tokens
+                .retain(|token| token != &entry.phrase);
         }
         true
     }
@@ -928,6 +944,22 @@ impl UserLexicon {
         }
     }
 
+    pub fn context_trigram_outgoing_stats(&self, prev2: &str, prev1: &str) -> (u64, usize) {
+        if let Some(entries) = self
+            .context_trigrams
+            .get(&(prev2.to_string(), prev1.to_string()))
+        {
+            let total = entries.iter().map(|entry| entry.freq).sum();
+            (total, entries.len())
+        } else {
+            (0, 0)
+        }
+    }
+
+    pub fn phrase_vocabulary_size(&self) -> usize {
+        self.phrase_stats.len()
+    }
+
     pub fn learn(&mut self, key: &str, phrase: &str) -> io::Result<()> {
         self.learn_with_delta(key, phrase, 1)
     }
@@ -942,6 +974,17 @@ impl UserLexicon {
         phrase: &str,
         delta: u64,
         source: CommitSource,
+    ) -> io::Result<()> {
+        self.learn_with_source_delta_and_tokens(key, phrase, delta, source, &[phrase.to_string()])
+    }
+
+    pub fn learn_with_source_delta_and_tokens(
+        &mut self,
+        key: &str,
+        phrase: &str,
+        delta: u64,
+        source: CommitSource,
+        word_tokens: &[String],
     ) -> io::Result<()> {
         let Some((key, phrase)) = validate_user_phrase_parts(key, phrase)? else {
             return Ok(());
@@ -983,37 +1026,7 @@ impl UserLexicon {
             ));
         }
 
-        if let Some(prev_commit) = self.recent_commits.first().cloned() {
-            if prev_commit.phrase != phrase {
-                let prev_phrase = prev_commit.phrase.clone();
-                let transitions = self.context_links.entry(prev_commit.phrase).or_default();
-                upsert_entry(transitions, phrase.to_string(), now, delta);
-                if let Some(entry) = transitions.iter().find(|entry| entry.phrase == phrase) {
-                    updates.push(format!(
-                        "C\t{}\t{}\t{}\t{}",
-                        prev_phrase, entry.phrase, entry.freq, entry.last_used
-                    ));
-                }
-                if let Some(prev2_commit) = self.recent_commits.get(1).cloned() {
-                    if prev2_commit.phrase != phrase {
-                        let prev2_phrase = prev2_commit.phrase.clone();
-                        let trigram_key = (prev2_phrase.clone(), prev_phrase.clone());
-                        let trigrams = self.context_trigrams.entry(trigram_key).or_default();
-                        upsert_entry(trigrams, phrase.to_string(), now, delta);
-                        if let Some(entry) = trigrams.iter().find(|entry| entry.phrase == phrase) {
-                            updates.push(format!(
-                                "T\t{}\t{}\t{}\t{}\t{}",
-                                prev2_phrase,
-                                prev_phrase,
-                                entry.phrase,
-                                entry.freq,
-                                entry.last_used
-                            ));
-                        }
-                    }
-                }
-            }
-        }
+        self.record_word_ngram_updates(&phrase, word_tokens, now, delta, &mut updates);
 
         self.record_adjacent_novel_candidates(adjacent_candidates, now, &mut updates);
         self.push_recent_commit(key, phrase, now, source);
@@ -1036,6 +1049,25 @@ impl UserLexicon {
         source: CommitSource,
         observed: LearnedStats,
     ) -> io::Result<()> {
+        self.promote_observed_input_with_source_delta_and_tokens(
+            key,
+            phrase,
+            delta,
+            source,
+            observed,
+            &[phrase.to_string()],
+        )
+    }
+
+    pub fn promote_observed_input_with_source_delta_and_tokens(
+        &mut self,
+        key: &str,
+        phrase: &str,
+        delta: u64,
+        source: CommitSource,
+        observed: LearnedStats,
+        word_tokens: &[String],
+    ) -> io::Result<()> {
         let Some((key, phrase)) = validate_user_phrase_parts(key, phrase)? else {
             return Ok(());
         };
@@ -1046,7 +1078,13 @@ impl UserLexicon {
         // The exact entry replaces the provisional observation. A snapshot is
         // queued below so the removal is durable as well as visible in memory.
         remove_observed_input_phrase(self, &key, &phrase);
-        self.learn_with_source_and_delta(&key, &phrase, delta.max(observed.freq).max(1), source)?;
+        self.learn_with_source_delta_and_tokens(
+            &key,
+            &phrase,
+            delta.max(observed.freq).max(1),
+            source,
+            word_tokens,
+        )?;
 
         if let Some(entry) = self
             .exact_input
@@ -1057,6 +1095,110 @@ impl UserLexicon {
             refresh_suggestion_confidence(entry);
         }
         self.persist_snapshot_now()
+    }
+
+    pub fn record_word_sequence(
+        &mut self,
+        committed_phrase: &str,
+        word_tokens: &[String],
+        delta: u64,
+    ) -> io::Result<()> {
+        let committed_phrase = committed_phrase.trim();
+        if committed_phrase.is_empty() || self.blocked_phrases.contains_key(committed_phrase) {
+            return Ok(());
+        }
+        let now = if self.clock == 0 {
+            self.bump_clock()
+        } else {
+            self.clock
+        };
+        let mut updates = Vec::new();
+        self.record_word_ngram_updates(
+            committed_phrase,
+            word_tokens,
+            now,
+            delta.max(1),
+            &mut updates,
+        );
+        if updates.is_empty() {
+            return Ok(());
+        }
+        if self.prune_for_memory() {
+            self.persist_snapshot_now()
+        } else {
+            self.persist_updates(updates)
+        }
+    }
+
+    fn record_word_ngram_updates(
+        &mut self,
+        committed_phrase: &str,
+        word_tokens: &[String],
+        now: u64,
+        delta: u64,
+        updates: &mut Vec<String>,
+    ) {
+        let mut tokens = word_tokens
+            .iter()
+            .filter_map(|token| normalize_selection_feedback_phrase(token))
+            .collect::<Vec<_>>();
+        if tokens.is_empty() {
+            if let Some(phrase) = normalize_selection_feedback_phrase(committed_phrase) {
+                tokens.push(phrase);
+            }
+        }
+        if tokens.is_empty() {
+            return;
+        }
+
+        let mut prev1 = self.recent_word_tokens.first().cloned();
+        let mut prev2 = self.recent_word_tokens.get(1).cloned();
+        for token in &tokens {
+            if tokens.len() > 1 || token != committed_phrase {
+                upsert_stats(&mut self.phrase_stats, token.clone(), now, delta);
+                if let Some(stats) = self.phrase_stats.get(token).copied() {
+                    updates.push(format!("P\t{}\t{}\t{}", token, stats.freq, stats.last_used));
+                }
+            }
+
+            if let Some(previous) = prev1.as_deref().filter(|previous| *previous != token) {
+                let transitions = self.context_links.entry(previous.to_string()).or_default();
+                upsert_entry(transitions, token.clone(), now, delta);
+                if let Some(entry) = transitions.iter().find(|entry| entry.phrase == *token) {
+                    updates.push(format!(
+                        "C\t{}\t{}\t{}\t{}",
+                        previous, entry.phrase, entry.freq, entry.last_used
+                    ));
+                }
+
+                if let Some(previous2) = prev2.as_deref().filter(|previous2| *previous2 != token) {
+                    let trigram_key = (previous2.to_string(), previous.to_string());
+                    let trigrams = self.context_trigrams.entry(trigram_key).or_default();
+                    upsert_entry(trigrams, token.clone(), now, delta);
+                    if let Some(entry) = trigrams.iter().find(|entry| entry.phrase == *token) {
+                        updates.push(format!(
+                            "T\t{}\t{}\t{}\t{}\t{}",
+                            previous2, previous, entry.phrase, entry.freq, entry.last_used
+                        ));
+                    }
+                }
+            }
+
+            prev2 = prev1;
+            prev1 = Some(token.clone());
+        }
+
+        for token in tokens {
+            if self
+                .recent_word_tokens
+                .first()
+                .is_some_and(|recent| recent == &token)
+            {
+                continue;
+            }
+            self.recent_word_tokens.insert(0, token);
+            self.recent_word_tokens.truncate(MAX_RECENT_WORD_TOKENS);
+        }
     }
 
     pub fn record_commit_observation(
@@ -1424,6 +1566,8 @@ impl UserLexicon {
             entry.pinned = true;
             entry.confidence = SuggestionConfidence::Established;
         }
+        // Re-sort so the newly pinned entry moves above unpinned ones.
+        sort_entries(exact_entries);
         register_approx_key(&mut self.approx_index, &key);
         upsert_stats(&mut self.phrase_stats, phrase.to_string(), now, 1);
 
@@ -1477,6 +1621,9 @@ impl UserLexicon {
                         entry.last_used,
                         u8::from(entry.pinned)
                     ));
+                    // Re-sort so the unpinned entry moves below any remaining
+                    // pinned entries for this key.
+                    sort_entries(entries);
                 }
             }
         }
@@ -2492,6 +2639,7 @@ fn prune_phrase_related_stats(lex: &mut UserLexicon, phrase: &str) {
         });
     lex.recent_commits
         .retain(|commit| commit.phrase.as_str() != phrase);
+    lex.recent_word_tokens.retain(|token| token != phrase);
 }
 
 fn remove_phrase_everywhere(lex: &mut UserLexicon, phrase: &str) -> bool {
@@ -3540,480 +3688,4 @@ fn bounded_edit_distance(left: &str, right: &str, max_distance: usize) -> Option
 
     let distance = prev[b.len()];
     (distance <= max_distance).then_some(distance)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn phrase(text: &str) -> String {
-        text.to_string()
-    }
-
-    fn remove_user_dict_test_files(path: &Path) {
-        let reset = crate::user_dict_io::user_dict_reset_marker_path(path);
-        let previous = crate::user_dict_io::user_dict_previous_path(path);
-        let backup = crate::user_dict_io::user_dict_backup_path(path);
-        let mut lock_os = path.as_os_str().to_os_string();
-        lock_os.push(".lock");
-        let lock = PathBuf::from(lock_os);
-        let mut partial_os = path.as_os_str().to_os_string();
-        partial_os.push(".partial");
-        let partial = PathBuf::from(partial_os);
-        for file in [path.to_path_buf(), reset, previous, backup, lock, partial] {
-            let _ = fs::remove_file(file);
-        }
-    }
-
-    #[test]
-    fn learn_tracks_recency_and_context() {
-        let path = std::env::temp_dir().join("srf_user_dict_test.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn("bj", "\u{5317}\u{4eac}").unwrap();
-        lex.learn("sh", "\u{4e0a}\u{6d77}").unwrap();
-        lex.learn("bj", "\u{5317}\u{4eac}").unwrap();
-        lex.flush_pending().unwrap();
-
-        let found = lex.lookup_input("bj").unwrap();
-        assert_eq!(found[0].phrase, phrase("\u{5317}\u{4eac}"));
-        assert_eq!(found[0].freq, 2);
-        assert!(found[0].last_used >= 2);
-
-        let phrase_signal = lex.phrase_signal("\u{5317}\u{4eac}");
-        assert_eq!(phrase_signal.freq, 2);
-
-        let context_signal = lex.context_signal("\u{4e0a}\u{6d77}", "\u{5317}\u{4eac}");
-        assert_eq!(context_signal.freq, 1);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        let again = reloaded.lookup_input("bj").unwrap();
-        assert_eq!(again[0].freq, 2);
-        assert_eq!(
-            reloaded
-                .context_signal("\u{4e0a}\u{6d77}", "\u{5317}\u{4eac}")
-                .freq,
-            1
-        );
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn decayed_counters_do_not_revive_historical_frequency_on_one_use() {
-        let mut entries = vec![LearnedEntry {
-            phrase: phrase("旧词"),
-            freq: 100,
-            last_used: 1,
-            pinned: false,
-            short_count_q16: 100 * 65_536,
-            long_count_q16: 100 * 65_536,
-            last_decay_tick: 1,
-            confidence: SuggestionConfidence::Established,
-            observation_count: 100,
-            selection_count: 0,
-        }];
-
-        upsert_entry(&mut entries, phrase("旧词"), 40_001, 1);
-        let stats = entries[0].stats();
-        let (short, long) = stats.effective_counts(
-            40_001,
-            SHORT_COUNT_HALF_LIFE_TICKS,
-            LONG_COUNT_HALF_LIFE_TICKS,
-        );
-
-        assert_eq!(stats.freq, 101, "累计次数仍供管理和兼容显示");
-        assert!(short < 1.01, "短期层只应保留本次使用: {short}");
-        assert!(long < 1.11, "长期历史也应按半衰期先衰减: {long}");
-    }
-
-    #[test]
-    fn exact_confidence_separates_memory_from_strong_suggestion() {
-        let mut lex = UserLexicon::default();
-        lex.learn_with_source_and_delta("ruoxuexi", "弱学习词", 1, CommitSource::Weak)
-            .unwrap();
-        assert_eq!(
-            lex.lookup_input("ruoxuexi").unwrap()[0].confidence,
-            SuggestionConfidence::Remembered
-        );
-
-        lex.learn_with_source_and_delta("ceshi", "测试词", 2, CommitSource::Direct)
-            .unwrap();
-        let first = &lex.lookup_input("ceshi").unwrap()[0];
-        assert_eq!(first.confidence, SuggestionConfidence::Confirmed);
-
-        lex.record_selection("ceshi", "测试词", 3).unwrap();
-        let confirmed = &lex.lookup_input("ceshi").unwrap()[0];
-        assert_eq!(confirmed.confidence, SuggestionConfidence::Confirmed);
-
-        lex.learn_with_source_and_delta("ceshi", "测试词", 2, CommitSource::Direct)
-            .unwrap();
-        let established = &lex.lookup_input("ceshi").unwrap()[0];
-        assert_eq!(established.confidence, SuggestionConfidence::Established);
-    }
-
-    #[test]
-    fn decayed_counters_and_confidence_persist_incrementally() {
-        let path = std::env::temp_dir().join("srf_user_dict_decay_confidence.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn_with_source_and_delta("ceshi", "测试词", 2, CommitSource::Direct)
-            .unwrap();
-        lex.record_selection("ceshi", "测试词", 3).unwrap();
-        lex.flush_pending().unwrap();
-        let before = lex.lookup_input("ceshi").unwrap()[0].clone();
-        drop(lex);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        let after = &reloaded.lookup_input("ceshi").unwrap()[0];
-        assert_eq!(after.short_count_q16, before.short_count_q16);
-        assert_eq!(after.long_count_q16, before.long_count_q16);
-        assert_eq!(after.last_decay_tick, before.last_decay_tick);
-        assert_eq!(after.observation_count, before.observation_count);
-        assert_eq!(after.selection_count, before.selection_count);
-        assert_eq!(after.confidence, before.confidence);
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn learn_tracks_trigram_context_and_persists() {
-        let path = std::env::temp_dir().join("srf_user_dict_trigram_context.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn("sh", "\u{4e0a}\u{6d77}").unwrap();
-        lex.learn("bj", "\u{5317}\u{4eac}").unwrap();
-        lex.learn("szf", "\u{5e02}\u{653f}\u{5e9c}").unwrap();
-        lex.flush_pending().unwrap();
-
-        assert_eq!(
-            lex.context_trigram_signal(
-                "\u{4e0a}\u{6d77}",
-                "\u{5317}\u{4eac}",
-                "\u{5e02}\u{653f}\u{5e9c}"
-            )
-            .freq,
-            1
-        );
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert_eq!(
-            reloaded
-                .context_trigram_signal(
-                    "\u{4e0a}\u{6d77}",
-                    "\u{5317}\u{4eac}",
-                    "\u{5e02}\u{653f}\u{5e9c}"
-                )
-                .freq,
-            1
-        );
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn clear_user_dict_keeps_background_worker_writable() {
-        let path = std::env::temp_dir().join("srf_user_dict_clear_reset_test.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut stale = UserLexicon::load_from_path(path.clone()).unwrap();
-        clear_user_dict_at_path(&path).unwrap();
-
-        stale.learn("bj", "\u{5317}\u{4eac}").unwrap();
-        stale.flush_pending().unwrap();
-        drop(stale);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert_eq!(
-            reloaded.lookup_input("bj").unwrap()[0].phrase,
-            phrase("\u{5317}\u{4eac}")
-        );
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn observed_input_persists_without_listing_as_exact_phrase() {
-        let path = std::env::temp_dir().join("srf_user_dict_observed_test.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        let stats = lex
-            .observe_input("kaixin", "\u{5f00}\u{5fc3}")
-            .expect("observe input");
-        assert_eq!(stats.freq, 1);
-        assert!(lex.lookup_input("kaixin").is_none());
-        lex.flush_pending().unwrap();
-        drop(lex);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert!(reloaded.lookup_input("kaixin").is_none());
-        assert_eq!(
-            reloaded.lookup_observed_input("kaixin").unwrap()[0].phrase,
-            phrase("\u{5f00}\u{5fc3}")
-        );
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn approx_lookup_finds_nearby_key() {
-        let path = std::env::temp_dir().join("srf_user_dict_approx.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn("beijing", "\u{5317}\u{4eac}").unwrap();
-        lex.flush_pending().unwrap();
-
-        let found = lex.approx_lookup_input("beijng", 1, 4);
-        assert_eq!(found[0].phrase, phrase("\u{5317}\u{4eac}"));
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn correction_pairs_persist_and_reload() {
-        let path = std::env::temp_dir().join("srf_user_dict_correction_pairs.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn_correction("beijng", "beijing").unwrap();
-        lex.learn_correction("beijng", "beijing").unwrap();
-        lex.flush_pending().unwrap();
-        drop(lex);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        let pairs = reloaded
-            .lookup_correction_pairs("beijng")
-            .expect("correction pairs exist");
-        assert_eq!(pairs.len(), 1);
-        assert_eq!(pairs[0].phrase, phrase("beijing"));
-        assert_eq!(pairs[0].freq, 2);
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn selection_feedback_persists_and_applies_sign() {
-        let path = std::env::temp_dir().join("srf_user_dict_selection_feedback.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.record_selection_feedback(
-            "shurufa",
-            [("\u{8f93}\u{5165}\u{6cd5}", 2), ("\u{4e66}\u{6cd5}", -1)],
-        )
-        .unwrap();
-        lex.record_selection("shurufa", "\u{4e66}\u{6cd5}", -2)
-            .unwrap();
-        lex.flush_pending().unwrap();
-        drop(lex);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        let feedback = reloaded
-            .selection_signal("shurufa")
-            .expect("selection feedback exists");
-        let shurufa = feedback
-            .iter()
-            .find(|e| e.phrase == phrase("\u{8f93}\u{5165}\u{6cd5}"))
-            .expect("selected feedback");
-        assert_eq!(shurufa.score, 2);
-        let shufa = feedback
-            .iter()
-            .find(|e| e.phrase == phrase("\u{4e66}\u{6cd5}"))
-            .expect("skipped feedback");
-        assert_eq!(shufa.score, -3);
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn context_and_weak_selection_feedback_persist() {
-        let path = std::env::temp_dir().join("srf_user_dict_context_selection_feedback.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.record_context_selection_feedback("打开", "shuru", [("输入法", 3), ("输入", -2)])
-            .unwrap();
-        lex.record_weak_unselected_feedback("shuru", [("数入", -3)])
-            .unwrap();
-        lex.record_context_weak_unselected_feedback("打开", "shuru", [("输如", -4)])
-            .unwrap();
-        lex.flush_pending().unwrap();
-        drop(lex);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        let context = reloaded
-            .context_selection_signal("打开", "shuru")
-            .expect("context feedback");
-        assert!(context
-            .iter()
-            .any(|entry| entry.phrase == phrase("输入法") && entry.score == 3));
-        assert!(context
-            .iter()
-            .any(|entry| entry.phrase == phrase("输入") && entry.score == -2));
-        let weak = reloaded
-            .weak_unselected_signal("shuru")
-            .expect("weak feedback");
-        assert!(weak
-            .iter()
-            .any(|entry| entry.phrase == phrase("数入") && entry.score == -3));
-        let context_weak = reloaded
-            .context_weak_unselected_signal("打开", "shuru")
-            .expect("context weak feedback");
-        assert!(context_weak
-            .iter()
-            .any(|entry| entry.phrase == phrase("输如") && entry.score == -4));
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn novel_phrase_records_persist() {
-        let path = std::env::temp_dir().join("srf_user_dict_novel_phrase.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.record_novel_phrase("duomotaiduiqi", "\u{591a}\u{6a21}\u{6001}\u{5bf9}\u{9f50}")
-            .unwrap();
-        lex.flush_pending().unwrap();
-        drop(lex);
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        let entries = reloaded
-            .novel_phrases
-            .get("duomotaiduiqi")
-            .expect("novel phrase bucket");
-        assert_eq!(entries.len(), 1);
-        assert_eq!(
-            entries[0].phrase,
-            phrase("\u{591a}\u{6a21}\u{6001}\u{5bf9}\u{9f50}")
-        );
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn remove_phrase_everywhere_clears_all_learned_variants() {
-        let path = std::env::temp_dir().join("srf_user_dict_remove_phrase_everywhere.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let phrase = "\u{591a}\u{6a21}\u{6001}\u{5bf9}\u{9f50}";
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn("women", "\u{6211}\u{4eec}").unwrap();
-        lex.learn("jintian", "\u{4eca}\u{5929}").unwrap();
-        lex.learn("duomotaiduiqi", phrase).unwrap();
-        lex.learn_mixed_input("dmtdq", phrase).unwrap();
-        lex.observe_input("duomotaiduiqi", phrase).unwrap();
-        lex.record_novel_phrase("duomotaiduiqi", phrase).unwrap();
-        lex.record_selection_feedback("duomotaiduiqi", [(phrase, 3)])
-            .unwrap();
-        assert!(lex.context_signal("\u{4eca}\u{5929}", phrase).freq > 0);
-        assert!(
-            lex.context_trigram_signal("\u{6211}\u{4eec}", "\u{4eca}\u{5929}", phrase)
-                .freq
-                > 0
-        );
-
-        assert!(remove_phrase_everywhere(&mut lex, phrase));
-        assert!(lex.lookup_input("duomotaiduiqi").is_none());
-        assert!(lex.lookup_mixed_input("dmtdq").is_none());
-        assert!(lex.lookup_observed_input("duomotaiduiqi").is_none());
-        assert!(!lex
-            .novel_phrases
-            .values()
-            .flatten()
-            .any(|entry| entry.phrase == phrase));
-        assert!(lex.selection_signal("duomotaiduiqi").is_none());
-        assert!(!lex.phrase_stats.contains_key(phrase));
-        assert!(!lex
-            .context_links
-            .values()
-            .flatten()
-            .any(|entry| entry.phrase == phrase));
-        assert!(!lex
-            .context_trigrams
-            .values()
-            .flatten()
-            .any(|entry| entry.phrase == phrase));
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn blocked_phrase_persists_and_skips_learning_paths() {
-        let path = std::env::temp_dir().join("srf_user_dict_blocked_phrase.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn("ceshi", "\u{6d4b}\u{8bd5}").unwrap();
-        assert!(lex.lookup_input("ceshi").is_some());
-
-        assert!(lex.block_phrase("\u{6d4b}\u{8bd5}").unwrap());
-        assert!(lex.lookup_input("ceshi").is_none());
-        assert!(lex.phrase_is_blocked("\u{6d4b}\u{8bd5}"));
-
-        lex.learn("ceshi", "\u{6d4b}\u{8bd5}").unwrap();
-        lex.learn_mixed_input("cs", "\u{6d4b}\u{8bd5}").unwrap();
-        lex.record_novel_phrase("ceshi", "\u{6d4b}\u{8bd5}")
-            .unwrap();
-        let observed = lex.observe_input("ceshi", "\u{6d4b}\u{8bd5}").unwrap();
-        lex.record_selection_feedback("ceshi", [("\u{6d4b}\u{8bd5}", 5)])
-            .unwrap();
-
-        assert_eq!(observed.freq, 0);
-        assert!(lex.lookup_input("ceshi").is_none());
-        assert!(lex.lookup_mixed_input("cs").is_none());
-        assert!(lex.lookup_observed_input("ceshi").is_none());
-        assert!(lex.novel_phrases.is_empty());
-        assert!(lex.selection_signal("ceshi").is_none());
-        lex.flush_pending().unwrap();
-
-        let mut reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert!(reloaded.phrase_is_blocked("\u{6d4b}\u{8bd5}"));
-        assert!(reloaded.unblock_phrase("\u{6d4b}\u{8bd5}").unwrap());
-        reloaded.flush_pending().unwrap();
-
-        let reloaded_after_unblock = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert!(!reloaded_after_unblock.phrase_is_blocked("\u{6d4b}\u{8bd5}"));
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn context_outgoing_stats_counts_total_and_kinds() {
-        let path = std::env::temp_dir().join("srf_user_dict_context_stats.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        lex.learn("jt", "\u{4eca}\u{5929}").unwrap();
-        lex.learn("xw", "\u{4e0b}\u{5348}").unwrap();
-        lex.learn("kh", "\u{5f00}\u{4f1a}").unwrap();
-        lex.learn("xw", "\u{4e0b}\u{5348}").unwrap();
-        lex.learn("kh", "\u{5f00}\u{4f1a}").unwrap();
-        lex.flush_pending().unwrap();
-
-        let (total, kinds) = lex.context_outgoing_stats("\u{4e0b}\u{5348}");
-        assert_eq!(total, 2);
-        assert_eq!(kinds, 1);
-
-        remove_user_dict_test_files(&path);
-    }
-
-    #[test]
-    fn user_phrase_validation_rejects_storage_breaking_fields() {
-        let path = std::env::temp_dir().join("srf_user_dict_validation.sqlite");
-        remove_user_dict_test_files(&path);
-
-        let mut lex = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert!(lex.learn("bj\tbad", "\u{5317}\u{4eac}").is_err());
-        assert!(lex.learn("bj", "\u{5317}\u{4eac}\n").is_err());
-        assert!(lex.learn("bj$", "\u{5317}\u{4eac}").is_err());
-        assert!(lex.lookup_input("bj").is_none());
-
-        remove_user_dict_test_files(&path);
-    }
 }

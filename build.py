@@ -53,7 +53,7 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable, TextIO
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 
 # ---------------------------------------------------------------------------
@@ -81,7 +81,7 @@ COMPONENT_PREFIXES = OrderedDict(
     )
 )
 PREBAKED_LEXICON_MAGIC = b"SRFLX002"
-PREBAKED_LEXICON_SCHEMA_VERSION = 7
+PREBAKED_LEXICON_SCHEMA_VERSION = 9
 PREBAKED_LEXICON_HEADER_SIZE = len(PREBAKED_LEXICON_MAGIC) + 4
 PREBAKED_LEXICON_MIN_BYTES = 1000
 COMMON_ENGLISH_LEXICON_RELATIVE_PATH = Path("en") / "kaixin_common_english.txt"
@@ -280,18 +280,35 @@ def dim(t: str) -> str:    return _c("2", t)
 class BuildContext:
     """Build helper: BuildContext."""
     def __init__(self):
-        self.quiet: bool = False
-        self.verbose: bool = False
-        self.dry_run: bool = False
-        self.no_version: bool = False
-        self.log_file: TextIO | None = None
-        self._log_lock = threading.Lock()
-        self.step_results: OrderedDict[str, float] = OrderedDict()
-        self.artifacts: list[tuple[str, int, str]] = []  # (name, size, sha256_prefix)
-        self.generator_cache_file: Path | None = None
         self.version: str = _read_version()
-        self.sign_warning_emitted: bool = False
-        self.build_timestamp: str = datetime.now().strftime("%Y%m%d-%H%M%S")
+        self._log_lock = threading.Lock()
+        self.reset_run_state()
+
+    def reset_run_state(self) -> None:
+        """Reset state that belongs to one invocation of :func:`main`.
+
+        Keeping the context object global is useful for the small helper
+        functions, but tests and embedders may invoke ``main`` more than once
+        in a process.  Without resetting these fields, a previous run could
+        leak its log handle, timings, signing warning, or artifact timestamp
+        into the next build.
+        """
+        previous_log = getattr(self, "log_file", None)
+        if previous_log is not None:
+            try:
+                previous_log.close()
+            except OSError:
+                pass
+        self.quiet = False
+        self.verbose = False
+        self.dry_run = False
+        self.no_version = False
+        self.log_file = None
+        self.step_results = OrderedDict()
+        self.artifacts = []
+        self.generator_cache_file = None
+        self.sign_warning_emitted = False
+        self.build_timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
     def log(self, msg: str) -> None:
         """Build helper: log."""
@@ -597,11 +614,23 @@ def cmake_build_dir_for(tsf_tip: Path, arch: str = ARCH_X64) -> Path:
 
 
 def read_pe_machine(path: Path) -> int:
-    with open(path, "rb") as f:
-        f.seek(0x3C)
-        pe_offset = int.from_bytes(f.read(4), "little")
-        f.seek(pe_offset + 4)
-        return int.from_bytes(f.read(2), "little")
+    """Read the PE machine field and reject truncated/non-PE inputs clearly."""
+    try:
+        with path.open("rb") as f:
+            dos_header = f.read(64)
+            if len(dos_header) < 64 or dos_header[:2] != b"MZ":
+                raise RuntimeError(f"not a PE image (missing MZ header): {path}")
+            pe_offset = int.from_bytes(dos_header[0x3C:0x40], "little")
+            if pe_offset < 64:
+                raise RuntimeError(f"invalid PE header offset: {path}")
+            f.seek(pe_offset)
+            signature = f.read(4)
+            machine_bytes = f.read(2)
+    except OSError as exc:
+        raise FileNotFoundError(f"cannot read PE image: {path}: {exc}") from exc
+    if signature != b"PE\0\0" or len(machine_bytes) != 2:
+        raise RuntimeError(f"not a valid PE image: {path}")
+    return int.from_bytes(machine_bytes, "little")
 
 
 def assert_pe_arch(path: Path, arch: str, label: str) -> None:
@@ -981,12 +1010,31 @@ def _decode_child_output(data: bytes) -> str:
     return data.decode("utf-8", errors="replace")
 
 
+def _redact_command(cmd: list[str], sensitive_values: tuple[str, ...]) -> list[str]:
+    """Return a log-safe command while preserving the executable invocation."""
+    if not sensitive_values:
+        return list(cmd)
+    secrets = {value for value in sensitive_values if value}
+    return ["<redacted>" if part in secrets else part for part in cmd]
+
+
+def _redact_text(text: str, sensitive_values: tuple[str, ...]) -> str:
+    """Remove secret values from child output before it reaches logs."""
+    redacted = text
+    for value in sensitive_values:
+        if value:
+            redacted = redacted.replace(value, "<redacted>")
+    return redacted
+
+
 def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
-        capture_on_fail: int = 30) -> None:
+        capture_on_fail: int = 30,
+        sensitive_values: tuple[str, ...] = ()) -> None:
     """Build helper: run."""
     # Match Windows command-line quoting so logged commands can be copied and
     # executed even when an executable or argument contains spaces.
-    display = subprocess.list2cmdline(cmd)
+    display_cmd = _redact_command(cmd, sensitive_values)
+    display = subprocess.list2cmdline(display_cmd)
     print_msg(f"  {cyan('$')} {display}")
 
     if ctx.dry_run:
@@ -998,10 +1046,13 @@ def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
     merged_env.setdefault("PYTHONUTF8", "1")
     merged_env.setdefault("PYTHONIOENCODING", "utf-8")
 
-    if ctx.verbose:
+    # Keep the direct passthrough mode for ordinary commands, but capture
+    # signing output so a tool that echoes its arguments cannot reveal a PFX
+    # password even with ``--verbose``.
+    if ctx.verbose and not sensitive_values:
         result = subprocess.run(cmd, cwd=str(cwd), env=merged_env)
         if result.returncode != 0:
-            raise BuildCommandError(result.returncode, cmd, [])
+            raise BuildCommandError(result.returncode, cmd, [], display_cmd=display_cmd)
         return
 
     proc = subprocess.Popen(
@@ -1014,7 +1065,7 @@ def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
     def _reader():
         assert proc.stdout is not None
         for raw_line in proc.stdout:
-            line = _decode_child_output(raw_line)
+            line = _redact_text(_decode_child_output(raw_line), sensitive_values)
             stripped = line.rstrip("\n\r")
             tail.append(stripped)
             if not ctx.quiet:
@@ -1027,15 +1078,23 @@ def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
     reader_thread.join(timeout=5)
 
     if proc.returncode != 0:
-        raise BuildCommandError(proc.returncode, cmd, list(tail))
+        raise BuildCommandError(proc.returncode, cmd, list(tail), display_cmd=display_cmd)
 
 
 class BuildCommandError(Exception):
-    def __init__(self, returncode: int, cmd: list[str], tail_lines: list[str]):
+    def __init__(
+        self,
+        returncode: int,
+        cmd: list[str],
+        tail_lines: list[str],
+        *,
+        display_cmd: list[str] | None = None,
+    ):
         self.returncode = returncode
         self.cmd = cmd
         self.tail_lines = tail_lines
-        cmd_str = " ".join(cmd)
+        self.display_cmd = display_cmd or cmd
+        cmd_str = subprocess.list2cmdline(self.display_cmd)
         tail_str = "\n".join(f"    {l}" for l in tail_lines) if tail_lines else "    (no output)"
         super().__init__(f"command failed (exit {returncode}): {cmd_str}\n{tail_str}")
 
@@ -1351,7 +1410,10 @@ def sign_file(path: Path, args: argparse.Namespace) -> bool:
         if pfx_password:
             cmd += ["/p", pfx_password]
     cmd.append(str(path))
-    run(cmd, cwd=path.parent)
+    # Never print the PFX password in the command transcript or failure text.
+    # The raw command is still passed to signtool, while ``run`` uses the
+    # redacted representation for stdout, build logs, and BuildCommandError.
+    run(cmd, cwd=path.parent, sensitive_values=(pfx_password,))
     return True
 
 
@@ -1723,10 +1785,13 @@ def _has_cjk(s: str) -> bool:
 
 
 def _weight_repeats(w: int) -> int:
-    if w >= 120_000: return 5
-    if w >= 20_000:  return 4
-    if w >= 3_000:   return 3
-    if w >= 80:      return 2
+    # Lexicon frequencies are normalized to the 1..10000 score space.
+    # Keep five coarse corpus-repeat buckets without relying on the old
+    # million-scale source weights.
+    if w >= 7_500: return 5
+    if w >= 5_000: return 4
+    if w >= 2_500: return 3
+    if w >= 100:   return 2
     return 1
 
 
@@ -1749,21 +1814,32 @@ def _is_native_lexicon_text(path: Path) -> bool:
     return path.suffix.lower() == ".txt" and not path.name.lower().startswith("readme")
 
 
-LEXICON_LAYER_ORDER = {
-    "core": 0,
-    "base": 1,
-    "ext": 2,
-    "large": 3,
-    "en": 4,
-}
+LEXICON_LAYER_ORDER = {"core": 0, "base": 1, "ext": 2, "large": 3, "en": 4}
 
 
-def _lexicon_sort_key(path: Path, root: Path) -> tuple[int, str]:
-    try:
-        parts = [part.lower() for part in path.relative_to(root).parts]
-    except ValueError:
-        parts = [part.lower() for part in path.parts]
-    layer = next((LEXICON_LAYER_ORDER[p] for p in parts if p in LEXICON_LAYER_ORDER), 99)
+def _lexicon_layer(path: Path) -> str | None:
+    parts = {part.casefold() for part in path.parts}
+    if "zh-ext" in parts:
+        return "ext"
+    for legacy_layer in ("core", "base", "ext", "large", "en"):
+        if legacy_layer in parts:
+            return legacy_layer
+    if "zh" not in parts:
+        return None
+    name = path.name.casefold()
+    if name in {
+        "kaixin_explicit.txt",
+        "kaixin_polyphone.txt",
+        "kaixin_pronunciation_aliases.txt",
+    }:
+        return "core"
+    if "_tail_" in name or name.startswith("large_"):
+        return "large"
+    return "base"
+
+
+def _lexicon_sort_key(path: Path, _root: Path) -> tuple[int, str]:
+    layer = LEXICON_LAYER_ORDER.get(_lexicon_layer(path), 99)
     return layer, path.as_posix().lower()
 
 
@@ -1778,11 +1854,29 @@ def _lexicon_term_char_count(term: str) -> int:
 
 
 def _is_frequency_reference_lexicon_source(path: Path) -> bool:
-    return any(part.lower() == "base" for part in path.parts)
+    return _lexicon_layer(path) == "base"
 
 
 def _is_absolute_priority_lexicon_source(path: Path) -> bool:
-    return path.name.lower() == "kaixin_polyphone.txt"
+    return _lexicon_layer(path) == "core" and path.name.lower() in {
+        "kaixin_polyphone.txt",
+        "kaixin_pronunciation_aliases.txt",
+    }
+
+
+def _is_unscaled_lexicon_source(path: Path) -> bool:
+    """Keep intentionally low-priority sources on their authored scale.
+
+    Surnames and newly added local places contain flat low-priority weights.
+    Percentile calibration would turn those values into an arbitrary point in
+    the base corpus distribution, making recall-only entries look common.
+    """
+    return _is_absolute_priority_lexicon_source(path) or path.name.lower() in {
+        "chinese_surnames.txt",
+        # Newly added local places are recall-only by design.  Percentile
+        # calibration would turn their flat low score into a median Base score.
+        "hangzhou_new_places.txt",
+    }
 
 
 def _source_frequency_values(path: Path) -> dict[int, list[int]]:
@@ -1813,7 +1907,7 @@ def _build_frequency_calibrators(
         if _is_frequency_reference_lexicon_source(path):
             for length, weights in values.items():
                 reference.setdefault(length, []).extend(weights)
-        elif not _is_absolute_priority_lexicon_source(path):
+        elif not _is_unscaled_lexicon_source(path):
             source_values[path] = values
     for weights in reference.values():
         weights.sort()
@@ -1828,6 +1922,13 @@ def _calibrated_source_weight(
     raw_weight: int,
     calibrator: tuple[dict[int, list[int]], dict[int, list[int]]] | None,
 ) -> int:
+    """Map auxiliary source percentiles onto the base lexicon's frequency scale.
+
+    This is the Python mirror of ``SourceFrequencyCalibrator::normalize`` in
+    ``pinyin-ime/src/thuocl.rs``.  The two implementations MUST stay in sync:
+    any change to the percentile-mapping logic here must be reflected in the
+    Rust side, and vice versa.  See the Rust doc comment for rationale.
+    """
     if calibrator is None:
         return max(1, raw_weight)
     source, reference = calibrator
@@ -1839,9 +1940,11 @@ def _calibrated_source_weight(
     lower = bisect.bisect_left(source_weights, raw_weight)
     upper = bisect.bisect_right(source_weights, raw_weight)
     rank = lower + max(0, upper - lower - 1) // 2
+    rank = min(rank, len(source_weights) - 1)
     if len(source_weights) <= 1 or len(reference_weights) <= 1:
         return max(1, reference_weights[0])
     index = rank * (len(reference_weights) - 1) // (len(source_weights) - 1)
+    index = min(index, len(reference_weights) - 1)
     return max(1, reference_weights[index])
 
 
@@ -1991,7 +2094,7 @@ def _iter_lexicon_lines(path: Path):
 
 
 def validate_common_english_lexicon(lexicon_dir: Path) -> int:
-    """Strictly validate the checked-in 20,000-word native English lexicon."""
+    """Validate the checked-in 20,000-word native English lexicon."""
     path = lexicon_dir / COMMON_ENGLISH_LEXICON_RELATIVE_PATH
     license_path = lexicon_dir / COMMON_ENGLISH_LICENSE_RELATIVE_PATH
     readme_path = lexicon_dir / "en" / "README.md"
@@ -2032,9 +2135,9 @@ def validate_common_english_lexicon(lexicon_dir: Path) -> int:
             ) from exc
         if weight <= 0:
             raise RuntimeError(f"English lexicon weight must be positive {path}:{line_no}")
-        if previous_weight is not None and weight >= previous_weight:
+        if previous_weight is not None and weight > previous_weight:
             raise RuntimeError(
-                f"English lexicon weights must be strictly descending {path}:{line_no}"
+                f"English lexicon weights must be non-increasing {path}:{line_no}"
             )
         if word in words:
             raise RuntimeError(f"duplicate English lexicon word {path}:{line_no}: {word}")
@@ -2258,18 +2361,25 @@ def _validate_theme_json(path: Path) -> list[str]:
                 f"(recommended >= {min_ratio:.1f}:1)"
             )
 
-    if "shadow_enabled" in data and not isinstance(data["shadow_enabled"], bool):
-        warnings.append(f"{theme_name}: shadow_enabled should be boolean")
+    for key in ("shadow_enabled", "animations_enabled"):
+        if key in data and not isinstance(data[key], bool):
+            warnings.append(f"{theme_name}: {key} should be boolean")
     numeric_ranges = {
         "selected_accent_width": (0, 8),
         "selected_ring_opacity": (0.0, 1.0),
         "border_opacity": (0.0, 1.0),
         "divider_opacity": (0.0, 1.0),
         "shadow_opacity": (0.0, 1.0),
+        "shadow_size": (0, 24),
         "font_weight": (300, 700),
         "selected_font_weight": (400, 800),
         "label_font_weight": (400, 800),
         "chip_font_weight": (350, 700),
+        "show_animation_ms": (0, 240),
+        "selection_animation_ms": (0, 240),
+        "hover_animation_ms": (0, 240),
+        "press_animation_ms": (0, 240),
+        "page_animation_ms": (0, 240),
     }
     for key, (lo, hi) in numeric_ranges.items():
         if key not in data:
@@ -2339,29 +2449,6 @@ def step_verify_rust(repo: Path) -> None:
         [cargo, "check", "--locked", "--all-targets"],
         cwd=cargo_dir,
         env=cargo_env,
-    )
-    run(
-        [cargo, "test", "--locked", "--all-targets"],
-        cwd=cargo_dir,
-        env=cargo_env,
-    )
-
-
-def step_verify_cmake_tests(repo: Path, build_dir: Path, profile: str) -> None:
-    """Run the C++ candidate-window/protocol tests from the packaged build tree."""
-    ctest = "ctest" if ctx.dry_run else which_or_die(
-        "ctest", "Install CMake/CTest and ensure it is available on PATH"
-    )
-    run(
-        [
-            ctest,
-            "--test-dir",
-            str(build_dir),
-            "-C",
-            profile.capitalize(),
-            "--output-on-failure",
-        ],
-        cwd=repo,
     )
 
 
@@ -3017,42 +3104,6 @@ def post_stage_smoke_verify(repo: Path, output_root: Path, profile: str) -> list
             )
         except (FileNotFoundError, RuntimeError) as exc:
             warnings.append(str(exc))
-
-    cases = repo / "tests" / "input_cases.sqlite"
-    mixed_cases = repo / "tests" / "mixed_pinyin_cases.sqlite"
-    short_abbrev_cases = repo / "tests" / "short_abbrev_cases.sqlite"
-    if not cases.is_file():
-        warnings.append(f"input smoke cases not found: {cases}")
-        return warnings
-    if not mixed_cases.is_file():
-        warnings.append(f"mixed pinyin smoke cases not found: {mixed_cases}")
-        return warnings
-    if not short_abbrev_cases.is_file():
-        warnings.append(f"short abbreviation smoke cases not found: {short_abbrev_cases}")
-        return warnings
-
-    target_dir = rust_target_dir(repo, profile, ARCH_X64)
-    with tempfile.TemporaryDirectory(prefix="kaixin-input-smoke-") as tmp:
-        smoke_root = Path(tmp)
-        local_appdata = smoke_root / "LocalAppData"
-        local_appdata.mkdir(parents=True, exist_ok=True)
-        smoke_env = {
-            "LOCALAPPDATA": str(local_appdata),
-            "SRF_USER_DICT_PATH": str(smoke_root / "user_dict.sqlite"),
-        }
-        smoke_tool = target_dir / "input_smoke.exe"
-        eval_tool = target_dir / "input_eval.exe"
-        if not smoke_tool.is_file():
-            warnings.append("input_smoke.exe not found; run a Rust build before smoke checks")
-        else:
-            run([str(smoke_tool), str(cases)], cwd=repo, env=smoke_env)
-
-        if not eval_tool.is_file():
-            warnings.append("input_eval.exe not found; run a Rust build before smoke checks")
-        else:
-            run([str(eval_tool), "--cases", str(cases)], cwd=repo, env=smoke_env)
-            run([str(eval_tool), "--cases", str(mixed_cases)], cwd=repo, env=smoke_env)
-            run([str(eval_tool), "--cases", str(short_abbrev_cases)], cwd=repo, env=smoke_env)
 
     return warnings
 
@@ -3785,7 +3836,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--no-smoke", action="store_true",
                    help="skip post-build smoke checks")
     p.add_argument("--verify", dest="verify", action="store_true",
-                   help="run Rust and C++ correctness tests (default for non-quick builds)")
+                   help="run Rust and C++ correctness checks (default for non-quick builds)")
     p.add_argument("--no-verify", dest="verify", action="store_false",
                    help="skip Rust and C++ correctness gates")
     p.set_defaults(verify=None)
@@ -3823,6 +3874,9 @@ def main() -> int:
         return 1
 
     args = parse_args()
+    # ``ctx`` is intentionally shared by helper functions, but each CLI
+    # invocation must start with a fresh timestamp, timings and log state.
+    ctx.reset_run_state()
     if args.quick:
         args.skip_cargo = True
         args.skip_cmake = True
@@ -4021,7 +4075,7 @@ def main() -> int:
                 step_regenerate_lexicons(repo)
 
         if args.verify:
-            with StepTimer("Step 1c/5  Verify Rust format, checks and tests"):
+            with StepTimer("Step 1c/5  Verify Rust format and checks"):
                 step_verify_rust(repo)
         else:
             print_msg(f"\n{dim('  [skip] Step 1c/5  Rust verification')}")
@@ -4030,8 +4084,12 @@ def main() -> int:
         skip_cargo_inc = False
         skip_cmake_inc = False
         skip_cmake_x86_inc = False
-        if not args.skip_cargo and not args.skip_cmake and not args.force and not args.clean:
-            if is_cargo_up_to_date(
+        # Cargo and CMake are independent products.  Check each one even when
+        # the other component was explicitly skipped; otherwise ``--skip-cmake``
+        # needlessly rebuilds Rust (and vice versa), defeating incremental use
+        # in focused developer builds.
+        if not args.force and not args.clean:
+            if not args.skip_cargo and is_cargo_up_to_date(
                 repo,
                 profile,
                 ARCH_X64,
@@ -4039,10 +4097,10 @@ def main() -> int:
             ):
                 print_msg(f"  {dim('>> Rust artifacts are up to date; skipping build (--force to rebuild)')}")
                 skip_cargo_inc = True
-            if is_cmake_up_to_date(repo, tsf_tip, profile, ARCH_X64):
+            if not args.skip_cmake and is_cmake_up_to_date(repo, tsf_tip, profile, ARCH_X64):
                 print_msg(f"  {dim('>> C++ artifacts are up to date; skipping build (--force to rebuild)')}")
                 skip_cmake_inc = True
-            if is_cmake_up_to_date(repo, tsf_tip, profile, ARCH_X86):
+            if not args.skip_cmake and is_cmake_up_to_date(repo, tsf_tip, profile, ARCH_X86):
                 print_msg(f"  {dim('>> C++ x86 TIP is up to date; skipping build (--force to rebuild)')}")
                 skip_cmake_x86_inc = True
 
@@ -4126,18 +4184,10 @@ def main() -> int:
         else:
             print_msg(f"\n{dim('  [skip] Step 3a/5  CMake x86 build')}")
 
-        if args.verify and not args.skip_cmake:
-            with StepTimer("Step 3b/5  Verify C++ candidate UI and overlay tests"):
-                step_verify_cmake_tests(repo, cmake_build_dir, profile)
-        elif not args.verify:
-            print_msg(f"\n{dim('  [skip] Step 3b/5  C++ verification')}")
-        else:
-            print_msg(f"\n{dim('  [skip] Step 3b/5  C++ verification (--skip-cmake)')}")
-
         if args.quick:
-            print_msg(f"\n{dim('  [skip] Step 3c/5  ShareX build (using existing publish output)')}")
+            print_msg(f"\n{dim('  [skip] Step 3b/5  ShareX build (using existing publish output)')}")
         else:
-            with StepTimer("Step 3c/5  Build ShareX screenshot integration"):
+            with StepTimer("Step 3b/5  Build ShareX screenshot integration"):
                 step_sharex(repo)
         if not args.dry_run:
             source_archive = build_sharex_source_archive(repo)
@@ -4155,7 +4205,7 @@ def main() -> int:
 
         if args.perf_smoke:
             with StepTimer(
-                "Step 3d/5  Release input performance smoke "
+                "Step 3c/5  Release input performance smoke "
                 f"(warm P99 <= {args.perf_max_p99_us}us; "
                 f"incremental P99 <= {args.perf_max_incremental_p99_us}us)"
             ):

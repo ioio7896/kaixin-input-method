@@ -146,7 +146,7 @@ HWND CSrfTip::CandidateOverlayTargetWindow() const {
   if (!contextHwnd) return foreground;
 
   bool appGameProfile = false;
-  if (const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName)) {
+  if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
     appGameProfile = options->hasGameProfile && options->gameCompactProfile;
   }
   if (appGameProfile || m_fullscreenCompatActive || m_gameCompatActive ||
@@ -165,7 +165,7 @@ HWND CSrfTip::CandidateOverlayTargetWindow() const {
 bool CSrfTip::CandidateGameOverlayActive() const {
   if (EffectiveCompatibilityPolicy() != SrfFullscreenPolicy::ShowUi) return false;
   bool appGameProfile = false;
-  if (const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName)) {
+  if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
     appGameProfile = options->hasGameProfile && options->gameCompactProfile;
   }
   return appGameProfile || m_fullscreenCompatActive || m_gameCompatActive ||
@@ -188,7 +188,7 @@ void CSrfTip::RefreshCandidateWindowEnvironment() {
   HWND target = CandidateOverlayTargetWindow();
   const bool gameOverlay = CandidateGameOverlayActive();
   const bool fullscreenOverlay = FullscreenCandidateOverlayActive();
-  const SrfAppOptions* overlayOptions = FindAppOptions(m_config, m_activeAppName);
+  const SrfAppOptions* overlayOptions = FindAppOptions(m_config, CompatibilityAppName());
   const SrfOverlayAnchor overlayAnchor = EffectiveOverlayAnchor(overlayOptions);
 
   RECT rect = {};
@@ -275,7 +275,7 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
   const SrfFocusPolicy focusPolicy = EffectiveFocusPolicy();
   const bool gameOverlay = CandidateGameOverlayActive();
   const bool fullscreenOverlay = FullscreenCandidateOverlayActive();
-  const SrfAppOptions* overlayOptions = FindAppOptions(m_config, m_activeAppName);
+  const SrfAppOptions* overlayOptions = FindAppOptions(m_config, CompatibilityAppName());
   const SrfOverlayAnchor overlayAnchor = EffectiveOverlayAnchor(overlayOptions);
   const bool fixedGameOverlay = gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret;
   const bool windowFocusPolicy = focusPolicy == SrfFocusPolicy::Window;
@@ -528,7 +528,12 @@ void CSrfTip::RedrawCandidateUiNow() {
     SetCandidateViewState(SrfCandidateViewState::Stale, L"redraw-stale");
   }
   if (!m_status.composing || m_context.candidates.Empty() || !m_hasLastCandidateRect) {
-    const bool transientWhileComposing = m_status.composing && !m_reading.empty();
+    // Keep a real candidate snapshot alive across transient model/anchor gaps,
+    // but never preserve an empty window shell while the first async lookup is
+    // still pending (notably for a cold single-letter lookup such as "q").
+    const bool transientWhileComposing =
+        srf_candidate_stability::ShouldKeepCandidateUiAliveDuringTransient(
+            m_status.composing, !m_reading.empty(), !m_candidates.empty());
     if (transientWhileComposing) {
       const ULONGLONG now = GetTickCount64();
       if (m_candidateUiTransientMissingSince == 0) {
@@ -662,7 +667,17 @@ HRESULT CSrfTip::SyncCompositionText(TfEditCookie ec, ITfContext* pic, bool refr
   if (updateCandidateWindowNow) {
     UpdateCandidateWindow(ec);
   } else {
-    if (m_candidateUi) m_candidateUi->UpdatePresentationState();
+    if (m_candidateUi) {
+      if (m_candidates.empty()) {
+        // An existing UI element may outlive the previous composition.  Do not
+        // leave its border/background visible with zero rows while waiting for
+        // the first async result; the result path will begin it again.
+        m_candidateUi->End();
+        m_candidateUiTransientMissingSince = 0;
+      } else {
+        m_candidateUi->UpdatePresentationState();
+      }
+    }
     std::wstring line = L"reading=";
     line += ShortenForLog(m_reading, 24);
     line += L", reason=await_async_candidate";
@@ -753,7 +768,49 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
         transportHr = PasteUnicodeTextViaClipboard(text);
       }
     } else if (commitTransport == SrfCommitTransport::UnicodeSendInput) {
+      bool appGameProfile = false;
+      if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
+        appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
+      }
+      const bool unicodeGameProbe =
+          appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
+          m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
+      const HWND unicodeTarget = GetForegroundWindow();
+      DWORD unicodeTargetProcessId = 0;
+      if (unicodeTarget) {
+        (void)GetWindowThreadProcessId(unicodeTarget, &unicodeTargetProcessId);
+      }
       transportHr = SendUnicodeTextInput(text);
+      bool unicodeTargetDisappeared = false;
+      if (SUCCEEDED(transportHr) && unicodeTarget && unicodeTargetProcessId != 0) {
+        // SendInput can report all packets accepted even when an anti-cheat or
+        // elevated host terminates the target immediately afterwards. Treat a
+        // vanished target as a failed probe so the next commit is clipboard-
+        // based instead of repeatedly exercising the crashing path.
+        Sleep(8);
+        if (!UnicodeInputTargetStillAlive(unicodeTarget, unicodeTargetProcessId)) {
+          unicodeTargetDisappeared = true;
+          transportHr = HRESULT_FROM_WIN32(ERROR_PROCESS_ABORTED);
+          if (unicodeGameProbe) MarkUnicodeFallbackApp(CompatibilityAppName());
+          SrfTsfDiagnosticLog(L"commit-transport-fallback",
+                              L"from=unicode_sendinput, reason=target_disappeared");
+        }
+      }
+      if (FAILED(transportHr) && !unicodeTargetDisappeared &&
+          !ShouldSuppressClipboardForPrivacy()) {
+        if (unicodeGameProbe) MarkUnicodeFallbackApp(CompatibilityAppName());
+        const HRESULT pasteHr = PasteUnicodeTextViaClipboard(text);
+        std::wstring fallbackLine = L"from=unicode_sendinput, to=clipboard_paste, status=";
+        fallbackLine += SUCCEEDED(pasteHr) ? L"ok" : L"failed";
+        if (FAILED(pasteHr)) {
+          wchar_t hrBuf[16] = {};
+          swprintf_s(hrBuf, L"%08lX", static_cast<unsigned long>(pasteHr));
+          fallbackLine += L", hr=0x";
+          fallbackLine += hrBuf;
+        }
+        SrfTsfDiagnosticLog(L"commit-transport-fallback", fallbackLine.c_str());
+        if (SUCCEEDED(pasteHr)) transportHr = S_OK;
+      }
     }
 
     std::wstring line = L"transport=";

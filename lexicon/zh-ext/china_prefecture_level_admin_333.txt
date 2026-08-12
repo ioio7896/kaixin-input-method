@@ -1,0 +1,339 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 中国 333 个地级行政区高优先级全拼词库
+# 原始清单已合并归档，数据溯源见 docs/licenses/AI_DATA_PROVENANCE.md。
+# 名称已去重并校正地名读音；运行时按扩展层处理，由全拼意图排序保证精确候选优先。
+# 格式：词语<TAB>拼音<TAB>权重；第三列统一为 1-10000 万分制排序分数。
+阿坝藏族羌族自治州	a ba zang zu qiang zu zi zhi zhou	1500
+阿克苏地区	a ke su di qu	1500
+阿拉善盟	a la shan meng	3167
+阿勒泰地区	a le tai di qu	1500
+阿里地区	a li di qu	3167
+安康	an kang	6500
+安庆	an qing	6500
+鞍山	an shan	6500
+安顺	an shun	6500
+安阳	an yang	6500
+巴彦淖尔	ba yan nao er	3167
+巴音郭楞蒙古自治州	ba yin guo leng meng gu zi zhi zhou	1500
+巴中	ba zhong	6500
+白城	bai cheng	6500
+百色	bai se	6500
+白山	bai shan	6500
+白银	bai yin	6500
+保定	bao ding	6500
+宝鸡	bao ji	6500
+保山	bao shan	6500
+包头	bao tou	6500
+北海	bei hai	6500
+本溪	ben xi	6500
+蚌埠	beng bu	6500
+毕节	bi jie	6500
+滨州	bin zhou	6500
+博尔塔拉蒙古自治州	bo er ta la meng gu zi zhi zhou	1500
+亳州	bo zhou	6500
+沧州	cang zhou	6500
+长春	chang chun	6500
+常德	chang de	6500
+昌都	chang du	6500
+昌吉回族自治州	chang ji hui zu zi zhi zhou	1500
+长沙	chang sha	6500
+长治	chang zhi	6500
+常州	chang zhou	6500
+朝阳	chao yang	6500
+潮州	chao zhou	6500
+郴州	chen zhou	6500
+承德	cheng de	6500
+成都	cheng du	6500
+赤峰	chi feng	6500
+池州	chi zhou	6500
+崇左	chong zuo	6500
+楚雄彝族自治州	chu xiong yi zu zi zhi zhou	1500
+滁州	chu zhou	6500
+大理白族自治州	da li bai zu zi zhi zhou	1500
+大连	da lian	6500
+大庆	da qing	6500
+大同	da tong	6500
+大兴安岭地区	da xing an ling di qu	1500
+达州	da zhou	6500
+丹东	dan dong	6500
+儋州	dan zhou	6500
+德宏傣族景颇族自治州	de hong dai zu jing po zu zi zhi zhou	1500
+德阳	de yang	6500
+德州	de zhou	6500
+迪庆藏族自治州	di qing zang zu zi zhi zhou	1500
+定西	ding xi	6500
+东莞	dong guan	6500
+东营	dong ying	6500
+鄂尔多斯	e er duo si	3167
+鄂州	e zhou	6500
+恩施土家族苗族自治州	en shi tu jia zu miao zu zi zhi zhou	1500
+防城港	fang cheng gang	4833
+佛山	fo shan	6500
+抚顺	fu shun	6500
+阜新	fu xin	6500
+阜阳	fu yang	6500
+抚州	fu zhou	6500
+福州	fu zhou	6500
+甘南藏族自治州	gan nan zang zu zi zhi zhou	1500
+赣州	gan zhou	6500
+甘孜藏族自治州	gan zi zang zu zi zhi zhou	1500
+固原	gu yuan	6500
+广安	guang an	6500
+广元	guang yuan	6500
+广州	guang zhou	6500
+贵港	gui gang	6500
+桂林	gui lin	6500
+贵阳	gui yang	6500
+果洛藏族自治州	guo luo zang zu zi zhi zhou	1500
+哈尔滨	ha er bin	4833
+哈密	ha mi	6500
+海北藏族自治州	hai bei zang zu zi zhi zhou	1500
+海东	hai dong	6500
+海口	hai kou	6500
+海南藏族自治州	hai nan zang zu zi zhi zhou	1500
+海西蒙古族藏族自治州	hai xi meng gu zu zang zu zi zhi zhou	1500
+邯郸	han dan	6500
+汉中	han zhong	6500
+杭州	hang zhou	6500
+鹤壁	he bi	6500
+河池	he chi	6500
+合肥	he fei	6500
+鹤岗	he gang	6500
+和田地区	he tian di qu	3167
+河源	he yuan	6500
+菏泽	he ze	6500
+贺州	he zhou	6500
+黑河	hei he	6500
+衡水	heng shui	6500
+衡阳	heng yang	6500
+红河哈尼族彝族自治州	hong he ha ni zu yi zu zi zhi zhou	1500
+呼和浩特	hu he hao te	3167
+葫芦岛	hu lu dao	4833
+呼伦贝尔	hu lun bei er	3167
+湖州	hu zhou	6500
+淮安	huai an	6500
+淮北	huai bei	6500
+怀化	huai hua	6500
+淮南	huai nan	6500
+黄冈	huang gang	6500
+黄南藏族自治州	huang nan zang zu zi zhi zhou	1500
+黄山	huang shan	6500
+黄石	huang shi	6500
+惠州	hui zhou	6500
+吉安	ji an	6500
+吉林	ji lin	6500
+济南	ji nan	6500
+济宁	ji ning	6500
+鸡西	ji xi	6500
+佳木斯	jia mu si	4833
+嘉兴	jia xing	6500
+嘉峪关	jia yu guan	4833
+江门	jiang men	6500
+焦作	jiao zuo	6500
+揭阳	jie yang	6500
+金昌	jin chang	6500
+晋城	jin cheng	6500
+金华	jin hua	6500
+晋中	jin zhong	6500
+锦州	jin zhou	6500
+景德镇	jing de zhen	4833
+荆门	jing men	6500
+荆州	jing zhou	6500
+九江	jiu jiang	6500
+酒泉	jiu quan	6500
+喀什地区	ka shi di qu	3167
+开封	kai feng	6500
+克拉玛依	ke la ma yi	3167
+克孜勒苏柯尔克孜自治州	ke zi lei su ke er ke zi zi zhi zhou	1500
+昆明	kun ming	6500
+拉萨	la sa	6500
+来宾	lai bin	6500
+兰州	lan zhou	6500
+廊坊	lang fang	6500
+乐山	le shan	6500
+丽江	li jiang	6500
+丽水	li shui	6500
+连云港	lian yun gang	4833
+凉山彝族自治州	liang shan yi zu zi zhi zhou	1500
+聊城	liao cheng	6500
+辽阳	liao yang	6500
+辽源	liao yuan	6500
+临沧	lin cang	6500
+临汾	lin fen	6500
+临夏回族自治州	lin xia hui zu zi zhi zhou	1500
+临沂	lin yi	6500
+林芝	lin zhi	6500
+六盘水	liu pan shui	4833
+柳州	liu zhou	6500
+陇南	long nan	6500
+龙岩	long yan	6500
+娄底	lou di	6500
+六安	lu an	6500
+泸州	lu zhou	6500
+漯河	luo he	6500
+洛阳	luo yang	6500
+吕梁	lv liang	6500
+马鞍山	ma an shan	4833
+茂名	mao ming	6500
+眉山	mei shan	6500
+梅州	mei zhou	6500
+绵阳	mian yang	6500
+牡丹江	mu dan jiang	4833
+那曲	na qu	6500
+南昌	nan chang	6500
+南充	nan chong	6500
+南京	nan jing	6500
+南宁	nan ning	6500
+南平	nan ping	6500
+南通	nan tong	6500
+南阳	nan yang	6500
+内江	nei jiang	6500
+宁波	ning bo	6500
+宁德	ning de	6500
+怒江傈僳族自治州	nu jiang li su zu zi zhi zhou	1500
+盘锦	pan jin	6500
+攀枝花	pan zhi hua	4833
+平顶山	ping ding shan	4833
+平凉	ping liang	6500
+萍乡	ping xiang	6500
+普洱	pu er	6500
+莆田	pu tian	6500
+濮阳	pu yang	6500
+齐齐哈尔	qi qi ha er	3167
+七台河	qi tai he	4833
+黔东南苗族侗族自治州	qian dong nan miao zu dong zu zi zhi zhou	1500
+黔南布依族苗族自治州	qian nan bu yi zu miao zu zi zhi zhou	1500
+黔西南布依族苗族自治州	qian xi nan bu yi zu miao zu zi zhi zhou	1500
+秦皇岛	qin huang dao	4833
+钦州	qin zhou	6500
+青岛	qing dao	6500
+庆阳	qing yang	6500
+清远	qing yuan	6500
+曲靖	qu jing	6500
+衢州	qu zhou	6500
+泉州	quan zhou	6500
+日喀则	ri ka ze	4833
+日照	ri zhao	6500
+三门峡	san men xia	4833
+三明	san ming	6500
+三沙	san sha	6500
+三亚	san ya	6500
+山南	shan nan	6500
+汕头	shan tou	6500
+汕尾	shan wei	6500
+商洛	shang luo	6500
+商丘	shang qiu	6500
+上饶	shang rao	6500
+韶关	shao guan	6500
+绍兴	shao xing	6500
+邵阳	shao yang	6500
+沈阳	shen yang	6500
+深圳	shen zhen	6500
+石家庄	shi jia zhuang	4833
+十堰	shi yan	6500
+石嘴山	shi zui shan	4833
+双鸭山	shuang ya shan	4833
+朔州	shuo zhou	6500
+四平	si ping	6500
+松原	song yuan	6500
+宿迁	su qian	6500
+宿州	su zhou	6500
+苏州	su zhou	6500
+绥化	sui hua	6500
+遂宁	sui ning	6500
+随州	sui zhou	6500
+塔城地区	ta cheng di qu	3167
+泰安	tai an	6500
+太原	tai yuan	6500
+台州	tai zhou	6500
+泰州	tai zhou	6500
+唐山	tang shan	6500
+天水	tian shui	6500
+铁岭	tie ling	6500
+铜川	tong chuan	6500
+通化	tong hua	6500
+通辽	tong liao	6500
+铜陵	tong ling	6500
+铜仁	tong ren	6500
+吐鲁番	tu lu fan	4833
+潍坊	wei fang	6500
+威海	wei hai	6500
+渭南	wei nan	6500
+文山壮族苗族自治州	wen shan zhuang zu miao zu zi zhi zhou	1500
+温州	wen zhou	6500
+乌海	wu hai	6500
+武汉	wu han	6500
+芜湖	wu hu	6500
+乌兰察布	wu lan cha bu	3167
+乌鲁木齐	wu lu mu qi	3167
+武威	wu wei	6500
+无锡	wu xi	6500
+吴忠	wu zhong	6500
+梧州	wu zhou	6500
+西安	xi an	6500
+锡林郭勒盟	xi lin guo lei meng	1500
+西宁	xi ning	6500
+西双版纳傣族自治州	xi shuang ban na dai zu zi zhi zhou	1500
+厦门	xia men	6500
+咸宁	xian ning	6500
+咸阳	xian yang	6500
+湘潭	xiang tan	6500
+湘西土家族苗族自治州	xiang xi tu jia zu miao zu zi zhi zhou	1500
+襄阳	xiang yang	6500
+孝感	xiao gan	6500
+新乡	xin xiang	6500
+信阳	xin yang	6500
+新余	xin yu	6500
+忻州	xin zhou	6500
+兴安盟	xing an meng	4833
+邢台	xing tai	6500
+许昌	xu chang	6500
+徐州	xu zhou	6500
+宣城	xuan cheng	6500
+雅安	ya an	6500
+延安	yan an	6500
+延边朝鲜族自治州	yan bian chao xian zu zi zhi zhou	1500
+盐城	yan cheng	6500
+烟台	yan tai	6500
+阳江	yang jiang	6500
+阳泉	yang quan	6500
+扬州	yang zhou	6500
+宜宾	yi bin	6500
+宜昌	yi chang	6500
+伊春	yi chun	6500
+宜春	yi chun	6500
+伊犁哈萨克自治州	yi li ha sa ke zi zhi zhou	1500
+益阳	yi yang	6500
+银川	yin chuan	6500
+营口	ying kou	6500
+鹰潭	ying tan	6500
+永州	yong zhou	6500
+榆林	yu lin	6500
+玉林	yu lin	6500
+玉树藏族自治州	yu shu zang zu zi zhi zhou	1500
+玉溪	yu xi	6500
+岳阳	yue yang	6500
+运城	yun cheng	6500
+云浮	yun fu	6500
+枣庄	zao zhuang	6500
+湛江	zhan jiang	6500
+张家界	zhang jia jie	4833
+张家口	zhang jia kou	4833
+张掖	zhang ye	6500
+漳州	zhang zhou	6500
+肇庆	zhao qing	6500
+昭通	zhao tong	6500
+镇江	zhen jiang	6500
+郑州	zheng zhou	6500
+中山	zhong shan	6500
+中卫	zhong wei	6500
+周口	zhou kou	6500
+舟山	zhou shan	6500
+珠海	zhu hai	6500
+驻马店	zhu ma dian	4833
+株洲	zhu zhou	6500
+淄博	zi bo	6500
+自贡	zi gong	6500
+资阳	zi yang	6500
+遵义	zun yi	6500

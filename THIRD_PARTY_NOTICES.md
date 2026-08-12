@@ -23,6 +23,7 @@ OCR 引擎、OCR 模型、Python 运行时依赖、系统 API、外部词库和�
 | ShareX 21.0.0 | GPL-3.0 | 可使用、研究、修改和再分发；本项目使用其截图与图像编辑功能 | 分发修改版二进制时同时提供完整对应源码、GPL-3.0 许可和修改说明；不得把 ShareX 描述为本项目自研 |
 | RapidOCR | Apache License 2.0 | 可使用、复制、修改和再分发工程代码；可随商业软件分发 | 保留 Apache-2.0 许可证、版权和 NOTICE/README；说明 OCR 模型版权另属模型方；如修改 RapidOCR 源码，标明修改 |
 | THUOCL | MIT License | 可使用、修改和再分发词表 | 保留 THUOCL 的 MIT 许可证及上游来源；本项目固定版本和归档哈希见 `data_sources/README.md` |
+| chinese-surnames 1.0.0 | MIT License | 可使用、修改和再分发姓氏列表 | `lexicon/zh/chinese_surnames.txt` 为其 `index.json` 的拼音化派生结果；保留 `data_sources/chinese_surnames/LICENSE` 及上游来源 |
 | rust-pinyin 0.10.0 | MIT License | 可使用、修改和再分发代码 | 保留 MIT 许可证和版权声明；本项目用于生成无声调拼音及支持字符表 |
 | wordfreq 3.1.1 | Apache License 2.0 | 可使用、修改和再分发代码与随包数据 | 保留版权、许可证和来源；本项目仅派生并分发筛选后的 20,000 词英文排序 |
 
@@ -68,11 +69,15 @@ ShareX 使用 GPL-3.0 许可证。完整对应源码、许可证、上游来源�
 | 组件或路径 | 用途 | 许可/来源说明 |
 | --- | --- | --- |
 | `lexicon/en/` | 20,000 词常用英文词库 | 高频顺序来自 wordfreq 3.1.1（Apache-2.0），并由开心输入法筛选及补充常用技术词；目录内保留 README 与许可证摘要 |
-| `data_sources/thuocl/`、`lexicon/ext/thuocl_*.txt` | 中文分类词库及其生成结果 | THUOCL，MIT License；固定上游提交、归档哈希和许可证原文均保存在 `data_sources/` |
+| `lexicon/zh/life_common_4char.txt`、`lexicon/zh/life_common_phrases_5to8.txt`、`lexicon/zh/chat_common_phrases.txt`、`lexicon/zh/office_common_phrases.txt` | 现代生活、聊天和办公短语 | 词频排序来自 wordfreq 3.1.1（Apache-2.0）；项目脚本补充并整理现代固定搭配，生成方法见 `scripts/build_common_phrase_lexicons.py` |
+| `lexicon/zh/single_char_common_8105.txt` | 8105 个常用汉字单字词库 | 按 wordfreq 3.1.1（Apache-2.0）中文词频排序，并与项目拼音支持表取交集；生成方法见 `scripts/generate_single_char_lexicon.py` |
+| `lexicon/zh/ai_and_machine_learning.txt`、`software_and_cloud.txt`、`internet_products.txt`、`programming_frameworks.txt` | 现代 AI、软件云、互联网产品和编程框架实体 | 词频排序来自 wordfreq 3.1.1（Apache-2.0）；项目脚本补充现代技术实体和中英混合输入码，生成方法见 `scripts/build_modern_it_lexicons.py` |
+| `data_sources/thuocl/`、`lexicon/zh/thuocl_*.txt` | 中文分类词库及其生成结果 | THUOCL，MIT License；固定上游提交、归档哈希和许可证原文均保存在 `data_sources/` |
+| `lexicon/zh/chinese_surnames.txt` | 中国单姓、复姓及姓氏异读 | `chinese-surnames` 1.0.0，MIT License；上游来源、版本和许可证原文见 `data_sources/README.md` 与 `data_sources/chinese_surnames/LICENSE` |
 | `data_sources/pinyin/`、`pinyin-ime/data/pinyin_supported_chars.txt` | 拼音生成与支持字符表 | rust-pinyin 0.10.0，MIT License；字符表由构建工具重新生成 |
-| `data_sources/kaixin/*.tsv`、`lexicon/core/kaixin_polyphone.txt` | 基础候选、多音词读音修正及其生成结果 | 开心输入法项目作者使用生成式 AI 辅助添加并自行维护；见 `docs/licenses/AI_DATA_PROVENANCE.md` |
-| `lexicon/base/kaixin_common.txt` | 基础中文词库 | 从许可明确的 THUOCL 数据及项目自维护基础候选经过去重、排序后构建 |
-| `lexicon/base/*admin*.txt`、`lexicon/base/hangzhou_*.txt`、`lexicon/ext/hangzhou_*.txt` | 行政区划及杭州本地词库 | 项目作者使用生成式 AI 辅助添加并自行维护；发布前补齐模型、提示输入、服务条款及事实核验记录 |
+| `data_sources/kaixin/*.tsv`、`lexicon/zh/kaixin_polyphone.txt` | 基础候选、多音词读音修正及其生成结果 | 开心输入法项目作者使用生成式 AI 辅助添加并自行维护；见 `docs/licenses/AI_DATA_PROVENANCE.md` |
+| `lexicon/zh/kaixin_common.txt` | 基础中文词库 | 从许可明确的 THUOCL 数据及项目自维护基础候选经过去重、排序后构建 |
+| `lexicon/zh/*admin*.txt`、`lexicon/zh/hangzhou_*.txt` | 行政区划及杭州本地词库 | 项目作者使用生成式 AI 辅助添加并自行维护；发布前补齐模型、提示输入、服务条款及事实核验记录 |
 | `pinyin-ime/src/handwrite_lookup/` | 手写查字匹配和数据 | 目录内已有 LGPL/APL 许可说明，发布时应保留 |
 | Windows TSF / Win32 API | 系统输入法接入 | 平台 API，不属于开心输入法自研源程序主张范围 |
 

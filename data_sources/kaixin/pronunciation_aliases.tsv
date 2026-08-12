@@ -1,0 +1,32 @@
+# 开心输入法可接受读音与多音字表
+# 来源：项目作者自维护。
+# 格式：词语或单字<TAB>无声调拼音<TAB>独立权重<TAB>读音类别
+# 读音类别：primary（主要）、alternate（其他规范读音）、colloquial（口语）、historical（旧读）。
+# 同一个词语或单字可有多行；每行的拼音和权重独立进入运行时索引。
+重	zhong	7000000	primary
+重	chong	900000	alternate
+长	chang	7000000	primary
+长	zhang	6000000	alternate
+行	xing	7000000	primary
+行	hang	3000000	alternate
+乐	le	7000000	primary
+乐	yue	3000000	alternate
+着	zhe	7000000	primary
+着	zhuo	2000000	alternate
+着	zhao	1500000	alternate
+谁	shui	7000000	primary
+谁	shei	6000000	colloquial
+熟	shu	5000000	primary
+熟	shou	4000000	colloquial
+血	xue	5000000	primary
+血	xie	3000000	colloquial
+薄	bo	4000000	primary
+薄	bao	2000000	alternate
+薄	bu	500000	alternate
+剥	bo	3000000	primary
+剥	bao	1000000	alternate
+给	gei	7000000	primary
+给	ji	1000000	alternate
+差	cha	5000000	primary
+差	chai	2000000	alternate
+差	ci	1000000	alternate

@@ -18,6 +18,7 @@ new setting is added or a default changes.
 | `style` | `candidate_label_font_weight` | `600` | `400..=800` | settings, TSF candidate window |
 | `style` | `candidate_chip_font_weight` | `500` | `350..=700` | settings, TSF candidate window |
 | `style` | `candidate_opacity` | `100` | `90..=100` | settings, TSF candidate window |
+| `style` | `candidate_reduce_motion` | `0` | boolean; also disabled automatically by Windows animation/high-contrast settings | settings, TSF candidate window |
 | `style` | `theme` | `auto` | `auto`, `light`, `dark`, `high_contrast` | settings, TSF |
 | `style` | `candidate_material` | `auto` | `auto`, `solid`, `gradient`, `mist` | settings, TSF |
 | `style` | `candidate_layout_variant` | legacy fallback | `classic`, `compact`, `card` | TSF, settings migration |
@@ -97,8 +98,8 @@ new setting is added or a default changes.
 | `lexicon` | `lexicon_<tag>` | `1` | boolean; controls optional text dictionaries by tag | settings, engine |
 | `input` | `traditional_output` | `0` | boolean | settings, TSF, engine ranking |
 | `input` | `traditional_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
-| `input` | `game_mode_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
-| `input` | `temporary_ascii_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
+| `input` | `game_mode_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
+| `input` | `temporary_ascii_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
 | `input` | `shift_tap_hotkey` | `1` | boolean | settings, TSF |
 | `input` | `candidate_number_select` | `1` | boolean | settings, TSF |
 | `input` | `date_auto_format` | `1` | boolean | settings, TSF, engine ranking |
@@ -106,6 +107,8 @@ new setting is added or a default changes.
 | `input` | `emoji_input` | `1` | boolean | settings, TSF, engine ranking |
 | `input` | `auto_pair_punct` | `1` | boolean | settings, TSF |
 | `input` | `symbol_fullwidth` | `1` | boolean | settings, TSF |
+| `input` | `default_full_shape` | `0` | boolean | start Chinese mode in IME-managed full shape; also enables Shift+Space |
+| `input` | `full_shape_hotkey` | `0` | boolean | enable Shift+Space even when default full shape is off |
 | `input` | `shift_symbol_temporary_ascii` | `0` | boolean | settings, TSF |
 | `input` | `page_minus_equal` | `1` | boolean | settings, TSF |
 | `input` | `page_comma_period` | `1` | boolean | settings, TSF |
@@ -141,6 +144,8 @@ Fullscreen display notes:
 | --- | --- |
 | Fullscreen default | `[compatibility] fullscreen_policy=show_ui` uses the compact, click-through game candidate overlay; `hide_ui` remains available as an explicit compatibility fallback. |
 | Fullscreen candidate overlay | Set `[compatibility] fullscreen_policy=show_ui` to keep candidates visible in fullscreen without forcing ASCII. |
+| ASCII direct mode | ASCII compatibility passes letters, digits, punctuation, keypad input, and game shortcuts directly to the target; it is not limited to English letters. |
+| Manual compatibility scope | Manual game/ASCII mode and the recovery override are bound to the current foreground window, process ID, and process path; changing windows clears them. |
 | Per-game candidate overlay | Set `[app:<process>] policy=show_ui`, or equivalently `ascii_mode=0`, `hide_ui=0`, and `candidate_topmost=1`. |
 | Recommended game profile | The settings app writes `policy=show_ui`, `game_profile=compact`, `commit_transport=tsf`, and `overlay_backend=auto`; the test wizard can then switch to Unicode SendInput or clipboard paste as real fallback steps. |
 | Per-game overlay placement | Use `overlay_anchor`, logical-pixel offsets, percentage scale, and `overlay_monitor`; `auto` follows the game window/display. |

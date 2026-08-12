@@ -1,5 +1,6 @@
 use crate::text_norm::strip_bom_str;
 use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct Lm {
@@ -16,6 +17,10 @@ pub struct Lm {
     /// Fallback log-bigram for unobserved (prev, c) pairs — depends only on
     /// `prev`, so one precomputed value per observed predecessor.
     bigram_unobserved_fallback: HashMap<char, f64>,
+    /// Character pools are queried repeatedly by the incremental and word
+    /// graph decoders. Cache their unigram order so every keystroke does not
+    /// clone and sort the same pool again.
+    ranked_char_cache: Arc<Mutex<HashMap<Vec<char>, Arc<[char]>>>>,
 }
 
 impl Lm {
@@ -81,6 +86,7 @@ impl Lm {
             u_logprob,
             bigram_logprob,
             bigram_unobserved_fallback,
+            ranked_char_cache: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
@@ -116,14 +122,34 @@ impl Lm {
     }
 
     pub fn rank_chars_by_unigram_with_limit(&self, chars: &[char], limit: usize) -> Vec<char> {
-        let mut ranked: Vec<char> = chars.to_vec();
+        if chars.is_empty() || limit == 0 {
+            return Vec::new();
+        }
+        let key = chars.to_vec();
+        if let Ok(cache) = self.ranked_char_cache.lock() {
+            if let Some(ranked) = cache.get(&key) {
+                return ranked.iter().take(limit).copied().collect();
+            }
+        }
+
+        let mut ranked = key.clone();
         ranked.sort_by(|a, b| {
             self.log_unigram(*b)
                 .partial_cmp(&self.log_unigram(*a))
                 .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.cmp(b))
         });
-        ranked.truncate(limit);
-        ranked
+        let ranked: Arc<[char]> = Arc::from(ranked);
+        if let Ok(mut cache) = self.ranked_char_cache.lock() {
+            // The syllable dictionary is small, but custom test/runtime
+            // dictionaries can contain arbitrary pools. Bound memory without
+            // adding an LRU dependency to the language model.
+            if cache.len() >= 512 {
+                cache.clear();
+            }
+            cache.insert(key, Arc::clone(&ranked));
+        }
+        ranked.iter().take(limit).copied().collect()
     }
 
     pub fn rank_chars_by_unigram(&self, chars: &[char]) -> Vec<char> {

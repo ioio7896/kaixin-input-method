@@ -1,0 +1,268 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭州地铁 262 个站点高优先级全拼词库
+# 原始清单已合并归档，数据溯源见 docs/licenses/AI_DATA_PROVENANCE.md。
+# 站名已去重并校正本地读音；运行时按基础层处理，保证完整全拼时优先显示。
+# 格式：词语<TAB>拼音<TAB>权重；第三列统一为 1-10000 万分制排序分数。
+奥体中心	ao ti zhong xin	3867
+八百里	ba bai li	4533
+白洋	bai yang	5200
+宝善桥	bao shan qiao	4533
+北大桥	bei da qiao	4533
+滨和路	bin he lu	4533
+滨康路	bin kang lu	4533
+博奥路	bo ao lu	4533
+博览中心	bo lan zhong xin	3867
+仓北村	cang bei cun	4533
+曹家桥	cao jia qiao	4533
+长河	chang he	5200
+潮王路	chao wang lu	4533
+朝阳	chao yang	5200
+城星路	cheng xing lu	4533
+诚业路	cheng ye lu	4533
+城站	cheng zhan	5200
+池华街	chi hua jie	4533
+储运路	chu yun lu	4533
+创景路	chuang jing lu	4533
+创明路	chuang ming lu	4533
+翠柏路	cui bai lu	4533
+大关	da guan	5200
+打铁关	da tie guan	4533
+大运河	da yun he	4533
+定安路	ding an lu	4533
+丁桥	ding qiao	5200
+东新园	dong xin yuan	4533
+东岳	dong yue	5200
+独城生态公园	du cheng sheng tai gong yuan	3200
+杜甫村	du fu cun	4533
+渡驾桥	du jia qiao	4533
+墩祥街	dun xiang jie	4533
+飞虹路	fei hong lu	4533
+丰北	feng bei	5200
+枫桦西路	feng hua xi lu	3867
+冯娄村	feng lou cun	4533
+凤起路	feng qi lu	4533
+丰潭路	feng tan lu	4533
+凤新路	feng xin lu	4533
+复兴路	fu xing lu	4533
+富阳客运中心	fu yang ke yun zhong xin	3200
+港城大道	gang cheng da dao	3867
+高教路	gao jiao lu	4533
+高桥	gao qiao	5200
+高沙路	gao sha lu	4533
+皋亭坝	gao ting ba	4533
+葛巷	ge xiang	5200
+耕文路	geng wen lu	4533
+拱宸桥东	gong chen qiao dong	3867
+工商大学云滨	gong shang da xue yun bin	3200
+公望街	gong wang jie	4533
+枸桔弄	gou ju nong	4533
+古翠路	gu cui lu	4533
+古荡	gu dang	5200
+古荡新村	gu dang xin cun	3867
+古墩路	gu dun lu	4533
+姑娘桥	gu niang qiao	4533
+观音塘	guan yin tang	4533
+桂花西路	gui hua xi lu	3867
+海创园	hai chuang yuan	4533
+杭发厂	hang fa chang	4533
+杭师大仓前	hang shi da cang qian	3200
+杭行路	hang xing lu	4533
+杭氧	hang yang	5200
+杭州大会展中心	hang zhou da hui zhan zhong xin	3200
+好运街	hao yun jie	4533
+合欢路	he huan lu	4533
+和睦	he mu	5200
+荷禹路	he yu lu	4533
+河庄路	he zhuang lu	4533
+红普南路	hong pu nan lu	3867
+洪园	hong yuan	5200
+候潮门	hou chao men	4533
+虎啸杏	hu xiao xing	4533
+华丰路	hua feng lu	4533
+华鹤街	hua he jie	4533
+花坞	hua wu	5200
+花园岗	hua yuan gang	4533
+华中南路	hua zhong nan lu	3867
+黄鹤山	huang he shan	4533
+黄龙洞	huang long dong	4533
+黄龙体育中心	huang long ti yu zhong xin	3200
+火车东站	huo che dong zhan	3867
+火车东站（东广场）	huo che dong zhan dong guang chang	3200
+火车南站	huo che nan zhan	3867
+火车西站	huo che xi zhan	3867
+建国北路	jian guo bei lu	3867
+笕桥老街	jian qiao lao jie	3867
+建设三路	jian she san lu	3867
+建设一路	jian she yi lu	3867
+建业路	jian ye lu	4533
+江城路	jiang cheng lu	4533
+蒋村	jiang cun	5200
+江东二路	jiang dong er lu	3867
+江汉路	jiang han lu	4533
+江河汇	jiang he hui	4533
+江晖路	jiang hui lu	4533
+江锦路	jiang jin lu	4533
+江陵路	jiang ling lu	4533
+金德路	jin de lu	4533
+金鸡路	jin ji lu	4533
+金家渡	jin jia du	4533
+近江	jin jiang	5200
+金沙湖	jin sha hu	4533
+金星	jin xing	5200
+荆长路	jing chang lu	4533
+景芳	jing fang	5200
+九堡	jiu bao	5200
+九和路	jiu he lu	4533
+九睦路	jiu mu lu	4533
+九州街	jiu zhou jie	4533
+聚才路	ju cai lu	4533
+坎山	kan shan	5200
+科海路	ke hai lu	4533
+客运中心	ke yun zhong xin	3867
+黎明	li ming	5200
+联胜路	lian sheng lu	4533
+联庄	lian zhuang	5200
+良睦路	liang mu lu	4533
+良渚	liang zhu	5200
+临安广场	lin an guang chang	3867
+临平	lin ping	5200
+临平南高铁站	lin ping nan gao tie zhan	3200
+六堡	liu bao	5200
+留下	liu xia	5200
+龙安	long an	5200
+龙翔桥	long xiang qiao	4533
+龙舟北路	long zhou bei lu	3867
+绿汀路	lv ting lu	4533
+美院象山	mei yuan xiang shan	3867
+明石路	ming shi lu	4533
+明星路	ming xing lu	4533
+莫邪塘	mo ye tang	4533
+南峰	nan feng	5200
+南湖	nan hu	5200
+南湖东	nan hu dong	4533
+南星桥	nan xing qiao	4533
+南阳	nan yang	5200
+南苑	nan yuan	5200
+农林大学	nong lin da xue	3867
+潘水	pan shui	5200
+彭埠	peng bu	5200
+平安桥	ping an qiao	4533
+屏峰	ping feng	5200
+平澜路	ping lan lu	4533
+萍水街	ping shui jie	4533
+浦沿	pu yan	5200
+七堡	qi bao	5200
+启成路	qi cheng lu	4533
+汽轮广场	qi lun guang chang	3867
+钱江路	qian jiang lu	4533
+钱江世纪城	qian jiang shi ji cheng	3200
+乔司	qiao si	5200
+乔司南	qiao si nan	4533
+桥头堡	qiao tou bao	4533
+庆春广场	qing chun guang chang	3867
+庆菱路	qing ling lu	4533
+青六中路	qing liu zhong lu	3867
+青山湖	qing shan hu	4533
+青山湖科技城	qing shan hu ke ji cheng	3200
+青西三路	qing xi san lu	3867
+邱山大街	qiu shan da jie	3867
+全丰	quan feng	5200
+人民广场	ren min guang chang	3867
+人民路	ren min lu	4533
+三坝	san ba	5200
+三堡	san bao	5200
+三墩	san dun	5200
+善贤	shan xian	5200
+沈塘桥	shen tang qiao	4533
+石马	shi ma	5200
+市民中心	shi min zhong xin	3867
+受降	shou xiang	5200
+双浦	shuang pu	5200
+双桥	shuang qiao	5200
+水澄桥	shui cheng qiao	4533
+昙花庵路	tan hua an lu	3867
+汤家村	tang jia cun	4533
+塘新线	tang xin xian	4533
+桃花湖公园	tao hua hu gong yuan	3200
+桃源街	tao yuan jie	4533
+苕溪	tiao xi	5200
+通惠中路	tong hui zhong lu	3867
+同协路	tong xie lu	4533
+万安桥	wan an qiao	4533
+伟业路	wei ye lu	4533
+文海南路	wen hai nan lu	3867
+文三路	wen san lu	4533
+文新	wen xin	5200
+文一西路	wen yi xi lu	3867
+文泽路	wen ze lu	4533
+翁梅	weng mei	5200
+五堡	wu bao	5200
+五常	wu chang	5200
+吴家角港	wu jia jiao gang	3867
+婺江路	wu jiang lu	4533
+五联	wu lian	5200
+武林广场	wu lin guang chang	3867
+武林门	wu lin men	4533
+吴山广场	wu shan guang chang	3867
+吴山前村	wu shan qian cun	3867
+五洲路	wu zhou lu	4533
+西湖文化广场	xi hu wen hua guang chang	3200
+西浦路	xi pu lu	4533
+西文街	xi wen jie	4533
+西溪湿地北	xi xi shi di bei	3200
+西溪湿地南	xi xi shi di nan	3200
+西兴	xi xing	5200
+虾龙圩	xia long wei	4533
+霞鸣街	xia ming jie	4533
+下宁桥	xia ning qiao	4533
+下沙江滨	xia sha jiang bin	3867
+下沙西	xia sha xi	4533
+湘湖	xiang hu	5200
+香积寺	xiang ji si	4533
+向阳路	xiang yang lu	4533
+祥园路	xiang yuan lu	4533
+小和山	xiao he shan	4533
+萧山国际机场	xiao shan guo ji ji chang	3200
+新风	xin feng	5200
+新港	xin gang	5200
+新汉路	xin han lu	4533
+新街	xin jie	5200
+新塘	xin tang	5200
+新天地街	xin tian di jie	3867
+新湾路	xin wan lu	4533
+新兴路	xin xing lu	4533
+新业路	xin ye lu	4533
+新镇路	xin zhen lu	4533
+星民	xing min	5200
+星桥	xing qiao	5200
+兴议	xing yi	5200
+学院路	xue yuan lu	4533
+亚运村	ya yun cun	4533
+阳陂湖	yang bei hu	4533
+杨家墩	yang jia dun	4533
+野生动物园东	ye sheng dong wu yuan dong	3200
+驿城路	yi cheng lu	4533
+义蓬	yi peng	5200
+逸盛路	yi sheng lu	4533
+银湖	yin hu	5200
+音乐学院	yin yue xue yuan	3867
+盈丰路	ying feng lu	4533
+盈中	ying zhong	5200
+永福	yong fu	5200
+甬江路	yong jiang lu	4533
+永盛路	yong sheng lu	4533
+育才北路	yu cai bei lu	3867
+御道	yu dao	5200
+禹航路	yu hang lu	4533
+元宝塘	yuan bao tang	4533
+云水	yun shui	5200
+闸弄口	zha nong kou	4533
+浙大紫金港	zhe da zi jin gang	3200
+振宁路	zhen ning lu	4533
+之江文化中心	zhi jiang wen hua zhong xin	3200
+知行路	zhi xing lu	4533
+中村	zhong cun	5200
+中河北路	zhong he bei lu	3867
+中泰	zhong tai	5200
+中医药大学	zhong yi yao da xue	3200

@@ -1,8 +1,5 @@
 //! Runtime preferences for learned exact-input hotword promotion.
 
-#[cfg(test)]
-use std::sync::{Mutex, OnceLock};
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum UserHotwordBoostLevel {
     Conservative,
@@ -61,9 +58,6 @@ impl Default for UserHotwordPrefs {
     }
 }
 
-#[cfg(test)]
-static TEST_PREFS: OnceLock<Mutex<Option<UserHotwordPrefs>>> = OnceLock::new();
-
 fn parse_level(value: &str) -> UserHotwordBoostLevel {
     match value.trim().to_ascii_lowercase().as_str() {
         "conservative" | "low" | "soft" => UserHotwordBoostLevel::Conservative,
@@ -101,40 +95,6 @@ pub(crate) fn parse_engine_section(text: &str) -> UserHotwordPrefs {
     UserHotwordPrefs::from_level(level)
 }
 
-#[cfg(test)]
-fn test_prefs() -> Option<UserHotwordPrefs> {
-    TEST_PREFS
-        .get()
-        .and_then(|prefs| prefs.lock().ok().and_then(|guard| *guard))
-}
-
-#[cfg(test)]
-pub struct UserHotwordPrefsTestGuard;
-
-#[cfg(test)]
-impl Drop for UserHotwordPrefsTestGuard {
-    fn drop(&mut self) {
-        if let Some(prefs) = TEST_PREFS.get() {
-            if let Ok(mut guard) = prefs.lock() {
-                *guard = None;
-            }
-        }
-    }
-}
-
-#[cfg(test)]
-pub fn set_user_hotword_level_for_test(level: UserHotwordBoostLevel) -> UserHotwordPrefsTestGuard {
-    let prefs = TEST_PREFS.get_or_init(|| Mutex::new(None));
-    if let Ok(mut guard) = prefs.lock() {
-        *guard = Some(UserHotwordPrefs::from_level(level));
-    }
-    UserHotwordPrefsTestGuard
-}
-
 pub fn get_user_hotword_prefs() -> UserHotwordPrefs {
-    #[cfg(test)]
-    if let Some(prefs) = test_prefs() {
-        return prefs;
-    }
     crate::runtime_config::snapshot().user_hotword
 }

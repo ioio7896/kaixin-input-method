@@ -1,0 +1,24 @@
+# 开心输入法：生活场景二字简拼热词覆盖
+#
+# 这些词在生活场景中明显比通用语料频次更常用。通过独立的轻量覆盖层
+# 提升二字简拼召回与首屏排序，不改变原生活词库的原始频次。
+# 格式：词语<TAB>全拼<TAB>领域热度
+好的	hao de	8500
+结束	jie shu	8500
+音乐	yin yue	8500
+房子	fang zi	8500
+生日	sheng ri	8500
+上班	shang ban	8500
+宝宝	bao bao	8500
+购物	gou wu	8500
+再见	zai jian	8500
+水果	shui guo	8500
+蔬菜	shu cai	8500
+超市	chao shi	8500
+啤酒	pi jiu	8500
+早餐	zao can	8500
+下班	xia ban	8500
+晚餐	wan can	8500
+快递	kuai di	8500
+外卖	wai mai	8500
+买菜	mai cai	8500

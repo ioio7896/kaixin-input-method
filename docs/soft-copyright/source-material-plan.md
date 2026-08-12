@@ -2,7 +2,7 @@
 
 ## 申请口径
 
-源程序鉴别材料建议使用“开心输入法软件 V1.0”自研核心代码，不把第三方 OCR 源码、外部模型、Python 虚拟环境、构建产物、安装包、词库数据或测试数据作为自研源程序提交。
+源程序鉴别材料建议使用“开心输入法软件 V2.0”自研核心代码，不把第三方 OCR 源码、外部模型、Python 虚拟环境、构建产物、安装包、词库数据或测试数据作为自研源程序提交。
 
 ## 建议纳入的自研源码范围
 
@@ -26,12 +26,11 @@
 | `lexicon/` | 内置词库和外部词库数据，不作为程序源码提交 |
 | `rocm-python-wheels-Windows*` | 临时 Python wheel 缓存 |
 | `build/`、`dist/`、`pinyin-ime/target/` | 构建产物和安装包 |
-| `tests/` | 测试用例，不作为登记核心源程序 |
 | `.git/`、`.idea/`、`.vscode/` | 版本库和编辑器状态 |
 
 ## 页面要求和生成方式
 
-登记材料通常按源程序前、后各连续 30 页提交；不足 60 页则提交全部。排版时建议每页不少于 50 行，并在页眉中统一写明“开心输入法软件 V1.0 源程序鉴别材料”。
+登记材料通常按源程序前、后各连续 30 页提交；不足 60 页则提交全部。排版时建议每页不少于 50 行，并在页眉中统一写明“开心输入法软件 V2.0 源程序鉴别材料”。
 
 建议先生成一份连续的自研源程序汇总文本，再从该文本中取前 1500 行和后 1500 行排版。这样可以保证材料连续、可复现，也能避免选到第三方源码。
 
@@ -65,12 +64,12 @@ $files = @(
   "tsf-tip\src\register.cpp"
 )
 foreach ($file in $files) {
-  "===== FILE: $file =====" | Add-Content "$outDir\source-program-v1.0.txt" -Encoding UTF8
-  Get-Content $file | Add-Content "$outDir\source-program-v1.0.txt" -Encoding UTF8
+  "===== FILE: $file =====" | Add-Content "$outDir\source-program-v2.0.txt" -Encoding UTF8
+  Get-Content $file | Add-Content "$outDir\source-program-v2.0.txt" -Encoding UTF8
 }
 ```
 
-生成后再把 `source-program-v1.0.txt` 转成 Word/PDF，设置等宽字体、行号或固定每页 50 行，并导出前后各 30 页。
+生成后再把 `source-program-v2.0.txt` 转成 Word/PDF，设置等宽字体、行号或固定每页 50 行，并导出前后各 30 页。
 
 ## 版本一致性检查
 

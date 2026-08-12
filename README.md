@@ -10,9 +10,9 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 
 - **本地优先**：拼音计算、词库、手写和 OCR 均在本机运行。
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
-- **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有自动化检查。
+- **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **1.0.0**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2.0.0**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -308,7 +308,7 @@ dist/kaixin-package-ocr/
 dist/kaixin-package-*.zip
 ```
 
-## 测试与验证
+## 验证
 
 项目级验证：
 
@@ -322,28 +322,15 @@ Rust：
 ```powershell
 cd pinyin-ime
 cargo check --all-targets
-cargo test --lib
 cargo build --bin srf_ime_engine
 target\debug\srf_ime_engine.exe --install-health-check --probe nihao
 ```
 
-C++/CTest：
-
-```powershell
-cmake -S tsf-tip -B tsf-tip\build-package -A x64
-cmake --build tsf-tip\build-package --config Release
-ctest --test-dir tsf-tip\build-package -C Release --output-on-failure
-```
-
-候选质量和学习评测：
+性能与运行时检查：
 
 ```powershell
 cd pinyin-ime
-cargo run --bin input_eval -- --quality
-cargo run --bin input_eval -- --quality --explain typo_jntian
 cargo run --bin phrase_len_eval -- --limit 500
-cargo run --bin phrase_len_eval -- --only-popular --popular-limit 100
-cargo run --bin learning_replay_eval -- --events ..\tests\user_learning_replay.tsv
 ```
 
 性能检查：
@@ -358,10 +345,9 @@ python build.py --perf-smoke
 
 | 目录 | 内容 |
 | --- | --- |
-| `lexicon/base` | 基础拼音词库、行政区划和常用生活词 |
-| `lexicon/core` | 多音词修正和显式读音 |
+| `lexicon/zh` | 中文主词库：热门基础候选和单字表，候选排序优先级较高 |
+| `lexicon/zh-ext` | 中文扩展词库：分类、地域、纠音等补充词，频率会校准且排序优先级较低 |
 | `lexicon/en` | 可重建的 20,000 词英文词库 |
-| `lexicon/ext` | THUOCL 分类词库及杭州本地扩展 |
 | `data_sources` | 固定上游版本、许可证、哈希和生成说明 |
 
 中文词库格式：
@@ -391,7 +377,6 @@ lexicon/         运行时中文及英文词库
 pinyin-ime/      Rust 引擎、GUI 工具和评测程序
 scripts/         验证、词库生成和安装检查脚本
 skins/           候选窗主题
-tests/           候选质量和学习回放数据
 tools/           本地 OCR 辅助脚本
 tsf-tip/         C++ TSF 前端、候选覆盖层和安装器
 build.py         一键构建、验证、stage、签名和打包
@@ -400,7 +385,6 @@ build.py         一键构建、验证、stage、签名和打包
 ## 相关文档
 
 - [配置项参考](docs/config_reference.md)
-- [候选质量评测](docs/candidate_quality_eval.md)
 - [皮肤主题规范](docs/skin_theme_schema.md)
 - [高 DPI / GDI 检查清单](docs/high_dpi_gdi_checklist.md)
 - [第三方组件声明](THIRD_PARTY_NOTICES.md)

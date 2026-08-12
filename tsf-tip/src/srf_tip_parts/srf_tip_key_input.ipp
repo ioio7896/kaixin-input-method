@@ -117,6 +117,23 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   if (ShouldForceAsciiForCompatibility()) return false;
   if (m_status.disabled) return false;
 
+  // A game owns the physical Shift key (sprint, crouch, Steam overlay, etc.).
+  // Do not consume a lone Shift for the desktop IME tap-toggle while game
+  // compatibility is active; stealing only the key-down edge can also make
+  // exclusive-fullscreen games lose their keyboard/focus state.
+  bool appGameProfile = false;
+  if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
+    appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
+  }
+  const bool gameCompatibilityActive =
+      appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
+      m_builtinGameCompatActive || m_manualGameCompatActive;
+  if (gameCompatibilityActive && IsVkShift(vk)) {
+    m_shiftTapActive = false;
+    m_shiftTapUsedWithOtherKey = false;
+    return false;
+  }
+
   // Shift-tap toggles Chinese/English.
   // 为实现「轻按 Shift 双向切中/英（无论当前模式、无论是否在输入拼音）」：
   // - Shift 本身始终拦截，以便在 KeyUp 判定轻按并执行切换。
@@ -210,6 +227,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
     return S_OK;
   }
   if (ShouldForceAsciiForCompatibility()) {
+    m_compatibilityAsciiCleanupPending = false;
     if (m_candidateUi) m_candidateUi->End();
     if (m_pComposition) {
       CancelCompositionEdit(ec);

@@ -125,6 +125,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_traditionalOutput = false;
   bool m_manualGameCompatActive = false;
   bool m_manualAsciiModeActive = false;
+  // 手动兼容状态只对触发它的前台窗口有效；bypass 是“恢复中文”的临时覆盖。
+  bool m_manualCompatibilityBypass = false;
+  HWND m_manualModeHwnd = nullptr;
+  DWORD m_manualModeProcessId = 0;
+  std::wstring m_manualModeAppName;
   bool m_nextSingleQuoteOpen = true;
   bool m_nextDoubleQuoteOpen = true;
   bool m_cuasWorkaroundEnabled = false;
@@ -134,6 +139,12 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_configuredGameCompatActive = false;
   bool m_builtinGameCompatActive = false;
   bool m_sensitiveInputActive = false;
+  HWND m_compatibilityHwnd = nullptr;
+  DWORD m_compatibilityProcessId = 0;
+  std::wstring m_compatibilityAppName;
+  SrfFullscreenPolicy m_lastCompatibilityPolicy = SrfFullscreenPolicy::Off;
+  bool m_hasLastCompatibilityPolicy = false;
+  bool m_compatibilityAsciiCleanupPending = false;
   HWND m_fullscreenCompatCandidateHwnd = nullptr;
   ULONGLONG m_fullscreenCompatCandidateSince = 0;
   ULONGLONG m_compatLastRawHitTick = 0;
@@ -210,6 +221,8 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void ApplyAppOptionsForFocusedContext(bool showNotification);
   void RequestCancelCompositionOnFocusLoss();
   void HandleFocusLossCancelEditSession(TfEditCookie ec, uint64_t generation, uint64_t cancelSequence);
+  void RequestCompatibilityAsciiCleanup();
+  void HandleCompatibilityAsciiCleanupEditSession(TfEditCookie ec);
   void CancelCompositionEdit(TfEditCookie ec);
 
   void OnCandidateClicked(UINT indexInPage);
@@ -302,6 +315,10 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void ToggleTraditionalOutput();
   void ToggleManualGameCompat();
   void ToggleManualAsciiMode(TfEditCookie ec);
+  void CaptureManualModeOwner();
+  bool ReconcileManualModeOwner();
+  void ClearManualModeOwner();
+  void RestoreImeModeFromCurrentAppOptions();
   bool IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const;
   void LearnCommittedText(const std::wstring& committedText);
   HRESULT CommitCandidateResolved(TfEditCookie ec, ITfContext* requestContext, size_t idx,
@@ -340,7 +357,9 @@ class CSrfTip : public ITfTextInputProcessorEx,
   const wchar_t* EffectiveFocusPolicyName() const;
   void RefreshRuntimeConfig();
   void RefreshCompatibilityState();
+  const std::wstring& CompatibilityAppName() const;
   SrfFullscreenPolicy EffectiveCompatibilityPolicy() const;
+  const wchar_t* EffectiveInputModeSource() const;
   const wchar_t* EffectiveCompatibilityPolicyName() const;
   SrfOverlayBackend EffectiveCandidateOverlayBackend() const;
   bool ShouldUseExternalCandidateOverlay() const;
@@ -397,7 +416,12 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_engineHealthNotifiedThisComposition = false;
   /// 延迟候选刷新：当 try_lock 失败或引擎预热中时，用定时器重试。
   HWND m_deferredTimerHwnd = nullptr;
-  std::vector<std::pair<unsigned long long, std::wstring>> m_pendingLearnNotifications;
+  struct PendingLearnNotification {
+    unsigned long long requestId = 0;
+    std::wstring reading;
+    std::wstring phrase;
+  };
+  std::vector<PendingLearnNotification> m_pendingLearnNotifications;
   bool m_deferredRefreshPending = false;
   std::wstring m_deferredRefreshReading;
   ULONGLONG m_deferredRefreshDueTick = 0;

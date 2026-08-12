@@ -188,7 +188,8 @@ int HorizontalCompactDeltaForDpi(const SrfUIStyle& style, UINT dpi) {
   return ScaleForDpi(logicalDelta, resolvedDpi);
 }
 
-int ResolveHorizontalCardsAreaWidth(const SrfUIStyle& style, const RECT* anchorRect, UINT dpi) {
+int ResolveHorizontalCardsAreaWidth(const SrfUIStyle& style, const RECT* anchorRect, UINT dpi,
+                                    bool reservePageIndicator) {
   const LayoutSpec spec = ResolveLayoutSpec(style);
   const int outerPadX = ScaleForDpi(spec.outerPadX, dpi);
   const int minWidth = ScaleForDpi(spec.minWidth, dpi);
@@ -199,7 +200,15 @@ int ResolveHorizontalCardsAreaWidth(const SrfUIStyle& style, const RECT* anchorR
   const int screenMargin = ScaleForDpi(10, dpi);
   const int maxWidth =
       std::max(ScaleForDpi(260, dpi), static_cast<int>((work.right - work.left) - screenMargin * 2));
-  const int usableMaxWidth = std::max(minWidth, maxWidth);
+  int usableMaxWidth = std::max(minWidth, maxWidth);
+  if (reservePageIndicator) {
+    // Keep a small, stable slot for the trailing page indicator. Without this
+    // reservation the last card can be laid out underneath the badge when a
+    // horizontal candidate list spans multiple pages.
+    usableMaxWidth = std::max(
+        minWidth, usableMaxWidth - ScaleForDpi(kHorizontalPageBadgeMinWidth, dpi) -
+                       ScaleForDpi(kHorizontalPageBadgeGap, dpi));
+  }
   return std::max(ScaleForDpi(100, dpi), usableMaxWidth - hOuterPadX * 2);
 }
 

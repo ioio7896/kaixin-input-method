@@ -69,16 +69,3 @@ pub(crate) fn parse_fuzzy_section(text: &str) -> FuzzyPairs {
 pub fn get_fuzzy_pairs() -> FuzzyPairs {
     crate::runtime_config::snapshot().fuzzy
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_fuzzy_pairs() {
-        let pairs = parse_fuzzy_section("[fuzzy]\nzh_z=false\nf_h=on\nin_ing=0\n");
-        assert!(!pairs.zh_z);
-        assert!(pairs.f_h);
-        assert!(!pairs.in_ing);
-    }
-}

@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT / "外挂词库"
-OUT_DIR = ROOT / "lexicon" / "ext"
+OUT_DIR = ROOT / "lexicon" / "zh"
 DEFAULT_FREQ = 5000
 
 LEXICONS = [

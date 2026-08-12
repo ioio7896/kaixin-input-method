@@ -1,5 +1,18 @@
 use super::*;
 
+#[inline]
+pub(super) fn phrase_length_rerank_prior(n_chars: usize) -> f64 {
+    match n_chars {
+        0 => 0.0,
+        1 => SHORT_PHRASE_SINGLE_RERANK_EXTRA,
+        2 => SHORT_PHRASE_TWO_CHAR_RERANK_BONUS,
+        3 => SHORT_PHRASE_THREE_CHAR_RERANK_BONUS,
+        _ => (MULTI_CHAR_PHRASE_RERANK_BONUS
+            + (n_chars.saturating_sub(4) as f64) * MULTI_CHAR_PHRASE_RERANK_STEP)
+            .min(MULTI_CHAR_PHRASE_RERANK_CAP),
+    }
+}
+
 #[derive(Clone)]
 pub(super) struct WordGraphEdge {
     end: usize,
@@ -14,6 +27,8 @@ pub(super) struct WordGraphState {
     phrase: String,
     score: f64,
     last_char: Option<char>,
+    prev_token: Option<String>,
+    last_token: Option<String>,
     token_count: usize,
     single_token_count: usize,
     last_token_was_single: bool,
@@ -24,6 +39,8 @@ struct CachedWordGraphState {
     syllables: Vec<String>,
     user_clock: u64,
     cache_epoch: u64,
+    initial_prev_token: Option<String>,
+    initial_last_token: Option<String>,
     edges_by_pos: Vec<Vec<WordGraphEdge>>,
     beams: Vec<Vec<WordGraphState>>,
     results: Vec<(String, f64)>,
@@ -56,12 +73,14 @@ impl IncrementalWordGraphCache {
         syllables: &[String],
         user_clock: u64,
         cache_epoch: u64,
+        initial_prev_token: Option<String>,
+        initial_last_token: Option<String>,
         mut populate: Populate,
         mut transition: Transition,
     ) -> Vec<(String, f64)>
     where
         Populate: FnMut(&[String], usize, &mut Vec<WordGraphEdge>),
-        Transition: FnMut(Option<char>, &str) -> f64,
+        Transition: FnMut(Option<char>, Option<&str>, Option<&str>, &str) -> f64,
     {
         if syllables.is_empty() {
             return Vec::new();
@@ -71,6 +90,8 @@ impl IncrementalWordGraphCache {
             state.user_clock == user_clock
                 && state.cache_epoch == cache_epoch
                 && state.syllables == syllables
+                && state.initial_prev_token == initial_prev_token
+                && state.initial_last_token == initial_last_token
         }) {
             let state = self.states.remove(index).expect("word graph state exists");
             let results = state.results.clone();
@@ -85,6 +106,8 @@ impl IncrementalWordGraphCache {
             .filter(|(_, state)| {
                 state.user_clock == user_clock
                     && state.cache_epoch == cache_epoch
+                    && state.initial_prev_token == initial_prev_token
+                    && state.initial_last_token == initial_last_token
                     && state.syllables.len() < syllables.len()
                     && syllables.starts_with(&state.syllables)
             })
@@ -99,6 +122,8 @@ impl IncrementalWordGraphCache {
                 syllables,
                 user_clock,
                 cache_epoch,
+                initial_prev_token,
+                initial_last_token,
                 &mut populate,
                 &mut transition,
             )
@@ -117,23 +142,31 @@ impl IncrementalWordGraphCache {
         syllables: &[String],
         user_clock: u64,
         cache_epoch: u64,
+        initial_prev_token: Option<String>,
+        initial_last_token: Option<String>,
         populate: &mut Populate,
         transition: &mut Transition,
     ) -> CachedWordGraphState
     where
         Populate: FnMut(&[String], usize, &mut Vec<WordGraphEdge>),
-        Transition: FnMut(Option<char>, &str) -> f64,
+        Transition: FnMut(Option<char>, Option<&str>, Option<&str>, &str) -> f64,
     {
         let mut edges_by_pos = vec![Vec::<WordGraphEdge>::new(); syllables.len()];
         for (start, edges) in edges_by_pos.iter_mut().enumerate() {
             populate(syllables, start, edges);
         }
-        let mut beams = empty_word_graph_beams(syllables.len());
+        let mut beams = empty_word_graph_beams(
+            syllables.len(),
+            initial_prev_token.clone(),
+            initial_last_token.clone(),
+        );
         expand_word_graph_range(&edges_by_pos, &mut beams, 0, 0, transition);
         CachedWordGraphState {
             syllables: syllables.to_vec(),
             user_clock,
             cache_epoch,
+            initial_prev_token,
+            initial_last_token,
             edges_by_pos,
             beams,
             results: Vec::new(),
@@ -149,7 +182,7 @@ impl IncrementalWordGraphCache {
     ) -> CachedWordGraphState
     where
         Populate: FnMut(&[String], usize, &mut Vec<WordGraphEdge>),
-        Transition: FnMut(Option<char>, &str) -> f64,
+        Transition: FnMut(Option<char>, Option<&str>, Option<&str>, &str) -> f64,
     {
         let prefix_len = state.syllables.len();
         state.edges_by_pos.resize_with(syllables.len(), Vec::new);
@@ -179,12 +212,18 @@ impl IncrementalWordGraphCache {
     }
 }
 
-fn empty_word_graph_beams(syllable_count: usize) -> Vec<Vec<WordGraphState>> {
+fn empty_word_graph_beams(
+    syllable_count: usize,
+    initial_prev_token: Option<String>,
+    initial_last_token: Option<String>,
+) -> Vec<Vec<WordGraphState>> {
     let mut beams = vec![Vec::<WordGraphState>::new(); syllable_count + 1];
     beams[0].push(WordGraphState {
         phrase: String::new(),
         score: 0.0,
         last_char: None,
+        prev_token: initial_prev_token,
+        last_token: initial_last_token,
         token_count: 0,
         single_token_count: 0,
         last_token_was_single: false,
@@ -197,7 +236,7 @@ fn expand_word_graph_range(
     beams: &mut [Vec<WordGraphState>],
     start_at: usize,
     old_end: usize,
-    transition: &mut impl FnMut(Option<char>, &str) -> f64,
+    transition: &mut impl FnMut(Option<char>, Option<&str>, Option<&str>, &str) -> f64,
 ) {
     for start in start_at..edges_by_pos.len() {
         let edge_count = edges_by_pos[start].len();
@@ -225,13 +264,20 @@ fn expand_word_graph_range(
                     phrase,
                     score: state.score
                         + edge.base_score
-                        + transition(state.last_char, &edge.phrase)
+                        + transition(
+                            state.last_char,
+                            state.prev_token.as_deref(),
+                            state.last_token.as_deref(),
+                            &edge.phrase,
+                        )
                         - if consecutive_single {
                             WORD_GRAPH_CONSECUTIVE_SINGLE_PENALTY
                         } else {
                             0.0
                         },
                     last_char: Some(edge.last_char),
+                    prev_token: state.last_token.clone(),
+                    last_token: Some(edge.phrase.clone()),
                     token_count: state.token_count + 1,
                     single_token_count: state.single_token_count + usize::from(edge.single_char),
                     last_token_was_single: edge.single_char,
@@ -280,6 +326,14 @@ impl PinyinEngine {
     pub(super) fn rerank_context_key(&self) -> Vec<String> {
         self.user_lexicon
             .preceding_commits_for_context()
+            .into_iter()
+            .map(str::to_string)
+            .collect()
+    }
+
+    pub(super) fn rerank_word_context_key(&self) -> Vec<String> {
+        self.user_lexicon
+            .preceding_word_tokens_for_context()
             .into_iter()
             .map(str::to_string)
             .collect()
@@ -350,15 +404,7 @@ impl PinyinEngine {
         let phrase_ch = self.rerank_sentence(phrase, now);
         let mut score = prefs.w_single_lm * single + prefs.w_phrase_path * phrase_ch;
         let n_chars = phrase.chars().filter(|c| !c.is_whitespace()).count();
-        score += match n_chars {
-            0 => 0.0,
-            1 => SHORT_PHRASE_SINGLE_RERANK_EXTRA,
-            2 => SHORT_PHRASE_TWO_CHAR_RERANK_BONUS,
-            3 => SHORT_PHRASE_THREE_CHAR_RERANK_BONUS,
-            _ => (MULTI_CHAR_PHRASE_RERANK_BONUS
-                + (n_chars.saturating_sub(4) as f64) * MULTI_CHAR_PHRASE_RERANK_STEP)
-                .min(MULTI_CHAR_PHRASE_RERANK_CAP),
-        };
+        score += phrase_length_rerank_prior(n_chars);
         score
     }
 
@@ -473,10 +519,7 @@ impl PinyinEngine {
     }
 
     pub(super) fn word_level_transition_bonus(&self, phrase: &str, now: u64) -> f64 {
-        if phrase.chars().filter(|c| !c.is_whitespace()).count() <= 1 {
-            return 0.0;
-        }
-        let context = self.rerank_context_key();
+        let context = self.rerank_word_context_key();
         let cache_key = rerank_score_cache_key(
             RerankScoreKind::WordTransition,
             phrase,
@@ -488,18 +531,19 @@ impl PinyinEngine {
             return score;
         }
         let tokens = self.best_phrase_tokens(phrase, now);
-        if tokens.len() <= 1 {
+        if tokens.is_empty() || (tokens.len() == 1 && context.is_empty()) {
             return 0.0;
         }
 
         let mut score = 0.0_f64;
-        if let Some(prev) = context.first() {
-            score += self.transition_pair_score(prev, &tokens[0], now);
-        }
-
-        for (idx, pair) in tokens.windows(2).enumerate() {
-            score += self.transition_pair_score(&pair[0], &pair[1], now)
-                * CONTEXT_TOKEN_DECAY.powi(idx as i32);
+        let mut prev1 = context.first().cloned();
+        let mut prev2 = context.get(1).cloned();
+        for (idx, token) in tokens.into_iter().enumerate() {
+            score +=
+                self.word_ngram_transition_score(prev2.as_deref(), prev1.as_deref(), &token, now)
+                    * CONTEXT_TOKEN_DECAY.powi(idx as i32);
+            prev2 = prev1;
+            prev1 = Some(token);
         }
 
         let score = score.clamp(0.0, WORD_TRANSITION_CAP);
@@ -552,31 +596,60 @@ impl PinyinEngine {
         SHORT_ABBREV_EXACT_LENGTH_RERANK_BONUS
     }
 
-    pub(super) fn transition_pair_score(&self, prev: &str, next: &str, now: u64) -> f64 {
-        if prev.is_empty() || next.is_empty() || prev == next {
+    pub(super) fn word_ngram_transition_score(
+        &self,
+        prev2: Option<&str>,
+        prev1: Option<&str>,
+        next: &str,
+        now: u64,
+    ) -> f64 {
+        if next.is_empty() {
             return 0.0;
         }
-        let pair = self.user_lexicon.context_signal(prev, next);
-        if pair.freq == 0 {
+        let Some(prev1) = prev1.filter(|prev| !prev.is_empty() && *prev != next) else {
             return 0.0;
-        }
-        let prev_stats = self.user_lexicon.phrase_signal(prev);
-        let next_stats = self.user_lexicon.phrase_signal(next);
-        let (outgoing_total, outgoing_kinds) = self.user_lexicon.context_outgoing_stats(prev);
+        };
 
-        let cond = (pair.freq as f64 + 1.0) / (outgoing_total as f64 + outgoing_kinds as f64 + 1.0);
-        let marginal =
-            (next_stats.freq as f64 + 1.0) / (self.user_lexicon.current_clock() as f64 + 2.0);
-        let pmi = (cond / marginal.max(1e-9)).ln().max(0.0);
-        let recency = signal_bonus(
+        let next_stats = self.user_lexicon.phrase_signal(next);
+        let vocabulary = self.user_lexicon.phrase_vocabulary_size().max(1) as f64;
+        let unigram_total = self
+            .user_lexicon
+            .current_clock()
+            .max(next_stats.freq)
+            .saturating_add(vocabulary as u64)
+            .max(1) as f64;
+        let unigram = ((next_stats.freq as f64 + 1.0) / unigram_total).clamp(1e-9, 0.5);
+
+        let pair = self.user_lexicon.context_signal(prev1, next);
+        let (bigram_total, _) = self.user_lexicon.context_outgoing_stats(prev1);
+        let mut probability = (pair.freq as f64 + WORD_NGRAM_BIGRAM_BACKOFF_STRENGTH * unigram)
+            / (bigram_total as f64 + WORD_NGRAM_BIGRAM_BACKOFF_STRENGTH);
+        let mut evidence = pair.freq as f64 / (pair.freq as f64 + 2.0);
+        let mut recency = signal_bonus(
             pair,
             now,
-            WORD_TRANSITION_SCALE * 0.45,
-            WORD_TRANSITION_RECENCY_SCALE,
+            WORD_NGRAM_RECENCY_SCALE,
+            WORD_TRANSITION_RECENCY_SCALE * 0.25,
         );
-        let prev_support = (prev_stats.freq as f64 + 1.0).ln();
 
-        pmi * WORD_TRANSITION_SCALE + recency + prev_support * 0.15
+        if let Some(prev2) = prev2.filter(|prev| !prev.is_empty() && *prev != next) {
+            let trigram = self.user_lexicon.context_trigram_signal(prev2, prev1, next);
+            let (trigram_total, _) = self
+                .user_lexicon
+                .context_trigram_outgoing_stats(prev2, prev1);
+            probability = (trigram.freq as f64 + WORD_NGRAM_TRIGRAM_BACKOFF_STRENGTH * probability)
+                / (trigram_total as f64 + WORD_NGRAM_TRIGRAM_BACKOFF_STRENGTH);
+            evidence = evidence.max(trigram.freq as f64 / (trigram.freq as f64 + 1.5));
+            recency += signal_bonus(
+                trigram,
+                now,
+                WORD_NGRAM_RECENCY_SCALE * 1.25,
+                WORD_TRANSITION_RECENCY_SCALE * 0.35,
+            );
+        }
+
+        let log_lift = (probability.max(1e-9) / unigram).ln().max(0.0);
+        (log_lift * WORD_NGRAM_LOG_LIFT_SCALE * evidence + recency).clamp(0.0, WORD_TRANSITION_CAP)
     }
 
     pub(super) fn best_phrase_tokens(&self, phrase: &str, now: u64) -> Vec<String> {
@@ -631,12 +704,17 @@ impl PinyinEngine {
     }
 
     pub(super) fn decode_word_graph(&self, syls: &[String], now: u64) -> Vec<(String, f64)> {
+        let (initial_prev_token, initial_last_token) = self.word_graph_initial_context();
         self.incremental_word_graph_cache.borrow_mut().decode(
             syls,
             now,
             self.cache_epoch,
+            initial_prev_token,
+            initial_last_token,
             |syllables, start, out| self.populate_word_graph_edges(syllables, start, now, out),
-            |previous, phrase| self.phrase_transition_lm_score(previous, phrase),
+            |previous_char, prev2, prev1, phrase| {
+                self.word_graph_transition_score(previous_char, prev2, prev1, phrase, now)
+            },
         )
     }
 
@@ -662,15 +740,8 @@ impl PinyinEngine {
             return Vec::new();
         }
 
-        let mut beams = vec![Vec::<WordGraphState>::new(); syls.len() + 1];
-        beams[0].push(WordGraphState {
-            phrase: String::new(),
-            score: 0.0,
-            last_char: None,
-            token_count: 0,
-            single_token_count: 0,
-            last_token_was_single: false,
-        });
+        let (initial_prev_token, initial_last_token) = self.word_graph_initial_context();
+        let mut beams = empty_word_graph_beams(syls.len(), initial_prev_token, initial_last_token);
 
         for start in 0..syls.len() {
             if should_stop() {
@@ -692,13 +763,21 @@ impl PinyinEngine {
                         phrase,
                         score: state.score
                             + edge.base_score
-                            + self.phrase_transition_lm_score(state.last_char, &edge.phrase)
+                            + self.word_graph_transition_score(
+                                state.last_char,
+                                state.prev_token.as_deref(),
+                                state.last_token.as_deref(),
+                                &edge.phrase,
+                                now,
+                            )
                             - if consecutive_single {
                                 WORD_GRAPH_CONSECUTIVE_SINGLE_PENALTY
                             } else {
                                 0.0
                             },
                         last_char: Some(edge.last_char),
+                        prev_token: state.last_token.clone(),
+                        last_token: Some(edge.phrase.clone()),
                         token_count: state.token_count + 1,
                         single_token_count: state.single_token_count
                             + usize::from(edge.single_char),
@@ -877,6 +956,23 @@ impl PinyinEngine {
         score
     }
 
+    pub(super) fn word_graph_initial_context(&self) -> (Option<String>, Option<String>) {
+        let context = self.rerank_word_context_key();
+        (context.get(1).cloned(), context.first().cloned())
+    }
+
+    pub(super) fn word_graph_transition_score(
+        &self,
+        prev_last: Option<char>,
+        prev2: Option<&str>,
+        prev1: Option<&str>,
+        phrase: &str,
+        now: u64,
+    ) -> f64 {
+        self.phrase_transition_lm_score(prev_last, phrase)
+            + self.word_ngram_transition_score(prev2, prev1, phrase, now) * WORD_GRAPH_NGRAM_SCALE
+    }
+
     pub(super) fn stability_bonus_for_candidate(&self, current_key: &str, phrase: &str) -> f64 {
         stability_bonus_from_state(self.last_lookup.as_ref(), current_key, phrase)
     }
@@ -1034,6 +1130,10 @@ pub(super) fn truncate_top_k_word_states(items: &mut Vec<WordGraphState>, k: usi
 }
 
 pub(super) fn sort_ranked_candidates_top_k(items: &mut Vec<RankedCandidate>, k: usize) {
+    if k == 0 {
+        items.clear();
+        return;
+    }
     if items.len() <= 1 {
         return;
     }
@@ -1043,10 +1143,6 @@ pub(super) fn sort_ranked_candidates_top_k(items: &mut Vec<RankedCandidate>, k: 
             .unwrap_or(std::cmp::Ordering::Equal)
             .then_with(|| a.phrase.cmp(&b.phrase))
     };
-    if k == 0 {
-        items.clear();
-        return;
-    }
     if items.len() <= k {
         items.sort_by(compare);
         return;
@@ -1055,6 +1151,60 @@ pub(super) fn sort_ranked_candidates_top_k(items: &mut Vec<RankedCandidate>, k: 
     items.select_nth_unstable_by(nth, compare);
     items.truncate(k);
     items.sort_by(compare);
+}
+
+pub(super) fn sort_ranked_candidates_top_k_preserving(
+    items: &mut Vec<RankedCandidate>,
+    k: usize,
+    protected_phrases: &[String],
+) {
+    if protected_phrases.is_empty() {
+        sort_ranked_candidates_top_k(items, k);
+        return;
+    }
+    if k == 0 {
+        items.clear();
+        return;
+    }
+
+    let protected_set = protected_phrases
+        .iter()
+        .map(String::as_str)
+        .collect::<HashSet<_>>();
+    let mut protected = Vec::with_capacity(protected_phrases.len().min(k));
+    let mut ordinary = Vec::with_capacity(items.len());
+    for item in std::mem::take(items) {
+        if protected_set.contains(item.phrase.as_str()) {
+            protected.push(item);
+        } else {
+            ordinary.push(item);
+        }
+    }
+
+    if protected.len() > k {
+        let desired_order = protected_phrases
+            .iter()
+            .enumerate()
+            .map(|(index, phrase)| (phrase.as_str(), index))
+            .collect::<HashMap<_, _>>();
+        protected.sort_by_key(|item| {
+            desired_order
+                .get(item.phrase.as_str())
+                .copied()
+                .unwrap_or(usize::MAX)
+        });
+        protected.truncate(k);
+        ordinary.clear();
+    } else {
+        sort_ranked_candidates_top_k(&mut ordinary, k - protected.len());
+    }
+
+    items.extend(ordinary);
+    items.extend(protected);
+    // Protection only controls top-k membership. Every retained candidate is
+    // still ordered by the same score comparator as the non-partial path.
+    let total = items.len();
+    sort_ranked_candidates_top_k(items, total);
 }
 
 pub(super) fn prune_merged_candidates_for_rerank<'a>(
@@ -1511,7 +1661,6 @@ fn merge_system_candidate_meta(
 
 pub(super) fn merge_into_candidate(current: &mut MergedCandidate, incoming: MergedCandidate) {
     const EPSILON: f64 = 1e-9;
-    const META_STICKY_SCORE_MARGIN: f64 = 96.0;
 
     let current_priority = merged_meta_priority(&current.meta);
     let incoming_priority = merged_meta_priority(&incoming.meta);

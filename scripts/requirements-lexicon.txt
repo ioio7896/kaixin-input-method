@@ -1,3 +1,4 @@
 wordfreq==3.1.1
+jieba==0.42.1
 pypinyin==0.55.0
 opencc-python-reimplemented==0.1.7

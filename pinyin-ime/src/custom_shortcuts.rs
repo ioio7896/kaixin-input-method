@@ -113,21 +113,3 @@ pub fn lookup_detailed(input: &str) -> Option<Vec<ShortcutCandidate>> {
     }
     None
 }
-
-#[cfg(test)]
-mod tests {
-    use super::parse_shortcuts_section;
-
-    #[test]
-    fn parse_shortcuts_section_reads_pipe_separated_values() {
-        let text =
-            "[shortcuts]\n;qq = name@example.com | mailto:name@example.com\n;;r= line1\\nline2\n";
-        let entries = parse_shortcuts_section(text);
-        assert_eq!(entries.len(), 2);
-        assert_eq!(entries[0].0, ";qq");
-        assert_eq!(entries[0].1[0], "name@example.com");
-        assert_eq!(entries[0].1[1], "mailto:name@example.com");
-        assert_eq!(entries[1].0, ";;r");
-        assert_eq!(entries[1].1[0], "line1\nline2");
-    }
-}

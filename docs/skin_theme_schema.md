@@ -8,7 +8,7 @@ directory and the TSF candidate window loads the selected theme at runtime.
 | Key | Type | Notes |
 | --- | --- | --- |
 | `name` | string | Display name for humans. |
-| `material` | string | `auto`, `solid`, `gradient`, or `mist`. |
+| `material` | string | `auto`, `solid`, `gradient`, or `mist` (`mist` is a soft gradient treatment, not backdrop blur). |
 | `layout` | string | `classic`, `compact`, or `card`. Used only when the user has not explicitly chosen separate vertical/horizontal layouts. |
 | `font_size` | integer | 14..28. Ignored when the user has saved a candidate font size in settings. |
 | `font_file` | string | Font face/path. Ignored when the user has saved a candidate font in settings. |
@@ -68,8 +68,24 @@ display more closely.
 | `divider_opacity` | number | 0.0..1.0 |
 | `shadow_enabled` | boolean | `true` or `false` |
 | `shadow_opacity` | number | Keep subtle for daily-use skins. |
-| `shadow_size` | integer | Logical pixels. |
+| `shadow_size` | integer | `0..24` logical pixels. |
 | `font_weight` | integer | 300..700 |
 | `selected_font_weight` | integer | 400..800 |
 | `label_font_weight` | integer | 400..800 |
 | `chip_font_weight` | integer | 350..700 |
+
+## Motion
+
+Candidate motion is disabled when the user enables “Reduce motion”, Windows
+client-area animations are disabled, high-contrast mode is active, or the
+candidate window is running as a game overlay. Durations are logical
+milliseconds and are clamped to `0..240`; `0` disables that transition.
+
+| Key | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `animations_enabled` | boolean | `true` | Disable all motion for this skin. |
+| `show_animation_ms` | integer | `90` | Initial fade and 2px settle. |
+| `selection_animation_ms` | integer | `80` | Selection color and indicator movement. |
+| `hover_animation_ms` | integer | `70` | Mouse hover color transition. |
+| `press_animation_ms` | integer | `36` | Mouse press/release transition. |
+| `page_animation_ms` | integer | `110` | Directional 6px page-entry transition. |

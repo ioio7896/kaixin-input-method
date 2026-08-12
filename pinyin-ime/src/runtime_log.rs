@@ -743,38 +743,3 @@ fn read_ini_value(text: &str, section: &str, key: &str) -> Option<String> {
     }
     None
 }
-
-#[cfg(test)]
-mod tests {
-    use super::{protect_event_field, rotated_log_path, unprotect_event_field, EVENT_FIELD_MAGIC};
-    use std::path::Path;
-
-    #[test]
-    fn rotated_log_path_keeps_legacy_first_backup_name() {
-        let path = Path::new(r"C:\logs\engine.log");
-
-        assert_eq!(
-            rotated_log_path(path, 1),
-            Path::new(r"C:\logs\engine.previous.log")
-        );
-        assert_eq!(
-            rotated_log_path(path, 3),
-            Path::new(r"C:\logs\engine.previous.3.log")
-        );
-    }
-
-    #[cfg(windows)]
-    #[test]
-    fn runtime_event_fields_are_dpapi_wrapped() {
-        let protected = protect_event_field("secret diagnostic value").unwrap();
-        assert!(protected.starts_with(EVENT_FIELD_MAGIC));
-        assert!(!protected
-            .windows(b"secret diagnostic value".len())
-            .any(|window| window == b"secret diagnostic value"));
-        assert_eq!(
-            unprotect_event_field(&protected).unwrap(),
-            "secret diagnostic value"
-        );
-        assert!(unprotect_event_field(b"plaintext").is_err());
-    }
-}

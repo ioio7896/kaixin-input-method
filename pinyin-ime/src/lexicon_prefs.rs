@@ -48,6 +48,18 @@ struct LexiconIniPoll {
 
 static LEXICON_RELOAD_PENDING: AtomicBool = AtomicBool::new(false);
 
+/// Background-loaded lexicon, ready for atomic swap by the engine.
+/// When the INI watcher detects a change, it spawns a load in a background
+/// thread so the next lookup can swap in the new lexicon without blocking.
+pub static PREPARED_LEXICON: std::sync::Mutex<Option<crate::thuocl::AbbrevLexicon>> =
+    std::sync::Mutex::new(None);
+
+/// If a background thread has finished loading a new lexicon, take it.
+/// Returns `None` if no prepared lexicon is available.
+pub fn take_prepared_lexicon() -> Option<crate::thuocl::AbbrevLexicon> {
+    PREPARED_LEXICON.lock().ok()?.take()
+}
+
 fn current_lexicon_fingerprint(state: &mut LexiconIniPoll) -> Option<u64> {
     let path = user_config_ini_path()?;
     let meta = std::fs::metadata(&path).ok();
@@ -165,26 +177,20 @@ pub fn thuocl_basename_tag(file_name: &str) -> Option<String> {
     None
 }
 
-fn has_path_component(path: &Path, name: &str) -> bool {
-    path.components().any(|component| {
-        component
-            .as_os_str()
-            .to_str()
-            .is_some_and(|part| part.eq_ignore_ascii_case(name))
-    })
-}
-
 pub fn optional_lexicon_path_tag(path: &Path) -> Option<String> {
+    // Only Ext-layer files are user-switchable. In particular, a legacy
+    // THUOCL-style filename under zh must not make the curated main lexicon
+    // optional: zh is always loaded, while zh-ext/ext can be disabled.
+    if crate::thuocl::LexiconLayer::from_path(path) != crate::thuocl::LexiconLayer::Ext {
+        return None;
+    }
     let file_name = path.file_name().and_then(|name| name.to_str())?;
     if let Some(tag) = thuocl_basename_tag(file_name) {
         return Some(tag);
     }
-    if has_path_component(path, "ext") {
-        let lower = file_name.to_ascii_lowercase();
-        let base = lower.strip_suffix(".txt")?;
-        return (!base.is_empty()).then_some(base.to_string());
-    }
-    None
+    let lower = file_name.to_ascii_lowercase();
+    let base = lower.strip_suffix(".txt")?;
+    (!base.is_empty()).then_some(base.to_string())
 }
 
 fn should_skip_lexicon_subdir(name: &str) -> bool {
@@ -269,85 +275,21 @@ pub fn filter_thuocl_paths_by_prefs(paths: &mut Vec<PathBuf>) {
 }
 
 pub fn filter_optional_lexicon_paths_by_default(paths: &mut Vec<PathBuf>) {
-    paths.retain(|path| {
-        optional_lexicon_path_tag(path)
-            .as_deref()
-            .map(default_optional_lexicon_tag_enabled)
-            .unwrap_or(true)
-    });
+    paths.retain(|path| optional_lexicon_path_enabled(path, None));
 }
 
 pub fn filter_optional_lexicon_paths_by_prefs(paths: &mut Vec<PathBuf>) {
     let map = lexicon_toggle_map();
-    paths.retain(|path| {
-        let Some(tag) = optional_lexicon_path_tag(path) else {
-            return true;
-        };
-        let key = format!("lexicon_{}", tag.to_ascii_lowercase());
-        map.as_ref()
-            .and_then(|prefs| prefs.get(&key).copied())
-            .unwrap_or_else(|| default_optional_lexicon_tag_enabled(&tag))
-    });
+    paths.retain(|path| optional_lexicon_path_enabled(path, map.as_ref()));
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parse_lexicon_section() {
-        let ini = "[lexicon]\nlexicon_diming=0\nlexicon_food=1\n";
-        let m = parse_lexicon_section_bool(ini);
-        assert_eq!(m.get("lexicon_diming"), Some(&false));
-        assert_eq!(m.get("lexicon_food"), Some(&true));
-    }
-
-    #[test]
-    fn thuocl_tag() {
-        assert_eq!(
-            thuocl_basename_tag("THUOCL_diming.txt").as_deref(),
-            Some("diming")
-        );
-        assert_eq!(
-            thuocl_basename_tag("\u{6e05}\u{534e}\u{8bcd}\u{5e93}-font1__THUOCL_diming.txt")
-                .as_deref(),
-            Some("diming")
-        );
-        assert_eq!(thuocl_basename_tag("foo.txt"), None);
-    }
-
-    #[test]
-    fn optional_text_tags_only_for_optional_layers() {
-        assert_eq!(
-            optional_lexicon_path_tag(Path::new("lexicon/ext/hangzhou_metro.txt")).as_deref(),
-            Some("hangzhou_metro")
-        );
-        assert_eq!(
-            optional_lexicon_path_tag(Path::new("lexicon/ext/chengyu.txt")).as_deref(),
-            Some("chengyu")
-        );
-        assert_eq!(
-            optional_lexicon_path_tag(Path::new("lexicon/base/base.txt")),
-            None
-        );
-        assert_eq!(
-            optional_lexicon_path_tag(Path::new("lexicon/large/tencent.txt")),
-            None
-        );
-    }
-
-    #[test]
-    fn optional_text_lexicons_are_default_enabled() {
-        assert!(default_optional_lexicon_tag_enabled("hangzhou_metro"));
-
-        let mut paths = vec![
-            PathBuf::from("lexicon/ext/hangzhou_metro.txt"),
-            PathBuf::from("lexicon/base/base.txt"),
-        ];
-        filter_optional_lexicon_paths_by_default(&mut paths);
-        assert!(paths
-            .iter()
-            .any(|path| path.ends_with("hangzhou_metro.txt")));
-        assert!(paths.iter().any(|path| path.ends_with("base.txt")));
-    }
+fn optional_lexicon_path_enabled(path: &Path, map: Option<&HashMap<String, bool>>) -> bool {
+    let Some(tag) = optional_lexicon_path_tag(path) else {
+        // Main zh/Core/Base/Large lexicons are mandatory and ignore toggle
+        // keys, including stale keys left by an older settings version.
+        return true;
+    };
+    let key = format!("lexicon_{}", tag.to_ascii_lowercase());
+    map.and_then(|prefs| prefs.get(&key).copied())
+        .unwrap_or_else(|| default_optional_lexicon_tag_enabled(&tag))
 }

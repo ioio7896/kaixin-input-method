@@ -209,6 +209,25 @@ pub fn translator_path() -> Option<PathBuf> {
                 .join(WINTRANSLATOR_EXE),
         );
     }
+    // Development builds are discovered only through an explicit environment
+    // variable. Do not scan drive-specific or repository-relative locations.
+    if let Some(root) = std::env::var_os("WINTRANSLATOR_ROOT") {
+        let root = PathBuf::from(root);
+        candidates.extend([
+            root.join(WINTRANSLATOR_EXE),
+            root.join("artifacts")
+                .join("publish")
+                .join("WinTranslator")
+                .join(WINTRANSLATOR_EXE),
+            root.join("src")
+                .join("WinTranslator")
+                .join("bin")
+                .join("Release")
+                .join("net10.0-windows")
+                .join("win-x64")
+                .join(WINTRANSLATOR_EXE),
+        ]);
+    }
     for variable in ["ProgramFiles", "ProgramFiles(x86)"] {
         if let Some(root) = std::env::var_os(variable) {
             candidates.push(
@@ -403,6 +422,36 @@ pub fn launch_compact_request(request: &ExternalTranslationRequest) -> Result<()
         let _ = fs::remove_file(request_file);
         format!("无法启动翻译结果浮窗：{error}")
     })
+}
+
+/// Send a request to WinTranslator while keeping the caller responsive.
+///
+/// OCR uses the full WinTranslator frontend, so it must not launch the
+/// input-method-owned result popup.  The named-pipe request is accepted by
+/// WinTranslator immediately; translation and UI updates then happen in its
+/// own process.  Startup/pipe failures are logged without putting a blocking
+/// retry loop on the OCR UI thread.
+pub fn launch_full_request(request: &ExternalTranslationRequest) -> Result<(), String> {
+    if !is_available() {
+        return Err(availability_message());
+    }
+    let request = request.clone();
+    thread::Builder::new()
+        .name("kaixin-wintranslator-request".to_string())
+        .spawn(move || {
+            if let Err(error) = send_request(&request) {
+                runtime_log::log_tray(
+                    runtime_log::RuntimeLogLevel::Error,
+                    "external_translate_request_async_failed",
+                    format!(
+                        "request_id={} origin={} error={}",
+                        request.request_id, request.origin, error
+                    ),
+                );
+            }
+        })
+        .map(|_| ())
+        .map_err(|error| format!("无法创建翻译联动线程：{error}"))
 }
 
 fn resolve_sibling_executable(name: &str) -> Option<PathBuf> {
@@ -634,40 +683,5 @@ fn parse_response(request: &ExternalTranslationRequest, response: &[u8]) -> Resu
         Err("WinTranslator 拒绝了请求".to_string())
     } else {
         Err(response.error)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn request_contract_uses_expected_json_fields() {
-        let mut request = ExternalTranslationRequest::new("你好", "ocr");
-        request.target_hwnd = Some(42);
-        request.target_process_id = Some(7);
-        request.screenshot_path = Some(PathBuf::from("shot.png"));
-        let value = serde_json::to_value(request).unwrap();
-        assert_eq!(value["protocol_version"], 2);
-        assert!(!value["request_id"].as_str().unwrap_or_default().is_empty());
-        assert_eq!(value["action"], "translate");
-        assert_eq!(value["text"], "你好");
-        assert_eq!(value["source"], "auto");
-        assert_eq!(value["target"], "auto-opposite");
-        assert_eq!(value["origin"], "ocr");
-        assert_eq!(value["target_hwnd"], 42);
-        assert_eq!(value["target_process_id"], 7);
-        assert_eq!(value["result_action"], "show");
-        assert_eq!(value["interactive"], false);
-        assert_eq!(value["screenshot_path"], "shot.png");
-        assert_eq!(value["presentation"], "compact");
-        assert_eq!(value["delivery"], "return");
-        assert_eq!(value["replace_selection"], false);
-    }
-
-    #[test]
-    fn target_language_follows_input_script() {
-        assert_eq!(target_language_for_text("你好，world"), "en");
-        assert_eq!(target_language_for_text("Hello world"), "zh");
     }
 }

@@ -81,6 +81,7 @@ struct SrfStatus {
   bool fuzzyPinyin = false;
   bool doublePinyin = false;
   std::wstring appName;
+  std::wstring modeSource;
   std::wstring notification;
 
   void Reset() {
@@ -92,6 +93,7 @@ struct SrfStatus {
     fuzzyPinyin = false;
     doublePinyin = false;
     appName.clear();
+    modeSource.clear();
     notification.clear();
   }
 };
@@ -143,6 +145,7 @@ struct SrfUIStyle {
   UINT candidateAbbreviateLength = 64;
   UINT candidateFontSize = 16;
   UINT candidateOpacity = 100;
+  bool candidateReduceMotion = false;
   std::wstring candidateFontFile = L"Microsoft YaHei";
   int candidateFontWeight = 500;          // Medium
   int candidateSelectedFontWeight = 600;  // Semibold
@@ -210,6 +213,12 @@ struct SrfUIStyle {
   float skinShadowOpacity = 0.0f;
   int skinShadowSize = 0;
   bool skinShadowEnabled = true;
+  bool skinAnimationsEnabled = true;
+  int skinShowAnimationMs = -1;
+  int skinSelectionAnimationMs = -1;
+  int skinHoverAnimationMs = -1;
+  int skinPressAnimationMs = -1;
+  int skinPageAnimationMs = -1;
   int skinFontWeight = -1;
   int skinSelectedFontWeight = -1;
   int skinLabelFontWeight = -1;

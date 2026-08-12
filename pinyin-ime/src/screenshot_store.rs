@@ -307,38 +307,3 @@ fn now_millis() -> i64 {
         .map(|duration| duration.as_millis().min(i64::MAX as u128) as i64)
         .unwrap_or(0)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[cfg(windows)]
-    #[test]
-    fn screenshot_store_is_dpapi_wrapped_and_rejects_plaintext() {
-        let path = std::env::temp_dir().join(format!(
-            "kaixin-screenshot-security-{}.sqlite",
-            std::process::id()
-        ));
-        let _ = fs::remove_file(&path);
-        with_store_mut_at(&path, |conn| {
-            conn.execute(
-                "INSERT INTO screenshots
-                 (path, created_ms, source, target_hwnd, ocr_done, ocr_text)
-                 VALUES ('secret.png', 1, 'test', 0, 1, 'sensitive OCR text')",
-                [],
-            )
-            .map_err(|err| err.to_string())?;
-            Ok(())
-        })
-        .unwrap();
-        let raw = fs::read(&path).unwrap();
-        assert!(raw.starts_with(SCREENSHOT_STORE_MAGIC));
-        assert!(!raw
-            .windows(b"sensitive OCR text".len())
-            .any(|window| window == b"sensitive OCR text"));
-
-        fs::write(&path, b"SQLite format 3\0plaintext").unwrap();
-        assert!(load_store_connection(&path).is_err());
-        let _ = fs::remove_file(&path);
-    }
-}

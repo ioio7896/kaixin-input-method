@@ -1,0 +1,80 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭帮菜、小吃、特产和老字号
+# Curated for local daily input; complete names rank above ambiguous short place names.
+# 格式：词条<TAB>拼音<TAB>词频。；第三列统一为 1-10000 万分制排序分数。
+杭帮菜	hang bang cai	4000
+西湖醋鱼	xi hu cu yu	4000
+东坡肉	dong po rou	4000
+龙井虾仁	long jing xia ren	4000
+宋嫂鱼羹	song sao yu geng	4000
+叫花鸡	jiao hua ji	4000
+干炸响铃	gan zha xiang ling	4000
+油焖春笋	you men chun sun	4000
+片儿川	pian er chuan	4000
+虾爆鳝面	xia bao shan mian	4000
+葱包桧	cong bao hui	4000
+定胜糕	ding sheng gao	4000
+猫耳朵	mao er duo	4000
+西湖龙井	xi hu long jing	4000
+径山茶	jing shan cha	4000
+临安山核桃	lin an shan he tao	4000
+萧山萝卜干	xiao shan luo bo gan	4000
+塘栖枇杷	tang qi pi pa	4000
+千岛湖鱼头	qian dao hu yu tou	4000
+富阳豆腐皮	fu yang dou fu pi	4000
+楼外楼	lou wai lou	4000
+知味观	zhi wei guan	4000
+奎元馆	kui yuan guan	4000
+新丰小吃	xin feng xiao chi	4000
+胡庆余堂	hu qing yu tang	4000
+张小泉	zhang xiao quan	4000
+王星记	wang xing ji	4000
+都锦生	dou jin sheng	4000
+西湖绸伞	xi hu chou san	4000
+富阳竹纸	fu yang zhu zhi	4000
+杭州菜	hang zhou cai	4000
+糟烩鞭笋	zao hui bian sun	4000
+八宝豆腐	ba bao dou fu	4000
+蟹酿橙	xie niang cheng	4000
+栗子炒子鸡	li zi chao zi ji	4000
+杭州酱鸭	hang zhou jiang ya	4000
+拌川	ban chuan	4000
+葱包烩	cong bao hui	4000
+吴山酥油饼	wu shan su you bing	4000
+麻球王	ma qiu wang	4000
+南方迷宗大包	nan fang mi zong da bao	4000
+荷花酥	he hua su	4000
+桂花糖藕	gui hua tang ou	4000
+条头糕	tiao tou gao	4000
+青团	qing tuan	4000
+龙井茶酥	long jing cha su	4000
+狮峰龙井	shi feng long jing	4000
+雪水云绿	xue shui yun lv	4000
+千岛玉叶	qian dao yu ye	4000
+建德草莓	jian de cao mei	4000
+里叶白莲	li ye bai lian	4000
+富阳东坞山豆腐皮	fu yang dong wu shan dou fu pi	4000
+桐庐酒酿馒头	tong lu jiu niang man tou	4000
+严州酥饼	yan zhou su bing	4000
+寿昌炒粉干	shou chang chao fen gan	4000
+楼外楼餐厅	lou wai lou can ting	4000
+外婆家	wai po jia	4000
+弄堂里	long tang li	4000
+山外山	shan wai shan	4000
+福缘居	fu yuan ju	4000
+慧娟面馆	hui juan mian guan	4000
+方老大面	fang lao da mian	4000
+老头儿油爆虾	lao tou er you bao xia	4000
+叶马茶楼	ye ma cha lou	4000
+解香楼	jie xiang lou	4000
+金沙厅	jin sha ting	4000
+张小泉剪刀	zhang xiao quan jian dao	4000
+都锦生织锦	dou jin sheng zhi jin	4000
+孔凤春	kong feng chun	4000
+方回春堂	fang hui chun tang	4000
+朱养心膏药	zhu yang xin gao yao	4000
+景阳观	jing yang guan	4000
+万承志堂	wan cheng zhi tang	4000
+杭州丝绸	hang zhou si chou	4000
+径山茶宴	jing shan cha yan	4000

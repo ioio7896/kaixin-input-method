@@ -810,7 +810,10 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   const UINT selectedInPage =
       (m_tip->m_candSel >= start && m_tip->m_candSel < end) ? (m_tip->m_candSel - start) : 0u;
   const UINT totalPages = std::max(1u, static_cast<UINT>(layout.pageStarts.size()));
-  const UINT renderPage = hasClipboardPage ? clipboardPage : clampedPage + 1;
+  // CCandidateWindow stores the current page as a zero-based index. Clipboard
+  // metadata is user-facing (1-based), so normalize it at this boundary.
+  const UINT renderPage = hasClipboardPage ? (clipboardPage > 0 ? clipboardPage - 1 : 0)
+                                           : clampedPage;
   const UINT renderTotalPages = hasClipboardPage ? clipboardPages : totalPages;
   const std::wstring title = m_tip->CandidateBarMainTitle();
   std::vector<std::wstring> modeTags = m_tip->CandidateBarModeTags();

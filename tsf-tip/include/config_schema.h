@@ -15,6 +15,7 @@ inline constexpr wchar_t kCandidateDensity[] = L"candidate_density";
 inline constexpr wchar_t kCandidateLayoutVariant[] = L"candidate_layout_variant";
 inline constexpr wchar_t kCandidateVerticalLayoutVariant[] = L"candidate_vertical_layout_variant";
 inline constexpr wchar_t kCandidateHorizontalLayoutVariant[] = L"candidate_horizontal_layout_variant";
+inline constexpr wchar_t kCandidateReduceMotion[] = L"candidate_reduce_motion";
 inline constexpr wchar_t kHighlightTypoCandidates[] = L"highlight_typo_candidates";
 inline constexpr wchar_t kShowCandidateSource[] = L"show_candidate_source";
 

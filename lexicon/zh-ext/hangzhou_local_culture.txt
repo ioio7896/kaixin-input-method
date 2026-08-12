@@ -1,0 +1,70 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭州文化活动、公共服务和本地表达
+# Curated for local daily input; complete names rank above ambiguous short place names.
+# 格式：词条<TAB>拼音<TAB>词频。；第三列统一为 1-10000 万分制排序分数。
+良渚文化	liang zhu wen hua	4000
+吴越文化	wu yue wen hua	4000
+南宋文化	nan song wen hua	4000
+宋韵文化	song yun wen hua	4000
+西泠印社	xi ling yin she	4000
+钱塘江观潮	qian tang jiang guan chao	4000
+杭州马拉松	hang zhou ma la song	4000
+杭马	hang ma	4000
+中国国际动漫节	zhong guo guo ji dong man jie	4000
+云栖大会	yun qi da hui	4000
+全球数字贸易博览会	quan qiu shu zi mao yi bo lan hui	4000
+杭州市民卡	hang zhou shi min ka	4000
+杭州通	hang zhou tong	4000
+杭州小客车摇号	hang zhou xiao ke che yao hao	4000
+错峰限行	cuo feng xian xing	4000
+大莲花	da lian hua	4000
+小莲花	xiao lian hua	4000
+杭州奥体博览城	hang zhou ao ti bo lan cheng	4000
+杭州话	hang zhou hua	4000
+小伢儿	xiao ya er	4000
+落雨	luo yu	4000
+木佬佬	mu lao lao	4000
+杭儿风	hang er feng	4000
+一塌刮子	yi ta gua zi	4000
+杭州方言	hang zhou fang yan	4000
+杭州宋韵	hang zhou song yun	4000
+运河文化	yun he wen hua	4000
+五千年良渚	wu qian nian liang zhu	4000
+武林旧事	wu lin jiu shi	4000
+西湖文化景观	xi hu wen hua jing guan	4000
+良渚申遗	liang zhu shen yi	4000
+天下第一潮	tian xia di yi chao	4000
+金石篆刻	jin shi zhuan ke	4000
+杭州评话	hang zhou ping hua	4000
+杭州小热昏	hang zhou xiao re hun	4000
+淳安竹马	chun an zhu ma	4000
+王星记制扇技艺	wang xing ji zhi shan ji yi	4000
+杭州丝织技艺	hang zhou si zhi ji yi	4000
+萧山花边	xiao shan hua bian	4000
+杭州亚运会	hang zhou ya yun hui	4000
+杭州动漫节	hang zhou dong man jie	4000
+西博会	xi bo hui	4000
+西湖国际音乐节	xi hu guo ji yin yue jie	4000
+杭州国际戏剧节	hang zhou guo ji xi ju jie	4000
+西湖音乐喷泉	xi hu yin yue pen quan	4000
+钱塘江灯光秀	qian tang jiang deng guang xiu	4000
+杭州城市大脑	hang zhou cheng shi da nao	4000
+杭州场所码	hang zhou chang suo ma	4000
+小客车摇号	xiao ke che yao hao	4000
+西湖景区限行	xi hu jing qu xian xing	4000
+杭州文旅	hang zhou wen lv	4000
+杭州政务服务	hang zhou zheng wu fu wu	4000
+杭州交警	hang zhou jiao jing	4000
+杭州城管	hang zhou cheng guan	4000
+杭州志愿者	hang zhou zhi yuan zhe	4000
+世界旅游联盟总部	shi jie lv you lian meng zong bu	4000
+钱江新城灯光秀	qian jiang xin cheng deng guang xiu	4000
+拎市面	lin shi mian	4000
+搞七捻三	gao qi nian san	4000
+灵市面	ling shi mian	4000
+罪过罪过	zui guo zui guo	4000
+石骨铁硬	shi gu tie ying	4000
+困觉	kun jiao	4000
+老杭州	lao hang zhou	4000
+杭州腔	hang zhou qiang	4000

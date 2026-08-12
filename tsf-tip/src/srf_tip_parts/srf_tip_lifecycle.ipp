@@ -473,7 +473,12 @@ void CSrfTip::ApplyAppOptionsForFocusedContext(bool showNotification) {
   stageStart = GetTickCount64();
 
   bool usedAppOptions = false;
-  if (const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName)) {
+  if (m_manualCompatibilityBypass) {
+    // “恢复中文”暂时覆盖应用的 ASCII 兼容配置；窗口离开后由 owner
+    // reconciliation 清掉该覆盖，下一次聚焦会重新应用原配置。
+    m_imeOpen = true;
+    usedAppOptions = true;
+  } else if (const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName)) {
     if (options->hasAsciiMode) {
       m_imeOpen = !options->asciiMode;
       usedAppOptions = true;
@@ -610,7 +615,8 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
     entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_IME_CTRL_SPACE, {VK_SPACE, TF_MOD_CONTROL},
                        L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Chinese/English (Ctrl+Space)"});
   }
-  if (m_config.input.fullShapeHotkeyEnabled) {
+  if (ShouldRegisterFullShapeHotkey(m_config.input.defaultFullShape,
+                                    m_config.input.fullShapeHotkeyEnabled)) {
     entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_FULLSHAPE, {VK_SPACE, TF_MOD_SHIFT},
                        L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Full Shape"});
   }

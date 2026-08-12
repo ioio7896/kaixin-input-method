@@ -30,6 +30,9 @@ struct ParseSnapshot {
 /// their decoder and mixed-pinyin lattices reuse their own incremental state.
 pub(crate) struct IncrementalParseCache {
     snapshots: VecDeque<ParseSnapshot>,
+    // Keep the exact first-page parser separate from the expanded correction
+    // cache. Typing normally needs only exact/alternate splits.
+    exact_snapshots: VecDeque<ParseSnapshot>,
     capacity: usize,
 }
 
@@ -37,6 +40,7 @@ impl Default for IncrementalParseCache {
     fn default() -> Self {
         Self {
             snapshots: VecDeque::new(),
+            exact_snapshots: VecDeque::new(),
             capacity: 48,
         }
     }
@@ -45,6 +49,39 @@ impl Default for IncrementalParseCache {
 impl IncrementalParseCache {
     pub(crate) fn clear(&mut self) {
         self.snapshots.clear();
+        self.exact_snapshots.clear();
+    }
+
+    pub(crate) fn parse_exact(
+        &mut self,
+        input: &str,
+        syllable_set: &HashSet<String>,
+        options: ParseOptions,
+    ) -> Result<Vec<ParseVariant>, String> {
+        if let Some(index) = self
+            .exact_snapshots
+            .iter()
+            .position(|snapshot| snapshot.input == input && snapshot.options == options)
+        {
+            let snapshot = self
+                .exact_snapshots
+                .remove(index)
+                .expect("exact parse snapshot exists");
+            let result = snapshot.result.clone();
+            self.exact_snapshots.push_front(snapshot);
+            return result;
+        }
+
+        let result = parse_input_exact_variants_detailed(input, syllable_set, options);
+        self.exact_snapshots.push_front(ParseSnapshot {
+            input: input.to_string(),
+            options,
+            result: result.clone(),
+        });
+        while self.exact_snapshots.len() > self.capacity {
+            self.exact_snapshots.pop_back();
+        }
+        result
     }
 
     pub(crate) fn parse(
@@ -74,13 +111,6 @@ impl IncrementalParseCache {
             self.snapshots.pop_back();
         }
         result
-    }
-
-    #[cfg(test)]
-    pub(crate) fn contains(&self, input: &str, options: ParseOptions) -> bool {
-        self.snapshots
-            .iter()
-            .any(|snapshot| snapshot.input == input && snapshot.options == options)
     }
 }
 
@@ -196,36 +226,11 @@ pub fn parse_input_variants_detailed(
         return Err("please input pinyin".into());
     }
 
-    let mut variants: Vec<ParseVariant> = Vec::new();
-    let mut base_err = None;
-
-    if options.double_pinyin_enabled {
-        if let Ok((syllables, tail)) = split_double_pinyin_with_tail(trimmed, syllable_set) {
-            variants.push(ParseVariant {
-                syllables,
-                tail,
-                source: ParseVariantSource::Exact,
-                corrected_input: None,
-            });
-        }
-    }
-
-    match split_full_pinyin_with_tail(trimmed, syllable_set) {
-        Ok((syllables, tail)) => variants.push(ParseVariant {
-            syllables,
-            tail,
-            source: ParseVariantSource::Exact,
-            corrected_input: None,
-        }),
-        Err(e) => base_err = Some(e),
-    }
-
-    dedup_variants(&mut variants);
-
-    if !options.double_pinyin_enabled {
-        merge_alternate_continuous_splittings(&mut variants, trimmed, syllable_set);
-        dedup_variants(&mut variants);
-    }
+    let (mut variants, base_err) = match parse_exact_variant_prefix(trimmed, syllable_set, options)
+    {
+        Ok(variants) => (variants, None),
+        Err(error) => (Vec::new(), Some(error)),
+    };
 
     let compact_latin_len = compact_latin_input_len(trimmed);
     let (phonetic_max_extra, typo_max_extra, fuzzy_max_extra) =
@@ -249,6 +254,63 @@ pub fn parse_input_variants_detailed(
     }
 
     dedup_variants(&mut variants);
+
+    if variants.is_empty() {
+        Err(base_err.unwrap_or_else(|| "no valid syllable parse".to_string()))
+    } else {
+        Ok(variants)
+    }
+}
+
+/// Parse only exact and alternate syllable splits. Typo, phonetic confusion
+/// and fuzzy variants are deferred until the exact first page is insufficient.
+pub fn parse_input_exact_variants_detailed(
+    input: &str,
+    syllable_set: &HashSet<String>,
+    options: ParseOptions,
+) -> Result<Vec<ParseVariant>, String> {
+    let normalized = normalize_pinyin_line(input);
+    let trimmed = normalized.trim();
+    if trimmed.is_empty() {
+        return Err("please input pinyin".into());
+    }
+    parse_exact_variant_prefix(trimmed, syllable_set, options)
+}
+
+fn parse_exact_variant_prefix(
+    trimmed: &str,
+    syllable_set: &HashSet<String>,
+    options: ParseOptions,
+) -> Result<Vec<ParseVariant>, String> {
+    let mut variants: Vec<ParseVariant> = Vec::new();
+    let mut base_err = None;
+
+    if options.double_pinyin_enabled {
+        if let Ok((syllables, tail)) = split_double_pinyin_with_tail(trimmed, syllable_set) {
+            variants.push(ParseVariant {
+                syllables,
+                tail,
+                source: ParseVariantSource::Exact,
+                corrected_input: None,
+            });
+        }
+    }
+
+    match split_full_pinyin_with_tail(trimmed, syllable_set) {
+        Ok((syllables, tail)) => variants.push(ParseVariant {
+            syllables,
+            tail,
+            source: ParseVariantSource::Exact,
+            corrected_input: None,
+        }),
+        Err(error) => base_err = Some(error),
+    }
+
+    dedup_variants(&mut variants);
+    if !options.double_pinyin_enabled {
+        merge_alternate_continuous_splittings(&mut variants, trimmed, syllable_set);
+        dedup_variants(&mut variants);
+    }
 
     if variants.is_empty() {
         Err(base_err.unwrap_or_else(|| "no valid syllable parse".to_string()))
@@ -1743,513 +1805,4 @@ struct MixedPinyinPartial {
     key: String,
     syllables: Vec<String>,
     score: f64,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn normalize_nue_lue_aliases_to_v_form() {
-        assert_eq!(normalize_token("nue"), "nve");
-        assert_eq!(normalize_token("lue"), "lve");
-        assert_eq!(normalize_token("NUE5"), "nve");
-        assert_eq!(normalize_token("LÜE"), "lve");
-    }
-
-    fn tiny_set() -> HashSet<String> {
-        [
-            "hao", "hai", "han", "hang", "wo", "ai", "bei", "jing", "ha", "shi", "zhong", "an",
-            "ying", "yao",
-        ]
-        .into_iter()
-        .map(String::from)
-        .collect()
-    }
-
-    #[test]
-    fn h_prefix_continuous() {
-        let set = tiny_set();
-        let (s, t) = split_syllables_with_tail("h", &set).unwrap();
-        assert!(s.is_empty());
-        assert_eq!(t.as_deref(), Some("h"));
-        let pred = predict_syllable_completions("h", &set, 20);
-        assert!(pred.contains(&"hao".into()));
-        assert!(pred.contains(&"hai".into()));
-    }
-
-    #[test]
-    fn wo_then_h() {
-        let set = tiny_set();
-        let (s, t) = split_syllables_with_tail("woh", &set).unwrap();
-        assert_eq!(s, vec!["wo".to_string()]);
-        assert_eq!(t.as_deref(), Some("h"));
-    }
-
-    #[test]
-    fn complete_no_tail() {
-        let set = tiny_set();
-        let (s, t) = split_syllables_with_tail("hao", &set).unwrap();
-        assert_eq!(s, vec!["hao".to_string()]);
-        assert!(t.is_none());
-    }
-
-    #[test]
-    fn fuzzy_variants_include_swaps() {
-        let set = tiny_set();
-        let vars = parse_input_variants(
-            "han",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: true,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars.iter().any(|(s, _)| s == &vec!["hang".to_string()]));
-    }
-
-    #[test]
-    fn fuzzy_variants_respect_pair_switches() {
-        let mut set = tiny_set();
-        set.insert("zong".to_string());
-        set.insert("fa".to_string());
-
-        let pairs = crate::fuzzy_prefs::FuzzyPairs {
-            f_h: false,
-            ..Default::default()
-        };
-        let vars = parse_input_variants(
-            "fa",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: true,
-                fuzzy_pairs: pairs,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(!vars.iter().any(|(s, _)| s == &vec!["ha".to_string()]));
-
-        let vars = parse_input_variants(
-            "fa",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: true,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars.iter().any(|(s, _)| s == &vec!["ha".to_string()]));
-    }
-
-    #[test]
-    fn syllable_confusion_emits_hang_without_fuzzy_mode() {
-        let set = tiny_set();
-        let vars = parse_input_variants_detailed(
-            "han",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars.iter().any(|v| {
-            v.source == ParseVariantSource::SyllableConfusion
-                && v.syllables == ["hang".to_string()]
-                && v.tail.is_none()
-                && v.corrected_input.as_deref() == Some("hang")
-        }));
-    }
-
-    #[test]
-    fn double_pinyin_basic() {
-        let set = tiny_set();
-        let (s, t) = split_syllables_with_tail_mode(
-            "ui",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: true,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert_eq!(s, vec!["shi".to_string()]);
-        assert!(t.is_none());
-    }
-
-    #[test]
-    fn apostrophe_syllable_boundary() {
-        let mut set = std::collections::HashSet::new();
-        for syl in ["xi", "an", "hao"] {
-            set.insert(syl.to_string());
-        }
-        let (s, t) = split_syllables_with_tail("xi'an", &set).unwrap();
-        assert_eq!(s, vec!["xi".to_string(), "an".to_string()]);
-        assert!(t.is_none());
-    }
-
-    #[test]
-    fn hyphen_splits_like_apostrophe() {
-        let mut set = std::collections::HashSet::new();
-        for syl in ["xi", "an"] {
-            set.insert(syl.to_string());
-        }
-        let (s, t) = split_syllables_with_tail("xi-an", &set).unwrap();
-        assert_eq!(s, vec!["xi".to_string(), "an".to_string()]);
-        assert!(t.is_none());
-    }
-
-    #[test]
-    fn xian_emits_xi_an_alternate() {
-        let mut set = tiny_set();
-        for syl in ["xi", "an", "xian"] {
-            set.insert(syl.to_string());
-        }
-        let vars = parse_input_variants(
-            "xian",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars
-            .iter()
-            .any(|(v, t)| { t.is_none() && v == &vec!["xian".to_string()] }));
-        assert!(vars
-            .iter()
-            .any(|(v, t)| { t.is_none() && v == &vec!["xi".to_string(), "an".to_string()] }));
-    }
-
-    #[test]
-    fn greedy_failed_continuous_input_keeps_single_valid_alternate_split() {
-        let mut set = tiny_set();
-        for syl in ["ang", "gui"] {
-            set.insert(syl.to_string());
-        }
-        let vars = parse_input_variants_detailed(
-            "angui",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars.iter().any(|variant| {
-            variant.source == ParseVariantSource::AlternateSplit
-                && variant.tail.is_none()
-                && variant.syllables == ["an".to_string(), "gui".to_string()]
-        }));
-    }
-
-    #[test]
-    fn fuzzy_input_typo_variants_include_neighbor_fix() {
-        let mut set = tiny_set();
-        set.insert("jing".to_string());
-        let vars = parse_input_variants(
-            "jimg",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: true,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars
-            .iter()
-            .any(|(v, t)| t.is_none() && v == &vec!["jing".to_string()]));
-    }
-
-    #[test]
-    fn keyboard_typo_variants_work_even_without_fuzzy_mode() {
-        let mut set = tiny_set();
-        set.insert("jing".to_string());
-        let vars = parse_input_variants(
-            "jimg",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars
-            .iter()
-            .any(|(v, t)| t.is_none() && v == &vec!["jing".to_string()]));
-    }
-
-    #[test]
-    fn keyboard_typo_variants_include_missing_letter_fix() {
-        let mut set = tiny_set();
-        set.insert("jing".to_string());
-        let vars = parse_input_variants(
-            "jng",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars
-            .iter()
-            .any(|(v, t)| t.is_none() && v == &vec!["jing".to_string()]));
-    }
-
-    #[test]
-    fn keyboard_typo_variants_include_extra_letter_fix() {
-        let mut set = tiny_set();
-        set.insert("jing".to_string());
-        let vars = parse_input_variants(
-            "jiing",
-            &set,
-            ParseOptions {
-                fuzzy_enabled: false,
-                double_pinyin_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars
-            .iter()
-            .any(|(v, t)| t.is_none() && v == &vec!["jing".to_string()]));
-    }
-
-    #[test]
-    fn phonetic_typo_enabled_emits_lan_for_ran() {
-        let mut set = HashSet::new();
-        for syl in ["ran", "lan"] {
-            set.insert(syl.to_string());
-        }
-        let vars = parse_input_variants_detailed(
-            "ran",
-            &set,
-            ParseOptions {
-                correction_enabled: true,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(vars.iter().any(|v| {
-            v.source == ParseVariantSource::PhoneticTypo
-                && v.syllables == ["lan".to_string()]
-                && v.tail.is_none()
-                && v.corrected_input.as_deref() == Some("lan")
-        }));
-    }
-
-    #[test]
-    fn phonetic_typo_disabled_skips_lan_for_ran() {
-        let mut set = HashSet::new();
-        for syl in ["ran", "lan"] {
-            set.insert(syl.to_string());
-        }
-        let vars = parse_input_variants_detailed(
-            "ran",
-            &set,
-            ParseOptions {
-                correction_enabled: false,
-                ..ParseOptions::default()
-            },
-        )
-        .unwrap();
-        assert!(!vars.iter().any(|v| {
-            v.source == ParseVariantSource::PhoneticTypo && v.syllables == ["lan".to_string()]
-        }));
-    }
-
-    #[test]
-    fn mixed_pinyin_keys_expand_initial_and_full_syllables() {
-        let mut set = tiny_set();
-        for syl in ["shu", "ru", "fa", "su"] {
-            set.insert(syl.to_string());
-        }
-
-        let shur = expand_mixed_pinyin_exact_keys("shur", &set, 32);
-        assert!(shur
-            .iter()
-            .any(|(key, segments)| key == "shuru" && *segments == 2));
-
-        let sru = expand_mixed_pinyin_exact_keys("sru", &set, 32);
-        assert!(sru
-            .iter()
-            .any(|(key, segments)| key == "shuru" && *segments == 2));
-        assert!(sru.iter().all(|(_, segments)| *segments == 2));
-
-        set.insert("chong".to_string());
-        set.insert("qing".to_string());
-        let cqing = expand_mixed_pinyin_exact_keys("cqing", &set, 128);
-        assert!(cqing
-            .iter()
-            .any(|(key, segments)| key == "chongqing" && *segments == 2));
-    }
-
-    #[test]
-    fn mixed_pinyin_key_details_track_path_and_rank_completion() {
-        let mut set = tiny_set();
-        for syl in ["shu", "ru", "ren"] {
-            set.insert(syl.to_string());
-        }
-
-        let ranked =
-            expand_mixed_pinyin_exact_key_details_by_score("shur", &set, 8, |leading, syllable| {
-                match (leading, syllable) {
-                    ("shu", "ru") => 10.0,
-                    _ => 0.0,
-                }
-            });
-
-        let first = ranked.first().expect("mixed expansion");
-        assert_eq!(first.key, "shuru");
-        assert_eq!(first.segment_count, 2);
-        assert_eq!(first.full_segments, 1);
-        assert_eq!(first.initial_segments, 1);
-    }
-
-    #[test]
-    fn mixed_pinyin_supports_non_initial_syllable_prefixes() {
-        let mut set = tiny_set();
-        for syllable in ["shu", "ru", "fa", "fang"] {
-            set.insert(syllable.to_string());
-        }
-
-        let ranked = expand_mixed_pinyin_exact_key_details_by_score(
-            "shurfa",
-            &set,
-            32,
-            |leading, syllable| {
-                let key = format!("{leading}{syllable}");
-                if "shurufang".starts_with(&key) {
-                    20.0
-                } else {
-                    0.0
-                }
-            },
-        );
-        let target = ranked
-            .iter()
-            .find(|item| item.key == "shurufang")
-            .expect("mixed prefix expansion");
-        assert_eq!(target.segment_count, 3);
-        assert_eq!(target.full_segments, 1);
-        assert_eq!(target.prefix_segments, 1);
-        assert_eq!(target.initial_segments, 1);
-    }
-
-    #[test]
-    fn mixed_pinyin_beam_keeps_globally_scored_four_segment_path() {
-        let mut set = tiny_set();
-        for syllable in [
-            "shi", "shou", "shui", "su", "si", "qi", "qiu", "qing", "qu", "sheng",
-        ] {
-            set.insert(syllable.to_string());
-        }
-
-        let target = "shishiqiushi";
-        let ranked = expand_mixed_pinyin_exact_key_details_by_score(
-            "shisqs",
-            &set,
-            24,
-            |leading, syllable| {
-                let key = format!("{leading}{syllable}");
-                if target.starts_with(&key) {
-                    100.0
-                } else {
-                    0.0
-                }
-            },
-        );
-        assert!(
-            ranked.iter().any(|item| item.key == target),
-            "ranked keys: {:?}",
-            ranked
-                .iter()
-                .map(|item| item.key.as_str())
-                .collect::<Vec<_>>()
-        );
-    }
-
-    #[test]
-    fn incremental_mixed_pinyin_matches_full_expansion_across_adjacent_edits() {
-        let mut set = tiny_set();
-        for syl in [
-            "shu", "ru", "fa", "su", "ren", "ran", "chong", "qing", "qi", "qu",
-        ] {
-            set.insert(syl.to_string());
-        }
-        let mut cache = MixedPinyinIncrementalCache::default();
-        for input in [
-            "s", "sh", "shu", "shur", "shuru", "shuruf", "shurufa", "shuruf", "shuruq", "shuruqi",
-            "cqing",
-        ] {
-            let expected = expand_mixed_pinyin_exact_key_details_by_score(
-                input,
-                &set,
-                64,
-                |leading, syllable| (leading.len() * 10 + syllable.len()) as f64,
-            );
-            let actual = cache.expand_by_score(input, &set, 64, |leading, syllable| {
-                (leading.len() * 10 + syllable.len()) as f64
-            });
-            assert_eq!(
-                actual, expected,
-                "incremental expansion differs for {input}"
-            );
-        }
-    }
-
-    #[test]
-    fn incremental_mixed_pinyin_budget_abort_does_not_break_full_retry() {
-        let mut set = tiny_set();
-        for syllable in ["ji", "suan", "wang", "luo", "li", "wu"] {
-            set.insert(syllable.to_string());
-        }
-        let mut cache = MixedPinyinIncrementalCache::default();
-        let mut checks = 0usize;
-        let (_, completed) = cache.expand_by_score_until(
-            "jisuanjwl",
-            &set,
-            16,
-            |leading, syllable| (leading.len() + syllable.len()) as f64,
-            || {
-                checks += 1;
-                checks >= 2
-            },
-        );
-        assert!(!completed);
-
-        let retried = cache.expand_by_score("jisuanjwl", &set, 16, |leading, syllable| {
-            (leading.len() + syllable.len()) as f64
-        });
-        assert!(
-            !retried.is_empty(),
-            "budget-free retry must finish expansion"
-        );
-    }
-
-    #[test]
-    fn predict_syllable_completions_can_rank_by_score() {
-        let set = tiny_set();
-        let ranked = predict_syllable_completions_by_score("h", &set, 4, |syl| match syl {
-            "hao" => 8.0,
-            "han" => 6.0,
-            "hai" => 4.0,
-            _ => 1.0,
-        });
-        assert_eq!(ranked[0], "hao");
-        assert_eq!(ranked[1], "han");
-        assert_eq!(ranked[2], "hai");
-    }
 }

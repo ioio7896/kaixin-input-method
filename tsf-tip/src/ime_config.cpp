@@ -31,6 +31,12 @@ constexpr wchar_t kConfigFileName[] = L"kaixin.ini";
 constexpr wchar_t kLocalConfigSubdir[] = L"kaixin";
 constexpr DWORD kConfigWatchFallbackIntervalMs = 30000;
 constexpr DWORD kConfigWatchDebounceMs = 80;
+constexpr std::uintmax_t kMaxConfigFileBytes = 4ull * 1024ull * 1024ull;
+constexpr std::size_t kOversizedConfigPrefixBytes = 64 * 1024;
+// A configuration value is scalar metadata, not a serialized lexicon. Ignore
+// corrupted/generated megabyte-sized lines so helper startup cannot be held
+// hostage by one malformed setting.
+constexpr std::size_t kMaxConfigLineChars = 4 * 1024;
 
 struct ConfigCache {
   std::mutex mutex;
@@ -125,6 +131,14 @@ IniDocument ParseIniDocument(const std::filesystem::path& path, const std::wstri
   size_t start = 0;
   while (start <= text.size()) {
     const size_t end = text.find_first_of(L"\r\n", start);
+    const size_t lineLength =
+        end == std::wstring::npos ? text.size() - start : end - start;
+    if (lineLength > kMaxConfigLineChars) {
+      if (end == std::wstring::npos) break;
+      start = end + 1;
+      if (text[end] == L'\r' && start < text.size() && text[start] == L'\n') ++start;
+      continue;
+    }
     std::wstring line =
         text.substr(start, end == std::wstring::npos ? std::wstring::npos : end - start);
     if (end == std::wstring::npos) {
@@ -157,7 +171,54 @@ IniDocument LoadIniDocument(const std::filesystem::path& path) {
     empty.path = path;
     return empty;
   }
-  std::string bytes((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+  std::error_code sizeError;
+  const std::uintmax_t fileSize = std::filesystem::file_size(path, sizeError);
+  if (!sizeError && fileSize > kMaxConfigFileBytes) {
+    // An oversized INI is already outside the scalar configuration contract.
+    // Keep the ordinary settings at the beginning, but do not read the rest
+    // of a potentially corrupted lexicon dump during helper startup.
+    std::string prefix(kOversizedConfigPrefixBytes, '\0');
+    file.read(prefix.data(), static_cast<std::streamsize>(prefix.size()));
+    prefix.resize(static_cast<size_t>(file.gcount()));
+    return ParseIniDocument(path, DecodeConfigBytes(prefix));
+  }
+
+  // Keep malformed/generated lexicon entries out of the decoder entirely.
+  // Reading the whole file first is especially expensive when a broken
+  // configuration contains megabyte-sized values: the UTF-8 conversion would
+  // otherwise allocate and scan the complete payload before ParseIniDocument
+  // can discard it.  Valid settings are scalar values and comfortably fit in
+  // this bound, so retain only bounded lines while streaming the file.
+  std::string bytes;
+  std::string line;
+  line.reserve(kMaxConfigLineChars);
+  std::array<char, 64 * 1024> chunk = {};
+  bool lineTooLong = false;
+  while (file) {
+    file.read(chunk.data(), static_cast<std::streamsize>(chunk.size()));
+    const std::streamsize count = file.gcount();
+    for (std::streamsize index = 0; index < count; ++index) {
+      const char value = chunk[static_cast<size_t>(index)];
+      if (value == '\n') {
+        if (!lineTooLong) {
+          bytes.append(line);
+          bytes.push_back('\n');
+        }
+        line.clear();
+        lineTooLong = false;
+        continue;
+      }
+      if (lineTooLong) continue;
+      if (line.size() < kMaxConfigLineChars) {
+        line.push_back(value);
+      } else {
+        line.clear();
+        lineTooLong = true;
+      }
+    }
+  }
+  if (!lineTooLong && !line.empty()) bytes.append(line);
   return ParseIniDocument(path, DecodeConfigBytes(bytes));
 }
 
@@ -664,6 +725,11 @@ void LoadStyle(const std::filesystem::path& path, SrfConfig& config) {
       ParseUInt(ReadIniString(path, L"style", L"candidate_opacity", L"100"),
                 config.style.candidateOpacity),
       90u, 100u);
+  config.style.candidateReduceMotion =
+      ParseBool(ReadIniString(path, SrfConfigSchema::section::kStyle,
+                              SrfConfigSchema::key::kCandidateReduceMotion,
+                              config.style.candidateReduceMotion ? L"1" : L"0"),
+                config.style.candidateReduceMotion);
   config.style.candidateFontFile =
       Trim(ReadIniStringLong(path, L"style", L"candidate_font_file", L"Microsoft YaHei"));
   if (config.style.candidateFontFile.empty()) {
@@ -1563,6 +1629,12 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   st.skinShadowOpacity = 0.0f;
   st.skinShadowSize = 0;
   st.skinShadowEnabled = true;
+  st.skinAnimationsEnabled = true;
+  st.skinShowAnimationMs = -1;
+  st.skinSelectionAnimationMs = -1;
+  st.skinHoverAnimationMs = -1;
+  st.skinPressAnimationMs = -1;
+  st.skinPageAnimationMs = -1;
   st.skinFontWeight = -1;
   st.skinSelectedFontWeight = -1;
   st.skinLabelFontWeight = -1;
@@ -1759,6 +1831,20 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   ApplySkinFloat(content, "shadow_opacity", isYaml, st.skinShadowOpacity);
   ApplySkinInt(content, "shadow_size", isYaml, st.skinShadowSize);
   ApplySkinBool(content, "shadow_enabled", isYaml, st.skinShadowEnabled);
+  ApplySkinBool(content, "animations_enabled", isYaml, st.skinAnimationsEnabled);
+  ApplySkinInt(content, "show_animation_ms", isYaml, st.skinShowAnimationMs);
+  ApplySkinInt(content, "selection_animation_ms", isYaml, st.skinSelectionAnimationMs);
+  ApplySkinInt(content, "hover_animation_ms", isYaml, st.skinHoverAnimationMs);
+  ApplySkinInt(content, "press_animation_ms", isYaml, st.skinPressAnimationMs);
+  ApplySkinInt(content, "page_animation_ms", isYaml, st.skinPageAnimationMs);
+  auto clampAnimationDuration = [](int& value) {
+    if (value >= 0) value = std::clamp(value, 0, 240);
+  };
+  clampAnimationDuration(st.skinShowAnimationMs);
+  clampAnimationDuration(st.skinSelectionAnimationMs);
+  clampAnimationDuration(st.skinHoverAnimationMs);
+  clampAnimationDuration(st.skinPressAnimationMs);
+  clampAnimationDuration(st.skinPageAnimationMs);
   ApplySkinInt(content, "font_weight", isYaml, st.skinFontWeight);
   ApplySkinInt(content, "selected_font_weight", isYaml, st.skinSelectedFontWeight);
   ApplySkinInt(content, "label_font_weight", isYaml, st.skinLabelFontWeight);
@@ -1793,6 +1879,8 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   if (st.skinChipFontWeight >= 0) st.skinChipFontWeight = std::clamp(st.skinChipFontWeight, 350, 700);
   if (st.skinSelectedAccentWidth >= 0) st.skinSelectedAccentWidth = std::clamp(st.skinSelectedAccentWidth, 0, 8);
   if (st.skinSelectedRingOpacity >= 0.0f) st.skinSelectedRingOpacity = std::clamp(st.skinSelectedRingOpacity, 0.0f, 1.0f);
+  st.skinShadowOpacity = std::clamp(st.skinShadowOpacity, 0.0f, 1.0f);
+  st.skinShadowSize = std::clamp(st.skinShadowSize, 0, 24);
 
   st.skinLoaded = true;
 }

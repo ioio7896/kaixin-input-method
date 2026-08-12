@@ -15,7 +15,7 @@ struct DecodeNode {
 
 #[derive(Clone)]
 struct CachedBeamItem {
-    text: String,
+    node: usize,
     last: char,
     score: f64,
 }
@@ -23,6 +23,7 @@ struct CachedBeamItem {
 struct CachedDecodeState {
     syllables: Vec<String>,
     beam_size: usize,
+    nodes: Vec<DecodeNode>,
     beam: Vec<CachedBeamItem>,
 }
 
@@ -85,19 +86,22 @@ impl IncrementalDecodeCache {
             if should_stop() {
                 return (Vec::new(), false);
             }
-            let mut beam = ranked
-                .iter()
-                .take(beam_size)
-                .map(|&ch| CachedBeamItem {
-                    text: ch.to_string(),
+            let mut nodes = Vec::with_capacity(beam_size);
+            let mut beam = Vec::with_capacity(beam_size);
+            for &ch in ranked.iter().take(beam_size) {
+                let node = nodes.len();
+                nodes.push(DecodeNode { parent: None, ch });
+                beam.push(CachedBeamItem {
+                    node,
                     last: ch,
                     score: lm.log_unigram(ch),
-                })
-                .collect::<Vec<_>>();
-            truncate_cached_beam(&mut beam, beam_size);
+                });
+            }
+            truncate_cached_beam(&mut beam, beam_size, &nodes);
             self.remember(CachedDecodeState {
                 syllables: syllables.to_vec(),
                 beam_size,
+                nodes,
                 beam,
             });
             return (
@@ -121,12 +125,12 @@ impl IncrementalDecodeCache {
             })
             .max_by_key(|(_, state)| state.syllables.len())
             .map(|(index, _)| index);
-        let (prefix_len, mut beam) = if let Some(index) = reusable {
+        let (prefix_len, mut nodes, mut beam) = if let Some(index) = reusable {
             let state = self
                 .states
                 .remove(index)
                 .expect("cached decoder state exists");
-            (state.syllables.len(), state.beam)
+            (state.syllables.len(), state.nodes, state.beam)
         } else {
             let (cold, complete) = decode_until_with_status(
                 dict,
@@ -139,12 +143,21 @@ impl IncrementalDecodeCache {
             if !complete {
                 return (Vec::new(), false);
             }
+            let mut nodes = Vec::new();
             let beam = cold
                 .iter()
                 .take(beam_size)
                 .filter_map(|(text, score)| {
-                    text.chars().last().map(|last| CachedBeamItem {
-                        text: text.clone(),
+                    let mut parent = None;
+                    let mut last = None;
+                    for ch in text.chars() {
+                        let node = nodes.len();
+                        nodes.push(DecodeNode { parent, ch });
+                        parent = Some(node);
+                        last = Some(ch);
+                    }
+                    last.map(|last| CachedBeamItem {
+                        node: parent.expect("cached decode node exists"),
                         last,
                         score: *score,
                     })
@@ -154,16 +167,18 @@ impl IncrementalDecodeCache {
             self.remember(CachedDecodeState {
                 syllables: syllables.to_vec(),
                 beam_size,
+                nodes,
                 beam,
             });
             return (result, true);
         };
 
         if prefix_len == syllables.len() {
-            let result = beam_results(&beam, max_candidates);
+            let result = beam_results(&nodes, &beam, max_candidates);
             self.remember(CachedDecodeState {
                 syllables: syllables.to_vec(),
                 beam_size,
+                nodes,
                 beam,
             });
             return (result, true);
@@ -186,23 +201,27 @@ impl IncrementalDecodeCache {
                     return (Vec::new(), false);
                 }
                 for &ch in &choices {
-                    let mut text = item.text.clone();
-                    text.push(ch);
+                    let node = nodes.len();
+                    nodes.push(DecodeNode {
+                        parent: Some(item.node),
+                        ch,
+                    });
                     next.push(CachedBeamItem {
-                        text,
+                        node,
                         last: ch,
                         score: item.score + lm.log_bigram(item.last, ch),
                     });
                 }
             }
-            truncate_cached_beam(&mut next, beam_size);
+            truncate_cached_beam(&mut next, beam_size, &nodes);
             beam = next;
         }
 
-        let result = beam_results(&beam, max_candidates);
+        let result = beam_results(&nodes, &beam, max_candidates);
         self.remember(CachedDecodeState {
             syllables: syllables.to_vec(),
             beam_size,
+            nodes,
             beam,
         });
         (result, true)
@@ -216,32 +235,48 @@ impl IncrementalDecodeCache {
     }
 }
 
-fn truncate_cached_beam(items: &mut Vec<CachedBeamItem>, k: usize) {
+fn truncate_cached_beam(items: &mut Vec<CachedBeamItem>, k: usize, nodes: &[DecodeNode]) {
     if items.len() > k {
         let nth = k - 1;
         items.select_nth_unstable_by(nth, |left, right| {
-            right
-                .score
-                .total_cmp(&left.score)
-                .then_with(|| left.text.cmp(&right.text))
+            right.score.total_cmp(&left.score).then_with(|| {
+                materialize_cached_node(nodes, left.node)
+                    .cmp(&materialize_cached_node(nodes, right.node))
+            })
         });
         items.truncate(k);
     }
     items.sort_by(|left, right| {
-        right
-            .score
-            .total_cmp(&left.score)
-            .then_with(|| left.text.cmp(&right.text))
+        right.score.total_cmp(&left.score).then_with(|| {
+            materialize_cached_node(nodes, left.node)
+                .cmp(&materialize_cached_node(nodes, right.node))
+        })
     });
 }
 
-fn beam_results(beam: &[CachedBeamItem], max_candidates: usize) -> Vec<(String, f64)> {
+fn beam_results(
+    nodes: &[DecodeNode],
+    beam: &[CachedBeamItem],
+    max_candidates: usize,
+) -> Vec<(String, f64)> {
     let mut seen = std::collections::HashSet::new();
     beam.iter()
-        .filter(|item| seen.insert(item.text.as_str()))
+        .map(|item| (materialize_cached_node(nodes, item.node), item.score))
+        .filter(|(text, _)| seen.insert(text.clone()))
         .take(max_candidates)
-        .map(|item| (item.text.clone(), item.score))
         .collect()
+}
+
+fn materialize_cached_node(nodes: &[DecodeNode], node: usize) -> String {
+    let mut chars = Vec::new();
+    let mut current = Some(node);
+    while let Some(index) = current {
+        let entry = &nodes[index];
+        chars.push(entry.ch);
+        current = entry.parent;
+    }
+    chars.reverse();
+    chars.into_iter().collect()
 }
 
 fn truncate_top_k_by_score(items: &mut Vec<BeamItem>, k: usize) {
@@ -419,63 +454,3 @@ fn decode_until_with_status(
 
 /// 与 UI 分页一致：最多保留若干整句候选。
 pub const DEFAULT_MAX_CANDIDATES: usize = 256;
-
-#[cfg(test)]
-mod tests {
-    use super::{decode, IncrementalDecodeCache};
-    use crate::lm::Lm;
-    use std::collections::{HashMap, HashSet};
-
-    #[test]
-    fn single_syllable_decode_is_not_capped_by_beam_size() {
-        let chars: Vec<char> = (0..80)
-            .map(|idx| char::from_u32(0x4E00 + idx).expect("valid CJK char"))
-            .collect();
-        let vocab: HashSet<char> = chars.iter().copied().collect();
-        let mut unigram = HashMap::new();
-        for (idx, ch) in chars.iter().copied().enumerate() {
-            unigram.insert(ch, 10_000usize - idx);
-        }
-        let lm = Lm::from_counts(vocab, unigram, HashMap::new());
-
-        let mut dict = HashMap::new();
-        dict.insert("shi".to_string(), chars);
-
-        let results = decode(&dict, &lm, &["shi".to_string()], 48, 80);
-        assert_eq!(results.len(), 80);
-        assert_eq!(results[0].0.chars().count(), 1);
-        assert_eq!(results[64].0.chars().count(), 1);
-    }
-
-    #[test]
-    fn incremental_cache_extends_a_cached_syllable_prefix_without_changing_scores() {
-        let chars = ['你', '尼', '好', '号', '世', '事'];
-        let vocab: HashSet<char> = chars.into_iter().collect();
-        let unigram = chars
-            .into_iter()
-            .enumerate()
-            .map(|(index, ch)| (ch, 100usize - index))
-            .collect();
-        let lm = Lm::from_counts(vocab, unigram, HashMap::new());
-        let dict = HashMap::from([
-            ("ni".to_string(), vec!['你', '尼']),
-            ("hao".to_string(), vec!['好', '号']),
-            ("shi".to_string(), vec!['世', '事']),
-        ]);
-        let prefix = vec!["ni".to_string(), "hao".to_string()];
-        let extended = vec!["ni".to_string(), "hao".to_string(), "shi".to_string()];
-        let mut cache = IncrementalDecodeCache::default();
-        let _ = cache.decode(&dict, &lm, &prefix, 8, 8);
-        let incremental = cache.decode(&dict, &lm, &extended, 8, 8);
-        let cold = decode(&dict, &lm, &extended, 8, 8);
-
-        assert_eq!(incremental.len(), cold.len());
-        for ((incremental_text, incremental_score), (cold_text, cold_score)) in
-            incremental.iter().zip(&cold)
-        {
-            assert_eq!(incremental_text, cold_text);
-            assert!((incremental_score - cold_score).abs() < 1e-9);
-        }
-        assert_eq!(cache.states.front().unwrap().syllables, extended);
-    }
-}

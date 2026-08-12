@@ -1,10 +1,12 @@
-use pinyin::ToPinyin;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs;
 use std::io::{BufWriter, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+#[path = "src/dict.rs"]
+mod dict;
 
 const MODEL_MAGIC: &[u8; 8] = b"SRFMD001";
 const MODEL_SCHEMA_VERSION: u32 = 1;
@@ -140,32 +142,6 @@ fn write_char<W: Write>(writer: &mut W, value: char) {
     write_u32(writer, value as u32);
 }
 
-fn normalize_pinyin_key(key: &str) -> String {
-    key.replace('ü', "v")
-        .replace("nue", "nve")
-        .replace("lue", "lve")
-}
-
-fn build_dict(chars: &str) -> HashMap<String, Vec<char>> {
-    let mut out: HashMap<String, Vec<char>> = HashMap::new();
-    for ch in chars
-        .chars()
-        .filter(|ch| !ch.is_whitespace() && *ch != '\r' && *ch != '\n')
-    {
-        if let Some(py) = ch.to_pinyin() {
-            let key = normalize_pinyin_key(&py.plain().to_ascii_lowercase());
-            out.entry(key).or_default().push(ch);
-        }
-    }
-
-    for values in out.values_mut() {
-        values.sort_unstable();
-        values.dedup();
-    }
-
-    out
-}
-
 fn build_lm_counts(
     corpus: &str,
     vocab: &HashSet<char>,
@@ -203,7 +179,7 @@ fn write_compiled_model(
     corpus: &str,
     syllables: &str,
 ) -> Result<(), String> {
-    let dict = build_dict(chars);
+    let dict = dict::build_dict(chars);
     let vocab: HashSet<char> = dict.values().flatten().copied().collect();
     let syllable_list = load_syllables(syllables);
     let (unigram, bigram) = build_lm_counts(corpus, &vocab);

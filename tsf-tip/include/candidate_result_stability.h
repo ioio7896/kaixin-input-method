@@ -21,6 +21,11 @@ inline bool ShouldRetainEmptyCandidateResult(bool hasReading, bool nextCandidate
   return hasReading && nextCandidatesEmpty && !currentCandidatesEmpty && transientLookup;
 }
 
+inline bool ShouldKeepCandidateUiAliveDuringTransient(bool composing, bool hasReading,
+                                                       bool hasCandidates) {
+  return composing && hasReading && hasCandidates;
+}
+
 inline bool CanRefreshCompletedPartialSnapshot(bool currentIsPartial,
                                                bool snapshotReadingMatches,
                                                unsigned long long interactionVersion,

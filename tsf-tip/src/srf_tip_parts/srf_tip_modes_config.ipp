@@ -11,17 +11,10 @@ void CSrfTip::EnsureDisplayAttributeAtom() {
 }
 
 void CSrfTip::LoadCompartmentState() {
-  m_imeOpen =
-      GetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_OPENCLOSE,
-                          m_config.input.defaultAscii ? 0 : (m_imeOpen ? 1 : 0)) != 0;
-
-  // INPUTMODE_CONVERSION is a thread-manager compartment shared with other
-  // input methods.  Reusing its FULLSHAPE bit here can make this IME start with
-  // a full-width space and digits merely because the previously active IME left
-  // that bit set.  Full shape is a temporary state for this IME, so initialize
-  // it from our own configured default and publish it below in
-  // SyncCompartmentState().
-  m_fullShape = m_config.input.defaultFullShape;
+  const SrfInitialInputModeState initial = ResolveInitialInputModeState(
+      m_config.input.defaultAscii, m_config.input.defaultFullShape);
+  m_imeOpen = initial.imeOpen;
+  m_fullShape = initial.fullShape;
   m_cnPunct = GetCompartmentDWORD(GUID_COMPARTMENT_SRF_PUNCT,
                                   m_config.input.defaultChinesePunct ? 1 : 0) != 0;
   m_fuzzyPinyin =
@@ -39,15 +32,9 @@ void CSrfTip::SyncCompartmentState() {
   SetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_OPENCLOSE, m_imeOpen ? 1 : 0);
 
   DWORD conversion = GetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, 0);
-  // In Chinese mode this TIP performs full-shape conversion itself.  Keeping
-  // the shared TSF FULLSHAPE bit clear prevents hosts from also converting
-  // space and top-row digits to full-width characters.
-  const bool publishSystemFullShape = m_fullShape && !m_imeOpen;
-  if (publishSystemFullShape) {
-    conversion |= TF_CONVERSIONMODE_FULLSHAPE;
-  } else {
-    conversion &= ~TF_CONVERSIONMODE_FULLSHAPE;
-  }
+  conversion = static_cast<DWORD>(ClearSystemFullShapeConversion(
+      static_cast<std::uint32_t>(conversion),
+      static_cast<std::uint32_t>(TF_CONVERSIONMODE_FULLSHAPE)));
   SetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, conversion);
 
   SetCompartmentDWORD(GUID_COMPARTMENT_SRF_PUNCT, m_cnPunct ? 1 : 0);
@@ -210,20 +197,125 @@ void CSrfTip::ToggleTraditionalOutput() {
   }
 }
 
+void CSrfTip::CaptureManualModeOwner() {
+  HWND hwnd = m_compatibilityHwnd;
+  DWORD processId = m_compatibilityProcessId;
+  std::wstring appName = m_compatibilityAppName;
+  if (!hwnd) {
+    hwnd = GetForegroundWindow();
+    HWND root = hwnd ? GetAncestor(hwnd, GA_ROOT) : nullptr;
+    if (root && IsWindowVisible(root)) hwnd = root;
+    appName = ProcessNameForWindow(hwnd, &processId);
+  }
+  m_manualModeHwnd = hwnd;
+  m_manualModeProcessId = processId;
+  m_manualModeAppName = std::move(appName);
+}
+
+void CSrfTip::ClearManualModeOwner() {
+  m_manualModeHwnd = nullptr;
+  m_manualModeProcessId = 0;
+  m_manualModeAppName.clear();
+}
+
+void CSrfTip::RestoreImeModeFromCurrentAppOptions() {
+  const bool previousImeOpen = m_imeOpen;
+  if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
+    if (options->hasAsciiMode) {
+      m_imeOpen = !options->asciiMode;
+    }
+  } else if (m_config.globalAscii) {
+    m_imeOpen = !LoadGlobalAsciiState();
+  } else {
+    m_imeOpen = true;
+  }
+  if (previousImeOpen != m_imeOpen) ApplyDefaultPunctuationForImeMode();
+}
+
+bool CSrfTip::ReconcileManualModeOwner() {
+  const bool manualModeActive = m_manualGameCompatActive || m_manualAsciiModeActive ||
+                                m_manualCompatibilityBypass;
+  if (!manualModeActive) {
+    ClearManualModeOwner();
+    return false;
+  }
+  if (!m_manualModeHwnd && m_manualModeProcessId == 0 && m_manualModeAppName.empty()) {
+    CaptureManualModeOwner();
+    return false;
+  }
+
+  const bool sameWindow = m_manualModeHwnd == m_compatibilityHwnd;
+  const bool sameProcess = m_manualModeProcessId == 0 ||
+                           m_manualModeProcessId == m_compatibilityProcessId;
+  const bool sameApp = m_manualModeAppName.empty() || m_compatibilityAppName.empty() ||
+                       WildcardMatchNoCase(m_manualModeAppName, m_compatibilityAppName) ||
+                       WildcardMatchNoCase(m_compatibilityAppName, m_manualModeAppName);
+  if (sameWindow && sameProcess && sameApp) return false;
+
+  m_manualGameCompatActive = false;
+  m_manualAsciiModeActive = false;
+  m_manualCompatibilityBypass = false;
+  ClearManualModeOwner();
+  if (m_candidateUi) m_candidateUi->End();
+  SrfTsfDiagnosticLog(L"manual-compatibility.owner-cleared", L"reason=foreground-changed");
+  return true;
+}
+
 void CSrfTip::ToggleManualGameCompat() {
-  m_manualGameCompatActive = !m_manualGameCompatActive;
+  ReconcileManualModeOwner();
+  const bool forcedByAutomaticPolicy = ShouldForceAsciiForCompatibility() &&
+                                        !m_config.privacy.enabled &&
+                                        !m_sensitiveInputActive;
+  if (m_manualAsciiModeActive) {
+    m_manualAsciiModeActive = false;
+  } else if (m_manualGameCompatActive) {
+    m_manualGameCompatActive = false;
+  } else if (m_manualCompatibilityBypass) {
+    m_manualCompatibilityBypass = false;
+    m_manualGameCompatActive = false;
+    RestoreImeModeFromCurrentAppOptions();
+  } else if (forcedByAutomaticPolicy) {
+    // The existing game hotkey doubles as an explicit “恢复中文” action when
+    // an automatic compatibility rule has taken over the current window.
+    m_manualCompatibilityBypass = true;
+    m_manualGameCompatActive = false;
+    m_imeOpen = true;
+  } else {
+    m_manualGameCompatActive = !m_manualGameCompatActive;
+  }
+  if (m_manualGameCompatActive || m_manualCompatibilityBypass) {
+    CaptureManualModeOwner();
+  } else if (!m_manualAsciiModeActive) {
+    ClearManualModeOwner();
+  }
   SyncStatusModel();
   RebuildContextModel();
   RedrawCandidateUi();
   if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
     ShowNotification(SrfNotificationKind::AppOptions,
-                     m_manualGameCompatActive ? L"\u6e38\u620f\u517c\u5bb9\u5f00"
-                                              : L"\u6e38\u620f\u517c\u5bb9\u5173");
+                     m_manualCompatibilityBypass
+                         ? L"\u5df2\u6062\u590d\u4e2d\u6587\uff08\u4ec5\u5f53\u524d\u7a97\u53e3\uff09"
+                         : (m_manualGameCompatActive ? L"\u6e38\u620f\u517c\u5bb9\u5f00"
+                                                     : L"\u6e38\u620f\u517c\u5bb9\u5173"));
   }
 }
 
 void CSrfTip::ToggleManualAsciiMode(TfEditCookie ec) {
-  m_manualAsciiModeActive = !m_manualAsciiModeActive;
+  ReconcileManualModeOwner();
+  if (m_manualAsciiModeActive) {
+    m_manualAsciiModeActive = false;
+  } else if (m_manualCompatibilityBypass) {
+    m_manualCompatibilityBypass = false;
+    RestoreImeModeFromCurrentAppOptions();
+  } else if (ShouldForceAsciiForCompatibility() && !m_config.privacy.enabled &&
+             !m_sensitiveInputActive) {
+    // 临时英文快捷键在自动 ASCII 状态下提供同一个明确的“恢复中文”入口。
+    m_manualCompatibilityBypass = !m_manualCompatibilityBypass;
+    m_imeOpen = m_manualCompatibilityBypass;
+  } else {
+    m_manualAsciiModeActive = true;
+    m_manualCompatibilityBypass = false;
+  }
   if (m_manualAsciiModeActive) {
     if (m_candidateUi) m_candidateUi->End();
     if (m_pComposition) {
@@ -232,13 +324,20 @@ void CSrfTip::ToggleManualAsciiMode(TfEditCookie ec) {
       ReleaseCompositionState();
     }
   }
+  if (m_manualAsciiModeActive || m_manualCompatibilityBypass) {
+    CaptureManualModeOwner();
+  } else {
+    ClearManualModeOwner();
+  }
   SyncStatusModel();
   RebuildContextModel();
   RedrawCandidateUi();
   if (m_config.ShouldShowNotification(SrfNotificationKind::Ime)) {
     ShowNotification(SrfNotificationKind::Ime,
-                     m_manualAsciiModeActive ? L"\u4e34\u65f6\u82f1\u6587\u5f00"
-                                             : L"\u4e34\u65f6\u82f1\u6587\u5173");
+                     m_manualCompatibilityBypass
+                         ? L"\u5df2\u6062\u590d\u4e2d\u6587\uff08\u4ec5\u5f53\u524d\u7a97\u53e3\uff09"
+                         : (m_manualAsciiModeActive ? L"\u4e34\u65f6\u82f1\u6587\u5f00"
+                                                     : L"\u4e34\u65f6\u82f1\u6587\u5173"));
   }
 }
 
@@ -639,11 +738,15 @@ bool CSrfTip::HasConfigurationChanged() const {
 }
 
 void CSrfTip::ApplyRuntimeConfigReload() {
+  const bool previousDefaultFullShape = m_config.input.defaultFullShape;
   if (!ReloadConfigurationIfChanged()) {
     m_configReloadPending = false;
     return;
   }
   m_configReloadPending = false;
+  if (previousDefaultFullShape != m_config.input.defaultFullShape) {
+    m_fullShape = m_config.input.defaultFullShape;
+  }
   UnregisterPreservedKeys();
   (void)RegisterPreservedKeys();
   m_uiStyle = ResolveUiStyleForApp(m_activeAppName);
@@ -651,6 +754,7 @@ void CSrfTip::ApplyRuntimeConfigReload() {
   InvalidateHotPathStateCache();
   RefreshCompatibilityState();
   ApplyRustModeFlags();
+  SyncCompartmentState();
   ClampCandidateState();
   RebuildContextModel();
   SyncStatusModel();
@@ -696,7 +800,7 @@ SrfUIStyle CSrfTip::ResolveUiStyleForApp(const std::wstring& appName) const {
 }
 
 SrfFocusPolicy CSrfTip::EffectiveFocusPolicy() const {
-  const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName);
+  const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName());
   if (options && options->hasFocusPolicy) {
     return options->focusPolicy;
   }
@@ -770,6 +874,11 @@ void CSrfTip::RefreshCompatibilityState() {
   HWND root = hwnd ? GetAncestor(hwnd, GA_ROOT) : nullptr;
   if (root && IsWindowVisible(root)) hwnd = root;
 
+  m_compatibilityHwnd = hwnd;
+  m_compatibilityAppName = ProcessNameForWindow(hwnd, &m_compatibilityProcessId);
+  if (m_compatibilityAppName.empty()) m_compatibilityAppName = m_activeAppName;
+  (void)ReconcileManualModeOwner();
+
   const bool wasSensitiveInputActive = m_sensitiveInputActive;
   m_sensitiveInputActive = SrfIsSensitiveInputContext(m_activeAppName);
   if (!wasSensitiveInputActive && m_sensitiveInputActive) {
@@ -779,15 +888,23 @@ void CSrfTip::RefreshCompatibilityState() {
   }
 
   std::wstring className = WindowClassName(hwnd);
-  const bool rawConfiguredGameCompat = IsConfiguredGameProcessName(m_config, m_activeAppName);
+  const std::wstring& compatibilityAppName = CompatibilityAppName();
+  const bool rawConfiguredGameCompat = IsConfiguredGameProcessName(m_config, compatibilityAppName);
   const bool rawBuiltinGameCompat =
       m_config.compatibility.builtinGameList &&
-      (IsBuiltinGameProcessName(m_activeAppName) || IsBuiltinGameWindowClass(className));
+      (IsBuiltinGameProcessName(compatibilityAppName) || IsBuiltinGameWindowClass(className));
   const bool rawGameCompat = rawConfiguredGameCompat || rawBuiltinGameCompat;
 
   const ULONGLONG now = GetTickCount64();
   const bool rawFullscreen =
       m_config.compatibility.fullscreenDetection && IsFullscreenForegroundWindow(hwnd);
+  const LONG_PTR foregroundStyle = hwnd ? GetWindowLongPtrW(hwnd, GWL_STYLE) : 0;
+  // Known game surfaces can be classified immediately.  Unknown fullscreen
+  // windows retain the short debounce below so a launcher/desktop transition
+  // cannot unexpectedly switch transports while the user is typing.
+  const bool immediateFullscreenCompat =
+      rawFullscreen &&
+      ((foregroundStyle & WS_POPUP) != 0 || rawBuiltinGameCompat || rawConfiguredGameCompat);
   if (!rawFullscreen) {
     m_fullscreenCompatCandidateHwnd = nullptr;
     m_fullscreenCompatCandidateSince = 0;
@@ -797,7 +914,7 @@ void CSrfTip::RefreshCompatibilityState() {
   }
   const bool stableFullscreen =
       rawFullscreen &&
-      (m_fullscreenCompatActive ||
+      (immediateFullscreenCompat || m_fullscreenCompatActive ||
        (m_fullscreenCompatCandidateSince != 0 &&
         now - m_fullscreenCompatCandidateSince >= kFullscreenCompatStableMs));
 
@@ -818,23 +935,33 @@ void CSrfTip::RefreshCompatibilityState() {
     m_fullscreenCompatActive = false;
   }
   if (m_runtimeHideUiFallbackActive &&
-      (m_activeAppName.empty() ||
-       !WildcardMatchNoCase(m_runtimeHideUiFallbackAppName, m_activeAppName))) {
+      (compatibilityAppName.empty() ||
+       !WildcardMatchNoCase(m_runtimeHideUiFallbackAppName, compatibilityAppName))) {
     m_runtimeHideUiFallbackActive = false;
     m_runtimeHideUiFallbackAppName.clear();
   }
   if (m_runtimeAsciiFallbackActive &&
-      (m_activeAppName.empty() ||
-       !WildcardMatchNoCase(m_runtimeAsciiFallbackAppName, m_activeAppName))) {
+      (compatibilityAppName.empty() ||
+       !WildcardMatchNoCase(m_runtimeAsciiFallbackAppName, compatibilityAppName))) {
     m_runtimeAsciiFallbackActive = false;
     m_runtimeAsciiFallbackAppName.clear();
   }
 
   const SrfFullscreenPolicy policy = EffectiveCompatibilityPolicy();
+  const bool enteredAscii =
+      m_hasLastCompatibilityPolicy && m_lastCompatibilityPolicy != SrfFullscreenPolicy::Ascii &&
+      policy == SrfFullscreenPolicy::Ascii;
+  m_lastCompatibilityPolicy = policy;
+  m_hasLastCompatibilityPolicy = true;
+  if (enteredAscii) {
+    m_compatibilityAsciiCleanupPending = true;
+    ClearFocusBoundCandidateState(L"compatibility-ascii-enter");
+    RequestCompatibilityAsciiCleanup();
+  }
   const bool compatibilityHidesUi =
       policy == SrfFullscreenPolicy::Ascii || policy == SrfFullscreenPolicy::HideUi;
   m_uiStyle.candidateTopmost =
-      ResolveUiStyleForApp(m_activeAppName).candidateTopmost && !compatibilityHidesUi;
+      ResolveUiStyleForApp(compatibilityAppName).candidateTopmost && !compatibilityHidesUi;
 
   if (ShouldSuppressCandidatesForPrivacy() && !m_candidates.empty()) {
     m_candidates.clear();
@@ -855,15 +982,64 @@ void CSrfTip::RefreshCompatibilityState() {
   }
 }
 
+void CSrfTip::RequestCompatibilityAsciiCleanup() {
+  if (!m_compatibilityAsciiCleanupPending) return;
+  if (!m_pComposition) {
+    m_compatibilityAsciiCleanupPending = false;
+    if (!m_reading.empty()) ReleaseCompositionState();
+    return;
+  }
+  if (!m_pCompositionContext || m_tid == 0) return;
+
+  CEditSessionCompatibilityAsciiCleanup* edit =
+      new (std::nothrow) CEditSessionCompatibilityAsciiCleanup(this);
+  if (!edit) return;
+  HRESULT hrSession = E_FAIL;
+  const HRESULT hr = m_pCompositionContext->RequestEditSession(
+      m_tid, edit, TF_ES_ASYNC | TF_ES_READWRITE, &hrSession);
+  edit->Release();
+  if (SUCCEEDED(hr) || SUCCEEDED(hrSession)) {
+    m_compatibilityAsciiCleanupPending = false;
+    return;
+  }
+  if (SrfTsfDebugTraceEnabled()) {
+    wchar_t line[144] = {};
+    swprintf_s(line, L"compatibility ASCII cleanup request failed hr=0x%08lX session=0x%08lX",
+               static_cast<unsigned long>(hr), static_cast<unsigned long>(hrSession));
+    SrfTsfDebugLog(line);
+  }
+}
+
+void CSrfTip::HandleCompatibilityAsciiCleanupEditSession(TfEditCookie ec) {
+  if (!ShouldForceAsciiForCompatibility()) {
+    m_compatibilityAsciiCleanupPending = false;
+    return;
+  }
+  m_compatibilityAsciiCleanupPending = false;
+  if (m_pComposition) {
+    CancelCompositionEdit(ec);
+  } else {
+    ReleaseCompositionState();
+  }
+  RebuildContextModel();
+  SyncStatusModel();
+}
+
+const std::wstring& CSrfTip::CompatibilityAppName() const {
+  return m_compatibilityAppName.empty() ? m_activeAppName : m_compatibilityAppName;
+}
+
 SrfFullscreenPolicy CSrfTip::EffectiveCompatibilityPolicy() const {
   if (m_config.privacy.enabled) return SrfFullscreenPolicy::Ascii;
   if (m_manualAsciiModeActive) return SrfFullscreenPolicy::Ascii;
-  if (m_manualGameCompatActive) return m_config.compatibility.fullscreenPolicy;
   if (m_sensitiveInputActive) return SrfFullscreenPolicy::Ascii;
+  if (m_manualCompatibilityBypass) return SrfFullscreenPolicy::Off;
+  if (m_manualGameCompatActive) return m_config.compatibility.fullscreenPolicy;
   if (m_runtimeAsciiFallbackActive) return SrfFullscreenPolicy::Ascii;
   if (m_runtimeHideUiFallbackActive) return SrfFullscreenPolicy::HideUi;
-  if (IsBuiltinAsciiOnlyProcessName(m_activeAppName)) return SrfFullscreenPolicy::Ascii;
-  if (const SrfAppOptions* matchedOptions = FindAppOptions(m_config, m_activeAppName)) {
+  const std::wstring& appName = CompatibilityAppName();
+  if (IsBuiltinAsciiOnlyProcessName(appName)) return SrfFullscreenPolicy::Ascii;
+  if (const SrfAppOptions* matchedOptions = FindAppOptions(m_config, appName)) {
     const SrfAppOptions& options = *matchedOptions;
     if (options.hasHideUi && options.hideUi) return SrfFullscreenPolicy::HideUi;
     if (options.hasAsciiMode && options.asciiMode) return SrfFullscreenPolicy::Ascii;
@@ -900,7 +1076,7 @@ const wchar_t* CSrfTip::EffectiveCompatibilityPolicyName() const {
 }
 
 SrfOverlayBackend CSrfTip::EffectiveCandidateOverlayBackend() const {
-  if (const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName)) {
+  if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
     if (options->hasOverlayBackend) return options->overlayBackend;
   }
   return SrfOverlayBackend::Auto;
@@ -915,7 +1091,7 @@ bool CSrfTip::ShouldUseExternalCandidateOverlay() const {
 SrfCommitTransport CSrfTip::EffectiveCommitTransport() const {
   SrfCommitTransport requested = m_config.compatibility.commitTransport;
   bool appGameProfile = false;
-  const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName);
+  const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName());
   if (options && options->hasCommitTransport) {
     requested = options->commitTransport;
   }
@@ -926,7 +1102,14 @@ SrfCommitTransport CSrfTip::EffectiveCommitTransport() const {
     const bool compatibilityActive =
         appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
         m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
-    return compatibilityActive ? SrfCommitTransport::UnicodeSendInput : SrfCommitTransport::Tsf;
+    if (compatibilityActive) {
+      // Probe games with the low-latency path first.  A failed injection (or a
+      // target process that disappears immediately after it) trips the
+      // process-local circuit breaker; subsequent commits use ClipboardPaste.
+      return IsUnicodeFallbackApp(CompatibilityAppName()) ? SrfCommitTransport::ClipboardPaste
+                                                   : SrfCommitTransport::UnicodeSendInput;
+    }
+    return SrfCommitTransport::Tsf;
   }
   return requested;
 }
@@ -947,6 +1130,32 @@ const wchar_t* CSrfTip::EffectiveCommitTransportName() const {
 
 bool CSrfTip::ShouldForceAsciiForCompatibility() const {
   return EffectiveCompatibilityPolicy() == SrfFullscreenPolicy::Ascii;
+}
+
+const wchar_t* CSrfTip::EffectiveInputModeSource() const {
+  if (m_config.privacy.enabled || m_sensitiveInputActive) return L"privacy";
+  if (m_manualCompatibilityBypass) return L"recovery";
+  if (m_manualAsciiModeActive) return L"manual";
+  if (m_runtimeAsciiFallbackActive) return L"fallback";
+
+  const std::wstring& appName = CompatibilityAppName();
+  if (const SrfAppOptions* options = FindAppOptions(m_config, appName)) {
+    if (options->hasAsciiMode && options->asciiMode) return L"app";
+    if (options->hasGameProfile && options->gameCompactProfile) return L"game";
+  }
+  if (IsBuiltinAsciiOnlyProcessName(appName) &&
+      EffectiveCompatibilityPolicy() == SrfFullscreenPolicy::Ascii) {
+    return L"game";
+  }
+  if (m_fullscreenCompatActive) {
+    return L"fullscreen";
+  }
+  if (m_configuredGameCompatActive || m_builtinGameCompatActive || m_gameCompatActive ||
+      m_manualGameCompatActive) {
+    return L"game";
+  }
+  if (!m_imeOpen) return L"global";
+  return L"chinese";
 }
 
 bool CSrfTip::ShouldUseBlindCommitForCompatibility() const {
@@ -1043,7 +1252,9 @@ void CSrfTip::SyncStatusModel() {
   m_status.fuzzyPinyin = m_fuzzyPinyin;
   m_status.doublePinyin = m_doublePinyin;
   m_status.appName = m_activeAppName;
-  PublishTrayInputStatus(m_status.asciiMode, m_status.fullShape, m_status.chinesePunctuation);
+  m_status.modeSource = EffectiveInputModeSource();
+  PublishTrayInputStatus(m_status.asciiMode, m_status.fullShape, m_status.chinesePunctuation,
+                         m_status.modeSource);
 }
 
 void CSrfTip::SyncCandidateContextState(const CandidatePageLayoutMetrics* layout) {
@@ -1178,26 +1389,12 @@ std::wstring CSrfTip::FocusedProcessName() {
     return m_cachedFocusedProcessName;
   }
 
-  HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
-  if (!process) {
-    m_cachedFocusedHwnd = hwnd;
-    m_cachedFocusedProcessId = processId;
-    m_cachedFocusedProcessName.clear();
-    return {};
-  }
+  const std::wstring processName = ProcessNameForWindow(hwnd, &processId);
 
-  std::wstring path(MAX_PATH, L'\0');
-  DWORD size = static_cast<DWORD>(path.size());
-  std::wstring name;
-  if (QueryFullProcessImageNameW(process, 0, path.data(), &size) && size > 0) {
-    path.resize(size);
-    name = path;
-  }
-  CloseHandle(process);
   m_cachedFocusedHwnd = hwnd;
   m_cachedFocusedProcessId = processId;
-  m_cachedFocusedProcessName = name;
-  return name;
+  m_cachedFocusedProcessName = processName;
+  return processName;
 }
 
 SrfFocusSnapshot CSrfTip::CaptureFocusSnapshot(ITfContext* context) const {
@@ -1254,6 +1451,17 @@ std::wstring CSrfTip::FormatFocusSnapshotForLog(const SrfFocusSnapshot& snapshot
 
 void CSrfTip::ShowNotification(SrfNotificationKind kind, const std::wstring& text) {
   RefreshCompatibilityState();
+  bool appGameProfile = false;
+  if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
+    appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
+  }
+  const bool gameCompatibilityActive =
+      appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
+      m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
+  if (gameCompatibilityActive) {
+    SrfTsfDiagnosticLog(L"notification.skip", L"game-compatibility-active");
+    return;
+  }
   if (ShouldHideUiForCompatibility()) {
     SrfTsfDiagnosticLog(L"notification.skip", L"compatibility policy hides UI");
     return;
@@ -1363,7 +1571,7 @@ void CSrfTip::SaveGlobalAsciiState(bool asciiMode) const {
 }
 
 void CSrfTip::ApplyGlobalAsciiStateFromRegistry() {
-  const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName);
+  const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName());
   if (options && options->hasAsciiMode) return;
 
   bool asciiMode = false;

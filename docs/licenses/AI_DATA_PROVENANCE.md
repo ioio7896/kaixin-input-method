@@ -9,9 +9,8 @@ status: verified
 
 - `pinyin-ime/data/s2t_chars.sqlite`；
 - `data_sources/kaixin/*.tsv`；
-- `lexicon/base/*admin*.txt`；
-- `lexicon/base/hangzhou_*.txt`；
-- `lexicon/ext/hangzhou_*.txt`。
+- `lexicon/zh-ext/*admin*.txt`；
+- `lexicon/zh-ext/hangzhou_*.txt`。
 
 这些文件不是从仓库中已有的 THUOCL、rust-pinyin、wordfreq、RapidOCR 或 ShareX 内容
 直接生成的上游同步文件。项目作者愿意在其依法拥有或有权授权的范围内，按照项目的

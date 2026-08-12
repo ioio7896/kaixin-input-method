@@ -1,0 +1,2003 @@
+# 开心输入法原生词库：2000 条五至七字生活日常常用短语
+# Source: 高频聊天表达 + 生活场景固定搭配整理
+# 格式：词语<TAB>全拼<TAB>万分制词频；第三列范围 1-10000，按本词库内常用程度排序。
+最近怎么样	zui jin zen me yang	10000
+你吃饭了吗	ni chi fan le ma	9996
+今天还好吗	jin tian hai hao ma	9992
+现在方便吗	xian zai fang bian ma	9988
+可以聊聊吗	ke yi liao liao ma	9984
+有什么事吗	you shen me shi ma	9980
+发生什么事	fa sheng shen me shi	9976
+这是怎么了	zhe shi zen me le	9972
+我不太清楚	wo bu tai qing chu	9968
+我也不知道	wo ye bu zhi dao	9964
+那就这样吧	na jiu zhe yang ba	9960
+有事联系我	you shi lian xi wo	9956
+真的假的呀	zhen de jia de ya	9952
+我已经到了	wo yi jing dao le	9948
+稍后回复你	shao hou hui fu ni	9944
+等一下再说	deng yi xia zai shuo	9940
+你先休息吧	ni xian xiu xi ba	9936
+麻烦看一下	ma fan kan yi xia	9932
+帮我看一下	bang wo kan yi xia	9928
+记得回复我	ji de hui fu wo	9924
+别忘了回复	bie wang le hui fu	9920
+看到请回复	kan dao qing hui fu	9916
+先谢谢你了	xian xie xie ni le	9912
+辛苦你帮忙	xin ku ni bang mang	9908
+麻烦你抽空	ma fan ni chou kong	9904
+打扰一下哈	da rao yi xia ha	9900
+抱歉打扰了	bao qian da rao le	9896
+不好意思啊	bu hao yi si a	9892
+别放在心上	bie fang zai xin shang	9888
+听起来不错	ting qi lai bu cuo	9884
+感觉还不错	gan jue hai bu cuo	9880
+我觉得可以	wo jue de ke yi	9876
+我觉得不行	wo jue de bu xing	9872
+让我想一想	rang wo xiang yi xiang	9868
+我考虑一下	wo kao lv yi xia	9864
+我来试试看	wo lai shi shi kan	9860
+已经解决了	yi jing jie jue le	9856
+还是不行啊	hai shi bu xing a	9852
+又出问题了	you chu wen ti le	9848
+等我处理完	deng wo chu li wan	9844
+明天见面吗	ming tian jian mian ma	9840
+下次再约吧	xia ci zai yue ba	9836
+有机会再见	you ji hui zai jian	9832
+到了告诉我	dao le gao su wo	9828
+开车慢一点	kai che man yi dian	9824
+今天辛苦了	jin tian xin ku le	9820
+工作加油啊	gong zuo jia you a	9816
+学习加油啊	xue xi jia you a	9812
+考试顺利啊	kao shi shun li a	9808
+面试顺利啊	mian shi shun li a	9804
+别忘了吃饭	bie wang le chi fan	9800
+多喝一点水	duo he yi dian shui	9796
+早点睡觉吧	zao dian shui jiao ba	9792
+做个好梦吧	zuo ge hao meng ba	9788
+你到家了吗	ni dao jia le ma	9784
+你看到了吗	ni kan dao le ma	9780
+你收到了吗	ni shou dao le ma	9776
+今天上班吗	jin tian shang ban ma	9772
+今天休息吗	jin tian xiu xi ma	9768
+今天有空吗	jin tian you kong ma	9764
+今天去哪儿	jin tian qu na er	9760
+今天吃什么	jin tian chi shen me	9756
+今天喝什么	jin tian he shen me	9752
+明天上班吗	ming tian shang ban ma	9748
+明天休息吗	ming tian xiu xi ma	9744
+明天有空吗	ming tian you kong ma	9740
+明天去哪儿	ming tian qu na er	9736
+明天吃什么	ming tian chi shen me	9732
+明天喝什么	ming tian he shen me	9728
+晚上吃什么	wan shang chi shen me	9724
+晚上喝什么	wan shang he shen me	9720
+晚上去哪儿	wan shang qu na er	9716
+周末有空吗	zhou mo you kong ma	9712
+周末去哪儿	zhou mo qu na er	9708
+周末玩什么	zhou mo wan shen me	9704
+现在忙不忙	xian zai mang bu mang	9700
+现在有空吗	xian zai you kong ma	9696
+现在去哪儿	xian zai qu na er	9692
+现在怎么办	xian zai zen me ban	9688
+最近忙不忙	zui jin mang bu mang	9684
+我先走一步	wo xian zou yi bu	9680
+我先回家了	wo xian hui jia le	9676
+我先去忙了	wo xian qu mang le	9672
+我先睡觉了	wo xian shui jiao le	9668
+我先吃饭了	wo xian chi fan le	9664
+我先出门了	wo xian chu men le	9660
+我还没到呢	wo hai mei dao ne	9656
+我快到了啊	wo kuai dao le a	9652
+我到家了啊	wo dao jia le a	9648
+我出发了啊	wo chu fa le a	9644
+我回来了啊	wo hui lai le a	9640
+我在路上呢	wo zai lu shang ne	9636
+我在地铁上	wo zai di tie shang	9632
+我在公交上	wo zai gong jiao shang	9628
+我找不到路	wo zhao bu dao lu	9624
+我马上回来	wo ma shang hui lai	9620
+你先回家吧	ni xian hui jia ba	9616
+你先吃饭吧	ni xian chi fan ba	9612
+你先看一下	ni xian kan yi xia	9608
+你再看一看	ni zai kan yi kan	9604
+你再想一想	ni zai xiang yi xiang	9600
+你再说一遍	ni zai shuo yi bian	9596
+你再等一下	ni zai deng yi xia	9592
+你快回来吧	ni kuai hui lai ba	9588
+你慢慢说吧	ni man man shuo ba	9584
+你注意安全	ni zhu yi an quan	9580
+请你看一下	qing ni kan yi xia	9576
+请你说一下	qing ni shuo yi xia	9572
+请你等一下	qing ni deng yi xia	9568
+请你帮帮我	qing ni bang bang wo	9564
+请你告诉我	qing ni gao su wo	9560
+请你联系我	qing ni lian xi wo	9556
+请你回复我	qing ni hui fu wo	9552
+请你确认下	qing ni que ren xia	9548
+请你检查下	qing ni jian cha xia	9544
+请你放心吧	qing ni fang xin ba	9540
+请你慢一点	qing ni man yi dian	9536
+麻烦问一下	ma fan wen yi xia	9532
+麻烦等一下	ma fan deng yi xia	9528
+麻烦帮一下	ma fan bang yi xia	9524
+麻烦告诉我	ma fan gao su wo	9520
+麻烦联系我	ma fan lian xi wo	9516
+麻烦回复我	ma fan hui fu wo	9512
+麻烦确认下	ma fan que ren xia	9508
+麻烦检查下	ma fan jian cha xia	9504
+麻烦拿一下	ma fan na yi xia	9500
+麻烦带一下	ma fan dai yi xia	9496
+记得吃饭啊	ji de chi fan a	9492
+记得喝水啊	ji de he shui a	9488
+记得带钥匙	ji de dai yao shi	9484
+记得带雨伞	ji de dai yu san	9480
+记得关好门	ji de guan hao men	9476
+记得关好灯	ji de guan hao deng	9472
+记得回消息	ji de hui xiao xi	9468
+记得联系我	ji de lian xi wo	9464
+记得早点睡	ji de zao dian shui	9460
+别忘了喝水	bie wang le he shui	9456
+别忘了带伞	bie wang le dai san	9452
+早点回家吧	zao dian hui jia ba	9448
+早点休息吧	zao dian xiu xi ba	9444
+早点吃饭吧	zao dian chi fan ba	9440
+早点出发吧	zao dian chu fa ba	9436
+早点告诉我	zao dian gao su wo	9432
+早点联系我	zao dian lian xi wo	9428
+多吃一点菜	duo chi yi dian cai	9424
+少吃一点吧	shao chi yi dian ba	9420
+少喝一点酒	shao he yi dian jiu	9416
+每天多喝水	mei tian duo he shui	9412
+每天吃水果	mei tian chi shui guo	9408
+每天要运动	mei tian yao yun dong	9404
+每天早点睡	mei tian zao dian shui	9400
+每天要开心	mei tian yao kai xin	9396
+注意安全啊	zhu yi an quan a	9392
+注意身体啊	zhu yi shen ti a	9388
+注意休息啊	zhu yi xiu xi a	9384
+注意保暖啊	zhu yi bao nuan a	9380
+注意别着凉	zhu yi bie zhao liang	9376
+注意看路啊	zhu yi kan lu a	9372
+注意天气啊	zhu yi tian qi a	9368
+谢谢你帮忙	xie xie ni bang mang	9364
+谢谢你提醒	xie xie ni ti xing	9360
+谢谢大家了	xie xie da jia le	9356
+谢谢大家啊	xie xie da jia a	9352
+不用客气了	bu yong ke qi le	9348
+不用担心我	bu yong dan xin wo	9344
+不用着急啊	bu yong zhao ji a	9340
+不用麻烦了	bu yong ma fan le	9336
+没关系的啊	mei guan xi de a	9332
+没事慢慢来	mei shi man man lai	9328
+回家先洗手	hui jia xian xi shou	9324
+回家先换鞋	hui jia xian huan xie	9320
+出门带雨伞	chu men dai yu san	9316
+出门带钥匙	chu men dai yao shi	9312
+出门关好门	chu men guan hao men	9308
+出门关好灯	chu men guan hao deng	9304
+睡前关好门	shui qian guan hao men	9300
+睡前关好灯	shui qian guan hao deng	9296
+我想吃火锅	wo xiang chi huo guo	9292
+我想吃米饭	wo xiang chi mi fan	9288
+我想吃面条	wo xiang chi mian tiao	9284
+我想吃饺子	wo xiang chi jiao zi	9280
+我想吃包子	wo xiang chi bao zi	9276
+我想吃水果	wo xiang chi shui guo	9272
+我想吃蔬菜	wo xiang chi shu cai	9268
+我想喝牛奶	wo xiang he niu nai	9264
+我想喝豆浆	wo xiang he dou jiang	9260
+我想喝咖啡	wo xiang he ka fei	9256
+我想喝红茶	wo xiang he hong cha	9252
+我想喝热水	wo xiang he re shui	9248
+今天吃火锅	jin tian chi huo guo	9244
+今天吃米饭	jin tian chi mi fan	9240
+今天吃面条	jin tian chi mian tiao	9236
+今天吃饺子	jin tian chi jiao zi	9232
+今天吃包子	jin tian chi bao zi	9228
+今天吃水果	jin tian chi shui guo	9224
+今天喝牛奶	jin tian he niu nai	9220
+今天喝豆浆	jin tian he dou jiang	9216
+晚上吃火锅	wan shang chi huo guo	9212
+晚上吃米饭	wan shang chi mi fan	9208
+晚上吃面条	wan shang chi mian tiao	9204
+晚上吃饺子	wan shang chi jiao zi	9200
+晚上喝牛奶	wan shang he niu nai	9196
+晚上喝杯茶	wan shang he bei cha	9192
+一起去吃饭	yi qi qu chi fan	9188
+一起去买菜	yi qi qu mai cai	9184
+一起去散步	yi qi qu san bu	9180
+一起去逛街	yi qi qu guang jie	9176
+一起去运动	yi qi qu yun dong	9172
+一起喝杯茶	yi qi he bei cha	9168
+帮我买点菜	bang wo mai dian cai	9164
+帮我买牛奶	bang wo mai niu nai	9160
+帮我买水果	bang wo mai shui guo	9156
+帮我买面包	bang wo mai mian bao	9152
+下班买点菜	xia ban mai dian cai	9148
+顺路买点菜	shun lu mai dian cai	9144
+这个多少钱	zhe ge duo shao qian	9140
+请发我地址	qing fa wo di zhi	9136
+在门口等我	zai men kou deng wo	9132
+楼下等我吧	lou xia deng wo ba	9128
+路上小心点	lu shang xiao xin dian	9124
+家里还好吗	jia li hai hao ma	9120
+有空一起玩	you kong yi qi wan	9116
+周末一起聚	zhou mo yi qi ju	9112
+下次一起吃	xia ci yi qi chi	9108
+好久不见啊	hao jiu bu jian a	9104
+常联系我啊	chang lian xi wo a	9100
+今天回家吧	jin tian hui jia ba	9096
+明天回家吧	ming tian hui jia ba	9092
+周末回家吧	zhou mo hui jia ba	9088
+祝你好运啊	zhu ni hao yun a	9084
+希望你开心	xi wang ni kai xin	9080
+我想吃馒头	wo xiang chi man tou	9076
+我想吃烧烤	wo xiang chi shao kao	9072
+我想吃炒菜	wo xiang chi chao cai	9068
+我想吃炒饭	wo xiang chi chao fan	9064
+我想吃汤面	wo xiang chi tang mian	9060
+我想吃米粥	wo xiang chi mi zhou	9056
+我想吃面包	wo xiang chi mian bao	9052
+我想吃蛋糕	wo xiang chi dan gao	9048
+我想吃鸡蛋	wo xiang chi ji dan	9044
+我想吃零食	wo xiang chi ling shi	9040
+我想吃甜点	wo xiang chi tian dian	9036
+我想吃汉堡	wo xiang chi han bao	9032
+我想吃披萨	wo xiang chi pi sa	9028
+我想吃炸鸡	wo xiang chi zha ji	9024
+我想吃烤鸭	wo xiang chi kao ya	9020
+我想吃早餐	wo xiang chi zao can	9016
+我想吃午饭	wo xiang chi wu fan	9012
+我想吃晚饭	wo xiang chi wan fan	9008
+我想吃夜宵	wo xiang chi ye xiao	9004
+我想吃外卖	wo xiang chi wai mai	8999
+我想喝温水	wo xiang he wen shui	8995
+我想喝绿茶	wo xiang he lv cha	8991
+我想喝果汁	wo xiang he guo zhi	8987
+我想喝饮料	wo xiang he yin liao	8983
+我想喝酸奶	wo xiang he suan nai	8979
+我想买蔬菜	wo xiang mai shu cai	8975
+我想买水果	wo xiang mai shui guo	8971
+我想买牛奶	wo xiang mai niu nai	8967
+我想买鸡蛋	wo xiang mai ji dan	8963
+我想买面包	wo xiang mai mian bao	8959
+我想买纸巾	wo xiang mai zhi jin	8955
+我想买牙膏	wo xiang mai ya gao	8951
+我想买牙刷	wo xiang mai ya shua	8947
+我想买大米	wo xiang mai da mi	8943
+我想买面粉	wo xiang mai mian fen	8939
+我想买雨伞	wo xiang mai yu san	8935
+我想买拖鞋	wo xiang mai tuo xie	8931
+我想买衣服	wo xiang mai yi fu	8927
+我想买鞋子	wo xiang mai xie zi	8923
+我想买袜子	wo xiang mai wa zi	8919
+我想买礼物	wo xiang mai li wu	8915
+我想买药品	wo xiang mai yao pin	8911
+我想买口罩	wo xiang mai kou zhao	8907
+我想买耳机	wo xiang mai er ji	8903
+我想买电池	wo xiang mai dian chi	8899
+我想买文具	wo xiang mai wen ju	8895
+一起去公司	yi qi qu gong si	8891
+怎么去公司	zen me qu gong si	8887
+到公司等我	dao gong si deng wo	8883
+一起去学校	yi qi qu xue xiao	8879
+怎么去学校	zen me qu xue xiao	8875
+到学校等我	dao xue xiao deng wo	8871
+一起去医院	yi qi qu yi yuan	8867
+怎么去医院	zen me qu yi yuan	8863
+到医院等我	dao yi yuan deng wo	8859
+一起去银行	yi qi qu yin hang	8855
+怎么去银行	zen me qu yin hang	8851
+到银行等我	dao yin hang deng wo	8847
+一起去超市	yi qi qu chao shi	8843
+怎么去超市	zen me qu chao shi	8839
+到超市等我	dao chao shi deng wo	8835
+一起去机场	yi qi qu ji chang	8831
+怎么去机场	zen me qu ji chang	8827
+到机场等我	dao ji chang deng wo	8823
+一起去商场	yi qi qu shang chang	8819
+怎么去商场	zen me qu shang chang	8815
+到商场等我	dao shang chang deng wo	8811
+一起去药店	yi qi qu yao dian	8807
+怎么去药店	zen me qu yao dian	8803
+到药店等我	dao yao dian deng wo	8799
+一起去餐厅	yi qi qu can ting	8795
+怎么去餐厅	zen me qu can ting	8791
+到餐厅等我	dao can ting deng wo	8787
+一起去公园	yi qi qu gong yuan	8783
+怎么去公园	zen me qu gong yuan	8779
+到公园等我	dao gong yuan deng wo	8775
+一起去老家	yi qi qu lao jia	8771
+怎么去老家	zen me qu lao jia	8767
+到老家等我	dao lao jia deng wo	8763
+一起去附近	yi qi qu fu jin	8759
+怎么去附近	zen me qu fu jin	8755
+到附近等我	dao fu jin deng wo	8751
+一起去楼下	yi qi qu lou xia	8747
+怎么去楼下	zen me qu lou xia	8743
+到楼下等我	dao lou xia deng wo	8739
+一起去门口	yi qi qu men kou	8735
+怎么去门口	zen me qu men kou	8731
+到门口等我	dao men kou deng wo	8727
+我到车站了	wo dao che zhan le	8723
+你到哪里了	ni dao na li le	8719
+请大家知悉	qing da jia zhi xi	8715
+附件请查收	fu jian qing cha shou	8711
+上线前检查	shang xian qian jian cha	8707
+上线后观察	shang xian hou guan cha	8703
+以上请知悉	yi shang qing zhi xi	8699
+请审批处理	qing shen pi chu li	8695
+请领导审阅	qing ling dao shen yue	8691
+请批示意见	qing pi shi yi jian	8687
+请予以确认	qing yu yi que ren	8683
+请做好记录	qing zuo hao ji lu	8679
+方便接电话吗	fang bian jie dian hua ma	8675
+到底怎么回事	dao di zen me hui shi	8671
+别着急慢慢来	bie zhao ji man man lai	8667
+一切都会好的	yi qie du hui hao de	8663
+不会吧不会吧	bu hui ba bu hui ba	8659
+很高兴认识你	hen gao xing ren shi ni	8655
+认识你很开心	ren shi ni hen kai xin	8651
+感谢你的帮助	gan xie ni de bang zhu	8647
+可以帮个忙吗	ke yi bang ge mang ma	8643
+有空帮我看看	you kong bang wo kan kan	8639
+方便发给我吗	fang bian fa gei wo ma	8635
+请你确认一下	qing ni que ren yi xia	8631
+这个主意不错	zhe ge zhu yi bu cuo	8627
+说得很有道理	shuo de hen you dao li	8623
+我不这么认为	wo bu zhe me ren wei	8619
+请继续说下去	qing ji xu shuo xia qu	8615
+能再说一遍吗	neng zai shuo yi bian ma	8611
+我没有听清楚	wo mei you ting qing chu	8607
+请问怎么操作	qing wen zen me cao zuo	8603
+怎么使用这个	zen me shi yong zhe ge	8599
+这个怎么解决	zhe ge zen me jie jue	8595
+我试一下看看	wo shi yi xia kan kan	8591
+现在可以用了	xian zai ke yi yong le	8587
+稍微有点问题	shao wei you dian wen ti	8583
+我来处理一下	wo lai chu li yi xia	8579
+你现在在哪里	ni xian zai zai na li	8575
+什么时候有空	shen me shi hou you kong	8571
+改天一起吃饭	gai tian yi qi chi fan	8567
+路上注意安全	lu shang zhu yi an quan	8563
+早点回家休息	zao dian hui jia xiu xi	8559
+祝你工作顺利	zhu ni gong zuo shun li	8555
+祝你天天开心	zhu ni tian tian kai xin	8551
+希望你能理解	xi wang ni neng li jie	8547
+希望一切顺利	xi wang yi qie shun li	8543
+愿你每天开心	yuan ni mei tian kai xin	8539
+新的一天加油	xin de yi tian jia you	8535
+今天也要开心	jin tian ye yao kai xin	8531
+记得照顾自己	ji de zhao gu zi ji	8527
+你今天有空吗	ni jin tian you kong ma	8523
+你现在方便吗	ni xian zai fang bian ma	8519
+你准备好了吗	ni zhun bei hao le ma	8515
+你听明白了吗	ni ting ming bai le ma	8511
+你觉得怎么样	ni jue de zen me yang	8507
+你有什么安排	ni you shen me an pai	8503
+你想吃什么呢	ni xiang chi shen me ne	8499
+你想喝点什么	ni xiang he dian shen me	8495
+你要一起去吗	ni yao yi qi qu ma	8491
+你要不要过来	ni yao bu yao guo lai	8487
+你要不要试试	ni yao bu yao shi shi	8483
+你有没有时间	ni you mei you shi jian	8479
+你有没有办法	ni you mei you ban fa	8475
+你有没有发现	ni you mei you fa xian	8471
+这件事怎么办	zhe jian shi zen me ban	8467
+我已经到家了	wo yi jing dao jia le	8463
+我马上就到了	wo ma shang jiu dao le	8459
+我还在路上呢	wo hai zai lu shang ne	8455
+我先回家休息	wo xian hui jia xiu xi	8451
+我先去吃饭了	wo xian qu chi fan le	8447
+我先忙一会儿	wo xian mang yi hui er	8443
+我也不太清楚	wo ye bu tai qing chu	8439
+我也不知道呢	wo ye bu zhi dao ne	8435
+我觉得不太好	wo jue de bu tai hao	8431
+我觉得有道理	wo jue de you dao li	8427
+我没有看明白	wo mei you kan ming bai	8423
+我已经看到了	wo yi jing kan dao le	8419
+我已经收到了	wo yi jing shou dao le	8415
+我马上回复你	wo ma shang hui fu ni	8411
+我晚点联系你	wo wan dian lian xi ni	8407
+我有空再联系	wo you kong zai lian xi	8403
+我来想想办法	wo lai xiang xiang ban fa	8399
+我来帮你看看	wo lai bang ni kan kan	8395
+我来确认一下	wo lai que ren yi xia	8391
+我先考虑一下	wo xian kao lv yi xia	8387
+我再想一想吧	wo zai xiang yi xiang ba	8383
+我们再看一看	wo men zai kan yi kan	8379
+我们改天再约	wo men gai tian zai yue	8375
+大家辛苦了啊	da jia xin ku le a	8371
+先这样安排吧	xian zhe yang an pai ba	8367
+先不用着急啊	xian bu yong zhao ji a	8363
+先等一下再说	xian deng yi xia zai shuo	8359
+这几天比较忙	zhe ji tian bi jiao mang	8355
+下班回家吃饭	xia ban hui jia chi fan	8351
+今天想吃米饭	jin tian xiang chi mi fan	8347
+晚上想吃米饭	wan shang xiang chi mi fan	8343
+一起去吃米饭	yi qi qu chi mi fan	8339
+我们去吃米饭	wo men qu chi mi fan	8335
+中午吃点米饭	zhong wu chi dian mi fan	8331
+家里还有米饭	jia li hai you mi fan	8327
+帮我买点米饭	bang wo mai dian mi fan	8323
+今天想吃面条	jin tian xiang chi mian tiao	8319
+晚上想吃面条	wan shang xiang chi mian tiao	8315
+一起去吃面条	yi qi qu chi mian tiao	8311
+我们去吃面条	wo men qu chi mian tiao	8307
+中午吃点面条	zhong wu chi dian mian tiao	8303
+家里还有面条	jia li hai you mian tiao	8299
+帮我买点面条	bang wo mai dian mian tiao	8295
+今天想吃饺子	jin tian xiang chi jiao zi	8291
+晚上想吃饺子	wan shang xiang chi jiao zi	8287
+一起去吃饺子	yi qi qu chi jiao zi	8283
+我们去吃饺子	wo men qu chi jiao zi	8279
+中午吃点饺子	zhong wu chi dian jiao zi	8275
+家里还有饺子	jia li hai you jiao zi	8271
+帮我买点饺子	bang wo mai dian jiao zi	8267
+今天想吃包子	jin tian xiang chi bao zi	8263
+晚上想吃包子	wan shang xiang chi bao zi	8259
+一起去吃包子	yi qi qu chi bao zi	8255
+我们去吃包子	wo men qu chi bao zi	8251
+中午吃点包子	zhong wu chi dian bao zi	8247
+家里还有包子	jia li hai you bao zi	8243
+帮我买点包子	bang wo mai dian bao zi	8239
+今天想吃馒头	jin tian xiang chi man tou	8235
+晚上想吃馒头	wan shang xiang chi man tou	8231
+一起去吃馒头	yi qi qu chi man tou	8227
+我们去吃馒头	wo men qu chi man tou	8223
+中午吃点馒头	zhong wu chi dian man tou	8219
+家里还有馒头	jia li hai you man tou	8215
+帮我买点馒头	bang wo mai dian man tou	8211
+今天想吃火锅	jin tian xiang chi huo guo	8207
+晚上想吃火锅	wan shang xiang chi huo guo	8203
+一起去吃火锅	yi qi qu chi huo guo	8199
+我们去吃火锅	wo men qu chi huo guo	8195
+中午吃点火锅	zhong wu chi dian huo guo	8191
+家里还有火锅	jia li hai you huo guo	8187
+帮我买点火锅	bang wo mai dian huo guo	8183
+今天想吃烧烤	jin tian xiang chi shao kao	8179
+晚上想吃烧烤	wan shang xiang chi shao kao	8175
+一起去吃烧烤	yi qi qu chi shao kao	8171
+我们去吃烧烤	wo men qu chi shao kao	8167
+中午吃点烧烤	zhong wu chi dian shao kao	8163
+家里还有烧烤	jia li hai you shao kao	8159
+帮我买点烧烤	bang wo mai dian shao kao	8155
+今天想吃炒菜	jin tian xiang chi chao cai	8151
+晚上想吃炒菜	wan shang xiang chi chao cai	8147
+一起去吃炒菜	yi qi qu chi chao cai	8143
+我们去吃炒菜	wo men qu chi chao cai	8139
+中午吃点炒菜	zhong wu chi dian chao cai	8135
+家里还有炒菜	jia li hai you chao cai	8131
+帮我买点炒菜	bang wo mai dian chao cai	8127
+今天想吃炒饭	jin tian xiang chi chao fan	8123
+晚上想吃炒饭	wan shang xiang chi chao fan	8119
+一起去吃炒饭	yi qi qu chi chao fan	8115
+我们去吃炒饭	wo men qu chi chao fan	8111
+中午吃点炒饭	zhong wu chi dian chao fan	8107
+家里还有炒饭	jia li hai you chao fan	8103
+帮我买点炒饭	bang wo mai dian chao fan	8099
+今天想吃汤面	jin tian xiang chi tang mian	8095
+晚上想吃汤面	wan shang xiang chi tang mian	8091
+一起去吃汤面	yi qi qu chi tang mian	8087
+我们去吃汤面	wo men qu chi tang mian	8083
+中午吃点汤面	zhong wu chi dian tang mian	8079
+家里还有汤面	jia li hai you tang mian	8075
+帮我买点汤面	bang wo mai dian tang mian	8071
+今天想吃米粥	jin tian xiang chi mi zhou	8067
+晚上想吃米粥	wan shang xiang chi mi zhou	8063
+一起去吃米粥	yi qi qu chi mi zhou	8059
+我们去吃米粥	wo men qu chi mi zhou	8055
+中午吃点米粥	zhong wu chi dian mi zhou	8051
+家里还有米粥	jia li hai you mi zhou	8047
+帮我买点米粥	bang wo mai dian mi zhou	8043
+今天想吃面包	jin tian xiang chi mian bao	8039
+晚上想吃面包	wan shang xiang chi mian bao	8035
+一起去吃面包	yi qi qu chi mian bao	8031
+我们去吃面包	wo men qu chi mian bao	8027
+中午吃点面包	zhong wu chi dian mian bao	8023
+家里还有面包	jia li hai you mian bao	8019
+帮我买点面包	bang wo mai dian mian bao	8015
+今天想吃蛋糕	jin tian xiang chi dan gao	8011
+晚上想吃蛋糕	wan shang xiang chi dan gao	8007
+一起去吃蛋糕	yi qi qu chi dan gao	8003
+我们去吃蛋糕	wo men qu chi dan gao	7999
+中午吃点蛋糕	zhong wu chi dian dan gao	7995
+家里还有蛋糕	jia li hai you dan gao	7991
+帮我买点蛋糕	bang wo mai dian dan gao	7987
+今天想吃水果	jin tian xiang chi shui guo	7983
+晚上想吃水果	wan shang xiang chi shui guo	7979
+一起去吃水果	yi qi qu chi shui guo	7975
+我们去吃水果	wo men qu chi shui guo	7971
+中午吃点水果	zhong wu chi dian shui guo	7967
+家里还有水果	jia li hai you shui guo	7963
+帮我买点水果	bang wo mai dian shui guo	7959
+今天想吃蔬菜	jin tian xiang chi shu cai	7955
+晚上想吃蔬菜	wan shang xiang chi shu cai	7951
+一起去吃蔬菜	yi qi qu chi shu cai	7947
+我们去吃蔬菜	wo men qu chi shu cai	7943
+中午吃点蔬菜	zhong wu chi dian shu cai	7939
+家里还有蔬菜	jia li hai you shu cai	7935
+帮我买点蔬菜	bang wo mai dian shu cai	7931
+今天想吃鸡蛋	jin tian xiang chi ji dan	7927
+晚上想吃鸡蛋	wan shang xiang chi ji dan	7923
+一起去吃鸡蛋	yi qi qu chi ji dan	7919
+我们去吃鸡蛋	wo men qu chi ji dan	7915
+中午吃点鸡蛋	zhong wu chi dian ji dan	7911
+家里还有鸡蛋	jia li hai you ji dan	7907
+帮我买点鸡蛋	bang wo mai dian ji dan	7903
+今天想吃零食	jin tian xiang chi ling shi	7899
+晚上想吃零食	wan shang xiang chi ling shi	7895
+一起去吃零食	yi qi qu chi ling shi	7891
+我们去吃零食	wo men qu chi ling shi	7887
+中午吃点零食	zhong wu chi dian ling shi	7883
+家里还有零食	jia li hai you ling shi	7879
+帮我买点零食	bang wo mai dian ling shi	7875
+今天想吃甜点	jin tian xiang chi tian dian	7871
+晚上想吃甜点	wan shang xiang chi tian dian	7867
+一起去吃甜点	yi qi qu chi tian dian	7863
+我们去吃甜点	wo men qu chi tian dian	7859
+中午吃点甜点	zhong wu chi dian tian dian	7855
+家里还有甜点	jia li hai you tian dian	7851
+帮我买点甜点	bang wo mai dian tian dian	7847
+我想吃冰淇淋	wo xiang chi bing qi lin	7843
+我想吃方便面	wo xiang chi fang bian mian	7839
+我想吃三明治	wo xiang chi san ming zhi	7835
+今天想吃汉堡	jin tian xiang chi han bao	7831
+晚上想吃汉堡	wan shang xiang chi han bao	7827
+一起去吃汉堡	yi qi qu chi han bao	7823
+我们去吃汉堡	wo men qu chi han bao	7819
+中午吃点汉堡	zhong wu chi dian han bao	7815
+家里还有汉堡	jia li hai you han bao	7811
+帮我买点汉堡	bang wo mai dian han bao	7807
+今天想吃披萨	jin tian xiang chi pi sa	7803
+晚上想吃披萨	wan shang xiang chi pi sa	7799
+一起去吃披萨	yi qi qu chi pi sa	7795
+我们去吃披萨	wo men qu chi pi sa	7791
+中午吃点披萨	zhong wu chi dian pi sa	7787
+家里还有披萨	jia li hai you pi sa	7783
+帮我买点披萨	bang wo mai dian pi sa	7779
+今天想吃炸鸡	jin tian xiang chi zha ji	7775
+晚上想吃炸鸡	wan shang xiang chi zha ji	7771
+一起去吃炸鸡	yi qi qu chi zha ji	7767
+我们去吃炸鸡	wo men qu chi zha ji	7763
+中午吃点炸鸡	zhong wu chi dian zha ji	7759
+家里还有炸鸡	jia li hai you zha ji	7755
+帮我买点炸鸡	bang wo mai dian zha ji	7751
+今天想吃烤鸭	jin tian xiang chi kao ya	7747
+晚上想吃烤鸭	wan shang xiang chi kao ya	7743
+一起去吃烤鸭	yi qi qu chi kao ya	7739
+我们去吃烤鸭	wo men qu chi kao ya	7735
+中午吃点烤鸭	zhong wu chi dian kao ya	7731
+家里还有烤鸭	jia li hai you kao ya	7727
+帮我买点烤鸭	bang wo mai dian kao ya	7723
+今天想吃早餐	jin tian xiang chi zao can	7719
+晚上想吃早餐	wan shang xiang chi zao can	7715
+一起去吃早餐	yi qi qu chi zao can	7711
+我们去吃早餐	wo men qu chi zao can	7707
+中午吃点早餐	zhong wu chi dian zao can	7703
+家里还有早餐	jia li hai you zao can	7699
+帮我买点早餐	bang wo mai dian zao can	7695
+今天想吃午饭	jin tian xiang chi wu fan	7691
+晚上想吃午饭	wan shang xiang chi wu fan	7687
+一起去吃午饭	yi qi qu chi wu fan	7683
+我们去吃午饭	wo men qu chi wu fan	7679
+中午吃点午饭	zhong wu chi dian wu fan	7675
+家里还有午饭	jia li hai you wu fan	7671
+帮我买点午饭	bang wo mai dian wu fan	7667
+今天想吃晚饭	jin tian xiang chi wan fan	7663
+晚上想吃晚饭	wan shang xiang chi wan fan	7659
+一起去吃晚饭	yi qi qu chi wan fan	7655
+我们去吃晚饭	wo men qu chi wan fan	7651
+中午吃点晚饭	zhong wu chi dian wan fan	7647
+家里还有晚饭	jia li hai you wan fan	7643
+帮我买点晚饭	bang wo mai dian wan fan	7639
+今天想吃夜宵	jin tian xiang chi ye xiao	7635
+晚上想吃夜宵	wan shang xiang chi ye xiao	7631
+一起去吃夜宵	yi qi qu chi ye xiao	7627
+我们去吃夜宵	wo men qu chi ye xiao	7623
+中午吃点夜宵	zhong wu chi dian ye xiao	7619
+家里还有夜宵	jia li hai you ye xiao	7615
+帮我买点夜宵	bang wo mai dian ye xiao	7611
+今天想吃外卖	jin tian xiang chi wai mai	7607
+晚上想吃外卖	wan shang xiang chi wai mai	7603
+一起去吃外卖	yi qi qu chi wai mai	7599
+我们去吃外卖	wo men qu chi wai mai	7595
+中午吃点外卖	zhong wu chi dian wai mai	7591
+家里还有外卖	jia li hai you wai mai	7587
+帮我买点外卖	bang wo mai dian wai mai	7583
+我想吃家常菜	wo xiang chi jia chang cai	7579
+给我倒杯热水	gei wo dao bei re shui	7575
+每天多喝热水	mei tian duo he re shui	7571
+先喝一杯热水	xian he yi bei re shui	7567
+早上喝点热水	zao shang he dian re shui	7563
+晚上少喝热水	wan shang shao he re shui	7559
+给我倒杯温水	gei wo dao bei wen shui	7555
+每天多喝温水	mei tian duo he wen shui	7551
+先喝一杯温水	xian he yi bei wen shui	7547
+早上喝点温水	zao shang he dian wen shui	7543
+晚上少喝温水	wan shang shao he wen shui	7539
+给我倒杯牛奶	gei wo dao bei niu nai	7535
+每天多喝牛奶	mei tian duo he niu nai	7531
+先喝一杯牛奶	xian he yi bei niu nai	7527
+早上喝点牛奶	zao shang he dian niu nai	7523
+晚上少喝牛奶	wan shang shao he niu nai	7519
+给我倒杯豆浆	gei wo dao bei dou jiang	7515
+每天多喝豆浆	mei tian duo he dou jiang	7511
+先喝一杯豆浆	xian he yi bei dou jiang	7507
+早上喝点豆浆	zao shang he dian dou jiang	7503
+晚上少喝豆浆	wan shang shao he dou jiang	7499
+给我倒杯咖啡	gei wo dao bei ka fei	7495
+每天多喝咖啡	mei tian duo he ka fei	7491
+先喝一杯咖啡	xian he yi bei ka fei	7487
+早上喝点咖啡	zao shang he dian ka fei	7483
+晚上少喝咖啡	wan shang shao he ka fei	7479
+给我倒杯红茶	gei wo dao bei hong cha	7475
+每天多喝红茶	mei tian duo he hong cha	7471
+先喝一杯红茶	xian he yi bei hong cha	7467
+早上喝点红茶	zao shang he dian hong cha	7463
+晚上少喝红茶	wan shang shao he hong cha	7459
+给我倒杯绿茶	gei wo dao bei lv cha	7455
+每天多喝绿茶	mei tian duo he lv cha	7451
+先喝一杯绿茶	xian he yi bei lv cha	7447
+早上喝点绿茶	zao shang he dian lv cha	7443
+晚上少喝绿茶	wan shang shao he lv cha	7439
+给我倒杯果汁	gei wo dao bei guo zhi	7435
+每天多喝果汁	mei tian duo he guo zhi	7431
+先喝一杯果汁	xian he yi bei guo zhi	7427
+早上喝点果汁	zao shang he dian guo zhi	7423
+晚上少喝果汁	wan shang shao he guo zhi	7419
+给我倒杯饮料	gei wo dao bei yin liao	7415
+每天多喝饮料	mei tian duo he yin liao	7411
+先喝一杯饮料	xian he yi bei yin liao	7407
+早上喝点饮料	zao shang he dian yin liao	7403
+晚上少喝饮料	wan shang shao he yin liao	7399
+给我倒杯酸奶	gei wo dao bei suan nai	7395
+每天多喝酸奶	mei tian duo he suan nai	7391
+先喝一杯酸奶	xian he yi bei suan nai	7387
+早上喝点酸奶	zao shang he dian suan nai	7383
+晚上少喝酸奶	wan shang shao he suan nai	7379
+别忘了多喝水	bie wang le duo he shui	7375
+我来收拾房间	wo lai shou shi fang jian	7371
+需要清理房间	xu yao qing li fang jian	7367
+今天打扫房间	jin tian da sao fang jian	7363
+回家收拾房间	hui jia shou shi fang jian	7359
+我来收拾客厅	wo lai shou shi ke ting	7355
+需要清理客厅	xu yao qing li ke ting	7351
+今天打扫客厅	jin tian da sao ke ting	7347
+回家收拾客厅	hui jia shou shi ke ting	7343
+我来收拾厨房	wo lai shou shi chu fang	7339
+需要清理厨房	xu yao qing li chu fang	7335
+今天打扫厨房	jin tian da sao chu fang	7331
+回家收拾厨房	hui jia shou shi chu fang	7327
+我来收拾卧室	wo lai shou shi wo shi	7323
+需要清理卧室	xu yao qing li wo shi	7319
+今天打扫卧室	jin tian da sao wo shi	7315
+回家收拾卧室	hui jia shou shi wo shi	7311
+我来收拾阳台	wo lai shou shi yang tai	7307
+需要清理阳台	xu yao qing li yang tai	7303
+今天打扫阳台	jin tian da sao yang tai	7299
+回家收拾阳台	hui jia shou shi yang tai	7295
+我来收拾冰箱	wo lai shou shi bing xiang	7291
+需要清理冰箱	xu yao qing li bing xiang	7287
+今天打扫冰箱	jin tian da sao bing xiang	7283
+回家收拾冰箱	hui jia shou shi bing xiang	7279
+我来收拾衣柜	wo lai shou shi yi gui	7275
+需要清理衣柜	xu yao qing li yi gui	7271
+今天打扫衣柜	jin tian da sao yi gui	7267
+回家收拾衣柜	hui jia shou shi yi gui	7263
+我来收拾书桌	wo lai shou shi shu zhuo	7259
+需要清理书桌	xu yao qing li shu zhuo	7255
+今天打扫书桌	jin tian da sao shu zhuo	7251
+回家收拾书桌	hui jia shou shi shu zhuo	7247
+我来收拾地板	wo lai shou shi di ban	7243
+需要清理地板	xu yao qing li di ban	7239
+今天打扫地板	jin tian da sao di ban	7235
+回家收拾地板	hui jia shou shi di ban	7231
+我来收拾门窗	wo lai shou shi men chuang	7227
+需要清理门窗	xu yao qing li men chuang	7223
+今天打扫门窗	jin tian da sao men chuang	7219
+回家收拾门窗	hui jia shou shi men chuang	7215
+我来收拾垃圾	wo lai shou shi la ji	7211
+需要清理垃圾	xu yao qing li la ji	7207
+今天打扫垃圾	jin tian da sao la ji	7203
+回家收拾垃圾	hui jia shou shi la ji	7199
+我来收拾衣服	wo lai shou shi yi fu	7195
+需要清理衣服	xu yao qing li yi fu	7191
+今天打扫衣服	jin tian da sao yi fu	7187
+回家收拾衣服	hui jia shou shi yi fu	7183
+我来收拾被子	wo lai shou shi bei zi	7179
+需要清理被子	xu yao qing li bei zi	7175
+今天打扫被子	jin tian da sao bei zi	7171
+回家收拾被子	hui jia shou shi bei zi	7167
+我来收拾鞋子	wo lai shou shi xie zi	7163
+需要清理鞋子	xu yao qing li xie zi	7159
+今天打扫鞋子	jin tian da sao xie zi	7155
+回家收拾鞋子	hui jia shou shi xie zi	7151
+我来收拾袜子	wo lai shou shi wa zi	7147
+需要清理袜子	xu yao qing li wa zi	7143
+今天打扫袜子	jin tian da sao wa zi	7139
+回家收拾袜子	hui jia shou shi wa zi	7135
+我来收拾毛巾	wo lai shou shi mao jin	7131
+需要清理毛巾	xu yao qing li mao jin	7127
+今天打扫毛巾	jin tian da sao mao jin	7123
+回家收拾毛巾	hui jia shou shi mao jin	7119
+我来收拾床单	wo lai shou shi chuang dan	7115
+需要清理床单	xu yao qing li chuang dan	7111
+今天打扫床单	jin tian da sao chuang dan	7107
+回家收拾床单	hui jia shou shi chuang dan	7103
+我来收拾桌子	wo lai shou shi zhuo zi	7099
+需要清理桌子	xu yao qing li zhuo zi	7095
+今天打扫桌子	jin tian da sao zhuo zi	7091
+回家收拾桌子	hui jia shou shi zhuo zi	7087
+我来收拾椅子	wo lai shou shi yi zi	7083
+需要清理椅子	xu yao qing li yi zi	7079
+今天打扫椅子	jin tian da sao yi zi	7075
+回家收拾椅子	hui jia shou shi yi zi	7071
+我来收拾碗筷	wo lai shou shi wan kuai	7067
+需要清理碗筷	xu yao qing li wan kuai	7063
+今天打扫碗筷	jin tian da sao wan kuai	7059
+回家收拾碗筷	hui jia shou shi wan kuai	7055
+我来收拾锅具	wo lai shou shi guo ju	7051
+需要清理锅具	xu yao qing li guo ju	7047
+今天打扫锅具	jin tian da sao guo ju	7043
+回家收拾锅具	hui jia shou shi guo ju	7039
+我来清洗衣服	wo lai qing xi yi fu	7035
+需要清洗衣服	xu yao qing xi yi fu	7031
+今天清洗衣服	jin tian qing xi yi fu	7027
+我来清洗被子	wo lai qing xi bei zi	7023
+需要清洗被子	xu yao qing xi bei zi	7019
+今天清洗被子	jin tian qing xi bei zi	7015
+我来清洗床单	wo lai qing xi chuang dan	7011
+需要清洗床单	xu yao qing xi chuang dan	7007
+今天清洗床单	jin tian qing xi chuang dan	7003
+我来清洗毛巾	wo lai qing xi mao jin	6998
+需要清洗毛巾	xu yao qing xi mao jin	6994
+今天清洗毛巾	jin tian qing xi mao jin	6990
+我来清洗鞋子	wo lai qing xi xie zi	6986
+需要清洗鞋子	xu yao qing xi xie zi	6982
+今天清洗鞋子	jin tian qing xi xie zi	6978
+我来清洗袜子	wo lai qing xi wa zi	6974
+需要清洗袜子	xu yao qing xi wa zi	6970
+今天清洗袜子	jin tian qing xi wa zi	6966
+我来清洗碗筷	wo lai qing xi wan kuai	6962
+需要清洗碗筷	xu yao qing xi wan kuai	6958
+今天清洗碗筷	jin tian qing xi wan kuai	6954
+我来清洗锅具	wo lai qing xi guo ju	6950
+需要清洗锅具	xu yao qing xi guo ju	6946
+今天清洗锅具	jin tian qing xi guo ju	6942
+我来清洗冰箱	wo lai qing xi bing xiang	6938
+需要清洗冰箱	xu yao qing xi bing xiang	6934
+今天清洗冰箱	jin tian qing xi bing xiang	6930
+我来检查门窗	wo lai jian cha men chuang	6926
+需要检查门窗	xu yao jian cha men chuang	6922
+我来检查窗户	wo lai jian cha chuang hu	6918
+需要检查窗户	xu yao jian cha chuang hu	6914
+我来检查冰箱	wo lai jian cha bing xiang	6910
+需要检查冰箱	xu yao jian cha bing xiang	6906
+我来检查手机	wo lai jian cha shou ji	6902
+需要检查手机	xu yao jian cha shou ji	6898
+我来检查电脑	wo lai jian cha dian nao	6894
+需要检查电脑	xu yao jian cha dian nao	6890
+我来检查电视	wo lai jian cha dian shi	6886
+需要检查电视	xu yao jian cha dian shi	6882
+我来检查空调	wo lai jian cha kong tiao	6878
+需要检查空调	xu yao jian cha kong tiao	6874
+我来放好钥匙	wo lai fang hao yao shi	6870
+请把钥匙带上	qing ba yao shi dai shang	6866
+记得带上钥匙	ji de dai shang yao shi	6862
+我来放好钱包	wo lai fang hao qian bao	6858
+请把钱包带上	qing ba qian bao dai shang	6854
+记得带上钱包	ji de dai shang qian bao	6850
+我来放好雨伞	wo lai fang hao yu san	6846
+请把雨伞带上	qing ba yu san dai shang	6842
+记得带上雨伞	ji de dai shang yu san	6838
+我来放好手机	wo lai fang hao shou ji	6834
+请把手机带上	qing ba shou ji dai shang	6830
+记得带上手机	ji de dai shang shou ji	6826
+我来放好电脑	wo lai fang hao dian nao	6822
+请把电脑带上	qing ba dian nao dai shang	6818
+记得带上电脑	ji de dai shang dian nao	6814
+我来放好衣服	wo lai fang hao yi fu	6810
+请把衣服带上	qing ba yi fu dai shang	6806
+记得带上衣服	ji de dai shang yi fu	6802
+我来放好鞋子	wo lai fang hao xie zi	6798
+请把鞋子带上	qing ba xie zi dai shang	6794
+记得带上鞋子	ji de dai shang xie zi	6790
+我来放好袜子	wo lai fang hao wa zi	6786
+请把袜子带上	qing ba wa zi dai shang	6782
+记得带上袜子	ji de dai shang wa zi	6778
+出门记得关灯	chu men ji de guan deng	6774
+床单换一下吧	chuang dan huan yi xia ba	6770
+今天去买蔬菜	jin tian qu mai shu cai	6766
+网上购买蔬菜	wang shang gou mai shu cai	6762
+家里需要蔬菜	jia li xu yao shu cai	6758
+顺便买点蔬菜	shun bian mai dian shu cai	6754
+先把蔬菜买了	xian ba shu cai mai le	6750
+今天去买水果	jin tian qu mai shui guo	6746
+网上购买水果	wang shang gou mai shui guo	6742
+家里需要水果	jia li xu yao shui guo	6738
+顺便买点水果	shun bian mai dian shui guo	6734
+先把水果买了	xian ba shui guo mai le	6730
+今天去买牛奶	jin tian qu mai niu nai	6726
+帮我买点牛奶	bang wo mai dian niu nai	6722
+网上购买牛奶	wang shang gou mai niu nai	6718
+家里需要牛奶	jia li xu yao niu nai	6714
+顺便买点牛奶	shun bian mai dian niu nai	6710
+先把牛奶买了	xian ba niu nai mai le	6706
+今天去买鸡蛋	jin tian qu mai ji dan	6702
+网上购买鸡蛋	wang shang gou mai ji dan	6698
+家里需要鸡蛋	jia li xu yao ji dan	6694
+顺便买点鸡蛋	shun bian mai dian ji dan	6690
+先把鸡蛋买了	xian ba ji dan mai le	6686
+今天去买面包	jin tian qu mai mian bao	6682
+网上购买面包	wang shang gou mai mian bao	6678
+家里需要面包	jia li xu yao mian bao	6674
+顺便买点面包	shun bian mai dian mian bao	6670
+先把面包买了	xian ba mian bao mai le	6666
+今天去买纸巾	jin tian qu mai zhi jin	6662
+帮我买点纸巾	bang wo mai dian zhi jin	6658
+网上购买纸巾	wang shang gou mai zhi jin	6654
+家里需要纸巾	jia li xu yao zhi jin	6650
+顺便买点纸巾	shun bian mai dian zhi jin	6646
+先把纸巾买了	xian ba zhi jin mai le	6642
+今天去买牙膏	jin tian qu mai ya gao	6638
+帮我买点牙膏	bang wo mai dian ya gao	6634
+网上购买牙膏	wang shang gou mai ya gao	6630
+家里需要牙膏	jia li xu yao ya gao	6626
+顺便买点牙膏	shun bian mai dian ya gao	6622
+先把牙膏买了	xian ba ya gao mai le	6618
+今天去买牙刷	jin tian qu mai ya shua	6614
+帮我买点牙刷	bang wo mai dian ya shua	6610
+网上购买牙刷	wang shang gou mai ya shua	6606
+家里需要牙刷	jia li xu yao ya shua	6602
+顺便买点牙刷	shun bian mai dian ya shua	6598
+先把牙刷买了	xian ba ya shua mai le	6594
+我想买洗发水	wo xiang mai xi fa shui	6590
+我想买沐浴露	wo xiang mai mu yu lu	6586
+我想买洗衣液	wo xiang mai xi yi ye	6582
+我想买垃圾袋	wo xiang mai la ji dai	6578
+我想买保鲜膜	wo xiang mai bao xian mo	6574
+我想买调味料	wo xiang mai tiao wei liao	6570
+我想买食用油	wo xiang mai shi yong you	6566
+今天去买大米	jin tian qu mai da mi	6562
+帮我买点大米	bang wo mai dian da mi	6558
+网上购买大米	wang shang gou mai da mi	6554
+家里需要大米	jia li xu yao da mi	6550
+顺便买点大米	shun bian mai dian da mi	6546
+先把大米买了	xian ba da mi mai le	6542
+今天去买面粉	jin tian qu mai mian fen	6538
+帮我买点面粉	bang wo mai dian mian fen	6534
+网上购买面粉	wang shang gou mai mian fen	6530
+家里需要面粉	jia li xu yao mian fen	6526
+顺便买点面粉	shun bian mai dian mian fen	6522
+先把面粉买了	xian ba mian fen mai le	6518
+今天去买雨伞	jin tian qu mai yu san	6514
+帮我买点雨伞	bang wo mai dian yu san	6510
+网上购买雨伞	wang shang gou mai yu san	6506
+家里需要雨伞	jia li xu yao yu san	6502
+顺便买点雨伞	shun bian mai dian yu san	6498
+先把雨伞买了	xian ba yu san mai le	6494
+今天去买拖鞋	jin tian qu mai tuo xie	6490
+帮我买点拖鞋	bang wo mai dian tuo xie	6486
+网上购买拖鞋	wang shang gou mai tuo xie	6482
+家里需要拖鞋	jia li xu yao tuo xie	6478
+顺便买点拖鞋	shun bian mai dian tuo xie	6474
+先把拖鞋买了	xian ba tuo xie mai le	6470
+今天去买衣服	jin tian qu mai yi fu	6466
+帮我买点衣服	bang wo mai dian yi fu	6462
+网上购买衣服	wang shang gou mai yi fu	6458
+家里需要衣服	jia li xu yao yi fu	6454
+顺便买点衣服	shun bian mai dian yi fu	6450
+先把衣服买了	xian ba yi fu mai le	6446
+今天去买鞋子	jin tian qu mai xie zi	6442
+帮我买点鞋子	bang wo mai dian xie zi	6438
+网上购买鞋子	wang shang gou mai xie zi	6434
+家里需要鞋子	jia li xu yao xie zi	6430
+顺便买点鞋子	shun bian mai dian xie zi	6426
+先把鞋子买了	xian ba xie zi mai le	6422
+今天去买袜子	jin tian qu mai wa zi	6418
+帮我买点袜子	bang wo mai dian wa zi	6414
+网上购买袜子	wang shang gou mai wa zi	6410
+家里需要袜子	jia li xu yao wa zi	6406
+顺便买点袜子	shun bian mai dian wa zi	6402
+先把袜子买了	xian ba wa zi mai le	6398
+今天去买礼物	jin tian qu mai li wu	6394
+帮我买点礼物	bang wo mai dian li wu	6390
+网上购买礼物	wang shang gou mai li wu	6386
+家里需要礼物	jia li xu yao li wu	6382
+顺便买点礼物	shun bian mai dian li wu	6378
+先把礼物买了	xian ba li wu mai le	6374
+今天去买药品	jin tian qu mai yao pin	6370
+帮我买点药品	bang wo mai dian yao pin	6366
+网上购买药品	wang shang gou mai yao pin	6362
+家里需要药品	jia li xu yao yao pin	6358
+顺便买点药品	shun bian mai dian yao pin	6354
+先把药品买了	xian ba yao pin mai le	6350
+今天去买口罩	jin tian qu mai kou zhao	6346
+帮我买点口罩	bang wo mai dian kou zhao	6342
+网上购买口罩	wang shang gou mai kou zhao	6338
+家里需要口罩	jia li xu yao kou zhao	6334
+顺便买点口罩	shun bian mai dian kou zhao	6330
+先把口罩买了	xian ba kou zhao mai le	6326
+我想买充电器	wo xiang mai chong dian qi	6322
+我想买数据线	wo xiang mai shu ju xian	6318
+今天去买耳机	jin tian qu mai er ji	6314
+帮我买点耳机	bang wo mai dian er ji	6310
+网上购买耳机	wang shang gou mai er ji	6306
+家里需要耳机	jia li xu yao er ji	6302
+顺便买点耳机	shun bian mai dian er ji	6298
+先把耳机买了	xian ba er ji mai le	6294
+今天去买电池	jin tian qu mai dian chi	6290
+帮我买点电池	bang wo mai dian dian chi	6286
+网上购买电池	wang shang gou mai dian chi	6282
+家里需要电池	jia li xu yao dian chi	6278
+顺便买点电池	shun bian mai dian dian chi	6274
+先把电池买了	xian ba dian chi mai le	6270
+我想买笔记本	wo xiang mai bi ji ben	6266
+今天去买文具	jin tian qu mai wen ju	6262
+帮我买点文具	bang wo mai dian wen ju	6258
+网上购买文具	wang shang gou mai wen ju	6254
+家里需要文具	jia li xu yao wen ju	6250
+顺便买点文具	shun bian mai dian wen ju	6246
+先把文具买了	xian ba wen ju mai le	6242
+我想买日用品	wo xiang mai ri yong pin	6238
+请帮我找一下	qing bang wo zhao yi xia	6234
+请帮我看一下	qing bang wo kan yi xia	6230
+快递请放门卫	kuai di qing fang men wei	6226
+请把地址发我	qing ba di zhi fa wo	6222
+发票可以开吗	fa piao ke yi kai ma	6218
+附近有超市吗	fu jin you chao shi ma	6214
+我去一趟超市	wo qu yi tang chao shi	6210
+下楼买点东西	xia lou mai dian dong xi	6206
+我现在去公司	wo xian zai qu gong si	6202
+我已经到公司	wo yi jing dao gong si	6198
+我马上到公司	wo ma shang dao gong si	6194
+从这里到公司	cong zhe li dao gong si	6190
+我现在去学校	wo xian zai qu xue xiao	6186
+我已经到学校	wo yi jing dao xue xiao	6182
+我马上到学校	wo ma shang dao xue xiao	6178
+从这里到学校	cong zhe li dao xue xiao	6174
+我现在去医院	wo xian zai qu yi yuan	6170
+我已经到医院	wo yi jing dao yi yuan	6166
+我马上到医院	wo ma shang dao yi yuan	6162
+从这里到医院	cong zhe li dao yi yuan	6158
+我现在去银行	wo xian zai qu yin hang	6154
+我已经到银行	wo yi jing dao yin hang	6150
+我马上到银行	wo ma shang dao yin hang	6146
+从这里到银行	cong zhe li dao yin hang	6142
+我现在去超市	wo xian zai qu chao shi	6138
+我已经到超市	wo yi jing dao chao shi	6134
+我马上到超市	wo ma shang dao chao shi	6130
+从这里到超市	cong zhe li dao chao shi	6126
+一起去菜市场	yi qi qu cai shi chang	6122
+怎么去菜市场	zen me qu cai shi chang	6118
+到菜市场等我	dao cai shi chang deng wo	6114
+一起去火车站	yi qi qu huo che zhan	6110
+怎么去火车站	zen me qu huo che zhan	6106
+到火车站等我	dao huo che zhan deng wo	6102
+一起去汽车站	yi qi qu qi che zhan	6098
+怎么去汽车站	zen me qu qi che zhan	6094
+到汽车站等我	dao qi che zhan deng wo	6090
+我现在去机场	wo xian zai qu ji chang	6086
+我已经到机场	wo yi jing dao ji chang	6082
+我马上到机场	wo ma shang dao ji chang	6078
+从这里到机场	cong zhe li dao ji chang	6074
+一起去地铁站	yi qi qu di tie zhan	6070
+怎么去地铁站	zen me qu di tie zhan	6066
+到地铁站等我	dao di tie zhan deng wo	6062
+一起去公交站	yi qi qu gong jiao zhan	6058
+怎么去公交站	zen me qu gong jiao zhan	6054
+到公交站等我	dao gong jiao zhan deng wo	6050
+我现在去商场	wo xian zai qu shang chang	6046
+我已经到商场	wo yi jing dao shang chang	6042
+我马上到商场	wo ma shang dao shang chang	6038
+从这里到商场	cong zhe li dao shang chang	6034
+我现在去药店	wo xian zai qu yao dian	6030
+我已经到药店	wo yi jing dao yao dian	6026
+我马上到药店	wo ma shang dao yao dian	6022
+从这里到药店	cong zhe li dao yao dian	6018
+我现在去餐厅	wo xian zai qu can ting	6014
+我已经到餐厅	wo yi jing dao can ting	6010
+我马上到餐厅	wo ma shang dao can ting	6006
+从这里到餐厅	cong zhe li dao can ting	6002
+一起去咖啡店	yi qi qu ka fei dian	5998
+怎么去咖啡店	zen me qu ka fei dian	5994
+到咖啡店等我	dao ka fei dian deng wo	5990
+一起去电影院	yi qi qu dian ying yuan	5986
+怎么去电影院	zen me qu dian ying yuan	5982
+到电影院等我	dao dian ying yuan deng wo	5978
+一起去图书馆	yi qi qu tu shu guan	5974
+怎么去图书馆	zen me qu tu shu guan	5970
+到图书馆等我	dao tu shu guan deng wo	5966
+我现在去公园	wo xian zai qu gong yuan	5962
+我已经到公园	wo yi jing dao gong yuan	5958
+我马上到公园	wo ma shang dao gong yuan	5954
+从这里到公园	cong zhe li dao gong yuan	5950
+一起去健身房	yi qi qu jian shen fang	5946
+怎么去健身房	zen me qu jian shen fang	5942
+到健身房等我	dao jian shen fang deng wo	5938
+一起去朋友家	yi qi qu peng you jia	5934
+怎么去朋友家	zen me qu peng you jia	5930
+到朋友家等我	dao peng you jia deng wo	5926
+一起去爸妈家	yi qi qu ba ma jia	5922
+怎么去爸妈家	zen me qu ba ma jia	5918
+到爸妈家等我	dao ba ma jia deng wo	5914
+我现在去老家	wo xian zai qu lao jia	5910
+我已经到老家	wo yi jing dao lao jia	5906
+我马上到老家	wo ma shang dao lao jia	5902
+从这里到老家	cong zhe li dao lao jia	5898
+我现在去附近	wo xian zai qu fu jin	5894
+我已经到附近	wo yi jing dao fu jin	5890
+我马上到附近	wo ma shang dao fu jin	5886
+从这里到附近	cong zhe li dao fu jin	5882
+我现在去楼下	wo xian zai qu lou xia	5878
+我已经到楼下	wo yi jing dao lou xia	5874
+我马上到楼下	wo ma shang dao lou xia	5870
+从这里到楼下	cong zhe li dao lou xia	5866
+我现在去门口	wo xian zai qu men kou	5862
+我已经到门口	wo yi jing dao men kou	5858
+我马上到门口	wo ma shang dao men kou	5854
+从这里到门口	cong zhe li dao men kou	5850
+我现在出门了	wo xian zai chu men le	5846
+我在公交车上	wo zai gong jiao che shang	5842
+我已经出发了	wo yi jing chu fa le	5838
+我快要到了啊	wo kuai yao dao le a	5834
+你什么时候到	ni shen me shi hou dao	5830
+到了给我电话	dao le gei wo dian hua	5826
+开车慢一点啊	kai che man yi dian a	5822
+骑车注意安全	qi che zhu yi an quan	5818
+过马路看车辆	guo ma lu kan che liang	5814
+今天路上很堵	jin tian lu shang hen du	5810
+公交车还没来	gong jiao che hai mei lai	5806
+请发一下地址	qing fa yi xia di zhi	5802
+地址发给我吧	di zhi fa gei wo ba	5798
+你能来接我吗	ni neng lai jie wo ma	5794
+我在楼下等你	wo zai lou xia deng ni	5790
+先去药店买药	xian qu yao dian mai yao	5786
+我的头有点疼	wo de tou you dian teng	5782
+晚上早点睡觉	wan shang zao dian shui jiao	5778
+每天出去走走	mei tian chu qu zou zou	5774
+饭后出去散步	fan hou chu qu san bu	5770
+多喝一点温水	duo he yi dian wen shui	5766
+记得按时吃药	ji de an shi chi yao	5762
+先去医院检查	xian qu yi yuan jian cha	5758
+身体最重要啊	shen ti zui zhong yao a	5754
+最近睡得好吗	zui jin shui de hao ma	5750
+昨晚睡得好吗	zuo wan shui de hao ma	5746
+今天回家吃饭	jin tian hui jia chi fan	5742
+周末一起回家	zhou mo yi qi hui jia	5738
+有空回家看看	you kong hui jia kan kan	5734
+下次再约时间	xia ci zai yue shi jian	5730
+欢迎你回到家	huan ying ni hui dao jia	5726
+请代我问声好	qing dai wo wen sheng hao	5722
+祝你生日快乐	zhu ni sheng ri kuai le	5718
+辛苦你帮忙了	xin ku ni bang mang le	5714
+项目进展顺利	xiang mu jin zhan shun li	5710
+项目已经启动	xiang mu yi jing qi dong	5706
+项目正在进行	xiang mu zheng zai jin xing	5702
+项目进度正常	xiang mu jin du zheng chang	5698
+项目需要跟进	xiang mu xu yao gen jin	5694
+项目需要复盘	xiang mu xu yao fu pan	5690
+项目情况汇报	xiang mu qing kuang hui bao	5686
+项目阶段总结	xiang mu jie duan zong jie	5682
+项目风险评估	xiang mu feng xian ping gu	5678
+项目预算审批	xiang mu yu suan shen pi	5674
+项目需求确认	xiang mu xu qiu que ren	5670
+项目方案讨论	xiang mu fang an tao lun	5666
+项目计划安排	xiang mu ji hua an pai	5662
+项目工作计划	xiang mu gong zuo ji hua	5658
+项目实施方案	xiang mu shi shi fang an	5654
+项目验收通过	xiang mu yan shou tong guo	5650
+项目按时完成	xiang mu an shi wan cheng	5646
+项目延期申请	xiang mu yan qi shen qing	5642
+项目交付时间	xiang mu jiao fu shi jian	5638
+工作安排如下	gong zuo an pai ru xia	5634
+工作已经完成	gong zuo yi jing wan cheng	5630
+工作正在进行	gong zuo zheng zai jin xing	5626
+工作进度汇报	gong zuo jin du hui bao	5622
+工作内容确认	gong zuo nei rong que ren	5618
+工作计划调整	gong zuo ji hua tiao zheng	5614
+工作重点说明	gong zuo zhong dian shuo ming	5610
+工作任务分配	gong zuo ren wu fen pei	5606
+工作需要配合	gong zuo xu yao pei he	5602
+工作及时跟进	gong zuo ji shi gen jin	5598
+工作认真负责	gong zuo ren zhen fu ze	5594
+工作效率提升	gong zuo xiao lv ti sheng	5590
+部门工作安排	bu men gong zuo an pai	5586
+部门之间协调	bu men zhi jian xie tiao	5582
+部门会议通知	bu men hui yi tong zhi	5578
+部门年度总结	bu men nian du zong jie	5574
+部门季度计划	bu men ji du ji hua	5570
+会议时间调整	hui yi shi jian tiao zheng	5566
+会议安排如下	hui yi an pai ru xia	5562
+会议内容确认	hui yi nei rong que ren	5558
+会议材料准备	hui yi cai liao zhun bei	5554
+会议纪要整理	hui yi ji yao zheng li	5550
+会议结果汇报	hui yi jie guo hui bao	5546
+会议已经结束	hui yi yi jing jie shu	5542
+会议按时召开	hui yi an shi zhao kai	5538
+请在今天完成	qing zai jin tian wan cheng	5534
+请于明天提交	qing yu ming tian ti jiao	5530
+邮件已经发送	you jian yi jing fa song	5526
+邮件附件如下	you jian fu jian ru xia	5522
+邮件内容确认	you jian nei rong que ren	5518
+邮件需要回复	you jian xu yao hui fu	5514
+邮件发送成功	you jian fa song cheng gong	5510
+邮件发送失败	you jian fa song shi bai	5506
+附件已经上传	fu jian yi jing shang chuan	5502
+附件内容如下	fu jian nei rong ru xia	5498
+文件已经完成	wen jian yi jing wan cheng	5494
+文件正在审核	wen jian zheng zai shen he	5490
+文件需要修改	wen jian xu yao xiu gai	5486
+文件版本更新	wen jian ban ben geng xin	5482
+文件格式错误	wen jian ge shi cuo wu	5478
+文件内容确认	wen jian nei rong que ren	5474
+文件已经归档	wen jian yi jing gui dang	5470
+资料需要补充	zi liao xu yao bu chong	5466
+资料内容有误	zi liao nei rong you wu	5462
+资料已经提交	zi liao yi jing ti jiao	5458
+材料准备完成	cai liao zhun bei wan cheng	5454
+材料需要盖章	cai liao xu yao gai zhang	5450
+材料需要审核	cai liao xu yao shen he	5446
+材料已经收到	cai liao yi jing shou dao	5442
+数据已经更新	shu ju yi jing geng xin	5438
+数据需要核对	shu ju xu yao he dui	5434
+数据分析报告	shu ju fen xi bao gao	5430
+数据统计结果	shu ju tong ji jie guo	5426
+数据导出完成	shu ju dao chu wan cheng	5422
+数据安全检查	shu ju an quan jian cha	5418
+数据异常情况	shu ju yi chang qing kuang	5414
+数据来源说明	shu ju lai yuan shuo ming	5410
+客户需求确认	ke hu xu qiu que ren	5406
+客户反馈意见	ke hu fan kui yi jian	5402
+客户服务支持	ke hu fu wu zhi chi	5398
+客户关系维护	ke hu guan xi wei hu	5394
+客户信息更新	ke hu xin xi geng xin	5390
+客户已经确认	ke hu yi jing que ren	5386
+客户需要跟进	ke hu xu yao gen jin	5382
+客户问题处理	ke hu wen ti chu li	5378
+合同已经签署	he tong yi jing qian shu	5374
+合同需要审核	he tong xu yao shen he	5370
+合同条款确认	he tong tiao kuan que ren	5366
+合同即将到期	he tong ji jiang dao qi	5362
+合同审批流程	he tong shen pi liu cheng	5358
+合同附件准备	he tong fu jian zhun bei	5354
+报价方案确认	bao jia fang an que ren	5350
+报价已经提交	bao jia yi jing ti jiao	5346
+报价需要调整	bao jia xu yao tiao zheng	5342
+预算已经批准	yu suan yi jing pi zhun	5338
+预算执行情况	yu suan zhi xing qing kuang	5334
+发票已经开具	fa piao yi jing kai ju	5330
+发票信息核对	fa piao xin xi he dui	5326
+费用报销申请	fei yong bao xiao shen qing	5322
+费用报销完成	fei yong bao xiao wan cheng	5318
+财务数据核对	cai wu shu ju he dui	5314
+付款申请提交	fu kuan shen qing ti jiao	5310
+付款已经完成	fu kuan yi jing wan cheng	5306
+收款信息确认	shou kuan xin xi que ren	5302
+审批流程如下	shen pi liu cheng ru xia	5298
+审批已经通过	shen pi yi jing tong guo	5294
+流程需要优化	liu cheng xu yao you hua	5290
+流程已经更新	liu cheng yi jing geng xin	5286
+流程执行情况	liu cheng zhi xing qing kuang	5282
+制度文件发布	zhi du wen jian fa bu	5278
+制度内容说明	zhi du nei rong shuo ming	5274
+通知已经发布	tong zhi yi jing fa bu	5270
+通知内容如下	tong zhi nei rong ru xia	5266
+培训时间安排	pei xun shi jian an pai	5262
+培训材料准备	pei xun cai liao zhun bei	5258
+培训计划确认	pei xun ji hua que ren	5254
+招聘需求确认	zhao pin xu qiu que ren	5250
+面试时间安排	mian shi shi jian an pai	5246
+入职手续办理	ru zhi shou xu ban li	5242
+离职手续办理	li zhi shou xu ban li	5238
+考勤记录核对	kao qin ji lu he dui	5234
+请假申请提交	qing jia shen qing ti jiao	5230
+加班申请审批	jia ban shen qing shen pi	5226
+年终总结会议	nian zhong zong jie hui yi	5222
+季度工作总结	ji du gong zuo zong jie	5218
+月度工作计划	yue du gong zuo ji hua	5214
+年度目标完成	nian du mu biao wan cheng	5210
+目标需要调整	mu biao xu yao tiao zheng	5206
+指标完成情况	zhi biao wan cheng qing kuang	5202
+绩效考核结果	ji xiao kao he jie guo	5198
+工作日报提交	gong zuo ri bao ti jiao	5194
+工作周报发送	gong zuo zhou bao fa song	5190
+工作月报汇总	gong zuo yue bao hui zong	5186
+进度及时同步	jin du ji shi tong bu	5182
+进展情况说明	jin zhan qing kuang shuo ming	5178
+后续工作安排	hou xu gong zuo an pai	5174
+后续安排如下	hou xu an pai ru xia	5170
+问题清单整理	wen ti qing dan zheng li	5166
+问题已经解决	wen ti yi jing jie jue	5162
+问题需要跟进	wen ti xu yao gen jin	5158
+问题原因分析	wen ti yuan yin fen xi	5154
+问题处理结果	wen ti chu li jie guo	5150
+风险问题提醒	feng xian wen ti ti xing	5146
+风险控制措施	feng xian kong zhi cuo shi	5142
+风险已经解除	feng xian yi jing jie chu	5138
+需要领导审批	xu yao ling dao shen pi	5134
+需要大家配合	xu yao da jia pei he	5130
+需要统一安排	xu yao tong yi an pai	5126
+需要重新检查	xu yao chong xin jian cha	5122
+建议尽快处理	jian yi jin kuai chu li	5118
+建议召开会议	jian yi zhao kai hui yi	5114
+建议修改方案	jian yi xiu gai fang an	5110
+建议补充说明	jian yi bu chong shuo ming	5106
+方案已经确定	fang an yi jing que ding	5102
+方案需要调整	fang an xu yao tiao zheng	5098
+方案内容如下	fang an nei rong ru xia	5094
+方案评审通过	fang an ping shen tong guo	5090
+版本已经发布	ban ben yi jing fa bu	5086
+版本更新说明	ban ben geng xin shuo ming	5082
+系统运行正常	xi tong yun xing zheng chang	5078
+我也是这么想的	wo ye shi zhe me xiang de	5074
+我理解你的心情	wo li jie ni de xin qing	5070
+我同意你的看法	wo tong yi ni de kan fa	5066
+我们再商量一下	wo men zai shang liang yi xia	5062
+你指的是这个吗	ni zhi de shi zhe ge ma	5058
+先把事情说清楚	xian ba shi qing shuo qing chu	5054
+具体是什么情况	ju ti shi shen me qing kuang	5050
+你什么时候有空	ni shen me shi hou you kong	5046
+这是什么情况呢	zhe shi shen me qing kuang ne	5042
+现在可以开始吗	xian zai ke yi kai shi ma	5038
+现在可以出发吗	xian zai ke yi chu fa ma	5034
+今天晚上吃什么	jin tian wan shang chi shen me	5030
+明天早上做什么	ming tian zao shang zuo shen me	5026
+晚上一起吃饭吗	wan shang yi qi chi fan ma	5022
+周末一起出去吗	zhou mo yi qi chu qu ma	5018
+下班以后有空吗	xia ban yi hou you kong ma	5014
+明天见面可以吗	ming tian jian mian ke yi ma	5010
+这样安排可以吗	zhe yang an pai ke yi ma	5006
+这样处理行不行	zhe yang chu li xing bu xing	5002
+还有其他办法吗	hai you qi ta ban fa ma	4997
+还有别的选择吗	hai you bie de xuan ze ma	4993
+能不能再说一遍	neng bu neng zai shuo yi bian	4989
+能不能帮我一下	neng bu neng bang wo yi xia	4985
+可以再解释一下	ke yi zai jie shi yi xia	4981
+可以发给我看看	ke yi fa gei wo kan kan	4977
+方便接一下电话	fang bian jie yi xia dian hua	4973
+麻烦你确认一下	ma fan ni que ren yi xia	4969
+请问怎么操作呢	qing wen zen me cao zuo ne	4965
+请问什么时候到	qing wen shen me shi hou dao	4961
+请问需要带什么	qing wen xu yao dai shen me	4957
+到底发生什么事	dao di fa sheng shen me shi	4953
+为什么会这样呢	wei shen me hui zhe yang ne	4949
+我已经准备好了	wo yi jing zhun bei hao le	4945
+我现在就过去了	wo xian zai jiu guo qu le	4941
+我觉得这样可以	wo jue de zhe yang ke yi	4937
+我来处理这件事	wo lai chu li zhe jian shi	4933
+我们一起商量下	wo men yi qi shang liang xia	4929
+大家一起吃饭吧	da jia yi qi chi fan ba	4925
+大家注意安全啊	da jia zhu yi an quan a	4921
+事情已经解决了	shi qing yi jing jie jue le	4917
+问题已经处理好	wen ti yi jing chu li hao	4913
+现在已经可以了	xian zai yi jing ke yi le	4909
+现在还是不行啊	xian zai hai shi bu xing a	4905
+可能需要再看看	ke neng xu yao zai kan kan	4901
+应该不会有问题	ying gai bu hui you wen ti	4897
+希望一切顺利啊	xi wang yi qie shun li a	4893
+今天早上去上班	jin tian zao shang qu shang ban	4889
+今天早上去上学	jin tian zao shang qu shang xue	4885
+今天早上去买菜	jin tian zao shang qu mai cai	4881
+今天早上去吃饭	jin tian zao shang qu chi fan	4877
+今天早上去运动	jin tian zao shang qu yun dong	4873
+今天早上去散步	jin tian zao shang qu san bu	4869
+今天早上洗衣服	jin tian zao shang xi yi fu	4865
+今天中午去买菜	jin tian zhong wu qu mai cai	4861
+今天下午去买菜	jin tian xia wu qu mai cai	4857
+今天下午去吃饭	jin tian xia wu qu chi fan	4853
+今天下午去逛街	jin tian xia wu qu guang jie	4849
+今天下午去运动	jin tian xia wu qu yun dong	4845
+今天下午去散步	jin tian xia wu qu san bu	4841
+今天晚上洗衣服	jin tian wan shang xi yi fu	4837
+明天早上去上班	ming tian zao shang qu shang ban	4833
+明天早上去上学	ming tian zao shang qu shang xue	4829
+明天早上去买菜	ming tian zao shang qu mai cai	4825
+明天早上去吃饭	ming tian zao shang qu chi fan	4821
+明天早上去运动	ming tian zao shang qu yun dong	4817
+明天早上去散步	ming tian zao shang qu san bu	4813
+明天中午去买菜	ming tian zhong wu qu mai cai	4809
+明天下午去买菜	ming tian xia wu qu mai cai	4805
+明天下午去吃饭	ming tian xia wu qu chi fan	4801
+明天下午去逛街	ming tian xia wu qu guang jie	4797
+明天下午去运动	ming tian xia wu qu yun dong	4793
+明天下午去散步	ming tian xia wu qu san bu	4789
+这几天有点累了	zhe ji tian you dian lei le	4785
+这几天注意身体	zhe ji tian zhu yi shen ti	4781
+这几天好好休息	zhe ji tian hao hao xiu xi	4777
+这几天一直下雨	zhe ji tian yi zhi xia yu	4773
+这几天需要上班	zhe ji tian xu yao shang ban	4769
+这几天没有休息	zhe ji tian mei you xiu xi	4765
+最近几天比较忙	zui jin ji tian bi jiao mang	4761
+下个星期去上班	xia ge xing qi qu shang ban	4757
+下个星期去上学	xia ge xing qi qu shang xue	4753
+下个星期去医院	xia ge xing qi qu yi yuan	4749
+回家以后先洗手	hui jia yi hou xian xi shou	4745
+过一会儿联系你	guo yi hui er lian xi ni	4741
+过一会儿再说吧	guo yi hui er zai shuo ba	4737
+等一会儿联系你	deng yi hui er lian xi ni	4733
+等一会儿再说吧	deng yi hui er zai shuo ba	4729
+待会儿再联系你	dai hui er zai lian xi ni	4725
+待会儿再说清楚	dai hui er zai shuo qing chu	4721
+待会儿再看情况	dai hui er zai kan qing kuang	4717
+现在马上去上班	xian zai ma shang qu shang ban	4713
+现在马上去买菜	xian zai ma shang qu mai cai	4709
+现在马上去吃饭	xian zai ma shang qu chi fan	4705
+现在马上出门了	xian zai ma shang chu men le	4701
+现在马上联系你	xian zai ma shang lian xi ni	4697
+回来以后先洗手	hui lai yi hou xian xi shou	4693
+到家以后先洗手	dao jia yi hou xian xi shou	4689
+今天下班一起走	jin tian xia ban yi qi zou	4685
+明天早上一起走	ming tian zao shang yi qi zou	4681
+今天晚上早点睡	jin tian wan shang zao dian shui	4677
+明天晚上再联系	ming tian wan shang zai lian xi	4673
+周末有时间回家	zhou mo you shi jian hui jia	4669
+周末一起出去玩	zhou mo yi qi chu qu wan	4665
+下班顺路买点菜	xia ban shun lu mai dian cai	4661
+出门记得带钥匙	chu men ji de dai yao shi	4657
+出门记得关好门	chu men ji de guan hao men	4653
+到家以后告诉我	dao jia yi hou gao su wo	4649
+到了以后联系我	dao le yi hou lian xi wo	4645
+吃饭之前先洗手	chi fan zhi qian xian xi shou	4641
+忙完以后再说吧	mang wan yi hou zai shuo ba	4637
+有时间我们再约	you shi jian wo men zai yue	4633
+有空一起出来玩	you kong yi qi chu lai wan	4629
+方便时给我电话	fang bian shi gei wo dian hua	4625
+晚一点再回复你	wan yi dian zai hui fu ni	4621
+过几天再看情况	guo ji tian zai kan qing kuang	4617
+最近过得怎么样	zui jin guo de zen me yang	4613
+新的一天加油啊	xin de yi tian jia you a	4609
+今天也要开心呀	jin tian ye yao kai xin ya	4605
+明天一定会更好	ming tian yi ding hui geng hao	4601
+以后有机会再见	yi hou you ji hui zai jian	4597
+今天想吃冰淇淋	jin tian xiang chi bing qi lin	4593
+晚上想吃冰淇淋	wan shang xiang chi bing qi lin	4589
+一起去吃冰淇淋	yi qi qu chi bing qi lin	4585
+我们去吃冰淇淋	wo men qu chi bing qi lin	4581
+中午吃点冰淇淋	zhong wu chi dian bing qi lin	4577
+家里还有冰淇淋	jia li hai you bing qi lin	4573
+帮我买点冰淇淋	bang wo mai dian bing qi lin	4569
+今天想吃方便面	jin tian xiang chi fang bian mian	4565
+晚上想吃方便面	wan shang xiang chi fang bian mian	4561
+一起去吃方便面	yi qi qu chi fang bian mian	4557
+我们去吃方便面	wo men qu chi fang bian mian	4553
+中午吃点方便面	zhong wu chi dian fang bian mian	4549
+家里还有方便面	jia li hai you fang bian mian	4545
+帮我买点方便面	bang wo mai dian fang bian mian	4541
+今天想吃三明治	jin tian xiang chi san ming zhi	4537
+晚上想吃三明治	wan shang xiang chi san ming zhi	4533
+一起去吃三明治	yi qi qu chi san ming zhi	4529
+我们去吃三明治	wo men qu chi san ming zhi	4525
+中午吃点三明治	zhong wu chi dian san ming zhi	4521
+家里还有三明治	jia li hai you san ming zhi	4517
+帮我买点三明治	bang wo mai dian san ming zhi	4513
+今天想吃家常菜	jin tian xiang chi jia chang cai	4509
+晚上想吃家常菜	wan shang xiang chi jia chang cai	4505
+一起去吃家常菜	yi qi qu chi jia chang cai	4501
+我们去吃家常菜	wo men qu chi jia chang cai	4497
+中午吃点家常菜	zhong wu chi dian jia chang cai	4493
+家里还有家常菜	jia li hai you jia chang cai	4489
+帮我买点家常菜	bang wo mai dian jia chang cai	4485
+我想吃一碗面条	wo xiang chi yi wan mian tiao	4481
+今天记得吃早饭	jin tian ji de chi zao fan	4477
+今天记得吃午饭	jin tian ji de chi wu fan	4473
+今天记得吃晚饭	jin tian ji de chi wan fan	4469
+别忘了按时吃饭	bie wang le an shi chi fan	4465
+吃饭不要太着急	chi fan bu yao tai zhao ji	4461
+饭菜已经做好了	fan cai yi jing zuo hao le	4457
+我来准备晚饭吧	wo lai zhun bei wan fan ba	4453
+今天回家做饭吧	jin tian hui jia zuo fan ba	4449
+晚上回家做饭吧	wan shang hui jia zuo fan ba	4445
+周末在家做饭吧	zhou mo zai jia zuo fan ba	4441
+今天一起点外卖	jin tian yi qi dian wai mai	4437
+外卖马上就到了	wai mai ma shang jiu dao le	4433
+外卖已经送到了	wai mai yi jing song dao le	4429
+这家饭菜很好吃	zhe jia fan cai hen hao chi	4425
+这道菜味道不错	zhe dao cai wei dao bu cuo	4421
+这个味道很不错	zhe ge wei dao hen bu cuo	4417
+今天的饭很好吃	jin tian de fan hen hao chi	4413
+少吃一点甜食吧	shao chi yi dian tian shi ba	4409
+最近要清淡饮食	zui jin yao qing dan yin shi	4405
+多吃一点蔬菜吧	duo chi yi dian shu cai ba	4401
+家里没有牛奶了	jia li mei you niu nai le	4397
+晚上一起喝杯茶	wan shang yi qi he bei cha	4393
+有空一起吃个饭	you kong yi qi chi ge fan	4389
+改天一起吃顿饭	gai tian yi qi chi dun fan	4385
+下次再一起吃饭	xia ci zai yi qi chi fan	4381
+吃完饭出去走走	chi wan fan chu qu zou zou	4377
+我来收拾卫生间	wo lai shou shi wei sheng jian	4373
+需要清理卫生间	xu yao qing li wei sheng jian	4369
+今天打扫卫生间	jin tian da sao wei sheng jian	4365
+回家收拾卫生间	hui jia shou shi wei sheng jian	4361
+我来收拾洗衣机	wo lai shou shi xi yi ji	4357
+需要清理洗衣机	xu yao qing li xi yi ji	4353
+今天打扫洗衣机	jin tian da sao xi yi ji	4349
+回家收拾洗衣机	hui jia shou shi xi yi ji	4345
+我来擦一下窗户	wo lai ca yi xia chuang hu	4341
+请把窗户擦一下	qing ba chuang hu ca yi xia	4337
+我来擦一下地板	wo lai ca yi xia di ban	4333
+请把地板擦一下	qing ba di ban ca yi xia	4329
+我来擦一下门窗	wo lai ca yi xia men chuang	4325
+请把门窗擦一下	qing ba men chuang ca yi xia	4321
+我来擦一下桌子	wo lai ca yi xia zhuo zi	4317
+请把桌子擦一下	qing ba zhuo zi ca yi xia	4313
+我来擦一下椅子	wo lai ca yi xia yi zi	4309
+请把椅子擦一下	qing ba yi zi ca yi xia	4305
+我来擦一下碗筷	wo lai ca yi xia wan kuai	4301
+请把碗筷擦一下	qing ba wan kuai ca yi xia	4297
+我来擦一下锅具	wo lai ca yi xia guo ju	4293
+请把锅具擦一下	qing ba guo ju ca yi xia	4289
+我来擦一下鞋子	wo lai ca yi xia xie zi	4285
+请把鞋子擦一下	qing ba xie zi ca yi xia	4281
+我来擦一下手机	wo lai ca yi xia shou ji	4277
+请把手机擦一下	qing ba shou ji ca yi xia	4273
+我来擦一下电脑	wo lai ca yi xia dian nao	4269
+请把电脑擦一下	qing ba dian nao ca yi xia	4265
+我来擦一下电视	wo lai ca yi xia dian shi	4261
+请把电视擦一下	qing ba dian shi ca yi xia	4257
+我来擦一下空调	wo lai ca yi xia kong tiao	4253
+请把空调擦一下	qing ba kong tiao ca yi xia	4249
+我来清洗洗衣机	wo lai qing xi xi yi ji	4245
+需要清洗洗衣机	xu yao qing xi xi yi ji	4241
+今天清洗洗衣机	jin tian qing xi xi yi ji	4237
+我来检查充电器	wo lai jian cha chong dian qi	4233
+需要检查充电器	xu yao jian cha chong dian qi	4229
+我来检查数据线	wo lai jian cha shu ju xian	4225
+需要检查数据线	xu yao jian cha shu ju xian	4221
+我来检查热水器	wo lai jian cha re shui qi	4217
+需要检查热水器	xu yao jian cha re shui qi	4213
+我来检查洗衣机	wo lai jian cha xi yi ji	4209
+需要检查洗衣机	xu yao jian cha xi yi ji	4205
+我来放好充电器	wo lai fang hao chong dian qi	4201
+请把充电器带上	qing ba chong dian qi dai shang	4197
+记得带上充电器	ji de dai shang chong dian qi	4193
+我来放好数据线	wo lai fang hao shu ju xian	4189
+请把数据线带上	qing ba shu ju xian dai shang	4185
+记得带上数据线	ji de dai shang shu ju xian	4181
+进门以后先换鞋	jin men yi hou xian huan xie	4177
+进门以后先洗手	jin men yi hou xian xi shou	4173
+回家先把鞋换了	hui jia xian ba xie huan le	4169
+回家先把手洗了	hui jia xian ba shou xi le	4165
+出门记得关空调	chu men ji de guan kong tiao	4161
+出门记得拿雨伞	chu men ji de na yu san	4157
+睡觉前关好门窗	shui jiao qian guan hao men chuang	4153
+睡觉前检查一下	shui jiao qian jian cha yi xia	4149
+睡觉少看点手机	shui jiao shao kan dian shou ji	4145
+晚上记得关灯啊	wan shang ji de guan deng a	4141
+卫生间需要通风	wei sheng jian xu yao tong feng	4137
+衣服已经洗好了	yi fu yi jing xi hao le	4133
+衣服已经晾好了	yi fu yi jing liang hao le	4129
+被子拿出去晒晒	bei zi na chu qu shai shai	4125
+垃圾记得拿下去	la ji ji de na xia qu	4121
+家里需要买东西	jia li xu yao mai dong xi	4117
+家里的水快用完	jia li de shui kuai yong wan	4113
+家里没有纸巾了	jia li mei you zhi jin le	4109
+东西放在桌上了	dong xi fang zai zhuo shang le	4105
+钥匙放在门口了	yao shi fang zai men kou le	4101
+手机快要没电了	shou ji kuai yao mei dian le	4097
+手机记得充电啊	shou ji ji de chong dian a	4093
+充电器带上了吗	chong dian qi dai shang le ma	4089
+空调温度调高点	kong tiao wen du diao gao dian	4085
+窗户记得关好了	chuang hu ji de guan hao le	4081
+下雨记得关窗户	xia yu ji de guan chuang hu	4077
+今天去买洗发水	jin tian qu mai xi fa shui	4073
+帮我买点洗发水	bang wo mai dian xi fa shui	4069
+网上购买洗发水	wang shang gou mai xi fa shui	4065
+家里需要洗发水	jia li xu yao xi fa shui	4061
+顺便买点洗发水	shun bian mai dian xi fa shui	4057
+先把洗发水买了	xian ba xi fa shui mai le	4053
+今天去买沐浴露	jin tian qu mai mu yu lu	4049
+帮我买点沐浴露	bang wo mai dian mu yu lu	4045
+网上购买沐浴露	wang shang gou mai mu yu lu	4041
+家里需要沐浴露	jia li xu yao mu yu lu	4037
+顺便买点沐浴露	shun bian mai dian mu yu lu	4033
+先把沐浴露买了	xian ba mu yu lu mai le	4029
+今天去买洗衣液	jin tian qu mai xi yi ye	4025
+帮我买点洗衣液	bang wo mai dian xi yi ye	4021
+网上购买洗衣液	wang shang gou mai xi yi ye	4017
+家里需要洗衣液	jia li xu yao xi yi ye	4013
+顺便买点洗衣液	shun bian mai dian xi yi ye	4009
+先把洗衣液买了	xian ba xi yi ye mai le	4005
+今天去买垃圾袋	jin tian qu mai la ji dai	4001
+帮我买点垃圾袋	bang wo mai dian la ji dai	3997
+网上购买垃圾袋	wang shang gou mai la ji dai	3993
+家里需要垃圾袋	jia li xu yao la ji dai	3989
+顺便买点垃圾袋	shun bian mai dian la ji dai	3985
+先把垃圾袋买了	xian ba la ji dai mai le	3981
+今天去买保鲜膜	jin tian qu mai bao xian mo	3977
+帮我买点保鲜膜	bang wo mai dian bao xian mo	3973
+网上购买保鲜膜	wang shang gou mai bao xian mo	3969
+家里需要保鲜膜	jia li xu yao bao xian mo	3965
+顺便买点保鲜膜	shun bian mai dian bao xian mo	3961
+先把保鲜膜买了	xian ba bao xian mo mai le	3957
+今天去买调味料	jin tian qu mai tiao wei liao	3953
+帮我买点调味料	bang wo mai dian tiao wei liao	3949
+网上购买调味料	wang shang gou mai tiao wei liao	3945
+家里需要调味料	jia li xu yao tiao wei liao	3941
+顺便买点调味料	shun bian mai dian tiao wei liao	3937
+先把调味料买了	xian ba tiao wei liao mai le	3933
+今天去买食用油	jin tian qu mai shi yong you	3929
+帮我买点食用油	bang wo mai dian shi yong you	3925
+网上购买食用油	wang shang gou mai shi yong you	3921
+家里需要食用油	jia li xu yao shi yong you	3917
+顺便买点食用油	shun bian mai dian shi yong you	3913
+先把食用油买了	xian ba shi yong you mai le	3909
+今天去买充电器	jin tian qu mai chong dian qi	3905
+帮我买点充电器	bang wo mai dian chong dian qi	3901
+网上购买充电器	wang shang gou mai chong dian qi	3897
+家里需要充电器	jia li xu yao chong dian qi	3893
+顺便买点充电器	shun bian mai dian chong dian qi	3889
+先把充电器买了	xian ba chong dian qi mai le	3885
+今天去买数据线	jin tian qu mai shu ju xian	3881
+帮我买点数据线	bang wo mai dian shu ju xian	3877
+网上购买数据线	wang shang gou mai shu ju xian	3873
+家里需要数据线	jia li xu yao shu ju xian	3869
+顺便买点数据线	shun bian mai dian shu ju xian	3865
+先把数据线买了	xian ba shu ju xian mai le	3861
+今天去买笔记本	jin tian qu mai bi ji ben	3857
+帮我买点笔记本	bang wo mai dian bi ji ben	3853
+网上购买笔记本	wang shang gou mai bi ji ben	3849
+家里需要笔记本	jia li xu yao bi ji ben	3845
+顺便买点笔记本	shun bian mai dian bi ji ben	3841
+先把笔记本买了	xian ba bi ji ben mai le	3837
+我想买生活用品	wo xiang mai sheng huo yong pin	3833
+今天去买日用品	jin tian qu mai ri yong pin	3829
+帮我买点日用品	bang wo mai dian ri yong pin	3825
+网上购买日用品	wang shang gou mai ri yong pin	3821
+家里需要日用品	jia li xu yao ri yong pin	3817
+顺便买点日用品	shun bian mai dian ri yong pin	3813
+先把日用品买了	xian ba ri yong pin mai le	3809
+我想买家用电器	wo xiang mai jia yong dian qi	3805
+这个东西多少钱	zhe ge dong xi duo shao qian	3801
+这个东西怎么样	zhe ge dong xi zen me yang	3797
+这个可以退货吗	zhe ge ke yi tui huo ma	3793
+这个可以换货吗	zhe ge ke yi huan huo ma	3789
+可以便宜一点吗	ke yi pian yi yi dian ma	3785
+有没有其他颜色	you mei you qi ta yan se	3781
+有没有大一点的	you mei you da yi dian de	3777
+有没有小一点的	you mei you xiao yi dian de	3773
+有没有更好的呢	you mei you geng hao de ne	3769
+还有别的款式吗	hai you bie de kuan shi ma	3765
+麻烦帮我拿一下	ma fan bang wo na yi xia	3761
+这个商品有货吗	zhe ge shang pin you huo ma	3757
+快递什么时候到	kuai di shen me shi hou dao	3753
+我的快递到了吗	wo de kuai di dao le ma	3749
+快递已经送到了	kuai di yi jing song dao le	3745
+快递放在门口了	kuai di fang zai men kou le	3741
+包裹已经收到了	bao guo yi jing shou dao le	3737
+包裹需要签收吗	bao guo xu yao qian shou ma	3733
+地址发给我一下	di zhi fa gei wo yi xia	3729
+收货地址改一下	shou huo di zhi gai yi xia	3725
+订单已经提交了	ding dan yi jing ti jiao le	3721
+订单可以取消吗	ding dan ke yi qu xiao ma	3717
+订单已经取消了	ding dan yi jing qu xiao le	3713
+付款已经完成了	fu kuan yi jing wan cheng le	3709
+请确认付款信息	qing que ren fu kuan xin xi	3705
+可以扫码付款吗	ke yi sao ma fu kuan ma	3701
+支持网上付款吗	zhi chi wang shang fu kuan ma	3697
+退货需要运费吗	tui huo xu yao yun fei ma	3693
+买东西要看质量	mai dong xi yao kan zhi liang	3689
+买之前先看评价	mai zhi qian xian kan ping jia	3685
+记得领取优惠券	ji de ling qu you hui quan	3681
+这个价格很合适	zhe ge jia ge hen he shi	3677
+今天买东西打折	jin tian mai dong xi da zhe	3673
+顺路帮我买回来	shun lu bang wo mai hui lai	3669
+东西买回来了吗	dong xi mai hui lai le ma	3665
+清单上的都买了	qing dan shang de dou mai le	3661
+我现在去菜市场	wo xian zai qu cai shi chang	3657
+我已经到菜市场	wo yi jing dao cai shi chang	3653
+我马上到菜市场	wo ma shang dao cai shi chang	3649
+从这里到菜市场	cong zhe li dao cai shi chang	3645
+我现在去火车站	wo xian zai qu huo che zhan	3641
+我已经到火车站	wo yi jing dao huo che zhan	3637
+我马上到火车站	wo ma shang dao huo che zhan	3633
+从这里到火车站	cong zhe li dao huo che zhan	3629
+我现在去汽车站	wo xian zai qu qi che zhan	3625
+我已经到汽车站	wo yi jing dao qi che zhan	3621
+我马上到汽车站	wo ma shang dao qi che zhan	3617
+从这里到汽车站	cong zhe li dao qi che zhan	3613
+我现在去地铁站	wo xian zai qu di tie zhan	3609
+我已经到地铁站	wo yi jing dao di tie zhan	3605
+我马上到地铁站	wo ma shang dao di tie zhan	3601
+从这里到地铁站	cong zhe li dao di tie zhan	3597
+我现在去公交站	wo xian zai qu gong jiao zhan	3593
+我已经到公交站	wo yi jing dao gong jiao zhan	3589
+我马上到公交站	wo ma shang dao gong jiao zhan	3585
+从这里到公交站	cong zhe li dao gong jiao zhan	3581
+我现在去咖啡店	wo xian zai qu ka fei dian	3577
+我已经到咖啡店	wo yi jing dao ka fei dian	3573
+我马上到咖啡店	wo ma shang dao ka fei dian	3569
+从这里到咖啡店	cong zhe li dao ka fei dian	3565
+我现在去电影院	wo xian zai qu dian ying yuan	3561
+我已经到电影院	wo yi jing dao dian ying yuan	3557
+我马上到电影院	wo ma shang dao dian ying yuan	3553
+从这里到电影院	cong zhe li dao dian ying yuan	3549
+我现在去图书馆	wo xian zai qu tu shu guan	3545
+我已经到图书馆	wo yi jing dao tu shu guan	3541
+我马上到图书馆	wo ma shang dao tu shu guan	3537
+从这里到图书馆	cong zhe li dao tu shu guan	3533
+我现在去健身房	wo xian zai qu jian shen fang	3529
+我已经到健身房	wo yi jing dao jian shen fang	3525
+我马上到健身房	wo ma shang dao jian shen fang	3521
+从这里到健身房	cong zhe li dao jian shen fang	3517
+我现在去朋友家	wo xian zai qu peng you jia	3513
+我已经到朋友家	wo yi jing dao peng you jia	3509
+我马上到朋友家	wo ma shang dao peng you jia	3505
+从这里到朋友家	cong zhe li dao peng you jia	3501
+我现在去爸妈家	wo xian zai qu ba ma jia	3497
+我已经到爸妈家	wo yi jing dao ba ma jia	3493
+我马上到爸妈家	wo ma shang dao ba ma jia	3489
+从这里到爸妈家	cong zhe li dao ba ma jia	3485
+到了给我发消息	dao le gei wo fa xiao xi	3481
+到了记得告诉我	dao le ji de gao su wo	3477
+今天路上顺利吗	jin tian lu shang shun li ma	3473
+地铁马上就到了	di tie ma shang jiu dao le	3469
+打车大概多少钱	da che da gai duo shao qian	3465
+帮我叫辆出租车	bang wo jiao liang chu zu che	3461
+在门口等我一下	zai men kou deng wo yi xia	3457
+我们在哪里见面	wo men zai na li jian mian	3453
+见面地点改一下	jian mian di dian gai yi xia	3449
+预约时间改一下	yu yue shi jian gai yi xia	3445
+请提前预约一下	qing ti qian yu yue yi xia	3441
+明天预约看医生	ming tian yu yue kan yi sheng	3437
+今天下午去医院	jin tian xia wu qu yi yuan	3433
+办完事情就回来	ban wan shi qing jiu hui lai	3429
+感觉身体不舒服	gan jue shen ti bu shu fu	3425
+今天有点不舒服	jin tian you dian bu shu fu	3421
+肚子有点不舒服	du zi you dian bu shu fu	3417
+今天身体好些了	jin tian shen ti hao xie le	3413
+最近注意身体啊	zui jin zhu yi shen ti a	3409
+最近不要太累了	zui jin bu yao tai lei le	3405
+早点休息别熬夜	zao dian xiu xi bie ao ye	3401
+每天坚持运动啊	mei tian jian chi yun dong a	3397
+不要一直熬夜了	bu yao yi zhi ao ye le	3393
+记得量一下体温	ji de liang yi xia ti wen	3389
+有空去医院看看	you kong qu yi yuan kan kan	3385
+预约明天的医生	yu yue ming tian de yi sheng	3381
+今天需要休息吗	jin tian xu yao xiu xi ma	3377
+今天精神好一点	jin tian jing shen hao yi dian	3373
+工作不要太拼了	gong zuo bu yao tai pin le	3369
+别让自己太累了	bie rang zi ji tai lei le	3365
+天气越来越冷了	tian qi yue lai yue leng le	3361
+天气越来越热了	tian qi yue lai yue re le	3357
+今天外面下雨了	jin tian wai mian xia yu le	3353
+今天外面很冷啊	jin tian wai mian hen leng a	3349
+今天外面很热啊	jin tian wai mian hen re a	3345
+明天可能会下雨	ming tian ke neng hui xia yu	3341
+出门记得带雨伞	chu men ji de dai yu san	3337
+出门记得添衣服	chu men ji de tian yi fu	3333
+天气变化要注意	tian qi bian hua yao zhu yi	3329
+最近天气不太好	zui jin tian qi bu tai hao	3325
+空气质量怎么样	kong qi zhi liang zen me yang	3321
+今天适合出去吗	jin tian shi he chu qu ma	3317
+洗完澡早点睡觉	xi wan zao zao dian shui jiao	3313
+记得每天刷牙啊	ji de mei tian shua ya a	3309
+出门之前洗把脸	chu men zhi qian xi ba lian	3305
+头发需要剪一下	tou fa xu yao jian yi xia	3301
+衣服穿暖和一点	yi fu chuan nuan huo yi dian	3297
+不要穿得太单薄	bu yao chuan de tai dan bo	3293
+注意保暖别着凉	zhu yi bao nuan bie zhao liang	3289
+感冒好一点了吗	gan mao hao yi dian le ma	3285
+常给家人打电话	chang gei jia ren da dian hua	3281
+记得给家里电话	ji de gei jia li dian hua	3277
+给爸妈报个平安	gei ba ma bao ge ping an	3273
+家里人都还好吗	jia li ren dou hai hao ma	3269
+孩子今天上学吗	hai zi jin tian shang xue ma	3265
+孩子已经睡着了	hai zi yi jing shui zhao le	3261
+老人身体还好吗	lao ren shen ti hai hao ma	3257
+一家人一起吃饭	yi jia ren yi qi chi fan	3253
+一家人开开心心	yi jia ren kai kai xin xin	3249
+周末一起聚聚吧	zhou mo yi qi ju ju ba	3245
+有空一起喝杯茶	you kong yi qi he bei cha	3241
+改天一起出来玩	gai tian yi qi chu lai wan	3237
+好久没有见面了	hao jiu mei you jian mian le	3233
+好久不见还好吗	hao jiu bu jian hai hao ma	3229
+很久没有联系了	hen jiu mei you lian xi le	3225
+谢谢你的关心啊	xie xie ni de guan xin a	3221
+多谢你的帮助啊	duo xie ni de bang zhu a	3217
+麻烦你照顾一下	ma fan ni zhao gu yi xia	3213
+祝你天天开心啊	zhu ni tian tian kai xin a	3209
+祝你工作顺利啊	zhu ni gong zuo shun li a	3205
+祝你一路顺风啊	zhu ni yi lu shun feng a	3201
+祝你考试顺利啊	zhu ni kao shi shun li a	3197
+新年快乐万事顺	xin nian kuai le wan shi shun	3193
+节日快乐身体好	jie ri kuai le shen ti hao	3189
+今天是个好日子	jin tian shi ge hao ri zi	3185
+今天大家都开心	jin tian da jia dou kai xin	3181
+希望你一切顺利	xi wang ni yi qie shun li	3177
+有时间常联系啊	you shi jian chang lian xi a	3173
+有机会再见面吧	you ji hui zai jian mian ba	3169
+下次一定要来啊	xia ci yi ding yao lai a	3165
+谢谢大家的关心	xie xie da jia de guan xin	3161
+感谢你的帮助啊	gan xie ni de bang zhu a	3157
+不好意思打扰了	bu hao yi si da rao le	3153
+真的非常感谢你	zhen de fei chang gan xie ni	3149
+不用客气没关系	bu yong ke qi mei guan xi	3145
+没事慢慢来就好	mei shi man man lai jiu hao	3141
+别把自己累坏了	bie ba zi ji lei huai le	3137
+大家一起加油吧	da jia yi qi jia you ba	3133
+项目按计划推进	xiang mu an ji hua tui jin	3129
+部门负责人确认	bu men fu ze ren que ren	3125
+请准时参加会议	qing zhun shi can jia hui yi	3121
+请提前准备材料	qing ti qian zhun bei cai liao	3117
+请及时回复邮件	qing ji shi hui fu you jian	3113
+请查收邮件附件	qing cha shou you jian fu jian	3109
+请查看相关文件	qing cha kan xiang guan wen jian	3105
+请确认收到邮件	qing que ren shou dao you jian	3101
+请各位注意查收	qing ge wei zhu yi cha shou	3097
+请按照要求办理	qing an zhao yao qiu ban li	3093
+请尽快处理一下	qing jin kuai chu li yi xia	3089
+请及时反馈意见	qing ji shi fan kui yi jian	3085
+请提供详细资料	qing ti gong xiang xi zi liao	3081
+请补充相关信息	qing bu chong xiang guan xin xi	3077
+请核对数据内容	qing he dui shu ju nei rong	3073
+请确认最终版本	qing que ren zui zhong ban ben	3069
+请安排人员参加	qing an pai ren yuan can jia	3065
+请做好会议准备	qing zuo hao hui yi zhun bei	3061
+请提前通知大家	qing ti qian tong zhi da jia	3057
+请抄送相关人员	qing chao song xiang guan ren yuan	3053
+请回复处理结果	qing hui fu chu li jie guo	3049
+资料已经准备好	zi liao yi jing zhun bei hao	3045
+资料请及时提供	zi liao qing ji shi ti gong	3041
+材料请尽快提交	cai liao qing jin kuai ti jiao	3037
+数据请及时同步	shu ju qing ji shi tong bu	3033
+客户满意度调查	ke hu man yi du diao cha	3029
+供应商联系确认	gong ying shang lian xi que ren	3025
+通知请及时查看	tong zhi qing ji shi cha kan	3021
+下一步工作计划	xia yi bu gong zuo ji hua	3017
+需要进一步确认	xu yao jin yi bu que ren	3013
+服务暂时不可用	fu wu zan shi bu ke yong	3009
+请遵守工作纪律	qing zun shou gong zuo ji lv	3005
+如有问题请联系	ru you wen ti qing lian xi	3001
+如有疑问请反馈	ru you yi wen qing fan kui	2996
+后续会及时通知	hou xu hui ji shi tong zhi	2992
+请按时完成任务	qing an shi wan cheng ren wu	2988
+请保存相关文件	qing bao cun xiang guan wen jian	2984
+请注意查收邮件	qing zhu yi cha shou you jian	2980
+请及时更新进度	qing ji shi geng xin jin du	2976
+请同步最新信息	qing tong bu zui xin xin xi	2972
+今天工作安排好	jin tian gong zuo an pai hao	2968
+今天工作比较忙	jin tian gong zuo bi jiao mang	2964
+今天工作完成了	jin tian gong zuo wan cheng le	2960
+明天开始上班了	ming tian kai shi shang ban le	2956
+下班以后再处理	xia ban yi hou zai chu li	2952
+工作正在进行中	gong zuo zheng zai jin xing zhong	2948
+工作需要跟进下	gong zuo xu yao gen jin xia	2944
+工作进度正常吗	gong zuo jin du zheng chang ma	2940
+工作内容确认下	gong zuo nei rong que ren xia	2936
+工作计划改一下	gong zuo ji hua gai yi xia	2932
+会议时间改一下	hui yi shi jian gai yi xia	2928
+会议马上就开始	hui yi ma shang jiu kai shi	2924
+会议已经结束了	hui yi yi jing jie shu le	2920
+会议内容确认下	hui yi nei rong que ren xia	2916
+请及时回复消息	qing ji shi hui fu xiao xi	2912
+请确认收到信息	qing que ren shou dao xin xi	2908
+文件已经准备好	wen jian yi jing zhun bei hao	2904
+文件内容确认下	wen jian nei rong que ren xia	2900
+资料需要补充下	zi liao xu yao bu chong xia	2896
+材料已经收到了	cai liao yi jing shou dao le	2892
+数据已经更新了	shu ju yi jing geng xin le	2888
+数据需要核对下	shu ju xu yao he dui xia	2884
+问题需要跟进下	wen ti xu yao gen jin xia	2880
+问题已经解决了	wen ti yi jing jie jue le	2876
+方案需要调整下	fang an xu yao tiao zheng xia	2872
+计划需要改一下	ji hua xu yao gai yi xia	2868
+有问题及时联系	you wen ti ji shi lian xi	2864
+有问题一起商量	you wen ti yi qi shang liang	2860
+有事情随时联系	you shi qing sui shi lian xi	2856
+有消息告诉我啊	you xiao xi gao su wo a	2852
+请记得保存文件	qing ji de bao cun wen jian	2848
+请不要删除数据	qing bu yao shan chu shu ju	2844
+邮件附件请查收	you jian fu jian qing cha shou	2840
+收到请回复一下	shou dao qing hui fu yi xia	2836
+看完以后告诉我	kan wan yi hou gao su wo	2832
+有空帮我看看吧	you kong bang wo kan kan ba	2828
+今天认真学习啊	jin tian ren zhen xue xi a	2824
+每天坚持学习啊	mei tian jian chi xue xi a	2820
+作业已经写完了	zuo ye yi jing xie wan le	2816
+作业需要检查下	zuo ye xu yao jian cha xia	2812
+考试准备得怎样	kao shi zhun bei de zen yang	2808
+考试一定要加油	kao shi yi ding yao jia you	2804
+上课不要迟到了	shang ke bu yao chi dao le	2800
+下课一起去吃饭	xia ke yi qi qu chi fan	2796
+笔记整理好了吗	bi ji zheng li hao le ma	2792
+这道题怎么解决	zhe dao ti zen me jie jue	2788
+这个答案对不对	zhe ge da an dui bu dui	2784
+需要再练习一下	xu yao zai lian xi yi xia	2780
+我今天先去时间	wo jin tian xian qu shi jian	2776
+我今天先去地点	wo jin tian xian qu di dian	2772
+我今天先去内容	wo jin tian xian qu nei rong	2768
+我今天先去安排	wo jin tian xian qu an pai	2764
+我今天先去计划	wo jin tian xian qu ji hua	2760
+我今天先去事情	wo jin tian xian qu shi qing	2756
+我今天先去问题	wo jin tian xian qu wen ti	2752
+我今天先去情况	wo jin tian xian qu qing kuang	2748
+我今天先去消息	wo jin tian xian qu xiao xi	2744
+我今天先去电话	wo jin tian xian qu dian hua	2740
+我今天先去短信	wo jin tian xian qu duan xin	2736
+我今天先去文件	wo jin tian xian qu wen jian	2732
+我今天先去资料	wo jin tian xian qu zi liao	2728
+我今天先去材料	wo jin tian xian qu cai liao	2724
+我今天先去房间	wo jin tian xian qu fang jian	2720
+我今天先去厨房	wo jin tian xian qu chu fang	2716
+我今天先去卫生	wo jin tian xian qu wei sheng	2712
+我今天先去晚饭	wo jin tian xian qu wan fan	2708
+我今天先去买菜	wo jin tian xian qu mai cai	2704
+我今天先去上班	wo jin tian xian qu shang ban	2700
+我今天先去上学	wo jin tian xian qu shang xue	2696
+我今天先去休息	wo jin tian xian qu xiu xi	2692
+我今天先去运动	wo jin tian xian qu yun dong	2688
+我今天先去散步	wo jin tian xian qu san bu	2684
+我今天先去购物	wo jin tian xian qu gou wu	2680
+我今天先去医院	wo jin tian xian qu yi yuan	2676
+我今天先去超市	wo jin tian xian qu chao shi	2672
+我今天先去银行	wo jin tian xian qu yin hang	2668
+我今天先去公园	wo jin tian xian qu gong yuan	2664
+我今天先去朋友	wo jin tian xian qu peng you	2660
+我明天先去时间	wo ming tian xian qu shi jian	2656
+我明天先去地点	wo ming tian xian qu di dian	2652
+我明天先去内容	wo ming tian xian qu nei rong	2648
+我明天先去安排	wo ming tian xian qu an pai	2644
+我明天先去计划	wo ming tian xian qu ji hua	2640
+我明天先去事情	wo ming tian xian qu shi qing	2636
+我明天先去问题	wo ming tian xian qu wen ti	2632
+我明天先去情况	wo ming tian xian qu qing kuang	2628
+我明天先去消息	wo ming tian xian qu xiao xi	2624
+我明天先去电话	wo ming tian xian qu dian hua	2620
+我明天先去短信	wo ming tian xian qu duan xin	2616
+我明天先去文件	wo ming tian xian qu wen jian	2612
+我明天先去资料	wo ming tian xian qu zi liao	2608
+我明天先去材料	wo ming tian xian qu cai liao	2604
+我明天先去房间	wo ming tian xian qu fang jian	2600
+我明天先去厨房	wo ming tian xian qu chu fang	2596
+我明天先去卫生	wo ming tian xian qu wei sheng	2592
+我明天先去晚饭	wo ming tian xian qu wan fan	2588
+我明天先去买菜	wo ming tian xian qu mai cai	2584
+我明天先去上班	wo ming tian xian qu shang ban	2580
+我明天先去上学	wo ming tian xian qu shang xue	2576
+我明天先去休息	wo ming tian xian qu xiu xi	2572
+我明天先去运动	wo ming tian xian qu yun dong	2568
+我明天先去散步	wo ming tian xian qu san bu	2564
+我明天先去购物	wo ming tian xian qu gou wu	2560
+我明天先去医院	wo ming tian xian qu yi yuan	2556
+我明天先去超市	wo ming tian xian qu chao shi	2552
+我明天先去银行	wo ming tian xian qu yin hang	2548
+我明天先去公园	wo ming tian xian qu gong yuan	2544
+我明天先去朋友	wo ming tian xian qu peng you	2540
+我现在先去时间	wo xian zai xian qu shi jian	2536
+我现在先去地点	wo xian zai xian qu di dian	2532
+我现在先去内容	wo xian zai xian qu nei rong	2528
+我现在先去安排	wo xian zai xian qu an pai	2524
+我现在先去计划	wo xian zai xian qu ji hua	2520
+我现在先去事情	wo xian zai xian qu shi qing	2516
+我现在先去问题	wo xian zai xian qu wen ti	2512
+我现在先去情况	wo xian zai xian qu qing kuang	2508
+我现在先去消息	wo xian zai xian qu xiao xi	2504
+我现在先去电话	wo xian zai xian qu dian hua	2500
+我现在先去短信	wo xian zai xian qu duan xin	2496
+我现在先去文件	wo xian zai xian qu wen jian	2492
+我现在先去资料	wo xian zai xian qu zi liao	2488
+我现在先去材料	wo xian zai xian qu cai liao	2484
+我现在先去房间	wo xian zai xian qu fang jian	2480
+我现在先去厨房	wo xian zai xian qu chu fang	2476
+我现在先去卫生	wo xian zai xian qu wei sheng	2472
+我现在先去晚饭	wo xian zai xian qu wan fan	2468
+我现在先去买菜	wo xian zai xian qu mai cai	2464
+我现在先去上班	wo xian zai xian qu shang ban	2460
+我现在先去上学	wo xian zai xian qu shang xue	2456
+我现在先去休息	wo xian zai xian qu xiu xi	2452
+我现在先去运动	wo xian zai xian qu yun dong	2448
+我现在先去散步	wo xian zai xian qu san bu	2444
+我现在先去购物	wo xian zai xian qu gou wu	2440
+我现在先去医院	wo xian zai xian qu yi yuan	2436
+我现在先去超市	wo xian zai xian qu chao shi	2432
+我现在先去银行	wo xian zai xian qu yin hang	2428
+我现在先去公园	wo xian zai xian qu gong yuan	2424
+我现在先去朋友	wo xian zai xian qu peng you	2420
+我晚上先去时间	wo wan shang xian qu shi jian	2416
+我晚上先去地点	wo wan shang xian qu di dian	2412
+我晚上先去内容	wo wan shang xian qu nei rong	2408
+我晚上先去安排	wo wan shang xian qu an pai	2404
+我晚上先去计划	wo wan shang xian qu ji hua	2400
+我晚上先去事情	wo wan shang xian qu shi qing	2396
+我晚上先去问题	wo wan shang xian qu wen ti	2392
+我晚上先去情况	wo wan shang xian qu qing kuang	2388
+我晚上先去消息	wo wan shang xian qu xiao xi	2384
+我晚上先去电话	wo wan shang xian qu dian hua	2380
+我晚上先去短信	wo wan shang xian qu duan xin	2376
+我晚上先去文件	wo wan shang xian qu wen jian	2372
+我晚上先去资料	wo wan shang xian qu zi liao	2368
+我晚上先去材料	wo wan shang xian qu cai liao	2364
+我晚上先去房间	wo wan shang xian qu fang jian	2360
+我晚上先去厨房	wo wan shang xian qu chu fang	2356
+我晚上先去卫生	wo wan shang xian qu wei sheng	2352
+我晚上先去晚饭	wo wan shang xian qu wan fan	2348
+我晚上先去买菜	wo wan shang xian qu mai cai	2344
+我晚上先去上班	wo wan shang xian qu shang ban	2340
+我晚上先去上学	wo wan shang xian qu shang xue	2336
+我晚上先去休息	wo wan shang xian qu xiu xi	2332
+我晚上先去运动	wo wan shang xian qu yun dong	2328
+我晚上先去散步	wo wan shang xian qu san bu	2324
+我晚上先去购物	wo wan shang xian qu gou wu	2320
+我晚上先去医院	wo wan shang xian qu yi yuan	2316
+我晚上先去超市	wo wan shang xian qu chao shi	2312
+我晚上先去银行	wo wan shang xian qu yin hang	2308
+我晚上先去公园	wo wan shang xian qu gong yuan	2304
+我晚上先去朋友	wo wan shang xian qu peng you	2300
+你今天先去时间	ni jin tian xian qu shi jian	2296
+你今天先去地点	ni jin tian xian qu di dian	2292
+你今天先去内容	ni jin tian xian qu nei rong	2288
+你今天先去安排	ni jin tian xian qu an pai	2284
+你今天先去计划	ni jin tian xian qu ji hua	2280
+你今天先去事情	ni jin tian xian qu shi qing	2276
+你今天先去问题	ni jin tian xian qu wen ti	2272
+你今天先去情况	ni jin tian xian qu qing kuang	2268
+你今天先去消息	ni jin tian xian qu xiao xi	2264
+你今天先去电话	ni jin tian xian qu dian hua	2260
+你今天先去短信	ni jin tian xian qu duan xin	2256
+你今天先去文件	ni jin tian xian qu wen jian	2252
+你今天先去资料	ni jin tian xian qu zi liao	2248
+你今天先去材料	ni jin tian xian qu cai liao	2244
+你今天先去房间	ni jin tian xian qu fang jian	2240
+你今天先去厨房	ni jin tian xian qu chu fang	2236
+你今天先去卫生	ni jin tian xian qu wei sheng	2232
+你今天先去晚饭	ni jin tian xian qu wan fan	2228
+你今天先去买菜	ni jin tian xian qu mai cai	2224
+你今天先去上班	ni jin tian xian qu shang ban	2220
+你今天先去上学	ni jin tian xian qu shang xue	2216
+你今天先去休息	ni jin tian xian qu xiu xi	2212
+你今天先去运动	ni jin tian xian qu yun dong	2208
+你今天先去散步	ni jin tian xian qu san bu	2204
+你今天先去购物	ni jin tian xian qu gou wu	2200
+你今天先去医院	ni jin tian xian qu yi yuan	2196
+你今天先去超市	ni jin tian xian qu chao shi	2192
+你今天先去银行	ni jin tian xian qu yin hang	2188
+你今天先去公园	ni jin tian xian qu gong yuan	2184
+你今天先去朋友	ni jin tian xian qu peng you	2180
+你明天先去时间	ni ming tian xian qu shi jian	2176
+你明天先去地点	ni ming tian xian qu di dian	2172
+你明天先去内容	ni ming tian xian qu nei rong	2168
+你明天先去安排	ni ming tian xian qu an pai	2164
+你明天先去计划	ni ming tian xian qu ji hua	2160
+你明天先去事情	ni ming tian xian qu shi qing	2156
+你明天先去问题	ni ming tian xian qu wen ti	2152
+你明天先去情况	ni ming tian xian qu qing kuang	2148
+你明天先去消息	ni ming tian xian qu xiao xi	2144
+你明天先去电话	ni ming tian xian qu dian hua	2140
+你明天先去短信	ni ming tian xian qu duan xin	2136
+你明天先去文件	ni ming tian xian qu wen jian	2132
+你明天先去资料	ni ming tian xian qu zi liao	2128
+你明天先去材料	ni ming tian xian qu cai liao	2124
+你明天先去房间	ni ming tian xian qu fang jian	2120
+你明天先去厨房	ni ming tian xian qu chu fang	2116
+你明天先去卫生	ni ming tian xian qu wei sheng	2112
+你明天先去晚饭	ni ming tian xian qu wan fan	2108
+你明天先去买菜	ni ming tian xian qu mai cai	2104
+你明天先去上班	ni ming tian xian qu shang ban	2100
+你明天先去上学	ni ming tian xian qu shang xue	2096
+你明天先去休息	ni ming tian xian qu xiu xi	2092
+你明天先去运动	ni ming tian xian qu yun dong	2088
+你明天先去散步	ni ming tian xian qu san bu	2084
+你明天先去购物	ni ming tian xian qu gou wu	2080
+你明天先去医院	ni ming tian xian qu yi yuan	2076
+你明天先去超市	ni ming tian xian qu chao shi	2072
+你明天先去银行	ni ming tian xian qu yin hang	2068
+你明天先去公园	ni ming tian xian qu gong yuan	2064
+你明天先去朋友	ni ming tian xian qu peng you	2060
+你现在先去时间	ni xian zai xian qu shi jian	2056
+你现在先去地点	ni xian zai xian qu di dian	2052
+你现在先去内容	ni xian zai xian qu nei rong	2048
+你现在先去安排	ni xian zai xian qu an pai	2044
+你现在先去计划	ni xian zai xian qu ji hua	2040
+你现在先去事情	ni xian zai xian qu shi qing	2036
+你现在先去问题	ni xian zai xian qu wen ti	2032
+你现在先去情况	ni xian zai xian qu qing kuang	2028
+你现在先去消息	ni xian zai xian qu xiao xi	2024
+你现在先去电话	ni xian zai xian qu dian hua	2020
+你现在先去短信	ni xian zai xian qu duan xin	2016
+你现在先去文件	ni xian zai xian qu wen jian	2012
+你现在先去资料	ni xian zai xian qu zi liao	2008
+你现在先去材料	ni xian zai xian qu cai liao	2004
+你现在先去房间	ni xian zai xian qu fang jian	2000

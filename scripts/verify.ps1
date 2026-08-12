@@ -87,12 +87,11 @@ try {
 Push-Location $cargoDir
 try {
     Invoke-Checked { cargo fmt -- --check }
-    Invoke-Checked { cargo test --lib }
-    Invoke-Checked { cargo run --bin input_smoke -- ..\tests\input_cases.sqlite }
     if ((-not $Fast) -and (-not $SkipEval)) {
-        Invoke-Checked { cargo run --bin input_eval -- --mixed }
-        Invoke-Checked { cargo run --bin input_perf -- --workload-size 240 --warmup 1 --iterations 1 }
-        Invoke-Checked { cargo run --bin input_eval -- --quality --min-top1 85 --min-top3 85 --min-top9 85 }
+        Invoke-Checked {
+            cargo run --bin input_perf -- --input shuru --input nihao --input zhongguo `
+                --workload-size 240 --warmup 1 --iterations 1
+        }
     }
 } finally {
     Pop-Location

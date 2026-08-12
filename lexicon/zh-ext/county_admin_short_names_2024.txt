@@ -1,0 +1,2776 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 2024 县级行政区简称高优先级全拼词库
+# 原始清单已合并归档，数据溯源见 docs/licenses/AI_DATA_PROVENANCE.md。
+# 重复简称已去重；运行时按扩展层处理，由全拼意图排序保证精确候选优先。
+# 格式：词语<TAB>拼音<TAB>权重；第三列统一为 1-10000 万分制排序分数。
+阿坝	a ba	6500
+阿巴嘎	a ba ga	4000
+阿城	a cheng	6500
+阿尔山	a er shan	4000
+阿合奇	a he qi	4000
+阿克塞哈萨克族	a ke sai ha sa ke zu	1500
+阿克苏	a ke su	4000
+阿克陶	a ke tao	4000
+阿拉尔	a la er	4000
+阿拉山口	a la shan kou	1500
+阿拉善右	a la shan you	1500
+阿拉善左	a la shan zuo	1500
+阿勒泰	a le tai	4000
+阿鲁科尔沁	a lu ke er qin	1500
+阿荣	a rong	6500
+阿图什	a tu shi	4000
+阿瓦提	a wa ti	4000
+爱辉	ai hui	6500
+爱民	ai min	6500
+安次	an ci	6500
+安达	an da	6500
+安定	an ding	6500
+安多	an duo	6500
+安福	an fu	6500
+安国	an guo	6500
+安化	an hua	6500
+安吉	an ji	6500
+安居	an ju	6500
+安龙	an long	6500
+安陆	an lu	6500
+安宁	an ning	6500
+安平	an ping	6500
+安丘	an qiu	6500
+安仁	an ren	6500
+安塞	an sai	6500
+安图	an tu	6500
+安溪	an xi	6500
+安乡	an xiang	6500
+安新	an xin	6500
+安阳	an yang	6500
+安义	an yi	6500
+安源	an yuan	6500
+安远	an yuan	6500
+安岳	an yue	6500
+安泽	an ze	6500
+安州	an zhou	6500
+昂昂溪	ang ang xi	4000
+昂仁	ang ren	6500
+敖汉	ao han	6500
+八步	ba bu	6500
+巴楚	ba chu	6500
+巴东	ba dong	6500
+八公山	ba gong shan	4000
+巴里坤哈萨克	ba li kun ha sa ke	1500
+巴林右	ba lin you	4000
+巴林左	ba lin zuo	4000
+巴马瑶族	ba ma yao zu	1500
+巴南	ba nan	6500
+灞桥	ba qiao	6500
+巴青	ba qing	6500
+八宿	ba su	6500
+巴塘	ba tang	6500
+巴彦	ba yan	6500
+巴宜	ba yi	6500
+鲅鱼圈	ba yu quan	4000
+巴州	ba zhou	6500
+霸州	ba zhou	6500
+拜城	bai cheng	6500
+白河	bai he	6500
+白碱滩	bai jian tan	4000
+白朗	bai lang	6500
+拜泉	bai quan	6500
+白沙黎族	bai sha li zu	1500
+白水	bai shui	6500
+白塔	bai ta	6500
+柏乡	bai xiang	6500
+白杨	bai yang	6500
+白银	bai yin	6500
+白玉	bai yu	6500
+白云	bai yun	6500
+白云鄂博矿	bai yun e bo kuang	1500
+班戈	ban ge	6500
+班玛	ban ma	6500
+宝安	bao an	6500
+保德	bao de	6500
+宝坻	bao di	6500
+宝丰	bao feng	6500
+包河	bao he	6500
+保靖	bao jing	6500
+保康	bao kang	6500
+宝清	bao qing	6500
+宝山	bao shan	6500
+宝塔	bao ta	6500
+保亭黎族苗族	bao ting li zu miao zu	1500
+宝兴	bao xing	6500
+宝应	bao ying	6500
+北安	bei an	6500
+北碚	bei bei	6500
+北辰	bei chen	6500
+北川羌族	bei chuan qiang zu	1500
+北戴河	bei dai he	4000
+北关	bei guan	6500
+北湖	bei hu	6500
+北林	bei lin	6500
+碑林	bei lin	6500
+北流	bei liu	6500
+北仑	bei lun	6500
+北票	bei piao	6500
+北塔	bei ta	6500
+北屯	bei tun	6500
+北镇	bei zhen	6500
+本溪满族	ben xi man zu	1500
+蚌山	beng shan	6500
+碧江	bi jiang	6500
+比如	bi ru	6500
+璧山	bi shan	6500
+泌阳	bi yang	6500
+边坝	bian ba	6500
+滨城	bin cheng	6500
+宾川	bin chuan	6500
+滨海	bin hai	6500
+滨海新	bin hai xin	4000
+滨湖	bin hu	6500
+滨江	bin jiang	6500
+宾县	bin xian	6500
+宾阳	bin yang	6500
+彬州	bin zhou	6500
+博爱	bo ai	6500
+博白	bo bai	6500
+博湖	bo hu	6500
+博乐	bo le	6500
+勃利	bo li	6500
+博罗	bo luo	6500
+波密	bo mi	6500
+博山	bo shan	6500
+博望	bo wang	6500
+博兴	bo xing	6500
+博野	bo ye	6500
+播州	bo zhou	6500
+布尔津	bu er jin	4000
+布拖	bu tuo	6500
+蔡甸	cai dian	6500
+苍南	cang nan	6500
+仓山	cang shan	6500
+苍梧	cang wu	6500
+苍溪	cang xi	6500
+沧县	cang xian	6500
+沧源佤族	cang yuan wa zu	1500
+曹妃甸	cao fei dian	4000
+曹县	cao xian	6500
+册亨	ce heng	6500
+策勒	ce le	6500
+岑巩	cen gong	6500
+岑溪	cen xi	6500
+察布查尔锡伯	cha bu cha er xi bo	1500
+察哈尔右翼后	cha ha er you yi hou	1500
+察哈尔右翼前	cha ha er you yi qian	1500
+察哈尔右翼中	cha ha er you yi zhong	1500
+茶陵	cha ling	6500
+察雅	cha ya	6500
+察隅	cha yu	6500
+柴桑	chai sang	6500
+禅城	chan cheng	6500
+瀍河回族	chan he hui zu	1500
+长安	chang an	6500
+长白朝鲜族	chang bai chao xian zu	1500
+长丰	chang feng	6500
+长葛	chang ge	6500
+长海	chang hai	6500
+昌吉	chang ji	6500
+昌江	chang jiang	6500
+昌江黎族	chang jiang li zu	1500
+昌乐	chang le	6500
+长乐	chang le	6500
+昌黎	chang li	6500
+长岭	chang ling	6500
+常宁	chang ning	6500
+昌宁	chang ning	6500
+长宁	chang ning	6500
+昌平	chang ping	6500
+长清	chang qing	6500
+长沙	chang sha	6500
+常山	chang shan	6500
+长寿	chang shou	6500
+常熟	chang shu	6500
+长顺	chang shun	6500
+长泰	chang tai	6500
+长汀	chang ting	6500
+昌图	chang tu	6500
+长武	chang wu	6500
+长兴	chang xing	6500
+昌邑	chang yi	6500
+长垣	chang yuan	6500
+长洲	chang zhou	6500
+潮安	chao an	6500
+巢湖	chao hu	6500
+潮南	chao nan	6500
+朝天	chao tian	6500
+朝阳	chao yang	6500
+潮阳	chao yang	6500
+陈巴尔虎	chen ba er hu	1500
+陈仓	chen cang	6500
+称多	chen duo	6500
+辰溪	chen xi	6500
+成安	cheng an	6500
+城北	cheng bei	6500
+城步苗族	cheng bu miao zu	1500
+澄城	cheng cheng	6500
+承德	cheng de	6500
+城东	cheng dong	6500
+呈贡	cheng gong	6500
+城固	cheng gu	6500
+城关	cheng guan	6500
+澄海	cheng hai	6500
+成华	cheng hua	6500
+澄江	cheng jiang	6500
+城口	cheng kou	6500
+澄迈	cheng mai	6500
+城区	cheng qu	6500
+成武	cheng wu	6500
+城西	cheng xi	6500
+成县	cheng xian	6500
+城厢	cheng xiang	6500
+城阳	cheng yang	6500
+城中	cheng zhong	6500
+城子河	cheng zi he	4000
+赤壁	chi bi	6500
+赤城	chi cheng	6500
+赤坎	chi kan	6500
+茌平	chi ping	6500
+赤水	chi shui	6500
+崇川	chong chuan	6500
+崇礼	chong li	6500
+崇明	chong ming	6500
+崇仁	chong ren	6500
+崇信	chong xin	6500
+崇阳	chong yang	6500
+崇义	chong yi	6500
+崇州	chong zhou	6500
+楚雄	chu xiong	6500
+川汇	chuan hui	6500
+船山	chuan shan	6500
+船营	chuan ying	6500
+淳安	chun an	6500
+淳化	chun hua	6500
+慈利	ci li	6500
+慈溪	ci xi	6500
+磁县	ci xian	6500
+从化	cong hua	6500
+从江	cong jiang	6500
+丛台	cong tai	6500
+翠屏	cui ping	6500
+措美	cuo mei	6500
+错那	cuo na	6500
+措勤	cuo qin	6500
+大安	da an	6500
+达坂城	da ban cheng	4000
+大埔	da bu	6500
+大厂回族	da chang hui zu	1500
+大城	da cheng	6500
+达川	da chuan	6500
+大东	da dong	6500
+大渡口	da du kou	4000
+达尔罕茂明安联合	da er han mao ming an lian he	1500
+大方	da fang	6500
+大丰	da feng	6500
+大关	da guan	6500
+大观	da guan	6500
+大化瑶族	da hua yao zu	1500
+达拉特	da la te	4000
+大理	da li	6500
+大荔	da li	6500
+大名	da ming	6500
+大宁	da ning	6500
+大箐山	da qing shan	4000
+达日	da ri	6500
+大石桥	da shi qiao	4000
+大田	da tian	6500
+大同	da tong	6500
+大通	da tong	6500
+大通回族土族	da tong hui zu tu zu	1500
+大洼	da wa	6500
+大悟	da wu	6500
+大武口	da wu kou	4000
+大祥	da xiang	6500
+大新	da xin	6500
+大兴	da xing	6500
+大姚	da yao	6500
+大冶	da ye	6500
+大邑	da yi	6500
+大英	da ying	6500
+大余	da yu	6500
+大竹	da zhu	6500
+达孜	da zi	6500
+大足	da zu	6500
+岱山	dai shan	6500
+代县	dai xian	6500
+岱岳	dai yue	6500
+丹巴	dan ba	6500
+郸城	dan cheng	6500
+丹凤	dan feng	6500
+丹江口	dan jiang kou	4000
+丹棱	dan leng	6500
+丹徒	dan tu	6500
+丹阳	dan yang	6500
+丹寨	dan zhai	6500
+宕昌	dang chang	6500
+砀山	dang shan	6500
+当涂	dang tu	6500
+当雄	dang xiong	6500
+当阳	dang yang	6500
+稻城	dao cheng	6500
+道孚	dao fu	6500
+道里	dao li	6500
+道外	dao wai	6500
+道县	dao xian	6500
+道真仡佬族苗族	dao zhen ge lao zu miao zu	1500
+德安	de an	6500
+德保	de bao	6500
+德昌	de chang	6500
+德城	de cheng	6500
+德格	de ge	6500
+德化	de hua	6500
+德惠	de hui	6500
+德江	de jiang	6500
+德令哈	de ling ha	4000
+德钦	de qin	6500
+德庆	de qing	6500
+德清	de qing	6500
+得荣	de rong	6500
+德兴	de xing	6500
+登封	deng feng	6500
+磴口	deng kou	6500
+灯塔	deng ta	6500
+邓州	deng zhou	6500
+滴道	di dao	6500
+电白	dian bai	6500
+垫江	dian jiang	6500
+点军	dian jun	6500
+调兵山	diao bing shan	4000
+迭部	die bu	6500
+叠彩	die cai	6500
+定安	ding an	6500
+定边	ding bian	6500
+鼎城	ding cheng	6500
+定海	ding hai	6500
+鼎湖	ding hu	6500
+定结	ding jie	6500
+定南	ding nan	6500
+丁青	ding qing	6500
+定日	ding ri	6500
+定陶	ding tao	6500
+定襄	ding xiang	6500
+定兴	ding xing	6500
+定远	ding yuan	6500
+定州	ding zhou	6500
+东安	dong an	6500
+东宝	dong bao	6500
+东昌	dong chang	6500
+东昌府	dong chang fu	4000
+东城	dong cheng	6500
+东川	dong chuan	6500
+东阿	dong e	6500
+东方	dong fang	6500
+东丰	dong feng	6500
+东风	dong feng	6500
+东港	dong gang	6500
+东光	dong guang	6500
+东海	dong hai	6500
+东河	dong he	6500
+东湖	dong hu	6500
+洞口	dong kou	6500
+东兰	dong lan	6500
+东丽	dong li	6500
+东辽	dong liao	6500
+东明	dong ming	6500
+东宁	dong ning	6500
+东平	dong ping	6500
+东坡	dong po	6500
+东区	dong qu	6500
+东山	dong shan	6500
+东胜	dong sheng	6500
+东台	dong tai	6500
+洞头	dong tou	6500
+东乌珠穆沁	dong wu zhu mu qin	1500
+东西湖	dong xi hu	4000
+东乡	dong xiang	6500
+东乡族	dong xiang zu	4000
+东兴	dong xing	6500
+东阳	dong yang	6500
+东营	dong ying	6500
+东源	dong yuan	6500
+东至	dong zhi	6500
+东洲	dong zhou	6500
+都安瑶族	dou an yao zu	1500
+斗门	dou men	6500
+都昌	du chang	6500
+杜尔伯特蒙古族	du er bo te meng gu zu	1500
+杜集	du ji	6500
+都江堰	du jiang yan	4000
+都兰	du lan	6500
+独山	du shan	6500
+独山子	du shan zi	4000
+都匀	du yun	6500
+端州	duan zhou	6500
+堆龙德庆	dui long de qing	1500
+敦化	dun hua	6500
+敦煌	dun huang	6500
+掇刀	duo dao	6500
+多伦	duo lun	6500
+峨边彝族	e bian yi zu	1500
+鄂城	e cheng	6500
+额尔古纳	e er gu na	1500
+额济纳	e ji na	4000
+鄂伦春	e lun chun	4000
+峨眉山	e mei shan	4000
+额敏	e min	6500
+峨山彝族	e shan yi zu	1500
+鄂托克	e tuo ke	4000
+鄂托克前	e tuo ke qian	1500
+鄂温克族	e wen ke zu	1500
+恩平	en ping	6500
+恩施	en shi	6500
+恩阳	en yang	6500
+二道	er dao	6500
+二道江	er dao jiang	4000
+二连浩特	er lian hao te	1500
+二七	er qi	6500
+洱源	er yuan	6500
+法库	fa ku	6500
+繁昌	fan chang	6500
+樊城	fan cheng	6500
+繁峙	fan shi	6500
+范县	fan xian	6500
+方城	fang cheng	6500
+防城	fang cheng	6500
+房山	fang shan	6500
+方山	fang shan	6500
+房县	fang xian	6500
+方正	fang zheng	6500
+坊子	fang zi	6500
+肥城	fei cheng	6500
+肥东	fei dong	6500
+肥西	fei xi	6500
+费县	fei xian	6500
+肥乡	fei xiang	6500
+汾西	fen xi	6500
+汾阳	fen yang	6500
+分宜	fen yi	6500
+丰城	feng cheng	6500
+凤城	feng cheng	6500
+丰都	feng du	6500
+峰峰矿	feng feng kuang	4000
+凤冈	feng gang	6500
+奉化	feng hua	6500
+凤凰	feng huang	6500
+奉节	feng jie	6500
+封开	feng kai	6500
+丰林	feng lin	6500
+丰满	feng man	6500
+丰南	feng nan	6500
+丰宁满族	feng ning man zu	1500
+凤庆	feng qing	6500
+封丘	feng qiu	6500
+凤泉	feng quan	6500
+丰润	feng run	6500
+凤山	feng shan	6500
+丰顺	feng shun	6500
+丰台	feng tai	6500
+凤台	feng tai	6500
+丰县	feng xian	6500
+凤县	feng xian	6500
+奉贤	feng xian	6500
+凤翔	feng xiang	6500
+奉新	feng xin	6500
+凤阳	feng yang	6500
+丰泽	feng ze	6500
+丰镇	feng zhen	6500
+佛冈	fo gang	6500
+佛坪	fo ping	6500
+福安	fu an	6500
+涪城	fu cheng	6500
+阜城	fu cheng	6500
+富川瑶族	fu chuan yao zu	1500
+福鼎	fu ding	6500
+扶风	fu feng	6500
+福贡	fu gong	6500
+扶沟	fu gou	6500
+府谷	fu gu	6500
+福海	fu hai	6500
+富锦	fu jin	6500
+阜康	fu kang	6500
+富拉尔基	fu la er ji	1500
+浮梁	fu liang	6500
+涪陵	fu ling	6500
+福绵	fu mian	6500
+富民	fu min	6500
+阜南	fu nan	6500
+富宁	fu ning	6500
+抚宁	fu ning	6500
+阜宁	fu ning	6500
+富平	fu ping	6500
+阜平	fu ping	6500
+福清	fu qing	6500
+福泉	fu quan	6500
+芙蓉	fu rong	6500
+浮山	fu shan	6500
+福山	fu shan	6500
+富顺	fu shun	6500
+抚顺	fu shun	6500
+抚松	fu song	6500
+扶绥	fu sui	6500
+福田	fu tian	6500
+富县	fu xian	6500
+阜新蒙古族	fu xin meng gu zu	1500
+复兴	fu xing	6500
+富阳	fu yang	6500
+富裕	fu yu	6500
+扶余	fu yu	6500
+富源	fu yuan	6500
+抚远	fu yuan	6500
+富蕴	fu yun	6500
+噶尔	ga er	6500
+改则	gai ze	6500
+盖州	gai zhou	6500
+甘德	gan de	6500
+甘谷	gan gu	6500
+甘井子	gan jing zi	4000
+甘洛	gan luo	6500
+甘南	gan nan	6500
+甘泉	gan quan	6500
+赣县	gan xian	6500
+赣榆	gan yu	6500
+甘州	gan zhou	6500
+甘孜	gan zi	6500
+岗巴	gang ba	6500
+港北	gang bei	6500
+刚察	gang cha	6500
+钢城	gang cheng	6500
+港口	gang kou	6500
+港南	gang nan	6500
+高安	gao an	6500
+高碑店	gao bei dian	4000
+高昌	gao chang	6500
+藁城	gao cheng	6500
+高淳	gao chun	6500
+高港	gao gang	6500
+皋兰	gao lan	6500
+高陵	gao ling	6500
+高密	gao mi	6500
+高明	gao ming	6500
+高坪	gao ping	6500
+高平	gao ping	6500
+高青	gao qing	6500
+高台	gao tai	6500
+高唐	gao tang	6500
+高县	gao xian	6500
+高阳	gao yang	6500
+高要	gao yao	6500
+高邑	gao yi	6500
+高邮	gao you	6500
+高州	gao zhou	6500
+格尔木	ge er mu	4000
+革吉	ge ji	6500
+个旧	ge jiu	6500
+根河	gen he	6500
+耿马傣族佤族	geng ma dai zu wa zu	1500
+公安	gong an	6500
+工布江达	gong bu jiang da	1500
+弓长岭	gong chang ling	4000
+恭城瑶族	gong cheng yao zu	1500
+贡嘎	gong ga	6500
+共和	gong he	6500
+贡井	gong jing	6500
+贡觉	gong jue	6500
+巩留	gong liu	6500
+工农	gong nong	6500
+共青城	gong qing cheng	4000
+贡山独龙族怒族	gong shan du long zu nu zu	1500
+拱墅	gong shu	6500
+珙县	gong xian	6500
+巩义	gong yi	6500
+公主岭	gong zhu ling	4000
+固安	gu an	6500
+古城	gu cheng	6500
+故城	gu cheng	6500
+谷城	gu cheng	6500
+古交	gu jiao	6500
+古浪	gu lang	6500
+古蔺	gu lin	6500
+鼓楼	gu lou	6500
+固始	gu shi	6500
+姑苏	gu su	6500
+古塔	gu ta	6500
+古田	gu tian	6500
+古县	gu xian	6500
+固阳	gu yang	6500
+古冶	gu ye	6500
+沽源	gu yuan	6500
+古丈	gu zhang	6500
+固镇	gu zhen	6500
+瓜州	gua zhou	6500
+管城回族	guan cheng hui zu	1500
+官渡	guan du	6500
+关岭布依族苗族	guan ling bu yi zu miao zu	1500
+灌南	guan nan	6500
+观山湖	guan shan hu	4000
+馆陶	guan tao	6500
+冠县	guan xian	6500
+灌阳	guan yang	6500
+灌云	guan yun	6500
+广安	guang an	6500
+广昌	guang chang	6500
+广德	guang de	6500
+广丰	guang feng	6500
+广汉	guang han	6500
+广河	guang he	6500
+广灵	guang ling	6500
+广陵	guang ling	6500
+光明	guang ming	6500
+广南	guang nan	6500
+广宁	guang ning	6500
+广平	guang ping	6500
+广饶	guang rao	6500
+光山	guang shan	6500
+广水	guang shui	6500
+广信	guang xin	6500
+广阳	guang yang	6500
+光泽	guang ze	6500
+广宗	guang zong	6500
+贵池	gui chi	6500
+贵德	gui de	6500
+贵定	gui ding	6500
+桂东	gui dong	6500
+贵南	gui nan	6500
+桂平	gui ping	6500
+贵溪	gui xi	6500
+桂阳	gui yang	6500
+涡阳	guo yang	6500
+哈巴河	ha ba he	4000
+海安	hai an	6500
+海勃湾	hai bo wan	4000
+海沧	hai cang	6500
+海城	hai cheng	6500
+海淀	hai dian	6500
+海丰	hai feng	6500
+海港	hai gang	6500
+海拉尔	hai la er	4000
+海林	hai lin	6500
+海陵	hai ling	6500
+海伦	hai lun	6500
+海门	hai men	6500
+海南	hai nan	6500
+海宁	hai ning	6500
+海曙	hai shu	6500
+海棠	hai tang	6500
+海兴	hai xing	6500
+海晏	hai yan	6500
+海盐	hai yan	6500
+海阳	hai yang	6500
+海原	hai yuan	6500
+海州	hai zhou	6500
+海珠	hai zhu	6500
+汉滨	han bin	6500
+韩城	han cheng	6500
+汉川	han chuan	6500
+涵江	han jiang	6500
+邗江	han jiang	6500
+汉南	han nan	6500
+含山	han shan	6500
+邯山	han shan	6500
+汉寿	han shou	6500
+汉台	han tai	6500
+寒亭	han ting	6500
+汉阳	han yang	6500
+汉阴	han yin	6500
+汉源	han yuan	6500
+杭锦	hang jin	6500
+杭锦后	hang jin hou	4000
+濠江	hao jiang	6500
+和安	he an	6500
+河北	he bei	6500
+和布克赛尔蒙古	he bu ke sai er meng gu	1500
+鹤城	he cheng	6500
+合川	he chuan	6500
+河东	he dong	6500
+鹤峰	he feng	6500
+河间	he jian	6500
+合江	he jiang	6500
+河津	he jin	6500
+和静	he jing	6500
+和康	he kang	6500
+河口	he kou	6500
+河口瑶族	he kou yao zu	1500
+贺兰	he lan	6500
+和林格尔	he lin ge er	1500
+和龙	he long	6500
+河南蒙古族	he nan meng gu zu	1500
+和平	he ping	6500
+合浦	he pu	6500
+鹤庆	he qing	6500
+河曲	he qu	6500
+合山	he shan	6500
+赫山	he shan	6500
+鹤山	he shan	6500
+合水	he shui	6500
+和顺	he shun	6500
+和硕	he shuo	6500
+荷塘	he tang	6500
+和田	he tian	6500
+河西	he xi	6500
+和县	he xian	6500
+合阳	he yang	6500
+赫章	he zhang	6500
+和政	he zheng	6500
+合作	he zuo	6500
+黑山	hei shan	6500
+黑水	hei shui	6500
+衡东	heng dong	6500
+横峰	heng feng	6500
+衡南	heng nan	6500
+恒山	heng shan	6500
+横山	heng shan	6500
+衡山	heng shan	6500
+衡阳	heng yang	6500
+横州	heng zhou	6500
+红安	hong an	6500
+红岗	hong gang	6500
+红古	hong gu	6500
+红谷滩	hong gu tan	4000
+红河	hong he	6500
+洪湖	hong hu	6500
+红花岗	hong hua gang	4000
+洪江	hong jiang	6500
+虹口	hong kou	6500
+红旗	hong qi	6500
+红桥	hong qiao	6500
+洪山	hong shan	6500
+红山	hong shan	6500
+红寺堡	hong si bao	4000
+红塔	hong ta	6500
+洪洞	hong tong	6500
+宏伟	hong wei	6500
+洪雅	hong ya	6500
+红原	hong yuan	6500
+洪泽	hong ze	6500
+侯马	hou ma	6500
+湖滨	hu bin	6500
+壶关	hu guan	6500
+湖口	hu kou	6500
+呼兰	hu lan	6500
+湖里	hu li	6500
+虎林	hu lin	6500
+呼玛	hu ma	6500
+虎丘	hu qiu	6500
+呼图壁	hu tu bi	4000
+胡杨河	hu yang he	4000
+鄠邑	hu yi	6500
+互助土族	hu zhu tu zu	1500
+华安	hua an	6500
+华池	hua chi	6500
+桦川	hua chuan	6500
+化德	hua de	6500
+桦甸	hua dian	6500
+花都	hua du	6500
+华龙	hua long	6500
+化隆回族	hua long hui zu	1500
+桦南	hua nan	6500
+华宁	hua ning	6500
+华坪	hua ping	6500
+华容	hua rong	6500
+花山	hua shan	6500
+华亭	hua ting	6500
+花溪	hua xi	6500
+滑县	hua xian	6500
+华阴	hua yin	6500
+华蓥	hua ying	6500
+花垣	hua yuan	6500
+化州	hua zhou	6500
+华州	hua zhou	6500
+怀安	huai an	6500
+淮安	huai an	6500
+淮滨	huai bin	6500
+怀集	huai ji	6500
+怀来	huai lai	6500
+怀宁	huai ning	6500
+怀仁	huai ren	6500
+怀柔	huai rou	6500
+淮上	huai shang	6500
+淮阳	huai yang	6500
+槐荫	huai yin	6500
+淮阴	huai yin	6500
+怀远	huai yuan	6500
+环翠	huan cui	6500
+环江毛南族	huan jiang mao nan zu	1500
+桓仁满族	huan ren man zu	1500
+桓台	huan tai	6500
+环县	huan xian	6500
+潢川	huang chuan	6500
+黄岛	huang dao	6500
+皇姑	huang gu	6500
+黄骅	huang hua	6500
+黄陵	huang ling	6500
+黄龙	huang long	6500
+黄梅	huang mei	6500
+黄陂	huang pi	6500
+黄平	huang ping	6500
+黄埔	huang pu	6500
+黄浦	huang pu	6500
+黄山	huang shan	6500
+黄石港	huang shi gang	4000
+黄岩	huang yan	6500
+湟源	huang yuan	6500
+湟中	huang zhong	6500
+黄州	huang zhou	6500
+惠安	hui an	6500
+会昌	hui chang	6500
+惠城	hui cheng	6500
+汇川	hui chuan	6500
+会东	hui dong	6500
+惠东	hui dong	6500
+惠济	hui ji	6500
+惠来	hui lai	6500
+会理	hui li	6500
+回民	hui min	6500
+惠民	hui min	6500
+辉南	hui nan	6500
+会宁	hui ning	6500
+惠农	hui nong	6500
+惠山	hui shan	6500
+惠水	hui shui	6500
+会同	hui tong	6500
+徽县	hui xian	6500
+辉县	hui xian	6500
+惠阳	hui yang	6500
+会泽	hui ze	6500
+徽州	hui zhou	6500
+珲春	hun chun	6500
+浑江	hun jiang	6500
+浑南	hun nan	6500
+浑源	hun yuan	6500
+霍城	huo cheng	6500
+霍尔果斯	huo er guo si	1500
+获嘉	huo jia	6500
+霍林郭勒	huo lin guo le	1500
+霍邱	huo qiu	6500
+霍山	huo shan	6500
+霍州	huo zhou	6500
+吉安	ji an	6500
+集安	ji an	6500
+鸡东	ji dong	6500
+鸡冠	ji guan	6500
+吉隆	ji long	6500
+集美	ji mei	6500
+即墨	ji mo	6500
+吉木乃	ji mu nai	4000
+吉木萨尔	ji mu sa er	1500
+集宁	ji ning	6500
+稷山	ji shan	6500
+积石山保安族东乡族撒拉族	ji shi shan bao an zu dong xiang zu sa la zu	1500
+吉首	ji shou	6500
+吉水	ji shui	6500
+绩溪	ji xi	6500
+吉县	ji xian	6500
+集贤	ji xian	6500
+吉阳	ji yang	6500
+济阳	ji yang	6500
+济源	ji yuan	6500
+鸡泽	ji ze	6500
+冀州	ji zhou	6500
+吉州	ji zhou	6500
+蓟州	ji zhou	6500
+加查	jia cha	6500
+嘉定	jia ding	6500
+嘉禾	jia he	6500
+夹江	jia jiang	6500
+嘉黎	jia li	6500
+嘉陵	jia ling	6500
+嘉善	jia shan	6500
+伽师	jia shi	6500
+贾汪	jia wang	6500
+佳县	jia xian	6500
+郏县	jia xian	6500
+嘉祥	jia xiang	6500
+嘉荫	jia yin	6500
+嘉鱼	jia yu	6500
+建安	jian an	6500
+尖草坪	jian cao ping	4000
+建昌	jian chang	6500
+剑川	jian chuan	6500
+建德	jian de	6500
+剑阁	jian ge	6500
+剑河	jian he	6500
+建湖	jian hu	6500
+建华	jian hua	6500
+监利	jian li	6500
+建宁	jian ning	6500
+建瓯	jian ou	6500
+建平	jian ping	6500
+尖山	jian shan	6500
+建始	jian shi	6500
+建水	jian shui	6500
+涧西	jian xi	6500
+建阳	jian yang	6500
+简阳	jian yang	6500
+建邺	jian ye	6500
+尖扎	jian zha	6500
+江安	jiang an	6500
+江岸	jiang an	6500
+江北	jiang bei	6500
+江城	jiang cheng	6500
+江城哈尼族彝族	jiang cheng ha ni zu yi zu	1500
+江川	jiang chuan	6500
+江达	jiang da	6500
+江都	jiang du	6500
+江海	jiang hai	6500
+江汉	jiang han	6500
+江华瑶族	jiang hua yao zu	1500
+江津	jiang jin	6500
+江口	jiang kou	6500
+将乐	jiang le	6500
+江陵	jiang ling	6500
+江南	jiang nan	6500
+江宁	jiang ning	6500
+江山	jiang shan	6500
+江夏	jiang xia	6500
+绛县	jiang xian	6500
+姜堰	jiang yan	6500
+江阳	jiang yang	6500
+江阴	jiang yin	6500
+江永	jiang yong	6500
+江油	jiang you	6500
+江源	jiang yuan	6500
+江州	jiang zhou	6500
+江孜	jiang zi	6500
+交城	jiao cheng	6500
+蕉城	jiao cheng	6500
+蛟河	jiao he	6500
+椒江	jiao jiang	6500
+交口	jiao kou	6500
+蕉岭	jiao ling	6500
+郊区	jiao qu	6500
+胶州	jiao zhou	6500
+揭东	jie dong	6500
+解放	jie fang	6500
+界首	jie shou	6500
+揭西	jie xi	6500
+介休	jie xiu	6500
+晋安	jin an	6500
+金安	jin an	6500
+金城江	jin cheng jiang	4000
+金川	jin chuan	6500
+金东	jin dong	6500
+金凤	jin feng	6500
+金湖	jin hu	6500
+晋江	jin jiang	6500
+锦江	jin jiang	6500
+金口河	jin kou he	4000
+金林	jin lin	6500
+金门	jin men	6500
+津南	jin nan	6500
+晋宁	jin ning	6500
+金牛	jin niu	6500
+金平	jin ping	6500
+锦屏	jin ping	6500
+金平苗族瑶族傣族	jin ping miao zu yao zu dai zu	1500
+金沙	jin sha	6500
+金山	jin shan	6500
+津市	jin shi	6500
+金水	jin shui	6500
+金塔	jin ta	6500
+金台	jin tai	6500
+金坛	jin tan	6500
+金堂	jin tang	6500
+金湾	jin wan	6500
+金溪	jin xi	6500
+进贤	jin xian	6500
+金乡	jin xiang	6500
+金秀瑶族	jin xiu yao zu	1500
+金阳	jin yang	6500
+晋源	jin yuan	6500
+缙云	jin yun	6500
+金寨	jin zhai	6500
+晋州	jin zhou	6500
+金州	jin zhou	6500
+靖安	jing an	6500
+静安	jing an	6500
+靖边	jing bian	6500
+泾川	jing chuan	6500
+旌德	jing de	6500
+景东彝族	jing dong yi zu	1500
+井冈山	jing gang shan	4000
+景谷傣族彝族	jing gu dai zu yi zu	1500
+静海	jing hai	6500
+精河	jing he	6500
+景洪	jing hong	6500
+镜湖	jing hu	6500
+靖江	jing jiang	6500
+京口	jing kou	6500
+静乐	jing le	6500
+静宁	jing ning	6500
+景宁畲族	jing ning she zu	1500
+京山	jing shan	6500
+景泰	jing tai	6500
+靖西	jing xi	6500
+景县	jing xian	6500
+泾县	jing xian	6500
+井陉	jing xing	6500
+井陉矿	jing xing kuang	4000
+竞秀	jing xiu	6500
+井研	jing yan	6500
+旌阳	jing yang	6500
+泾阳	jing yang	6500
+靖宇	jing yu	6500
+泾源	jing yuan	6500
+靖远	jing yuan	6500
+荆州	jing zhou	6500
+靖州苗族侗族	jing zhou miao zu dong zu	1500
+鸠江	jiu jiang	6500
+九龙	jiu long	6500
+九龙坡	jiu long po	4000
+九台	jiu tai	6500
+九原	jiu yuan	6500
+九寨沟	jiu zhai gou	4000
+久治	jiu zhi	6500
+巨鹿	ju lu	6500
+莒南	ju nan	6500
+句容	ju rong	6500
+莒县	ju xian	6500
+巨野	ju ye	6500
+鄄城	juan cheng	6500
+筠连	jun lian	6500
+君山	jun shan	6500
+喀喇沁	ka la qin	4000
+喀喇沁左翼蒙古族	ka la qin zuo yi meng gu zu	1500
+卡若	ka ruo	6500
+喀什	ka shi	6500
+开福	kai fu	6500
+开化	kai hua	6500
+开江	kai jiang	6500
+凯里	kai li	6500
+开鲁	kai lu	6500
+开平	kai ping	6500
+开阳	kai yang	6500
+开原	kai yuan	6500
+开远	kai yuan	6500
+开州	kai zhou	6500
+康巴什	kang ba shen	4000
+康保	kang bao	6500
+康定	kang ding	6500
+康乐	kang le	6500
+康马	kang ma	6500
+康平	kang ping	6500
+康县	kang xian	6500
+柯城	ke cheng	6500
+克东	ke dong	6500
+科尔沁	ke er qin	4000
+科尔沁右翼前	ke er qin you yi qian	1500
+科尔沁右翼中	ke er qin you yi zhong	1500
+科尔沁左翼后	ke er qin zuo yi hou	1500
+科尔沁左翼中	ke er qin zuo yi zhong	1500
+可克达拉	ke ke da la	1500
+克拉玛依	ke la ma yi	1500
+岢岚	ke lan	6500
+柯坪	ke ping	6500
+柯桥	ke qiao	6500
+克山	ke shan	6500
+克什克腾	ke shi ke teng	1500
+垦利	ken li	6500
+崆峒	kong tong	6500
+库车	ku che	6500
+库尔勒	ku er le	4000
+库伦	ku lun	6500
+宽城	kuan cheng	6500
+宽城满族	kuan cheng man zu	1500
+宽甸满族	kuan dian man zu	1500
+矿区	kuang qu	6500
+奎屯	kui tun	6500
+奎文	kui wen	6500
+昆都仑	kun du lun	4000
+昆山	kun shan	6500
+昆玉	kun yu	6500
+拉孜	la zi	6500
+来安	lai an	6500
+来凤	lai feng	6500
+莱山	lai shan	6500
+涞水	lai shui	6500
+莱芜	lai wu	6500
+莱西	lai xi	6500
+莱阳	lai yang	6500
+涞源	lai yuan	6500
+莱州	lai zhou	6500
+澜沧拉祜族	lan cang la hu zu	1500
+岚皋	lan gao	6500
+兰考	lan kao	6500
+兰陵	lan ling	6500
+兰坪白族普米族	lan ping bai zu pu mi zu	1500
+兰山	lan shan	6500
+岚山	lan shan	6500
+蓝山	lan shan	6500
+蓝田	lan tian	6500
+兰溪	lan xi	6500
+兰西	lan xi	6500
+岚县	lan xian	6500
+浪卡子	lang ka zi	4000
+郎溪	lang xi	6500
+朗县	lang xian	6500
+琅琊	lang ya	6500
+阆中	lang zhong	6500
+老边	lao bian	6500
+老城	lao cheng	6500
+老河口	lao he kou	4000
+崂山	lao shan	6500
+乐亭	lao ting	6500
+乐安	le an	6500
+乐昌	le chang	6500
+乐东黎族	le dong li zu	1500
+乐都	le dou	6500
+乐陵	le ling	6500
+乐平	le ping	6500
+乐业	le ye	6500
+乐至	le zhi	6500
+雷波	lei bo	6500
+雷山	lei shan	6500
+类乌齐	lei wu qi	4000
+耒阳	lei yang	6500
+雷州	lei zhou	6500
+冷水江	leng shui jiang	4000
+冷水滩	leng shui tan	4000
+荔波	li bo	6500
+李沧	li cang	6500
+历城	li cheng	6500
+荔城	li cheng	6500
+鲤城	li cheng	6500
+黎城	li cheng	6500
+利川	li chuan	6500
+黎川	li chuan	6500
+利津	li jin	6500
+醴陵	li ling	6500
+黎平	li ping	6500
+荔浦	li pu	6500
+礼泉	li quan	6500
+立山	li shan	6500
+离石	li shi	6500
+梨树	li shu	6500
+溧水	li shui	6500
+理塘	li tang	6500
+利通	li tong	6500
+荔湾	li wan	6500
+历下	li xia	6500
+澧县	li xian	6500
+理县	li xian	6500
+礼县	li xian	6500
+蠡县	li xian	6500
+利辛	li xin	6500
+溧阳	li yang	6500
+利州	li zhou	6500
+连城	lian cheng	6500
+莲池	lian chi	6500
+莲都	lian du	6500
+莲湖	lian hu	6500
+莲花	lian hua	6500
+廉江	lian jiang	6500
+连江	lian jiang	6500
+连南瑶族	lian nan yao zu	1500
+连平	lian ping	6500
+连山	lian shan	6500
+连山壮族瑶族	lian shan zhuang zu yao zu	1500
+涟水	lian shui	6500
+濂溪	lian xi	6500
+涟源	lian yuan	6500
+连云	lian yun	6500
+连州	lian zhou	6500
+凉城	liang cheng	6500
+两当	liang dang	6500
+梁河	liang he	6500
+梁平	liang ping	6500
+良庆	liang qing	6500
+梁山	liang shan	6500
+梁溪	liang xi	6500
+梁园	liang yuan	6500
+凉州	liang zhou	6500
+梁子湖	liang zi hu	4000
+辽阳	liao yang	6500
+辽中	liao zhong	6500
+烈山	lie shan	6500
+临安	lin an	6500
+临城	lin cheng	6500
+临川	lin chuan	6500
+林甸	lin dian	6500
+临高	lin gao	6500
+临桂	lin gui	6500
+临海	lin hai	6500
+临河	lin he	6500
+临江	lin jiang	6500
+林口	lin kou	6500
+临澧	lin li	6500
+临平	lin ping	6500
+临清	lin qing	6500
+临朐	lin qu	6500
+临泉	lin quan	6500
+临沭	lin shu	6500
+邻水	lin shui	6500
+临潭	lin tan	6500
+临洮	lin tao	6500
+临潼	lin tong	6500
+临渭	lin wei	6500
+临武	lin wu	6500
+临西	lin xi	6500
+林西	lin xi	6500
+临夏	lin xia	6500
+临县	lin xian	6500
+临湘	lin xiang	6500
+临翔	lin xiang	6500
+临猗	lin yi	6500
+临邑	lin yi	6500
+临颍	lin ying	6500
+麟游	lin you	6500
+临泽	lin ze	6500
+临漳	lin zhang	6500
+林周	lin zhou	6500
+林州	lin zhou	6500
+临淄	lin zi	6500
+灵宝	ling bao	6500
+灵璧	ling bi	6500
+陵城	ling cheng	6500
+灵川	ling chuan	6500
+陵川	ling chuan	6500
+岭东	ling dong	6500
+凌海	ling hai	6500
+凌河	ling he	6500
+零陵	ling ling	6500
+灵丘	ling qiu	6500
+灵山	ling shan	6500
+灵石	ling shi	6500
+灵寿	ling shou	6500
+陵水黎族	ling shui li zu	1500
+灵台	ling tai	6500
+灵武	ling wu	6500
+凌源	ling yuan	6500
+凌云	ling yun	6500
+留坝	liu ba	6500
+柳北	liu bei	6500
+柳城	liu cheng	6500
+六合	liu he	6500
+柳河	liu he	6500
+柳江	liu jiang	6500
+柳林	liu lin	6500
+柳南	liu nan	6500
+浏阳	liu yang	6500
+隆安	long an	6500
+龙安	long an	6500
+隆昌	long chang	6500
+龙城	long cheng	6500
+陇川	long chuan	6500
+龙川	long chuan	6500
+隆德	long de	6500
+龙凤	long feng	6500
+龙岗	long gang	6500
+龙港	long gang	6500
+龙海	long hai	6500
+龙湖	long hu	6500
+隆化	long hua	6500
+龙华	long hua	6500
+隆回	long hui	6500
+龙江	long jiang	6500
+龙井	long jing	6500
+龙口	long kou	6500
+龙里	long li	6500
+隆林各族	long lin ge zu	1500
+龙陵	long ling	6500
+龙马潭	long ma tan	4000
+龙门	long men	6500
+龙南	long nan	6500
+龙泉	long quan	6500
+龙泉驿	long quan yi	4000
+龙沙	long sha	6500
+龙山	long shan	6500
+龙胜各族	long sheng ge zu	1500
+龙潭	long tan	6500
+龙亭	long ting	6500
+龙湾	long wan	6500
+龙圩	long wei	6500
+龙文	long wen	6500
+陇西	long xi	6500
+陇县	long xian	6500
+隆阳	long yang	6500
+隆尧	long yao	6500
+龙游	long you	6500
+龙州	long zhou	6500
+隆子	long zi	6500
+龙子湖	long zi hu	4000
+娄烦	lou fan	6500
+娄星	lou xing	6500
+路北	lu bei	6500
+潞城	lu cheng	6500
+鹿城	lu cheng	6500
+陆川	lu chuan	6500
+鲁甸	lu dian	6500
+泸定	lu ding	6500
+禄丰	lu feng	6500
+陆丰	lu feng	6500
+陆河	lu he	6500
+炉霍	lu huo	6500
+庐江	lu jiang	6500
+渌口	lu kou	6500
+陆良	lu liang	6500
+卢龙	lu long	6500
+路南	lu nan	6500
+路桥	lu qiao	6500
+碌曲	lu qu	6500
+鹿泉	lu quan	6500
+禄劝彝族苗族	lu quan yi zu miao zu	1500
+庐山	lu shan	6500
+芦山	lu shan	6500
+鲁山	lu shan	6500
+卢氏	lu shi	6500
+泸水	lu shui	6500
+芦淞	lu song	6500
+泸溪	lu xi	6500
+泸西	lu xi	6500
+芦溪	lu xi	6500
+泸县	lu xian	6500
+庐阳	lu yang	6500
+鹿邑	lu yi	6500
+鹿寨	lu zhai	6500
+潞州	lu zhou	6500
+栾城	luan cheng	6500
+栾川	luan chuan	6500
+滦南	luan nan	6500
+滦平	luan ping	6500
+滦州	luan zhou	6500
+轮台	lun tai	6500
+萝北	luo bei	6500
+罗城仫佬族	luo cheng mu lao zu	1500
+洛川	luo chuan	6500
+罗甸	luo dian	6500
+罗定	luo ding	6500
+罗湖	luo hu	6500
+洛江	luo jiang	6500
+罗江	luo jiang	6500
+洛隆	luo long	6500
+洛龙	luo long	6500
+洛南	luo nan	6500
+洛宁	luo ning	6500
+罗平	luo ping	6500
+洛浦	luo pu	6500
+罗山	luo shan	6500
+罗田	luo tian	6500
+罗源	luo yuan	6500
+洛扎	luo zha	6500
+罗庄	luo zhuang	6500
+绿春	lv chun	6500
+旅顺口	lv shun kou	4000
+绿园	lv yuan	6500
+略阳	lve yang	6500
+马边彝族	ma bian yi zu	1500
+麻城	ma cheng	6500
+马村	ma cun	6500
+玛多	ma duo	6500
+马尔康	ma er kang	4000
+马关	ma guan	6500
+麻江	ma jiang	6500
+麻栗坡	ma li po	4000
+马龙	ma long	6500
+玛纳斯	ma na si	4000
+玛沁	ma qin	6500
+玛曲	ma qu	6500
+马山	ma shan	6500
+麻山	ma shan	6500
+麻阳苗族	ma yang miao zu	1500
+马尾	ma yi	6500
+麻章	ma zhang	6500
+麦盖提	mai ge ti	4000
+麦积	mai ji	6500
+满城	man cheng	6500
+满洲里	man zhou li	4000
+芒康	mang kang	6500
+芒市	mang shi	6500
+茫崖	mang ya	6500
+茅箭	mao jian	6500
+茂南	mao nan	6500
+茂县	mao xian	6500
+美姑	mei gu	6500
+梅河口	mei he kou	4000
+梅江	mei jiang	6500
+美兰	mei lan	6500
+梅里斯达斡尔族	mei li si da wo er zu	1500
+湄潭	mei tan	6500
+梅县	mei xian	6500
+眉县	mei xian	6500
+门头沟	men tou gou	4000
+门源回族	men yuan hui zu	1500
+蒙城	meng cheng	6500
+孟村回族	meng cun hui zu	1500
+勐海	meng hai	6500
+孟津	meng jin	6500
+勐腊	meng la	6500
+孟连傣族拉祜族佤族	meng lian dai zu la hu zu wa zu	1500
+蒙山	meng shan	6500
+蒙阴	meng yin	6500
+孟州	meng zhou	6500
+蒙自	meng zi	6500
+米东	mi dong	6500
+弥渡	mi du	6500
+弥勒	mi le	6500
+米林	mi lin	6500
+汨罗	mi luo	6500
+密山	mi shan	6500
+米易	mi yi	6500
+密云	mi yun	6500
+米脂	mi zhi	6500
+渑池	mian chi	6500
+冕宁	mian ning	6500
+勉县	mian xian	6500
+绵竹	mian zhu	6500
+民丰	min feng	6500
+民和回族土族	min he hui zu tu zu	1500
+闽侯	min hou	6500
+民勤	min qin	6500
+闽清	min qing	6500
+民权	min quan	6500
+岷县	min xian	6500
+闵行	min xing	6500
+民乐	min yue	6500
+明光	ming guang	6500
+名山	ming shan	6500
+明山	ming shan	6500
+明水	ming shui	6500
+明溪	ming xi	6500
+漠河	mo he	6500
+墨江哈尼族	mo jiang ha ni zu	1500
+莫力达瓦达斡尔族	mo li da wa da wo er zu	1500
+墨脱	mo tuo	6500
+墨玉	mo yu	6500
+墨竹工卡	mo zhu gong ka	1500
+牟定	mou ding	6500
+沐川	mu chuan	6500
+牡丹	mu dan	6500
+木兰	mu lan	6500
+木垒哈萨克	mu lei ha sa ke	1500
+木里藏族	mu li cang zu	1500
+穆棱	mu ling	6500
+牟平	mu ping	6500
+牧野	mu ye	6500
+那坡	na po	6500
+纳溪	na xi	6500
+纳雍	na yong	6500
+乃东	nai dong	6500
+奈曼	nai man	6500
+南安	nan an	6500
+南岸	nan an	6500
+南澳	nan ao	6500
+南部	nan bu	6500
+南岔	nan cha	6500
+南昌	nan chang	6500
+南城	nan cheng	6500
+南川	nan chuan	6500
+南丹	nan dan	6500
+南芬	nan fen	6500
+南丰	nan feng	6500
+南岗	nan gang	6500
+南宫	nan gong	6500
+南关	nan guan	6500
+南海	nan hai	6500
+南和	nan he	6500
+南湖	nan hu	6500
+南华	nan hua	6500
+南涧彝族	nan jian yi zu	1500
+南江	nan jiang	6500
+南靖	nan jing	6500
+南开	nan kai	6500
+南康	nan kang	6500
+南乐	nan le	6500
+南陵	nan ling	6500
+南明	nan ming	6500
+南木林	nan mu lin	4000
+南皮	nan pi	6500
+南票	nan piao	6500
+南谯	nan qiao	6500
+南沙	nan sha	6500
+南山	nan shan	6500
+南溪	nan xi	6500
+南县	nan xian	6500
+南雄	nan xiong	6500
+南浔	nan xun	6500
+南岳	nan yue	6500
+南漳	nan zhang	6500
+南召	nan zhao	6500
+南郑	nan zheng	6500
+囊谦	nang qian	6500
+讷河	ne he	6500
+内黄	nei huang	6500
+内丘	nei qiu	6500
+内乡	nei xiang	6500
+嫩江	nen jiang	6500
+尼勒克	ni le ke	4000
+尼玛	ni ma	6500
+尼木	ni mu	6500
+碾子山	nian zi shan	4000
+聂拉木	nie la mu	4000
+聂荣	nie rong	6500
+宁安	ning an	6500
+宁城	ning cheng	6500
+宁都	ning du	6500
+宁洱哈尼族彝族	ning er ha ni zu yi zu	1500
+宁国	ning guo	6500
+宁海	ning hai	6500
+宁河	ning he	6500
+宁化	ning hua	6500
+宁江	ning jiang	6500
+宁晋	ning jin	6500
+宁津	ning jin	6500
+宁蒗彝族	ning lang yi zu	1500
+宁陵	ning ling	6500
+宁明	ning ming	6500
+宁南	ning nan	6500
+宁强	ning qiang	6500
+宁陕	ning shan	6500
+宁武	ning wu	6500
+宁县	ning xian	6500
+宁乡	ning xiang	6500
+宁阳	ning yang	6500
+宁远	ning yuan	6500
+农安	nong an	6500
+瓯海	ou hai	6500
+磐安	pan an	6500
+潘集	pan ji	6500
+盘龙	pan long	6500
+盘山	pan shan	6500
+磐石	pan shi	6500
+番禺	pan yu	6500
+盘州	pan zhou	6500
+沛县	pei xian	6500
+蓬安	peng an	6500
+蓬江	peng jiang	6500
+蓬莱	peng lai	6500
+彭山	peng shan	6500
+彭水苗族土家族	peng shui miao zu tu jia zu	1500
+蓬溪	peng xi	6500
+彭阳	peng yang	6500
+彭泽	peng ze	6500
+彭州	peng zhou	6500
+郫都	pi dou	6500
+皮山	pi shan	6500
+邳州	pi zhou	6500
+偏关	pian guan	6500
+平安	ping an	6500
+平坝	ping ba	6500
+屏边苗族	ping bian miao zu	1500
+平昌	ping chang	6500
+平城	ping cheng	6500
+平川	ping chuan	6500
+平定	ping ding	6500
+平度	ping du	6500
+平房	ping fang	6500
+平谷	ping gu	6500
+平桂	ping gui	6500
+平果	ping guo	6500
+平和	ping he	6500
+平湖	ping hu	6500
+平江	ping jiang	6500
+平乐	ping le	6500
+平利	ping li	6500
+平陆	ping lu	6500
+平鲁	ping lu	6500
+平罗	ping luo	6500
+屏南	ping nan	6500
+平南	ping nan	6500
+平桥	ping qiao	6500
+平泉	ping quan	6500
+坪山	ping shan	6500
+屏山	ping shan	6500
+平山	ping shan	6500
+平顺	ping shun	6500
+平潭	ping tan	6500
+平塘	ping tang	6500
+平武	ping wu	6500
+凭祥	ping xiang	6500
+平乡	ping xiang	6500
+平阳	ping yang	6500
+平遥	ping yao	6500
+平邑	ping yi	6500
+平阴	ping yin	6500
+平舆	ping yu	6500
+平原	ping yuan	6500
+平远	ping yuan	6500
+坡头	po tou	6500
+泊头	po tou	6500
+鄱阳	po yang	6500
+普安	pu an	6500
+浦北	pu bei	6500
+浦城	pu cheng	6500
+蒲城	pu cheng	6500
+普定	pu ding	6500
+浦东新	pu dong xin	4000
+普格	pu ge	6500
+浦江	pu jiang	6500
+蒲江	pu jiang	6500
+浦口	pu kou	6500
+普兰	pu lan	6500
+普兰店	pu lan dian	4000
+普宁	pu ning	6500
+普陀	pu tuo	6500
+蒲县	pu xian	6500
+濮阳	pu yang	6500
+淇滨	qi bin	6500
+蕲春	qi chun	6500
+启东	qi dong	6500
+祁东	qi dong	6500
+齐河	qi he	6500
+綦江	qi jiang	6500
+七里河	qi li he	4000
+祁连	qi lian	6500
+麒麟	qi lin	6500
+祁门	qi men	6500
+岐山	qi shan	6500
+奇台	qi tai	6500
+栖霞	qi xia	6500
+杞县	qi xian	6500
+淇县	qi xian	6500
+祁县	qi xian	6500
+七星	qi xing	6500
+七星关	qi xing guan	4000
+祁阳	qi yang	6500
+乾安	qian an	6500
+迁安	qian an	6500
+前锋	qian feng	6500
+前郭尔罗斯蒙古族	qian guo er luo si meng gu zu	1500
+潜江	qian jiang	6500
+黔江	qian jiang	6500
+前进	qian jin	6500
+千山	qian shan	6500
+潜山	qian shan	6500
+钱塘	qian tang	6500
+犍为	qian wei	6500
+迁西	qian xi	6500
+黔西	qian xi	6500
+乾县	qian xian	6500
+千阳	qian yang	6500
+谯城	qiao cheng	6500
+桥东	qiao dong	6500
+巧家	qiao jia	6500
+硚口	qiao kou	6500
+桥西	qiao xi	6500
+且末	qie mo	6500
+茄子河	qie zi he	4000
+秦安	qin an	6500
+钦北	qin bei	6500
+秦都	qin du	6500
+秦淮	qin huai	6500
+钦南	qin nan	6500
+沁水	qin shui	6500
+沁县	qin xian	6500
+沁阳	qin yang	6500
+沁源	qin yuan	6500
+秦州	qin zhou	6500
+庆安	qing an	6500
+青白江	qing bai jiang	4000
+庆城	qing cheng	6500
+清城	qing cheng	6500
+青川	qing chuan	6500
+清丰	qing feng	6500
+青冈	qing gang	6500
+清河	qing he	6500
+青河	qing he	6500
+清河门	qing he men	4000
+清涧	qing jian	6500
+清江浦	qing jiang pu	4000
+清流	qing liu	6500
+晴隆	qing long	6500
+青龙满族	qing long man zu	1500
+青浦	qing pu	6500
+青山	qing shan	6500
+青山湖	qing shan hu	4000
+青神	qing shen	6500
+清水	qing shui	6500
+清水河	qing shui he	4000
+青田	qing tian	6500
+青铜峡	qing tong xia	4000
+青县	qing xian	6500
+清新	qing xin	6500
+青秀	qing xiu	6500
+清徐	qing xu	6500
+青羊	qing yang	6500
+青阳	qing yang	6500
+庆元	qing yuan	6500
+清苑	qing yuan	6500
+青原	qing yuan	6500
+清原满族	qing yuan man zu	1500
+庆云	qing yun	6500
+青云谱	qing yun pu	4000
+清镇	qing zhen	6500
+青州	qing zhou	6500
+琼海	qiong hai	6500
+琼结	qiong jie	6500
+邛崃	qiong lai	6500
+琼山	qiong shan	6500
+琼中黎族苗族	qiong zhong li zu miao zu	1500
+丘北	qiu bei	6500
+邱县	qiu xian	6500
+曲阜	qu fu	6500
+曲江	qu jiang	6500
+衢江	qu jiang	6500
+曲麻莱	qu ma lai	4000
+曲水	qu shui	6500
+曲松	qu song	6500
+曲沃	qu wo	6500
+渠县	qu xian	6500
+曲阳	qu yang	6500
+曲周	qu zhou	6500
+泉港	quan gang	6500
+全椒	quan jiao	6500
+全南	quan nan	6500
+泉山	quan shan	6500
+全州	quan zhou	6500
+确山	que shan	6500
+让胡路	rang hu lu	4000
+壤塘	rang tang	6500
+饶河	rao he	6500
+饶平	rao ping	6500
+饶阳	rao yang	6500
+仁布	ren bu	6500
+任城	ren cheng	6500
+仁和	ren he	6500
+仁化	ren hua	6500
+仁怀	ren huai	6500
+任丘	ren qiu	6500
+仁寿	ren shou	6500
+任泽	ren ze	6500
+日土	ri tu	6500
+融安	rong an	6500
+荣昌	rong chang	6500
+容城	rong cheng	6500
+榕城	rong cheng	6500
+荣成	rong cheng	6500
+榕江	rong jiang	6500
+融水苗族	rong shui miao zu	1500
+容县	rong xian	6500
+荣县	rong xian	6500
+汝城	ru cheng	6500
+如东	ru dong	6500
+如皋	ru gao	6500
+汝南	ru nan	6500
+乳山	ru shan	6500
+汝阳	ru yang	6500
+乳源瑶族	ru yuan yao zu	1500
+汝州	ru zhou	6500
+瑞安	rui an	6500
+瑞昌	rui chang	6500
+芮城	rui cheng	6500
+瑞金	rui jin	6500
+瑞丽	rui li	6500
+润州	run zhou	6500
+若尔盖	ruo er gai	4000
+若羌	ruo qiang	6500
+萨尔图	sa er tu	4000
+萨嘎	sa ga	6500
+萨迦	sa jia	6500
+赛罕	sai han	6500
+三都水族	san dou shui zu	1500
+三河	san he	6500
+三江侗族	san jiang dong zu	1500
+三门	san men	6500
+三水	san shui	6500
+三穗	san sui	6500
+三台	san tai	6500
+三元	san yuan	6500
+三原	san yuan	6500
+桑日	sang ri	6500
+桑植	sang zhi	6500
+桑珠孜	sang zhu zi	4000
+色达	se da	6500
+色尼	se ni	6500
+莎车	sha che	6500
+沙河	sha he	6500
+沙河口	sha he kou	4000
+沙坪坝	sha ping ba	4000
+沙坡头	sha po tou	4000
+沙市	sha shi	6500
+沙湾	sha wan	6500
+沙县	sha xian	6500
+沙雅	sha ya	6500
+沙洋	sha yang	6500
+沙依巴克	sha yi ba ke	1500
+山城	shan cheng	6500
+山丹	shan dan	6500
+山海关	shan hai guan	4000
+鄯善	shan shan	6500
+山亭	shan ting	6500
+单县	shan xian	6500
+山阳	shan yang	6500
+山阴	shan yin	6500
+陕州	shan zhou	6500
+上蔡	shang cai	6500
+上城	shang cheng	6500
+商城	shang cheng	6500
+上党	shang dang	6500
+商都	shang du	6500
+上高	shang gao	6500
+上杭	shang hang	6500
+商河	shang he	6500
+上街	shang jie	6500
+上栗	shang li	6500
+上林	shang lin	6500
+商南	shang nan	6500
+商水	shang shui	6500
+上思	shang si	6500
+尚义	shang yi	6500
+上犹	shang you	6500
+上虞	shang yu	6500
+尚志	shang zhi	6500
+商州	shang zhou	6500
+邵东	shao dong	6500
+召陵	shao ling	6500
+韶山	shao shan	6500
+邵武	shao wu	6500
+邵阳	shao yang	6500
+射洪	she hong	6500
+社旗	she qi	6500
+歙县	she xian	6500
+涉县	she xian	6500
+射阳	she yang	6500
+沈北新	shen bei xin	4000
+神池	shen chi	6500
+沈河	shen he	6500
+神木	shen mu	6500
+沈丘	shen qiu	6500
+莘县	shen xian	6500
+深泽	shen ze	6500
+申扎	shen zha	6500
+深州	shen zhou	6500
+嵊泗	sheng si	6500
+嵊州	sheng zhou	6500
+市北	shi bei	6500
+施秉	shi bing	6500
+石城	shi cheng	6500
+施甸	shi dian	6500
+什邡	shi fang	6500
+石峰	shi feng	6500
+石鼓	shi gu	6500
+石拐	shi guai	6500
+浉河	shi he	6500
+石河子	shi he zi	4000
+石景山	shi jing shan	4000
+石林彝族	shi lin yi zu	1500
+石龙	shi long	6500
+石楼	shi lou	6500
+石门	shi men	6500
+石棉	shi mian	6500
+市南	shi nan	6500
+石屏	shi ping	6500
+石阡	shi qian	6500
+石渠	shi qu	6500
+石泉	shi quan	6500
+石狮	shi shi	6500
+石首	shi shou	6500
+石台	shi tai	6500
+始兴	shi xing	6500
+市中	shi zhong	6500
+石柱土家族	shi zhu tu jia zu	1500
+师宗	shi zong	6500
+寿光	shou guang	6500
+寿宁	shou ning	6500
+寿县	shou xian	6500
+寿阳	shou yang	6500
+舒城	shu cheng	6500
+疏附	shu fu	6500
+舒兰	shu lan	6500
+疏勒	shu le	6500
+蜀山	shu shan	6500
+沭阳	shu yang	6500
+双柏	shuang bai	6500
+双城	shuang cheng	6500
+双峰	shuang feng	6500
+双河	shuang he	6500
+双湖	shuang hu	6500
+双江拉祜族佤族布朗族傣族	shuang jiang la hu zu wa zu bu lang zu dai zu	1500
+双辽	shuang liao	6500
+双流	shuang liu	6500
+双滦	shuang luan	6500
+双牌	shuang pai	6500
+双桥	shuang qiao	6500
+双清	shuang qing	6500
+双塔	shuang ta	6500
+双台子	shuang tai zi	4000
+双阳	shuang yang	6500
+水城	shui cheng	6500
+水富	shui fu	6500
+水磨沟	shui mo gou	4000
+顺昌	shun chang	6500
+顺城	shun cheng	6500
+顺德	shun de	6500
+顺河回族	shun he hui zu	1500
+顺平	shun ping	6500
+顺庆	shun qing	6500
+顺义	shun yi	6500
+朔城	shuo cheng	6500
+四方台	si fang tai	4000
+泗洪	si hong	6500
+四会	si hui	6500
+思茅	si mao	6500
+思明	si ming	6500
+思南	si nan	6500
+泗水	si shui	6500
+泗县	si xian	6500
+泗阳	si yang	6500
+四子王	si zi wang	4000
+松北	song bei	6500
+松江	song jiang	6500
+嵩明	song ming	6500
+松潘	song pan	6500
+松山	song shan	6500
+松桃苗族	song tao miao zu	1500
+松溪	song xi	6500
+嵩县	song xian	6500
+松阳	song yang	6500
+松滋	song zi	6500
+肃北蒙古族	su bei meng gu zu	1500
+宿城	su cheng	6500
+苏家屯	su jia tun	4000
+肃南裕固族	su nan yu gu zu	1500
+苏尼特右	su ni te you	1500
+苏尼特左	su ni te zuo	1500
+肃宁	su ning	6500
+宿松	su song	6500
+苏仙	su xian	6500
+宿豫	su yu	6500
+肃州	su zhou	6500
+绥滨	sui bin	6500
+遂昌	sui chang	6500
+遂川	sui chuan	6500
+绥德	sui de	6500
+绥芬河	sui fen he	4000
+绥江	sui jiang	6500
+绥棱	sui leng	6500
+睢宁	sui ning	6500
+绥宁	sui ning	6500
+遂平	sui ping	6500
+濉溪	sui xi	6500
+遂溪	sui xi	6500
+睢县	sui xian	6500
+随县	sui xian	6500
+睢阳	sui yang	6500
+绥阳	sui yang	6500
+绥中	sui zhong	6500
+孙吴	sun wu	6500
+索县	suo xian	6500
+塔城	ta cheng	6500
+塔河	ta he	6500
+塔什库尔干塔吉克	ta shen ku er gan ta ji ke	1500
+台安	tai an	6500
+太白	tai bai	6500
+太仓	tai cang	6500
+台儿庄	tai er zhuang	4000
+太谷	tai gu	6500
+太和	tai he	6500
+泰和	tai he	6500
+太湖	tai hu	6500
+台江	tai jiang	6500
+太康	tai kang	6500
+泰来	tai lai	6500
+泰宁	tai ning	6500
+太平	tai ping	6500
+太仆寺	tai pu si	4000
+台前	tai qian	6500
+台山	tai shan	6500
+泰山	tai shan	6500
+泰顺	tai shun	6500
+泰兴	tai xing	6500
+太子河	tai zi he	4000
+郯城	tan cheng	6500
+覃塘	tan tang	6500
+唐河	tang he	6500
+汤旺	tang wang	6500
+唐县	tang xian	6500
+汤阴	tang yin	6500
+汤原	tang yuan	6500
+洮北	tao bei	6500
+桃城	tao cheng	6500
+桃江	tao jiang	6500
+洮南	tao nan	6500
+桃山	tao shan	6500
+桃源	tao yuan	6500
+特克斯	te ke si	4000
+腾冲	teng chong	6500
+藤县	teng xian	6500
+滕州	teng zhou	6500
+天长	tian chang	6500
+天等	tian deng	6500
+田东	tian dong	6500
+天峨	tian e	6500
+天河	tian he	6500
+田家庵	tian jia an	4000
+天峻	tian jun	6500
+田林	tian lin	6500
+天门	tian men	6500
+天宁	tian ning	6500
+天桥	tian qiao	6500
+天全	tian quan	6500
+天山	tian shan	6500
+天台	tian tai	6500
+天心	tian xin	6500
+天涯	tian ya	6500
+田阳	tian yang	6500
+天元	tian yuan	6500
+天镇	tian zhen	6500
+天柱	tian zhu	6500
+天祝藏族	tian zhu cang zu	1500
+铁东	tie dong	6500
+铁锋	tie feng	6500
+铁力	tie li	6500
+铁岭	tie ling	6500
+铁门关	tie men guan	4000
+铁山	tie shan	6500
+铁山港	tie shan gang	4000
+铁西	tie xi	6500
+亭湖	ting hu	6500
+同安	tong an	6500
+桐柏	tong bai	6500
+桐城	tong cheng	6500
+通城	tong cheng	6500
+通川	tong chuan	6500
+通道侗族	tong dao dong zu	1500
+同德	tong de	6500
+铜鼓	tong gu	6500
+潼关	tong guan	6500
+铜官	tong guan	6500
+通海	tong hai	6500
+通河	tong he	6500
+通化	tong hua	6500
+同江	tong jiang	6500
+通江	tong jiang	6500
+铜梁	tong liang	6500
+桐庐	tong lu	6500
+潼南	tong nan	6500
+同仁	tong ren	6500
+通山	tong shan	6500
+铜山	tong shan	6500
+通渭	tong wei	6500
+桐乡	tong xiang	6500
+同心	tong xin	6500
+通许	tong xu	6500
+通榆	tong yu	6500
+通州	tong zhou	6500
+桐梓	tong zi	6500
+头屯河	tou tun he	4000
+图们	tu men	6500
+土默特右	tu mo te you	1500
+土默特左	tu mo te zuo	1500
+图木舒克	tu mu shu ke	1500
+突泉	tu quan	6500
+团风	tuan feng	6500
+屯昌	tun chang	6500
+屯留	tun liu	6500
+屯溪	tun xi	6500
+托克托	tuo ke tuo	4000
+托克逊	tuo ke xun	4000
+托里	tuo li	6500
+瓦房店	wa fang dian	4000
+万安	wan an	6500
+万柏林	wan bo lin	4000
+宛城	wan cheng	6500
+万年	wan nian	6500
+万宁	wan ning	6500
+万全	wan quan	6500
+万荣	wan rong	6500
+万山	wan shan	6500
+万秀	wan xiu	6500
+万源	wan yuan	6500
+万载	wan zai	6500
+湾沚	wan zhi	6500
+万州	wan zhou	6500
+旺苍	wang cang	6500
+望城	wang cheng	6500
+望都	wang du	6500
+望花	wang hua	6500
+望江	wang jiang	6500
+望奎	wang kui	6500
+望谟	wang mo	6500
+汪清	wang qing	6500
+王益	wang yi	6500
+卫滨	wei bin	6500
+渭滨	wei bin	6500
+围场满族蒙古族	wei chang man zu meng gu zu	1500
+渭城	wei cheng	6500
+潍城	wei cheng	6500
+卫东	wei dong	6500
+魏都	wei du	6500
+卫辉	wei hui	6500
+威宁彝族回族苗族	wei ning yi zu hui zu miao zu	1500
+微山	wei shan	6500
+巍山彝族回族	wei shan yi zu hui zu	1500
+尉氏	wei shi	6500
+维西傈僳族	wei xi li su zu	1500
+威县	wei xian	6500
+魏县	wei xian	6500
+威信	wei xin	6500
+未央	wei yang	6500
+威远	wei yuan	6500
+渭源	wei yuan	6500
+文安	wen an	6500
+文昌	wen chang	6500
+文成	wen cheng	6500
+汶川	wen chuan	6500
+文登	wen deng	6500
+文峰	wen feng	6500
+温江	wen jiang	6500
+温岭	wen ling	6500
+温泉	wen quan	6500
+文山	wen shan	6500
+汶上	wen shang	6500
+文圣	wen sheng	6500
+文水	wen shui	6500
+温宿	wen su	6500
+闻喜	wen xi	6500
+文县	wen xian	6500
+温县	wen xian	6500
+瓮安	weng an	6500
+翁牛特	weng niu te	4000
+翁源	weng yuan	6500
+卧龙	wo long	6500
+武安	wu an	6500
+吴堡	wu bu	6500
+五常	wu chang	6500
+武昌	wu chang	6500
+婺城	wu cheng	6500
+武城	wu cheng	6500
+吴川	wu chuan	6500
+武川	wu chuan	6500
+务川仡佬族苗族	wu chuan ge lao zu miao zu	1500
+乌翠	wu cui	6500
+乌达	wu da	6500
+五大连池	wu da lian chi	1500
+乌当	wu dang	6500
+无棣	wu di	6500
+武定	wu ding	6500
+武都	wu du	6500
+乌尔禾	wu er he	4000
+五峰土家族	wu feng tu jia zu	1500
+武冈	wu gang	6500
+舞钢	wu gang	6500
+武功	wu gong	6500
+五河	wu he	6500
+武侯	wu hou	6500
+五华	wu hua	6500
+无极	wu ji	6500
+伍家岗	wu jia gang	4000
+五家渠	wu jia qu	4000
+吴江	wu jiang	6500
+武江	wu jiang	6500
+武进	wu jin	6500
+乌拉特后	wu la te hou	1500
+乌拉特前	wu la te qian	1500
+乌拉特中	wu la te zhong	1500
+乌兰	wu lan	6500
+乌兰浩特	wu lan hao te	1500
+五莲	wu lian	6500
+武陵	wu ling	6500
+武陵源	wu ling yuan	4000
+武隆	wu long	6500
+乌鲁木齐	wu lu mu qi	1500
+武鸣	wu ming	6500
+武宁	wu ning	6500
+武平	wu ping	6500
+吴起	wu qi	6500
+乌恰	wu qia	6500
+武强	wu qiang	6500
+吴桥	wu qiao	6500
+武清	wu qing	6500
+巫山	wu shan	6500
+武山	wu shan	6500
+乌审	wu shen	6500
+武胜	wu sheng	6500
+乌什	wu shi	6500
+乌苏	wu su	6500
+五台	wu tai	6500
+五通桥	wu tong qiao	4000
+无为	wu wei	6500
+巫溪	wu xi	6500
+武乡	wu xiang	6500
+吴兴	wu xing	6500
+武宣	wu xuan	6500
+武穴	wu xue	6500
+舞阳	wu yang	6500
+武义	wu yi	6500
+武邑	wu yi	6500
+武夷山	wu yi shan	4000
+五原	wu yuan	6500
+婺源	wu yuan	6500
+五寨	wu zhai	6500
+武陟	wu zhi	6500
+五指山	wu zhi shan	4000
+吴中	wu zhong	6500
+西安	xi an	6500
+西昌	xi chang	6500
+西城	xi cheng	6500
+西充	xi chong	6500
+西畴	xi chou	6500
+淅川	xi chuan	6500
+喜德	xi de	6500
+息烽	xi feng	6500
+西丰	xi feng	6500
+西峰	xi feng	6500
+西岗	xi gang	6500
+西工	xi gong	6500
+西固	xi gu	6500
+细河	xi he	6500
+西和	xi he	6500
+溪湖	xi hu	6500
+西湖	xi hu	6500
+西华	xi hua	6500
+西吉	xi ji	6500
+西林	xi lin	6500
+锡林浩特	xi lin hao te	1500
+西陵	xi ling	6500
+西盟佤族	xi meng wa zu	1500
+西平	xi ping	6500
+西青	xi qing	6500
+西区	xi qu	6500
+西塞山	xi sai shan	4000
+西沙	xi sha	6500
+西山	xi shan	6500
+锡山	xi shan	6500
+西市	xi shi	6500
+习水	xi shui	6500
+浠水	xi shui	6500
+西乌珠穆沁	xi wu zhu mu qin	1500
+西夏	xi xia	6500
+西峡	xi xia	6500
+息县	xi xian	6500
+隰县	xi xian	6500
+西乡	xi xiang	6500
+西乡塘	xi xiang tang	4000
+西秀	xi xiu	6500
+昔阳	xi yang	6500
+夏河	xia he	6500
+下花园	xia hua yuan	4000
+峡江	xia jiang	6500
+夏津	xia jin	6500
+下陆	xia lu	6500
+霞浦	xia pu	6500
+霞山	xia shan	6500
+夏县	xia xian	6500
+夏邑	xia yi	6500
+咸安	xian an	6500
+咸丰	xian feng	6500
+仙居	xian ju	6500
+仙桃	xian tao	6500
+献县	xian xian	6500
+仙游	xian you	6500
+翔安	xiang an	6500
+乡城	xiang cheng	6500
+相城	xiang cheng	6500
+芗城	xiang cheng	6500
+襄城	xiang cheng	6500
+项城	xiang cheng	6500
+湘东	xiang dong	6500
+襄都	xiang dou	6500
+香坊	xiang fang	6500
+襄汾	xiang fen	6500
+祥符	xiang fu	6500
+香格里拉	xiang ge li la	1500
+香河	xiang he	6500
+镶黄	xiang huang	6500
+乡宁	xiang ning	6500
+湘桥	xiang qiao	6500
+相山	xiang shan	6500
+象山	xiang shan	6500
+响水	xiang shui	6500
+湘潭	xiang tan	6500
+湘乡	xiang xiang	6500
+向阳	xiang yang	6500
+湘阴	xiang yin	6500
+襄垣	xiang yuan	6500
+祥云	xiang yun	6500
+襄州	xiang zhou	6500
+象州	xiang zhou	6500
+香洲	xiang zhou	6500
+孝昌	xiao chang	6500
+小店	xiao dian	6500
+小金	xiao jin	6500
+孝南	xiao nan	6500
+萧山	xiao shan	6500
+猇亭	xiao ting	6500
+萧县	xiao xian	6500
+孝义	xiao yi	6500
+谢家集	xie jia ji	4000
+谢通门	xie tong men	4000
+新安	xin an	6500
+新巴尔虎右	xin ba er hu you	1500
+新巴尔虎左	xin ba er hu zuo	1500
+新北	xin bei	6500
+新宾满族	xin bin man zu	1500
+新蔡	xin cai	6500
+新昌	xin chang	6500
+忻城	xin cheng	6500
+新城	xin cheng	6500
+信都	xin dou	6500
+新都	xin du	6500
+信丰	xin feng	6500
+新丰	xin feng	6500
+忻府	xin fu	6500
+新抚	xin fu	6500
+新干	xin gan	6500
+新和	xin he	6500
+新河	xin he	6500
+新化	xin hua	6500
+新华	xin hua	6500
+新晃侗族	xin huang dong zu	1500
+新会	xin hui	6500
+辛集	xin ji	6500
+新建	xin jian	6500
+新绛	xin jiang	6500
+新津	xin jin	6500
+新乐	xin le	6500
+新龙	xin long	6500
+新罗	xin luo	6500
+新密	xin mi	6500
+新民	xin min	6500
+新宁	xin ning	6500
+新平彝族傣族	xin ping yi zu dai zu	1500
+新邱	xin qiu	6500
+新荣	xin rong	6500
+新邵	xin shao	6500
+新市	xin shi	6500
+新泰	xin tai	6500
+新田	xin tian	6500
+新吴	xin wu	6500
+新县	xin xian	6500
+新乡	xin xiang	6500
+新兴	xin xing	6500
+新星	xin xing	6500
+新野	xin ye	6500
+信宜	xin yi	6500
+新沂	xin yi	6500
+新源	xin yuan	6500
+新郑	xin zheng	6500
+信州	xin zhou	6500
+新洲	xin zhou	6500
+兴安	xing an	6500
+兴宾	xing bin	6500
+兴城	xing cheng	6500
+兴国	xing guo	6500
+兴海	xing hai	6500
+兴和	xing he	6500
+兴化	xing hua	6500
+杏花岭	xing hua ling	4000
+兴隆	xing long	6500
+兴隆台	xing long tai	4000
+兴宁	xing ning	6500
+兴平	xing ping	6500
+兴庆	xing qing	6500
+兴仁	xing ren	6500
+兴山	xing shan	6500
+行唐	xing tang	6500
+兴文	xing wen	6500
+兴县	xing xian	6500
+荥阳	xing yang	6500
+兴业	xing ye	6500
+兴义	xing yi	6500
+雄县	xiong xian	6500
+秀峰	xiu feng	6500
+休宁	xiu ning	6500
+秀山土家族苗族	xiu shan tu jia zu miao zu	1500
+修水	xiu shui	6500
+修文	xiu wen	6500
+修武	xiu wu	6500
+岫岩满族	xiu yan man zu	1500
+秀英	xiu ying	6500
+秀屿	xiu yu	6500
+秀洲	xiu zhou	6500
+徐汇	xu hui	6500
+溆浦	xu pu	6500
+徐水	xu shui	6500
+徐闻	xu wen	6500
+盱眙	xu yi	6500
+叙永	xu yong	6500
+叙州	xu zhou	6500
+宣恩	xuan en	6500
+宣汉	xuan han	6500
+宣化	xuan hua	6500
+宣威	xuan wei	6500
+玄武	xuan wu	6500
+宣州	xuan zhou	6500
+薛城	xue cheng	6500
+寻甸回族彝族	xun dian hui zu yi zu	1500
+循化撒拉族	xun hua sa la zu	1500
+逊克	xun ke	6500
+寻乌	xun wu	6500
+浚县	xun xian	6500
+旬阳	xun yang	6500
+浔阳	xun yang	6500
+旬邑	xun yi	6500
+亚东	ya dong	6500
+雅江	ya jiang	6500
+牙克石	ya ke shi	4000
+崖州	ya zhou	6500
+盐边	yan bian	6500
+延长	yan chang	6500
+郾城	yan cheng	6500
+盐池	yan chi	6500
+延川	yan chuan	6500
+盐都	yan du	6500
+雁峰	yan feng	6500
+沿河土家族	yan he tu jia zu	1500
+盐湖	yan hu	6500
+延吉	yan ji	6500
+雁江	yan jiang	6500
+延津	yan jin	6500
+盐津	yan jin	6500
+阎良	yan liang	6500
+炎陵	yan ling	6500
+鄢陵	yan ling	6500
+延平	yan ping	6500
+焉耆回族	yan qi hui zu	1500
+延庆	yan qing	6500
+盐山	yan shan	6500
+砚山	yan shan	6500
+铅山	yan shan	6500
+雁山	yan shan	6500
+偃师	yan shi	6500
+延寿	yan shou	6500
+雁塔	yan ta	6500
+沿滩	yan tan	6500
+盐田	yan tian	6500
+盐亭	yan ting	6500
+盐源	yan yuan	6500
+兖州	yan zhou	6500
+漾濞彝族	yang bi yi zu	1500
+阳城	yang cheng	6500
+阳春	yang chun	6500
+阳东	yang dong	6500
+阳高	yang gao	6500
+阳谷	yang gu	6500
+杨陵	yang ling	6500
+阳明	yang ming	6500
+杨浦	yang pu	6500
+阳曲	yang qu	6500
+阳山	yang shan	6500
+阳朔	yang shuo	6500
+阳西	yang xi	6500
+洋县	yang xian	6500
+阳信	yang xin	6500
+阳新	yang xin	6500
+阳原	yang yuan	6500
+扬中	yang zhong	6500
+姚安	yao an	6500
+尧都	yao du	6500
+瑶海	yao hai	6500
+耀州	yao zhou	6500
+叶城	ye cheng	6500
+叶集	ye ji	6500
+叶县	ye xian	6500
+义安	yi an	6500
+依安	yi an	6500
+宜城	yi cheng	6500
+峄城	yi cheng	6500
+翼城	yi cheng	6500
+驿城	yi cheng	6500
+伊川	yi chuan	6500
+宜川	yi chuan	6500
+宜都	yi du	6500
+宜丰	yi feng	6500
+宜黄	yi huang	6500
+弋江	yi jiang	6500
+伊金霍洛	yi jin huo luo	1500
+宜君	yi jun	6500
+依兰	yi lan	6500
+宜良	yi liang	6500
+彝良	yi liang	6500
+夷陵	yi ling	6500
+仪陇	yi long	6500
+义马	yi ma	6500
+伊美	yi mei	6500
+易门	yi men	6500
+沂南	yi nan	6500
+伊宁	yi ning	6500
+沂水	yi shui	6500
+伊通满族	yi tong man zu	1500
+义乌	yi wu	6500
+伊吾	yi wu	6500
+义县	yi xian	6500
+易县	yi xian	6500
+黟县	yi xian	6500
+宜兴	yi xing	6500
+宜秀	yi xiu	6500
+宜阳	yi yang	6500
+弋阳	yi yang	6500
+沂源	yi yuan	6500
+宜章	yi zhang	6500
+仪征	yi zheng	6500
+伊州	yi zhou	6500
+宜州	yi zhou	6500
+殷都	yin du	6500
+银海	yin hai	6500
+印江土家族苗族	yin jiang tu jia zu miao zu	1500
+印台	yin tai	6500
+鄞州	yin zhou	6500
+银州	yin zhou	6500
+应城	ying cheng	6500
+英德	ying de	6500
+颍东	ying dong	6500
+英吉沙	ying ji sha	4000
+盈江	ying jiang	6500
+迎江	ying jiang	6500
+荥经	ying jing	6500
+颍泉	ying quan	6500
+英山	ying shan	6500
+营山	ying shan	6500
+颍上	ying shang	6500
+鹰手营子矿	ying shou ying zi kuang	1500
+应县	ying xian	6500
+迎泽	ying ze	6500
+颍州	ying zhou	6500
+永安	yong an	6500
+永昌	yong chang	6500
+永城	yong cheng	6500
+永川	yong chuan	6500
+永春	yong chun	6500
+永德	yong de	6500
+永登	yong deng	6500
+永定	yong ding	6500
+永丰	yong feng	6500
+永福	yong fu	6500
+永和	yong he	6500
+永吉	yong ji	6500
+永济	yong ji	6500
+永嘉	yong jia	6500
+永靖	yong jing	6500
+永康	yong kang	6500
+永年	yong nian	6500
+永宁	yong ning	6500
+邕宁	yong ning	6500
+永平	yong ping	6500
+埇桥	yong qiao	6500
+永清	yong qing	6500
+永仁	yong ren	6500
+永善	yong shan	6500
+永胜	yong sheng	6500
+永寿	yong shou	6500
+永顺	yong shun	6500
+永泰	yong tai	6500
+永新	yong xin	6500
+永兴	yong xing	6500
+永修	yong xiu	6500
+友好	you hao	6500
+右江	you jiang	6500
+尤溪	you xi	6500
+攸县	you xian	6500
+游仙	you xian	6500
+酉阳土家族苗族	you yang tu jia zu miao zu	1500
+友谊	you yi	6500
+右玉	you yu	6500
+裕安	yu an	6500
+渝北	yu bei	6500
+禹城	yu cheng	6500
+虞城	yu cheng	6500
+雨城	yu cheng	6500
+榆次	yu ci	6500
+于都	yu du	6500
+鱼峰	yu feng	6500
+余干	yu gan	6500
+余杭	yu hang	6500
+于洪	yu hong	6500
+雨湖	yu hu	6500
+裕华	yu hua	6500
+雨花	yu hua	6500
+雨花台	yu hua tai	4000
+玉环	yu huan	6500
+禹会	yu hui	6500
+余江	yu jiang	6500
+尉犁	yu li	6500
+玉龙纳西族	yu long na xi zu	1500
+玉门	yu men	6500
+裕民	yu min	6500
+郁南	yu nan	6500
+玉屏侗族	yu ping dong zu	1500
+余庆	yu qing	6500
+玉泉	yu quan	6500
+玉山	yu shan	6500
+雨山	yu shan	6500
+榆社	yu she	6500
+榆树	yu shu	6500
+玉树	yu shu	6500
+渝水	yu shui	6500
+鱼台	yu tai	6500
+于田	yu tian	6500
+玉田	yu tian	6500
+禹王台	yu wang tai	4000
+盂县	yu xian	6500
+蔚县	yu xian	6500
+榆阳	yu yang	6500
+余姚	yu yao	6500
+榆中	yu zhong	6500
+渝中	yu zhong	6500
+玉州	yu zhou	6500
+禹州	yu zhou	6500
+远安	yuan an	6500
+元宝	yuan bao	6500
+元宝山	yuan bao shan	4000
+源城	yuan cheng	6500
+源汇	yuan hui	6500
+沅江	yuan jiang	6500
+元江哈尼族彝族傣族	yuan jiang ha ni zu yi zu dai zu	1500
+沅陵	yuan ling	6500
+元谋	yuan mou	6500
+原平	yuan ping	6500
+垣曲	yuan qu	6500
+元氏	yuan shi	6500
+元阳	yuan yang	6500
+原阳	yuan yang	6500
+原州	yuan zhou	6500
+袁州	yuan zhou	6500
+越城	yue cheng	6500
+岳池	yue chi	6500
+月湖	yue hu	6500
+岳麓	yue lu	6500
+岳普湖	yue pu hu	4000
+乐清	yue qing	6500
+岳塘	yue tang	6500
+岳西	yue xi	6500
+越西	yue xi	6500
+越秀	yue xiu	6500
+岳阳	yue yang	6500
+岳阳楼	yue yang lou	4000
+云安	yun an	6500
+云城	yun cheng	6500
+郓城	yun cheng	6500
+云冈	yun gang	6500
+云和	yun he	6500
+运河	yun he	6500
+云龙	yun long	6500
+云梦	yun meng	6500
+云溪	yun xi	6500
+郧西	yun xi	6500
+云县	yun xian	6500
+云霄	yun xiao	6500
+云岩	yun yan	6500
+云阳	yun yang	6500
+郧阳	yun yang	6500
+云州	yun zhou	6500
+杂多	za duo	6500
+扎鲁特	za lu te	4000
+扎囊	za nang	6500
+赞皇	zan huang	6500
+枣强	zao qiang	6500
+枣阳	zao yang	6500
+泽库	ze ku	6500
+泽普	ze pu	6500
+泽州	ze zhou	6500
+增城	zeng cheng	6500
+曾都	zeng du	6500
+札达	zha da	6500
+扎赉诺尔	zha lai nuo er	1500
+扎赉特	zha lai te	4000
+扎兰屯	zha lan tun	4000
+柞水	zha shui	6500
+湛河	zhan he	6500
+沾化	zhan hua	6500
+站前	zhan qian	6500
+沾益	zhan yi	6500
+张北	zhang bei	6500
+张店	zhang dian	6500
+章贡	zhang gong	6500
+张家川回族	zhang jia chuan hui zu	1500
+张家港	zhang jia gang	4000
+漳平	zhang ping	6500
+漳浦	zhang pu	6500
+章丘	zhang qiu	6500
+樟树	zhang shu	6500
+张湾	zhang wan	6500
+彰武	zhang wu	6500
+漳县	zhang xian	6500
+长阳土家族	zhang yang tu jia zu	1500
+长子	zhang zi	6500
+诏安	zhao an	6500
+肇东	zhao dong	6500
+昭化	zhao hua	6500
+昭觉	zhao jue	6500
+昭平	zhao ping	6500
+昭苏	zhao su	6500
+赵县	zhao xian	6500
+昭阳	zhao yang	6500
+招远	zhao yuan	6500
+肇源	zhao yuan	6500
+肇州	zhao zhou	6500
+柘城	zhe cheng	6500
+柘荣	zhe rong	6500
+振安	zhen an	6500
+镇安	zhen an	6500
+镇巴	zhen ba	6500
+贞丰	zhen feng	6500
+镇海	zhen hai	6500
+浈江	zhen jiang	6500
+镇康	zhen kang	6500
+镇赉	zhen lai	6500
+镇宁布依族苗族	zhen ning bu yi zu miao zu	1500
+镇坪	zhen ping	6500
+镇平	zhen ping	6500
+振兴	zhen xing	6500
+镇雄	zhen xiong	6500
+镇原	zhen yuan	6500
+镇远	zhen yuan	6500
+镇沅彝族哈尼族拉祜族	zhen yuan yi zu ha ni zu la hu zu	1500
+正安	zheng an	6500
+正定	zheng ding	6500
+政和	zheng he	6500
+正蓝	zheng lan	6500
+正宁	zheng ning	6500
+蒸湘	zheng xiang	6500
+正镶白	zheng xiang bai	4000
+正阳	zheng yang	6500
+志丹	zhi dan	6500
+治多	zhi duo	6500
+芝罘	zhi fu	6500
+枝江	zhi jiang	6500
+芷江侗族	zhi jiang dong zu	1500
+织金	zhi jin	6500
+仲巴	zhong ba	6500
+中方	zhong fang	6500
+中江	zhong jiang	6500
+钟楼	zhong lou	6500
+中牟	zhong mu	6500
+中宁	zhong ning	6500
+中山	zhong shan	6500
+钟山	zhong shan	6500
+忠县	zhong xian	6500
+钟祥	zhong xiang	6500
+中阳	zhong yang	6500
+中原	zhong yuan	6500
+中站	zhong zhan	6500
+周村	zhou cun	6500
+周宁	zhou ning	6500
+舟曲	zhou qu	6500
+周至	zhou zhi	6500
+诸城	zhu cheng	6500
+珠晖	zhu hui	6500
+诸暨	zhu ji	6500
+珠山	zhu shan	6500
+竹山	zhu shan	6500
+竹溪	zhu xi	6500
+庄河	zhuang he	6500
+庄浪	zhuang lang	6500
+准格尔	zhun ge er	4000
+涿鹿	zhuo lu	6500
+卓尼	zhuo ni	6500
+涿州	zhuo zhou	6500
+卓资	zhuo zi	6500
+子长	zi chang	6500
+淄川	zi chuan	6500
+秭归	zi gui	6500
+紫金	zi jin	6500
+自流井	zi liu jing	4000
+梓潼	zi tong	6500
+资溪	zi xi	6500
+资兴	zi xing	6500
+紫阳	zi yang	6500
+资阳	zi yang	6500
+资源	zi yuan	6500
+紫云苗族布依族	zi yun miao zu bu yi zu	1500
+资中	zi zhong	6500
+子洲	zi zhou	6500
+枞阳	zong yang	6500
+邹城	zou cheng	6500
+邹平	zou ping	6500
+遵化	zun hua	6500
+左贡	zuo gong	6500
+左权	zuo quan	6500
+左云	zuo yun	6500

@@ -186,6 +186,9 @@ impl PinyinEngine {
             self.user_lexicon
                 .learn_exact_input_without_phrase_signal(&key, phrase, delta)
                 .map_err(|e| format!("save single-char user dict: {}", e))?;
+            self.user_lexicon
+                .record_word_sequence(phrase, &[phrase.to_string()], delta)
+                .map_err(|e| format!("save single-char word context: {}", e))?;
             self.note_user_lexicon_updated();
             return Ok(());
         }
@@ -193,6 +196,7 @@ impl PinyinEngine {
             return Ok(());
         }
         self.reload_user_lexicon_if_changed_now();
+        let word_tokens = self.best_phrase_tokens(phrase, self.user_lexicon.current_clock());
         let weak_learning = flags & LEARN_FLAG_WEAK != 0;
         let composed_phrase = flags & LEARN_FLAG_COMPOSED_PHRASE != 0;
         let auto_novel = self.auto_novel_phrase_parts(&key, reading, phrase);
@@ -213,6 +217,9 @@ impl PinyinEngine {
                 .observe_input(&key, phrase)
                 .map_err(|e| format!("observe user dict: {}", e))?;
             if observed.freq < profile.composed_observe_threshold && auto_novel.is_none() {
+                self.user_lexicon
+                    .record_word_sequence(phrase, &word_tokens, 1)
+                    .map_err(|e| format!("save observed word context: {}", e))?;
                 self.note_user_lexicon_updated();
                 return Ok(());
             }
@@ -225,6 +232,9 @@ impl PinyinEngine {
             self.user_lexicon
                 .record_commit_observation(&key, phrase, CommitSource::Mixed)
                 .map_err(|e| format!("observe mixed commit: {}", e))?;
+            self.user_lexicon
+                .record_word_sequence(phrase, &word_tokens, 1)
+                .map_err(|e| format!("save mixed word context: {}", e))?;
             self.note_user_lexicon_updated();
             return Ok(());
         }
@@ -233,17 +243,24 @@ impl PinyinEngine {
 
         if let Some(observed) = composed_observation {
             self.user_lexicon
-                .promote_observed_input_with_source_and_delta(
+                .promote_observed_input_with_source_delta_and_tokens(
                     &key,
                     phrase,
                     profile.exact_delta,
                     profile.source,
                     observed,
+                    &word_tokens,
                 )
                 .map_err(|e| format!("promote observed user dict: {}", e))?;
         } else {
             self.user_lexicon
-                .learn_with_source_and_delta(&key, phrase, profile.exact_delta, profile.source)
+                .learn_with_source_delta_and_tokens(
+                    &key,
+                    phrase,
+                    profile.exact_delta,
+                    profile.source,
+                    &word_tokens,
+                )
                 .map_err(|e| format!("save user dict: {}", e))?;
         }
 
@@ -580,6 +597,24 @@ impl PinyinEngine {
         ranked: &mut [RankedCandidate],
     ) -> bool {
         self.adjust_selection_feedback(reading, ranked, 1.0)
+    }
+
+    pub(super) fn has_selection_feedback_for_reading(&self, reading: &str) -> bool {
+        let has_entries = |entries: Option<&[crate::user_dict::SelectionFeedbackEntry]>| {
+            entries.is_some_and(|items| items.iter().any(|item| item.score != 0))
+        };
+        if has_entries(self.user_lexicon.selection_signal(reading))
+            || has_entries(self.user_lexicon.weak_unselected_signal(reading))
+        {
+            return true;
+        }
+        self.rerank_context_key().first().is_some_and(|prev| {
+            has_entries(self.user_lexicon.context_selection_signal(prev, reading))
+                || has_entries(
+                    self.user_lexicon
+                        .context_weak_unselected_signal(prev, reading),
+                )
+        })
     }
 
     pub(super) fn remove_selection_feedback(

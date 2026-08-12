@@ -113,6 +113,7 @@ class CCandidateWindow {
 
  private:
   HWND m_hwnd = nullptr;
+  HWND m_shadowHwnd = nullptr;
   ICandidateWindowEvents* m_events = nullptr;
   std::wstring m_title;
   std::vector<std::wstring> m_items;
@@ -166,6 +167,8 @@ class CCandidateWindow {
   bool m_trackingMouse = false;
   bool m_interactive = true;
   bool m_pendingVisual = false;
+  ULONGLONG m_pendingVisualSince = 0;
+  bool m_pendingIndicatorTimerPending = false;
   bool m_gameOverlay = false;
   bool m_fullscreenOverlayPlacement = false;
   HWND m_overlayTargetHwnd = nullptr;
@@ -182,9 +185,11 @@ class CCandidateWindow {
   SrfCandidateLayoutVariant m_lastLayoutVariant = SrfCandidateLayoutVariant::Classic;
   SIZE m_measuredClientSize = {};
   ULONGLONG m_lastShowTick = 0;
+  RECT m_targetWindowRect = {};
+  bool m_hasTargetWindowRect = false;
   bool m_paintTimerPending = false;
+  bool m_animationTimerPending = false;
   bool m_horizontalShrinkTimerPending = false;
-  bool m_autoHideTimerPending = false;
   bool m_environmentRefreshTimerPending = false;
   bool m_environmentRefreshForced = false;
   bool m_overlayEnvironmentValid = false;
@@ -203,6 +208,29 @@ class CCandidateWindow {
   unsigned long long m_paintCount = 0;
   unsigned long long m_fullPaintCount = 0;
 
+  bool m_showAnimationActive = false;
+  ULONGLONG m_showAnimationStart = 0;
+  int m_showAnimationDurationMs = 0;
+  bool m_selectionAnimationActive = false;
+  int m_selectionAnimationFrom = -1;
+  int m_selectionAnimationTo = -1;
+  ULONGLONG m_selectionAnimationStart = 0;
+  int m_selectionAnimationDurationMs = 0;
+  bool m_hoverAnimationActive = false;
+  int m_hoverAnimationFrom = -1;
+  int m_hoverAnimationTo = -1;
+  ULONGLONG m_hoverAnimationStart = 0;
+  int m_hoverAnimationDurationMs = 0;
+  bool m_pressAnimationActive = false;
+  int m_pressAnimationFrom = -1;
+  int m_pressAnimationTo = -1;
+  ULONGLONG m_pressAnimationStart = 0;
+  int m_pressAnimationDurationMs = 0;
+  bool m_pageAnimationActive = false;
+  int m_pageAnimationDirection = 0;
+  ULONGLONG m_pageAnimationStart = 0;
+  int m_pageAnimationDurationMs = 0;
+
   // 上次生成字体时的 key，用于避免重复创建相同字体。
   UINT m_lastFontDpi = 0;
   std::wstring m_lastFontFace;
@@ -214,6 +242,10 @@ class CCandidateWindow {
   std::wstring m_lastFontFile;
 
   bool EnsureWindow();
+  bool EnsureShadowWindow();
+  void UpdateShadowWindow();
+  void ShowShadowWindow();
+  void HideShadowWindow();
   void ApplyMouseTransparency();
   void ApplyWindowOpacity();
   void RefreshFonts();
@@ -225,6 +257,7 @@ class CCandidateWindow {
   RECT CalculateWindowRect(const RECT& anchorRect, SIZE content);
   void ApplyWindowRegion(int width, int height, bool redraw);
   void ApplyWindowRect(const RECT& rect);
+  void ApplyAnimatedWindowRect(float showProgress);
   void Paint(HDC hdc, const RECT& paintRect);
   void PaintFull(HDC memDc, const RECT& client, const RECT* dirtyRect = nullptr);
   void ReleasePaintBuffer();
@@ -234,8 +267,7 @@ class CCandidateWindow {
   void FlushPendingInvalidates();
   void ScheduleDeferredPaint(ULONGLONG now);
   void FlushDeferredPaint();
-  bool ScheduleDeferredAutoHide();
-  void CancelDeferredAutoHide();
+  void UpdatePendingIndicatorTimer(bool pendingVisual);
   void ScheduleEnvironmentRefresh();
   void ScheduleOverlayEnvironmentPoll();
   void CancelEnvironmentRefresh();
@@ -263,6 +295,16 @@ class CCandidateWindow {
   void UpdatePressedIndex(int pressedIndex);
   void UpdatePinMenuHotCommand(int command);
   void BeginTrackMouseLeave();
+  bool MotionEnabled() const;
+  int ResolveAnimationDuration(int skinDuration, int fallbackMs) const;
+  void StartShowAnimation();
+  void StartSelectionAnimation(int previousIndex, int nextIndex);
+  void StartHoverAnimation(int previousIndex, int nextIndex);
+  void StartPressAnimation(int previousIndex, int nextIndex);
+  void StartPageAnimation(int previousPage, int nextPage);
+  void CancelAnimations(bool restoreWindowState);
+  void ScheduleAnimationFrame();
+  void AdvanceAnimations();
 
   static ATOM EnsureWindowClass();
   static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

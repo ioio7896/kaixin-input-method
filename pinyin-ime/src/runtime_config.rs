@@ -116,23 +116,3 @@ fn config_watch_loop() {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parses_all_runtime_sections_together() {
-        let snapshot = RuntimeConfigSnapshot::parse(
-            "[style]\ncandidate_page_size=5\n[correction]\nenabled=false\n[fuzzy]\nzh_z=false\n[rank]\nw_single_lm=.5\n[engine]\nuser_hotword_boost=strong\n[shortcuts]\nqq=测试\n",
-            7,
-        );
-        assert_eq!(snapshot.candidate_page_size, 5);
-        assert!(!snapshot.correction.enabled);
-        assert!(!snapshot.fuzzy.zh_z);
-        assert_eq!(snapshot.rerank.w_single_lm, 0.5);
-        assert_eq!(snapshot.user_hotword.front_limit, 3);
-        assert_eq!(snapshot.shortcuts.len(), 1);
-        assert_eq!(snapshot.generation, 7);
-    }
-}

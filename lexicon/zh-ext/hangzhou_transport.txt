@@ -1,0 +1,150 @@
+# 开心输入法原生词库
+# 来源：项目作者使用生成式 AI 辅助添加并人工纳入；详见 docs/licenses/AI_DATA_PROVENANCE.md
+# 杭州综合交通、道路、桥隧与交通枢纽
+# Curated for local daily input; complete names rank above ambiguous short place names.
+# 格式：词条<TAB>拼音<TAB>词频。；第三列统一为 1-10000 万分制排序分数。
+杭州站	hang zhou zhan	4000
+杭州东站	hang zhou dong zhan	4000
+杭州南站	hang zhou nan zhan	4000
+杭州西站	hang zhou xi zhan	4000
+临平南站	lin ping nan zhan	4000
+富阳西站	fu yang xi zhan	4000
+桐庐站	tong lu zhan	4000
+千岛湖站	qian dao hu zhan	4000
+建德站	jian de zhan	4000
+杭州萧山国际机场	hang zhou xiao shan guo ji ji chang	4000
+萧山机场	xiao shan ji chang	4000
+杭州客运中心	hang zhou ke yun zhong xin	4000
+杭州汽车西站	hang zhou qi che xi zhan	4000
+杭州汽车北站	hang zhou qi che bei zhan	4000
+中河高架	zhong he gao jia	4000
+上塘高架	shang tang gao jia	4000
+秋石高架	qiu shi gao jia	4000
+留石高架	liu shi gao jia	4000
+德胜快速路	de sheng kuai su lu	4000
+钱塘快速路	qian tang kuai su lu	4000
+彩虹快速路	cai hong kuai su lu	4000
+时代高架	shi dai gao jia	4000
+钱塘江大桥	qian tang jiang da qiao	4000
+彭埠大桥	peng bu da qiao	4000
+西兴大桥	xi xing da qiao	4000
+复兴大桥	fu xing da qiao	4000
+钱江一桥	qian jiang yi qiao	4000
+钱江二桥	qian jiang er qiao	4000
+钱江三桥	qian jiang san qiao	4000
+钱江四桥	qian jiang si qiao	4000
+杭州地铁	hang zhou di tie	4000
+杭州机场快线	hang zhou ji chang kuai xian	4000
+城站火车站	cheng zhan huo che zhan	4000
+富阳站	fu yang zhan	4000
+桐庐东站	tong lu dong zhan	4000
+萧山国际机场	xiao shan guo ji ji chang	4000
+杭州机场航站楼	hang zhou ji chang hang zhan lou	4000
+萧山机场航站楼	xiao shan ji chang hang zhan lou	4000
+萧山机场二号航站楼	xiao shan ji chang er hao hang zhan lou	4000
+萧山机场四号航站楼	xiao shan ji chang si hao hang zhan lou	4000
+杭州汽车客运中心	hang zhou qi che ke yun zhong xin	4000
+萧山汽车总站	xiao shan qi che zong zhan	4000
+富阳客运中心	fu yang ke yun zhong xin	4000
+临安汽车东站	lin an qi che dong zhan	4000
+杭州公交	hang zhou gong jiao	4000
+杭州公共自行车	hang zhou gong gong zi xing che	4000
+杭州机场大巴	hang zhou ji chang da ba	4000
+杭州轨道交通	hang zhou gui dao jiao tong	4000
+杭州地铁二号线	hang zhou di tie er hao xian	4000
+杭州地铁四号线	hang zhou di tie si hao xian	4000
+杭州地铁五号线	hang zhou di tie wu hao xian	4000
+杭州地铁七号线	hang zhou di tie qi hao xian	4000
+杭州地铁九号线	hang zhou di tie jiu hao xian	4000
+杭州地铁十号线	hang zhou di tie shi hao xian	4000
+杭州地铁十九号线	hang zhou di tie shi jiu hao xian	4000
+杭海城际铁路	hang hai cheng ji tie lu	4000
+杭绍城际铁路	hang shao cheng ji tie lu	4000
+杭富城际铁路	hang fu cheng ji tie lu	4000
+沪昆铁路	hu kun tie lu	4000
+沪昆高铁	hu kun gao tie	4000
+杭长高铁	hang zhang gao tie	4000
+杭温高铁	hang wen gao tie	4000
+杭昌高铁	hang chang gao tie	4000
+合杭高铁	he hang gao tie	4000
+杭衢高铁	hang qu gao tie	4000
+杭州绕城高速	hang zhou rao cheng gao su	4000
+杭甬高速	hang yong gao su	4000
+杭新景高速	hang xin jing gao su	4000
+杭徽高速	hang hui gao su	4000
+练杭高速	lian hang gao su	4000
+杭宁高速	hang ning gao su	4000
+机场高速	ji chang gao su	4000
+通城高架	tong cheng gao jia	4000
+风情快速路	feng qing kuai su lu	4000
+莫干山高架	mo gan shan gao jia	4000
+紫之隧道	zi zhi sui dao	4000
+望江隧道	wang jiang sui dao	4000
+庆春隧道	qing chun sui dao	4000
+钱江隧道	qian jiang sui dao	4000
+吉鸿路隧道	ji hong lu sui dao	4000
+环城北路隧道	huan cheng bei lu sui dao	4000
+袁浦大桥	yuan pu da qiao	4000
+下沙大桥	xia sha da qiao	4000
+之江大桥	zhi jiang da qiao	4000
+钱江七桥	qian jiang qi qiao	4000
+钱江八桥	qian jiang ba qiao	4000
+钱江九桥	qian jiang jiu qiao	4000
+新彭埠大桥	xin peng bu da qiao	4000
+富春江大桥	fu chun jiang da qiao	4000
+运河大桥	yun he da qiao	4000
+拱宸桥	gong chen qiao	4000
+卖鱼桥	mai yu qiao	4000
+轻纺桥	qing fang qiao	4000
+石祥路	shi xiang lu	4000
+德胜路	de sheng lu	4000
+文二路	wen er lu	4000
+文三路	wen san lu	4000
+文二西路	wen er xi lu	4000
+环城北路	huan cheng bei lu	4000
+体育场路	ti yu chang lu	4000
+庆春路	qing chun lu	4000
+延安路	yan an lu	4000
+中山路	zhong shan lu	4000
+湖滨路	hu bin lu	4000
+南山路	nan shan lu	4000
+曙光路	shu guang lu	4000
+玉古路	yu gu lu	4000
+梅灵路	mei ling lu	4000
+虎跑路	hu pao lu	4000
+之江路	zhi jiang lu	4000
+富春路	fu chun lu	4000
+秋涛路	qiu tao lu	4000
+秋涛北路	qiu tao bei lu	4000
+艮山西路	gen shan xi lu	4000
+九沙大道	jiu sha da dao	4000
+下沙路	xia sha lu	4000
+学林街	xue lin jie	4000
+滨盛路	bin sheng lu	4000
+滨康路	bin kang lu	4000
+滨文路	bin wen lu	4000
+风情大道	feng qing da dao	4000
+市心路	shi xin lu	4000
+通惠路	tong hui lu	4000
+建设二路	jian she er lu	4000
+建设三路	jian she san lu	4000
+奔竞大道	ben jing da dao	4000
+望潮路	wang chao lu	4000
+余杭塘路	yu hang tang lu	4000
+荆长大道	jing zhang da dao	4000
+联创街	lian chuang jie	4000
+向往街	xiang wang jie	4000
+创景路	chuang jing lu	4000
+迎宾路	ying bin lu	4000
+人民大道	ren min da dao	4000
+星河南路	xing he nan lu	4000
+江东大道	jiang dong da dao	4000
+青六路	qing liu lu	4000
+青六北路	qing liu bei lu	4000
+科技大道	ke ji da dao	4000
+钱王街	qian wang jie	4000
+苕溪北街	tiao xi bei jie	4000
+千岛湖大道	qian dao hu da dao	4000
+阳光路	yang guang lu	4000
+环湖北路	huan hu bei lu	4000
+新安路	xin an lu	4000

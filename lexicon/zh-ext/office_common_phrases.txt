@@ -1,0 +1,5003 @@
+# 开心输入法原生词库：5000 条办公沟通短语
+# Source: wordfreq 中文频率排序 + 常用办公表达整理
+# 格式：词语<TAB>全拼<TAB>权重；拼音不标声调。；第三列统一为 1-10000 万分制排序分数。
+项目进展顺利	xiang mu jin zhan shun li	9300
+项目已经启动	xiang mu yi jing qi dong	9300
+项目正在进行	xiang mu zheng zai jin xing	9300
+项目按计划推进	xiang mu an ji hua tui jin	9300
+项目进度正常	xiang mu jin du zheng chang	9300
+项目需要跟进	xiang mu xu yao gen jin	9300
+项目需要复盘	xiang mu xu yao fu pan	9300
+项目情况汇报	xiang mu qing kuang hui bao	9300
+项目阶段总结	xiang mu jie duan zong jie	9300
+项目风险评估	xiang mu feng xian ping gu	9300
+项目预算审批	xiang mu yu suan shen pi	9300
+项目需求确认	xiang mu xu qiu que ren	9300
+项目方案讨论	xiang mu fang an tao lun	9300
+项目计划安排	xiang mu ji hua an pai	9300
+项目工作计划	xiang mu gong zuo ji hua	9300
+项目实施方案	xiang mu shi shi fang an	9300
+项目验收通过	xiang mu yan shou tong guo	9300
+项目按时完成	xiang mu an shi wan cheng	9300
+项目延期申请	xiang mu yan qi shen qing	9300
+项目交付时间	xiang mu jiao fu shi jian	9300
+工作安排如下	gong zuo an pai ru xia	9300
+工作已经完成	gong zuo yi jing wan cheng	9300
+工作正在进行	gong zuo zheng zai jin xing	9300
+工作进度汇报	gong zuo jin du hui bao	9300
+工作内容确认	gong zuo nei rong que ren	9300
+工作计划调整	gong zuo ji hua tiao zheng	9300
+工作重点说明	gong zuo zhong dian shuo ming	9300
+工作任务分配	gong zuo ren wu fen pei	9300
+工作需要配合	gong zuo xu yao pei he	9300
+工作及时跟进	gong zuo ji shi gen jin	9300
+工作认真负责	gong zuo ren zhen fu ze	9300
+工作效率提升	gong zuo xiao lv ti sheng	9300
+部门工作安排	bu men gong zuo an pai	9300
+部门之间协调	bu men zhi jian xie tiao	9300
+部门会议通知	bu men hui yi tong zhi	9300
+部门负责人确认	bu men fu ze ren que ren	9300
+部门年度总结	bu men nian du zong jie	9300
+部门季度计划	bu men ji du ji hua	9300
+会议时间调整	hui yi shi jian tiao zheng	9300
+会议安排如下	hui yi an pai ru xia	9300
+会议内容确认	hui yi nei rong que ren	9300
+会议材料准备	hui yi cai liao zhun bei	9300
+会议纪要整理	hui yi ji yao zheng li	9300
+会议结果汇报	hui yi jie guo hui bao	9300
+会议已经结束	hui yi yi jing jie shu	9300
+会议按时召开	hui yi an shi zhao kai	9300
+请准时参加会议	qing zhun shi can jia hui yi	9300
+请提前准备材料	qing ti qian zhun bei cai liao	9300
+请及时回复邮件	qing ji shi hui fu you jian	9300
+请查收邮件附件	qing cha shou you jian fu jian	9300
+请查看相关文件	qing cha kan xiang guan wen jian	9300
+请确认收到邮件	qing que ren shou dao you jian	9300
+请大家知悉	qing da jia zhi xi	9300
+请各位注意查收	qing ge wei zhu yi cha shou	9300
+请按照要求办理	qing an zhao yao qiu ban li	9300
+请在今天完成	qing zai jin tian wan cheng	9300
+请于明天提交	qing yu ming tian ti jiao	9300
+请尽快处理一下	qing jin kuai chu li yi xia	9300
+请及时反馈意见	qing ji shi fan kui yi jian	9300
+请提供详细资料	qing ti gong xiang xi zi liao	9300
+请补充相关信息	qing bu chong xiang guan xin xi	9300
+请核对数据内容	qing he dui shu ju nei rong	9300
+请确认最终版本	qing que ren zui zhong ban ben	9300
+请安排人员参加	qing an pai ren yuan can jia	9300
+请做好会议准备	qing zuo hao hui yi zhun bei	9300
+请提前通知大家	qing ti qian tong zhi da jia	9300
+请抄送相关人员	qing chao song xiang guan ren yuan	9300
+请回复处理结果	qing hui fu chu li jie guo	9300
+邮件已经发送	you jian yi jing fa song	9300
+邮件附件如下	you jian fu jian ru xia	9300
+邮件内容确认	you jian nei rong que ren	9300
+邮件需要回复	you jian xu yao hui fu	9300
+邮件发送成功	you jian fa song cheng gong	9300
+邮件发送失败	you jian fa song shi bai	9300
+附件已经上传	fu jian yi jing shang chuan	9300
+附件请查收	fu jian qing cha shou	9300
+附件内容如下	fu jian nei rong ru xia	9300
+文件已经完成	wen jian yi jing wan cheng	9300
+文件正在审核	wen jian zheng zai shen he	9300
+文件需要修改	wen jian xu yao xiu gai	9300
+文件版本更新	wen jian ban ben geng xin	9300
+文件格式错误	wen jian ge shi cuo wu	9300
+文件内容确认	wen jian nei rong que ren	9300
+文件已经归档	wen jian yi jing gui dang	9300
+资料已经准备好	zi liao yi jing zhun bei hao	9300
+资料需要补充	zi liao xu yao bu chong	9300
+资料请及时提供	zi liao qing ji shi ti gong	9300
+资料内容有误	zi liao nei rong you wu	9300
+资料已经提交	zi liao yi jing ti jiao	9300
+材料准备完成	cai liao zhun bei wan cheng	9300
+材料需要盖章	cai liao xu yao gai zhang	9300
+材料需要审核	cai liao xu yao shen he	9300
+材料已经收到	cai liao yi jing shou dao	9300
+材料请尽快提交	cai liao qing jin kuai ti jiao	9300
+数据已经更新	shu ju yi jing geng xin	9300
+数据需要核对	shu ju xu yao he dui	9300
+数据分析报告	shu ju fen xi bao gao	9300
+数据统计结果	shu ju tong ji jie guo	9300
+数据导出完成	shu ju dao chu wan cheng	9300
+数据安全检查	shu ju an quan jian cha	9300
+数据异常情况	shu ju yi chang qing kuang	9300
+数据来源说明	shu ju lai yuan shuo ming	9300
+数据请及时同步	shu ju qing ji shi tong bu	9300
+客户需求确认	ke hu xu qiu que ren	9300
+客户反馈意见	ke hu fan kui yi jian	9300
+客户服务支持	ke hu fu wu zhi chi	9300
+客户关系维护	ke hu guan xi wei hu	9300
+客户信息更新	ke hu xin xi geng xin	9300
+客户已经确认	ke hu yi jing que ren	9300
+客户需要跟进	ke hu xu yao gen jin	9300
+客户问题处理	ke hu wen ti chu li	9300
+客户满意度调查	ke hu man yi du diao cha	9300
+供应商联系确认	gong ying shang lian xi que ren	9300
+合同已经签署	he tong yi jing qian shu	9300
+合同需要审核	he tong xu yao shen he	9300
+合同条款确认	he tong tiao kuan que ren	9300
+合同即将到期	he tong ji jiang dao qi	9300
+合同审批流程	he tong shen pi liu cheng	9300
+合同附件准备	he tong fu jian zhun bei	9300
+报价方案确认	bao jia fang an que ren	9300
+报价已经提交	bao jia yi jing ti jiao	9300
+报价需要调整	bao jia xu yao tiao zheng	9300
+预算已经批准	yu suan yi jing pi zhun	9300
+预算执行情况	yu suan zhi xing qing kuang	9300
+发票已经开具	fa piao yi jing kai ju	9300
+发票信息核对	fa piao xin xi he dui	9300
+费用报销申请	fei yong bao xiao shen qing	9300
+费用报销完成	fei yong bao xiao wan cheng	9300
+财务数据核对	cai wu shu ju he dui	9300
+付款申请提交	fu kuan shen qing ti jiao	9300
+付款已经完成	fu kuan yi jing wan cheng	9300
+收款信息确认	shou kuan xin xi que ren	9300
+审批流程如下	shen pi liu cheng ru xia	9300
+审批已经通过	shen pi yi jing tong guo	9300
+审批需要补充材料	shen pi xu yao bu chong cai liao	9300
+流程需要优化	liu cheng xu yao you hua	9300
+流程已经更新	liu cheng yi jing geng xin	9300
+流程执行情况	liu cheng zhi xing qing kuang	9300
+制度文件发布	zhi du wen jian fa bu	9300
+制度内容说明	zhi du nei rong shuo ming	9300
+通知已经发布	tong zhi yi jing fa bu	9300
+通知内容如下	tong zhi nei rong ru xia	9300
+通知请及时查看	tong zhi qing ji shi cha kan	9300
+培训时间安排	pei xun shi jian an pai	9300
+培训材料准备	pei xun cai liao zhun bei	9300
+培训计划确认	pei xun ji hua que ren	9300
+招聘需求确认	zhao pin xu qiu que ren	9300
+面试时间安排	mian shi shi jian an pai	9300
+入职手续办理	ru zhi shou xu ban li	9300
+离职手续办理	li zhi shou xu ban li	9300
+考勤记录核对	kao qin ji lu he dui	9300
+请假申请提交	qing jia shen qing ti jiao	9300
+加班申请审批	jia ban shen qing shen pi	9300
+年终总结会议	nian zhong zong jie hui yi	9300
+季度工作总结	ji du gong zuo zong jie	9300
+月度工作计划	yue du gong zuo ji hua	9300
+年度目标完成	nian du mu biao wan cheng	9300
+目标需要调整	mu biao xu yao tiao zheng	9300
+指标完成情况	zhi biao wan cheng qing kuang	9300
+绩效考核结果	ji xiao kao he jie guo	9300
+工作日报提交	gong zuo ri bao ti jiao	9300
+工作周报发送	gong zuo zhou bao fa song	9300
+工作月报汇总	gong zuo yue bao hui zong	9300
+进度及时同步	jin du ji shi tong bu	9300
+进展情况说明	jin zhan qing kuang shuo ming	9300
+后续工作安排	hou xu gong zuo an pai	9300
+下一步工作计划	xia yi bu gong zuo ji hua	9300
+后续安排如下	hou xu an pai ru xia	9300
+问题清单整理	wen ti qing dan zheng li	9300
+问题已经解决	wen ti yi jing jie jue	9300
+问题需要跟进	wen ti xu yao gen jin	9300
+问题原因分析	wen ti yuan yin fen xi	9300
+问题处理结果	wen ti chu li jie guo	9300
+风险问题提醒	feng xian wen ti ti xing	9300
+风险控制措施	feng xian kong zhi cuo shi	9300
+风险已经解除	feng xian yi jing jie chu	9300
+需要进一步确认	xu yao jin yi bu que ren	9300
+需要领导审批	xu yao ling dao shen pi	9300
+需要大家配合	xu yao da jia pei he	9300
+需要统一安排	xu yao tong yi an pai	9300
+需要重新检查	xu yao chong xin jian cha	9300
+建议尽快处理	jian yi jin kuai chu li	9300
+建议召开会议	jian yi zhao kai hui yi	9300
+建议修改方案	jian yi xiu gai fang an	9300
+建议补充说明	jian yi bu chong shuo ming	9300
+方案已经确定	fang an yi jing que ding	9300
+方案需要调整	fang an xu yao tiao zheng	9300
+方案内容如下	fang an nei rong ru xia	9300
+方案评审通过	fang an ping shen tong guo	9300
+版本已经发布	ban ben yi jing fa bu	9300
+版本更新说明	ban ben geng xin shuo ming	9300
+系统运行正常	xi tong yun xing zheng chang	9300
+系统需要升级	xi tong xu yao sheng ji	9300
+系统故障排查	xi tong gu zhang pai cha	9300
+系统权限申请	xi tong quan xian shen qing	9300
+账号权限开通	zhang hao quan xian kai tong	9300
+账号信息确认	zhang hao xin xi que ren	9300
+密码需要重置	mi ma xu yao zhong zhi	9300
+网络连接异常	wang luo lian jie yi chang	9300
+服务已经恢复	fu wu yi jing hui fu	9300
+服务暂时不可用	fu wu zan shi bu ke yong	9300
+平台功能更新	ping tai gong neng geng xin	9300
+平台使用说明	ping tai shi yong shuo ming	9300
+上线时间确定	shang xian shi jian que ding	9300
+上线前检查	shang xian qian jian cha	9300
+上线后观察	shang xian hou guan cha	9300
+测试结果通过	ce shi jie guo tong guo	9300
+测试环境准备	ce shi huan jing zhun bei	9300
+测试数据清理	ce shi shu ju qing li	9300
+测试问题反馈	ce shi wen ti fan kui	9300
+发布流程确认	fa bu liu cheng que ren	9300
+发布计划安排	fa bu ji hua an pai	9300
+上线计划如下	shang xian ji hua ru xia	9300
+请勿外传文件	qing wu wai zhuan wen jian	9300
+内部资料保密	nei bu zi liao bao mi	9300
+仅供内部使用	jin gong nei bu shi yong	9300
+未经允许不得转载	wei jing yun xu bu de zhuan zai	9300
+请遵守工作纪律	qing zun shou gong zuo ji lv	9300
+感谢大家配合	gan xie da jia pei he	9300
+辛苦大家配合	xin ku da jia pei he	9300
+谢谢大家支持	xie xie da jia zhi chi	9300
+感谢您的理解	gan xie nin de li jie	9300
+如有问题请联系	ru you wen ti qing lian xi	9300
+如有疑问请反馈	ru you yi wen qing fan kui	9300
+后续会及时通知	hou xu hui ji shi tong zhi	9300
+具体安排另行通知	ju ti an pai ling xing tong zhi	9300
+最终结果另行通知	zui zhong jie guo ling xing tong zhi	9300
+以上请知悉	yi shang qing zhi xi	9300
+特此通知	te ci tong zhi	9300
+请审批处理	qing shen pi chu li	9300
+请领导审阅	qing ling dao shen yue	9300
+请批示意见	qing pi shi yi jian	9300
+烦请审核	fan qing shen he	9300
+烦请查收	fan qing cha shou	9300
+烦请回复	fan qing hui fu	9300
+敬请知悉	jing qing zhi xi	9300
+请予以确认	qing yu yi que ren	9300
+请按时完成任务	qing an shi wan cheng ren wu	9300
+请做好记录	qing zuo hao ji lu	9300
+请保存相关文件	qing bao cun xiang guan wen jian	9300
+请勿修改内容	qing wu xiu gai nei rong	9300
+请勿删除数据	qing wu shan chu shu ju	9300
+请注意查收邮件	qing zhu yi cha shou you jian	9300
+请及时更新进度	qing ji shi geng xin jin du	9300
+请同步最新信息	qing tong bu zui xin xin xi	9300
+工作人员	gong zuo ren yuan	9247
+发布会	fa bu hui	9231
+数据库	shu ju ku	9217
+工作者	gong zuo zhe	9210
+工作室	gong zuo shi	9188
+解决方案	jie jue fang an	9150
+客户端	ke hu duan	9084
+操作系统	cao zuo xi tong	9046
+政府部门	zheng fu bu men	8939
+计划生育	ji hua sheng yu	8926
+电子邮件	dian zi you jian	8864
+原材料	yuan cai liao	8846
+国会议员	guo hui yi yuan	8820
+会议室	hui yi shi	8773
+工作日	gong zuo ri	8683
+文件系统	wen jian xi tong	7027
+个人资料	ge ren zi liao	8635
+生产资料	sheng chan zi liao	8569
+控制系统	kong zhi xi tong	8536
+系统性	xi tong xing	8461
+行政部门	xing zheng bu men	8437
+管理系统	guan li xi tong	8368
+通知书	tong zhi shu	8365
+工作组	gong zuo zu	8301
+生态系统	sheng tai xi tong	8263
+工作站	gong zuo zhan	8244
+调查报告	diao cha bao gao	8226
+统计数据	tong ji shu ju	8203
+文件夹	wen jian jia	8183
+联席会议	lian xi hui yi	8174
+工作岗位	gong zuo gang wei	8022
+客户服务	ke hu fu wu	7985
+工作量	gong zuo liang	7951
+行动计划	xing dong ji hua	7776
+部长会议	bu zhang hui yi	7737
+信息系统	xin xi xi tong	7726
+改革方案	gai ge fang an	7672
+计划书	ji hua shu	7655
+预算案	yu suan an	7650
+资料库	zi liao ku	7607
+全体会议	quan ti hui yi	7593
+神经系统	shen jing xi tong	7566
+为什么	wei shen me	9300
+委员会	wei yuan hui	9299
+是不是	shi bu shi	9299
+怎么样	zen me yang	9298
+俄罗斯	e luo si	9298
+有没有	you mei you	9297
+进一步	jin yi bu	9297
+第一次	di yi ci	9296
+加拿大	jia na da	9296
+国务院	guo wu yuan	9295
+办公室	ban gong shi	9295
+安全部门	an quan bu men	7459
+越来越	yue lai yue	9294
+共产党	gong chan dang	9294
+有限公司	you xian gong si	9293
+一部分	yi bu fen	9293
+怎么办	zen me ban	9292
+是因为	shi yin wei	9292
+毛泽东	mao ze dong	9291
+系统工程	xi tong gong cheng	7443
+互联网	hu lian wang	9291
+联合国	lian he guo	9290
+电视台	dian shi tai	9290
+国民党	guo min dang	9289
+大部分	da bu fen	9289
+西班牙	xi ban ya	9288
+新加坡	xin jia po	9288
+社会主义	she hui zhu yi	9287
+第一个	di yi ge	9287
+实际上	shi ji shang	9286
+中华人民共和国	zhong hua ren min gong he guo	9286
+领导人	ling dao ren	9285
+全世界	quan shi jie	9285
+任何人	ren he ren	9284
+数据分析	shu ju fen xi	7365
+大多数	da duo shu	9284
+计算机	ji suan ji	9283
+事实上	shi shi shang	9283
+中国共产党	zhong guo gong chan dang	9282
+人民币	ren min bi	9282
+俱乐部	ju le bu	9281
+没什么	mei shen me	9281
+大学生	da xue sheng	9280
+所有人	suo you ren	9280
+马来西亚	ma lai xi ya	9279
+现代化	xian dai hua	9279
+科学家	ke xue jia	9278
+意大利	yi da li	9278
+菲律宾	fei lv bin	9277
+消费者	xiao fei zhe	9277
+看起来	kan qi lai	9276
+亿美元	yi mei yuan	9276
+博物馆	bo wu guan	9275
+大规模	da gui mo	9275
+年轻人	nian qing ren	9274
+一系列	yi xi lie	9274
+乌克兰	wu ke lan	9273
+澳大利亚	ao da li ya	9273
+其他人	qi ta ren	9272
+负责人	fu ze ren	9272
+共和国	gong he guo	9271
+不得不	bu de bu	9271
+候选人	hou xuan ren	9270
+受害者	shou hai zhe	9270
+一个月	yi ge yue	9269
+墨西哥	mo xi ge	9269
+打电话	da dian hua	9268
+什么样	shen me yang	9268
+实验室	shi yan shi	9267
+自治区	zi zhi qu	9267
+艺术家	yi shu jia	9266
+图书馆	tu shu guan	9266
+对不起	dui bu qi	9265
+以色列	yi se lie	9265
+天安门	tian an men	9264
+意味着	yi wei zhe	9264
+房地产	fang di chan	9264
+穆斯林	mu si lin	9263
+叙利亚	xu li ya	9263
+基督教	ji du jiao	9262
+接下来	jie xia lai	9262
+电视剧	dian shi ju	9261
+土耳其	tu er qi	9261
+有时候	you shi hou	9260
+工作坊	gong zuo fang	7242
+只不过	zhi bu guo	9260
+外交部	wai jiao bu	9259
+工程师	gong cheng shi	9259
+差不多	cha bu duo	9258
+邓小平	deng xiao ping	9258
+万美元	wan mei yuan	9257
+机器人	ji qi ren	9257
+世界杯	shi jie bei	9256
+研究所	yan jiu suo	9256
+莫斯科	mo si ke	9255
+伊拉克	yi la ke	9255
+华盛顿	hua sheng dun	9254
+没想到	mei xiang dao	9254
+主持人	zhu chi ren	9253
+洛杉矶	luo shan ji	9253
+秘书长	mi shu zhang	9252
+东南亚	dong nan ya	9252
+基本上	ji ben shang	9251
+太平洋	tai ping yang	9251
+巴基斯坦	ba ji si tan	9250
+北京市	bei jing shi	9250
+另一方面	ling yi fang mian	9249
+设计师	she ji shi	9249
+按计划	an ji hua	7188
+公务员	gong wu yuan	9248
+同性恋	tong xing lian	9248
+影响力	ying xiang li	9247
+犹太人	you tai ren	9246
+青少年	qing shao nian	9246
+一会儿	yi hui er	9245
+之所以	zhi suo yi	9245
+发动机	fa dong ji	9244
+第二次	di er ci	9244
+近年来	jin nian lai	9243
+可能性	ke neng xing	9243
+投资者	tou zi zhe	9242
+江泽民	jiang ze min	9242
+资本主义	zi ben zhu yi	9241
+运动员	yun dong yuan	9241
+阿拉伯	a la bo	9240
+我爱你	wo ai ni	9240
+行政区划	xing zheng qu hua	9239
+一辈子	yi bei zi	9239
+劳动力	lao dong li	9238
+外国人	wai guo ren	9238
+女朋友	nv peng you	9237
+建筑物	jian zhu wu	9237
+研究生	yan jiu sheng	9236
+一方面	yi fang mian	9236
+习近平	xi jin ping	9235
+伊斯兰	yi si lan	9235
+发言人	fa yan ren	9234
+男朋友	nan peng you	9234
+经济学	jing ji xue	9233
+奥运会	ao yun hui	9233
+直升机	zhi sheng ji	9232
+高速公路	gao su gong lu	9232
+黑龙江	hei long jiang	9231
+检察院	jian cha yuan	9230
+中国政府	zhong guo zheng fu	9230
+人民政府	ren min zheng fu	9229
+匈牙利	xiong ya li	9229
+周恩来	zhou en lai	9228
+新华社	xin hua she	9228
+民主党	min zhu dang	9228
+与此同时	yu ci tong shi	9227
+国内外	guo nei wai	9227
+葡萄牙	pu tao ya	9226
+价值观	jia zhi guan	9226
+伊斯兰教	yi si lan jiao	9225
+内蒙古	nei meng gu	9225
+哈尔滨	ha er bin	9224
+官方网站	guan fang wang zhan	9224
+干什么	gan shen me	9223
+当事人	dang shi ren	9223
+服务器	fu wu qi	9222
+没关系	mei guan xi	9222
+相当于	xiang dang yu	9221
+解放军	jie fang jun	9221
+教育部	jiao yu bu	9220
+阿根廷	a gen ting	9220
+农产品	nong chan pin	9219
+开玩笑	kai wan xiao	9219
+总书记	zong shu ji	9218
+总人口	zong ren kou	9218
+无论如何	wu lun ru he	9217
+称之为	cheng zhi wei	9216
+第二天	di er tian	9216
+董事会	dong shi hui	9215
+主管部门	zhu guan bu men	7065
+一段时间	yi duan shi jian	9215
+不仅仅	bu jin jin	9214
+不在乎	bu zai hu	9214
+人大代表	ren da dai biao	9213
+免疫系统	mian yi xi tong	7062
+企业家	qi ye jia	9213
+同一个	tong yi ge	9212
+有意思	you yi si	9212
+第二个	di er ge	9211
+行政区	xing zheng qu	9211
+天安门广场	tian an men guang chang	9210
+所在地	suo zai di	9209
+柬埔寨	jian pu zhai	9209
+殖民地	zhi min di	9208
+毕业生	bi ye sheng	9208
+身份证	shen fen zheng	9207
+机密文件	ji mi wen jian	7043
+小女孩	xiao nv hai	9207
+总经理	zong jing li	9206
+看不到	kan bu dao	9206
+老百姓	lao bai xing	9205
+自行车	zi xing che	9205
+董事长	dong shi zhang	9204
+管理工作	guan li gong zuo	7041
+天主教	tian zhu jiao	9204
+小时候	xiao shi hou	9203
+平方千米	ping fang qian mi	9203
+摄影师	she ying shi	9202
+科学院	ke xue yuan	9202
+阿富汗	a fu han	9201
+也就是说	ye jiu shi shuo	9201
+希特勒	xi te lei	9200
+蒋介石	jiang jie shi	9200
+忍不住	ren bu zhu	9199
+火车站	huo che zhan	9199
+研究员	yan jiu yuan	9198
+资本家	zi ben jia	9198
+代表团	dai biao tuan	9197
+信用卡	xin yong ka	9197
+奥地利	ao di li	9196
+市政府	shi zheng fu	9196
+所有权	suo you quan	9195
+美国政府	mei guo zheng fu	9195
+一分钟	yi fen zhong	9194
+教育工作者	jiao yu gong zuo zhe	7040
+出版社	chu ban she	9194
+印度尼西亚	yin du ni xi ya	9193
+广东省	guang dong sheng	9193
+爱尔兰	ai er lan	9192
+生产力	sheng chan li	9192
+纪录片	ji lu pian	9192
+詹姆斯	zhan mu si	9191
+一点点	yi dian dian	9191
+亚马逊	ya ma xun	9190
+创始人	chuang shi ren	9190
+参议员	can yi yuan	9189
+天然气	tian ran qi	9189
+市中心	shi zhong xin	9188
+幼儿园	you er yuan	9187
+无论是	wu lun shi	9187
+直辖市	zhi xia shi	9186
+苏维埃	su wei ai	9186
+基督徒	ji du tu	9185
+基金会	ji jin hui	9185
+女孩子	nv hai zi	9184
+新西兰	xin xi lan	9184
+自动化	zi dong hua	9183
+共产主义	gong chan zhu yi	9183
+制造业	zhi zao ye	9182
+奥斯卡	ao si ka	9182
+完整版	wan zheng ban	9181
+平方公里	ping fang gong li	9181
+总面积	zong mian ji	9180
+战斗机	zhan dou ji	9180
+演唱会	yan chang hui	9179
+联合会	lian he hui	9179
+中共中央	zhong gong zhong yang	9178
+从来不	cong lai bu	9178
+出租车	chu zu che	9177
+大使馆	da shi guan	9177
+好不好	hao bu hao	9176
+报告书	bao gao shu	7040
+比利时	bi li shi	9176
+中华民国	zhong hua min guo	9175
+使用者	shi yong zhe	9175
+受欢迎	shou huan ying	9174
+好莱坞	hao lai wu	9174
+感兴趣	gan xing qu	9173
+支持者	zhi chi zhe	9173
+星期一	xing qi yi	9172
+绝大多数	jue da duo shu	9172
+重要性	zhong yao xing	9171
+世界各地	shi jie ge di	9171
+中华民族	zhong hua min zu	9170
+亚历山大	ya li shan da	9170
+参议院	can yi yuan	9169
+受不了	shou bu liao	9169
+哥伦比亚	ge lun bi ya	9168
+政治家	zheng zhi jia	9168
+有助于	you zhu yu	9167
+检察官	jian cha guan	9167
+研究院	yan jiu yuan	9166
+小孩子	xiao hai zi	9166
+尽可能	jin ke neng	9165
+志愿者	zhi yuan zhe	9165
+竞争力	jing zheng li	9164
+说不定	shuo bu ding	9164
+飞行员	fei xing yuan	9163
+共同体	gong tong ti	9163
+好消息	hao xiao xi	9162
+巧克力	qiao ke li	9162
+星期六	xing qi liu	9161
+有利于	you li yu	9161
+建筑材料	jian zhu cai liao	7039
+知识分子	zhi shi fen zi	9160
+马克思	ma ke si	9160
+一个个	yi ge ge	9159
+人民法院	ren min fa yuan	9159
+公元前	gong yuan qian	9158
+教育部门	jiao yu bu men	7039
+几分钟	ji fen zhong	9158
+怎么回事	zen me hui shi	9157
+无人机	wu ren ji	9157
+电影院	dian ying yuan	9156
+经济学家	jing ji xue jia	9156
+致力于	zhi li yu	9156
+不好意思	bu hao yi si	9155
+交易所	jiao yi suo	9155
+原住民	yuan zhu min	9154
+小小的	xiao xiao de	9154
+平方米	ping fang mi	9153
+指挥官	zhi hui guan	9153
+斯大林	si da lin	9152
+新闻网	xin wen wang	9152
+第一位	di yi wei	9151
+统治者	tong zhi zhe	9151
+英格兰	ying ge lan	9150
+二十年	er shi nian	9149
+几十年	ji shi nian	9149
+孙中山	sun zhong shan	9148
+排行榜	pai hang bang	9148
+法西斯	fa xi si	9147
+注意力	zhu yi li	9147
+爱好者	ai hao zhe	9146
+目的地	mu di di	9146
+英国人	ying guo ren	9145
+记者会	ji zhe hui	9145
+长时间	zhang shi jian	9144
+陕西省	shan xi sheng	9144
+主义者	zhu yi zhe	9143
+事务所	shi wu suo	9143
+发布公告	fa bu gong gao	7038
+无线电	wu xian dian	9142
+根据地	gen ju di	9142
+浏览器	liu lan qi	9141
+子系统	zi xi tong	7038
+芝加哥	zhi jia ge	9141
+年度报告	nian du bao gao	7037
+不同于	bu tong yu	9140
+停车场	ting che chang	9140
+国家级	guo jia ji	9139
+少数民族	shao shu min zu	9139
+比如说	bi ru shuo	9138
+第二季	di er ji	9138
+上海市	shang hai shi	9137
+动物园	dong wu yuan	9137
+成员国	cheng yuan guo	9136
+新华网	xin hua wang	9136
+无所谓	wu suo wei	9135
+研讨会	yan tao hui	9135
+第一天	di yi tian	9134
+陌生人	mo sheng ren	9134
+音乐会	yin yue hui	9133
+领导者	ling dao zhe	9133
+项目管理	xiang mu guan li	7037
+党中央	dang zhong yang	9132
+圣诞节	sheng dan jie	9132
+小学生	xiao xue sheng	9131
+意识形态	yi shi xing tai	9131
+星期五	xing qi wu	9130
+江苏省	jiang su sheng	9130
+除此之外	chu ci zhi wai	9129
+全国政协	quan guo zheng xie	9129
+工作效率	gong zuo xiao lv	7036
+第三次	di san ci	9128
+西班牙语	xi ban ya yu	9128
+这方面	zhe fang mian	9127
+高等教育	gao deng jiao yu	9127
+一家人	yi jia ren	9126
+中文版	zhong wen ban	9126
+办事处	ban shi chu	9125
+博览会	bo lan hui	9125
+国务卿	guo wu qing	9124
+国家队	guo jia dui	9124
+工业化	gong ye hua	9123
+纽约时报	niu yue shi bao	9123
+艾滋病	ai zi bing	9122
+一下子	yi xia zi	9122
+紧急会议	jin ji hui yi	7036
+中学生	zhong xue sheng	9121
+可不是	ke bu shi	9121
+外星人	wai xing ren	9120
+太阳能	tai yang neng	9120
+尼泊尔	ni po er	9120
+无产阶级	wu chan jie ji	9119
+服务业	fu wu ye	9119
+来不及	lai bu ji	9118
+核武器	he wu qi	9118
+湖北省	hu bei sheng	9117
+特朗普	te lang pu	9117
+看上去	kan shang qu	9116
+说实话	shuo shi hua	9116
+不可思议	bu ke si yi	9115
+世纪末	shi ji mo	9115
+公交车	gong jiao che	9114
+国防部	guo fang bu	9114
+大西洋	da xi yang	9113
+好几个	hao ji ge	9113
+德国人	de guo ren	9112
+成年人	cheng nian ren	9112
+教科书	jiao ke shu	9111
+理事会	li shi hui	9111
+罗马尼亚	luo ma ni ya	9110
+航空公司	hang kong gong si	9110
+言论自由	yan lun zi you	9109
+锦标赛	jin biao sai	9109
+上半年	shang ban nian	9108
+人民日报	ren min ri bao	9108
+北京大学	bei jing da xue	9107
+十二月	shi er yue	9107
+吸引力	xi yin li	9106
+大城市	da cheng shi	9106
+奥巴马	ao ba ma	9105
+小朋友	xiao peng you	9105
+山东省	shan dong sheng	9104
+摩托车	mo tuo che	9104
+波士顿	bo shi dun	9103
+留学生	liu xue sheng	9103
+纪念碑	ji nian bei	9102
+苏格兰	su ge lan	9102
+数据中心	shu ju zhong xin	7036
+中世纪	zhong shi ji	9101
+本职工作	ben zhi gong zuo	7035
+全球化	quan qiu hua	9101
+发电机	fa dian ji	9100
+取决于	qu jue yu	9100
+奖学金	jiang xue jin	9099
+恐怖主义	kong bu zhu yi	9099
+最新消息	zui xin xiao xi	9098
+未成年	wei cheng nian	9098
+柴油机	chai you ji	9097
+电影节	dian ying jie	9097
+白俄罗斯	bai e luo si	9096
+监管部门	jian guan bu men	7035
+运动会	yun dong hui	9096
+中国科学院	zhong guo ke xue yuan	9095
+了不起	liao bu qi	9095
+云南省	yun nan sheng	9094
+别忘了	bie wang le	9094
+南斯拉夫	nan si la fu	9093
+威尼斯	wei ni si	9093
+巴勒斯坦	ba le si tan	9092
+性骚扰	xing sao rao	9092
+毫无疑问	hao wu yi wen	9091
+清华大学	qing hua da xue	9091
+看不见	kan bu jian	9090
+第一季	di yi ji	9090
+老太太	lao tai tai	9089
+蛋白质	dan bai zhi	9089
+这时候	zhe shi hou	9088
+东北部	dong bei bu	9088
+代表性	dai biao xing	9087
+到时候	dao shi hou	9087
+反对派	fan dui pai	9086
+发电厂	fa dian chang	9086
+多伦多	duo lun duo	9085
+娱乐场	yu le chang	9085
+应用程序	ying yong cheng xu	9084
+心理学	xin li xue	9084
+段时间	duan shi jian	9083
+法国人	fa guo ren	9083
+电话号码	dian hua hao ma	9082
+第三方	di san fang	9082
+维也纳	wei ye na	9081
+美少女	mei shao nv	9081
+胡锦涛	hu jin tao	9080
+资产阶级	zi chan jie ji	9080
+集团军	ji tuan jun	9079
+音乐家	yin yue jia	9079
+马克思主义	ma ke si zhu yi	9078
+三十年	san shi nian	9078
+十一月	shi yi yue	9077
+发展中国家	fa zhan zhong guo jia	9077
+安全性	an quan xing	9076
+小伙子	xiao huo zi	9076
+抗日战争	kang ri zhan zheng	9075
+新一代	xin yi dai	9075
+来源于	lai yuan yu	9074
+民族主义	min zu zhu yi	9074
+混凝土	hun ning tu	9073
+百分点	bai fen dian	9073
+省政府	sheng zheng fu	9072
+管理局	guan li ju	9072
+解决问题	jie jue wen ti	9071
+中央政府	zhong yang zheng fu	9071
+人大常委会	ren da chang wei hui	9070
+体育场	ti yu chang	9070
+处理器	chu li qi	9069
+系统化	xi tong hua	7034
+推特上	tui te shang	9069
+旧金山	jiu jin shan	9068
+星期日	xing qi ri	9068
+普通话	pu tong hua	9067
+标准化	biao zhun hua	9067
+知识产权	zhi shi chan quan	9066
+穆罕默德	mu han mo de	9066
+管理员	guan li yuan	9065
+维生素	wei sheng su	9065
+罗伯特	luo bo te	9064
+警察局	jing cha ju	9064
+运营商	yun ying shang	9063
+集中营	ji zhong ying	9063
+高中生	gao zhong sheng	9062
+一切都是	yi qie dou shi	9062
+大自然	da zi ran	9061
+巴拿马	ba na ma	9061
+开发商	kai fa shang	9060
+摄像头	she xiang tou	9060
+浙江省	zhe jiang sheng	9059
+轰炸机	hong zha ji	9059
+一体化	yi ti hua	9058
+四川省	si chuan sheng	9058
+塞尔维亚	sai er wei ya	9057
+女主角	nv zhu jue	9057
+心脏病	xin zang bing	9056
+想不到	xiang bu dao	9056
+旅游业	lv you ye	9055
+河南省	he nan sheng	9055
+游击队	you ji dui	9054
+湖南省	hu nan sheng	9054
+玛丽亚	ma li ya	9053
+许可证	xu ke zheng	9053
+不介意	bu jie yi	9052
+乌鲁木齐	wu lu mu qi	9052
+众议院	zhong yi yuan	9051
+全国性	quan guo xing	9051
+制造商	zhi zao shang	9050
+前所未有	qian suo wei you	9050
+化妆品	hua zhuang pin	9049
+历史性	li shi xing	9049
+合法性	he fa xing	9048
+地中海	di zhong hai	9048
+多媒体	duo mei ti	9048
+嫌疑人	xian yi ren	9047
+幸存者	xing cun zhe	9047
+旅行社	lv xing she	9046
+独裁者	du cai zhe	9045
+知名度	zhi ming du	9045
+财政部	cai zheng bu	9044
+下一代	xia yi dai	9044
+共和党	gong he dang	9043
+设计方案	she ji fang an	7034
+受害人	shou hai ren	9043
+史密斯	shi mi si	9042
+太好了	tai hao le	9042
+委内瑞拉	wei nei rui la	9041
+实事求是	shi shi qiu shi	9041
+就是说	jiu shi shuo	9040
+开发区	kai fa qu	9040
+手工业	shou gong ye	9039
+投资人	tou zi ren	9039
+支付宝	zhi fu bao	9038
+文化大革命	wen hua da ge ming	9038
+日常生活	ri chang sheng huo	9037
+望远镜	wang yuan jing	9037
+科学技术	ke xue ji shu	9036
+第一名	di yi ming	9036
+第三个	di san ge	9035
+供应商	gong ying shang	9035
+债权人	zhai quan ren	9034
+克里斯	ke li si	9034
+公开信	gong kai xin	9033
+分公司	fen gong si	9033
+半导体	ban dao ti	9032
+反革命	fan ge ming	9032
+国际法	guo ji fa	9031
+基础设施	ji chu she shi	9031
+外交官	wai jiao guan	9030
+或者说	huo zhe shuo	9030
+托马斯	tuo ma si	9029
+无条件	wu tiao jian	9029
+河北省	he bei sheng	9028
+派出所	pai chu suo	9028
+深圳市	shen zhen shi	9027
+清真寺	qing zhen si	9027
+理所当然	li suo dang ran	9026
+笔记本	bi ji ben	9026
+第一部	di yi bu	9025
+糖尿病	tang niao bing	9025
+阿尔巴尼亚	a er ba ni ya	9024
+隶属于	li shu yu	9024
+人口普查	ren kou pu cha	9023
+全国人民代表大会	quan guo ren min dai biao da hui	9023
+公安局	gong an ju	9022
+卫生部	wei sheng bu	9022
+发达国家	fa da guo jia	9021
+合作社	he zuo she	9021
+吸血鬼	xi xue gui	9020
+哲学家	zhe xue jia	9020
+国防部长	guo fang bu zhang	9019
+天津市	tian jin shi	9019
+太棒了	tai bang le	9018
+失业率	shi ye lv	9018
+座谈会	zuo tan hui	9017
+情人节	qing ren jie	9017
+日内瓦	ri nei wa	9016
+曼哈顿	man ha dun	9016
+残疾人	can ji ren	9015
+环境保护	huan jing bao hu	9015
+示威者	shi wei zhe	9014
+第一届	di yi jie	9014
+经纪人	jing ji ren	9013
+维多利亚	wei duo li ya	9013
+下半年	xia ban nian	9012
+中产阶级	zhong chan jie ji	9012
+中国人民解放军	zhong guo ren min jie fang jun	9012
+保加利亚	bao jia li ya	9011
+分析师	fen xi shi	9011
+指挥部	zhi hui bu	9010
+消费品	xiao fei pin	9010
+电子书	dian zi shu	9009
+精神病	jing shen bing	9009
+驾驶员	jia shi yuan	9008
+麦当劳	mai dang lao	9008
+保护区	bao hu qu	9007
+十五年	shi wu nian	9007
+司令部	si ling bu	9006
+大部份	da bu fen	9006
+如果说	ru guo shuo	9005
+得不到	de bu dao	9005
+总统府	zong tong fu	9004
+战斗力	zhan dou li	9004
+无能为力	wu neng wei li	9003
+星期二	xing qi er	9003
+最高法院	zui gao fa yuan	9002
+漫画家	man hua jia	9002
+社会学	she hui xue	9001
+第一批	di yi pi	9001
+第一步	di yi bu	9000
+范冰冰	fan bing bing	9000
+高科技	gao ke ji	8999
+一口气	yi kou qi	8999
+一阵子	yi zhen zi	8998
+关键词	guan jian ci	8998
+刘少奇	liu shao qi	8997
+华尔街	hua er jie	8997
+参与者	can yu zhe	8996
+子公司	zi gong si	8996
+建筑师	jian zhu shi	8995
+恐怖分子	kong bu fen zi	8995
+拿破仑	na po lun	8994
+星期四	xing qi si	8994
+有的是	you de shi	8993
+留下来	liu xia lai	8993
+建设项目	jian she xiang mu	7033
+纳税人	na shui ren	8992
+胡说八道	hu shuo ba dao	8992
+艺术品	yi shu pin	8991
+重庆市	chong qing shi	8991
+一模一样	yi mu yi yang	8990
+主人公	zhu ren gong	8990
+人民检察院	ren min jian cha yuan	8989
+以至于	yi zhi yu	8989
+克林顿	ke lin dun	8988
+利比亚	li bi ya	8988
+医学院	yi xue yuan	8987
+发现自己	fa xian zi ji	8987
+国际化	guo ji hua	8986
+地铁站	di tie zhan	8986
+外交部长	wai jiao bu zhang	8985
+实名制	shi ming zhi	8985
+开发者	kai fa zhe	8984
+星期天	xing qi tian	8984
+显示器	xian shi qi	8983
+物理学	wu li xue	8983
+玛利亚	ma li ya	8982
+生日快乐	sheng ri kuai le	8982
+立法院	li fa yuan	8981
+纪念日	ji nian ri	8981
+耶路撒冷	ye lu sa leng	8980
+葡萄酒	pu tao jiu	8980
+马德里	ma de li	8979
+黎巴嫩	li ba nen	8979
+一点儿	yi dian er	8978
+三分之一	san fen zhi yi	8978
+不合理	bu he li	8977
+中央电视台	zhong yang dian shi tai	8977
+体育馆	ti yu guan	8977
+冰淇淋	bing qi lin	8976
+劳动者	lao dong zhe	8976
+半小时	ban xiao shi	8975
+吉隆坡	ji long po	8975
+哈萨克斯坦	ha sa ke si tan	8974
+夏威夷	xia wei yi	8974
+大屠杀	da tu sha	8973
+就行了	jiu xing le	8973
+尼日利亚	ni ri li ya	8972
+帝国主义	di guo zhu yi	8972
+广州市	guang zhou shi	8971
+总公司	zong gong si	8971
+成千上万	cheng qian shang wan	8970
+执政党	zhi zheng dang	8970
+普通人	pu tong ren	8969
+机械化	ji xie hua	8969
+第二次世界大战	di er ci shi jie da zhan	8968
+继承人	ji cheng ren	8968
+西北部	xi bei bu	8967
+路透社	lu tou she	8967
+卫生部门	wei sheng bu men	7033
+一整天	yi zheng tian	8966
+亚美尼亚	ya mei ni ya	8966
+修正案	xiu zheng an	8965
+做生意	zuo sheng yi	8965
+农作物	nong zuo wu	8964
+决定性	jue ding xing	8964
+化合物	hua he wu	8963
+备忘录	bei wang lu	8963
+有史以来	you shi yi lai	8962
+查尔斯	cha er si	8962
+江西省	jiang xi sheng	8961
+石家庄	shi jia zhuang	8961
+篇文章	pian wen zhang	8960
+粉红色	fen hong se	8960
+联合国教科文组织	lian he guo jiao ke wen zu zhi	8959
+被害人	bei hai ren	8959
+迈阿密	mai a mi	8958
+进出口	jin chu kou	8958
+面对面	mian dui mian	8957
+上市公司	shang shi gong si	8957
+中央军委	zhong yang jun wei	8956
+人民网	ren min wang	8956
+众所周知	zhong suo zhou zhi	8955
+会计师	kuai ji shi	8955
+党组织	dang zu zhi	8954
+全方位	quan fang wei	8954
+共产党员	gong chan dang yuan	8953
+创造性	chuang zao xing	8953
+安徽省	an hui sheng	8952
+小姑娘	xiao gu niang	8952
+开幕式	kai mu shi	8951
+文化部	wen hua bu	8951
+日本政府	ri ben zheng fu	8950
+有期徒刑	you qi tu xing	8950
+服务员	fu wu yuan	8949
+爱德华	ai de hua	8949
+玩意儿	wan yi er	8948
+种族歧视	zhong zu qi shi	8948
+绝大部分	jue da bu fen	8947
+评论家	ping lun jia	8947
+迈克尔	mai ke er	8946
+通讯社	tong xun she	8946
+金字塔	jin zi ta	8945
+一次性	yi ci xing	8945
+一连串	yi lian chuan	8944
+不足以	bu zu yi	8944
+中小学	zhong xiao xue	8943
+利物浦	li wu pu	8943
+加勒比	jia lei bi	8942
+加油站	jia you zhan	8942
+十字架	shi zi jia	8941
+国民政府	guo min zheng fu	8941
+国民经济	guo min jing ji	8941
+微生物	wei sheng wu	8940
+打招呼	da zhao hu	8940
+摩洛哥	mo luo ge	8939
+斯洛伐克	si luo fa ke	8938
+斯里兰卡	si li lan ka	8938
+物理学家	wu li xue jia	8937
+电视机	dian shi ji	8937
+真是太	zhen shi tai	8936
+自卫队	zi wei dui	8936
+责任感	ze ren gan	8935
+路易斯	lu yi si	8935
+不知不觉	bu zhi bu jue	8934
+东南部	dong nan bu	8934
+传感器	chuan gan qi	8933
+副作用	fu zuo yong	8933
+哈佛大学	ha fu da xue	8932
+大幅度	da fu du	8932
+奴隶制	nu li zhi	8931
+小男孩	xiao nan hai	8931
+数学家	shu xue jia	8930
+显而易见	xian er yi jian	8930
+法兰西	fa lan xi	8929
+离不开	li bu kai	8929
+稳定性	wen ding xing	8928
+经济效益	jing ji xiao yi	8928
+维吾尔	wei wu er	8927
+美国国会	mei guo guo hui	8927
+辽宁省	liao ning sheng	8926
+这样的话	zhe yang de hua	8925
+长期以来	chang qi yi lai	8925
+黑社会	hei she hui	8924
+不怎么	bu zen me	8924
+二氧化碳	er yang hua tan	8923
+加勒比海	jia le bi hai	8923
+南美洲	nan mei zhou	8922
+司法部	si fa bu	8922
+固定资产	gu ding zi chan	8921
+有限责任	you xian ze ren	8921
+游泳池	you yong chi	8920
+现场直播	xian chang zhi bo	8920
+电子商务	dian zi shang wu	8919
+管理者	guan li zhe	8919
+老年人	lao nian ren	8918
+不必要	bu bi yao	8918
+中小企业	zhong xiao qi ye	8917
+保险公司	bao xian gong si	8917
+克罗地亚	ke luo di ya	8916
+印度人	yin du ren	8916
+哈萨克	ha sa ke	8915
+地下水	di xia shui	8915
+墨尔本	mo er ben	8914
+安理会	an li hui	8914
+德意志	de yi zhi	8913
+性生活	xing sheng huo	8913
+性行为	xing xing wei	8912
+文化遗产	wen hua yi chan	8912
+武汉市	wu han shi	8911
+电视节目	dian shi jie mu	8911
+目前为止	mu qian wei zhi	8910
+自然资源	zi ran zi yuan	8910
+要不然	yao bu ran	8909
+试试看	shi shi kan	8909
+通货膨胀	tong huo peng zhang	8908
+领事馆	ling shi guan	8908
+万平方米	wan ping fang mi	8907
+不管怎样	bu guan zen yang	8907
+主题曲	zhu ti qu	8906
+宣传部	xuan chuan bu	8906
+当地人	dang di ren	8905
+欧洲人	ou zhou ren	8905
+游戏机	you xi ji	8905
+独一无二	du yi wu er	8904
+福建省	fu jian sheng	8904
+第三季	di san ji	8903
+难以置信	nan yi zhi xin	8903
+高尔夫	gao er fu	8902
+三角洲	san jiao zhou	8902
+上个月	shang ge yue	8901
+不动产	bu dong chan	8901
+系统地	xi tong di	7032
+中国队	zhong guo dui	8900
+中新网	zhong xin wang	8900
+公积金	gong ji jin	8899
+大连市	da lian shi	8899
+孟加拉	meng jia la	8898
+安东尼	an dong ni	8898
+工商业	gong shang ye	8897
+微博上	wei bo shang	8897
+星期三	xing qi san	8896
+浪费时间	lang fei shi jian	8896
+神经病	shen jing bing	8895
+纪念馆	ji nian guan	8895
+肯尼亚	ken ni ya	8894
+西雅图	xi ya tu	8894
+要不是	yao bu shi	8893
+诺贝尔奖	nuo bei er jiang	8893
+高新技术	gao xin ji shu	8892
+万人次	wan ren ci	8892
+不至于	bu zhi yu	8891
+主席团	zhu xi tuan	8891
+乌拉圭	wu la gui	8890
+传染病	chuan ran bing	8890
+南京市	nan jing shi	8889
+卡洛斯	ka luo si	8889
+印度洋	yin du yang	8888
+听证会	ting zheng hui	8888
+委员长	wei yuan zhang	8887
+对外开放	dui wai kai fang	8887
+生物学	sheng wu xue	8886
+看电视	kan dian shi	8886
+罗马帝国	luo ma di guo	8885
+西伯利亚	xi bo li ya	8885
+规范化	gui fan hua	8884
+迪士尼	di shi ni	8884
+报告会	bao gao hui	7032
+不可避免	bu ke bi mian	8883
+不论是	bu lun shi	8883
+仅次于	jin ci yu	8882
+代理人	dai li ren	8882
+六个月	liu ge yue	8881
+内政部	nei zheng bu	8881
+军政府	jun zheng fu	8880
+几内亚	ji nei ya	8880
+历史学家	li shi xue jia	8879
+司令员	si ling yuan	8879
+基本法	ji ben fa	8878
+女演员	nv yan yuan	8878
+政治部	zheng zhi bu	8877
+时间表	shi jian biao	8877
+牛仔裤	niu zai ku	8876
+玩游戏	wan you xi	8876
+电动车	dian dong che	8875
+研究者	yan jiu zhe	8875
+科索沃	ke suo wo	8874
+第五届	di wu jie	8874
+维吾尔族	wei wu er zu	8873
+网络安全	wang luo an quan	8873
+联系方式	lian xi fang shi	8872
+自由主义	zi you zhu yi	8872
+著作权	zhu zuo quan	8871
+西南部	xi nan bu	8871
+诺基亚	nuo ji ya	8870
+这辈子	zhe bei zi	8870
+五分钟	wu fen zhong	8869
+传教士	chuan jiao shi	8869
+农业部	nong ye bu	8869
+原子弹	yuan zi dan	8868
+参谋长	can mou zhang	8868
+增长率	zeng zhang lv	8867
+多样性	duo yang xing	8867
+季后赛	ji hou sai	8866
+新世纪	xin shi ji	8866
+爱国主义	ai guo zhu yi	8865
+爱国者	ai guo zhe	8865
+组成部分	zu cheng bu fen	8864
+至关重要	zhi guan zhong yao	8863
+西游记	xi you ji	8863
+解放区	jie fang qu	8862
+驱逐舰	qu zhu jian	8862
+高等学校	gao deng xue xiao	8861
+不久前	bu jiu qian	8861
+今天下午	jin tian xia wu	8860
+代表作	dai biao zuo	8860
+代言人	dai yan ren	8859
+党委书记	dang wei shu ji	8859
+公安部	gong an bu	8858
+前一天	qian yi tian	8858
+司法部门	si fa bu men	7031
+十八年	shi ba nian	8857
+十分钟	shi fen zhong	8857
+千万别	qian wan bie	8856
+卫生间	wei sheng jian	8856
+参赛者	can sai zhe	8855
+双胞胎	shuang bao tai	8855
+古希腊	gu xi la	8854
+摄影机	she ying ji	8854
+救护车	jiu hu che	8853
+来得及	lai de ji	8853
+红楼梦	hong lou meng	8852
+绝不会	jue bu hui	8852
+罗斯福	luo si fu	8851
+菲利普	fei li pu	8851
+袁世凯	yuan shi kai	8850
+霍华德	huo hua de	8850
+音乐节	yin yue jie	8849
+马拉松	ma la song	8849
+世界观	shi jie guan	8848
+二十四	er shi si	8848
+信息化	xin xi hua	8847
+八路军	ba lu jun	8847
+副局长	fu ju zhang	8846
+发表声明	fa biao sheng ming	8845
+多样化	duo yang hua	8845
+好不容易	hao bu rong yi	8844
+州政府	zhou zheng fu	8844
+很漂亮	hen piao liang	8843
+总有一天	zong you yi tian	8843
+恶作剧	e zuo ju	8842
+打交道	da jiao dao	8842
+抗生素	kang sheng su	8841
+政治犯	zheng zhi fan	8841
+新世界	xin shi jie	8840
+更何况	geng he kuang	8840
+武汉大学	wu han da xue	8839
+班主任	ban zhu ren	8839
+真实性	zhen shi xing	8838
+纺织品	fang zhi pin	8838
+老朋友	lao peng you	8837
+这么久	zhe me jiu	8837
+透明度	tou ming du	8836
+里程碑	li cheng bei	8836
+阿尔及利亚	a er ji li ya	8835
+集团公司	ji tuan gong si	8835
+一周年	yi zhou nian	8834
+义务教育	yi wu jiao yu	8834
+交通工具	jiao tong gong ju	8833
+伊丽莎白	yi li sha bai	8833
+克拉克	ke la ke	8833
+印第安人	yin di an ren	8832
+咖啡馆	ka fei guan	8832
+回忆录	hui yi lu	8831
+学生会	xue sheng hui	8831
+所作所为	suo zuo suo wei	8830
+收音机	shou yin ji	8830
+玻利维亚	bo li wei ya	8829
+生殖器	sheng zhi qi	8829
+第二轮	di er lun	8828
+索马里	suo ma li	8828
+经营者	jing ying zhe	8827
+老人家	lao ren jia	8827
+节度使	jie du shi	8826
+说明书	shuo ming shu	8826
+谋杀案	mou sha an	8825
+银行卡	yin hang ka	8825
+阿里巴巴	a li ba ba	8824
+人行道	ren xing dao	8824
+复合材料	fu he cai liao	7031
+副教授	fu jiao shou	8823
+动画片	dong hua pian	8823
+半决赛	ban jue sai	8822
+受够了	shou gou le	8822
+台湾省	tai wan sheng	8821
+合伙人	he huo ren	8821
+四人帮	si ren bang	8820
+多元化	duo yuan hua	8819
+实习生	shi xi sheng	8819
+市场经济	shi chang jing ji	8818
+手榴弹	shou liu dan	8818
+数十万	shu shi wan	8817
+新生儿	xin sheng er	8817
+死亡率	si wang lv	8816
+法兰克福	fa lan ke fu	8816
+活生生	huo sheng sheng	8815
+第一条	di yi tiao	8815
+综合性	zong he xing	8814
+舍不得	she bu de	8814
+葡萄牙语	pu tao ya yu	8813
+行政院	xing zheng yuan	8813
+计程车	ji cheng che	8812
+这样一来	zhe yang yi lai	8812
+连续剧	lian xu ju	8811
+销售额	xiao shou e	8811
+阿姆斯特丹	a mu si te dan	8810
+阿拉伯人	a la bo ren	8810
+高跟鞋	gao gen xie	8809
+黑龙江省	hei long jiang sheng	8809
+全国人大	quan guo ren da	8808
+到头来	dao tou lai	8808
+十几年	shi ji nian	8807
+圣地亚哥	sheng di ya ge	8807
+埃塞俄比亚	ai sai e bi ya	8806
+太阳系	tai yang xi	8806
+尽管如此	jin guan ru ci	8805
+思想家	si xiang jia	8805
+愈来愈	yu lai yu	8804
+慕尼黑	mu ni hei	8804
+换句话说	huan ju hua shuo	8803
+数十年	shu shi nian	8803
+比不上	bi bu shang	8802
+水资源	shui zi yuan	8802
+沙特阿拉伯	sha te a la bo	8801
+爱沙尼亚	ai sha ni ya	8801
+科学研究	ke xue yan jiu	8800
+紧急状态	jin ji zhuang tai	8800
+经济体	jing ji ti	8799
+自然界	zi ran jie	8799
+选择性	xuan ze xing	8798
+野生动物	ye sheng dong wu	8798
+不要紧	bu yao jin	8797
+与众不同	yu zhong bu tong	8797
+中文网	zhong wen wang	8797
+人工智能	ren gong zhi neng	8796
+可不可以	ke bu ke yi	8796
+各种各样	ge zhong ge yang	8795
+大本营	da ben ying	8795
+戴维斯	dai wei si	8794
+核电站	he dian zhan	8794
+格鲁吉亚	ge lu ji ya	8793
+法兰克	fa lan ke	8793
+海军陆战队	hai jun lu zhan dui	8792
+监护人	jian hu ren	8792
+立陶宛	li tao wan	8791
+约翰逊	yue han xun	8791
+纪念品	ji nian pin	8790
+纽约市	niu yue shi	8790
+美术馆	mei shu guan	8789
+蒙古族	meng gu zu	8789
+谢谢你们	xie xie ni men	8788
+马其顿	ma qi dun	8788
+主教练	zhu jiao lian	8787
+作曲家	zuo qu jia	8787
+保守派	bao shou pai	8786
+工作服	gong zuo fu	7030
+全国人大常委会	quan guo ren da chang wei hui	8786
+共青团	gong qing tuan	8785
+反过来	fan guo lai	8785
+台北市	tai bei shi	8784
+圣彼得堡	sheng bi de bao	8784
+坏消息	huai xiao xi	8783
+培训班	pei xun ban	8783
+奥林匹克	ao lin pi ke	8782
+好日子	hao ri zi	8782
+希腊人	xi la ren	8781
+广播电台	guang bo dian tai	8781
+改革开放	gai ge kai fang	8780
+放射性	fang she xing	8780
+有所不同	you suo bu tong	8779
+有点儿	you dian er	8779
+毛主席	mao zhu xi	8778
+温哥华	wen ge hua	8778
+爱因斯坦	ai yin si tan	8777
+竞争对手	jing zheng dui shou	8777
+第一场	di yi chang	8776
+约瑟夫	yue se fu	8776
+莎士比亚	sha shi bi ya	8775
+莫过于	mo guo yu	8775
+那一刻	na yi ke	8774
+筹备工作	chou bei gong zuo	7030
+乱七八糟	luan qi ba zao	8774
+全心全意	quan xin quan yi	8773
+几百万	ji bai wan	8772
+计算机系统	ji suan ji xi tong	7029
+创造力	chuang zao li	8772
+办公厅	ban gong ting	8771
+华尔街日报	hua er jie ri bao	8771
+发起人	fa qi ren	8770
+吉林省	ji lin sheng	8770
+哈哈哈	ha ha ha	8769
+四分之一	si fen zhi yi	8769
+大革命	da ge ming	8768
+威尔斯	wei er si	8768
+安全感	an quan gan	8767
+山西省	shan xi sheng	8767
+拉丁美洲	la ding mei zhou	8766
+斯拉夫	si la fu	8766
+有钱人	you qian ren	8765
+民进党	min jin dang	8765
+活下去	huo xia qu	8764
+独立自主	du li zi zhu	8764
+生产线	sheng chan xian	8763
+第二届	di er jie	8763
+第二部	di er bu	8762
+经济社会	jing ji she hui	8762
+联邦政府	lian bang zheng fu	8761
+装甲车	zhuang jia che	8761
+西方人	xi fang ren	8761
+说真的	shuo zhen de	8760
+一封信	yi feng xin	8760
+一无所有	yi wu suo you	8759
+不太好	bu tai hao	8759
+不敢相信	bu gan xiang xin	8758
+世界卫生组织	shi jie wei sheng zu zhi	8758
+事业单位	shi ye dan wei	8757
+保持沉默	bao chi chen mo	8757
+卡塔尔	ka ta er	8756
+可说是	ke shuo shi	8756
+合作伙伴	he zuo huo ban	8755
+地下室	di xia shi	8755
+地理位置	di li wei zhi	8754
+复旦大学	fu dan da xue	8754
+宗教信仰	zong jiao xin yang	8753
+探测器	tan ce qi	8753
+教育局	jiao yu ju	8752
+海内外	hai nei wai	8752
+生产商	sheng chan shang	8751
+生产总值	sheng chan zong zhi	8751
+电子游戏	dian zi you xi	8750
+报告文学	bao gao wen xue	7029
+目击者	mu ji zhe	8750
+社会党	she hui dang	8749
+自民党	zi min dang	8749
+诸葛亮	zhu ge liang	8748
+诺贝尔	nuo bei er	8748
+达赖喇嘛	da lai la ma	8747
+银行业	yin hang ye	8747
+一无所知	yi wu suo zhi	8746
+下水道	xia shui dao	8746
+不仅如此	bu jin ru ci	8745
+不能不	bu neng bu	8745
+中山大学	zhong shan da xue	8744
+修道院	xiu dao yuan	8744
+党支部	dang zhi bu	8743
+副总裁	fu zong cai	8743
+印第安	yin di an	8742
+反动派	fan dong pai	8742
+社会工作	she hui gong zuo	7028
+可行性	ke xing xing	8741
+在我看来	zai wo kan lai	8741
+大大的	da da de	8740
+好几年	hao ji nian	8740
+小视频	xiao shi pin	8739
+巴塞罗那	ba sai luo na	8739
+引人注目	yin ren zhu mu	8738
+当地政府	dang di zheng fu	8738
+搜索引擎	sou suo yin qing	8737
+收视率	shou shi lv	8737
+早上好	zao shang hao	8736
+有色金属	you se jin shu	8736
+梵蒂冈	fan di gang	8735
+理查德	li cha de	8735
+甘肃省	gan su sheng	8734
+科威特	ke wei te	8734
+第一件	di yi jian	8733
+第一次世界大战	di yi ci shi jie da zhan	8733
+第五次	di wu ci	8732
+米歇尔	mi xie er	8732
+网路上	wang lu shang	8731
+自然而然	zi ran er ran	8731
+英特尔	ying te er	8730
+阿波罗	a bo luo	8730
+高血压	gao xue ya	8729
+一两个	yi liang ge	8729
+一瞬间	yi shun jian	8728
+一等奖	yi deng jiang	8728
+中央委员会	zhong yang wei yuan hui	8727
+为所欲为	wei suo yu wei	8727
+义和团	yi he tuan	8726
+乌托邦	wu tuo bang	8726
+信息技术	xin xi ji shu	8725
+值得注意	zhi de zhu yi	8725
+公信力	gong xin li	8725
+动植物	dong zhi wu	8724
+发改委	fa gai wei	8724
+另一半	ling yi ban	8723
+合唱团	he chang tuan	8723
+听不懂	ting bu dong	8722
+哥本哈根	ge ben ha gen	8722
+商业银行	shang ye yin hang	8721
+四十年	si shi nian	8721
+多方面	duo fang mian	8720
+好奇心	hao qi xin	8720
+安全局	an quan ju	8719
+市委书记	shi wei shu ji	8719
+执行官	zhi xing guan	8718
+拖拉机	tuo la ji	8718
+支持率	zhi chi lv	8717
+政治学	zheng zhi xue	8717
+政治局	zheng zhi ju	8716
+橄榄球	gan lan qiu	8716
+温家宝	wen jia bao	8715
+男孩子	nan hai zi	8715
+社会科学	she hui ke xue	8714
+第一轮	di yi lun	8714
+纽西兰	niu xi lan	8713
+莫名其妙	mo ming qi miao	8713
+评论员	ping lun yuan	8712
+财产权	cai chan quan	8712
+足球赛	zu qiu sai	8711
+轻工业	qing gong ye	8711
+针对性	zhen dui xing	8710
+阿塞拜疆	a sai bai jiang	8710
+零部件	ling bu jian	8709
+非常感谢	fei chang gan xie	8709
+一个多	yi ge duo	8708
+两分钟	liang fen zhong	8708
+交通事故	jiao tong shi gu	8707
+人民大会堂	ren min da hui tang	8707
+俄国人	e guo ren	8706
+农民工	nong min gong	8706
+反对党	fan dui dang	8705
+外交政策	wai jiao zheng ce	8705
+大不了	da bu liao	8704
+安哥拉	an ge la	8704
+安德鲁	an de lu	8703
+开放式	kai fang shi	8703
+戏剧性	xi ju xing	8702
+拉斯维加斯	la si wei jia si	8702
+指导员	zhi dao yuan	8701
+杰克逊	jie ke xun	8701
+民主化	min zhu hua	8700
+海岸线	hai an xian	8700
+爱丽丝	ai li si	8699
+生命力	sheng ming li	8699
+社会保障	she hui bao zhang	8698
+第一集	di yi ji	8698
+纽约州	niu yue zhou	8697
+维基百科	wei ji bai ke	8697
+老天爷	lao tian ye	8696
+自治州	zi zhi zhou	8696
+自然保护区	zi ran bao hu qu	8695
+自然科学	zi ran ke xue	8695
+艺术节	yi shu jie	8694
+萨达姆	sa da mu	8694
+蒙古人	meng gu ren	8693
+被告人	bei gao ren	8693
+非正式	fei zheng shi	8692
+预告片	yu gao pian	8692
+风景区	feng jing qu	8691
+飞行器	fei xing qi	8691
+一大堆	yi da dui	8690
+不用说	bu yong shuo	8690
+世界银行	shi jie yin hang	8689
+丹尼尔	dan ni er	8689
+二维码	er wei ma	8689
+值得一提的是	zhi de yi ti de shi	8688
+别无选择	bie wu xuan ze	8688
+前不久	qian bu jiu	8687
+千方百计	qian fang bai ji	8687
+原子能	yuan zi neng	8686
+在此之前	zai ci zhi qian	8686
+多功能	duo gong neng	8685
+学术界	xue shu jie	8685
+宇航员	yu hang yuan	8684
+小说家	xiao shuo jia	8684
+工人阶级	gong ren jie ji	8683
+弹道导弹	dan dao dao dan	8682
+总产值	zong chan zhi	8682
+公安部门	gong an bu men	7028
+换言之	huan yan zhi	8681
+新四军	xin si jun	8681
+明信片	ming xin pian	8680
+潜意识	qian yi shi	8680
+短篇小说	duan pian xiao shuo	8679
+美联储	mei lian chu	8679
+肯尼迪	ken ni di	8678
+胡萝卜	hu luo bo	8678
+自治县	zi zhi xian	8677
+蔡依林	cai yi lin	8677
+证监会	zheng jian hui	8676
+轨道交通	gui dao jiao tong	8676
+选举权	xuan ju quan	8675
+锦衣卫	jin yi wei	8675
+阿联酋	a lian qiu	8674
+集装箱	ji zhuang xiang	8674
+文件名	wen jian ming	7027
+一国两制	yi guo liang zhi	8673
+一般来说	yi ban lai shuo	8673
+不利于	bu li yu	8672
+亚运会	ya yun hui	8672
+众议员	zhong yi yuan	8671
+净利润	jing li run	8671
+可靠性	ke kao xing	8670
+商务部	shang wu bu	8670
+商学院	shang xue yuan	8669
+嘉年华	jia nian hua	8669
+多一点	duo yi dian	8668
+天文学家	tian wen xue jia	8668
+小提琴	xiao ti qin	8667
+巴格达	ba ge da	8667
+布拉格	bu la ge	8666
+布鲁斯	bu lu si	8666
+总决赛	zong jue sai	8665
+总编辑	zong bian ji	8665
+摄像机	she xiang ji	8664
+斯德哥尔摩	si de ge er mo	8664
+无数次	wu shu ci	8663
+曾多次	ceng duo ci	8663
+最高人民法院	zui gao ren min fa yuan	8662
+有效期	you xiao qi	8662
+未成年人	wei cheng nian ren	8661
+杀人犯	sha ren fan	8661
+极少数	ji shao shu	8660
+欧洲杯	ou zhou bei	8660
+民主派	min zhu pai	8659
+污染物	wu ran wu	8659
+法学院	fa xue yuan	8658
+波多黎各	bo duo li ge	8658
+现阶段	xian jie duan	8657
+研究会	yan jiu hui	8657
+第一家	di yi jia	8656
+第二年	di er nian	8656
+计划经济	ji hua jing ji	7027
+行政区域	xing zheng qu yu	8655
+这部分	zhe bu fen	8655
+违法行为	wei fa xing wei	8654
+退休金	tui xiu jin	8654
+阿拉伯语	a la bo yu	8653
+马歇尔	ma xie er	8653
+一分钱	yi fen qian	8653
+一路上	yi lu shang	8652
+万美金	wan mei jin	8652
+三分钟	san fen zhong	8651
+专科学校	zhuan ke xue xiao	8651
+亚热带	ya re dai	8650
+人道主义	ren dao zhu yi	8650
+县政府	xian zheng fu	8649
+天主教徒	tian zhu jiao tu	8649
+天文学	tian wen xue	8648
+奢侈品	she chi pin	8648
+孟加拉国	meng jia la guo	8647
+家门口	jia men kou	8647
+居委会	ju wei hui	8646
+工业区	gong ye qu	8646
+师范学院	shi fan xue yuan	8645
+新闻稿	xin wen gao	8645
+新闻自由	xin wen zi you	8644
+暴风雨	bao feng yu	8644
+朝鲜半岛	chao xian ban dao	8643
+洗衣机	xi yi ji	8643
+百分百	bai fen bai	8642
+相互作用	xiang hu zuo yong	8642
+看不出	kan bu chu	8641
+睡不着	shui bu zhe	8641
+突尼斯	tu ni si	8640
+美国国务院	mei guo guo wu yuan	8640
+翻译成	fan yi cheng	8639
+诺贝尔和平奖	nuo bei er he ping jiang	8639
+革命家	ge ming jia	8638
+马铃薯	ma ling shu	8638
+高质量	gao zhi liang	8637
+一百万	yi bai wan	8637
+一首歌	yi shou ge	8636
+不在意	bu zai yi	8636
+十几个	shi ji ge	8635
+十多年	shi duo nian	8634
+哥伦布	ge lun bu	8634
+复活节	fu huo jie	8633
+巴比伦	ba bi lun	8633
+总司令	zong si ling	8632
+情报局	qing bao ju	8632
+意想不到	yi xiang bu dao	8631
+截然不同	jie ran bu tong	8631
+打印机	da yin ji	8630
+数字化	shu zi hua	8630
+新政府	xin zheng fu	8629
+法拉利	fa la li	8629
+爆炸案	bao zha an	8628
+牙买加	ya mai jia	8628
+种族主义	zhong zu zhu yi	8627
+第一期	di yi qi	8627
+花花公子	hua hua gong zi	8626
+蝙蝠侠	bian fu xia	8626
+达尔文	da er wen	8625
+金融机构	jin rong ji gou	8625
+领导小组	ling dao xiao zu	8624
+一对一	yi dui yi	8624
+中美洲	zhong mei zhou	8623
+人类学	ren lei xue	8623
+付出代价	fu chu dai jia	8622
+侦察机	zhen cha ji	8622
+保证金	bao zheng jin	8621
+兄弟姐妹	xiong di jie mei	8621
+分辨率	fen bian lv	8620
+制片人	zhi pian ren	8620
+卢森堡	lu sen bao	8619
+参选人	can xuan ren	8619
+发脾气	fa pi qi	8618
+受访者	shou fang zhe	8618
+台湾人	tai wan ren	8617
+同一天	tong yi tian	8617
+咖啡店	ka fei dian	8617
+大面积	da mian ji	8616
+女主播	nv zhu bo	8616
+孤儿院	gu er yuan	8615
+技术人员	ji shu ren yuan	8615
+斯巴达	si ba da	8614
+无关紧要	wu guan jin yao	8614
+智能手机	zhi neng shou ji	8613
+株式会社	zhu shi hui she	8613
+正常人	zheng chang ren	8612
+此时此刻	ci shi ci ke	8612
+殖民者	zhi min zhe	8611
+毫无意义	hao wu yi yi	8611
+独立性	du li xing	8610
+生产者	sheng chan zhe	8610
+电气化	dian qi hua	8609
+看样子	kan yang zi	8609
+真不知道	zhen bu zhi dao	8608
+羽毛球	yu mao qiu	8608
+聊天室	liao tian shi	8607
+自以为是	zi yi wei shi	8607
+英文版	ying wen ban	8606
+西班牙人	xi ban ya ren	8606
+说服力	shuo fu li	8605
+购物中心	gou wu zhong xin	8605
+贵州省	gui zhou sheng	8604
+足球队	zu qiu dui	8604
+迫不及待	po bu ji dai	8603
+通讯员	tong xun yuan	8603
+陈独秀	chen du xiu	8602
+音乐剧	yin yue ju	8602
+音乐学院	yin yue xue yuan	8601
+一步步	yi bu bu	8601
+中南部	zhong nan bu	8600
+中文字幕	zhong wen zi mu	8600
+健身房	jian shen fang	8599
+几十万	ji shi wan	8599
+办公楼	ban gong lou	8598
+印度教	yin du jiao	8598
+各式各样	ge shi ge yang	8597
+垃圾桶	la ji tong	8597
+大将军	da jiang jun	8596
+娱乐圈	yu le quan	8596
+媒体报道	mei ti bao dao	8595
+布鲁塞尔	bu lu sai er	8595
+师范大学	shi fan da xue	8594
+希拉里	xi la li	8594
+广播电视	guang bo dian shi	8593
+很多年	hen duo nian	8593
+志愿军	zhi yuan jun	8592
+总而言之	zong er yan zhi	8592
+所有者	suo you zhe	8591
+执行长	zhi xing zhang	8591
+数百万	shu bai wan	8590
+本地人	ben di ren	8590
+机动车	ji dong che	8589
+核试验	he shi yan	8589
+比基尼	bi ji ni	8588
+波罗的海	bo luo di hai	8588
+津巴布韦	jin ba bu wei	8587
+现实生活	xian shi sheng huo	8587
+百分之百	bai fen zhi bai	8586
+紧接着	jin jie zhe	8586
+编辑部	bian ji bu	8585
+观察员	guan cha yuan	8585
+调查局	diao cha ju	8584
+跨国公司	kua guo gong si	8584
+转折点	zhuan zhe dian	8583
+通电话	tong dian hua	8583
+食品安全	shi pin an quan	8582
+工作部门	gong zuo bu men	7000
+不人道	bu ren dao	8582
+中央银行	zhong yang yin hang	8581
+中科院	zhong ke yuan	8581
+亚特兰大	ya te lan da	8581
+再也不会	zai ye bu hui	8580
+几千年	ji qian nian	8580
+出发点	chu fa dian	8579
+另一边	ling yi bian	8579
+史无前例	shi wu qian li	8578
+圣保罗	sheng bao luo	8578
+工程学院	gong cheng xue yuan	8577
+强制性	qiang zhi xing	8577
+微不足道	wei bu zu dao	8576
+控制器	kong zhi qi	8576
+搞清楚	gao qing chu	8575
+旅行者	lv xing zhe	8575
+无家可归	wu jia ke gui	8574
+普鲁士	pu lu shi	8574
+村委会	cun wei hui	8573
+柏拉图	bo la tu	8573
+染色体	ran se ti	8572
+检察长	jian cha zhang	8572
+植物园	zhi wu yuan	8571
+法轮功	fa lun gong	8571
+流动性	liu dong xing	8570
+犹太教	you tai jiao	8570
+短时间	duan shi jian	8569
+秦始皇	qin shi huang	8568
+积极性	ji ji xing	8568
+第一夫人	di yi fu ren	8567
+经销商	jing xiao shang	8567
+节假日	jie jia ri	8566
+设计者	she ji zhe	8566
+语言学	yu yan xue	8565
+谈恋爱	tan lian ai	8565
+达成协议	da cheng xie yi	8564
+过日子	guo ri zi	8564
+运输机	yun shu ji	8563
+金正日	jin zheng ri	8563
+高利贷	gao li dai	8562
+高尔夫球	gao er fu qiu	8562
+麦克风	mai ke feng	8561
+一百年	yi bai nian	8561
+万公顷	wan gong qing	8560
+东正教	dong zheng jiao	8560
+丝绸之路	si chou zhi lu	8559
+中国移动	zhong guo yi dong	8559
+五角大楼	wu jiao da lou	8558
+代表大会	dai biao da hui	8558
+参考资料	can kao zi liao	7026
+养老金	yang lao jin	8557
+十七年	shi qi nian	8557
+十八岁	shi ba sui	8556
+呈现出	cheng xian chu	8556
+天花板	tian hua ban	8555
+奖得主	jiang de zhu	8555
+尼加拉瓜	ni jia la gua	8554
+布尔什维克	bu er shi wei ke	8554
+性关系	xing guan xi	8553
+恐怖组织	kong bu zu zhi	8553
+斯科特	si ke te	8552
+白血病	bai xue bing	8552
+禽流感	qin liu gan	8551
+脱颖而出	tuo ying er chu	8551
+自来水	zi lai shui	8550
+重工业	zhong gong ye	8550
+钓鱼岛	diao yu dao	8549
+阿拉斯加	a la si jia	8549
+随心所欲	sui xin suo yu	8548
+颁奖典礼	ban jiang dian li	8548
+马戏团	ma xi tuan	8547
+下定决心	xia ding jue xin	8547
+专业化	zhuan ye hua	8546
+佛罗伦萨	fo luo lun sa	8546
+佛罗里达	fu luo li da	8545
+公安机关	gong an ji guan	8545
+关键字	guan jian zi	8545
+副校长	fu xiao zhang	8544
+加速器	jia su qi	8544
+十二年	shi er nian	8543
+博士生	bo shi sheng	8543
+危险性	wei xian xing	8542
+变压器	bian ya qi	8542
+古罗马	gu luo ma	8541
+哥伦比亚大学	ge lun bi ya da xue	8541
+塔利班	ta li ban	8540
+大酒店	da jiu dian	8540
+太平天国	tai ping tian guo	8539
+尼克松	ni ke song	8539
+并不知道	bing bu zhi dao	8538
+张家口	zhang jia kou	8538
+怪不得	guai bu de	8537
+手无寸铁	shou wu cun tie	8537
+文艺复兴	wen yi fu xing	8536
+清政府	qing zheng fu	8535
+理事长	li shi zhang	8535
+男主角	nan zhu jue	8534
+相对论	xiang dui lun	8534
+看得见	kan de jian	8533
+秘书处	mi shu chu	8533
+第三世界	di san shi jie	8532
+第三届	di san jie	8532
+综合症	zong he zheng	8531
+自古以来	zi gu yi lai	8531
+责任制	ze ren zhi	8530
+迄今为止	qi jin wei zhi	8530
+运动场	yun dong chang	8529
+避孕套	bi yun tao	8529
+里斯本	li si ben	8528
+野战军	ye zhan jun	8528
+阿森纳	a sen na	8527
+陈水扁	chen shui bian	8527
+静静地	jing jing di	8526
+马尼拉	ma ni la	8526
+一如既往	yi ru ji wang	8525
+一小部分	yi xiao bu fen	8525
+三轮车	san lun che	8524
+下议院	xia yi yuan	8524
+世界大战	shi jie da zhan	8523
+中西部	zhong xi bu	8523
+产业化	chan ye hua	8522
+任天堂	ren tian tang	8522
+低收入	di shou ru	8521
+催化剂	cui hua ji	8521
+几小时	ji xiao shi	8520
+出版物	chu ban wu	8520
+卡斯特罗	ka si te luo	8519
+可信度	ke xin du	8519
+因特网	yin te wang	8518
+大事记	da shi ji	8518
+大理石	da li shi	8517
+威尔逊	wei er xun	8517
+字幕组	zi mu zu	8516
+安德烈	an de lie	8516
+实实在在	shi shi zai zai	8515
+展览会	zhan lan hui	8515
+建筑群	jian zhu qun	8514
+息息相关	xi xi xiang guan	8514
+愈演愈烈	yu yan yu lie	8513
+捍卫者	han wei zhe	8513
+政治委员	zheng zhi wei yuan	8512
+工作队	gong zuo dui	7026
+海南省	hai nan sheng	8512
+生活费	sheng huo fei	8511
+电动机	dian dong ji	8511
+电视网	dian shi wang	8510
+竞技场	jing ji chang	8510
+管理层	guan li ceng	8509
+组织部	zu zhi bu	8509
+胡耀邦	hu yao bang	8509
+英国伦敦	ying guo lun dun	8508
+辛亥革命	xin hai ge ming	8508
+过不去	guo bu qu	8507
+进化论	jin hua lun	8507
+铁道部	tie dao bu	8506
+青春期	qing chun qi	8506
+高品质	gao pin zhi	8505
+高等院校	gao deng yuan xiao	8505
+一个多月	yi ge duo yue	8504
+不见得	bu jian de	8504
+不负责任	bu fu ze ren	8503
+世锦赛	shi jin sai	8503
+乌干达	wu gan da	8502
+产业链	chan ye lian	8502
+伺服器	ci fu qi	8501
+体制改革	ti zhi gai ge	8501
+侵略者	qin lve zhe	8500
+剑桥大学	jian qiao da xue	8500
+北海道	bei hai dao	8499
+南北朝	nan bei chao	8499
+史蒂芬	shi di fen	8498
+后遗症	hou yi zheng	8498
+唐人街	tang ren jie	8497
+天文台	tian wen tai	8497
+太过分	tai guo fen	8496
+小行星	xiao xing xing	8496
+巴拉圭	ba la gui	8495
+并发症	bing fa zheng	8495
+很久没	hen jiu mei	8494
+想象力	xiang xiang li	8494
+成吉思汗	cheng ji si han	8493
+政府军	zheng fu jun	8493
+新浪网	xin lang wang	8492
+时不时	shi bu shi	8492
+模特儿	mo te er	8491
+欧元区	ou yuan qu	8491
+水电站	shui dian zhan	8490
+照相机	zhao xiang ji	8490
+牛津大学	niu jin da xue	8489
+特种部队	te zhong bu dui	8489
+环球时报	huan qiu shi bao	8488
+由此可见	you ci ke jian	8488
+申请人	shen qing ren	8487
+突击队	tu ji dui	8487
+第二代	di er dai	8486
+第二名	di er ming	8486
+第四届	di si jie	8485
+结构性	jie gou xing	8485
+英国政府	ying guo zheng fu	8484
+视而不见	shi er bu jian	8484
+说了算	shuo le suan	8483
+金融市场	jin rong shi chang	8483
+银河系	yin he xi	8482
+银行家	yin hang jia	8482
+一时间	yi shi jian	8481
+三分之二	san fen zhi er	8481
+上班族	shang ban zu	8480
+不可或缺	bu ke huo que	8480
+不得了	bu de le	8479
+不得已	bu de yi	8479
+不远处	bu yuan chu	8478
+不锈钢	bu xiu gang	8478
+主旋律	zhu xuan lv	8477
+买不到	mai bu dao	8477
+二十一	er shi yi	8476
+交响乐团	jiao xiang yue tuan	8476
+从业人员	cong ye ren yuan	8475
+停下来	ting xia lai	8475
+全球性	quan qiu xing	8474
+公共场所	gong gong chang suo	8474
+剧作家	ju zuo jia	8473
+化学品	hua xue pin	8473
+在世界上	zai shi jie shang	8473
+坦桑尼亚	tan sang ni ya	8472
+大学毕业	da xue bi ye	8472
+大都会	da du hui	8471
+奥克兰	ao ke lan	8471
+小心翼翼	xiao xin yi yi	8470
+布鲁克林	bu lu ke lin	8470
+幽默感	you mo gan	8469
+弗兰克	fu lan ke	8469
+心理学家	xin li xue jia	8468
+必要性	bi yao xing	8468
+手续费	shou xu fei	8467
+打不开	da bu kai	8467
+有线电视	you xian dian shi	8466
+梁振英	liang zhen ying	8466
+毁灭性	hui mie xing	8465
+洗手间	xi shou jian	8465
+消防员	xiao fang yuan	8464
+生产率	sheng chan lv	8464
+百分比	bai fen bi	8463
+百科全书	bai ke quan shu	8463
+真人秀	zhen ren xiu	8462
+私有化	si you hua	8462
+第一张	di yi zhang	8461
+统计局	tong ji ju	8460
+职业生涯	zhi ye sheng ya	8460
+自由派	zi you pai	8459
+荷兰人	he lan ren	8459
+萨尔瓦多	sa er wa duo	8458
+谢谢您	xie xie nin	8458
+里约热内卢	li yue re nei lu	8457
+高加索	gao jia suo	8457
+魔术师	mo shu shi	8456
+龙卷风	long juan feng	8456
+一举一动	yi ju yi dong	8455
+三明治	san ming zhi	8455
+东北地区	dong bei di qu	8454
+乌兹别克斯坦	wu zi bie ke si tan	8454
+共产党人	gong chan dang ren	8453
+动力学	dong li xue	8453
+劳伦斯	lao lun si	8452
+十字路口	shi zi lu kou	8452
+单机游戏	dan ji you xi	8451
+取而代之	qu er dai zhi	8451
+喀麦隆	ka mai long	8450
+国际贸易	guo ji mao yi	8450
+塞浦路斯	sai pu lu si	8449
+增值税	zeng zhi shui	8449
+女孩儿	nv hai er	8448
+小规模	xiao gui mo	8448
+底特律	di te lv	8447
+强有力	qiang you li	8447
+当务之急	dang wu zhi ji	8446
+必需品	bi xu pin	8446
+成都市	cheng du shi	8445
+接班人	jie ban ren	8445
+朋友圈	peng you quan	8444
+根本就是	gen ben jiu shi	8444
+源代码	yuan dai ma	8443
+满意度	man yi du	8443
+热衷于	re zhong yu	8442
+男子汉	nan zi han	8442
+百分之	bai fen zhi	8441
+看守所	kan shou suo	8441
+真面目	zhen mian mu	8440
+第一台	di yi tai	8440
+第三代	di san dai	8439
+第四次	di si ci	8439
+美联社	mei lian she	8438
+脑子里	nao zi li	8438
+自由化	zi you hua	8438
+蒙特利尔	meng te li er	8437
+西红柿	xi hong shi	8436
+辩护律师	bian hu lv shi	8436
+近距离	jin ju li	8435
+通行证	tong xing zheng	8435
+长篇小说	chang pian xiao shuo	8434
+非暴力	fei bao li	8434
+高峰期	gao feng qi	8433
+下个月	xia ge yue	8433
+下半场	xia ban chang	8432
+业内人士	ye nei ren shi	8432
+个人信息	ge ren xin xi	8431
+五百万	wu bai wan	8431
+交通运输	jiao tong yun shu	8430
+交通部	jiao tong bu	8430
+人际关系	ren ji guan xi	8429
+保守党	bao shou dang	8429
+克里米亚	ke li mi ya	8428
+公开赛	gong kai sai	8428
+再生产	zai sheng chan	8427
+出入境	chu ru jing	8427
+加利福尼亚	jia li fu ni ya	8426
+十字军	shi zi jun	8426
+地平线	di ping xian	8425
+大家庭	da jia ting	8425
+实质性	shi zhi xing	8424
+巡洋舰	xun yang jian	8424
+市辖区	shi xia qu	8423
+市面上	shi mian shang	8423
+建筑面积	jian zhu mian ji	8422
+很难说	hen nan shuo	8422
+技术性	ji shu xing	8421
+排名第	pai ming di	8421
+新年快乐	xin nian kuai le	8420
+最起码	zui qi ma	8420
+杀虫剂	sha chong ji	8419
+毫不犹豫	hao bu you yu	8419
+氨基酸	an ji suan	8418
+爱奇艺	ai qi yi	8418
+狙击手	ju ji shou	8417
+环境污染	huan jing wu ran	8417
+循环系统	xun huan xi tong	7025
+福克斯	fu ke si	8416
+种族灭绝	zhong zu mie jue	8416
+第六次	di liu ci	8415
+第四个	di si ge	8415
+等同于	deng tong yu	8414
+精神文明	jing shen wen ming	8414
+红十字会	hong shi zi hui	8413
+组织者	zu zhi zhe	8413
+综合征	zong he zheng	8412
+获奖者	huo jiang zhe	8412
+数据流	shu ju liu	7025
+起源于	qi yuan yu	8411
+连锁店	lian suo dian	8411
+长安街	chang an jie	8410
+阴谋论	yin mou lun	8410
+核计划	he ji hua	7024
+一千万	yi qian wan	8409
+不感兴趣	bu gan xing qu	8409
+专业人士	zhuan ye ren shi	8408
+丘吉尔	qiu ji er	8408
+二十五	er shi wu	8407
+候补委员	hou bu wei yuan	8407
+加拿大人	jia na da ren	8406
+化学武器	hua xue wu qi	8406
+卖国贼	mai guo zei	8405
+厄瓜多尔	e gua duo er	8405
+另一方	ling yi fang	8404
+史蒂夫	shi di fu	8404
+大气层	da qi ceng	8403
+大都市	da du shi	8403
+好久不见	hao jiu bu jian	8402
+工学院	gong xue yuan	8402
+慰安妇	wei an fu	8402
+战略性	zhan lve xing	8401
+摄氏度	she shi du	8401
+方面军	fang mian jun	8400
+星巴克	xing ba ke	8400
+曼德拉	man de la	8399
+最高峰	zui gao feng	8399
+有用吗	you yong ma	8398
+武则天	wu ze tian	8398
+游乐场	you le chang	8397
+相提并论	xiang ti bing lun	8397
+眼睁睁	yan zheng zheng	8396
+研究室	yan jiu shi	8396
+程序员	cheng xu yuan	8395
+第一年	di yi nian	8395
+第二位	di er wei	8394
+绝不能	jue bu neng	8394
+耶和华	ye he hua	8393
+联合国安理会	lian he guo an li hui	8393
+脚踏车	jiao ta che	8392
+色情网站	se qing wang zhan	8392
+詹姆士	zhan mu shi	8391
+象征性	xiang zheng xing	8391
+财政部长	cai zheng bu zhang	8390
+赞比亚	zan bi ya	8390
+邮政编码	you zheng bian ma	8389
+金正恩	jin zheng en	8389
+金融服务	jin rong fu wu	8388
+一块儿	yi kuai er	8388
+三部曲	san bu qu	8387
+下落不明	xia luo bu ming	8387
+不知情	bu zhi qing	8386
+丹尼斯	dan ni si	8386
+乒乓球	ping pang qiu	8385
+乔纳森	qiao na sen	8385
+五十年	wu shi nian	8384
+佛教徒	fo jiao tu	8384
+便利店	bian li dian	8383
+几十个	ji shi ge	8383
+刘亦菲	liu yi fei	8382
+创办人	chuang ban ren	8382
+初中生	chu zhong sheng	8381
+动作片	dong zuo pian	8381
+发短信	fa duan xin	8380
+周年纪念	zhou nian ji nian	8380
+国际性	guo ji xing	8379
+外国语	wai guo yu	8379
+大马士革	da ma shi ge	8378
+太空船	tai kong chuan	8378
+工艺品	gong yi pin	8377
+控制权	kong zhi quan	8377
+摇滚乐	yao gun yue	8376
+播放器	bo fang qi	8376
+是否是	shi fou shi	8375
+朱元璋	zhu yuan zhang	8375
+某种程度	mou zhong cheng du	8374
+导航系统	dao hang xi tong	7024
+灰姑娘	hui gu niang	8374
+爱情故事	ai qing gu shi	8373
+相比之下	xiang bi zhi xia	8373
+看一看	kan yi kan	8372
+看清楚	kan qing chu	8372
+真的假	zhen de jia	8371
+积极参与	ji ji can yu	8371
+空间站	kong jian zhan	8370
+情报部门	qing bao bu men	7023
+立方米	li fang mi	8370
+第一章	di yi zhang	8369
+第七届	di qi jie	8369
+经理人	jing li ren	8368
+议定书	yi ding shu	8367
+说到底	shuo dao di	8367
+超能力	chao neng li	8366
+路由器	lu you qi	8366
+连云港	lian yun gang	8366
+材料科学	cai liao ke xue	7023
+追随者	zhui sui zhe	8365
+采取行动	cai qu xing dong	8364
+重大事件	zhong da shi jian	8364
+长沙市	chang sha shi	8363
+一大早	yi da zao	8363
+三角形	san jiao xing	8362
+不知所措	bu zhi suo cuo	8362
+不要脸	bu yao lian	8361
+中国外交部	zhong guo wai jiao bu	8361
+优惠券	you hui quan	8360
+佛罗里达州	fu luo li da zhou	8360
+信息安全	xin xi an quan	8359
+做不了	zuo bu liao	8359
+切尔西	qie er xi	8358
+医疗保险	yi liao bao xian	8358
+反对者	fan dui zhe	8357
+另一名	ling yi ming	8357
+可想而知	ke xiang er zhi	8356
+网络系统	wang luo xi tong	7022
+大奖赛	da jiang sai	8356
+大学士	da xue shi	8355
+大熊猫	da xiong mao	8355
+安德森	an de sen	8354
+寄生虫	ji sheng chong	8354
+层出不穷	ceng chu bu qiong	8353
+布达佩斯	bu da pei si	8353
+总工会	zong gong hui	8352
+意味著	yi wei zhu	8352
+拉脱维亚	la tuo wei ya	8351
+新德里	xin de li	8351
+新闻媒体	xin wen mei ti	8350
+显示屏	xian shi ping	8350
+更进一步	geng jin yi bu	8349
+朝鲜战争	chao xian zhan zheng	8349
+李克强	li ke qiang	8348
+根本无法	gen ben wu fa	8348
+海平面	hai ping mian	8347
+理工学院	li gong xue yuan	8347
+用不着	yong bu zhe	8346
+男同志	nan tong zhi	8346
+第三名	di san ming	8345
+红卫兵	hong wei bing	8345
+网络游戏	wang luo you xi	8344
+老头子	lao tou zi	8344
+老奶奶	lao nai nai	8343
+自由党	zi you dang	8343
+航空母舰	hang kong mu jian	8342
+行动党	xing dong dang	8342
+记忆力	ji yi li	8341
+识字率	shi zi lv	8341
+谢天谢地	xie tian xie di	8340
+销售量	xiao shou liang	8340
+防火墙	fang huo qiang	8339
+马英九	ma ying jiu	8339
+高等法院	gao deng fa yuan	8338
+黑名单	hei ming dan	8338
+不经意	bu jing yi	8337
+两件事	liang jian shi	8337
+买不起	mai bu qi	8336
+人力资源	ren li zi yuan	8336
+俗话说	su hua shuo	8335
+信息网	xin xi wang	8335
+凝聚力	ning ju li	8334
+制造厂	zhi zao chang	8334
+动不动	dong bu dong	8333
+南京大学	nan jing da xue	8333
+博士学位	bo shi xue wei	8332
+卢旺达	lu wang da	8332
+反应堆	fan ying dui	8331
+古兰经	gu lan jing	8331
+吉祥物	ji xiang wu	8330
+团结起来	tuan jie qi lai	8330
+小精灵	xiao jing ling	8330
+度假村	du jia cun	8329
+建筑业	jian zhu ye	8329
+张学良	zhang xue liang	8328
+想一想	xiang yi xiang	8328
+所有制	suo you zhi	8327
+手电筒	shou dian tong	8327
+投票权	tou piao quan	8326
+斯蒂芬	si di fen	8326
+显微镜	xian wei jing	8325
+有所作为	you suo zuo wei	8325
+服务中心	fu wu zhong xin	8324
+服务商	fu wu shang	8324
+杭州市	hang zhou shi	8323
+常务会议	chang wu hui yi	7022
+没完没了	mei wan mei liao	8323
+海淀区	hai dian qu	8322
+添加剂	tian jia ji	8322
+爆米花	bao mi hua	8321
+特斯拉	te si la	8321
+猫头鹰	mao tou ying	8320
+监事会	jian shi hui	8320
+私生子	si sheng zi	8319
+竞争者	jing zheng zhe	8319
+经济危机	jing ji wei ji	8318
+缔约国	di yue guo	8318
+联谊会	lian yi hui	8317
+自然灾害	zi ran zai hai	8317
+自然环境	zi ran huan jing	8316
+数据处理	shu ju chu li	7021
+被誉为	bei yu wei	8316
+诸如此类	zhu ru ci lei	8315
+足球场	zu qiu chang	8315
+输入法	shu ru fa	8314
+饮用水	yin yong shui	8314
+马克斯	ma ke si	8313
+马达加斯加	ma da jia si jia	8313
+一年一度	yi nian yi du	8312
+不为人知	bu wei ren zhi	8312
+专卖店	zhuan mai dian	8311
+世界级	shi jie ji	8311
+世界纪录	shi jie ji lu	8310
+为的是	wei de shi	8310
+乔治亚	qiao zhi ya	8309
+人身安全	ren shen an quan	8309
+使用权	shi yong quan	8308
+全人类	quan ren lei	8308
+共同努力	gong tong nu li	8307
+几千万	ji qian wan	8307
+刘德华	liu de hua	8306
+加泰罗尼亚	jia tai luo ni ya	8306
+另一面	ling yi mian	8305
+史学家	shi xue jia	8305
+合法化	he fa hua	8304
+同情心	tong qing xin	8304
+呼吸道	hu xi dao	8303
+大人物	da ren wu	8303
+大惊小怪	da jing xiao guai	8302
+好了吗	hao le ma	8302
+巴尔干	ba er gan	8301
+市政厅	shi zheng ting	8300
+希尔顿	xi er dun	8300
+干细胞	gan xi bao	8299
+德黑兰	de hei lan	8299
+恨不得	hen bu de	8298
+意大利人	yi da li ren	8298
+投票率	tou piao lv	8297
+拉丁文	la ding wen	8297
+挺身而出	ting shen er chu	8296
+摩纳哥	mo na ge	8296
+攻击性	gong ji xing	8295
+朝阳区	chao yang qu	8295
+标志性	biao zhi xing	8294
+武装部队	wu zhuang bu dui	8294
+汤普森	tang pu sen	8294
+汪精卫	wang jing wei	8293
+满满的	man man de	8293
+现代人	xian dai ren	8292
+百万富翁	bai wan fu weng	8292
+看得出	kan de chu	8291
+瞧不起	qiao bu qi	8291
+矿泉水	kuang quan shui	8290
+福布斯	fu bu si	8290
+第二批	di er pi	8289
+第二条	di er tiao	8289
+耶鲁大学	ye lu da xue	8288
+联合政府	lian he zheng fu	8288
+胰岛素	yi dao su	8287
+苹果公司	ping guo gong si	8287
+西门子	xi men zi	8286
+谈不上	tan bu shang	8286
+购买力	gou mai li	8285
+资格赛	zi ge sai	8285
+逍遥法外	xiao yao fa wai	8284
+非政府	fei zheng fu	8284
+香港政府	xiang gang zheng fu	8283
+与会者	yu hui zhe	8283
+世界末日	shi jie mo ri	8282
+世界遗产	shi jie yi chan	8282
+个性化	ge xing hua	8281
+乔布斯	qiao bu si	8281
+乳腺癌	ru xian ai	8280
+五四运动	wu si yun dong	8280
+井冈山	jing gang shan	8279
+区域性	qu yu xing	8279
+十三年	shi san nian	8278
+原来如此	yuan lai ru ci	8278
+发行量	fa xing liang	8277
+古建筑	gu jian zhu	8277
+吉尔吉斯斯坦	ji er ji si si tan	8276
+名列前茅	ming lie qian mao	8276
+周杰伦	zhou jie lun	8275
+哈利波	ha li bo	8275
+哈里斯	ha li si	8274
+天气预报	tian qi yu bao	8274
+对外贸易	dui wai mao yi	8273
+小伙伴	xiao huo ban	8273
+尼罗河	ni luo he	8272
+布莱恩	bu lai en	8272
+并非如此	bing fei ru ci	8271
+想想看	xiang xiang kan	8271
+所得税	suo de shui	8270
+救世主	jiu shi zhu	8270
+新一轮	xin yi lun	8269
+新闻界	xin wen jie	8269
+新鲜事	xin xian shi	8268
+方程式	fang cheng shi	8268
+时至今日	shi zhi jin ri	8267
+更衣室	geng yi shi	8267
+有效率	you xiao lv	8266
+有点像	you dian xiang	8266
+朝鲜族	chao xian zu	8265
+根深蒂固	gen shen di gu	8265
+民主运动	min zhu yun dong	8264
+洪都拉斯	hong dou la si	8264
+玛格丽特	ma ge li te	8263
+生理学	sheng li xue	8262
+社会民主党	she hui min zhu dang	8262
+第一线	di yi xian	8261
+红宝石	hong bao shi	8261
+组委会	zu wei hui	8260
+聪明人	cong ming ren	8260
+肆无忌惮	si wu ji dan	8259
+自由民主	zi you min zhu	8259
+茉莉花	mo li hua	8258
+菲尔德	fei er de	8258
+赞助商	zan zhu shang	8258
+轻而易举	qing er yi ju	8257
+金融危机	jin rong wei ji	8257
+金融时报	jin rong shi bao	8256
+长长的	chang chang de	8256
+雅加达	ya jia da	8255
+一个半	yi ge ban	8255
+万亿元	wan yi yuan	8254
+不切实际	bu qie shi ji	8254
+不列颠	bu lie dian	8253
+中关村	zhong guan cun	8253
+中国人民银行	zhong guo ren min yin hang	8252
+五星级	wu xing ji	8252
+信不信	xin bu xin	8251
+全天候	quan tian hou	8251
+共同点	gong tong dian	8250
+军事基地	jun shi ji di	8250
+凯瑟琳	kai se lin	8249
+副会长	fu hui zhang	8249
+化学家	hua xue jia	8248
+博士后	bo shi hou	8248
+原则上	yuan ze shang	8247
+大伙儿	da huo er	8247
+好孩子	hao hai zi	8246
+宁夏回族自治区	ning xia hui zu zi zhi qu	8246
+宗教自由	zong jiao zi you	8245
+小游戏	xiao you xi	8245
+小组赛	xiao zu sai	8244
+市场化	shi chang hua	8243
+常委会	chang wei hui	8243
+心血管	xin xue guan	8242
+必不可少	bi bu ke shao	8242
+恢复正常	hui fu zheng chang	8241
+想得到	xiang de dao	8241
+或多或少	huo duo huo shao	8240
+护卫舰	hu wei jian	8240
+挑战者	tiao zhan zhe	8239
+数千年	shu qian nian	8239
+旁观者	pang guan zhe	8238
+无济于事	wu ji yu shi	8238
+最佳影片	zui jia ying pian	8237
+杂货店	za huo dian	8237
+李登辉	li deng hui	8236
+栖息地	qi xi di	8236
+椭圆形	tuo yuan xing	8235
+首要任务	shou yao ren wu	7021
+法西斯主义	fa xi si zhu yi	8235
+济南市	ji nan shi	8234
+浙江大学	zhe jiang da xue	8234
+清清楚楚	qing qing chu chu	8233
+湖南卫视	hu nan wei shi	8233
+犯罪行为	fan zui xing wei	8232
+生产能力	sheng chan neng li	8232
+生命危险	sheng ming wei xian	8231
+生物学家	sheng wu xue jia	8231
+看不起	kan bu qi	8230
+研究成果	yan jiu cheng guo	8230
+笔记本电脑	bi ji ben dian nao	8229
+第三天	di san tian	8229
+第十届	di shi jie	8228
+管理人员	guan li ren yuan	8228
+老先生	lao xian sheng	8227
+聚在一起	ju zai yi qi	8227
+讨论区	tao lun qu	8226
+谢尔盖	xie er gai	8225
+这么晚	zhe me wan	8225
+非官方	fei guan fang	8224
+交易系统	jiao yi xi tong	7020
+高级中学	gao ji zhong xue	8224
+默默地	mo mo di	8223
+一季度	yi ji du	8223
+一百个	yi bai ge	8222
+人民党	ren min dang	8222
+低成本	di cheng ben	8222
+全力以赴	quan li yi fu	8221
+再生能源	zai sheng neng yuan	8221
+决议案	jue yi an	8220
+前男友	qian nan you	8220
+副省长	fu sheng zhang	8219
+匹兹堡	pi zi bao	8219
+单方面	dan fang mian	8218
+发行人	fa xing ren	8218
+各行各业	ge hang ge ye	8217
+商业区	shang ye qu	8217
+国家机关	guo jia ji guan	8216
+夏令营	xia ling ying	8216
+夏洛特	xia luo te	8215
+多长时间	duo zhang shi jian	8215
+大主教	da zhu jiao	8214
+委托人	wei tuo ren	8214
+安全部	an quan bu	8213
+尼尔森	ni er sen	8213
+广告牌	guang gao pai	8212
+形容词	xing rong ci	8212
+彭德怀	peng de huai	8211
+得票率	de piao lv	8211
+总统大选	zong tong da xuan	8210
+抑郁症	yi yu zheng	8210
+改编自	gai bian zi	8209
+政治权利	zheng zhi quan li	8209
+文化交流	wen hua jiao liu	8208
+新华门	xin hua men	8208
+无处不在	wu chu bu zai	8207
+核潜艇	he qian ting	8207
+气候变化	qi hou bian hua	8206
+沈阳市	shen yang shi	8206
+港澳台	gang ao tai	8205
+白皮书	bai pi shu	8205
+示范区	shi fan qu	8204
+私生活	si sheng huo	8204
+第一种	di yi zhong	8203
+综艺节目	zong yi jie mu	8202
+荷尔蒙	he er meng	8202
+计算器	ji suan qi	8201
+讨价还价	tao jia huan jia	8201
+赤裸裸	chi luo luo	8200
+辩证法	bian zheng fa	8200
+进行曲	jin xing qu	8199
+三中全会	san zhong quan hui	8199
+不顾一切	bu gu yi qie	8198
+中国联通	zhong guo lian tong	8198
+中国银行	zhong guo yin hang	8197
+中央人民政府	zhong yang ren min zheng fu	8197
+中央政治局	zhong yang zheng zhi ju	8196
+人民代表大会	ren min dai biao da hui	8196
+什叶派	shen ye pai	8195
+休息室	xiu xi shi	8195
+优胜者	you sheng zhe	8194
+供不应求	gong bu ying qiu	8194
+全国代表大会	quan guo dai biao da hui	8193
+公有制	gong you zhi	8193
+写信给	xie xin gei	8192
+卫生局	wei sheng ju	8192
+发源地	fa yuan di	8191
+可口可乐	ke kou ke le	8191
+合理化	he li hua	8190
+名古屋	ming gu wu	8190
+商业化	shang ye hua	8189
+啊啊啊	a a a	8189
+塑料袋	su liao dai	8188
+增加值	zeng jia zhi	8188
+大吃一惊	da chi yi jing	8187
+失败者	shi bai zhe	8187
+奥兰多	ao lan duo	8186
+奴隶主	nu li zhu	8186
+实际行动	shi ji xing dong	8186
+小妹妹	xiao mei mei	8185
+录影带	lu ying dai	8185
+很久以前	hen jiu yi qian	8184
+恐怖片	kong bu pian	8184
+教职员	jiao zhi yuan	8183
+无神论	wu shen lun	8182
+无话可说	wu hua ke shuo	8182
+既然如此	ji ran ru ci	8181
+本科生	ben ke sheng	8181
+枪击案	qiang ji an	8180
+永久性	yong jiu xing	8180
+爸爸妈妈	ba ba ma ma	8179
+犯罪率	fan zui lv	8179
+第九届	di jiu jie	8178
+紫外线	zi wai xian	8178
+繁体字	fan ti zi	8177
+红外线	hong wai xian	8177
+结果显示	jie guo xian shi	8176
+罪魁祸首	zui kui huo shou	8176
+美国纽约	mei guo niu yue	8175
+考古学家	kao gu xue jia	8175
+联系人	lian xi ren	8174
+自主权	zi zhu quan	8173
+自我介绍	zi wo jie shao	8173
+苏黎世	su li shi	8172
+行李箱	xing li xiang	8172
+覆盖率	fu gai lv	8171
+贝鲁特	bei lu te	8171
+退伍军人	tui wu jun ren	8170
+遗传学	yi chuan xue	8170
+体育项目	ti yu xiang mu	7020
+阅读器	yue du qi	8169
+阶级斗争	jie ji dou zheng	8169
+陪审团	pei shen tuan	8168
+非洲人	fei zhou ren	8168
+非营利	fei ying li	8167
+马哈迪	ma ha di	8167
+马赛克	ma sai ke	8166
+高速铁路	gao su tie lu	8166
+黄鹤楼	huang he lou	8165
+黑手党	hei shou dang	8165
+万圣节	wan sheng jie	8164
+上海交通大学	shang hai jiao tong da xue	8164
+下意识	xia yi shi	8163
+不确定性	bu que ding xing	8163
+举足轻重	ju zu qing zhong	8162
+亚当斯	ya dang si	8162
+交朋友	jiao peng you	8161
+人口数	ren kou shu	8161
+人民公社	ren min gong she	8160
+人民共和国	ren min gong he guo	8160
+从头到尾	cong tou dao wei	8159
+住宅区	zhu zhai qu	8159
+全过程	quan guo cheng	8158
+内蒙古自治区	nei meng gu zi zhi qu	8158
+几百年	ji bai nian	8157
+前女友	qian nv you	8157
+化学反应	hua xue fan ying	8156
+十一年	shi yi nian	8156
+君主制	jun zhu zhi	8155
+因涉嫌	yin she xian	8155
+国家统计局	guo jia tong ji ju	8154
+在历史上	zai li shi shang	8154
+复杂性	fu za xing	8153
+性工作者	xing gong zuo zhe	7019
+屋子里	wu zi li	8153
+巴士站	ba shi zhan	8152
+平均值	ping jun zhi	8152
+建设性	jian she xing	8151
+异议人士	yi yi ren shi	8151
+怪怪的	guai guai de	8150
+恐怖袭击	kong bu xi ji	8150
+方向盘	fang xiang pan	8150
+方法论	fang fa lun	8149
+无动于衷	wu dong yu zhong	8149
+无意间	wu yi jian	8148
+无政府主义	wu zheng fu zhu yi	8148
+梁启超	liang qi chao	8147
+歌剧院	ge ju yuan	8147
+混合物	hun he wu	8146
+疗养院	liao yang yuan	8146
+皇太后	huang tai hou	8145
+矿物质	kuang wu zhi	8145
+突如其来	tu ru qi lai	8144
+第一代	di yi dai	8144
+第二场	di er chang	8143
+管理处	guan li chu	8143
+继任者	ji ren zhe	8142
+美利坚	mei li jian	8142
+耶稣基督	ye su ji du	8141
+自尊心	zi zun xin	8141
+获得者	huo de zhe	8140
+观察者	guan cha zhe	8140
+责任人	ze ren ren	8139
+迟早会	chi zao hui	8139
+铁路线	tie lu xian	8138
+青年人	qing nian ren	8138
+音乐厅	yin yue ting	8137
+预备役	yu bei yi	8137
+香格里拉	xiang ge li la	8136
+一时期	yi shi qi	8136
+不太可能	bu tai ke neng	8135
+不规则	bu gui ze	8135
+不遗余力	bu yi yu li	8134
+中国国民党	zhong guo guo min dang	8134
+中央委员	zhong yang wei yuan	8133
+主任委员	zhu ren wei yuan	8133
+二等奖	er deng jiang	8132
+供应链	gong ying lian	8132
+做得好	zuo de hao	8131
+全家人	quan jia ren	8131
+全部都是	quan bu dou shi	8130
+关键时刻	guan jian shi ke	8130
+几句话	ji ju hua	8129
+刘易斯	liu yi si	8129
+刘晓波	liu xiao bo	8128
+加利福尼亚州	jia li fu ni ya zhou	8128
+压倒性	ya dao xing	8127
+原作者	yuan zuo zhe	8127
+呼和浩特	hu he hao te	8126
+哥斯达黎加	ge si da li jia	8126
+唯物主义	wei wu zhu yi	8125
+国家元首	guo jia yuan shou	8125
+国资委	guo zi wei	8124
+地理学	di li xue	8124
+基本建设	ji ben jian she	8123
+夜总会	ye zong hui	8123
+天下第一	tian xia di yi	8122
+天安门城楼	tian an men cheng lou	8122
+富士康	fu shi kang	8121
+工人党	gong ren dang	8121
+布鲁克	bu lu ke	8120
+广播公司	guang bo gong si	8120
+总动员	zong dong yuan	8119
+恐惧症	kong ju zheng	8119
+想方设法	xiang fang she fa	8118
+战利品	zhan li pin	8118
+手机号	shou ji hao	8117
+拍电影	pai dian ying	8117
+掉下来	diao xia lai	8116
+新台币	xin tai bi	8116
+有朝一日	you zhao yi ri	8115
+民营化	min ying hua	8115
+没人能	mei ren neng	8114
+波斯湾	bo si wan	8114
+流浪汉	liu lang han	8114
+深层次	shen ceng ci	8113
+游击战	you ji zhan	8113
+特派员	te pai yuan	8112
+珊瑚礁	shan hu jiao	8112
+症候群	zheng hou qun	8111
+癌细胞	ai xi bao	8111
+秦皇岛	qin huang dao	8110
+穿衣服	chuan yi fu	8110
+第一份	di yi fen	8109
+第二种	di er zhong	8109
+统一战线	tong yi zhan xian	8108
+联合国大会	lian he guo da hui	8108
+脱口秀	tuo kou xiu	8107
+自由人	zi you ren	8107
+自言自语	zi yan zi yu	8106
+艾伯特	ai bo te	8106
+花岗岩	hua gang yan	8105
+莫桑比克	mo sang bi ke	8105
+营业额	ying ye e	8104
+行不通	xing bu tong	8104
+西安市	xi an shi	8103
+贝尔格莱德	bei er ge lai de	8103
+跟不上	gen bu shang	8102
+轰轰烈烈	hong hong lie lie	8102
+错综复杂	cuo zong fu za	8101
+飞利浦	fei li pu	8101
+高风险	gao feng xian	8100
+一般而言	yi ban er yan	8100
+万英镑	wan ying bang	8099
+不耐烦	bu nai fan	8099
+中国工程院	zhong guo gong cheng yuan	8098
+仅此而已	jin ci er yi	8098
+代理商	dai li shang	8097
+你们好	ni men hao	8097
+出生地	chu sheng di	8096
+利比里亚	li bi li ya	8096
+北美洲	bei mei zhou	8095
+医护人员	yi hu ren yuan	8095
+十六年	shi liu nian	8094
+十四年	shi si nian	8094
+参加者	can jia zhe	8093
+商品房	shang pin fang	8093
+团结一致	tuan jie yi zhi	8092
+国有企业	guo you qi ye	8092
+城市化	cheng shi hua	8091
+妇产科	fu chan ke	8091
+守护者	shou hu zhe	8090
+安全带	an quan dai	8090
+富兰克林	fu lan ke lin	8089
+小王子	xiao wang zi	8089
+布政使	bu zheng shi	8088
+布莱克	bu lai ke	8088
+带我去	dai wo qu	8087
+常规赛	chang gui sai	8087
+弗吉尼亚	fu ji ni ya	8086
+当权者	dang quan zhe	8086
+录像带	lu xiang dai	8085
+总工程师	zong gong cheng shi	8085
+恐怖份子	kong bu fen zi	8084
+投入使用	tou ru shi yong	8084
+拘留所	ju liu suo	8083
+数百年	shu bai nian	8083
+文学家	wen xue jia	8082
+新泽西	xin ze xi	8082
+新石器	xin shi qi	8081
+新闻联播	xin wen lian bo	8081
+无期徒刑	wu qi tu xing	8080
+曼彻斯特	man che si te	8080
+服务生	fu wu sheng	8079
+未婚妻	wei hun qi	8079
+杂志社	za zhi she	8078
+沃尔夫	wo er fu	8078
+游乐园	you le yuan	8078
+特殊性	te shu xing	8077
+牺牲品	xi sheng pin	8077
+监督管理	jian du guan li	8076
+真让人	zhen rang ren	8076
+福尔摩斯	fu er mo si	8075
+第四季	di si ji	8075
+纳粹德国	na cui de guo	8074
+维克多	wei ke duo	8074
+美国队	mei guo dui	8073
+老板娘	lao ban niang	8073
+股份制	gu fen zhi	8072
+芭蕾舞	ba lei wu	8072
+蓬勃发展	peng bo fa zhan	8071
+角度看	jiao du kan	8071
+语言学家	yu yan xue jia	8070
+误以为	wu yi wei	8070
+贝多芬	bei duo fen	8069
+运载火箭	yun zai huo jian	8069
+随处可见	sui chu ke jian	8068
+领导层	ling dao ceng	8068
+上百万	shang bai wan	8067
+二十世纪	er shi shi ji	8067
+交易日	jiao yi ri	8066
+产业园	chan ye yuan	8066
+人民解放军	ren min jie fang jun	8065
+伊斯坦布尔	yi si tan bu er	8065
+八十年代	ba shi nian dai	8064
+数据资料	shu ju zi liao	7000
+军事行动	jun shi xing dong	8064
+出版商	chu ban shang	8063
+刑事案件	xing shi an jian	8063
+创业者	chuang ye zhe	8062
+判决书	pan jue shu	8062
+匈牙利语	xiong ya li yu	8061
+十二点	shi er dian	8061
+十五岁	shi wu sui	8060
+司法机关	si fa ji guan	8060
+合众国	he zhong guo	8059
+国庆日	guo qing ri	8059
+坚持下去	jian chi xia qu	8058
+大力支持	da li zhi chi	8058
+学生妹	xue sheng mei	8057
+家里人	jia li ren	8057
+尽全力	jin quan li	8056
+差一点	cha yi dian	8056
+忘不了	wang bu liao	8055
+总的来说	zong de lai shuo	8055
+慢慢来	man man lai	8054
+手机号码	shou ji hao ma	8054
+无意识	wu yi shi	8053
+最高点	zui gao dian	8053
+李鸿章	li hong zhang	8052
+没人会	mei ren hui	8052
+潜规则	qian gui ze	8051
+爱上你	ai shang ni	8051
+狮子山	shi zi shan	8050
+甲状腺	jia zhuang xian	8050
+百家乐	bai jia le	8049
+看不出来	kan bu chu lai	8049
+着眼于	zhuo yan yu	8048
+破坏性	po huai xing	8048
+第八届	di ba jie	8047
+精神病院	jing shen bing yuan	8047
+继续下去	ji xu xia qu	8046
+自由贸易	zi you mao yi	8046
+至高无上	zhi gao wu shang	8045
+见证人	jian zheng ren	8045
+话说回来	hua shuo hui lai	8044
+贫民窟	pin min ku	8044
+赛马会	sai ma hui	8043
+超自然	chao zi ran	8043
+身体健康	shen ti jian kang	8042
+遥控器	yao kong qi	8042
+重量级	zhong liang ji	8042
+重金属	zhong jin shu	8041
+降水量	jiang shui liang	8041
+零售商	ling shou shang	8040
+领导班子	ling dao ban zi	8040
+三国演义	san guo yan yi	8039
+不以为然	bu yi wei ran	8039
+不好过	bu hao guo	8038
+世界冠军	shi jie guan jun	8038
+严重性	yan zhong xing	8037
+习以为常	xi yi wei chang	8037
+五月天	wu yue tian	8036
+交换机	jiao huan ji	8036
+休斯顿	xiu si dun	8035
+作品集	zuo pin ji	8035
+保护主义	bao hu zhu yi	8034
+倒计时	dao ji shi	8034
+儿媳妇	er xi fu	8033
+公共卫生	gong gong wei sheng	8033
+决策者	jue ce zhe	8032
+出乎意料	chu hu yi liao	8032
+出生率	chu sheng lv	8031
+十七岁	shi qi sui	8031
+危地马拉	wei di ma la	8030
+历史悠久	li shi you jiu	8030
+友谊赛	you yi sai	8029
+哺乳动物	bu ru dong wu	8029
+国际广播电台	guo ji guang bo dian tai	8028
+国际货币基金组织	guo ji huo bi ji jin zu zhi	8028
+国际足联	guo ji zu lian	8027
+土耳其人	tu er qi ren	8027
+坚定不移	jian ding bu yi	8026
+基础教育	ji chu jiao yu	8026
+塞内加尔	sai nei jia er	8025
+夜生活	ye sheng huo	8025
+威尔士	wei er shi	8024
+季节性	ji jie xing	8024
+守护神	shou hu shen	8023
+宝可梦	bao ke meng	8023
+少不了	shao bu liao	8022
+布莱尔	bu lai er	8021
+张国荣	zhang guo rong	8021
+归根结底	gui gen jie di	8020
+当之无愧	dang zhi wu kui	8020
+意大利语	yi da li yu	8019
+执法人员	zhi fa ren yuan	8019
+招待会	zhao dai hui	8018
+搞不懂	gao bu dong	8018
+环保部门	huan bao bu men	7019
+教育部长	jiao yu bu zhang	8017
+新闻记者	xin wen ji zhe	8017
+无法无天	wu fa wu tian	8016
+无缘无故	wu yuan wu gu	8016
+明斯克	ming si ke	8015
+昨天晚上	zuo tian wan shang	8015
+有太多	you tai duo	8014
+有效性	you xiao xing	8014
+殖民主义	zhi min zhu yi	8013
+沃尔特	wo er te	8013
+活动家	huo dong jia	8012
+济州岛	ji zhou dao	8012
+淡淡的	dan dan de	8011
+演员表	yan yuan biao	8011
+演艺圈	yan yi quan	8010
+特洛伊	te luo yi	8010
+生物科技	sheng wu ke ji	8009
+直到现在	zhi dao xian zai	8009
+短短的	duan duan de	8008
+红树林	hong shu lin	8008
+网络媒体	wang luo mei ti	8007
+老一辈	lao yi bei	8007
+老太婆	lao tai po	8006
+老老实实	lao lao shi shi	8006
+葡萄牙人	pu tao ya ren	8006
+西双版纳	xi shuang ban na	8005
+警卫队	jing wei dui	8005
+豁免权	huo mian quan	8004
+达拉斯	da la si	8004
+遵义会议	zun yi hui yi	7018
+近代史	jin dai shi	8003
+通缉令	tong ji ling	8003
+金融中心	jin rong zhong xin	8002
+陆战队	lu zhan dui	8002
+青海省	qing hai sheng	8001
+香港电影	xiang gang dian ying	8001
+高新区	gao xin qu	8000
+麻省理工学院	ma sheng li gong xue yuan	8000
+一天到晚	yi tian dao wan	7999
+一席之地	yi xi zhi di	7999
+一致性	yi zhi xing	7998
+万平方公里	wan ping fang gong li	7998
+三位一体	san wei yi ti	7997
+不择手段	bu ze shou duan	7997
+不景气	bu jing qi	7996
+世界性	shi jie xing	7996
+中国电信	zhong guo dian xin	7995
+体育运动	ti yu yun dong	7995
+保时捷	bao shi jie	7994
+光天化日	guang tian hua ri	7994
+全自动	quan zi dong	7993
+共产国际	gong chan guo ji	7993
+兴奋剂	xing fen ji	7992
+内政部长	nei zheng bu zhang	7992
+写字楼	xie zi lou	7991
+别有用心	bie you yong xin	7991
+十一届	shi yi jie	7990
+卡斯特	ka si te	7990
+司法部长	si fa bu zhang	7989
+合法权益	he fa quan yi	7989
+国民革命军	guo min ge ming jun	7988
+在生活中	zai sheng huo zhong	7988
+大洋洲	da yang zhou	7987
+大猩猩	da xing xing	7987
+头条新闻	tou tiao xin wen	7986
+奇怪的是	qi guai de shi	7986
+官方版	guan fang ban	7985
+小家伙	xiao jia huo	7984
+尼古拉	ni gu la	7984
+尼日尔	ni ri er	7983
+常务副	chang wu fu	7983
+必要条件	bi yao tiao jian	7982
+恩格斯	en ge si	7982
+拨乱反正	bo luan fan zheng	7981
+探险家	tan xian jia	7981
+收容所	shou rong suo	7980
+斯特拉	si te la	7980
+无与伦比	wu yu lun bi	7979
+无法忍受	wu fa ren shou	7979
+无法控制	wu fa kong zhi	7978
+曲棍球	qu gun qiu	7978
+朴槿惠	pu jin hui	7977
+权威性	quan wei xing	7977
+每一件	mei yi jian	7976
+毛骨悚然	mao gu song ran	7976
+独角兽	du jiao shou	7975
+申请书	shen qing shu	7975
+社会学家	she hui xue jia	7974
+私有制	si you zhi	7974
+称得上	cheng de shang	7973
+移民局	yi min ju	7973
+空气污染	kong qi wu ran	7972
+第一任	di yi ren	7972
+第一节	di yi jie	7971
+第二期	di er qi	7971
+统战部	tong zhan bu	7970
+美人鱼	mei ren yu	7970
+肯德基	ken de ji	7970
+艺术性	yi shu xing	7969
+莫里斯	mo li si	7969
+许多年	xu duo nian	7968
+转换成	zhuan huan cheng	7968
+辛普森	xin pu sen	7967
+郑州市	zheng zhou shi	7967
+长春市	chang chun shi	7966
+随时随地	sui shi sui di	7966
+马列主义	ma lie zhu yi	7965
+高性能	gao xing neng	7965
+一塌糊涂	yi ta hu tu	7964
+不复存在	bu fu cun zai	7964
+中南海	zhong nan hai	7963
+中小学生	zhong xiao xue sheng	7963
+为数不多	wei shu bu duo	7962
+二十多年	er shi duo nian	7962
+交界处	jiao jie chu	7961
+京津冀	jing jin ji	7961
+人性化	ren xing hua	7960
+共产主义者	gong chan zhu yi zhe	7960
+冯玉祥	feng yu xiang	7959
+判断力	pan duan li	7959
+办公桌	ban gong zhuo	7958
+十五日	shi wu ri	7958
+即日起	ji ri qi	7957
+县委书记	xian wei shu ji	7957
+发展局	fa zhan ju	7956
+和平共处	he ping gong chu	7956
+喜马拉雅	xi ma la ya	7955
+埃里克	ai li ke	7955
+复印件	fu yin jian	7954
+电力系统	dian li xi tong	7018
+多一些	duo yi xie	7954
+大中型	da zhong xing	7953
+婴幼儿	ying you er	7953
+察哈尔	cha ha er	7952
+对立面	dui li mian	7952
+异教徒	yi jiao tu	7951
+心甘情愿	xin gan qing yuan	7950
+感谢您	gan xie nin	7950
+承包商	cheng bao shang	7949
+抗议者	kang yi zhe	7949
+政治立场	zheng zhi li chang	7948
+文化教育	wen hua jiao yu	7948
+斯坦福大学	si tan fu da xue	7947
+新纪元	xin ji yuan	7947
+新陈代谢	xin chen dai xie	7946
+无所事事	wu suo shi shi	7946
+日本首相	ri ben shou xiang	7945
+最大化	zui da hua	7945
+杜鲁门	du lu men	7944
+民政部	min zheng bu	7944
+潘金莲	pan jin lian	7943
+热力学	re li xue	7943
+狂欢节	kuang huan jie	7942
+生态环境	sheng tai huan jing	7942
+电磁波	dian ci bo	7941
+知不知道	zhi bu zhi dao	7941
+科罗拉多	ke luo la duo	7940
+第一座	di yi zuo	7940
+第三者	di san zhe	7939
+纪念活动	ji nian huo dong	7939
+纳米比亚	na mi bi ya	7938
+胜利者	sheng li zhe	7938
+脑海中	nao hai zhong	7937
+航天飞机	hang tian fei ji	7937
+艾哈迈德	ai ha mai de	7936
+蒙古国	meng gu guo	7936
+西西里	xi xi li	7935
+调查员	diao cha yuan	7935
+这会儿	zhe hui er	7934
+闭上眼睛	bi shang yan jing	7934
+难以想象	nan yi xiang xiang	7934
+面包车	mian bao che	7933
+高雄市	gao xiong shi	7933
+万立方米	wan li fang mi	7932
+三年级	san nian ji	7932
+中长期	zhong chang qi	7931
+习惯于	xi guan yu	7931
+二二八	er er ba	7930
+交响乐	jiao xiang yue	7930
+保卫战	bao wei zhan	7929
+免疫力	mian yi li	7929
+党政军	dang zheng jun	7928
+六合彩	liu he cai	7928
+五年计划	wu nian ji hua	7017
+决不会	jue bu hui	7927
+出人意料	chu ren yi liao	7927
+创业板	chuang ye ban	7926
+会议厅	hui yi ting	7017
+制度化	zhi du hua	7926
+十九年	shi jiu nian	7925
+十二个	shi er ge	7925
+十六岁	shi liu sui	7924
+厦门市	xia men shi	7924
+发射器	fa she qi	7923
+发言权	fa yan quan	7923
+周期性	zhou qi xing	7922
+唐纳德	tang na de	7922
+四十岁	si shi sui	7921
+大大小小	da da xiao xiao	7921
+夫斯基	fu si ji	7920
+安倍晋三	an bei jin san	7920
+宣传片	xuan chuan pian	7919
+家庭主妇	jia ting zhu fu	7919
+小弟弟	xiao di di	7918
+尼古拉斯	ni gu la si	7918
+局域网	ju yu wang	7917
+展现出	zhan xian chu	7917
+工人运动	gong ren yun dong	7916
+市场份额	shi chang fen e	7916
+广电总局	guang dian zong ju	7915
+废弃物	fei qi wu	7915
+总指挥	zong zhi hui	7914
+成功率	cheng gong lv	7914
+戴高乐	dai gao le	7913
+挑战赛	tiao zhan sai	7913
+收藏家	shou cang jia	7912
+更多人	geng duo ren	7912
+替代品	ti dai pin	7911
+本年度	ben nian du	7911
+本赛季	ben sai ji	7910
+歇斯底里	xie si di li	7910
+正常化	zheng chang hua	7909
+武装力量	wu zhuang li liang	7909
+每件事	mei jian shi	7908
+民政局	min zheng ju	7908
+深思熟虑	shen si shu lv	7907
+电力公司	dian li gong si	7907
+监视器	jian shi qi	7906
+直播间	zhi bo jian	7906
+相关性	xiang guan xing	7905
+祖父母	zu fu mu	7905
+第一阶段	di yi jie duan	7904
+第六届	di liu jie	7904
+算了吧	suan le ba	7903
+系主任	xi zhu ren	7903
+纳粹党	na cui dang	7902
+胡思乱想	hu si luan xiang	7902
+自始至终	zi shi zhi zhong	7901
+自给自足	zi ji zi zu	7901
+草泥马	cao ni ma	7900
+误认为	wu ren wei	7900
+贵金属	gui jin shu	7899
+遇难者	yu nan zhe	7899
+数据结构	shu ju jie gou	7016
+阿萨德	a sa de	7898
+集散地	ji san di	7898
+首都机场	shou du ji chang	7898
+高分子	gao fen zi	7897
+一成不变	yi cheng bu bian	7897
+三十岁	san shi sui	7896
+不定期	bu ding qi	7896
+中央集权	zhong yang ji quan	7895
+伊莎贝尔	yi sha bei er	7895
+佐佐木	zuo zuo mu	7894
+全副武装	quan fu wu zhuang	7894
+公共汽车	gong gong qi che	7893
+冬奥会	dong ao hui	7893
+出去玩	chu qu wan	7892
+创造者	chuang zao zhe	7892
+副总经理	fu zong jing li	7891
+加工厂	jia gong chang	7891
+华莱士	hua lai shi	7890
+发展史	fa zhan shi	7890
+叶剑英	ye jian ying	7889
+司令官	si ling guan	7889
+同位素	tong wei su	7888
+同盟会	tong meng hui	7888
+哈尔滨市	ha er bin shi	7887
+国有化	guo you hua	7887
+地方性	di fang xing	7886
+士大夫	shi da fu	7886
+处理厂	chu li chang	7885
+多米尼克	duo mi ni ke	7885
+大峡谷	da xia gu	7884
+大拇指	da mu zhi	7884
+大跃进	da yue jin	7883
+奥斯曼	ao si man	7883
+奥斯曼帝国	ao si man di guo	7882
+宋庆龄	song qing ling	7882
+局局长	ju ju zhang	7881
+巴哈马	ba ha ma	7881
+年青人	nian qing ren	7880
+弗朗西斯	fu lang xi si	7880
+录音带	lu yin dai	7879
+得益于	de yi yu	7879
+悄悄地	qiao qiao di	7878
+拉丁语	la ding yu	7878
+提供商	ti gong shang	7877
+教育厅	jiao yu ting	7877
+斯坦福	si tan fu	7876
+昆明市	kun ming shi	7876
+晒太阳	shai tai yang	7875
+配置文件	pei zhi wen jian	7016
+殡仪馆	bin yi guan	7875
+母公司	mu gong si	7874
+水浒传	shui hu zhuan	7874
+波斯尼亚	bo si ni ya	7873
+预算内	yu suan nei	7015
+甲骨文	jia gu wen	7873
+纳尔逊	na er xun	7872
+经济带	jing ji dai	7872
+美国空军	mei guo kong jun	7871
+胆固醇	dan gu chun	7871
+行政长官	xing zheng zhang guan	7870
+被称作	bei cheng zuo	7870
+装饰品	zhuang shi pin	7869
+解释一下	jie shi yi xia	7869
+赔偿金	pei chang jin	7868
+赫鲁晓夫	he lu xiao fu	7868
+集成电路	ji cheng dian lu	7867
+革命性	ge ming xing	7867
+会议员	hui yi yuan	7015
+一大批	yi da pi	7866
+一帆风顺	yi fan feng shun	7866
+一把手	yi ba shou	7865
+一条龙	yi tiao long	7865
+一辆车	yi liang che	7864
+不间断	bu jian duan	7864
+中国人民大学	zhong guo ren min da xue	7863
+中国画	zhong guo hua	7863
+中间人	zhong jian ren	7862
+二十万	er shi wan	7862
+二手车	er shou che	7862
+亲眼目睹	qin yan mu du	7861
+从根本上	cong gen ben shang	7861
+入侵者	ru qin zhe	7860
+公共服务	gong gong fu wu	7860
+冠状病毒	guan zhuang bing du	7859
+发明家	fa ming jia	7859
+小册子	xiao ce zi	7858
+居住地	ju zhu di	7858
+学术会议	xue shu hui yi	7014
+带回家	dai hui jia	7857
+开拓者	kai tuo zhe	7857
+情不自禁	qing bu zi jin	7856
+承担责任	cheng dan ze ren	7856
+搞不好	gao bu hao	7855
+政协委员	zheng xie wei yuan	7855
+新天地	xin tian di	7854
+旅游景点	lv you jing dian	7854
+昆士兰	kun shi lan	7853
+民主主义	min zhu zhu yi	7853
+淘宝网	tao bao wang	7852
+独立国家	du li guo jia	7852
+理直气壮	li zhi qi zhuang	7851
+电视频道	dian shi pin dao	7851
+男同性恋	nan tong xing lian	7850
+百老汇	bai lao hui	7850
+硕士学位	shuo shi xue wei	7849
+社会主义者	she hui zhu yi zhe	7849
+社会福利	she hui fu li	7848
+立法会	li fa hui	7848
+第三位	di san wei	7847
+算不上	suan bu shang	7847
+经济损失	jing ji sun shi	7846
+翰林院	han lin yuan	7846
+考古学	kao gu xue	7845
+职业病	zhi ye bing	7845
+脚踏实地	jiao ta shi di	7844
+脱衣服	tuo yi fu	7844
+自定义	zi ding yi	7843
+表演者	biao yan zhe	7843
+袖手旁观	xiu shou pang guan	7842
+训练营	xun lian ying	7842
+贫富差距	pin fu cha ju	7841
+赵紫阳	zhao zi yang	7841
+越南人	yue nan ren	7840
+进不去	jin bu qu	7840
+道格拉斯	dao ge la si	7839
+非常简单	fei chang jian dan	7839
+非常高兴	fei chang gao xing	7838
+一次次	yi ci ci	7838
+系统升级	xi tong sheng ji	7014
+上半场	shang ban chang	7837
+上周五	shang zhou wu	7837
+与你同在	yu ni tong zai	7836
+世贸组织	shi mao zu zhi	7836
+东道主	dong dao zhu	7835
+中国区	zhong guo qu	7835
+争夺战	zheng duo zhan	7834
+二次元	er ci yuan	7834
+亿美金	yi mei jin	7833
+侏罗纪	zhu luo ji	7833
+健康状况	jian kang zhuang kuang	7832
+克劳德	ke lao de	7832
+准确性	zhun que xing	7831
+到哪去	dao na qu	7831
+前两天	qian liang tian	7830
+办不到	ban bu dao	7830
+吞吐量	tun tu liang	7829
+哈哈大笑	ha ha da xiao	7829
+哈瓦那	ha wa na	7828
+唐太宗	tang tai zong	7828
+喀布尔	ka bu er	7827
+地方法院	di fang fa yuan	7827
+天主教会	tian zhu jiao hui	7827
+安东尼奥	an dong ni ao	7826
+完整性	wan zheng xing	7826
+对得起	dui de qi	7825
+小人物	xiao ren wu	7825
+小女儿	xiao nv er	7824
+弗洛伊德	fu luo yi de	7824
+录音机	lu yin ji	7823
+怎样才能	zen yang cai neng	7823
+感染者	gan ran zhe	7822
+手术室	shou shu shi	7822
+捷克斯洛伐克	jie ke si luo fa ke	7821
+撒哈拉	sa ha la	7821
+教师节	jiao shi jie	7820
+数百名	shu bai ming	7820
+新疆维吾尔自治区	xin jiang wei wu er zi zhi qu	7819
+早些时候	zao xie shi hou	7819
+朱利安	zhu li an	7818
+梦寐以求	meng mei yi qiu	7818
+毋庸置疑	wu yong zhi yi	7817
+民主人士	min zhu ren shi	7817
+民主革命	min zhu ge ming	7816
+汉武帝	han wu di	7816
+沙漠化	sha mo hua	7815
+海洛因	hai luo yin	7815
+游戏规则	you xi gui ze	7814
+灌木丛	guan mu cong	7814
+火山口	huo shan kou	7813
+火车票	huo che piao	7813
+玛莉亚	ma li ya	7812
+电子产品	dian zi chan pin	7812
+社会化	she hui hua	7811
+第一手	di yi shou	7811
+第四名	di si ming	7810
+终结者	zhong jie zhe	7810
+结核病	jie he bing	7809
+统计学	tong ji xue	7809
+维吉尼亚	wei ji ni ya	7808
+网络版	wang luo ban	7808
+股份公司	gu fen gong si	7807
+航站楼	hang zhan lou	7807
+路线图	lu xian tu	7806
+踢足球	ti zu qiu	7806
+运动鞋	yun dong xie	7805
+迫击炮	pai ji pao	7805
+选择权	xuan ze quan	7804
+避难所	bi nan suo	7804
+都还没	dou hai mei	7803
+非线性	fei xian xing	7803
+鲍威尔	bao wei er	7802
+一整套	yi zheng tao	7802
+一清二楚	yi qing er chu	7801
+专业性	zhuan ye xing	7801
+两国关系	liang guo guan xi	7800
+中情局	zhong qing ju	7800
+乌兹别克	wu zi bie ke	7799
+人生观	ren sheng guan	7799
+似曾相识	si ceng xiang shi	7798
+何去何从	he qu he cong	7798
+农场主	nong chang zhu	7797
+十周年	shi zhou nian	7797
+华中科技大学	hua zhong ke ji da xue	7796
+印地安人	yin di an ren	7796
+变速箱	bian su xiang	7795
+名副其实	ming fu qi shi	7795
+吸尘器	xi chen qi	7794
+咖啡厅	ka fei ting	7794
+墨西哥湾	mo xi ge wan	7793
+外交关系	wai jiao guan xi	7793
+大学教授	da xue jiao shou	7792
+女同性恋	nv tong xing lian	7792
+女歌手	nv ge shou	7791
+好久没	hao jiu mei	7791
+孙悟空	sun wu kong	7791
+守门员	shou men yuan	7790
+局限于	ju xian yu	7790
+弗雷德	fu lei de	7789
+强奸犯	qiang jian fan	7789
+想像力	xiang xiang li	7788
+批评家	pi ping jia	7788
+技术员	ji shu yuan	7787
+挑战性	tiao zhan xing	7787
+整件事	zheng jian shi	7786
+文汇报	wen hui bao	7786
+无异于	wu yi yu	7785
+日复一日	ri fu yi ri	7785
+有件事	you jian shi	7784
+民族主义者	min zu zhu yi zhe	7784
+沃尔玛	wo er ma	7783
+没意思	mei yi si	7783
+环境影响	huan jing ying xiang	7782
+理论家	li lun jia	7782
+畜牧业	xu mu ye	7781
+科学界	ke xue jie	7781
+科技进步	ke ji jin bu	7780
+竭尽全力	jie jin quan li	7780
+第二章	di er zhang	7779
+第二集	di er ji	7779
+美国国防部	mei guo guo fang bu	7778
+胡言乱语	hu yan luan yu	7778
+测试版	ce shi ban	7013
+自然人	zi ran ren	7777
+英联邦	ying lian bang	7777
+认识论	ren shi lun	7776
+试验区	shi yan qu	7775
+转换器	zhuan huan qi	7775
+连续性	lian xu xing	7774
+适应性	shi ying xing	7774
+郭沫若	guo mo ruo	7773
+需求量	xu qiu liang	7773
+青铜器	qing tong qi	7772
+革命者	ge ming zhe	7772
+紧急通知	jin ji tong zhi	7013
+高尔夫球场	gao er fu qiu chang	7771
+一棵树	yi ke shu	7771
+一氧化碳	yi yang hua tan	7770
+一视同仁	yi shi tong ren	7770
+丈母娘	zhang mu niang	7769
+三十六	san shi liu	7769
+上星期	shang xing qi	7768
+不放过	bu fang guo	7768
+东帝汶	dong di wen	7767
+中国社会科学院	zhong guo she hui ke xue yuan	7767
+交易平台	jiao yi ping tai	7766
+财政预算	cai zheng yu suan	7012
+从业者	cong ye zhe	7766
+伦理学	lun li xue	7765
+党组书记	dang zu shu ji	7765
+凤凰网	feng huang wang	7764
+县级市	xian ji shi	7764
+同一时间	tong yi shi jian	7763
+向日葵	xiang ri kui	7763
+商业模式	shang ye mo shi	7762
+四面八方	si mian ba fang	7762
+因地制宜	yin di zhi yi	7761
+在线播放	zai xian bo fang	7761
+坚持不懈	jian chi bu xie	7760
+垃圾堆	la ji dui	7760
+大儿子	da er zi	7759
+大理寺	da li si	7759
+太极拳	tai ji quan	7758
+威士忌	wei shi ji	7758
+小分队	xiao fen dui	7757
+局限性	ju xian xing	7757
+恐怖活动	kong bu huo dong	7756
+情绪化	qing xu hua	7756
+扑克牌	pu ke pai	7755
+打官司	da guan si	7755
+推销员	tui xiao yuan	7755
+摩天大楼	mo tian da lou	7754
+支离破碎	zhi li po sui	7754
+教职工	jiao zhi gong	7753
+新闻社	xin wen she	7753
+日新月异	ri xin yue yi	7752
+景德镇	jing de zhen	7752
+本世纪	ben shi ji	7751
+杀伤力	sha shang li	7751
+束手无策	shu shou wu ce	7750
+杨尚昆	yang shang kun	7750
+档案馆	dang an guan	7749
+橄榄油	gan lan you	7749
+每分钟	mei fen zhong	7748
+毛里求斯	mao li qiu si	7748
+波特兰	bo te lan	7747
+混为一谈	hun wei yi tan	7747
+热门话题	re men hua ti	7746
+瘾君子	yin jun zi	7746
+看不懂	kan bu dong	7745
+社会各界	she hui ge jie	7745
+神经元	shen jing yuan	7744
+空军基地	kong jun ji di	7744
+第十一	di shi yi	7743
+等不及	deng bu ji	7743
+航空器	hang kong qi	7742
+莫扎特	mo zha te	7742
+莱比锡	lai bi xi	7741
+装甲师	zhuang jia shi	7741
+角色扮演	jue se ban yan	7740
+训练班	xun lian ban	7740
+说得好	shuo de hao	7739
+贸易战	mao yi zhan	7739
+近几年	jin ji nian	7738
+逊尼派	xun ni pai	7738
+阿尔法	a er fa	7737
+降雨量	jiang yu liang	7736
+雅各布	ya ge bu	7736
+面包店	mian bao dian	7735
+香港特别行政区	xiang gang te bie xing zheng qu	7735
+马里奥	ma li ao	7734
+不道德	bu dao de	7734
+中国籍	zhong guo ji	7733
+书法家	shu fa jia	7733
+事务部	shi wu bu	7732
+二十七年	er shi qi nian	7732
+二十六	er shi liu	7731
+二十四年	er shi si nian	7731
+二十岁	er shi sui	7730
+亚细亚	ya xi ya	7730
+亲朋好友	qin peng hao you	7729
+亲身经历	qin shen jing li	7729
+企事业	qi shi ye	7728
+休斯敦	xiu si dun	7728
+伪装成	wei zhuang cheng	7727
+便携式	bian xie shi	7727
+免不了	mian bu liao	7726
+六十年	liu shi nian	7725
+内心深处	nei xin shen chu	7725
+十一点	shi yi dian	7724
+十分之一	shi fen zhi yi	7724
+华盛顿邮报	hua sheng dun you bao	7723
+南开大学	nan kai da xue	7723
+历史博物馆	li shi bo wu guan	7722
+原子核	yuan zi he	7722
+发生爆炸	fa sheng bao zha	7721
+政治协商会议	zheng zhi xie shang hui yi	7012
+同济大学	tong ji da xue	7721
+名胜区	ming sheng qu	7720
+向前走	xiang qian zou	7720
+君主立宪	jun zhu li xian	7719
+启示录	qi shi lu	7719
+喝咖啡	he ka fei	7719
+回老家	hui lao jia	7718
+圣诞树	sheng dan shu	7718
+墨西哥人	mo xi ge ren	7717
+奥斯陆	ao si lu	7717
+平民百姓	ping min bai xing	7716
+年轻一代	nian qing yi dai	7716
+年龄段	nian ling duan	7715
+并不需要	bing bu xu yao	7715
+应有尽有	ying you jin you	7714
+弗拉基米尔	fu la ji mi er	7714
+很多很多	hen duo hen duo	7713
+忍无可忍	ren wu ke ren	7713
+怎么着	zen me zhe	7712
+性交易	xing jiao yi	7712
+抵抗力	di kang li	7711
+数百人	shu bai ren	7711
+文化产业	wen hua chan ye	7710
+斯洛文尼亚	si luo wen ni ya	7710
+新奥尔良	xin ao er liang	7709
+日用品	ri yong pin	7709
+来龙去脉	lai long qu mai	7708
+枢密院	shu mi yuan	7708
+沿海地区	yan hai di qu	7707
+波兰人	bo lan ren	7707
+洗衣服	xi yi fu	7706
+游行示威	you xing shi wei	7706
+炼油厂	lian you chang	7705
+生小孩	sheng xiao hai	7705
+瘦肉精	shou rou jing	7704
+种族主义者	zhong zu zhu yi zhe	7704
+科特迪瓦	ke te di wa	7703
+第一句	di yi ju	7703
+第一道	di yi dao	7702
+第三条	di san tiao	7702
+第二十	di er shi	7701
+第二节	di er jie	7701
+老干部	lao gan bu	7700
+自力更生	zi li geng sheng	7700
+航空兵	hang kong bing	7699
+英国首相	ying guo shou xiang	7699
+蓝宝石	lan bao shi	7698
+观光客	guan guang ke	7698
+该不该	gai bu gai	7697
+详情请	xiang qing qing	7697
+请原谅	qing yuan liang	7697
+超声波	chao sheng bo	7696
+轻描淡写	qing miao dan xie	7696
+轻轻地	qing qing di	7695
+辩护人	bian hu ren	7695
+边缘化	bian yuan hua	7695
+这些年来	zhe xie nian lai	7694
+马耳他	ma er ta	7694
+驾驶舱	jia shi cang	7693
+骨子里	gu zi li	7693
+黑格尔	hei ge er	7692
+一点一点	yi dian yi dian	7692
+一目了然	yi mu liao ran	7691
+三民主义	san min zhu yi	7691
+下半身	xia ban shen	7690
+不由自主	bu you zi zhu	7690
+专案组	zhuan an zu	7689
+东京大学	dong jing da xue	7689
+东方红	dong fang hong	7688
+中国日报	zhong guo ri bao	7688
+中央党校	zhong yang dang xiao	7687
+义勇军	yi yong jun	7687
+仙人掌	xian ren zhang	7686
+代名词	dai ming ci	7686
+伽利略	jia li lve	7685
+侯赛因	hou sai yin	7685
+保守主义	bao shou zhu yi	7684
+入口处	ru kou chu	7684
+冠军赛	guan jun sai	7683
+出口额	chu kou e	7683
+制造者	zhi zao zhe	7683
+化学物质	hua xue wu zhi	7682
+升级版	sheng ji ban	7682
+半辈子	ban bei zi	7681
+卡扎菲	ka zha fei	7681
+发牢骚	fa lao sao	7680
+发病率	fa bing lv	7680
+台中市	tai zhong shi	7679
+咖啡因	ka fei yin	7679
+土地改革	tu di gai ge	7678
+地级市	di ji shi	7678
+大错特错	da cuo te cuo	7677
+女主人	nv zhu ren	7677
+官僚主义	guan liao zhu yi	7676
+宣传部长	xuan chuan bu zhang	7676
+富士山	fu shi shan	7675
+小兄弟	xiao xiong di	7675
+全球定位系统	quan qiu ding wei xi tong	7011
+广东话	guang dong hua	7674
+怎么弄	zen me nong	7674
+手指头	shou zhi tou	7673
+控股公司	kong gu gong si	7673
+推波助澜	tui bo zhu lan	7672
+政法委	zheng fa wei	7671
+教育家	jiao yu jia	7671
+新北市	xin bei shi	7670
+新泽西州	xin ze xi zhou	7670
+新能源	xin neng yuan	7669
+旅游局	lv you ju	7669
+无锡市	wu xi shi	7668
+时装周	shi zhuang zhou	7668
+有意识	you yi shi	7667
+朝鲜人	chao xian ren	7667
+李小龙	li xiao long	7666
+杰克森	jie ke sen	7666
+某种意义	mou zhong yi yi	7665
+每天晚上	mei tian wan shang	7665
+汽车站	qi che zhan	7664
+没多久	mei duo jiu	7664
+泰国人	tai guo ren	7663
+海南岛	hai nan dao	7663
+湄公河	mei gong he	7662
+火箭炮	huo jian pao	7662
+理工大学	li gong da xue	7661
+管委会	guan wei hui	7661
+管辖权	guan xia quan	7660
+纪念堂	ji nian tang	7660
+网络平台	wang luo ping tai	7659
+美国联邦	mei guo lian bang	7659
+芭芭拉	ba ba la	7658
+苏州市	su zhou shi	7658
+萤火虫	ying huo chong	7657
+行政命令	xing zheng ming ling	7657
+西海岸	xi hai an	7656
+规章制度	gui zhang zhi du	7656
+解决办法	jie jue ban fa	7655
+设计院	she ji yuan	7654
+责任心	ze ren xin	7654
+货真价实	huo zhen jia shi	7653
+起重机	qi zhong ji	7653
+追溯到	zhui su dao	7652
+长三角	zhang san jiao	7652
+阿弥陀佛	e mi tuo fo	7651
+难民营	nan min ying	7651
+韩国政府	han guo zheng fu	7650
+数据传输	shu ju chuan shu	7011
+黄金周	huang jin zhou	7649
+一团糟	yi tuan zao	7649
+一月份	yi yue fen	7648
+业务员	ye wu yuan	7648
+东京都	dong jing du	7647
+两三个	liang san ge	7647
+中小型	zhong xiao xing	7647
+中新社	zhong xin she	7647
+丰富多彩	feng fu duo cai	7646
+交响曲	jiao xiang qu	7646
+人民代表	ren min dai biao	7645
+亿万富翁	yi wan fu weng	7645
+亿立方米	yi li fang mi	7644
+从未见过	cong wei jian guo	7644
+优越性	you yue xing	7643
+会员国	hui yuan guo	7643
+促进会	cu jin hui	7642
+俄亥俄州	e hai e zhou	7642
+倡导者	chang dao zhe	7641
+债务人	zhai wu ren	7641
+先天性	xian tian xing	7640
+全明星	quan ming xing	7640
+出入口	chu ru kou	7639
+别以为	bie yi wei	7639
+制高点	zhi gao dian	7638
+北戴河	bei dai he	7638
+历史系	li shi xi	7637
+哥们儿	ge men er	7637
+大队长	da dui zhang	7636
+奥尼尔	ao ni er	7636
+山脚下	shan jiao xia	7635
+工业革命	gong ye ge ming	7635
+工商局	gong shang ju	7634
+工程学	gong cheng xue	7634
+市场需求	shi chang xu qiu	7634
+年收入	nian shou ru	7633
+并不多	bing bu duo	7633
+幸灾乐祸	xing zai le huo	7632
+微波炉	wei bo lu	7632
+心理健康	xin li jian kang	7631
+总冠军	zong guan jun	7631
+恶性循环	e xing xun huan	7630
+戴眼镜	dai yan jing	7630
+打篮球	da lan qiu	7629
+拍卖会	pai mai hui	7629
+拥有者	yong you zhe	7628
+排水量	pai shui liang	7628
+摇摇欲坠	yao yao yu zhui	7627
+收藏品	shou cang pin	7627
+攻击者	gong ji zhe	7626
+无人驾驶	wu ren jia shi	7626
+无国界	wu guo jie	7625
+时时刻刻	shi shi ke ke	7625
+智慧型	zhi hui xing	7624
+李光耀	li guang yao	7624
+欢呼声	huan hu sheng	7623
+欧洲议会	ou zhou yi hui	7623
+比方说	bi fang shuo	7622
+民族团结	min zu tuan jie	7622
+永远都是	yong yuan dou shi	7621
+沙尘暴	sha chen bao	7621
+法国巴黎	fa guo ba li	7620
+流水线	liu shui xian	7620
+火影忍者	huo ying ren zhe	7619
+火车头	huo che tou	7619
+灵活性	ling huo xing	7618
+照镜子	zhao jing zi	7618
+特殊教育	te shu jiao yu	7617
+犯罪者	fan zui zhe	7617
+生意人	sheng yi ren	7616
+申请表	shen qing biao	7616
+示意图	shi yi tu	7615
+科技部	ke ji bu	7615
+空气质量	kong qi zhi liang	7614
+突破口	tu po kou	7614
+章子怡	zhang zi yi	7613
+筹委会	chou wei hui	7613
+纪检组	ji jian zu	7612
+经济部	jing ji bu	7612
+老家伙	lao jia huo	7611
+能见度	neng jian du	7611
+自欺欺人	zi qi qi ren	7611
+自由度	zi you du	7610
+蒋经国	jiang jing guo	7610
+西藏自治区	xi zang zi zhi qu	7609
+观察家	guan cha jia	7609
+许许多多	xu xu duo duo	7608
+货币政策	huo bi zheng ce	7608
+转变成	zhuan bian cheng	7607
+违规行为	wei gui xing wei	7606
+迫切需要	po qie xu yao	7606
+避孕药	bi yun yao	7605
+邀请函	yao qing han	7605
+都柏林	dou bo lin	7605
+铁丝网	tie si wang	7604
+银监会	yin jian hui	7604
+门户网站	men hu wang zhan	7603
+阶段性	jie duan xing	7603
+阿尔伯特	a er bo te	7602
+障碍物	zhang ai wu	7602
+青岛市	qing dao shi	7601
+面对现实	mian dui xian shi	7601
+马尔代夫	ma er dai fu	7600
+麦克阿瑟	mai ke a se	7600
+呼吸系统	hu xi xi tong	7010
+一不小心	yi bu xiao xin	7599
+三等奖	san deng jiang	7599
+不同寻常	bu tong xun chang	7598
+不失为	bu shi wei	7598
+中华书局	zhong hua shu ju	7598
+中国式	zhong guo shi	7597
+中国网民	zhong guo wang min	7597
+主办方	zhu ban fang	7596
+二十三	er shi san	7596
+人员伤亡	ren yuan shang wang	7595
+代表队	dai biao dui	7595
+元宵节	yuan xiao jie	7594
+克什米尔	ke shi mi er	7594
+公共交通	gong gong jiao tong	7593
+关系人	guan xi ren	7592
+关键性	guan jian xing	7592
+养老院	yang lao yuan	7591
+冲锋枪	chong feng qiang	7591
+几秒钟	ji miao zhong	7590
+刚刚开始	gang gang kai shi	7590
+刺激性	ci ji xing	7589
+加州大学	jia zhou da xue	7589
+加速度	jia su du	7588
+工作狂	gong zuo kuang	7010
+十二五	shi er wu	7588
+去年同期	qu nian tong qi	7587
+去年底	qu nian di	7587
+可见一斑	ke jian yi ban	7586
+吉尔吉斯	ji er ji si	7586
+吉普车	ji pu che	7585
+告一段落	gao yi duan luo	7585
+圣路易斯	sheng lu yi si	7584
+圭亚那	gui ya na	7584
+大丈夫	da zhang fu	7583
+女子监狱	nv zi jian yu	7583
+好家伙	hao jia huo	7582
+字里行间	zi li hang jian	7582
+存储器	cun chu qi	7581
+实用性	shi yong xing	7581
+家喻户晓	jia yu hu xiao	7580
+少林寺	shao lin si	7580
+居民区	ju min qu	7579
+州立大学	zhou li da xue	7579
+巡回演唱	xun hui yan chang	7578
+布宜诺斯艾利斯	bu yi nuo si ai li si	7578
+希腊语	xi la yu	7577
+常见于	chang jian yu	7577
+开放性	kai fang xing	7576
+张家界	zhang jia jie	7576
+形形色色	xing xing se se	7576
+执政者	zhi zheng zhe	7575
+技术开发区	ji shu kai fa qu	7575
+拉斐尔	la fei er	7575
+持有者	chi you zhe	7574
+接二连三	jie er lian san	7574
+播音员	bo yin yuan	7573
+新生代	xin sheng dai	7573
+方方面面	fang fang mian mian	7572
+有生之年	you sheng zhi nian	7572
+杀人案	sha ren an	7571
+李先生	li xian sheng	7571
+根本性	gen ben xing	7570
+法律法规	fa lv fa gui	7570
+清洁工	qing jie gong	7569
+热带雨林	re dai yu lin	7569
+爆炸事件	bao zha shi jian	7568
+犹豫不决	you yu bu jue	7568
+病虫害	bing chong hai	7567
+真不错	zhen bu cuo	7567
+真实情况	zhen shi qing kuang	7566
+突破性	tu po xing	7565
+第一本	di yi ben	7565
+第一篇	di yi pian	7565
+第三批	di san pi	7564
+管理中心	guan li zhong xin	7564
+经济体制	jing ji ti zhi	7563
+聚合物	ju he wu	7563
+肺结核	fei jie he	7562
+自治权	zi zhi quan	7562
+萨摩亚	sa mo ya	7561
+蔡元培	cai yuan pei	7561
+被害者	bei hai zhe	7560
+越来越少	yue lai yue shao	7560
+连衣裙	lian yi qun	7559
+选举人	xuan ju ren	7559
+选举法	xuan ju fa	7558
+都市报	du shi bao	7558
+金牛座	jin niu zuo	7557
+金融业	jin rong ye	7557
+针锋相对	zhen feng xiang dui	7556
+阿勒颇	a lei po	7556
+革命军	ge ming jun	7555
+高尔基	gao er ji	7555
+黄金时代	huang jin shi dai	7554
+项目组	xiang mu zu	7009
+一刹那	yi cha na	7554
+一夜情	yi ye qing	7553
+一年级	yi nian ji	7553
+一条街	yi tiao jie	7553
+一见钟情	yi jian zhong qing	7552
+万千瓦	wan qian wa	7552
+上周末	shang zhou mo	7551
+不起眼	bu qi yan	7551
+两三年	liang san nian	7550
+个人崇拜	ge ren chong bai	7550
+中华文化	zhong hua wen hua	7549
+久而久之	jiu er jiu zhi	7549
+九十年代	jiu shi nian dai	7548
+事实证明	shi shi zheng ming	7548
+交流会	jiao liu hui	7547
+俄罗斯联邦	e luo si lian bang	7547
+保护法	bao hu fa	7546
+催泪弹	cui lei dan	7546
+充其量	chong qi liang	7545
+克里斯多	ke li si duo	7545
+全日制	quan ri zhi	7544
+兴高采烈	xing gao cai lie	7544
+冒出来	mao chu lai	7543
+分数线	fen shu xian	7543
+创建者	chuang jian zhe	7542
+利润率	li run lv	7542
+十二岁	shi er sui	7541
+占地面积	zhan di mian ji	7541
+哈马斯	ha ma si	7540
+哪里找	na li zhao	7540
+国税局	guo shui ju	7539
+大中华	da zhong hua	7539
+奥马尔	ao ma er	7539
+好多年	hao duo nian	7538
+娱乐城	yu le cheng	7538
+嫌疑犯	xian yi fan	7537
+字符串	zi fu chuan	7537
+展览馆	zhan lan guan	7536
+工业园	gong ye yuan	7536
+巴尔的摩	ba er de mo	7535
+平安无事	ping an wu shi	7535
+开普敦	kai pu dun	7534
+投注站	tou zhu zhan	7534
+政治经济	zheng zhi jing ji	7533
+无忧无虑	wu you wu lv	7533
+无限期	wu xian qi	7532
+有别于	you bie yu	7532
+核反应堆	he fan ying dui	7531
+核弹头	he dan tou	7531
+格兰特	ge lan te	7530
+模拟器	mo ni qi	7530
+欢迎您	huan ying nin	7529
+死刑犯	si xing fan	7529
+民意调查	min yi diao cha	7528
+汉族人	han zu ren	7528
+没听说过	mei ting shuo guo	7527
+流动资金	liu dong zi jin	7527
+浪漫主义	lang man zhu yi	7526
+海参崴	hai shen wei	7526
+海洋生物	hai yang sheng wu	7526
+深化改革	shen hua gai ge	7525
+演变成	yan bian cheng	7525
+灾难性	zai nan xing	7524
+犯罪分子	fan zui fen zi	7524
+对系统	dui xi tong	7009
+综合治理	zong he zhi li	7523
+美国会	mei guo hui	7523
+美国大使馆	mei guo da shi guan	7522
+联邦调查局	lian bang diao cha ju	7522
+自相矛盾	zi xiang mao dun	7521
+西城区	xi cheng qu	7521
+讨论会	tao lun hui	7520
+设计图	she ji tu	7520
+诺贝尔文学奖	nuo bei er wen xue jiang	7519
+调查组	diao cha zu	7519
+赫尔辛基	he er xin ji	7519
+近几年来	jin ji nian lai	7518
+近现代	jin xian dai	7518
+数据包	shu ju bao	7008
+量子力学	liang zi li xue	7517
+金钱豹	jin qian bao	7517
+随之而来	sui zhi er lai	7516
+飞机场	fei ji chang	7516
+食品药品	shi pin yao pin	7515
+香港市民	xiang gang shi min	7515
+高水平	gao shui ping	7514
+民政部门	min zheng bu men	7008
+不得而知	bu de er zhi	7514
+不管怎么	bu guan zen me	7513
+两百万	liang bai wan	7513
+主营业务	zhu ying ye wu	7512
+人民出版社	ren min chu ban she	7512
+从今以后	cong jin yi hou	7511
+从小到大	cong xiao dao da	7511
+从未有过	cong wei you guo	7510
+伊甸园	yi dian yuan	7510
+光明网	guang ming wang	7509
+入场券	ru chang quan	7509
+凯恩斯	kai en si	7508
+版本号	ban ben hao	7007
+副产品	fu chan pin	7508
+化工厂	hua gong chang	7507
+北极熊	bei ji xiong	7507
+南华早报	nan hua zao bao	7506
+卢卡斯	lu ka si	7506
+卫生巾	wei sheng jin	7505
+厦门大学	xia men da xue	7505
+只能靠	zhi neng kao	7504
+台湾地区	tai wan di qu	7504
+在政治上	zai zheng zhi shang	7503
+坐飞机	zuo fei ji	7503
+墨西哥城	mo xi ge cheng	7503
+大体上	da ti shang	7502
+大张旗鼓	da zhang qi gu	7502
+婆罗洲	po luo zhou	7501
+安乐死	an le si	7501
+密不可分	mi bu ke fen	7500
+察觉到	cha jue dao	7500
+导火线	dao huo xian	7499
+小学校	xiao xue xiao	7499
+师范学校	shi fan xue xiao	7498
+广西壮族自治区	guang xi zhuang zu zi zhi qu	7498
+心知肚明	xin zhi du ming	7497
+急诊室	ji zhen shi	7497
+性价比	xing jia bi	7496
+成就感	cheng jiu gan	7496
+抗美援朝	kang mei yuan chao	7495
+控制中心	kong zhi zhong xin	7495
+措手不及	cuo shou bu ji	7494
+收益率	shou yi lv	7494
+政治化	zheng zhi hua	7493
+故事片	gu shi pian	7493
+数以万计	shu yi wan ji	7492
+文化节	wen hua jie	7492
+文物保护	wen wu bao hu	7491
+新闻报道	xin wen bao dao	7491
+旅游者	lv you zhe	7490
+旗舰店	qi jian dian	7490
+无时无刻	wu shi wu ke	7490
+曾荫权	ceng yin quan	7489
+最高人民检察院	zui gao ren min jian cha yuan	7489
+未婚夫	wei hun fu	7489
+核废料	he fei liao	7488
+模块化	mo kuai hua	7488
+殊不知	shu bu zhi	7487
+水龙头	shui long tou	7487
+没人管	mei ren guan	7486
+法国政府	fa guo zheng fu	7486
+潘基文	pan ji wen	7485
+环球网	huan qiu wang	7485
+理发师	li fa shi	7484
+生态学	sheng tai xue	7484
+百货公司	bai huo gong si	7483
+真心话	zhen xin hua	7483
+社会性	she hui xing	7482
+私营企业	si ying qi ye	7482
+美高梅	mei gao mei	7481
+背道而驰	bei dao er chi	7481
+艺术作品	yi shu zuo pin	7480
+艺术馆	yi shu guan	7480
+行动者	xing dong zhe	7479
+表决权	biao jue quan	7479
+视网膜	shi wang mo	7478
+记不清	ji bu qing	7478
+说说话	shuo shuo hua	7477
+软件开发	ruan jian kai fa	7477
+这群人	zhe qun ren	7476
+迪斯尼	di si ni	7476
+都督府	du du fu	7475
+金日成	jin ri cheng	7475
+长方形	chang fang xing	7474
+长治久安	chang zhi jiu an	7474
+雅典娜	ya dian na	7473
+预选赛	yu xuan sai	7473
+齐齐哈尔	qi qi ha er	7472
+专业知识	zhuan ye zhi shi	7472
+中国工农红军	zhong guo gong nong hong jun	7471
+中秋节	zhong qiu jie	7471
+五星红旗	wu xing hong qi	7470
+从何而来	cong he er lai	7470
+从天而降	cong tian er jiang	7470
+代表人	dai biao ren	7469
+令人满意	ling ren man yi	7469
+企业主	qi ye zhu	7468
+便利商店	bian li shang dian	7468
+兄弟会	xiong di hui	7467
+先发制人	xian fa zhi ren	7467
+克里姆林宫	ke li mu lin gong	7467
+党和国家	dang he guo jia	7466
+公民权	gong min quan	7466
+刻不容缓	ke bu rong huan	7465
+功能性	gong neng xing	7465
+化学工业	hua xue gong ye	7464
+北京地铁	bei jing di tie	7464
+印地安	yin di an	7464
+历史学	li shi xue	7463
+发号施令	fa hao shi ling	7463
+各界人士	ge jie ren shi	7463
+合肥市	he fei shi	7462
+另行通知	ling xing tong zhi	7007
+命中注定	ming zhong zhu ding	7462
+国家森林公园	guo jia sen lin gong yuan	7461
+地质学	di zhi xue	7461
+多层次	duo ceng ci	7460
+大提琴	da ti qin	7460
+太平洋战争	tai ping yang zhan zheng	7459
+安然无恙	an ran wu yang	7458
+嵌入式	qian ru shi	7458
+工程技术	gong cheng ji shu	7457
+应用软件	ying yong ruan jian	7457
+张学友	zhang xue you	7456
+征服者	zheng fu zhe	7456
+心里话	xin li hua	7455
+念念不忘	nian nian bu wang	7455
+恍然大悟	huang ran da wu	7454
+慈善机构	ci shan ji gou	7454
+成绩单	cheng ji dan	7453
+拉丁字母	la ding zi mu	7453
+招待所	zhao dai suo	7452
+工程项目	gong cheng xiang mu	7006
+挖掘机	wa jue ji	7452
+教研室	jiao yan shi	7451
+数十名	shu shi ming	7451
+新大陆	xin da lu	7450
+时间轴	shi jian zhou	7450
+木乃伊	mu nai yi	7449
+李自成	li zi cheng	7449
+检察机关	jian cha ji guan	7448
+检查站	jian cha zhan	7448
+残奥会	can ao hui	7447
+民营企业	min ying qi ye	7447
+气象局	qi xiang ju	7446
+焕然一新	huan ran yi xin	7446
+独自一人	du zi yi ren	7445
+生命线	sheng ming xian	7445
+生还者	sheng huan zhe	7444
+的确如此	di que ru ci	7444
+紫禁城	zi jin cheng	7443
+统治阶级	tong zhi jie ji	7442
+老爷爷	lao ye ye	7442
+联合报	lian he bao	7441
+脱口而出	tuo kou er chu	7441
+舞台剧	wu tai ju	7440
+艺术团	yi shu tuan	7440
+艾森豪威尔	ai sen hao wei er	7439
+赵本山	zhao ben shan	7439
+躲起来	duo qi lai	7438
+长大成人	zhang da cheng ren	7438
+阿卜杜勒	a bo du lei	7437
+阿尔卑斯山	a er bei si shan	7437
+青年团	qing nian tuan	7436
+非主流	fei zhu liu	7436
+风景线	feng jing xian	7436
+高高的	gao gao de	7435
+一事无成	yi shi wu cheng	7435
+一巴掌	yi ba zhang	7434
+一针见血	yi zhen jian xie	7434
+三个代表	san ge dai biao	7433
+三百年	san bai nian	7433
+三聚氰胺	san ju qing an	7432
+上议院	shang yi yuan	7432
+不对劲	bu dui jin	7431
+中医药	zhong yi yao	7431
+书记处	shu ji chu	7431
+二十日	er shi ri	7430
+五十万	wu shi wan	7430
+今天上午	jin tian shang wu	7429
+伯明翰	bo ming han	7429
+住在一起	zhu zai yi qi	7428
+佛山市	fo shan shi	7428
+充电器	chong dian qi	7428
+养鸡场	yang ji chang	7427
+内分泌	nei fen mi	7427
+写文章	xie wen zhang	7426
+分不清	fen bu qing	7426
+利用率	li yong lv	7425
+前列腺	qian lie xian	7425
+剧场版	ju chang ban	7424
+劳斯莱斯	lao si lai si	7424
+医药费	yi yao fei	7424
+十二届	shi er jie	7423
+十八日	shi ba ri	7423
+协奏曲	xie zou qu	7422
+南半球	nan ban qiu	7422
+受难者	shou nan zhe	7421
+叶利钦	ye li qin	7421
+啥意思	sha yi si	7420
+喜闻乐见	xi wen le jian	7420
+国大党	guo da dang	7419
+国际标准	guo ji biao zhun	7419
+土木工程	tu mu gong cheng	7418
+地质学家	di zhi xue jia	7418
+塔吉克	ta ji ke	7417
+塔吉克斯坦	ta ji ke si tan	7417
+太多人	tai duo ren	7417
+女明星	nv ming xing	7416
+宏观经济	hong guan jing ji	7416
+密苏里州	mi su li zhou	7415
+尤文图斯	you wen tu si	7415
+就是指	jiu shi zhi	7414
+巡回演出	xun hui yan chu	7414
+巡回赛	xun hui sai	7413
+干干净净	gan gan jing jing	7413
+幸福感	xing fu gan	7412
+张闻天	zhang wen tian	7412
+形而上学	xing er shang xue	7411
+影视剧	ying shi ju	7411
+德里克	de li ke	7411
+忧郁症	you yu zheng	7410
+性伴侣	xing ban lv	7410
+总干事	zong gan shi	7409
+拳击手	quan ji shou	7409
+挺不错	ting bu cuo	7408
+文学院	wen xue yuan	7408
+无可厚非	wu ke hou fei	7407
+日耳曼	ri er man	7407
+普遍认为	pu bian ren wei	7406
+欧盟委员会	ou meng wei yuan hui	7406
+正当性	zheng dang xing	7405
+法学家	fa xue jia	7405
+淘汰赛	tao tai sai	7404
+漠不关心	mo bu guan xin	7404
+爆炸性	bao zha xing	7403
+牡丹江	mu dan jiang	7403
+独立战争	du li zhan zheng	7402
+短期内	duan qi nei	7402
+福斯特	fu si te	7401
+空手道	kong shou dao	7401
+第五个	di wu ge	7400
+第十五	di shi wu	7400
+算不算	suan bu suan	7399
+纺织业	fang zhi ye	7399
+经营权	jing ying quan	7398
+给事中	gei shi zhong	7398
+绳之以法	sheng zhi yi fa	7398
+维纳斯	wei na si	7397
+美国大学	mei guo da xue	7397
+翻天覆地	fan tian fu di	7396
+自由自在	zi you zi zai	7396
+自由软件	zi you ruan jian	7396
+艺术展	yi shu zhan	7395
+莱斯特	lai si te	7395
+葡萄糖	pu tao tang	7395
+被选为	bei xuan wei	7394
+解放战争	jie fang zhan zheng	7394
+记录下来	ji lu xia lai	7393
+试一试	shi yi shi	7393
+话语权	hua yu quan	7392
+走投无路	zou tou wu lu	7392
+鄂尔多斯	e er duo si	7391
+长颈鹿	chang jing lu	7391
+零售业	ling shou ye	7390
+静静的	jing jing de	7390
+高中毕业	gao zhong bi ye	7389
+高技术	gao ji shu	7389
+齐心协力	qi xin xie li	7389
+出席会议	chu xi hui yi	7006
+一心一意	yi xin yi yi	7388
+万公里	wan gong li	7388
+五十岁	wu shi sui	7387
+亚太地区	ya tai di qu	7387
+传染性	chuan ran xing	7386
+伪君子	wei jun zi	7386
+信得过	xin de guo	7385
+停火协议	ting huo xie yi	7385
+克利夫兰	ke li fu lan	7384
+创世纪	chuang shi ji	7384
+创立者	chuang li zhe	7383
+匪夷所思	fei yi suo si	7383
+医学会	yi xue hui	7382
+十月革命	shi yue ge ming	7382
+南京大屠杀	nan jing da tu sha	7381
+客户群	ke hu qun	7005
+卷土重来	juan tu chong lai	7381
+历险记	li xian ji	7381
+口口声声	kou kou sheng sheng	7380
+另一端	ling yi duan	7380
+只在乎	zhi zai hu	7380
+吐鲁番	tu lu fan	7379
+周星驰	zhou xing chi	7379
+命中率	ming zhong lv	7379
+坎贝尔	kan bei er	7378
+外地人	wai di ren	7378
+大总统	da zong tong	7377
+大相径庭	da xiang jing ting	7377
+婚外情	hun wai qing	7376
+安全法	an quan fa	7376
+安道尔	an dao er	7375
+完全同意	wan quan tong yi	7375
+家庭成员	jia ting cheng yuan	7374
+小天使	xiao tian shi	7374
+小女生	xiao nv sheng	7373
+就读于	jiu du yu	7373
+屡见不鲜	lv jian bu xian	7372
+库尔德	ku er de	7372
+得天独厚	de tian du hou	7371
+心满意足	xin man yi zu	7371
+恰到好处	qia dao hao chu	7370
+情报机构	qing bao ji gou	7370
+戈尔巴乔夫	ge er ba qiao fu	7369
+成问题	cheng wen ti	7369
+文件格式	wen jian ge shi	7005
+护肤品	hu fu pin	7368
+探险队	tan xian dui	7368
+搞不清楚	gao bu qing chu	7367
+摩尔多瓦	mo er duo wa	7367
+攻击机	gong ji ji	7366
+教育界	jiao yu jie	7366
+无中生有	wu zhong sheng you	7365
+朱镕基	zhu rong ji	7364
+核电厂	he dian chang	7364
+民主党派	min zhu dang pai	7363
+水利工程	shui li gong cheng	7363
+水污染	shui wu ran	7363
+沉积物	chen ji wu	7362
+流行音乐	liu xing yin yue	7362
+混血儿	hun xue er	7361
+爱丁堡	ai ding bao	7361
+爱我吗	ai wo ma	7360
+理发店	li fa dian	7360
+用电量	yong dian liang	7359
+百慕大	bai mu da	7359
+皮肤病	pi fu bing	7359
+相结合	xiang jie he	7359
+知名人士	zhi ming ren shi	7359
+福州市	fu zhou shi	7358
+空中巴士	kong zhong ba shi	7358
+第十二	di shi er	7357
+编者按	bian zhe an	7357
+置之不理	zhi zhi bu li	7356
+美利坚合众国	mei li jian he zhong guo	7356
+联合体	lian he ti	7355
+联系电话	lian xi dian hua	7355
+脂肪酸	zhi fang suan	7354
+自贸区	zi mao qu	7354
+色情片	se qing pian	7353
+若无其事	ruo wu qi shi	7353
+记录片	ji lu pian	7352
+说不出	shuo bu chu	7352
+请愿书	qing yuan shu	7351
+资源管理	zi yuan guan li	7351
+赶不上	gan bu shang	7350
+转基因	zhuan ji yin	7350
+过敏性	guo min xing	7349
+远距离	yuan ju li	7349
+迫在眉睫	po zai mei jie	7348
+那会儿	na hui er	7348
+郁金香	yu jin xiang	7347
+金黄色	jin huang se	7347
+长久以来	chang jiu yi lai	7346
+靖国神社	jing guo shen she	7346
+首歌曲	shou ge qu	7345
+一无是处	yi wu shi chu	7345
+上下文	shang xia wen	7345
+上个星期	shang ge xing qi	7344
+不了了之	bu liao liao zhi	7344
+不言而喻	bu yan er yu	7343
+与生俱来	yu sheng ju lai	7343
+东北亚	dong bei ya	7343
+东城区	dong cheng qu	7342
+东莞市	dong guan shi	7342
+中书省	zhong shu sheng	7342
+中央社	zhong yang she	7341
+中宣部	zhong xuan bu	7341
+乘务员	cheng wu yuan	7340
+习惯性	xi guan xing	7340
+事业部	shi ye bu	7339
+二氧化硫	er yang hua liu	7339
+人身攻击	ren shen gong ji	7339
+仅供参考	jin gong can kao	7338
+伏特加	fu te jia	7338
+伸张正义	shen zhang zheng yi	7337
+停车位	ting che wei	7337
+公民权利	gong min quan li	7336
+公立学校	gong li xue xiao	7336
+刽子手	gui zi shou	7336
+剧情片	ju qing pian	7335
+北洋政府	bei yang zheng fu	7335
+医科大学	yi ke da xue	7334
+十余年	shi yu nian	7334
+博茨瓦纳	bo ci wa na	7334
+卫生纸	wei sheng zhi	7333
+受益人	shou yi ren	7333
+可追溯	ke zhui su	7332
+吉普赛人	ji pu sai ren	7332
+国安局	guo an ju	7331
+国庆节	guo qing jie	7331
+国立大学	guo li da xue	7330
+处女膜	chu nv mo	7330
+大专院校	da zhuan yuan xiao	7329
+大结局	da jie ju	7329
+奥特曼	ao te man	7328
+威廉姆斯	wei lian mu si	7328
+帕特里克	pa te li ke	7327
+广播节目	guang bo jie mu	7327
+往前走	wang qian zou	7326
+总成绩	zong cheng ji	7326
+感染力	gan ran li	7325
+感谢上帝	gan xie shang di	7325
+愿不愿意	yuan bu yuan yi	7325
+打喷嚏	da pen ti	7324
+护身符	hu shen fu	7324
+放大器	fang da qi	7323
+教育学	jiao yu xue	7323
+文学作品	wen xue zuo pin	7323
+新文化	xin wen hua	7322
+旗帜鲜明	qi zhi xian ming	7322
+时刻表	shi ke biao	7322
+暂时性	zan shi xing	7321
+有机物	you ji wu	7321
+李显龙	li xian long	7320
+毕加索	bi jia suo	7320
+没事儿	mei shi er	7319
+沼泽地	zhao ze di	7319
+波斯语	bo si yu	7319
+注意事项	zhu yi shi xiang	7318
+海王星	hai wang xing	7318
+润滑油	run hua you	7317
+深深地	shen shen di	7317
+潘多拉	pan duo la	7316
+澳洲人	ao zhou ren	7316
+火箭弹	huo jian dan	7315
+热水器	re shui qi	7315
+热身赛	re shen sai	7314
+独裁政权	du cai zheng quan	7314
+珠三角	zhu san jiao	7313
+生日礼物	sheng ri li wu	7313
+看得出来	kan de chu lai	7312
+社会制度	she hui zhi du	7312
+社会秩序	she hui zhi xu	7311
+第一款	di yi kuan	7311
+篮球场	lan qiu chang	7310
+发邮件	fa you jian	7004
+纽伦堡	niu lun bao	7310
+组织法	zu zhi fa	7310
+经不起	jing bu qi	7309
+经验丰富	jing yan feng fu	7309
+维他命	wei ta ming	7308
+营业执照	ying ye zhi zhao	7308
+虚拟现实	xu ni xian shi	7307
+蛛丝马迹	zhu si ma ji	7307
+装模作样	zhuang mu zuo yang	7306
+试一下	shi yi xia	7306
+说不清	shuo bu qing	7305
+贪污腐败	tan wu fu bai	7305
+这段话	zhe duan hua	7304
+非正常	fei zheng chang	7304
+韩国队	han guo dui	7303
+魁北克	kui bei ke	7303
+鸦片战争	ya pian zhan zheng	7302
+麦迪逊	mai di xun	7302
+一万元	yi wan yuan	7301
+一代人	yi dai ren	7301
+一般性	yi ban xing	7300
+三十多年	san shi duo nian	7300
+东西方	dong xi fang	7299
+中国台湾	zhong guo tai wan	7299
+为时已晚	wei shi yi wan	7298
+主人翁	zhu ren weng	7298
+二十六年	er shi liu nian	7297
+人寿保险	ren shou bao xian	7297
+价值量	jia zhi liang	7296
+依法治国	yi fa zhi guo	7296
+保险业	bao xian ye	7295
+关系密切	guan xi mi qie	7295
+关节炎	guan jie yan	7294
+冷空气	leng kong qi	7294
+分水岭	fen shui ling	7293
+分界线	fen jie xian	7293
+划时代	hua shi dai	7292
+创作者	chuang zuo zhe	7292
+判处死刑	pan chu si xing	7291
+加尔各答	jia er ge da	7291
+发电量	fa dian liang	7290
+另一家	ling yi jia	7290
+吃晚饭	chi wan fan	7289
+合情合理	he qing he li	7289
+同时代	tong shi dai	7288
+听不见	ting bu jian	7288
+喝一杯	he yi bei	7288
+在野党	zai ye dang	7287
+消化系统	xiao hua xi tong	7004
+城市规划	cheng shi gui hua	7287
+大开眼界	da kai yan jie	7286
+奥斯汀	ao si ting	7286
+如火如荼	ru huo ru tu	7285
+威廉斯	wei lian si	7285
+安眠药	an mian yao	7284
+宜兰县	yi lan xian	7284
+宪法法院	xian fa fa yuan	7283
+局外人	ju wai ren	7283
+广为流传	guang wei liu chuan	7282
+广播剧	guang bo ju	7282
+归功于	gui gong yu	7281
+忧心忡忡	you xin chong chong	7281
+恰恰相反	qia qia xiang fan	7280
+成交量	cheng jiao liang	7280
+掉下去	diao xia qu	7279
+接电话	jie dian hua	7279
+签合同	qian he tong	7003
+旅游区	lv you qu	7278
+无一例外	wu yi li wai	7278
+无可奈何	wu ke nai he	7278
+服务站	fu wu zhan	7277
+林业局	lin ye ju	7277
+柯林斯	ke lin si	7276
+民粹主义	min cui zhu yi	7276
+水产品	shui chan pin	7275
+波音公司	bo yin gong si	7275
+泰晤士报	tai wu shi bao	7274
+海明威	hai ming wei	7274
+淋漓尽致	lin li jin zhi	7273
+深呼吸	shen hu xi	7273
+渥太华	wo tai hua	7272
+玫瑰花	mei gui hua	7272
+珍珠港	zhen zhu gang	7271
+男演员	nan yan yuan	7271
+皮埃尔	pi ai er	7270
+省部级	sheng bu ji	7270
+石家庄市	shi jia zhuang shi	7269
+秘密警察	mi mi jing cha	7269
+税务局	shui wu ju	7268
+突飞猛进	tu fei meng jin	7268
+第二步	di er bu	7268
+第十三	di shi san	7267
+纪委书记	ji wei shu ji	7267
+编辑器	bian ji qi	7266
+网络空间	wang luo kong jian	7266
+老爷子	lao ye zi	7265
+脱衣舞	tuo yi wu	7265
+英国广播公司	ying guo guang bo gong si	7264
+行不行	xing bu xing	7264
+裁判员	cai pan yuan	7263
+西北地区	xi bei di qu	7263
+议会选举	yi hui xuan ju	7263
+调查结果	diao cha jie guo	7262
+贫困县	pin kun xian	7262
+起跑线	qi pao xian	7261
+身心健康	shen xin jian kang	7261
+金大中	jin da zhong	7260
+阿卜杜拉	a bo du la	7260
+难以忍受	nan yi ren shou	7259
+马鞍山	ma an shan	7259
+高标准	gao biao zhun	7258
+一触即发	yi chu ji fa	7258
+上帝保佑	shang di bao you	7257
+不可分割	bu ke fen ge	7257
+与日俱增	yu ri ju zeng	7256
+世界人权宣言	shi jie ren quan xuan yan	7256
+东海岸	dong hai an	7256
+中年人	zhong nian ren	7255
+临时工	lin shi gong	7255
+从此以后	cong ci yi hou	7254
+以身作则	yi shen zuo ze	7254
+企业界	qi ye jie	7254
+伊莉莎白	yi li sha bai	7253
+保险套	bao xian tao	7253
+公安厅	gong an ting	7252
+力所能及	li suo neng ji	7252
+医务人员	yi wu ren yuan	7252
+半年前	ban nian qian	7251
+南朝鲜	nan chao xian	7251
+卫生院	wei sheng yuan	7251
+叛国罪	pan guo zui	7250
+口香糖	kou xiang tang	7250
+可视化	ke shi hua	7249
+各有不同	ge you bu tong	7249
+君士坦丁堡	jun shi tan ding bao	7248
+哈里森	ha li sen	7248
+器官移植	qi guan yi zhi	7247
+国务委员	guo wu wei yuan	7247
+大不列颠	da bu lie dian	7246
+大功率	da gong lv	7246
+大英帝国	da ying di guo	7245
+大街小巷	da jie xiao xiang	7245
+如是说	ru shi shuo	7244
+小儿子	xiao er zi	7244
+小宝宝	xiao bao bao	7244
+居住区	ju zhu qu	7243
+工业品	gong ye pin	7243
+内部资料	nei bu zi liao	7003
+工农业	gong nong ye	7242
+巴伐利亚	ba fa li ya	7241
+巴尔干半岛	ba er gan ban dao	7241
+市场占有率	shi chang zhan you lv	7241
+市议员	shi yi yuan	7240
+应运而生	ying yun er sheng	7240
+康拉德	kang la de	7239
+弗吉尼亚州	fu ji ni ya zhou	7239
+待会儿	dai hui er	7239
+忘恩负义	wang en fu yi	7238
+性侵犯	xing qin fan	7238
+总参谋长	zong can mou zhang	7237
+持之以恒	chi zhi yi heng	7237
+持有人	chi you ren	7237
+推进器	tui jin qi	7236
+文学史	wen xue shi	7236
+文工团	wen gong tuan	7235
+无足轻重	wu zu qing zhong	7235
+日本国	ri ben guo	7234
+合同法	he tong fa	7002
+李先念	li xian nian	7234
+李宇春	li yu chun	7233
+死定了	si ding le	7233
+民主党人	min zhu dang ren	7232
+激动人心	ji dong ren xin	7232
+爱滋病	ai zi bing	7231
+爵士乐	jue shi yue	7231
+病原体	bing yuan ti	7230
+皮尔斯	pi er si	7230
+直言不讳	zhi yan bu hui	7229
+破口大骂	po kou da ma	7229
+社民党	she min dang	7228
+祝你们	zhu ni men	7228
+科罗拉多州	ke luo la duo zhou	7227
+第一眼	di yi yan	7227
+第二张	di er zhang	7226
+第十二届	di shi er jie	7226
+组成员	zu cheng yuan	7226
+绊脚石	ban jiao shi	7225
+经常性	jing chang xing	7225
+经济网	jing ji wang	7225
+美国公司	mei guo gong si	7224
+自由市场	zi you shi chang	7224
+莱茵河	lai yin he	7223
+葡萄园	pu tao yuan	7223
+蓄电池	xu dian chi	7222
+螺旋桨	luo xuan jiang	7222
+解放后	jie fang hou	7222
+解放思想	jie fang si xiang	7221
+请参阅	qing can yue	7221
+财政局	cai zheng ju	7220
+越南政府	yue nan zheng fu	7220
+跆拳道	tai quan dao	7219
+轩然大波	xuan ran da bo	7219
+运输业	yun shu ye	7218
+违法犯罪	wei fa fan zui	7218
+迦太基	jia tai ji	7217
+造船厂	zao chuan chang	7217
+邓丽君	deng li jun	7216
+革命党	ge ming dang	7216
+风云人物	feng yun ren wu	7216
+黄埔军校	huang pu jun xiao	7215
+黑猩猩	hei xing xing	7215
+一厢情愿	yi xiang qing yuan	7214
+一大步	yi da bu	7214
+一大群	yi da qun	7213
+不堪一击	bu kan yi ji	7213
+不由得	bu you de	7213
+不算什么	bu suan shen me	7212
+与世隔绝	yu shi ge jue	7212
+世博会	shi bo hui	7211
+中东地区	zhong dong di qu	7211
+中英文	zhong ying wen	7211
+亚伯拉罕	ya bo la han	7210
+产品线	chan pin xian	7210
+以人为本	yi ren wei ben	7209
+信息中心	xin xi zhong xin	7209
+倒不如	dao bu ru	7208
+全家福	quan jia fu	7208
+全球华人	quan qiu hua ren	7208
+公共安全	gong gong an quan	7207
+六中全会	liu zhong quan hui	7207
+内华达	nei hua da	7206
+决不能	jue bu neng	7206
+列宁格勒	lie ning ge lei	7205
+初学者	chu xue zhe	7205
+协议书	xie yi shu	7204
+南方周末	nan fang zhou mo	7204
+卫生部长	wei sheng bu zhang	7203
+印度政府	yin du zheng fu	7203
+反腐败	fan fu bai	7202
+发扬光大	fa yang guang da	7202
+发生率	fa sheng lv	7201
+发表意见	fa biao yi jian	7201
+史考特	shi kao te	7201
+同义词	tong yi ci	7200
+国家博物馆	guo jia bo wu guan	7200
+地区性	di qu xing	7199
+垃圾场	la ji chang	7199
+塞拉利昂	sai la li ang	7198
+多米尼加	duo mi ni jia	7198
+大字报	da zi bao	7197
+大门口	da men kou	7197
+好意思	hao yi si	7196
+封建社会	feng jian she hui	7196
+巡航导弹	xun hang dao dan	7195
+巴不得	ba bu de	7195
+布拉德	bu la de	7194
+并不一定	bing bu yi ding	7194
+弄清楚	nong qing chu	7193
+弗格森	fu ge sen	7193
+强迫症	qiang po zheng	7192
+录像机	lu xiang ji	7192
+德国队	de guo dui	7191
+总产量	zong chan liang	7191
+总领事	zong ling shi	7191
+慈禧太后	ci xi tai hou	7190
+战胜国	zhan sheng guo	7190
+打火机	da huo ji	7190
+托儿所	tuo er suo	7189
+拥护者	yong hu zhe	7189
+插进去	cha jin qu	7188
+擦肩而过	ca jian er guo	7187
+断断续续	duan duan xu xu	7187
+新教徒	xin jiao tu	7186
+无计可施	wu ji ke shi	7186
+普通高中	pu tong gao zhong	7185
+晶体管	jing ti guan	7185
+本杰明	ben jie ming	7184
+某件事	mou jian shi	7184
+歌舞伎	ge wu ji	7183
+正确性	zheng que xing	7183
+武侠小说	wu xia xiao shuo	7183
+毛里塔尼亚	mao li ta ni ya	7182
+沉迷于	chen mi yu	7182
+法律顾问	fa lv gu wen	7181
+波尔多	bo er duo	7181
+流浪者	liu lang zhe	7181
+消防车	xiao fang che	7180
+点点头	dian dian tou	7180
+电讯报	dian xun bao	7180
+直流电	zhi liu dian	7179
+看一遍	kan yi bian	7179
+私立学校	si li xue xiao	7178
+科维奇	ke wei qi	7178
+第一卷	di yi juan	7177
+第二阶段	di er jie duan	7177
+第四代	di si dai	7176
+米兰达	mi lan da	7176
+美国佬	mei guo lao	7175
+老大哥	lao da ge	7175
+耿耿于怀	geng geng yu huai	7175
+背景音乐	bei jing yin yue	7174
+艾瑞克	ai rui ke	7174
+观众席	guan zhong xi	7173
+认真学习	ren zhen xue xi	7173
+讲故事	jiang gu shi	7172
+评审团	ping shen tuan	7172
+诺曼底	nuo man di	7172
+资讯网	zi xun wang	7171
+辅导员	fu dao yuan	7171
+辛辛苦苦	xin xin ku ku	7170
+近十年	jin shi nian	7170
+追悼会	zhui dao hui	7169
+适得其反	shi de qi fan	7169
+逃出来	tao chu lai	7168
+闪光灯	shan guang deng	7168
+阴阳师	yin yang shi	7167
+顺其自然	shun qi zi ran	7167
+马克思主义者	ma ke si zhu yi zhe	7166
+驱动器	qu dong qi	7166
+鸡尾酒	ji wei jiu	7165
+一切顺利	yi qie shun li	7165
+一小撮	yi xiao cuo	7164
+一本正经	yi ben zheng jing	7164
+不为过	bu wei guo	7163
+不亚于	bu ya yu	7163
+不怎么样	bu zen me yang	7163
+专业课	zhuan ye ke	7162
+专利权	zhuan li quan	7162
+世界贸易组织	shi jie mao yi zu zhi	7162
+中央大学	zhong yang da xue	7161
+中等教育	zhong deng jiao yu	7161
+临时政府	lin shi zheng fu	7160
+买得起	mai de qi	7160
+五分之一	wu fen zhi yi	7159
+五颜六色	wu yan liu se	7159
+亚洲杯	ya zhou bei	7158
+令人兴奋	ling ren xing fen	7158
+任何理由	ren he li you	7157
+优越感	you yue gan	7157
+伯尔尼	bo er ni	7156
+保龄球	bao ling qiu	7156
+修正主义	xiu zheng zhu yi	7155
+做好事	zuo hao shi	7155
+儿童文学	er tong wen xue	7154
+兵工厂	bing gong chang	7154
+内务部	nei wu bu	7153
+军事法庭	jun shi fa ting	7153
+准决赛	zhun jue sai	7152
+分布式	fen bu shi	7152
+分道扬镳	fen dao yang biao	7152
+勇往直前	yong wang zhi qian	7151
+北京城	bei jing cheng	7151
+区政府	qu zheng fu	7150
+卡路里	ka lu li	7150
+历史记录	li shi ji lu	7149
+另一回事	ling yi hui shi	7149
+合理性	he li xing	7148
+同胞们	tong bao men	7148
+售货员	shou huo yuan	7147
+商业街	shang ye jie	7147
+商务印书馆	shang wu yin shu guan	7146
+坐落于	zuo luo yu	7146
+城市群	cheng shi qun	7145
+工作台	gong zuo tai	7002
+基督教徒	ji du jiao tu	7145
+多万元	duo wan yuan	7144
+大会堂	da hui tang	7144
+大学城	da xue cheng	7144
+大灾难	da zai nan	7144
+奉献给	feng xian gei	7144
+奥斯特	ao si te	7144
+女权运动	nv quan yun dong	7143
+好想你	hao xiang ni	7143
+安全套	an quan tao	7142
+市议会	shi yi hui	7142
+带头人	dai tou ren	7141
+常务委员会	chang wu wei yuan hui	7141
+建设工程	jian she gong cheng	7140
+开发人员	kai fa ren yuan	7140
+总收入	zong shou ru	7140
+感同身受	gan tong shen shou	7139
+挡不住	dang bu zhu	7139
+据我所知	ju wo suo zhi	7138
+攀枝花	pan zhi hua	7138
+数以千计	shu yi qian ji	7137
+新闻频道	xin wen pin dao	7137
+数据挖掘	shu ju wa jue	7001
+无政府	wu zheng fu	7136
+日本帝国	ri ben di guo	7136
+普林斯顿大学	pu lin si dun da xue	7135
+普遍性	pu bian xing	7135
+暗地里	an di li	7134
+有把握	you ba wo	7134
+服务公司	fu wu gong si	7133
+李大钊	li da zhao	7133
+比比皆是	bi bi jie shi	7132
+沙丁鱼	sha ding yu	7132
+法新社	fa xin she	7131
+浓浓的	nong nong de	7131
+清明节	qing ming jie	7130
+热血沸腾	re xue fei teng	7130
+牧羊人	mu yang ren	7129
+用户名	yong hu ming	7129
+田纳西州	tian na xi zhou	7129
+电路板	dian lu ban	7128
+白色恐怖	bai se kong bu	7128
+白雪公主	bai xue gong zhu	7127
+知识点	zhi shi dian	7127
+碳水化合物	tan shui hua he wu	7126
+礼拜堂	li bai tang	7126
+社会效益	she hui xiao yi	7126
+纳斯达克	na si da ke	7125
+美国陆军	mei guo lu jun	7125
+老婆婆	lao po po	7125
+聊聊天	liao liao tian	7124
+联络线	lian luo xian	7124
+自相残杀	zi xiang can sha	7123
+舞蹈家	wu dao jia	7123
+行尸走肉	xing shi zou rou	7123
+角落里	jiao luo li	7122
+财政收入	cai zheng shou ru	7122
+赵丽颖	zhao li ying	7121
+起义军	qi yi jun	7121
+超级大国	chao ji da guo	7121
+这么回事	zhe me hui shi	7120
+选择题	xuan ze ti	7120
+郭富城	guo fu cheng	7119
+陪审员	pei shen yuan	7119
+隋炀帝	sui yang di	7118
+预备队	yu bei dui	7118
+马科斯	ma ke si	7117
+骇人听闻	hai ren ting wen	7117
+高难度	gao nan du	7116
+一天天	yi tian tian	7116
+不合时宜	bu he shi yi	7115
+不折不扣	bu zhe bu kou	7115
+不闻不问	bu wen bu wen	7114
+世界排名	shi jie pai ming	7114
+两回事	liang hui shi	7114
+中国青年报	zhong guo qing nian bao	7113
+事务局	shi wu ju	7113
+二年级	er nian ji	7113
+使用率	shi yong lv	7112
+儿童节	er tong jie	7112
+克莱尔	ke lai er	7111
+全力支持	quan li zhi chi	7111
+八国联军	ba guo lian jun	7110
+公平竞争	gong ping jing zheng	7110
+公车上	gong che shang	7109
+农副产品	nong fu chan pin	7109
+制片厂	zhi pian chang	7108
+前首相	qian shou xiang	7108
+动手术	dong shou shu	7108
+劳动节	lao dong jie	7107
+千言万语	qian yan wan yu	7107
+即使如此	ji shi ru ci	7106
+原以为	yuan yi wei	7106
+双边关系	shuang bian guan xi	7105
+同性恋者	tong xing lian zhe	7105
+后顾之忧	hou gu zhi you	7104
+售后服务	shou hou fu wu	7104
+国务院办公厅	guo wu yuan ban gong ting	7103
+国家机密	guo jia ji mi	7103
+国家标准	guo jia biao zhun	7102
+多公里	duo gong li	7102
+多明尼加	duo ming ni jia	7101
+多瑙河	duo nao he	7101
+太阳神	tai yang shen	7100
+孟山都	meng shan dou	7100
+官方语言	guan fang yu yan	7099
+实话实说	shi hua shi shuo	7099
+家庭教育	jia ting jiao yu	7098
+密切相关	mi qie xiang guan	7098
+巴勒斯坦人	ba le si tan ren	7097
+巴恩斯	ba en si	7097
+巴特勒	ba te lei	7096
+布隆迪	bu long di	7096
+引人入胜	yin ren ru sheng	7095
+当代艺术	dang dai yi shu	7095
+感应器	gan ying qi	7094
+托尔斯泰	tuo er si tai	7094
+招聘会	zhao pin hui	7093
+拭目以待	shi mu yi dai	7093
+挥之不去	hui zhi bu qu	7092
+换衣服	huan yi fu	7092
+收费站	shou fei zhan	7091
+普林斯顿	pu lin si dun	7091
+未知数	wei zhi shu	7090
+来之不易	lai zhi bu yi	7090
+桑德斯	sang de si	7089
+死难者	si nan zhe	7089
+民族英雄	min zu ying xiong	7088
+沸沸扬扬	fei fei yang yang	7088
+法务部	fa wu bu	7087
+法律责任	fa lv ze ren	7087
+洛克希德	luo ke xi de	7087
+消费税	xiao fei shui	7086
+源源不断	yuan yuan bu duan	7086
+满脑子	man nao zi	7085
+父母亲	fu mu qin	7085
+白热化	bai re hua	7084
+百万美元	bai wan mei yuan	7084
+百花齐放	bai hua qi fang	7084
+直截了当	zhi jie liao dang	7083
+离退休	li tui xiu	7083
+立法者	li fa zhe	7082
+第一季度	di yi ji du	7082
+第三部	di san bu	7082
+第二段	di er duan	7081
+管理权	guan li quan	7081
+粉丝团	fen si tuan	7081
+精神疾病	jing shen ji bing	7080
+经得起	jing de qi	7080
+绝无仅有	jue wu jin you	7079
+老字号	lao zi hao	7079
+肾上腺素	shen shang xian su	7078
+节节败退	jie jie bai tui	7078
+苏格拉底	su ge la di	7077
+苏美尔	su mei er	7077
+英国海军	ying guo hai jun	7076
+见面会	jian mian hui	7076
+规律性	gui lv xing	7075
+试用期	shi yong qi	7075
+资治通鉴	zi zhi tong jian	7074
+那不勒斯	na bu le si	7074
+阮成发	ruan cheng fa	7073
+降落伞	jiang luo san	7073
+颐和园	yi he yuan	7072
+马六甲	ma liu jia	7072
+马里兰州	ma li lan zhou	7072
+一两年	yi liang nian	7071
+一块钱	yi kuai qian	7071
+一干二净	yi gan er jing	7070
+一应俱全	yi ying ju quan	7070
+不可收拾	bu ke shou shi	7070
+不尽然	bu jin ran	7069
+两岸关系	liang an guan xi	7069
+中下游	zhong xia you	7068
+中共中央政治局	zhong gong zhong yang zheng zhi ju	7068
+中国证监会	zhong guo zheng jian hui	7067
+中央书记处	zhong yang shu ji chu	7067
+中纪委	zhong ji wei	7067
+临界点	lin jie dian	7066
+主动性	zhu dong xing	7066
+二十三日	er shi san ri	7065
+二极管	er ji guan	7064
+报告员	bao gao yuan	7001
+亚里士多德	ya li shi duo de	7064
+假消息	jia xiao xi	7063
+先行者	xian xing zhe	7063
+八百万	ba bai wan	7062
+公共场合	gong gong chang he	7061
+凌驾于	ling jia yu	7061
+刑事责任	xing shi ze ren	7060
+北朝鲜	bei chao xian	7060
+北极星	bei ji xing	7059
+十三届	shi san jie	7059
+十八个	shi ba ge	7059
+协约国	xie yue guo	7058
+南极洲	nan ji zhou	7058
+占领区	zhan ling qu	7058
+卡梅伦	ka mei lun	7058
+原产地	yuan chan di	7057
+哈罗德	ha luo de	7057
+土生土长	tu sheng tu zhang	7056
+多种多样	duo zhong duo yang	7056
+大众化	da zhong hua	7055
+大声疾呼	da sheng ji hu	7055
+大白天	da bai tian	7055
+女同学	nv tong xue	7054
+安居乐业	an ju le ye	7054
+宫颈癌	gong jing ai	7053
+家庭暴力	jia ting bao li	7053
+家用电器	jia yong dian qi	7052
+密西西比	mi xi xi bi	7052
+少部分	shao bu fen	7052
+屈指可数	qu zhi ke shu	7051
+差点儿	cha dian er	7051
+巴巴多斯	ba ba duo si	7050
+康有为	kang you wei	7050
+心电图	xin dian tu	7049
+惨不忍睹	can bu ren du	7049
+慢性病	man xing bing	7048
+执委会	zhi wei hui	7048
+投资额	tou zi e	7047
+抢劫案	qiang jie an	7047
+拉塞尔	la sai er	7047
+拉莫斯	la mo si	7046
+捕捉到	bu zhuo dao	7046
+摇钱树	yao qian shu	7046
+文化局	wen hua ju	7045
+无所畏惧	wu suo wei ju	7045
+时代广场	shi dai guang chang	7044
+明摆着	ming bai zhe	7044
+有利可图	you li ke tu	7043
+校园内	xiao yuan nei	7042
+热烈欢迎	re lie huan ying	7042
+犯罪现场	fan zui xian chang	7041

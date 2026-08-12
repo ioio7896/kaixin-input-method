@@ -31,10 +31,10 @@ struct CandidateColors {
   COLORREF chipActiveText = RGB(29, 78, 216);
   float borderOpacity = 0.86f;
   float dividerOpacity = 0.48f;
-  float shadowOpacity = 0.025f;
-  int shadowSize = 3;
+  float shadowOpacity = 0.08f;
+  int shadowSize = 8;
   bool shadowEnabled = true;
-  bool isMist = false;   // Acrylic/Mist mode
+  bool isMist = false;  // Soft mist gradient; no backdrop blur.
 };
 
 COLORREF AlphaBlendColor(COLORREF fg, COLORREF bg, float alpha) {
