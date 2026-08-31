@@ -17,7 +17,6 @@ $ErrorActionPreference = 'Stop'
 
 $PackageManifestName = 'package_manifest.sha256'
 $ComponentManifestName = 'component_manifest.ini'
-$ShareXSourceArchiveName = 'kaixin-sharex-corresponding-source.zip'
 $PythonPackageExcludeNames = @(
     '__pycache__',
     '.pytest_cache',
@@ -154,6 +153,24 @@ function Copy-FileIfChanged {
     (Get-Item -LiteralPath $DestinationPath).LastWriteTimeUtc = $sourceItem.LastWriteTimeUtc
 }
 
+function Copy-PowerShellScriptUtf8Bom {
+    param(
+        [string]$SourcePath,
+        [string]$DestinationPath
+    )
+
+    $destinationDir = Split-Path -Parent $DestinationPath
+    if (-not (Test-Path -LiteralPath $destinationDir)) {
+        New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
+    }
+
+    $text = [System.IO.File]::ReadAllText($SourcePath, [System.Text.Encoding]::UTF8)
+    $utf8Bom = New-Object System.Text.UTF8Encoding($true)
+    [System.IO.File]::WriteAllText($DestinationPath, $text, $utf8Bom)
+    (Get-Item -LiteralPath $DestinationPath).LastWriteTimeUtc =
+        (Get-Item -LiteralPath $SourcePath).LastWriteTimeUtc
+}
+
 function Get-Sha256Hex {
     param([string]$Path)
 
@@ -241,50 +258,6 @@ function Sync-DirectoryContents {
     }
 }
 
-function Remove-VenvDevelopmentFiles {
-    param([string]$VenvDir)
-
-    if (-not (Test-Path -LiteralPath $VenvDir)) {
-        return
-    }
-
-    Remove-ItemWithRetry -Path (Join-Path $VenvDir 'Include')
-    Remove-ItemWithRetry -Path (Join-Path $VenvDir '.gitignore')
-
-    $scriptsDir = Join-Path $VenvDir 'Scripts'
-    if (Test-Path -LiteralPath $scriptsDir) {
-        foreach ($entry in @(Get-ChildItem -LiteralPath $scriptsDir -Force)) {
-            if ($entry.Name -notin @('python.exe', 'pythonw.exe')) {
-                Remove-ItemWithRetry -Path $entry.FullName
-            }
-        }
-    }
-}
-
-function Write-ShareXDistributionNotice {
-    param(
-        [string]$SourcePath,
-        [string]$DestinationPath
-    )
-
-    $text = Get-Content -LiteralPath $SourcePath -Raw -Encoding UTF8
-    $oldNotice = 'The complete corresponding source is retained in this directory and is packaged with binary distributions.'
-    $newNotice = "The complete corresponding source is distributed separately as ``$ShareXSourceArchiveName`` alongside formal binary releases, and is not installed with the application."
-    if (-not $text.Contains($oldNotice)) {
-        throw "ShareX source distribution notice is missing expected text: $SourcePath"
-    }
-    $text = $text.Replace($oldNotice, $newNotice)
-    $destinationDir = Split-Path -Parent $DestinationPath
-    if (-not (Test-Path -LiteralPath $destinationDir)) {
-        New-Item -ItemType Directory -Path $destinationDir -Force | Out-Null
-    }
-    [System.IO.File]::WriteAllText(
-        $DestinationPath,
-        $text,
-        [System.Text.UTF8Encoding]::new($false)
-    )
-}
-
 function Write-ThirdPartyDistributionNotices {
     param(
         [string]$SourcePath,
@@ -292,9 +265,6 @@ function Write-ThirdPartyDistributionNotices {
     )
 
     $text = Get-Content -LiteralPath $SourcePath -Raw -Encoding UTF8
-    if (-not $text.Contains($ShareXSourceArchiveName)) {
-        throw "Third-party ShareX distribution notice is missing the source archive name: $SourcePath"
-    }
     [System.IO.File]::WriteAllText(
         $DestinationPath,
         $text,
@@ -370,6 +340,23 @@ function Sync-PythonRuntimeFromVenv {
     }
 }
 
+function Sync-PythonPackagesFromVenv {
+    param(
+        [string]$VenvDir,
+        [string]$DestinationDir
+    )
+
+    $sitePackages = Join-Path $VenvDir 'Lib\site-packages'
+    if (-not (Test-Path -LiteralPath $sitePackages)) {
+        throw "Python site-packages directory not found: $sitePackages"
+    }
+    Sync-DirectoryContents `
+        -SourceDir $sitePackages `
+        -DestinationDir $DestinationDir `
+        -ExcludeNames $PythonPackageExcludeNames `
+        -ExcludePatterns $PythonPackageExcludePatterns
+}
+
 function Write-PackageHashManifest {
     param(
         [string]$Root,
@@ -420,9 +407,8 @@ function Write-ComponentManifestFromPackageManifest {
         -not [string]::IsNullOrWhiteSpace($_) -and -not $_.StartsWith('#')
     })
     $components = [ordered]@{
-        sharex = 'ShareX/'
         python_runtime = '.python-runtime/'
-        rapidocr_venv = '.venv-rapidocr/'
+        rapidocr_packages = '.python-packages/'
         rapidocr_payload = 'RapidOCR-3.9.0/'
     }
     $output = New-Object 'System.Collections.Generic.List[string]'
@@ -479,8 +465,8 @@ $settingsExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_sett
 $trayExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_tray.exe"
 $engineExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_engine.exe"
 $clipboardExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_clipboard.exe"
+$clipboardSvcExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_clipboard_svc.exe"
 $handwriteExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_handwrite.exe"
-$translateResultExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_translate_result.exe"
 $ocrExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_ocr.exe"
 $settingsManifest = Join-Path $PSScriptRoot 'srf_ime_settings.exe.manifest'
 $trayManifest = Join-Path $PSScriptRoot 'srf_ime_tray.exe.manifest'
@@ -493,11 +479,6 @@ $projectNoticeFile = Join-Path $RepoRoot 'NOTICE'
 $thirdPartyNoticesFile = Join-Path $RepoRoot 'THIRD_PARTY_NOTICES.md'
 $generatedLicenseDir = Join-Path $RepoRoot 'docs\licenses\generated'
 $distributionLicenseDir = Join-Path $RepoRoot 'docs\licenses\distribution'
-$shareXSourceDir = Join-Path $RepoRoot 'third_party\ShareX'
-$shareXPublishDir = Join-Path $shareXSourceDir 'publish\win-x64'
-$shareXExe = Join-Path $shareXPublishDir 'KaixinShareX.exe'
-$shareXLicense = Join-Path $shareXSourceDir 'LICENSE.txt'
-$shareXSourceInfo = Join-Path $shareXSourceDir 'SOURCE_INFO.md'
 $lexiconDir = Get-LexiconDirectory -RepoRoot $RepoRoot
 $fontDir = Join-Path $RepoRoot 'font1'
 $skinDir = Join-Path $RepoRoot 'skins'
@@ -506,12 +487,13 @@ $toolsDir = Join-Path $RepoRoot 'tools'
 $rapidOcrDir = Join-Path $RepoRoot 'RapidOCR-3.9.0'
 $rapidOcrVenvDir = Join-Path $RepoRoot '.venv-rapidocr'
 $pythonRuntimeDirName = '.python-runtime'
+$pythonPackagesDirName = '.python-packages'
 $pythonRuntimeSourceVenv = $null
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
     $pythonRuntimeSourceVenv = $rapidOcrVenvDir
 }
 
-$requiredOutputs = @($tipDll, $bakeLexiconExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $repairInstallScript, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile, $shareXExe, $shareXLicense, $shareXSourceInfo)
+$requiredOutputs = @($tipDll, $bakeLexiconExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $clipboardSvcExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $repairInstallScript, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
 if ($IncludeOcr) {
     $requiredOutputs += $ocrExe
 }
@@ -595,8 +577,8 @@ $managedRootEntries = @(
     'srf_ime_tray.exe.manifest',
     'srf_ime_engine.exe',
     'srf_ime_clipboard.exe',
+    'srf_ime_clipboard_svc.exe',
     'srf_ime_handwrite.exe',
-    'srf_ime_translate_result.exe',
     'uninstall_dev.ps1',
     'uninstall_current_user.ps1',
     'user_data_manifest.json',
@@ -605,7 +587,6 @@ $managedRootEntries = @(
     'NOTICE',
     'licenses',
     'THIRD_PARTY_NOTICES.md',
-    'ShareX',
     $lexiconDir.Name
 )
 if ($IncludeOcr) {
@@ -627,7 +608,7 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
     $managedRootEntries += 'RapidOCR-3.9.0'
 }
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
-    $managedRootEntries += '.venv-rapidocr'
+    $managedRootEntries += $pythonPackagesDirName
 }
 if ($pythonRuntimeSourceVenv) {
     $managedRootEntries += $pythonRuntimeDirName
@@ -658,22 +639,22 @@ Copy-FileIfChanged -SourcePath $trayExe -DestinationPath (Join-Path $OutputRoot 
 Copy-FileIfChanged -SourcePath $trayManifest -DestinationPath (Join-Path $OutputRoot 'srf_ime_tray.exe.manifest')
 Copy-FileIfChanged -SourcePath $engineExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_engine.exe')
 Copy-FileIfChanged -SourcePath $clipboardExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard.exe')
+Copy-FileIfChanged -SourcePath $clipboardSvcExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard_svc.exe')
 Copy-FileIfChanged -SourcePath $handwriteExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_handwrite.exe')
-Copy-FileIfChanged -SourcePath $translateResultExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_translate_result.exe')
 if ($IncludeOcr) {
     Copy-FileIfChanged -SourcePath $ocrExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_ocr.exe')
 } else {
     Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_ocr.exe')
 }
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_translate.exe')
-Copy-FileIfChanged -SourcePath (Join-Path $TsfTipRoot 'invoke_registration.ps1') -DestinationPath (Join-Path $OutputRoot 'invoke_registration.ps1')
-Copy-FileIfChanged -SourcePath (Join-Path $PSScriptRoot 'install_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'install_dev.ps1')
-Copy-FileIfChanged -SourcePath (Join-Path $PSScriptRoot 'install_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'install_current_user.ps1')
-Copy-FileIfChanged -SourcePath (Join-Path $PSScriptRoot 'restart_stale_hosts.ps1') -DestinationPath (Join-Path $OutputRoot 'restart_stale_hosts.ps1')
-Copy-FileIfChanged -SourcePath $repairInstallScript -DestinationPath (Join-Path $OutputRoot 'repair_install.ps1')
-Copy-FileIfChanged -SourcePath (Join-Path $PSScriptRoot 'export_diagnostics.ps1') -DestinationPath (Join-Path $OutputRoot 'export_diagnostics.ps1')
-Copy-FileIfChanged -SourcePath (Join-Path $PSScriptRoot 'uninstall_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'uninstall_dev.ps1')
-Copy-FileIfChanged -SourcePath (Join-Path $PSScriptRoot 'uninstall_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'uninstall_current_user.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $TsfTipRoot 'invoke_registration.ps1') -DestinationPath (Join-Path $OutputRoot 'invoke_registration.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'install_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'install_dev.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'install_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'install_current_user.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'restart_stale_hosts.ps1') -DestinationPath (Join-Path $OutputRoot 'restart_stale_hosts.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath $repairInstallScript -DestinationPath (Join-Path $OutputRoot 'repair_install.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'export_diagnostics.ps1') -DestinationPath (Join-Path $OutputRoot 'export_diagnostics.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'uninstall_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'uninstall_dev.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'uninstall_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'uninstall_current_user.ps1')
 Copy-FileIfChanged -SourcePath $userDataManifest -DestinationPath (Join-Path $OutputRoot 'user_data_manifest.json')
 Copy-FileIfChanged -SourcePath $versionFile -DestinationPath (Join-Path $OutputRoot 'VERSION')
 Copy-FileIfChanged -SourcePath $projectLicenseFile -DestinationPath (Join-Path $OutputRoot 'LICENSE')
@@ -700,17 +681,6 @@ if ((Test-Path -LiteralPath $generatedLicenseDir) -or (Test-Path -LiteralPath $d
     Remove-ItemWithRetry -Path $stagedLicenseReportDir
 }
 [System.IO.File]::WriteAllText((Join-Path $OutputRoot 'current_runtime_payload.txt'), $runtimeRelativePath, [System.Text.Encoding]::ASCII)
-
-$shareXTarget = Join-Path $OutputRoot 'ShareX'
-Sync-DirectoryContents `
-    -SourceDir $shareXPublishDir `
-    -DestinationDir $shareXTarget `
-    -ExcludePatterns @('*.pdb')
-Copy-FileIfChanged -SourcePath $shareXLicense -DestinationPath (Join-Path $shareXTarget 'LICENSE.txt')
-Write-ShareXDistributionNotice `
-    -SourcePath $shareXSourceInfo `
-    -DestinationPath (Join-Path $shareXTarget 'SOURCE_INFO.md')
-Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'ShareX-Source')
 
 $lexiconTarget = Join-Path $OutputRoot $lexiconDir.Name
 $lexiconSyncExcludes = @('translate')
@@ -764,15 +734,14 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $toolsDir)) {
     Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'tools')
 }
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
-    Sync-DirectoryContents `
-        -SourceDir $rapidOcrVenvDir `
-        -DestinationDir (Join-Path $OutputRoot '.venv-rapidocr') `
-        -ExcludeNames $PythonPackageExcludeNames `
-        -ExcludePatterns $PythonPackageExcludePatterns
-    Remove-VenvDevelopmentFiles -VenvDir (Join-Path $OutputRoot '.venv-rapidocr')
+    Sync-PythonPackagesFromVenv `
+        -VenvDir $rapidOcrVenvDir `
+        -DestinationDir (Join-Path $OutputRoot $pythonPackagesDirName)
 } else {
-    Remove-ItemWithRetry -Path (Join-Path $OutputRoot '.venv-rapidocr')
+    Remove-ItemWithRetry -Path (Join-Path $OutputRoot $pythonPackagesDirName)
 }
+# Remove the legacy full virtual environment from restaged packages.
+Remove-ItemWithRetry -Path (Join-Path $OutputRoot '.venv-rapidocr')
 if ($pythonRuntimeSourceVenv) {
     Sync-PythonRuntimeFromVenv `
         -VenvDir $pythonRuntimeSourceVenv `

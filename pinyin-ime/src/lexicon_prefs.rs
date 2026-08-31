@@ -241,14 +241,59 @@ pub fn default_optional_lexicon_tag_enabled(_tag: &str) -> bool {
     true
 }
 
+pub fn legacy_optional_lexicon_tags(tag: &str) -> &'static [&'static str] {
+    match tag {
+        "technology" => &[
+            "ai_and_machine_learning",
+            "internet_products",
+            "programming_frameworks",
+            "software_and_cloud",
+        ],
+        "daily_communication" => &["chat_common_phrases", "office_common_phrases"],
+        "geography_admin" => &[
+            "china_prefecture_level_admin_333",
+            "county_admin_short_names_2024",
+            "world_countries_major_cities",
+        ],
+        "hangzhou_local" => &[
+            "hangzhou_admin",
+            "hangzhou_business",
+            "hangzhou_food_culture",
+            "hangzhou_landmarks_life",
+            "hangzhou_local_culture",
+            "hangzhou_metro_stations_262",
+            "hangzhou_new_places",
+            "hangzhou_public_services",
+            "hangzhou_transport",
+        ],
+        "people_names" => &["chinese_surnames", "name1"],
+        "animals" => &["animal_common_5000"],
+        "medicine" => &["yaowu"],
+        _ => &[],
+    }
+}
+
+fn optional_lexicon_tag_enabled_from_map(tag: &str, map: &HashMap<String, bool>) -> bool {
+    let key = format!("lexicon_{}", tag.to_ascii_lowercase());
+    if let Some(enabled) = map.get(&key).copied() {
+        return enabled;
+    }
+    let legacy_values = legacy_optional_lexicon_tags(tag)
+        .iter()
+        .filter_map(|legacy| map.get(&format!("lexicon_{legacy}")).copied())
+        .collect::<Vec<_>>();
+    if legacy_values.is_empty() {
+        default_optional_lexicon_tag_enabled(tag)
+    } else {
+        legacy_values.into_iter().all(|enabled| enabled)
+    }
+}
+
 pub fn is_optional_lexicon_tag_enabled(tag: &str) -> bool {
     let Some(map) = lexicon_toggle_map() else {
         return default_optional_lexicon_tag_enabled(tag);
     };
-    let key = format!("lexicon_{}", tag.to_ascii_lowercase());
-    map.get(&key)
-        .copied()
-        .unwrap_or_else(|| default_optional_lexicon_tag_enabled(tag))
+    optional_lexicon_tag_enabled_from_map(tag, &map)
 }
 
 pub fn is_thuocl_tag_enabled(tag: &str) -> bool {
@@ -289,7 +334,6 @@ fn optional_lexicon_path_enabled(path: &Path, map: Option<&HashMap<String, bool>
         // keys, including stale keys left by an older settings version.
         return true;
     };
-    let key = format!("lexicon_{}", tag.to_ascii_lowercase());
-    map.and_then(|prefs| prefs.get(&key).copied())
+    map.map(|prefs| optional_lexicon_tag_enabled_from_map(&tag, prefs))
         .unwrap_or_else(|| default_optional_lexicon_tag_enabled(&tag))
 }

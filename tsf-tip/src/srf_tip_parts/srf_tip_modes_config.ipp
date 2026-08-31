@@ -107,6 +107,21 @@ void CSrfTip::SetCompartmentDWORD(REFGUID guid, DWORD value) {
   compartment->Release();
 }
 
+bool CSrfTip::IsActiveTextServiceProfile() const {
+  if (!m_pThreadMgr) return false;
+  // 与本仓库 register.cpp 相同的获取方式；TSF 文档明确 out 参数不可为 nullptr。
+  ITfInputProcessorProfiles* profiles = nullptr;
+  const HRESULT hrCreate =
+      CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+                       IID_ITfInputProcessorProfiles, reinterpret_cast<void**>(&profiles));
+  if (FAILED(hrCreate) || !profiles) return false;
+  LANGID langid = 0;
+  CLSID profileClsid = {};
+  const HRESULT hr = profiles->GetActiveLanguageProfile(CLSID_SrfTsfTip, &langid, &profileClsid);
+  profiles->Release();
+  return hr == S_OK && IsEqualCLSID(profileClsid, GUID_PROFILE_SRF);
+}
+
 bool CSrfTip::IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const {
   if (!hotkey.enabled || hotkey.vk == 0 || hotkey.vk != vk) return false;
   const bool ctrlDown = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
@@ -116,6 +131,53 @@ bool CSrfTip::IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const 
   const bool needShift = (hotkey.modifiers & TF_MOD_SHIFT) != 0;
   const bool needAlt = (hotkey.modifiers & TF_MOD_ALT) != 0;
   return ctrlDown == needCtrl && shiftDown == needShift && altDown == needAlt;
+}
+
+SrfHotkeyScope CSrfTip::EffectiveHotkeyScope() const {
+  if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
+    if (options->hasHotkeyScope) return options->hotkeyScope;
+  }
+  return m_config.input.hotkeyScope;
+}
+
+bool CSrfTip::IsGameHotkeyPassthroughActive() const {
+  bool appGameProfile = false;
+  if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
+    appGameProfile = options->hasGameProfile && options->gameCompactProfile;
+  }
+  return appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
+         m_builtinGameCompatActive || m_manualGameCompatActive;
+}
+
+bool CSrfTip::ShouldHandleImeHotkeys() const {
+  switch (EffectiveHotkeyScope()) {
+    case SrfHotkeyScope::Global:
+      return true;
+    case SrfHotkeyScope::TextOnly:
+      return m_imeOpen && !m_reading.empty();
+    case SrfHotkeyScope::DisabledInGame:
+      return !IsGameHotkeyPassthroughActive();
+    case SrfHotkeyScope::PerApp:
+    default:
+      return false;
+  }
+}
+
+void CSrfTip::UpdatePreservedKeysForHotkeyScope() {
+  const SrfHotkeyScope scope = EffectiveHotkeyScope();
+  // Text-only keys remain registered so they can become available while a
+  // composition is active; OnPreservedKey lets the idle keystroke pass on.
+  const bool suppress = scope == SrfHotkeyScope::PerApp ||
+                        (scope == SrfHotkeyScope::DisabledInGame &&
+                         IsGameHotkeyPassthroughActive());
+  if (!m_preservedKeysRegistered && !m_preservedKeysSuppressedForHotkeyScope) return;
+  if (suppress == m_preservedKeysSuppressedForHotkeyScope) return;
+  if (suppress) {
+    UnregisterPreservedKeys();
+  } else {
+    (void)RegisterPreservedKeys();
+  }
+  m_preservedKeysSuppressedForHotkeyScope = suppress;
 }
 
 void CSrfTip::ToggleImeOpen() {
@@ -229,7 +291,10 @@ void CSrfTip::RestoreImeModeFromCurrentAppOptions() {
   } else {
     m_imeOpen = true;
   }
-  if (previousImeOpen != m_imeOpen) ApplyDefaultPunctuationForImeMode();
+  if (previousImeOpen != m_imeOpen) {
+    ApplyDefaultPunctuationForImeMode();
+    SyncCompartmentState();
+  }
 }
 
 bool CSrfTip::ReconcileManualModeOwner() {
@@ -256,72 +321,119 @@ bool CSrfTip::ReconcileManualModeOwner() {
   m_manualAsciiModeActive = false;
   m_manualCompatibilityBypass = false;
   ClearManualModeOwner();
+  // bypass 曾把 m_imeOpen 强制为 true；切窗后按新窗口的配置恢复，
+  // 否则非 TSF 宿主（只走按键驱动刷新）会把中文泄漏到下一个窗口。
+  RestoreImeModeFromCurrentAppOptions();
   if (m_candidateUi) m_candidateUi->End();
   SrfTsfDiagnosticLog(L"manual-compatibility.owner-cleared", L"reason=foreground-changed");
   return true;
 }
 
-void CSrfTip::ToggleManualGameCompat() {
+void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
+  // 非 TSF 宿主可能长期不触发兼容刷新；先刷新前台窗口，避免手动 owner
+  // 抓到过期窗口而被下一次对账误清。
+  RefreshCompatibilityState();
   ReconcileManualModeOwner();
   const bool forcedByAutomaticPolicy = ShouldForceAsciiForCompatibility() &&
                                         !m_config.privacy.enabled &&
                                         !m_sensitiveInputActive;
+  const wchar_t* notificationText = nullptr;
   if (m_manualAsciiModeActive) {
     m_manualAsciiModeActive = false;
+    notificationText = L"临时英文关";
   } else if (m_manualGameCompatActive) {
     m_manualGameCompatActive = false;
+    notificationText = L"游戏兼容关";
   } else if (m_manualCompatibilityBypass) {
     m_manualCompatibilityBypass = false;
     m_manualGameCompatActive = false;
     RestoreImeModeFromCurrentAppOptions();
+    notificationText = L"已恢复自动兼容策略";
   } else if (forcedByAutomaticPolicy) {
     // The existing game hotkey doubles as an explicit “恢复中文” action when
     // an automatic compatibility rule has taken over the current window.
     m_manualCompatibilityBypass = true;
     m_manualGameCompatActive = false;
-    m_imeOpen = true;
+    if (!m_imeOpen) {
+      m_imeOpen = true;
+      ApplyDefaultPunctuationForImeMode();
+      SyncCompartmentState();
+    }
+    notificationText = L"已恢复中文（仅当前窗口）";
   } else {
     m_manualGameCompatActive = !m_manualGameCompatActive;
+    notificationText = m_manualGameCompatActive ? L"游戏兼容开"
+                                                 : L"游戏兼容关";
   }
   if (m_manualGameCompatActive || m_manualCompatibilityBypass) {
     CaptureManualModeOwner();
   } else if (!m_manualAsciiModeActive) {
     ClearManualModeOwner();
   }
+  // 手动开启后若策略为强制 ASCII，同步清理组合与候选窗（与临时英文开关一致）。
+  // preserved-key 路径没有 EditSession cookie，改走异步 cleanup。
+  if (ShouldForceAsciiForCompatibility()) {
+    m_compatibilityAsciiCleanupPending = false;
+    if (m_candidateUi) m_candidateUi->End();
+    if (ec != TF_INVALID_COOKIE) {
+      if (m_pComposition) {
+        CancelCompositionEdit(ec);
+      } else {
+        ReleaseCompositionState();
+      }
+    } else {
+      m_compatibilityAsciiCleanupPending = true;
+      RequestCompatibilityAsciiCleanup();
+    }
+  }
   SyncStatusModel();
   RebuildContextModel();
   RedrawCandidateUi();
-  if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
-    ShowNotification(SrfNotificationKind::AppOptions,
-                     m_manualCompatibilityBypass
-                         ? L"\u5df2\u6062\u590d\u4e2d\u6587\uff08\u4ec5\u5f53\u524d\u7a97\u53e3\uff09"
-                         : (m_manualGameCompatActive ? L"\u6e38\u620f\u517c\u5bb9\u5f00"
-                                                     : L"\u6e38\u620f\u517c\u5bb9\u5173"));
+  if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions) && notificationText) {
+    ShowNotification(SrfNotificationKind::AppOptions, notificationText);
   }
 }
 
 void CSrfTip::ToggleManualAsciiMode(TfEditCookie ec) {
+  // 非 TSF 宿主可能长期不触发兼容刷新；先刷新前台窗口，避免手动 owner
+  // 抓到过期窗口而被下一次对账误清。
+  RefreshCompatibilityState();
   ReconcileManualModeOwner();
+  const wchar_t* notificationText = nullptr;
   if (m_manualAsciiModeActive) {
     m_manualAsciiModeActive = false;
+    notificationText = L"临时英文关";
   } else if (m_manualCompatibilityBypass) {
     m_manualCompatibilityBypass = false;
     RestoreImeModeFromCurrentAppOptions();
+    notificationText = L"已恢复自动兼容策略";
   } else if (ShouldForceAsciiForCompatibility() && !m_config.privacy.enabled &&
              !m_sensitiveInputActive) {
     // 临时英文快捷键在自动 ASCII 状态下提供同一个明确的“恢复中文”入口。
-    m_manualCompatibilityBypass = !m_manualCompatibilityBypass;
-    m_imeOpen = m_manualCompatibilityBypass;
+    // 该分支只会在 bypass 为 false 时到达（前一支已拦截 true），故恒为开启。
+    m_manualCompatibilityBypass = true;
+    if (!m_imeOpen) {
+      m_imeOpen = true;
+      ApplyDefaultPunctuationForImeMode();
+      SyncCompartmentState();
+    }
+    notificationText = L"已恢复中文（仅当前窗口）";
   } else {
     m_manualAsciiModeActive = true;
     m_manualCompatibilityBypass = false;
+    notificationText = L"临时英文开";
   }
   if (m_manualAsciiModeActive) {
     if (m_candidateUi) m_candidateUi->End();
-    if (m_pComposition) {
-      CancelCompositionEdit(ec);
+    if (ec != TF_INVALID_COOKIE) {
+      if (m_pComposition) {
+        CancelCompositionEdit(ec);
+      } else {
+        ReleaseCompositionState();
+      }
     } else {
-      ReleaseCompositionState();
+      m_compatibilityAsciiCleanupPending = true;
+      RequestCompatibilityAsciiCleanup();
     }
   }
   if (m_manualAsciiModeActive || m_manualCompatibilityBypass) {
@@ -332,12 +444,8 @@ void CSrfTip::ToggleManualAsciiMode(TfEditCookie ec) {
   SyncStatusModel();
   RebuildContextModel();
   RedrawCandidateUi();
-  if (m_config.ShouldShowNotification(SrfNotificationKind::Ime)) {
-    ShowNotification(SrfNotificationKind::Ime,
-                     m_manualCompatibilityBypass
-                         ? L"\u5df2\u6062\u590d\u4e2d\u6587\uff08\u4ec5\u5f53\u524d\u7a97\u53e3\uff09"
-                         : (m_manualAsciiModeActive ? L"\u4e34\u65f6\u82f1\u6587\u5f00"
-                                                     : L"\u4e34\u65f6\u82f1\u6587\u5173"));
+  if (m_config.ShouldShowNotification(SrfNotificationKind::Ime) && notificationText) {
+    ShowNotification(SrfNotificationKind::Ime, notificationText);
   }
 }
 
@@ -605,23 +713,6 @@ std::wstring CSrfTip::ConvertDirectText(std::wstring text) {
         case L'\'':
           replacement = m_nextSingleQuoteOpen ? L"‘" : L"’";
           m_nextSingleQuoteOpen = !m_nextSingleQuoteOpen;
-          break;
-        default:
-          break;
-      }
-    }
-
-    if (m_cnPunct && !m_config.input.symbolFullwidth) {
-      switch (ch) {
-        case L'(':
-        case L')':
-        case L'[':
-        case L']':
-        case L'<':
-        case L'>':
-        case L'\\':
-        case L'/':
-          replacement.clear();
           break;
         default:
           break;
@@ -962,10 +1053,13 @@ void CSrfTip::RefreshCompatibilityState() {
       policy == SrfFullscreenPolicy::Ascii || policy == SrfFullscreenPolicy::HideUi;
   m_uiStyle.candidateTopmost =
       ResolveUiStyleForApp(compatibilityAppName).candidateTopmost && !compatibilityHidesUi;
+  UpdatePreservedKeysForHotkeyScope();
 
   if (ShouldSuppressCandidatesForPrivacy() && !m_candidates.empty()) {
     m_candidates.clear();
     m_candidateMeta.clear();
+    m_candidateRows.clear();
+    m_candidateHasMore = false;
     m_candidatesReading.clear();
     SetCandidateViewState(SrfCandidateViewState::Empty, L"privacy-refresh");
     InvalidateCandidatePageLayoutCache();
@@ -1319,10 +1413,10 @@ void CSrfTip::RebuildContextModel() {
       const UINT indexInPage =
           static_cast<UINT>(i - static_cast<size_t>(layout.pageStarts[pageIdx]));
 
-      CandidateMetaParts meta;
-      if (i < m_candidateMeta.size() && !m_candidateMeta[i].empty()) {
-        meta = SplitCandidateMeta(m_candidateMeta[i]);
-      }
+      const CandidateMetaParts* metaPtr =
+          i < m_candidateRows.size() ? &m_candidateRows[i].meta : nullptr;
+      const CandidateMetaParts emptyMeta;
+      const CandidateMetaParts& meta = metaPtr ? *metaPtr : emptyMeta;
 
       SrfText item = {};
       item.str = meta.display.empty() ? m_candidates[i] : meta.display;

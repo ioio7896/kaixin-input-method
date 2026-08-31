@@ -13,14 +13,11 @@
 #ifndef KXIncludeOcr
 #define KXIncludeOcr "1"
 #endif
-#ifndef KXComponentShareX
-#define KXComponentShareX ""
-#endif
 #ifndef KXComponentPythonRuntime
 #define KXComponentPythonRuntime ""
 #endif
-#ifndef KXComponentRapidOcrVenv
-#define KXComponentRapidOcrVenv ""
+#ifndef KXComponentRapidOcrPackages
+#define KXComponentRapidOcrPackages ""
 #endif
 #ifndef KXComponentRapidOcrPayload
 #define KXComponentRapidOcrPayload ""
@@ -62,18 +59,18 @@ RestartIfNeededByRun=no
 Name: "chinesesimp"; MessagesFile: "ChineseSimplified.isl"
 
 [Files]
-Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "runtime\*,.python-runtime\*,.venv-rapidocr\*,.venv-translate\*,RapidOCR-3.9.0\*,models\*,ShareX\*,ShareX-Source\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete
+Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "runtime\*,.python-runtime\*,.python-packages\*,.venv-rapidocr\*,.venv-translate\*,RapidOCR-3.9.0\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete
 Source: "{#KXPackageDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs uninsrestartdelete solidbreak
-Source: "{#KXPackageDir}\ShareX\*"; DestDir: "{app}\ShareX"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete solidbreak; Check: ShouldInstallShareX
 Source: "{#KXPackageDir}\.python-runtime\*"; DestDir: "{app}\.python-runtime"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallPythonRuntime
-Source: "{#KXPackageDir}\.venv-rapidocr\*"; DestDir: "{app}\.venv-rapidocr"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrVenv
+Source: "{#KXPackageDir}\.python-packages\*"; DestDir: "{app}\.python-packages"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPackages
 Source: "{#KXPackageDir}\RapidOCR-3.9.0\*"; DestDir: "{app}\RapidOCR-3.9.0"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPayload
 Source: "{#KXPackageDir}\component_manifest.ini"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete solidbreak
 
 [InstallDelete]
-Type: filesandordirs; Name: "{app}\ShareX"; Check: ShouldInstallShareX
+Type: filesandordirs; Name: "{app}\ShareX"
 Type: filesandordirs; Name: "{app}\.python-runtime"; Check: ShouldInstallPythonRuntime
-Type: filesandordirs; Name: "{app}\.venv-rapidocr"; Check: ShouldInstallRapidOcrVenv
+Type: filesandordirs; Name: "{app}\.python-packages"; Check: ShouldInstallRapidOcrPackages
+Type: filesandordirs; Name: "{app}\.venv-rapidocr"
 Type: filesandordirs; Name: "{app}\RapidOCR-3.9.0"; Check: ShouldInstallRapidOcrPayload
 Type: filesandordirs; Name: "{app}\.venv-translate"
 Type: filesandordirs; Name: "{app}\models\translate"
@@ -84,7 +81,7 @@ Type: files; Name: "{app}\tools\kaixin_ocr_engine.py"; Check: not OcrIncluded
 Type: files; Name: "{app}\tools\kaixin_ocr_engine.cmd"; Check: not OcrIncluded
 Type: files; Name: "{app}\tools\kaixin_cv_crop.py"; Check: not OcrIncluded
 Type: filesandordirs; Name: "{app}\.python-runtime"; Check: not OcrIncluded
-Type: filesandordirs; Name: "{app}\.venv-rapidocr"; Check: not OcrIncluded
+Type: filesandordirs; Name: "{app}\.python-packages"; Check: not OcrIncluded
 Type: filesandordirs; Name: "{app}\RapidOCR-3.9.0"; Check: not OcrIncluded
 Type: files; Name: "{group}\开心输入法中英翻译.lnk"
 Type: files; Name: "{app}\srf_ime_translate.exe"
@@ -134,22 +131,16 @@ begin
   Result := '{#KXIncludeOcr}' = '1';
 end;
 
-function ShouldInstallShareX(): Boolean;
-begin
-  InitializeComponentChecks();
-  Result := InstallShareXComponent;
-end;
-
 function ShouldInstallPythonRuntime(): Boolean;
 begin
   InitializeComponentChecks();
   Result := OcrIncluded() and InstallPythonRuntimeComponent;
 end;
 
-function ShouldInstallRapidOcrVenv(): Boolean;
+function ShouldInstallRapidOcrPackages(): Boolean;
 begin
   InitializeComponentChecks();
-  Result := OcrIncluded() and InstallRapidOcrVenvComponent;
+  Result := OcrIncluded() and InstallRapidOcrPackagesComponent;
 end;
 
 function ShouldInstallRapidOcrPayload(): Boolean;
@@ -326,18 +317,21 @@ begin
   RequestCloseHelperProcess('srf_ime_ocr.exe');
   RequestCloseHelperProcess('srf_ime_translate_result.exe');
   RequestCloseHelperProcess('srf_ime_translate.exe');
+  StopHelperProcess('srf_ime_clipboard_svc.exe');
   WaitForProcessExit('srf_ime_settings.exe', 10);
   WaitForProcessExit('srf_ime_clipboard.exe', 10);
   WaitForProcessExit('srf_ime_handwrite.exe', 10);
   WaitForProcessExit('srf_ime_ocr.exe', 10);
   WaitForProcessExit('srf_ime_translate_result.exe', 10);
   WaitForProcessExit('srf_ime_translate.exe', 10);
+  WaitForProcessExit('srf_ime_clipboard_svc.exe', 10);
   StopHelperProcess('srf_ime_settings.exe');
   StopHelperProcess('srf_ime_clipboard.exe');
   StopHelperProcess('srf_ime_handwrite.exe');
   StopHelperProcess('srf_ime_ocr.exe');
   StopHelperProcess('srf_ime_translate_result.exe');
   StopHelperProcess('srf_ime_translate.exe');
+  StopHelperProcess('srf_ime_clipboard_svc.exe');
   Result := '';
 end;
 
@@ -438,6 +432,7 @@ begin
     RequestCloseHelperProcess('srf_ime_handwrite.exe');
     RequestCloseHelperProcess('srf_ime_ocr.exe');
     RequestCloseHelperProcess('srf_ime_translate.exe');
+    StopHelperProcess('srf_ime_clipboard_svc.exe');
   end;
   if CurUninstallStep = usPostUninstall then
     SetInstallMaintenance(False);

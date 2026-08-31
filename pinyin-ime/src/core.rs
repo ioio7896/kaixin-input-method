@@ -56,6 +56,11 @@ use ranking::*;
 
 pub const TSF_PAGE_SIZE: usize = 9;
 pub const TSF_MAX_CANDIDATES: usize = 128;
+/// 完整候选加载的上限。精确单音节输入（si/shi/yi 等）的候选全部是单字，
+/// 允许用户翻页直达冷门单字，不能再按高频词场景截断在 128 条。
+/// 必须与 TSF 侧 kRustRows（响应行数上限）保持一致，否则完整加载结果
+/// 会在某一环被砍回 128。
+pub const LOOKUP_FULL_MAX_CANDIDATES: usize = 256;
 
 pub const MODE_FUZZY_PINYIN: u32 = 0x0001;
 pub const MODE_DOUBLE_PINYIN: u32 = 0x0002;
@@ -262,6 +267,12 @@ const SINGLE_SYLLABLE_COMMON_CHAR_PRIOR_CAP: f64 = 108.0;
 const EXT_LEXICON_LAYER_PENALTY: f64 = 18.0;
 const EXT_SHORT_WORD_GATE_PENALTY: f64 = 24.0;
 const LARGE_LEXICON_LAYER_PENALTY: f64 = 8.0;
+// zh-ext/large 词库允许在完整全拼中召回长尾词；简拼和混拼则只让
+// 低于这个归一化词频阈值的长尾词落到高频候选之后，避免动物、地名等
+// 扩展词在短输入下抢占首屏。
+const NON_FULL_COLD_LEXICON_FREQ_THRESHOLD: u64 = MAX_LEXICON_FREQ * 60 / 100;
+const NON_FULL_COLD_LEXICON_PENALTY_BASE: f64 = 48.0;
+const NON_FULL_COLD_LEXICON_PENALTY_SCALE: f64 = 60.0;
 const TOP1_CONFIDENCE_GAP: f64 = 24.0;
 
 /// 超长输入兜底：当输入过长且常规候选不足时，按分段前缀/近似前缀继续给候选，
@@ -346,7 +357,6 @@ const SHORT_INPUT_EXACT_FRONT_LIMIT_TWO: usize = 4;
 const SHORT_INPUT_EXACT_FRONT_LIMIT_THREE: usize = 3;
 const SHORT_INPUT_EXACT_FRONT_LIMIT_FOUR: usize = 3;
 const SHORT_INPUT_LOW_FREQ_EXACT_FRONT_LIMIT: usize = 1;
-const TWO_CHAR_INTENT_SINGLE_RESERVE_PAGES: usize = 3;
 const SHORT_PHRASE_SINGLE_RERANK_EXTRA: f64 = 20.0;
 const SHORT_PHRASE_TWO_CHAR_RERANK_BONUS: f64 = 22.0;
 // Do not give generic two-character candidates a head start over equally
@@ -650,6 +660,9 @@ pub struct CandidateMeta {
     pub blocked: bool,
     pub partial: bool,
     pub correction_target: Option<String>,
+    /// 同词的系统候选在并入用户学习信号时保留该标记：即使系统分数高出
+    /// META_STICKY_SCORE_MARGIN，hotword 前置逻辑仍应识别它为用户热词。
+    pub user_signal: bool,
     display: Option<String>,
 }
 
@@ -778,6 +791,7 @@ impl CandidateMeta {
             blocked: lower.contains("blocked") || text.contains("屏蔽"),
             partial: tokens.contains(&"partial=1"),
             correction_target: correction_target_from_legacy_meta(&text),
+            user_signal: tokens.contains(&"user_signal=1"),
             display: Some(text),
         }
     }
@@ -825,6 +839,11 @@ impl CandidateMeta {
 
     pub fn with_source_layer(mut self, source_layer: LexiconLayer) -> Self {
         self.source_layer = source_layer;
+        self
+    }
+
+    pub fn with_user_signal(mut self) -> Self {
+        self.user_signal = true;
         self
     }
 

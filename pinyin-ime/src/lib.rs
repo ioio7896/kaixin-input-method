@@ -35,7 +35,6 @@ pub mod screenshot_region_selector;
 pub mod screenshot_store;
 pub mod segment;
 pub mod shared_rules;
-pub mod sharex_integration;
 pub mod text_encoding;
 pub mod text_norm;
 pub mod thuocl;

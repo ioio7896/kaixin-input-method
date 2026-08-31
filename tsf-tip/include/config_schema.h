@@ -32,6 +32,7 @@ inline constexpr wchar_t kOverlayBackend[] = L"overlay_backend";
 inline constexpr wchar_t kBuiltinGameList[] = L"builtin_game_list";
 inline constexpr wchar_t kAutoSuggestAppOptions[] = L"auto_suggest_app_options";
 inline constexpr wchar_t kGameProcesses[] = L"game_processes";
+inline constexpr wchar_t kHotkeyScope[] = L"hotkey_scope";
 
 inline constexpr wchar_t kNeverLearnProcesses[] = L"never_learn_processes";
 inline constexpr wchar_t kNeverClipboardProcesses[] = L"never_clipboard_processes";

@@ -1,7 +1,8 @@
 use crate::clipboard_store;
 use crate::core::{
     default_phrase_lexicon_dir, validate_trusted_phrase_dir, CandidateMeta,
-    LookupCancellationToken, LookupSession, PinyinEngine, TSF_MAX_CANDIDATES,
+    LookupCancellationToken, LookupSession, PinyinEngine, LOOKUP_FULL_MAX_CANDIDATES,
+    TSF_MAX_CANDIDATES,
 };
 use crate::runtime_log::{self, RuntimeLogLevel};
 use crate::segment::syllable_boundary_offsets_utf16;
@@ -16,8 +17,9 @@ use std::os::windows::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::ptr::null_mut;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
+use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
 use std::sync::{Condvar, Mutex, MutexGuard, OnceLock, TryLockError};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 use windows_sys::Win32::Foundation::{
     CloseHandle, GetLastError, LocalFree, ERROR_MORE_DATA, ERROR_NO_DATA, ERROR_PIPE_BUSY,
     ERROR_PIPE_CONNECTED, HANDLE, INVALID_HANDLE_VALUE,
@@ -66,15 +68,25 @@ const MAX_LEXICON_PATH_UNITS: usize = 4096;
 const MAX_REQUEST_BYTES: usize = 256 * 1024;
 const ROW_TEXT_UNITS: usize = 512;
 const ROW_META_UNITS: usize = 512;
-const LOOKUP_RESPONSE_BYTES: usize =
-    4 + TSF_MAX_CANDIDATES * (2 + (ROW_TEXT_UNITS - 1) * 2 + 2 + (ROW_META_UNITS - 1) * 2);
+// The first candidate page should be cheap to transfer and paint.  Additional
+// rows are requested only when the user reaches the end of the visible batch.
+const LOOKUP_FIRST_BATCH_CANDIDATES: usize = 18;
+const LOOKUP_RESPONSE_BYTES: usize = 4
+    + LOOKUP_FULL_MAX_CANDIDATES * (2 + (ROW_TEXT_UNITS - 1) * 2 + 2 + (ROW_META_UNITS - 1) * 2)
+    + 4;
 const LOOKUP_SLOW_THRESHOLD_US: u128 = 20_000;
 const LOOKUP_FAST_SAMPLE_MASK: usize = 0x3f;
 const LOOKUP_INTERACTIVE_BUSY_WAIT: Duration = Duration::from_millis(20);
 const LOOKUP_BACKGROUND_BUSY_WAIT: Duration = Duration::from_millis(3);
-const LEARN_BUSY_WAIT: Duration = Duration::from_millis(20);
 const FULL_LOAD_INSTALL_IDLE: Duration = Duration::from_millis(500);
 const FULL_LOAD_INSTALL_RETRY_SLEEP: Duration = Duration::from_millis(25);
+// The full prebaked lexicon is deliberately not promoted into the interactive
+// shared engine.  It is much larger than the hot lexicon and loading it in the
+// background can briefly create two complete lexicon graphs, while the later
+// install holds the same mutex used by key lookups.  Interactive candidates
+// stay on the bounded hot index; offline/evaluation callers can still use the
+// full PinyinEngine constructor directly.
+const BACKGROUND_FULL_LEXICON_LOAD_ENABLED: bool = false;
 const PIPE_LISTENER_MAX_CONSECUTIVE_FAILURES: usize = 120;
 const PIPE_BUFFER_BYTES: u32 = if LOOKUP_RESPONSE_BYTES as u32 + 4096 > 64 * 1024 {
     LOOKUP_RESPONSE_BYTES as u32 + 4096
@@ -216,6 +228,7 @@ enum EngineCommand {
     CandidateAction = 12,
     ResetLearningContext = 13,
     CancelLookup = 14,
+    LearnStatus = 15,
 }
 
 impl EngineCommand {
@@ -235,6 +248,7 @@ impl EngineCommand {
             12 => Some(Self::CandidateAction),
             13 => Some(Self::ResetLearningContext),
             14 => Some(Self::CancelLookup),
+            15 => Some(Self::LearnStatus),
             _ => None,
         }
     }
@@ -305,6 +319,9 @@ impl SharedEngine {
     }
 
     fn schedule_full_load_if_needed(&mut self) {
+        if !BACKGROUND_FULL_LEXICON_LOAD_ENABLED {
+            return;
+        }
         if self.full_load_in_flight {
             return;
         }
@@ -326,6 +343,321 @@ impl SharedEngine {
         self.engine
             .as_mut()
             .ok_or_else(|| "shared engine is not initialized".to_string())
+    }
+}
+
+/// Learning is feedback, not part of the request/response critical path.
+///
+/// The TSF side already coalesces duplicate learn events, but the old IPC
+/// handlers still performed the SQLite-backed mutation before sending the
+/// response. A slow user-dictionary write could therefore make the TSF bridge
+/// hit its 750 ms learn timeout and tear down an otherwise healthy pipe. Keep
+/// one bounded, FIFO worker in the helper so mutations remain serialized with
+/// the shared engine. The IPC response contains a completion id; the TSF polls
+/// that id before treating the learning operation as successful.
+enum AsyncLearningRequest {
+    Commit {
+        reading: String,
+        committed: String,
+        flags: u32,
+    },
+    Correction {
+        raw: String,
+        corrected: String,
+        committed: String,
+    },
+    SelectionFeedback {
+        reading: String,
+        committed: String,
+        selected_index: usize,
+        page: usize,
+        skipped_candidates: Vec<String>,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum AsyncLearningOutcome {
+    Pending,
+    Succeeded,
+    Failed(String),
+}
+
+#[derive(Default)]
+struct AsyncLearningStatusRegistry {
+    statuses: HashMap<u64, AsyncLearningOutcome>,
+}
+
+impl AsyncLearningStatusRegistry {
+    fn reserve(&mut self, id: u64, capacity: usize) -> Result<(), &'static str> {
+        self.statuses
+            .retain(|_, outcome| matches!(outcome, AsyncLearningOutcome::Pending));
+        if self.statuses.len() >= capacity {
+            return Err("learning status busy");
+        }
+        self.statuses.insert(id, AsyncLearningOutcome::Pending);
+        Ok(())
+    }
+
+    fn cancel(&mut self, id: u64) {
+        self.statuses.remove(&id);
+    }
+
+    fn complete(&mut self, id: u64, outcome: AsyncLearningOutcome) {
+        if self.statuses.contains_key(&id) {
+            self.statuses.insert(id, outcome);
+        }
+    }
+
+    fn poll(&mut self, id: u64) -> Option<AsyncLearningOutcome> {
+        let outcome = self.statuses.get(&id)?.clone();
+        if !matches!(outcome, AsyncLearningOutcome::Pending) {
+            self.statuses.remove(&id);
+        }
+        Some(outcome)
+    }
+}
+
+struct AsyncLearningTask {
+    id: u64,
+    request: AsyncLearningRequest,
+}
+
+const ASYNC_LEARNING_QUEUE_CAPACITY: usize = 256;
+const ASYNC_LEARNING_STATUS_CAPACITY: usize = ASYNC_LEARNING_QUEUE_CAPACITY * 4;
+const ASYNC_LEARNING_PENDING_RC: i32 = -7;
+
+fn async_learning_statuses() -> &'static Mutex<AsyncLearningStatusRegistry> {
+    static STATUSES: OnceLock<Mutex<AsyncLearningStatusRegistry>> = OnceLock::new();
+    STATUSES.get_or_init(|| Mutex::new(AsyncLearningStatusRegistry::default()))
+}
+
+fn async_learning_lifecycle_gate() -> &'static Mutex<()> {
+    static GATE: OnceLock<Mutex<()>> = OnceLock::new();
+    GATE.get_or_init(|| Mutex::new(()))
+}
+
+fn async_learning_drain_event() -> &'static (Mutex<()>, Condvar) {
+    static EVENT: OnceLock<(Mutex<()>, Condvar)> = OnceLock::new();
+    EVENT.get_or_init(|| (Mutex::new(()), Condvar::new()))
+}
+
+static NEXT_ASYNC_LEARNING_ID: AtomicU64 = AtomicU64::new(1);
+static ASYNC_LEARNING_ACTIVE: AtomicUsize = AtomicUsize::new(0);
+static ASYNC_LEARNING_SHUTDOWN: AtomicBool = AtomicBool::new(false);
+
+fn notify_async_learning_drain() {
+    let (_, event) = async_learning_drain_event();
+    event.notify_all();
+}
+
+fn finish_async_learning_task(id: u64, outcome: AsyncLearningOutcome) {
+    if let Ok(mut statuses) = async_learning_statuses().lock() {
+        statuses.complete(id, outcome);
+    }
+    ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
+    notify_async_learning_drain();
+}
+
+fn async_learning_sender() -> Option<&'static SyncSender<AsyncLearningTask>> {
+    static SENDER: OnceLock<Option<SyncSender<AsyncLearningTask>>> = OnceLock::new();
+    SENDER
+        .get_or_init(|| {
+            let (sender, receiver) = mpsc::sync_channel(ASYNC_LEARNING_QUEUE_CAPACITY);
+            match std::thread::Builder::new()
+                .name("srf-engine-learning".to_string())
+                .spawn(move || async_learning_worker_loop(receiver))
+            {
+                Ok(_) => Some(sender),
+                Err(err) => {
+                    runtime_log::log_engine(
+                        RuntimeLogLevel::Error,
+                        "srf_async_learning_worker_start_failed",
+                        format!("reason={err}"),
+                    );
+                    None
+                }
+            }
+        })
+        .as_ref()
+}
+
+fn enqueue_async_learning(request: AsyncLearningRequest) -> Result<u64, &'static str> {
+    let _gate = async_learning_lifecycle_gate()
+        .lock()
+        .map_err(|_| "learning lifecycle unavailable")?;
+    if ASYNC_LEARNING_SHUTDOWN.load(Ordering::Acquire) {
+        return Err("learning worker shutting down");
+    }
+    let Some(sender) = async_learning_sender() else {
+        return Err("learning worker unavailable");
+    };
+
+    let id = NEXT_ASYNC_LEARNING_ID
+        .fetch_add(1, Ordering::Relaxed)
+        .max(1);
+    {
+        let mut statuses = async_learning_statuses()
+            .lock()
+            .map_err(|_| "learning status unavailable")?;
+        statuses.reserve(id, ASYNC_LEARNING_STATUS_CAPACITY)?;
+    }
+    ASYNC_LEARNING_ACTIVE.fetch_add(1, Ordering::AcqRel);
+    match sender.try_send(AsyncLearningTask { id, request }) {
+        Ok(()) => Ok(id),
+        Err(TrySendError::Full(task)) => {
+            if let Ok(mut statuses) = async_learning_statuses().lock() {
+                statuses.cancel(task.id);
+            }
+            ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
+            notify_async_learning_drain();
+            Err("shared engine busy")
+        }
+        Err(TrySendError::Disconnected(task)) => {
+            if let Ok(mut statuses) = async_learning_statuses().lock() {
+                statuses.cancel(task.id);
+            }
+            ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
+            notify_async_learning_drain();
+            Err("learning worker disconnected")
+        }
+    }
+}
+
+fn async_learning_outcome_from_result(
+    result: Result<(), (&'static str, String)>,
+) -> AsyncLearningOutcome {
+    match result {
+        Ok(()) => AsyncLearningOutcome::Succeeded,
+        Err((_, error)) => AsyncLearningOutcome::Failed(error),
+    }
+}
+
+fn async_learning_worker_loop(receiver: Receiver<AsyncLearningTask>) {
+    while let Ok(task) = receiver.recv() {
+        let id = task.id;
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            process_async_learning_request(task.request)
+        }));
+        let outcome = match result {
+            Ok(result) => {
+                if let Err((event, error)) = &result {
+                    runtime_log::log_engine(RuntimeLogLevel::Error, *event, error);
+                }
+                async_learning_outcome_from_result(result)
+            }
+            Err(_) => {
+                let error = "learning worker panicked".to_string();
+                runtime_log::log_engine(
+                    RuntimeLogLevel::Error,
+                    "srf_async_learning_failed",
+                    &error,
+                );
+                AsyncLearningOutcome::Failed(error)
+            }
+        };
+        finish_async_learning_task(id, outcome);
+    }
+}
+
+fn begin_async_learning_shutdown() {
+    if let Ok(_gate) = async_learning_lifecycle_gate().lock() {
+        ASYNC_LEARNING_SHUTDOWN.store(true, Ordering::Release);
+    } else {
+        ASYNC_LEARNING_SHUTDOWN.store(true, Ordering::Release);
+    }
+}
+
+fn wait_for_async_learning_drain() {
+    wait_for_async_learning_drain_state(&ASYNC_LEARNING_ACTIVE, async_learning_drain_event());
+}
+
+fn wait_for_async_learning_drain_state(active: &AtomicUsize, event: &(Mutex<()>, Condvar)) {
+    let (lock, event) = event;
+    let mut guard = match lock.lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    while active.load(Ordering::Acquire) != 0 {
+        guard = match event.wait(guard) {
+            Ok(guard) => guard,
+            Err(poison) => poison.into_inner(),
+        };
+    }
+}
+
+fn process_async_learning_request(
+    request: AsyncLearningRequest,
+) -> Result<(), (&'static str, String)> {
+    if let Err(err) = ensure_shared_engine_loaded(None) {
+        return Err((
+            "srf_async_learning_failed",
+            format!("operation=ensure_engine error={err}"),
+        ));
+    }
+
+    let mut state = lock_shared_engine_recover();
+    let engine = state.engine_mut().map_err(|err| {
+        (
+            "srf_async_learning_failed",
+            format!("operation=engine_mut error={err}"),
+        )
+    })?;
+
+    match request {
+        AsyncLearningRequest::Commit {
+            reading,
+            committed,
+            flags,
+        } => engine
+            .learn_commit_with_flags(reading.trim(), committed.trim(), flags)
+            .map_err(|err| {
+                (
+                    "srf_async_learning_failed",
+                    format!("operation=commit error={err}"),
+                )
+            }),
+        AsyncLearningRequest::Correction {
+            raw,
+            corrected,
+            committed,
+        } => {
+            engine
+                .learn_correction(raw.trim(), corrected.trim())
+                .map_err(|err| {
+                    (
+                        "srf_ipc_learn_correction_failed",
+                        format!("operation=correction error={err}"),
+                    )
+                })?;
+            engine
+                .learn_commit_with_flags(corrected.trim(), committed.trim(), 0)
+                .map_err(|err| {
+                    (
+                        "srf_async_learning_failed",
+                        format!("operation=correction_commit error={err}"),
+                    )
+                })
+        }
+        AsyncLearningRequest::SelectionFeedback {
+            reading,
+            committed,
+            selected_index,
+            page,
+            skipped_candidates,
+        } => engine
+            .learn_selection_feedback(
+                reading.trim(),
+                committed.trim(),
+                selected_index,
+                page,
+                &skipped_candidates,
+            )
+            .map_err(|err| {
+                (
+                    "srf_ipc_learn_selection_feedback_failed",
+                    format!("operation=selection_feedback error={err}"),
+                )
+            }),
     }
 }
 
@@ -842,43 +1174,6 @@ fn lock_shared_engine_for_lookup(
     }
 }
 
-fn try_lock_until<'a, T>(
-    mutex: &'a Mutex<T>,
-    busy_wait: Duration,
-) -> Result<MutexGuard<'a, T>, TryLockError<MutexGuard<'a, T>>> {
-    let started = Instant::now();
-    loop {
-        match mutex.try_lock() {
-            Ok(guard) => return Ok(guard),
-            Err(TryLockError::WouldBlock) if started.elapsed() < busy_wait => {
-                std::thread::yield_now();
-            }
-            Err(err) => return Err(err),
-        }
-    }
-}
-
-fn lock_shared_engine_for_learning(
-    operation: &'static str,
-) -> Result<MutexGuard<'static, SharedEngine>, (i32, Vec<u8>)> {
-    let started = Instant::now();
-    match try_lock_until(shared_engine(), LEARN_BUSY_WAIT) {
-        Ok(guard) => Ok(guard),
-        Err(TryLockError::WouldBlock) => {
-            runtime_log::log_engine(
-                RuntimeLogLevel::Basic,
-                "srf_ipc_learn_busy",
-                format!(
-                    "operation={operation} waited_us={} status=busy",
-                    started.elapsed().as_micros()
-                ),
-            );
-            Err((-5, error_payload("shared engine busy")))
-        }
-        Err(TryLockError::Poisoned(poison)) => Ok(recover_shared_engine_poison(poison, "learning")),
-    }
-}
-
 fn ensure_shared_engine_loaded(requested_dir: Option<&Path>) -> Result<(), String> {
     if requested_dir.is_none() && DEFAULT_ENGINE_READY.load(Ordering::Acquire) {
         return Ok(());
@@ -1129,6 +1424,9 @@ fn engine_pipe_name_from_env() -> String {
 pub fn start_engine_service() {
     static STARTED: OnceLock<()> = OnceLock::new();
     STARTED.get_or_init(|| {
+        // Start this before the first client request so the first learn event
+        // cannot pay thread-creation latency on the named-pipe handler.
+        let _ = async_learning_sender();
         clipboard_store::warmup_snapshot_cache_async();
         let pipe_name = engine_pipe_name_from_env();
         let mutex_name = engine_mutex_name_from_env();
@@ -1243,62 +1541,8 @@ pub fn probe_shared_engine_via_pipe(input: &str) -> Result<usize, String> {
     start_engine_service();
     warmup_shared_engine_sync();
 
-    let pipe_name = engine_pipe_name_from_env();
-    let mut file = open_pipe_client(&pipe_name)?;
-    let mut capability = read_engine_capability_token()
-        .map_err(|err| format!("engine capability unavailable: {err}"))?;
-    let mut payload = Vec::with_capacity(24 + capability.len() * 2 + reading.len() * 2);
-    append_utf16_string(&mut payload, &capability);
-    zeroize_string(&mut capability);
-    append_u32(&mut payload, 0);
-    append_utf16_string(&mut payload, reading);
-    payload.extend_from_slice(&0u64.to_le_bytes());
-
-    let mut request = Vec::with_capacity(12 + payload.len());
-    request.extend_from_slice(&PROTOCOL_MAGIC.to_le_bytes());
-    request.extend_from_slice(&PROTOCOL_VERSION.to_le_bytes());
-    request.extend_from_slice(&(EngineCommand::Lookup as u16).to_le_bytes());
-    request.extend_from_slice(&(payload.len() as u32).to_le_bytes());
-    request.extend_from_slice(&payload);
-
     let started = Instant::now();
-    file.write_all(&request)
-        .map_err(|err| format!("pipe write failed: {err}"))?;
-    file.flush()
-        .map_err(|err| format!("pipe flush failed: {err}"))?;
-
-    let mut header = [0u8; 16];
-    file.read_exact(&mut header)
-        .map_err(|err| format!("pipe response header read failed: {err}"))?;
-    let magic = u32::from_le_bytes([header[0], header[1], header[2], header[3]]);
-    let version = u16::from_le_bytes([header[4], header[5]]);
-    let command = u16::from_le_bytes([header[6], header[7]]);
-    let status = i32::from_le_bytes([header[8], header[9], header[10], header[11]]);
-    let payload_len = u32::from_le_bytes([header[12], header[13], header[14], header[15]]) as usize;
-    if magic != PROTOCOL_MAGIC
-        || version != PROTOCOL_VERSION
-        || command != EngineCommand::Lookup as u16
-    {
-        return Err(format!(
-            "pipe response header mismatch magic={magic:#x} version={version} command={command}"
-        ));
-    }
-    if payload_len > LOOKUP_RESPONSE_BYTES {
-        return Err(format!("pipe response too large: {payload_len}"));
-    }
-
-    let mut response = vec![0u8; payload_len];
-    if payload_len > 0 {
-        file.read_exact(&mut response)
-            .map_err(|err| format!("pipe response payload read failed: {err}"))?;
-    }
-    if status != 0 {
-        return Err(format!("pipe lookup failed status={status}"));
-    }
-    if response.len() < 4 {
-        return Err("pipe lookup response was truncated".to_string());
-    }
-    let count = u32::from_le_bytes([response[0], response[1], response[2], response[3]]) as usize;
+    let (count, response_bytes) = engine_pipe_roundtrip(reading)?;
     runtime_log::log_engine(
         RuntimeLogLevel::Basic,
         "install_health_check_pipe_probe",
@@ -1306,7 +1550,7 @@ pub fn probe_shared_engine_via_pipe(input: &str) -> Result<usize, String> {
             "{} candidates={} response_bytes={} elapsed={}us status={}",
             runtime_log::input_fingerprint(reading),
             count,
-            response.len(),
+            response_bytes,
             started.elapsed().as_micros(),
             if count > 0 { "ok" } else { "failed" }
         ),
@@ -1315,6 +1559,108 @@ pub fn probe_shared_engine_via_pipe(input: &str) -> Result<usize, String> {
         return Err("pipe lookup returned no candidates".to_string());
     }
     Ok(count)
+}
+
+/// 单次命名管道 lookup 往返（打开新连接 + 读取令牌），要求进程内引擎服务
+/// 已启动（start_engine_service + warmup_shared_engine_sync）。返回
+/// (候选数, 响应字节数)。供健康检查与一次性探测使用；性能基准请用
+/// EnginePipeClient 复用连接，避免每键支付连接建立与令牌解密的开销。
+pub fn engine_pipe_roundtrip(input: &str) -> Result<(usize, usize), String> {
+    let mut client = EnginePipeClient::connect()?;
+    client.lookup(input, 0)
+}
+
+/// 持久化管道客户端：与真实 TSF 客户端一致——能力令牌只读取一次、
+/// 连接保持复用，避免每键支付文件读取 + DPAPI 解密的固定开销。
+pub struct EnginePipeClient {
+    file: std::fs::File,
+    capability: String,
+}
+
+impl Drop for EnginePipeClient {
+    fn drop(&mut self) {
+        zeroize_string(&mut self.capability);
+    }
+}
+
+impl EnginePipeClient {
+    pub fn connect() -> Result<Self, String> {
+        let pipe_name = engine_pipe_name_from_env();
+        let file = open_pipe_client(&pipe_name)?;
+        let capability = read_engine_capability_token()
+            .map_err(|err| format!("engine capability unavailable: {err}"))?;
+        Ok(Self { file, capability })
+    }
+
+    /// 单次 lookup 往返。request_id 非 0 走交互优先级（真实 TSF 客户端），
+    /// 0 为后台优先级（健康探测）。返回 (候选数, 响应字节数)。
+    pub fn lookup(&mut self, input: &str, request_id: u64) -> Result<(usize, usize), String> {
+        let reading = input.trim();
+        if reading.is_empty() {
+            return Err("roundtrip input is empty".to_string());
+        }
+        if reading.encode_utf16().count() > MAX_BRIDGE_INPUT_UNITS {
+            return Err("roundtrip input is too long".to_string());
+        }
+
+        let mut payload = Vec::with_capacity(24 + self.capability.len() * 2 + reading.len() * 2);
+        append_utf16_string(&mut payload, &self.capability);
+        append_u32(&mut payload, 0);
+        append_utf16_string(&mut payload, reading);
+        payload.extend_from_slice(&request_id.to_le_bytes());
+
+        let mut request = Vec::with_capacity(12 + payload.len());
+        request.extend_from_slice(&PROTOCOL_MAGIC.to_le_bytes());
+        request.extend_from_slice(&PROTOCOL_VERSION.to_le_bytes());
+        request.extend_from_slice(&(EngineCommand::Lookup as u16).to_le_bytes());
+        request.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+        request.extend_from_slice(&payload);
+
+        self.file
+            .write_all(&request)
+            .map_err(|err| format!("pipe write failed: {err}"))?;
+        self.file
+            .flush()
+            .map_err(|err| format!("pipe flush failed: {err}"))?;
+
+        let mut header = [0u8; 16];
+        self.file
+            .read_exact(&mut header)
+            .map_err(|err| format!("pipe response header read failed: {err}"))?;
+        let magic = u32::from_le_bytes([header[0], header[1], header[2], header[3]]);
+        let version = u16::from_le_bytes([header[4], header[5]]);
+        let command = u16::from_le_bytes([header[6], header[7]]);
+        let status = i32::from_le_bytes([header[8], header[9], header[10], header[11]]);
+        let payload_len =
+            u32::from_le_bytes([header[12], header[13], header[14], header[15]]) as usize;
+        if magic != PROTOCOL_MAGIC
+            || version != PROTOCOL_VERSION
+            || command != EngineCommand::Lookup as u16
+        {
+            return Err(format!(
+                "pipe response header mismatch magic={magic:#x} version={version} command={command}"
+            ));
+        }
+        if payload_len > LOOKUP_RESPONSE_BYTES {
+            return Err(format!("pipe response too large: {payload_len}"));
+        }
+
+        let mut response = vec![0u8; payload_len];
+        if payload_len > 0 {
+            self.file
+                .read_exact(&mut response)
+                .map_err(|err| format!("pipe response payload read failed: {err}"))?;
+        }
+        if status != 0 {
+            return Err(format!("pipe lookup failed status={status}"));
+        }
+        if response.len() < 4 {
+            return Err("pipe lookup response was truncated".to_string());
+        }
+        let count =
+            u32::from_le_bytes([response[0], response[1], response[2], response[3]]) as usize;
+        Ok((count, response.len()))
+    }
 }
 
 fn open_pipe_client(pipe_name: &str) -> Result<std::fs::File, String> {
@@ -1683,7 +2029,7 @@ fn constant_time_eq(a: &str, b: &str) -> bool {
 fn verify_capability_token(cursor: &mut PayloadCursor<'_>) -> Result<(), i32> {
     let len = cursor.read_u32().ok_or(-1)? as usize;
     let mut supplied = cursor.read_utf16_string(len, 128).ok_or(-1)?;
-    let mut expected = match read_engine_capability_token() {
+    let mut expected = match cached_engine_capability_token() {
         Ok(token) => token,
         Err(err) => {
             runtime_log::log_engine(
@@ -1707,6 +2053,41 @@ fn verify_capability_token(cursor: &mut PayloadCursor<'_>) -> Result<(), i32> {
         );
         Err(-6)
     }
+}
+
+/// 服务端能力令牌缓存。令牌文件由 tray 启动时写入、静态不变；每个请求都
+/// 读文件 + DPAPI 解密会把毫秒级开销加在每键热路径上。用 (mtime, len)
+/// 校验后复用内存明文，文件变化（令牌轮换）时重新解密。
+static CAPABILITY_CACHE: Mutex<Option<(SystemTime, u64, String)>> = Mutex::new(None);
+
+fn cached_engine_capability_token() -> io::Result<String> {
+    let path = capability_path().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            "engine capability token path is unavailable",
+        )
+    })?;
+    let meta = std::fs::metadata(&path)?;
+    let mtime = meta.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+    let len = meta.len();
+    {
+        let cache = CAPABILITY_CACHE
+            .lock()
+            .map_err(|_| io::Error::other("capability cache poisoned"))?;
+        if let Some((cached_mtime, cached_len, token)) = cache.as_ref() {
+            if *cached_mtime == mtime && *cached_len == len {
+                return Ok(token.clone());
+            }
+        }
+    }
+    let token = read_engine_capability_token()?;
+    let mut cache = CAPABILITY_CACHE
+        .lock()
+        .map_err(|_| io::Error::other("capability cache poisoned"))?;
+    if let Some((_, _, mut old)) = cache.replace((mtime, len, token.clone())) {
+        zeroize_string(&mut old);
+    }
+    Ok(token)
 }
 
 fn handle_client(pipe: HANDLE, _client_guard: ActivePipeClient) {
@@ -1735,6 +2116,14 @@ fn handle_client(pipe: HANDLE, _client_guard: ActivePipeClient) {
                 "srf_engine_helper_shutdown",
                 "requested_by_tsf_bridge",
             );
+            // Persist clipboard records the store writer has not flushed yet
+            // so a user quit never loses recent captures.
+            clipboard_store::flush_pending_ops_sync();
+            // Learning requests are acknowledged only after the worker has
+            // completed them.  Still drain here because a request may have
+            // been accepted by the queue while the shutdown command was in
+            // flight from another pipe client.
+            wait_for_async_learning_drain();
             unsafe {
                 let _ = FlushFileBuffers(pipe);
                 let _ = DisconnectNamedPipe(pipe);
@@ -1819,6 +2208,7 @@ fn dispatch_request_with_session(
         EngineCommand::CandidateAction => handle_candidate_action(payload),
         EngineCommand::ResetLearningContext => handle_reset_learning_context(payload),
         EngineCommand::CancelLookup => handle_cancel_lookup(payload, lookup_session.as_deref()),
+        EngineCommand::LearnStatus => handle_learn_status(payload),
     }
 }
 
@@ -1885,6 +2275,7 @@ fn handle_shutdown(payload: &[u8]) -> (i32, Vec<u8>) {
     if !cursor.is_at_end() {
         return (-1, Vec::new());
     }
+    begin_async_learning_shutdown();
     (0, Vec::new())
 }
 
@@ -2009,6 +2400,14 @@ fn handle_lookup(
             None => return (-1, Vec::new()),
         }
     };
+    let full_result = if cursor.is_at_end() {
+        false
+    } else {
+        match cursor.read_u32() {
+            Some(v) => v != 0,
+            None => return (-1, Vec::new()),
+        }
+    };
     if !cursor.is_at_end() {
         return (-1, Vec::new());
     }
@@ -2037,12 +2436,21 @@ fn handle_lookup(
     } else {
         LookupPriority::Interactive
     };
+    // Background probes must not initialize or claim the shared engine while
+    // an interactive request is already waiting. They can retry from the
+    // TIP-side cache during the next quiet window.
+    if priority == LookupPriority::Background && lookup_scheduler().has_interactive_pressure() {
+        return (-5, error_payload("shared engine busy"));
+    }
     // Do first-time model construction outside the scheduler permit. Building
     // the fast engine can take much longer than a lookup and must not make a
     // background probe the head-of-line owner for all interactive clients.
     match shared_engine().try_lock() {
         Ok(state) if state.engine.is_none() => {
             drop(state);
+            if priority == LookupPriority::Background {
+                return (-5, error_payload("shared engine busy"));
+            }
             if let Err(err) = ensure_shared_engine_loaded(None) {
                 return (-3, error_payload(&err));
             }
@@ -2050,6 +2458,9 @@ fn handle_lookup(
         Ok(_) | Err(TryLockError::WouldBlock) => {}
         Err(TryLockError::Poisoned(poison)) => {
             drop(recover_shared_engine_poison(poison, "lookup-ensure"));
+            if priority == LookupPriority::Background {
+                return (-5, error_payload("shared engine busy"));
+            }
             if let Err(err) = ensure_shared_engine_loaded(None) {
                 return (-3, error_payload(&err));
             }
@@ -2060,13 +2471,24 @@ fn handle_lookup(
     } else {
         LOOKUP_BACKGROUND_BUSY_WAIT
     };
-    let permit = match lookup_scheduler().acquire(
-        session_id,
-        lookup_generation,
-        cancellation.as_ref(),
-        priority,
-        scheduler_wait,
-    ) {
+    let permit_result = if priority == LookupPriority::Background {
+        if lookup_scheduler().has_interactive_pressure() {
+            Err(SchedulerAcquireError::Busy)
+        } else {
+            lookup_scheduler()
+                .try_acquire_background()
+                .ok_or(SchedulerAcquireError::Busy)
+        }
+    } else {
+        lookup_scheduler().acquire(
+            session_id,
+            lookup_generation,
+            cancellation.as_ref(),
+            priority,
+            scheduler_wait,
+        )
+    };
+    let permit = match permit_result {
         Ok(permit) => permit,
         Err(SchedulerAcquireError::Superseded) => {
             if perf_log_enabled() {
@@ -2115,6 +2537,10 @@ fn handle_lookup(
         Err(SchedulerAcquireError::Poisoned) => return (-2, Vec::new()),
     };
     let queue_wait_us = permit.queue_wait_us();
+    if priority == LookupPriority::Background && lookup_scheduler().has_interactive_pressure() {
+        drop(permit);
+        return (-5, error_payload("shared engine busy"));
+    }
 
     let (ranked, lexicon_state, full_in_flight, engine_us) = {
         let mut state = match lock_shared_engine_for_lookup(
@@ -2178,7 +2604,13 @@ fn handle_lookup(
     let scheduler_after_engine = lookup_scheduler().snapshot();
     drop(permit);
 
-    let count = ranked.len().min(TSF_MAX_CANDIDATES);
+    let result_limit = if full_result {
+        LOOKUP_FULL_MAX_CANDIDATES
+    } else {
+        LOOKUP_FIRST_BATCH_CANDIDATES
+    };
+    let count = ranked.len().min(result_limit);
+    let has_more = !full_result && ranked.len() > count;
     let mut payload = Vec::with_capacity(4 + count * 48);
     append_u32(&mut payload, count as u32);
     for candidate in ranked.iter().take(count) {
@@ -2186,6 +2618,7 @@ fn handle_lookup(
         let meta = lookup_row_meta(&candidate.meta, candidate.score);
         append_utf16_field_u16(&mut payload, &meta, ROW_META_UNITS - 1);
     }
+    append_u32(&mut payload, if has_more { 1 } else { 0 });
     let total_us = lookup_started.elapsed().as_micros();
     if perf_log_enabled() {
         let scheduler = scheduler_after_engine;
@@ -2287,6 +2720,9 @@ fn lookup_row_meta(meta: &CandidateMeta, score: f64) -> String {
     if meta.partial {
         parts.push("partial=1".to_string());
     }
+    if meta.user_signal {
+        parts.push("user_signal=1".to_string());
+    }
     parts.push(format!("{score:.2}"));
     parts.join("\t")
 }
@@ -2324,20 +2760,14 @@ fn handle_learn(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    if let Err(err) = ensure_shared_engine_loaded(None) {
-        return (-3, error_payload(&err));
-    }
-    let mut state = match lock_shared_engine_for_learning("commit") {
-        Ok(guard) => guard,
-        Err(result) => return result,
-    };
-    let engine = match state.engine_mut() {
-        Ok(engine) => engine,
-        Err(_) => return (-3, Vec::new()),
-    };
-    match engine.learn_commit_with_flags(reading.trim(), committed.trim(), flags) {
-        Ok(()) => (0, Vec::new()),
-        Err(_) => (-3, Vec::new()),
+    match enqueue_async_learning(AsyncLearningRequest::Commit {
+        reading,
+        committed,
+        flags,
+    }) {
+        Ok(id) => (0, id.to_le_bytes().to_vec()),
+        Err("shared engine busy") => (-5, error_payload("shared engine busy")),
+        Err(err) => (-3, error_payload(err)),
     }
 }
 
@@ -2374,29 +2804,14 @@ fn handle_learn_correction(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    if let Err(err) = ensure_shared_engine_loaded(None) {
-        return (-3, error_payload(&err));
-    }
-    let mut state = match lock_shared_engine_for_learning("correction") {
-        Ok(guard) => guard,
-        Err(result) => return result,
-    };
-    let engine = match state.engine_mut() {
-        Ok(engine) => engine,
-        Err(_) => return (-3, Vec::new()),
-    };
-    if let Err(err) = engine.learn_correction(raw.trim(), corrected.trim()) {
-        runtime_log::log_engine(
-            RuntimeLogLevel::Error,
-            "srf_ipc_learn_correction_failed",
-            &err,
-        );
-        return (-3, Vec::new());
-    }
-    // Learn the committed phrase under the corrected spelling, not the raw typo.
-    match engine.learn_commit_with_flags(corrected.trim(), committed.trim(), 0) {
-        Ok(()) => (0, Vec::new()),
-        Err(_) => (-3, Vec::new()),
+    match enqueue_async_learning(AsyncLearningRequest::Correction {
+        raw,
+        corrected,
+        committed,
+    }) {
+        Ok(id) => (0, id.to_le_bytes().to_vec()),
+        Err("shared engine busy") => (-5, error_payload("shared engine busy")),
+        Err(err) => (-3, error_payload(err)),
     }
 }
 
@@ -2455,33 +2870,41 @@ fn handle_learn_selection_feedback(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    if let Err(err) = ensure_shared_engine_loaded(None) {
-        return (-3, error_payload(&err));
-    }
-    let mut state = match lock_shared_engine_for_learning("selection_feedback") {
-        Ok(guard) => guard,
-        Err(result) => return result,
-    };
-    let engine = match state.engine_mut() {
-        Ok(engine) => engine,
-        Err(_) => return (-3, Vec::new()),
-    };
-    match engine.learn_selection_feedback(
-        reading.trim(),
-        committed.trim(),
+    match enqueue_async_learning(AsyncLearningRequest::SelectionFeedback {
+        reading,
+        committed,
         selected_index,
         page,
-        &skipped_candidates,
-    ) {
-        Ok(()) => (0, Vec::new()),
-        Err(err) => {
-            runtime_log::log_engine(
-                RuntimeLogLevel::Error,
-                "srf_ipc_learn_selection_feedback_failed",
-                &err,
-            );
-            (-3, Vec::new())
-        }
+        skipped_candidates,
+    }) {
+        Ok(id) => (0, id.to_le_bytes().to_vec()),
+        Err("shared engine busy") => (-5, error_payload("shared engine busy")),
+        Err(err) => (-3, error_payload(err)),
+    }
+}
+
+fn handle_learn_status(payload: &[u8]) -> (i32, Vec<u8>) {
+    let mut cursor = PayloadCursor::new(payload);
+    if let Err(status) = verify_capability_token(&mut cursor) {
+        return (status, Vec::new());
+    }
+    let id = match cursor.read_u64() {
+        Some(id) if id != 0 => id,
+        _ => return (-1, Vec::new()),
+    };
+    if !cursor.is_at_end() {
+        return (-1, Vec::new());
+    }
+
+    let mut statuses = match async_learning_statuses().lock() {
+        Ok(statuses) => statuses,
+        Err(_) => return (-3, error_payload("learning status unavailable")),
+    };
+    match statuses.poll(id) {
+        Some(AsyncLearningOutcome::Pending) => (ASYNC_LEARNING_PENDING_RC, Vec::new()),
+        Some(AsyncLearningOutcome::Succeeded) => (0, Vec::new()),
+        Some(AsyncLearningOutcome::Failed(error)) => (-3, error_payload(&error)),
+        None => (-3, error_payload("learning request is unknown or expired")),
     }
 }
 
@@ -2655,7 +3078,24 @@ fn handle_record_clipboard(payload: &[u8]) -> (i32, Vec<u8>) {
 }
 
 fn handle_resolve_clipboard(payload: &[u8]) -> (i32, Vec<u8>) {
-    handle_resolve_clipboard_with(payload, clipboard_store::snapshot)
+    let started = Instant::now();
+    let used_cache = clipboard_store::cached_snapshot().is_some();
+    let (status, response) =
+        handle_resolve_clipboard_with(payload, clipboard_store::resolve_snapshot);
+    if perf_log_enabled() {
+        runtime_log::log_engine(
+            RuntimeLogLevel::Perf,
+            "srf_ipc_resolve_clipboard",
+            format!(
+                "id_len={} cache={} total_us={} status={}",
+                payload.len(),
+                if used_cache { 1 } else { 0 },
+                started.elapsed().as_micros(),
+                status
+            ),
+        );
+    }
+    (status, response)
 }
 
 fn handle_resolve_clipboard_with<F>(payload: &[u8], load_snapshot: F) -> (i32, Vec<u8>)
@@ -2768,7 +3208,12 @@ fn read_exact_with_timeout(handle: HANDLE, mut buf: &mut [u8], timeout: Duration
                 continue;
             }
             if err == ERROR_NO_DATA && Instant::now() < deadline {
-                std::thread::sleep(Duration::from_millis(10));
+                // 轮询粒度即每个请求的排队延迟上限：PIPE_NOWAIT 下服务端
+                // 靠此循环等待客户端的下一条消息。10ms 会让持久连接上每个
+                // 请求固定多吃一个轮询周期；1ms 把该开销压到 ~0.5ms 均值，
+                // 空闲时每个客户端线程约 1000 次/秒唤醒，客户端数量有限，
+                // CPU 代价可忽略。
+                std::thread::sleep(Duration::from_millis(1));
                 continue;
             }
             return false;
@@ -2798,7 +3243,8 @@ fn write_all(handle: HANDLE, mut buf: &[u8]) -> bool {
         if ok == 0 || written == 0 {
             let err = unsafe { GetLastError() };
             if err == ERROR_NO_DATA && Instant::now() < deadline {
-                std::thread::sleep(Duration::from_millis(10));
+                // 与读侧一致：1ms 轮询粒度，避免响应写侧放大每个请求的延迟。
+                std::thread::sleep(Duration::from_millis(1));
                 continue;
             }
             return false;
@@ -2813,4 +3259,106 @@ fn wide(value: &str) -> Vec<u16> {
         .encode_wide()
         .chain(std::iter::once(0))
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+
+    #[test]
+    fn learning_status_reports_success_once() {
+        let mut registry = AsyncLearningStatusRegistry::default();
+        registry.reserve(1, 2).unwrap();
+        assert_eq!(registry.poll(1), Some(AsyncLearningOutcome::Pending));
+        registry.complete(1, AsyncLearningOutcome::Succeeded);
+        assert_eq!(registry.poll(1), Some(AsyncLearningOutcome::Succeeded));
+        assert_eq!(registry.poll(1), None);
+    }
+
+    #[test]
+    fn learning_status_reports_failure_and_releases_slot() {
+        let mut registry = AsyncLearningStatusRegistry::default();
+        registry.reserve(1, 1).unwrap();
+        assert_eq!(
+            registry.reserve(2, 1),
+            Err("learning status busy"),
+            "a pending request must apply backpressure"
+        );
+        registry.complete(
+            1,
+            AsyncLearningOutcome::Failed("sqlite write failed".to_string()),
+        );
+        assert_eq!(
+            registry.poll(1),
+            Some(AsyncLearningOutcome::Failed(
+                "sqlite write failed".to_string()
+            ))
+        );
+        registry.reserve(2, 1).unwrap();
+    }
+
+    #[test]
+    fn learning_worker_exposes_background_write_failure() {
+        let outcome = async_learning_outcome_from_result(Err((
+            "srf_async_learning_failed",
+            "sqlite write failed".to_string(),
+        )));
+        assert_eq!(
+            outcome,
+            AsyncLearningOutcome::Failed("sqlite write failed".to_string())
+        );
+    }
+
+    #[test]
+    fn learning_status_capacity_prunes_observed_terminal_state() {
+        let mut registry = AsyncLearningStatusRegistry::default();
+        registry.reserve(1, 1).unwrap();
+        registry.complete(1, AsyncLearningOutcome::Succeeded);
+        registry.reserve(2, 1).unwrap();
+        assert_eq!(registry.poll(1), None);
+        assert_eq!(registry.poll(2), Some(AsyncLearningOutcome::Pending));
+    }
+
+    #[test]
+    fn learning_queue_is_bounded() {
+        let (sender, _receiver) = mpsc::sync_channel(ASYNC_LEARNING_QUEUE_CAPACITY);
+        for id in 1..=ASYNC_LEARNING_QUEUE_CAPACITY as u64 {
+            sender
+                .try_send(AsyncLearningTask {
+                    id,
+                    request: AsyncLearningRequest::Commit {
+                        reading: "ni".to_string(),
+                        committed: "你".to_string(),
+                        flags: 0,
+                    },
+                })
+                .unwrap();
+        }
+        let result = sender.try_send(AsyncLearningTask {
+            id: ASYNC_LEARNING_QUEUE_CAPACITY as u64 + 1,
+            request: AsyncLearningRequest::Commit {
+                reading: "hao".to_string(),
+                committed: "好".to_string(),
+                flags: 0,
+            },
+        });
+        assert!(matches!(result, Err(TrySendError::Full(_))));
+    }
+
+    #[test]
+    fn shutdown_drain_waits_for_pending_worker() {
+        let active = Arc::new(AtomicUsize::new(1));
+        let event = Arc::new((Mutex::new(()), Condvar::new()));
+        let worker_active = Arc::clone(&active);
+        let worker_event = Arc::clone(&event);
+        std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(10));
+            worker_active.store(0, Ordering::Release);
+            worker_event.1.notify_all();
+        });
+
+        wait_for_async_learning_drain_state(&active, &event);
+        assert_eq!(active.load(Ordering::Acquire), 0);
+    }
 }

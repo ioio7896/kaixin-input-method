@@ -158,6 +158,16 @@ pub fn log_clipboard(level: RuntimeLogLevel, event: &str, message: impl AsRef<st
     log("clipboard.log", "clipboard", level, event, message);
 }
 
+/// Lazy variant for hot paths: the message closure is only evaluated when the
+/// level is enabled, so per-event `format!` work (often O(text) unit counts)
+/// is skipped at the default log level.
+pub fn log_clipboard_lazy(level: RuntimeLogLevel, event: &str, message: impl FnOnce() -> String) {
+    if !enabled(level) {
+        return;
+    }
+    log_clipboard(level, event, message());
+}
+
 pub fn config_diagnostics_fields() -> String {
     let config_path = app_paths::config_ini_path();
     let config_exists = config_path.as_deref().is_some_and(Path::is_file);

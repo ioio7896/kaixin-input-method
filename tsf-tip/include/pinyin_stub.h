@@ -73,16 +73,22 @@ void SrfTip_ApplyCandidateAction(const std::wstring& reading,
                                  SrfCandidateAction action);
 void SrfTip_RecordClipboardText(const std::wstring& text);
 bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text);
+/// 解析剪贴板条目文本；命中本地缓存时零管道往返（供提交路径使用）。
+bool SrfTip_ResolveClipboardTextCached(const std::wstring& id, std::wstring* text);
+/// 后台预取剪贴板条目文本到本地缓存（vvu 候选列表构建后调用，幂等且合并）。
+void SrfTip_PrefetchClipboardTexts(const std::vector<std::wstring>& ids);
 unsigned long long SrfTip_NextLookupRequestId();
 // Best-effort, non-blocking publication of a newer request. The helper only
 // cancels an active lookup from this TIP process whose request id is older.
 void SrfTip_CancelPendingLookupBefore(unsigned long long requestId);
 SrfLookupCandidatesStatus SrfTip_LookupCandidates(
     const std::wstring& reading, std::vector<std::wstring>& candidates,
-    std::vector<std::wstring>* metaScores = nullptr, unsigned long long requestId = 0);
+    std::vector<std::wstring>* metaScores = nullptr, unsigned long long requestId = 0,
+    bool fullResult = false, bool* hasMore = nullptr);
 bool SrfTip_TryGetCachedLookupCandidates(const std::wstring& reading,
                                          std::vector<std::wstring>& candidates,
-                                         std::vector<std::wstring>* metaScores = nullptr);
+                                         std::vector<std::wstring>* metaScores = nullptr,
+                                         bool* hasMore = nullptr);
 void SrfTip_PrewarmSingleLetterLookupCacheAsync();
 
 /// 音节边界 UTF-16 偏移（含首尾）；返回写入个数。DLL 无导出时返回 0。

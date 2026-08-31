@@ -27,6 +27,13 @@ dist/
 !pinyin-ime/src/bin/
 pinyin-ime/src/bin/*
 !pinyin-ime/src/bin/phrase_len_eval.rs
+!pinyin-ime/src/bin/learning_replay_eval.rs
+!pinyin-ime/src/bin/srf_ime_clipboard.rs
+!pinyin-ime/src/bin/srf_ime_settings.rs
+!pinyin-ime/src/bin/srf_ime_settings/
+pinyin-ime/src/bin/srf_ime_settings/config.rs
+!pinyin-ime/src/bin/srf_ime_settings/model.rs
+!pinyin-ime/src/bin/srf_ime_settings/ui.rs
 
 # Python caches
 __pycache__/

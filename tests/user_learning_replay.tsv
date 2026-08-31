@@ -1,0 +1,43 @@
+# 用户学习回放基准：验证「学习 → 下次键入高频前置」的闭环。
+# 事件格式：
+#   commit	reading	phrase [flags]
+#   select	reading	phrase	selected_index	page	skipped|...
+#   lookup	case_id	reading	expected
+#   lookup 的第五列可选填写 bucket（例如 correction、mixed_prefix），用于
+#   learning_replay_eval 按场景分别统计 Top1/Top3/MRR/平均翻页次数。
+#   age	ticks
+#   reset
+# 目标：学过的词在后续相同/缩写输入下进入候选并逐步前置；所有 lookup
+# 的 expected 必须可达（missing 为 0）。
+#
+# 第一组：直接提交两个字词，检查全拼下次键入即时前置。
+commit	we	我们	0
+lookup	direct_first	we	我们	short_abbrev
+commit	a yi	阿姨	0
+lookup	direct_second	a yi	阿姨	full_pinyin
+lookup	direct_repeat	we	我们	short_abbrev
+#
+# 第二组：完整全拼提交后，简拼缩写也能召回并置顶。
+commit	xue xi	学习	0
+lookup	abbrev_boost	xx	学习	short_abbrev
+commit	wen gu	温故	0
+lookup	abbrev_boost_short	wg	温故	short_abbrev
+#
+# 第三组：逐字组词（composed）路径，学习后完整词在下次输入时前置。
+commit	bei jing	北京	2
+lookup	composed_pinyin	bei jing	北京	full_pinyin
+commit	tian jin	天津	2
+lookup	composed_repeat	tian jin	天津	full_pinyin
+#
+# 第四组：选择反馈（选中非首项）后，同 reading 下该候选权重提升。
+select	fang zhi	防止	2	1	组织|放置|房子
+lookup	feedback_rank	fang zhi	防止	full_pinyin
+#
+# 第五组：敏感形态与纯数字不应被学习（防误学）。
+commit	zhichang	s://example.com	0
+commit	int_input	1234567891	0
+lookup	no_garbage_int	san	三	full_pinyin
+#
+# 年龄衰减：让学习词老化后仍可被内置高频词覆盖（验证衰减路径存在）。
+age	50000
+lookup	aged_lookup	shijie	世界	compact_pinyin

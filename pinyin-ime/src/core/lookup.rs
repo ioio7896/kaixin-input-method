@@ -417,12 +417,47 @@ impl PinyinEngine {
         self.advance_shared_data_generation();
     }
 
-    pub(super) fn note_selection_feedback_updated(&mut self) {
+    pub(super) fn note_selection_feedback_updated(&mut self, affected: &[String]) {
+        self.note_user_phrases_updated(affected);
+    }
+
+    /// 已知词条的用户词典变化（提交/置顶/删除/反馈等）只影响这些词条
+    /// 参与的缓存结果：按短语定向驱逐，而不是整表清空。外部磁盘重载等
+    /// 未知范围的变化仍走 note_user_lexicon_updated 的整表失效。
+    pub(super) fn note_user_phrases_updated(&mut self, affected: &[String]) {
         self.user_lexicon_stamp = user_lexicon_disk_stamp();
         self.user_lexicon_generation = notify_user_lexicon_changed(self.user_lexicon_stamp.clone());
-        self.clear_user_sensitive_lookup_caches();
+        self.invalidate_user_sensitive_lookup_caches_for(affected);
         self.last_lookup = None;
         self.advance_shared_data_generation();
+    }
+
+    /// 提交路径的定向失效：短语本身 + 其分词 token 都算受影响词条。
+    pub(super) fn note_phrase_and_tokens_updated(&mut self, phrase: &str, tokens: &[String]) {
+        let mut affected = Vec::with_capacity(1 + tokens.len());
+        affected.push(phrase.to_string());
+        for token in tokens {
+            if !affected.iter().any(|existing| existing == token) {
+                affected.push(token.clone());
+            }
+        }
+        self.note_user_phrases_updated(&affected);
+    }
+
+    /// 定向失效：只驱逐依赖受影响词条的缓存项，保留其余输入的结果，
+    /// 让"选词/上屏后的下一键"继续命中已有缓存而不是全冷启动。
+    pub(super) fn invalidate_user_sensitive_lookup_caches_for(&mut self, affected: &[String]) {
+        if let Ok(mut c) = self.rerank_score_cache.lock() {
+            c.evict_affected(affected);
+        }
+        if let Ok(mut c) = self.mixed_completion_score_cache.lock() {
+            // 该缓存只存 f64 分值，无法按短语反查 key；容量小、重建便宜，
+            // 保持整表清空。
+            c.clear();
+        }
+        self.final_lookup_cache.evict_affected(affected);
+        self.short_lookup_cache.evict_affected(affected);
+        self.pending_lookup_continuation = None;
     }
 
     pub(crate) fn warmup_correction_indexes(&self) {
@@ -922,14 +957,14 @@ impl PinyinEngine {
             Some(short_lookup_cache_key(
                 &compact_key,
                 self.mode_flags,
-                user_clock,
                 self.cache_epoch,
             ))
         } else {
             None
         };
         if let Some(cache_key) = short_cache_key.as_ref() {
-            if let Some((mut cached, visible_short_intent)) = self.short_lookup_cache.get(cache_key)
+            if let Some((mut cached, visible_short_intent, two_char_density_replay)) =
+                self.short_lookup_cache.get(cache_key)
             {
                 self.apply_cached_context_rerank(&compact_key, &mut cached);
                 drop_disabled_english_word_candidates(
@@ -944,6 +979,12 @@ impl PinyinEngine {
                         &mut cached,
                         Some(intent_chars),
                         self.phrase_lexicon.as_ref(),
+                    );
+                    replay_two_char_intent_density(
+                        &mut cached,
+                        two_char_density_replay,
+                        intent_chars,
+                        page_size,
                     );
                     enforce_short_intent_visible_page(&mut cached, intent_chars, page_size);
                 }
@@ -963,11 +1004,18 @@ impl PinyinEngine {
                 if let Some((intent, phrase_len)) =
                     self.strict_lexicon_frequency_order_context(raw, &compact_key)
                 {
-                    enforce_strict_system_lexicon_frequency_order(
+                    if phrase_len >= 2 {
+                        enforce_strict_system_lexicon_frequency_order(
+                            &mut cached,
+                            &compact_key,
+                            intent,
+                            phrase_len,
+                            self.phrase_lexicon.as_ref(),
+                        );
+                    }
+                    demote_cold_non_full_lexicon_candidates(
                         &mut cached,
-                        &compact_key,
                         intent,
-                        phrase_len,
                         self.phrase_lexicon.as_ref(),
                     );
                 }
@@ -989,7 +1037,8 @@ impl PinyinEngine {
             None
         };
         if let Some(cache_key) = final_cache_key.as_ref() {
-            if let Some((mut cached, visible_short_intent)) = self.final_lookup_cache.get(cache_key)
+            if let Some((mut cached, visible_short_intent, two_char_density_replay)) =
+                self.final_lookup_cache.get(cache_key)
             {
                 self.apply_cached_context_rerank(&compact_key, &mut cached);
                 drop_disabled_english_word_candidates(
@@ -1004,6 +1053,12 @@ impl PinyinEngine {
                         &mut cached,
                         Some(intent_chars),
                         self.phrase_lexicon.as_ref(),
+                    );
+                    replay_two_char_intent_density(
+                        &mut cached,
+                        two_char_density_replay,
+                        intent_chars,
+                        page_size,
                     );
                     enforce_short_intent_visible_page(&mut cached, intent_chars, page_size);
                 }
@@ -1023,11 +1078,18 @@ impl PinyinEngine {
                 if let Some((intent, phrase_len)) =
                     self.strict_lexicon_frequency_order_context(raw, &compact_key)
                 {
-                    enforce_strict_system_lexicon_frequency_order(
+                    if phrase_len >= 2 {
+                        enforce_strict_system_lexicon_frequency_order(
+                            &mut cached,
+                            &compact_key,
+                            intent,
+                            phrase_len,
+                            self.phrase_lexicon.as_ref(),
+                        );
+                    }
+                    demote_cold_non_full_lexicon_candidates(
                         &mut cached,
-                        &compact_key,
                         intent,
-                        phrase_len,
                         self.phrase_lexicon.as_ref(),
                     );
                 }
@@ -2209,16 +2271,18 @@ impl PinyinEngine {
             }
         }
         // 长输入若首批只有单字/短片段，宁可继续精确解码，也不向候选窗发送
-        // “干、感、甘……”一类误导性的闪屏。已有四字以上短语时仍可及时返回。
+        // “干、感、甘……”一类误导性的闪屏。预算已经触发且首屏已满时，
+        // 直接交付首批，避免长拼音继续占用共享引擎。
         let partial_min_phrase_chars = if compact_key.len() >= 18 { 6 } else { 5 };
         let partial_has_long_phrase = merged
             .phrases()
             .any(|phrase| phrase_char_count(phrase) >= partial_min_phrase_chars);
         let partial_has_first_page = merged.len()
             >= candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
+        let interactive_page_size =
+            candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
         if (!exact_complete_full_pinyin || deferred_first_batch_stage.is_some())
-            && (compact_key.len() < 10
-                || partial_has_long_phrase
+            && (partial_has_long_phrase
                 || (deferred_first_batch_stage.is_some() && partial_has_first_page))
         {
             if let Some(stage) = deferred_first_batch_stage {
@@ -2232,6 +2296,23 @@ impl PinyinEngine {
                     stage,
                 );
             }
+        }
+        // A long reading that already has a visible page must not enter the
+        // expanded parse/correction tail.  This is the hard hand-off point
+        // that keeps one held composition from monopolising the shared engine.
+        if compact_key.chars().count() > LONG_INPUT_COMPACT_CHAR_LIMIT
+            && soft_budget.should_yield_stage("first_batch_ready", merged.len())
+            && merged.len() >= interactive_page_size
+        {
+            return self.finish_partial_first_batch(
+                &mut merged,
+                &compact_key,
+                raw,
+                now,
+                request_id,
+                profiler.take(),
+                "first_batch_ready",
+            );
         }
         if let Some(profiler) = profiler.as_mut() {
             profiler.mark("abbrev_phrase");
@@ -2250,11 +2331,15 @@ impl PinyinEngine {
                 .any(|variant| variant.source == ParseVariantSource::Exact);
             if has_exact_variant && merged.len() >= page_size {
                 Ok(preparsed)
+            } else if compact_key.chars().count() > LONG_INPUT_COMPACT_CHAR_LIMIT {
+                Err("long lookup skipped expanded parse".to_string())
             } else if soft_budget.should_yield_stage("parse", merged.len()) {
                 Err("lookup soft budget yielded before expanded parse".to_string())
             } else {
                 self.parse_variants_cached(raw)
             }
+        } else if compact_key.chars().count() > LONG_INPUT_COMPACT_CHAR_LIMIT {
+            Err("long lookup skipped expanded parse".to_string())
         } else if soft_budget.should_yield_stage("parse", merged.len()) {
             Err("lookup soft budget yielded before parse".to_string())
         } else {
@@ -2571,7 +2656,7 @@ impl PinyinEngine {
             .phrases()
             .any(|phrase| phrase_char_count(phrase) >= partial_min_phrase_chars);
         if soft_budget.should_defer_first_batch_stage("first_batch_decode", merged.len())
-            && (compact_key.len() < 10 || decoded_partial_has_long_phrase)
+            && (decoded_partial_has_long_phrase || merged.len() >= TSF_PAGE_SIZE)
         {
             return self.finish_partial_first_batch(
                 &mut merged,
@@ -2598,7 +2683,11 @@ impl PinyinEngine {
 
         let mut correction_budget =
             CorrectionWorkBudget::new(request_id, compact_key.chars().count());
-        if correction_enabled && !compact_is_exact_single_syllable && compact_key.len() >= 4 {
+        if correction_enabled
+            && compact_key.chars().count() <= LONG_INPUT_COMPACT_CHAR_LIMIT
+            && !compact_is_exact_single_syllable
+            && compact_key.len() >= 4
+        {
             let allow_correction =
                 correction_prefs.level != CorrectionLevel::Light || !has_exact_parse;
             let candidate_shortage = merged.len() < TSF_PAGE_SIZE;
@@ -2807,7 +2896,8 @@ impl PinyinEngine {
             self.ranked_buf = ranked;
             return_lookup_superseded!();
         }
-        if self.apply_selection_feedback(&compact_key, &mut ranked) {
+        let selection_feedback_applied = self.apply_selection_feedback(&compact_key, &mut ranked);
+        if selection_feedback_applied {
             sort_ranked_candidates_top_k(&mut ranked, TSF_MAX_CANDIDATES * 2);
         }
         drop_disabled_english_word_candidates(
@@ -3038,7 +3128,11 @@ impl PinyinEngine {
         limit_english_candidates_for_non_english_intent(&mut ranked, input_intent);
         let final_negative_feedback_applied =
             self.apply_final_negative_selection_feedback(&compact_key, &mut ranked);
-        if final_negative_feedback_applied {
+        // Candidate-layout policies run after the first feedback sort and may
+        // restore the static lexicon order. Re-sort once at the end whenever
+        // any per-reading feedback was applied so repeated choices and weak
+        // top-two misses remain authoritative on both cold and cached paths.
+        if selection_feedback_applied || final_negative_feedback_applied {
             sort_ranked_candidates_top_k(&mut ranked, TSF_MAX_CANDIDATES * 2);
         }
 
@@ -3164,15 +3258,22 @@ impl PinyinEngine {
             InputIntent::ShortAbbrev if jianpin_enabled => Some(compact_key.chars().count()),
             _ => None,
         };
-        if let Some(phrase_len) = strict_frequency_phrase_len {
-            enforce_strict_system_lexicon_frequency_order(
-                &mut ranked,
-                &compact_key,
-                input_intent,
-                phrase_len,
-                self.phrase_lexicon.as_ref(),
-            );
+        if !self.has_selection_feedback_for_reading(&compact_key) {
+            if let Some(phrase_len) = strict_frequency_phrase_len {
+                enforce_strict_system_lexicon_frequency_order(
+                    &mut ranked,
+                    &compact_key,
+                    input_intent,
+                    phrase_len,
+                    self.phrase_lexicon.as_ref(),
+                );
+            }
         }
+        demote_cold_non_full_lexicon_candidates(
+            &mut ranked,
+            input_intent,
+            self.phrase_lexicon.as_ref(),
+        );
 
         let lookup_was_limited = soft_budget.was_limited();
         if lookup_was_limited {
@@ -3186,8 +3287,8 @@ impl PinyinEngine {
             }
         }
 
-        if ranked.len() > TSF_MAX_CANDIDATES {
-            ranked.truncate(TSF_MAX_CANDIDATES);
+        if ranked.len() > LOOKUP_FULL_MAX_CANDIDATES {
+            ranked.truncate(LOOKUP_FULL_MAX_CANDIDATES);
         }
         if let Some(profiler) = profiler.as_mut() {
             profiler.mark("rerank_sort");
@@ -3224,6 +3325,20 @@ impl PinyinEngine {
                     base_out = Some(cached_base);
                 }
             }
+            // 记录冷路径是否对二字意图应用了完整分页编排，缓存命中路径据此
+            // 重放同样的编排，保持两条路径的页面结构一致。
+            let two_char_density_replay = if !skip_final_short_density
+                && preserved_pinned_user_phrases.is_empty()
+                && postprocess_final_short_phrase_intent == Some(2)
+            {
+                Some(if input_intent == InputIntent::FullPinyin {
+                    TwoCharDensityReplay::FullPinyin
+                } else {
+                    TwoCharDensityReplay::Minimum
+                })
+            } else {
+                None
+            };
             self.last_lookup = lookup_stability_state_from_candidates(&compact_key, &out);
             if !lookup_was_limited && !soft_budget.was_cancelled() {
                 self.complete_full_lookup_retry(raw);
@@ -3234,11 +3349,16 @@ impl PinyinEngine {
                         cache_key,
                         base_out.clone(),
                         visible_short_intent,
+                        two_char_density_replay,
                     );
                 }
                 if let Some(cache_key) = final_cache_key {
-                    self.final_lookup_cache
-                        .insert(cache_key, base_out, visible_short_intent);
+                    self.final_lookup_cache.insert(
+                        cache_key,
+                        base_out,
+                        visible_short_intent,
+                        two_char_density_replay,
+                    );
                 }
             }
             self.ranked_buf = ranked;
@@ -3354,7 +3474,7 @@ impl PinyinEngine {
     pub fn lookup_tsf_candidates(&mut self, pinyin_buffer: &str) -> Vec<String> {
         let (v, _) = self.lookup_full_detailed(pinyin_buffer);
         v.into_iter()
-            .take(TSF_MAX_CANDIDATES)
+            .take(LOOKUP_FULL_MAX_CANDIDATES)
             .map(|item| item.phrase)
             .collect()
     }
@@ -3465,6 +3585,7 @@ impl PinyinEngine {
                     .map(|variant| variant.syllables.len())?;
                 Some((InputIntent::FullPinyin, syllable_count))
             }
+            InputIntent::MixedPrefix => Some((InputIntent::MixedPrefix, 0)),
             _ => None,
         }
     }
@@ -4615,9 +4736,33 @@ pub(super) fn trusted_default_phrase_dir() -> Option<PathBuf> {
     None
 }
 
+/// 缓存命中路径重放冷路径对二字意图的完整分页编排。冷路径在
+/// postprocess 内依次应用 `apply_short_intent_final_candidate_density` 再
+/// `apply_two_char_intent_page_density`/`apply_two_char_intent_minimum_page_density`;
+/// 此处按同样的顺序重放，避免热路径上二字词退化为整块 exact_later。
+fn replay_two_char_intent_density(
+    cached: &mut Vec<RankedCandidate>,
+    replay: Option<TwoCharDensityReplay>,
+    intent_chars: usize,
+    page_size: usize,
+) {
+    if intent_chars != 2 {
+        return;
+    }
+    match replay {
+        Some(TwoCharDensityReplay::FullPinyin) => {
+            arrange_two_char_intent_page_density(cached, page_size);
+        }
+        Some(TwoCharDensityReplay::Minimum) => {
+            arrange_two_char_intent_minimum_page_density(cached, page_size);
+        }
+        None => {}
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::PinyinEngine;
+    use super::*;
     use crate::core::{LEARN_FLAG_COMPOSED_PHRASE, LEARN_FLAG_WEAK};
 
     #[test]
@@ -4712,6 +4857,61 @@ mod tests {
     }
 
     #[test]
+    fn repeated_unselected_top_two_cool_while_selected_candidate_moves_forward() {
+        let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("repository root")
+            .join("lexicon");
+        let mut engine = PinyinEngine::with_phrase_dir(Some(&repo_lexicon));
+        engine.clear_user_lexicon_for_eval();
+        engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
+
+        let before = engine.lookup_full_explain("fangzhi").0;
+        assert!(before.len() >= 3, "not enough candidates: {before:?}");
+        let first = before[0].0.clone();
+        let second = before[1].0.clone();
+        let selected = before[2].0.clone();
+        let skipped = vec![first.clone(), second.clone()];
+
+        for _ in 0..3 {
+            engine
+                .learn_selection_feedback("fangzhi", &selected, 2, 0, &skipped)
+                .expect("record candidate feedback");
+        }
+
+        let weak = engine
+            .user_lexicon
+            .weak_unselected_signal("fangzhi")
+            .expect("weak top-two feedback");
+        for phrase in [&first, &second] {
+            assert_eq!(
+                weak.iter()
+                    .find(|entry| &entry.phrase == phrase)
+                    .map(|entry| entry.score),
+                Some(-3),
+                "top-two candidate did not accumulate three weak misses: {weak:?}"
+            );
+        }
+        let strong = engine.user_lexicon.selection_signal("fangzhi");
+        assert!(
+            strong.is_none_or(|entries| entries
+                .iter()
+                .all(|entry| { entry.phrase != first && entry.phrase != second })),
+            "top-two candidates received an immediate strong penalty: {strong:?}"
+        );
+
+        let after = engine.lookup_full_explain("fangzhi").0;
+        let selected_rank = after
+            .iter()
+            .position(|(phrase, _, _)| phrase == &selected)
+            .expect("selected candidate remains reachable");
+        assert!(
+            selected_rank < 2,
+            "frequently selected candidate did not move ahead: selected={selected}, after={after:?}"
+        );
+    }
+
+    #[test]
     fn two_syllable_full_pinyin_keeps_two_char_words_on_later_pages() {
         let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
@@ -4738,6 +4938,184 @@ mod tests {
             two_char_per_page.len() >= 3 && two_char_per_page.iter().all(|count| *count >= 2),
             "two-character candidates were not distributed across pages: \
              page_size={page_size}, counts={two_char_per_page:?}, candidates={candidates:?}"
+        );
+    }
+
+    #[test]
+    fn two_char_intent_page_density_matches_between_cold_and_cached_lookup() {
+        let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("repository root")
+            .join("lexicon");
+        let mut engine = PinyinEngine::with_phrase_dir(Some(&repo_lexicon));
+        engine.clear_user_lexicon_for_eval();
+        engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
+
+        // 第一次查询是冷路径：完整 postprocess + 二字分页编排。
+        let cold = engine.lookup_full_explain("shishi").0;
+        // 第二次查询应命中 final 缓存，并按存储的两字意图编排模式重放分页。
+        let cache_key = final_lookup_cache_key("shishi", engine.mode_flags, engine.cache_epoch);
+        assert!(
+            engine.final_lookup_cache.get(&cache_key).is_some(),
+            "first lookup did not populate the final lookup cache"
+        );
+        let cached = engine.lookup_full_explain("shishi").0;
+
+        let page_size = crate::candidate_prefs::get_effective_candidate_page_size()
+            .clamp(3, crate::core::TSF_PAGE_SIZE);
+        let two_char_per_page = |candidates: &[(String, f64, CandidateMeta)]| -> Vec<usize> {
+            candidates
+                .chunks(page_size)
+                .take(3)
+                .map(|page| {
+                    page.iter()
+                        .filter(|(phrase, _, _)| phrase.chars().count() == 2)
+                        .count()
+                })
+                .collect()
+        };
+        let cold_counts = two_char_per_page(&cold);
+        let cached_counts = two_char_per_page(&cached);
+
+        assert_eq!(
+            cached_counts, cold_counts,
+            "cached lookup lost the two-character page layout applied on the \
+             cold path: page_size={page_size}, cold={cold_counts:?}, \
+             cached={cached_counts:?}, cold_candidates={cold:?}, \
+             cached_candidates={cached:?}"
+        );
+        assert!(
+            cached_counts.len() >= 3 && cached_counts.iter().all(|count| *count >= 2),
+            "cached lookup did not keep two-character candidates on later pages: \
+             page_size={page_size}, counts={cached_counts:?}, candidates={cached:?}"
+        );
+    }
+
+    #[test]
+    fn exact_full_pinyin_single_syllable_keeps_cold_chars_reachable() {
+        let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("repository root")
+            .join("lexicon");
+        let mut engine = PinyinEngine::with_phrase_dir(Some(&repo_lexicon));
+        engine.clear_user_lexicon_for_eval();
+        engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
+
+        for (input, cold_chars) in [
+            ("chang", &["昶", "氅", "鲳"][..]),
+            ("da", &["龘", "妲"][..]),
+            ("shang", &["熵", "殇"][..]),
+            ("wang", &["罔", "辋"][..]),
+            ("si", &["兕", "巳"][..]),
+        ] {
+            let candidates = engine.lookup_full_explain(input).0;
+            let phrases: Vec<String> = candidates.iter().map(|(p, _, _)| p.clone()).collect();
+            for cold in cold_chars {
+                assert!(
+                    phrases.iter().any(|phrase| phrase == cold),
+                    "{input} did not list cold single char {cold}; candidates={phrases:?}"
+                );
+            }
+        }
+
+        // 精确单音节的完整候选池应容纳字典内全部单字（不再按高频场景截断
+        // 到 128）；这里断言字典中每个单字在完整结果里都可翻页到达。
+        for input in ["chang", "da", "shang", "wang", "si", "mo"] {
+            let candidates = engine.lookup_full_explain(input).0;
+            let phrases: Vec<String> = candidates.iter().map(|(p, _, _)| p.clone()).collect();
+            let dict_chars = engine.dict.get(input);
+            let missing = dict_chars.map(|chars| {
+                chars
+                    .iter()
+                    .filter(|ch| !phrases.contains(&ch.to_string()))
+                    .map(|ch| ch.to_string())
+                    .collect::<Vec<_>>()
+            });
+            assert!(
+                missing.as_ref().is_none_or(|m| m.is_empty()),
+                "{input} full-pinyin candidate list dropped dict chars: \
+                 missing={missing:?} total={} dict={}",
+                phrases.len(),
+                dict_chars.map_or(0, Vec::len)
+            );
+        }
+
+        // 首屏仍保持小批量：首批候选（用户翻页前）只给单字页，完整加载由
+        // 翻页触发，交互成本不变。
+        assert_eq!(engine.lookup_first_page("si").len(), 9);
+    }
+
+    #[test]
+    fn cold_extension_words_are_tail_only_for_non_full_input() {
+        let mut lexicon = AbbrevLexicon::default();
+        assert!(lexicon.insert_parsed_with_layer(
+            ThuoclEntry {
+                phrase: "高频词".to_string(),
+                freq: 9_000,
+                code: Some("gao pin ci".to_string()),
+            },
+            LexiconLayer::Base,
+        ));
+        assert!(lexicon.insert_parsed_with_layer(
+            ThuoclEntry {
+                phrase: "冷门词".to_string(),
+                freq: 3_500,
+                code: Some("leng men ci".to_string()),
+            },
+            LexiconLayer::Ext,
+        ));
+
+        let cold = RankedCandidate {
+            phrase: "冷门词".to_string(),
+            score: 100.0,
+            meta: CandidateMeta::legacy(ABBREV_CANDIDATE_META).with_source_layer(LexiconLayer::Ext),
+        };
+        let hot = RankedCandidate {
+            phrase: "高频词".to_string(),
+            score: 1.0,
+            meta: CandidateMeta::legacy(ABBREV_CANDIDATE_META)
+                .with_source_layer(LexiconLayer::Base),
+        };
+        let mut abbreviated = vec![cold.clone(), hot.clone()];
+        demote_cold_non_full_lexicon_candidates(
+            &mut abbreviated,
+            InputIntent::ShortAbbrev,
+            Some(&lexicon),
+        );
+        assert_eq!(
+            abbreviated
+                .iter()
+                .map(|item| item.phrase.as_str())
+                .collect::<Vec<_>>(),
+            ["高频词", "冷门词"]
+        );
+
+        let mut full_pinyin = vec![cold, hot];
+        demote_cold_non_full_lexicon_candidates(
+            &mut full_pinyin,
+            InputIntent::FullPinyin,
+            Some(&lexicon),
+        );
+        assert_eq!(full_pinyin[0].phrase, "冷门词");
+
+        let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("repository root")
+            .join("lexicon");
+        let mut engine = PinyinEngine::with_phrase_dir(Some(&repo_lexicon));
+        engine.clear_user_lexicon_for_eval();
+        engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
+        assert_eq!(engine.input_intent("wj"), InputIntent::ShortAbbrev);
+        let abbreviated = engine.lookup_tsf_candidates("wj");
+        let cold_position = abbreviated.iter().position(|phrase| phrase == "弯棘");
+        assert!(
+            cold_position.is_none_or(|position| position >= crate::core::TSF_PAGE_SIZE),
+            "cold extension phrase entered the short-input page: {abbreviated:?}"
+        );
+        let full_pinyin = engine.lookup_tsf_candidates("wanji");
+        assert!(
+            full_pinyin.iter().any(|phrase| phrase == "弯棘"),
+            "full pinyin could not recall the cold extension phrase: {full_pinyin:?}"
         );
     }
 }

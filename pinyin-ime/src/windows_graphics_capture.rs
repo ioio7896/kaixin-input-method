@@ -3,7 +3,7 @@
 //! The module deliberately does not read user configuration or invoke another
 //! screenshot program.  Callers can therefore select WGC as the primary
 //! backend and decide whether a typed failure should fall back to DXGI,
-//! ShareX, or `ms-screenclip`.
+//! the native region selector, or `ms-screenclip`.
 
 use image::{Rgba, RgbaImage};
 use std::fmt;

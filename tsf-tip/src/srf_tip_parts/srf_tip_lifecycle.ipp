@@ -289,6 +289,7 @@ STDMETHODIMP CSrfTip::ActivateEx(ITfThreadMgr* ptim, TfClientId tid, DWORD dwFla
     return hr;
   }
   DebugLogPerfMs(L"ActivateEx/register-preserved-keys", stageStart);
+  UpdatePreservedKeysForHotkeyScope();
 
   // 在切到本 IME 线程后即异步加载 Rust 引擎，避免首键才触发 warmup 造成首击无候选。
   if (!ShouldForceAsciiForCompatibility()) {
@@ -324,6 +325,8 @@ void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
   CancelDeferredCandidateRefresh();
   m_candidates.clear();
   m_candidateMeta.clear();
+  m_candidateRows.clear();
+  m_candidateHasMore = false;
   m_candidatesReading.clear();
   SetCandidateViewState(SrfCandidateViewState::Empty, reason ? reason : L"focus-bound-clear");
   m_candSel = 0;
@@ -649,10 +652,48 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
         m_tid, GUID_PRESERVEDKEY_SRF_SCREENSHOT, &key, description,
         static_cast<ULONG>(wcslen(description)));
     if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
-    m_registeredScreenshotKey = key;
-    m_hasRegisteredScreenshotKey = true;
+    if (SUCCEEDED(hr)) {
+      // TF_E_ALREADY_EXISTS \u8868\u793a\u8be5\u7ec4\u5408\u5df2\u88ab\u5176\u4ed6 TIP \u6ce8\u518c\uff1b\u4e0d\u7f6e\u4f4d\uff0c
+      // \u907f\u514d\u6ce8\u9500\u65f6\u8bef\u5220\u4ed6\u4eba\u7ec4\u5408\u3002\u6b63\u5e38\u6309\u952e\u6d41\u7a0b\u4ecd\u53ef\u515c\u5e95\u5904\u7406\u3002
+      m_registeredScreenshotKey = key;
+      m_hasRegisteredScreenshotKey = true;
+    }
   }
 
+  // \u6e38\u620f\u517c\u5bb9\u4e0e\u4e34\u65f6\u82f1\u6587\u70ed\u952e\u6ce8\u518c\u4e3a preserved key\uff1a\u7981\u7528 TSF \u4e0a\u4e0b\u6587\u7684\u6e38\u620f
+  // \uff08ImmAssociateContext/TF_DISABLECONTEXT\uff09\u4e0d\u6d3e\u53d1\u6b63\u5e38\u6309\u952e\uff0c\u70ed\u952e\u6070\u5728\u8be5\u7c7b
+  // \u573a\u666f\u6700\u9700\u8981\uff1bpreserved key \u4e0e OnKeyDown \u662f\u4e92\u65a5\u8def\u5f84\uff0c\u4e0d\u4f1a\u53cc\u89e6\u53d1\u3002
+  m_hasRegisteredGameModeKey = false;
+  if (m_config.input.gameModeHotkey.enabled && m_config.input.gameModeHotkey.vk != 0) {
+    const TF_PRESERVEDKEY key = {m_config.input.gameModeHotkey.vk,
+                                 m_config.input.gameModeHotkey.modifiers};
+    const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Game Compatibility";
+    const HRESULT hr = m_pKeystrokeMgr->PreserveKey(
+        m_tid, GUID_PRESERVEDKEY_SRF_GAME_MODE, &key, description,
+        static_cast<ULONG>(wcslen(description)));
+    if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+    if (SUCCEEDED(hr)) {
+      m_registeredGameModeKey = key;
+      m_hasRegisteredGameModeKey = true;
+    }
+  }
+  m_hasRegisteredTemporaryAsciiKey = false;
+  if (m_config.input.temporaryAsciiHotkey.enabled && m_config.input.temporaryAsciiHotkey.vk != 0) {
+    const TF_PRESERVEDKEY key = {m_config.input.temporaryAsciiHotkey.vk,
+                                 m_config.input.temporaryAsciiHotkey.modifiers};
+    const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Temporary ASCII";
+    const HRESULT hr = m_pKeystrokeMgr->PreserveKey(
+        m_tid, GUID_PRESERVEDKEY_SRF_TEMP_ASCII, &key, description,
+        static_cast<ULONG>(wcslen(description)));
+    if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+    if (SUCCEEDED(hr)) {
+      m_registeredTemporaryAsciiKey = key;
+      m_hasRegisteredTemporaryAsciiKey = true;
+    }
+  }
+
+  m_preservedKeysRegistered = true;
+  m_preservedKeysSuppressedForHotkeyScope = false;
   return S_OK;
 }
 
@@ -677,6 +718,19 @@ void CSrfTip::UnregisterPreservedKeys() {
     m_hasRegisteredScreenshotKey = false;
     m_registeredScreenshotKey = {};
   }
+  if (m_hasRegisteredGameModeKey) {
+    (void)m_pKeystrokeMgr->UnpreserveKey(GUID_PRESERVEDKEY_SRF_GAME_MODE,
+                                         &m_registeredGameModeKey);
+    m_hasRegisteredGameModeKey = false;
+    m_registeredGameModeKey = {};
+  }
+  if (m_hasRegisteredTemporaryAsciiKey) {
+    (void)m_pKeystrokeMgr->UnpreserveKey(GUID_PRESERVEDKEY_SRF_TEMP_ASCII,
+                                         &m_registeredTemporaryAsciiKey);
+    m_hasRegisteredTemporaryAsciiKey = false;
+    m_registeredTemporaryAsciiKey = {};
+  }
+  m_preservedKeysRegistered = false;
 }
 
 void CSrfTip::ClearCompositionBufferState() {
@@ -687,6 +741,8 @@ void CSrfTip::ClearCompositionBufferState() {
   m_readingCursor = 0;
   m_candidates.clear();
   m_candidateMeta.clear();
+  m_candidateRows.clear();
+  m_candidateHasMore = false;
   m_candidatesReading.clear();
   SetCandidateViewState(SrfCandidateViewState::Empty, L"composition-clear");
   m_candSel = 0;

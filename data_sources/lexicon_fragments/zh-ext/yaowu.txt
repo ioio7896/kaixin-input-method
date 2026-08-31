@@ -1,0 +1,103 @@
+# 开心输入法自维护词库：100 条常见西药词条
+# 按常见用药领域编排；仅用于输入联想，不构成用药建议。
+# 格式：词语<TAB>全拼<TAB>权重
+阿莫西林	a mo xi lin	5000
+阿莫西林克拉维酸钾	a mo xi lin ke la wei suan jia	5000
+头孢氨苄	tou bao an bian	5000
+头孢呋辛	tou bao fu xin	5000
+头孢克洛	tou bao ke luo	5000
+头孢地尼	tou bao di ni	5000
+头孢克肟	tou bao ke wo	5000
+阿奇霉素	a qi mei su	5000
+克拉霉素	ke la mei su	5000
+罗红霉素	luo hong mei su	5000
+多西环素	duo xi huan su	5000
+米诺环素	mi nuo huan su	5000
+克林霉素	ke lin mei su	5000
+甲硝唑	jia xiao zuo	5000
+替硝唑	ti xiao zuo	5000
+左氧氟沙星	zuo yang fu sha xing	5000
+莫西沙星	mo xi sha xing	5000
+环丙沙星	huan bing sha xing	5000
+诺氟沙星	nuo fu sha xing	5000
+复方磺胺甲噁唑	fu fang huang an jia e zuo	5000
+呋喃妥因	fu nan tuo yin	5000
+异烟肼	yi yan jing	5000
+利福平	li fu ping	5000
+乙胺丁醇	yi an ding chun	5000
+吡嗪酰胺	bi qin xian an	5000
+阿昔洛韦	a xi luo wei	5000
+伐昔洛韦	fa xi luo wei	5000
+奥司他韦	ao si ta wei	5000
+恩替卡韦	en ti ka wei	5000
+替诺福韦	ti nuo fu wei	5000
+拉米夫定	la mi fu ding	5000
+氟康唑	fu kang zuo	5000
+伊曲康唑	yi qu kang zuo	5000
+特比萘芬	te bi nai fen	5000
+阿苯达唑	a ben da zuo	5000
+伊维菌素	yi wei jun su	5000
+吡喹酮	bi kui tong	5000
+对乙酰氨基酚	dui yi xian an ji fen	5000
+布洛芬	bu luo fen	5000
+阿司匹林	a si pi lin	5000
+双氯芬酸	shuang lv fen suan	5000
+吲哚美辛	yin duo mei xin	5000
+萘普生	nai pu sheng	5000
+塞来昔布	sai lai xi bu	5000
+依托考昔	yi tuo kao xi	5000
+美洛昔康	mei luo xi kang	5000
+洛索洛芬	luo suo luo fen	5000
+曲马多	qu ma duo	5000
+卡马西平	ka ma xi ping	5000
+奥卡西平	ao ka xi ping	5000
+丙戊酸钠	bing wu suan na	5000
+拉莫三嗪	la mo san qin	5000
+左乙拉西坦	zuo yi la xi tan	5000
+托吡酯	tuo bi zhi	5000
+加巴喷丁	jia ba pen ding	5000
+普瑞巴林	pu rui ba lin	5000
+舍曲林	she qu lin	5000
+氟西汀	fu xi ting	5000
+帕罗西汀	pa luo xi ting	5000
+艾司西酞普兰	ai si xi tai pu lan	5000
+文拉法辛	wen la fa xin	5000
+度洛西汀	du luo xi ting	5000
+米氮平	mi dan ping	5000
+美托洛尔	mei tuo luo er	5000
+比索洛尔	bi suo luo er	5000
+阿替洛尔	a ti luo er	5000
+普萘洛尔	pu nai luo er	5000
+硝苯地平	xiao ben di ping	5000
+氨氯地平	an lv di ping	5000
+贝那普利	bei na pu li	5000
+依那普利	yi na pu li	5000
+卡托普利	ka tuo pu li	5000
+氯沙坦	lv sha tan	5000
+缬沙坦	xie sha tan	5000
+厄贝沙坦	e bei sha tan	5000
+替米沙坦	ti mi sha tan	5000
+奥美沙坦	ao mei sha tan	5000
+氢氯噻嗪	qing lv sai qin	5000
+螺内酯	luo nei zhi	5000
+阿托伐他汀	a tuo fa ta ting	5000
+瑞舒伐他汀	rui shu fa ta ting	5000
+辛伐他汀	xin fa ta ting	5000
+二甲双胍	er jia shuang gua	5000
+阿卡波糖	a ka bo tang	5000
+格列齐特	ge lie qi te	5000
+格列美脲	ge lie mei niao	5000
+西格列汀	xi ge lie ting	5000
+达格列净	da ge lie jing	5000
+恩格列净	en ge lie jing	5000
+甲巯咪唑	jia qiu mi zuo	5000
+丙硫氧嘧啶	bing liu yang mi ding	5000
+泼尼松	po ni song	5000
+甲泼尼龙	jia po ni long	5000
+地塞米松	di sai mi song	5000
+奥美拉唑	ao mei la zuo	5000
+埃索美拉唑	ai suo mei la zuo	5000
+兰索拉唑	lan suo la zuo	5000
+泮托拉唑	pan tuo la zuo	5000
+雷贝拉唑	lei bei la zuo	5000
+法莫替丁	fa mo ti ding	5000

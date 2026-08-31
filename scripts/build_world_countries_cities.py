@@ -258,12 +258,16 @@ def main() -> None:
         "--output",
         type=Path,
         default=Path(__file__).resolve().parents[1]
-        / "lexicon"
-        / "zh"
+        / "data_sources"
+        / "lexicon_fragments"
+        / "zh-ext"
         / "world_countries_major_cities.txt",
     )
     args = parser.parse_args()
     countries, entries = build(args.output)
+    from merge_zh_ext_lexicons import merge_lexicons
+
+    merge_lexicons()
     print(f"countries={countries} entries={entries} output={args.output}")
 
 

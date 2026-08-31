@@ -785,31 +785,6 @@ void MaybeInsertPredictedPhraseCandidates(const std::wstring& reading,
   candidates->insert(candidates->begin(), predictedTexts.begin(), predictedTexts.end());
 }
 
-struct CandidateMetaParts {
-  std::wstring display;
-  std::wstring annotation;
-  std::wstring score;
-  std::wstring correctedReading;
-  bool noLearn = false;
-  bool clipboardQuick = false;
-  std::wstring clipboardId;
-  std::wstring clipboardSource;
-  std::wstring clipboardTime;
-  std::wstring clipboardType;
-  std::wstring clipboardFilter;
-  UINT clipboardPage = 1;
-  UINT clipboardPages = 1;
-  bool clipboardPinned = false;
-  bool forceVerticalLayout = false;
-  bool partialResult = false;
-  bool correctionCandidate = false;
-  bool prefixPlaceholder = false;
-  bool pinnedExactInput = false;
-  bool userCandidate = false;
-  std::wstring userSourceLabel;
-  bool extCandidate = false;
-};
-
 bool LooksLikeNumericCandidateMeta(const std::wstring& text) {
   if (text.empty()) return false;
   return std::all_of(text.begin(), text.end(), [](wchar_t ch) {
@@ -1092,11 +1067,19 @@ class ScopedOleClipboardRestore {
   HRESULT RestoreAfterPaste() {
     if (!previous_) return S_FALSE;
     // Give the target a brief chance to consume Ctrl+V, but never restore over
-    // content copied by the user while the paste was in flight.
-    Sleep(60);
-    const DWORD current_sequence = GetClipboardSequenceNumber();
+    // content copied by the user while the paste was in flight.  Poll the
+    // clipboard sequence so a fast target short-circuits the wait instead of
+    // paying a fixed sleep on the key thread; total wait is bounded at ~40 ms.
     const DWORD expected_sequence =
         temporary_sequence_valid_ ? temporary_sequence_ : original_sequence_;
+    for (int wait = 0; wait < 4; ++wait) {
+      const DWORD current = GetClipboardSequenceNumber();
+      if (current != 0 && expected_sequence != 0 && current != expected_sequence) {
+        break;
+      }
+      Sleep(10);
+    }
+    const DWORD current_sequence = GetClipboardSequenceNumber();
     if (expected_sequence != 0 && current_sequence != 0 &&
         current_sequence != expected_sequence) {
       SrfTsfDiagnosticLog(L"clipboard-paste.restore",
@@ -1150,12 +1133,15 @@ HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
   HWND owner = ClipboardOwnerWindow();
   if (!owner) owner = GetForegroundWindow();
   bool opened = false;
-  for (int attempt = 0; attempt < 24; ++attempt) {
+  // Bounded retry: this runs on the key-sink thread, so the previous long
+  // backoff (up to ~470 ms) stalled typing whenever a clipboard owner held
+  // the lock.  Worst case is now ~48 ms.
+  for (int attempt = 0; attempt < 8; ++attempt) {
     if (OpenClipboard(owner)) {
       opened = true;
       break;
     }
-    Sleep(8 + static_cast<DWORD>(attempt));
+    Sleep(std::min<DWORD>(4 + static_cast<DWORD>(attempt), 20));
   }
   if (!opened) {
     const DWORD err = GetLastError();
@@ -1209,11 +1195,12 @@ HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
   if (out_sequence) *out_sequence = GetClipboardSequenceNumber();
   // Let the clipboard owner publish both CF_UNICODETEXT and the temporary
   // marker before the listener receives WM_CLIPBOARDUPDATE.
-  Sleep(10);
+  Sleep(2);
   return hr;
 }
 
 HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text) {
+  const ULONGLONG pasteStart = GetTickCount64();
   ScopedOleClipboardRestore restore;
   DWORD temporary_sequence = 0;
   HRESULT hr = SetUnicodeClipboardTextForPaste(text, &temporary_sequence);
@@ -1229,6 +1216,7 @@ HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text) {
       SrfTsfDiagnosticLog(L"clipboard-paste.restore", line.c_str());
     }
   }
+  DebugLogPerfMs(L"clipboard-paste.total", pasteStart);
   return hr;
 }
 

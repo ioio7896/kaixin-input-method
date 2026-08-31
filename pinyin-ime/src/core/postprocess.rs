@@ -246,9 +246,11 @@ impl PinyinEngine {
         now: u64,
     ) {
         if let Some(raw) = self.dict.get(syllable) {
+            // 精确单音节输入的候选全部为单字，保留更大的候选池，让冷门
+            // 单字在翻页后仍然可达（否则会被高频截断永久排除）。
             for (rank, ch) in self
                 .lm
-                .rank_chars_by_unigram_with_limit(raw, TSF_MAX_CANDIDATES)
+                .rank_chars_by_unigram_with_limit(raw, LOOKUP_FULL_MAX_CANDIDATES)
                 .into_iter()
                 .enumerate()
             {
@@ -271,7 +273,7 @@ impl PinyinEngine {
                     .iter()
                     .filter(|entry| phrase_char_count(&entry.phrase) == 1),
                 PHRASE_EXACT_PINYIN_BONUS + 150.0,
-                TSF_MAX_CANDIDATES,
+                LOOKUP_FULL_MAX_CANDIDATES,
                 &self.user_lexicon,
                 now,
                 Some(PINYIN_CANDIDATE_META),
@@ -503,13 +505,7 @@ impl PinyinEngine {
             .phrase_lexicon
             .as_ref()
             .and_then(|lex| lex.lookup_pinyin(full_compact_key))
-            .map(|entries| {
-                entries
-                    .iter()
-                    .filter(|entry| phrase_char_count(&entry.phrase) == syllable_count)
-                    .map(|entry| entry.phrase.clone())
-                    .collect()
-            })
+            .map(|entries| entries.iter().map(|entry| entry.phrase.clone()).collect())
             .unwrap_or_default();
         let mut exact_multi = Vec::new();
         let mut composed_multi = Vec::new();
@@ -521,12 +517,10 @@ impl PinyinEngine {
                 if self.single_phrase_matches_syllable(&item.phrase, first_syllable) {
                     singles_from_ranked.push(item);
                 }
+            } else if n >= 2 && exact_pinyin_phrases.contains(&item.phrase) {
+                exact_multi.push(item);
             } else if n == syllable_count && n >= 2 {
-                if exact_pinyin_phrases.contains(&item.phrase) {
-                    exact_multi.push(item);
-                } else {
-                    composed_multi.push(item);
-                }
+                composed_multi.push(item);
             } else {
                 others.push(item);
             }
@@ -616,6 +610,7 @@ impl PinyinEngine {
                 .saturating_add(others.len()),
         );
         let mut emitted = HashSet::with_capacity(ranked.capacity().min(512));
+        let mut pending_multi = Vec::new();
         if has_exact_full_pinyin {
             let exact_front = exact_head.len().min(front_limit);
             for item in exact_head.drain(..exact_front) {
@@ -661,45 +656,25 @@ impl PinyinEngine {
                     front_fill -= 1;
                 }
             }
-            for item in singles.iter().cloned() {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in exact_head {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in exact_tail {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in prefix_support {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in composed_head {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in composed_tail {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
+            pending_multi.extend(exact_head);
+            pending_multi.extend(exact_tail);
+            pending_multi.extend(prefix_support);
+            pending_multi.extend(composed_head);
+            pending_multi.extend(composed_tail);
         } else {
             let composed_front = composed_head.len().min(front_limit);
             for item in composed_head.drain(..composed_front) {
                 push_unique_ranked_candidate(ranked, &mut emitted, item);
             }
-            for item in singles.iter().cloned() {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in composed_head {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
-            for item in composed_tail {
-                push_unique_ranked_candidate(ranked, &mut emitted, item);
-            }
+            pending_multi.extend(composed_head);
+            pending_multi.extend(composed_tail);
         }
 
-        // 逐页补齐单字槽位（从第二页开始也持续保留），避免“翻页看不到单字”。
+        // 多字词与单字逐页交错，既保留造词入口，也避免单字池挡住后续整词。
 
-        let mut single_idx = singles.len();
-        for item in others {
-            if ranked.len() % page_size == page_size - reserve_single_slots_per_page
+        let mut single_idx = 0;
+        for item in pending_multi.into_iter().chain(others) {
+            while ranked.len() % page_size >= page_size - reserve_single_slots_per_page
                 && single_idx < singles.len()
             {
                 push_unique_ranked_candidate(ranked, &mut emitted, singles[single_idx].clone());
@@ -2956,9 +2931,9 @@ pub(super) fn arrange_two_char_intent_page_density(
     let mut two_iter = two_char.into_iter();
     let mut single_iter = single_char.into_iter();
     let front_two_slots = page_size.saturating_sub(1).max(1);
-    let reserve_pages = TWO_CHAR_INTENT_SINGLE_RESERVE_PAGES
-        .min(single_iter.len())
-        .min(two_iter.len().div_ceil(front_two_slots));
+    // 全部分页保持"整词在前、单字填空"的交错，而不是只保证前 3 页：
+    // 第 4 页起二字词成块出现会破坏翻页体验的一致性。
+    let reserve_pages = two_iter.len().div_ceil(front_two_slots);
 
     for _ in 0..reserve_pages {
         let page_start = ranked.len();
@@ -3250,11 +3225,78 @@ pub(super) fn primary_lexicon_score_adjustment(
     }
     if meta.source_layer == LexiconLayer::Ext
         && (2..=3).contains(&char_count)
-        && matches!(intent, InputIntent::FullPinyin | InputIntent::ShortAbbrev)
+        && matches!(
+            intent,
+            InputIntent::FullPinyin | InputIntent::ShortAbbrev | InputIntent::MixedPrefix
+        )
     {
         score -= EXT_SHORT_WORD_GATE_PENALTY;
     }
+    if matches!(intent, InputIntent::ShortAbbrev | InputIntent::MixedPrefix)
+        && matches!(meta.source_layer, LexiconLayer::Ext | LexiconLayer::Large)
+    {
+        score -= non_full_cold_lexicon_penalty(freq);
+    }
     score
+}
+
+fn non_full_cold_lexicon_penalty(freq: u64) -> f64 {
+    if freq == 0 || freq >= NON_FULL_COLD_LEXICON_FREQ_THRESHOLD {
+        return 0.0;
+    }
+    let coldness = (NON_FULL_COLD_LEXICON_FREQ_THRESHOLD.saturating_sub(freq) as f64
+        / NON_FULL_COLD_LEXICON_FREQ_THRESHOLD as f64)
+        .clamp(0.0, 1.0);
+    (NON_FULL_COLD_LEXICON_PENALTY_BASE + coldness * NON_FULL_COLD_LEXICON_PENALTY_SCALE)
+        .min(NON_FULL_COLD_LEXICON_PENALTY_BASE + NON_FULL_COLD_LEXICON_PENALTY_SCALE)
+}
+
+/// 简拼/混拼只把低频扩展词放到高频词之后；完整全拼不调用这条尾部规则，
+/// 因而用户仍能通过完整读音找回长尾词。
+pub(super) fn demote_cold_non_full_lexicon_candidates(
+    ranked: &mut Vec<RankedCandidate>,
+    intent: InputIntent,
+    lexicon: Option<&AbbrevLexicon>,
+) {
+    if ranked.len() <= 1 || !matches!(intent, InputIntent::ShortAbbrev | InputIntent::MixedPrefix) {
+        return;
+    }
+    let Some(lexicon) = lexicon else {
+        return;
+    };
+
+    let mut front = Vec::with_capacity(ranked.len());
+    let mut cold_tail = Vec::new();
+    for item in std::mem::take(ranked) {
+        let layer = if item.meta.source_layer == LexiconLayer::Unknown {
+            lexicon.phrase_layer(&item.phrase)
+        } else {
+            item.meta.source_layer
+        };
+        let protected_source = matches!(
+            item.meta.source,
+            CandidateSource::Direct
+                | CandidateSource::Shortcut
+                | CandidateSource::User
+                | CandidateSource::Correction
+                | CandidateSource::DateTime
+        );
+        let cold = !protected_source
+            && !candidate_has_user_priority(&item)
+            && matches!(layer, LexiconLayer::Ext | LexiconLayer::Large)
+            && non_full_cold_lexicon_penalty(lexicon.phrase_frequency(&item.phrase)) > 0.0;
+        if cold {
+            cold_tail.push(item);
+        } else {
+            front.push(item);
+        }
+    }
+    if cold_tail.is_empty() {
+        *ranked = front;
+    } else {
+        front.extend(cold_tail);
+        *ranked = front;
+    }
 }
 
 pub(super) fn top1_confidence_priority(
@@ -3654,6 +3696,7 @@ pub(super) fn promote_short_intent_abbrev_prefix_expansions(
 pub(super) fn candidate_has_user_priority(item: &RankedCandidate) -> bool {
     item.meta.source == CandidateSource::User
         || item.meta.pinned
+        || item.meta.user_signal
         || item.meta.display_text().is_some_and(|meta| {
             meta.split('\t')
                 .any(|token| token == USER_CANDIDATE_META || token == MIXED_USER_CANDIDATE_META)

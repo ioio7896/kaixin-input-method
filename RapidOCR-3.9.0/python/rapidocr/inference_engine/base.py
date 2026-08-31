@@ -168,7 +168,7 @@ class InferSession(abc.ABC):
             "\n"
             "Example valid usage:\n"
             "  from rapidocr import LangRec, OCRVersion, RapidOCR\n"
-            "  engine = RapidOCR(params={'Rec.ocr_version': OCRVersion.PPOCRV6, 'Rec.lang_type': LangRec.CH, 'Rec.model_type': 'medium'})",
+            "  engine = RapidOCR(params={'Rec.ocr_version': OCRVersion.PPOCRV5, 'Rec.lang_type': LangRec.CH, 'Rec.model_type': 'mobile'})",
         )
         raise ValueError("Invalid OCR configuration.")
 

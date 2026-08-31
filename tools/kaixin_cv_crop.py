@@ -16,6 +16,15 @@ import traceback
 from pathlib import Path
 from typing import Any
 
+
+# Automatic cropping is used on a window capture, where the intended outer
+# border should already be close to every edge of the bitmap.  A larger inset
+# is much more likely to be a card, editor or translation-pane border inside
+# the window.  Keep this deliberately conservative: users can still use the
+# explicit manual crop for screenshots with broad surrounding margins.
+MAX_OUTER_BORDER_INSET_RATIO = 0.04
+MIN_OUTER_BORDER_INSET_PX = 12
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 if hasattr(sys.stderr, "reconfigure"):
@@ -26,7 +35,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Crop an image to the strongest rectangular border.")
     parser.add_argument("input", type=Path, help="Input image path.")
     parser.add_argument("output", type=Path, help="Output image path written only when cropped.")
-    parser.add_argument("--padding", type=int, default=2, help="Pixels to keep around the detected border.")
+    parser.add_argument("--padding", type=int, default=6, help="Pixels to keep around the detected border.")
     parser.add_argument("--min-area", type=float, default=0.04, help="Minimum rectangle area ratio.")
     parser.add_argument("--max-area", type=float, default=0.985, help="Maximum rectangle area ratio.")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON.")
@@ -126,6 +135,39 @@ def find_rect(image, min_area: float, max_area: float):
     return best
 
 
+def safe_border_crop_rect(
+    x: int,
+    y: int,
+    rect_width: int,
+    rect_height: int,
+    image_width: int,
+    image_height: int,
+    padding: int = 6,
+) -> tuple[int, int, int, int] | None:
+    """Return a crop rectangle only when it plausibly represents a window edge.
+
+    `find_rect` deliberately recognizes generic rectangles.  Without this
+    second check, a high-contrast inner pane can beat the window frame and
+    remove a strip from one side of the capture.
+    """
+    padding = max(0, padding)
+    x0 = max(0, x - padding)
+    y0 = max(0, y - padding)
+    x1 = min(image_width, x + rect_width + padding)
+    y1 = min(image_height, y + rect_height + padding)
+    if (x1 - x0) >= image_width - 3 and (y1 - y0) >= image_height - 3:
+        return None
+
+    max_inset_x = max(MIN_OUTER_BORDER_INSET_PX, round(image_width * MAX_OUTER_BORDER_INSET_RATIO))
+    max_inset_y = max(MIN_OUTER_BORDER_INSET_PX, round(image_height * MAX_OUTER_BORDER_INSET_RATIO))
+    insets = (x0, y0, image_width - x1, image_height - y1)
+    if insets[0] > max_inset_x or insets[2] > max_inset_x:
+        return None
+    if insets[1] > max_inset_y or insets[3] > max_inset_y:
+        return None
+    return x0, y0, x1, y1
+
+
 def main() -> int:
     args = parse_args()
     try:
@@ -144,16 +186,13 @@ def main() -> int:
             )
 
         score, (x, y, rect_width, rect_height), density = found
-        padding = max(0, args.padding)
-        x0 = max(0, x - padding)
-        y0 = max(0, y - padding)
-        x1 = min(width, x + rect_width + padding)
-        y1 = min(height, y + rect_height + padding)
-        if (x1 - x0) >= width - 3 and (y1 - y0) >= height - 3:
+        crop_rect = safe_border_crop_rect(x, y, rect_width, rect_height, width, height, args.padding)
+        if crop_rect is None:
             return emit(
-                {"ok": True, "cropped": False, "reason": "border-is-full-image", "width": width, "height": height},
+                {"ok": True, "cropped": False, "reason": "unsafe-or-full-image-border", "width": width, "height": height},
                 args.pretty,
             )
+        x0, y0, x1, y1 = crop_rect
 
         cropped = image[y0:y1, x0:x1]
         write_image(output, cropped)

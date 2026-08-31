@@ -125,6 +125,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="also verify pinyin syllable count matches Chinese character count",
     )
+    parser.add_argument(
+        "--strict-syllable-count",
+        action="store_true",
+        help="treat pinyin syllable-count mismatches as errors",
+    )
     return parser.parse_args()
 
 
@@ -180,9 +185,12 @@ def main() -> int:
                     f"  - {rel}:{line_no} '{phrase}' code='{code}' "
                     f"chars={cc} syllables={sc}"
                 )
-            # Syllable count mismatches are warnings, not errors (they may be
-            # intentional for erhua or multi-reading entries)
-            print("  (syllable count mismatches are advisory; review manually)")
+            if args.strict_syllable_count:
+                exit_code = 1
+            else:
+                # Some historical entries intentionally keep more than one
+                # reading. Release verification opts into strict mode.
+                print("  (syllable count mismatches are advisory; review manually)")
         else:
             print("Lexicon syllable count check passed")
 

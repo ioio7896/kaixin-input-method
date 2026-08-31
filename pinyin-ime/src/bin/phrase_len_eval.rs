@@ -1,6 +1,8 @@
 use pinyin_ime::core::{PinyinEngine, MODE_JIANPIN, MODE_MIXED_PINYIN, TSF_PAGE_SIZE};
-use pinyin_ime::segment::split_syllables_with_tail;
-use pinyin_ime::thuocl::{load_dir_txt_with_profile_default_enabled, LexiconBuildProfile};
+use pinyin_ime::thuocl::{
+    load_dir_txt_with_profile_default_enabled, primary_pinyin_syllables_for_phrase,
+    LexiconBuildProfile,
+};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
@@ -52,6 +54,8 @@ fn main() {
     let mut popular_three_limit = usize::MAX;
     let mut only_popular = false;
     let mut incremental = false;
+    let mut min_full_top9: Option<f64> = None;
+    let mut max_full_unrecalled: Option<f64> = None;
     let default_popular_three = repo.join("tests").join("popular_three_char_cases.tsv");
     let default_popular = repo.join("tests").join("popular_four_char_cases.tsv");
     let mut popular_three_path = default_popular_three
@@ -96,6 +100,12 @@ fn main() {
             "--incremental" => incremental = true,
             "--no-popular-three-char" => popular_three_path = None,
             "--no-popular-four-char" => popular_path = None,
+            "--min-full-top9" => {
+                min_full_top9 = args.next().and_then(|value| value.parse::<f64>().ok())
+            }
+            "--max-full-unrecalled" => {
+                max_full_unrecalled = args.next().and_then(|value| value.parse::<f64>().ok())
+            }
             _ => {}
         }
     }
@@ -124,12 +134,15 @@ fn main() {
     });
 
     let mut cases: Vec<EvalCase> = Vec::new();
-    for (full, expected, freq, layer) in samples {
-        let Ok((syllables, tail)) = split_syllables_with_tail(full.as_str(), engine.syllable_set())
-        else {
+    for (_stored_key, expected, freq, layer) in samples {
+        // Do not greedily re-split the compact index key: `jianada` otherwise
+        // becomes `jian|a|da` and evaluates 加拿大 with the fake initial key
+        // `jad`.  The lexicon's character reading table preserves one intended
+        // syllable boundary per character for this audit.
+        let Some(syllables) = primary_pinyin_syllables_for_phrase(&expected) else {
             continue;
         };
-        if tail.is_some() || syllables.len() != expected.chars().count() {
+        if syllables.len() != expected.chars().count() {
             continue;
         }
         append_cases(
@@ -299,8 +312,16 @@ fn main() {
             );
         }
     }
+    let mut full_cases = 0usize;
+    let mut full_top9 = 0usize;
+    let mut full_unrecalled = 0usize;
     let total = cases.len().max(1) as f64;
     for ((source, category, len, mode), stats) in grouped {
+        if mode == "full" {
+            full_cases += stats.cases;
+            full_top9 += stats.top9;
+            full_unrecalled += stats.missing;
+        }
         let total = stats.cases.max(1) as f64;
         let weighted_total = stats.weighted_cases.max(1) as f64;
         let avg_commit_keys = format_optional_average(stats.commit_keys, stats.selectable_cases);
@@ -348,6 +369,26 @@ fn main() {
         avg_first_visible,
         avg_top1_changes,
     );
+
+    // 门禁：用户输入全拼的最关键指标——常用三字词按 TOP9 召回率与不可召回
+    // 率。基准值来自发布基线（heldout=300 组：top9≈68%、unrecalled≈14%），
+    // 门限留出安全余量以便发现候选排序回退。
+    if full_cases == 0 {
+        eprintln!("GATE\tfull_mode_no_cases\tfailed=1");
+        std::process::exit(2);
+    }
+    let full_top9_pct = full_top9 as f64 * 100.0 / full_cases as f64;
+    let full_unrecalled_pct = full_unrecalled as f64 * 100.0 / full_cases as f64;
+    println!(
+        "GATE\tfull_cases={full_cases}\tfull_top9={full_top9_pct:.1}%\tfull_unrecalled={full_unrecalled_pct:.1}%\tmin_top9={:.1}%\tmax_unrecalled={:.1}%",
+        min_full_top9.unwrap_or(0.0),
+        max_full_unrecalled.unwrap_or(100.0),
+    );
+    let gate_failed = min_full_top9.is_some_and(|minimum| full_top9_pct < minimum)
+        || max_full_unrecalled.is_some_and(|maximum| full_unrecalled_pct > maximum);
+    if gate_failed {
+        std::process::exit(2);
+    }
 }
 
 fn append_cases(

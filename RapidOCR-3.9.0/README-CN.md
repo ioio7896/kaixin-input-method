@@ -174,7 +174,7 @@ RapidOCR 是一个基于 Apache2.0 许可的开源项目，其持续开发之所
 
 ### ⭐️ Star history
 
-[![Stargazers over time](https://starchart.cc/RapidAI/RapidOCR.svg?variant=adaptive)](https://starchart.cc/RapidAI/RapidOCR)
+![Star History](https://raw.githubusercontent.com/RapidAI/RapidOCR/star-tracker-data/charts/star-history.svg)
 
 ### ⚖️ 开源许可证
 

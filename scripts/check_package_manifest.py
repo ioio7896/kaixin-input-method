@@ -14,10 +14,6 @@ from pathlib import Path, PurePosixPath
 
 PACKAGE_HASH_MANIFEST = "package_manifest.sha256"
 COMPONENT_MANIFEST = "component_manifest.ini"
-SHAREX_SOURCE_ARCHIVE_NAME = "kaixin-sharex-corresponding-source.zip"
-SHAREX_SOURCE_NOTICE_MARKER = (
-    f"distributed separately as `{SHAREX_SOURCE_ARCHIVE_NAME}`"
-)
 PYTHON_EXCLUDED_DIR_NAMES = {
     "__pycache__",
     ".pytest_cache",
@@ -61,9 +57,8 @@ REQUIRED_FILES = {
 }
 
 COMPONENT_PREFIXES = {
-    "sharex": "ShareX/",
     "python_runtime": ".python-runtime/",
-    "rapidocr_venv": ".venv-rapidocr/",
+    "rapidocr_packages": ".python-packages/",
     "rapidocr_payload": "RapidOCR-3.9.0/",
 }
 
@@ -152,21 +147,6 @@ def validate_slim_package_layout(package: Path, errors: list[str]) -> None:
         if not path.is_file() or path.stat().st_size <= 0:
             errors.append(f"missing staged project license/notice: {name}")
 
-    sharex_dir = package / "ShareX"
-    for name in ("KaixinShareX.exe", "LICENSE.txt", "SOURCE_INFO.md"):
-        path = sharex_dir / name
-        if not path.is_file() or path.stat().st_size <= 0:
-            errors.append(f"missing staged ShareX component: ShareX/{name}")
-    source_info = sharex_dir / "SOURCE_INFO.md"
-    if source_info.is_file():
-        text = source_info.read_text(encoding="utf-8", errors="replace")
-        if SHAREX_SOURCE_NOTICE_MARKER not in text:
-            errors.append(
-                "ShareX/SOURCE_INFO.md does not identify the separate corresponding-source archive"
-            )
-    if (package / "ShareX-Source").exists():
-        errors.append("formal staged package still contains ShareX-Source")
-
     for relative in (
         "srf_ime_translate.exe",
         ".venv-translate",
@@ -177,9 +157,12 @@ def validate_slim_package_layout(package: Path, errors: list[str]) -> None:
         if (package / relative).exists():
             errors.append(f"removed translation runtime is still packaged: {relative}")
 
+    if (package / ".venv-rapidocr").exists():
+        errors.append("staged package still contains the legacy OCR virtual environment")
+
     python_roots = [
         package / ".python-runtime",
-        package / ".venv-rapidocr",
+        package / ".python-packages",
         package / "RapidOCR-3.9.0" / "python",
     ]
     forbidden: list[str] = []
@@ -243,31 +226,6 @@ def validate_component_manifest(package: Path, errors: list[str]) -> None:
             )
 
 
-def validate_sharex_source_archive(dist: Path, errors: list[str]) -> None:
-    archive_path = dist / SHAREX_SOURCE_ARCHIVE_NAME
-    if not archive_path.is_file() or archive_path.stat().st_size <= 0:
-        errors.append(f"missing separate ShareX corresponding-source archive: {archive_path.name}")
-        return
-    required_members = {
-        "ShareX-Source/LICENSE.txt",
-        "ShareX-Source/SOURCE_INFO.md",
-        "ShareX-Source/ShareX/ShareXCLIManager.cs",
-        "ShareX-Source/ShareX/Program.cs",
-        "ShareX-Source/ShareX/SystemOptions.cs",
-    }
-    try:
-        with zipfile.ZipFile(archive_path) as archive:
-            members = {name.replace("\\", "/") for name in archive.namelist()}
-    except (OSError, zipfile.BadZipFile) as exc:
-        errors.append(f"invalid ShareX corresponding-source archive: {exc}")
-        return
-    missing = sorted(required_members - members)
-    if missing:
-        errors.append(
-            "ShareX corresponding-source archive is incomplete: " + ", ".join(missing)
-        )
-
-
 def main() -> int:
     repo = Path(__file__).resolve().parents[1]
     dist = repo / "dist"
@@ -283,7 +241,6 @@ def main() -> int:
         return 0
 
     errors: list[str] = []
-    validate_sharex_source_archive(dist, errors)
     for package in packages:
         package_label = package.relative_to(repo).as_posix()
         for name in REQUIRED_FILES:

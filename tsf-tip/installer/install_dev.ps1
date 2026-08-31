@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$PackageRoot = $PSScriptRoot,
     [string]$InstallationRoot,
     [switch]$Machine,
@@ -32,7 +32,7 @@ $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $PackageManifestName = 'package_manifest.sha256'
 $RuntimeSuccessManifestName = 'successful_runtime_payload.txt'
 $RuntimePayloadRootName = 'runtime'
-$CurrentConfigVersion = 10
+$CurrentConfigVersion = 13
 $script:InstallLogPath = $null
 
 function Get-DefaultInstallRoot {
@@ -418,16 +418,6 @@ function Invoke-ConfigMigration {
         [void][int]::TryParse($configVersionText, [ref]$existingConfigVersion)
     }
 
-    if ($existingConfigVersion -lt 3) {
-        $symbolFullwidth = Get-IniValue -Lines $lines -Section 'input' -Key 'symbol_fullwidth'
-        if ($symbolFullwidth -and $symbolFullwidth.Trim().Equals('0', [System.StringComparison]::OrdinalIgnoreCase)) {
-            if (Set-IniValue -Lines ([ref]$lines) -Section 'input' -Key 'symbol_fullwidth' -Value '1') {
-                $changed = $true
-                Write-InstallLog 'OK: migrated symbol_fullwidth old default 0 -> 1'
-            }
-        }
-    }
-
     if ($existingConfigVersion -lt 4) {
         $screenshotAutoSave = Get-IniValue -Lines $lines -Section 'screenshot' -Key 'auto_save'
         if ([string]::IsNullOrWhiteSpace($screenshotAutoSave) -or $screenshotAutoSave.Trim().Equals('0', [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -448,24 +438,6 @@ function Invoke-ConfigMigration {
         }
     }
 
-    if ($existingConfigVersion -lt 9) {
-        $screenshotBackend = Get-IniValue -Lines $lines -Section 'screenshot' -Key 'backend'
-        $screenshotMode = Get-IniValue -Lines $lines -Section 'screenshot' -Key 'mode'
-        $legacyBackend = -not [string]::IsNullOrWhiteSpace($screenshotBackend) -and $screenshotBackend.Trim().Equals('wgc', [System.StringComparison]::OrdinalIgnoreCase)
-        $legacyMode = [string]::IsNullOrWhiteSpace($screenshotMode) -or $screenshotMode.Trim().Equals('manual_region', [System.StringComparison]::OrdinalIgnoreCase)
-        if ($legacyBackend -and $legacyMode) {
-            $backendChanged = Set-IniValue -Lines ([ref]$lines) -Section 'screenshot' -Key 'backend' -Value 'sharex'
-            $modeChanged = if ([string]::IsNullOrWhiteSpace($screenshotMode)) {
-                Add-IniDefaultIfMissing -Lines ([ref]$lines) -Section 'screenshot' -Key 'mode' -Value 'manual_region'
-            } else {
-                Set-IniValue -Lines ([ref]$lines) -Section 'screenshot' -Key 'mode' -Value 'manual_region'
-            }
-            if ($backendChanged -or $modeChanged) {
-                $changed = $true
-                Write-InstallLog 'OK: migrated screenshot backend legacy default wgc/manual_region -> sharex/manual_region'
-            }
-        }
-    }
 
     if ($existingConfigVersion -lt 10) {
         $canonicalizedLegacyKeys = $false
@@ -524,8 +496,9 @@ function Invoke-ConfigMigration {
         @{ Section = 'screenshot'; Key = 'copy_after_capture'; Value = '1' },
         @{ Section = 'screenshot'; Key = 'ocr_after_capture'; Value = '0' },
         @{ Section = 'screenshot'; Key = 'translate_after_capture'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'backend'; Value = 'sharex' },
         @{ Section = 'screenshot'; Key = 'mode'; Value = 'manual_region' },
+        @{ Section = 'screenshot'; Key = 'confirm_on_release'; Value = '0' },
+        @{ Section = 'screenshot'; Key = 'show_instructions'; Value = '1' },
         @{ Section = 'clipboard'; Key = 'hotkey'; Value = 'off' },
         @{ Section = 'tools'; Key = 'settings_hotkey'; Value = 'off' },
         @{ Section = 'tools'; Key = 'handwrite_hotkey'; Value = 'off' },
@@ -536,7 +509,7 @@ function Invoke-ConfigMigration {
         @{ Section = 'input'; Key = 'temporary_ascii_hotkey'; Value = 'off' },
         @{ Section = 'input'; Key = 'shift_tap_hotkey'; Value = '1' },
         @{ Section = 'input'; Key = 'candidate_number_select'; Value = '1' },
-        @{ Section = 'input'; Key = 'symbol_fullwidth'; Value = '1' },
+        @{ Section = 'input'; Key = 'symbol_fullwidth'; Value = '0' },
         @{ Section = 'input'; Key = 'shift_symbol_temporary_ascii'; Value = '0' },
         @{ Section = 'input'; Key = 'page_minus_equal'; Value = '1' },
         @{ Section = 'input'; Key = 'page_comma_period'; Value = '1' },
@@ -576,7 +549,7 @@ function Get-PackagedLexiconDirectories {
 }
 
 function Stop-RunningHelpers {
-    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray', 'KaixinShareX')
+    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray')
     $visibleTools = @('srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_ocr', 'srf_ime_translate_result')
     foreach ($processName in @($backgroundHelpers + $visibleTools)) {
         $processes = @(Get-Process -Name $processName -ErrorAction SilentlyContinue)
@@ -1886,6 +1859,7 @@ $requiredFiles = @(
     $RuntimePayloadManifestName,
     $PackageManifestName,
     'build-manifest.json',
+    'component_manifest.ini',
     'VERSION',
     'install_dev.ps1',
     'srf_ime_settings.exe',
@@ -1894,8 +1868,8 @@ $requiredFiles = @(
     'srf_ime_tray.exe.manifest',
     'srf_ime_engine.exe',
     'srf_ime_clipboard.exe',
+    'srf_ime_clipboard_svc.exe',
     'srf_ime_handwrite.exe',
-    'srf_ime_translate_result.exe',
     'invoke_registration.ps1',
     'install_current_user.ps1',
     'repair_install.ps1',
@@ -1940,12 +1914,8 @@ $skinDir = Join-Path $PackageRoot 'skins'
 $assetsDir = Join-Path $PackageRoot 'assets'
 $toolsDir = Join-Path $PackageRoot 'tools'
 $rapidOcrDir = Join-Path $PackageRoot 'RapidOCR-3.9.0'
-$rapidOcrVenvDir = Join-Path $PackageRoot '.venv-rapidocr'
+$rapidOcrPackagesDir = Join-Path $PackageRoot '.python-packages'
 $pythonRuntimeDir = Join-Path $PackageRoot '.python-runtime'
-$shareXDir = Join-Path $PackageRoot 'ShareX'
-Ensure-File (Join-Path $shareXDir 'KaixinShareX.exe')
-Ensure-File (Join-Path $shareXDir 'LICENSE.txt')
-Ensure-File (Join-Path $shareXDir 'SOURCE_INFO.md')
 
 if (-not $SkipFileCopy) {
     Stop-TextInputStackForInstall
@@ -1999,9 +1969,8 @@ if (-not $SkipFileCopy) {
             @{ Source = $assetsDir; Name = 'assets' },
             @{ Source = $toolsDir; Name = 'tools' },
             @{ Source = $pythonRuntimeDir; Name = '.python-runtime' },
-            @{ Source = $rapidOcrVenvDir; Name = '.venv-rapidocr' },
-            @{ Source = $rapidOcrDir; Name = 'RapidOCR-3.9.0' },
-            @{ Source = $shareXDir; Name = 'ShareX' }
+            @{ Source = $rapidOcrPackagesDir; Name = '.python-packages' },
+            @{ Source = $rapidOcrDir; Name = 'RapidOCR-3.9.0' }
         )) {
             if (Test-Path -LiteralPath $optionalDir.Source) {
                 $target = Join-Path $InstallationRoot $optionalDir.Name
@@ -2118,4 +2087,3 @@ if ($SkipHealthCheck) {
 
 Write-InstallLog ("OK: installed to {0}" -f $InstallationRoot)
 Write-Output ("Installed {0} to: {1}" -f $AppDisplayName, $InstallationRoot)
-

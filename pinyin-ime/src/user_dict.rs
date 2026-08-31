@@ -9,9 +9,12 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::sync::{mpsc, Arc, Mutex, OnceLock};
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    mpsc, Arc, Mutex, OnceLock,
+};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LearnedStats {
@@ -225,6 +228,14 @@ const MAX_USER_DICT_LINE_BYTES: usize = 65_536;
 const SNAPSHOT_EVERY_LEARNS: usize = 48;
 /// 后台写线程的攒批窗口，减少高频 commit 的磁盘抖动。
 const PERSIST_BATCH_WINDOW_MS: u64 = 160;
+const PERSIST_FAILURE_LOG_INTERVAL: Duration = Duration::from_secs(60);
+
+/// 全角/中文语句标点：相邻生词合并不应当把它们带进词条。
+const CJK_PHRASE_PUNCTUATION: &[char] = &[
+    '。', '，', '、', '；', '：', '？', '！', '"', '"', '\'', '\'', '(', ')', '[', ']', '{', '}',
+    '《', '》', '〈', '〉', '「', '」', '『', '』', '（', '）', '【', '】', '—', '…', '‧', '·',
+    '～', '々',
+];
 const APPROX_INDEX_MAX_KEY_LEN: usize = 40;
 const MAX_USER_ENTRIES_PER_KEY: usize = 64;
 const MAX_CONTEXT_ENTRIES_PER_PREV: usize = 32;
@@ -2296,6 +2307,10 @@ impl UserLexicon {
     }
 
     fn prune_for_memory(&mut self) -> bool {
+        // 每个 key 的条目按 (pinned, freq, last_used, phrase) 排序后截断到
+        // MAX_USER_ENTRIES_PER_KEY：置顶 > 高频 > 近期 > 字典序。新词 freq=1
+        // 只会在同 key 已有 64 个更强词条时被截掉——这是有界内存的预期行为；
+        // 磁盘为被截词条多写的行会在下次快照重写时自然清除。
         let mut changed = false;
         let mut exact_index_changed = false;
 
@@ -2912,8 +2927,18 @@ fn persistence_worker_loop(
             &mut pending_snapshot,
         );
         let status = match &result {
-            Ok(()) => Ok(()),
-            Err(err) => Err(err.to_string()),
+            Ok(()) => {
+                USER_DICT_DURABILITY_FAILURES.store(0, Ordering::Relaxed);
+                Ok(())
+            }
+            Err(err) => {
+                let failures = USER_DICT_DURABILITY_FAILURES.fetch_add(1, Ordering::Relaxed) + 1;
+                // 学习在内存模型里已生效，但落盘失败会让重启后的用户词丢失。
+                // 定期写 engine 日志（磁盘满等持续失败按 60 秒合并成一条），
+                // 避免静默丢失；flush 等待者（重启/清空）仍收到逐次失败。
+                memory_log_persist_failure(err, failures, pending_lines.len());
+                Err(err.to_string())
+            }
         };
         for waiter in flush_waiters {
             let _ = waiter.send(status.clone());
@@ -2923,6 +2948,30 @@ fn persistence_worker_loop(
             break;
         }
     }
+}
+
+/// 落盘失败计数（成功落盘后清零）。用于诊断“学习成功但重启丢失”。
+pub(crate) static USER_DICT_DURABILITY_FAILURES: AtomicU64 = AtomicU64::new(0);
+
+fn memory_log_persist_failure(err: &io::Error, failures: u64, pending: usize) {
+    static LAST_LOG_AT: OnceLock<Mutex<Instant>> = OnceLock::new();
+    let last = LAST_LOG_AT.get_or_init(|| Mutex::new(Instant::now() - Duration::from_secs(120)));
+    let mut guard = match last.lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    if guard.elapsed() < PERSIST_FAILURE_LOG_INTERVAL {
+        return;
+    }
+    *guard = Instant::now();
+    runtime_log::log_engine(
+        RuntimeLogLevel::Error,
+        "srf_user_dict_persist_failed",
+        format!(
+            "error={} failures={failures} pending_lines={pending} note=in-memory learning still applies until restart",
+            err
+        ),
+    );
 }
 
 fn handle_persistence_command(
@@ -3092,6 +3141,14 @@ fn is_adjacent_novel_candidate(key: &str, phrase: &str) -> bool {
     if phrase
         .chars()
         .any(|ch| ch == '\t' || ch == '\r' || ch == '\n' || ch.is_control())
+    {
+        return false;
+    }
+    // 相邻生词合并只应拼出纯词，不允许夹杂标点（如"你好。"+"世界"把它
+    // 学成"你好。世界"）；标点属于语句边界信号，不应进入生词库。
+    if phrase
+        .chars()
+        .any(|ch| ch.is_ascii_punctuation() || CJK_PHRASE_PUNCTUATION.contains(&ch))
     {
         return false;
     }
@@ -3688,4 +3745,54 @@ fn bounded_edit_distance(left: &str, right: &str, max_distance: usize) -> Option
 
     let distance = prev[b.len()];
     (distance <= max_distance).then_some(distance)
+}
+
+#[cfg(test)]
+mod persistence_tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn unique_test_path() -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "kaixin-restart-recovery-{}-{nonce}.sqlite",
+            std::process::id()
+        ))
+    }
+
+    fn cleanup_test_files(path: &Path) {
+        for suffix in ["", ".partial", ".lock", ".previous", ".bak", ".reset"] {
+            let candidate = PathBuf::from(format!("{}{}", path.display(), suffix));
+            let _ = fs::remove_file(candidate);
+        }
+    }
+
+    #[test]
+    fn learned_pinyin_path_survives_flush_drop_and_reload() {
+        let path = unique_test_path();
+        {
+            let mut lexicon = UserLexicon::load_from_path(path.clone()).expect("open test dict");
+            lexicon
+                .learn_with_delta("ceshilujing", "\u{6d4b}\u{8bd5}\u{8def}\u{5f84}", 3)
+                .expect("learn pinyin path");
+            lexicon.flush_pending().expect("flush learned path");
+        }
+
+        let reloaded = UserLexicon::load_from_path(path.clone()).expect("reload test dict");
+        let entry = reloaded
+            .lookup_input("ceshilujing")
+            .and_then(|entries| {
+                entries
+                    .iter()
+                    .find(|entry| entry.phrase == "\u{6d4b}\u{8bd5}\u{8def}\u{5f84}")
+            })
+            .expect("learned path after restart");
+        assert_eq!(entry.freq, 3);
+        drop(reloaded);
+
+        cleanup_test_files(&path);
+    }
 }

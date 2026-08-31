@@ -1,8 +1,7 @@
 var
   ComponentChecksReady: Boolean;
-  InstallShareXComponent: Boolean;
   InstallPythonRuntimeComponent: Boolean;
-  InstallRapidOcrVenvComponent: Boolean;
+  InstallRapidOcrPackagesComponent: Boolean;
   InstallRapidOcrPayloadComponent: Boolean;
 
 function InstalledComponentDiffers(const ComponentName: string; const ExpectedId: string): Boolean;
@@ -28,9 +27,8 @@ procedure InitializeComponentChecks();
 begin
   if ComponentChecksReady then
     exit;
-  InstallShareXComponent := InstalledComponentDiffers('sharex', '{#KXComponentShareX}');
   InstallPythonRuntimeComponent := InstalledComponentDiffers('python_runtime', '{#KXComponentPythonRuntime}');
-  InstallRapidOcrVenvComponent := InstalledComponentDiffers('rapidocr_venv', '{#KXComponentRapidOcrVenv}');
+  InstallRapidOcrPackagesComponent := InstalledComponentDiffers('rapidocr_packages', '{#KXComponentRapidOcrPackages}');
   InstallRapidOcrPayloadComponent := InstalledComponentDiffers('rapidocr_payload', '{#KXComponentRapidOcrPayload}');
   ComponentChecksReady := True;
 end;

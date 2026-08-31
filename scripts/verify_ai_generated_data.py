@@ -16,57 +16,57 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXT_FILES = {
-    "lexicon/zh/china_prefecture_level_admin_333.txt": (
+    "data_sources/lexicon_fragments/zh-ext/china_prefecture_level_admin_333.txt": (
         "cf0c9a8322b253fa7b5218134238054ca947431bc43a47d3f2a526e17fb8ed67",
         333,
         3,
     ),
-    "lexicon/zh/county_admin_short_names_2024.txt": (
+    "data_sources/lexicon_fragments/zh-ext/county_admin_short_names_2024.txt": (
         "e370c5f6d9c3d1465852a89c2e43095407491267a6f9afbc8d9288e873a7a3cd",
         2770,
         3,
     ),
-    "lexicon/zh/hangzhou_metro_stations_262.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_metro_stations_262.txt": (
         "c59fd37d8889097f7dfa46f5a0ea8ed147edafa671083f5eac5500d338d8321b",
         262,
         3,
     ),
-    "lexicon/zh/hangzhou_admin.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_admin.txt": (
         "082e70434a94ed31820657c8a673d44b801f4e5c1a9aa90add5503cf105fe463",
         300,
         3,
     ),
-    "lexicon/zh/hangzhou_business.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_business.txt": (
         "bbf6c97ba7a70c210302521a422da5f02f70fb4e8ceacc3a653f7c1bd8864e2d",
         85,
         3,
     ),
-    "lexicon/zh/hangzhou_food_culture.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_food_culture.txt": (
         "52fa56b9e6f6fcb4efe447fa13d2aa319353eb68a4bd6d7882aa35a2bd9691fe",
         75,
         3,
     ),
-    "lexicon/zh/hangzhou_landmarks_life.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_landmarks_life.txt": (
         "7b1758d0ccebaf53bcfe6bf3242b8e665edd0c005695f410779e0b0e4fd589c6",
         165,
         3,
     ),
-    "lexicon/zh/hangzhou_local_culture.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_local_culture.txt": (
         "9244048090e2759942537d9c99fd46cb3fece27d33db709f3deaa60a9ae574f4",
         65,
         3,
     ),
-    "lexicon/zh/hangzhou_new_places.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_new_places.txt": (
         "c47fc6428fdc481d8389e5c0ce0657fb46fb782aad19c08fd22e07f8ad2b7e62",
         131,
         3,
     ),
-    "lexicon/zh/hangzhou_public_services.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_public_services.txt": (
         "e25892eb12a1e83bc26e0e4e888e74258db28263a68a156edfc63df67a1b5dae",
         165,
         3,
     ),
-    "lexicon/zh/hangzhou_transport.txt": (
+    "data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt": (
         "5a6032ad99f69af1ebab90e075b5eac1bdf7c44b9a3a3031528ed0226ca8952a",
         145,
         3,

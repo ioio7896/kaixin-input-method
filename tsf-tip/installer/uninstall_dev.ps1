@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$InstallationRoot = $PSScriptRoot,
     [switch]$Machine,
     [switch]$SkipFileRemoval,
@@ -540,7 +540,7 @@ function Invoke-TipUnregistration {
 }
 
 function Stop-RunningHelpers {
-    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray', 'KaixinShareX')
+    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray')
     $visibleTools = @('srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_ocr', 'srf_ime_translate_result')
     foreach ($processName in @($backgroundHelpers + $visibleTools)) {
         foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {

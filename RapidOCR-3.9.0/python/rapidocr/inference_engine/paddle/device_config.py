@@ -64,6 +64,15 @@ class DeviceConfig:
 
             logger.info(f"Set CPU math library threads to: {infer_num_threads}")
 
+        if self.ocr_version in (OCRVersion.PPOCRV5, OCRVersion.PPOCRV6):
+            if hasattr(self.infer_opts, "enable_new_ir"):
+                self.infer_opts.enable_new_ir(True)
+
+            if hasattr(self.infer_opts, "enable_new_executor"):
+                self.infer_opts.enable_new_executor()
+            if hasattr(self.infer_opts, "set_optimization_level"):
+                self.infer_opts.set_optimization_level(3)
+
     @staticmethod
     def setup_device_envs(envs):
         for key, val in envs.items():

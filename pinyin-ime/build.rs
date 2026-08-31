@@ -49,6 +49,25 @@ fn git_dirty(repo: &Path) -> bool {
     git_output(repo, &["status", "--porcelain"]).is_some_and(|text| !text.trim().is_empty())
 }
 
+/// Git files whose change should re-run the build script so the embedded
+/// commit stamp tracks HEAD even when no source file changed.  Uses the real
+/// git dir (worktree-safe); `packed-refs` covers ref-pack rewrites.  Not
+/// watching `.git/index`: `git add` without a commit would re-stamp the
+/// engine while the TIP DLL (stamped at CMake configure time) stays put.
+fn git_state_paths(repo: &Path) -> Vec<PathBuf> {
+    let mut paths = Vec::new();
+    if let Some(text) = git_output(repo, &["rev-parse", "--absolute-git-dir"]) {
+        let dir = PathBuf::from(text);
+        for name in ["HEAD", "packed-refs"] {
+            let path = dir.join(name);
+            if path.is_file() {
+                paths.push(path);
+            }
+        }
+    }
+    paths
+}
+
 fn decode_text_bytes(bytes: &[u8]) -> Result<String, String> {
     if let Some(rest) = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]) {
         return String::from_utf8(rest.to_vec()).map_err(|err| format!("invalid utf-8: {err}"));
@@ -501,6 +520,9 @@ fn main() {
         "cargo:rustc-env=SRF_ENGINE_GIT_DIRTY={}",
         if git_dirty(repo) { "1" } else { "0" }
     );
+    for path in git_state_paths(repo) {
+        println!("cargo:rerun-if-changed={}", path.display());
+    }
     println!("cargo:rustc-env=SRF_ENGINE_MODEL_HASH={model_hash}");
     compile_windows_app_resource(out_dir, manifest, &app_version);
 

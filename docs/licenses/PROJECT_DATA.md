@@ -7,8 +7,8 @@ status: verified
 
 下列内容在第三方声明中标记为“项目自维护 / AI 辅助”：
 
-- `lexicon/zh-ext/*admin*.txt`
-- `lexicon/zh-ext/hangzhou_*.txt`
+- `data_sources/lexicon_fragments/zh-ext/*admin*.txt`
+- `data_sources/lexicon_fragments/zh-ext/hangzhou_*.txt`
 - `data_sources/kaixin/*.tsv`
 
 项目作者进一步确认使用的服务是 OpenAI ChatGPT。历史原始提示、精确模型版本、具体

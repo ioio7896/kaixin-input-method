@@ -187,7 +187,7 @@ If you find this project useful in your research, please consider cite:
 
 ### ⭐️ Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/RapidAI/RapidOCR.svg?variant=adaptive)](https://starchart.cc/RapidAI/RapidOCR)
+![Star History](https://raw.githubusercontent.com/RapidAI/RapidOCR/star-tracker-data/charts/star-history.svg)
 
 ### ⚖️ License
 

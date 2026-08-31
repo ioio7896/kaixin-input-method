@@ -189,7 +189,7 @@ impl PinyinEngine {
             self.user_lexicon
                 .record_word_sequence(phrase, &[phrase.to_string()], delta)
                 .map_err(|e| format!("save single-char word context: {}", e))?;
-            self.note_user_lexicon_updated();
+            self.note_user_phrases_updated(&[phrase.to_string()]);
             return Ok(());
         }
         if !is_learnable_user_phrase(phrase) {
@@ -220,7 +220,7 @@ impl PinyinEngine {
                 self.user_lexicon
                     .record_word_sequence(phrase, &word_tokens, 1)
                     .map_err(|e| format!("save observed word context: {}", e))?;
-                self.note_user_lexicon_updated();
+                self.note_phrase_and_tokens_updated(phrase, &word_tokens);
                 return Ok(());
             }
             composed_observation = Some(observed);
@@ -235,7 +235,7 @@ impl PinyinEngine {
             self.user_lexicon
                 .record_word_sequence(phrase, &word_tokens, 1)
                 .map_err(|e| format!("save mixed word context: {}", e))?;
-            self.note_user_lexicon_updated();
+            self.note_phrase_and_tokens_updated(phrase, &word_tokens);
             return Ok(());
         }
 
@@ -362,7 +362,7 @@ impl PinyinEngine {
             }
         }
 
-        self.note_user_lexicon_updated();
+        self.note_phrase_and_tokens_updated(phrase, &word_tokens);
         Ok(())
     }
 
@@ -387,7 +387,7 @@ impl PinyinEngine {
         } else {
             CommitSource::Direct
         };
-        let mut exact_delta = if weak || composed { 1 } else { 2 };
+        let mut exact_delta: u64 = if weak || composed { 1 } else { 2 };
         if !weak && full_exact && chars >= 4 {
             exact_delta += 1;
         }
@@ -419,6 +419,15 @@ impl PinyinEngine {
                 if composed {
                     composed_observe_threshold = 1;
                 }
+            }
+        }
+        // 挡位也作用于多字直接提交：积极模式更快把新学词推到高频（+1），
+        // 保守模式减半增量（-1），让"积极会更快置顶刚学词"对普通提交成立。
+        if !weak && !composed && chars >= 2 {
+            match self.learning_sensitivity() {
+                LearningSensitivity::Aggressive => exact_delta += 1,
+                LearningSensitivity::Conservative => exact_delta = exact_delta.saturating_sub(1),
+                LearningSensitivity::Standard => {}
             }
         }
 
@@ -522,6 +531,16 @@ impl PinyinEngine {
             if !is_learnable_user_phrase(skipped) {
                 continue;
             }
+            // The first two slots are shown on every ordinary candidate bar.
+            // Treat not choosing them as a weak observation, even when the
+            // user selects a later item: one selection may be contextual and
+            // must not immediately sink an otherwise useful hot candidate.
+            // Repeated observations cross the weak-feedback threshold and
+            // then cool these candidates gradually.
+            if rank < selected_index && rank < 2 {
+                weak_unselected.push((skipped.to_string(), -1));
+                continue;
+            }
             if rank >= selected_index {
                 weak_unselected.push((skipped.to_string(), -1));
                 continue;
@@ -585,7 +604,17 @@ impl PinyinEngine {
                     .map_err(|e| format!("save weak unselected feedback: {}", e))?;
             }
         }
-        self.note_selection_feedback_updated();
+        // 定向失效：仅驱逐选中词与负反馈涉及的候选，其余输入的缓存保持命中。
+        let mut affected: Vec<String> = adjustments
+            .iter()
+            .map(|(candidate, _)| candidate.clone())
+            .collect();
+        for (candidate, _) in &weak_unselected {
+            if !affected.iter().any(|a| a == candidate) {
+                affected.push(candidate.clone());
+            }
+        }
+        self.note_selection_feedback_updated(&affected);
         Ok(())
     }
 
@@ -938,7 +967,7 @@ impl PinyinEngine {
         self.user_lexicon
             .flush_pending()
             .map_err(|e| format!("flush user dict: {}", e))?;
-        self.note_user_lexicon_updated();
+        self.note_user_phrases_updated(&[phrase.to_string()]);
         Ok(())
     }
 
@@ -960,7 +989,7 @@ impl PinyinEngine {
             self.user_lexicon
                 .record_selection_feedback(&key, [(phrase, REMOVED_PHRASE_FEEDBACK_DELTA)])
                 .map_err(|e| format!("remember removed user phrase: {}", e))?;
-            self.note_user_lexicon_updated();
+            self.note_user_phrases_updated(&[phrase.to_string()]);
         }
         Ok(removed)
     }
@@ -975,7 +1004,7 @@ impl PinyinEngine {
             .block_phrase(phrase)
             .map_err(|e| format!("block user phrase: {}", e))?;
         if blocked {
-            self.note_user_lexicon_updated();
+            self.note_user_phrases_updated(&[phrase.to_string()]);
         }
         Ok(blocked)
     }
@@ -990,7 +1019,7 @@ impl PinyinEngine {
             .unblock_phrase(phrase)
             .map_err(|e| format!("unblock user phrase: {}", e))?;
         if unblocked {
-            self.note_user_lexicon_updated();
+            self.note_user_phrases_updated(&[phrase.to_string()]);
         }
         Ok(unblocked)
     }

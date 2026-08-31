@@ -7,8 +7,8 @@ Apache-2.0 许可证授权贡献。复制或改编第三方代码、模型、字
 ## 开发环境
 
 项目当前只支持在 Windows 上完整构建。需要 Python 3、Rust 1.88 或更高版本、
-MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6；OCR 和
-ShareX 构建有各自的附加依赖。
+MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6；OCR
+功能有单独的 Python 依赖，桌面辅助程序均随 Rust 工作区构建。
 
 建议从独立分支开始，保持一次提交只解决一个主题。不要提交 `dist/`、虚拟环境、
 诊断包、日志、PDB、签名证书、用户数据库或其他本机生成内容。
@@ -39,6 +39,5 @@ cargo check --manifest-path pinyin-ime/Cargo.toml --lib --locked
 - 不在日志或截图中包含真实输入、剪贴板、用户名或本地路径。
 - 依赖变化须更新锁文件和第三方许可证报告。
 - 第三方内容须更新 `THIRD_PARTY_NOTICES.md` 及 `docs/licenses/` 中的来源记录。
-- 修改 ShareX fork 时，更新其 `SOURCE_INFO.md`，并验证对应源码包和发布二进制一致。
 
 项目维护者可能要求拆分过大的 PR，或拒绝来源、授权和隐私边界无法核验的内容。

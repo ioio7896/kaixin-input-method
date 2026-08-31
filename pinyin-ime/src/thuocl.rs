@@ -61,7 +61,7 @@ impl LexiconBuildProfile {
         match self {
             Self::Hot => matches!(
                 LexiconLayer::from_path(path),
-                LexiconLayer::Core | LexiconLayer::Base
+                LexiconLayer::Core | LexiconLayer::Base | LexiconLayer::Ext
             ),
             Self::Full => true,
             // Standard scans `large`, but entry filtering keeps only short
@@ -228,6 +228,17 @@ pub fn pinyin_keys_for_phrase(phrase: &str) -> Vec<String> {
     phrase_pinyin_keys(phrase, false)
 }
 
+/// Return one syllable per character for evaluation tooling.  Keeping the
+/// boundaries here avoids re-segmenting a compact key with a greedy splitter
+/// (for example `jia na da` must not become `jian a da`).
+pub fn primary_pinyin_syllables_for_phrase(phrase: &str) -> Option<Vec<String>> {
+    phrase
+        .chars()
+        .filter(|ch| !ch.is_whitespace())
+        .map(|ch| pinyin_options_for_char(ch, false).into_iter().next())
+        .collect()
+}
+
 fn normalize_pinyin_code(code: &str) -> Option<String> {
     let compact: String = code
         .chars()
@@ -289,6 +300,15 @@ fn explicit_pinyin_syllables(code: &str) -> Vec<String> {
         out.push(part.to_ascii_lowercase());
     }
     out
+}
+
+/// Explicit readings are authoritative only when they can describe every
+/// Chinese character in the phrase.  A malformed third-party row must not
+/// poison its full-pinyin and abbreviation indexes; callers then fall back to
+/// the built-in per-character reading table.
+fn has_matching_explicit_pinyin(phrase: &str, code: &str) -> bool {
+    let phrase_len = lexicon_phrase_char_count(phrase);
+    phrase_len > 0 && explicit_pinyin_syllables(code).len() == phrase_len
 }
 
 fn mixed_pinyin_keys_from_options(syllable_options: Vec<Vec<String>>) -> Vec<String> {
@@ -963,9 +983,11 @@ impl AbbrevLexicon {
     ) -> bool {
         let mut inserted = false;
         let phrase_id = self.intern_phrase(&entry.phrase, entry.freq, source_layer);
-        let abbrev_keys = entry
+        let explicit_code = entry
             .code
             .as_deref()
+            .filter(|code| has_matching_explicit_pinyin(&entry.phrase, code));
+        let abbrev_keys = explicit_code
             .and_then(abbrev_key_for_pinyin_code)
             .map(|key| vec![key])
             .unwrap_or_else(|| abbrev_keys_for_phrase(&entry.phrase));
@@ -975,9 +997,7 @@ impl AbbrevLexicon {
             trim_compact_entries(v, PREBAKED_ENTRIES_PER_KEY_TOP_K);
             inserted = true;
         }
-        let pinyin_keys = entry
-            .code
-            .as_deref()
+        let pinyin_keys = explicit_code
             .and_then(normalize_pinyin_code)
             .map(|key| vec![key])
             .unwrap_or_else(|| pinyin_keys_for_phrase(&entry.phrase));
@@ -1000,7 +1020,7 @@ impl AbbrevLexicon {
             }
         }
         if should_index_mixed_hot(source_layer, entry.freq) {
-            if let Some(code) = entry.code.as_deref() {
+            if let Some(code) = explicit_code {
                 let phrase_char_count = lexicon_phrase_char_count(&entry.phrase);
                 let syllable_count = explicit_pinyin_syllables(code).len();
                 if (2..=MAX_MIXED_KEY_PHRASE_CHARS).contains(&phrase_char_count)
@@ -2539,16 +2559,16 @@ fn is_absolute_priority_source(path: &Path) -> bool {
 }
 
 fn is_unscaled_source(path: &Path) -> bool {
-    // Surnames and newly added local places are deliberately low-priority
-    // recall sources. Their lists use flat low weights, so percentile
-    // calibration would promote them into the same range as everyday words.
+    // Names and local places are deliberately low-priority recall sources.
+    // Their lists use flat low weights, so percentile calibration would
+    // promote them into the same range as everyday words.
     is_absolute_priority_source(path)
         || path
             .file_name()
             .and_then(|name| name.to_str())
             .is_some_and(|name| {
-                name.eq_ignore_ascii_case("chinese_surnames.txt")
-                    || name.eq_ignore_ascii_case("hangzhou_new_places.txt")
+                name.eq_ignore_ascii_case("people_names.txt")
+                    || name.eq_ignore_ascii_case("hangzhou_local.txt")
             })
 }
 
@@ -2808,4 +2828,25 @@ pub fn validate_hot_subset(hot: &AbbrevLexicon, full: &AbbrevLexicon) -> Vec<Str
         }
     }
     mismatches
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mismatched_explicit_pinyin_falls_back_to_character_readings() {
+        let mut lexicon = AbbrevLexicon::default();
+        lexicon.insert_parsed(ThuoclEntry {
+            phrase: "布洛芬".to_string(),
+            // A shifted neighbouring row: four syllables for a three-char word.
+            code: Some("jia xiao zuo pian".to_string()),
+            freq: 5_000,
+        });
+
+        assert!(lexicon
+            .lookup_pinyin("buluofen")
+            .is_some_and(|entries| entries.iter().any(|entry| entry.phrase == "布洛芬")));
+        assert!(lexicon.lookup_pinyin("jiaxiaozuopian").is_none());
+    }
 }

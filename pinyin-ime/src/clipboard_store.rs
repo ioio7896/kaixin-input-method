@@ -1,12 +1,13 @@
 use crate::runtime_log::{self, RuntimeLogLevel};
 use fs2::FileExt;
 use rusqlite::{params, Connection, DatabaseName};
+use std::collections::VecDeque;
 use std::fs::{self, File, OpenOptions};
 use std::io;
 use std::path::{Path, PathBuf};
 use std::ptr::NonNull;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Condvar, Mutex, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 const STORE_FILE_NAME: &str = "clipboard_store.sqlite";
@@ -19,6 +20,11 @@ const BACKGROUND_POLL_TICK: Duration = Duration::from_millis(250);
 const CLIPBOARD_EVENT_DEBOUNCE: Duration = Duration::from_millis(80);
 #[cfg(windows)]
 const CLIPBOARD_EVENT_QUEUE_CAPACITY: usize = 16;
+#[cfg(windows)]
+const CLIPBOARD_LISTENER_IDLE_TICK: Duration = Duration::from_millis(50);
+#[cfg(windows)]
+const CLIPBOARD_READ_MAX_ATTEMPTS: usize = 3;
+const STORE_WRITE_DEBOUNCE: Duration = Duration::from_millis(50);
 const SYSTEM_CLIPBOARD_DUPLICATE_WINDOW_SECS: u64 = 2;
 const MAX_HISTORY_ITEMS: usize = 60;
 const MAX_PINNED_ITEMS: usize = 24;
@@ -36,6 +42,171 @@ static CLIPBOARD_WORKER_ACTIVE: AtomicBool = AtomicBool::new(false);
 static COM_WARNING_LOGGED: AtomicBool = AtomicBool::new(false);
 #[cfg(windows)]
 static CLIPBOARD_EVENT_QUEUE: ClipboardEventQueue = ClipboardEventQueue::new();
+/// When the event queue is full the latest request id lands here so the worker
+/// captures the newest state once after draining instead of dropping it.
+#[cfg(windows)]
+static CLIPBOARD_COALESCED_REQUEST: AtomicU64 = AtomicU64::new(0);
+
+/// A pending store mutation. Records carry the fully built entry so the id and
+/// timestamp assigned at enqueue time are identical everywhere the entry is
+/// applied (optimistic cache, flush, later disk loads). Clipboard candidates
+/// resolve by id, so a second id assignment at flush time would break commits.
+#[derive(Clone)]
+enum StoreOp {
+    Record { entry: ClipboardEntry },
+}
+
+fn pending_ops() -> &'static (Mutex<VecDeque<StoreOp>>, Condvar) {
+    static OPS: OnceLock<(Mutex<VecDeque<StoreOp>>, Condvar)> = OnceLock::new();
+    OPS.get_or_init(|| (Mutex::new(VecDeque::new()), Condvar::new()))
+}
+
+fn drain_pending_ops() -> Vec<StoreOp> {
+    match pending_ops().0.lock() {
+        Ok(mut queue) => queue.drain(..).collect(),
+        Err(_) => Vec::new(),
+    }
+}
+
+fn requeue_store_ops(ops: Vec<StoreOp>) {
+    if let Ok(mut queue) = pending_ops().0.lock() {
+        for op in ops.into_iter().rev() {
+            queue.push_front(op);
+        }
+    }
+}
+
+fn apply_store_ops(snapshot: &mut ClipboardSnapshot, ops: &[StoreOp], prefs: &ClipboardPrefs) {
+    for op in ops {
+        let StoreOp::Record { entry } = op;
+        apply_record_entry(snapshot, entry, prefs);
+    }
+}
+
+/// Applies pending ops to `snapshot` without removing them from the queue.
+/// Used by read paths so returned snapshots include not-yet-flushed records;
+/// the queue stays intact for the writer thread.
+fn merge_pending_ops_into(snapshot: &mut ClipboardSnapshot, prefs: &ClipboardPrefs) {
+    let ops: Vec<StoreOp> = match pending_ops().0.lock() {
+        Ok(queue) => queue.iter().cloned().collect(),
+        Err(_) => return,
+    };
+    apply_store_ops(snapshot, &ops, prefs);
+}
+
+/// Publishes a committed snapshot and merges records enqueued while it was
+/// being built. The merge runs under the runtime mutex so a concurrent
+/// optimistic cache update can never be dropped by the replace.
+fn publish_snapshot_with_pending(mut snapshot: ClipboardSnapshot) {
+    let prefs = clipboard_prefs();
+    let Ok(mut runtime) = runtime().lock() else {
+        return;
+    };
+    merge_pending_ops_into(&mut snapshot, &prefs);
+    runtime.snapshot_cache = Some(Arc::new(snapshot));
+}
+
+static STORE_WRITER_STARTED: OnceLock<()> = OnceLock::new();
+
+fn kick_store_writer() {
+    STORE_WRITER_STARTED.get_or_init(|| {
+        let _ = std::thread::Builder::new()
+            .name("kaixin-clipboard-store-writer".to_string())
+            .spawn(store_writer_loop);
+    });
+    pending_ops().1.notify_one();
+}
+
+fn store_writer_loop() {
+    let (ops, wake) = pending_ops();
+    loop {
+        {
+            let Ok(queue) = ops.lock() else {
+                return;
+            };
+            if queue.is_empty() {
+                // The debounce timeout bounds flush latency for bursts and
+                // also recovers any notify lost to a start-up race.
+                let _ = wake.wait_timeout(queue, STORE_WRITE_DEBOUNCE);
+            }
+        }
+        if let Err(err) = flush_pending_store_ops() {
+            runtime_log::log_clipboard(
+                RuntimeLogLevel::Error,
+                "clipboard_store_flush",
+                format!("status=failed reason={err}"),
+            );
+            std::thread::sleep(STORE_WRITE_DEBOUNCE);
+        }
+    }
+}
+
+/// Flushes queued records to disk. Failed saves requeue the ops so a transient
+/// write error does not lose captures; the loop backs off between attempts.
+fn flush_pending_store_ops() -> Result<(), String> {
+    let ops = {
+        let Ok(mut queue) = pending_ops().0.lock() else {
+            return Err("lock clipboard store op queue".to_string());
+        };
+        if queue.is_empty() {
+            return Ok(());
+        }
+        queue.drain(..).collect::<Vec<_>>()
+    };
+    if let Err(err) = flush_store_ops_to_path(&store_path(), &ops) {
+        requeue_store_ops(ops);
+        return Err(err);
+    }
+    Ok(())
+}
+
+/// Persists queued records on the graceful shutdown path so a user quit never
+/// loses captures the writer has not flushed yet.
+pub fn flush_pending_ops_sync() {
+    for _ in 0..8 {
+        let empty = pending_ops()
+            .0
+            .lock()
+            .map(|queue| queue.is_empty())
+            .unwrap_or(true);
+        if empty {
+            break;
+        }
+        if let Err(err) = flush_pending_store_ops() {
+            runtime_log::log_clipboard(
+                RuntimeLogLevel::Error,
+                "clipboard_store_flush",
+                format!("status=failed reason={err}"),
+            );
+            break;
+        }
+    }
+}
+
+fn flush_store_ops_to_path(path: &Path, ops: &[StoreOp]) -> Result<(), String> {
+    if ops.is_empty() {
+        return Ok(());
+    }
+    let lock_path = lock_path_for(path);
+    let lock_file = open_lock_file(path)?;
+    lock_file
+        .lock_exclusive()
+        .map_err(|e| format!("lock clipboard store: {e}"))?;
+    let prefs = clipboard_prefs();
+    let mut snapshot = restore_backup_if_needed(path)?;
+    prune_snapshot(&mut snapshot, &prefs);
+    let before = snapshot.clone();
+    apply_store_ops(&mut snapshot, ops, &prefs);
+    prune_snapshot(&mut snapshot, &prefs);
+    if snapshot != before {
+        save_snapshot_atomically(path, &snapshot)?;
+    }
+    publish_snapshot_with_pending(snapshot);
+    let _ = lock_file.unlock();
+    drop(lock_file);
+    let _ = fs::remove_file(lock_path);
+    Ok(())
+}
 
 #[cfg(windows)]
 struct ClipboardEventQueue {
@@ -182,7 +353,7 @@ fn refresh_snapshot_cache(capture_system: bool) {
         let _ = capture_system_clipboard(true);
     }
     match load_snapshot_at_path(&store_path()) {
-        Ok(snapshot) => update_snapshot_cache(snapshot),
+        Ok(snapshot) => publish_snapshot_with_pending(snapshot),
         Err(err) => runtime_log::log_clipboard(
             RuntimeLogLevel::Error,
             "clipboard_snapshot_cache",
@@ -241,12 +412,13 @@ fn enqueue_clipboard_event_request(request_id: u64) {
     let head = CLIPBOARD_EVENT_QUEUE.head.load(Ordering::Relaxed);
     let tail = CLIPBOARD_EVENT_QUEUE.tail.load(Ordering::Acquire);
     if head.wrapping_sub(tail) >= CLIPBOARD_EVENT_QUEUE_CAPACITY as u64 {
-        CLIPBOARD_EVENT_QUEUE.tail.fetch_add(1, Ordering::AcqRel);
-        runtime_log::log_clipboard(
-            RuntimeLogLevel::Error,
-            "clipboard_update_queue",
-            format!("status=dropped reason=queue_full capacity={CLIPBOARD_EVENT_QUEUE_CAPACITY}"),
-        );
+        // Queue full: remember the latest request so the worker captures the
+        // newest state once after draining, instead of dropping the event.
+        CLIPBOARD_COALESCED_REQUEST.store(request_id, Ordering::Release);
+        runtime_log::log_clipboard_lazy(RuntimeLogLevel::Error, "clipboard_update_queue", || {
+            format!("status=coalesced reason=queue_full capacity={CLIPBOARD_EVENT_QUEUE_CAPACITY}")
+        });
+        return;
     }
     let slot = (head as usize) % CLIPBOARD_EVENT_QUEUE_CAPACITY;
     CLIPBOARD_EVENT_QUEUE.slots[slot].store(request_id, Ordering::Release);
@@ -272,6 +444,7 @@ fn dequeue_clipboard_event_request() -> Option<u64> {
 
 #[cfg(windows)]
 fn clear_clipboard_event_queue() {
+    CLIPBOARD_COALESCED_REQUEST.store(0, Ordering::Release);
     let tail = CLIPBOARD_EVENT_QUEUE.tail.load(Ordering::Relaxed);
     let head = CLIPBOARD_EVENT_QUEUE.head.load(Ordering::Acquire);
     for index in tail..head {
@@ -299,6 +472,13 @@ fn clipboard_background_worker_loop() {
             if let Some(request_id) = dequeue_clipboard_event_request() {
                 std::thread::sleep(CLIPBOARD_EVENT_DEBOUNCE);
                 let _ = poll_system_clipboard_changed_event_with_request(request_id);
+                continue;
+            }
+            // A full queue collapses a burst into this single capture request.
+            let coalesced = CLIPBOARD_COALESCED_REQUEST.swap(0, Ordering::AcqRel);
+            if coalesced != 0 {
+                std::thread::sleep(CLIPBOARD_EVENT_DEBOUNCE);
+                let _ = poll_system_clipboard_changed_event_with_request(coalesced);
                 continue;
             }
             let _ = poll_system_clipboard_if_due(false);
@@ -382,14 +562,16 @@ fn run_clipboard_listener_or_poll() {
             if BACKGROUND_POLLING_ENABLED.load(Ordering::Acquire) {
                 let request_id = next_clipboard_request_id();
                 let worker_active = CLIPBOARD_WORKER_ACTIVE.load(Ordering::Acquire);
-                runtime_log::log_clipboard(
+                runtime_log::log_clipboard_lazy(
                     RuntimeLogLevel::Verbose,
                     "clipboard_update",
-                    format!(
-                        "status=received request_id={} worker_active={}",
-                        request_id,
-                        if worker_active { 1 } else { 0 }
-                    ),
+                    || {
+                        format!(
+                            "status=received request_id={} worker_active={}",
+                            request_id,
+                            if worker_active { 1 } else { 0 }
+                        )
+                    },
                 );
                 if worker_active {
                     enqueue_clipboard_event_request(request_id);
@@ -483,7 +665,9 @@ fn run_clipboard_listener_or_poll() {
             }
         }
         if !processed {
-            std::thread::sleep(BACKGROUND_POLL_TICK);
+            // Short idle tick so a queued WM_CLIPBOARDUPDATE is dispatched
+            // quickly; the capture itself stays debounced on the worker.
+            std::thread::sleep(CLIPBOARD_LISTENER_IDLE_TICK);
         }
     }
 }
@@ -688,17 +872,38 @@ fn parse_clipboard_prefs(text: &str) -> ClipboardPrefs {
 fn clipboard_prefs() -> ClipboardPrefs {
     #[derive(Clone)]
     struct CachedPrefs {
-        modified: Option<SystemTime>,
+        stamp: Option<(SystemTime, u64)>,
+        checked_at: Instant,
         prefs: ClipboardPrefs,
     }
 
     static CACHE: OnceLock<Mutex<Option<CachedPrefs>>> = OnceLock::new();
+    // Stat at most once per interval: clipboard_prefs() sits on the per-poll,
+    // per-read, and per-lookup hot paths, so a metadata syscall per call was
+    // measurable. Config edits propagate within one interval.
+    const PREFS_STAT_INTERVAL: Duration = Duration::from_millis(250);
 
     let path = config_path();
-    let modified = std::fs::metadata(&path).and_then(|m| m.modified()).ok();
     if let Ok(mut cache) = CACHE.get_or_init(|| Mutex::new(None)).lock() {
-        if let Some(cached) = cache.as_ref() {
-            if cached.modified == modified {
+        let stat_due = cache
+            .as_ref()
+            .map(|cached| cached.checked_at.elapsed() >= PREFS_STAT_INTERVAL)
+            .unwrap_or(true);
+        if !stat_due {
+            return cache
+                .as_ref()
+                .map(|cached| cached.prefs.clone())
+                .unwrap_or_default();
+        }
+        let stamp = std::fs::metadata(&path).ok().and_then(|metadata| {
+            metadata
+                .modified()
+                .ok()
+                .map(|modified| (modified, metadata.len()))
+        });
+        if let Some(cached) = cache.as_mut() {
+            cached.checked_at = Instant::now();
+            if cached.stamp == stamp {
                 return cached.prefs.clone();
             }
         }
@@ -706,7 +911,8 @@ fn clipboard_prefs() -> ClipboardPrefs {
             .map(|text| parse_clipboard_prefs(&text))
             .unwrap_or_default();
         *cache = Some(CachedPrefs {
-            modified,
+            stamp,
+            checked_at: Instant::now(),
             prefs: prefs.clone(),
         });
         prefs
@@ -1259,29 +1465,41 @@ fn with_store_mut_at_path_impl<R>(
     let prefs = clipboard_prefs();
     let mut snapshot = restore_backup_if_needed(path)?;
     prune_snapshot(&mut snapshot, &prefs);
+    // Queued records must be part of the base state the mutation sees: they
+    // are removed from the queue here because this path saves the merged
+    // result, and leaving them queued would apply them a second time.
+    let pending = if path == store_path() {
+        drain_pending_ops()
+    } else {
+        Vec::new()
+    };
+    apply_store_ops(&mut snapshot, &pending, &prefs);
+    prune_snapshot(&mut snapshot, &prefs);
     let before = snapshot.clone();
     let result = f(&mut snapshot);
     prune_snapshot(&mut snapshot, &prefs);
     if result.is_ok() && snapshot != before {
-        save_snapshot_atomically(path, &snapshot)?;
+        if let Err(err) = save_snapshot_atomically(path, &snapshot) {
+            requeue_store_ops(pending);
+            let _ = lock_file.unlock();
+            drop(lock_file);
+            let _ = fs::remove_file(lock_path);
+            return Err(err);
+        }
+    }
+    if result.is_err() {
+        requeue_store_ops(pending);
     }
     if result.is_ok() && publish_runtime_cache {
         // Publish the exact committed state while the cross-process store lock
         // is still held. Clipboard candidates can then observe a successful
         // capture immediately instead of waiting for a later async reload.
-        update_snapshot_cache(snapshot.clone());
+        publish_snapshot_with_pending(snapshot.clone());
     }
     let _ = lock_file.unlock();
     drop(lock_file);
     let _ = fs::remove_file(lock_path);
     result
-}
-
-fn with_store_mut_at_path<R>(
-    path: &Path,
-    f: impl FnOnce(&mut ClipboardSnapshot) -> Result<R, String>,
-) -> Result<R, String> {
-    with_store_mut_at_path_impl(path, false, f)
 }
 
 fn load_snapshot_at_path(path: &Path) -> Result<ClipboardSnapshot, String> {
@@ -1308,6 +1526,14 @@ fn remove_entry_by_text(entries: &mut Vec<ClipboardEntry>, text: &str) -> Option
     Some(entries.remove(pos))
 }
 
+/// Ordering for the kept-sorted entry vectors: newest capture first, text
+/// ascending as the tiebreak (mirrors the SQLite read order).
+fn entry_sort_cmp(a: &ClipboardEntry, b: &ClipboardEntry) -> std::cmp::Ordering {
+    b.captured_at
+        .cmp(&a.captured_at)
+        .then_with(|| a.text.cmp(&b.text))
+}
+
 fn upsert_entry(entries: &mut Vec<ClipboardEntry>, mut entry: ClipboardEntry, limit: usize) {
     if let Some(pos) = entries
         .iter()
@@ -1322,12 +1548,13 @@ fn upsert_entry(entries: &mut Vec<ClipboardEntry>, mut entry: ClipboardEntry, li
             entry.source_app = std::mem::take(&mut existing.source_app);
         }
     }
-    entries.insert(0, entry);
-    entries.sort_by(|a, b| {
-        b.captured_at
-            .cmp(&a.captured_at)
-            .then_with(|| a.text.cmp(&b.text))
-    });
+    // The vector is kept sorted, so a binary search insertion replaces the
+    // previous full sort (O(N) text comparisons on strings up to 20k units).
+    // binary_search_by wants the probe's ordering relative to the target.
+    let insert_at = entries
+        .binary_search_by(|existing| entry_sort_cmp(existing, &entry))
+        .unwrap_or_else(|pos| pos);
+    entries.insert(insert_at, entry);
     if entries.len() > limit {
         entries.truncate(limit);
     }
@@ -1360,6 +1587,60 @@ fn record_text_at_path_with_mode(
     record_text_at_path_with_mode_and_cache(path, text, duplicate_mode, path == store_path())
 }
 
+/// Builds the entry for a record. Called once per record so the id and
+/// timestamp are stable across the optimistic cache, the flush, and later
+/// disk loads — clipboard candidates resolve entries by id.
+fn build_record_entry(
+    snapshot: &ClipboardSnapshot,
+    text: &str,
+    prefs: &ClipboardPrefs,
+    source_app: Option<&str>,
+) -> ClipboardEntry {
+    let captured_at = next_entry_timestamp(snapshot);
+    new_entry(
+        text.to_string(),
+        captured_at,
+        prefs
+            .record_source_app
+            .then(|| source_app.map(str::to_string))
+            .flatten(),
+    )
+}
+
+/// Mirrors the old record closure: refresh a pinned copy when the text is
+/// pinned, then upsert into history.
+fn apply_record_entry(
+    snapshot: &mut ClipboardSnapshot,
+    entry: &ClipboardEntry,
+    prefs: &ClipboardPrefs,
+) {
+    if snapshot
+        .pinned
+        .iter()
+        .any(|existing| existing.text == entry.text)
+    {
+        upsert_entry(&mut snapshot.pinned, entry.clone(), prefs.max_pinned_items);
+    }
+    upsert_entry(
+        &mut snapshot.history,
+        entry.clone(),
+        prefs.max_history_items,
+    );
+}
+
+/// Makes a freshly recorded entry visible to the next clipboard candidate
+/// lookup immediately, without waiting for the writer flush.
+fn optimistic_record_into_cache(entry: &ClipboardEntry, prefs: &ClipboardPrefs) {
+    let Ok(mut runtime) = runtime().lock() else {
+        return;
+    };
+    let Some(cache) = runtime.snapshot_cache.as_mut() else {
+        return;
+    };
+    let snapshot = Arc::make_mut(cache);
+    apply_record_entry(snapshot, entry, prefs);
+}
+
 fn record_text_at_path_with_mode_and_cache(
     path: &Path,
     text: &str,
@@ -1383,25 +1664,40 @@ fn record_text_at_path_with_mode_and_cache(
     {
         return Ok(false);
     }
+    if path == store_path() {
+        // Hot path: queue the record for the background writer and update the
+        // runtime cache optimistically. Per-copy events never touch the disk,
+        // the store lock, or the DPAPI round trip from the caller's thread.
+        let base = cached_snapshot().unwrap_or_else(|| Arc::new(ClipboardSnapshot::default()));
+        if duplicate_mode == DuplicateRecordMode::CoalesceRecentSystemEvent
+            && is_recent_system_duplicate(&base, &text, current_timestamp_secs())
+        {
+            return Ok(false);
+        }
+        let entry = build_record_entry(&base, &text, &prefs, source_app.as_deref());
+        {
+            let Ok(mut queue) = pending_ops().0.lock() else {
+                return Err("lock clipboard store op queue".to_string());
+            };
+            queue.push_back(StoreOp::Record {
+                entry: entry.clone(),
+            });
+        }
+        if publish_runtime_cache {
+            optimistic_record_into_cache(&entry, &prefs);
+        }
+        kick_store_writer();
+        return Ok(true);
+    }
+    // Non-store paths (tests) keep the synchronous implementation.
     with_store_mut_at_path_impl(path, publish_runtime_cache, |snapshot| {
         if duplicate_mode == DuplicateRecordMode::CoalesceRecentSystemEvent
             && is_recent_system_duplicate(snapshot, &text, current_timestamp_secs())
         {
             return Ok(false);
         }
-        let captured_at = next_entry_timestamp(snapshot);
-        let entry = new_entry(
-            text.clone(),
-            captured_at,
-            prefs
-                .record_source_app
-                .then(|| source_app.clone())
-                .flatten(),
-        );
-        if snapshot.pinned.iter().any(|existing| existing.text == text) {
-            upsert_entry(&mut snapshot.pinned, entry.clone(), prefs.max_pinned_items);
-        }
-        upsert_entry(&mut snapshot.history, entry, prefs.max_history_items);
+        let entry = build_record_entry(snapshot, &text, &prefs, source_app.as_deref());
+        apply_record_entry(snapshot, &entry, &prefs);
         Ok(true)
     })
 }
@@ -1420,7 +1716,7 @@ fn pin_text_at_path(path: &Path, text: &str) -> Result<bool, String> {
     } else {
         None
     };
-    with_store_mut_at_path(path, |snapshot| {
+    with_store_mut_at_path_impl(path, true, |snapshot| {
         let Some(text) = snapshot
             .pinned
             .iter()
@@ -1462,7 +1758,7 @@ fn unpin_text_at_path(path: &Path, text: &str) -> Result<bool, String> {
     } else {
         None
     };
-    with_store_mut_at_path(path, |snapshot| {
+    with_store_mut_at_path_impl(path, true, |snapshot| {
         let Some(mut removed) = remove_entry_by_text(&mut snapshot.pinned, &text) else {
             return Ok(false);
         };
@@ -1489,7 +1785,7 @@ fn remove_saved_text_at_path(path: &Path, text: &str) -> Result<bool, String> {
     let Some(text) = normalize_existing_text_key(text) else {
         return Ok(false);
     };
-    with_store_mut_at_path(path, |snapshot| {
+    with_store_mut_at_path_impl(path, true, |snapshot| {
         let removed_pinned = remove_text(&mut snapshot.pinned, &text);
         let removed_history = remove_text(&mut snapshot.history, &text);
         Ok(removed_pinned || removed_history)
@@ -1497,14 +1793,14 @@ fn remove_saved_text_at_path(path: &Path, text: &str) -> Result<bool, String> {
 }
 
 fn clear_history_at_path(path: &Path) -> Result<(), String> {
-    with_store_mut_at_path(path, |snapshot| {
+    with_store_mut_at_path_impl(path, true, |snapshot| {
         snapshot.history.clear();
         Ok(())
     })
 }
 
 fn clear_all_at_path(path: &Path) -> Result<(), String> {
-    with_store_mut_at_path(path, |snapshot| {
+    with_store_mut_at_path_impl(path, true, |snapshot| {
         snapshot.history.clear();
         snapshot.pinned.clear();
         Ok(())
@@ -1514,7 +1810,7 @@ fn clear_all_at_path(path: &Path) -> Result<(), String> {
 fn clear_older_than_days_at_path(path: &Path, days: u64) -> Result<usize, String> {
     let cutoff = current_timestamp_secs().saturating_sub(days.saturating_mul(86_400));
     let prefs = clipboard_prefs();
-    with_store_mut_at_path(path, |snapshot| {
+    with_store_mut_at_path_impl(path, true, |snapshot| {
         let before = snapshot.history.len() + snapshot.pinned.len();
         snapshot.history.retain(|entry| entry.captured_at >= cutoff);
         if prefs.pinned_respects_max_age {
@@ -1625,13 +1921,15 @@ impl OpenClipboardGuard {
         use windows_sys::Win32::System::DataExchange::OpenClipboard;
 
         let mut last_error = 0;
-        for attempt in 0..12 {
+        // Bounded backoff: missed opens are recovered by the 250 ms worker
+        // tick and the fallback poll, so long exponential waits buy nothing.
+        for attempt in 0..8 {
             if unsafe { OpenClipboard(0) } != 0 {
                 return Ok(Self);
             }
             last_error = unsafe { GetLastError() };
-            let delay_ms = (12.0 * 1.5_f64.powi(attempt)).round() as u64;
-            std::thread::sleep(Duration::from_millis(delay_ms.min(240)));
+            let delay_ms = (4 + 2 * attempt).min(40) as u64;
+            std::thread::sleep(Duration::from_millis(delay_ms));
         }
         Err(format!(
             "OpenClipboard failed error={}",
@@ -1801,9 +2099,7 @@ unsafe fn read_hglobal_unicode_text(
 fn normalize_read_clipboard_text(text: &str, request_id: u64) -> Option<String> {
     let units = text.encode_utf16().count();
     let normalized = normalize_text(text);
-    runtime_log::log_clipboard(
-        RuntimeLogLevel::Verbose,
-        "clipboard_read",
+    runtime_log::log_clipboard_lazy(RuntimeLogLevel::Verbose, "clipboard_read", || {
         format!(
             "status={} request_id={} units={}{}",
             if normalized.is_some() {
@@ -1818,8 +2114,8 @@ fn normalize_read_clipboard_text(text: &str, request_id: u64) -> Option<String> 
             } else {
                 " reason=normalize_empty_or_over_limit"
             }
-        ),
-    );
+        )
+    });
     normalized
 }
 
@@ -1830,24 +2126,24 @@ fn read_system_clipboard_text(request_id: u64) -> Option<String> {
     // when the caller already selected an incompatible apartment model.
     let com = ComGuard::init();
     if clipboard_has_temporary_paste_marker() {
-        runtime_log::log_clipboard(
-            RuntimeLogLevel::Verbose,
-            "clipboard_read_skip",
+        runtime_log::log_clipboard_lazy(RuntimeLogLevel::Verbose, "clipboard_read_skip", || {
             format!(
                 "status=skipped request_id={} reason=temporary_paste_marker",
                 request_id
-            ),
-        );
+            )
+        });
         return None;
     }
 
     // Clipboard owners are allowed to render CF_UNICODETEXT lazily.  A
     // WM_CLIPBOARDUPDATE can therefore arrive before GetClipboardData has any
     // text to return.  Retry the complete native read rather than treating the
-    // first empty result as a missed copy event.
+    // first empty result as a missed copy event.  The retry count and delays
+    // are bounded: this path runs per keystroke and per manager refresh, and
+    // missed opens are recovered by the 250 ms worker tick / fallback poll.
     let mut last_error = None;
     let mut saw_unicode_format = false;
-    for attempt in 0..9 {
+    for attempt in 0..CLIPBOARD_READ_MAX_ATTEMPTS {
         let sequence_before = clipboard_sequence_number();
         let mut text = None;
         match read_system_clipboard_text_win32() {
@@ -1882,32 +2178,25 @@ fn read_system_clipboard_text(request_id: u64) -> Option<String> {
                 && sequence_after.is_some()
                 && sequence_before != sequence_after
             {
-                runtime_log::log_clipboard(
+                runtime_log::log_clipboard_lazy(
                     RuntimeLogLevel::Verbose,
                     "clipboard_read_retry",
-                    format!(
-                        "status=retry request_id={} reason=sequence_changed before={} after={}",
-                        request_id,
-                        sequence_before.unwrap_or_default(),
-                        sequence_after.unwrap_or_default()
-                    ),
+                    || {
+                        format!(
+                            "status=retry request_id={} reason=sequence_changed before={} after={}",
+                            request_id,
+                            sequence_before.unwrap_or_default(),
+                            sequence_after.unwrap_or_default()
+                        )
+                    },
                 );
             } else {
                 return normalize_read_clipboard_text(&value, request_id);
             }
         }
 
-        if attempt < 8 {
-            let delay_ms = match attempt {
-                0 => 30,
-                1 => 45,
-                2 => 60,
-                3 => 75,
-                4 => 100,
-                5 => 200,
-                6 => 400,
-                _ => 800,
-            };
+        if attempt + 1 < CLIPBOARD_READ_MAX_ATTEMPTS {
+            let delay_ms = if attempt == 0 { 30 } else { 50 };
             std::thread::sleep(Duration::from_millis(delay_ms));
         }
     }
@@ -1916,19 +2205,17 @@ fn read_system_clipboard_text(request_id: u64) -> Option<String> {
             RuntimeLogLevel::Error,
             "clipboard_read_fallback_failed",
             format!(
-                "status=failed request_id={} retries=9 reason={err}",
+                "status=failed request_id={} retries={CLIPBOARD_READ_MAX_ATTEMPTS} reason={err}",
                 request_id
             ),
         );
     } else if !saw_unicode_format {
-        runtime_log::log_clipboard(
-            RuntimeLogLevel::Verbose,
-            "clipboard_read_skip",
+        runtime_log::log_clipboard_lazy(RuntimeLogLevel::Verbose, "clipboard_read_skip", || {
             format!(
-                "status=skipped request_id={} retries=9 reason=no_cf_unicode_text",
-                request_id
-            ),
-        );
+                    "status=skipped request_id={} retries={CLIPBOARD_READ_MAX_ATTEMPTS} reason=no_cf_unicode_text",
+                    request_id
+                )
+        });
     }
     None
 }
@@ -1949,14 +2236,12 @@ fn poll_system_clipboard_with_request(
         return Ok(None);
     }
     if require_background_enabled && !prefs.background_enabled {
-        runtime_log::log_clipboard(
-            RuntimeLogLevel::Verbose,
-            "clipboard_capture_skip",
+        runtime_log::log_clipboard_lazy(RuntimeLogLevel::Verbose, "clipboard_capture_skip", || {
             format!(
                 "status=skipped request_id={} reason=background_disabled",
                 request_id
-            ),
-        );
+            )
+        });
         return Ok(None);
     }
     {
@@ -1979,18 +2264,20 @@ fn poll_system_clipboard_with_request(
                     .map(|last| last.elapsed() < poll_interval)
                     .unwrap_or(false))
         {
-            runtime_log::log_clipboard(
+            runtime_log::log_clipboard_lazy(
                 RuntimeLogLevel::Verbose,
                 "clipboard_capture_skip",
-                format!(
-                    "status=skipped request_id={} reason={}",
-                    request_id,
-                    if sequence_unchanged {
-                        "sequence_unchanged"
-                    } else {
-                        "poll_interval"
-                    }
-                ),
+                || {
+                    format!(
+                        "status=skipped request_id={} reason={}",
+                        request_id,
+                        if sequence_unchanged {
+                            "sequence_unchanged"
+                        } else {
+                            "poll_interval"
+                        }
+                    )
+                },
             );
             return Ok(None);
         }
@@ -2013,16 +2300,18 @@ fn poll_system_clipboard_with_request(
             && !record_duplicate_text
             && (sequence.is_none() || same_sequence)
         {
-            runtime_log::log_clipboard(
+            runtime_log::log_clipboard_lazy(
                 RuntimeLogLevel::Verbose,
                 "clipboard_capture_skip",
-                format!(
-                    "status=skipped request_id={} reason=unchanged units={} force={} background_required={}",
-                    request_id,
-                    text.encode_utf16().count(),
-                    if force { 1 } else { 0 },
-                    if require_background_enabled { 1 } else { 0 }
-                ),
+                || {
+                    format!(
+                        "status=skipped request_id={} reason=unchanged units={} force={} background_required={}",
+                        request_id,
+                        text.encode_utf16().count(),
+                        if force { 1 } else { 0 },
+                        if require_background_enabled { 1 } else { 0 }
+                    )
+                },
             );
             return Ok(Some(text));
         }
@@ -2045,19 +2334,17 @@ fn poll_system_clipboard_with_request(
             return Err(err);
         }
     };
-    runtime_log::log_clipboard(
-        RuntimeLogLevel::Basic,
-        "clipboard_capture",
+    runtime_log::log_clipboard_lazy(RuntimeLogLevel::Basic, "clipboard_capture", || {
         format!(
-            "status=ok request_id={} units={} recorded={} force={} duplicate_event={} background_required={}",
-            request_id,
-            text.encode_utf16().count(),
-            if recorded { 1 } else { 0 },
-            if force { 1 } else { 0 },
-            if record_duplicate_text { 1 } else { 0 },
-            if require_background_enabled { 1 } else { 0 }
-        ),
-    );
+                "status=ok request_id={} units={} recorded={} force={} duplicate_event={} background_required={}",
+                request_id,
+                text.encode_utf16().count(),
+                if recorded { 1 } else { 0 },
+                if force { 1 } else { 0 },
+                if record_duplicate_text { 1 } else { 0 },
+                if require_background_enabled { 1 } else { 0 }
+            )
+    });
     Ok(Some(text))
 }
 
@@ -2109,6 +2396,51 @@ pub fn capture_system_clipboard_snapshot() -> Result<Arc<ClipboardSnapshot>, Str
     snapshot_after_capture(|| capture_system_clipboard(true).map(|_| ()))
 }
 
+/// Snapshot for clipboard candidate commands (vvu / vv cb).
+///
+/// Compares the system clipboard sequence number with the last capture
+/// without opening the clipboard, so the common unchanged case never touches
+/// the clipboard API, the store lock, or disk on the lookup thread. When the
+/// sequence moved — a copy the background monitor has not recorded yet — one
+/// synchronous capture commits the newest text before the first page renders;
+/// an async refresh started at the same keystroke would complete after the
+/// candidate list is already drawn, leaving the newest copy off the page.
+pub fn clipboard_candidate_snapshot() -> Arc<ClipboardSnapshot> {
+    if clipboard_prefs().privacy_enabled {
+        return Arc::new(ClipboardSnapshot::default());
+    }
+    let sequence_changed = runtime()
+        .lock()
+        .ok()
+        .map(
+            |runtime| match (clipboard_sequence_number(), runtime.last_seen_sequence) {
+                (Some(current), Some(seen)) => current != seen,
+                // Never captured or the sequence is unavailable: capture once so
+                // the first render is grounded in the real system clipboard.
+                _ => true,
+            },
+        )
+        .unwrap_or(true);
+    if sequence_changed {
+        return match capture_system_clipboard_snapshot() {
+            Ok(snapshot) => snapshot,
+            Err(_) => {
+                // Clipboard busy: fall back to the cache and retry in the
+                // background so the next keystroke still sees the newest copy.
+                refresh_snapshot_cache_async(true);
+                cached_snapshot().unwrap_or_else(|| Arc::new(ClipboardSnapshot::default()))
+            }
+        };
+    }
+    if let Some(snapshot) = cached_snapshot() {
+        // The cache matches the system clipboard; reload the store off the
+        // lookup thread to pick up cross-process changes (manager GUI, flush).
+        refresh_snapshot_cache_async(false);
+        return snapshot;
+    }
+    Arc::new(snapshot().unwrap_or_default())
+}
+
 fn snapshot_after_capture(
     capture: impl FnOnce() -> Result<(), String>,
 ) -> Result<Arc<ClipboardSnapshot>, String> {
@@ -2158,9 +2490,23 @@ pub fn snapshot() -> Result<ClipboardSnapshot, String> {
     if clipboard_prefs().privacy_enabled {
         return Ok(ClipboardSnapshot::default());
     }
-    let snapshot = load_snapshot_at_path(&store_path())?;
+    let mut snapshot = load_snapshot_at_path(&store_path())?;
+    // Include records the writer has not flushed yet so callers (manager GUI,
+    // resolve fallback) see the newest captures immediately.
+    merge_pending_ops_into(&mut snapshot, &clipboard_prefs());
     update_snapshot_cache(snapshot.clone());
     Ok(snapshot)
+}
+
+/// Snapshot for clipboard id resolution. Serves the runtime cache when warm
+/// (entry ids are immutable and never reused, so a cached snapshot is always
+/// correct for any id it contains) and falls back to a full load on cold
+/// start. Keeps the 750 ms pipe budget off the disk path entirely.
+pub fn resolve_snapshot() -> Result<ClipboardSnapshot, String> {
+    if let Some(snapshot) = cached_snapshot() {
+        return Ok(snapshot.as_ref().clone());
+    }
+    snapshot()
 }
 
 pub fn pin_current_clipboard() -> Result<Option<String>, String> {
@@ -2191,4 +2537,184 @@ pub fn unpin_current_clipboard() -> Result<Option<String>, String> {
     runtime.last_seen_text = Some(text.clone());
     runtime.last_seen_sequence = clipboard_sequence_number();
     Ok(Some(text))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn prefs_with(history: usize, pinned: usize) -> ClipboardPrefs {
+        ClipboardPrefs {
+            max_history_items: history,
+            max_pinned_items: pinned,
+            ..ClipboardPrefs::default()
+        }
+    }
+
+    fn make_entry(text: &str, captured_at: u64) -> ClipboardEntry {
+        new_entry(text.to_string(), captured_at, None)
+    }
+
+    fn assert_sorted(entries: &[ClipboardEntry]) {
+        for pair in entries.windows(2) {
+            assert_eq!(
+                entry_sort_cmp(&pair[0], &pair[1]),
+                std::cmp::Ordering::Less,
+                "entries not sorted: {:?}",
+                entries
+            );
+        }
+    }
+
+    #[test]
+    fn record_into_snapshot_appends_to_history() {
+        let prefs = prefs_with(60, 24);
+        let mut snapshot = ClipboardSnapshot::default();
+        let entry = build_record_entry(&snapshot, "hello", &prefs, None);
+        apply_record_entry(&mut snapshot, &entry, &prefs);
+        assert_eq!(snapshot.history.len(), 1);
+        assert_eq!(snapshot.history[0].text, "hello");
+        assert!(snapshot.pinned.is_empty());
+    }
+
+    #[test]
+    fn record_into_snapshot_refreshes_pinned_copy() {
+        let prefs = prefs_with(60, 24);
+        let mut snapshot = ClipboardSnapshot::default();
+        let pinned = make_entry("keep me", 10);
+        upsert_entry(&mut snapshot.pinned, pinned, prefs.max_pinned_items);
+        let entry = build_record_entry(&snapshot, "keep me", &prefs, None);
+        apply_record_entry(&mut snapshot, &entry, &prefs);
+        assert_eq!(snapshot.pinned.len(), 1);
+        assert_eq!(snapshot.pinned[0].copy_count, 2);
+        assert_eq!(snapshot.history.len(), 1);
+    }
+
+    #[test]
+    fn upsert_entry_merges_duplicate_text() {
+        let prefs = prefs_with(60, 24);
+        let mut entries = Vec::new();
+        let first = make_entry("same text", 100);
+        upsert_entry(&mut entries, first.clone(), prefs.max_history_items);
+        let second = make_entry("same text", 101);
+        upsert_entry(&mut entries, second, prefs.max_history_items);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].id, first.id, "existing id must be kept");
+        assert_eq!(entries[0].captured_at, 101);
+        assert_eq!(entries[0].copy_count, 2);
+    }
+
+    #[test]
+    fn upsert_entry_keeps_sort_invariant_under_churn() {
+        let prefs = prefs_with(300, 24);
+        let mut entries = Vec::new();
+        // Deterministic pseudo-random captured_at/text mix, including
+        // duplicates and out-of-order timestamps.
+        let mut seed = 0x5eedu64;
+        for index in 0..200u64 {
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            let captured_at = seed % 500;
+            let text = if seed % 7 == 0 {
+                "dup text".to_string()
+            } else {
+                format!("text {seed}")
+            };
+            let entry = make_entry(&text, captured_at);
+            upsert_entry(&mut entries, entry, prefs.max_history_items);
+            assert_sorted(&entries);
+            let _ = index;
+        }
+        assert!(entries.len() <= prefs.max_history_items);
+        assert_eq!(
+            entries
+                .iter()
+                .filter(|entry| entry.text == "dup text")
+                .count(),
+            1,
+            "duplicate texts must merge into one entry"
+        );
+    }
+
+    #[test]
+    fn upsert_entry_truncates_to_limit() {
+        let prefs = prefs_with(5, 24);
+        let mut entries = Vec::new();
+        for captured_at in 0..10u64 {
+            let entry = make_entry(&format!("text {captured_at}"), captured_at);
+            upsert_entry(&mut entries, entry, prefs.max_history_items);
+        }
+        assert_eq!(entries.len(), 5);
+        assert_sorted(&entries);
+    }
+
+    #[test]
+    fn snapshot_sqlite_bytes_round_trip() {
+        let prefs = prefs_with(60, 24);
+        let mut snapshot = ClipboardSnapshot::default();
+        for index in 0..5u64 {
+            let entry = make_entry(&format!("history {index}"), index);
+            upsert_entry(&mut snapshot.history, entry, prefs.max_history_items);
+        }
+        for index in 0..2u64 {
+            let entry = make_entry(&format!("pinned {index}"), index);
+            upsert_entry(&mut snapshot.pinned, entry, prefs.max_pinned_items);
+        }
+        let bytes = snapshot_to_sqlite_bytes(&snapshot).expect("serialize snapshot");
+        let loaded = read_snapshot_from_sqlite_bytes(&bytes).expect("deserialize snapshot");
+        assert_eq!(loaded, snapshot);
+    }
+
+    #[test]
+    fn resolve_entry_text_finds_by_id() {
+        let prefs = prefs_with(60, 24);
+        let mut snapshot = ClipboardSnapshot::default();
+        let entry = make_entry("resolve target", 1);
+        let id = entry.id.clone();
+        upsert_entry(&mut snapshot.history, entry, prefs.max_history_items);
+        assert_eq!(
+            resolve_entry_text(&snapshot, &id).as_deref(),
+            Some("resolve target")
+        );
+        assert_eq!(resolve_entry_text(&snapshot, "no-such-id"), None);
+        assert_eq!(resolve_entry_text(&snapshot, "  "), None);
+    }
+
+    #[test]
+    fn apply_store_ops_preserves_queue_order() {
+        let prefs = prefs_with(60, 24);
+        let mut base = ClipboardSnapshot::default();
+        let ops = vec![
+            StoreOp::Record {
+                entry: make_entry("first", 1),
+            },
+            StoreOp::Record {
+                entry: make_entry("second", 2),
+            },
+            StoreOp::Record {
+                entry: make_entry("first", 3),
+            },
+        ];
+        apply_store_ops(&mut base, &ops, &prefs);
+        assert_eq!(base.history.len(), 2);
+        // "first" merged into one entry with count 2, "second" behind it.
+        assert_eq!(base.history[0].text, "first");
+        assert_eq!(base.history[0].copy_count, 2);
+        assert_eq!(base.history[1].text, "second");
+    }
+
+    #[test]
+    fn apply_record_entry_respects_history_limit() {
+        let prefs = prefs_with(2, 24);
+        let mut snapshot = ClipboardSnapshot::default();
+        for index in 0..5u64 {
+            let entry = make_entry(&format!("text {index}"), index);
+            apply_record_entry(&mut snapshot, &entry, &prefs);
+        }
+        assert_eq!(snapshot.history.len(), 2);
+        assert_sorted(&snapshot.history);
+        // Newest survives truncation.
+        assert_eq!(snapshot.history[0].text, "text 4");
+    }
 }

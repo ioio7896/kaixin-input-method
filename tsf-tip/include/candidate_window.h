@@ -26,6 +26,13 @@ enum SrfCandidateWindowMenuCommand : int {
   kSrfCandidateWindowMenuSource = 5,
 };
 
+/// 剪贴板候选注释的拆分结果（详情 / 类型芯片），在候选变更时一次性拆分缓存，
+/// 避免每帧在绘制循环里重复拆分与测量。
+struct ClipboardCommentParts {
+  std::wstring detail;
+  std::wstring type;
+};
+
 /// 文本测量结果缓存。HFONT 与 DPI 不变时，相同文本的测量结果可复用。
 struct MeasuredTextCache {
   std::wstring text;
@@ -123,6 +130,7 @@ class CCandidateWindow {
   std::vector<bool> m_clipboardItems;
   std::vector<std::wstring> m_modeTags;
   std::vector<std::wstring> m_displayItems;
+  std::vector<ClipboardCommentParts> m_clipboardCommentParts;
   std::vector<RECT> m_itemRects;
   std::vector<std::array<CandidateItemPaintCache, 4>> m_itemPaintCaches;
   UINT m_pageIndex = 0;

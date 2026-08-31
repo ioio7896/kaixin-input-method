@@ -371,6 +371,20 @@ UINT ParseCnEnHotkey(const std::wstring& value, UINT fallback) {
   return fallback;
 }
 
+SrfHotkeyScope ParseHotkeyScope(const std::wstring& value, SrfHotkeyScope fallback) {
+  const std::wstring lowered = ToLower(Trim(value));
+  if (lowered == L"global") return SrfHotkeyScope::Global;
+  if (lowered == L"text_only" || lowered == L"text-only" || lowered == L"text") {
+    return SrfHotkeyScope::TextOnly;
+  }
+  if (lowered == L"disabled_in_game" || lowered == L"disabled-in-game" ||
+      lowered == L"game_passthrough" || lowered == L"game-passthrough") {
+    return SrfHotkeyScope::DisabledInGame;
+  }
+  if (lowered == L"per_app" || lowered == L"per-app") return SrfHotkeyScope::PerApp;
+  return fallback;
+}
+
 std::wstring ReadIniString(const std::filesystem::path& path, const wchar_t* section,
                            const wchar_t* key, const wchar_t* fallback = L"") {
   std::wstring value;
@@ -884,7 +898,7 @@ void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
   config.input.numberFullwidth = ParseBool(
       ReadIniString(path, L"input", L"number_fullwidth", L"0"), config.input.numberFullwidth);
   config.input.symbolFullwidth = ParseBool(
-      ReadIniString(path, L"input", L"symbol_fullwidth", L"1"), config.input.symbolFullwidth);
+      ReadIniString(path, L"input", L"symbol_fullwidth", L"0"), config.input.symbolFullwidth);
   config.input.shiftSymbolTemporaryAscii =
       ParseBool(ReadIniString(path, L"input", L"shift_symbol_temporary_ascii", L"0"),
                 config.input.shiftSymbolTemporaryAscii);
@@ -917,6 +931,10 @@ void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
   config.input.shiftTapHotkeyEnabled =
       ParseBool(ReadIniString(path, L"input", L"shift_tap_hotkey", L"1"),
                 config.input.shiftTapHotkeyEnabled);
+  config.input.hotkeyScope = ParseHotkeyScope(
+      ReadIniString(path, L"input", SrfConfigSchema::key::kHotkeyScope,
+                    L"disabled_in_game"),
+      config.input.hotkeyScope);
   config.input.candidateNumberSelect =
       ParseBool(ReadIniString(path, L"input", L"candidate_number_select", L"1"),
                 config.input.candidateNumberSelect);
@@ -1103,6 +1121,13 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
       if (!Trim(hideUi).empty()) {
         options.hasHideUi = true;
         options.hideUi = ParseBool(hideUi, false);
+      }
+
+      const std::wstring hotkeyScope =
+          ReadIniString(path, section.c_str(), SrfConfigSchema::key::kHotkeyScope);
+      if (!Trim(hotkeyScope).empty()) {
+        options.hasHotkeyScope = true;
+        options.hotkeyScope = ParseHotkeyScope(hotkeyScope, options.hotkeyScope);
       }
 
       const std::wstring inlinePreedit = ReadIniString(path, section.c_str(), L"inline_preedit");

@@ -628,7 +628,7 @@ pub fn read_user_dict_sqlite_export_text(path: &Path) -> io::Result<String> {
     text
 }
 
-pub fn read_user_dict_sqlite_text(path: &Path) -> io::Result<Option<String>> {
+fn read_user_dict_sqlite_text_at(path: &Path) -> io::Result<Option<String>> {
     if !path.is_file() {
         return Ok(None);
     }
@@ -636,6 +636,32 @@ pub fn read_user_dict_sqlite_text(path: &Path) -> io::Result<Option<String>> {
     let text = user_dict_text_from_sqlite_bytes(&bytes);
     zeroize_vec(&mut bytes);
     text.map(Some)
+}
+
+/// Read the current user dictionary, falling back to the two last known-good
+/// snapshots when an interrupted replacement or external corruption leaves
+/// the primary file unreadable. The next successful persistence update will
+/// atomically replace the damaged primary with the recovered in-memory state.
+pub fn read_user_dict_sqlite_text(path: &Path) -> io::Result<Option<String>> {
+    match read_user_dict_sqlite_text_at(path) {
+        Ok(Some(text)) => return Ok(Some(text)),
+        Ok(None) => {}
+        Err(primary_error) => {
+            for recovery_path in [user_dict_previous_path(path), user_dict_backup_path(path)] {
+                if let Ok(Some(text)) = read_user_dict_sqlite_text_at(&recovery_path) {
+                    return Ok(Some(text));
+                }
+            }
+            return Err(primary_error);
+        }
+    }
+
+    for recovery_path in [user_dict_previous_path(path), user_dict_backup_path(path)] {
+        if let Ok(Some(text)) = read_user_dict_sqlite_text_at(&recovery_path) {
+            return Ok(Some(text));
+        }
+    }
+    Ok(None)
 }
 
 pub(crate) fn write_user_dict_sqlite_snapshot_unlocked(
@@ -810,4 +836,54 @@ fn append_user_dict_reset_marker(dict_path: &Path) -> io::Result<()> {
     let mut file = OpenOptions::new().create(true).append(true).open(&path)?;
     writeln!(file, "{:?}", SystemTime::now())?;
     file.sync_all()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn unique_test_path(name: &str) -> PathBuf {
+        let nonce = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos();
+        std::env::temp_dir().join(format!(
+            "kaixin-{name}-{}-{nonce}.sqlite",
+            std::process::id()
+        ))
+    }
+
+    fn cleanup_test_files(path: &Path) {
+        for candidate in [
+            path.to_path_buf(),
+            staging_path(path),
+            lock_sidecar(path),
+            user_dict_previous_path(path),
+            user_dict_backup_path(path),
+            user_dict_reset_marker_path(path),
+        ] {
+            let _ = fs::remove_file(candidate);
+        }
+    }
+
+    #[test]
+    fn unreadable_primary_recovers_previous_readable_snapshot() {
+        let path = unique_test_path("interrupted-recovery");
+        write_user_dict_sqlite_snapshot(
+            &path,
+            b"I\tceshilujing\t\xe6\xb5\x8b\xe8\xaf\x95\xe8\xb7\xaf\xe5\xbe\x84\t3\t1\t0",
+        )
+        .expect("write first snapshot");
+        write_user_dict_sqlite_snapshot(&path, b"I\tnewpath\t\xe6\x96\xb0\xe8\xaf\x8d\t1\t2\t0")
+            .expect("write second snapshot and recovery point");
+
+        fs::write(&path, b"interrupted-and-unreadable").expect("damage primary snapshot");
+        let recovered = read_user_dict_sqlite_text(&path)
+            .expect("recover readable previous snapshot")
+            .expect("recovered snapshot text");
+        assert!(recovered.contains("ceshilujing\t\u{6d4b}\u{8bd5}\u{8def}\u{5f84}"));
+        assert!(!recovered.contains("newpath"));
+
+        cleanup_test_files(&path);
+    }
 }

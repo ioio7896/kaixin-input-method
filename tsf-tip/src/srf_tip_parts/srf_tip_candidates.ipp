@@ -27,7 +27,9 @@ void CSrfTip::RefreshCandidates() {
   if (ShouldSuppressCandidatesForPrivacy()) {
     m_candidates.clear();
     m_candidateMeta.clear();
+    m_candidateRows.clear();
     m_candidatesReading.clear();
+    m_candidateHasMore = false;
     SetCandidateViewState(SrfCandidateViewState::Empty, L"privacy");
     InvalidateCandidatePageLayoutCache();
     ClampCandidateState();
@@ -53,12 +55,14 @@ void CSrfTip::RefreshCandidates() {
   }
   std::vector<std::wstring> nextCandidates;
   std::vector<std::wstring> nextMeta;
+  bool hasMore = false;
   const SrfLookupCandidatesStatus lookupStatus =
-      SrfTip_LookupCandidates(m_reading, nextCandidates, &nextMeta, engineRequestId);
+      SrfTip_LookupCandidates(m_reading, nextCandidates, &nextMeta, engineRequestId, false,
+                              &hasMore);
   MaybeInsertPredictedPhraseCandidates(m_reading, &nextCandidates, &nextMeta);
   const SrfEngineState stateAfterLookup = SrfTip_GetEngineState();
   ApplyCandidateRefreshResult(m_reading, std::move(nextCandidates), std::move(nextMeta),
-                              stateAfterLookup, lookupStatus, false, requestId);
+                              stateAfterLookup, lookupStatus, false, requestId, hasMore, false);
 }
 
 bool CSrfTip::EnsureBlindCommitCandidatesReady() {
@@ -106,6 +110,7 @@ bool CSrfTip::EnsureCandidateLookupWorker() {
     m_candidateWorkerRequestReading.clear();
     m_candidateWorkerRequestSerial = 0;
     m_candidateWorkerEngineRequestId = 0;
+    m_candidateWorkerRequestFullResult = false;
     m_candidateWorkerNotifyHwnd = nullptr;
     m_candidateWorkerRequestTick = 0;
     m_candidateWorkerRapidRequestCount = 0;
@@ -135,6 +140,7 @@ void CSrfTip::StopCandidateLookupWorker() {
     m_candidateWorkerRequestReading.clear();
     m_candidateWorkerRequestSerial = 0;
     m_candidateWorkerEngineRequestId = 0;
+    m_candidateWorkerRequestFullResult = false;
     m_candidateWorkerNotifyHwnd = nullptr;
     m_candidateWorkerRequestTick = 0;
     m_candidateWorkerRapidRequestCount = 0;
@@ -150,7 +156,7 @@ void CSrfTip::StopCandidateLookupWorker() {
 
 void CSrfTip::QueueCandidateLookup(const std::wstring& reading, unsigned long long serial,
                                    unsigned long long engineRequestId, HWND hwnd,
-                                   const SrfFocusSnapshot& focus) {
+                                   const SrfFocusSnapshot& focus, bool fullResult) {
   {
     std::lock_guard<std::mutex> guard(m_candidateWorkerMutex);
     if (m_candidateWorkerStop) return;
@@ -165,6 +171,7 @@ void CSrfTip::QueueCandidateLookup(const std::wstring& reading, unsigned long lo
     m_candidateWorkerRequestReading = reading;
     m_candidateWorkerRequestSerial = serial;
     m_candidateWorkerEngineRequestId = engineRequestId;
+    m_candidateWorkerRequestFullResult = fullResult;
     m_candidateWorkerNotifyHwnd = hwnd;
     m_candidateWorkerRequestTick = now;
     m_candidateWorkerRequestFocus = focus;
@@ -181,6 +188,7 @@ void CSrfTip::CandidateLookupWorkerMain() {
     HWND hwnd = nullptr;
     ULONGLONG requestTick = 0;
     SrfFocusSnapshot focus = {};
+    bool fullResult = false;
     {
       std::unique_lock<std::mutex> lock(m_candidateWorkerMutex);
       m_candidateWorkerCv.wait(lock, [&]() {
@@ -212,6 +220,7 @@ void CSrfTip::CandidateLookupWorkerMain() {
       reading = m_candidateWorkerRequestReading;
       serial = m_candidateWorkerRequestSerial;
       engineRequestId = m_candidateWorkerEngineRequestId;
+      fullResult = m_candidateWorkerRequestFullResult;
       hwnd = m_candidateWorkerNotifyHwnd;
       requestTick = m_candidateWorkerRequestTick;
       focus = m_candidateWorkerRequestFocus;
@@ -219,6 +228,7 @@ void CSrfTip::CandidateLookupWorkerMain() {
       m_candidateWorkerRequestReading.clear();
       m_candidateWorkerRequestSerial = 0;
       m_candidateWorkerEngineRequestId = 0;
+      m_candidateWorkerRequestFullResult = false;
       m_candidateWorkerNotifyHwnd = nullptr;
       m_candidateWorkerRequestFocus = {};
     }
@@ -238,12 +248,14 @@ void CSrfTip::CandidateLookupWorkerMain() {
 
     std::vector<std::wstring> candidates;
     std::vector<std::wstring> meta;
+    bool hasMore = false;
     SrfEngineState stateAfterLookup = SrfEngineState::Idle;
     SrfLookupCandidatesStatus lookupStatus = SrfLookupCandidatesStatus::Failed;
     const ULONGLONG lookupStart = GetTickCount64();
     try {
       lookupStatus =
-          SrfTip_LookupCandidates(reading, candidates, &meta, engineRequestId);
+          SrfTip_LookupCandidates(reading, candidates, &meta, engineRequestId, fullResult,
+                                  &hasMore);
       MaybeInsertPredictedPhraseCandidates(reading, &candidates, &meta);
       stateAfterLookup = SrfTip_GetEngineState();
     } catch (...) {
@@ -270,6 +282,8 @@ void CSrfTip::CandidateLookupWorkerMain() {
         m_asyncCandidatePendingMeta = std::move(meta);
         m_asyncCandidatePendingEngineState = stateAfterLookup;
         m_asyncCandidatePendingLookupStatus = lookupStatus;
+        m_asyncCandidatePendingHasMore = hasMore;
+        m_asyncCandidatePendingFullResult = fullResult;
         m_asyncCandidatePendingRequestTick = requestTick;
         m_asyncCandidatePendingFocus = focus;
       }
@@ -368,7 +382,20 @@ void CSrfTip::RememberPrefixCandidateCache(const std::wstring& reading) {
   }
 }
 
-bool CSrfTip::RefreshCandidatesAsync() {
+void CSrfTip::RebuildCandidateRows() {
+  m_candidateRows.clear();
+  m_candidateRows.reserve(m_candidates.size());
+  for (size_t i = 0; i < m_candidates.size(); ++i) {
+    CandidateRow row;
+    row.text = m_candidates[i];
+    if (i < m_candidateMeta.size() && !m_candidateMeta[i].empty()) {
+      row.meta = SplitCandidateMeta(m_candidateMeta[i]);
+    }
+    m_candidateRows.push_back(std::move(row));
+  }
+}
+
+bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
   CancelDeferredCandidateRefresh();
   const unsigned long long engineRequestId = SrfTip_NextLookupRequestId();
   SrfTip_CancelPendingLookupBefore(engineRequestId);
@@ -379,7 +406,10 @@ bool CSrfTip::RefreshCandidatesAsync() {
   if (ShouldSuppressCandidatesForPrivacy()) {
     m_candidates.clear();
     m_candidateMeta.clear();
+    m_candidateRows.clear();
     m_candidatesReading.clear();
+    m_candidateHasMore = false;
+    m_candidateFullLookupPending = false;
     SetCandidateViewState(SrfCandidateViewState::Empty, L"async-privacy");
     InvalidateCandidatePageLayoutCache();
     ClampCandidateState();
@@ -391,6 +421,7 @@ bool CSrfTip::RefreshCandidatesAsync() {
   }
 
   const std::wstring reading = m_reading;
+  if (fullResult) m_candidateFullLookupPending = true;
   const unsigned long long serial =
       m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel) + 1;
   const SrfEngineState stateBefore = SrfTip_GetEngineState();
@@ -409,16 +440,19 @@ bool CSrfTip::RefreshCandidatesAsync() {
 
   bool appliedCachedCandidates = false;
   bool skipAsyncLookupAfterCacheHit = false;
-  {
+  if (!fullResult) {
     std::vector<std::wstring> cachedCandidates;
     std::vector<std::wstring> cachedMeta;
-    if (SrfTip_TryGetCachedLookupCandidates(reading, cachedCandidates, &cachedMeta)) {
+    bool cachedHasMore = false;
+    if (SrfTip_TryGetCachedLookupCandidates(reading, cachedCandidates, &cachedMeta,
+                                            &cachedHasMore)) {
       std::wstring cacheLine = L"request_id=" + std::to_wstring(serial);
       cacheLine += L", count=";
       cacheLine += std::to_wstring(cachedCandidates.size());
       SrfTsfPerfLog(L"candidate-refresh.cache-hit", cacheLine.c_str());
       ApplyCandidateRefreshResult(reading, std::move(cachedCandidates), std::move(cachedMeta),
-                                  stateBefore, SrfLookupCandidatesStatus::Ok, false, serial);
+                                  stateBefore, SrfLookupCandidatesStatus::Ok, false, serial,
+                                  cachedHasMore, false);
       appliedCachedCandidates = true;
       skipAsyncLookupAfterCacheHit = stateBefore == SrfEngineState::Ready;
     }
@@ -487,6 +521,10 @@ bool CSrfTip::RefreshCandidatesAsync() {
   }
 
   if (!EnsureDeferredTimerWindow()) {
+    if (fullResult) {
+      m_candidateFullLookupPending = false;
+      m_candidatePageAfterLoad = 0;
+    }
     std::wstring line = L"request_id=" + std::to_wstring(serial);
     line += L", reason=message_window_unavailable";
     SrfTsfDiagnosticLog(L"candidate-refresh.async-skip", line.c_str());
@@ -494,18 +532,22 @@ bool CSrfTip::RefreshCandidatesAsync() {
   }
   HWND hwnd = m_deferredTimerHwnd;
   if (!EnsureCandidateLookupWorker()) {
+    if (fullResult) {
+      m_candidateFullLookupPending = false;
+      m_candidatePageAfterLoad = 0;
+    }
     std::wstring line = L"request_id=" + std::to_wstring(serial);
     line += L", reason=worker_unavailable";
     SrfTsfDiagnosticLog(L"candidate-refresh.async-skip", line.c_str());
     return true;
   }
-  QueueCandidateLookup(reading, serial, engineRequestId, hwnd, focus);
+  QueueCandidateLookup(reading, serial, engineRequestId, hwnd, focus, fullResult);
   return !deferCandidateUiUntilAsync;
 }
 
 bool CSrfTip::CurrentCandidatesPartial() const {
-  for (const auto& raw : m_candidateMeta) {
-    if (!raw.empty() && SplitCandidateMeta(raw).partialResult) return true;
+  for (const auto& row : m_candidateRows) {
+    if (row.meta.partialResult) return true;
   }
   return false;
 }
@@ -645,7 +687,8 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
                                           SrfEngineState stateAfterLookup,
                                           SrfLookupCandidatesStatus lookupStatus,
                                           bool asyncResult,
-                                          unsigned long long requestId) {
+                                          unsigned long long requestId, bool hasMore,
+                                          bool fullResult) {
   if (reading != m_reading) {
     if (!m_reading.empty()) {
       if (!m_candidates.empty() && m_candidatesReading != m_reading) {
@@ -799,7 +842,35 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     m_candidates = std::move(nextCandidates);
     m_candidateMeta = std::move(nextMeta);
     m_candidatesReading = m_candidates.empty() ? std::wstring() : m_reading;
+    RebuildCandidateRows();
     InvalidateCandidatePageLayoutCache();
+    // Prefetch long clipboard entries (clipboard://{id} placeholders) so the
+    // commit path resolves from the local cache instead of a blocking pipe
+    // wait on the key thread.  Idempotent; cached ids are skipped.
+    {
+      std::vector<std::wstring> prefetchIds;
+      const size_t metaCount = std::min(m_candidates.size(), m_candidateMeta.size());
+      for (size_t i = 0; i < metaCount; ++i) {
+        if (m_candidates[i].rfind(L"clipboard://", 0) != 0) continue;
+        const CandidateMetaParts& parts = m_candidateRows[i].meta;
+        if (parts.clipboardQuick && !parts.clipboardId.empty()) {
+          prefetchIds.push_back(parts.clipboardId);
+        }
+      }
+      SrfTip_PrefetchClipboardTexts(prefetchIds);
+    }
+  }
+  if (!retainedPrevious && (lookupStatus == SrfLookupCandidatesStatus::Ok ||
+                            !m_candidates.empty())) {
+    m_candidateHasMore = hasMore;
+  }
+  if (fullResult) {
+    m_candidateFullLookupPending = false;
+    if (!retainedPrevious && lookupStatus == SrfLookupCandidatesStatus::Ok &&
+        m_candidatePageAfterLoad != 0) {
+      m_candPage = m_candidatePageAfterLoad;
+    }
+    m_candidatePageAfterLoad = 0;
   }
   SetCandidateViewState(resolvedViewState(), retainedPrevious
                                                  ? L"retain-transient"
@@ -935,6 +1006,8 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
   std::vector<std::wstring> meta;
   SrfEngineState stateAfterLookup = SrfEngineState::Idle;
   SrfLookupCandidatesStatus lookupStatus = SrfLookupCandidatesStatus::Failed;
+  bool hasMore = false;
+  bool fullResult = false;
   unsigned long long serial = 0;
   ULONGLONG requestTick = 0;
   SrfFocusSnapshot focus = {};
@@ -953,14 +1026,20 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
     m_asyncCandidatePendingItems.clear();
     m_asyncCandidatePendingMeta.clear();
     lookupStatus = m_asyncCandidatePendingLookupStatus;
+    hasMore = m_asyncCandidatePendingHasMore;
+    fullResult = m_asyncCandidatePendingFullResult;
     m_asyncCandidatePendingLookupStatus = SrfLookupCandidatesStatus::Ok;
+    m_asyncCandidatePendingHasMore = false;
+    m_asyncCandidatePendingFullResult = false;
     m_asyncCandidatePendingRequestTick = 0;
     m_asyncCandidatePendingFocus = {};
   }
   if (ShouldSuppressCandidatesForPrivacy()) {
     m_candidates.clear();
     m_candidateMeta.clear();
+    m_candidateRows.clear();
     m_candidatesReading.clear();
+    m_candidateHasMore = false;
     SetCandidateViewState(SrfCandidateViewState::Empty, L"async-drop-privacy");
     InvalidateCandidatePageLayoutCache();
     ClampCandidateState();
@@ -1021,7 +1100,8 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
     DebugLogPerfMs(L"CandidateWorker/request-to-apply", requestTick);
   }
   const bool changed = ApplyCandidateRefreshResult(reading, std::move(candidates), std::move(meta),
-                                                   stateAfterLookup, lookupStatus, true, serial);
+                                                   stateAfterLookup, lookupStatus, true, serial,
+                                                   hasMore, fullResult);
   // A result that is byte-for-byte identical to the current stable snapshot does not
   // need to walk the TSF UI-element/update/measure path again.  The synchronous
   // callers still explicitly update the window when they need to show it for the
@@ -1042,10 +1122,8 @@ std::wstring CSrfTip::CandidateBarMainTitle() const {
 
 std::vector<std::wstring> CSrfTip::CandidateBarModeTags() const {
   if (CurrentCandidatesClipboardQuickMode()) {
-    for (const auto& raw : m_candidateMeta) {
-      if (raw.empty()) continue;
-      const CandidateMetaParts meta = SplitCandidateMeta(raw);
-      if (!meta.clipboardFilter.empty()) return {meta.clipboardFilter};
+    for (const auto& row : m_candidateRows) {
+      if (!row.meta.clipboardFilter.empty()) return {row.meta.clipboardFilter};
     }
     return {};
   }
@@ -1078,14 +1156,12 @@ std::vector<std::wstring> CSrfTip::CandidateBarModeTags() const {
 std::wstring CSrfTip::FormatCandidateDisplayText(size_t index) const {
   if (index >= m_candidates.size()) return {};
 
-  CandidateMetaParts meta;
-  if (index < m_candidateMeta.size() && !m_candidateMeta[index].empty()) {
-    meta = SplitCandidateMeta(m_candidateMeta[index]);
-  }
-  std::wstring text = meta.display.empty() ? m_candidates[index] : meta.display;
+  const CandidateMetaParts* meta =
+      index < m_candidateRows.size() ? &m_candidateRows[index].meta : nullptr;
+  std::wstring text = !meta || meta->display.empty() ? m_candidates[index] : meta->display;
   SrfUIStyle quietStyle = EffectiveCandidateUiStyle();
   quietStyle.showCandidateSource = false;
-  PrefixCandidateDisplayText(&text, meta, quietStyle);
+  if (meta) PrefixCandidateDisplayText(&text, *meta, quietStyle);
   return text;
 }
 
@@ -1095,15 +1171,13 @@ const std::vector<std::wstring>& CSrfTip::BuildCandidateDisplayItems() const {
   m_candidateDisplayItemsCache.reserve(m_candidates.size());
   const SrfUIStyle style = EffectiveCandidateUiStyle();
   for (size_t i = 0; i < m_candidates.size(); ++i) {
-    CandidateMetaParts meta;
-    if (i < m_candidateMeta.size() && !m_candidateMeta[i].empty()) {
-      meta = SplitCandidateMeta(m_candidateMeta[i]);
-    }
-    std::wstring text = meta.display.empty() ? m_candidates[i] : meta.display;
+    const CandidateMetaParts* meta =
+        i < m_candidateRows.size() ? &m_candidateRows[i].meta : nullptr;
+    std::wstring text = !meta || meta->display.empty() ? m_candidates[i] : meta->display;
     // 来源图标仅跟随当前候选显示；纠错提示仍需覆盖全部候选，避免失去语义。
     SrfUIStyle quietStyle = style;
     quietStyle.showCandidateSource = false;
-    PrefixCandidateDisplayText(&text, meta, quietStyle);
+    if (meta) PrefixCandidateDisplayText(&text, *meta, quietStyle);
     m_candidateDisplayItemsCache.push_back(std::move(text));
   }
   m_candidateDisplayItemsCacheValid = true;
@@ -1111,8 +1185,8 @@ const std::vector<std::wstring>& CSrfTip::BuildCandidateDisplayItems() const {
 }
 
 bool CSrfTip::CurrentCandidatesForceVerticalLayout() const {
-  for (const auto& raw : m_candidateMeta) {
-    if (!raw.empty() && SplitCandidateMeta(raw).forceVerticalLayout) return true;
+  for (const auto& row : m_candidateRows) {
+    if (row.meta.forceVerticalLayout) return true;
   }
   return false;
 }
@@ -1121,27 +1195,25 @@ bool CSrfTip::CurrentCandidatesClipboardQuickMode() const {
   UINT page = 0;
   std::wstring filter;
   if (ParseClipboardQuickReading(m_reading, &page, &filter)) return true;
-  for (const auto& raw : m_candidateMeta) {
-    if (!raw.empty() && SplitCandidateMeta(raw).clipboardQuick) return true;
+  for (const auto& row : m_candidateRows) {
+    if (row.meta.clipboardQuick) return true;
   }
   return false;
 }
 
 bool CSrfTip::IsClipboardQuickCandidate(size_t idx) const {
-  return idx < m_candidateMeta.size() && !m_candidateMeta[idx].empty() &&
-         SplitCandidateMeta(m_candidateMeta[idx]).clipboardQuick;
+  return idx < m_candidateRows.size() && m_candidateRows[idx].meta.clipboardQuick;
 }
 
 bool CSrfTip::IsClipboardCandidatePinned(size_t idx) const {
-  return idx < m_candidateMeta.size() && !m_candidateMeta[idx].empty() &&
-         SplitCandidateMeta(m_candidateMeta[idx]).clipboardPinned;
+  return idx < m_candidateRows.size() && m_candidateRows[idx].meta.clipboardPinned;
 }
 
 bool CSrfTip::ClipboardCandidatePageInfo(size_t idx, UINT* page, UINT* pages) const {
-  if (!page || !pages || idx >= m_candidateMeta.size() || m_candidateMeta[idx].empty()) {
+  if (!page || !pages || idx >= m_candidateRows.size()) {
     return false;
   }
-  const CandidateMetaParts meta = SplitCandidateMeta(m_candidateMeta[idx]);
+  const CandidateMetaParts& meta = m_candidateRows[idx].meta;
   if (!meta.clipboardQuick) return false;
   *page = meta.clipboardPage;
   *pages = std::max(1u, meta.clipboardPages);
@@ -1253,6 +1325,14 @@ void CSrfTip::ClampReadingCursor() {
 UINT CSrfTip::MaxCandidatePage() const {
   if (m_candidates.empty()) return 0;
   return CandidatePageCount() - 1;
+}
+
+bool CSrfTip::RequestMoreCandidatesForPage(UINT targetPage) {
+  if (!m_candidateHasMore || m_candidateFullLookupPending || m_reading.empty()) return false;
+  if (targetPage <= MaxCandidatePage()) return false;
+  m_candidatePageAfterLoad = targetPage;
+  RefreshCandidatesAsync(true);
+  return true;
 }
 
 void CSrfTip::ClampCandidateState() {

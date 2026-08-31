@@ -100,9 +100,14 @@ class TRTEngineBuilder:
             opt_shape = profile_cfg.get("opt_shape", (6, 3, 48, 320))
             max_shape = profile_cfg.get("max_shape", (6, 3, 48, 2048))
         elif self.task_type == "cls":
-            raise ValueError(
-                "Text classification is not available in this PP-OCRv6-only bundle."
-            )
+            if self.ocr_version == OCRVersion.PPOCRV4:
+                min_shape = profile_cfg.get("min_shape", (1, 3, 48, 192))
+                opt_shape = profile_cfg.get("opt_shape", (6, 3, 48, 192))
+                max_shape = profile_cfg.get("max_shape", (6, 3, 48, 192))
+            elif self.ocr_version == OCRVersion.PPOCRV5:
+                min_shape = profile_cfg.get("min_shape", (1, 3, 80, 160))
+                opt_shape = profile_cfg.get("opt_shape", (6, 3, 80, 160))
+                max_shape = profile_cfg.get("max_shape", (6, 3, 80, 160))
         else:
             # Generic fallback
             min_shape = (1, 3, 32, 32)

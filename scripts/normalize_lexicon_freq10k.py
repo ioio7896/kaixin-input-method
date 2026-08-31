@@ -57,16 +57,8 @@ def profile(path: Path, rows: list[tuple[str, list[str], int]]) -> tuple[int, in
 
     # Curated Base sources: useful, but should not outrank every ordinary word.
     if "/base/" in rel:
-        if name in {"chat_common_phrases.txt", "office_common_phrases.txt"}:
-            return 7_000, 9_300
         if name == "life_short_hot_2char.txt":
             return 8_200, 8_800
-        if name == "hangzhou_metro_stations_262.txt":
-            return 3_200, 5_200
-        if name == "world_countries_major_cities.txt":
-            return 3_200, 5_600
-        if name == "kaixin_common.txt":
-            return 1, 9_500
         return 1, 10_000
 
     # Large is a recall tail and must remain below the normal Base head.
@@ -75,27 +67,21 @@ def profile(path: Path, rows: list[tuple[str, list[str], int]]) -> tuple[int, in
 
     # Surnames and newly-added places are intentionally recall-only.  Their
     # low score is also kept low by the runtime's unscaled-source policy.
-    if name == "chinese_surnames.txt":
-        return 200, 300
-    if name == "hangzhou_new_places.txt":
-        return 100, 250
+    if name == "people_names.txt":
+        return 200, 500
+    if name == "hangzhou_local.txt":
+        return 100, 6_500
 
     # Hand-curated local/admin and modern product sources get a middle band;
     # their runtime percentile calibration still preserves within-file rank.
-    if name.startswith("hangzhou_") or name in {
-        "china_prefecture_level_admin_333.txt",
-        "county_admin_short_names_2024.txt",
-    }:
+    if name == "geography_admin.txt":
         return 1_500, 6_500
-    if name in {
-        "ai_and_machine_learning.txt",
-        "internet_products.txt",
-        "programming_frameworks.txt",
-        "software_and_cloud.txt",
-    }:
+    if name == "technology.txt":
         return 2_000, 8_800
+    if name == "daily_communication.txt":
+        return 7_000, 9_300
 
-    # THUOCL/other extension dictionaries are normalized independently; the
+    # Auxiliary extension dictionaries are normalized independently; the
     # runtime maps their percentiles onto the Base distribution by phrase len.
     return 1, 8_500
 

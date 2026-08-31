@@ -3,6 +3,7 @@
 # @Contact: liekkaskono@163.com
 import argparse
 import copy
+import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -39,11 +40,11 @@ class RapidOCR:
     def __init__(
         self, config_path: Optional[str] = None, params: Optional[Dict[str, Any]] = None
     ):
-        cfg = self._load_config(config_path, params)
+        self.cfg = self._load_config(config_path, params)
 
-        logger.setLevel(cfg.Global.log_level.upper())
+        logger.setLevel(self.cfg.Global.log_level.upper())
 
-        self._initialize(cfg)
+        self._initialize(self.cfg)
 
     def _load_config(
         self, config_path: Optional[str], params: Optional[Dict[str, Any]]
@@ -66,22 +67,16 @@ class RapidOCR:
         self.width_height_ratio = cfg.Global.width_height_ratio
 
         self.use_det = cfg.Global.use_det
-        cfg.Det.engine_cfg = cfg.EngineConfig[cfg.Det.engine_type.value]
-        cfg.Det.model_root_dir = cfg.Global.model_root_dir
-        self.text_det = TextDetector(cfg.Det)
+        self.text_det = None
+        self._det_model_lock = threading.Lock()
 
         self.use_cls = cfg.Global.use_cls
         self.text_cls = None
-        if self.use_cls:
-            cfg.Cls.engine_cfg = cfg.EngineConfig[cfg.Cls.engine_type.value]
-            cfg.Cls.model_root_dir = cfg.Global.model_root_dir
-            self.text_cls = TextClassifier(cfg.Cls)
+        self._cls_model_lock = threading.Lock()
 
         self.use_rec = cfg.Global.use_rec
-        cfg.Rec.engine_cfg = cfg.EngineConfig[cfg.Rec.engine_type.value]
-        cfg.Rec.font_path = cfg.Global.font_path
-        cfg.Rec.model_root_dir = cfg.Global.model_root_dir
-        self.text_rec = TextRecognizer(cfg.Rec)
+        self.text_rec = None
+        self._rec_model_lock = threading.Lock()
 
         self.load_img = LoadImage()
         self.max_side_len = cfg.Global.max_side_len
@@ -123,6 +118,40 @@ class RapidOCR:
         return self.build_final_output(
             ori_img, det_res, cls_res, rec_res, cropped_img_list, op_record
         )
+
+    def _load_det_model(self):
+        if self.text_det is None:
+            with self._det_model_lock:
+                if self.text_det is None:
+                    self.cfg.Det.engine_cfg = self.cfg.EngineConfig[
+                        self.cfg.Det.engine_type.value
+                    ]
+                    self.cfg.Det.model_root_dir = self.cfg.Global.model_root_dir
+                    self.text_det = TextDetector(self.cfg.Det)
+        return self.text_det
+
+    def _load_cls_model(self):
+        if self.text_cls is None:
+            with self._cls_model_lock:
+                if self.text_cls is None:
+                    self.cfg.Cls.engine_cfg = self.cfg.EngineConfig[
+                        self.cfg.Cls.engine_type.value
+                    ]
+                    self.cfg.Cls.model_root_dir = self.cfg.Global.model_root_dir
+                    self.text_cls = TextClassifier(self.cfg.Cls)
+        return self.text_cls
+
+    def _load_rec_model(self):
+        if self.text_rec is None:
+            with self._rec_model_lock:
+                if self.text_rec is None:
+                    self.cfg.Rec.engine_cfg = self.cfg.EngineConfig[
+                        self.cfg.Rec.engine_type.value
+                    ]
+                    self.cfg.Rec.font_path = self.cfg.Global.font_path
+                    self.cfg.Rec.model_root_dir = self.cfg.Global.model_root_dir
+                    self.text_rec = TextRecognizer(self.cfg.Rec)
+        return self.text_rec
 
     def run_ocr_steps(self, img: np.ndarray, op_record: Dict[str, Any]):
         det_res, cls_res, rec_res = TextDetOutput(), TextClsOutput(), TextRecOutput()
@@ -262,12 +291,18 @@ class RapidOCR:
             "return_word_box": ("return_word_box",),
             "return_single_char_box": ("return_single_char_box",),
             "text_score": ("text_score",),
-            "box_thresh": ("text_det", "postprocess_op", "box_thresh"),
-            "unclip_ratio": ("text_det", "postprocess_op", "unclip_ratio"),
         }
+        det_params = {"box_thresh", "unclip_ratio"}
 
         for key, value in kwargs.items():
             if value is None:
+                continue
+
+            if key in det_params:
+                setattr(self.cfg.Det, key, value)
+
+                if self.text_det is not None:
+                    setattr(self.text_det.postprocess_op, key, value)
                 continue
 
             path = param_map.get(key)
@@ -281,21 +316,28 @@ class RapidOCR:
             setattr(obj, path[-1], value)
 
     def preprocess_img(self, ori_img: np.ndarray) -> Tuple[np.ndarray, Dict[str, Any]]:
-        op_record = {}
+        if not self.cfg.Global.use_preprocess_img:
+            return ori_img, {"preprocess": {"ratio_h": 1.0, "ratio_w": 1.0}}
+
         img, ratio_h, ratio_w = resize_image_within_bounds(
             ori_img, self.min_side_len, self.max_side_len
         )
-        op_record["preprocess"] = {"ratio_h": ratio_h, "ratio_w": ratio_w}
+        op_record = {"preprocess": {"ratio_h": ratio_h, "ratio_w": ratio_w}}
         return img, op_record
 
     def detect_and_crop(
         self, img: np.ndarray, op_record: Dict[str, Any]
     ) -> Tuple[List[np.ndarray], TextDetOutput]:
-        img, op_record = apply_vertical_padding(
-            img, op_record, self.width_height_ratio, self.min_height
-        )
-        det_res = self.text_det(img)
+        det_model = self._load_det_model()
 
+        if self.cfg.Global.use_vertical_padding:
+            img, op_record = apply_vertical_padding(
+                img, op_record, self.width_height_ratio, self.min_height
+            )
+        else:
+            op_record["padding_1"] = {"top": 0, "left": 0}
+
+        det_res = det_model(img)
         if det_res.boxes is None:
             raise RapidOCRError("The text detection result is empty")
 
@@ -314,17 +356,18 @@ class RapidOCR:
     def cls_and_rotate(
         self, img: List[np.ndarray]
     ) -> Tuple[List[np.ndarray], TextClsOutput]:
-        if self.text_cls is None:
-            return img, TextClsOutput()
-        cls_res = self.text_cls(img)
+        cls_model = self._load_cls_model()
+
+        cls_res = cls_model(img)
         if cls_res.img_list is None:
             raise RapidOCRError("The text classifier is empty")
         return cls_res.img_list, cls_res
 
     def recognize_txt(self, img: List[np.ndarray]) -> TextRecOutput:
+        rec_model = self._load_rec_model()
         rec_input = TextRecInput(img=img, return_word_box=self.return_word_box)
 
-        rec_res = self.text_rec(rec_input)
+        rec_res = rec_model(rec_input)
         if rec_res.txts is None:
             raise RapidOCRError("The text recognize result is empty")
 

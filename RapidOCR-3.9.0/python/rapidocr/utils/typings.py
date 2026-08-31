@@ -45,6 +45,8 @@ class LangRec(Enum):
 
 
 class OCRVersion(Enum):
+    PPOCRV4 = "PP-OCRv4"
+    PPOCRV5 = "PP-OCRv5"
     PPOCRV6 = "PP-OCRv6"
 
 

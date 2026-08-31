@@ -88,9 +88,27 @@ Push-Location $cargoDir
 try {
     Invoke-Checked { cargo fmt -- --check }
     if ((-not $Fast) -and (-not $SkipEval)) {
+        Invoke-Checked { python scripts/check_lexicon_syllables.py --check-syllable-count --strict-syllable-count }
         Invoke-Checked {
             cargo run --bin input_perf -- --input shuru --input nihao --input zhongguo `
                 --workload-size 240 --warmup 1 --iterations 1
+        }
+        # 候选质量门禁：常用三字词基准（tests/popular_three_char_cases.tsv）按
+        # 全拼输入 TOP9 召回与不可召回率检查候选排序质量。
+        Invoke-Checked {
+            cargo run --release --bin phrase_len_eval -- --limit 400 `
+                --min-full-top9 60 --max-full-unrecalled 20
+        }
+        # Do not let the mixed 2/3/4-character aggregate hide a three-character
+        # regression in the heldout benchmark.
+        Invoke-Checked {
+            cargo run --release --bin phrase_len_eval -- --only-popular-three `
+                --min-full-top9 66 --max-full-unrecalled 16
+        }
+        # 学习回放门禁：commit/select 事件后同一输入的前置表现。
+        Invoke-Checked {
+            cargo run --release --bin learning_replay_eval -- `
+                --min-top1 70 --max-missing 0
         }
     }
 } finally {

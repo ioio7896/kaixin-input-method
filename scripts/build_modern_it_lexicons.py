@@ -13,7 +13,7 @@ from wordfreq import top_n_list
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "lexicon" / "zh"
+OUT = ROOT / "data_sources" / "lexicon_fragments" / "zh-ext"
 T2S = OpenCC("t2s")
 POOL_SIZE = 500_000
 SIZE = 5_000
@@ -128,6 +128,9 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, (seeds, keywords) in CATEGORIES.items():
         write(OUT / f"{name}.txt", name, seeds, keywords, pool)
+    from merge_zh_ext_lexicons import merge_lexicons
+
+    merge_lexicons()
 
 
 if __name__ == "__main__":

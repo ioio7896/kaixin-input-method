@@ -2160,8 +2160,7 @@ fn clipboard_text_direct_candidates(
 
 fn clipboard_candidates(arg: &str) -> Vec<(String, f64)> {
     let trimmed = arg.trim();
-    let current_snapshot = clipboard_store::capture_system_clipboard_snapshot()
-        .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
+    let current_snapshot = clipboard_store::clipboard_candidate_snapshot();
 
     let (cmd, rest) = split_command_args(trimmed);
     let key = cmd.to_ascii_lowercase();
@@ -2204,8 +2203,7 @@ fn clipboard_candidates(arg: &str) -> Vec<(String, f64)> {
 
 fn clipboard_candidates_detailed(arg: &str) -> Vec<DirectCandidate> {
     let trimmed = arg.trim();
-    let current_snapshot = clipboard_store::capture_system_clipboard_snapshot()
-        .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
+    let current_snapshot = clipboard_store::clipboard_candidate_snapshot();
 
     let (cmd, rest) = split_command_args(trimmed);
     let key = cmd.to_ascii_lowercase();
@@ -2293,8 +2291,7 @@ pub fn lookup_detailed_with_options(
                     quick_rest,
                 )));
             }
-            let snapshot = clipboard_store::capture_system_clipboard_snapshot()
-                .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
+            let snapshot = clipboard_store::clipboard_candidate_snapshot();
             return Some(quick_clipboard_candidates_or_help(&snapshot, page, filter));
         }
         let cmd_lower = cmd.to_ascii_lowercase();
@@ -2396,8 +2393,7 @@ pub fn lookup_with_options(rest: &str, options: LookupOptions) -> Option<Vec<(St
         if page == 0 && matches!(quick_cmd.as_str(), "open" | "manager" | "mgr" | "window") {
             return Some(open_clipboard_manager_candidates(quick_rest));
         }
-        let snapshot = clipboard_store::capture_system_clipboard_snapshot()
-            .unwrap_or_else(|_| clipboard_store::cached_snapshot().unwrap_or_default());
+        let snapshot = clipboard_store::clipboard_candidate_snapshot();
         return Some(
             quick_clipboard_candidates_or_help(&snapshot, page, filter)
                 .into_iter()

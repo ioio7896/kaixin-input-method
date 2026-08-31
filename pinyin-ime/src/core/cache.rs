@@ -268,7 +268,6 @@ pub(super) struct FinalLookupCacheKey {
 pub(super) struct ShortLookupCacheKey {
     input: String,
     mode_flags: u32,
-    user_clock: u64,
     cache_epoch: u64,
 }
 
@@ -283,7 +282,6 @@ pub(super) enum RerankScoreKind {
 pub(super) struct RerankScoreCacheKey {
     kind: RerankScoreKind,
     phrase: String,
-    user_clock: u64,
     cache_epoch: u64,
     context: Vec<String>,
 }
@@ -296,14 +294,43 @@ pub(super) struct ShortLookupCache {
     map: LruCache<ShortLookupCacheKey, CachedLookupResult>,
 }
 
+/// 冷路径对二字意图应用的完整分页编排方式。缓存命中路径需要重放同样的
+/// 编排，保证冷/热两条路径的候选页面结构一致（否则热路径上二字词会退化为
+/// 一整块 exact_later，不再与单字逐页交错）。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum TwoCharDensityReplay {
+    /// 全拼输入：每页 page_size-1 个二字词 + 单字填空，前 3 页保持交错。
+    FullPinyin,
+    /// 简拼/混拼输入：每页至少 2 个二字词，候选充足时可达 4 个。
+    Minimum,
+}
+
 #[derive(Clone)]
 struct CachedLookupResult {
     candidates: Arc<[RankedCandidate]>,
     visible_short_intent: Option<usize>,
+    two_char_density_replay: Option<TwoCharDensityReplay>,
 }
 
 pub(super) struct RerankScoreCache {
     map: LruCache<RerankScoreCacheKey, f64>,
+}
+
+/// True when `phrase` can be affected by a learn/feedback event touching any
+/// of `affected` phrases.  Single-char phrases use exact matching so common
+/// characters cannot evict nearly every entry; longer phrases match on
+/// containment because a frequency bump for `a` also shifts the path score of
+/// any longer phrase that embeds `a` as a segmentation span.
+fn affected_matches_phrase(affected: &[String], phrase: &str) -> bool {
+    affected.iter().any(|a| {
+        if a.chars().count() < 2 {
+            phrase == a
+        } else {
+            // 双向包含：学习/反馈影响词 a 后，包含 a 作为分词跨度的长短语，
+            // 以及被 a 包含的词（如词序列 token）对应的上下文缓存都会失效。
+            phrase.contains(a.as_str()) || a.contains(phrase)
+        }
+    })
 }
 
 impl MixedCompletionScoreCache {
@@ -354,11 +381,16 @@ impl FinalLookupCache {
     pub(super) fn get(
         &mut self,
         key: &FinalLookupCacheKey,
-    ) -> Option<(Vec<RankedCandidate>, Option<usize>)> {
+    ) -> Option<(
+        Vec<RankedCandidate>,
+        Option<usize>,
+        Option<TwoCharDensityReplay>,
+    )> {
         let cached = self.map.get(key)?.clone();
         Some((
             cached.candidates.as_ref().to_vec(),
             cached.visible_short_intent,
+            cached.two_char_density_replay,
         ))
     }
 
@@ -367,6 +399,7 @@ impl FinalLookupCache {
         key: FinalLookupCacheKey,
         candidates: Vec<RankedCandidate>,
         visible_short_intent: Option<usize>,
+        two_char_density_replay: Option<TwoCharDensityReplay>,
     ) {
         if candidates.is_empty() {
             return;
@@ -376,8 +409,30 @@ impl FinalLookupCache {
             CachedLookupResult {
                 candidates: Arc::from(candidates),
                 visible_short_intent,
+                two_char_density_replay,
             },
         );
+    }
+
+    /// 驱逐候选列表含任一受影响词条的缓存项，其余输入的结果保持命中。
+    pub(super) fn evict_affected(&mut self, affected: &[String]) {
+        if affected.is_empty() {
+            return;
+        }
+        let stale_keys: Vec<FinalLookupCacheKey> = self
+            .map
+            .iter()
+            .filter(|(_, cached)| {
+                cached
+                    .candidates
+                    .iter()
+                    .any(|c| affected_matches_phrase(affected, &c.phrase))
+            })
+            .map(|(key, _)| key.clone())
+            .collect();
+        for key in stale_keys {
+            self.map.pop(&key);
+        }
     }
 }
 
@@ -395,11 +450,16 @@ impl ShortLookupCache {
     pub(super) fn get(
         &mut self,
         key: &ShortLookupCacheKey,
-    ) -> Option<(Vec<RankedCandidate>, Option<usize>)> {
+    ) -> Option<(
+        Vec<RankedCandidate>,
+        Option<usize>,
+        Option<TwoCharDensityReplay>,
+    )> {
         let cached = self.map.get(key)?.clone();
         Some((
             cached.candidates.as_ref().to_vec(),
             cached.visible_short_intent,
+            cached.two_char_density_replay,
         ))
     }
 
@@ -408,6 +468,7 @@ impl ShortLookupCache {
         key: ShortLookupCacheKey,
         candidates: Vec<RankedCandidate>,
         visible_short_intent: Option<usize>,
+        two_char_density_replay: Option<TwoCharDensityReplay>,
     ) {
         if candidates.is_empty() {
             return;
@@ -417,8 +478,30 @@ impl ShortLookupCache {
             CachedLookupResult {
                 candidates: Arc::from(candidates),
                 visible_short_intent,
+                two_char_density_replay,
             },
         );
+    }
+
+    /// 驱逐候选列表含任一受影响词条的缓存项，其余输入的结果保持命中。
+    pub(super) fn evict_affected(&mut self, affected: &[String]) {
+        if affected.is_empty() {
+            return;
+        }
+        let stale_keys: Vec<ShortLookupCacheKey> = self
+            .map
+            .iter()
+            .filter(|(_, cached)| {
+                cached
+                    .candidates
+                    .iter()
+                    .any(|c| affected_matches_phrase(affected, &c.phrase))
+            })
+            .map(|(key, _)| key.clone())
+            .collect();
+        for key in stale_keys {
+            self.map.pop(&key);
+        }
     }
 }
 
@@ -440,6 +523,30 @@ impl RerankScoreCache {
     pub(super) fn insert(&mut self, key: RerankScoreCacheKey, score: f64) {
         if score.is_finite() {
             self.map.put(key, score);
+        }
+    }
+
+    /// 驱逐 phrase 命中或上下文命中受影响词条的评分项。上下文词同样走
+    /// affected_matches_phrase，保证学习了一个词后，依赖该词作为上文的
+    /// context_bonus 缓存也会被剔除。
+    pub(super) fn evict_affected(&mut self, affected: &[String]) {
+        if affected.is_empty() {
+            return;
+        }
+        let stale_keys: Vec<RerankScoreCacheKey> = self
+            .map
+            .iter()
+            .filter(|(key, _)| {
+                affected_matches_phrase(affected, &key.phrase)
+                    || key
+                        .context
+                        .iter()
+                        .any(|w| affected_matches_phrase(affected, w))
+            })
+            .map(|(key, _)| key.clone())
+            .collect();
+        for key in stale_keys {
+            self.map.pop(&key);
         }
     }
 }
@@ -657,13 +764,11 @@ pub(super) fn final_lookup_cache_key(
 pub(super) fn short_lookup_cache_key(
     compact_key: &str,
     mode_flags: u32,
-    user_clock: u64,
     cache_epoch: u64,
 ) -> ShortLookupCacheKey {
     ShortLookupCacheKey {
         input: compact_key.to_string(),
         mode_flags,
-        user_clock,
         cache_epoch,
     }
 }
@@ -671,14 +776,12 @@ pub(super) fn short_lookup_cache_key(
 pub(super) fn rerank_score_cache_key(
     kind: RerankScoreKind,
     phrase: &str,
-    user_clock: u64,
     cache_epoch: u64,
     context: Vec<String>,
 ) -> RerankScoreCacheKey {
     RerankScoreCacheKey {
         kind,
         phrase: phrase.to_string(),
-        user_clock,
         cache_epoch,
         context,
     }

@@ -72,7 +72,6 @@ if ([string]::IsNullOrWhiteSpace($PackageRoot)) {
 
 $PackageRoot = [System.IO.Path]::GetFullPath($PackageRoot)
 Assert-PathExists $PackageRoot
-Assert-PathMissing (Join-Path $PackageRoot 'ShareX-Source')
 Assert-PathExists (Join-Path $PackageRoot 'component_manifest.ini')
 
 $previousLocalAppData = $env:LOCALAPPDATA
@@ -108,8 +107,6 @@ try {
     Assert-PathExists (Join-Path $installRoot 'srf_ime_settings.exe')
     Assert-PathExists (Join-Path $installRoot 'user_data_manifest.json')
     Assert-PathExists (Join-Path $installRoot 'component_manifest.ini')
-    Assert-PathExists (Join-Path $installRoot 'ShareX\SOURCE_INFO.md')
-    Assert-PathMissing (Join-Path $installRoot 'ShareX-Source')
 
     Assert-RegistryPath ("HKCU:\Software\Classes\CLSID\{0}\InprocServer32" -f $TextServiceClsid)
     Assert-RegistryPath ("HKCU:\Software\Classes\WOW6432Node\CLSID\{0}\InprocServer32" -f $TextServiceClsid)

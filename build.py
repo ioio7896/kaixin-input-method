@@ -21,7 +21,6 @@ Artifacts:
     dist/kaixin-setup-ocr-<version>-<YYYYMMDD-HHMMSS>.exe
     dist/kaixin-package-ime/
     dist/kaixin-package-ocr/
-    dist/kaixin-sharex-corresponding-source.zip
 
 If shared-engine Init timeouts occur at runtime, check:
 %LOCALAPPDATA%\\kaixin\\logs\\engine.log
@@ -74,9 +73,8 @@ PACKAGE_HASH_MANIFEST = "package_manifest.sha256"
 COMPONENT_MANIFEST = "component_manifest.ini"
 COMPONENT_PREFIXES = OrderedDict(
     (
-        ("sharex", "ShareX/"),
         ("python_runtime", ".python-runtime/"),
-        ("rapidocr_venv", ".venv-rapidocr/"),
+        ("rapidocr_packages", ".python-packages/"),
         ("rapidocr_payload", "RapidOCR-3.9.0/"),
     )
 )
@@ -95,17 +93,14 @@ DEFAULT_PERF_INCREMENTAL_MAX_P99_US = 40000
 PYTHON_RUNTIME = ".python-runtime"
 RAPIDOCR_DIR = "RapidOCR-3.9.0"
 RAPIDOCR_VENV = ".venv-rapidocr"
+RAPIDOCR_PACKAGES = ".python-packages"
 RAPIDOCR_HELPER = "kaixin_ocr_engine.py"
 RAPIDOCR_HELPERS = ("kaixin_ocr_engine.py", "kaixin_ocr_engine.cmd", "kaixin_cv_crop.py")
 OPENCV_CROP_HELPER = "kaixin_cv_crop.py"
-RAPIDOCR_REQUIRED_MODELS = ("PP-OCRv6_det_medium.onnx", "PP-OCRv6_rec_medium.onnx")
-SHAREX_SOURCE_DIR = Path("third_party") / "ShareX"
-SHAREX_PROJECT = SHAREX_SOURCE_DIR / "ShareX" / "ShareX.csproj"
-SHAREX_PUBLISH_DIR = SHAREX_SOURCE_DIR / "publish" / "win-x64"
-SHAREX_EXE = SHAREX_PUBLISH_DIR / "KaixinShareX.exe"
-SHAREX_SOURCE_ARCHIVE_NAME = "kaixin-sharex-corresponding-source.zip"
-SHAREX_SOURCE_NOTICE_MARKER = (
-    f"distributed separately as `{SHAREX_SOURCE_ARCHIVE_NAME}`"
+RAPIDOCR_REQUIRED_MODELS = (
+    "PP-OCRv6_det_medium.onnx",
+    "PP-OCRv6_det_small.onnx",
+    "PP-OCRv6_rec_medium.onnx",
 )
 PYTHON_PACKAGE_EXCLUDED_DIR_NAMES = frozenset(
     {
@@ -187,8 +182,8 @@ BASE_STAGED_RUST_ARTIFACTS = (
     "srf_ime_tray.exe",
     "srf_ime_engine.exe",
     "srf_ime_clipboard.exe",
+    "srf_ime_clipboard_svc.exe",
     "srf_ime_handwrite.exe",
-    "srf_ime_translate_result.exe",
 )
 BASE_PACKAGE_RUST_ARTIFACTS = PACKAGE_BUILD_TOOL_RUST_ARTIFACTS + BASE_STAGED_RUST_ARTIFACTS
 OPTIONAL_OCR_RUST_ARTIFACTS = ("srf_ime_ocr.exe",)
@@ -523,6 +518,8 @@ def resolve_package_variants(
                 f"Create it with `python -m venv {RAPIDOCR_VENV}` and "
                 f"`{RAPIDOCR_VENV}\\Scripts\\python.exe -m pip install "
                 f"-r {RAPIDOCR_DIR}\\python\\requirements.txt onnxruntime`, "
+                "then run `powershell -ExecutionPolicy Bypass -File "
+                "scripts/fetch_rapidocr_models.ps1`; "
                 f"or explicitly request `--package-variants ime`."
             )
         selected.append(variant)
@@ -567,14 +564,49 @@ def git_release_info(repo: Path) -> dict:
             return None
 
     commit = _git(["rev-parse", "HEAD"])
+    commit_short = _git(["rev-parse", "--short=12", "HEAD"])
     branch = _git(["rev-parse", "--abbrev-ref", "HEAD"])
     status = _git(["status", "--porcelain"])
     return {
         "commit": commit,
+        "commit_short": commit_short,
         "branch": branch,
         "dirty": bool(status),
         "status_porcelain": status or "",
     }
+
+
+def _git_state_fingerprint(repo: Path) -> tuple[float, str]:
+    """Build helper: _git_state_fingerprint.
+
+    Hash of (short HEAD commit, dirty flag) - the exact inputs both stamping
+    sites embed (tsf-tip/CMakeLists.txt SRF_GIT_COMMIT/SRF_GIT_DIRTY,
+    pinyin-ime/build.rs SRF_ENGINE_GIT_COMMIT/SRF_ENGINE_GIT_DIRTY).  The
+    mtime contribution is 0.0 so mtime-based freshness logic is untouched; a
+    bare commit or a dirty/clean transition changes the hash and forces both
+    products to rebuild and re-stamp.  Degrades to the stamping fallback
+    "unknown" when git is unavailable.
+    """
+    def _git(args: list[str]) -> str | None:
+        try:
+            return subprocess.check_output(
+                ["git", *args],
+                cwd=str(repo),
+                text=True,
+                stderr=subprocess.DEVNULL,
+                encoding="utf-8",
+                errors="replace",
+            ).strip()
+        except Exception:
+            return None
+
+    commit_short = _git(["rev-parse", "--short=12", "HEAD"]) or "unknown"
+    dirty = bool(_git(["status", "--porcelain"]))
+    h = hashlib.sha256()
+    h.update(commit_short.encode("ascii", errors="replace"))
+    h.update(b"\0")
+    h.update(b"dirty" if dirty else b"clean")
+    return 0.0, h.hexdigest()
 
 
 def validate_version_sources(repo: Path) -> list[str]:
@@ -796,15 +828,12 @@ def write_build_manifest(
             stage_root / "NOTICE",
             stage_root / "THIRD_PARTY_NOTICES.md",
             stage_root / "current_runtime_payload.txt",
-            stage_root / "ShareX" / "KaixinShareX.exe",
-            stage_root / "ShareX" / "LICENSE.txt",
-            stage_root / "ShareX" / "SOURCE_INFO.md",
             *[stage_root / name for name in staged_rust_exe_names()],
             stage_root / "tools" / RAPIDOCR_HELPER,
             stage_root / "tools" / OPENCV_CROP_HELPER,
             packaged_python_runtime_path(stage_root),
             packaged_python_stdlib_marker(stage_root),
-            rapidocr_venv_python_path(stage_root),
+            rapidocr_packages_path(stage_root),
             stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "__init__.py",
             *[
                 stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "models" / model
@@ -1272,10 +1301,14 @@ def rapidocr_venv_python_path(root: Path) -> Path:
     return root / RAPIDOCR_VENV / "bin" / "python"
 
 
-def rapidocr_site_packages_path(root: Path) -> Path:
+def rapidocr_packages_path(root: Path) -> Path:
+    return root / RAPIDOCR_PACKAGES
+
+
+def rapidocr_source_site_packages_path(repo: Path) -> Path:
     if sys.platform == "win32":
-        return root / RAPIDOCR_VENV / "Lib" / "site-packages"
-    return root / RAPIDOCR_VENV / "lib"
+        return repo / RAPIDOCR_VENV / "Lib" / "site-packages"
+    return repo / RAPIDOCR_VENV / "lib"
 
 
 def rapidocr_runtime_status(repo: Path) -> tuple[bool, list[str]]:
@@ -1305,7 +1338,7 @@ def rapidocr_runtime_status(repo: Path) -> tuple[bool, list[str]]:
     venv_dir = repo / RAPIDOCR_VENV
     cfg = venv_dir / "pyvenv.cfg"
     venv_python = rapidocr_venv_python_path(repo)
-    site_packages = rapidocr_site_packages_path(repo)
+    site_packages = rapidocr_source_site_packages_path(repo)
     if not cfg.is_file():
         problems.append(f"missing OCR venv config: {cfg}")
     else:
@@ -1422,12 +1455,6 @@ def sign_staged_binaries(output_root: Path, args: argparse.Namespace) -> list[Pa
     marker = output_root / "current_runtime_payload.txt"
     runtime_rel = marker.read_text(encoding="utf-8", errors="replace").strip() if marker.is_file() else ""
     candidates = [output_root / name for name in staged_rust_exe_names()]
-    candidates.extend(
-        [
-            output_root / "ShareX" / "KaixinShareX.exe",
-            output_root / "ShareX" / "KaixinShareX.dll",
-        ]
-    )
     if runtime_rel:
         runtime_dir = output_root / runtime_rel
         candidates.extend([runtime_dir / arch / "srf_tsf_tip.dll" for arch in BUILD_ARCHES])
@@ -1572,6 +1599,43 @@ def _tree_source_stats(root: Path, extensions: set[str]) -> tuple[float, str]:
     return max_m, h.hexdigest()
 
 
+def _tree_source_stats_filtered(
+    root: Path, excluded_dir_names: frozenset[str] | set[str]
+) -> tuple[float, str]:
+    """Fingerprint every source file below ``root``, excluding generated trees."""
+    if not root.is_dir():
+        return 0.0, hashlib.sha256().hexdigest()
+    excluded = {name.casefold() for name in excluded_dir_names}
+    paths: list[Path] = []
+    try:
+        for current_root, dir_names, file_names in os.walk(root):
+            dir_names[:] = [
+                name for name in dir_names if name.casefold() not in excluded
+            ]
+            current = Path(current_root)
+            paths.extend(current / name for name in file_names)
+    except OSError:
+        pass
+    paths.sort(key=lambda path: path.as_posix().casefold())
+    digest = hashlib.sha256()
+    max_mtime = 0.0
+    root_abs = root.resolve()
+    for path in paths:
+        try:
+            stat = path.stat()
+            max_mtime = max(max_mtime, stat.st_mtime)
+            relative = os.path.relpath(str(path), str(root_abs)).replace("\\", "/")
+            digest.update(relative.encode("utf-8", errors="surrogateescape"))
+            digest.update(b"\0")
+            digest.update(str(int(stat.st_mtime_ns)).encode("ascii"))
+            digest.update(b"\0")
+            digest.update(str(int(stat.st_size)).encode("ascii"))
+            digest.update(b"\n")
+        except OSError:
+            pass
+    return max_mtime, digest.hexdigest()
+
+
 def _source_file_stats(path: Path, repo: Path) -> tuple[float, str]:
     """Build helper: _source_file_stats."""
     h = hashlib.sha256()
@@ -1625,6 +1689,7 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
         max_icon, fp_icon = _source_file_stats(app_icon, repo)
     except OSError:
         return None
+    _, fp_git = _git_state_fingerprint(repo)
     max_src = max(
         max_rs,
         max_data,
@@ -1649,6 +1714,8 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
     comb.update(fp_lock.encode("ascii"))
     comb.update(b"\0")
     comb.update(fp_icon.encode("ascii"))
+    comb.update(b"\0")
+    comb.update(fp_git.encode("ascii"))
     sig_path = target_dir / ".cargo_source_manifest.sha256"
     return max_src, comb.hexdigest(), sig_path
 
@@ -1698,6 +1765,7 @@ def _cmake_inputs_fingerprint(tsf_tip: Path, repo: Path | None = None) -> tuple[
     tests_dir = tsf_tip / "tests"
     cm = tsf_tip / "CMakeLists.txt"
     module_def = tsf_tip / "srf_tsf_tip.def"
+    version_file = (repo or tsf_tip.parent) / "VERSION"
     if not src_dir.is_dir() or not inc_dir.is_dir() or not cm.is_file():
         return None
     max_cpp, fp_cpp = _tree_source_stats(
@@ -1708,9 +1776,11 @@ def _cmake_inputs_fingerprint(tsf_tip: Path, repo: Path | None = None) -> tuple[
     try:
         st = cm.stat()
         max_def, fp_def = _source_file_stats(module_def, repo or tsf_tip)
+        max_version, fp_version = _source_file_stats(version_file, repo or tsf_tip.parent)
     except OSError:
         return None
-    max_src = max(max_cpp, max_h, max_tests, st.st_mtime, max_def)
+    _, fp_git = _git_state_fingerprint(repo or tsf_tip.parent)
+    max_src = max(max_cpp, max_h, max_tests, st.st_mtime, max_def, max_version)
     comb = hashlib.sha256()
     comb.update(fp_cpp.encode("ascii"))
     comb.update(b"\0")
@@ -1721,6 +1791,10 @@ def _cmake_inputs_fingerprint(tsf_tip: Path, repo: Path | None = None) -> tuple[
     comb.update(str(int(st.st_mtime_ns)).encode("ascii"))
     comb.update(b"\0")
     comb.update(fp_def.encode("ascii"))
+    comb.update(b"\0")
+    comb.update(fp_version.encode("ascii"))
+    comb.update(b"\0")
+    comb.update(fp_git.encode("ascii"))
     return max_src, comb.hexdigest()
 
 
@@ -1740,7 +1814,7 @@ def _refresh_cmake_build_sig(tsf_tip: Path, build_dir: Path, profile: str) -> No
     _write_sig(dll.parent / ".cmake_source_manifest.sha256", comb_fp)
 
 
-def is_cmake_up_to_date(_repo: Path, tsf_tip: Path, profile: str, arch: str = ARCH_X64) -> bool:
+def is_cmake_up_to_date(repo: Path, tsf_tip: Path, profile: str, arch: str = ARCH_X64) -> bool:
     """Build helper: is_cmake_up_to_date."""
     profile_cap = profile.capitalize()
     build_dir = cmake_build_dir_for(tsf_tip, arch)
@@ -1748,7 +1822,7 @@ def is_cmake_up_to_date(_repo: Path, tsf_tip: Path, profile: str, arch: str = AR
         dll, overlay = find_tsf_runtime_pair(tsf_tip, build_dir, profile_cap)
     except FileNotFoundError:
         return False
-    fp = _cmake_inputs_fingerprint(tsf_tip, _repo)
+    fp = _cmake_inputs_fingerprint(tsf_tip, repo)
     if fp is None:
         return False
     max_src, comb_fp = fp
@@ -1867,15 +1941,13 @@ def _is_absolute_priority_lexicon_source(path: Path) -> bool:
 def _is_unscaled_lexicon_source(path: Path) -> bool:
     """Keep intentionally low-priority sources on their authored scale.
 
-    Surnames and newly added local places contain flat low-priority weights.
-    Percentile calibration would turn those values into an arbitrary point in
-    the base corpus distribution, making recall-only entries look common.
+    Names and local places contain flat low-priority weights. Percentile
+    calibration would turn those values into an arbitrary point in the base
+    corpus distribution, making recall-only entries look common.
     """
     return _is_absolute_priority_lexicon_source(path) or path.name.lower() in {
-        "chinese_surnames.txt",
-        # Newly added local places are recall-only by design.  Percentile
-        # calibration would turn their flat low score into a median Base score.
-        "hangzhou_new_places.txt",
+        "people_names.txt",
+        "hangzhou_local.txt",
     }
 
 
@@ -2434,7 +2506,17 @@ def step_check_lexicon_syllables(repo: Path) -> None:
     if ctx.dry_run:
         print_msg(f"  [dry-run] python \"{script}\" --root \"{repo}\"")
         return
-    run([sys.executable, str(script), "--root", str(repo)], cwd=repo)
+    run(
+        [
+            sys.executable,
+            str(script),
+            "--root",
+            str(repo),
+            "--check-syllable-count",
+            "--strict-syllable-count",
+        ],
+        cwd=repo,
+    )
 
 
 def step_verify_rust(repo: Path) -> None:
@@ -2487,6 +2569,16 @@ def stop_workspace_rust_artifact_processes(
     stopped. Installed copies elsewhere on the machine are deliberately left
     alone.
     """
+    _stop_processes_under_root(
+        repo, artifact_names, (repo / "pinyin-ime" / "target").resolve()
+    )
+
+
+def _stop_processes_under_root(
+    repo: Path,
+    artifact_names: list[str] | tuple[str, ...],
+    target_root: Path,
+) -> None:
     if ctx.dry_run or os.name != "nt":
         return
     process_names = sorted(
@@ -2497,7 +2589,6 @@ def stop_workspace_rust_artifact_processes(
     powershell = shutil.which("powershell.exe") or shutil.which("powershell")
     if not powershell:
         return
-    target_root = (repo / "pinyin-ime" / "target").resolve()
     script = r"""
 $targetRoot = [IO.Path]::GetFullPath($env:KAIXIN_BUILD_TARGET_ROOT).TrimEnd('\') + '\'
 $names = $env:KAIXIN_BUILD_PROCESS_NAMES -split ';'
@@ -2828,9 +2919,8 @@ def step_inno(repo: Path, script_name: str = "kaixin.iss", output_name: str = "k
         component_config = configparser.ConfigParser(interpolation=None)
         component_config.read(component_manifest, encoding="utf-8-sig")
         component_defines = {
-            "sharex": "KXComponentShareX",
             "python_runtime": "KXComponentPythonRuntime",
-            "rapidocr_venv": "KXComponentRapidOcrVenv",
+            "rapidocr_packages": "KXComponentRapidOcrPackages",
             "rapidocr_payload": "KXComponentRapidOcrPayload",
         }
         for key, define_name in component_defines.items():
@@ -2902,171 +2992,6 @@ def step_cargo_and_cmake_parallel(
         raise errors[0][1]
 
 
-def step_sharex(repo: Path) -> None:
-    """Build the vendored ShareX integration as a self-contained x64 app."""
-    project = repo / SHAREX_PROJECT
-    output = repo / SHAREX_PUBLISH_DIR
-    if not project.is_file():
-        raise FileNotFoundError(f"missing ShareX project: {project}")
-    if output.exists() and not ctx.dry_run:
-        shutil.rmtree(output)
-    # Avalonia's build-services telemetry attempts to write under the global
-    # LocalAppData directory, which may be unavailable in service/CI accounts.
-    # Opt out by default; this does not affect the generated ShareX binary.
-    run(
-        [
-            "dotnet",
-            "publish",
-            str(project),
-            "-c",
-            "Release",
-            "-r",
-            "win-x64",
-            "--self-contained",
-            "true",
-            "--nologo",
-            "-p:DebugType=None",
-            "-p:DebugSymbols=false",
-            "-p:PublishSingleFile=true",
-            "-p:EnableCompressionInSingleFile=true",
-            "-p:IncludeNativeLibrariesForSelfExtract=false",
-            "-o",
-            str(output),
-        ],
-        cwd=repo,
-        env={"AVALONIA_TELEMETRY_OPTOUT": "1"},
-    )
-    if not ctx.dry_run:
-        for pattern in ("*.pdb", "*.lib", "*.exp"):
-            for development_file in output.rglob(pattern):
-                development_file.unlink(missing_ok=True)
-    if not ctx.dry_run and not (repo / SHAREX_EXE).is_file():
-        raise FileNotFoundError(f"ShareX publish did not produce: {repo / SHAREX_EXE}")
-
-
-def verify_sharex_source_tree(source_root: Path) -> None:
-    """Verify the corresponding ShareX source before publishing its archive."""
-    source_info = source_root / "SOURCE_INFO.md"
-    license_file = source_root / "LICENSE.txt"
-    cli_source = source_root / "ShareX" / "ShareXCLIManager.cs"
-    program_source = source_root / "ShareX" / "Program.cs"
-    system_options_source = source_root / "ShareX" / "SystemOptions.cs"
-    for path in (
-        source_info,
-        license_file,
-        cli_source,
-        program_source,
-        system_options_source,
-    ):
-        if not path.is_file() or path.stat().st_size <= 0:
-            raise FileNotFoundError(f"missing ShareX corresponding-source component: {path}")
-
-    cli_text = cli_source.read_text(encoding="utf-8", errors="replace")
-    if "KaixinRectangleRegion" not in cli_text or "KaixinCaptureWindow" not in cli_text:
-        raise RuntimeError("ShareX source is missing Kaixin integration commands")
-    if "KaixinOptionsPath" not in cli_text:
-        raise RuntimeError("ShareX source is missing Kaixin capture-options handoff")
-    if "if (Program.KaixinIntegration)" not in cli_text:
-        raise RuntimeError("ShareX source is missing the Kaixin CLI isolation guard")
-
-    program_text = program_source.read_text(encoding="utf-8", errors="replace")
-    system_options_text = system_options_source.read_text(
-        encoding="utf-8", errors="replace"
-    )
-    if "SystemOptions.ForceKaixinOfflineMode();" not in program_text:
-        raise RuntimeError("ShareX source does not force Kaixin offline mode at startup")
-    if "KaixinIntegration-V3" not in program_text:
-        raise RuntimeError("ShareX source is missing the current Kaixin protocol identity")
-    if (
-        "ForceKaixinOfflineMode" not in system_options_text
-        or "DisableUpdateCheck = true;" not in system_options_text
-        or "DisableUpload = true;" not in system_options_text
-    ):
-        raise RuntimeError("ShareX source does not disable update checks and uploads")
-
-
-def _sharex_distribution_notice(text: str) -> str:
-    old_notice = (
-        "The complete corresponding source is retained in this directory and is "
-        "packaged with binary distributions."
-    )
-    new_notice = (
-        "The complete corresponding source is distributed separately as "
-        f"`{SHAREX_SOURCE_ARCHIVE_NAME}` alongside formal binary releases, and is "
-        "not installed with the application."
-    )
-    if old_notice not in text:
-        raise RuntimeError("ShareX SOURCE_INFO.md is missing its distribution notice")
-    return text.replace(old_notice, new_notice)
-
-
-def build_sharex_source_archive(repo: Path) -> Path:
-    """Create the GPL corresponding-source archive beside, not inside, installers."""
-    source_root = repo / SHAREX_SOURCE_DIR
-    verify_sharex_source_tree(source_root)
-    dist_dir = repo / "dist"
-    dist_dir.mkdir(parents=True, exist_ok=True)
-    archive_path = dist_dir / SHAREX_SOURCE_ARCHIVE_NAME
-    archive_path.unlink(missing_ok=True)
-
-    ignored_dir_names = {"bin", "obj", "publish", ".vs", ".idea", ".git"}
-
-    def ignore_development_outputs(_directory: str, names: list[str]) -> set[str]:
-        ignored: set[str] = set()
-        for name in names:
-            lower = name.casefold()
-            if lower in ignored_dir_names or lower.endswith((".pdb", ".user", ".suo")):
-                ignored.add(name)
-        return ignored
-
-    with tempfile.TemporaryDirectory(prefix="kaixin-sharex-source-") as temp_dir:
-        temp_root = Path(temp_dir)
-        archive_root = temp_root / "ShareX-Source"
-        shutil.copytree(source_root, archive_root, ignore=ignore_development_outputs)
-        staged_source_info = archive_root / "SOURCE_INFO.md"
-        staged_source_info.write_text(
-            _sharex_distribution_notice(staged_source_info.read_text(encoding="utf-8")),
-            encoding="utf-8",
-        )
-        shutil.make_archive(
-            str(archive_path.with_suffix("")),
-            "zip",
-            root_dir=temp_root,
-            base_dir=archive_root.name,
-        )
-
-    if not archive_path.is_file() or archive_path.stat().st_size <= 0:
-        raise RuntimeError(f"failed to create ShareX source archive: {archive_path}")
-    required_members = {
-        "ShareX-Source/LICENSE.txt",
-        "ShareX-Source/SOURCE_INFO.md",
-        "ShareX-Source/ShareX/ShareXCLIManager.cs",
-        "ShareX-Source/ShareX/Program.cs",
-        "ShareX-Source/ShareX/SystemOptions.cs",
-    }
-    with zipfile.ZipFile(archive_path) as archive:
-        members = {name.replace("\\", "/") for name in archive.namelist()}
-        missing = sorted(required_members - members)
-        if missing:
-            raise RuntimeError(
-                "ShareX corresponding-source archive is incomplete: " + ", ".join(missing)
-            )
-        forbidden_parts = {"bin", "obj", "publish", ".vs", ".idea", ".git"}
-        for member in members:
-            if any(part.casefold() in forbidden_parts for part in PurePosixPath(member).parts):
-                raise RuntimeError(
-                    f"ShareX source archive contains a build/development directory: {member}"
-                )
-        archived_notice = archive.read("ShareX-Source/SOURCE_INFO.md").decode("utf-8")
-        if SHAREX_SOURCE_NOTICE_MARKER not in archived_notice:
-            raise RuntimeError(
-                "ShareX source archive does not identify its separate distribution filename"
-            )
-    return archive_path
-
-
-# Skin validation
-
 def smoke_verify(repo: Path, profile: str) -> list[str]:
     """Pre-stage smoke checks for build outputs that already exist."""
     warnings: list[str] = []
@@ -3108,10 +3033,75 @@ def post_stage_smoke_verify(repo: Path, output_root: Path, profile: str) -> list
     return warnings
 
 
+def _stamped_git_commit_in(data: bytes, commit_short: str) -> bool:
+    """True when a staged binary embeds the expected 12-hex commit, in ASCII
+    (narrow C++/Rust string literals) or UTF-16LE (defensive)."""
+    needle = commit_short.encode("ascii")
+    return needle in data or needle.decode("ascii").encode("utf-16-le") in data
+
+
+def _best_effort_git_commit(data: bytes) -> str | None:
+    """Best-effort extraction of an exactly-12-hex run for error messages only.
+    Never used for the pass/fail decision: the real DLL contains 12-hex runs
+    that are not the commit, while membership of the expected commit is
+    unambiguous."""
+    m = re.search(rb"(?<![0-9a-f])[0-9a-f]{12}(?![0-9a-f])", data)
+    return m.group().decode("ascii") if m else None
+
+
+def verify_staged_git_commits(runtime_dir: Path, engine_exe: Path, repo: Path) -> None:
+    """Build helper: verify_staged_git_commits.
+
+    Hard packaging gate: staged x64/x86 TIP DLLs and srf_ime_engine.exe must
+    all embed the git commit HEAD has at staging time.  Mixed or stale stamps
+    fail the package.  Degrades to binary-vs-binary consistency when git is
+    unavailable.  The dirty flag is not part of the decision (DLLs embed it
+    only as an integer constant, not a string)."""
+    info = git_release_info(repo)
+    expected = info.get("commit_short")
+    targets = [
+        ("x64 srf_tsf_tip.dll", runtime_dir / "x64" / "srf_tsf_tip.dll"),
+        ("x86 srf_tsf_tip.dll", runtime_dir / "x86" / "srf_tsf_tip.dll"),
+        ("srf_ime_engine.exe", engine_exe),
+    ]
+    found: dict[str, str | None] = {}
+    for name, path in targets:
+        data = path.read_bytes()
+        if expected and _stamped_git_commit_in(data, expected):
+            found[name] = expected
+        else:
+            # Display-only: prefer the real stamped hex over the "unknown"
+            # fallback word, which also appears in binaries for unrelated
+            # reasons (error strings).  The decision stays membership-based.
+            found[name] = _best_effort_git_commit(data) or (
+                "unknown" if b"unknown" in data else None
+            )
+    stamps = list(found.values())
+    if expected:
+        ok = all(s == expected for s in stamps)
+    else:
+        ok = all(s is not None and s == stamps[0] for s in stamps)
+    if ok:
+        print_msg(
+            f"  {green('OK')} git stamps match HEAD ({expected or 'unknown'}) "
+            "in all staged binaries"
+        )
+        return
+    detail = ", ".join(f"{name}={stamp or '?'}" for name, stamp in found.items())
+    head_note = f"当前 HEAD={expected}" if expected else "git 不可用，仅校验二进制间一致性"
+    raise RuntimeError(
+        f"staged binaries carry stale or mismatched git stamps: {detail}; "
+        f"{head_note}. 各产物必须在同一份新代码上重新打包：请重新运行完整构建，"
+        "不要使用 --quick / --skip-cargo / --skip-cmake，"
+        "确保 DLL 与引擎使用同一 git 提交（只用新代码）。"
+    )
+
+
 def verify_staged_package(
     output_root: Path,
     include_ocr: bool = True,
     include_translation: bool = False,
+    repo: Path | None = None,
 ) -> None:
     """Build helper: verify_staged_package."""
     if not output_root.is_dir():
@@ -3142,34 +3132,6 @@ def verify_staged_package(
         p = output_root / name
         if not p.is_file():
             raise FileNotFoundError(f"missing staged {name}: {p}")
-    sharex_exe = output_root / "ShareX" / "KaixinShareX.exe"
-    sharex_license = output_root / "ShareX" / "LICENSE.txt"
-    sharex_source_info = output_root / "ShareX" / "SOURCE_INFO.md"
-    for path in (sharex_exe, sharex_license, sharex_source_info):
-        if not path.is_file() or path.stat().st_size <= 0:
-            raise FileNotFoundError(f"missing staged ShareX component: {path}")
-    if (output_root / "ShareX-Source").exists():
-        raise RuntimeError("formal staged packages must not include ShareX-Source")
-    source_info_text = sharex_source_info.read_text(encoding="utf-8", errors="replace")
-    if SHAREX_SOURCE_NOTICE_MARKER not in source_info_text:
-        raise RuntimeError(
-            "staged ShareX source notice does not identify the separate corresponding-source archive"
-        )
-    third_party_notices = output_root / "THIRD_PARTY_NOTICES.md"
-    project_license = output_root / "LICENSE"
-    license_scope = output_root / "LICENSE_SCOPE.md"
-    project_notice = output_root / "NOTICE"
-    for path in (project_license, license_scope, project_notice):
-        if not path.is_file() or path.stat().st_size <= 0:
-            raise FileNotFoundError(f"missing staged project license/notice: {path}")
-    if (
-        not third_party_notices.is_file()
-        or SHAREX_SOURCE_ARCHIVE_NAME
-        not in third_party_notices.read_text(encoding="utf-8", errors="replace")
-    ):
-        raise RuntimeError(
-            "staged third-party notices do not identify the separate ShareX source archive"
-        )
     ocr_exe = output_root / "srf_ime_ocr.exe"
     if include_ocr:
         if not ocr_exe.is_file():
@@ -3180,12 +3142,15 @@ def verify_staged_package(
     rapidocr_root = output_root / RAPIDOCR_DIR
     rapidocr_python_package = rapidocr_root / "python" / "rapidocr"
     rapidocr_model_dir = rapidocr_python_package / "models"
+    legacy_venv = output_root / RAPIDOCR_VENV
+    if legacy_venv.exists():
+        raise RuntimeError(f"staged package must not contain legacy OCR venv: {legacy_venv}")
     if include_ocr:
         rapidocr_required = [
             output_root / "tools" / RAPIDOCR_HELPER,
             output_root / "tools" / OPENCV_CROP_HELPER,
             rapidocr_python_package / "__init__.py",
-            rapidocr_site_packages_path(output_root),
+            rapidocr_packages_path(output_root),
             packaged_python_runtime_path(output_root),
             packaged_python_stdlib_marker(output_root),
         ]
@@ -3203,7 +3168,7 @@ def verify_staged_package(
     else:
         forbidden_ocr_paths = [
             rapidocr_root,
-            output_root / RAPIDOCR_VENV,
+            output_root / RAPIDOCR_PACKAGES,
             output_root / PYTHON_RUNTIME,
             *(output_root / "tools" / helper for helper in RAPIDOCR_HELPERS),
         ]
@@ -3224,7 +3189,7 @@ def verify_staged_package(
 
     python_roots = [
         output_root / PYTHON_RUNTIME,
-        output_root / RAPIDOCR_VENV,
+        output_root / RAPIDOCR_PACKAGES,
         output_root / RAPIDOCR_DIR / "python",
     ]
     forbidden_python_artifacts: list[str] = []
@@ -3285,7 +3250,6 @@ def verify_staged_package(
     settings_exe = output_root / "srf_ime_settings.exe"
     clipboard_exe = output_root / "srf_ime_clipboard.exe"
     handwrite_exe = output_root / "srf_ime_handwrite.exe"
-    translate_result_exe = output_root / "srf_ime_translate_result.exe"
     ocr_exe = output_root / "srf_ime_ocr.exe"
     if settings_exe.stat().st_size == clipboard_exe.stat().st_size:
         settings_hash = sha256_file(settings_exe)
@@ -3298,7 +3262,6 @@ def verify_staged_package(
     settings_bytes = settings_exe.read_bytes()
     clipboard_bytes = clipboard_exe.read_bytes()
     handwrite_bytes = handwrite_exe.read_bytes()
-    translate_result_bytes = translate_result_exe.read_bytes()
     ocr_bytes = ocr_exe.read_bytes() if include_ocr else b""
     if "开心输入法 剪贴板".encode("utf-8") in settings_bytes:
         raise RuntimeError(
@@ -3309,18 +3272,27 @@ def verify_staged_package(
         raise RuntimeError("staged srf_ime_settings.exe is missing settings window title")
     if "开心输入法 剪贴板".encode("utf-8") not in clipboard_bytes:
         raise RuntimeError("staged srf_ime_clipboard.exe is missing clipboard window title")
+    clipboard_svc_exe = output_root / "srf_ime_clipboard_svc.exe"
+    clipboard_svc_bytes = clipboard_svc_exe.read_bytes()
+    if "开心输入法 剪贴板".encode("utf-8") in clipboard_svc_bytes:
+        raise RuntimeError(
+            "staged srf_ime_clipboard_svc.exe contains clipboard window title; "
+            "the Rust service must be headless — check srf_ime_clipboard_svc.rs"
+        )
     if "开心输入法 手写查字".encode("utf-8") not in handwrite_bytes:
         raise RuntimeError("staged srf_ime_handwrite.exe is missing handwriting window title")
-    if "开心输入法 翻译结果".encode("utf-8") not in translate_result_bytes:
-        raise RuntimeError("staged srf_ime_translate_result.exe is missing translation result window title")
     if include_ocr and "开心输入法 OCR".encode("utf-8") not in ocr_bytes:
         raise RuntimeError("staged srf_ime_ocr.exe is missing OCR window title")
+
+    if repo is not None:
+        verify_staged_git_commits(runtime_dir, output_root / "srf_ime_engine.exe", repo)
 
     install_dev = output_root / "install_dev.ps1"
     install_current_user = output_root / "install_current_user.ps1"
     uninstall_dev = output_root / "uninstall_dev.ps1"
     uninstall_current_user = output_root / "uninstall_current_user.ps1"
     restart_stale_hosts = output_root / "restart_stale_hosts.ps1"
+    repair_install = output_root / "repair_install.ps1"
     export_diagnostics = output_root / "export_diagnostics.ps1"
     invoke_registration = output_root / "invoke_registration.ps1"
     user_data_manifest = output_root / "user_data_manifest.json"
@@ -3337,11 +3309,16 @@ def verify_staged_package(
         uninstall_dev,
         uninstall_current_user,
         restart_stale_hosts,
+        repair_install,
         export_diagnostics,
         invoke_registration,
     ):
         if not script.is_file():
             raise FileNotFoundError(f"missing staged installer script: {script}")
+        if not script.read_bytes().startswith(codecs.BOM_UTF8):
+            raise RuntimeError(
+                f"staged PowerShell script must use UTF-8 BOM for Windows PowerShell 5.1: {script}"
+            )
     if not version_file.is_file():
         raise FileNotFoundError(f"missing staged VERSION file: {version_file}")
     if not third_party_notices.is_file():
@@ -3473,20 +3450,6 @@ def collect_artifacts(
         except FileNotFoundError:
             pass
 
-    sharex_exe = repo / SHAREX_EXE
-    if sharex_exe.is_file():
-        artifacts.append(
-            ("KaixinShareX.exe", sharex_exe.stat().st_size, sha256_prefix(sharex_exe))
-        )
-    sharex_source_archive = repo / "dist" / SHAREX_SOURCE_ARCHIVE_NAME
-    if sharex_source_archive.is_file():
-        artifacts.append(
-            (
-                sharex_source_archive.name,
-                sharex_source_archive.stat().st_size,
-                sha256_prefix(sharex_source_archive),
-            )
-        )
 
     # Installer
     for installer_name in installer_names or []:
@@ -3626,7 +3589,7 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
     print_msg(f"  {'-' * 40}")
 
     # Repository layout
-    for name in ["pinyin-ime", "tsf-tip", "tsf-tip/installer", "third_party/ShareX"]:
+    for name in ["pinyin-ime", "tsf-tip", "tsf-tip/installer"]:
         d = repo / name
         if not d.is_dir():
             errors.append(f"missing directory: {d}")
@@ -3701,23 +3664,6 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
             print_msg(f"  CMake      : {yellow('not found')} (allowed for --dry-run)")
         else:
             errors.append("cmake not found (install from https://cmake.org/download/)")
-
-    # ShareX / .NET
-    sharex_project = repo / SHAREX_PROJECT
-    if not sharex_project.is_file():
-        errors.append(f"missing ShareX project: {sharex_project}")
-    if not args.quick:
-        dotnet = shutil.which("dotnet")
-        if dotnet:
-            try:
-                ver = subprocess.check_output([dotnet, "--version"], text=True).strip()
-                print_msg(f"  .NET SDK   : {green(ver)}")
-            except Exception:
-                print_msg(f"  .NET SDK   : {green(dotnet)}")
-        elif args.dry_run:
-            print_msg(f"  .NET SDK   : {yellow('not found')} (allowed for --dry-run)")
-        else:
-            errors.append("dotnet SDK not found; ShareX 21.0.0 requires the .NET 9 SDK or newer")
 
     # PowerShell
     try:
@@ -4000,9 +3946,6 @@ def main() -> int:
                 if not (target_dir / name).is_file():
                     missing.append(f"pinyin-ime/target/{profile}/{name}")
 
-            if not (repo / SHAREX_EXE).is_file():
-                missing.append(str(SHAREX_EXE).replace("\\", "/"))
-
             # C++ artifacts
             try:
                 _ = find_tsf_runtime_pair(tsf_tip, cmake_build_dir, profile_cap)
@@ -4032,7 +3975,6 @@ def main() -> int:
             with StepTimer("Step 0/5  Clean build caches"):
                 targets = [
                     repo / "pinyin-ime" / "target",
-                    repo / SHAREX_SOURCE_DIR / "publish",
                     cmake_build_dir,
                     cmake_build_dir_x86,
                     repo / "dist" / "kaixin-package",
@@ -4184,18 +4126,6 @@ def main() -> int:
         else:
             print_msg(f"\n{dim('  [skip] Step 3a/5  CMake x86 build')}")
 
-        if args.quick:
-            print_msg(f"\n{dim('  [skip] Step 3b/5  ShareX build (using existing publish output)')}")
-        else:
-            with StepTimer("Step 3b/5  Build ShareX screenshot integration"):
-                step_sharex(repo)
-        if not args.dry_run:
-            source_archive = build_sharex_source_archive(repo)
-            print_msg(
-                f"  {green('OK')} separate ShareX corresponding source: "
-                f"{source_archive.name} ({fmt_size(source_archive.stat().st_size)})"
-            )
-
         if not args.no_smoke and not args.dry_run:
             warnings = smoke_verify(repo, profile)
             if warnings:
@@ -4281,6 +4211,7 @@ def main() -> int:
                         stage_root,
                         include_ocr=variant.include_ocr,
                         include_translation=variant.include_translation,
+                        repo=repo,
                     )
                     total = sum(f.stat().st_size for f in stage_root.rglob("*") if f.is_file())
                     print_msg(f"  {green('OK')} stage directory: {stage_root}")
@@ -4435,13 +4366,10 @@ def main() -> int:
         copy_to_stage=False,
         include_installer_files=installer_expected,
     )
-    for stage_root in stage_roots:
-        if stage_root.is_dir():
-            verified = verify_package_hash_manifest(stage_root)
-            print_msg(
-                f"  {green('OK')} verified staged package manifest: "
-                f"{stage_root / PACKAGE_HASH_MANIFEST} ({verified} files)"
-            )
+    # Every staged variant's package hash manifest was already written and
+    # verified during Step 4 (write + verify per variant); nothing modifies the
+    # stage directories afterwards, so re-verifying here would only run a third
+    # full SHA-256 pass over the same bytes (most costly on the OCR payload).
     artifacts.append((manifest_path.name, manifest_path.stat().st_size, sha256_prefix(manifest_path)))
     ctx.artifacts = artifacts
 

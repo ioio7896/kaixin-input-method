@@ -6,7 +6,7 @@ new setting is added or a default changes.
 
 | Section | Key | Default | Range / Values | Readers |
 | --- | --- | --- | --- | --- |
-| `general` | `config_version` | `5` | integer migration marker | installer, settings |
+| `general` | `config_version` | `13` | integer migration marker | installer, settings |
 | `diagnostics` | `log_level` | `basic` | `off`, `error`, `basic`, `perf`, `verbose` | Rust logs, TSF logs |
 | `style` | `candidate_page_size` | `9` | `3..=9` in settings; vertical quick panels may force `10` | settings, TSF, engine ranking |
 | `style` | `candidate_horizontal` | `1` | boolean | settings, TSF candidate window |
@@ -56,7 +56,6 @@ new setting is added or a default changes.
 | `screenshot` | `hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `screenshot` | `auto_save` | `1` | boolean; saves the final image to `save_dir` using `name_pattern` | settings, tray |
 | `screenshot` | `copy_after_capture` | `1` | boolean; copies the final image to the system clipboard | settings, tray |
-| `screenshot` | `open_editor_after_capture` | `1` | boolean; ShareX only, opens the annotation editor after selection; disable for direct save/copy | settings, tray, ShareX |
 | `screenshot` | `save_dir` | empty | folder path; empty uses `%USERPROFILE%\Pictures\Kaixin Screenshots` | settings, tray |
 | `screenshot` | `silent_copy_enabled` | `0` | boolean; after primary auto-save succeeds, also copy the file to `silent_copy_dir` | settings, tray |
 | `screenshot` | `silent_copy_dir` | empty | folder path for silent screenshot copies; empty disables the copy target | settings, tray |
@@ -64,29 +63,13 @@ new setting is added or a default changes.
 | `screenshot` | `date_subdirs` | `0` | boolean; saves into `YYYY/MM/DD` subdirectories below `save_dir` | settings, tray |
 | `screenshot` | `conflict_strategy` | `increment` | `increment` appends `_002` etc.; `overwrite` replaces an existing same-name file | settings, tray |
 | `screenshot` | `format` | `png` | `png`, `jpg` | settings, tray |
-| `screenshot` | `backend` | `sharex` | `sharex` uses the bundled ShareX capture/edit flow; `wgc` uses the native Windows Graphics Capture path | settings, tray |
-| `screenshot` | `mode` | `manual_region` | `manual_region` or `current_window`; ShareX defaults to manual region capture | settings, tray |
-| `sharex` | `detect_windows` / `detect_controls` | `1` / `1` | snap region selection to windows and child controls | settings, tray, ShareX |
-| `sharex` | `show_magnifier` / `show_info` / `show_crosshair` | `1` / `1` / `0` | region-selection helpers | settings, tray, ShareX |
-| `sharex` | `magnifier_pixel_count` / `magnifier_pixel_size` | `15` / `160` | source pixels `1..=100`, display size `40..=1000` | settings, tray, ShareX |
-| `sharex` | `magnifier_square` / `show_center_crosshair` | `0` / `0` | square magnifier and center marker toggles | settings, tray, ShareX |
-| `sharex` | `use_dimming` / `dim_strength` | `1` / `20` | dim unselected screen area; strength `0..=100` | settings, tray, ShareX |
-| `sharex` | `enable_animations` | `1` | region-selection animations | settings, tray, ShareX |
-| `sharex` | `fixed_size_enabled` / `fixed_width` / `fixed_height` | `0` / `250` / `250` | fixed-size region selection | settings, tray, ShareX |
-| `sharex` | `show_cursor` / `screenshot_delay` | `1` / `0` | include cursor and delay capture by seconds | settings, tray, ShareX |
-| `sharex` | `capture_client_area` / `capture_shadow` | `0` / `1` | current-window capture options | settings, tray, ShareX |
-| `sharex` | `hide_taskbar` / `hide_desktop_icons` | `0` / `0` | temporarily hide desktop surfaces during capture | settings, tray, ShareX |
-| `sharex` | `jpeg_quality` | `90` | JPEG encoder quality `1..=100` | settings, tray, ShareX |
-| `sharex` | `open_folder_after_capture` / `pin_to_screen` / `show_notification` | `0` / `0` / `0` | local post-capture actions | settings, tray, ShareX |
-| `sharex` | `editor_annotation_color` / `editor_thickness` | `#F23C3C` / `4` | default shape annotation color and line width | settings, tray, ShareX |
-| `sharex` | `editor_text_color` / `editor_text_border_color` | `#FFFFFF` / `#F23C3C` | independent text foreground and outline colors | settings, tray, ShareX |
-| `sharex` | `editor_font_family` / `editor_font_size` | `Segoe UI` / `48` | default editor text style | settings, tray, ShareX |
-| `sharex` | `editor_arrow_style` | `classic` | `classic`, `modern`, `double`, `basic`, `line` | settings, tray, ShareX |
-| `sharex` | `editor_blur_strength` / `editor_pixelate_strength` | `30` / `20` | editor effect strengths | settings, tray, ShareX |
-| `sharex` | `editor_step_type` | `numeric` | numeric, letter, or Roman step markers | settings, tray, ShareX |
-| `sharex` | `editor_auto_close` / `editor_remember_last_tool` | `0` / `1` | editor completion and tool-memory behavior | settings, tray, ShareX |
-| `sharex` | `editor_default_tool` | `rectangle` | default annotation tool when tool memory is disabled | settings, tray, ShareX |
-| `sharex` | `editor_toolbar_tools` | all tools | comma-separated visible editor tool IDs | settings, tray, ShareX |
+| `screenshot` | `mode` | `manual_region` | `manual_region` uses the native smart selector; `current_window` captures the foreground window | settings, tray |
+| `screenshot` | `confirm_on_release` | `0` | boolean; immediately confirms a freely dragged region when the mouse button is released | settings, tray |
+| `screenshot` | `show_instructions` | `1` | boolean; shows selector keyboard and interaction guidance; action buttons remain visible | settings, tray |
+| `ocr` | `profile` | `balanced` | `fast`, `balanced`, `accurate`; controls maximum OCR image edge | OCR window, prewarm |
+| `ocr` | `language` | `zh` | `zh`, `en`, `mixed`/`auto`; last OCR language, used for prewarm | OCR window, prewarm |
+| `ocr` | `provider` | `auto` | `auto`, `cpu`, `directml`, `cuda`; unavailable GPU providers fall back to CPU | OCR window, ONNX Runtime |
+| `ocr` | `keep_alive` | `1` | boolean; keep the Python/ONNX worker resident between requests | OCR |
 | `tools` | `settings_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `tools` | `handwrite_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `tools` | `ocr_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
@@ -100,13 +83,15 @@ new setting is added or a default changes.
 | `input` | `traditional_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
 | `input` | `game_mode_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
 | `input` | `temporary_ascii_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
+| `input` | `hotkey_scope` | `disabled_in_game` | `global`, `text_only`, `disabled_in_game`, or `per_app`; controls every TSF IME hotkey, including Shift tap and preserved keys | TSF |
+| `app:<process>` | `hotkey_scope` | inherited | Per-app override of `input.hotkey_scope`; set `global` only when this game/application should explicitly receive IME hotkeys | TSF |
 | `input` | `shift_tap_hotkey` | `1` | boolean | settings, TSF |
 | `input` | `candidate_number_select` | `1` | boolean | settings, TSF |
 | `input` | `date_auto_format` | `1` | boolean | settings, TSF, engine ranking |
 | `input` | `symbol_toolbox` | `1` | boolean | settings, TSF, engine ranking |
 | `input` | `emoji_input` | `1` | boolean | settings, TSF, engine ranking |
 | `input` | `auto_pair_punct` | `1` | boolean | settings, TSF |
-| `input` | `symbol_fullwidth` | `1` | boolean | settings, TSF |
+| `input` | `symbol_fullwidth` | `0` | boolean | settings, TSF |
 | `input` | `default_full_shape` | `0` | boolean | start Chinese mode in IME-managed full shape; also enables Shift+Space |
 | `input` | `full_shape_hotkey` | `0` | boolean | enable Shift+Space even when default full shape is off |
 | `input` | `shift_symbol_temporary_ascii` | `0` | boolean | settings, TSF |

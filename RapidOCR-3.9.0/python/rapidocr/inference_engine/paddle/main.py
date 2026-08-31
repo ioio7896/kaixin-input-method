@@ -130,6 +130,10 @@ class PaddleInferSession(InferSession):
         return model_file_path
 
     def init_predictor(self, infer_opts, ocr_version):
+        if ocr_version in (OCRVersion.PPOCRV5, OCRVersion.PPOCRV6):
+            infer_opts.enable_memory_optim()
+            return inference.create_predictor(infer_opts)
+
         infer_opts.enable_memory_optim()
         infer_opts.disable_glog_info()
         infer_opts.delete_pass("conv_transpose_eltwiseadd_bn_fuse_pass")

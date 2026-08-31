@@ -9,11 +9,12 @@ status: verified
 
 - `pinyin-ime/data/s2t_chars.sqlite`；
 - `data_sources/kaixin/*.tsv`；
-- `lexicon/zh-ext/*admin*.txt`；
-- `lexicon/zh-ext/hangzhou_*.txt`。
+- `data_sources/lexicon_fragments/zh-ext/animal_common_5000.txt`；
+- `data_sources/lexicon_fragments/zh-ext/*admin*.txt`；
+- `data_sources/lexicon_fragments/zh-ext/hangzhou_*.txt`。
 
-这些文件不是从仓库中已有的 THUOCL、rust-pinyin、wordfreq、RapidOCR 或 ShareX 内容
-直接生成的上游同步文件。项目作者愿意在其依法拥有或有权授权的范围内，按照项目的
+这些文件不是从仓库中的第三方词库、拼音库、OCR 或截图项目内容直接同步的上游文件。
+项目作者愿意在其依法拥有或有权授权的范围内，按照项目的
 Apache License 2.0 提供其对这些数据所做的选择、整理、校正、权重设置、拼音标注和
 数据库编排。
 

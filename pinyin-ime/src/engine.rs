@@ -236,22 +236,32 @@ impl IncrementalDecodeCache {
 }
 
 fn truncate_cached_beam(items: &mut Vec<CachedBeamItem>, k: usize, nodes: &[DecodeNode]) {
-    if items.len() > k {
-        let nth = k - 1;
-        items.select_nth_unstable_by(nth, |left, right| {
-            right.score.total_cmp(&left.score).then_with(|| {
-                materialize_cached_node(nodes, left.node)
-                    .cmp(&materialize_cached_node(nodes, right.node))
-            })
-        });
-        items.truncate(k);
-    }
-    items.sort_by(|left, right| {
-        right.score.total_cmp(&left.score).then_with(|| {
-            materialize_cached_node(nodes, left.node)
-                .cmp(&materialize_cached_node(nodes, right.node))
+    // 原比较器每次比较都回溯节点链物化两个 String（O(depth) 分配）。
+    // 先为每个候选一次性物化，比较只引用预计算字符串，排序语义不变。
+    let mut keyed: Vec<(f64, String, CachedBeamItem)> = items
+        .drain(..)
+        .map(|item| {
+            let text = materialize_cached_node(nodes, item.node);
+            (item.score, text, item)
         })
+        .collect();
+    if keyed.len() > k {
+        let nth = k - 1;
+        keyed.select_nth_unstable_by(nth, |left, right| {
+            right
+                .0
+                .total_cmp(&left.0)
+                .then_with(|| left.1.cmp(&right.1))
+        });
+        keyed.truncate(k);
+    }
+    keyed.sort_by(|left, right| {
+        right
+            .0
+            .total_cmp(&left.0)
+            .then_with(|| left.1.cmp(&right.1))
     });
+    *items = keyed.into_iter().map(|(_, _, item)| item).collect();
 }
 
 fn beam_results(

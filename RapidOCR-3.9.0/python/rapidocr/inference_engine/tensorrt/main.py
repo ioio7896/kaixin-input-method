@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 # @Author: SWHL
 # @Contact: liekkaskono@163.com
+import os
 import traceback
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -32,7 +33,7 @@ class TRTInferSession(InferSession):
         engine_path = self._get_engine_path(cfg)
         self.engine = self._load_or_build_engine(cfg, engine_path)
 
-        self.context = self.engine.create_execution_context()
+        self.context = self._create_execution_context(engine_path)
 
         # Allocate memory buffers (pre-allocated with max shape)
         self.inputs, self.outputs, self.bindings, self.stream = allocate_buffers(
@@ -41,16 +42,7 @@ class TRTInferSession(InferSession):
 
         logger.info(f"TensorRT engine loaded: {engine_path}")
 
-        # Detect MULTI model for square input requirement
-        self._requires_square_input = self._check_multi_model(cfg)
-        if self._requires_square_input:
-            self._max_square_size = self._get_max_profile_size()
-            logger.debug(
-                f"MULTI det model: requires square input, max_size={self._max_square_size}"
-            )
-        else:
-            self._requires_square_input = False
-            self._max_square_size = 2048
+        self._max_square_size = 2048
 
     def __enter__(self) -> "TRTInferSession":
         return self
@@ -114,26 +106,17 @@ class TRTInferSession(InferSession):
             >>> output = session(input_data)
         """
         try:
-            # Step 1: Handle square input for MULTI model
-            original_hw = None
-            if self._requires_square_input:
-                input_content, original_hw = self._pad_to_square(input_content)
-
-            # Step 2: Set input shape for dynamic dimensions
+            # Step 1: Set input shape for dynamic dimensions
             output_shape = self._set_input_shape(input_content)
 
-            # Step 3: Copy input data to GPU
+            # Step 2: Copy input data to GPU
             self._copy_input_to_device(input_content)
 
-            # Step 4: Execute inference
+            # Step 3: Execute inference
             self._execute_inference()
 
-            # Step 5: Copy output back to CPU
+            # Step 4: Copy output back to CPU
             output = self._copy_output_to_host(output_shape)
-
-            # Step 6: Crop output back to original shape
-            if original_hw is not None:
-                output = self._crop_output(output, original_hw)
 
             return output
 
@@ -183,16 +166,6 @@ class TRTInferSession(InferSession):
 
         return self.outputs[0].host[:output_size].reshape(output_shape)
 
-    def _check_multi_model(self, cfg: Dict[str, Any]) -> bool:
-        try:
-            from ...utils.typings import LangDet, TaskType
-
-            is_det = getattr(cfg, "task_type", None) == TaskType.DET
-            is_multi = getattr(cfg, "lang_type", None) == LangDet.MULTI
-            return is_det and is_multi
-        except Exception:
-            return False
-
     def _get_max_profile_size(self) -> int:
         try:
             # Try to get from config first
@@ -212,64 +185,6 @@ class TRTInferSession(InferSession):
 
         # Default fallback
         return 2048
-
-    def _pad_to_square(self, input_content: np.ndarray) -> tuple:
-        N, C, H, W = input_content.shape
-
-        if H == W:
-            return input_content, None  # Already square
-
-        # Calculate square size
-        square_size = max(H, W)
-
-        # Limit to max profile size if needed
-        if square_size > self._max_square_size:
-            logger.warning(
-                f"Square size {square_size} exceeds max profile size {self._max_square_size}. "
-                f"Limiting to {self._max_square_size}. This may cause accuracy loss."
-            )
-            square_size = self._max_square_size
-
-        # Ensure divisible by 32 (TensorRT requirement)
-        square_size = int(round(square_size / 32) * 32)
-
-        # Create padded array (zero padding)
-        padded = np.zeros((N, C, square_size, square_size), dtype=input_content.dtype)
-
-        # Copy original content to top-left
-        copy_h = min(H, square_size)
-        copy_w = min(W, square_size)
-        padded[:, :, :copy_h, :copy_w] = input_content[:, :, :copy_h, :copy_w]
-
-        return padded, (H, W)
-
-    def _crop_output(self, output: np.ndarray, original_hw: tuple) -> np.ndarray:
-        """Crop output back to original shape after square inference.
-
-        Args:
-            output: Output array with shape (N, C, S, S) from square inference.
-            original_hw: Original (H, W) before padding.
-
-        Returns:
-            Cropped output array with shape (N, C, H, W).
-        """
-        if original_hw is None:
-            return output
-
-        orig_h, orig_w = original_hw
-        out_h, out_w = output.shape[2:4]
-
-        if out_h >= orig_h and out_w >= orig_w:
-            # Normal case: crop to original size
-            return output[:, :, :orig_h, :orig_w]
-        else:
-            # Output is smaller - need to scale
-            # This happens when square_size was limited by max_profile_size
-            scale_h = out_h / max(orig_h, orig_w)
-            scale_w = out_w / max(orig_h, orig_w)
-            crop_h = int(orig_h * scale_h)
-            crop_w = int(orig_w * scale_w)
-            return output[:, :, :crop_h, :crop_w]
 
     def _setup_cuda_device(self) -> int:
         device_id = self.engine_cfg.get("device_id", 0)
@@ -308,8 +223,11 @@ class TRTInferSession(InferSession):
         model_name = self._get_model_name(cfg)
         gpu_arch = self._get_gpu_arch()
         precision = "fp16" if self.engine_cfg.get("use_fp16", True) else "fp32"
+        tf32_override = os.environ.get("NVIDIA_TF32_OVERRIDE", "unset")
 
-        return cache_dir / f"{model_name}_{gpu_arch}_{precision}.engine"
+        return cache_dir / (
+            f"{model_name}_{gpu_arch}_{precision}_tf32{tf32_override}.engine"
+        )
 
     def _get_model_name(self, cfg: Dict[str, Any]) -> str:
         """Extract model name from config for engine filename."""
@@ -418,7 +336,23 @@ class TRTInferSession(InferSession):
         runtime = trt.Runtime(self.trt_logger)
         with open(engine_path, "rb") as f:
             engine_data = f.read()
-        return runtime.deserialize_cuda_engine(engine_data)
+
+        engine = runtime.deserialize_cuda_engine(engine_data)
+        if engine is None:
+            raise TensorRTError(f"Failed to deserialize TensorRT engine: {engine_path}")
+        return engine
+
+    def _create_execution_context(self, engine_path: Path) -> trt.IExecutionContext:
+        context = self.engine.create_execution_context()
+        if context is None:
+            tf32_override = os.environ.get("NVIDIA_TF32_OVERRIDE", "unset")
+            raise TensorRTError(
+                "Failed to create TensorRT execution context for "
+                f"{engine_path}. NVIDIA_TF32_OVERRIDE={tf32_override}. "
+                "Remove the cached engine or rebuild it under the current "
+                "TensorRT/CUDA environment."
+            )
+        return context
 
     def have_key(self, key: str = "character") -> bool:
         return False

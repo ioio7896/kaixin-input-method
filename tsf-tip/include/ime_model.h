@@ -104,6 +104,10 @@ enum class SrfCandidateDensity : UINT { Compact = 0, Standard = 1, Comfortable =
 enum class SrfCandidateLayoutVariant : UINT { Classic = 0, Compact = 1, Card = 2 };
 enum class SrfFullscreenPolicy : UINT { Off = 0, HideUi = 1, Ascii = 2, ShowUi = 3 };
 enum class SrfFocusPolicy : UINT { Normal = 0, Strict = 1, Window = 2 };
+// Controls whether IME-owned shortcuts may intercept a foreground application.
+// PerApp is intentionally fail-closed: it only becomes active when an app rule
+// supplies a concrete scope.
+enum class SrfHotkeyScope : UINT { Global = 0, TextOnly = 1, DisabledInGame = 2, PerApp = 3 };
 enum class SrfOverlayAnchor : UINT {
   Auto = 0,
   Caret = 1,
@@ -276,7 +280,7 @@ struct SrfInputOptions {
   bool curlyPunct = true;
   bool autoPairPunct = true;
   bool numberFullwidth = false;
-  bool symbolFullwidth = true;
+  bool symbolFullwidth = false;
   bool shiftSymbolTemporaryAscii = false;
   bool dateAutoFormat = true;
   bool englishWordInput = false;
@@ -296,6 +300,7 @@ struct SrfInputOptions {
   bool pageMinusEqual = true;
   bool pageCommaPeriod = true;
   bool pagePgUpDown = true;
+  SrfHotkeyScope hotkeyScope = SrfHotkeyScope::DisabledInGame;
   SrfHotkeyOptions traditionalHotkey = {};
   SrfHotkeyOptions gameModeHotkey = {};
   SrfHotkeyOptions temporaryAsciiHotkey = {};
@@ -343,6 +348,8 @@ struct SrfAppOptions {
   bool candidateTopmost = true;
   bool hasFocusPolicy = false;
   SrfFocusPolicy focusPolicy = SrfFocusPolicy::Normal;
+  bool hasHotkeyScope = false;
+  SrfHotkeyScope hotkeyScope = SrfHotkeyScope::DisabledInGame;
   bool hasCommitTransport = false;
   SrfCommitTransport commitTransport = SrfCommitTransport::Tsf;
   bool hasGameProfile = false;

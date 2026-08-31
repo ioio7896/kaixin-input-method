@@ -36,6 +36,39 @@ struct SrfFocusSnapshot {
   uint64_t generation = 0;
 };
 
+// Parsed once when a lookup result is accepted.  Candidate UI, commit and
+// context-model paths can then share the same metadata without repeatedly
+// splitting the tab-delimited wire string during rapid typing.
+struct CandidateMetaParts {
+  std::wstring display;
+  std::wstring annotation;
+  std::wstring score;
+  std::wstring correctedReading;
+  bool noLearn = false;
+  bool clipboardQuick = false;
+  std::wstring clipboardId;
+  std::wstring clipboardSource;
+  std::wstring clipboardTime;
+  std::wstring clipboardType;
+  std::wstring clipboardFilter;
+  UINT clipboardPage = 1;
+  UINT clipboardPages = 1;
+  bool clipboardPinned = false;
+  bool forceVerticalLayout = false;
+  bool partialResult = false;
+  bool correctionCandidate = false;
+  bool prefixPlaceholder = false;
+  bool pinnedExactInput = false;
+  bool userCandidate = false;
+  std::wstring userSourceLabel;
+  bool extCandidate = false;
+};
+
+struct CandidateRow {
+  std::wstring text;
+  CandidateMetaParts meta;
+};
+
 class CSrfTip : public ITfTextInputProcessorEx,
                  public ITfDisplayAttributeProvider,
                  public ITfFunctionProvider,
@@ -64,7 +97,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
   size_t m_readingCursor = 0;
   std::vector<std::wstring> m_candidates;
   std::vector<std::wstring> m_candidateMeta;
+  std::vector<CandidateRow> m_candidateRows;
   std::wstring m_candidatesReading;
+  bool m_candidateHasMore = false;
+  bool m_candidateFullLookupPending = false;
+  UINT m_candidatePageAfterLoad = 0;
   enum class SrfCandidateViewState : UINT {
     Empty = 0,
     Stable = 1,
@@ -176,6 +213,12 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_configReloadPending = false;
   TF_PRESERVEDKEY m_registeredScreenshotKey = {};
   bool m_hasRegisteredScreenshotKey = false;
+  TF_PRESERVEDKEY m_registeredGameModeKey = {};
+  bool m_hasRegisteredGameModeKey = false;
+  TF_PRESERVEDKEY m_registeredTemporaryAsciiKey = {};
+  bool m_hasRegisteredTemporaryAsciiKey = false;
+  /// preserved-key 路径的自动重复去重时间戳（仅 OnPreservedKey 更新）。
+  ULONGLONG m_lastManualToggleTick = 0;
 
   CSrfCandidateListUIElement* m_candidateUi = nullptr;
   CNotificationWindow m_notificationWindow;
@@ -253,18 +296,22 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void ReleaseCompositionObjects();
   void ReleaseCompositionState();
   void RefreshCandidates();
-  bool RefreshCandidatesAsync();
+  bool RefreshCandidatesAsync(bool fullResult = false);
   bool ApplyCandidateRefreshResult(const std::wstring& reading,
                                    std::vector<std::wstring> nextCandidates,
                                    std::vector<std::wstring> nextMeta,
                                    SrfEngineState stateAfterLookup,
                                    SrfLookupCandidatesStatus lookupStatus,
                                    bool asyncResult,
-                                   unsigned long long requestId);
+                                   unsigned long long requestId,
+                                   bool hasMore = false,
+                                   bool fullResult = false);
   bool TryApplyPrefixCandidatePlaceholder(const std::wstring& reading,
                                           SrfEngineState stateBefore,
                                           unsigned long long requestId);
   void RememberPrefixCandidateCache(const std::wstring& reading);
+  void RebuildCandidateRows();
+  bool RequestMoreCandidatesForPage(UINT targetPage);
   void ApplyAsyncCandidateResult(TfEditCookie ec);
   bool CurrentCandidatesPartial() const;
   const wchar_t* CandidateViewStateName() const;
@@ -307,19 +354,24 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void BeginPreservedKeyGuardAfterActivation();
   void LogActivationEnvironment(DWORD dwFlags);
   bool ShouldSuppressImeTogglePreservedKey();
+  bool IsActiveTextServiceProfile() const;
   void ToggleImeOpen();
   void ToggleFullShape();
   void ToggleChinesePunctuation();
   void ToggleFuzzyPinyin();
   void ToggleDoublePinyin();
   void ToggleTraditionalOutput();
-  void ToggleManualGameCompat();
+  void ToggleManualGameCompat(TfEditCookie ec);
   void ToggleManualAsciiMode(TfEditCookie ec);
   void CaptureManualModeOwner();
   bool ReconcileManualModeOwner();
   void ClearManualModeOwner();
   void RestoreImeModeFromCurrentAppOptions();
   bool IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const;
+  SrfHotkeyScope EffectiveHotkeyScope() const;
+  bool IsGameHotkeyPassthroughActive() const;
+  bool ShouldHandleImeHotkeys() const;
+  void UpdatePreservedKeysForHotkeyScope();
   void LearnCommittedText(const std::wstring& committedText);
   HRESULT CommitCandidateResolved(TfEditCookie ec, ITfContext* requestContext, size_t idx,
                                    const std::wstring* snapshotReading,
@@ -410,7 +462,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void StopCandidateLookupWorker();
   void QueueCandidateLookup(const std::wstring& reading, unsigned long long serial,
                             unsigned long long engineRequestId, HWND hwnd,
-                            const SrfFocusSnapshot& focus);
+                            const SrfFocusSnapshot& focus, bool fullResult = false);
   void CandidateLookupWorkerMain();
 
   bool m_engineHealthNotifiedThisComposition = false;
@@ -442,6 +494,8 @@ class CSrfTip : public ITfTextInputProcessorEx,
   std::wstring m_asyncCandidatePendingReading;
   std::vector<std::wstring> m_asyncCandidatePendingItems;
   std::vector<std::wstring> m_asyncCandidatePendingMeta;
+  bool m_asyncCandidatePendingHasMore = false;
+  bool m_asyncCandidatePendingFullResult = false;
   SrfEngineState m_asyncCandidatePendingEngineState = SrfEngineState::Idle;
   SrfLookupCandidatesStatus m_asyncCandidatePendingLookupStatus =
       SrfLookupCandidatesStatus::Ok;
@@ -455,12 +509,15 @@ class CSrfTip : public ITfTextInputProcessorEx,
   unsigned long long m_candidateWorkerRequestSerial = 0;
   unsigned long long m_candidateWorkerEngineRequestId = 0;
   std::wstring m_candidateWorkerRequestReading;
+  bool m_candidateWorkerRequestFullResult = false;
   HWND m_candidateWorkerNotifyHwnd = nullptr;
   ULONGLONG m_candidateWorkerRequestTick = 0;
   unsigned int m_candidateWorkerRapidRequestCount = 0;
   SrfFocusSnapshot m_candidateWorkerRequestFocus = {};
   ULONGLONG m_lastKeyHotPathRefreshTick = 0;
   ULONGLONG m_lastCompatibilityRefreshTick = 0;
+  bool m_preservedKeysRegistered = false;
+  bool m_preservedKeysSuppressedForHotkeyScope = false;
   mutable bool m_candidatePageLayoutCacheValid = false;
   mutable CandidatePageLayoutMetrics m_candidatePageLayoutCache = {};
   mutable bool m_candidateDisplayItemsCacheValid = false;
@@ -490,8 +547,8 @@ class CSrfTip : public ITfTextInputProcessorEx,
   static constexpr UINT kAsyncCandidateResultMessage = WM_APP + 43;
   static constexpr UINT kLearnCommitCompletedMessage = WM_APP + 44;
   static constexpr DWORD kCandidateLookupCoalesceMs = 1;
-  static constexpr DWORD kCandidateLookupWarmCoalesceMs = 3;
-  static constexpr DWORD kCandidateLookupRapidCoalesceMs = 6;
+  static constexpr DWORD kCandidateLookupWarmCoalesceMs = 2;
+  static constexpr DWORD kCandidateLookupRapidCoalesceMs = 3;
   static constexpr DWORD kCandidateLookupBackpressureCoalesceMs = 8;
   static constexpr DWORD kCandidateLookupRapidInputMs = 40;
   static constexpr DWORD kCandidateLookupBackpressureMs = 120;
@@ -502,5 +559,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   static constexpr ULONGLONG kCompatibilityRefreshMs = 40;
   static constexpr ULONGLONG kFullscreenCompatStableMs = 250;
   static constexpr ULONGLONG kCompatibilityReleaseDebounceMs = 450;
+  /// Preserved-key 路径无 lParam 可判重复，用时间窗防按住热键自动重复连翻。
+  static constexpr ULONGLONG kManualToggleDedupMs = 250;
   static LRESULT CALLBACK DeferredTimerWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };

@@ -417,7 +417,6 @@ impl PinyinEngine {
         let cache_key = rerank_score_cache_key(
             RerankScoreKind::PhrasePath,
             phrase,
-            now,
             self.cache_epoch,
             Vec::new(),
         );
@@ -470,7 +469,6 @@ impl PinyinEngine {
         let cache_key = rerank_score_cache_key(
             RerankScoreKind::ContextBonus,
             phrase,
-            now,
             self.cache_epoch,
             context.clone(),
         );
@@ -523,7 +521,6 @@ impl PinyinEngine {
         let cache_key = rerank_score_cache_key(
             RerankScoreKind::WordTransition,
             phrase,
-            now,
             self.cache_epoch,
             context.clone(),
         );
@@ -1068,7 +1065,7 @@ impl PinyinEngine {
 
         let top_without_stability = ranked[0].score - top_stability;
         let mut promote_idx = None;
-        let mut best_margin = TOP1_STABILITY_CONFIDENCE_MARGIN;
+        let mut best_margin = f64::NEG_INFINITY;
         for idx in 1..ranked.len().min(TOP1_STABILITY_RECHECK_LIMIT) {
             if ranked[idx].meta.pinned {
                 continue;
@@ -1077,7 +1074,21 @@ impl PinyinEngine {
                 self.stability_bonus_for_candidate(current_key, &ranked[idx].phrase);
             let candidate_without_stability = ranked[idx].score - candidate_stability;
             let margin = candidate_without_stability - top_without_stability;
-            if margin >= best_margin {
+            // Exact user and full-pinyin candidates are stronger evidence than
+            // the previous prefix's display order.  They still need to win on
+            // their raw score, but use a lower confidence threshold so a stale
+            // stability bonus cannot keep an evidently better Top-1 stuck
+            // behind it while a word is being completed.
+            let confidence_margin = if matches!(
+                ranked[idx].meta.match_kind,
+                CandidateMatchKind::User | CandidateMatchKind::FullPinyin
+            ) && !ranked[idx].meta.partial
+            {
+                TOP1_STABILITY_CONFIDENCE_MARGIN * 0.45
+            } else {
+                TOP1_STABILITY_CONFIDENCE_MARGIN
+            };
+            if margin >= confidence_margin && margin > best_margin {
                 best_margin = margin;
                 promote_idx = Some(idx);
             }
@@ -1681,6 +1692,11 @@ pub(super) fn merge_into_candidate(current: &mut MergedCandidate, incoming: Merg
             && current.score - incoming.score <= META_STICKY_SCORE_MARGIN
         {
             current.meta = incoming.meta;
+        } else if incoming.meta.match_kind == CandidateMatchKind::User && !current.meta.user_signal
+        {
+            // 同词系统候选分数高出 META_STICKY_SCORE_MARGIN：保留系统的
+            // 排序位置，但带上用户学习信号，避免反复学习也无法前置。
+            current.meta.user_signal = true;
         }
         return;
     }

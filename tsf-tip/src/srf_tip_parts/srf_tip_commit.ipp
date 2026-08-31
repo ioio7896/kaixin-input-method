@@ -99,9 +99,15 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       return S_OK;
     }
     const ULONGLONG clipboardStart = GetTickCount64();
-    if (!committedMeta.clipboardId.empty()) {
+    // Short entries (<= CLIPBOARD_QUICK_INLINE_TEXT_UTF16_LIMIT units) already
+    // carry their full text inline in the phrase; only longer entries hold a
+    // clipboard://{id} placeholder that needs the pipe round trip.  Skipping
+    // the resolve for inline texts keeps the common commit offline-safe and
+    // removes a blocking pipe wait from the key thread.
+    if (!committedMeta.clipboardId.empty() &&
+        committed.rfind(L"clipboard://", 0) == 0) {
       std::wstring resolved;
-      if (!SrfTip_ResolveClipboardText(committedMeta.clipboardId, &resolved)) {
+      if (!SrfTip_ResolveClipboardTextCached(committedMeta.clipboardId, &resolved)) {
         if (committed.rfind(L"clipboard://", 0) == 0) {
           SrfTsfDiagnosticLog(L"clipboard-quick.resolve", L"reason=resolve_failed");
           SrfTip_ResetLearningContext();

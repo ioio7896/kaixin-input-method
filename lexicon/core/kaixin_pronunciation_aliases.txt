@@ -1,0 +1,30 @@
+# 开心输入法可接受读音与多音字表
+# 格式：词语或单字<TAB>无声调拼音<TAB>独立权重<TAB>读音类别
+# 同一个词语或单字可以按不同拼音出现多次；类别不参与运行时解析。
+乐	le	10000	primary
+乐	yue	5556	alternate
+剥	bo	5556	primary
+剥	bao	2223	alternate
+差	cha	7778	primary
+差	chai	4445	alternate
+差	ci	2223	alternate
+熟	shu	7778	primary
+熟	shou	6667	colloquial
+着	zhe	10000	primary
+着	zhuo	4445	alternate
+着	zhao	3334	alternate
+给	gei	10000	primary
+给	ji	2223	alternate
+薄	bo	6667	primary
+薄	bao	4445	alternate
+薄	bu	1	alternate
+血	xue	7778	primary
+血	xie	5556	colloquial
+行	xing	10000	primary
+行	hang	5556	alternate
+谁	shui	10000	primary
+谁	shei	8889	colloquial
+重	zhong	10000	primary
+重	chong	1112	alternate
+长	chang	10000	primary
+长	zhang	8889	alternate

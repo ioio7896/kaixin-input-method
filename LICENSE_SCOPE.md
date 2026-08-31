@@ -8,11 +8,9 @@ Apache-2.0 **不自动覆盖**仓库中标明为第三方作品的数据、模�
 
 | 路径 | 许可证或状态 | 说明 |
 | --- | --- | --- |
-| `third_party/ShareX/` | GPL-3.0 | 修改版独立程序；见该目录的 `LICENSE.txt` 和 `SOURCE_INFO.md` |
 | `RapidOCR-3.9.0/` | Apache-2.0（工程代码） | OCR 模型须按 `docs/licenses/OCR_MODELS.md` 单独核验 |
 | `pinyin-ime/src/handwrite_lookup/` 中的匹配器 | LGPL-3.0 | 见目录内 `NOTICE.md` 和 `LICENSE-LGPL` |
 | `pinyin-ime/src/handwrite_lookup/data/mmah.bin` | Arphic Public License | 见目录内 `LICENSE-APL` |
-| `data_sources/thuocl/` | MIT | 见该目录 `LICENSE` |
 | `data_sources/pinyin/` | MIT | 见该目录 `LICENSE` |
 | `lexicon/en/` 中源自 wordfreq 的内容 | Apache-2.0 | 见该目录 README 和许可证说明 |
 | 其他在 `THIRD_PARTY_NOTICES.md` 中列出的组件 | 各自许可证 | 以随附许可证和上游声明为准 |

@@ -1,0 +1,1003 @@
+# 开心输入法扩展词库：全球知名人物姓名
+# 格式：词语<TAB>全拼<TAB>词频；拼音不标声调。
+# 词频：统一为 200。
+阿兰德隆	a lan de long	200
+曹景行	cao jing xing	200
+查尔顿	cha er dun	200
+陈丹青	chen dan qing	200
+狄仁杰	di ren jie	200
+毛泽东	mao ze dong	200
+李彦宏	li yan hong	200
+宋美龄	song mei ling	200
+梁文博	liang wen bo	200
+殷洪年	yin hong nian	200
+余秋雨	yu qiu yu	200
+昭文帝	zhao wen di	200
+邹德忠	zou de zhong	200
+阿宝	a bao	200
+阿扁	a bian	200
+阿波罗	a bo luo	200
+阿卜杜尔	a bo du er	200
+阿部	a bu	200
+阿部规秀	a bu gui xiu	200
+阿辰	a chen	200
+阿达	a da	200
+阿道夫	a dao fu	200
+阿德米尔	a de mi er	200
+阿笛	a di	200
+阿杜	a du	200
+阿朵	a duo	200
+阿尔巴	a er ba	200
+阿尔贝特	a er bei te	200
+阿尔贝托	a er bei tuo	200
+阿尔弗雷德	a er fu lei de	200
+阿尔弗雷多	a er fu lei duo	200
+阿古柏	a gu bai	200
+阿骨打	a gu da	200
+阿怪	a guai	200
+阿贵	a gui	200
+阿桂	a gui	200
+阿赫罗梅耶夫	a he luo mei ye fu	200
+阿会喃	a hui nan	200
+阿基米德	a ji mi de	200
+阿基诺	a ji nuo	200
+阿加莎	a jia sha	200
+阿加西	a jia xi	200
+阿贾克斯	a jia ke si	200
+阿婕	a jie	200
+阿喀琉斯	a ka liu si	200
+阿奎那	a kui na	200
+阿拉法特	a la fa te	200
+阿来	a lai	200
+阿兰	a lan	200
+阿里不哥	a li bu ge	200
+阿里汉	a li han	200
+阿里克谢	a li ke xie	200
+阿里郎	a li lang	200
+阿里斯托芬	a li si tuo fen	200
+阿历克斯	a li ke si	200
+阿连德	a lian de	200
+阿隆索	a long suo	200
+阿伦特	a lun te	200
+阿罗尼扬	a luo ni yang	200
+阿马里尔多	a ma li er duo	200
+阿曼尼莎汗	a man ni sha han	200
+阿蒙	a meng	200
+阿木	a mu	200
+阿南德	a nan de	200
+阿牛	a niu	200
+阿诺德	a nuo de	200
+阿沛阿旺晋美	a pei a wang jin mei	200
+阿沁	a qin	200
+阿庆嫂	a qing sao	200
+阿丘	a qiu	200
+阿桑	a sang	200
+阿瑟	a se	200
+阿速吉八	a su ji ba	200
+阿速温和吉八	a su wen he ji ba	200
+阿西莫夫	a xi mo fu	200
+阿信	a xin	200
+阿雅	a ya	200
+阿忆	a yi	200
+阿英	a ying	200
+阿玉锡	a yu xi	200
+阿育王	a yu wang	200
+哀平帝	ai ping di	200
+哀平帝苻丕	ai ping di fu pi	200
+哀王	ai wang	200
+哀王沮渠牧犍	ai wang ju qu mu jian	200
+哀宗	ai zong	200
+哀宗完颜守绪	ai zong wan yan shou xu	200
+埃布登	ai bu deng	200
+埃德尔曼	ai de er man	200
+埃德加	ai de jia	200
+埃德蒙德	ai de meng de	200
+埃尔顿	ai er dun	200
+埃尔克耶尔	ai er ke ye er	200
+埃来提	ai lai ti	200
+埃米尔	ai mi er	200
+埃斯科巴	ai si ke ba	200
+艾尔	ai er	200
+艾菲尔	ai fei er	200
+艾哈迈德	ai ha mai de	200
+艾敬	ai jing	200
+艾柯	ai ke	200
+艾伦	ai lun	200
+艾吕雅	ai lv ya	200
+艾梦萌	ai meng meng	200
+艾青	ai qing	200
+艾森豪威尔	ai sen hao wei er	200
+艾思奇	ai si qi	200
+艾薇塔	ai wei ta	200
+艾伟桉	ai wei an	200
+艾未未	ai wei wei	200
+艾芜	ai wu	200
+艾小羊	ai xiao yang	200
+艾昕	ai xin	200
+爱戴	ai dai	200
+爱德华	ai de hua	200
+爱德华兹	ai de hua zi	200
+爱迪生	ai di sheng	200
+爱多士	ai duo shi	200
+爱默生	ai mo sheng	200
+爱新觉罗	ai xin jue luo	200
+爱新觉罗努尔哈赤	ai xin jue luo nu er ha chi	200
+爱新觉罗氏	ai xin jue luo shi	200
+爱因斯坦	ai yin si tan	200
+爱育黎拔力八达	ai yu li ba li ba da	200
+安德拉德	an de la de	200
+安德雷斯	an de lei si	200
+安德烈	an de lie	200
+安德鲁	an de lu	200
+安德王	an de wang	200
+安德王高延宗	an de wang gao yan zong	200
+安迪	an di	200
+安定王	an ding wang	200
+安定王元朗	an ding wang yuan lang	200
+安东尼	an dong ni	200
+安东诺夫	an dong nuo fu	200
+安格尔	an ge er	200
+安琥	an hu	200
+安吉丽娜	an ji li na	200
+安家满	an jia man	200
+安钧璨	an jun can	200
+安禄山	an lu shan	200
+安南	an nan	200
+安妮	an ni	200
+安妮宝贝	an ni bao bei	200
+安琪	an qi	200
+安童	an tong	200
+安徒生	an tu sheng	200
+安西奇	an xi qi	200
+安沂华	an yi hua	200
+安以轩	an yi xuan	200
+安又琪	an you qi	200
+安泽豪	an ze hao	200
+安致远	an zhi yuan	200
+安祚永	an zuo yong	200
+昂山素姬	ang shan su ji	200
+敖幼祥	ao you xiang	200
+奥黛丽	ao dai li	200
+奥德赛	ao de sai	200
+奥尔布赖特	ao er bu lai te	200
+奥古斯丁	ao gu si ding	200
+奥古斯都	ao gu si dou	200
+奥古斯特	ao gu si te	200
+奥金莱克	ao jin lai ke	200
+奥克塔维奥	ao ke ta wei ao	200
+奥勒留	ao lei liu	200
+奥利弗	ao li fu	200
+奥利维拉	ao li wei la	200
+奥列格	ao lie ge	200
+奥尼尔	ao ni er	200
+奥沙利文	ao sha li wen	200
+奥斯卡	ao si ka	200
+奥斯曼	ao si man	200
+奥斯特洛夫斯基	ao si te luo fu si ji	200
+奥斯汀	ao si ting	200
+奥特加	ao te jia	200
+奥托	ao tuo	200
+奥威尔	ao wei er	200
+奥维兰	ao wei lan	200
+奥西	ao xi	200
+八思巴	ba si ba	200
+巴巴拉	ba ba la	200
+巴勃鲁	ba bo lu	200
+巴勃罗	ba bo luo	200
+巴丹	ba dan	200
+巴蒂斯图塔	ba di si tu ta	200
+巴顿	ba dun	200
+巴多里奥	ba duo li ao	200
+巴尔达诺	ba er da nuo	200
+巴尔德斯	ba er de si	200
+巴尔扎克	ba er zha ke	200
+巴甫洛夫	ba fu luo fu	200
+巴甫洛维奇	ba fu luo wei qi	200
+巴家伟	ba jia wei	200
+巴金	ba jin	200
+巴拉迪	ba la di	200
+巴拉克	ba la ke	200
+巴雷拉	ba lei la	200
+巴雷西	ba lei xi	200
+巴蔓子	ba man zi	200
+巴乔	ba qiao	200
+巴人	ba ren	200
+巴曙松	ba shu song	200
+巴斯德	ba si de	200
+巴斯腾	ba si teng	200
+巴特尔	ba te er	200
+拔都	ba dou	200
+白冰冰	bai bing bing	200
+白沉	bai chen	200
+白成豪	bai cheng hao	200
+白诚铉	bai cheng xuan	200
+白崇禧	bai chong xi	200
+白峰基	bai feng ji	200
+白凤鸣	bai feng ming	200
+白圭	bai gui	200
+白行简	bai xing jian	200
+白鹤亮	bai he liang	200
+白洁	bai jie	200
+白居易	bai ju yi	200
+白朗	bai lang	200
+白利彬	bai li bin	200
+白灵	bai ling	200
+白鹏飞	bai peng fei	200
+白朴	bai pu	200
+白起	bai qi	200
+白庆琳	bai qing lin	200
+白求恩	bai qiu en	200
+白石裕	bai shi yu	200
+白淑湘	bai shu xiang	200
+白嵩	bai song	200
+白先勇	bai xian yong	200
+白欣怡	bai xin yi	200
+白修德	bai xiu de	200
+白岩松	bai yan song	200
+白燕	bai yan	200
+白杨	bai yang	200
+白茵	bai yin	200
+白音格力	bai yin ge li	200
+白英	bai ying	200
+白永成	bai yong cheng	200
+白玉霜	bai yu shuang	200
+白元	bai yuan	200
+白云鹏	bai yun peng	200
+百里奚	bai li xi	200
+百里溪	bai li xi	200
+柏邦妮	bai bang ni	200
+柏含	bai han	200
+柏辉章	bai hui zhang	200
+柏拉图	bo la tu	200
+柏杨	bai yang	200
+班彪	ban biao	200
+班超	ban chao	200
+班固	ban gu	200
+班克罗夫特	ban ke luo fu te	200
+班克斯	ban ke si	200
+班扬	ban yang	200
+班昭	ban zhao	200
+坂田荣男	ban tian rong nan	200
+邦德	bang de	200
+包尔汉	bao er han	200
+包公	bao gong	200
+包冉	bao ran	200
+包仁	bao ren	200
+包世臣	bao shi chen	200
+包训国	bao xun guo	200
+包玉刚	bao yu gang	200
+包拯	bao zheng	200
+保剑锋	bao jian feng	200
+保卢斯	bao lu si	200
+保罗	bao luo	200
+保罗艾伦	bao luo ai lun	200
+鲍比	bao bi	200
+鲍超	bao chao	200
+鲍方	bao fang	200
+鲍刚	bao gang	200
+鲍革	bao ge	200
+鲍林	bao lin	200
+鲍曼	bao man	200
+鲍宁	bao ning	200
+鲍照	bao zhao	200
+北村	bei cun	200
+北海王	bei hai wang	200
+北海王慕容超	bei hai wang mu rong chao	200
+贝阿尔佐特	bei a er zuo te	200
+贝贝托	bei bei tuo	200
+贝多芬	bei duo fen	200
+贝恩	bei en	200
+贝尔戈米	bei er ge mi	200
+贝尔纳	bei er na	200
+贝弗里奇	bei fu li qi	200
+贝克汉姆	bei ke han mu	200
+贝肯鲍尔	bei ken bao er	200
+贝利	bei li	200
+贝隆	bei long	200
+贝卢斯科尼	bei lu si ke ni	200
+贝瑞	bei rui	200
+贝斯特	bei si te	200
+孛儿只斤铁木真	bei er zhi jin tie mu zhen	200
+倍赏千惠子	bei shang qian hui zi	200
+本杰明	ben jie ming	200
+本拉登	ben la deng	200
+本田邦久	ben tian bang jiu	200
+本乡健	ben xiang jian	200
+本雅明	ben ya ming	200
+比尔	bi er	200
+比尔盖茨	bi er gai ci	200
+比干	bi gan	200
+比拉尔多	bi la er duo	200
+彼得	bi de	200
+彼得大帝	bi de da di	200
+彼得梅尔	bi de mei er	200
+彼什科夫	bi shen ke fu	200
+彼特	bi te	200
+毕彬彬	bi bin bin	200
+毕达哥拉斯	bi da ge la si	200
+毕加索	bi jia suo	200
+毕荩臣	bi jin chen	200
+毕然	bi ran	200
+毕升	bi sheng	200
+毕熙东	bi xi dong	200
+毕晓普	bi xiao pu	200
+毕玉玺	bi yu xi	200
+碧珊	bi shan	200
+碧野	bi ye	200
+扁鹊	bian que	200
+卞秉彬	bian bing bin	200
+别尔嘉耶夫	bie er jia ye fu	200
+别拉诺夫	bie la nuo fu	200
+别林斯基	bie lin si ji	200
+宾汉姆	bin han mu	200
+滨崎步	bin qi bu	200
+冰心	bing xin	200
+兵哥	bing ge	200
+兵圣	bing sheng	200
+秉志	bing zhi	200
+并多次	bing duo ci	200
+波爱修斯	bo ai xiu si	200
+波德莱尔	bo de lai er	200
+波尔	bo er	200
+波尔克	bo er ke	200
+波伏瓦	bo fu wa	200
+波普	bo pu	200
+波普尔	bo pu er	200
+波佐	bo zuo	200
+玻恩	bo en	200
+玻尔	bo er	200
+玻尔兹曼	bo er zi man	200
+玻利瓦尔	bo li wa er	200
+伯阳	bo yang	200
+伯夷	bo yi	200
+勃朗宁	bo lang ning	200
+勃朗特	bo lang te	200
+勃劳希契	bo lao xi qi	200
+博巴	bo ba	200
+博比	bo bi	200
+博尔忽	bo er hu	200
+博格坎普	bo ge kan pu	200
+博古	bo gu	200
+博克	bo ke	200
+博拉	bo la	200
+博涅克	bo nie ke	200
+博斯曼	bo si man	200
+卜凤波	bo feng bo	200
+卜万苍	bo wan cang	200
+卜祥志	bo xiang zhi	200
+不降	bu jiang	200
+不寿	bu shou	200
+布袋和尚	bu dai he shang	200
+布德尔	bu de er	200
+布尔达	bu er da	200
+布哈林	bu ha lin	200
+布坎南	bu kan nan	200
+布拉特	bu la te	200
+布莱德雷	bu lai de lei	200
+布莱恩	bu lai en	200
+布莱尔	bu lai er	200
+布莱克	bu lai ke	200
+布莱特纳	bu lai te na	200
+布莱希特	bu lai xi te	200
+布兰科	bu lan ke	200
+布兰妮	bu lan ni	200
+布朗	bu lang	200
+布勒东	bu lei dong	200
+布雷克	bu lei ke	200
+布雷默	bu lei mo	200
+布鲁查加	bu lu cha jia	200
+布鲁诺	bu lu nuo	200
+布罗茨基	bu luo ci ji	200
+布洛欣	bu luo xin	200
+布什	bu shen	200
+布施	bu shi	200
+布特拉格诺	bu te la ge nuo	200
+布托	bu tuo	200
+步非烟	bu fei yan	200
+才溢	cai yi	200
+蔡哀侯	cai ai hou	200
+蔡伯荒	cai bo huang	200
+蔡博	cai bo	200
+蔡灿得	cai can de	200
+蔡畅	cai chang	200
+蔡成侯	cai cheng hou	200
+蔡戴侯	cai dai hou	200
+蔡悼侯	cai dao hou	200
+蔡锷	cai e	200
+蔡宫侯	cai gong hou	200
+蔡共侯	cai gong hou	200
+蔡国权	cai guo quan	200
+蔡海山	cai hai shan	200
+蔡和森	cai he sen	200
+蔡鸿岩	cai hong yan	200
+蔡欢	cai huan	200
+蔡桓侯	cai huan hou	200
+蔡佳臻	cai jia zhen	200
+蔡建忠	cai jian zhong	200
+蔡健雅	cai jian ya	200
+蔡景侯	cai jing hou	200
+蔡婧	cai jing	200
+蔡康永	cai kang yong	200
+蔡澜	cai lan	200
+蔡厉侯	cai li hou	200
+蔡伶	cai ling	200
+蔡灵侯	cai ling hou	200
+蔡伦	cai lun	200
+蔡瑁	cai mao	200
+蔡孟君	cai meng jun	200
+蔡明	cai ming	200
+蔡穆侯	cai mu hou	200
+蔡佩贞	cai pei zhen	200
+蔡平侯	cai ping hou	200
+蔡琴	cai qin	200
+蔡少芬	cai shao fen	200
+蔡叔度	cai shu du	200
+蔡叔度姬度	cai shu du ji du	200
+蔡松年	cai song nian	200
+蔡廷锴	cai ting kai	200
+蔡为民	cai wei min	200
+蔡文侯	cai wen hou	200
+蔡文姬	cai wen ji	200
+蔡文胜	cai wen sheng	200
+蔡武侯	cai wu hou	200
+蔡僖侯	cai xi hou	200
+蔡襄	cai xiang	200
+蔡翔雄	cai xiang xiong	200
+蔡欣云	cai xin yun	200
+蔡宣侯	cai xuan hou	200
+蔡雪婧	cai xue jing	200
+蔡亚林	cai ya lin	200
+蔡妍	cai yan	200
+蔡琰	cai yan	200
+蔡依林	cai yi lin	200
+蔡夷侯	cai yi hou	200
+蔡邕	cai yong	200
+蔡宇翔	cai yu xiang	200
+蔡玉珂	cai yu ke	200
+蔡元培	cai yuan pei	200
+蔡昭侯	cai zhao hou	200
+蔡照明	cai zhao ming	200
+蔡志忠	cai zhi zhong	200
+蔡忠诚	cai zhong cheng	200
+蔡仲	cai zhong	200
+蔡仲姬胡	cai zhong ji hu	200
+蔡庄侯	cai zhuang hou	200
+蔡卓妍	cai zhuo yan	200
+蔡子华	cai zi hua	200
+残雪	can xue	200
+仓颉	cang jie	200
+仓木麻衣	cang mu ma yi	200
+沧月	cang yue	200
+藏霸	cang ba	200
+曹阿瞒	cao a man	200
+曹霸	cao ba	200
+曹彬	cao bin	200
+曹参	cao can	200
+曹操	cao cao	200
+曹成公	cao cheng gong	200
+曹成公姬负刍	cao cheng gong ji fu chu	200
+曹大元	cao da yuan	200
+曹戴伯	cao dai bo	200
+曹戴伯姬苏	cao dai bo ji su	200
+曹丹丹	cao dan dan	200
+曹悼公	cao dao gong	200
+曹悼公姬午	cao dao gong ji wu	200
+曹方	cao fang	200
+曹芳	cao fang	200
+曹凤珠	cao feng zhu	200
+曹刚川	cao gang chuan	200
+曹格	cao ge	200
+曹宫伯	cao gong bo	200
+曹宫伯姬侯	cao gong bo ji hou	200
+曹共公	cao gong gong	200
+曹共公姬襄	cao gong gong ji xiang	200
+曹国舅	cao guo jiu	200
+曹荭	cao hong	200
+曹桓公	cao huan gong	200
+曹桓公姬终生	cao huan gong ji zhong sheng	200
+曹奂	cao huan	200
+曹惠公	cao hui gong	200
+曹惠公姬兕	cao hui gong ji si	200
+曹建海	cao jian hai	200
+曹健	cao jian	200
+曹谨	cao jin	200
+曹靖公	cao jing gong	200
+曹靖公姬露	cao jing gong ji lu	200
+曹靖华	cao jing hua	200
+曹凯胜	cao kai sheng	200
+曹克林	cao ke lin	200
+曹克明	cao ke ming	200
+曹寇	cao kou	200
+曹锟	cao kun	200
+曹霖	cao lin	200
+曹髦	cao mao	200
+曹孟德	cao meng de	200
+曹穆公	cao mu gong	200
+曹穆公姬武	cao mu gong ji wu	200
+曹丕	cao pi	200
+曹平公	cao ping gong	200
+曹平公姬须	cao ping gong ji xu	200
+曹仁	cao ren	200
+曹汝霖	cao ru lin	200
+曹叡	cao rui	200
+曹盛洁	cao sheng jie	200
+曹叔	cao shu	200
+曹叔姬振铎	cao shu ji zhen duo	200
+曹素功	cao su gong	200
+曹太伯	cao tai bo	200
+曹太伯姬脾	cao tai bo ji pi	200
+曹天戈	cao tian ge	200
+曹天昊	cao tian hao	200
+曹维城	cao wei cheng	200
+曹文公	cao wen gong	200
+曹文公姬寿	cao wen gong ji shou	200
+曹武公	cao wu gong	200
+曹武公姬胜	cao wu gong ji sheng	200
+曹僖公	cao xi gong	200
+曹僖公姬夷	cao xi gong ji yi	200
+曹曦文	cao xi wen	200
+曹喜蛙	cao xi wa	200
+曹显兵	cao xian bing	200
+曹襄公	cao xiang gong	200
+曹襄公姬野	cao xiang gong ji ye	200
+曹孝伯	cao xiao bo	200
+曹孝伯姬云	cao xiao bo ji yun	200
+曹宣公	cao xuan gong	200
+曹宣公姬强	cao xuan gong ji qiang	200
+曹雪	cao xue	200
+曹雪芹	cao xue qin	200
+曹薰铉	cao xun xuan	200
+曹龑	cao yan	200
+曹燕	cao yan	200
+曹燕华	cao yan hua	200
+曹阳	cao yang	200
+曹夷伯	cao yi bo	200
+曹夷伯姬喜	cao yi bo ji xi	200
+曹隐公	cao yin gong	200
+曹隐公姬通	cao yin gong ji tong	200
+曹颖	cao ying	200
+曹幽伯	cao you bo	200
+曹幽伯姬强	cao you bo ji qiang	200
+曹禺	cao yu	200
+曹远征	cao yuan zheng	200
+曹增辉	cao zeng hui	200
+曹昭公	cao zhao gong	200
+曹昭公姬班	cao zhao gong ji ban	200
+曹贞吉	cao zhen ji	200
+曹征	cao zheng	200
+曹植	cao zhi	200
+曹中铭	cao zhong ming	200
+曹仲君	cao zhong jun	200
+曹仲君姬平	cao zhong jun ji ping	200
+曹庄公	cao zhuang gong	200
+曹庄公姬夕姑	cao zhuang gong ji xi gu	200
+曹子建	cao zi jian	200
+草圣	cao sheng	200
+岑参	cen can	200
+岑春煊	cen chun xuan	200
+岑凯伦	cen kai lun	200
+岑科	cen ke	200
+岑鹏	cen peng	200
+岑永康	cen yong kang	200
+曾宝仪	ceng bao yi	200
+曾炳权	ceng bing quan	200
+曾参	ceng can	200
+曾灿灯	ceng can deng	200
+曾巩	ceng gong	200
+曾国藩	ceng guo fan	200
+曾国荃	ceng guo quan	200
+曾璜	ceng huang	200
+曾会明	ceng hui ming	200
+曾纪泽	ceng ji ze	200
+曾建徽	ceng jian hui	200
+曾玲	ceng ling	200
+曾朴	ceng pu	200
+曾启全	ceng qi quan	200
+曾庆祝	ceng qing zhu	200
+曾少宗	ceng shao zong	200
+曾万钟	ceng wan zhong	200
+曾炜	ceng wei	200
+曾宪锋	ceng xian feng	200
+曾祥金	ceng xiang jin	200
+曾孝谷	ceng xiao gu	200
+曾业辉	ceng ye hui	200
+曾荫权	ceng yin quan	200
+曾泽生	ceng ze sheng	200
+曾之乔	ceng zhi qiao	200
+曾志伟	ceng zhi wei	200
+曾子	ceng zi	200
+曾子航	ceng zi hang	200
+茶圣	cha sheng	200
+查可欣	cha ke xin	200
+查理大帝	cha li da di	200
+查慕新	cha mu xin	200
+查韦斯	cha wei si	200
+查仙奴	cha xian nu	200
+查小欣	cha xiao xin	200
+察合台	cha he tai	200
+柴进	chai jin	200
+柴静	chai jing	200
+柴荣	chai rong	200
+柴宗训	chai zong xun	200
+常宝	chang bao	200
+常昊	chang hao	200
+常红利	chang hong li	200
+常宽	chang kuan	200
+常明芳	chang ming fang	200
+常任侠	chang ren xia	200
+常婉华	chang wan hua	200
+常香玉	chang xiang yu	200
+常晓阳	chang xiao yang	200
+常颖	chang ying	200
+常遇春	chang yu chun	200
+常远	chang yuan	200
+嫦娥	chang e	200
+晁补之	chao bu zhi	200
+晁错	chao cuo	200
+晁盖	chao gai	200
+晁衡	chao heng	200
+车尔尼雪夫斯基	che er ni xue fu si ji	200
+车径行	che jing xing	200
+车太铉	che tai xuan	200
+车泽武	che ze wu	200
+辰亦儒	chen yi ru	200
+陈哀公	chen ai gong	200
+陈哀公妫弱	chen ai gong gui ruo	200
+陈爱莲	chen ai lian	200
+陈安保	chen an bao	200
+陈安齐	chen an qi	200
+陈霸先	chen ba xian	200
+陈白尘	chen bai chen	200
+陈白沙	chen bai sha	200
+陈柏霖	chen bai lin	200
+陈柏祥	chen bai xiang	200
+陈宝国	chen bao guo	200
+陈宝莲	chen bao lian	200
+陈宝箴	chen bao zhen	200
+陈璧君	chen bi jun	200
+陈斌	chen bin	200
+陈波	chen bo	200
+陈波儿	chen bo er	200
+陈伯吹	chen bo chui	200
+陈伯达	chen bo da	200
+陈伯华	chen bo hua	200
+陈伯宗	chen bo zong	200
+陈布雷	chen bu lei	200
+陈昌凤	chen chang feng	200
+陈辰	chen chen	200
+陈成公	chen cheng gong	200
+陈成公妫午	chen cheng gong gui wu	200
+陈诚	chen cheng	200
+陈冲	chen chong	200
+陈翀	chen chong	200
+陈闯	chen chuang	200
+陈春	chen chun	200
+陈纯甄	chen chun zhen	200
+陈达	chen da	200
+陈大悲	chen da bei	200
+陈大齐	chen da qi	200
+陈大阳	chen da yang	200
+陈道明	chen dao ming	200
+陈道远	chen dao yuan	200
+陈德容	chen de rong	200
+陈登科	chen deng ke	200
+陈东	chen dong	200
+陈独秀	chen du xiu	200
+陈妃平	chen fei ping	200
+陈废帝	chen fei di	200
+陈废帝陈伯宗	chen fei di chen bo zong	200
+陈峰	chen feng	200
+陈凤林	chen feng lin	200
+陈富杰	chen fu jie	200
+陈纲	chen gang	200
+陈赓	chen geng	200
+陈公博	chen gong bo	200
+陈功	chen gong	200
+陈宫	chen gong	200
+陈共公	chen gong gong	200
+陈共公妫朔	chen gong gong gui shuo	200
+陈冠霖	chen guan lin	200
+陈冠希	chen guan xi	200
+陈冠中	chen guan zhong	200
+陈光	chen guang	200
+陈国东	chen guo dong	200
+陈果夫	chen guo fu	200
+陈寒峰	chen han feng	200
+陈好	chen hao	200
+陈昊	chen hao	200
+陈浩民	chen hao min	200
+陈和生	chen he sheng	200
+陈衡恪	chen heng ke	200
+陈衡哲	chen heng zhe	200
+陈红	chen hong	200
+陈红峰	chen hong feng	200
+陈洪绶	chen hong shou	200
+陈洪武	chen hong wu	200
+陈鸿寿	chen hong shou	200
+陈鸿远	chen hong yuan	200
+陈后主	chen hou zhu	200
+陈后主陈叔宝	chen hou zhu chen shu bao	200
+陈胡公	chen hu gong	200
+陈胡公妫满	chen hu gong gui man	200
+陈虎	chen hu	200
+陈化成	chen hua cheng	200
+陈怀公	chen huai gong	200
+陈怀公妫柳	chen huai gong gui liu	200
+陈桓公	chen huan gong	200
+陈桓公妫鲍	chen huan gong gui bao	200
+陈荒煤	chen huang mei	200
+陈晖	chen hui	200
+陈惠公	chen hui gong	200
+陈惠公妫吴	chen hui gong gui wu	200
+陈惠祯	chen hui zhen	200
+陈慧琳	chen hui lin	200
+陈慧珊	chen hui shan	200
+陈济恒	chen ji heng	200
+陈继承	chen ji cheng	200
+陈继红	chen ji hong	200
+陈家洛	chen jia luo	200
+陈家伟	chen jia wei	200
+陈嘉庚	chen jia geng	200
+陈嘉桦	chen jia hua	200
+陈嘉锐	chen jia rui	200
+陈建斌	chen jian bin	200
+陈建功	chen jian gong	200
+陈建国	chen jian guo	200
+陈建翔	chen jian xiang	200
+陈剑月	chen jian yue	200
+陈江波	chen jiang bo	200
+陈洁如	chen jie ru	200
+陈介祺	chen jie qi	200
+陈金城	chen jin cheng	200
+陈劲松	chen jing song	200
+陈景润	chen jing run	200
+陈景藻	chen jing zao	200
+陈婧	chen jing	200
+陈镜开	chen jing kai	200
+陈炯明	chen jiong ming	200
+陈鞠旅	chen ju lv	200
+陈菊	chen ju	200
+陈娟红	chen juan hong	200
+陈君长	chen jun zhang	200
+陈俊峰	chen jun feng	200
+陈俊虹	chen jun hong	200
+陈俊介	chen jun jie	200
+陈峻青	chen jun qing	200
+陈凯歌	chen kai ge	200
+陈克	chen ke	200
+陈克帆	chen ke fan	200
+陈坤	chen kun	200
+陈鲤庭	chen li ting	200
+陈厉公	chen li gong	200
+陈厉公妫佗	chen li gong gui tuo	200
+陈立夫	chen li fu	200
+陈立平	chen li ping	200
+陈立伟	chen li wei	200
+陈丽醇	chen li chun	200
+陈丽娜	chen li na	200
+陈莉莉	chen li li	200
+陈亮	chen liang	200
+陈临新	chen lin xin	200
+陈琳	chen lin	200
+陈灵公	chen ling gong	200
+陈灵公妫平国	chen ling gong gui ping guo	200
+陈留王	chen liu wang	200
+陈留王曹奂	chen liu wang cao huan	200
+陈龙	chen long	200
+陈鲁豫	chen lu yu	200
+陈玫君	chen mei jun	200
+陈美琪	chen mei qi	200
+陈梦飞	chen meng fei	200
+陈闵公	chen min gong	200
+陈闵公妫越	chen min gong gui yue	200
+陈明	chen ming	200
+陈明川	chen ming chuan	200
+陈明仁	chen ming ren	200
+陈明远	chen ming yuan	200
+陈墨	chen mo	200
+陈墨香	chen mo xiang	200
+陈木胜	chen mu sheng	200
+陈穆公	chen mu gong	200
+陈穆公妫款	chen mu gong gui kuan	200
+陈纳德	chen na de	200
+陈沛	chen pei	200
+陈佩骐	chen pei qi	200
+陈佩斯	chen pei si	200
+陈丕显	chen pi xian	200
+陈平	chen ping	200
+陈平公	chen ping gong	200
+陈平公妫燮	chen ping gong gui xie	200
+陈其迈	chen qi mai	200
+陈其美	chen qi mei	200
+陈启明	chen qi ming	200
+陈蒨	chen qian	200
+陈乔年	chen qiao nian	200
+陈庆之	chen qing zhi	200
+陈去病	chen qu bing	200
+陈铨	chen quan	200
+陈染	chen ran	200
+陈荣森	chen rong sen	200
+陈瑞珂	chen rui ke	200
+陈若曦	chen ruo xi	200
+陈赛	chen sai	200
+陈赛娟	chen sai juan	200
+陈绍堂	chen shao tang	200
+陈申公	chen shen gong	200
+陈申公妫犀侯	chen shen gong gui xi hou	200
+陈慎公	chen shen gong	200
+陈慎公妫圉戎	chen shen gong gui yu rong	200
+陈省身	chen sheng shen	200
+陈胜	chen sheng	200
+陈师曾	chen shi ceng	200
+陈师道	chen shi dao	200
+陈诗欣	chen shi xin	200
+陈寿	chen shou	200
+陈叔宝	chen shu bao	200
+陈淑兰	chen shu lan	200
+陈淑琬	chen shu wan	200
+陈水扁	chen shui bian	200
+陈顺	chen shun	200
+陈顺乐	chen shun le	200
+陈硕贞	chen shuo zhen	200
+陈司翰	chen si han	200
+陈思思	chen si si	200
+陈松伶	chen song ling	200
+陈素农	chen su nong	200
+陈素卿	chen su qing	200
+陈潭秋	chen tan qiu	200
+陈涛	chen tao	200
+陈天华	chen tian hua	200
+陈天桥	chen tian qiao	200
+陈铁	chen tie	200
+陈彤	chen tong	200
+陈抟	chen tuan	200
+陈婉珍	chen wan zhen	200
+陈望道	chen wang dao	200
+陈威翰	chen wei han	200
+陈维崧	chen wei song	200
+陈伟鸿	chen wei hong	200
+陈伟明	chen wei ming	200
+陈文彬	chen wen bin	200
+陈文灯	chen wen deng	200
+陈文帝	chen wen di	200
+陈文帝陈蒨	chen wen di chen qian	200
+陈文定	chen wen ding	200
+陈文公	chen wen gong	200
+陈文公妫圉	chen wen gong gui yu	200
+陈文杞	chen wen qi	200
+陈文茜	chen wen qian	200
+陈武	chen wu	200
+陈武帝	chen wu di	200
+陈武帝陈霸先	chen wu di chen ba xian	200
+陈武公	chen wu gong	200
+陈武公妫灵	chen wu gong gui ling	200
+陈西贝	chen xi bei	200
+陈锡联	chen xi lian	200
+陈锡文	chen xi wen	200
+陈僖公	chen xi gong	200
+陈僖公妫孝	chen xi gong gui xiao	200
+陈曦	chen xi	200
+陈仙梅	chen xian mei	200
+陈先奎	chen xian kui	200
+陈相公	chen xiang gong	200
+陈相公妫皋羊	chen xiang gong gui gao yang	200
+陈小春	chen xiao chun	200
+陈小艺	chen xiao yi	200
+陈晓东	chen xiao dong	200
+陈晓林	chen xiao lin	200
+陈晓琦	chen xiao qi	200
+陈晓晓	chen xiao xiao	200
+陈晓旭	chen xiao xu	200
+陈晓焱	chen xiao yan	200
+陈孝公	chen xiao gong	200
+陈孝公妫突	chen xiao gong gui tu	200
+陈孝坤	chen xiao kun	200
+陈孝年	chen xiao nian	200
+陈孝荣	chen xiao rong	200
+陈新全	chen xin quan	200
+陈新亚	chen xin ya	200
+陈信安	chen xin an	200
+陈星聚	chen xing ju	200
+陈秀丽	chen xiu li	200
+陈顼	chen xu	200
+陈宣帝	chen xuan di	200
+陈宣帝陈顼	chen xuan di chen xu	200
+陈宣公	chen xuan gong	200
+陈宣公妫杵臼	chen xuan gong gui chu jiu	200
+陈学松	chen xue song	200
+陈雪根	chen xue gen	200
+陈雅丹	chen ya dan	200
+陈雅琳	chen ya lin	200
+陈雅玲	chen ya ling	200
+陈亚军	chen ya jun	200
+陈亚宁	chen ya ning	200
+陈延年	chen yan nian	200
+陈衍	chen yan	200
+陈燕燕	chen yan yan	200
+陈依秋	chen yi qiu	200
+陈夷公	chen yi gong	200
+陈夷公妫说	chen yi gong gui shuo	200
+陈怡嘉	chen yi jia	200
+陈怡蓉	chen yi rong	200
+陈贻标	chen yi biao	200
+陈奕	chen yi	200
+陈奕迅	chen yi xun	200
+陈逸飞	chen yi fei	200
+陈毅	chen yi	200
+陈毅维	chen yi wei	200
+陈寅恪	chen yin ke	200
+陈英	chen ying	200
+陈撄宁	chen ying ning	200
+陈盈帧	chen ying zhen	200
+陈莹	chen ying	200
+陈滢	chen ying	200
+陈映真	chen ying zhen	200
+陈永贵	chen yong gui	200
+陈泳蓓	chen yong bei	200
+陈幽公	chen you gong	200
+陈幽公妫宁	chen you gong gui ning	200
+陈友谅	chen you liang	200
+陈羽凡	chen yu fan	200
+陈玉成	chen yu cheng	200
+陈玉佳	chen yu jia	200
+陈育平	chen yu ping	200
+陈育新	chen yu xin	200
+陈元安	chen yuan an	200
+陈元光	chen yuan guang	200
+陈垣	chen yuan	200
+陈圆圆	chen yuan yuan	200
+陈远	chen yuan	200
+陈悦	chen yue	200
+陈云	chen yun	200
+陈云峰	chen yun feng	200
+陈云裳	chen yun shang	200
+陈在华	chen zai hua	200
+陈钊	chen zhao	200
+陈昭荣	chen zhao rong	200
+陈之平	chen zhi ping	200
+陈志刚	chen zhi gang	200
+陈志朋	chen zhi peng	200
+陈志武	chen zhi wu	200
+陈中纬	chen zhong wei	200
+陈竺	chen zhu	200
+陈庄公	chen zhuang gong	200
+陈庄公妫林	chen zhuang gong gui lin	200
+陈子昂	chen zi ang	200
+陈子威	chen zi wei	200
+陈紫函	chen zi han	200
+陈祖德	chen zu de	200
+晨岚	chen lan	200
+谌容	chen rong	200
+谌湛溪	chen zhan xi	200
+称制	cheng zhi	200
+称制海迷失后	cheng zhi hai mi shi hou	200
+称制乃马真后	cheng zhi nai ma zhen hou	200
+成仿吾	cheng fang wu	200
+成公	cheng gong	200
+成公张茂	cheng gong zhang mao	200
+成吉思汗	cheng ji si han	200
+成钧	cheng jun	200
+成龙	cheng long	200
+成泰燊	cheng tai shen	200
+成无己	cheng wu ji	200
+成荫	cheng yin	200
+成兆才	cheng zhao cai	200
+承天后耶律普速完	cheng tian hou ye lv pu su wan	200
+程步高	cheng bu gao	200
+程蝉	cheng chan	200
+程大位	cheng da wei	200
+程福臣	cheng fu chen	200
+程海	cheng hai	200
+程颢	cheng hao	200
+程鹤麟	cheng he lin	200
+程季淑	cheng ji shu	200
+程进超	cheng jin chao	200
+程琳	cheng lin	200
+程灵素	cheng ling su	200
+程苓峰	cheng ling feng	200
+程普	cheng pu	200
+程潜	cheng qian	200
+程青松	cheng qing song	200
+程瑞声	cheng rui sheng	200
+程世才	cheng shi cai	200
+程树芬	cheng shu fen	200

@@ -1,9 +1,3 @@
-本输入法一切东西都留在本机win系统内。下载源代码之前可以通过你的AI进行一次源代码审计，放心再用。谢谢
-
-
-
-
-
 # 开心输入法
 
 ![开心输入法图标](assets/kaixin-input-icon.png)
@@ -57,9 +51,9 @@ TSF/辅助组件，以适配不同位数的宿主程序。
 
 - **剪贴板管理器**：搜索、置顶、复制、粘贴、快粘和清空文本历史。
 - **手写查字**：独立画布、候选复制和直接粘贴。
-- **截图**：ShareX 集成或原生 Windows Graphics Capture，支持区域和窗口截图。
+- **截图**：原生 Windows Graphics Capture，支持智能框选、自由区域和当前窗口截图。
 - **OCR**：本地 RapidOCR/ONNXRuntime，支持预处理、二次框选、历史和结果整理。
-- **翻译联动**：通过当前用户命名管道连接外部 WinTranslator。
+- **翻译联动**：输入法只采集文本并通过当前用户命名管道发起请求；翻译、展示和结果操作均由外部 WinTranslator 完成。
 - **托盘与设置**：统一管理输入、外观、工具、应用兼容和隐私选项。
 
 ## 架构
@@ -77,8 +71,8 @@ srf_ime_engine.exe            Rust：解析、候选、学习、词库和剪贴�
         ├── srf_ime_tray.exe
         ├── srf_ime_clipboard.exe
         ├── srf_ime_handwrite.exe
-        ├── srf_ime_ocr.exe
-        └── srf_ime_translate_result.exe ──► 外部 WinTranslator
+        └── srf_ime_ocr.exe
+        └── 翻译请求（候选词 / 托盘 / OCR） ──► 外部 WinTranslator
 ```
 
 候选窗口通常由 TSF 进程内渲染；全屏或无 UI 宿主可按策略切换到独立的
@@ -176,14 +170,19 @@ OCR 安装包要求以下内容完整存在于安装目录：
 
 ```text
 RapidOCR-3.9.0/
-.venv-rapidocr/
+.python-runtime/
+.python-packages/
 tools/kaixin_ocr_engine.py
 RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_det_medium.onnx
+RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_det_small.onnx
 RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_rec_medium.onnx
 ```
 
-程序会根据 `package_manifest.sha256` 校验模型哈希。可选的 small/INT8 检测模型存在时
-可用于快速档，否则使用 PP-OCRv6 medium。
+程序会根据 `package_manifest.sha256` 校验模型哈希。快速档使用 `det_small`，均衡和
+高精度档使用 PP-OCRv6 `det_medium`。
+
+开发环境首次准备或模型缺失时，运行
+`powershell -ExecutionPolicy Bypass -File scripts/fetch_rapidocr_models.ps1` 下载并校验全部必需模型。
 
 截图默认保存到 `%USERPROFILE%\Pictures\Kaixin Screenshots`，OCR 截图默认保存到
 `%USERPROFILE%\Pictures\Kaixin OCR`；两者都可在设置中修改。截图图片本身是普通
@@ -406,11 +405,11 @@ build.py         一键构建、验证、stage、签名和打包
 ## 许可证
 
 开心输入法自行开发的代码和文档采用
-[Apache License 2.0](LICENSE) 授权。ShareX、RapidOCR、OCR 模型、词库和手写数据等
+[Apache License 2.0](LICENSE) 授权。RapidOCR、OCR 模型、词库和手写数据等
 第三方内容不自动适用该许可证，详细边界见 [LICENSE_SCOPE.md](LICENSE_SCOPE.md) 和
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
-正式发布的安装包、便携包和 ShareX 对应源码包应同时提供 SHA-256 校验值。项目的
+正式发布的安装包和便携包应同时提供 SHA-256 校验值。项目的
 已知限制包括：仅支持 Windows；部分截图测试需要交互式桌面；OCR 变体依赖体积较大的
 第三方运行时及模型；未提供已核验的 `s2t_chars.sqlite` 时源码构建会停用简繁映射并
 保持原文输出；管理员权限或已被入侵的同用户会话不在本项目的隐私隔离边界内。

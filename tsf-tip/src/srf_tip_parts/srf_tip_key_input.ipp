@@ -48,57 +48,118 @@ std::wstring JsonEscapeTranslationText(const std::wstring& text) {
   return escaped;
 }
 
-std::filesystem::path FindTranslationResultHelper() {
-  std::filesystem::path current = ModuleDirFromAddress(
-      reinterpret_cast<const void*>(&FindTranslationResultHelper));
-  std::error_code ec;
-  for (int depth = 0; depth < 6 && !current.empty(); ++depth) {
-    const auto candidate = current / L"srf_ime_translate_result.exe";
+constexpr wchar_t kWinTranslatorRequestPipe[] = LR"(\\.\pipe\WinTranslator.Request)";
+constexpr DWORD kWinTranslatorPipeProbeTimeoutMs = 120;
+constexpr DWORD kWinTranslatorStartupTimeoutMs = 12'000;
+std::atomic<unsigned long long> g_candidateTranslationRequestCounter{1};
+
+bool WideTextToUtf8(const std::wstring& text, std::string* output) {
+  if (!output) return false;
+  output->clear();
+  if (text.empty()) return true;
+  const int bytes = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(),
+                                        static_cast<int>(text.size()), nullptr, 0, nullptr, nullptr);
+  if (bytes <= 0) return false;
+  output->resize(static_cast<size_t>(bytes));
+  return WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(),
+                             static_cast<int>(text.size()), output->data(), bytes, nullptr,
+                             nullptr) == bytes;
+}
+
+std::filesystem::path FindWinTranslatorExecutable() {
+  std::vector<std::filesystem::path> candidates;
+  wchar_t configured[MAX_PATH] = {};
+  const DWORD configuredLength = GetEnvironmentVariableW(L"WINTRANSLATOR_EXE", configured, MAX_PATH);
+  if (configuredLength > 0 && configuredLength < MAX_PATH) candidates.emplace_back(configured);
+
+  wchar_t localAppData[MAX_PATH] = {};
+  const DWORD localLength = GetEnvironmentVariableW(L"LOCALAPPDATA", localAppData, MAX_PATH);
+  if (localLength > 0 && localLength < MAX_PATH) {
+    const auto localRoot = std::filesystem::path(localAppData);
+    wchar_t iniPath[MAX_PATH] = {};
+    const auto configPath = localRoot / L"kaixin" / L"kaixin.ini";
+    const DWORD iniLength = GetPrivateProfileStringW(L"tools", L"wintranslator_path", L"", iniPath,
+                                                      MAX_PATH, configPath.c_str());
+    if (iniLength > 0 && iniLength < MAX_PATH) candidates.emplace_back(iniPath);
+    candidates.push_back(localRoot / L"Programs" / L"WinTranslator" / L"WinTranslator.exe");
+  }
+
+  const auto moduleDir = ModuleDirFromAddress(reinterpret_cast<const void*>(&FindWinTranslatorExecutable));
+  if (!moduleDir.empty()) candidates.push_back(moduleDir / L"WinTranslator.exe");
+  for (const auto& candidate : candidates) {
+    std::error_code ec;
     if (std::filesystem::is_regular_file(candidate, ec)) return candidate;
-    ec.clear();
-    current = current.parent_path();
   }
   return {};
+}
+
+bool SendWinTranslatorRequestOnce(const std::string& request) {
+  if (!WaitNamedPipeW(kWinTranslatorRequestPipe, kWinTranslatorPipeProbeTimeoutMs)) return false;
+  HANDLE pipe = CreateFileW(kWinTranslatorRequestPipe, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (pipe == INVALID_HANDLE_VALUE) return false;
+
+  DWORD written = 0;
+  const BOOL writeOk = WriteFile(pipe, request.data(), static_cast<DWORD>(request.size()), &written, nullptr);
+  if (!writeOk || written != request.size()) {
+    CloseHandle(pipe);
+    return false;
+  }
+  // Do not treat a malformed or rejected request as a successful dispatch.
+  // This runs on the background launcher thread and never blocks TSF input.
+  char response[512] = {};
+  DWORD read = 0;
+  const BOOL readOk = ReadFile(pipe, response, sizeof(response) - 1, &read, nullptr);
+  CloseHandle(pipe);
+  return readOk && read > 0 && std::string_view(response, read).find("\"ok\":true") != std::string_view::npos;
+}
+
+bool LaunchWinTranslator(const std::filesystem::path& executable) {
+  if (executable.empty()) return false;
+  const HINSTANCE launched = ShellExecuteW(nullptr, L"open", executable.c_str(), nullptr,
+                                           executable.parent_path().c_str(), SW_SHOWNORMAL);
+  return reinterpret_cast<INT_PTR>(launched) > 32;
 }
 
 bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
                                 uint64_t focusGeneration) {
   if (text.empty() || !targetHwnd) return false;
-  const auto helper = FindTranslationResultHelper();
-  if (helper.empty()) return false;
 
-  wchar_t localAppData[MAX_PATH] = {};
-  const DWORD localLen = GetEnvironmentVariableW(L"LOCALAPPDATA", localAppData, MAX_PATH);
-  if (localLen == 0 || localLen >= MAX_PATH) return false;
-  const std::wstring requestId = std::to_wstring(GetCurrentProcessId()) + L"-" +
-                                 std::to_wstring(GetTickCount64()) + L"-candidate";
-  const auto requestDir = std::filesystem::path(localAppData) / L"kaixin" /
-                          L"translation-requests";
-  const auto requestPath = requestDir / (requestId + L".json");
-  std::error_code ec;
-  std::filesystem::create_directories(requestDir, ec);
-  if (ec) return false;
+  const bool pipeReady = WaitNamedPipeW(kWinTranslatorRequestPipe, 0) != FALSE;
+  const auto executable = FindWinTranslatorExecutable();
+  if (!pipeReady && executable.empty()) return false;
 
   DWORD targetProcessId = 0;
   GetWindowThreadProcessId(targetHwnd, &targetProcessId);
-  std::wstring json = L"{\"protocol_version\":2,\"request_id\":\"" + requestId +
+  const unsigned long long counter =
+      g_candidateTranslationRequestCounter.fetch_add(1, std::memory_order_relaxed);
+  const std::wstring requestId = std::to_wstring(GetCurrentProcessId()) + L"-" +
+                                 std::to_wstring(GetTickCount64()) + L"-" + std::to_wstring(counter);
+  const std::wstring json = L"{\"protocol_version\":2,\"request_id\":\"" + requestId +
       L"\",\"action\":\"translate\",\"text\":\"" + JsonEscapeTranslationText(text) +
       L"\",\"source\":\"auto\",\"target\":\"auto-opposite\","
       L"\"origin\":\"kaixin-ime-candidate\",\"target_hwnd\":" +
       std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) +
       L",\"target_process_id\":" + std::to_wstring(targetProcessId) +
-      L",\"result_action\":\"paste\",\"interactive\":false,"
-      L"\"presentation\":\"compact\",\"delivery\":\"return\","
+      L",\"result_action\":\"show\",\"interactive\":true,"
+      L"\"presentation\":\"full\",\"delivery\":\"show\","
       L"\"focus_generation\":" + std::to_wstring(focusGeneration) +
       L",\"replace_selection\":false}";
-  AppendWideUtf8TextRaw(requestPath, json);
-  if (!std::filesystem::is_regular_file(requestPath, ec)) return false;
+  std::string request;
+  if (!WideTextToUtf8(json, &request)) return false;
+  request.push_back('\n');
 
-  const std::wstring parameters = L"--request-file \"" + requestPath.wstring() + L"\"";
-  const HINSTANCE launched = ShellExecuteW(nullptr, L"open", helper.c_str(), parameters.c_str(),
-                                           helper.parent_path().c_str(), SW_SHOWNORMAL);
-  if (reinterpret_cast<INT_PTR>(launched) <= 32) {
-    std::filesystem::remove(requestPath, ec);
+  try {
+    std::thread([request = std::move(request), executable]() {
+      if (SendWinTranslatorRequestOnce(request)) return;
+      if (!LaunchWinTranslator(executable)) return;
+      const ULONGLONG deadline = GetTickCount64() + kWinTranslatorStartupTimeoutMs;
+      while (GetTickCount64() < deadline) {
+        if (SendWinTranslatorRequestOnce(request)) return;
+        Sleep(120);
+      }
+    }).detach();
+  } catch (...) {
     return false;
   }
   return true;
@@ -109,9 +170,11 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
 bool CSrfTip::WouldEatKey(UINT vk) {
   SrfScopedPerfTimer perf(L"Key/WouldEat");
   RefreshKeyHotPathState();
-  if (IsConfiguredHotkey(vk, m_config.input.traditionalHotkey) ||
-      IsConfiguredHotkey(vk, m_config.input.gameModeHotkey) ||
-      IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey)) {
+  const bool allowImeHotkeys = ShouldHandleImeHotkeys();
+  if (allowImeHotkeys &&
+      (IsConfiguredHotkey(vk, m_config.input.traditionalHotkey) ||
+       IsConfiguredHotkey(vk, m_config.input.gameModeHotkey) ||
+       IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey))) {
     return true;
   }
   if (ShouldForceAsciiForCompatibility()) return false;
@@ -121,13 +184,7 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   // Do not consume a lone Shift for the desktop IME tap-toggle while game
   // compatibility is active; stealing only the key-down edge can also make
   // exclusive-fullscreen games lose their keyboard/focus state.
-  bool appGameProfile = false;
-  if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
-  }
-  const bool gameCompatibilityActive =
-      appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
-      m_builtinGameCompatActive || m_manualGameCompatActive;
+  const bool gameCompatibilityActive = IsGameHotkeyPassthroughActive();
   if (gameCompatibilityActive && IsVkShift(vk)) {
     m_shiftTapActive = false;
     m_shiftTapUsedWithOtherKey = false;
@@ -139,7 +196,7 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   // - Shift 本身始终拦截，以便在 KeyUp 判定轻按并执行切换。
   // - Shift 已按下后，只拦截 IME 确实要处理的后续按键。
   //   Ctrl/Alt 组合键直接让给宿主应用，避免占用编辑器和设计软件快捷键。
-  if (m_config.input.shiftTapHotkeyEnabled) {
+  if (allowImeHotkeys && m_config.input.shiftTapHotkeyEnabled) {
     if (IsVkShift(vk)) {
       return true;
     }
@@ -211,17 +268,18 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
 
   RefreshKeyHotPathState();
   const bool keyDownTransition = (lParam & 0x40000000) == 0;
-  if (IsConfiguredHotkey(vk, m_config.input.traditionalHotkey)) {
+  const bool allowImeHotkeys = ShouldHandleImeHotkeys();
+  if (allowImeHotkeys && IsConfiguredHotkey(vk, m_config.input.traditionalHotkey)) {
     if (keyDownTransition) ToggleTraditionalOutput();
     *pHandled = true;
     return S_OK;
   }
-  if (IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) {
-    if (keyDownTransition) ToggleManualGameCompat();
+  if (allowImeHotkeys && IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) {
+    if (keyDownTransition) ToggleManualGameCompat(ec);
     *pHandled = true;
     return S_OK;
   }
-  if (IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey)) {
+  if (allowImeHotkeys && IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey)) {
     if (keyDownTransition) ToggleManualAsciiMode(ec);
     *pHandled = true;
     return S_OK;
@@ -265,7 +323,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
 
   // Shift-tap toggles Chinese/English。
   // lParam bit31：0=按下 1=释放（KeyUp 上完成轻按判定，见 key_sink OnKeyUp）。
-  if (m_config.input.shiftTapHotkeyEnabled && IsVkShift(vk)) {
+  if (allowImeHotkeys && m_config.input.shiftTapHotkeyEnabled && IsVkShift(vk)) {
     const bool wasDown = (lParam & 0x80000000) != 0;
     if (!wasDown) {
       m_shiftTapActive = true;
@@ -292,7 +350,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
     }
     *pHandled = true;
     return S_OK;
-  } else if (m_config.input.shiftTapHotkeyEnabled && m_shiftTapActive) {
+  } else if (allowImeHotkeys && m_config.input.shiftTapHotkeyEnabled && m_shiftTapActive) {
     // WouldEatKey 已经避开 Ctrl/Alt 组合；进入这里的后续键均是 IME 需要处理的键。
     m_shiftTapUsedWithOtherKey = true;
     if (!m_imeOpen && m_reading.empty()) {
@@ -547,6 +605,10 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
           *pHandled = true;
           return clipboardQuickPageHr;
         }
+        if (m_candPage >= MaxCandidatePage() && RequestMoreCandidatesForPage(m_candPage + 1)) {
+          *pHandled = true;
+          return S_OK;
+        }
         if (!m_config.input.pagePgUpDown) {
           *pHandled = true;
           return S_OK;
@@ -592,6 +654,10 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
             *pHandled = true;
             return clipboardQuickPageHr;
           }
+          if (m_candPage >= MaxCandidatePage() && RequestMoreCandidatesForPage(m_candPage + 1)) {
+            *pHandled = true;
+            return S_OK;
+          }
           if (m_config.input.pageMinusEqual) {
             if (m_candPage < MaxCandidatePage()) {
               const UINT offset = CandidateIndexInPage(m_candSel);
@@ -630,6 +696,11 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
       case VK_OEM_PERIOD:
       case VK_OEM_6:
         if (!m_candidates.empty()) {
+          if (m_config.input.pageCommaPeriod && m_candPage >= MaxCandidatePage() &&
+              resolveDirectText().empty() && RequestMoreCandidatesForPage(m_candPage + 1)) {
+            *pHandled = true;
+            return S_OK;
+          }
           if (m_config.input.pageCommaPeriod && m_candPage < MaxCandidatePage() &&
               resolveDirectText().empty()) {
             const UINT offset = CandidateIndexInPage(m_candSel);

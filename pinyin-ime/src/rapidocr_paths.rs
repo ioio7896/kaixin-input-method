@@ -4,6 +4,8 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::{Mutex, OnceLock};
+use std::time::UNIX_EPOCH;
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -13,10 +15,14 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 const RAPIDOCR_DIR_NAME: &str = "RapidOCR-3.9.0";
 pub(crate) const PYTHON_RUNTIME_DIR_NAME: &str = ".python-runtime";
-const RAPIDOCR_VENV_DIR_NAME: &str = ".venv-rapidocr";
+const RAPIDOCR_PACKAGES_DIR_NAME: &str = ".python-packages";
 pub(crate) const PACKAGE_MANIFEST_NAME: &str = "package_manifest.sha256";
-const REQUIRED_ONNX_MODELS: &[&str] = &["PP-OCRv6_det_medium.onnx", "PP-OCRv6_rec_medium.onnx"];
-const OPTIONAL_ONNX_MODELS: &[&str] = &["PP-OCRv6_det_small.onnx", "PP-OCRv6_det_int8.onnx"];
+const REQUIRED_ONNX_MODELS: &[&str] = &[
+    "PP-OCRv6_det_medium.onnx",
+    "PP-OCRv6_det_small.onnx",
+    "PP-OCRv6_rec_medium.onnx",
+];
+const OPTIONAL_ONNX_MODELS: &[&str] = &["PP-OCRv6_det_int8.onnx"];
 
 #[derive(Clone, Debug)]
 pub struct PythonRuntime {
@@ -53,15 +59,6 @@ pub fn ocr_helper_path() -> Option<PathBuf> {
     }
 }
 
-pub fn cv_crop_helper_path() -> Option<PathBuf> {
-    let helper = install_dir()?.join("tools").join("kaixin_cv_crop.py");
-    if helper.is_file() {
-        Some(fs::canonicalize(&helper).unwrap_or(helper))
-    } else {
-        None
-    }
-}
-
 pub fn python_exe(rapidocr_root: Option<&Path>) -> Result<PathBuf, String> {
     Ok(python_runtime(rapidocr_root)?.executable)
 }
@@ -82,7 +79,7 @@ pub fn python_runtime(rapidocr_root: Option<&Path>) -> Result<PythonRuntime, Str
     let mut diagnostics = Vec::new();
 
     let portable = shared_python_runtime_path(install_dir);
-    let portable_env = python_env_for_venv_site_packages(install_dir);
+    let portable_env = python_env_for_rapidocr_packages(install_dir);
     match python_unavailable_reason(&portable, &portable_env) {
         None => {
             return Ok(PythonRuntime {
@@ -93,17 +90,6 @@ pub fn python_runtime(rapidocr_root: Option<&Path>) -> Result<PythonRuntime, Str
         Some(reason) => diagnostics.push(format!("{} ({reason})", portable.display())),
     }
 
-    let python = venv_python_path(install_dir);
-    let venv_env = Vec::new();
-    match python_unavailable_reason(&python, &venv_env) {
-        None => {
-            return Ok(PythonRuntime {
-                executable: fs::canonicalize(&python).unwrap_or(python),
-                env: venv_env,
-            });
-        }
-        Some(reason) => diagnostics.push(format!("{} ({reason})", python.display())),
-    }
     Err(format!(
         "RapidOCR bundled Python is unavailable. Checked: {}",
         diagnostics.join("; ")
@@ -156,27 +142,59 @@ pub fn validate_rapidocr_models(rapidocr_root: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// Hash models once, then use a cheap metadata fingerprint until a model or
+/// manifest changes. This keeps the integrity guarantee while avoiding a full
+/// disk scan every time a crashed OCR worker is recreated.
+pub fn validate_rapidocr_models_cached(rapidocr_root: &Path) -> Result<(), String> {
+    static CACHE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
+    let stamp = rapidocr_model_stamp(rapidocr_root)?;
+    let cache = CACHE.get_or_init(|| Mutex::new(None));
+    let mut cached = cache
+        .lock()
+        .map_err(|_| "RapidOCR 模型校验缓存锁定失败。".to_string())?;
+    if cached.as_deref() == Some(stamp.as_str()) {
+        return Ok(());
+    }
+    validate_rapidocr_models(rapidocr_root)?;
+    *cached = Some(stamp);
+    Ok(())
+}
+
+fn rapidocr_model_stamp(rapidocr_root: &Path) -> Result<String, String> {
+    let install_dir = rapidocr_root.parent().ok_or_else(|| {
+        format!(
+            "RapidOCR path has no install parent: {}",
+            rapidocr_root.display()
+        )
+    })?;
+    let model_dir = rapidocr_root.join("python").join("rapidocr").join("models");
+    let mut paths = vec![install_dir.join(PACKAGE_MANIFEST_NAME)];
+    paths.extend(
+        REQUIRED_ONNX_MODELS
+            .iter()
+            .chain(OPTIONAL_ONNX_MODELS.iter())
+            .map(|name| model_dir.join(name))
+            .filter(|path| path.is_file()),
+    );
+    let mut stamp = rapidocr_root.to_string_lossy().into_owned();
+    for path in paths {
+        let metadata = fs::metadata(&path)
+            .map_err(|err| format!("read RapidOCR model metadata {}: {err}", path.display()))?;
+        let modified = metadata
+            .modified()
+            .ok()
+            .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+            .map(|time| time.as_nanos())
+            .unwrap_or_default();
+        stamp.push_str(&format!("|{}:{}", metadata.len(), modified));
+    }
+    Ok(stamp)
+}
+
 pub fn missing_root_message() -> String {
     format!(
         "RapidOCR directory is unavailable: expected .\\{RAPIDOCR_DIR_NAME} inside the installed program directory."
     )
-}
-
-fn venv_python_path(install_dir: &Path) -> PathBuf {
-    #[cfg(windows)]
-    {
-        install_dir
-            .join(RAPIDOCR_VENV_DIR_NAME)
-            .join("Scripts")
-            .join("python.exe")
-    }
-    #[cfg(not(windows))]
-    {
-        install_dir
-            .join(RAPIDOCR_VENV_DIR_NAME)
-            .join("bin")
-            .join("python")
-    }
 }
 
 fn shared_python_runtime_path(install_dir: &Path) -> PathBuf {
@@ -193,27 +211,17 @@ fn shared_python_runtime_path(install_dir: &Path) -> PathBuf {
     }
 }
 
-fn python_env_for_venv_site_packages(install_dir: &Path) -> Vec<(String, OsString)> {
-    let site_packages = rapidocr_site_packages_path(install_dir);
-    if site_packages.is_dir() {
-        vec![("PYTHONPATH".to_string(), site_packages.into_os_string())]
+fn python_env_for_rapidocr_packages(install_dir: &Path) -> Vec<(String, OsString)> {
+    let packages = rapidocr_packages_path(install_dir);
+    if packages.is_dir() {
+        vec![("PYTHONPATH".to_string(), packages.into_os_string())]
     } else {
         Vec::new()
     }
 }
 
-fn rapidocr_site_packages_path(install_dir: &Path) -> PathBuf {
-    #[cfg(windows)]
-    {
-        install_dir
-            .join(RAPIDOCR_VENV_DIR_NAME)
-            .join("Lib")
-            .join("site-packages")
-    }
-    #[cfg(not(windows))]
-    {
-        install_dir.join(RAPIDOCR_VENV_DIR_NAME).join("lib")
-    }
+fn rapidocr_packages_path(install_dir: &Path) -> PathBuf {
+    install_dir.join(RAPIDOCR_PACKAGES_DIR_NAME)
 }
 
 fn python_unavailable_reason(path: &Path, env: &[(String, OsString)]) -> Option<String> {

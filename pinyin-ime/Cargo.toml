@@ -19,7 +19,7 @@ name = "pinyin_ime_gui"
 path = "src/main.rs"
 
 [[bin]]
-name = "thuocl_tool"
+name = "lexicon_tool"
 path = "src/bin/thuocl_tool.rs"
 
 [[bin]]
@@ -35,6 +35,10 @@ name = "srf_ime_engine"
 path = "src/bin/srf_ime_engine.rs"
 
 [[bin]]
+name = "srf_ime_clipboard_svc"
+path = "src/bin/srf_ime_clipboard_svc.rs"
+
+[[bin]]
 name = "srf_ime_clipboard"
 path = "src/bin/srf_ime_clipboard.rs"
 
@@ -47,15 +51,11 @@ name = "srf_ime_ocr"
 path = "src/bin/srf_ime_ocr.rs"
 
 [[bin]]
-name = "srf_ime_translate_result"
-path = "src/bin/srf_ime_translate_result.rs"
-
-[[bin]]
 name = "bake_lexicon"
 path = "src/bin/bake_lexicon.rs"
 
 [[bin]]
-name = "build_clean_lexicons"
+name = "build_ai_lexicons"
 path = "src/bin/build_clean_lexicons.rs"
 
 [[bin]]
@@ -79,6 +79,7 @@ name = "build_blind_corpus"
 path = "src/bin/build_blind_corpus.rs"
 
 [dependencies]
+base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 eframe = "0.29"
 egui = "0.29"
@@ -103,8 +104,8 @@ embed-resource = "3"
 
 [target.'cfg(windows)'.dependencies]
 clipboard-win = "5.4.1"
-windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_DataExchange", "Win32_System_IO", "Win32_System_JobObjects", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Registry", "Win32_System_SystemInformation", "Win32_System_Threading", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
-windows = { version = "0.62", features = ["Graphics_Capture", "Win32_Foundation", "Win32_Graphics_Direct3D", "Win32_Graphics_Direct3D11", "Win32_Graphics_Dwm", "Win32_Graphics_Dxgi", "Win32_Graphics_Dxgi_Common", "Win32_Graphics_Gdi", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_Ole", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_DataExchange", "Win32_System_IO", "Win32_System_JobObjects", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Registry", "Win32_System_SystemInformation", "Win32_System_Threading", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows = { version = "0.62", features = ["Graphics_Capture", "Win32_Foundation", "Win32_Graphics_Direct3D", "Win32_Graphics_Direct3D11", "Win32_Graphics_Dwm", "Win32_Graphics_Dxgi", "Win32_Graphics_Dxgi_Common", "Win32_Graphics_Gdi", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_Ole", "Win32_UI_Accessibility", "Win32_UI_WindowsAndMessaging"] }
 xcap = { version = "0.9.6", default-features = false, features = ["wgc"] }
 
 [profile.release]

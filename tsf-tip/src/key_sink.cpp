@@ -13,6 +13,7 @@
 // 由 srf_tip.cpp 中的匿名命名空间提供。
 extern bool SrfTsfDebugTraceEnabled();
 extern void SrfTsfDebugLog(const wchar_t* msg);
+extern void SrfTsfDiagnosticLog(const wchar_t* tag, const wchar_t* msg);
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace {
@@ -78,20 +79,12 @@ void LaunchSystemScreenshot() {
         if (reinterpret_cast<INT_PTR>(helperResult) > 32) return;
       }
 
-      const std::filesystem::path shareXPath = probe / L"ShareX" / L"KaixinShareX.exe";
-      std::error_code shareXEc;
-      if (std::filesystem::is_regular_file(shareXPath, shareXEc)) {
-        HINSTANCE shareXResult = ShellExecuteW(
-            nullptr, L"open", shareXPath.c_str(),
-            L"-portable -silent -KaixinRectangleRegion", probe.c_str(), SW_SHOWNORMAL);
-        if (reinterpret_cast<INT_PTR>(shareXResult) > 32) return;
-      }
       probe = probe.parent_path();
     }
   }
 
   if (SrfTsfDebugTraceEnabled()) {
-    SrfTsfDebugLog(L"Failed to launch packaged ShareX screenshot workflow");
+    SrfTsfDebugLog(L"Failed to launch native screenshot workflow");
   }
 }
 
@@ -289,6 +282,11 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
 
+  // PreserveKey is global to the active TSF profile. Keep a final runtime
+  // guard as foreground transitions can race dynamic unregistration.
+  m_pTip->RefreshKeyHotPathState();
+  if (!m_pTip->ShouldHandleImeHotkeys()) return S_OK;
+
   const bool hasReading = m_pTip->m_imeOpen && !m_pTip->m_reading.empty();
   if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_IME) ||
       IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_IME_CTRL_SPACE)) {
@@ -320,6 +318,22 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
     m_pTip->ToggleDoublePinyin();
   } else if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_SCREENSHOT)) {
     LaunchSystemScreenshot();
+  } else if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE) ||
+             IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TEMP_ASCII)) {
+    // preserved key 对所有注册 TIP 派发；非本 TIP 激活时按键让给激活方。
+    if (!m_pTip->IsActiveTextServiceProfile()) return S_OK;
+    // OnPreservedKey 无 lParam 可判重复，用时间窗防按住自动重复连翻。
+    const ULONGLONG now = GetTickCount64();
+    if (now - m_pTip->m_lastManualToggleTick >= CSrfTip::kManualToggleDedupMs) {
+      m_pTip->m_lastManualToggleTick = now;
+      if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE)) {
+        SrfTsfDiagnosticLog(L"manual-compatibility.hotkey", L"source=preserved-key,action=game");
+        m_pTip->ToggleManualGameCompat(TF_INVALID_COOKIE);
+      } else {
+        SrfTsfDiagnosticLog(L"manual-compatibility.hotkey", L"source=preserved-key,action=temp-ascii");
+        m_pTip->ToggleManualAsciiMode(TF_INVALID_COOKIE);
+      }
+    }
   } else {
     return S_OK;
   }

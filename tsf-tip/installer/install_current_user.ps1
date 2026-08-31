@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$InstallationRoot = $PSScriptRoot,
     [switch]$SkipRegistration,
     [switch]$SkipLanguageList,
@@ -27,7 +27,7 @@ $EngineRunEntryName = $AppDisplayName + (-join ([char[]](0x5F15, 0x64CE)))
 $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $PackageManifestName = 'package_manifest.sha256'
 $RuntimePayloadRootName = 'runtime'
-$CurrentConfigVersion = 10
+$CurrentConfigVersion = 13
 $script:InstallLogPath = $null
 
 function Get-UserStateRoot {
@@ -530,16 +530,6 @@ function Invoke-ConfigMigration {
         [void][int]::TryParse($configVersionText, [ref]$existingConfigVersion)
     }
 
-    if ($existingConfigVersion -lt 3) {
-        $symbolFullwidth = Get-IniValue -Lines $lines -Section 'input' -Key 'symbol_fullwidth'
-        if ($symbolFullwidth -and $symbolFullwidth.Trim().Equals('0', [System.StringComparison]::OrdinalIgnoreCase)) {
-            if (Set-IniValue -Lines ([ref]$lines) -Section 'input' -Key 'symbol_fullwidth' -Value '1') {
-                $changed = $true
-                Write-InstallLog 'OK: migrated symbol_fullwidth old default 0 -> 1'
-            }
-        }
-    }
-
     if ($existingConfigVersion -lt 4) {
         $screenshotAutoSave = Get-IniValue -Lines $lines -Section 'screenshot' -Key 'auto_save'
         if ([string]::IsNullOrWhiteSpace($screenshotAutoSave) -or $screenshotAutoSave.Trim().Equals('0', [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -560,24 +550,6 @@ function Invoke-ConfigMigration {
         }
     }
 
-    if ($existingConfigVersion -lt 9) {
-        $screenshotBackend = Get-IniValue -Lines $lines -Section 'screenshot' -Key 'backend'
-        $screenshotMode = Get-IniValue -Lines $lines -Section 'screenshot' -Key 'mode'
-        $legacyBackend = -not [string]::IsNullOrWhiteSpace($screenshotBackend) -and $screenshotBackend.Trim().Equals('wgc', [System.StringComparison]::OrdinalIgnoreCase)
-        $legacyMode = [string]::IsNullOrWhiteSpace($screenshotMode) -or $screenshotMode.Trim().Equals('manual_region', [System.StringComparison]::OrdinalIgnoreCase)
-        if ($legacyBackend -and $legacyMode) {
-            $backendChanged = Set-IniValue -Lines ([ref]$lines) -Section 'screenshot' -Key 'backend' -Value 'sharex'
-            $modeChanged = if ([string]::IsNullOrWhiteSpace($screenshotMode)) {
-                Add-IniDefaultIfMissing -Lines ([ref]$lines) -Section 'screenshot' -Key 'mode' -Value 'manual_region'
-            } else {
-                Set-IniValue -Lines ([ref]$lines) -Section 'screenshot' -Key 'mode' -Value 'manual_region'
-            }
-            if ($backendChanged -or $modeChanged) {
-                $changed = $true
-                Write-InstallLog 'OK: migrated screenshot backend legacy default wgc/manual_region -> sharex/manual_region'
-            }
-        }
-    }
 
     if ($existingConfigVersion -lt 10) {
         $canonicalizedLegacyKeys = $false
@@ -636,8 +608,9 @@ function Invoke-ConfigMigration {
         @{ Section = 'screenshot'; Key = 'copy_after_capture'; Value = '1' },
         @{ Section = 'screenshot'; Key = 'ocr_after_capture'; Value = '0' },
         @{ Section = 'screenshot'; Key = 'translate_after_capture'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'backend'; Value = 'sharex' },
         @{ Section = 'screenshot'; Key = 'mode'; Value = 'manual_region' },
+        @{ Section = 'screenshot'; Key = 'confirm_on_release'; Value = '0' },
+        @{ Section = 'screenshot'; Key = 'show_instructions'; Value = '1' },
         @{ Section = 'clipboard'; Key = 'hotkey'; Value = 'off' },
         @{ Section = 'tools'; Key = 'settings_hotkey'; Value = 'off' },
         @{ Section = 'tools'; Key = 'handwrite_hotkey'; Value = 'off' },
@@ -648,7 +621,7 @@ function Invoke-ConfigMigration {
         @{ Section = 'input'; Key = 'temporary_ascii_hotkey'; Value = 'off' },
         @{ Section = 'input'; Key = 'shift_tap_hotkey'; Value = '1' },
         @{ Section = 'input'; Key = 'candidate_number_select'; Value = '1' },
-        @{ Section = 'input'; Key = 'symbol_fullwidth'; Value = '1' },
+        @{ Section = 'input'; Key = 'symbol_fullwidth'; Value = '0' },
         @{ Section = 'input'; Key = 'shift_symbol_temporary_ascii'; Value = '0' },
         @{ Section = 'input'; Key = 'page_minus_equal'; Value = '1' },
         @{ Section = 'input'; Key = 'page_comma_period'; Value = '1' },
@@ -772,7 +745,7 @@ function Invoke-TipRegistration {
 }
 
 function Stop-RunningHelpers {
-    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray', 'KaixinShareX')
+    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray')
     $visibleTools = @('srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_ocr', 'srf_ime_translate_result')
     foreach ($processName in @($backgroundHelpers + $visibleTools)) {
         $processes = @(Get-Process -Name $processName -ErrorAction SilentlyContinue)

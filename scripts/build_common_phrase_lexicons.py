@@ -20,6 +20,7 @@ from wordfreq import top_n_list, zipf_frequency
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "lexicon" / "zh"
+EXT_SOURCE = ROOT / "data_sources" / "lexicon_fragments" / "zh-ext"
 POOL_SIZE = 500_000
 BLOCKED = ("他妈", "你妈", "妈逼", "傻逼", "煞笔", "操你", "艹你", "狗日", "王八蛋")
 T2S = OpenCC("t2s")
@@ -156,6 +157,7 @@ def write(path: Path, title: str, source: str, rows: list[str]) -> None:
 
 def build() -> None:
     candidates = source_candidates()
+    EXT_SOURCE.mkdir(parents=True, exist_ok=True)
     life_keywords = ("可以", "需要", "已经", "正在", "比较", "还是", "如果", "因为", "所以", "我们", "大家", "请", "没有", "能够", "应该", "不要", "不能", "这是", "那个", "通过", "对于", "关于", "相关", "时候", "问题", "情况", "工作", "事情", "时间", "以后", "之前", "目前", "最后", "一般", "可能", "希望", "觉得", "知道", "看到", "发现", "开始", "继续", "结束", "一点", "起来", "一下")
     four = select_ranked(
         candidates,
@@ -180,8 +182,11 @@ def build() -> None:
     office = select_ranked(candidates, 5_000, range(3, 9), seeds=OFFICE_SEEDS, scorer=lambda p, r: category_score(p, r, office_keywords))
     write(BASE / "life_common_4char.txt", "5000 条通用四字短语", "wordfreq 中文频率排序 + 高频现代固定搭配", make_rows(four, 9_000_000))
     write(BASE / "life_common_phrases_5to8.txt", "5000 条五至八字通用短语", "wordfreq 中文频率排序 + 现代工作与生活固定搭配模板", make_rows(long, 8_000_000))
-    write(BASE / "chat_common_phrases.txt", "5000 条聊天口语短语", "wordfreq 中文频率排序 + 常用聊天表达整理", make_rows(chat, 7_000_000))
-    write(BASE / "office_common_phrases.txt", "5000 条办公沟通短语", "wordfreq 中文频率排序 + 常用办公表达整理", make_rows(office, 7_000_000))
+    write(EXT_SOURCE / "chat_common_phrases.txt", "5000 条聊天口语短语", "wordfreq 中文频率排序 + 常用聊天表达整理", make_rows(chat, 7_000_000))
+    write(EXT_SOURCE / "office_common_phrases.txt", "5000 条办公沟通短语", "wordfreq 中文频率排序 + 常用办公表达整理", make_rows(office, 7_000_000))
+    from merge_zh_ext_lexicons import merge_lexicons
+
+    merge_lexicons()
     print("generated:", "four", len(four), "long", len(long), "chat", len(chat), "office", len(office))
 
 

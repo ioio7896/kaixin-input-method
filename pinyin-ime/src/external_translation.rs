@@ -1,6 +1,5 @@
 use crate::{app_paths, runtime_log};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -31,7 +30,6 @@ use windows_sys::Win32::System::IO::{
 };
 
 pub const PIPE_PATH: &str = r"\\.\pipe\WinTranslator.Request";
-const COMPACT_REQUEST_MAGIC: &[u8] = b"KXTRANS-DPAPI-1\n";
 pub const WINTRANSLATOR_EXE: &str = "WinTranslator.exe";
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(12);
@@ -65,26 +63,6 @@ pub struct ExternalTranslationRequest {
     pub replace_selection: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cancel_request_id: Option<String>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct ExternalTranslationEvent {
-    pub protocol_version: u32,
-    pub event: String,
-    pub request_id: String,
-    #[serde(default)]
-    pub text: String,
-    #[serde(default)]
-    pub stage: String,
-    #[serde(default)]
-    pub error_code: String,
-    #[serde(default)]
-    pub message: String,
-    pub target_hwnd: Option<isize>,
-    pub target_process_id: Option<u32>,
-    pub focus_generation: Option<u64>,
-    #[serde(default)]
-    pub replace_selection: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -141,10 +119,6 @@ fn new_request_id() -> String {
 
 pub fn fresh_request_id() -> String {
     new_request_id()
-}
-
-pub fn new_reply_pipe_name() -> String {
-    format!("Kaixin.Translate.Result.{}", new_request_id())
 }
 
 pub fn target_language_for_text(text: &str) -> &'static str {
@@ -369,68 +343,11 @@ pub fn send_request(request: &ExternalTranslationRequest) -> Result<(), String> 
     Err(error)
 }
 
-pub fn write_compact_request_file(request: &ExternalTranslationRequest) -> Result<PathBuf, String> {
-    let local = std::env::var_os("LOCALAPPDATA")
-        .map(PathBuf::from)
-        .unwrap_or_else(std::env::temp_dir);
-    let directory = local.join("kaixin").join("translation-requests");
-    fs::create_dir_all(&directory).map_err(|error| format!("创建翻译请求目录失败：{error}"))?;
-    let final_path = directory.join(format!("{}.json", request.request_id));
-    let temporary_path = directory.join(format!("{}.tmp", request.request_id));
-    let mut payload = serde_json::to_vec(request).map_err(|error| error.to_string())?;
-    let encoded =
-        crate::windows_security::dpapi_protect_with_magic(COMPACT_REQUEST_MAGIC, &payload)
-            .map_err(|error| format!("加密翻译请求失败：{error}"))?;
-    zeroize_bytes(&mut payload);
-    fs::write(&temporary_path, encoded).map_err(|error| format!("写入翻译请求失败：{error}"))?;
-    fs::rename(&temporary_path, &final_path).map_err(|error| {
-        let _ = fs::remove_file(&temporary_path);
-        format!("提交翻译请求失败：{error}")
-    })?;
-    Ok(final_path)
-}
-
-pub fn read_compact_request_file(path: &Path) -> Result<ExternalTranslationRequest, String> {
-    let payload = fs::read(path).map_err(|error| format!("读取翻译请求失败：{error}"))?;
-    let _ = fs::remove_file(path);
-    if cfg!(windows)
-        && !crate::windows_security::dpapi_blob_has_magic(COMPACT_REQUEST_MAGIC, &payload)
-    {
-        return Err("拒绝未加密的翻译请求文件".to_string());
-    }
-    let mut decoded =
-        crate::windows_security::dpapi_unprotect_with_magic(COMPACT_REQUEST_MAGIC, &payload)
-            .map_err(|error| format!("解密翻译请求失败：{error}"))?;
-    let request =
-        serde_json::from_slice(&decoded).map_err(|error| format!("翻译请求无效：{error}"));
-    zeroize_bytes(&mut decoded);
-    request
-}
-
-pub fn launch_compact_request(request: &ExternalTranslationRequest) -> Result<(), String> {
-    let request_file = write_compact_request_file(request)?;
-    let popup = resolve_sibling_executable("srf_ime_translate_result.exe")
-        .ok_or_else(|| "未找到翻译结果浮窗 srf_ime_translate_result.exe".to_string())?;
-    let mut command = Command::new(&popup);
-    command.arg("--request-file").arg(&request_file);
-    if let Some(parent) = popup.parent() {
-        command.current_dir(parent);
-    }
-    #[cfg(windows)]
-    command.creation_flags(CREATE_NO_WINDOW);
-    command.spawn().map(|_| ()).map_err(|error| {
-        let _ = fs::remove_file(request_file);
-        format!("无法启动翻译结果浮窗：{error}")
-    })
-}
-
 /// Send a request to WinTranslator while keeping the caller responsive.
 ///
-/// OCR uses the full WinTranslator frontend, so it must not launch the
-/// input-method-owned result popup.  The named-pipe request is accepted by
-/// WinTranslator immediately; translation and UI updates then happen in its
-/// own process.  Startup/pipe failures are logged without putting a blocking
-/// retry loop on the OCR UI thread.
+/// Queue work in WinTranslator without blocking an input-method tool window.
+/// Translation, presentation, and configured result actions all happen in the
+/// translation application's own process.
 pub fn launch_full_request(request: &ExternalTranslationRequest) -> Result<(), String> {
     if !is_available() {
         return Err(availability_message());
@@ -452,24 +369,6 @@ pub fn launch_full_request(request: &ExternalTranslationRequest) -> Result<(), S
         })
         .map(|_| ())
         .map_err(|error| format!("无法创建翻译联动线程：{error}"))
-}
-
-fn resolve_sibling_executable(name: &str) -> Option<PathBuf> {
-    let mut candidates = Vec::new();
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(parent) = exe.parent() {
-            candidates.push(parent.join(name));
-        }
-    }
-    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
-        candidates.push(
-            PathBuf::from(local)
-                .join("Programs")
-                .join("kaixin")
-                .join(name),
-        );
-    }
-    candidates.into_iter().find(|path| path.is_file())
 }
 
 fn log_request(
@@ -498,13 +397,6 @@ fn log_request(
             error.unwrap_or("none")
         ),
     );
-}
-
-fn zeroize_bytes(bytes: &mut [u8]) {
-    for byte in bytes {
-        unsafe { std::ptr::write_volatile(byte, 0) };
-    }
-    std::sync::atomic::compiler_fence(std::sync::atomic::Ordering::SeqCst);
 }
 
 fn spawn_translator(path: &Path) -> Result<(), String> {

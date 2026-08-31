@@ -254,6 +254,10 @@ void CSrfCandidateListUIElement::OnCandidateWheel(int wheelDelta) {
     if (wheelDelta > 0) {
       if (m_tip->m_candPage > 0) --m_tip->m_candPage;
     } else if (wheelDelta < 0) {
+      if (m_tip->m_candPage >= m_tip->MaxCandidatePage() &&
+          m_tip->RequestMoreCandidatesForPage(m_tip->m_candPage + 1)) {
+        return;
+      }
       if (m_tip->m_candPage < m_tip->MaxCandidatePage()) ++m_tip->m_candPage;
     }
     const UINT pageStart = m_tip->CandidatePageStart(m_tip->m_candPage);

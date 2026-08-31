@@ -111,9 +111,7 @@ def import_tensorrt_main(monkeypatch):
     return tensorrt_main
 
 
-def test_tensorrt_cache_dir_initializes_model_root_dir_for_build(
-    monkeypatch, tmp_path
-):
+def test_tensorrt_cache_dir_initializes_model_root_dir_for_build(monkeypatch, tmp_path):
     tensorrt_main = import_tensorrt_main(monkeypatch)
 
     downloaded_paths = []
@@ -166,7 +164,9 @@ def test_tensorrt_default_cache_dir_uses_model_root_dir(monkeypatch, tmp_path):
 
     assert session.model_root_dir == cfg.model_root_dir
     assert engine_paths == [
-        cfg.model_root_dir / "models" / "en_PP-OCRv4_det_mobile_sm87_fp16.engine"
+        cfg.model_root_dir
+        / "models"
+        / "en_PP-OCRv4_det_mobile_sm87_fp16_tf32unset.engine"
     ]
 
 
@@ -200,7 +200,7 @@ def test_tensorrt_explicit_model_path_skips_download(monkeypatch, tmp_path):
 
     assert builder_kwargs[0]["onnx_path"] == model_path
     assert builder_kwargs[0]["engine_path"] == (
-        tmp_path / "trt_cache" / "custom_sm87_fp32.engine"
+        tmp_path / "trt_cache" / "custom_sm87_fp32_tf32unset.engine"
     )
 
 
@@ -208,7 +208,9 @@ def test_tensorrt_loads_cached_engine_without_rebuild(monkeypatch, tmp_path):
     tensorrt_main = import_tensorrt_main(monkeypatch)
 
     cfg = make_tensorrt_cfg(tmp_path, engine_cfg={"cache_dir": tmp_path / "trt_cache"})
-    engine_path = tmp_path / "trt_cache" / "en_PP-OCRv4_det_mobile_sm87_fp16.engine"
+    engine_path = (
+        tmp_path / "trt_cache" / "en_PP-OCRv4_det_mobile_sm87_fp16_tf32unset.engine"
+    )
     engine_path.parent.mkdir()
     engine_path.write_bytes(b"cached engine")
 
@@ -236,7 +238,9 @@ def test_tensorrt_force_rebuild_ignores_cached_engine(monkeypatch, tmp_path):
         tmp_path,
         engine_cfg={"cache_dir": tmp_path / "trt_cache", "force_rebuild": True},
     )
-    engine_path = tmp_path / "trt_cache" / "en_PP-OCRv4_det_mobile_sm87_fp16.engine"
+    engine_path = (
+        tmp_path / "trt_cache" / "en_PP-OCRv4_det_mobile_sm87_fp16_tf32unset.engine"
+    )
     engine_path.parent.mkdir()
     engine_path.write_bytes(b"cached engine")
 
@@ -273,7 +277,9 @@ def test_tensorrt_falls_back_to_rebuild_when_cached_engine_load_fails(
     tensorrt_main = import_tensorrt_main(monkeypatch)
 
     cfg = make_tensorrt_cfg(tmp_path, engine_cfg={"cache_dir": tmp_path / "trt_cache"})
-    engine_path = tmp_path / "trt_cache" / "en_PP-OCRv4_det_mobile_sm87_fp16.engine"
+    engine_path = (
+        tmp_path / "trt_cache" / "en_PP-OCRv4_det_mobile_sm87_fp16_tf32unset.engine"
+    )
     engine_path.parent.mkdir()
     engine_path.write_bytes(b"bad cached engine")
 
@@ -304,26 +310,36 @@ def test_tensorrt_falls_back_to_rebuild_when_cached_engine_load_fails(
     assert build_count == 1
 
 
-def test_tensorrt_square_padding_and_crop(monkeypatch):
+def test_tensorrt_context_creation_failure_raises_tensorrt_error(monkeypatch, tmp_path):
     tensorrt_main = import_tensorrt_main(monkeypatch)
 
-    session = object.__new__(tensorrt_main.TRTInferSession)
-    session._closed = True
-    session._max_square_size = 64
+    class FailedContextEngine:
+        def create_execution_context(self):
+            return None
 
-    import numpy as np
+    class FakeEngineBuilder:
+        def __init__(self, **kwargs):
+            pass
 
-    img = np.ones((1, 3, 32, 48), dtype=np.float32)
-    padded, original_hw = session._pad_to_square(img)
+        def build(self):
+            return FailedContextEngine()
 
-    assert padded.shape == (1, 3, 64, 64)
-    assert original_hw == (32, 48)
-    np.testing.assert_array_equal(padded[:, :, :32, :48], img)
-    assert padded[:, :, 32:, :].sum() == 0
-    assert padded[:, :, :, 48:].sum() == 0
+    monkeypatch.setattr(
+        tensorrt_main.DownloadFile,
+        "run",
+        lambda input_params: Path(input_params.save_path).write_bytes(b"fake onnx"),
+    )
+    monkeypatch.setattr(tensorrt_main, "TRTEngineBuilder", FakeEngineBuilder)
 
-    cropped = session._crop_output(padded, original_hw)
-    assert cropped.shape == (1, 3, 32, 48)
+    cfg = make_tensorrt_cfg(tmp_path, engine_cfg={"cache_dir": tmp_path / "trt_cache"})
+
+    try:
+        tensorrt_main.TRTInferSession(cfg)
+    except tensorrt_main.TensorRTError as exc:
+        assert "Failed to create TensorRT execution context" in str(exc)
+        assert "NVIDIA_TF32_OVERRIDE=unset" in str(exc)
+    else:
+        raise AssertionError("Expected TensorRTError")
 
 
 def test_tensorrt_get_dict_key_url_uses_fallback_engines(monkeypatch):

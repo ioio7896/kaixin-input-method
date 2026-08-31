@@ -16,6 +16,7 @@
 #include <new>
 #include <ole2.h>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <unordered_set>
 #include <vector>

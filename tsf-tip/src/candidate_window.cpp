@@ -357,11 +357,6 @@ bool HasClipboardCandidateItems(const std::vector<bool>& values) {
   return std::any_of(values.begin(), values.end(), [](bool value) { return value; });
 }
 
-struct ClipboardCommentParts {
-  std::wstring detail;
-  std::wstring type;
-};
-
 ClipboardCommentParts SplitClipboardComment(const std::wstring& comment) {
   const size_t tab = comment.find(L'\t');
   if (tab == std::wstring::npos) return {comment, {}};
@@ -2120,9 +2115,20 @@ void CCandidateWindow::DestroyFonts() {
 void CCandidateWindow::RebuildDisplayItems() {
   m_displayItems.clear();
   m_displayItems.reserve(m_items.size());
+  // Split clipboard comments once per candidate update instead of per frame
+  // in the measure and draw loops.  Mirrors the draw-site condition
+  // (clipboardMode && i < m_comments.size()).
+  const bool clipboardMode =
+      !m_style.candidateHorizontal && HasClipboardCandidateItems(m_clipboardItems);
+  m_clipboardCommentParts.clear();
+  m_clipboardCommentParts.reserve(m_items.size());
   for (size_t i = 0; i < m_items.size(); ++i) {
     const bool clipboardItem =
         i < m_clipboardItems.size() && m_clipboardItems[i];
+    m_clipboardCommentParts.push_back(
+        (clipboardMode && i < m_comments.size())
+            ? SplitClipboardComment(m_comments[i])
+            : ClipboardCommentParts{});
     if (clipboardItem && !m_style.candidateHorizontal) {
       const size_t maxLines = i == static_cast<size_t>(m_selectedInPage) ? 3 : 2;
       m_displayItems.push_back(ClipboardCandidatePreviewForDisplay(m_items[i], maxLines));
@@ -2324,7 +2330,9 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
       if (!m_comments[i].empty() &&
           (clipboardMode || i == static_cast<size_t>(m_selectedInPage))) {
         if (clipboardMode) {
-          const ClipboardCommentParts parts = SplitClipboardComment(m_comments[i]);
+          const ClipboardCommentParts parts =
+              i < m_clipboardCommentParts.size() ? m_clipboardCommentParts[i]
+                                                 : ClipboardCommentParts{};
           const SIZE detailSize = MeasureSingleLine(screenDc, m_metaFont, parts.detail, m_dpi);
           const SIZE typeSize = MeasureSingleLine(screenDc, m_chipFont, parts.type, m_dpi);
           commentHeight = std::max<int>(Scale(16), std::max(detailSize.cy, typeSize.cy));
@@ -3122,8 +3130,8 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       RECT textRect = {badgeRect.right + labelGap, rect.top + itemPadY, rect.right - itemPadX,
                        rect.bottom - itemPadY};
       const ClipboardCommentParts clipboardComment =
-          clipboardMode && i < m_comments.size() ? SplitClipboardComment(m_comments[i])
-                                                  : ClipboardCommentParts{};
+          i < m_clipboardCommentParts.size() ? m_clipboardCommentParts[i]
+                                             : ClipboardCommentParts{};
       int commentHeight = 0;
       if (i < m_comments.size() && !m_comments[i].empty() &&
           (clipboardMode || isSelected)) {
