@@ -157,4 +157,37 @@ mod tests {
         assert!(pinyin_plain_options('行').contains(&"hang".to_string()));
         assert!(pinyin_plain_options('着').contains(&"zhao".to_string()));
     }
+
+    #[test]
+    fn keeps_high_frequency_modern_single_character_aliases() {
+        for (ch, reading) in [
+            ('了', "liao"),
+            ('和', "huo"),
+            ('和', "hu"),
+            ('会', "kuai"),
+            ('弹', "tan"),
+            ('强', "jiang"),
+            ('省', "xing"),
+            ('觉', "jiao"),
+            ('率', "shuai"),
+            ('藏', "zang"),
+            ('圈', "juan"),
+            ('系', "ji"),
+            ('单', "shan"),
+            ('调', "diao"),
+            ('降', "xiang"),
+            ('角', "jue"),
+            ('解', "xie"),
+            ('仇', "qiu"),
+            ('查', "zha"),
+            ('盛', "cheng"),
+        ] {
+            assert!(
+                pinyin_plain_options(ch)
+                    .iter()
+                    .any(|value| value == reading),
+                "missing modern alias {ch} -> {reading}"
+            );
+        }
+    }
 }

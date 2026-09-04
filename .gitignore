@@ -28,12 +28,24 @@ dist/
 pinyin-ime/src/bin/*
 !pinyin-ime/src/bin/phrase_len_eval.rs
 !pinyin-ime/src/bin/learning_replay_eval.rs
+!pinyin-ime/src/bin/input_perf.rs
+!pinyin-ime/src/bin/input_perf/
+!pinyin-ime/src/bin/input_perf/metrics.rs
 !pinyin-ime/src/bin/srf_ime_clipboard.rs
+!pinyin-ime/src/bin/srf_ime_clipboard_svc.rs
+!pinyin-ime/src/bin/srf_ime_tray.rs
+!pinyin-ime/src/bin/srf_ime_tray/
+!pinyin-ime/src/bin/srf_ime_tray/input_state.rs
 !pinyin-ime/src/bin/srf_ime_settings.rs
 !pinyin-ime/src/bin/srf_ime_settings/
 pinyin-ime/src/bin/srf_ime_settings/config.rs
 !pinyin-ime/src/bin/srf_ime_settings/model.rs
 !pinyin-ime/src/bin/srf_ime_settings/ui.rs
+!pinyin-ime/src/bin/srf_ime_settings/ui_appearance.rs
+!pinyin-ime/src/bin/srf_ime_settings/ui_hotkeys_clipboard.rs
+!pinyin-ime/src/bin/srf_ime_settings/ui_privacy.rs
+!pinyin-ime/src/bin/srf_ime_ocr/
+!pinyin-ime/src/bin/srf_ime_ocr/history_store.rs
 
 # Python caches
 __pycache__/

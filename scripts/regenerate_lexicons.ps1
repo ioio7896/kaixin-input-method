@@ -29,4 +29,9 @@ if ($LASTEXITCODE -ne 0) {
     throw "merge_zh_ext_lexicons.py failed with exit code $LASTEXITCODE"
 }
 
+python (Join-Path $PSScriptRoot 'build_short_hot_lexicons.py')
+if ($LASTEXITCODE -ne 0) {
+    throw "build_short_hot_lexicons.py failed with exit code $LASTEXITCODE"
+}
+
 Write-Host 'AI-maintained lexicons and the pinyin-supported character table were regenerated.'

@@ -122,7 +122,7 @@ fn with_store_mut_at<T>(
     path: &Path,
     mutate: impl FnOnce(&Connection) -> Result<T, String>,
 ) -> Result<T, String> {
-    ensure_parent(&path)?;
+    ensure_parent(path)?;
     let lock_path = path.with_extension("sqlite.lock");
     let lock = OpenOptions::new()
         .create(true)
@@ -135,9 +135,9 @@ fn with_store_mut_at<T>(
         .map_err(|err| format!("lock screenshot library: {err}"))?;
 
     let result = (|| {
-        let conn = load_store_connection(&path)?;
+        let conn = load_store_connection(path)?;
         let value = mutate(&conn)?;
-        save_store_connection(&path, &conn)?;
+        save_store_connection(path, &conn)?;
         Ok(value)
     })();
 

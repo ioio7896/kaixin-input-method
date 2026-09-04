@@ -2598,10 +2598,239 @@ pub fn export_decrypted_user_dict(path: &Path) -> io::Result<()> {
     export_user_dict(path)
 }
 
+pub fn export_user_dict_tsv(path: &Path) -> io::Result<()> {
+    let lex = UserLexicon::load_from_path(default_user_dict_path())?;
+    let mut out = String::from("# 开心输入法便携用户词库 v1\n# phrase\tpinyin\tweight\tpinned\n");
+    for (key, entries) in &lex.exact_input {
+        for entry in entries {
+            out.push_str(&format!(
+                "{}\t{}\t{}\t{}\n",
+                entry.phrase,
+                key,
+                entry.freq,
+                u8::from(entry.pinned)
+            ));
+        }
+    }
+    fs::write(path, out)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UserDictImportMode {
+    Merge,
+    Replace,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct UserDictImportPreview {
+    pub total_entries: usize,
+    pub new_entries: usize,
+    pub duplicate_entries: usize,
+    pub reading_conflicts: usize,
+    pub pinned_entries: usize,
+    pub blocked_entries: usize,
+    pub context_entries: usize,
+    pub skipped_entries: usize,
+}
+
+fn lexicon_from_export_text(text: &str) -> UserLexicon {
+    let mut lex = UserLexicon::empty_for_path(PathBuf::new());
+    lex.parse_text_lines(text);
+    lex.prune_for_memory();
+    lex
+}
+
+fn read_user_dict_import_text(path: &Path) -> io::Result<String> {
+    let is_tsv = path
+        .extension()
+        .and_then(|value| value.to_str())
+        .is_some_and(|value| value.eq_ignore_ascii_case("tsv"));
+    if !is_tsv {
+        return read_user_dict_sqlite_export_text(path);
+    }
+    let source = fs::read_to_string(path)?;
+    let mut snapshot = String::new();
+    for (line_no, line) in source.lines().enumerate() {
+        if line.trim().is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let parts = line.split('\t').collect::<Vec<_>>();
+        if parts.len() != 4 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("TSV line {} must have 4 columns", line_no + 1),
+            ));
+        }
+        let phrase = parts[0].trim();
+        let key = parts[1]
+            .chars()
+            .filter(|ch| !ch.is_whitespace())
+            .collect::<String>()
+            .to_ascii_lowercase();
+        let freq = parts[2]
+            .trim()
+            .parse::<u64>()
+            .unwrap_or(1)
+            .clamp(1, 1_000_000);
+        let pinned = u8::from(matches!(
+            parts[3].trim().to_ascii_lowercase().as_str(),
+            "1" | "true" | "yes"
+        ));
+        if validate_user_phrase_parts(&key, phrase)?.is_none() {
+            continue;
+        }
+        snapshot.push_str(&format!(
+            "I\t{}\t{}\t{}\t{}\t{}\n",
+            key, phrase, freq, freq, pinned
+        ));
+    }
+    Ok(snapshot)
+}
+
+pub fn preview_user_dict_import(path: &Path) -> io::Result<UserDictImportPreview> {
+    let contents = read_user_dict_import_text(path)?;
+    let incoming = lexicon_from_export_text(&contents);
+    let current = UserLexicon::load_from_path(default_user_dict_path())?;
+    let mut preview = UserDictImportPreview::default();
+    preview.blocked_entries = incoming.blocked_phrases.len();
+    preview.context_entries = incoming.context_links.values().map(Vec::len).sum::<usize>()
+        + incoming
+            .context_trigrams
+            .values()
+            .map(Vec::len)
+            .sum::<usize>();
+    for (key, entries) in &incoming.exact_input {
+        for entry in entries {
+            preview.total_entries += 1;
+            preview.pinned_entries += usize::from(entry.pinned);
+            match current.exact_input.get(key) {
+                Some(existing) if existing.iter().any(|item| item.phrase == entry.phrase) => {
+                    preview.duplicate_entries += 1;
+                }
+                _ => preview.new_entries += 1,
+            }
+            if current.exact_input.iter().any(|(other_key, values)| {
+                other_key != key && values.iter().any(|item| item.phrase == entry.phrase)
+            }) {
+                preview.reading_conflicts += 1;
+            }
+        }
+    }
+    Ok(preview)
+}
+
+fn merge_imported_entries(
+    target: &mut BTreeMap<String, Vec<LearnedEntry>>,
+    incoming: BTreeMap<String, Vec<LearnedEntry>>,
+) {
+    for (key, entries) in incoming {
+        let target_entries = target.entry(key).or_default();
+        for entry in entries {
+            if let Some(existing) = target_entries
+                .iter_mut()
+                .find(|existing| existing.phrase == entry.phrase)
+            {
+                existing.freq = existing.freq.max(entry.freq);
+                existing.last_used = existing.last_used.max(entry.last_used);
+                existing.pinned |= entry.pinned;
+                existing.short_count_q16 = existing.short_count_q16.max(entry.short_count_q16);
+                existing.long_count_q16 = existing.long_count_q16.max(entry.long_count_q16);
+                existing.last_decay_tick = existing.last_decay_tick.max(entry.last_decay_tick);
+                existing.observation_count =
+                    existing.observation_count.max(entry.observation_count);
+                existing.selection_count = existing.selection_count.max(entry.selection_count);
+                refresh_suggestion_confidence(existing);
+            } else {
+                target_entries.push(entry);
+            }
+        }
+        sort_entries(target_entries);
+    }
+}
+
+fn create_pre_import_backup(target: &Path) -> io::Result<()> {
+    if !target.is_file() {
+        return Ok(());
+    }
+    let _guard = UserDictSharedGuard::new(target)?;
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let backup = target.with_file_name(format!("user_dict_import_backup_{stamp}.sqlite"));
+    fs::copy(target, backup)?;
+    let Some(parent) = target.parent() else {
+        return Ok(());
+    };
+    let mut backups = fs::read_dir(parent)?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.starts_with("user_dict_import_backup_"))
+        })
+        .collect::<Vec<_>>();
+    backups.sort();
+    let remove_count = backups.len().saturating_sub(5);
+    for stale in backups.into_iter().take(remove_count) {
+        let _ = fs::remove_file(stale);
+    }
+    Ok(())
+}
+
 pub fn import_user_dict(path: &Path) -> io::Result<()> {
-    let contents = read_user_dict_sqlite_export_text(path)?;
+    import_user_dict_with_mode(path, UserDictImportMode::Merge)
+}
+
+pub fn import_user_dict_with_mode(path: &Path, mode: UserDictImportMode) -> io::Result<()> {
+    let contents = read_user_dict_import_text(path)?;
     let target = default_user_dict_path();
-    write_user_dict_sqlite_snapshot_with_reset(&target, contents.as_bytes()).map(|stamp| {
+    let snapshot = if mode == UserDictImportMode::Replace {
+        contents
+    } else {
+        let mut current = UserLexicon::load_from_path(target.clone())?;
+        let mut incoming = lexicon_from_export_text(&contents);
+        merge_imported_entries(
+            &mut current.exact_input,
+            std::mem::take(&mut incoming.exact_input),
+        );
+        merge_imported_entries(
+            &mut current.mixed_input,
+            std::mem::take(&mut incoming.mixed_input),
+        );
+        merge_imported_entries(
+            &mut current.observed_input,
+            std::mem::take(&mut incoming.observed_input),
+        );
+        merge_imported_entries(
+            &mut current.correction_pairs,
+            std::mem::take(&mut incoming.correction_pairs),
+        );
+        merge_imported_entries(
+            &mut current.novel_phrases,
+            std::mem::take(&mut incoming.novel_phrases),
+        );
+        // Local block/negative-feedback policy wins. Context signals are not
+        // imported by default because they may expose old writing habits and
+        // can distort ranking on a different machine.
+        rebuild_approx_index(&mut current);
+        current.prune_for_memory();
+        current.serialize_snapshot()
+    };
+    let prepared = lexicon_from_export_text(&snapshot);
+    if prepared.exact_input.is_empty()
+        && prepared.mixed_input.is_empty()
+        && prepared.observed_input.is_empty()
+        && prepared.novel_phrases.is_empty()
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "import contains no valid user dictionary entries",
+        ));
+    }
+    create_pre_import_backup(&target)?;
+    write_user_dict_sqlite_snapshot_with_reset(&target, snapshot.as_bytes()).map(|stamp| {
         update_shared_reset_stamp_for_path(&target, stamp);
     })
 }
@@ -3136,6 +3365,14 @@ fn is_adjacent_novel_candidate(key: &str, phrase: &str) -> bool {
     }
     let chars = phrase.chars().count();
     if !(ADJACENT_NOVEL_MIN_CHARS..=ADJACENT_NOVEL_MAX_CHARS).contains(&chars) {
+        return false;
+    }
+    // Automatic novel-phrase discovery is deliberately limited to continuous
+    // CJK text. This excludes URLs, email addresses, account identifiers,
+    // numeric secrets and random ASCII strings before persistence.
+    if !phrase.chars().all(|ch| {
+        ('\u{3400}'..='\u{4dbf}').contains(&ch) || ('\u{4e00}'..='\u{9fff}').contains(&ch)
+    }) {
         return false;
     }
     if phrase

@@ -9,26 +9,26 @@ struct CandidateColors {
   COLORREF divider = CLR_INVALID;     // Divider line color
   COLORREF itemBg = RGB(255, 255, 255);
   COLORREF itemBorder = RGB(226, 232, 240);
-  COLORREF hoverBg = RGB(241, 247, 255);
-  COLORREF hoverBorder = RGB(191, 219, 254);
-  COLORREF selectedBg = RGB(234, 243, 255);
-  COLORREF selectedBorder = RGB(187, 215, 255);
-  COLORREF pressedBg = RGB(219, 234, 254);
-  COLORREF pressedBorder = RGB(147, 197, 253);
+  COLORREF hoverBg = RGB(240, 248, 245);
+  COLORREF hoverBorder = RGB(159, 213, 195);
+  COLORREF selectedBg = RGB(218, 241, 234);
+  COLORREF selectedBorder = RGB(111, 190, 164);
+  COLORREF pressedBg = RGB(199, 232, 220);
+  COLORREF pressedBorder = RGB(61, 163, 133);
   COLORREF text = RGB(15, 23, 42);
   COLORREF mutedText = RGB(100, 116, 139);
   COLORREF selectedText = RGB(15, 23, 42);
   COLORREF selectedMutedText = RGB(71, 85, 105);
-  COLORREF selectedOutline = RGB(37, 99, 235);
+  COLORREF selectedOutline = RGB(0, 137, 110);
   COLORREF badgeBg = RGB(241, 245, 249);
   COLORREF badgeBorder = RGB(203, 213, 225);
   COLORREF badgeText = RGB(51, 65, 85);
   COLORREF chipBg = RGB(248, 250, 252);
   COLORREF chipBorder = RGB(226, 232, 240);
   COLORREF chipText = RGB(100, 116, 139);
-  COLORREF chipActiveBg = RGB(239, 246, 255);
-  COLORREF chipActiveBorder = RGB(191, 219, 254);
-  COLORREF chipActiveText = RGB(29, 78, 216);
+  COLORREF chipActiveBg = RGB(218, 241, 234);
+  COLORREF chipActiveBorder = RGB(111, 190, 164);
+  COLORREF chipActiveText = RGB(0, 112, 89);
   float borderOpacity = 0.86f;
   float dividerOpacity = 0.48f;
   float shadowOpacity = 0.08f;
@@ -104,10 +104,10 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
     colors.itemBorder = RGB(71, 76, 86);
     colors.hoverBg = RGB(55, 60, 69);
     colors.hoverBorder = RGB(113, 128, 148);
-    colors.selectedBg = RGB(103, 136, 222);
-    colors.selectedBorder = RGB(131, 159, 234);
-    colors.pressedBg = RGB(82, 113, 194);
-    colors.pressedBorder = RGB(116, 146, 226);
+    colors.selectedBg = RGB(35, 69, 56);
+    colors.selectedBorder = RGB(76, 209, 151);
+    colors.pressedBg = RGB(28, 58, 48);
+    colors.pressedBorder = RGB(47, 180, 126);
     colors.text = RGB(241, 244, 249);
     colors.mutedText = RGB(183, 191, 204);
     colors.selectedText = RGB(255, 255, 255);
@@ -118,10 +118,10 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
     colors.chipBg = RGB(63, 67, 76);
     colors.chipBorder = RGB(110, 116, 128);
     colors.chipText = RGB(235, 240, 247);
-    colors.chipActiveBg = RGB(103, 136, 222);
-    colors.chipActiveBorder = RGB(131, 159, 234);
-    colors.chipActiveText = RGB(255, 255, 255);
-    colors.selectedOutline = RGB(15, 20, 32);
+    colors.chipActiveBg = RGB(35, 69, 56);
+    colors.chipActiveBorder = RGB(76, 209, 151);
+    colors.chipActiveText = RGB(225, 255, 242);
+    colors.selectedOutline = RGB(76, 209, 151);
   } else if (style.themeMode == SrfThemeMode::HighContrast) {
     const COLORREF highlight = GetSysColor(COLOR_HIGHLIGHT);
     const COLORREF highlightText = GetSysColor(COLOR_HIGHLIGHTTEXT);
@@ -155,7 +155,7 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
   } else {
     // Light: divider defaults
     colors.divider = RGB(226, 232, 240);
-    colors.selectedOutline = RGB(37, 99, 235);
+    colors.selectedOutline = RGB(0, 137, 110);
   }
 
   // Apply material effects

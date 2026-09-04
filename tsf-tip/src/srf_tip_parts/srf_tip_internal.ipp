@@ -495,6 +495,11 @@ constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
 constexpr wchar_t kStateAsciiValue[] = L"AsciiMode";
 constexpr wchar_t kStateInputAsciiValue[] = L"InputAsciiMode";
 constexpr wchar_t kStateInputModeSourceValue[] = L"InputModeSource";
+constexpr wchar_t kStateInputOwnerProcessIdValue[] = L"InputOwnerProcessId";
+constexpr wchar_t kStateInputOwnerThreadIdValue[] = L"InputOwnerThreadId";
+constexpr wchar_t kStateInputOwnerHwndValue[] = L"InputOwnerHwnd";
+constexpr wchar_t kStateInputUpdatedTickValue[] = L"InputUpdatedTick";
+constexpr wchar_t kStateInputSequenceValue[] = L"InputSequence";
 constexpr wchar_t kStateFullShapeValue[] = L"FullShape";
 constexpr wchar_t kStateChinesePunctuationValue[] = L"ChinesePunctuation";
 constexpr wchar_t kStateInstallMaintenanceValue[] = L"InstallMaintenance";
@@ -552,6 +557,19 @@ bool WriteStateDwordValue(const wchar_t* name, DWORD value) {
   return wrote;
 }
 
+bool WriteStateQwordValue(const wchar_t* name, ULONGLONG value) {
+  HKEY key = nullptr;
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
+                      &key, nullptr) != ERROR_SUCCESS) {
+    return false;
+  }
+  const bool wrote =
+      RegSetValueExW(key, name, 0, REG_QWORD, reinterpret_cast<const BYTE*>(&value),
+                     sizeof(value)) == ERROR_SUCCESS;
+  RegCloseKey(key);
+  return wrote;
+}
+
 bool WriteStateStringValue(const wchar_t* name, const std::wstring& value) {
   HKEY key = nullptr;
   if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
@@ -596,25 +614,52 @@ void PublishTrayInputStatus(bool asciiMode, bool fullShape, bool chinesePunctuat
   static bool lastFullShape = false;
   static bool lastChinesePunctuation = true;
   static std::wstring lastModeSource;
+  static HWND lastOwnerHwnd = nullptr;
+  static ULONGLONG sequence = 0;
+
+  const DWORD publisherProcessId = GetCurrentProcessId();
+  const DWORD publisherThreadId = GetCurrentThreadId();
+  HWND ownerHwnd = GetForegroundWindow();
+  DWORD foregroundProcessId = 0;
+  if (ownerHwnd) GetWindowThreadProcessId(ownerHwnd, &foregroundProcessId);
+  // A background TSF instance must not replace the foreground application's
+  // state in the shared tray snapshot.
+  if (!ownerHwnd || foregroundProcessId != publisherProcessId) return;
 
   if (initialized && lastAsciiMode == asciiMode && lastFullShape == fullShape &&
-      lastChinesePunctuation == chinesePunctuation && lastModeSource == modeSource) {
+      lastChinesePunctuation == chinesePunctuation && lastModeSource == modeSource &&
+      lastOwnerHwnd == ownerHwnd) {
     return;
   }
+
+  const ULONGLONG updatedTick = GetTickCount64();
+  ++sequence;
 
   const bool wroteAscii = WriteStateDwordValue(kStateInputAsciiValue, asciiMode ? 1u : 0u);
   const bool wroteFullShape = WriteStateDwordValue(kStateFullShapeValue, fullShape ? 1u : 0u);
   const bool wrotePunctuation =
       WriteStateDwordValue(kStateChinesePunctuationValue, chinesePunctuation ? 1u : 0u);
   const bool wroteModeSource = WriteStateStringValue(kStateInputModeSourceValue, modeSource);
+  const bool wroteOwnerProcess =
+      WriteStateDwordValue(kStateInputOwnerProcessIdValue, publisherProcessId);
+  const bool wroteOwnerThread =
+      WriteStateDwordValue(kStateInputOwnerThreadIdValue, publisherThreadId);
+  const bool wroteOwnerHwnd = WriteStateQwordValue(
+      kStateInputOwnerHwndValue, static_cast<ULONGLONG>(reinterpret_cast<ULONG_PTR>(ownerHwnd)));
+  const bool wroteUpdatedTick = WriteStateQwordValue(kStateInputUpdatedTickValue, updatedTick);
+  // Sequence is the commit marker and must be written last. Readers reject a
+  // snapshot if this value changes while the other fields are being read.
+  const bool wroteSequence = WriteStateQwordValue(kStateInputSequenceValue, sequence);
 
   initialized = true;
   lastAsciiMode = asciiMode;
   lastFullShape = fullShape;
   lastChinesePunctuation = chinesePunctuation;
   lastModeSource = modeSource;
+  lastOwnerHwnd = ownerHwnd;
 
-  if (wroteAscii || wroteFullShape || wrotePunctuation || wroteModeSource) {
+  if (wroteAscii || wroteFullShape || wrotePunctuation || wroteModeSource || wroteOwnerProcess ||
+      wroteOwnerThread || wroteOwnerHwnd || wroteUpdatedTick || wroteSequence) {
     NotifyTrayStateChanged();
   }
 }
@@ -2374,18 +2419,21 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
   std::wstring m_committed;
   std::wstring m_meta;
   std::vector<std::wstring> m_skippedCandidates;
+  bool m_explicitSelection = false;
 
  public:
   CEditSessionCommitCandidate(CSrfTip* tip, ITfContext* context, size_t index,
                               std::wstring reading, std::wstring committed, std::wstring meta,
-                              std::vector<std::wstring> skippedCandidates)
+                              std::vector<std::wstring> skippedCandidates,
+                              bool explicitSelection)
       : m_tip(tip),
         m_context(context),
         m_index(index),
         m_reading(std::move(reading)),
         m_committed(std::move(committed)),
         m_meta(std::move(meta)),
-        m_skippedCandidates(std::move(skippedCandidates)) {
+        m_skippedCandidates(std::move(skippedCandidates)),
+        m_explicitSelection(explicitSelection) {
     if (m_tip) m_tip->AddRef();
     if (m_context) m_context->AddRef();
   }
@@ -2417,7 +2465,7 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
     return m_tip->CommitCandidateSnapshot(ec, m_context, m_index, m_reading, m_committed, m_meta,
-                                          m_skippedCandidates);
+                                          m_skippedCandidates, m_explicitSelection);
   }
 };
 

@@ -125,7 +125,7 @@ def is_excluded(path: Path) -> bool:
     return any(
         part in EXCLUDED_DIR_NAMES
         or part.startswith(".venv")
-        or part.startswith("build-codex")
+        or part.startswith("build-")
         or part.startswith("kaixin-diagnostics-")
         for part in path.parts
     )

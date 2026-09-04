@@ -1,3 +1,5 @@
+#include "wintranslator_protocol.h"
+
 namespace {
 
 class SrfScopedPerfTimer {
@@ -48,9 +50,6 @@ std::wstring JsonEscapeTranslationText(const std::wstring& text) {
   return escaped;
 }
 
-constexpr wchar_t kWinTranslatorRequestPipe[] = LR"(\\.\pipe\WinTranslator.Request)";
-constexpr DWORD kWinTranslatorPipeProbeTimeoutMs = 120;
-constexpr DWORD kWinTranslatorStartupTimeoutMs = 12'000;
 std::atomic<unsigned long long> g_candidateTranslationRequestCounter{1};
 
 bool WideTextToUtf8(const std::wstring& text, std::string* output) {
@@ -94,8 +93,9 @@ std::filesystem::path FindWinTranslatorExecutable() {
 }
 
 bool SendWinTranslatorRequestOnce(const std::string& request) {
-  if (!WaitNamedPipeW(kWinTranslatorRequestPipe, kWinTranslatorPipeProbeTimeoutMs)) return false;
-  HANDLE pipe = CreateFileW(kWinTranslatorRequestPipe, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+  if (!WaitNamedPipeW(wintranslator_protocol::kRequestPipe,
+                      wintranslator_protocol::kProbeTimeoutMs)) return false;
+  HANDLE pipe = CreateFileW(wintranslator_protocol::kRequestPipe, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
                             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
   if (pipe == INVALID_HANDLE_VALUE) return false;
 
@@ -125,7 +125,7 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
                                 uint64_t focusGeneration) {
   if (text.empty() || !targetHwnd) return false;
 
-  const bool pipeReady = WaitNamedPipeW(kWinTranslatorRequestPipe, 0) != FALSE;
+  const bool pipeReady = WaitNamedPipeW(wintranslator_protocol::kRequestPipe, 0) != FALSE;
   const auto executable = FindWinTranslatorExecutable();
   if (!pipeReady && executable.empty()) return false;
 
@@ -135,7 +135,8 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
       g_candidateTranslationRequestCounter.fetch_add(1, std::memory_order_relaxed);
   const std::wstring requestId = std::to_wstring(GetCurrentProcessId()) + L"-" +
                                  std::to_wstring(GetTickCount64()) + L"-" + std::to_wstring(counter);
-  const std::wstring json = L"{\"protocol_version\":2,\"request_id\":\"" + requestId +
+  const std::wstring json = L"{\"protocol_version\":" +
+      std::to_wstring(wintranslator_protocol::kVersion) + L",\"request_id\":\"" + requestId +
       L"\",\"action\":\"translate\",\"text\":\"" + JsonEscapeTranslationText(text) +
       L"\",\"source\":\"auto\",\"target\":\"auto-opposite\","
       L"\"origin\":\"kaixin-ime-candidate\",\"target_hwnd\":" +
@@ -147,13 +148,14 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
       L",\"replace_selection\":false}";
   std::string request;
   if (!WideTextToUtf8(json, &request)) return false;
+  if (request.size() + 1 > wintranslator_protocol::kMaximumRequestBytes) return false;
   request.push_back('\n');
 
   try {
     std::thread([request = std::move(request), executable]() {
       if (SendWinTranslatorRequestOnce(request)) return;
       if (!LaunchWinTranslator(executable)) return;
-      const ULONGLONG deadline = GetTickCount64() + kWinTranslatorStartupTimeoutMs;
+      const ULONGLONG deadline = GetTickCount64() + wintranslator_protocol::kStartupTimeoutMs;
       while (GetTickCount64() < deadline) {
         if (SendWinTranslatorRequestOnce(request)) return;
         Sleep(120);
@@ -771,7 +773,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
       const UINT pageEndExclusive = CandidatePageEndExclusive(m_candPage);
       const size_t idx = pageStart + static_cast<size_t>(candidateNumberIndex);
       if (idx >= pageEndExclusive) return S_OK;
-      return CommitCandidate(ec, idx);
+      return CommitCandidate(ec, idx, true);
     }
 
     std::wstring reading = resolveDirectText();

@@ -11,7 +11,9 @@ use crate::windows_graphics_capture::{
 use image::{Rgba, RgbaImage};
 use std::time::{Duration, Instant};
 
-const CAPTURE_TIMEOUT_MS: u32 = 1_000;
+// This is a fallback after WGC has already failed. Bound the per-display wait
+// so a multi-monitor capture does not appear to hang for several seconds.
+const CAPTURE_TIMEOUT_MS: u32 = 500;
 const MAX_CAPTURE_PIXELS: u64 = 134_217_728;
 
 #[cfg(windows)]

@@ -32,6 +32,7 @@ enum SrfLearnCommitFlags : unsigned long {
   kSrfLearnCommitDefault = 0,
   kSrfLearnCommitWeak = 1u << 0,
   kSrfLearnCommitComposedPhrase = 1u << 1,
+  kSrfLearnCommitExplicitSelection = 1u << 3,
 };
 
 enum SrfCandidateAction : unsigned long {

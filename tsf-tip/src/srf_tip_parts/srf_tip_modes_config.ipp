@@ -495,7 +495,7 @@ HRESULT CSrfTip::RequestCommitCandidate(size_t idx) {
   CEditSessionCommitCandidate* edit =
       new (std::nothrow) CEditSessionCommitCandidate(this, context, idx, snapshotReading,
                                                      snapshotCommitted, snapshotMeta,
-                                                     std::move(snapshotSkippedCandidates));
+                                                     std::move(snapshotSkippedCandidates), true);
   if (!edit) return E_OUTOFMEMORY;
 
   HRESULT hrSession = E_FAIL;

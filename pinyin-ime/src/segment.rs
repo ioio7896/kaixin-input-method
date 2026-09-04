@@ -1496,12 +1496,16 @@ fn finalize_mixed_expansions(
             // Keep the more compact syllable path so downstream word-graph
             // decoding sees the intended word boundaries.
             .then_with(|| {
-                let left_compact_segments = (left.key.len() >= 10)
-                    .then_some(left.segment_count)
-                    .unwrap_or(0);
-                let right_compact_segments = (right.key.len() >= 10)
-                    .then_some(right.segment_count)
-                    .unwrap_or(0);
+                let left_compact_segments = if left.key.len() >= 10 {
+                    left.segment_count
+                } else {
+                    0
+                };
+                let right_compact_segments = if right.key.len() >= 10 {
+                    right.segment_count
+                } else {
+                    0
+                };
                 left_compact_segments.cmp(&right_compact_segments)
             })
             .then_with(|| {
@@ -1671,7 +1675,7 @@ fn expand_mixed_pattern_keys_until(
         syllables: Vec::new(),
         score: 0.0,
     }];
-    let beam_width = max_keys.min(MIXED_PINYIN_INTERNAL_BEAM).max(1);
+    let beam_width = max_keys.clamp(1, MIXED_PINYIN_INTERNAL_BEAM);
     for segment in pattern {
         if should_stop() {
             return false;

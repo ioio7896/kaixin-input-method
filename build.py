@@ -189,6 +189,11 @@ BASE_PACKAGE_RUST_ARTIFACTS = PACKAGE_BUILD_TOOL_RUST_ARTIFACTS + BASE_STAGED_RU
 OPTIONAL_OCR_RUST_ARTIFACTS = ("srf_ime_ocr.exe",)
 SMOKE_RUST_ARTIFACTS = ("input_smoke.exe", "input_eval.exe")
 PERF_RUST_ARTIFACT = "input_perf.exe"
+DEV_TOOL_RUST_BINS = {
+    "lexicon_tool", "bake_lexicon", "build_ai_lexicons", "input_smoke",
+    "input_eval", "input_perf", "phrase_len_eval", "learning_replay_eval",
+    "build_blind_corpus",
+}
 
 
 def rust_artifact_names_for_variants(
@@ -891,6 +896,12 @@ def write_build_manifest(
         .isoformat()
         .replace("+00:00", "Z"),
         "git": git_release_info(repo),
+        "build_environment": {
+            "python": sys.version.split()[0],
+            "platform": sys.platform,
+            "machine": os.environ.get("PROCESSOR_ARCHITECTURE", "unknown"),
+            "hostname": os.environ.get("COMPUTERNAME", "unknown"),
+        },
         "runtime_payload": runtime_rel,
         "stage_roots": [
             _rel_path(stage_root, repo)
@@ -951,6 +962,16 @@ def write_build_manifest(
         },
         "files": files,
     }
+    suspicious = [
+        item["path"] for item in files
+        if any(part in item["path"].lower().split("/")
+               for part in (".git", "__pycache__", ".pytest_cache"))
+        or any(token in item["path"].lower()
+               for token in (".pem", ".pfx", ".key", "secret", "password"))
+    ]
+    manifest["audit"] = {"suspicious_files": suspicious, "passed": not suspicious}
+    if suspicious:
+        raise RuntimeError("release artifact audit found suspicious files: " + ", ".join(suspicious))
 
     manifest_path = repo / "dist" / "build-manifest.json"
     manifest_path.write_text(
@@ -1905,6 +1926,7 @@ def _lexicon_layer(path: Path) -> str | None:
         "kaixin_explicit.txt",
         "kaixin_polyphone.txt",
         "kaixin_pronunciation_aliases.txt",
+        "lfie-common-3char.txt",
     }:
         return "core"
     if "_tail_" in name or name.startswith("large_"):
@@ -2532,6 +2554,25 @@ def step_verify_rust(repo: Path) -> None:
         cwd=cargo_dir,
         env=cargo_env,
     )
+    run(
+        [
+            cargo,
+            "clippy",
+            "--locked",
+            "--lib",
+            "--",
+            "-D",
+            "warnings",
+            "-A",
+            "clippy::too-many-arguments",
+            "-A",
+            "clippy::manual-is-multiple-of",
+            "-A",
+            "clippy::incompatible-msrv",
+        ],
+        cwd=cargo_dir,
+        env=cargo_env,
+    )
 
 
 # CMake generator cache
@@ -2665,6 +2706,8 @@ def step_cargo(
     artifact_names = artifact_names or rust_artifact_names_for_variants()
     stop_workspace_rust_artifact_processes(repo, artifact_names)
     bin_names = rust_bin_names_for_artifacts(artifact_names)
+    if any(bin_name in DEV_TOOL_RUST_BINS for bin_name in bin_names):
+        cmd += ["--features", "dev-tools"]
     if bin_names:
         for bin_name in bin_names:
             cmd += ["--bin", bin_name]

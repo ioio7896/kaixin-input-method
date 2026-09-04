@@ -86,29 +86,34 @@ try {
 
 Push-Location $cargoDir
 try {
-    Invoke-Checked { cargo fmt -- --check }
+    Invoke-Checked { cargo fmt "--" --check }
+    Invoke-Checked { cargo test --locked --lib }
+    Invoke-Checked {
+        $clippyArgs = @("clippy", "--locked", "--lib", "--", "-D", "warnings", "-A", "clippy::too-many-arguments", "-A", "clippy::manual-is-multiple-of", "-A", "clippy::incompatible-msrv")
+        & cargo @clippyArgs
+    }
     if ((-not $Fast) -and (-not $SkipEval)) {
         Invoke-Checked { python scripts/check_lexicon_syllables.py --check-syllable-count --strict-syllable-count }
         Invoke-Checked {
-            cargo run --bin input_perf -- --input shuru --input nihao --input zhongguo `
-                --workload-size 240 --warmup 1 --iterations 1
+            $perfArgs = @("run", "--bin", "input_perf", "--", "--input", "shuru", "--input", "nihao", "--input", "zhongguo", "--workload-size", "240", "--warmup", "1", "--iterations", "1")
+            & cargo @perfArgs
         }
-        # 候选质量门禁：常用三字词基准（tests/popular_three_char_cases.tsv）按
-        # 全拼输入 TOP9 召回与不可召回率检查候选排序质量。
+        # Candidate quality gate: validate full-pinyin TOP9 recall and the
+        # unrecalled rate against tests/popular_three_char_cases.tsv.
         Invoke-Checked {
-            cargo run --release --bin phrase_len_eval -- --limit 400 `
-                --min-full-top9 60 --max-full-unrecalled 20
+            $evalArgs = @("run", "--release", "--bin", "phrase_len_eval", "--", "--limit", "400", "--min-full-top9", "60", "--max-full-unrecalled", "20")
+            & cargo @evalArgs
         }
         # Do not let the mixed 2/3/4-character aggregate hide a three-character
         # regression in the heldout benchmark.
         Invoke-Checked {
-            cargo run --release --bin phrase_len_eval -- --only-popular-three `
-                --min-full-top9 66 --max-full-unrecalled 16
+            $threeCharArgs = @("run", "--release", "--bin", "phrase_len_eval", "--", "--only-popular-three", "--min-full-top9", "66", "--max-full-unrecalled", "16")
+            & cargo @threeCharArgs
         }
-        # 学习回放门禁：commit/select 事件后同一输入的前置表现。
+        # Learning replay gate: measure ranking after commit/select events.
         Invoke-Checked {
-            cargo run --release --bin learning_replay_eval -- `
-                --min-top1 70 --max-missing 0
+            $learningArgs = @("run", "--release", "--bin", "learning_replay_eval", "--", "--min-top1", "70", "--max-missing", "0")
+            & cargo @learningArgs
         }
     }
 } finally {
@@ -121,7 +126,8 @@ if ((-not $Fast) -and (-not $SkipTsfBuild)) {
         $x64Build = "tsf-tip\build-codex-current-x64"
         $x86Build = "tsf-tip\build-codex-current-x86"
         Ensure-CMakeBuildDir -BuildDir $x64Build -Arch "x64"
-        Invoke-Checked { cmake --build $x64Build --config Release --target srf_tsf_tip }
+        Invoke-Checked { cmake --build $x64Build --config Release --target srf_tsf_tip srf_policy_tests }
+        Invoke-Checked { ctest --test-dir $x64Build -C Release --output-on-failure }
         Ensure-CMakeBuildDir -BuildDir $x86Build -Arch "Win32"
         Invoke-Checked { cmake --build $x86Build --config Release --target srf_tsf_tip }
     } finally {

@@ -180,7 +180,14 @@ def build() -> None:
     office_keywords = ("项目", "工作", "会议", "邮件", "文件", "资料", "材料", "数据", "客户", "合同", "预算", "审批", "部门", "安排", "提交", "审核", "进度", "报告", "方案", "系统", "通知", "任务", "计划", "发票", "版本", "测试", "发布")
     chat = select_ranked(candidates, 5_000, range(3, 9), seeds=CHAT_SEEDS, scorer=lambda p, r: category_score(p, r, chat_keywords))
     office = select_ranked(candidates, 5_000, range(3, 9), seeds=OFFICE_SEEDS, scorer=lambda p, r: category_score(p, r, office_keywords))
-    write(BASE / "life_common_4char.txt", "5000 条通用四字短语", "wordfreq 中文频率排序 + 高频现代固定搭配", make_rows(four, 9_000_000))
+    four_rows = make_rows(four, 9_000_000)
+    # Formal discourse connectors remain available but should not dominate
+    # ordinary daily input on the first page.
+    four_rows = [
+        row.rsplit("\t", 1)[0] + "\t7500" if row.split("\t", 1)[0] in {"与此同时", "总的来说", "换句话说"} else row
+        for row in four_rows
+    ]
+    write(BASE / "life_common_4char.txt", "5000 条通用四字短语", "wordfreq 中文频率排序 + 高频现代固定搭配", four_rows)
     write(BASE / "life_common_phrases_5to8.txt", "5000 条五至八字通用短语", "wordfreq 中文频率排序 + 现代工作与生活固定搭配模板", make_rows(long, 8_000_000))
     write(EXT_SOURCE / "chat_common_phrases.txt", "5000 条聊天口语短语", "wordfreq 中文频率排序 + 常用聊天表达整理", make_rows(chat, 7_000_000))
     write(EXT_SOURCE / "office_common_phrases.txt", "5000 条办公沟通短语", "wordfreq 中文频率排序 + 常用办公表达整理", make_rows(office, 7_000_000))

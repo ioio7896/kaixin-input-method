@@ -82,8 +82,8 @@ TEXT_FILES = {
         2,
     ),
     "data_sources/kaixin/pronunciation_aliases.tsv": (
-        "b813f6c836e1bc1590cb51db2009b24bc6694dbf20f6f3c1ce7871eb16e89fc8",
-        27,
+        "110b59eb4b4a14c57ebf0145c4503428965e23f1aa506586e1efdbec5697c67b",
+        123,
         4,
     ),
 }

@@ -1,5 +1,6 @@
 use crate::runtime_log::{self, RuntimeLogLevel};
 use fs2::FileExt;
+use regex::Regex;
 use rusqlite::{params, Connection, DatabaseName};
 use std::collections::VecDeque;
 use std::fs::{self, File, OpenOptions};
@@ -1186,7 +1187,31 @@ fn normalize_text_with_limit(text: &str, max_text_utf16_units: usize) -> Option<
 }
 
 fn normalize_text(text: &str) -> Option<String> {
-    normalize_text_with_limit(text, clipboard_prefs().max_text_utf16_units)
+    let normalized = normalize_text_with_limit(text, clipboard_prefs().max_text_utf16_units)?;
+    if looks_like_sensitive_clipboard(&normalized) {
+        runtime_log::log_clipboard(
+            RuntimeLogLevel::Basic,
+            "clipboard_sensitive_skipped",
+            "sensitive-looking clipboard content was not persisted",
+        );
+        return None;
+    }
+    Some(normalized)
+}
+
+fn looks_like_sensitive_clipboard(text: &str) -> bool {
+    let patterns = [
+        r"(?i)\b(api[_ -]?key|access[_ -]?token|secret|password|passwd)\s*[:=]",
+        r"\bAKIA[0-9A-Z]{16}\b",
+        r"\bgh[pousr]_[A-Za-z0-9_]{20,}\b",
+        r"\bsk-[A-Za-z0-9]{20,}\b",
+        r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
+    ];
+    patterns.iter().any(|pattern| {
+        Regex::new(pattern)
+            .map(|regex| regex.is_match(text))
+            .unwrap_or(false)
+    })
 }
 
 fn normalize_existing_text_key(text: &str) -> Option<String> {
@@ -1835,7 +1860,7 @@ pub fn resolve_entry_text(snapshot: &ClipboardSnapshot, id: &str) -> Option<Stri
 
 #[cfg(windows)]
 fn current_foreground_process_name() -> Option<String> {
-    use windows_sys::Win32::Foundation::CloseHandle;
+    use crate::win_handle::OwnedWinHandle;
     use windows_sys::Win32::System::Threading::{
         OpenProcess, QueryFullProcessImageNameW, PROCESS_QUERY_LIMITED_INFORMATION,
     };
@@ -1855,15 +1880,12 @@ fn current_foreground_process_name() -> Option<String> {
         return None;
     }
     let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
-    if handle == 0 {
-        return None;
-    }
+    // SAFETY: OpenProcess returned a new process handle owned here.
+    let handle = unsafe { OwnedWinHandle::from_raw(handle) }.ok()?;
     let mut buffer = vec![0u16; 32768];
     let mut len = buffer.len() as u32;
-    let ok = unsafe { QueryFullProcessImageNameW(handle, 0, buffer.as_mut_ptr(), &mut len) };
-    unsafe {
-        CloseHandle(handle);
-    }
+    let ok =
+        unsafe { QueryFullProcessImageNameW(handle.as_raw(), 0, buffer.as_mut_ptr(), &mut len) };
     if ok == 0 || len == 0 {
         return None;
     }

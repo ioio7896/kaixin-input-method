@@ -948,7 +948,7 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
   }
   if (!m_reading.empty() &&
       (lookupEmptyForReading || m_candidates.empty() || retainedPrevious || usedFallbackCandidate ||
-       partialResult || transientLookup)) {
+       partialResult || transientLookup || hasMore)) {
     const SrfEngineState state = stateAfterLookup;
     std::wstring detail = L"request_id=" + std::to_wstring(requestId);
     detail += L", reading=";
@@ -974,6 +974,13 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     const bool hasCurrentUsableCandidates =
         !m_candidates.empty() && m_candidatesReading == m_reading &&
         !usedFallbackCandidate && !prefixPlaceholder;
+    // A non-full lookup may return a short first chunk and advertise that more
+    // candidates are available. Request the complete result now, rather than
+    // making the user press PageDown to trigger the same lookup path.
+    const bool incompleteFirstPage =
+        lookupStatus == SrfLookupCandidatesStatus::Ok && !fullResult && hasMore &&
+        !m_candidateFullLookupPending && hasCurrentUsableCandidates &&
+        m_candidates.size() < visibleCandidateTarget;
     const bool hasFirstPaintCandidates =
         hasCurrentUsableCandidates &&
         (!partialResult || m_candidates.size() >= visibleCandidateTarget);
@@ -986,6 +993,9 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     const bool awaitingQueuedAsyncLookup = prefixPlaceholder && !asyncResult;
     if (awaitingQueuedAsyncLookup) {
       detail += L", retry=await_async";
+    } else if (incompleteFirstPage) {
+      detail += L", retry=full_result";
+      RefreshCandidatesAsync(true);
     } else if (retryNow) {
       detail += L", retry=scheduled";
       ScheduleDeferredCandidateRefresh();
@@ -1335,6 +1345,30 @@ bool CSrfTip::RequestMoreCandidatesForPage(UINT targetPage) {
   return true;
 }
 
+bool CSrfTip::RequestMoreCandidatesToFillCurrentPage() {
+  if (!m_candidateHasMore || m_candidateFullLookupPending || m_reading.empty() ||
+      m_candidatesReading != m_reading || m_candPage != MaxCandidatePage()) {
+    return false;
+  }
+
+  const UINT pageStart = CandidatePageStart(m_candPage);
+  const UINT pageEndExclusive = CandidatePageEndExclusive(m_candPage);
+  const size_t visibleCandidateTarget =
+      m_uiStyle.candidateHorizontal
+          ? static_cast<size_t>(std::clamp(m_uiStyle.candidateHorizontalCount, 3u, 9u))
+          : static_cast<size_t>(CandidatePageSize());
+  if (pageEndExclusive <= pageStart ||
+      static_cast<size_t>(pageEndExclusive - pageStart) >= visibleCandidateTarget) {
+    return false;
+  }
+
+  // The first lookup is intentionally capped. When that cap leaves the last
+  // visible page short, complete it in the background without requiring one
+  // more PageDown solely to request the remaining candidates.
+  RefreshCandidatesAsync(true);
+  return true;
+}
+
 void CSrfTip::ClampCandidateState() {
   if (m_candidates.empty()) {
     m_candSel = 0;
@@ -1353,4 +1387,5 @@ void CSrfTip::ClampCandidateState() {
   if (m_candSel < pageStart || m_candSel >= pageEndExclusive) {
     m_candPage = PageForIndexFromMetrics(layout, m_candSel, static_cast<UINT>(m_candidates.size()));
   }
+  RequestMoreCandidatesToFillCurrentPage();
 }

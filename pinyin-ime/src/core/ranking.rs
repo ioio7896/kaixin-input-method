@@ -1675,6 +1675,10 @@ pub(super) fn merge_into_candidate(current: &mut MergedCandidate, incoming: Merg
 
     let current_priority = merged_meta_priority(&current.meta);
     let incoming_priority = merged_meta_priority(&incoming.meta);
+    let has_user_signal = current.meta.user_signal
+        || incoming.meta.user_signal
+        || current.meta.match_kind == CandidateMatchKind::User
+        || incoming.meta.match_kind == CandidateMatchKind::User;
 
     if incoming.score > current.score + EPSILON {
         if current_priority > incoming_priority
@@ -1684,6 +1688,7 @@ pub(super) fn merge_into_candidate(current: &mut MergedCandidate, incoming: Merg
         } else {
             *current = incoming;
         }
+        current.meta.user_signal |= has_user_signal;
         return;
     }
 
@@ -1692,18 +1697,17 @@ pub(super) fn merge_into_candidate(current: &mut MergedCandidate, incoming: Merg
             && current.score - incoming.score <= META_STICKY_SCORE_MARGIN
         {
             current.meta = incoming.meta;
-        } else if incoming.meta.match_kind == CandidateMatchKind::User && !current.meta.user_signal
-        {
-            // 同词系统候选分数高出 META_STICKY_SCORE_MARGIN：保留系统的
-            // 排序位置，但带上用户学习信号，避免反复学习也无法前置。
-            current.meta.user_signal = true;
         }
+        // 同词的用户候选与系统候选无论按什么顺序合并，都保留用户
+        // 学习信号，避免系统高分覆盖元数据后热词无法前置。
+        current.meta.user_signal |= has_user_signal;
         return;
     }
 
     if incoming_priority > current_priority {
         *current = incoming;
     }
+    current.meta.user_signal |= has_user_signal;
 }
 
 pub(super) fn merged_meta_priority(meta: &CandidateMeta) -> u8 {

@@ -2,6 +2,149 @@
 
 use std::sync::OnceLock;
 
+pub fn constant_time_eq(left: &str, right: &str) -> bool {
+    let left = left.as_bytes();
+    let right = right.as_bytes();
+    let mut difference = left.len() ^ right.len();
+    for index in 0..left.len().max(right.len()) {
+        difference |= (left.get(index).copied().unwrap_or(0)
+            ^ right.get(index).copied().unwrap_or(0)) as usize;
+    }
+    difference == 0
+}
+
+#[cfg(windows)]
+pub fn generate_capability_token() -> std::io::Result<String> {
+    use windows_sys::Win32::Security::Cryptography::{
+        BCryptGenRandom, BCRYPT_USE_SYSTEM_PREFERRED_RNG,
+    };
+    let mut bytes = [0u8; 32];
+    let status = unsafe {
+        BCryptGenRandom(
+            std::ptr::null_mut(),
+            bytes.as_mut_ptr(),
+            bytes.len() as u32,
+            BCRYPT_USE_SYSTEM_PREFERRED_RNG,
+        )
+    };
+    if status != 0 {
+        return Err(std::io::Error::from_raw_os_error(status));
+    }
+    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
+}
+
+#[cfg(windows)]
+pub struct LocalLogonPipeSecurity {
+    attrs: windows_sys::Win32::Security::SECURITY_ATTRIBUTES,
+    descriptor: *mut std::ffi::c_void,
+}
+
+#[cfg(windows)]
+impl LocalLogonPipeSecurity {
+    pub fn new() -> std::io::Result<Self> {
+        use crate::win_handle::OwnedWinHandle;
+        use windows_sys::Win32::Foundation::LocalFree;
+        use windows_sys::Win32::Security::Authorization::{
+            ConvertSidToStringSidW, ConvertStringSecurityDescriptorToSecurityDescriptorW,
+            SDDL_REVISION_1,
+        };
+        use windows_sys::Win32::Security::{
+            GetTokenInformation, TokenLogonSid, SECURITY_ATTRIBUTES, TOKEN_GROUPS, TOKEN_QUERY,
+        };
+        use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+
+        let mut raw_token = 0;
+        if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut raw_token) } == 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        let token = unsafe { OwnedWinHandle::from_raw(raw_token) }?;
+        let mut needed = 0;
+        unsafe {
+            GetTokenInformation(
+                token.as_raw(),
+                TokenLogonSid,
+                std::ptr::null_mut(),
+                0,
+                &mut needed,
+            )
+        };
+        if needed == 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        let mut buffer = vec![0u8; needed as usize];
+        if unsafe {
+            GetTokenInformation(
+                token.as_raw(),
+                TokenLogonSid,
+                buffer.as_mut_ptr().cast(),
+                needed,
+                &mut needed,
+            )
+        } == 0
+        {
+            return Err(std::io::Error::last_os_error());
+        }
+        let groups = unsafe { &*buffer.as_ptr().cast::<TOKEN_GROUPS>() };
+        if groups.GroupCount == 0 {
+            return Err(std::io::Error::other("current token has no logon SID"));
+        }
+        let mut sid_text = std::ptr::null_mut();
+        if unsafe { ConvertSidToStringSidW(groups.Groups[0].Sid, &mut sid_text) } == 0
+            || sid_text.is_null()
+        {
+            return Err(std::io::Error::last_os_error());
+        }
+        let sid = unsafe {
+            let mut len = 0;
+            while *sid_text.add(len) != 0 {
+                len += 1;
+            }
+            let value = String::from_utf16_lossy(std::slice::from_raw_parts(sid_text, len));
+            LocalFree(sid_text.cast());
+            value
+        };
+        let sddl: Vec<u16> =
+            format!("D:P(D;;GA;;;NU)(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;{sid})S:(ML;;NW;;;ME)")
+                .encode_utf16()
+                .chain(std::iter::once(0))
+                .collect();
+        let mut descriptor = std::ptr::null_mut();
+        if unsafe {
+            ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                sddl.as_ptr(),
+                SDDL_REVISION_1,
+                &mut descriptor,
+                std::ptr::null_mut(),
+            )
+        } == 0
+            || descriptor.is_null()
+        {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(Self {
+            attrs: SECURITY_ATTRIBUTES {
+                nLength: std::mem::size_of::<SECURITY_ATTRIBUTES>() as u32,
+                lpSecurityDescriptor: descriptor,
+                bInheritHandle: 0,
+            },
+            descriptor,
+        })
+    }
+
+    pub fn as_ptr(&self) -> *const windows_sys::Win32::Security::SECURITY_ATTRIBUTES {
+        &self.attrs
+    }
+}
+
+#[cfg(windows)]
+impl Drop for LocalLogonPipeSecurity {
+    fn drop(&mut self) {
+        if !self.descriptor.is_null() {
+            unsafe { windows_sys::Win32::Foundation::LocalFree(self.descriptor) };
+        }
+    }
+}
+
 static PROCESS_HARDENING: OnceLock<()> = OnceLock::new();
 
 pub fn apply_process_hardening() {

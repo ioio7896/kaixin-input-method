@@ -1,7 +1,7 @@
 use super::*;
 
 const SETTINGS_FONT_HEADING: f32 = 20.0;
-const SETTINGS_FONT_PAGE_TITLE: f32 = 18.0;
+const SETTINGS_FONT_PAGE_TITLE: f32 = 23.0;
 const SETTINGS_FONT_BRAND_TITLE: f32 = 17.0;
 const SETTINGS_FONT_SECTION_TITLE: f32 = 16.0;
 const SETTINGS_FONT_SETTING_TITLE: f32 = 15.0;
@@ -11,10 +11,17 @@ const SETTINGS_MIN_HINT_FONT: f32 = 10.0;
 const SETTINGS_FONT_SMALL: f32 = 14.0;
 const SETTINGS_FONT_MONOSPACE: f32 = 14.0;
 const SETTINGS_FONT_LOG: f32 = 12.0;
-const SETTINGS_CONTROL_WIDTH: f32 = 420.0;
-const SETTINGS_CONTROL_MIN_WIDTH: f32 = 220.0;
+const SETTINGS_CONTROL_WIDTH: f32 = 320.0;
+const SETTINGS_CONTROL_MIN_WIDTH: f32 = 280.0;
+const SETTINGS_CONTROL_HEIGHT: f32 = 52.0;
+const SETTINGS_ROW_HEIGHT: f32 = 52.0;
+const SETTINGS_ROW_PAD_Y: f32 = 8.0;
+const SETTINGS_RADIUS_CONTROL: f32 = 6.0;
+const SETTINGS_RADIUS_CARD: f32 = 10.0;
+const SETTINGS_RADIUS_FULL: f32 = 999.0;
 const SETTINGS_ROW_STACK_WIDTH: f32 = 640.0;
 const SETTINGS_BUTTON_WIDTH: f32 = 82.0;
+const SETTINGS_TOAST_MS: u64 = 2_400;
 const DEFAULT_SCREENSHOT_DIR_DESCRIPTION: &str = "留空时使用“图片\\Kaixin Screenshots”。";
 const DEFAULT_SCREENSHOT_DIR_HINT: &str = "默认：图片\\Kaixin Screenshots";
 
@@ -38,6 +45,15 @@ impl eframe::App for SettingsApp {
         // is deliberately kept on the save path, where it belongs.
         let is_dirty = self.model != self.last_saved_model;
         let mut request_real_candidate_preview = false;
+        let mut save_toast = None;
+        if let Some((text, shown_at)) = &self.save_toast {
+            if shown_at.elapsed() > Duration::from_millis(SETTINGS_TOAST_MS) {
+                self.save_toast = None;
+            } else {
+                save_toast = Some(text.clone());
+            }
+        }
+        let save_toast = save_toast.as_deref();
         if ctx.input(|input| input.viewport().close_requested()) && is_dirty {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             self.confirm_close_with_unsaved_changes = true;
@@ -80,7 +96,7 @@ impl eframe::App for SettingsApp {
                 egui::Frame::none()
                     .fill(palette.command_bar)
                     .stroke(Stroke::new(1.0, palette.border_subtle))
-                    .inner_margin(egui::Margin::symmetric(22.0, 8.0)),
+                    .inner_margin(egui::Margin::symmetric(22.0, 10.0)),
             )
             .show(ctx, |ui| {
                 let conflicts = hotkey_conflicts(&self.model);
@@ -94,6 +110,13 @@ impl eframe::App for SettingsApp {
                             )
                             .wrap(),
                         );
+                    } else if let Some(message) = save_toast {
+                        ui.add(
+                            egui::Label::new(
+                                RichText::new(message).small().color(palette.success),
+                            )
+                            .wrap(),
+                        );
                     } else if !self.status.is_empty() {
                         ui.add(
                             egui::Label::new(
@@ -104,7 +127,7 @@ impl eframe::App for SettingsApp {
                     }
                     ui.add_space(4.0);
                     ui.horizontal_wrapped(|ui| {
-                        settings_action_buttons(ui, self, palette, is_dirty);
+                        settings_action_buttons(ui, self, palette, is_dirty, save_toast);
                     });
                 } else {
                     ui.horizontal(|ui| {
@@ -120,7 +143,7 @@ impl eframe::App for SettingsApp {
                         egui::Layout::top_down(egui::Align::Min),
                         |ui| {
                             ui.set_width(status_width);
-                        if !conflicts.is_empty() {
+                            if !conflicts.is_empty() {
                             ui.add(
                                 egui::Label::new(
                                     RichText::new(format!(
@@ -130,18 +153,24 @@ impl eframe::App for SettingsApp {
                                     .small()
                                     .color(palette.warning),
                                 )
-                                .wrap(),
-                            );
-                        }
-
-                        if !self.status.is_empty() {
-                            ui.add(
-                                egui::Label::new(
-                                    RichText::new(&self.status).small().color(palette.muted),
-                                )
-                                .wrap(),
-                            );
-                        } else if conflicts.is_empty() {
+                                    .wrap(),
+                                );
+                            } else if let Some(message) = save_toast {
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(message).small().color(palette.success),
+                                    )
+                                    .wrap(),
+                                );
+                            } else if !self.status.is_empty() {
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(&self.status).small().color(palette.muted),
+                                    )
+                                    .wrap(),
+                                );
+                            }
+                            if conflicts.is_empty() && save_toast.is_none() && self.status.is_empty() {
                             ui.add(
                                 egui::Label::new(
                                     RichText::new("设置保存在本机配置文件中；多数设置热加载，热键/兼容规则可能需要切换一次焦点。")
@@ -159,7 +188,7 @@ impl eframe::App for SettingsApp {
                         egui::Layout::right_to_left(egui::Align::Center),
                         |ui| {
                             ui.set_width(actions_width);
-                        settings_action_buttons(ui, self, palette, is_dirty);
+                            settings_action_buttons(ui, self, palette, is_dirty, save_toast);
                         },
                     );
                     });
@@ -224,7 +253,7 @@ impl eframe::App for SettingsApp {
                                     current_group = section.nav_group();
                                     ui.label(
                                         RichText::new(current_group)
-                                            .size(SETTINGS_FONT_SMALL)
+                                            .size(11.0)
                                             .color(palette.muted),
                                     );
                                     ui.add_space(3.0);
@@ -237,7 +266,8 @@ impl eframe::App for SettingsApp {
                             }
                             ui.add_space(8.0);
                             ui.label(
-                                RichText::new("数据只保存在本机")
+                                RichText::new("隐私说明：配置与日志仅保存在本机。")
+                                    .strong()
                                     .small()
                                     .color(palette.muted),
                             );
@@ -356,7 +386,7 @@ impl FluentPalette {
                 nav_hover: Color32::from_rgb(45, 45, 45),
                 nav_selected: Color32::from_rgb(37, 54, 70),
                 border: Color32::from_rgb(64, 64, 64),
-                border_subtle: Color32::from_rgb(52, 52, 52),
+                border_subtle: Color32::from_rgb(48, 48, 48),
                 text: Color32::from_rgb(245, 245, 245),
                 muted: Color32::from_rgb(200, 200, 200),
                 accent: Color32::from_rgb(76, 209, 151),
@@ -383,7 +413,7 @@ impl FluentPalette {
                 nav_hover: Color32::from_rgb(224, 233, 234),
                 nav_selected: Color32::from_rgb(218, 238, 234),
                 border: Color32::from_rgb(205, 213, 223),
-                border_subtle: Color32::from_rgb(218, 225, 234),
+                border_subtle: Color32::from_rgb(229, 235, 232),
                 text: Color32::from_rgb(31, 41, 55),
                 muted: Color32::from_rgb(96, 110, 128),
                 accent: Color32::from_rgb(0, 137, 110),
@@ -410,8 +440,16 @@ fn fluent_primary_button<'a>(label: &'a str, palette: FluentPalette) -> egui::Bu
     egui::Button::new(RichText::new(label).strong().color(palette.accent_text))
         .fill(palette.accent)
         .stroke(Stroke::new(1.0, palette.accent))
-        .rounding(4.0)
-        .min_size(egui::vec2(104.0, 30.0))
+        .rounding(SETTINGS_RADIUS_CONTROL)
+        .min_size(egui::vec2(104.0, 34.0))
+}
+
+fn outline_icon_button<'a>(icon: &str, label: &'a str, palette: FluentPalette) -> egui::Button<'a> {
+    egui::Button::new(RichText::new(format!("{icon}  {label}")).color(palette.text))
+        .fill(Color32::TRANSPARENT)
+        .stroke(Stroke::new(1.0, palette.border))
+        .rounding(SETTINGS_RADIUS_CONTROL)
+        .min_size(egui::vec2(126.0, 34.0))
 }
 
 fn settings_action_buttons(
@@ -419,19 +457,34 @@ fn settings_action_buttons(
     app: &mut SettingsApp,
     palette: FluentPalette,
     is_dirty: bool,
+    save_toast: Option<&str>,
 ) {
-    if ui.add(fluent_primary_button(SAVE_CN, palette)).clicked() {
-        let _ = app.save();
-    }
-    if is_dirty {
-        status_badge(ui, StatusTone::Warning, "未保存");
-    }
-    if outline_button(ui, OPEN_CFG_CN).clicked() {
+    ui.horizontal(|ui| {
+        if ui.add(fluent_primary_button(SAVE_CN, palette)).clicked() {
+            let _ = app.save();
+        }
+        if is_dirty {
+            status_dot(ui, palette.warning);
+            ui.label(
+                RichText::new("有未保存更改")
+                    .size(SETTINGS_FONT_SMALL)
+                    .color(palette.warning),
+            );
+        }
+    });
+    if ui
+        .add(outline_icon_button("📁", OPEN_CFG_CN, palette))
+        .clicked()
+    {
         app.open_config_dir();
     }
-    if danger_button(ui, RESET_CN).clicked() {
-        app.reset_defaults();
-    }
+    ui.menu_button("更多", |ui| {
+        ui.set_min_width(150.0);
+        if ui.button(RESET_CN).clicked() {
+            app.reset_defaults();
+            ui.close_menu();
+        }
+    });
 }
 
 fn fluent_nav_header(ui: &mut egui::Ui) {
@@ -439,21 +492,40 @@ fn fluent_nav_header(ui: &mut egui::Ui) {
     egui::Frame::none()
         .fill(palette.surface_alt)
         .stroke(Stroke::new(1.0, palette.border_subtle))
-        .rounding(SETTINGS_PANEL_RADIUS)
+        .rounding(SETTINGS_RADIUS_CARD)
         .inner_margin(egui::Margin::symmetric(12.0, 10.0))
         .show(ui, |ui| {
-            ui.label(
-                RichText::new(TITLE_CN)
-                    .strong()
-                    .size(SETTINGS_FONT_BRAND_TITLE)
-                    .color(palette.text),
-            );
-            ui.add_space(2.0);
-            ui.label(
-                RichText::new("本地、干净、可控")
-                    .small()
-                    .color(palette.muted),
-            );
+            ui.horizontal(|ui| {
+                let (mark, _) =
+                    ui.allocate_exact_size(egui::vec2(34.0, 34.0), egui::Sense::hover());
+                ui.painter()
+                    .circle_filled(mark.center(), 17.0, palette.accent);
+                ui.painter().text(
+                    mark.center(),
+                    egui::Align2::CENTER_CENTER,
+                    "开",
+                    FontId::proportional(18.0),
+                    palette.accent_text,
+                );
+                ui.vertical(|ui| {
+                    ui.label(
+                        RichText::new(TITLE_CN)
+                            .strong()
+                            .size(SETTINGS_FONT_BRAND_TITLE)
+                            .color(palette.text),
+                    );
+                    ui.label(
+                        RichText::new("本地、干净、可控")
+                            .small()
+                            .color(palette.muted),
+                    );
+                    ui.label(
+                        RichText::new(format!("v{}", env!("CARGO_PKG_VERSION")))
+                            .small()
+                            .color(palette.muted),
+                    );
+                });
+            });
         });
 }
 
@@ -470,13 +542,6 @@ fn section_header(ui: &mut egui::Ui, section: SettingsSection) {
             ui.add_space(4.0);
             ui.label(
                 RichText::new(section.hint())
-                    .size(SETTINGS_FONT_SMALL)
-                    .color(palette.muted),
-            );
-        });
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
-            ui.label(
-                RichText::new("本机配置")
                     .size(SETTINGS_FONT_SMALL)
                     .color(palette.muted),
             );
@@ -508,7 +573,7 @@ pub(super) fn enforce_settings_min_font_size(ctx: &egui::Context) {
     style.spacing.button_padding = egui::vec2(10.0, 6.0);
 
     let palette = FluentPalette::from_visuals(&style.visuals);
-    let radius = egui::Rounding::same(4.0);
+    let radius = egui::Rounding::same(SETTINGS_RADIUS_CONTROL);
     style.visuals.window_fill = palette.app_bg;
     style.visuals.panel_fill = palette.app_bg;
     style.visuals.extreme_bg_color = palette.control_bg;
@@ -543,7 +608,7 @@ fn nav_item(
     let palette = fluent_palette(ui);
     let selected = *current == section;
     let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(ui.available_width(), 38.0), egui::Sense::click());
+        ui.allocate_exact_size(egui::vec2(ui.available_width(), 42.0), egui::Sense::click());
     let response = response.on_hover_text(section.hint());
     let fill = if selected {
         palette.nav_selected
@@ -555,7 +620,7 @@ fn nav_item(
     if ui.is_rect_visible(rect) {
         ui.painter().rect(
             rect,
-            egui::Rounding::same(6.0),
+            egui::Rounding::same(SETTINGS_RADIUS_CONTROL),
             fill,
             Stroke::new(0.0, Color32::TRANSPARENT),
         );
@@ -610,11 +675,7 @@ fn nav_status_summary(section: SettingsSection, model: &SettingsModel) -> Option
             let conflicts = hotkey_conflicts(model).len();
             (conflicts > 0).then(|| format!("{conflicts} 冲突"))
         }
-        SettingsSection::Clipboard => Some(if model.clipboard_background_enabled {
-            format!("{} 条", model.clipboard_max_history_items)
-        } else {
-            "已关闭".to_string()
-        }),
+        SettingsSection::Clipboard => None,
         // "词库与个性化"本身较长；在窄侧栏同一行追加数量会挤压标题。
         // 词库统计保留在页面内，导航只显示不会破坏布局的状态摘要。
         SettingsSection::Lexicon => None,
@@ -622,26 +683,22 @@ fn nav_status_summary(section: SettingsSection, model: &SettingsModel) -> Option
             let count = model.compat_rules.len();
             (count > 0).then(|| format!("{count} 规则"))
         }
-        SettingsSection::Privacy => Some(if model.privacy_enabled {
-            "隐私模式".to_string()
-        } else {
-            "标准".to_string()
-        }),
+        SettingsSection::Privacy => model.privacy_enabled.then(|| "隐私模式".to_string()),
         _ => None,
     }
 }
 
 fn section_panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut egui::Ui)) {
     let palette = fluent_palette(ui);
-    ui.add_space(2.0);
+    ui.add_space(4.0);
     let available_width = ui.available_width();
     egui::Frame::none()
         .fill(palette.surface)
-        .stroke(Stroke::new(1.0, palette.border_subtle))
-        .rounding(SETTINGS_PANEL_RADIUS)
-        .inner_margin(egui::Margin::symmetric(14.0, 12.0))
+        .stroke(Stroke::new(0.5, palette.border_subtle))
+        .rounding(SETTINGS_RADIUS_CARD)
+        .inner_margin(egui::Margin::symmetric(16.0, 14.0))
         .show(ui, |ui| {
-            ui.set_width((available_width - 28.0).max(160.0));
+            ui.set_width((available_width - 36.0).max(160.0));
             ui.label(
                 RichText::new(title)
                     .strong()
@@ -652,7 +709,7 @@ fn section_panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut 
             add_contents(ui);
             ui.add_space(4.0);
         });
-    ui.add_space(10.0);
+    ui.add_space(16.0);
 }
 
 fn quiet_section(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut egui::Ui)) {
@@ -666,6 +723,33 @@ fn quiet_section(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut 
     ui.add_space(8.0);
     add_contents(ui);
     ui.add_space(20.0);
+}
+
+fn tool_page_intro(ui: &mut egui::Ui, symbol: &str, title: &str, hint: &str) {
+    let palette = fluent_palette(ui);
+    egui::Frame::none()
+        .fill(palette.surface_alt)
+        .rounding(SETTINGS_PANEL_RADIUS)
+        .inner_margin(egui::Margin::symmetric(14.0, 12.0))
+        .show(ui, |ui| {
+            ui.horizontal(|ui| {
+                tool_symbol(ui, symbol, palette.nav_selected);
+                ui.vertical(|ui| {
+                    ui.label(
+                        RichText::new(title)
+                            .strong()
+                            .size(SETTINGS_FONT_SECTION_TITLE)
+                            .color(palette.text),
+                    );
+                    ui.label(
+                        RichText::new(hint)
+                            .size(SETTINGS_FONT_SMALL)
+                            .color(palette.muted),
+                    );
+                });
+            });
+        });
+    ui.add_space(10.0);
 }
 
 fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, color: Color32) {
@@ -841,8 +925,12 @@ fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, co
 fn tool_symbol(ui: &mut egui::Ui, symbol: &str, fill: Color32) {
     let palette = fluent_palette(ui);
     let (rect, _) = ui.allocate_exact_size(egui::vec2(30.0, 30.0), egui::Sense::hover());
-    ui.painter()
-        .rect(rect, 4.0, fill, Stroke::new(1.0, palette.border_subtle));
+    ui.painter().rect(
+        rect,
+        SETTINGS_RADIUS_CONTROL,
+        fill,
+        Stroke::new(1.0, palette.border_subtle),
+    );
     ui.painter().text(
         rect.center(),
         egui::Align2::CENTER_CENTER,
@@ -860,8 +948,9 @@ fn tool_row(
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
     let palette = fluent_palette(ui);
+    let show_description = ui.available_width() >= SETTINGS_ROW_STACK_WIDTH;
     let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, 7.0))
+        .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
         .show(ui, |ui| {
             let total_width = ui.available_width();
             if total_width < SETTINGS_ROW_STACK_WIDTH {
@@ -871,25 +960,31 @@ fn tool_row(
                         tool_symbol(ui, symbol, palette.surface_alt);
                         ui.vertical(|ui| {
                             ui.set_width((total_width - 42.0).max(160.0));
-                            ui.label(
+                            let title_response = ui.label(
                                 RichText::new(title)
                                     .strong()
                                     .size(SETTINGS_FONT_SETTING_TITLE)
                                     .color(palette.text),
                             );
-                            ui.add(
-                                egui::Label::new(
-                                    RichText::new(description)
-                                        .size(SETTINGS_FONT_SMALL)
-                                        .color(palette.muted),
-                                )
-                                .wrap(),
-                            );
+                            if show_description {
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(description)
+                                            .size(SETTINGS_FONT_SMALL)
+                                            .color(palette.muted),
+                                    )
+                                    .wrap(),
+                                );
+                            } else {
+                                if !description.is_empty() {
+                                    title_response.on_hover_text(description);
+                                }
+                            }
                         });
                     });
                     ui.add_space(6.0);
                     ui.allocate_ui_with_layout(
-                        egui::vec2(total_width, 34.0),
+                        egui::vec2(total_width, SETTINGS_CONTROL_HEIGHT),
                         egui::Layout::left_to_right(egui::Align::Center),
                         |ui| {
                             ui.set_width(total_width);
@@ -903,31 +998,37 @@ fn tool_row(
                     .min((total_width * 0.40).max(SETTINGS_CONTROL_MIN_WIDTH));
                 let text_width = (total_width - control_width - 30.0 - spacing * 2.0).max(160.0);
                 ui.horizontal(|ui| {
-                    ui.set_min_height(48.0);
+                    ui.set_min_height(SETTINGS_ROW_HEIGHT);
                     tool_symbol(ui, symbol, palette.surface_alt);
                     ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, 48.0),
+                        egui::vec2(text_width, SETTINGS_ROW_HEIGHT),
                         egui::Layout::top_down(egui::Align::Min),
                         |ui| {
                             ui.set_width(text_width);
-                            ui.label(
+                            let title_response = ui.label(
                                 RichText::new(title)
                                     .strong()
                                     .size(SETTINGS_FONT_SETTING_TITLE)
                                     .color(palette.text),
                             );
-                            ui.add(
-                                egui::Label::new(
-                                    RichText::new(description)
-                                        .size(SETTINGS_FONT_SMALL)
-                                        .color(palette.muted),
-                                )
-                                .wrap(),
-                            );
+                            if show_description {
+                                ui.add(
+                                    egui::Label::new(
+                                        RichText::new(description)
+                                            .size(SETTINGS_FONT_SMALL)
+                                            .color(palette.muted),
+                                    )
+                                    .wrap(),
+                                );
+                            } else {
+                                if !description.is_empty() {
+                                    title_response.on_hover_text(description);
+                                }
+                            }
                         },
                     );
                     ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, 48.0),
+                        egui::vec2(control_width, SETTINGS_ROW_HEIGHT),
                         egui::Layout::left_to_right(egui::Align::Center),
                         |ui| {
                             ui.set_width(control_width);
@@ -944,7 +1045,7 @@ fn tool_row(
             egui::pos2(row.response.rect.left(), y),
             egui::pos2(row.response.rect.right(), y),
         ],
-        Stroke::new(1.0, palette.border_subtle),
+        Stroke::new(0.6, palette.border_subtle),
     );
 }
 
@@ -977,7 +1078,7 @@ fn status_badge(ui: &mut egui::Ui, tone: StatusTone, text: &str) {
     egui::Frame::none()
         .fill(fill)
         .stroke(Stroke::new(1.0, color))
-        .rounding(4.0)
+        .rounding(SETTINGS_RADIUS_FULL)
         .inner_margin(egui::Margin::symmetric(8.0, 4.0))
         .show(ui, |ui| {
             ui.set_max_width(max_width);
@@ -1001,7 +1102,7 @@ fn inline_notice(ui: &mut egui::Ui, tone: StatusTone, text: &str) {
     egui::Frame::none()
         .fill(fill)
         .stroke(Stroke::new(1.0, color))
-        .rounding(4.0)
+        .rounding(SETTINGS_RADIUS_FULL)
         .inner_margin(egui::Margin::symmetric(10.0, 7.0))
         .show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -1022,7 +1123,7 @@ fn diagnostic_status_card(ui: &mut egui::Ui, label: &str, value: &str, color: Co
     let palette = fluent_palette(ui);
     egui::Frame::none()
         .fill(palette.surface_alt)
-        .rounding(6.0)
+        .rounding(SETTINGS_RADIUS_CONTROL)
         .inner_margin(egui::Margin::symmetric(10.0, 8.0))
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
@@ -1055,8 +1156,8 @@ fn outline_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
         egui::Button::new(label)
             .fill(Color32::TRANSPARENT)
             .stroke(Stroke::new(1.0, palette.border))
-            .rounding(4.0)
-            .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, 30.0)),
+            .rounding(SETTINGS_RADIUS_CONTROL)
+            .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, 34.0)),
     )
 }
 
@@ -1066,13 +1167,43 @@ fn danger_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
         egui::Button::new(RichText::new(label).strong().color(palette.danger))
             .fill(palette.danger_bg)
             .stroke(Stroke::new(1.0, palette.danger))
-            .rounding(4.0)
-            .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, 30.0)),
+            .rounding(SETTINGS_RADIUS_CONTROL)
+            .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, 34.0)),
     )
 }
 
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+enum RestartRequirement {
+    #[default]
+    None,
+    FocusChange,
+    ApplicationRestart,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct SettingSpec<'a> {
+    title: &'a str,
+    description: &'a str,
+    visible: bool,
+    enabled: bool,
+    restart_requirement: RestartRequirement,
+}
+
+impl<'a> SettingSpec<'a> {
+    fn new(title: &'a str, description: &'a str) -> Self {
+        Self {
+            title,
+            description,
+            visible: true,
+            enabled: true,
+            restart_requirement: RestartRequirement::None,
+        }
+    }
+}
+
 fn setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut bool) {
-    setting_row(ui, title, description, |ui| {
+    setting_spec_row(ui, SettingSpec::new(title, description), |ui| {
         capsule_switch(ui, value);
     });
 }
@@ -1132,7 +1263,7 @@ fn setting_slider_usize(
     range: std::ops::RangeInclusive<usize>,
 ) {
     setting_row(ui, title, description, |ui| {
-        ui.add_sized([230.0, 20.0], Slider::new(value, range).show_value(true));
+        ui.add_sized([240.0, 24.0], Slider::new(value, range).show_value(true));
     });
 }
 
@@ -1144,7 +1275,7 @@ fn setting_slider_f64(
     range: std::ops::RangeInclusive<f64>,
 ) {
     setting_row(ui, title, description, |ui| {
-        ui.add_sized([230.0, 20.0], Slider::new(value, range).show_value(true));
+        ui.add_sized([240.0, 24.0], Slider::new(value, range).show_value(true));
     });
 }
 
@@ -1154,21 +1285,45 @@ fn setting_row(
     description: &str,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
+    setting_spec_row(ui, SettingSpec::new(title, description), add_control);
+}
+
+fn setting_spec_row(
+    ui: &mut egui::Ui,
+    spec: SettingSpec<'_>,
+    add_control: impl FnOnce(&mut egui::Ui),
+) {
+    if !spec.visible {
+        return;
+    }
+    ui.add_enabled_ui(spec.enabled, |ui| {
+        setting_spec_row_enabled(ui, spec, add_control);
+    });
+}
+
+fn setting_spec_row_enabled(
+    ui: &mut egui::Ui,
+    spec: SettingSpec<'_>,
+    add_control: impl FnOnce(&mut egui::Ui),
+) {
+    let title = spec.title;
+    let description = spec.description;
     let palette = fluent_palette(ui);
+    let show_description = ui.available_width() >= SETTINGS_ROW_STACK_WIDTH;
     let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, 5.0))
+        .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y - 1.0))
         .show(ui, |ui| {
             let total_width = ui.available_width();
             if total_width < SETTINGS_ROW_STACK_WIDTH {
                 ui.vertical(|ui| {
                     ui.set_width(total_width);
-                    ui.label(
+                    let title_response = ui.label(
                         RichText::new(title)
                             .strong()
                             .size(SETTINGS_FONT_SETTING_TITLE)
                             .color(palette.text),
                     );
-                    if !description.is_empty() {
+                    if !description.is_empty() && show_description {
                         ui.add(
                             egui::Label::new(
                                 RichText::new(description)
@@ -1177,10 +1332,13 @@ fn setting_row(
                             )
                             .wrap(),
                         );
+                    } else if !description.is_empty() {
+                        title_response.on_hover_text(description);
                     }
+                    render_restart_requirement(ui, spec.restart_requirement, palette);
                     ui.add_space(6.0);
                     ui.allocate_ui_with_layout(
-                        egui::vec2(total_width, 34.0),
+                        egui::vec2(total_width, SETTINGS_ROW_HEIGHT),
                         egui::Layout::left_to_right(egui::Align::Center),
                         |ui| {
                             ui.set_width(total_width);
@@ -1194,19 +1352,20 @@ fn setting_row(
                     .min((total_width * 0.42).max(SETTINGS_CONTROL_MIN_WIDTH));
                 let text_width = (total_width - control_width - spacing).max(160.0);
                 ui.horizontal(|ui| {
-                    ui.set_min_height(46.0);
+                    ui.set_min_height(SETTINGS_ROW_HEIGHT);
                     ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, 46.0),
+                        egui::vec2(text_width, SETTINGS_ROW_HEIGHT),
                         egui::Layout::top_down(egui::Align::Min),
                         |ui| {
                             ui.set_width(text_width);
-                            ui.label(
+                            let title_response = ui.label(
                                 RichText::new(title)
                                     .strong()
                                     .size(SETTINGS_FONT_SETTING_TITLE)
                                     .color(palette.text),
                             );
-                            if !description.is_empty() {
+                            render_restart_requirement(ui, spec.restart_requirement, palette);
+                            if !description.is_empty() && show_description {
                                 ui.add(
                                     egui::Label::new(
                                         RichText::new(description)
@@ -1215,11 +1374,13 @@ fn setting_row(
                                     )
                                     .wrap(),
                                 );
+                            } else if !description.is_empty() {
+                                title_response.on_hover_text(description);
                             }
                         },
                     );
                     ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, 46.0),
+                        egui::vec2(control_width, SETTINGS_ROW_HEIGHT),
                         egui::Layout::left_to_right(egui::Align::Center),
                         |ui| {
                             ui.set_width(control_width);
@@ -1236,7 +1397,24 @@ fn setting_row(
             egui::pos2(row.response.rect.left(), y),
             egui::pos2(row.response.rect.right(), y),
         ],
-        Stroke::new(1.0, palette.border_subtle),
+        Stroke::new(0.6, palette.border_subtle),
+    );
+}
+
+fn render_restart_requirement(
+    ui: &mut egui::Ui,
+    requirement: RestartRequirement,
+    palette: FluentPalette,
+) {
+    let label = match requirement {
+        RestartRequirement::None => return,
+        RestartRequirement::FocusChange => "切换窗口后生效",
+        RestartRequirement::ApplicationRestart => "重启应用后生效",
+    };
+    ui.label(
+        RichText::new(label)
+            .size(SETTINGS_FONT_SMALL)
+            .color(palette.muted),
     );
 }
 
@@ -1582,7 +1760,7 @@ fn custom_shortcuts_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         egui::Frame::none()
             .fill(palette.surface_alt)
             .stroke(Stroke::new(1.0, palette.border_subtle))
-            .rounding(4.0)
+            .rounding(SETTINGS_RADIUS_CARD)
             .inner_margin(egui::Margin::symmetric(8.0, 6.0))
             .show(ui, |ui| {
                 ui.add(
@@ -1929,1460 +2107,6 @@ fn preview_colors_for_skin(
     }
 }
 
-fn candidate_preview_colors(
-    ui: &egui::Ui,
-    model: &SettingsModel,
-    skins: &[SkinPreview],
-) -> CandidatePreviewColors {
-    let palette = fluent_palette(ui);
-    let selected = selected_skin(model, skins);
-    if selected.is_some() {
-        return preview_colors_for_skin(palette, selected);
-    }
-    if model.theme == "high_contrast" {
-        return CandidatePreviewColors {
-            window: Color32::BLACK,
-            header: Color32::BLACK,
-            border: Color32::WHITE,
-            divider: Color32::WHITE,
-            item: Color32::BLACK,
-            item_border: Color32::WHITE,
-            selected: Color32::from_rgb(255, 242, 0),
-            selected_border: Color32::WHITE,
-            text: Color32::WHITE,
-            muted: Color32::from_gray(210),
-            selected_text: Color32::BLACK,
-            selected_muted: Color32::BLACK,
-            chip: Color32::BLACK,
-            chip_border: Color32::WHITE,
-            chip_text: Color32::WHITE,
-        };
-    }
-    if model.theme == "dark" {
-        return CandidatePreviewColors {
-            window: Color32::from_rgb(31, 35, 42),
-            header: Color32::from_rgb(48, 55, 66),
-            border: Color32::from_rgb(72, 78, 90),
-            divider: Color32::from_rgb(72, 78, 90),
-            item: Color32::from_rgb(38, 43, 52),
-            item_border: Color32::from_rgb(72, 78, 90),
-            selected: Color32::from_rgb(39, 73, 68),
-            selected_border: Color32::from_rgb(76, 209, 151),
-            text: Color32::from_rgb(244, 247, 250),
-            muted: Color32::from_rgb(184, 193, 204),
-            selected_text: Color32::WHITE,
-            selected_muted: Color32::from_rgb(230, 235, 241),
-            chip: Color32::from_rgb(48, 55, 66),
-            chip_border: Color32::from_rgb(72, 78, 90),
-            chip_text: Color32::from_rgb(230, 235, 241),
-        };
-    }
-    if model.theme == "light" {
-        return CandidatePreviewColors {
-            window: Color32::from_rgb(248, 250, 252),
-            header: Color32::from_rgb(241, 245, 249),
-            border: Color32::from_rgb(203, 213, 225),
-            divider: Color32::from_rgb(226, 232, 240),
-            item: Color32::WHITE,
-            item_border: Color32::from_rgb(226, 232, 240),
-            selected: Color32::from_rgb(226, 246, 240),
-            selected_border: Color32::from_rgb(0, 137, 110),
-            text: Color32::from_rgb(15, 23, 42),
-            muted: Color32::from_rgb(100, 116, 139),
-            selected_text: Color32::from_rgb(15, 23, 42),
-            selected_muted: Color32::from_rgb(71, 85, 105),
-            chip: Color32::from_rgb(241, 245, 249),
-            chip_border: Color32::from_rgb(226, 232, 240),
-            chip_text: Color32::from_rgb(51, 65, 85),
-        };
-    }
-    preview_colors_for_skin(palette, None)
-}
-
-fn with_preview_opacity(color: Color32, opacity: usize) -> Color32 {
-    Color32::from_rgba_unmultiplied(
-        color.r(),
-        color.g(),
-        color.b(),
-        ((opacity.clamp(10, 100) as f32 / 100.0) * 255.0).round() as u8,
-    )
-}
-
-#[derive(Clone, Copy, Debug)]
-struct CandidatePreviewLayoutSpec {
-    outer_pad_y: f32,
-    header_pad_y: f32,
-    header_gap: f32,
-    item_gap: f32,
-    item_pad_y: f32,
-    label_width: f32,
-    comment_gap: f32,
-}
-
-#[derive(Clone, Copy, Debug)]
-struct CandidatePreviewMetrics {
-    height: f32,
-    outer_pad_y: f32,
-    header_height: f32,
-    header_gap: f32,
-    item_gap: f32,
-    item_height: f32,
-    count: usize,
-    has_comment: bool,
-}
-
-fn candidate_preview_layout_spec(
-    model: &SettingsModel,
-    skins: &[SkinPreview],
-) -> CandidatePreviewLayoutSpec {
-    let layout = if model.candidate_horizontal {
-        model.candidate_horizontal_layout_variant.as_str()
-    } else {
-        model.candidate_vertical_layout_variant.as_str()
-    };
-    let mut spec = match (layout, model.candidate_horizontal) {
-        ("compact", true) => CandidatePreviewLayoutSpec {
-            outer_pad_y: 5.0,
-            header_pad_y: 5.0,
-            header_gap: 3.0,
-            item_gap: 1.0,
-            item_pad_y: 4.0,
-            label_width: 22.0,
-            comment_gap: 2.0,
-        },
-        ("compact", false) => CandidatePreviewLayoutSpec {
-            outer_pad_y: 7.0,
-            header_pad_y: 6.0,
-            header_gap: 5.0,
-            item_gap: 3.0,
-            item_pad_y: 6.0,
-            label_width: 28.0,
-            comment_gap: 4.0,
-        },
-        ("card", _) => CandidatePreviewLayoutSpec {
-            outer_pad_y: 8.0,
-            header_pad_y: 8.0,
-            header_gap: 6.0,
-            item_gap: 3.0,
-            item_pad_y: 6.0,
-            label_width: 28.0,
-            comment_gap: 3.0,
-        },
-        _ => CandidatePreviewLayoutSpec {
-            outer_pad_y: 6.0,
-            header_pad_y: 5.0,
-            header_gap: 4.0,
-            item_gap: 2.0,
-            item_pad_y: 5.0,
-            label_width: 26.0,
-            comment_gap: 3.0,
-        },
-    };
-
-    if let Some(skin) = selected_skin(model, skins) {
-        if let Some(value) = skin.outer_pad_y {
-            spec.outer_pad_y = value;
-        }
-        if let Some(value) = skin.header_pad_y {
-            spec.header_pad_y = value;
-        }
-        if let Some(value) = skin.header_gap {
-            spec.header_gap = value;
-        }
-        if let Some(value) = skin.item_gap {
-            spec.item_gap = value;
-        }
-        if let Some(value) = skin.item_pad_y {
-            spec.item_pad_y = value;
-        }
-        if let Some(value) = skin.label_width {
-            spec.label_width = value;
-        }
-        if let Some(value) = skin.comment_gap {
-            spec.comment_gap = value;
-        }
-    }
-
-    match model.candidate_density.as_str() {
-        "compact" => {
-            spec.outer_pad_y = (spec.outer_pad_y - 2.0).max(4.0);
-            spec.header_pad_y = (spec.header_pad_y - 1.0).max(4.0);
-            spec.header_gap = (spec.header_gap - 1.0).max(2.0);
-            spec.item_gap = (spec.item_gap - 1.0).max(1.0);
-            spec.item_pad_y = (spec.item_pad_y - 1.0).max(3.0);
-            spec.label_width = (spec.label_width - 2.0).max(20.0);
-            spec.comment_gap = (spec.comment_gap - 1.0).max(1.0);
-        }
-        "comfortable" => {
-            spec.outer_pad_y += 1.0;
-            spec.header_pad_y += 1.0;
-            spec.header_gap += 1.0;
-            spec.item_gap += 1.0;
-            spec.item_pad_y += 1.0;
-            spec.label_width += 2.0;
-            spec.comment_gap += 1.0;
-        }
-        _ => {}
-    }
-    spec
-}
-
-fn candidate_preview_metrics(
-    model: &SettingsModel,
-    skins: &[SkinPreview],
-) -> CandidatePreviewMetrics {
-    let spec = candidate_preview_layout_spec(model, skins);
-    let horizontal = model.candidate_horizontal;
-    let skin_loaded = selected_skin(model, skins).is_some();
-    let horizontal_compact_delta = if horizontal {
-        (if model.candidate_horizontal_compact {
-            2.0
-        } else {
-            0.0
-        }) + if skin_loaded { 1.0 } else { 0.0 }
-    } else {
-        0.0
-    };
-    let outer_pad_y = if horizontal {
-        (spec.outer_pad_y - horizontal_compact_delta).max(0.0)
-    } else {
-        spec.outer_pad_y
-    };
-    let item_pad_y = if horizontal {
-        (spec.item_pad_y - horizontal_compact_delta).max(0.0)
-    } else {
-        spec.item_pad_y
-    };
-    let has_comment =
-        model.show_candidate_source || model.show_candidate_reading || model.show_candidate_score;
-    let body_line_height = (model.candidate_font_size as f32 * 1.25).max(18.0);
-    let meta_font_size = model.candidate_font_size.saturating_sub(2).max(9) as f32;
-    let meta_line_height = (meta_font_size * 1.25).max(12.0);
-    let content_height = item_pad_y * 2.0
-        + body_line_height
-        + if has_comment {
-            spec.comment_gap + meta_line_height
-        } else {
-            0.0
-        };
-    let item_height = if horizontal {
-        content_height.max(if has_comment { 42.0 } else { 30.0 })
-    } else {
-        content_height
-            .max(item_pad_y * 2.0 + 22.0_f32.max(spec.label_width))
-            .max(30.0)
-    };
-    let count = if horizontal {
-        model.candidate_horizontal_count.clamp(3, 9)
-    } else {
-        model.candidate_page_size.clamp(3, 10)
-    };
-    let header_height = if horizontal {
-        0.0
-    } else {
-        ((model.candidate_font_size + 1) as f32 * 1.25 + spec.header_pad_y * 2.0).max(32.0)
-    };
-    let header_gap = if horizontal { 0.0 } else { spec.header_gap };
-    let rows_height = if horizontal {
-        item_height
-    } else {
-        item_height * count as f32 + spec.item_gap * count.saturating_sub(1) as f32
-    };
-    CandidatePreviewMetrics {
-        height: outer_pad_y * 2.0 + header_height + header_gap + rows_height,
-        outer_pad_y,
-        header_height,
-        header_gap,
-        item_gap: spec.item_gap,
-        item_height,
-        count,
-        has_comment,
-    }
-}
-
-fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
-    let colors = candidate_preview_colors(ui, model, skins);
-    let horizontal = model.candidate_horizontal;
-    let width = ui.available_width().min(720.0);
-    let metrics = candidate_preview_metrics(model, skins);
-    let height = metrics.height;
-    let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
-    let painter = ui.painter();
-    let window = with_preview_opacity(colors.window, model.candidate_opacity);
-    painter.rect(rect, 9.0, window, Stroke::new(1.0, colors.border));
-
-    let content = rect.shrink2(egui::vec2(9.0, metrics.outer_pad_y));
-    let body_top = if horizontal {
-        content.top()
-    } else {
-        let header = egui::Rect::from_min_size(
-            content.min,
-            egui::vec2(content.width(), metrics.header_height),
-        );
-        painter.rect(
-            header,
-            6.0,
-            with_preview_opacity(colors.header, model.candidate_opacity),
-            Stroke::new(1.0, colors.divider),
-        );
-        painter.text(
-            egui::pos2(header.left() + 4.0, header.center().y),
-            egui::Align2::LEFT_CENTER,
-            "shurufa",
-            FontId::proportional(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT)),
-            colors.muted,
-        );
-        if model.show_mode_in_candidate_header {
-            let chip = egui::Rect::from_min_size(
-                egui::pos2(header.right() - 40.0, header.center().y - 11.0),
-                egui::vec2(36.0, 22.0),
-            );
-            painter.rect(chip, 6.0, colors.chip, Stroke::new(1.0, colors.chip_border));
-            painter.text(
-                chip.center(),
-                egui::Align2::CENTER_CENTER,
-                "中文",
-                FontId::proportional(SETTINGS_MIN_HINT_FONT.max(11.0)),
-                colors.chip_text,
-            );
-        }
-        header.bottom() + metrics.header_gap
-    };
-
-    let candidates = [
-        ("输入法", "常用"),
-        ("输入", "全拼"),
-        ("输入方式", "词库"),
-        ("输入符号", "联想"),
-        ("输入方案", "用户词"),
-        ("输入体验", "常用"),
-        ("输入习惯", "全拼"),
-        ("输入工具", "词库"),
-        ("输入状态", "联想"),
-        ("输入设置", "用户词"),
-    ];
-    let body =
-        egui::Rect::from_min_max(egui::pos2(content.left(), body_top), content.right_bottom());
-    let font_size = (model.candidate_font_size as f32).clamp(12.0, 28.0);
-    let count = metrics.count;
-
-    if horizontal {
-        let gap = if model.candidate_horizontal_compact {
-            3.0
-        } else {
-            6.0
-        };
-        let card_width = (body.width() - gap * (count.saturating_sub(1)) as f32) / count as f32;
-        for (idx, (candidate, meta)) in candidates.iter().take(count).enumerate() {
-            let card = egui::Rect::from_min_size(
-                egui::pos2(body.left() + idx as f32 * (card_width + gap), body.top()),
-                egui::vec2(card_width, body.height()),
-            );
-            let selected = idx == 0;
-            painter.rect(
-                card,
-                6.0,
-                if selected {
-                    colors.selected
-                } else {
-                    colors.item
-                },
-                Stroke::new(
-                    1.0,
-                    if selected {
-                        colors.selected_border
-                    } else {
-                        colors.item_border
-                    },
-                ),
-            );
-            painter.text(
-                egui::pos2(card.left() + 7.0, card.top() + 10.0),
-                egui::Align2::LEFT_TOP,
-                format!("{} {}", idx + 1, candidate),
-                FontId::proportional(font_size),
-                if selected {
-                    colors.selected_text
-                } else {
-                    colors.text
-                },
-            );
-            if metrics.has_comment {
-                painter.text(
-                    egui::pos2(card.left() + 7.0, card.bottom() - 9.0),
-                    egui::Align2::LEFT_BOTTOM,
-                    *meta,
-                    FontId::proportional(SETTINGS_MIN_HINT_FONT.max(11.0)),
-                    if selected {
-                        colors.selected_muted
-                    } else {
-                        colors.muted
-                    },
-                );
-            }
-        }
-    } else {
-        let gap = metrics.item_gap;
-        let row_height = metrics.item_height;
-        for (idx, (candidate, meta)) in candidates.iter().take(count).enumerate() {
-            let row = egui::Rect::from_min_size(
-                egui::pos2(body.left(), body.top() + idx as f32 * (row_height + gap)),
-                egui::vec2(body.width(), row_height),
-            );
-            let selected = idx == 0;
-            painter.rect(
-                row,
-                5.0,
-                if selected {
-                    colors.selected
-                } else {
-                    colors.item
-                },
-                Stroke::new(
-                    1.0,
-                    if selected {
-                        colors.selected_border
-                    } else {
-                        colors.item_border
-                    },
-                ),
-            );
-            painter.text(
-                egui::pos2(
-                    row.left() + 9.0,
-                    if metrics.has_comment {
-                        row.top() + 7.0
-                    } else {
-                        row.center().y
-                    },
-                ),
-                if metrics.has_comment {
-                    egui::Align2::LEFT_TOP
-                } else {
-                    egui::Align2::LEFT_CENTER
-                },
-                format!("{}   {}", idx + 1, candidate),
-                FontId::proportional(font_size),
-                if selected {
-                    colors.selected_text
-                } else {
-                    colors.text
-                },
-            );
-            if metrics.has_comment {
-                painter.text(
-                    egui::pos2(row.left() + 9.0, row.bottom() - 6.0),
-                    egui::Align2::LEFT_BOTTOM,
-                    *meta,
-                    FontId::proportional(SETTINGS_MIN_HINT_FONT.max(11.0)),
-                    if selected {
-                        colors.selected_muted
-                    } else {
-                        colors.muted
-                    },
-                );
-            }
-        }
-    }
-}
-
-fn skin_preview_card(
-    ui: &mut egui::Ui,
-    key: &str,
-    label: &str,
-    colors: CandidatePreviewColors,
-    width: f32,
-    selected: bool,
-) -> egui::Response {
-    let palette = fluent_palette(ui);
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(width, 92.0), egui::Sense::click());
-    let outer_stroke = if selected || response.hovered() {
-        Stroke::new(1.5, palette.accent)
-    } else {
-        Stroke::new(1.0, palette.border_subtle)
-    };
-    ui.painter()
-        .rect(rect, 7.0, palette.surface_alt, outer_stroke);
-    let preview = egui::Rect::from_min_max(
-        rect.min + egui::vec2(5.0, 5.0),
-        egui::pos2(rect.right() - 5.0, rect.bottom() - 27.0),
-    );
-    ui.painter()
-        .rect(preview, 5.0, colors.window, Stroke::new(1.0, colors.border));
-    let normal = egui::Rect::from_min_size(
-        preview.min + egui::vec2(5.0, 6.0),
-        egui::vec2(preview.width() - 10.0, 18.0),
-    );
-    let active = normal.translate(egui::vec2(0.0, 22.0));
-    ui.painter().rect(
-        normal,
-        4.0,
-        colors.item,
-        Stroke::new(1.0, colors.item_border),
-    );
-    ui.painter().rect(
-        active,
-        4.0,
-        colors.selected,
-        Stroke::new(1.0, colors.selected_border),
-    );
-    ui.painter().text(
-        normal.left_center() + egui::vec2(6.0, 0.0),
-        egui::Align2::LEFT_CENTER,
-        "1 输入法",
-        FontId::proportional(SETTINGS_MIN_HINT_FONT.max(10.5)),
-        colors.text,
-    );
-    ui.painter().text(
-        active.left_center() + egui::vec2(6.0, 0.0),
-        egui::Align2::LEFT_CENTER,
-        "2 输入",
-        FontId::proportional(SETTINGS_MIN_HINT_FONT.max(10.5)),
-        colors.selected_text,
-    );
-    let title = if key.is_empty() { "默认" } else { label };
-    ui.painter().text(
-        egui::pos2(rect.left() + 7.0, rect.bottom() - 10.0),
-        egui::Align2::LEFT_CENTER,
-        title,
-        FontId::proportional(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT)),
-        if selected {
-            palette.accent
-        } else {
-            palette.text
-        },
-    );
-    response.on_hover_text(if key.is_empty() {
-        "使用内置默认外观"
-    } else {
-        key
-    })
-}
-
-const CORE_CANDIDATE_SKINS: &[&str] = &["dark", "mint-glass", "high-visibility", "retro-terminal"];
-
-fn skin_card_grid_rows(
-    ui: &mut egui::Ui,
-    model: &mut SettingsModel,
-    skins: &[&SkinPreview],
-    grid_id: &str,
-    include_default: bool,
-) {
-    let palette = fluent_palette(ui);
-    let available = ui.available_width();
-    let columns = ((available + 8.0) / 168.0).floor().clamp(1.0, 4.0) as usize;
-    let card_width =
-        ((available - 8.0 * columns.saturating_sub(1) as f32) / columns as f32).clamp(132.0, 210.0);
-    let default_colors = preview_colors_for_skin(palette, None);
-    egui::Grid::new(grid_id)
-        .num_columns(columns)
-        .spacing([8.0, 8.0])
-        .show(ui, |ui| {
-            let mut index = 0usize;
-            if include_default {
-                if skin_preview_card(
-                    ui,
-                    "",
-                    "默认",
-                    default_colors,
-                    card_width,
-                    model.candidate_skin_file.trim().is_empty(),
-                )
-                .clicked()
-                {
-                    model.candidate_skin_file.clear();
-                }
-                index += 1;
-                if index % columns == 0 {
-                    ui.end_row();
-                }
-            }
-            for skin in skins {
-                let colors = preview_colors_for_skin(palette, Some(skin));
-                if skin_preview_card(
-                    ui,
-                    &skin.key,
-                    &skin.display_name,
-                    colors,
-                    card_width,
-                    skin_key_from_config(&model.candidate_skin_file)
-                        .is_some_and(|key| key.eq_ignore_ascii_case(&skin.key)),
-                )
-                .clicked()
-                {
-                    model.candidate_skin_file.clone_from(&skin.key);
-                }
-                index += 1;
-                if index % columns == 0 {
-                    ui.end_row();
-                }
-            }
-            if index % columns != 0 {
-                ui.end_row();
-            }
-        });
-}
-
-fn skin_card_grid(ui: &mut egui::Ui, model: &mut SettingsModel, skins: &[SkinPreview]) {
-    let core: Vec<&SkinPreview> = CORE_CANDIDATE_SKINS
-        .iter()
-        .filter_map(|key| skins.iter().find(|skin| skin.key == *key))
-        .collect();
-    let more: Vec<&SkinPreview> = skins
-        .iter()
-        .filter(|skin| !CORE_CANDIDATE_SKINS.contains(&skin.key.as_str()))
-        .collect();
-
-    skin_card_grid_rows(ui, model, &core, "candidate_skin_core_cards", true);
-    if !more.is_empty() {
-        ui.add_space(6.0);
-        ui.collapsing(format!("更多皮肤（{}）", more.len()), |ui| {
-            ui.add_space(4.0);
-            skin_card_grid_rows(ui, model, &more, "candidate_skin_more_cards", false);
-        });
-    }
-}
-
-fn candidate_appearance_ui(
-    ui: &mut egui::Ui,
-    model: &mut SettingsModel,
-    status: &mut String,
-    skins: &[SkinPreview],
-    chinese_fonts: &[String],
-    request_real_preview: &mut bool,
-) {
-    section_panel(ui, "候选栏实时预览", |ui| {
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("下方预览会跟随横竖布局、字号、透明度、候选信息和皮肤设置变化。")
-                .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
-                .color(palette.muted),
-        );
-        ui.add_space(8.0);
-        candidate_live_preview(ui, model, skins);
-        ui.add_space(8.0);
-        ui.horizontal_wrapped(|ui| {
-            if outline_button(ui, "保存并用真实候选窗试用").clicked() {
-                *request_real_preview = true;
-            }
-            ui.label(
-                RichText::new("调用与输入时相同的 C++ 渲染器，10 秒后自动关闭。")
-                    .small()
-                    .color(palette.muted),
-            );
-        });
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "推荐外观", |ui| {
-        ui.horizontal_wrapped(|ui| {
-            if outline_button(ui, "恢复推荐").clicked() {
-                apply_candidate_recommended_defaults(model);
-                *status = "候选栏已恢复推荐外观。".to_string();
-            }
-            if outline_button(ui, "游戏紧凑").clicked() {
-                apply_candidate_game_compact(model);
-                *status = "候选栏已切到游戏紧凑推荐。".to_string();
-            }
-            if outline_button(ui, "低延迟紧凑").clicked() {
-                apply_candidate_low_latency_compact(model);
-                *status = "候选栏已切到低延迟紧凑外观。".to_string();
-            }
-        });
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("这些按钮只调整候选栏显示，不会改热键、词库或隐私设置。")
-                .small()
-                .color(palette.muted),
-        );
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "布局与显示", |ui| {
-        setting_slider_usize(
-            ui,
-            "每页候选数",
-            "候选窗口单页显示的候选数量。",
-            &mut model.candidate_page_size,
-            3..=9,
-        );
-        setting_toggle(
-            ui,
-            "横向候选栏",
-            "开启后以横排卡片显示候选。",
-            &mut model.candidate_horizontal,
-        );
-        setting_slider_usize(
-            ui,
-            "横向候选数",
-            "横排模式下每页显示的候选数量。",
-            &mut model.candidate_horizontal_count,
-            3..=9,
-        );
-        ui.collapsing("高级布局与交互", |ui| {
-            setting_toggle(
-                ui,
-                "横排紧凑",
-                "减少横排候选卡片间距。",
-                &mut model.candidate_horizontal_compact,
-            );
-            setting_combo_row(
-                ui,
-                "外观密度",
-                "统一调整字号周围的留白、行距和候选间距。",
-                density_label(&model.candidate_density).to_owned(),
-                "candidate_density",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_density,
-                        schema_options::CANDIDATE_DENSITIES[0],
-                        "紧凑",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_density,
-                        schema_options::CANDIDATE_DENSITIES[1],
-                        "标准",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_density,
-                        schema_options::CANDIDATE_DENSITIES[2],
-                        "舒适",
-                    );
-                },
-            );
-            setting_combo_row(
-                ui,
-                "竖排布局",
-                "控制竖向候选窗口的行距、边框和选中样式。",
-                vertical_layout_label(&model.candidate_vertical_layout_variant).to_owned(),
-                "vertical_layout",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_vertical_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[0],
-                        "经典",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_vertical_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[1],
-                        "舒适",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_vertical_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[2],
-                        "卡片",
-                    );
-                },
-            );
-            setting_combo_row(
-                ui,
-                "横排布局",
-                "控制横向候选栏的间距、分块感和单行显示效果。",
-                horizontal_layout_label(&model.candidate_horizontal_layout_variant).to_owned(),
-                "horizontal_layout",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_horizontal_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[0],
-                        "单行舒适",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_horizontal_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[1],
-                        "单行紧凑",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_horizontal_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[2],
-                        "分块卡片",
-                    );
-                },
-            );
-            setting_toggle(
-                ui,
-                "候选窗置顶",
-                "候选窗口浮在宿主应用上方。",
-                &mut model.candidate_topmost,
-            );
-            setting_toggle(
-                ui,
-                "候选左键提交",
-                "允许在候选栏用鼠标左键提交候选。",
-                &mut model.candidate_left_click,
-            );
-            setting_toggle(
-                ui,
-                "候选右键菜单",
-                "允许在候选栏用鼠标右键打开固定菜单。",
-                &mut model.candidate_right_click,
-            );
-            setting_toggle(
-                ui,
-                "滚轮翻页",
-                "鼠标滚轮在候选窗口上切换页。",
-                &mut model.paging_on_scroll,
-            );
-            setting_toggle(
-                ui,
-                "输入框内显示预编辑",
-                "拼音串显示在宿主输入框内部。",
-                &mut model.inline_preedit,
-            );
-            setting_toggle(
-                ui,
-                "增强候选窗定位",
-                "优先跟随光标和编辑区域定位候选窗。",
-                &mut model.enhanced_position,
-            );
-            setting_toggle(
-                ui,
-                "减少动态效果",
-                "关闭候选窗出现、切换、悬停和翻页动画；系统关闭动画或启用高对比度时也会自动生效。",
-                &mut model.candidate_reduce_motion,
-            );
-        });
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "字体与主题", |ui| {
-        setting_slider_usize(
-            ui,
-            "候选字号",
-            "候选正文的显示字号。",
-            &mut model.candidate_font_size,
-            14..=28,
-        );
-        ui.collapsing("高级字体", |ui| {
-            setting_slider_usize(
-                ui,
-                "透明度",
-                "候选窗整体透明度。",
-                &mut model.candidate_opacity,
-                90..=100,
-            );
-            let current_font = model.candidate_font_file.trim().to_owned();
-            let default_font_label = "默认（Microsoft YaHei）";
-            let uses_default_font =
-                current_font.is_empty() || current_font == DEFAULT_CANDIDATE_FONT_FAMILY;
-            let selected_font = if uses_default_font {
-                default_font_label.to_owned()
-            } else {
-                current_font.clone()
-            };
-            setting_combo_row(
-                ui,
-                "中文字体",
-                "候选窗口使用的字体族。",
-                selected_font,
-                "candidate_font_family",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_font_file,
-                        DEFAULT_CANDIDATE_FONT_FAMILY,
-                        default_font_label,
-                    );
-                    if !uses_default_font && !chinese_fonts.iter().any(|name| name == &current_font)
-                    {
-                        selectable_string(
-                            ui,
-                            &mut model.candidate_font_file,
-                            &current_font,
-                            &current_font,
-                        );
-                    }
-                    for font in chinese_fonts {
-                        selectable_string(ui, &mut model.candidate_font_file, font, font);
-                    }
-                },
-            );
-        });
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("皮肤")
-                .strong()
-                .size(SETTINGS_FONT_SETTING_TITLE)
-                .color(palette.text),
-        );
-        ui.label(
-            RichText::new("点击色板即可切换；上方候选栏会立即预览实际配色。")
-                .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
-                .color(palette.muted),
-        );
-        ui.add_space(8.0);
-        skin_card_grid(ui, model, skins);
-        ui.add_space(10.0);
-        ui.collapsing("高级主题", |ui| {
-            setting_combo_row(
-                ui,
-                "主题",
-                "跟随系统或固定浅色/深色。",
-                theme_label(&model.theme).to_owned(),
-                "candidate_theme",
-                |ui| {
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[0], "自动");
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[1], "浅色");
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[2], "深色");
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[3], "高对比度");
-                },
-            );
-        });
-        ui.collapsing("高级材质与字重", |ui| {
-            setting_combo_row(
-                ui,
-                "材质",
-                "候选窗口背景和层次风格。",
-                material_label(&model.candidate_material).to_owned(),
-                "candidate_material",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[0],
-                        "自动",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[1],
-                        "实心",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[2],
-                        "渐变",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[3],
-                        "柔雾",
-                    );
-                },
-            );
-            setting_slider_usize(
-                ui,
-                "普通",
-                "未选中候选的字重。",
-                &mut model.candidate_font_weight,
-                300..=700,
-            );
-            setting_slider_usize(
-                ui,
-                "当前",
-                "选中候选的字重。",
-                &mut model.candidate_selected_font_weight,
-                400..=800,
-            );
-            setting_slider_usize(
-                ui,
-                "标签",
-                "序号标签的字重。",
-                &mut model.candidate_label_font_weight,
-                400..=800,
-            );
-            setting_slider_usize(
-                ui,
-                "胶囊",
-                "模式标签的字重。",
-                &mut model.candidate_chip_font_weight,
-                350..=700,
-            );
-        });
-    });
-
-    ui.add_space(10.0);
-    ui.collapsing("高级候选信息", |ui| {
-        section_panel(ui, "候选信息与调试标记", |ui| {
-            setting_toggle(
-                ui,
-                "显示读音 / 拼音",
-                "仅在当前候选下显示读音信息。",
-                &mut model.show_candidate_reading,
-            );
-            setting_toggle(
-                ui,
-                "显示候选分数",
-                "调试排序时仅在当前候选显示分值。",
-                &mut model.show_candidate_score,
-            );
-            setting_toggle(
-                ui,
-                "高亮显示纠错候选",
-                "纠错或音近候选会在候选文本前显示 ~ 标记。",
-                &mut model.highlight_typo_candidates,
-            );
-            setting_toggle(
-                ui,
-                "显示候选来源",
-                "仅在当前候选显示用户、专业词库、纠错等来源。",
-                &mut model.show_candidate_source,
-            );
-            setting_toggle(
-                ui,
-                "在候选栏显示模式",
-                "在候选窗口顶部显示中英、标点、双拼等状态。",
-                &mut model.show_mode_in_candidate_header,
-            );
-            setting_slider_usize(
-                ui,
-                "候选缩略长度",
-                "过长候选在窗口中的截断长度。",
-                &mut model.candidate_abbreviate_length,
-                16..=256,
-            );
-        });
-    });
-}
-
-fn apply_candidate_recommended_defaults(model: &mut SettingsModel) {
-    let default = SettingsModel::default();
-    model.candidate_page_size = default.candidate_page_size;
-    model.candidate_horizontal = default.candidate_horizontal;
-    model.candidate_horizontal_count = default.candidate_horizontal_count;
-    model.candidate_horizontal_compact = default.candidate_horizontal_compact;
-    model.candidate_font_size = default.candidate_font_size;
-    model.candidate_opacity = default.candidate_opacity;
-    model.candidate_reduce_motion = default.candidate_reduce_motion;
-    model.candidate_font_weight = default.candidate_font_weight;
-    model.candidate_selected_font_weight = default.candidate_selected_font_weight;
-    model.candidate_label_font_weight = default.candidate_label_font_weight;
-    model.candidate_chip_font_weight = default.candidate_chip_font_weight;
-    model.candidate_material = default.candidate_material;
-    model.candidate_density = default.candidate_density;
-    model.candidate_vertical_layout_variant = default.candidate_vertical_layout_variant;
-    model.candidate_horizontal_layout_variant = default.candidate_horizontal_layout_variant;
-    model.candidate_topmost = default.candidate_topmost;
-    model.show_candidate_reading = default.show_candidate_reading;
-    model.show_candidate_score = default.show_candidate_score;
-    model.highlight_typo_candidates = default.highlight_typo_candidates;
-    model.show_candidate_source = default.show_candidate_source;
-    model.show_mode_in_candidate_header = default.show_mode_in_candidate_header;
-    model.candidate_abbreviate_length = default.candidate_abbreviate_length;
-}
-
-fn apply_candidate_game_compact(model: &mut SettingsModel) {
-    model.candidate_page_size = 5;
-    model.candidate_horizontal = true;
-    model.candidate_horizontal_count = 5;
-    model.candidate_horizontal_compact = true;
-    model.candidate_material = "solid".to_string();
-    model.candidate_density = "compact".to_string();
-    model.candidate_horizontal_layout_variant = schema_options::CANDIDATE_LAYOUTS[1].to_string();
-    model.candidate_topmost = true;
-    model.show_candidate_reading = false;
-    model.show_candidate_score = false;
-    model.show_candidate_source = false;
-    model.show_mode_in_candidate_header = false;
-}
-
-fn apply_candidate_low_latency_compact(model: &mut SettingsModel) {
-    apply_candidate_game_compact(model);
-    model.candidate_opacity = 100;
-    model.candidate_font_weight = 500;
-    model.candidate_selected_font_weight = 600;
-    model.candidate_abbreviate_length = 48;
-}
-
-fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
-    let translate_available = translation_available();
-    section_panel(ui, "快捷键", |ui| {
-        setting_combo_row(
-            ui,
-            "中英切换",
-            "切换中文输入与英文直输模式。",
-            cn_en_hotkey_label(&model.cn_en_hotkey),
-            "cn_en_hotkey",
-            |ui| {
-                selectable_string(
-                    ui,
-                    &mut model.cn_en_hotkey,
-                    "both",
-                    "Ctrl+Shift / Ctrl+Space",
-                );
-                selectable_string(ui, &mut model.cn_en_hotkey, "shift", "Ctrl+Shift");
-                selectable_string(ui, &mut model.cn_en_hotkey, "ctrl_space", "Ctrl+Space");
-                selectable_string(ui, &mut model.cn_en_hotkey, "none", "关闭");
-            },
-        );
-        setting_toggle(
-            ui,
-            "全半角切换",
-            "使用 Shift+Space 在全角和半角之间切换；默认全角开启时会自动启用。",
-            &mut model.full_shape_hotkey,
-        );
-        setting_toggle(
-            ui,
-            "标点切换",
-            "使用 Ctrl+. 在中文标点和英文标点之间切换。",
-            &mut model.punct_hotkey,
-        );
-        setting_toggle(
-            ui,
-            "模糊音切换",
-            "使用 Ctrl+Shift+F 快速开关模糊音。",
-            &mut model.fuzzy_hotkey,
-        );
-        setting_toggle(
-            ui,
-            "双拼切换",
-            "使用 Ctrl+Shift+D 快速开关双拼。",
-            &mut model.double_pinyin_hotkey,
-        );
-        setting_toggle(
-            ui,
-            "轻按 Shift 切换英文",
-            "单击 Shift 临时进入英文直输。",
-            &mut model.shift_tap_hotkey,
-        );
-        setting_toggle(
-            ui,
-            "默认繁体输出",
-            "开启后候选输出为繁体；也可使用下方快捷键临时切换。",
-            &mut model.traditional_output,
-        );
-        setting_row(
-            ui,
-            "简繁切换",
-            "在当前输入法会话中切换简体/繁体输出。",
-            |ui| {
-                hotkey_combo(
-                    ui,
-                    "",
-                    "traditional_hotkey",
-                    &mut model.traditional_hotkey,
-                    "F",
-                );
-            },
-        );
-        setting_row(
-            ui,
-            "游戏兼容模式",
-            "手动切换游戏兼容策略，适合临时进入全屏游戏前使用。",
-            |ui| {
-                hotkey_combo(ui, "", "game_mode_hotkey", &mut model.game_mode_hotkey, "G");
-            },
-        );
-        setting_row(
-            ui,
-            "临时强制英文",
-            "手动切换临时英文直输。",
-            |ui| {
-                hotkey_combo(
-                    ui,
-                    "",
-                    "temporary_ascii_hotkey",
-                    &mut model.temporary_ascii_hotkey,
-                    "Space",
-                );
-            },
-        );
-        setting_toggle(
-            ui,
-            "候选数字直选",
-            "按数字键直接提交对应候选。",
-            &mut model.candidate_number_select,
-        );
-        setting_toggle(
-            ui,
-            "翻页 - / =",
-            "使用 - 和 = 翻页。",
-            &mut model.page_minus_equal,
-        );
-        setting_toggle(
-            ui,
-            "翻页 , / .",
-            "使用逗号和句号翻页。",
-            &mut model.page_comma_period,
-        );
-        setting_toggle(
-            ui,
-            "翻页 PgUp / PgDn",
-            "使用 PageUp 和 PageDown 翻页。",
-            &mut model.page_pgup_pgdn,
-        );
-        setting_row(
-            ui,
-            "截图快捷键",
-            "组合键固定为修饰键 + 字母。",
-            |ui| {
-                ui.vertical(|ui| {
-                    fixed_letter_hotkey_combo(
-                        ui,
-                        "",
-                        "screenshot_hotkey_letter",
-                        &mut model.screenshot_hotkey,
-                        'A',
-                    );
-                    hotkey_registration_status_label(ui, "registered");
-                });
-            },
-        );
-        setting_row(ui, "设置页快捷键", "全局打开设置页。", |ui| {
-            hotkey_combo(
-                ui,
-                "",
-                "settings_hotkey",
-                &mut model.settings_hotkey,
-                "Comma",
-            );
-        });
-        setting_row(
-            ui,
-            "手写查字快捷键",
-            "全局打开手写查字工具。",
-            |ui| {
-                hotkey_combo(ui, "", "handwrite_hotkey", &mut model.handwrite_hotkey, "H");
-            },
-        );
-        setting_row(ui, "OCR 快捷键", "全局打开 OCR 工具。", |ui| {
-            ui.vertical(|ui| {
-                hotkey_combo(ui, "", "ocr_hotkey", &mut model.ocr_hotkey, "O");
-                hotkey_registration_status_label(ui, "ocr_registered");
-            });
-        });
-        setting_row(
-            ui,
-            "截图翻译快捷键",
-            "截图识别后自动送入中英翻译。",
-            |ui| {
-                ui.vertical(|ui| {
-                    hotkey_combo(
-                        ui,
-                        "",
-                        "ocr_translate_hotkey",
-                        &mut model.ocr_translate_hotkey,
-                        "Y",
-                    );
-                    hotkey_registration_status_label(ui, "ocr_translate_registered");
-                });
-            },
-        );
-        setting_row(
-            ui,
-            "中英翻译快捷键",
-            "全局打开中英翻译浮窗。",
-            |ui| {
-                ui.vertical(|ui| {
-                    hotkey_combo(ui, "", "translate_hotkey", &mut model.translate_hotkey, "T");
-                    hotkey_registration_status_label(ui, "translate_registered");
-                    if !translate_available {
-                        status_badge(ui, StatusTone::Warning, "模型未安装");
-                    }
-                });
-            },
-        );
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("快捷键冲突会以橙色提示。")
-                .small()
-                .color(palette.muted),
-        );
-    });
-}
-
-fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    section_panel(ui, "剪贴板快捷键", |ui| {
-        setting_row(
-            ui,
-            "剪贴板快捷键",
-            "打开独立剪贴板管理器；组合键固定为修饰键 + 字母。",
-            |ui| {
-                fixed_letter_hotkey_combo(
-                    ui,
-                    "",
-                    "clipboard_hotkey_letter",
-                    &mut app.model.clipboard_hotkey,
-                    'V',
-                );
-            },
-        );
-    });
-
-    section_panel(ui, "历史记录", |ui| {
-        setting_toggle(
-            ui,
-            "后台保存剪贴板历史",
-            "关闭后不再记录系统剪贴板文本；已保存内容仍可在下方清空。",
-            &mut app.model.clipboard_background_enabled,
-        );
-        setting_slider_usize(
-            ui,
-            "历史记录上限",
-            "最多保留的普通剪贴板条数；设为 0 表示不保留普通历史。",
-            &mut app.model.clipboard_max_history_items,
-            0..=300,
-        );
-        setting_slider_usize(
-            ui,
-            "置顶记录上限",
-            "最多保留的置顶剪贴板条数；设为 0 表示不保留置顶记录。",
-            &mut app.model.clipboard_max_pinned_items,
-            0..=100,
-        );
-        setting_slider_usize(
-            ui,
-            "单条文本上限",
-            "单条文本最多保存的 UTF-16 单元数，过长内容会被截断。",
-            &mut app.model.clipboard_max_text_utf16_units,
-            20..=20_000,
-        );
-        setting_toggle(
-            ui,
-            "候选栏显示剪贴板片段",
-            "关闭后仍可使用剪贴板候选，但候选栏不显示复制文本预览。",
-            &mut app.model.clipboard_candidate_preview_enabled,
-        );
-        setting_toggle(
-            ui,
-            "记录来源应用",
-            "开启后会在剪贴板历史中保存复制来源进程路径。",
-            &mut app.model.clipboard_record_source_app,
-        );
-        setting_slider_usize(
-            ui,
-            "自动清理天数",
-            "用于剪贴板管理器的自动清理参考；0 表示不按天数清理。",
-            &mut app.model.clipboard_max_age_days,
-            0..=3650,
-        );
-        setting_toggle(
-            ui,
-            "置顶也按天数清理",
-            "开启后，按天数清理时也会处理置顶记录；清理天数为 0 时不按天数清理。",
-            &mut app.model.clipboard_pinned_respects_max_age,
-        );
-    });
-
-    let clipboard_path = pinyin_ime::clipboard_store::store_path();
-    let clipboard_storage_status = clipboard_storage_status_text(&clipboard_path);
-    section_panel(ui, "存储与维护", |ui| {
-        setting_row(ui, "加密状态", &clipboard_storage_status, |_| {});
-        data_location_row(
-            ui,
-            "历史数据库",
-            "剪贴板历史仅在后台保存开启时写入本机数据库。",
-            &clipboard_path,
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    app.open_data_location(clipboard_path.clone());
-                }
-            },
-        );
-        inline_notice(
-            ui,
-            StatusTone::Danger,
-            "清空会删除本机已保存的剪贴板历史和置顶项。",
-        );
-        ui.add_space(6.0);
-        if danger_button(ui, "清空历史").clicked() {
-            app.clear_clipboard();
-        }
-    });
-
-    section_panel(ui, "敏感应用", |ui| {
-        ui.label("以下进程名单会以明文保存到 config.ini；匹配后不解析剪贴板历史候选。");
-        privacy_process_list_row(
-            ui,
-            "永不剪贴板",
-            "匹配这些进程时，不解析剪贴板历史候选。",
-            &mut app.model.privacy_never_clipboard_processes,
-        );
-    });
-}
-
-struct HotkeyRegistrationStatus {
-    enabled: bool,
-    hotkey: Option<String>,
-    reason: Option<String>,
-    error: Option<String>,
-}
-
-fn hotkey_registration_status_label(ui: &mut egui::Ui, status_key: &str) {
-    let (text, tone) = match read_hotkey_registration_status(status_key) {
-        Some(status) if status.enabled => {
-            let hotkey = status.hotkey.unwrap_or_else(|| "未知快捷键".to_string());
-            (format!("已生效 {hotkey}"), StatusTone::Success)
-        }
-        Some(status) if status.reason.as_deref() == Some("disabled") => {
-            ("已关闭".to_string(), StatusTone::Info)
-        }
-        Some(status) => {
-            let detail = status
-                .error
-                .or(status.reason)
-                .unwrap_or_else(|| "注册失败".to_string());
-            (format!("注册失败 {detail}"), StatusTone::Warning)
-        }
-        None => ("等待托盘注册".to_string(), StatusTone::Info),
-    };
-    status_badge(ui, tone, &text);
-}
-
-fn read_hotkey_registration_status(status_key: &str) -> Option<HotkeyRegistrationStatus> {
-    let path = app_paths::local_data_dir()?.join("screenshot_hotkey_status.txt");
-    let body = fs::read_to_string(path).ok()?;
-    parse_hotkey_registration_status(&body, status_key)
-}
-
-fn parse_hotkey_registration_status(
-    body: &str,
-    status_key: &str,
-) -> Option<HotkeyRegistrationStatus> {
-    let tokens = body.split_whitespace().collect::<Vec<_>>();
-    let mut idx = 0usize;
-    while idx < tokens.len() {
-        let Some((key, value)) = tokens[idx].split_once('=') else {
-            idx += 1;
-            continue;
-        };
-        if key != status_key {
-            idx += 1;
-            continue;
-        }
-
-        let mut status = HotkeyRegistrationStatus {
-            enabled: value == "1",
-            hotkey: None,
-            reason: None,
-            error: None,
-        };
-        idx += 1;
-        while idx < tokens.len() {
-            let Some((token_key, token_value)) = tokens[idx].split_once('=') else {
-                idx += 1;
-                continue;
-            };
-            if is_hotkey_status_start_token(token_key) {
-                break;
-            }
-            match token_key {
-                "hotkey" => status.hotkey = Some(token_value.to_string()),
-                "reason" => status.reason = Some(token_value.to_string()),
-                "error" => status.error = Some(token_value.to_string()),
-                _ => {}
-            }
-            idx += 1;
-        }
-        return Some(status);
-    }
-    None
-}
-
-fn is_hotkey_status_start_token(key: &str) -> bool {
-    key == "registered" || key.ends_with("_registered")
-}
-
 fn lexicon_learning_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     section_panel(ui, "词库与学习", |ui| {
         lexicon_learning_controls(ui, app);
@@ -3399,7 +2123,7 @@ fn lexicon_learning_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
     setting_combo_row(
         ui,
         "学习灵敏度",
-        "控制逐字拼出生词后写入用户词库的速度。保守更少误学，积极会更快置顶刚学词。",
+        "控制生词进入用户词库的速度。数字键或鼠标选词反馈更强；四字以上短语需重复使用，保守模式更少误学。",
         learning_sensitivity_label(&app.model.learning_sensitivity),
         "learning_sensitivity",
         |ui| {
@@ -3460,11 +2184,14 @@ fn lexicon_learning_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
         if outline_button(ui, "导入").clicked() {
             app.import_user_dict();
         }
-        if outline_button(ui, "导出明文").clicked() {
+        if outline_button(ui, "覆盖导入").clicked() {
+            app.replace_user_dict();
+        }
+        if outline_button(ui, "导出完整备份").clicked() {
             app.export_user_dict();
         }
-        if outline_button(ui, "解密导出").clicked() {
-            app.export_decrypted_user_dict();
+        if outline_button(ui, "导出便携词表").clicked() {
+            app.export_user_dict_tsv();
         }
     });
     ui.label(
@@ -4007,7 +2734,7 @@ fn compatibility_recent_logs_ui(ui: &mut egui::Ui) {
     egui::Frame::none()
         .fill(palette.surface_alt)
         .stroke(Stroke::new(1.0, palette.border_subtle))
-        .rounding(4.0)
+        .rounding(SETTINGS_RADIUS_CARD)
         .inner_margin(egui::Margin::symmetric(12.0, 10.0))
         .show(ui, |ui| {
             for line in lines {
@@ -4315,792 +3042,6 @@ fn recent_process_suggestions_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     );
 }
 
-fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    section_panel(ui, "截图设置", |ui| {
-        let palette = fluent_palette(ui);
-        setting_combo_row(
-            ui,
-            "截图方案",
-            "使用内置原生截图，可智能吸附窗口和控件，也可自由拖动框选。",
-            screenshot_capture_scheme_label(&app.model.screenshot_mode).to_owned(),
-            "screenshot_scheme",
-            |ui| {
-                if ui
-                    .selectable_label(app.model.screenshot_mode == "manual_region", "智能框选")
-                    .on_hover_text("直接使用系统原生 GPU 捕获路径。")
-                    .clicked()
-                {
-                    app.model.screenshot_mode = "manual_region".to_string();
-                }
-                if ui
-                    .selectable_label(app.model.screenshot_mode == "current_window", "当前窗口")
-                    .on_hover_text("直接捕获当前窗口，适合只想快速保存或复制的场景。")
-                    .clicked()
-                {
-                    app.model.screenshot_mode = "current_window".to_string();
-                }
-            },
-        );
-        ui.label(
-            RichText::new(
-                "受保护视频、DRM 和安全桌面无法截取；WGC 不可用时自动回退 DXGI 或系统截图。",
-            )
-            .small()
-            .color(palette.muted),
-        );
-        if app.model.screenshot_mode == "manual_region" {
-            setting_toggle(
-                ui,
-                "松开鼠标立即完成",
-                "开启后，自由拖动框选并松开鼠标时立即提交截图；关闭后可继续移动或缩放选区，再点击“完成”、双击选区或按 Enter。",
-                &mut app.model.screenshot_confirm_on_release,
-            );
-            setting_toggle(
-                ui,
-                "显示框选操作提示",
-                "在框选界面顶部显示吸附、快捷键和确认方式；选区旁的“完成/取消”按钮始终显示。",
-                &mut app.model.screenshot_show_instructions,
-            );
-            ui.label(
-                RichText::new(if app.model.screenshot_confirm_on_release {
-                    "当前确认方式：拖动松手后立即截图；单击智能吸附区域同样会立即完成。"
-                } else {
-                    "当前确认方式：拖动松手后保留选区，可调整范围，再点击“完成”、双击或按 Enter。"
-                })
-                .small()
-                .color(palette.muted),
-            );
-        }
-        ui.add_space(6.0);
-        ui.label(RichText::new("截图完成后").strong());
-        setting_toggle(
-            ui,
-            "保存图片",
-            "把最终截图写入本地截图库；OCR 和翻译仍会接收明确的图片路径。",
-            &mut app.model.screenshot_auto_save,
-        );
-        setting_toggle(
-            ui,
-            "复制图片",
-            "把最终截图复制到系统剪贴板，方便直接粘贴到聊天或文档。",
-            &mut app.model.screenshot_copy_after_capture,
-        );
-        setting_toggle(
-            ui,
-            "自动 OCR",
-            "截图完成后把实际图片文件直接交给 OCR，并立即显示预览和识别进度；不依赖剪贴板。",
-            &mut app.model.screenshot_ocr_after_capture,
-        );
-        setting_toggle(
-            ui,
-            "OCR 后翻译",
-            "识别完成后自动打开本地中英翻译；开启时会同时启用自动 OCR。",
-            &mut app.model.screenshot_translate_after_capture,
-        );
-        if app.model.screenshot_translate_after_capture {
-            app.model.screenshot_ocr_after_capture = true;
-        }
-        if !app.model.screenshot_auto_save
-            && !app.model.screenshot_copy_after_capture
-            && !app.model.screenshot_ocr_after_capture
-            && !app.model.screenshot_translate_after_capture
-        {
-            ui.label(
-                RichText::new("请至少开启保存、复制、OCR 或翻译中的一项，否则截图结果不会被保留。")
-                    .small()
-                    .color(palette.danger),
-            );
-        }
-        folder_path_row(
-            ui,
-            "截图保存目录",
-            DEFAULT_SCREENSHOT_DIR_DESCRIPTION,
-            &mut app.model.screenshot_save_dir,
-            DEFAULT_SCREENSHOT_DIR_HINT,
-        );
-        setting_toggle(
-            ui,
-            "静默保存截图副本",
-            "开启后，截图自动保存成功时会额外复制一份到副本目录；复制失败只写日志。",
-            &mut app.model.screenshot_silent_copy_enabled,
-        );
-        folder_path_row(
-            ui,
-            "截图副本目录",
-            "仅在静默保存副本开启且目录不为空时使用。",
-            &mut app.model.screenshot_silent_copy_dir,
-            "选择副本目录",
-        );
-        filename_pattern_row(
-            ui,
-            "截图命名规则",
-            "支持 {timestamp}（含毫秒）、{date}、{time}、{datetime}、{seq}、{app}、{window}、{width}、{height}；不需要写扩展名。",
-            &mut app.model.screenshot_name_pattern,
-            "{timestamp}",
-        );
-        setting_toggle(
-            ui,
-            "按日期自动分目录",
-            "在保存目录下按 YYYY/MM/DD 建立子目录，便于长期整理截图。",
-            &mut app.model.screenshot_date_subdirs,
-        );
-        setting_combo_row(
-            ui,
-            "文件冲突策略",
-            "同名截图已存在时选择覆盖，或自动递增为 _002、_003。",
-            if app.model.screenshot_conflict_strategy == "overwrite" {
-                "覆盖"
-            } else {
-                "自动递增"
-            }
-            .to_owned(),
-            "screenshot_conflict_strategy",
-            |ui| {
-                selectable_string(
-                    ui,
-                    &mut app.model.screenshot_conflict_strategy,
-                    "increment",
-                    "自动递增",
-                );
-                selectable_string(
-                    ui,
-                    &mut app.model.screenshot_conflict_strategy,
-                    "overwrite",
-                    "覆盖",
-                );
-            },
-        );
-        setting_combo_row(
-            ui,
-            "截图格式",
-            "托盘截图自动保存的图片格式。",
-            screenshot_format_label(&app.model.screenshot_format).to_owned(),
-            "screenshot_format",
-            |ui| {
-                selectable_string(ui, &mut app.model.screenshot_format, "png", "PNG");
-                selectable_string(ui, &mut app.model.screenshot_format, "jpg", "JPG");
-            },
-        );
-    });
-}
-
-fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let config_path = app.config_path.clone();
-    let data_dir = app_paths::local_data_dir().unwrap_or_else(|| {
-        config_path
-            .parent()
-            .map(Path::to_path_buf)
-            .unwrap_or_else(|| PathBuf::from("."))
-    });
-    let user_dict_path = pinyin_ime::user_dict::default_user_dict_path();
-    let log_path = tsf_trace_log_path();
-    let encryption_status = user_dict_encryption_status_text(&user_dict_path);
-
-    section_panel(ui, "信任中心", |ui| {
-        data_location_row(
-            ui,
-            "本地数据目录",
-            "配置、词库、剪贴板和日志所在目录。",
-            &data_dir,
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    app.open_data_location(data_dir.clone());
-                }
-            },
-        );
-        setting_row(ui, "用户词库加密状态", &encryption_status, |ui| {
-            if outline_button(ui, "导出隐私说明").clicked() {
-                app.export_privacy_statement();
-            }
-        });
-        data_location_row(
-            ui,
-            "配置文件",
-            "输入法行为和界面设置。",
-            &config_path,
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    app.open_data_location(config_path.clone());
-                }
-            },
-        );
-        data_location_row(
-            ui,
-            "用户词库",
-            "本地学习词和上下文排序信号。",
-            &user_dict_path,
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    app.open_data_location(user_dict_path.clone());
-                }
-            },
-        );
-        data_location_row(
-            ui,
-            "TSF 日志",
-            "默认只记录脱敏诊断事件。",
-            &log_path,
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    app.open_data_location(log_path.clone());
-                }
-            },
-        );
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "维护", |ui| {
-        let palette = fluent_palette(ui);
-        inline_notice(
-            ui,
-            StatusTone::Danger,
-            "红色按钮会删除本机数据；备份和恢复只影响配置文件。",
-        );
-        ui.add_space(6.0);
-        egui::Grid::new("maintenance_actions_grid")
-            .num_columns(3)
-            .striped(true)
-            .spacing([12.0, 8.0])
-            .show(ui, |ui| {
-                ui.label(
-                    RichText::new("配置")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label("备份或恢复 kaixin.ini。");
-                ui.horizontal(|ui| {
-                    if outline_button(ui, "备份").clicked() {
-                        app.backup_config();
-                    }
-                    if outline_button(ui, "恢复").clicked() {
-                        app.restore_config();
-                    }
-                });
-                ui.end_row();
-
-                ui.label(
-                    RichText::new("用户词库")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label("清空本地学习词和上下文排序信号。");
-                if danger_button(ui, "清空").clicked() {
-                    app.clear_user_dict();
-                }
-                ui.end_row();
-
-                ui.label(
-                    RichText::new("日志")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label("清空 TSF 和运行时诊断日志。");
-                if danger_button(ui, "清空").clicked() {
-                    app.clear_tsf_log();
-                }
-                ui.end_row();
-            });
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "敏感应用规则", |ui| {
-        setting_toggle(
-            ui,
-            "全局隐私模式",
-            "开启后强制 ASCII，不显示候选、不学习，并停止剪贴板捕获和历史读取。",
-            &mut app.model.privacy_enabled,
-        );
-        ui.label("这些进程名单会以明文保存到 config.ini；需要隐藏使用痕迹时请留空。");
-        privacy_process_list_row(
-            ui,
-            "永不学习",
-            "匹配这些进程时，不写入用户词库、置顶、屏蔽和选择反馈。",
-            &mut app.model.privacy_never_learn_processes,
-        );
-        privacy_process_list_row(
-            ui,
-            "永不候选",
-            "匹配这些进程时，不查询或显示候选列表。",
-            &mut app.model.privacy_never_candidate_processes,
-        );
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "通知", |ui| {
-        setting_combo_row(
-            ui,
-            "通知显示",
-            "状态切换和引擎提示是否弹出通知。",
-            notification_label(&app.model.show_notifications).to_owned(),
-            "notification_visibility",
-            |ui| {
-                selectable_string(ui, &mut app.model.show_notifications, "true", "开启");
-                selectable_string(ui, &mut app.model.show_notifications, "false", "关闭");
-                selectable_string(
-                    ui,
-                    &mut app.model.show_notifications,
-                    "ime,full_shape,punct,fuzzy,double,app,engine",
-                    "自定义种类",
-                );
-            },
-        );
-        setting_slider_usize(
-            ui,
-            "通知显示时长",
-            "通知浮窗停留时间，单位毫秒。",
-            &mut app.model.show_notifications_time,
-            500..=5000,
-        );
-    });
-}
-
-fn privacy_process_list_row(ui: &mut egui::Ui, title: &str, description: &str, value: &mut String) {
-    let palette = fluent_palette(ui);
-    ui.add_space(6.0);
-    ui.label(
-        RichText::new(title)
-            .strong()
-            .size(SETTINGS_FONT_SETTING_TITLE)
-            .color(palette.text),
-    );
-    ui.label(RichText::new(description).small().color(palette.muted));
-    ui.add(
-        TextEdit::multiline(value)
-            .desired_width(ui.available_width().max(320.0))
-            .desired_rows(2)
-            .hint_text("app.exe, password*.exe"),
-    );
-}
-
-fn privacy_process_list_text(value: &str) -> String {
-    let text = normalize_inline_list(value);
-    if text.is_empty() {
-        "未配置".to_string()
-    } else {
-        text
-    }
-}
-
-fn data_location_row(
-    ui: &mut egui::Ui,
-    title: &str,
-    description: &str,
-    path: &Path,
-    add_actions: impl FnOnce(&mut egui::Ui),
-) {
-    let palette = fluent_palette(ui);
-    let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, 7.0))
-        .show(ui, |ui| {
-            let total_width = ui.available_width();
-            let path_text = path.display().to_string();
-            if total_width < SETTINGS_ROW_STACK_WIDTH {
-                ui.vertical(|ui| {
-                    ui.set_width(total_width);
-                    ui.label(
-                        RichText::new(title)
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
-                    );
-                    ui.label(RichText::new(description).small().color(palette.muted));
-                    ui.add_space(6.0);
-                    ui.horizontal_wrapped(|ui| {
-                        let field_width =
-                            (total_width - SETTINGS_BUTTON_WIDTH * 2.0 - 32.0).clamp(180.0, 420.0);
-                        let mut readonly_path = path_text.clone();
-                        ui.add_sized(
-                            [field_width, 24.0],
-                            TextEdit::singleline(&mut readonly_path)
-                                .font(TextStyle::Monospace)
-                                .interactive(false),
-                        );
-                        if outline_button(ui, "复制").clicked() {
-                            ui.ctx().copy_text(path_text.clone());
-                        }
-                        add_actions(ui);
-                    });
-                });
-            } else {
-                let spacing = ui.spacing().item_spacing.x;
-                let control_width = 560.0_f32.min((total_width * 0.54).max(390.0));
-                let text_width = (total_width - control_width - spacing).max(180.0);
-                ui.horizontal(|ui| {
-                    ui.set_min_height(50.0);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, 50.0),
-                        egui::Layout::top_down(egui::Align::Min),
-                        |ui| {
-                            ui.set_width(text_width);
-                            ui.label(
-                                RichText::new(title)
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            ui.label(RichText::new(description).small().color(palette.muted));
-                        },
-                    );
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, 50.0),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(control_width);
-                            ui.set_max_width(control_width);
-                            let mut readonly_path = path_text;
-                            let field_width = (control_width - SETTINGS_BUTTON_WIDTH * 2.0 - 24.0)
-                                .clamp(180.0, 360.0);
-                            ui.add_sized(
-                                [field_width, 24.0],
-                                TextEdit::singleline(&mut readonly_path)
-                                    .font(TextStyle::Monospace)
-                                    .interactive(false),
-                            );
-                            if outline_button(ui, "复制").clicked() {
-                                ui.ctx().copy_text(readonly_path.clone());
-                            }
-                            add_actions(ui);
-                        },
-                    );
-                });
-            }
-        });
-    let y = row.response.rect.bottom();
-    ui.painter().line_segment(
-        [
-            egui::pos2(row.response.rect.left(), y),
-            egui::pos2(row.response.rect.right(), y),
-        ],
-        Stroke::new(1.0, palette.border_subtle),
-    );
-}
-
-fn folder_path_row(
-    ui: &mut egui::Ui,
-    title: &str,
-    description: &str,
-    value: &mut String,
-    empty_hint: &str,
-) {
-    setting_row(ui, title, description, |ui| {
-        let field_width = (ui.available_width() - SETTINGS_BUTTON_WIDTH - 16.0).clamp(180.0, 320.0);
-        ui.add_sized(
-            [field_width, 24.0],
-            TextEdit::singleline(value).hint_text(empty_hint),
-        );
-        if outline_button(ui, "选择").clicked() {
-            if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                *value = path.display().to_string();
-            }
-        }
-    });
-}
-
-fn executable_path_row(
-    ui: &mut egui::Ui,
-    title: &str,
-    description: &str,
-    value: &mut String,
-    empty_hint: &str,
-) {
-    setting_row(ui, title, description, |ui| {
-        let field_width = (ui.available_width() - 110.0).max(180.0);
-        ui.add_sized(
-            [field_width, 24.0],
-            TextEdit::singleline(value).hint_text(empty_hint),
-        );
-        if outline_button(ui, "选择").clicked() {
-            if let Some(path) = rfd::FileDialog::new()
-                .add_filter("WinTranslator", &["exe"])
-                .pick_file()
-            {
-                *value = path.display().to_string();
-            }
-        }
-        if !value.is_empty() && outline_button(ui, "清除").clicked() {
-            value.clear();
-        }
-    });
-}
-
-fn filename_pattern_row(
-    ui: &mut egui::Ui,
-    title: &str,
-    description: &str,
-    value: &mut String,
-    empty_hint: &str,
-) {
-    setting_row(ui, title, description, |ui| {
-        ui.add_sized(
-            [260.0, 24.0],
-            TextEdit::singleline(value).hint_text(empty_hint),
-        );
-    });
-}
-
-#[allow(dead_code)]
-fn screenshot_dir_row(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let palette = fluent_palette(ui);
-    let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, 7.0))
-        .show(ui, |ui| {
-            let total_width = ui.available_width();
-            if total_width < SETTINGS_ROW_STACK_WIDTH {
-                ui.vertical(|ui| {
-                    ui.set_width(total_width);
-                    ui.label(
-                        RichText::new("截图保存目录")
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
-                    );
-                    ui.label(
-                        RichText::new(DEFAULT_SCREENSHOT_DIR_DESCRIPTION)
-                            .small()
-                            .color(palette.muted),
-                    );
-                    ui.add_space(6.0);
-                    ui.horizontal_wrapped(|ui| {
-                        let field_width =
-                            (total_width - SETTINGS_BUTTON_WIDTH - 20.0).clamp(180.0, 420.0);
-                        ui.add_sized(
-                            [field_width, 24.0],
-                            TextEdit::singleline(&mut app.model.screenshot_save_dir)
-                                .hint_text(DEFAULT_SCREENSHOT_DIR_HINT),
-                        );
-                        if outline_button(ui, "选择").clicked() {
-                            if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                                app.model.screenshot_save_dir = path.display().to_string();
-                            }
-                        }
-                    });
-                });
-            } else {
-                let spacing = ui.spacing().item_spacing.x;
-                let control_width = 430.0_f32.min((total_width * 0.44).max(320.0));
-                let text_width = (total_width - control_width - spacing).max(180.0);
-                ui.horizontal(|ui| {
-                    ui.set_min_height(50.0);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, 50.0),
-                        egui::Layout::top_down(egui::Align::Min),
-                        |ui| {
-                            ui.set_width(text_width);
-                            ui.label(
-                                RichText::new("截图保存目录")
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            ui.label(
-                                RichText::new(DEFAULT_SCREENSHOT_DIR_DESCRIPTION)
-                                    .small()
-                                    .color(palette.muted),
-                            );
-                        },
-                    );
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, 50.0),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(control_width);
-                            ui.set_max_width(control_width);
-                            let field_width =
-                                (control_width - SETTINGS_BUTTON_WIDTH - 16.0).clamp(180.0, 320.0);
-                            ui.add_sized(
-                                [field_width, 24.0],
-                                TextEdit::singleline(&mut app.model.screenshot_save_dir)
-                                    .hint_text(DEFAULT_SCREENSHOT_DIR_HINT),
-                            );
-                            if outline_button(ui, "选择").clicked() {
-                                if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                                    app.model.screenshot_save_dir = path.display().to_string();
-                                }
-                            }
-                        },
-                    );
-                });
-            }
-        });
-    let y = row.response.rect.bottom();
-    ui.painter().line_segment(
-        [
-            egui::pos2(row.response.rect.left(), y),
-            egui::pos2(row.response.rect.right(), y),
-        ],
-        Stroke::new(1.0, palette.border_subtle),
-    );
-}
-
-fn tsf_trace_log_path() -> PathBuf {
-    runtime_log::log_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join("tsf.log")
-}
-
-fn diagnostic_log_dir() -> PathBuf {
-    runtime_log::log_dir().unwrap_or_else(|| PathBuf::from("."))
-}
-
-fn compatibility_log_path() -> Option<PathBuf> {
-    app_paths::local_data_dir().map(|dir| dir.join("compatibility.log"))
-}
-
-pub(super) fn diagnostic_log_paths() -> Vec<PathBuf> {
-    let mut paths = runtime_log::current_log_paths();
-    if let Some(dir) = runtime_log::log_dir() {
-        for name in runtime_log::known_log_files() {
-            let path = dir.join(name);
-            for index in 1..=runtime_log::LOG_ROTATE_KEEP {
-                let rotated = runtime_log::rotated_log_path(&path, index);
-                if !paths.iter().any(|existing| existing == &rotated) {
-                    paths.push(rotated);
-                }
-            }
-        }
-    }
-    if let Some(path) = compatibility_log_path() {
-        if !paths.iter().any(|existing| existing == &path) {
-            paths.push(path);
-        }
-    }
-    paths
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum UserDictEncryptionState {
-    Encrypted,
-    Plain,
-    Missing,
-}
-
-fn user_dict_encryption_component_state(
-    path: &Path,
-) -> Result<UserDictEncryptionState, std::io::Error> {
-    match pinyin_ime::user_dict_io::user_dict_file_is_encrypted(path) {
-        Ok(true) => Ok(UserDictEncryptionState::Encrypted),
-        Ok(false) => Ok(UserDictEncryptionState::Plain),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-            Ok(UserDictEncryptionState::Missing)
-        }
-        Err(err) => Err(err),
-    }
-}
-
-fn user_dict_encryption_status_text(path: &Path) -> String {
-    let state = match user_dict_encryption_component_state(path) {
-        Ok(state) => state,
-        Err(err) => return format!("无法读取用户词库加密状态：{err}"),
-    };
-    let encryption_enabled = pinyin_ime::user_dict_io::user_dict_encryption_enabled();
-    if !encryption_enabled {
-        return if state == UserDictEncryptionState::Missing {
-            "未启用：用户词库 SQLite 尚未生成。".to_string()
-        } else {
-            "未启用：用户词库 SQLite 以明文文件保存。".to_string()
-        };
-    }
-
-    match state {
-        UserDictEncryptionState::Encrypted => {
-            "已加密：用户词库 SQLite 受 Windows DPAPI 保护。".to_string()
-        }
-        UserDictEncryptionState::Plain => {
-            "需迁移：用户词库 SQLite 仍是明文或空文件；下次读取/写入会使用 Windows DPAPI。"
-                .to_string()
-        }
-        UserDictEncryptionState::Missing => {
-            "已启用：用户词库 SQLite 尚未生成，首次写入会使用 Windows DPAPI。".to_string()
-        }
-    }
-}
-
-fn clipboard_storage_status_text(path: &Path) -> String {
-    if !pinyin_ime::clipboard_store::clipboard_store_encryption_enabled() {
-        return if path.is_file() {
-            "本地 SQLite 数据库，当前平台未启用 DPAPI 加密。".to_string()
-        } else {
-            "本地 SQLite 数据库尚未生成；当前平台未启用 DPAPI 加密。".to_string()
-        };
-    }
-    match pinyin_ime::clipboard_store::clipboard_store_file_is_encrypted(path) {
-        Ok(true) => "已加密：本地 SQLite 数据库受 Windows DPAPI 保护。".to_string(),
-        Ok(false) if path.is_file() => {
-            "需迁移：剪贴板 SQLite 仍是明文或空文件；下次读取/写入会使用 Windows DPAPI。"
-                .to_string()
-        }
-        Ok(false) => "已启用：剪贴板历史尚未生成，首次写入会使用 Windows DPAPI。".to_string(),
-        Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-            "已启用：剪贴板历史尚未生成，首次写入会使用 Windows DPAPI。".to_string()
-        }
-        Err(err) => format!("无法读取剪贴板加密状态：{err}"),
-    }
-}
-
-pub(super) fn privacy_statement_text(config_path: &Path, model: &SettingsModel) -> String {
-    let data_dir = app_paths::local_data_dir()
-        .map(|path| path.display().to_string())
-        .unwrap_or_else(|| ".".to_string());
-    let user_dict_path = pinyin_ime::user_dict::default_user_dict_path();
-    let clipboard_path = pinyin_ime::clipboard_store::store_path();
-    let log_path = tsf_trace_log_path();
-    let screenshot_dir = if model.screenshot_save_dir.trim().is_empty() {
-        DEFAULT_SCREENSHOT_DIR_HINT.to_string()
-    } else {
-        model.screenshot_save_dir.trim().to_string()
-    };
-    let screenshot_copy_dir = if !model.screenshot_silent_copy_enabled {
-        "未启用".to_string()
-    } else if model.screenshot_silent_copy_dir.trim().is_empty() {
-        "未设置（不会保存副本）".to_string()
-    } else {
-        model.screenshot_silent_copy_dir.trim().to_string()
-    };
-    let encryption_status = user_dict_encryption_status_text(&user_dict_path);
-    let clipboard_storage_status = clipboard_storage_status_text(&clipboard_path);
-    let never_learn_processes = privacy_process_list_text(&model.privacy_never_learn_processes);
-    let never_clipboard_processes =
-        privacy_process_list_text(&model.privacy_never_clipboard_processes);
-    let never_candidate_processes =
-        privacy_process_list_text(&model.privacy_never_candidate_processes);
-
-    format!(
-        "开心输入法隐私说明\n\
-\n\
-联网说明：本输入法不联网，不上传输入内容、候选、截图、剪贴板或用户词库。\n\
-\n\
-本地数据位置：\n\
-- 数据目录：{data_dir}\n\
-- 配置文件：{}\n\
-- 用户词库：{}\n\
-- 剪贴板历史：{}\n\
-- TSF 诊断日志：{}\n\
-- 截图保存目录：{screenshot_dir}\n\
-- 截图副本目录：{screenshot_copy_dir}\n\
-\n\
-本地数据用途：\n\
-- 用户词库用于学习上屏词、词频和上下文排序信号。\n\
-- 剪贴板历史仅在后台保存剪贴板开启时写入本地 SQLite 数据库，Windows 上使用 DPAPI 保护。\n\
-- TSF 日志默认只记录脱敏诊断和性能事件。\n\
-- 截图文件只保存到用户选择的本地目录；开启静默副本时会额外复制到副本目录。\n\
-\n\
-用户词库加密状态：{encryption_status}\n\
-剪贴板历史存储：{clipboard_storage_status}\n\
-永不学习应用：{never_learn_processes}\n\
-永不剪贴板应用：{never_clipboard_processes}\n\
-永不候选应用：{never_candidate_processes}\n\
-\n\
-可清除数据：设置页可一键清空用户词库学习记录、剪贴板历史和 TSF 日志。\n",
-        config_path.display(),
-        user_dict_path.display(),
-        clipboard_path.display(),
-        log_path.display()
-    )
-}
-
 fn input_experience_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     input_habits_ui(ui, &mut app.model);
     ui.add_space(2.0);
@@ -5130,188 +3071,6 @@ fn screenshot_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 
 fn diagnostics_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     diagnostics_ui(ui, app);
-}
-
-fn ocr_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let mut open_ocr = false;
-    let mut open_ocr_translate = false;
-    let mut check_ocr = false;
-    section_panel(ui, "本地 OCR", |ui| {
-        setting_row(
-            ui,
-            "截图 OCR",
-            "截取屏幕区域后由本地 RapidOCR 识别文字。",
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    open_ocr = true;
-                }
-                if outline_button(ui, "识别后翻译").clicked() {
-                    open_ocr_translate = true;
-                }
-                if outline_button(ui, "检测").clicked() {
-                    check_ocr = true;
-                }
-            },
-        );
-        if rapidocr_paths::rapidocr_root().is_none() {
-            inline_notice(
-                ui,
-                StatusTone::Warning,
-                "RapidOCR 环境未找到，OCR 暂不可用。点“检测”可查看缺失项。",
-            );
-        }
-        setting_combo_row(
-            ui,
-            "OCR 完成后",
-            "识别完成后的默认处理方式。",
-            ocr_result_action_label(&app.model.ocr_result_action),
-            "ocr_result_action",
-            |ui| {
-                selectable_string(ui, &mut app.model.ocr_result_action, "show", "仅显示结果");
-                selectable_string(ui, &mut app.model.ocr_result_action, "copy", "自动复制");
-                selectable_string(ui, &mut app.model.ocr_result_action, "paste", "自动粘贴");
-            },
-        );
-        setting_toggle(
-            ui,
-            "OCR 模型常驻",
-            "开启后复用模型以减少等待；关闭后释放内存。",
-            &mut app.model.ocr_keep_alive,
-        );
-        setting_combo_row(
-            ui,
-            "OCR 速度与精度",
-            "快速适合短文本；高精度使用更大的检测边长。",
-            match app.model.ocr_profile.as_str() {
-                "fast" => "快速",
-                "accurate" => "高精度",
-                _ => "均衡",
-            },
-            "ocr_profile",
-            |ui| {
-                selectable_string(
-                    ui,
-                    &mut app.model.ocr_profile,
-                    "fast",
-                    "快速（最长边 1280）",
-                );
-                selectable_string(
-                    ui,
-                    &mut app.model.ocr_profile,
-                    "balanced",
-                    "均衡（最长边 1920）",
-                );
-                selectable_string(
-                    ui,
-                    &mut app.model.ocr_profile,
-                    "accurate",
-                    "高精度（最长边 2560）",
-                );
-            },
-        );
-        setting_toggle(
-            ui,
-            "截图翻译后保留 OCR 窗口",
-            "方便校对截图预览和识别文字。",
-            &mut app.model.ocr_translate_keep_window,
-        );
-        setting_toggle(
-            ui,
-            "OCR 截图自动保存",
-            "另存 OCR 的原始截图到本地目录。",
-            &mut app.model.ocr_screenshot_auto_save,
-        );
-        folder_path_row(
-            ui,
-            "OCR 截图保存目录",
-            "留空时使用“图片\\Kaixin OCR”。",
-            &mut app.model.ocr_screenshot_save_dir,
-            "默认：图片\\Kaixin OCR",
-        );
-        filename_pattern_row(
-            ui,
-            "OCR 截图命名规则",
-            "支持 {date}、{time}、{datetime}、{seq}；不需要写扩展名。",
-            &mut app.model.ocr_screenshot_name_pattern,
-            "ocr-{datetime}",
-        );
-    });
-    if open_ocr {
-        app.open_ocr();
-    }
-    if open_ocr_translate {
-        app.open_ocr_translate();
-    }
-    if check_ocr {
-        app.check_ocr_language();
-    }
-}
-
-fn translation_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let mut open_translate = false;
-    let mut check_translate = false;
-    section_panel(ui, "中英翻译", |ui| {
-        setting_row(
-            ui,
-            "WinTranslator",
-            "选中文本后发送到独立 WinTranslator，并自动开始翻译。",
-            |ui| {
-                if outline_button(ui, "打开").clicked() {
-                    open_translate = true;
-                }
-                if outline_button(ui, "检测").clicked() {
-                    check_translate = true;
-                }
-            },
-        );
-        if !translation_available() {
-            inline_notice(
-                ui,
-                StatusTone::Warning,
-                "未找到 WinTranslator。点“检测”可查看安装提示。",
-            );
-        }
-        executable_path_row(
-            ui,
-            "WinTranslator 路径",
-            "可留空自动检测；自定义安装目录时选择 WinTranslator.exe。",
-            &mut app.model.wintranslator_path,
-            "自动检测",
-        );
-        setting_combo_row(
-            ui,
-            "翻译完成后",
-            "用翻译热键或剪贴板启动后，译文的默认处理方式。",
-            translate_result_action_label(&app.model.translate_result_action),
-            "translate_result_action",
-            |ui| {
-                selectable_string(
-                    ui,
-                    &mut app.model.translate_result_action,
-                    "show",
-                    "仅显示结果",
-                );
-                selectable_string(
-                    ui,
-                    &mut app.model.translate_result_action,
-                    "copy",
-                    "自动复制",
-                );
-                selectable_string(
-                    ui,
-                    &mut app.model.translate_result_action,
-                    "paste",
-                    "自动粘贴",
-                );
-            },
-        );
-    });
-    if open_translate {
-        app.open_translate();
-    }
-    if check_translate {
-        app.check_translation_environment();
-    }
 }
 
 fn advanced_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
@@ -5426,956 +3185,28 @@ fn advanced_engine_tuning_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     });
 }
 
-fn recent_perf_log_lines(limit: usize) -> Vec<String> {
-    let patterns = [
-        "srf_engine_load",
-        "srf_engine_lexicon_mode",
-        "srf_engine_ensure_loaded",
-        "srf_engine_full_warmup",
-        "engine_helper_start",
-        "srf_ipc_lookup",
-        "srf_lookup_profile",
-        "candidate-refresh",
-    ];
-    let mut lines = runtime_log::recent_lines_matching(limit, &patterns);
-    if lines.len() >= limit {
-        return lines;
-    }
-    for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
-        lines.extend(
-            text.lines()
-                .filter(|line| patterns.iter().any(|pattern| line.contains(pattern)))
-                .map(|line| {
-                    format!(
-                        "{}  {}",
-                        path.file_name().unwrap_or_default().to_string_lossy(),
-                        line
-                    )
-                }),
-        );
-    }
-    if lines.len() > limit {
-        lines.drain(0..lines.len() - limit);
-    }
-    lines
-}
+#[path = "ui_diagnostics.rs"]
+mod diagnostics;
+use diagnostics::*;
+pub(super) use diagnostics::{export_diagnostic_package_to, DiagnosticsSnapshot};
 
-fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
-    let patterns = [
-        "compat",
-        "fullscreen",
-        "fallback",
-        "candidateui",
-        "candidate ui",
-    ];
-    let mut lines = runtime_log::recent_lines_matching(limit, &patterns);
-    if lines.len() >= limit {
-        return lines;
-    }
-    for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
-        let file_name = path.file_name().unwrap_or_default().to_string_lossy();
-        for line in text.lines() {
-            let lower = line.to_ascii_lowercase();
-            let is_compat_log = file_name.eq_ignore_ascii_case("compatibility.log");
-            if is_compat_log || patterns.iter().any(|pattern| lower.contains(pattern)) {
-                lines.push(format!("{file_name}  {line}"));
-            }
-        }
-    }
-    if lines.len() > limit {
-        lines.drain(0..lines.len() - limit);
-    }
-    lines
-}
+#[path = "ui_screenshot.rs"]
+mod screenshot;
+use screenshot::*;
+#[path = "ui_ocr.rs"]
+mod ocr;
+use ocr::*;
+#[path = "ui_translation.rs"]
+mod translation;
+use translation::*;
 
-fn latest_log_line_matching(patterns: &[&str]) -> Option<String> {
-    let mut found = None;
-    for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
-        for line in text.lines() {
-            if patterns.iter().any(|pattern| line.contains(pattern)) {
-                found = Some(format!(
-                    "{}  {}",
-                    path.file_name().unwrap_or_default().to_string_lossy(),
-                    line
-                ));
-            }
-        }
-    }
-    found
-}
-
-fn compact_diagnostic_line(line: &str, max_chars: usize) -> String {
-    let compact = line.split_whitespace().collect::<Vec<_>>().join(" ");
-    let mut chars = compact.chars();
-    let value = chars.by_ref().take(max_chars).collect::<String>();
-    if chars.next().is_some() {
-        format!("{value}...")
-    } else {
-        value
-    }
-}
-
-fn cold_start_summary_lines() -> Vec<String> {
-    let probes: [(&str, &[&str]); 5] = [
-        ("tray", &["engine_helper_start"]),
-        ("engine", &["srf_engine_lexicon_mode"]),
-        ("hot/full", &["srf_engine_full_warmup_finish"]),
-        ("first lookup", &["srf_ipc_lookup"][..]),
-        ("ensure", &["srf_engine_ensure_loaded"]),
-    ];
-    probes
-        .iter()
-        .filter_map(|(label, patterns)| {
-            latest_log_line_matching(patterns).map(|line| format!("{label}: {line}"))
-        })
-        .collect()
-}
-
-#[derive(Clone)]
-struct LatencyStatsRow {
-    label: &'static str,
-    count: usize,
-    p50_ms: f64,
-    p90_ms: f64,
-    p99_ms: f64,
-    max_ms: f64,
-}
-
-fn metric_token_after<'a>(line: &'a str, key: &str) -> Option<&'a str> {
-    let start = line.find(key)? + key.len();
-    let rest = &line[start..];
-    let end = rest
-        .find(|ch: char| ch.is_ascii_whitespace() || ch == ',' || ch == ';')
-        .unwrap_or(rest.len());
-    let token = rest[..end].trim();
-    (!token.is_empty()).then_some(token)
-}
-
-fn metric_number_after(line: &str, key: &str) -> Option<f64> {
-    let start = line.find(key)? + key.len();
-    let rest = &line[start..];
-    let mut end = 0usize;
-    for (idx, ch) in rest.char_indices() {
-        if ch.is_ascii_digit() || ch == '.' {
-            end = idx + ch.len_utf8();
-        } else {
-            break;
-        }
-    }
-    (end > 0).then(|| rest[..end].parse::<f64>().ok()).flatten()
-}
-
-fn push_latency_sample(
-    series: &mut BTreeMap<&'static str, Vec<f64>>,
-    label: &'static str,
-    value_ms: f64,
-) {
-    if value_ms.is_finite() && value_ms >= 0.0 {
-        series.entry(label).or_default().push(value_ms);
-    }
-}
-
-fn collect_latency_line(series: &mut BTreeMap<&'static str, Vec<f64>>, line: &str) {
-    if line.contains("[perf]") {
-        if let (Some(stage), Some(elapsed_ms)) = (
-            metric_token_after(line, "stage="),
-            metric_number_after(line, "elapsed_ms="),
-        ) {
-            let label = match stage {
-                "Key/WouldEat" => Some("按键预判"),
-                "Key/ProcessKey" => Some("按键处理"),
-                "CandidateWorker/lookup" => Some("候选查询(worker)"),
-                "CandidateWorker/request-to-apply" => Some("按键到候选应用"),
-                "CandidateWindow/prepare-resources" => Some("候选窗资源准备"),
-                "CandidateWindow/begin-or-update" => Some("候选窗更新"),
-                "CandidateWindow/total" => Some("候选窗绘制总计"),
-                "CommitCandidate/text-write" => Some("候选上屏写入"),
-                _ => None,
-            };
-            if let Some(label) = label {
-                push_latency_sample(series, label, elapsed_ms);
-            }
-        }
-    }
-
-    if line.contains("event=srf_ipc_lookup ") {
-        if let Some(total_us) = metric_number_after(line, "total=") {
-            push_latency_sample(series, "IPC 查询总计", total_us / 1000.0);
-        }
-        if let Some(engine_us) = metric_number_after(line, "engine=") {
-            push_latency_sample(series, "IPC 引擎内部", engine_us / 1000.0);
-        }
-    }
-    if line.contains("event=srf_ipc_lookup_waited") || line.contains("event=srf_ipc_lookup_busy") {
-        if let Some(waited_us) = metric_number_after(line, "waited_us=") {
-            push_latency_sample(series, "共享引擎等待", waited_us / 1000.0);
-        }
-    }
-
-    if line.contains("event=srf_lookup_profile") {
-        if let Some(total_us) = metric_number_after(line, "total=") {
-            push_latency_sample(series, "Rust 查询总计", total_us / 1000.0);
-        }
-        for (key, label) in [
-            ("prepare=", "Rust 准备"),
-            ("decode=", "Rust 解码"),
-            ("correction=", "Rust 纠错"),
-            ("rerank_sort=", "Rust 排序后处理"),
-            ("finish=", "Rust 收尾"),
-        ] {
-            if let Some(value_us) = metric_number_after(line, key) {
-                push_latency_sample(series, label, value_us / 1000.0);
-            }
-        }
-    }
-}
-
-fn percentile(sorted: &[f64], pct: f64) -> f64 {
-    if sorted.is_empty() {
-        return 0.0;
-    }
-    let pos = ((sorted.len() - 1) as f64 * pct).round() as usize;
-    sorted[pos.min(sorted.len() - 1)]
-}
-
-fn typing_latency_stats() -> Vec<LatencyStatsRow> {
-    let mut series: BTreeMap<&'static str, Vec<f64>> = BTreeMap::new();
-    for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
-        for line in text.lines() {
-            collect_latency_line(&mut series, line);
-        }
-    }
-
-    let order = [
-        "按键预判",
-        "按键处理",
-        "按键到候选应用",
-        "候选查询(worker)",
-        "IPC 查询总计",
-        "IPC 引擎内部",
-        "Rust 查询总计",
-        "Rust 准备",
-        "Rust 解码",
-        "Rust 纠错",
-        "Rust 排序后处理",
-        "Rust 收尾",
-        "候选窗资源准备",
-        "候选窗更新",
-        "候选窗绘制总计",
-        "候选上屏写入",
-        "共享引擎等待",
-    ];
-
-    let mut rows = Vec::new();
-    for label in order {
-        let Some(mut values) = series.remove(label) else {
-            continue;
-        };
-        values.sort_by(|a, b| a.total_cmp(b));
-        let count = values.len();
-        rows.push(LatencyStatsRow {
-            label,
-            count,
-            p50_ms: percentile(&values, 0.50),
-            p90_ms: percentile(&values, 0.90),
-            p99_ms: percentile(&values, 0.99),
-            max_ms: values.last().copied().unwrap_or_default(),
-        });
-    }
-    rows
-}
-
-fn format_latency_ms(value: f64) -> String {
-    if value < 1.0 {
-        format!("{value:.2}")
-    } else if value < 10.0 {
-        format!("{value:.1}")
-    } else {
-        format!("{value:.0}")
-    }
-}
-
-fn diagnostic_sqlite_io_error(err: rusqlite::Error) -> std::io::Error {
-    std::io::Error::new(std::io::ErrorKind::Other, err)
-}
-
-fn write_typing_latency_summary_sqlite(
-    path: &Path,
-    rows: &[LatencyStatsRow],
-) -> std::io::Result<()> {
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)?;
-    }
-    let mut conn = rusqlite::Connection::open(path).map_err(diagnostic_sqlite_io_error)?;
-    conn.execute_batch(
-        "PRAGMA journal_mode = DELETE;
-         PRAGMA synchronous = NORMAL;
-         CREATE TABLE IF NOT EXISTS typing_latency_summary (
-           label TEXT PRIMARY KEY,
-           count INTEGER NOT NULL,
-           p50_ms REAL NOT NULL,
-           p90_ms REAL NOT NULL,
-           p99_ms REAL NOT NULL,
-           max_ms REAL NOT NULL
-         );",
-    )
-    .map_err(diagnostic_sqlite_io_error)?;
-    let tx = conn.transaction().map_err(diagnostic_sqlite_io_error)?;
-    tx.execute("DELETE FROM typing_latency_summary", [])
-        .map_err(diagnostic_sqlite_io_error)?;
-    {
-        let mut stmt = tx
-            .prepare(
-                "INSERT INTO typing_latency_summary
-                 (label, count, p50_ms, p90_ms, p99_ms, max_ms)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-            )
-            .map_err(diagnostic_sqlite_io_error)?;
-        for row in rows {
-            stmt.execute(rusqlite::params![
-                redact_diagnostic_text(row.label),
-                row.count as i64,
-                row.p50_ms,
-                row.p90_ms,
-                row.p99_ms,
-                row.max_ms
-            ])
-            .map_err(diagnostic_sqlite_io_error)?;
-        }
-    }
-    tx.commit().map_err(diagnostic_sqlite_io_error)
-}
-
-fn file_modified_summary(path: &Path) -> String {
-    fs::metadata(path)
-        .and_then(|metadata| metadata.modified())
-        .map(|modified| {
-            let local: chrono::DateTime<chrono::Local> = modified.into();
-            local.to_rfc3339()
-        })
-        .unwrap_or_else(|_| "none".to_string())
-}
-
-fn diagnostic_redaction_values() -> Vec<(String, &'static str)> {
-    let mut values = Vec::new();
-    let mut push_value = |value: String, token: &'static str| {
-        let trimmed = value.trim().to_string();
-        if !trimmed.is_empty() && !values.iter().any(|(existing, _)| existing == &trimmed) {
-            values.push((trimmed, token));
-        }
-    };
-    if let Some(path) = app_paths::local_data_dir() {
-        push_value(path.display().to_string(), "<DATA_DIR>");
-    }
-    for (name, token) in [
-        ("USERPROFILE", "<USERPROFILE>"),
-        ("LOCALAPPDATA", "<LOCALAPPDATA>"),
-        ("APPDATA", "<APPDATA>"),
-        ("TEMP", "<TEMP>"),
-        ("TMP", "<TEMP>"),
-        ("COMPUTERNAME", "<COMPUTERNAME>"),
-        ("USERNAME", "<USERNAME>"),
-    ] {
-        if let Ok(value) = std::env::var(name) {
-            push_value(value, token);
-        }
-    }
-    values.sort_by(|left, right| right.0.len().cmp(&left.0.len()));
-    values
-}
-
-fn redact_diagnostic_text(text: &str) -> String {
-    let mut redacted = text.to_string();
-    for (value, token) in diagnostic_redaction_values() {
-        redacted = redacted.replace(&value, token);
-    }
-    redacted
-}
-
-fn append_clipboard_store_summary(summary: &mut String) {
-    let path = pinyin_ime::clipboard_store::store_path();
-    let exists = path.is_file();
-    let bytes = fs::metadata(&path)
-        .map(|metadata| metadata.len())
-        .unwrap_or(0);
-    summary.push_str("clipboard_store_path=<DATA_DIR>\\clipboard_store.sqlite\n");
-    summary.push_str(&format!("clipboard_store_exists={}\n", exists));
-    summary.push_str(&format!("clipboard_store_bytes={}\n", bytes));
-    summary.push_str(&format!(
-        "clipboard_store_modified={}\n",
-        file_modified_summary(&path)
-    ));
-    match pinyin_ime::clipboard_store::snapshot() {
-        Ok(snapshot) => {
-            summary.push_str(&format!(
-                "clipboard_history_count={}\nclipboard_pinned_count={}\n",
-                snapshot.history.len(),
-                snapshot.pinned.len()
-            ));
-        }
-        Err(err) => {
-            summary.push_str(&format!("clipboard_snapshot_error={err}\n"));
-        }
-    }
-}
-
-fn process_running_summary(name: &str) -> String {
-    #[cfg(windows)]
-    {
-        let filter = format!("IMAGENAME eq {name}");
-        let output = Command::new("tasklist")
-            .arg("/FI")
-            .arg(&filter)
-            .arg("/NH")
-            .output();
-        return match output {
-            Ok(output) => {
-                let text = String::from_utf8_lossy(&output.stdout).to_ascii_lowercase();
-                if text.contains(&name.to_ascii_lowercase()) {
-                    "1".to_string()
-                } else {
-                    "0".to_string()
-                }
-            }
-            Err(err) => format!("unknown:{err}"),
-        };
-    }
-
-    #[cfg(not(windows))]
-    {
-        let _ = name;
-        "unknown".to_string()
-    }
-}
-
-fn recent_runtime_event_lines(limit: usize) -> Vec<String> {
-    let sqlite_lines = runtime_log::recent_event_lines(limit);
-    if sqlite_lines.len() >= limit {
-        return sqlite_lines;
-    }
-    let mut lines: Vec<(String, String)> = sqlite_lines
-        .into_iter()
-        .map(|line| (line.clone(), line))
-        .collect();
-    for path in runtime_log::current_log_paths() {
-        let label = path
-            .file_name()
-            .map(|name| name.to_string_lossy().to_string())
-            .unwrap_or_else(|| "runtime.log".to_string());
-        let Ok(text) = fs::read_to_string(&path) else {
-            continue;
-        };
-        for line in text.lines().rev().take(limit) {
-            let clipped: String = line.chars().take(2000).collect();
-            lines.push((line.to_string(), format!("{label}\t{clipped}")));
-        }
-    }
-    lines.sort_by(|left, right| left.0.cmp(&right.0));
-    let selected = if lines.len() > limit {
-        lines.split_off(lines.len() - limit)
-    } else {
-        lines
-    };
-    selected.into_iter().map(|(_, line)| line).collect()
-}
-
-pub(super) fn export_diagnostic_package_to(
-    dest: &Path,
-    config_path: &Path,
-    model: &SettingsModel,
-) -> std::io::Result<()> {
-    fs::create_dir_all(dest)?;
-    fs::create_dir_all(dest.join("logs"))?;
-
-    let mut summary = String::new();
-    summary.push_str("Kaixin IME diagnostics\n");
-    summary.push_str(&format!("created={}\n", chrono::Local::now().to_rfc3339()));
-    summary.push_str(&format!("version={}\n", env!("CARGO_PKG_VERSION")));
-    summary.push_str("config_path=<DATA_DIR>\\kaixin.ini\n");
-    summary.push_str(&format!("config_exists={}\n", config_path.is_file()));
-    summary.push_str(&format!(
-        "config_modified={}\n",
-        file_modified_summary(config_path)
-    ));
-    summary.push_str("data_dir=<DATA_DIR>\\logs\n");
-    summary.push_str(&format!("log_level={}\n", model.log_level.trim()));
-    summary.push_str(&format!(
-        "clipboard_background_enabled={}\n",
-        model.clipboard_background_enabled
-    ));
-    summary.push_str(&format!(
-        "privacy_never_learn_process_count={}\n",
-        model.privacy_never_learn_processes.len()
-    ));
-    summary.push_str(&format!(
-        "privacy_never_clipboard_process_count={}\n",
-        model.privacy_never_clipboard_processes.len()
-    ));
-    summary.push_str(&format!(
-        "privacy_never_candidate_process_count={}\n",
-        model.privacy_never_candidate_processes.len()
-    ));
-    summary.push_str(&format!("mixed_pinyin={}\n", model.mixed_pinyin));
-    append_clipboard_store_summary(&mut summary);
-    summary.push_str(&format!(
-        "process_srf_ime_tray_running={}\n",
-        process_running_summary("srf_ime_tray.exe")
-    ));
-    summary.push_str(&format!(
-        "process_srf_ime_engine_running={}\n",
-        process_running_summary("srf_ime_engine.exe")
-    ));
-    summary.push_str("\nlogs:\n");
-
-    for path in diagnostic_log_paths() {
-        let exists = path.is_file();
-        let size = fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
-        summary.push_str(&format!(
-            "- {} exists={} bytes={}\n",
-            redact_diagnostic_text(&path.display().to_string()),
-            exists,
-            size
-        ));
-        if exists {
-            let file_name = path
-                .file_name()
-                .map(|name| name.to_string_lossy().to_string())
-                .unwrap_or_else(|| "log.txt".to_string());
-            let mut dest_name = file_name.clone();
-            let mut idx = 2usize;
-            while dest.join("logs").join(&dest_name).exists() {
-                dest_name = format!("{idx}-{file_name}");
-                idx += 1;
-            }
-            if let Ok(text) = fs::read_to_string(&path) {
-                let _ = fs::write(
-                    dest.join("logs").join(dest_name),
-                    redact_diagnostic_text(&text),
-                );
-            }
-        }
-    }
-
-    fs::write(dest.join("summary.txt"), redact_diagnostic_text(&summary))?;
-    let recent_events = recent_runtime_event_lines(20).join("\n");
-    fs::write(
-        dest.join("recent-events.log"),
-        redact_diagnostic_text(&recent_events),
-    )?;
-    let recent = recent_perf_log_lines(80).join("\n");
-    fs::write(
-        dest.join("recent-perf.log"),
-        redact_diagnostic_text(&recent),
-    )?;
-    let compat = recent_compatibility_log_lines(80).join("\n");
-    fs::write(
-        dest.join("recent-compatibility.log"),
-        redact_diagnostic_text(&compat),
-    )?;
-    let latency_rows = typing_latency_stats();
-    write_typing_latency_summary_sqlite(
-        &dest.join("typing-latency-summary.sqlite"),
-        &latency_rows,
-    )?;
-    Ok(())
-}
-
-fn log_level_label(value: &str) -> &'static str {
-    match value.trim().to_ascii_lowercase().as_str() {
-        "off" => "关闭",
-        "error" => "错误",
-        "perf" => "性能",
-        "verbose" => "详细",
-        _ => "基础",
-    }
-}
-
-fn learning_sensitivity_label(value: &str) -> &'static str {
-    match value.trim().to_ascii_lowercase().as_str() {
-        "conservative" => "保守",
-        "aggressive" => "积极",
-        _ => "标准",
-    }
-}
-
-fn user_hotword_boost_label(value: &str) -> &'static str {
-    match value.trim().to_ascii_lowercase().as_str() {
-        "conservative" => "保守",
-        "strong" => "强",
-        "aggressive" => "积极",
-        _ => "标准",
-    }
-}
-
-fn engine_recovery_state_summary() -> Option<String> {
-    let reason = read_state_string("LastEngineRecoveryReason")?;
-    let time =
-        read_state_string("LastEngineRecoveryTime").unwrap_or_else(|| "时间未知".to_string());
-    Some(format!("{time}  {reason}"))
-}
-
-#[cfg(windows)]
-fn read_state_string(name: &str) -> Option<String> {
-    use windows_sys::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_SZ};
-
-    let subkey: Vec<u16> = r"Software\kaixin\State"
-        .encode_utf16()
-        .chain(std::iter::once(0))
-        .collect();
-    let value_name: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
-    let mut bytes = 0u32;
-    let status = unsafe {
-        RegGetValueW(
-            HKEY_CURRENT_USER,
-            subkey.as_ptr(),
-            value_name.as_ptr(),
-            RRF_RT_REG_SZ,
-            std::ptr::null_mut(),
-            std::ptr::null_mut(),
-            &mut bytes,
-        )
-    };
-    if status != 0 || bytes <= 2 {
-        return None;
-    }
-
-    let mut buffer = vec![0u16; (bytes as usize).div_ceil(2)];
-    let status = unsafe {
-        RegGetValueW(
-            HKEY_CURRENT_USER,
-            subkey.as_ptr(),
-            value_name.as_ptr(),
-            RRF_RT_REG_SZ,
-            std::ptr::null_mut(),
-            buffer.as_mut_ptr().cast(),
-            &mut bytes,
-        )
-    };
-    if status != 0 {
-        return None;
-    }
-    if let Some(pos) = buffer.iter().position(|unit| *unit == 0) {
-        buffer.truncate(pos);
-    }
-    let text = String::from_utf16_lossy(&buffer).trim().to_string();
-    (!text.is_empty()).then_some(text)
-}
-
-#[cfg(not(windows))]
-fn read_state_string(_name: &str) -> Option<String> {
-    None
-}
-
-#[derive(Clone)]
-pub(super) struct DiagnosticsSnapshot {
-    pub(super) refreshed_at: Instant,
-    recovery: Option<String>,
-    cold_lines: Vec<String>,
-    recent_lines: Vec<String>,
-    compat_lines: Vec<String>,
-    latency_rows: Vec<LatencyStatsRow>,
-    foreground: Option<ProcessSuggestion>,
-    latest_candidate_refresh: Option<String>,
-}
-
-pub(super) fn build_diagnostics_snapshot(app: &SettingsApp) -> DiagnosticsSnapshot {
-    DiagnosticsSnapshot {
-        refreshed_at: Instant::now(),
-        recovery: engine_recovery_state_summary(),
-        cold_lines: cold_start_summary_lines(),
-        recent_lines: recent_perf_log_lines(12),
-        compat_lines: recent_compatibility_log_lines(12),
-        latency_rows: typing_latency_stats(),
-        foreground: app.foreground_process.clone(),
-        latest_candidate_refresh: latest_log_line_matching(&["candidate-refresh"]),
-    }
-}
-
-fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let Some(snapshot) = app.diagnostics_cache.as_ref().cloned() else {
-        ui.label("正在读取诊断数据…");
-        return;
-    };
-    let recovery = snapshot.recovery.as_ref();
-    let cold_lines = &snapshot.cold_lines;
-    let recent_lines = &snapshot.recent_lines;
-    let compat_lines = &snapshot.compat_lines;
-    let latency_rows = &snapshot.latency_rows;
-    let foreground = snapshot.foreground.as_ref();
-    let foreground_policy = foreground.and_then(|process| {
-        matching_compat_rule(&app.model.compat_rules, &process.name).map(|rule| {
-            if rule.enabled {
-                rule.policy.label().to_string()
-            } else {
-                "规则已停用".to_string()
-            }
-        })
-    });
-    let latest_candidate_refresh = snapshot.latest_candidate_refresh.as_ref();
-    let palette = fluent_palette(ui);
-    let engine_value = recovery
-        .map(|value| compact_diagnostic_line(value, 52))
-        .unwrap_or_else(|| "正常".to_string());
-    let foreground_value = foreground
-        .map(|process| process.name.clone())
-        .unwrap_or_else(|| "未获取".to_string());
-    let policy_value = foreground_policy
-        .clone()
-        .unwrap_or_else(|| "未命中自定义规则".to_string());
-    let performance_value = if recent_lines.is_empty() {
-        "暂无性能事件".to_string()
-    } else {
-        format!("最近 {} 条", recent_lines.len())
-    };
-    let latency_value = if latency_rows.is_empty() {
-        "暂无样本".to_string()
-    } else {
-        format!("{} 项指标", latency_rows.len())
-    };
-    let refresh_value = latest_candidate_refresh
-        .map(String::as_str)
-        .map(|line| compact_diagnostic_line(line, 52))
-        .unwrap_or_else(|| "暂无刷新耗时".to_string());
-    let compat_value = if compat_lines.is_empty() {
-        "暂无记录".to_string()
-    } else {
-        format!("最近 {} 条", compat_lines.len())
-    };
-    let cold_value = if cold_lines.is_empty() {
-        "暂无摘要".to_string()
-    } else {
-        format!("{} 条摘要", cold_lines.len())
-    };
-    let status_items = [
-        (
-            "引擎",
-            engine_value.as_str(),
-            if recovery.is_some() {
-                palette.warning
-            } else {
-                palette.success
-            },
-        ),
-        (
-            "前台进程",
-            foreground_value.as_str(),
-            if foreground.is_some() {
-                palette.success
-            } else {
-                palette.warning
-            },
-        ),
-        (
-            "兼容策略",
-            policy_value.as_str(),
-            if foreground_policy.is_some() {
-                palette.success
-            } else {
-                palette.warning
-            },
-        ),
-        (
-            "性能日志",
-            performance_value.as_str(),
-            if recent_lines.is_empty() {
-                palette.warning
-            } else {
-                palette.success
-            },
-        ),
-        (
-            "延迟统计",
-            latency_value.as_str(),
-            if latency_rows.is_empty() {
-                palette.warning
-            } else {
-                palette.success
-            },
-        ),
-        (
-            "候选刷新",
-            refresh_value.as_str(),
-            if latest_candidate_refresh.is_some() {
-                palette.success
-            } else {
-                palette.warning
-            },
-        ),
-        (
-            "兼容降级",
-            compat_value.as_str(),
-            if compat_lines.is_empty() {
-                palette.warning
-            } else {
-                palette.success
-            },
-        ),
-        (
-            "冷启动",
-            cold_value.as_str(),
-            if cold_lines.is_empty() {
-                palette.warning
-            } else {
-                palette.success
-            },
-        ),
-    ];
-    quiet_section(ui, "运行状态", |ui| {
-        ui.columns(2, |columns| {
-            for (idx, (label, value, color)) in status_items.iter().enumerate() {
-                diagnostic_status_card(&mut columns[idx % 2], label, value, *color);
-                columns[idx % 2].add_space(8.0);
-            }
-        });
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "打字延迟统计", |ui| {
-        let palette = fluent_palette(ui);
-        if latency_rows.is_empty() {
-            ui.label(
-                RichText::new("暂无延迟样本。把日志级别临时切到“性能”，正常打字一小段后再回来看。")
-                    .small()
-                    .color(palette.muted),
-            );
-        } else {
-            egui::Grid::new("typing_latency_stats_grid")
-                .num_columns(6)
-                .striped(true)
-                .spacing([14.0, 7.0])
-                .show(ui, |ui| {
-                    ui.label(RichText::new("阶段").strong().color(palette.text));
-                    ui.label(RichText::new("样本").strong().color(palette.text));
-                    ui.label(RichText::new("P50 ms").strong().color(palette.text));
-                    ui.label(RichText::new("P90 ms").strong().color(palette.text));
-                    ui.label(RichText::new("P99 ms").strong().color(palette.text));
-                    ui.label(RichText::new("Max ms").strong().color(palette.text));
-                    ui.end_row();
-                    for row in latency_rows {
-                        ui.label(RichText::new(row.label).color(palette.text));
-                        ui.label(RichText::new(row.count.to_string()).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p50_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p90_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p99_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.max_ms)).monospace());
-                        ui.end_row();
-                    }
-                });
-            ui.add_space(6.0);
-            ui.label(
-                RichText::new(
-                    "统计来自最近的 TSF / engine 日志；输入内容已脱敏，只保留耗时和样本数量。",
-                )
-                .small()
-                .color(palette.muted),
-            );
-        }
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "诊断控制", |ui| {
-        let palette = fluent_palette(ui);
-        setting_combo_row(
-            ui,
-            "日志级别",
-            "off/error/basic/perf/verbose；默认 basic，性能日志建议排障时临时开启。",
-            log_level_label(&app.model.log_level).to_string(),
-            "diagnostic_log_level",
-            |ui| {
-                selectable_string(ui, &mut app.model.log_level, "off", "关闭");
-                selectable_string(ui, &mut app.model.log_level, "error", "错误");
-                selectable_string(ui, &mut app.model.log_level, "basic", "基础");
-                selectable_string(ui, &mut app.model.log_level, "perf", "性能");
-                selectable_string(ui, &mut app.model.log_level, "verbose", "详细");
-            },
-        );
-        ui.horizontal(|ui| {
-            if outline_button(ui, "打开日志").clicked() {
-                app.open_data_location(diagnostic_log_dir());
-            }
-            if danger_button(ui, "清空日志").clicked() {
-                app.clear_tsf_log();
-            }
-            if outline_button(ui, "导出诊断包").clicked() {
-                app.export_diagnostic_package();
-            }
-        });
-        ui.label(
-            RichText::new("日志默认脱敏；排障时临时切到“性能”，完成后建议改回“基础”。")
-                .small()
-                .color(palette.muted),
-        );
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "最近事件", |ui| {
-        let palette = fluent_palette(ui);
-        ui.horizontal(|ui| {
-            ui.label(
-                RichText::new("最近 12 条诊断事件")
-                    .size(SETTINGS_FONT_SMALL)
-                    .color(palette.muted),
-            );
-            if recent_lines.is_empty() && compat_lines.is_empty() && cold_lines.is_empty() {
-                ui.label(RichText::new("暂无记录").small().color(palette.muted));
-            }
-        });
-        ui.add_space(8.0);
-        egui::Frame::none()
-            .fill(palette.surface_alt)
-            .rounding(6.0)
-            .inner_margin(egui::Margin::symmetric(12.0, 10.0))
-            .show(ui, |ui| {
-                egui::ScrollArea::vertical()
-                    .id_salt("recent_diagnostic_events")
-                    .max_height(260.0)
-                    .auto_shrink([false, false])
-                    .show(ui, |ui| {
-                        ui.set_width(ui.available_width());
-                        if !cold_lines.is_empty() {
-                            diagnostic_log_group(ui, "冷启动摘要", &cold_lines);
-                        }
-                        if !compat_lines.is_empty() {
-                            diagnostic_log_group(ui, "兼容 / 降级", &compat_lines);
-                        }
-                        if !recent_lines.is_empty() {
-                            diagnostic_log_group(ui, "性能事件", &recent_lines);
-                        }
-                        if recent_lines.is_empty()
-                            && compat_lines.is_empty()
-                            && cold_lines.is_empty()
-                        {
-                            ui.label(RichText::new("暂无性能或兼容事件。").color(palette.muted));
-                        }
-                    });
-            });
-    });
-}
-
-fn diagnostic_log_group(ui: &mut egui::Ui, title: &str, lines: &[String]) {
-    let palette = fluent_palette(ui);
-    ui.label(
-        RichText::new(title)
-            .strong()
-            .size(SETTINGS_FONT_SMALL)
-            .color(palette.text),
-    );
-    ui.add_space(4.0);
-    for line in lines {
-        ui.add(
-            egui::Label::new(
-                RichText::new(line)
-                    .monospace()
-                    .size(SETTINGS_FONT_LOG)
-                    .color(palette.text),
-            )
-            .wrap(),
-        );
-        ui.add_space(2.0);
-    }
-    ui.add_space(8.0);
-}
+#[path = "ui_appearance.rs"]
+mod appearance;
+use appearance::*;
+#[path = "ui_hotkeys_clipboard.rs"]
+mod hotkeys_clipboard;
+use hotkeys_clipboard::*;
+#[path = "ui_privacy.rs"]
+mod privacy;
+use privacy::*;
+pub(super) use privacy::{diagnostic_log_paths, privacy_statement_text};

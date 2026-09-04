@@ -4,8 +4,10 @@
 mod fonts;
 
 use chrono::{Local, TimeZone};
-use eframe::egui::{
-    self, Align, Color32, Frame, Key, Layout, Margin, RichText, ScrollArea, Stroke,
+use eframe::egui::{self, Align, Frame, Key, Layout, RichText, ScrollArea, Sense, Stroke};
+use pinyin_ime::ui_theme::{
+    apply_tool_style, empty_state, status_pill, UiPalette, CARD_RADIUS, SPACE_LG, SPACE_MD,
+    SPACE_SM, SPACE_XS,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -23,9 +25,10 @@ use std::time::{Duration, Instant};
 use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 use windows_sys::Win32::Foundation::{
-    CloseHandle, GetLastError, ERROR_IO_PENDING, GENERIC_READ, GENERIC_WRITE, HANDLE,
-    INVALID_HANDLE_VALUE, WAIT_TIMEOUT,
+    GetLastError, ERROR_IO_PENDING, GENERIC_READ, GENERIC_WRITE, HANDLE, INVALID_HANDLE_VALUE,
+    WAIT_TIMEOUT,
 };
+#[cfg(windows)]
 #[cfg(windows)]
 use windows_sys::Win32::Storage::FileSystem::{
     CreateFileW, ReadFile, WriteFile, FILE_FLAG_OVERLAPPED, OPEN_EXISTING,
@@ -43,7 +46,8 @@ use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 
 const WINDOW_TITLE: &str = "开心输入法 剪贴板";
 const SERVICE_EXE: &str = "srf_ime_clipboard_svc.exe";
-const PIPE_NAME: &str = r"\\.\pipe\KaixinClipboardSvc_v1";
+const CAPABILITY_ENV: &str = "KAIXIN_CLIPBOARD_CAPABILITY";
+const PIPE_NAME_PREFIX: &str = r"\\.\pipe\KaixinClipboardSvc_v1";
 const MAX_FRAME_BYTES: usize = 32 * 1024 * 1024;
 const REFRESH_INTERVAL: Duration = Duration::from_millis(900);
 const PIPE_CONNECT_TIMEOUT_MS: u32 = 250;
@@ -78,6 +82,7 @@ struct Snapshot {
 struct Request {
     req: u64,
     method: String,
+    capability: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     force: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -113,6 +118,7 @@ impl Request {
         Self {
             req,
             method: method.to_string(),
+            capability: String::new(),
             force: None,
             last_modified: None,
             text: None,
@@ -153,6 +159,7 @@ struct AsyncServiceClient {
     next_req: u64,
     stopping: Arc<AtomicBool>,
     worker: Option<JoinHandle<()>>,
+    capability: String,
 }
 
 impl AsyncServiceClient {
@@ -161,9 +168,19 @@ impl AsyncServiceClient {
         let (completion_tx, completion_rx) = mpsc::channel();
         let stopping = Arc::new(AtomicBool::new(false));
         let worker_stopping = Arc::clone(&stopping);
+        let capability = generate_capability();
+        let worker_capability = capability.clone();
         let worker = thread::Builder::new()
             .name("kaixin-clipboard-client".to_string())
-            .spawn(move || service_worker(command_rx, completion_tx, ctx, worker_stopping))
+            .spawn(move || {
+                service_worker(
+                    command_rx,
+                    completion_tx,
+                    ctx,
+                    worker_stopping,
+                    worker_capability,
+                )
+            })
             .ok();
         Self {
             commands: command_tx,
@@ -171,12 +188,14 @@ impl AsyncServiceClient {
             next_req: 1,
             stopping,
             worker,
+            capability,
         }
     }
 
     fn call(&mut self, method: &str, configure: impl FnOnce(&mut Request)) -> u64 {
         self.next_req = self.next_req.wrapping_add(1).max(1);
         let mut request = Request::new(self.next_req, method);
+        request.capability.clone_from(&self.capability);
         configure(&mut request);
         let req = request.req;
         let _ = self.commands.send(WorkerCommand::Call(request));
@@ -201,8 +220,9 @@ fn service_worker(
     completions: Sender<WorkerCompletion>,
     ctx: egui::Context,
     stopping: Arc<AtomicBool>,
+    capability: String,
 ) {
-    let mut worker = ServiceWorker::new(Arc::clone(&stopping));
+    let mut worker = ServiceWorker::new(Arc::clone(&stopping), capability);
     while let Ok(command) = commands.recv() {
         match command {
             WorkerCommand::Call(request) => {
@@ -228,15 +248,17 @@ struct ServiceWorker {
     child: Option<Child>,
     owns_service: bool,
     stopping: Arc<AtomicBool>,
+    capability: String,
 }
 
 impl ServiceWorker {
-    fn new(stopping: Arc<AtomicBool>) -> Self {
+    fn new(stopping: Arc<AtomicBool>, capability: String) -> Self {
         Self {
             pipe: None,
             child: None,
             owns_service: false,
             stopping,
+            capability,
         }
     }
 
@@ -277,7 +299,7 @@ impl ServiceWorker {
         cancellable: bool,
     ) -> Result<Response, String> {
         if self.pipe.is_none() {
-            self.pipe = Some(PipeConnection::connect()?);
+            self.pipe = Some(PipeConnection::connect(&self.capability)?);
         }
         self.pipe.as_mut().expect("pipe initialized").call(
             request,
@@ -300,6 +322,7 @@ impl ServiceWorker {
             find_service_exe().ok_or_else(|| format!("未找到剪贴板服务：{SERVICE_EXE}"))?;
         let mut command = Command::new(&service);
         command.current_dir(service.parent().unwrap_or_else(|| Path::new(".")));
+        command.env(CAPABILITY_ENV, &self.capability);
         #[cfg(windows)]
         command.creation_flags(CREATE_NO_WINDOW);
         self.child = Some(
@@ -325,7 +348,7 @@ impl ServiceWorker {
             if self.stopping.load(Ordering::Acquire) {
                 return Err("剪贴板服务连接已取消".to_string());
             }
-            match PipeConnection::connect() {
+            match PipeConnection::connect(&self.capability) {
                 Ok(pipe) => {
                     self.pipe = Some(pipe);
                     return Ok(());
@@ -342,6 +365,7 @@ impl ServiceWorker {
             return;
         }
         let mut request = Request::new(u64::MAX, "shutdown");
+        request.capability.clone_from(&self.capability);
         request.force = Some(false);
         let _ = self.call_once(&request, 2_000, false);
         self.pipe = None;
@@ -379,28 +403,37 @@ fn request_is_retry_safe(method: &str) -> bool {
     )
 }
 
+fn generate_capability() -> String {
+    #[cfg(windows)]
+    {
+        pinyin_ime::windows_security::generate_capability_token()
+            .expect("Windows cryptographic random generator unavailable")
+    }
+    #[cfg(not(windows))]
+    {
+        use sha2::{Digest, Sha256};
+        format!(
+            "{:x}",
+            Sha256::digest(format!("{}-{:#?}", std::process::id(), Instant::now()))
+        )
+    }
+}
+
 #[cfg(windows)]
 fn wide(value: &str) -> Vec<u16> {
     value.encode_utf16().chain(std::iter::once(0)).collect()
 }
 
 #[cfg(windows)]
-struct PipeConnection(HANDLE);
-
-#[cfg(windows)]
-impl Drop for PipeConnection {
-    fn drop(&mut self) {
-        if self.0 != 0 && self.0 != INVALID_HANDLE_VALUE {
-            unsafe { CloseHandle(self.0) };
-            self.0 = INVALID_HANDLE_VALUE;
-        }
-    }
-}
+struct PipeConnection(pinyin_ime::win_handle::OwnedWinHandle);
 
 #[cfg(windows)]
 impl PipeConnection {
-    fn connect() -> Result<Self, String> {
-        let pipe_name = wide(PIPE_NAME);
+    fn connect(capability: &str) -> Result<Self, String> {
+        let pipe_name = wide(&format!(
+            "{PIPE_NAME_PREFIX}.{}",
+            capability.get(..16).unwrap_or(capability)
+        ));
         if unsafe { WaitNamedPipeW(pipe_name.as_ptr(), PIPE_CONNECT_TIMEOUT_MS) } == 0 {
             return Err(format!(
                 "等待剪贴板服务失败：{}",
@@ -424,6 +457,8 @@ impl PipeConnection {
                 std::io::Error::last_os_error()
             ));
         }
+        let handle = unsafe { pinyin_ime::win_handle::OwnedWinHandle::try_from_raw(handle) }
+            .expect("validated clipboard pipe handle");
         Ok(Self(handle))
     }
 
@@ -439,20 +474,20 @@ impl PipeConnection {
             return Err("剪贴板请求大小非法".to_string());
         }
         write_all_timeout(
-            self.0,
+            self.0.as_raw(),
             &(payload.len() as u32).to_le_bytes(),
             timeout_ms,
             stopping,
         )?;
-        write_all_timeout(self.0, &payload, timeout_ms, stopping)?;
+        write_all_timeout(self.0.as_raw(), &payload, timeout_ms, stopping)?;
         let mut header = [0u8; 4];
-        read_exact_timeout(self.0, &mut header, timeout_ms, stopping)?;
+        read_exact_timeout(self.0.as_raw(), &mut header, timeout_ms, stopping)?;
         let length = u32::from_le_bytes(header) as usize;
         if length == 0 || length > MAX_FRAME_BYTES {
             return Err(format!("剪贴板响应大小非法：{length}"));
         }
         let mut response = vec![0u8; length];
-        read_exact_timeout(self.0, &mut response, timeout_ms, stopping)?;
+        read_exact_timeout(self.0.as_raw(), &mut response, timeout_ms, stopping)?;
         serde_json::from_slice(&response).map_err(|err| format!("解析剪贴板响应失败：{err}"))
     }
 }
@@ -633,6 +668,13 @@ enum Action {
     Remove,
 }
 
+#[derive(Clone, Copy)]
+enum ClearKind {
+    History,
+    Older,
+    All,
+}
+
 enum PendingKind {
     Refresh,
     Mutation {
@@ -659,7 +701,11 @@ struct ClipboardApp {
     last_refresh: Instant,
     status: String,
     status_error: bool,
+    notice_until: Option<Instant>,
     last_removed: Option<(String, bool)>,
+    undo_until: Option<Instant>,
+    hovered: Option<usize>,
+    confirm_clear: Option<ClearKind>,
     dark: bool,
     dense: bool,
     quick_paste: bool,
@@ -687,7 +733,11 @@ impl ClipboardApp {
             last_refresh: Instant::now() - REFRESH_INTERVAL,
             status: "正在连接剪贴板服务…".to_string(),
             status_error: false,
+            notice_until: None,
             last_removed: None,
+            undo_until: None,
+            hovered: None,
+            confirm_clear: None,
             dark: false,
             dense: false,
             quick_paste: true,
@@ -748,6 +798,7 @@ impl ClipboardApp {
         }
         self.status = "就绪".to_string();
         self.status_error = false;
+        self.notice_until = None;
         Ok(())
     }
 
@@ -791,6 +842,7 @@ impl ClipboardApp {
         );
         self.status = "正在处理…".to_string();
         self.status_error = false;
+        self.notice_until = None;
     }
 
     fn save_pref(&mut self, key: &str, value: &str) {
@@ -841,8 +893,10 @@ impl ClipboardApp {
                         .unwrap_or("操作完成")
                         .to_string();
                     self.status_error = false;
+                    self.notice_until = Some(Instant::now() + Duration::from_secs(3));
                     if let Some(removed) = removed {
                         self.last_removed = Some(removed);
+                        self.undo_until = Some(Instant::now() + Duration::from_secs(6));
                     }
                     self.modified.clear();
                     self.request_refresh(false);
@@ -989,6 +1043,7 @@ impl ClipboardApp {
     fn set_error(&mut self, error: String) {
         self.status = error;
         self.status_error = true;
+        self.notice_until = None;
     }
 
     fn handle_keys(&mut self, ctx: &egui::Context) {
@@ -1033,24 +1088,44 @@ impl ClipboardApp {
         }
     }
 
-    fn top_bar(&mut self, ui: &mut egui::Ui) {
+    fn top_bar(&mut self, ui: &mut egui::Ui, compact: bool) {
+        let palette = UiPalette::from_visuals(ui.visuals());
         ui.horizontal(|ui| {
-            ui.heading("剪贴板记录");
-            ui.label(format!(
-                "最近 {} · 置顶 {}",
-                self.snapshot.history.len(),
-                self.snapshot.pinned.len()
-            ));
+            ui.vertical(|ui| {
+                ui.label(
+                    RichText::new("剪贴板记录")
+                        .strong()
+                        .size(20.0)
+                        .color(palette.text),
+                );
+                ui.label(
+                    RichText::new(format!(
+                        "最近 {} 条 · 置顶 {} 条",
+                        self.snapshot.history.len(),
+                        self.snapshot.pinned.len()
+                    ))
+                    .small()
+                    .color(palette.muted),
+                );
+            });
             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                if ui.button(if self.dark { "浅色" } else { "深色" }).clicked() {
-                    self.dark = !self.dark;
-                    let value = if self.dark { "dark" } else { "light" };
-                    self.save_pref("theme_mode", value);
-                }
-                if ui.button("刷新").clicked() {
+                if ui.button("↻").on_hover_text("刷新").clicked() {
                     self.request_refresh(true);
                 }
-                ui.menu_button("更多", |ui| {
+                ui.menu_button("•••", |ui| {
+                    if ui
+                        .button(if self.dark {
+                            "☀  使用浅色主题"
+                        } else {
+                            "☾  使用深色主题"
+                        })
+                        .clicked()
+                    {
+                        self.dark = !self.dark;
+                        let value = if self.dark { "dark" } else { "light" };
+                        self.save_pref("theme_mode", value);
+                        ui.close_menu();
+                    }
                     if ui.button("置顶当前剪贴板").clicked() {
                         self.mutate("pin_current", |_| {}, None, false);
                         ui.close_menu();
@@ -1067,46 +1142,90 @@ impl ClipboardApp {
                         self.save_pref("quick_paste", value);
                     }
                     if ui.button("清空未置顶历史").clicked() {
-                        self.mutate("clear_history", |_| {}, None, false);
+                        self.confirm_clear = Some(ClearKind::History);
                         ui.close_menu();
                     }
                     if ui
                         .button(format!("清空 {} 天前记录", self.max_age_days))
                         .clicked()
                     {
-                        let days = self.max_age_days;
-                        self.mutate(
-                            "clear_older_than",
-                            |request| request.days = Some(days),
-                            None,
-                            false,
-                        );
+                        self.confirm_clear = Some(ClearKind::Older);
                         ui.close_menu();
                     }
                     if ui.button("清空全部").clicked() {
-                        self.mutate("clear_all", |_| {}, None, false);
+                        self.confirm_clear = Some(ClearKind::All);
                         ui.close_menu();
                     }
                 });
             });
         });
-        ui.add_space(6.0);
+        ui.add_space(SPACE_MD);
         ui.horizontal(|ui| {
-            ui.label("搜索");
             let response = ui.add_sized(
-                [ui.available_width() - 8.0, 30.0],
+                [(ui.available_width() - 48.0).max(120.0), 34.0],
                 egui::TextEdit::singleline(&mut self.search)
-                    .hint_text("搜索内容、网址、代码或路径…"),
+                    .hint_text("⌕  搜索内容、网址、代码或路径…"),
             );
             if response.changed() {
                 self.selected = 0;
             }
+            if !self.search.is_empty() && ui.button("×").on_hover_text("清除搜索").clicked() {
+                self.search.clear();
+                self.selected = 0;
+            }
+        });
+        if compact {
+            ui.add_space(SPACE_SM);
+            self.compact_navigation(ui);
+        } else if !self.filter.is_empty() {
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("当前筛选").small().color(palette.muted));
+                if ui
+                    .button(format!("{}  ×", filter_label(&self.filter)))
+                    .clicked()
+                {
+                    self.filter.clear();
+                    self.selected = 0;
+                }
+            });
+        }
+    }
+
+    fn compact_navigation(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal_wrapped(|ui| {
+            for (tab, label, count) in [
+                (Tab::Recent, "最近", self.snapshot.history.len()),
+                (Tab::Pinned, "置顶", self.snapshot.pinned.len()),
+            ] {
+                if ui
+                    .selectable_label(self.tab == tab, format!("{label}  {count}"))
+                    .clicked()
+                {
+                    self.tab = tab;
+                    self.selected = 0;
+                }
+            }
+            ui.separator();
+            egui::ComboBox::from_id_salt("compact_filter")
+                .selected_text(filter_label(&self.filter))
+                .show_ui(ui, |ui| self.filter_options(ui));
         });
     }
 
+    fn filter_options(&mut self, ui: &mut egui::Ui) {
+        for (label, value) in clipboard_filters() {
+            if ui.selectable_label(self.filter == value, label).clicked() {
+                self.filter = value.to_string();
+                self.selected = 0;
+                ui.close_menu();
+            }
+        }
+    }
+
     fn sidebar(&mut self, ui: &mut egui::Ui) {
+        let palette = UiPalette::from_visuals(ui.visuals());
         ui.set_width(112.0);
-        ui.label(RichText::new("查看").strong());
+        ui.label(RichText::new("查看").strong().color(palette.text));
         if ui
             .selectable_label(
                 self.tab == Tab::Recent,
@@ -1127,17 +1246,9 @@ impl ClipboardApp {
             self.tab = Tab::Pinned;
             self.selected = 0;
         }
-        ui.add_space(16.0);
-        ui.label(RichText::new("筛选").strong());
-        for (label, value) in [
-            ("全部", ""),
-            ("今天", "今天"),
-            ("近 7 天", "7d"),
-            ("网址", "type:url"),
-            ("代码", "type:code"),
-            ("路径", "type:path"),
-            ("邮箱", "type:email"),
-        ] {
+        ui.add_space(SPACE_LG);
+        ui.label(RichText::new("筛选").strong().color(palette.text));
+        for (label, value) in clipboard_filters() {
             if ui.selectable_label(self.filter == value, label).clicked() {
                 self.filter = value.to_string();
                 self.selected = 0;
@@ -1149,42 +1260,35 @@ impl ClipboardApp {
         let entries: Vec<ClipboardEntry> = self.entries().into_iter().cloned().collect();
         if entries.is_empty() {
             ui.centered_and_justified(|ui| {
-                ui.label("没有匹配内容，换个关键词试试。");
+                let (symbol, title, hint) = self.empty_state_copy();
+                empty_state(ui, symbol, title, hint);
+                if self.status_error && ui.button("重新连接").clicked() {
+                    self.request_refresh(true);
+                } else if (!self.search.is_empty() || !self.filter.is_empty())
+                    && ui.button("清除搜索和筛选").clicked()
+                {
+                    self.search.clear();
+                    self.filter.clear();
+                }
             });
             return;
         }
+        let previously_hovered = self.hovered;
+        self.hovered = None;
         ScrollArea::vertical().show(ui, |ui| {
             for (index, entry) in entries.into_iter().enumerate() {
                 let selected = index == self.selected;
-                Frame::none()
-                    .fill(if selected {
-                        ui.visuals().selection.bg_fill
-                    } else {
-                        Color32::TRANSPARENT
-                    })
-                    .stroke(Stroke::new(
-                        1.0,
-                        ui.visuals().widgets.noninteractive.bg_stroke.color,
-                    ))
-                    .inner_margin(Margin::same(if self.dense { 6.0 } else { 10.0 }))
-                    .rounding(6.0)
-                    .show(ui, |ui| {
+                let was_hovered = previously_hovered == Some(index);
+                let card =
+                    clipboard_card(ui, index, selected, was_hovered, self.dense, |ui| {
                         ui.horizontal(|ui| {
                             if self.tab == Tab::Recent && index < 9 {
-                                ui.label(RichText::new(format!("{}", index + 1)).strong());
+                                keycap(ui, index + 1);
                             }
-                            ui.label(RichText::new(kind_label(&entry.text)).small());
-                            ui.label(RichText::new(entry_meta(&entry)).small().weak());
+                            ui.label(RichText::new(kind_label(&entry.text)).small().color(
+                                kind_color(&entry.text, UiPalette::from_visuals(ui.visuals())),
+                            ));
                             ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                                if ui.small_button("删").clicked() {
-                                    self.apply_action(Action::Remove, entry.clone(), ctx);
-                                }
-                                if ui.small_button("粘").clicked() {
-                                    self.apply_action(Action::Paste, entry.clone(), ctx);
-                                }
-                                if ui.small_button("复制").clicked() {
-                                    self.apply_action(Action::Copy, entry.clone(), ctx);
-                                }
                                 let pin = if self.pinned_texts.contains(&entry.text) {
                                     "★"
                                 } else {
@@ -1193,26 +1297,112 @@ impl ClipboardApp {
                                 if ui.small_button(pin).clicked() {
                                     self.apply_action(Action::TogglePin, entry.clone(), ctx);
                                 }
+                                if selected || was_hovered {
+                                    ui.menu_button("⋯", |ui| {
+                                        if ui.button("复制").clicked() {
+                                            self.apply_action(Action::Copy, entry.clone(), ctx);
+                                            ui.close_menu();
+                                        }
+                                        if ui.button("删除").clicked() {
+                                            self.apply_action(Action::Remove, entry.clone(), ctx);
+                                            ui.close_menu();
+                                        }
+                                    });
+                                    if ui.button("粘贴").clicked() {
+                                        self.apply_action(Action::Paste, entry.clone(), ctx);
+                                    }
+                                }
                             });
                         });
                         let preview = display_text(&entry.text);
-                        let preview = if preview.chars().count() > 220 {
-                            format!("{}…", preview.chars().take(220).collect::<String>())
+                        let preview_limit = if self.dense { 100 } else { 180 };
+                        let preview = if preview.chars().count() > preview_limit {
+                            format!(
+                                "{}…",
+                                preview.chars().take(preview_limit).collect::<String>()
+                            )
                         } else {
                             preview
                         };
-                        let response =
-                            ui.add(egui::Label::new(preview).wrap().sense(egui::Sense::click()));
-                        if response.clicked() {
-                            self.selected = index;
-                        }
-                        if response.double_clicked() {
-                            self.apply_action(Action::Paste, entry, ctx);
-                        }
+                        let text = if looks_like_code(&entry.text) || looks_like_path(&entry.text) {
+                            RichText::new(preview).monospace()
+                        } else {
+                            RichText::new(preview)
+                        };
+                        ui.add(egui::Label::new(text).wrap());
+                        ui.add_space(SPACE_XS);
+                        ui.label(RichText::new(entry_meta(&entry)).small().weak());
                     });
+                if card.hovered() {
+                    self.hovered = Some(index);
+                }
+                if card.clicked() {
+                    self.selected = index;
+                }
+                if card.double_clicked() {
+                    self.apply_action(Action::Paste, entry, ctx);
+                }
                 ui.add_space(5.0);
             }
         });
+    }
+
+    fn empty_state_copy(&self) -> (&'static str, &'static str, &'static str) {
+        if self.status_error {
+            ("!", "剪贴板服务暂不可用", "请检查服务状态后点击刷新重试")
+        } else if !self.search.is_empty() || !self.filter.is_empty() {
+            ("⌕", "没有匹配内容", "尝试其他关键词，或清除当前筛选")
+        } else if self.tab == Tab::Pinned {
+            ("☆", "还没有置顶内容", "置顶常用内容，之后可以快速粘贴")
+        } else {
+            ("▢", "还没有剪贴板记录", "复制文字后，内容会自动出现在这里")
+        }
+    }
+
+    fn clear_confirmation(&mut self, ctx: &egui::Context) {
+        let Some(kind) = self.confirm_clear else {
+            return;
+        };
+        let (title, message) = match kind {
+            ClearKind::History => ("清空未置顶历史？", "置顶内容会被保留。"),
+            ClearKind::Older => ("清理旧记录？", "将删除超过保留期限的记录。"),
+            ClearKind::All => ("清空全部记录？", "历史和置顶内容都会被删除。"),
+        };
+        egui::Window::new(title)
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.label(message);
+                ui.add_space(SPACE_MD);
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    if ui.button("取消").clicked() {
+                        self.confirm_clear = None;
+                    }
+                    if ui
+                        .button(
+                            RichText::new("确认清空")
+                                .color(UiPalette::from_visuals(ui.visuals()).danger),
+                        )
+                        .clicked()
+                    {
+                        match kind {
+                            ClearKind::History => self.mutate("clear_history", |_| {}, None, false),
+                            ClearKind::Older => {
+                                let days = self.max_age_days;
+                                self.mutate(
+                                    "clear_older_than",
+                                    |request| request.days = Some(days),
+                                    None,
+                                    false,
+                                );
+                            }
+                            ClearKind::All => self.mutate("clear_all", |_| {}, None, false),
+                        }
+                        self.confirm_clear = None;
+                    }
+                });
+            });
     }
 }
 
@@ -1224,50 +1414,160 @@ impl eframe::App for ClipboardApp {
         } else {
             ctx.set_visuals(egui::Visuals::light());
         }
+        apply_tool_style(ctx);
         if self.last_refresh.elapsed() >= REFRESH_INTERVAL {
             self.request_refresh(false);
         }
         self.maybe_save_window_rect(ctx);
         self.handle_keys(ctx);
+        if self
+            .undo_until
+            .is_some_and(|deadline| Instant::now() >= deadline)
+        {
+            self.last_removed = None;
+            self.undo_until = None;
+        }
+        let compact = ctx.screen_rect().width() < 720.0;
         egui::TopBottomPanel::top("top")
             .frame(Frame::side_top_panel(&ctx.style()).inner_margin(12.0))
-            .show(ctx, |ui| self.top_bar(ui));
-        egui::TopBottomPanel::bottom("status").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                let color = if self.status_error {
-                    Color32::from_rgb(190, 45, 45)
-                } else {
-                    ui.visuals().weak_text_color()
-                };
-                ui.colored_label(color, &self.status);
-                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
-                    ui.label("数字键 1–9 快粘");
-                    if let Some((text, pinned)) = self.last_removed.clone() {
-                        if ui.button("撤销删除").clicked() {
-                            self.mutate(
-                                "restore",
-                                |request| {
-                                    request.text = Some(text);
-                                    request.was_pinned = Some(pinned);
-                                },
-                                None,
-                                false,
-                            );
-                            self.last_removed = None;
-                        }
+            .show(ctx, |ui| self.top_bar(ui, compact));
+        let show_notice = self.status_error
+            || self
+                .notice_until
+                .is_some_and(|deadline| Instant::now() < deadline)
+            || self.status == "正在处理…"
+            || self.last_removed.is_some();
+        if show_notice {
+            egui::TopBottomPanel::bottom("status").show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    if self.status_error || self.status != "就绪" {
+                        status_pill(ui, &self.status, self.status_error);
                     }
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        if let Some((text, pinned)) = self.last_removed.clone() {
+                            if ui.button("撤销删除").clicked() {
+                                self.mutate(
+                                    "restore",
+                                    |request| {
+                                        request.text = Some(text);
+                                        request.was_pinned = Some(pinned);
+                                    },
+                                    None,
+                                    false,
+                                );
+                                self.last_removed = None;
+                                self.undo_until = None;
+                            }
+                        } else if self.quick_paste {
+                            ui.label("数字键 1–9 快粘");
+                        }
+                    });
                 });
             });
-        });
-        egui::SidePanel::left("sidebar")
-            .resizable(false)
-            .show(ctx, |ui| self.sidebar(ui));
+        }
+        if !compact {
+            egui::SidePanel::left("sidebar")
+                .resizable(false)
+                .frame(Frame::side_top_panel(&ctx.style()).inner_margin(12.0))
+                .show(ctx, |ui| self.sidebar(ui));
+        }
         egui::CentralPanel::default().show(ctx, |ui| self.list(ui, ctx));
+        self.clear_confirmation(ctx);
         ctx.request_repaint_after(REFRESH_INTERVAL);
     }
 
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
         self.client.shutdown();
+    }
+}
+
+fn clipboard_filters() -> [(&'static str, &'static str); 7] {
+    [
+        ("全部", ""),
+        ("今天", "今天"),
+        ("近 7 天", "7d"),
+        ("网址", "type:url"),
+        ("代码", "type:code"),
+        ("路径", "type:path"),
+        ("邮箱", "type:email"),
+    ]
+}
+
+fn filter_label(value: &str) -> &'static str {
+    clipboard_filters()
+        .into_iter()
+        .find_map(|(label, filter)| (filter == value).then_some(label))
+        .unwrap_or("全部")
+}
+
+fn clipboard_card(
+    ui: &mut egui::Ui,
+    index: usize,
+    selected: bool,
+    hovered: bool,
+    dense: bool,
+    add: impl FnOnce(&mut egui::Ui),
+) -> egui::Response {
+    let palette = UiPalette::from_visuals(ui.visuals());
+    let active = selected || hovered;
+    let progress = ui.ctx().animate_bool_with_time(
+        ui.make_persistent_id(("clipboard-card", index)),
+        active,
+        0.14,
+    );
+    let fill = egui::Color32::from(egui::lerp(
+        egui::Rgba::from(palette.surface)..=egui::Rgba::from(palette.accent_soft),
+        progress,
+    ));
+    let frame = Frame::none()
+        .fill(fill)
+        .stroke(Stroke::new(
+            1.0,
+            if selected {
+                palette.accent
+            } else {
+                palette.border_subtle
+            },
+        ))
+        .rounding(CARD_RADIUS)
+        .inner_margin(egui::Margin::symmetric(
+            SPACE_MD,
+            if dense { SPACE_XS } else { 10.0 },
+        ))
+        .show(ui, add);
+    if selected {
+        let stripe = egui::Rect::from_min_max(
+            frame.response.rect.left_top() + egui::vec2(1.0, CARD_RADIUS),
+            frame.response.rect.left_bottom() + egui::vec2(4.0, -CARD_RADIUS),
+        );
+        ui.painter().rect_filled(stripe, 2.0, palette.accent);
+    }
+    ui.interact(
+        frame.response.rect,
+        ui.make_persistent_id(("clipboard-card-interaction", index)),
+        Sense::click(),
+    )
+}
+
+fn keycap(ui: &mut egui::Ui, number: usize) {
+    let palette = UiPalette::from_visuals(ui.visuals());
+    Frame::none()
+        .fill(palette.surface_alt)
+        .stroke(Stroke::new(1.0, palette.border))
+        .rounding(4.0)
+        .inner_margin(egui::Margin::symmetric(6.0, 2.0))
+        .show(ui, |ui| {
+            ui.label(RichText::new(number.to_string()).strong().small());
+        });
+}
+
+fn kind_color(text: &str, palette: UiPalette) -> egui::Color32 {
+    if looks_like_url(text) || looks_like_email(text) {
+        palette.accent
+    } else if looks_like_path(text) || looks_like_code(text) {
+        palette.muted
+    } else {
+        palette.text
     }
 }
 

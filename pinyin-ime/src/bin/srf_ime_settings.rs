@@ -59,8 +59,8 @@ const CANDIDATE_OVERLAY_EXE: &str = "srf_ime_overlay.exe";
 const SETTINGS_WINDOW_SIZE: [f32; 2] = [1000.0, 940.0];
 const SETTINGS_MAX_WINDOW_SIZE: [f32; 2] = [1160.0, 1040.0];
 const SETTINGS_MIN_WINDOW_SIZE: [f32; 2] = [780.0, 680.0];
-const SETTINGS_NAV_WIDTH: f32 = 224.0;
-const SETTINGS_PANEL_RADIUS: f32 = 8.0;
+const SETTINGS_NAV_WIDTH: f32 = 212.0;
+const SETTINGS_PANEL_RADIUS: f32 = 10.0;
 const SETTINGS_USER_DICT_LIST_LIMIT: usize = 100;
 const MS_PINYIN_TIP: &str =
     r"0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411F-A5AC-CA038EC515D7}";
@@ -88,6 +88,7 @@ struct SettingsApp {
     config: IniDoc,
     config_path: PathBuf,
     status: String,
+    save_toast: Option<(String, Instant)>,
     last_saved_model: SettingsModel,
     confirm_close_with_unsaved_changes: bool,
     user_phrase_key: String,
@@ -145,6 +146,7 @@ impl SettingsApp {
             config,
             config_path,
             status,
+            save_toast: None,
             last_saved_model,
             confirm_close_with_unsaved_changes: false,
             user_phrase_key: String::new(),
@@ -333,6 +335,7 @@ impl SettingsApp {
                     self.config_path.display(),
                     effect_summary
                 );
+                self.save_toast = Some((self.status.clone(), Instant::now()));
                 Ok(())
             }
             Err(err) => {
@@ -445,18 +448,85 @@ impl SettingsApp {
         }
     }
 
+    fn export_user_dict_tsv(&mut self) {
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("导出便携用户词表")
+            .set_file_name("kaixin_user_words.tsv")
+            .add_filter("TSV", &["tsv"])
+            .save_file()
+        else {
+            return;
+        };
+        match pinyin_ime::user_dict::export_user_dict_tsv(&path) {
+            Ok(()) => self.status = format!("已导出便携用户词表：{}", path.display()),
+            Err(err) => self.status = format!("导出便携用户词表失败: {err}"),
+        }
+    }
+
     fn import_user_dict(&mut self) {
+        self.import_user_dict_mode(pinyin_ime::user_dict::UserDictImportMode::Merge);
+    }
+
+    fn replace_user_dict(&mut self) {
+        self.import_user_dict_mode(pinyin_ime::user_dict::UserDictImportMode::Replace);
+    }
+
+    fn import_user_dict_mode(&mut self, mode: pinyin_ime::user_dict::UserDictImportMode) {
         let Some(path) = rfd::FileDialog::new()
             .set_title("导入用户词库")
-            .add_filter("SQLite", &["sqlite", "db"])
+            .add_filter("用户词库", &["sqlite", "db", "tsv"])
             .pick_file()
         else {
             return;
         };
-        match pinyin_ime::user_dict::import_user_dict(&path) {
+        let preview = match pinyin_ime::user_dict::preview_user_dict_import(&path) {
+            Ok(preview) => preview,
+            Err(err) => {
+                self.status = format!("读取用户词库失败: {err}");
+                return;
+            }
+        };
+        let action = if mode == pinyin_ime::user_dict::UserDictImportMode::Merge {
+            "合并"
+        } else {
+            "完全覆盖"
+        };
+        let description = format!(
+            "准备{action}用户词库。\n\n词条：{}\n新增：{}\n重复：{}\n异读冲突：{}\n置顶：{}\n屏蔽：{}\n上下文记录：{}\n\n导入前会自动备份当前词库；合并模式不会导入上下文和负反馈。",
+            preview.total_entries,
+            preview.new_entries,
+            preview.duplicate_entries,
+            preview.reading_conflicts,
+            preview.pinned_entries,
+            preview.blocked_entries,
+            preview.context_entries,
+        );
+        let confirmed = matches!(
+            rfd::MessageDialog::new()
+                .set_title("确认导入用户词库")
+                .set_description(&description)
+                .set_level(
+                    if mode == pinyin_ime::user_dict::UserDictImportMode::Replace {
+                        rfd::MessageLevel::Warning
+                    } else {
+                        rfd::MessageLevel::Info
+                    }
+                )
+                .set_buttons(rfd::MessageButtons::OkCancel)
+                .show(),
+            rfd::MessageDialogResult::Ok
+        );
+        if !confirmed {
+            self.status = "已取消导入用户词库。".to_string();
+            return;
+        }
+        match pinyin_ime::user_dict::import_user_dict_with_mode(&path, mode) {
             Ok(()) => {
                 self.blocked_phrases_loaded = false;
-                self.status = format!("已导入用户词库。{USER_DICT_RELOAD_HINT}");
+                self.status = format!(
+                    "已{action}用户词库：新增 {} 条，重复 {} 条，冲突 {} 条。{USER_DICT_RELOAD_HINT}",
+                    preview.new_entries, preview.duplicate_entries, preview.reading_conflicts
+                );
             }
             Err(err) => self.status = format!("导入用户词库失败: {err}"),
         }
@@ -1799,7 +1869,7 @@ fn current_foreground_process() -> Option<ProcessSuggestion> {
 
 #[cfg(windows)]
 fn process_name_for_hwnd(hwnd: windows_sys::Win32::Foundation::HWND) -> Option<String> {
-    use windows_sys::Win32::Foundation::CloseHandle;
+    use pinyin_ime::win_handle::OwnedWinHandle;
     use windows_sys::Win32::System::Threading::{
         OpenProcess, QueryFullProcessImageNameW, PROCESS_QUERY_LIMITED_INFORMATION,
     };
@@ -1813,15 +1883,12 @@ fn process_name_for_hwnd(hwnd: windows_sys::Win32::Foundation::HWND) -> Option<S
         return None;
     }
     let process = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
-    if process == 0 {
-        return None;
-    }
+    // SAFETY: OpenProcess returned a new process handle owned here.
+    let process = unsafe { OwnedWinHandle::from_raw(process) }.ok()?;
     let mut buffer = vec![0u16; 32768];
     let mut size = buffer.len() as u32;
-    let ok = unsafe { QueryFullProcessImageNameW(process, 0, buffer.as_mut_ptr(), &mut size) };
-    unsafe {
-        CloseHandle(process);
-    }
+    let ok =
+        unsafe { QueryFullProcessImageNameW(process.as_raw(), 0, buffer.as_mut_ptr(), &mut size) };
     if ok == 0 || size == 0 {
         return None;
     }
@@ -2522,18 +2589,7 @@ fn settings_viewport() -> egui::ViewportBuilder {
 
 #[cfg(windows)]
 struct SettingsInstanceGuard {
-    handle: windows_sys::Win32::Foundation::HANDLE,
-}
-
-#[cfg(windows)]
-impl Drop for SettingsInstanceGuard {
-    fn drop(&mut self) {
-        if self.handle != 0 {
-            unsafe {
-                windows_sys::Win32::Foundation::CloseHandle(self.handle);
-            }
-        }
-    }
+    _handle: Option<pinyin_ime::win_handle::OwnedWinHandle>,
 }
 
 #[cfg(windows)]
@@ -2559,22 +2615,25 @@ fn activate_existing_settings_window() {
 
 #[cfg(windows)]
 fn acquire_settings_instance() -> Option<SettingsInstanceGuard> {
-    use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS};
+    use pinyin_ime::win_handle::OwnedWinHandle;
+    use windows_sys::Win32::Foundation::{GetLastError, ERROR_ALREADY_EXISTS};
     use windows_sys::Win32::System::Threading::CreateMutexW;
 
     let name = wide_null("Local\\KaixinImeSettings.SingleInstance");
     let handle = unsafe { CreateMutexW(std::ptr::null(), 0, name.as_ptr()) };
     if handle == 0 {
-        return Some(SettingsInstanceGuard { handle });
+        return Some(SettingsInstanceGuard { _handle: None });
     }
+    // SAFETY: CreateMutexW returned a new mutex handle owned here.
+    let handle = unsafe { OwnedWinHandle::try_from_raw(handle) }.expect("validated settings mutex");
     if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
-        unsafe {
-            CloseHandle(handle);
-        }
+        drop(handle);
         activate_existing_settings_window();
         return None;
     }
-    Some(SettingsInstanceGuard { handle })
+    Some(SettingsInstanceGuard {
+        _handle: Some(handle),
+    })
 }
 
 #[cfg(not(windows))]

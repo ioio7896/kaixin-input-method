@@ -43,6 +43,18 @@ FORBIDDEN_SUFFIXES = {".pfx", ".p12", ".pem", ".key", ".dmp", ".pdb"}
 FORBIDDEN_NAMES = {
     "pinyin-ime/data/corpus.txt",
 }
+
+
+def contains_forbidden_directory(relative: Path) -> bool:
+    """Reject build outputs without mistaking Rust's src/bin for an output dir."""
+    parts = tuple(part.lower() for part in relative.parts)
+    for index, part in enumerate(parts):
+        if part not in FORBIDDEN_PARTS:
+            continue
+        if part == "bin" and parts[: index + 1] == ("pinyin-ime", "src", "bin"):
+            continue
+        return True
+    return False
 HIGH_CONFIDENCE_SECRETS = (
     re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     re.compile(rb"AKIA[0-9A-Z]{16}"),
@@ -127,10 +139,9 @@ def main() -> int:
     else:
         for relative in tracked:
             posix = relative.as_posix()
-            lower_parts = {part.lower() for part in relative.parts}
             if posix in FORBIDDEN_NAMES:
                 errors.append(f"unverified generated data is tracked: {posix}")
-            if lower_parts & FORBIDDEN_PARTS:
+            if contains_forbidden_directory(relative):
                 errors.append(f"build/private directory is tracked: {posix}")
             if relative.suffix.lower() in FORBIDDEN_SUFFIXES:
                 errors.append(f"private or generated file is tracked: {posix}")

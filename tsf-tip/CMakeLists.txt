@@ -4,6 +4,11 @@ if(POLICY CMP0091)
 endif()
 project(srf_tsf_tip LANGUAGES CXX)
 
+include(CTest)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(MSVC)
   # Apply exploit mitigations consistently to the TIP, helpers and tests.
   add_compile_options(/GS /sdl /guard:cf)
@@ -13,8 +18,19 @@ if(MSVC)
   endif()
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(BUILD_TESTING)
+  add_executable(srf_policy_tests
+    tests/policy_tests.cpp
+  )
+  target_include_directories(srf_policy_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+  target_compile_definitions(srf_policy_tests PRIVATE UNICODE _UNICODE)
+  if(MSVC)
+    set_property(TARGET srf_policy_tests PROPERTY
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    target_compile_options(srf_policy_tests PRIVATE /W4 /EHsc /utf-8)
+  endif()
+  add_test(NAME srf_policy_tests COMMAND srf_policy_tests)
+endif()
 
 set(SRF_APP_VERSION "dev")
 set(SRF_VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION")

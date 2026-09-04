@@ -1,21 +1,9 @@
 #[cfg(windows)]
-use windows_sys::Win32::Foundation::HANDLE;
+use crate::win_handle::OwnedWinHandle;
 
 #[cfg(windows)]
 pub struct SingleInstanceGuard {
-    handle: HANDLE,
-}
-
-#[cfg(windows)]
-impl Drop for SingleInstanceGuard {
-    fn drop(&mut self) {
-        if self.handle != 0 {
-            unsafe {
-                let _ = windows_sys::Win32::Foundation::CloseHandle(self.handle);
-            }
-            self.handle = 0;
-        }
-    }
+    _handle: OwnedWinHandle,
 }
 
 #[cfg(windows)]
@@ -23,7 +11,7 @@ pub fn claim_or_activate_existing(
     mutex_name: &str,
     window_title: &str,
 ) -> Result<Option<SingleInstanceGuard>, String> {
-    use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, ERROR_ALREADY_EXISTS};
+    use windows_sys::Win32::Foundation::{GetLastError, ERROR_ALREADY_EXISTS};
     use windows_sys::Win32::System::Threading::CreateMutexW;
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         FindWindowW, SetForegroundWindow, ShowWindow, SW_RESTORE, SW_SHOW,
@@ -48,13 +36,15 @@ pub fn claim_or_activate_existing(
                 let _ = SetForegroundWindow(hwnd);
             }
         }
-        unsafe {
-            let _ = CloseHandle(handle);
-        }
+        // SAFETY: CreateMutexW returned a new handle owned by this function.
+        drop(unsafe { OwnedWinHandle::from_raw(handle) }.expect("validated mutex handle"));
         return Ok(None);
     }
 
-    Ok(Some(SingleInstanceGuard { handle }))
+    // SAFETY: CreateMutexW returned a new mutex handle transferred to the guard.
+    let handle = unsafe { OwnedWinHandle::from_raw(handle) }
+        .map_err(|err| format!("own single-instance mutex failed: {err}"))?;
+    Ok(Some(SingleInstanceGuard { _handle: handle }))
 }
 
 #[cfg(windows)]

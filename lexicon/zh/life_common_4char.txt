@@ -1,9 +1,9 @@
 # 开心输入法原生词库：5000 条通用四字短语
 # Source: wordfreq 中文频率排序 + 高频现代固定搭配
 # 格式：词语<TAB>全拼<TAB>权重；拼音不标声调。；第三列统一为 1-10000 万分制排序分数。
-与此同时	yu ci tong shi	10000
-总的来说	zong de lai shuo	10000
-换句话说	huan ju hua shuo	10000
+与此同时	yu ci tong shi	7500
+总的来说	zong de lai shuo	7500
+换句话说	huan ju hua shuo	7500
 一点一点	yi dian yi dian	8220
 工作人员	gong zuo ren yuan	9985
 一段时间	yi duan shi jian	9966

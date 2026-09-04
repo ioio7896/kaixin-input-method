@@ -7,9 +7,9 @@ use crate::core::{
 use crate::runtime_log::{self, RuntimeLogLevel};
 use crate::segment::syllable_boundary_offsets_utf16;
 use crate::shared_rules::strip_windows_verbatim_prefix;
+use crate::win_handle::OwnedWinHandle;
 use crate::ENGINE_PANIC_RC;
 use std::collections::{HashMap, VecDeque};
-use std::ffi::c_void;
 use std::ffi::OsStr;
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
@@ -21,14 +21,9 @@ use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
 use std::sync::{Condvar, Mutex, MutexGuard, OnceLock, TryLockError};
 use std::time::{Duration, Instant, SystemTime};
 use windows_sys::Win32::Foundation::{
-    CloseHandle, GetLastError, LocalFree, ERROR_MORE_DATA, ERROR_NO_DATA, ERROR_PIPE_BUSY,
-    ERROR_PIPE_CONNECTED, HANDLE, INVALID_HANDLE_VALUE,
+    GetLastError, ERROR_MORE_DATA, ERROR_NO_DATA, ERROR_PIPE_BUSY, ERROR_PIPE_CONNECTED, HANDLE,
+    INVALID_HANDLE_VALUE,
 };
-use windows_sys::Win32::Security::Authorization::{
-    ConvertSidToStringSidW, ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
-};
-use windows_sys::Win32::Security::SECURITY_ATTRIBUTES;
-use windows_sys::Win32::Security::{GetTokenInformation, TokenLogonSid, TOKEN_GROUPS, TOKEN_QUERY};
 use windows_sys::Win32::Storage::FileSystem::{
     FlushFileBuffers, ReadFile, WriteFile, PIPE_ACCESS_DUPLEX,
 };
@@ -37,7 +32,6 @@ use windows_sys::Win32::System::Pipes::{
     SetNamedPipeHandleState, PIPE_NOWAIT, PIPE_READMODE_MESSAGE, PIPE_REJECT_REMOTE_CLIENTS,
     PIPE_TYPE_MESSAGE, PIPE_WAIT,
 };
-use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
 const PIPE_NAME: &str = r"\\.\pipe\KaixinInput_Engine_V5";
 const PIPE_NAME_ENV: &str = "SRF_ENGINE_PIPE_NAME";
@@ -541,7 +535,7 @@ fn async_learning_worker_loop(receiver: Receiver<AsyncLearningTask>) {
         let outcome = match result {
             Ok(result) => {
                 if let Err((event, error)) = &result {
-                    runtime_log::log_engine(RuntimeLogLevel::Error, *event, error);
+                    runtime_log::log_engine(RuntimeLogLevel::Error, event, error);
                 }
                 async_learning_outcome_from_result(result)
             }
@@ -1694,7 +1688,7 @@ fn listen_loop() {
 fn listen_loop_inner() {
     let pipe_name_text = engine_pipe_name_from_env();
     let pipe_name = wide(&pipe_name_text);
-    let security = match PipeSecurityAttributes::new() {
+    let security = match crate::windows_security::LocalLogonPipeSecurity::new() {
         Ok(security) => security,
         Err(err) => {
             runtime_log::log_engine(
@@ -1716,7 +1710,7 @@ fn listen_loop_inner() {
                 PIPE_BUFFER_BYTES,
                 PIPE_BUFFER_BYTES,
                 0,
-                &security.attrs as *const SECURITY_ATTRIBUTES,
+                security.as_ptr(),
             )
         };
         if pipe == INVALID_HANDLE_VALUE {
@@ -1745,8 +1739,10 @@ fn listen_loop_inner() {
             continue;
         }
         consecutive_create_failures = 0;
+        // SAFETY: CreateNamedPipeW returned a new handle owned by this loop.
+        let pipe = unsafe { OwnedWinHandle::from_raw(pipe) }.expect("validated engine pipe");
 
-        let connected = unsafe { ConnectNamedPipe(pipe, null_mut()) } != 0
+        let connected = unsafe { ConnectNamedPipe(pipe.as_raw(), null_mut()) } != 0
             || unsafe { GetLastError() } == ERROR_PIPE_CONNECTED;
         if connected {
             let Some(client_guard) = ActivePipeClient::try_acquire() else {
@@ -1760,165 +1756,26 @@ fn listen_loop_inner() {
                     ),
                 );
                 unsafe {
-                    let _ = DisconnectNamedPipe(pipe);
-                    CloseHandle(pipe);
+                    let _ = DisconnectNamedPipe(pipe.as_raw());
                 }
                 std::thread::sleep(Duration::from_millis(20));
                 continue;
             };
             let mode = PIPE_READMODE_MESSAGE | PIPE_NOWAIT;
             unsafe {
-                let _ = SetNamedPipeHandleState(pipe, &mode, null_mut(), null_mut());
+                let _ = SetNamedPipeHandleState(pipe.as_raw(), &mode, null_mut(), null_mut());
             }
             if std::thread::Builder::new()
                 .name("srf-engine-pipe-client".to_string())
                 .spawn(move || handle_client(pipe, client_guard))
                 .is_err()
             {
-                unsafe {
-                    let _ = DisconnectNamedPipe(pipe);
-                    CloseHandle(pipe);
-                }
                 std::thread::sleep(Duration::from_millis(50));
             }
         } else {
-            unsafe {
-                CloseHandle(pipe);
-            }
             std::thread::sleep(Duration::from_millis(50));
         }
     }
-}
-
-struct PipeSecurityAttributes {
-    attrs: SECURITY_ATTRIBUTES,
-    descriptor: *mut c_void,
-}
-
-impl PipeSecurityAttributes {
-    fn new() -> io::Result<Self> {
-        let logon_sid = current_logon_sid_string()?;
-        // Bind the service to this interactive logon session, not merely the
-        // account SID. The explicit Network deny complements
-        // PIPE_REJECT_REMOTE_CLIENTS for down-level/redirected callers.
-        let sddl = format!(
-            "D:P(D;;GA;;;NU)(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;{logon_sid})S:(ML;;NW;;;ME)"
-        );
-        let mut descriptor: *mut c_void = null_mut();
-        let sddl = wide(&sddl);
-        let ok = unsafe {
-            ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                sddl.as_ptr(),
-                SDDL_REVISION_1,
-                &mut descriptor,
-                null_mut(),
-            )
-        };
-        if ok == 0 || descriptor.is_null() {
-            return Err(io::Error::last_os_error());
-        }
-        let attrs = SECURITY_ATTRIBUTES {
-            nLength: std::mem::size_of::<SECURITY_ATTRIBUTES>() as u32,
-            lpSecurityDescriptor: descriptor,
-            bInheritHandle: 0,
-        };
-        Ok(Self { attrs, descriptor })
-    }
-}
-
-impl Drop for PipeSecurityAttributes {
-    fn drop(&mut self) {
-        if !self.descriptor.is_null() {
-            unsafe {
-                let _ = LocalFree(self.descriptor);
-            }
-            self.descriptor = null_mut();
-        }
-    }
-}
-
-struct OwnedHandle(HANDLE);
-
-impl OwnedHandle {
-    fn new(handle: HANDLE) -> io::Result<Self> {
-        if handle == 0 || handle == INVALID_HANDLE_VALUE {
-            Err(io::Error::last_os_error())
-        } else {
-            Ok(Self(handle))
-        }
-    }
-
-    fn raw(&self) -> HANDLE {
-        self.0
-    }
-}
-
-impl Drop for OwnedHandle {
-    fn drop(&mut self) {
-        if self.0 != 0 && self.0 != INVALID_HANDLE_VALUE {
-            unsafe {
-                CloseHandle(self.0);
-            }
-            self.0 = 0;
-        }
-    }
-}
-
-fn current_logon_sid_string() -> io::Result<String> {
-    let mut token = 0;
-    let ok = unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) };
-    if ok == 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let token = OwnedHandle::new(token)?;
-    let mut needed = 0u32;
-    unsafe {
-        GetTokenInformation(token.raw(), TokenLogonSid, null_mut(), 0, &mut needed);
-    }
-    if needed == 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let mut buffer = vec![0u8; needed as usize];
-    let ok = unsafe {
-        GetTokenInformation(
-            token.raw(),
-            TokenLogonSid,
-            buffer.as_mut_ptr().cast(),
-            needed,
-            &mut needed,
-        )
-    };
-    if ok == 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let groups = unsafe { &*(buffer.as_ptr() as *const TOKEN_GROUPS) };
-    if groups.GroupCount == 0 {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "current token has no logon SID",
-        ));
-    }
-    sid_to_string(groups.Groups[0].Sid)
-}
-
-fn sid_to_string(sid: *mut c_void) -> io::Result<String> {
-    let mut sid_text = null_mut();
-    let ok = unsafe { ConvertSidToStringSidW(sid, &mut sid_text) };
-    if ok == 0 || sid_text.is_null() {
-        return Err(io::Error::last_os_error());
-    }
-    let text = unsafe {
-        let mut len = 0usize;
-        while *sid_text.add(len) != 0 {
-            len += 1;
-        }
-        let slice = std::slice::from_raw_parts(sid_text, len);
-        String::from_utf16_lossy(slice)
-    };
-    unsafe {
-        let _ = LocalFree(sid_text.cast());
-    }
-    Ok(text)
 }
 
 fn capability_path() -> Option<PathBuf> {
@@ -2014,18 +1871,6 @@ fn read_engine_capability_token() -> io::Result<String> {
     }
 }
 
-fn constant_time_eq(a: &str, b: &str) -> bool {
-    let a = a.as_bytes();
-    let b = b.as_bytes();
-    let mut diff = a.len() ^ b.len();
-    for i in 0..a.len().max(b.len()) {
-        let av = a.get(i).copied().unwrap_or(0);
-        let bv = b.get(i).copied().unwrap_or(0);
-        diff |= (av ^ bv) as usize;
-    }
-    diff == 0
-}
-
 fn verify_capability_token(cursor: &mut PayloadCursor<'_>) -> Result<(), i32> {
     let len = cursor.read_u32().ok_or(-1)? as usize;
     let mut supplied = cursor.read_utf16_string(len, 128).ok_or(-1)?;
@@ -2040,7 +1885,7 @@ fn verify_capability_token(cursor: &mut PayloadCursor<'_>) -> Result<(), i32> {
             return Err(-6);
         }
     };
-    let ok = constant_time_eq(supplied.trim(), expected.trim());
+    let ok = crate::windows_security::constant_time_eq(supplied.trim(), expected.trim());
     zeroize_string(&mut supplied);
     zeroize_string(&mut expected);
     if ok {
@@ -2090,7 +1935,8 @@ fn cached_engine_capability_token() -> io::Result<String> {
     Ok(token)
 }
 
-fn handle_client(pipe: HANDLE, _client_guard: ActivePipeClient) {
+fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
+    let pipe = pipe_guard.as_raw();
     // A persistent pipe is owned by one TIP process. Keep composition-local
     // lookup state on that connection without changing the V5 wire format.
     let mut client_process_id = 0u32;
@@ -2127,7 +1973,6 @@ fn handle_client(pipe: HANDLE, _client_guard: ActivePipeClient) {
             unsafe {
                 let _ = FlushFileBuffers(pipe);
                 let _ = DisconnectNamedPipe(pipe);
-                let _ = CloseHandle(pipe);
             }
             std::process::exit(0);
         }
@@ -2136,7 +1981,6 @@ fn handle_client(pipe: HANDLE, _client_guard: ActivePipeClient) {
     unsafe {
         let _ = FlushFileBuffers(pipe);
         let _ = DisconnectNamedPipe(pipe);
-        let _ = CloseHandle(pipe);
     }
 }
 

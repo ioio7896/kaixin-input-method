@@ -98,7 +98,7 @@ new setting is added or a default changes.
 | `input` | `page_minus_equal` | `1` | boolean | settings, TSF |
 | `input` | `page_comma_period` | `1` | boolean | settings, TSF |
 | `engine` | `retry_on_failure` | `1` | boolean | TSF |
-| `engine` | `learning_sensitivity` | `standard` | `conservative`, `standard`, `aggressive` | settings, TSF, engine learning |
+| `engine` | `learning_sensitivity` | `standard` | `conservative`, `standard`, `aggressive`; explicit number/mouse selection is stronger than Space acceptance, while 4–8 character novel phrases require repeated evidence | settings, TSF, engine learning |
 | `engine` | `user_hotword_boost` | `standard` | `conservative`, `standard`, `strong`, `aggressive` | settings, engine ranking |
 | `engine` | `prefix_cache_capacity` | `384` | `8..=512` | engine lookup |
 | `engine` | `final_lookup_cache_capacity` | `128` | `8..=512` | engine lookup |

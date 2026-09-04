@@ -376,6 +376,7 @@ impl PinyinEngine {
     ) -> LearnCommitProfile {
         let weak = flags & LEARN_FLAG_WEAK != 0;
         let composed = flags & LEARN_FLAG_COMPOSED_PHRASE != 0;
+        let explicit_selection = flags & LEARN_FLAG_EXPLICIT_SELECTION != 0;
         let chars = phrase_char_count(phrase);
         let full_exact =
             full_pinyin_syllables.is_some_and(|syllables| syllables.len() == chars && chars >= 2);
@@ -387,24 +388,41 @@ impl PinyinEngine {
         } else {
             CommitSource::Direct
         };
-        let mut exact_delta: u64 = if weak || composed { 1 } else { 2 };
-        if !weak && full_exact && chars >= 4 {
-            exact_delta += 1;
-        }
-        if auto_novel && (4..=AUTO_NOVEL_MAX_CHARS).contains(&chars) {
-            exact_delta += 1;
+        // Candidate acceptance strength is intentionally length-aware.
+        // A mistaken long phrase is much more disruptive than a mistaken
+        // two-character word, so long phrases need repeated evidence instead
+        // of receiving the historical extra boost on their first commit.
+        let mut exact_delta: u64 = if weak || composed {
+            1
+        } else {
+            match chars {
+                0 | 1 => 1,
+                2 => 2,
+                3 => 2,
+                _ => 1,
+            }
+        };
+        if explicit_selection && !weak && !composed {
+            exact_delta = exact_delta.saturating_add(1);
         }
 
-        let mut composed_observe_threshold: u64 = if chars <= 2 { 3 } else { 2 };
+        let mut composed_observe_threshold: u64 = match chars {
+            0 | 1 => 1,
+            2 => 2,
+            3 => 2,
+            4 => 3,
+            _ => 4,
+        };
         if auto_novel && chars >= 4 {
-            composed_observe_threshold = 1;
+            composed_observe_threshold = composed_observe_threshold.max(3);
         } else if full_exact && chars >= 4 {
-            composed_observe_threshold = 2;
+            composed_observe_threshold = composed_observe_threshold.max(3);
         }
         match self.learning_sensitivity() {
             LearningSensitivity::Aggressive => {
                 if composed {
-                    composed_observe_threshold = 1;
+                    composed_observe_threshold =
+                        composed_observe_threshold.saturating_sub(1).max(1);
                     exact_delta += 1;
                 }
             }
@@ -413,12 +431,10 @@ impl PinyinEngine {
                     composed_observe_threshold = composed_observe_threshold.saturating_add(1);
                 }
             }
-            // 逐字选出的完整词组是明确意图，不应在默认模式下继续作为
-            // “观察词”等待多次。保守模式仍保留额外确认门槛。
             LearningSensitivity::Standard => {
-                if composed {
-                    composed_observe_threshold = 1;
-                }
+                // Keep the length-based observation gate. Two/three-character
+                // words promote quickly; long composed phrases need repeated
+                // confirmation before they can influence the first page.
             }
         }
         // 挡位也作用于多字直接提交：积极模式更快把新学词推到高频（+1），

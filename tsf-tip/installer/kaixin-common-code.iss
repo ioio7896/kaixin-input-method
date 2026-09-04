@@ -41,16 +41,44 @@ begin
   RegQueryStringValue(RootKey, UninstallKey, 'InstallLocation', InstallLocation);
 end;
 
+function QueryInstallByDisplayName(RootKey: Integer; var Version: string; var InstallLocation: string): Boolean;
+begin
+  Version := '';
+  InstallLocation := '';
+  Result := QueryInstallDisplayVersion(
+    RootKey,
+    'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#KXBaseAppName}',
+    Version,
+    InstallLocation
+  );
+end;
+
 function QueryMachineInstall(var Version: string; var InstallLocation: string): Boolean;
 begin
-  Result := QueryInstallDisplayVersion(HKLM64, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{2B91F956-7D55-4D85-B3A6-456A4A5DBB84}_is1', Version, InstallLocation);
+  Result := QueryInstallDisplayVersion(
+    HKLM64,
+    'Software\Microsoft\Windows\CurrentVersion\Uninstall\{2B91F956-7D55-4D85-B3A6-456A4A5DBB84}_is1',
+    Version,
+    InstallLocation
+  );
+  if not Result then
+    Result := QueryInstallByDisplayName(HKLM64, Version, InstallLocation);
   if not Result then
     Result := QueryInstallDisplayVersion(HKLM, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{2B91F956-7D55-4D85-B3A6-456A4A5DBB84}_is1', Version, InstallLocation);
+  if not Result then
+    Result := QueryInstallByDisplayName(HKLM, Version, InstallLocation);
 end;
 
 function QueryUserInstall(var Version: string; var InstallLocation: string): Boolean;
 begin
-  Result := QueryInstallDisplayVersion(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{2B91F956-7D55-4D85-B3A6-456A4A5DBB84}-User_is1', Version, InstallLocation);
+  Result := QueryInstallDisplayVersion(
+    HKCU,
+    'Software\Microsoft\Windows\CurrentVersion\Uninstall\{2B91F956-7D55-4D85-B3A6-456A4A5DBB84}-User_is1',
+    Version,
+    InstallLocation
+  );
+  if not Result then
+    Result := QueryInstallByDisplayName(HKCU, Version, InstallLocation);
 end;
 
 function QueryCurrentScopeInstall(var Version: string; var InstallLocation: string): Boolean;

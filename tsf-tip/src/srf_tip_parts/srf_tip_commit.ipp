@@ -12,15 +12,17 @@ CSrfTip::SrfPhraseComposeStateGuard::~SrfPhraseComposeStateGuard() {
   tip_->m_userPhraseComposeCommitted = committed_;
 }
 
-HRESULT CSrfTip::CommitCandidate(TfEditCookie ec, size_t idx) {
-  return CommitCandidateResolved(ec, nullptr, idx, nullptr, nullptr, nullptr, nullptr);
+HRESULT CSrfTip::CommitCandidate(TfEditCookie ec, size_t idx, bool explicitSelection) {
+  return CommitCandidateResolved(ec, nullptr, idx, nullptr, nullptr, nullptr, nullptr,
+                                 explicitSelection);
 }
 
 HRESULT CSrfTip::CommitCandidateSnapshot(TfEditCookie ec, ITfContext* requestContext, size_t idx,
                                          const std::wstring& reading,
                                          const std::wstring& committedText,
                                          const std::wstring& metaText,
-                                         const std::vector<std::wstring>& skippedCandidates) {
+                                         const std::vector<std::wstring>& skippedCandidates,
+                                         bool explicitSelection) {
   if (!reading.empty() && (m_reading != reading || m_candidatesReading != reading)) {
     std::wstring line = L"idx=" + std::to_wstring(idx);
     line += L", snapshot=";
@@ -33,14 +35,15 @@ HRESULT CSrfTip::CommitCandidateSnapshot(TfEditCookie ec, ITfContext* requestCon
     return S_OK;
   }
   return CommitCandidateResolved(ec, requestContext, idx, &reading, &committedText, &metaText,
-                                 &skippedCandidates);
+                                 &skippedCandidates, explicitSelection);
 }
 
 HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestContext, size_t idx,
                                          const std::wstring* snapshotReading,
                                          const std::wstring* snapshotCommitted,
                                          const std::wstring* snapshotMeta,
-                                         const std::vector<std::wstring>* snapshotSkippedCandidates) {
+                                         const std::vector<std::wstring>* snapshotSkippedCandidates,
+                                         bool explicitSelection) {
   const ULONGLONG commitStart = GetTickCount64();
   const bool commitReading = idx == static_cast<size_t>(-1);
   auto snapshotOrCurrentReading = [&]() -> std::wstring {
@@ -126,6 +129,10 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       }
     }
     DebugLogPerfMs(L"CommitCandidate/clipboard-resolve", clipboardStart);
+    // Treat selecting a vvu clipboard candidate as a fresh use. The store
+    // keeps history in most-recent-first order, while pinned entries retain
+    // their separate priority.
+    SrfTip_RecordClipboardText(committed);
   }
   const std::wstring reading =
       snapshotReading && !snapshotReading->empty() ? *snapshotReading : m_reading;
@@ -396,7 +403,9 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     if (committedMeta.correctionCandidate && !committedMeta.correctedReading.empty()) {
       SrfTip_LearnCorrection(reading, committedMeta.correctedReading, committed);
     } else {
-      SrfTip_LearnCommitEx(reading, committed, kSrfLearnCommitDefault);
+      SrfTip_LearnCommitEx(
+          reading, committed,
+          explicitSelection ? kSrfLearnCommitExplicitSelection : kSrfLearnCommitDefault);
     }
   } else if (SUCCEEDED(hr) && suppressCandidateLearning) {
     SrfTip_ResetLearningContext();

@@ -148,7 +148,10 @@ impl LexiconLayer {
             .to_ascii_lowercase();
         if matches!(
             name.as_str(),
-            "kaixin_explicit.txt" | "kaixin_polyphone.txt" | "kaixin_pronunciation_aliases.txt"
+            "kaixin_explicit.txt"
+                | "kaixin_polyphone.txt"
+                | "kaixin_pronunciation_aliases.txt"
+                | "lfie-common-3char.txt"
         ) {
             Self::Core
         } else if name.contains("_tail_") || name.starts_with("large_") {

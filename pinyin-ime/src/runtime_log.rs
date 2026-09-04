@@ -150,6 +150,18 @@ pub fn log_tray(level: RuntimeLogLevel, event: &str, message: impl AsRef<str>) {
     log("tray.log", "tray", level, event, message);
 }
 
+/// Records privacy-safe screenshot health data even when normal logging is off.
+/// Callers must not include window titles, paths, image data, or OCR text.
+pub fn log_screenshot_health(event: &str, message: impl AsRef<str>) {
+    enqueue_log(
+        "tray.log",
+        "screenshot",
+        RuntimeLogLevel::Basic,
+        event,
+        message,
+        true,
+    );
+}
 pub fn log_ocr(level: RuntimeLogLevel, event: &str, message: impl AsRef<str>) {
     log("ocr.log", "ocr", level, event, message);
 }
@@ -321,7 +333,18 @@ fn log(
     event: &str,
     message: impl AsRef<str>,
 ) {
-    if !enabled(level) {
+    enqueue_log(file_name, component, level, event, message, false);
+}
+
+fn enqueue_log(
+    file_name: &'static str,
+    component: &'static str,
+    level: RuntimeLogLevel,
+    event: &str,
+    message: impl AsRef<str>,
+    force: bool,
+) {
+    if !force && !enabled(level) {
         return;
     }
 

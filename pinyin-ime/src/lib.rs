@@ -40,11 +40,14 @@ pub mod text_norm;
 pub mod thuocl;
 pub mod tool_prefs;
 pub mod traditional;
+pub mod ui_theme;
 pub mod user_dict;
 pub mod user_dict_io;
 pub mod user_hotword_prefs;
 pub mod v_mode;
 pub mod v_tools;
+#[cfg(windows)]
+pub mod win_handle;
 pub mod win_paste;
 pub mod win_single_instance;
 pub mod windows_graphics_capture;

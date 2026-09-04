@@ -120,19 +120,6 @@ impl SingleCharCommonIndex {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::SingleCharCommonIndex;
-
-    #[test]
-    fn excludes_historical_neng_xiong_reading() {
-        let index = SingleCharCommonIndex::from_text("能\t2\n熊\t1\n", None)
-            .expect("single-character index");
-        assert_eq!(index.pinyin_order("neng"), &['能']);
-        assert_eq!(index.pinyin_order("xiong"), &['熊']);
-    }
-}
-
 fn push_unique(values: &mut Vec<char>, ch: char) {
     if !values.contains(&ch) {
         values.push(ch);
@@ -149,4 +136,17 @@ fn invalid_row(path: &Option<PathBuf>, line_index: usize, reason: &str) -> io::E
         io::ErrorKind::InvalidData,
         format!("{source}:{}: {reason}", line_index + 1),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SingleCharCommonIndex;
+
+    #[test]
+    fn excludes_historical_neng_xiong_reading() {
+        let index = SingleCharCommonIndex::from_text("能\t2\n熊\t1\n", None)
+            .expect("single-character index");
+        assert_eq!(index.pinyin_order("neng"), &['能']);
+        assert_eq!(index.pinyin_order("xiong"), &['熊']);
+    }
 }

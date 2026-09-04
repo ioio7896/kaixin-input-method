@@ -1,10 +1,17 @@
+#[cfg(windows)]
+use crate::win_handle::OwnedWinHandle;
 use crate::{app_paths, runtime_log};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+#[cfg(not(windows))]
 use std::sync::atomic::{AtomicU64, Ordering};
+#[cfg(windows)]
+use std::sync::mpsc;
 use std::thread;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant};
+#[cfg(not(windows))]
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[cfg(not(windows))]
 use std::fs::OpenOptions;
@@ -15,15 +22,19 @@ use std::io::{BufRead, BufReader, Write};
 use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 use windows_sys::Win32::Foundation::{
-    CloseHandle, GetLastError, ERROR_IO_PENDING, GENERIC_READ, GENERIC_WRITE, HANDLE,
+    GetLastError, ERROR_IO_PENDING, ERROR_PIPE_CONNECTED, GENERIC_READ, GENERIC_WRITE, HANDLE,
     INVALID_HANDLE_VALUE, WAIT_TIMEOUT,
 };
 #[cfg(windows)]
+#[cfg(windows)]
 use windows_sys::Win32::Storage::FileSystem::{
-    CreateFileW, ReadFile, WriteFile, FILE_FLAG_OVERLAPPED, OPEN_EXISTING,
+    CreateFileW, ReadFile, WriteFile, FILE_FLAG_OVERLAPPED, OPEN_EXISTING, PIPE_ACCESS_INBOUND,
 };
 #[cfg(windows)]
-use windows_sys::Win32::System::Pipes::WaitNamedPipeW;
+use windows_sys::Win32::System::Pipes::{
+    ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, WaitNamedPipeW, PIPE_READMODE_BYTE,
+    PIPE_REJECT_REMOTE_CLIENTS, PIPE_TYPE_BYTE, PIPE_WAIT,
+};
 #[cfg(windows)]
 use windows_sys::Win32::System::IO::{
     CancelIoEx, GetOverlappedResult, GetOverlappedResultEx, OVERLAPPED,
@@ -35,6 +46,7 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(12);
 const PIPE_PHASE_TIMEOUT_MS: u32 = 2_500;
 pub const PROTOCOL_VERSION: u32 = 2;
+#[cfg(not(windows))]
 static REQUEST_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -72,6 +84,43 @@ struct ExternalTranslationResponse {
     request_id: String,
     #[serde(default)]
     error: String,
+    #[serde(default)]
+    protocol_version: u32,
+    #[serde(default)]
+    capabilities: Option<WinTranslatorCapabilities>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize)]
+struct WinTranslatorCapabilities {
+    #[serde(default)]
+    protocol_versions: Vec<u32>,
+    #[serde(default)]
+    actions: Vec<String>,
+    #[serde(default)]
+    presentations: Vec<String>,
+    #[serde(default)]
+    deliveries: Vec<String>,
+    #[serde(default)]
+    callback_events: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct TranslationCallbackEvent {
+    #[serde(rename = "event")]
+    event_name: String,
+    request_id: String,
+    #[serde(default)]
+    text: Option<String>,
+    #[serde(default)]
+    error_code: Option<String>,
+    #[serde(default)]
+    message: Option<String>,
+    #[serde(default)]
+    target_hwnd: Option<isize>,
+    #[serde(default)]
+    target_process_id: Option<u32>,
+    #[serde(default)]
+    focus_generation: Option<u64>,
 }
 
 impl ExternalTranslationRequest {
@@ -109,12 +158,20 @@ impl ExternalTranslationRequest {
 }
 
 fn new_request_id() -> String {
-    let nanos = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map(|value| value.as_nanos())
-        .unwrap_or_default();
-    let counter = REQUEST_COUNTER.fetch_add(1, Ordering::Relaxed);
-    format!("{:x}-{:x}-{:x}", std::process::id(), nanos, counter)
+    #[cfg(windows)]
+    {
+        crate::windows_security::generate_capability_token()
+            .expect("Windows cryptographic random generator unavailable")
+    }
+    #[cfg(not(windows))]
+    {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|value| value.as_nanos())
+            .unwrap_or_default();
+        let counter = REQUEST_COUNTER.fetch_add(1, Ordering::Relaxed);
+        format!("{:x}-{:x}-{:x}", std::process::id(), nanos, counter)
+    }
 }
 
 pub fn fresh_request_id() -> String {
@@ -238,9 +295,30 @@ pub fn test_connection() -> Result<String, String> {
     let mut request = ExternalTranslationRequest::new("", "settings-test");
     request.action = "capabilities".to_string();
     request.presentation = "background".to_string();
-    send_request(&request)?;
+    let response = send_request_for_response(&request)?;
+    let capabilities = response.capabilities.ok_or_else(|| {
+        "WinTranslator 未返回 capabilities；请升级到支持协议 v2 的版本。".to_string()
+    })?;
+    if !capabilities.protocol_versions.contains(&PROTOCOL_VERSION)
+        || !capabilities
+            .presentations
+            .iter()
+            .any(|value| value == "background")
+        || !capabilities
+            .deliveries
+            .iter()
+            .any(|value| value == "return")
+        || !capabilities
+            .callback_events
+            .iter()
+            .any(|value| value == "completed")
+        || !capabilities.actions.iter().any(|value| value == "cancel")
+    {
+        return Err("WinTranslator 缺少后台返回或取消能力，请升级后再联动。".to_string());
+    }
     Ok(format!(
-        "WinTranslator 联动成功：命名管道可用，协议版本 v{PROTOCOL_VERSION}。"
+        "WinTranslator 联动成功：协议 v{}，支持后台返回、进度回调与取消。",
+        response.protocol_version.max(PROTOCOL_VERSION)
     ))
 }
 
@@ -352,7 +430,13 @@ pub fn launch_full_request(request: &ExternalTranslationRequest) -> Result<(), S
     if !is_available() {
         return Err(availability_message());
     }
-    let request = request.clone();
+    let mut request = request.clone();
+    if matches!(request.delivery.as_str(), "copy" | "paste") {
+        request.presentation = "background".to_string();
+        request.delivery = "return".to_string();
+        request.reply_pipe = Some(format!("Kaixin.Translate.Result.{}", request.request_id));
+        return launch_callback_request(request);
+    }
     thread::Builder::new()
         .name("kaixin-wintranslator-request".to_string())
         .spawn(move || {
@@ -369,6 +453,193 @@ pub fn launch_full_request(request: &ExternalTranslationRequest) -> Result<(), S
         })
         .map(|_| ())
         .map_err(|error| format!("无法创建翻译联动线程：{error}"))
+}
+
+#[cfg(windows)]
+fn launch_callback_request(request: ExternalTranslationRequest) -> Result<(), String> {
+    thread::Builder::new()
+        .name("kaixin-wintranslator-session".to_string())
+        .spawn(move || {
+            let outcome = (|| {
+                let reply_pipe = request
+                    .reply_pipe
+                    .clone()
+                    .ok_or_else(|| "后台翻译缺少回调管道".to_string())?;
+                let expected_request = request.clone();
+                let (ready_sender, ready_receiver) = mpsc::sync_channel(1);
+                thread::Builder::new()
+                    .name("kaixin-wintranslator-callback".to_string())
+                    .spawn(move || {
+                        listen_for_translation_callbacks(
+                            &reply_pipe,
+                            expected_request,
+                            ready_sender,
+                        )
+                    })
+                    .map_err(|error| format!("无法创建翻译结果监听线程：{error}"))?;
+                ready_receiver
+                    .recv_timeout(Duration::from_secs(2))
+                    .map_err(|_| "创建翻译结果管道超时".to_string())??;
+                send_request(&request)
+            })();
+            if let Err(error) = outcome {
+                runtime_log::log_tray(
+                    runtime_log::RuntimeLogLevel::Error,
+                    "external_translate_session_failed",
+                    format!("request_id={} error={error}", request.request_id),
+                );
+            }
+        })
+        .map(|_| ())
+        .map_err(|error| format!("无法创建翻译会话线程：{error}"))
+}
+
+#[cfg(not(windows))]
+fn launch_callback_request(_request: ExternalTranslationRequest) -> Result<(), String> {
+    Err("当前平台不支持 WinTranslator 回调管道".to_string())
+}
+
+#[cfg(windows)]
+fn listen_for_translation_callbacks(
+    reply_pipe: &str,
+    request: ExternalTranslationRequest,
+    ready_sender: mpsc::SyncSender<Result<(), String>>,
+) {
+    let security = match crate::windows_security::LocalLogonPipeSecurity::new() {
+        Ok(security) => security,
+        Err(error) => {
+            let _ = ready_sender.send(Err(format!("创建翻译回调管道安全描述符失败：{error}")));
+            return;
+        }
+    };
+    let full_pipe_name = format!(r"\\.\pipe\{reply_pipe}");
+    let pipe_name = full_pipe_name
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect::<Vec<_>>();
+    let mut first = true;
+    loop {
+        let handle = unsafe {
+            CreateNamedPipeW(
+                pipe_name.as_ptr(),
+                PIPE_ACCESS_INBOUND,
+                PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
+                1,
+                0,
+                64 * 1024,
+                3_000,
+                security.as_ptr(),
+            )
+        };
+        if handle == INVALID_HANDLE_VALUE {
+            if first {
+                let _ = ready_sender.send(Err(format!(
+                    "创建翻译结果管道失败：{}",
+                    std::io::Error::last_os_error()
+                )));
+            }
+            return;
+        }
+        // SAFETY: CreateNamedPipeW returned a new pipe handle for this loop.
+        let handle = unsafe { OwnedWinHandle::from_raw(handle) }.expect("validated pipe handle");
+        if first {
+            let _ = ready_sender.send(Ok(()));
+            first = false;
+        }
+        let connected = unsafe { ConnectNamedPipe(handle.as_raw(), std::ptr::null_mut()) } != 0
+            || unsafe { GetLastError() } == ERROR_PIPE_CONNECTED;
+        if !connected {
+            return;
+        }
+        let event = read_callback_event(handle.as_raw())
+            .and_then(|bytes| serde_json::from_slice::<TranslationCallbackEvent>(&bytes).ok());
+        unsafe { DisconnectNamedPipe(handle.as_raw()) };
+        let Some(event) = event else { continue };
+        if event.request_id != request.request_id {
+            continue;
+        }
+        let terminal = matches!(
+            event.event_name.as_str(),
+            "completed" | "failed" | "cancelled"
+        );
+        if event.event_name == "completed" {
+            if let Some(text) = event.text.as_deref() {
+                apply_returned_translation(&request, &event, text);
+            }
+        } else if event.event_name == "failed" {
+            runtime_log::log_tray(
+                runtime_log::RuntimeLogLevel::Error,
+                "external_translate_callback_failed",
+                format!(
+                    "request_id={} code={} message={}",
+                    request.request_id,
+                    event.error_code.as_deref().unwrap_or("translation_failed"),
+                    event.message.as_deref().unwrap_or("none")
+                ),
+            );
+        }
+        if terminal {
+            return;
+        }
+    }
+}
+
+#[cfg(windows)]
+fn read_callback_event(handle: HANDLE) -> Option<Vec<u8>> {
+    let mut result = Vec::with_capacity(4096);
+    let mut buffer = [0u8; 4096];
+    loop {
+        let mut read = 0u32;
+        if unsafe {
+            ReadFile(
+                handle,
+                buffer.as_mut_ptr(),
+                buffer.len() as u32,
+                &mut read,
+                std::ptr::null_mut(),
+            )
+        } == 0
+        {
+            return None;
+        }
+        if read == 0 {
+            break;
+        }
+        let bytes = &buffer[..read as usize];
+        if let Some(newline) = bytes.iter().position(|byte| *byte == b'\n') {
+            result.extend_from_slice(&bytes[..newline]);
+            break;
+        }
+        result.extend_from_slice(bytes);
+        if result.len() > 1024 * 1024 {
+            return None;
+        }
+    }
+    Some(result)
+}
+
+#[cfg(windows)]
+fn apply_returned_translation(
+    request: &ExternalTranslationRequest,
+    event: &TranslationCallbackEvent,
+    text: &str,
+) {
+    if event.target_hwnd != request.target_hwnd
+        || event.target_process_id != request.target_process_id
+        || event.focus_generation != request.focus_generation
+    {
+        return;
+    }
+    if clipboard_win::set_clipboard(clipboard_win::formats::Unicode, text).is_err() {
+        return;
+    }
+    if request.result_action == "paste" {
+        if let Some(hwnd) = request.target_hwnd {
+            if process_id_for_window(hwnd) == request.target_process_id {
+                let _ = crate::win_paste::send_ctrl_v_to_target(hwnd);
+            }
+        }
+    }
 }
 
 fn log_request(
@@ -417,6 +688,13 @@ fn spawn_translator(path: &Path) -> Result<(), String> {
 
 #[cfg(windows)]
 fn send_request_once(request: &ExternalTranslationRequest) -> Result<(), String> {
+    send_request_once_for_response(request).map(|_| ())
+}
+
+#[cfg(windows)]
+fn send_request_once_for_response(
+    request: &ExternalTranslationRequest,
+) -> Result<ExternalTranslationResponse, String> {
     let mut payload = serde_json::to_vec(request).map_err(|error| error.to_string())?;
     payload.push(b'\n');
     let mut pipe_name = PIPE_PATH.encode_utf16().collect::<Vec<_>>();
@@ -444,23 +722,13 @@ fn send_request_once(request: &ExternalTranslationRequest) -> Result<(), String>
             std::io::Error::last_os_error()
         ));
     }
-    let handle = OwnedWinHandle(raw_handle);
-    write_pipe_with_timeout(handle.0, &payload)?;
+    // SAFETY: CreateFileW returned a new pipe handle owned by this request.
+    let handle = unsafe { OwnedWinHandle::from_raw(raw_handle) }
+        .map_err(|err| format!("接管 WinTranslator 管道句柄失败：{err}"))?;
+    write_pipe_with_timeout(handle.as_raw(), &payload)?;
     let mut response = vec![0u8; 4096];
-    let bytes_read = read_pipe_with_timeout(handle.0, &mut response)?;
+    let bytes_read = read_pipe_with_timeout(handle.as_raw(), &mut response)?;
     parse_response(request, &response[..bytes_read as usize])
-}
-
-#[cfg(windows)]
-struct OwnedWinHandle(HANDLE);
-
-#[cfg(windows)]
-impl Drop for OwnedWinHandle {
-    fn drop(&mut self) {
-        if self.0 != 0 && self.0 != INVALID_HANDLE_VALUE {
-            unsafe { CloseHandle(self.0) };
-        }
-    }
 }
 
 #[cfg(windows)]
@@ -558,10 +826,26 @@ fn send_request_once(request: &ExternalTranslationRequest) -> Result<(), String>
     BufReader::new(pipe)
         .read_line(&mut response)
         .map_err(|error| error.to_string())?;
-    parse_response(request, response.as_bytes())
+    parse_response(request, response.as_bytes()).map(|_| ())
 }
 
-fn parse_response(request: &ExternalTranslationRequest, response: &[u8]) -> Result<(), String> {
+fn send_request_for_response(
+    request: &ExternalTranslationRequest,
+) -> Result<ExternalTranslationResponse, String> {
+    #[cfg(windows)]
+    {
+        send_request_once_for_response(request)
+    }
+    #[cfg(not(windows))]
+    {
+        Err("当前平台不支持 WinTranslator 命名管道".to_string())
+    }
+}
+
+fn parse_response(
+    request: &ExternalTranslationRequest,
+    response: &[u8],
+) -> Result<ExternalTranslationResponse, String> {
     let response: ExternalTranslationResponse = serde_json::from_slice(response)
         .map_err(|error| format!("WinTranslator 返回无效响应：{error}"))?;
     if !response.request_id.is_empty() && response.request_id != request.request_id {
@@ -570,7 +854,7 @@ fn parse_response(request: &ExternalTranslationRequest, response: &[u8]) -> Resu
         );
     }
     if response.ok {
-        Ok(())
+        Ok(response)
     } else if response.error.is_empty() {
         Err("WinTranslator 拒绝了请求".to_string())
     } else {

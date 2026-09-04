@@ -9,6 +9,10 @@ readme = "../README.md"
 description = "Local-first Chinese input method engine and tools for Windows"
 repository = "https://github.com/ioio7896/kaixin-input-method"
 
+[features]
+default = []
+dev-tools = []
+
 [lib]
 name = "pinyin_ime"
 path = "src/lib.rs"
@@ -21,6 +25,7 @@ path = "src/main.rs"
 [[bin]]
 name = "lexicon_tool"
 path = "src/bin/thuocl_tool.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "srf_ime_settings"
@@ -53,30 +58,42 @@ path = "src/bin/srf_ime_ocr.rs"
 [[bin]]
 name = "bake_lexicon"
 path = "src/bin/bake_lexicon.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "build_ai_lexicons"
 path = "src/bin/build_clean_lexicons.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "input_smoke"
 path = "src/bin/input_smoke.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "input_eval"
 path = "src/bin/input_eval.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "input_perf"
 path = "src/bin/input_perf.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "phrase_len_eval"
 path = "src/bin/phrase_len_eval.rs"
+required-features = ["dev-tools"]
+
+[[bin]]
+name = "learning_replay_eval"
+path = "src/bin/learning_replay_eval.rs"
+required-features = ["dev-tools"]
 
 [[bin]]
 name = "build_blind_corpus"
 path = "src/bin/build_blind_corpus.rs"
+required-features = ["dev-tools"]
 
 [dependencies]
 base64 = "0.22"
@@ -87,8 +104,8 @@ encoding_rs = "0.8"
 fontdb = "0.23"
 fs2 = "0.4"
 image = { version = "0.25", default-features = false, features = ["bmp", "png", "jpeg"] }
-lru = "0.12"
-memmap2 = "0.9"
+lru = "0.18.2"
+memmap2 = "0.9.11"
 pinyin = "0.10"
 rfd = "0.15"
 regex = "1"

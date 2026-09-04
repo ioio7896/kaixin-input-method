@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WinTranslator local IPC protocol v2",
+  "type": "object",
+  "required": ["protocol_version", "request_id", "action"],
+  "properties": {
+    "protocol_version": { "const": 2 },
+    "request_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$" },
+    "action": { "enum": ["translate", "ping", "capabilities", "cancel"] },
+    "presentation": { "enum": ["background", "compact", "full"] },
+    "delivery": { "enum": ["return", "copy", "paste", "show"] },
+    "reply_pipe": { "type": "string", "pattern": "^Kaixin\\.Translate\\.Result\\.[A-Za-z0-9._-]+$" },
+    "focus_generation": { "type": "integer", "minimum": 0 },
+    "replace_selection": { "type": "boolean" },
+    "cancel_request_id": { "type": "string" }
+  }
+}

@@ -83,6 +83,9 @@ pub const LEARN_FLAG_WEAK: u32 = 1 << 0;
 pub const LEARN_FLAG_COMPOSED_PHRASE: u32 = 1 << 1;
 /// TSF 端已标记为 no_learn 的候选，Rust 端作为兜底二次校验。
 pub const LEARN_FLAG_NO_LEARN: u32 = 1 << 2;
+/// The user deliberately chose a candidate (number key or mouse), rather than
+/// accepting the highlighted candidate with Space.
+pub const LEARN_FLAG_EXPLICIT_SELECTION: u32 = 1 << 3;
 
 const DEFAULT_MODE_FLAGS: u32 = MODE_JIANPIN | MODE_MIXED_PINYIN;
 

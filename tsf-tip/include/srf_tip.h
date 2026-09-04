@@ -249,12 +249,13 @@ class CSrfTip : public ITfTextInputProcessorEx,
   HRESULT ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lParam,
                      bool shiftDown, bool* pHandled);
   bool WouldEatKey(UINT vk);
-  HRESULT CommitCandidate(TfEditCookie ec, size_t idx);
+  HRESULT CommitCandidate(TfEditCookie ec, size_t idx, bool explicitSelection = false);
   HRESULT CommitCandidateSnapshot(TfEditCookie ec, ITfContext* requestContext, size_t idx,
                                    const std::wstring& reading,
                                    const std::wstring& committedText,
                                    const std::wstring& metaText,
-                                   const std::vector<std::wstring>& skippedCandidates);
+                                   const std::vector<std::wstring>& skippedCandidates,
+                                   bool explicitSelection);
   HRESULT CommitReadingText(TfEditCookie ec, ITfContext* pic);
   UINT CandidatePageSize() const;
   std::wstring CandidateBarMainTitle() const;
@@ -312,6 +313,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void RememberPrefixCandidateCache(const std::wstring& reading);
   void RebuildCandidateRows();
   bool RequestMoreCandidatesForPage(UINT targetPage);
+  bool RequestMoreCandidatesToFillCurrentPage();
   void ApplyAsyncCandidateResult(TfEditCookie ec);
   bool CurrentCandidatesPartial() const;
   const wchar_t* CandidateViewStateName() const;
@@ -377,7 +379,8 @@ class CSrfTip : public ITfTextInputProcessorEx,
                                    const std::wstring* snapshotReading,
                                    const std::wstring* snapshotCommitted,
                                    const std::wstring* snapshotMeta,
-                                   const std::vector<std::wstring>* snapshotSkippedCandidates);
+                                   const std::vector<std::wstring>* snapshotSkippedCandidates,
+                                   bool explicitSelection);
   HRESULT RequestCommitCandidate(size_t idx);
   HRESULT RequestCommitReadingText();
   std::wstring TranslateDirectKey(UINT vk, LPARAM lParam, bool shiftDown) const;
