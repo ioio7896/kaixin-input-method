@@ -196,8 +196,8 @@ impl PinyinEngine {
             return Ok(());
         }
         self.reload_user_lexicon_if_changed_now();
+        self.invalidate_lookup_readings(std::slice::from_ref(&key));
         let word_tokens = self.best_phrase_tokens(phrase, self.user_lexicon.current_clock());
-        let weak_learning = flags & LEARN_FLAG_WEAK != 0;
         let composed_phrase = flags & LEARN_FLAG_COMPOSED_PHRASE != 0;
         let auto_novel = self.auto_novel_phrase_parts(&key, reading, phrase);
         let full_pinyin_learning_syllables = self.full_pinyin_learning_syllables(reading, &key);
@@ -229,12 +229,17 @@ impl PinyinEngine {
             self.user_lexicon
                 .learn_mixed_input_with_delta(&key, phrase, 1)
                 .map_err(|e| format!("save mixed user dict: {}", e))?;
+            // Record one real selection in both the exact-reading and phrase
+            // layers. Generated aliases must never increment phrase frequency.
             self.user_lexicon
-                .record_commit_observation(&key, phrase, CommitSource::Mixed)
-                .map_err(|e| format!("observe mixed commit: {}", e))?;
-            self.user_lexicon
-                .record_word_sequence(phrase, &word_tokens, 1)
-                .map_err(|e| format!("save mixed word context: {}", e))?;
+                .learn_with_source_delta_and_tokens(
+                    &key,
+                    phrase,
+                    profile.exact_delta,
+                    CommitSource::Mixed,
+                    &word_tokens,
+                )
+                .map_err(|e| format!("save mixed selection: {}", e))?;
             self.note_phrase_and_tokens_updated(phrase, &word_tokens);
             return Ok(());
         }
@@ -278,20 +283,10 @@ impl PinyinEngine {
             }
         }
 
-        if (2..=4).contains(&phrase_char_count(phrase))
-            && crate::thuocl::mixed_pinyin_keys_for_phrase(phrase)
-                .iter()
-                .any(|mixed_key| mixed_key == &key)
-        {
-            self.user_lexicon
-                .learn_input_only_with_delta(&key, phrase, 2)
-                .map_err(|e| format!("save user dict: {}", e))?;
-        }
-
         // 让“缩写也能打出常用词”：如果 reading 可解析为多个完整音节，则额外学习其首字母串（如 bei jing -> bj）。
 
         if let Some(syllables) = full_pinyin_learning_syllables.as_ref() {
-            if syllables.len() >= 2 {
+            if (2..=7).contains(&syllables.len()) && syllables.len() == phrase_char_count(phrase) {
                 let mut abbrev = String::with_capacity(syllables.len());
                 for syl in syllables {
                     if let Some(ch) = syl.chars().next() {
@@ -300,64 +295,23 @@ impl PinyinEngine {
                         }
                     }
                 }
-                if !abbrev.is_empty()
-                    && abbrev != key
-                    && !self.is_effective_direct_input_shortcut(&abbrev)
+                let mut mixed_keys = mixed_pinyin_keys_from_syllables(syllables, 128);
+                if !abbrev.is_empty() && abbrev != key {
+                    mixed_keys.push(abbrev);
+                }
+                mixed_keys.retain(|alias| {
+                    alias != &key && !self.is_effective_direct_input_shortcut(alias)
+                });
+                dedup_preserved_phrase_order(&mut mixed_keys);
+                // Use the actual syllables once, rather than learning a second
+                // set guessed from polyphonic characters. Aliases are weaker
+                // than a deliberate selection on that exact reading.
+                self.invalidate_lookup_readings(&mixed_keys);
+                if let Err(err) = self
+                    .user_lexicon
+                    .learn_mixed_aliases(&mixed_keys, phrase, 1)
                 {
-                    // 缩写学习力度比全拼弱一点，避免压过明确的短语/单字输入意图。
-
-                    if let Err(err) = self
-                        .user_lexicon
-                        .learn_input_only_with_delta(&abbrev, phrase, 1)
-                    {
-                        log_learning_aux_error("learn_abbrev", &err);
-                    }
-                    if (2..=SHORT_HOTWORD_MAX_CHARS).contains(&syllables.len()) {
-                        if let Err(err) = self
-                            .user_lexicon
-                            .learn_input_only_with_delta(&abbrev, phrase, 1)
-                        {
-                            log_learning_aux_error("learn_abbrev_boost", &err);
-                        }
-                    }
-                }
-                let mixed_delta = if weak_learning {
-                    1
-                } else {
-                    USER_MIXED_INPUT_MIN_FREQ
-                };
-                for mixed_key in mixed_pinyin_keys_from_syllables(syllables, 64) {
-                    if mixed_key != key
-                        && mixed_key != abbrev
-                        && !self.is_effective_direct_input_shortcut(&mixed_key)
-                    {
-                        if let Err(err) = self.user_lexicon.learn_mixed_input_with_delta(
-                            &mixed_key,
-                            phrase,
-                            mixed_delta,
-                        ) {
-                            log_learning_aux_error("learn_syllable_mixed", &err);
-                        }
-                    }
-                }
-            }
-        }
-
-        if full_pinyin_learning_syllables.is_some() {
-            let mixed_delta = if weak_learning {
-                1
-            } else {
-                USER_MIXED_INPUT_MIN_FREQ
-            };
-            for mixed_key in crate::thuocl::mixed_pinyin_keys_for_phrase(phrase) {
-                if mixed_key != key && !self.is_effective_direct_input_shortcut(&mixed_key) {
-                    if let Err(err) = self.user_lexicon.learn_mixed_input_with_delta(
-                        &mixed_key,
-                        phrase,
-                        mixed_delta,
-                    ) {
-                        log_learning_aux_error("learn_phrase_mixed", &err);
-                    }
+                    log_learning_aux_error("learn_syllable_mixed", &err);
                 }
             }
         }
@@ -1222,7 +1176,7 @@ pub(super) fn is_cjk_unified(ch: char) -> bool {
 }
 
 pub(super) fn is_mixed_pinyin_learning_key(key: &str, phrase: &str) -> bool {
-    if !(2..=4).contains(&phrase_char_count(phrase)) {
+    if !(2..=7).contains(&phrase_char_count(phrase)) {
         return false;
     }
     crate::thuocl::mixed_pinyin_keys_for_phrase(phrase)
@@ -1232,7 +1186,7 @@ pub(super) fn is_mixed_pinyin_learning_key(key: &str, phrase: &str) -> bool {
 
 pub(super) fn mixed_pinyin_keys_from_syllables(syllables: &[String], limit: usize) -> Vec<String> {
     let len = syllables.len();
-    if !(2..=6).contains(&len) || limit == 0 {
+    if !(2..=7).contains(&len) || limit == 0 {
         return Vec::new();
     }
     let all_full_mask = (1usize << len) - 1;

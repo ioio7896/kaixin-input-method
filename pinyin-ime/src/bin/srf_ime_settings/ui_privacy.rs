@@ -9,6 +9,7 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             .unwrap_or_else(|| PathBuf::from("."))
     });
     let user_dict_path = pinyin_ime::user_dict::default_user_dict_path();
+    let clipboard_path = pinyin_ime::clipboard_store::store_path();
     let log_path = tsf_trace_log_path();
     let encryption_status = user_dict_encryption_status_text(&user_dict_path);
 
@@ -70,7 +71,7 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         inline_notice(
             ui,
             StatusTone::Danger,
-            "红色按钮会删除本机数据；备份和恢复只影响配置文件。",
+            "清理会删除所选的本机数据，请确认后操作。",
         );
         ui.add_space(6.0);
         egui::Grid::new("maintenance_actions_grid")
@@ -79,31 +80,31 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             .spacing([12.0, 8.0])
             .show(ui, |ui| {
                 ui.label(
-                    RichText::new("配置")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label("备份或恢复 kaixin.ini。");
-                ui.horizontal(|ui| {
-                    if outline_button(ui, "备份").clicked() {
-                        app.backup_config();
-                    }
-                    if outline_button(ui, "恢复").clicked() {
-                        app.restore_config();
-                    }
-                });
-                ui.end_row();
-
-                ui.label(
                     RichText::new("用户词库")
                         .strong()
                         .size(SETTINGS_FONT_SETTING_TITLE)
                         .color(palette.text),
                 );
                 ui.label("清空本地学习词和上下文排序信号。");
+                ui.horizontal(|ui| {
+                    if danger_button(ui, "清空").clicked() {
+                        app.clear_user_dict();
+                    }
+                });
+                ui.end_row();
+
+                ui.label(
+                    RichText::new("剪贴板历史")
+                        .strong()
+                        .size(SETTINGS_FONT_SETTING_TITLE)
+                        .color(palette.text),
+                );
+                ui.label(format!(
+                    "删除本机历史和置顶项；不可恢复。{}",
+                    clipboard_path.display()
+                ));
                 if danger_button(ui, "清空").clicked() {
-                    app.clear_user_dict();
+                    app.clear_clipboard();
                 }
                 ui.end_row();
 
@@ -113,7 +114,7 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                         .size(SETTINGS_FONT_SETTING_TITLE)
                         .color(palette.text),
                 );
-                ui.label("清空 TSF 和运行时诊断日志。");
+                ui.label("清空 TSF 和运行时诊断日志；不可恢复，不需要重启。");
                 if danger_button(ui, "清空").clicked() {
                     app.clear_tsf_log();
                 }
@@ -144,33 +145,7 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         );
     });
 
-    ui.add_space(10.0);
-    section_panel(ui, "通知", |ui| {
-        setting_combo_row(
-            ui,
-            "通知显示",
-            "状态切换和引擎提示是否弹出通知。",
-            notification_label(&app.model.show_notifications).to_owned(),
-            "notification_visibility",
-            |ui| {
-                selectable_string(ui, &mut app.model.show_notifications, "true", "开启");
-                selectable_string(ui, &mut app.model.show_notifications, "false", "关闭");
-                selectable_string(
-                    ui,
-                    &mut app.model.show_notifications,
-                    "ime,full_shape,punct,fuzzy,double,app,engine",
-                    "自定义种类",
-                );
-            },
-        );
-        setting_slider_usize(
-            ui,
-            "通知显示时长",
-            "通知浮窗停留时间，单位毫秒。",
-            &mut app.model.show_notifications_time,
-            500..=5000,
-        );
-    });
+
 }
 
 pub(super) fn privacy_process_list_row(
@@ -620,4 +595,34 @@ pub(crate) fn privacy_statement_text(config_path: &Path, model: &SettingsModel) 
         clipboard_path.display(),
         log_path.display()
     )
+}
+
+pub(super) fn general_notifications_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    ui.add_space(10.0);
+    section_panel(ui, "通知", |ui| {
+        setting_combo_row(
+            ui,
+            "通知显示",
+            "状态切换和引擎提示是否弹出通知。",
+            notification_label(&app.model.show_notifications).to_owned(),
+            "notification_visibility",
+            |ui| {
+                selectable_string(ui, &mut app.model.show_notifications, "true", "开启");
+                selectable_string(ui, &mut app.model.show_notifications, "false", "关闭");
+                selectable_string(
+                    ui,
+                    &mut app.model.show_notifications,
+                    "ime,full_shape,punct,fuzzy,double,app,engine",
+                    "自定义种类",
+                );
+            },
+        );
+        setting_slider_usize(
+            ui,
+            "通知显示时长",
+            "通知浮窗停留时间，单位毫秒。",
+            &mut app.model.show_notifications_time,
+            500..=5000,
+        );
+    });
 }

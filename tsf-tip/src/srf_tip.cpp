@@ -1,5 +1,6 @@
 #include "srf_tip.h"
 #include "input_mode_policy.h"
+#include "game_rules.generated.h"
 
 #include <algorithm>
 #include <array>

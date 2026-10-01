@@ -1,18 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $CargoDir = Join-Path $RepoRoot 'pinyin-ime'
-
-Push-Location $CargoDir
-try {
-    cargo run --locked --offline --bin build_ai_lexicons
-    if ($LASTEXITCODE -ne 0) {
-        throw "build_ai_lexicons failed with exit code $LASTEXITCODE"
-    }
-}
-finally {
-    Pop-Location
-}
-
 $LexiconDir = Join-Path $RepoRoot 'lexicon'
 $CoreDir = Join-Path $LexiconDir 'core'
 $LegacyExtDir = Join-Path $LexiconDir 'zh-ext'
@@ -22,6 +10,17 @@ foreach ($Name in @('kaixin_explicit.txt', 'kaixin_polyphone.txt', 'kaixin_pronu
     if (Test-Path -LiteralPath $LegacyPath) {
         Move-Item -LiteralPath $LegacyPath -Destination (Join-Path $CoreDir $Name) -Force
     }
+}
+
+Push-Location $CargoDir
+try {
+    cargo run --locked --offline --features dev-tools --bin build_ai_lexicons
+    if ($LASTEXITCODE -ne 0) {
+        throw "build_ai_lexicons failed with exit code $LASTEXITCODE"
+    }
+}
+finally {
+    Pop-Location
 }
 
 python (Join-Path $PSScriptRoot 'merge_zh_ext_lexicons.py')

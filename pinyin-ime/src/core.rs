@@ -40,6 +40,8 @@ mod lookup;
 mod postprocess;
 mod ranking;
 mod single_char_common;
+mod stable_words;
+mod presentation;
 
 use cache::*;
 pub(crate) use cache::{
@@ -57,10 +59,10 @@ use ranking::*;
 pub const TSF_PAGE_SIZE: usize = 9;
 pub const TSF_MAX_CANDIDATES: usize = 128;
 /// 完整候选加载的上限。精确单音节输入（si/shi/yi 等）的候选全部是单字，
-/// 允许用户翻页直达冷门单字，不能再按高频词场景截断在 128 条。
-/// 必须与 TSF 侧 kRustRows（响应行数上限）保持一致，否则完整加载结果
-/// 会在某一环被砍回 128。
-pub const LOOKUP_FULL_MAX_CANDIDATES: usize = 256;
+/// 允许用户翻页直达冷门单字，容量覆盖当前编译字典中最大的单音节字符池。
+/// 必须与 TSF 侧 srf_candidate_limits::kFullResult 保持一致，否则完整加载结果
+/// 会在某一环被提前截断。
+pub const LOOKUP_FULL_MAX_CANDIDATES: usize = 1024;
 
 pub const MODE_FUZZY_PINYIN: u32 = 0x0001;
 pub const MODE_DOUBLE_PINYIN: u32 = 0x0002;
@@ -125,7 +127,9 @@ const PHRASE_PREFIX_ABBREV_BONUS: f64 = 205.0;
 const USER_EXACT_INPUT_BONUS: f64 = 280.0;
 const USER_MIXED_INPUT_BONUS: f64 = 168.0;
 const USER_OBSERVED_INPUT_BONUS: f64 = 82.0;
-const USER_MIXED_INPUT_MIN_FREQ: u64 = 2;
+// Alias counts advance once per committed selection; require repeat use before fronting.
+const USER_SHORT_ABBREV_ALIAS_MIN_FREQ: u64 = 3;
+const MAX_USER_LEARNED_ABBREV_CHARS: usize = 7;
 const USER_EXACT_INPUT_SCALE: f64 = 24.0;
 const USER_PHRASE_SCORE_SCALE: f64 = 8.0;
 const USER_RECENCY_SCALE: f64 = 15.0;
@@ -324,9 +328,6 @@ const SHORT_ABBREV_TOP1_FREQ_BONUS_CAP: f64 = 26.0;
 const SHORT_ASCII_MULTI_CHAR_RERANK_DISCOUNT: f64 = 8.0;
 const EXPLICIT_SEPARATOR_PHRASE_BONUS: f64 = 72.0;
 const SHORT_COMPACT_BACKOFF_STEP_PENALTY: f64 = 26.0;
-/// Metadata from a higher-priority source may remain attached while merging
-/// the same phrase, but the candidate score is always raised to the maximum.
-const META_STICKY_SCORE_MARGIN: f64 = 96.0;
 const HIGH_PRIORITY_TWO_CHAR_FREQ_MIN: u64 = MAX_LEXICON_FREQ * 98 / 100;
 const DAILY_SHORT_FREQ_MAX: u64 = MAX_LEXICON_FREQ;
 /// 简拼短词优先级平滑分数阈值（范围 [0, 1]）。
@@ -404,6 +405,7 @@ pub struct PinyinEngine {
     lm: Arc<Lm>,
     single_char_common: Arc<single_char_common::SingleCharCommonIndex>,
     pub(crate) phrase_lexicon: Option<AbbrevLexicon>,
+    cold_lexicon: Option<crate::cold_lexicon::ColdLexicon>,
     user_lexicon: UserLexicon,
     user_lexicon_stamp: UserLexiconDiskStamp,
     user_lexicon_generation: u64,
@@ -621,6 +623,7 @@ struct CandidatePostprocessContext<'a> {
     preserved_exact_lexicon_phrases: &'a [String],
     preserved_exact_user_phrases: &'a [String],
     preserved_mixed_user_phrases: &'a [String],
+    preserved_short_abbrev_user_phrases: &'a [String],
     preserved_pinned_user_phrases: &'a [String],
     preserved_high_priority_two_char_phrases: &'a [String],
     preserved_chat_priority_two_char_phrases: &'a [String],
@@ -663,8 +666,8 @@ pub struct CandidateMeta {
     pub blocked: bool,
     pub partial: bool,
     pub correction_target: Option<String>,
-    /// 同词的系统候选在并入用户学习信号时保留该标记：即使系统分数高出
-    /// META_STICKY_SCORE_MARGIN，hotword 前置逻辑仍应识别它为用户热词。
+    /// 同词的系统候选在并入用户学习信号时保留该标记：无论哪条路径
+    /// 提供最高分，hotword 前置逻辑仍应识别真实的用户选词信号。
     pub user_signal: bool,
     display: Option<String>,
 }

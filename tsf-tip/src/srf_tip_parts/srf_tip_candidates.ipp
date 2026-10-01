@@ -707,6 +707,10 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
                   line.c_str());
     return false;
   }
+  if (stateAfterLookup != SrfEngineState::Ready) {
+    EnsureEngineInputReady();
+    return false;
+  }
   bool partialResult = false;
   bool prefixPlaceholder = false;
   const bool transientLookup = LookupCandidatesStatusIsTransient(lookupStatus);
@@ -828,7 +832,7 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     // occurred, the completed batch is safe to apply below.
     frozeInteractiveSnapshot = srf_candidate_stability::FreezeInteractiveBatch(
         m_candidates, m_candidateMeta, &nextCandidates, &nextMeta,
-        srf_candidate_stability::kCandidateBatchLimit);
+        srf_candidate_limits::kFullResult);
   }
   const bool retainEmptyTransientResult =
       srf_candidate_stability::ShouldRetainEmptyCandidateResult(
@@ -1233,8 +1237,7 @@ bool CSrfTip::ClipboardCandidatePageInfo(size_t idx, UINT* page, UINT* pages) co
 SrfUIStyle CSrfTip::EffectiveCandidateUiStyle() const {
   SrfUIStyle style = m_uiStyle;
   style.candidateFullscreenPlacement = FullscreenCandidateOverlayActive();
-  if ((m_fullscreenCompatActive || m_gameCompatActive || m_configuredGameCompatActive ||
-       m_builtinGameCompatActive || m_manualGameCompatActive) &&
+  if ((m_fullscreenCompatActive || IsGameHotkeyPassthroughActive()) &&
       EffectiveCompatibilityPolicy() == SrfFullscreenPolicy::ShowUi) {
     style.candidateHorizontal = true;
     style.candidateHorizontalCompact = true;
@@ -1245,6 +1248,9 @@ SrfUIStyle CSrfTip::EffectiveCandidateUiStyle() const {
     style.candidateMaterial = SrfCandidateMaterial::Solid;
     style.candidateDensity = SrfCandidateDensity::Compact;
     style.candidateLayoutVariant = SrfCandidateLayoutVariant::Compact;
+    style.skinAnimationsEnabled = false;
+    if (style.candidateOverlayAnchor == SrfOverlayAnchor::Auto)
+      style.candidateOverlayAnchor = SrfOverlayAnchor::BottomLeft;
     style.candidateLeftClick = false;
     style.candidateRightClick = false;
     style.showCandidateReading = false;

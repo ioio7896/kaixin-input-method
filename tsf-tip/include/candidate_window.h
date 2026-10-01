@@ -86,6 +86,7 @@ void ShutdownCandidateWindowRendering();
 
 struct ICandidateWindowEvents {
   virtual ~ICandidateWindowEvents() = default;
+  virtual void OnCandidateInteractionStarted() {}
   virtual void OnCandidateClicked(UINT indexInPage) = 0;
   virtual void OnCandidateRightClicked(UINT indexInPage, POINT screenPoint) = 0;
   virtual void OnCandidatePinRequested(UINT indexInPage, bool pinned) = 0;

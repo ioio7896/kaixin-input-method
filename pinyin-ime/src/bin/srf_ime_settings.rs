@@ -13,7 +13,8 @@ use config::*;
 use model::*;
 use ui::{
     capsule_switch, diagnostic_log_paths, enforce_settings_min_font_size,
-    export_diagnostic_package_to, fluent_palette, privacy_statement_text,
+    export_diagnostic_package_to, export_performance_log_to, fluent_palette,
+    privacy_statement_text,
 };
 
 use eframe::egui::{
@@ -46,7 +47,6 @@ const WINDOW_TITLE: &str = "开心输入法 设置";
 
 const TITLE_CN: &str = "输入法设置";
 const SAVE_CN: &str = "保存设置";
-const RESET_CN: &str = "重置默认";
 const OPEN_CFG_CN: &str = "打开配置目录";
 const SAVED_CN: &str = "已保存";
 const LOAD_FAIL_CN: &str = "读取配置失败";
@@ -56,11 +56,11 @@ const USER_DICT_RELOAD_HINT: &str =
 const HANDWRITE_EXE: &str = "srf_ime_handwrite.exe";
 const OCR_EXE: &str = "srf_ime_ocr.exe";
 const CANDIDATE_OVERLAY_EXE: &str = "srf_ime_overlay.exe";
-const SETTINGS_WINDOW_SIZE: [f32; 2] = [1000.0, 940.0];
-const SETTINGS_MAX_WINDOW_SIZE: [f32; 2] = [1160.0, 1040.0];
+const SETTINGS_WINDOW_SIZE: [f32; 2] = [1160.0, 860.0];
+const SETTINGS_MAX_WINDOW_SIZE: [f32; 2] = [1440.0, 1040.0];
 const SETTINGS_MIN_WINDOW_SIZE: [f32; 2] = [780.0, 680.0];
 const SETTINGS_NAV_WIDTH: f32 = 212.0;
-const SETTINGS_PANEL_RADIUS: f32 = 10.0;
+const SETTINGS_PANEL_RADIUS: f32 = 8.0;
 const SETTINGS_USER_DICT_LIST_LIMIT: usize = 100;
 const MS_PINYIN_TIP: &str =
     r"0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411F-A5AC-CA038EC515D7}";
@@ -102,10 +102,19 @@ struct SettingsApp {
     recent_processes: Vec<ProcessSuggestion>,
     foreground_process: Option<ProcessSuggestion>,
     game_test_wizard: Option<GameTestWizard>,
+    compat_selected_rule: usize,
     active_section: SettingsSection,
+    tool_page: ToolSettingsPage,
+    system_page: SystemSettingsPage,
+    settings_search: String,
     reset_section_scroll: bool,
     vv_command_filter: String,
+    lexicon_filter: String,
+    lexicon_catalog: Option<Vec<pinyin_ime::lexicon_prefs::OptionalLexiconInfo>>,
+    lexicon_catalog_rx: Option<mpsc::Receiver<Vec<pinyin_ime::lexicon_prefs::OptionalLexiconInfo>>>,
     diagnostics_cache: Option<ui::DiagnosticsSnapshot>,
+    diagnostics_rx: Option<mpsc::Receiver<ui::DiagnosticsSnapshot>>,
+    performance_export_rx: Option<mpsc::Receiver<String>>,
 }
 
 enum UserDictTaskResult {
@@ -160,10 +169,23 @@ impl SettingsApp {
             recent_processes,
             foreground_process,
             game_test_wizard: None,
-            active_section: SettingsSection::Hotkeys,
+            compat_selected_rule: 0,
+            active_section: if std::env::args().any(|arg| arg == "--game-settings") {
+                SettingsSection::Compatibility
+            } else {
+                SettingsSection::Input
+            },
+            tool_page: ToolSettingsPage::Clipboard,
+            system_page: SystemSettingsPage::General,
+            settings_search: String::new(),
             reset_section_scroll: false,
             vv_command_filter: String::new(),
+            lexicon_filter: String::new(),
+            lexicon_catalog: None,
+            lexicon_catalog_rx: None,
             diagnostics_cache: None,
+            diagnostics_rx: None,
+            performance_export_rx: None,
         }
     }
 
@@ -244,12 +266,23 @@ impl SettingsApp {
         if normalized.is_empty() {
             return;
         }
+        let existing = self
+            .model
+            .compat_rules
+            .iter()
+            .find(|rule| rule.process.eq_ignore_ascii_case(normalized))
+            .cloned();
+        let transport = existing
+            .as_ref()
+            .map(|r| r.commit_transport.as_str())
+            .filter(|t| *t != "global")
+            .unwrap_or("tsf");
         upsert_compat_rule(
             &mut self.model.compat_rules,
             normalized,
             true,
             CompatRulePolicy::ShowUi,
-            "tsf",
+            transport,
             true,
         );
         if let Some(rule) = self
@@ -258,10 +291,19 @@ impl SettingsApp {
             .iter_mut()
             .find(|rule| rule.process.eq_ignore_ascii_case(normalized))
         {
-            rule.overlay_backend = schema_default::OVERLAY_BACKEND.to_string();
+            if rule.game_input_mode == "inherit" {
+                rule.game_input_mode = "manual".to_string();
+            }
+            if rule.overlay_anchor == "auto" {
+                rule.overlay_anchor = "bottom_left".to_string();
+            }
+            if existing.is_none() {
+                rule.overlay_backend = schema_default::OVERLAY_BACKEND.to_string();
+            }
         }
         sync_compat_rules_to_legacy_fields(&mut self.model);
-        self.status = format!("已为 {normalized} 启用游戏配置档（先测试标准 TSF 上屏）。");
+        self.status =
+            format!("已为 {normalized} 启用游戏配置档（新游戏使用标准 TSF，已测试方式保持）。");
     }
 
     fn set_overlay_backend_for_process(&mut self, process: &str, backend: &str) {
@@ -385,150 +427,6 @@ impl SettingsApp {
             self.status = format!("已加入游戏配置档：{normalized}");
         } else {
             self.status = format!("兼容进程已存在：{normalized}");
-        }
-    }
-
-    fn export_user_dict(&mut self) {
-        let confirmed = matches!(
-            rfd::MessageDialog::new()
-                .set_title("导出用户词库")
-                .set_description(
-                    "导出的用户词库 SQLite 是明文数据库，包含已学习的词、编码、词频和上下文排序信号。请只保存到可信位置。"
-                )
-                .set_level(rfd::MessageLevel::Warning)
-                .set_buttons(rfd::MessageButtons::OkCancel)
-                .show(),
-            rfd::MessageDialogResult::Ok
-        );
-        if !confirmed {
-            self.status = "已取消导出用户词库。".to_string();
-            return;
-        }
-
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("导出用户词库")
-            .set_file_name("user_dict_export.sqlite")
-            .save_file()
-        else {
-            return;
-        };
-        match pinyin_ime::user_dict::export_user_dict(&path) {
-            Ok(()) => self.status = format!("已导出明文用户词库：{}", path.display()),
-            Err(err) => self.status = format!("导出用户词库失败: {err}"),
-        }
-    }
-
-    fn export_decrypted_user_dict(&mut self) {
-        let confirmed = matches!(
-            rfd::MessageDialog::new()
-                .set_title("解密导出用户词库")
-                .set_description(
-                    "将把本机加密的用户词库导出为明文 SQLite，包含已学习的词、编码、词频和上下文排序信号。请只保存到可信位置。"
-                )
-                .set_level(rfd::MessageLevel::Warning)
-                .set_buttons(rfd::MessageButtons::OkCancel)
-                .show(),
-            rfd::MessageDialogResult::Ok
-        );
-        if !confirmed {
-            self.status = "已取消解密导出用户词库。".to_string();
-            return;
-        }
-
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("解密导出用户词库")
-            .set_file_name("user_dict_decrypted.sqlite")
-            .save_file()
-        else {
-            return;
-        };
-        match pinyin_ime::user_dict::export_decrypted_user_dict(&path) {
-            Ok(()) => self.status = format!("已解密导出用户词库：{}", path.display()),
-            Err(err) => self.status = format!("解密导出用户词库失败: {err}"),
-        }
-    }
-
-    fn export_user_dict_tsv(&mut self) {
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("导出便携用户词表")
-            .set_file_name("kaixin_user_words.tsv")
-            .add_filter("TSV", &["tsv"])
-            .save_file()
-        else {
-            return;
-        };
-        match pinyin_ime::user_dict::export_user_dict_tsv(&path) {
-            Ok(()) => self.status = format!("已导出便携用户词表：{}", path.display()),
-            Err(err) => self.status = format!("导出便携用户词表失败: {err}"),
-        }
-    }
-
-    fn import_user_dict(&mut self) {
-        self.import_user_dict_mode(pinyin_ime::user_dict::UserDictImportMode::Merge);
-    }
-
-    fn replace_user_dict(&mut self) {
-        self.import_user_dict_mode(pinyin_ime::user_dict::UserDictImportMode::Replace);
-    }
-
-    fn import_user_dict_mode(&mut self, mode: pinyin_ime::user_dict::UserDictImportMode) {
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("导入用户词库")
-            .add_filter("用户词库", &["sqlite", "db", "tsv"])
-            .pick_file()
-        else {
-            return;
-        };
-        let preview = match pinyin_ime::user_dict::preview_user_dict_import(&path) {
-            Ok(preview) => preview,
-            Err(err) => {
-                self.status = format!("读取用户词库失败: {err}");
-                return;
-            }
-        };
-        let action = if mode == pinyin_ime::user_dict::UserDictImportMode::Merge {
-            "合并"
-        } else {
-            "完全覆盖"
-        };
-        let description = format!(
-            "准备{action}用户词库。\n\n词条：{}\n新增：{}\n重复：{}\n异读冲突：{}\n置顶：{}\n屏蔽：{}\n上下文记录：{}\n\n导入前会自动备份当前词库；合并模式不会导入上下文和负反馈。",
-            preview.total_entries,
-            preview.new_entries,
-            preview.duplicate_entries,
-            preview.reading_conflicts,
-            preview.pinned_entries,
-            preview.blocked_entries,
-            preview.context_entries,
-        );
-        let confirmed = matches!(
-            rfd::MessageDialog::new()
-                .set_title("确认导入用户词库")
-                .set_description(&description)
-                .set_level(
-                    if mode == pinyin_ime::user_dict::UserDictImportMode::Replace {
-                        rfd::MessageLevel::Warning
-                    } else {
-                        rfd::MessageLevel::Info
-                    }
-                )
-                .set_buttons(rfd::MessageButtons::OkCancel)
-                .show(),
-            rfd::MessageDialogResult::Ok
-        );
-        if !confirmed {
-            self.status = "已取消导入用户词库。".to_string();
-            return;
-        }
-        match pinyin_ime::user_dict::import_user_dict_with_mode(&path, mode) {
-            Ok(()) => {
-                self.blocked_phrases_loaded = false;
-                self.status = format!(
-                    "已{action}用户词库：新增 {} 条，重复 {} 条，冲突 {} 条。{USER_DICT_RELOAD_HINT}",
-                    preview.new_entries, preview.duplicate_entries, preview.reading_conflicts
-                );
-            }
-            Err(err) => self.status = format!("导入用户词库失败: {err}"),
         }
     }
 
@@ -705,6 +603,39 @@ impl SettingsApp {
         }
     }
 
+    fn export_performance_log(&mut self) {
+        if self.performance_export_rx.is_some() {
+            return;
+        }
+        let stamp = chrono::Local::now().format("%Y%m%d-%H%M%S").to_string();
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("导出性能日志")
+            .set_file_name(format!("kaixin-performance-{stamp}.log"))
+            .add_filter("日志文件", &["log", "txt"])
+            .save_file()
+        else {
+            return;
+        };
+        let log_level = runtime_log::configured_level().as_str().to_string();
+        let (tx, rx) = mpsc::channel();
+        self.performance_export_rx = Some(rx);
+        self.status = "正在导出性能日志…".to_string();
+        std::thread::spawn(move || {
+            let _ = runtime_log::flush_pending_logs(Duration::from_millis(250));
+            let status = match export_performance_log_to(&path, &log_level) {
+                Ok(0) => {
+                    format!(
+                        "已导出性能日志（暂无性能事件；将日志级别设为“性能”并复现后再导出）：{}",
+                        path.display()
+                    )
+                }
+                Ok(count) => format!("已导出 {count} 条性能记录：{}", path.display()),
+                Err(err) => format!("导出性能日志失败: {err}"),
+            };
+            let _ = tx.send(status);
+        });
+    }
+
     fn add_microsoft_pinyin(&mut self) {
         self.status = match run_language_list_action(LanguageListAction::AddMicrosoftPinyin) {
             Ok(()) => "已添加中文（中国）微软拼音输入法。".to_string(),
@@ -760,39 +691,6 @@ impl SettingsApp {
         }
     }
 
-    fn backup_config(&mut self) {
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("备份配置")
-            .set_file_name(app_paths::CONFIG_FILE_NAME)
-            .save_file()
-        else {
-            return;
-        };
-        match fs::copy(&self.config_path, &path) {
-            Ok(_) => self.status = format!("已备份配置到 {}", path.display()),
-            Err(err) => self.status = format!("备份配置失败: {err}"),
-        }
-    }
-
-    fn restore_config(&mut self) {
-        let Some(path) = rfd::FileDialog::new()
-            .set_title("恢复配置")
-            .add_filter("INI", &["ini"])
-            .pick_file()
-        else {
-            return;
-        };
-        match fs::read_to_string(&path) {
-            Ok(text) => {
-                self.config = parse_ini(&text);
-                self.model = model_from_config(&self.config);
-                merge_discovered_lexicon_tags_compat(&mut self.model);
-                self.last_saved_model = self.model.clone();
-                let _ = self.save();
-            }
-            Err(err) => self.status = format!("恢复配置失败: {err}"),
-        }
-    }
     fn open_handwrite(&mut self) {
         let Some(path) = resolve_runtime_exe_path(HANDWRITE_EXE) else {
             self.status = format!("未找到手写查字程序：{HANDWRITE_EXE}");
@@ -900,6 +798,8 @@ impl SettingsApp {
     }
 
     fn reload_lexicon_now(&mut self) {
+        self.lexicon_catalog = None;
+        self.lexicon_catalog_rx = None;
         pinyin_ime::lexicon_prefs::request_phrase_lexicon_reload();
         self.status = "已请求引擎重新加载词库。正在输入的应用会在下一次查询时生效。".to_string();
     }
@@ -1277,6 +1177,8 @@ fn hotkey_combo(
 ) {
     let mut parts = hotkey_parts(value, default_key);
     let mut enabled = !is_hotkey_disabled(value);
+    let capture_id = egui::Id::new(("hotkey_capture", combo_id));
+    let mut capturing = ui.data(|data| data.get_temp::<bool>(capture_id).unwrap_or(false));
     let available_width = ui.available_width().max(160.0);
     ui.set_max_width(available_width);
     ui.horizontal_wrapped(|ui| {
@@ -1293,15 +1195,20 @@ fn hotkey_combo(
                 .color(fluent_palette(ui).muted),
         );
         let mut changed = false;
+        changed |= ui
+            .add_enabled(enabled, egui::Checkbox::new(&mut parts.ctrl, "Ctrl"))
+            .changed();
+        changed |= ui
+            .add_enabled(enabled, egui::Checkbox::new(&mut parts.shift, "Shift"))
+            .changed();
+        changed |= ui
+            .add_enabled(enabled, egui::Checkbox::new(&mut parts.alt, "Alt"))
+            .changed();
+        if !parts.ctrl && !parts.shift && !parts.alt {
+            parts.ctrl = true;
+            changed = true;
+        }
         ui.add_enabled_ui(enabled, |ui| {
-            ui.set_max_width(available_width);
-            changed |= ui.checkbox(&mut parts.ctrl, "Ctrl").changed();
-            changed |= ui.checkbox(&mut parts.shift, "Shift").changed();
-            changed |= ui.checkbox(&mut parts.alt, "Alt").changed();
-            if !parts.ctrl && !parts.shift && !parts.alt {
-                parts.ctrl = true;
-                changed = true;
-            }
             ComboBox::from_id_salt(combo_id)
                 .selected_text(hotkey_key_label(&parts.key))
                 .width(78.0)
@@ -1313,6 +1220,73 @@ fn hotkey_combo(
                     }
                 });
         });
+        if ui
+            .add_enabled(
+                enabled,
+                egui::SelectableLabel::new(
+                    capturing,
+                    if capturing {
+                        "请按组合键…"
+                    } else {
+                        "按键录入"
+                    },
+                ),
+            )
+            .clicked()
+        {
+            capturing = !capturing;
+            ui.data_mut(|data| data.insert_temp(capture_id, capturing));
+        }
+        if ui
+            .add_enabled(enabled, egui::Button::new("清除"))
+            .on_hover_text("关闭此快捷键")
+            .clicked()
+        {
+            *value = "off".to_string();
+            enabled = false;
+            capturing = false;
+            ui.data_mut(|data| data.insert_temp(capture_id, false));
+        }
+        if ui
+            .add_enabled(enabled, egui::Button::new("默认"))
+            .on_hover_text("恢复推荐组合键")
+            .clicked()
+        {
+            *value = "off".to_string();
+            enabled = false;
+            capturing = false;
+            ui.data_mut(|data| data.insert_temp(capture_id, false));
+        }
+        if capturing {
+            let captured = ui.input(|input| {
+                input.events.iter().find_map(|event| match event {
+                    egui::Event::Key {
+                        key,
+                        pressed: true,
+                        modifiers,
+                        ..
+                    } => Some((*key, *modifiers)),
+                    _ => None,
+                })
+            });
+            if let Some((key, modifiers)) = captured {
+                let key_name = format!("{key:?}");
+                if key_name == "Escape" && !modifiers.ctrl && !modifiers.shift && !modifiers.alt {
+                    capturing = false;
+                    ui.data_mut(|data| data.insert_temp(capture_id, false));
+                } else if let Some(key) = normalize_hotkey_key(&key_name) {
+                    *value = hotkey_value(FixedLetterHotkeyParts {
+                        ctrl: modifiers.ctrl,
+                        shift: modifiers.shift,
+                        alt: modifiers.alt,
+                        key,
+                    });
+                    enabled = true;
+                    capturing = false;
+                    ui.data_mut(|data| data.insert_temp(capture_id, false));
+                }
+            }
+        }
         if enabled_changed {
             if enabled {
                 *value = hotkey_value(parts);
@@ -2169,7 +2143,8 @@ fn global_hotkey_settings_changed(before: &SettingsModel, after: &SettingsModel)
 }
 
 fn compatibility_settings_changed(before: &SettingsModel, after: &SettingsModel) -> bool {
-    before.fullscreen_detection != after.fullscreen_detection
+    before.game_input_mode != after.game_input_mode
+        || before.fullscreen_detection != after.fullscreen_detection
         || before.fullscreen_policy != after.fullscreen_policy
         || before.commit_transport != after.commit_transport
         || before.builtin_game_list != after.builtin_game_list
@@ -2417,6 +2392,46 @@ fn merge_discovered_lexicon_tags_compat(model: &mut SettingsModel) {
 
 fn lexicon_tag_label(tag: &str) -> &str {
     match tag {
+        "professional_medical" => "医疗",
+        "professional_law" => "法律",
+        "professional_math" => "数学",
+        "professional_physics" => "物理",
+        "professional_chemistry" => "化学",
+        "professional_biology" => "生物",
+        "professional_history" => "历史",
+        "professional_geography" => "地理",
+        "professional_philosophy" => "哲学",
+        "professional_finance" => "金融",
+        "professional_architecture" => "建筑",
+        "professional_computing" => "计算机",
+        "professional_music" => "音乐",
+        "ai_and_machine_learning" => "人工智能与机器学习（旧版）",
+        "internet_products" => "互联网产品（旧版）",
+        "programming_frameworks" => "编程框架（旧版）",
+        "software_and_cloud" => "软件与云服务（旧版）",
+        "chat_common_phrases" => "聊天常用语（旧版）",
+        "office_common_phrases" => "办公常用语（旧版）",
+        "china_prefecture_level_admin_333" => "全国地级行政区划（旧版）",
+        "county_admin_short_names_2024" => "全国区县简称（旧版）",
+        "world_countries_major_cities" => "世界国家与主要城市（旧版）",
+        "chinese_surnames" => "中华姓氏（旧版）",
+        "name1" => "人物姓名（旧版）",
+        "animal" => "动物词汇（旧版）",
+        "animal_common_5000" => "常见动物扩展（旧版）",
+        "yaowu" => "药物名称（旧版）",
+        "caijing" => "财经词汇（旧版）",
+        "car" => "汽车词汇（旧版）",
+        "chengyu" => "成语（旧版）",
+        "diming" => "地名（旧版）",
+        "food" => "饮食词汇（旧版）",
+        "it" => "信息技术（旧版）",
+        "kaixin_common" => "常用词汇（旧版）",
+        "law" => "法律词汇（旧版）",
+        "lishimingren" => "历史人物（旧版）",
+        "medical" => "医学词汇（旧版）",
+        "poem" => "诗词（旧版）",
+        "hangzhou_metro_stations_262" => "杭州地铁站点（旧版）",
+        "hangzhou_new_places" => "杭州新增地名（旧版）",
         "technology" => "科技、互联网与编程",
         "daily_communication" => "聊天与办公沟通",
         "geography_admin" => "行政区划、国家与城市",
@@ -2645,6 +2660,13 @@ fn acquire_settings_instance() -> Option<SettingsInstanceGuard> {
 }
 
 fn main() -> eframe::Result<()> {
+    let args: Vec<String> = std::env::args().collect();
+    if args.get(1).map(String::as_str) == Some("--export-default-config") {
+        let path = args.get(2).expect("--export-default-config requires an output path");
+        let defaults = rendered_config_for_model(&IniDoc::default(), &SettingsModel::default());
+        fs::write(path, defaults).expect("write default configuration");
+        return Ok(());
+    }
     pinyin_ime::windows_security::apply_process_hardening();
     let Some(_instance_guard) = acquire_settings_instance() else {
         return Ok(());

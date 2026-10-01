@@ -4,11 +4,13 @@
 #include <cstddef>
 #include <cwctype>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
-namespace srf_candidate_stability {
+#include "candidate_limits.h"
 
-inline constexpr size_t kCandidateBatchLimit = 128;
+namespace srf_candidate_stability {
 
 inline bool CompletedBatchKeepsTop(const std::wstring& currentTop,
                                    const std::wstring& completedTop) {
@@ -144,17 +146,25 @@ inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandi
   incomingMeta.resize(incomingCandidates.size());
 
   const size_t frozenCount = std::min(candidateLimit, currentCandidates.size());
-  std::vector<std::wstring> frozenCandidates(currentCandidates.begin(),
-                                             currentCandidates.begin() + frozenCount);
+  std::vector<std::wstring> frozenCandidates;
   std::vector<std::wstring> frozenMeta;
   frozenCandidates.reserve(std::min(candidateLimit,
                                     currentCandidates.size() + incomingCandidates.size()));
   frozenMeta.reserve(frozenCandidates.capacity());
+  std::unordered_map<std::wstring, size_t> incomingIndex;
+  incomingIndex.reserve(incomingCandidates.size());
+  for (size_t i = 0; i < incomingCandidates.size(); ++i) {
+    incomingIndex.emplace(incomingCandidates[i], i);
+  }
+  std::unordered_set<std::wstring> frozenSet;
+  frozenSet.reserve(std::min(candidateLimit,
+                             currentCandidates.size() + incomingCandidates.size()));
   for (size_t i = 0; i < frozenCount; ++i) {
-    const auto match = std::find(incomingCandidates.begin(), incomingCandidates.end(),
-                                 currentCandidates[i]);
-    if (match != incomingCandidates.end()) {
-      const size_t index = static_cast<size_t>(match - incomingCandidates.begin());
+    if (!frozenSet.insert(currentCandidates[i]).second) continue;
+    frozenCandidates.push_back(currentCandidates[i]);
+    const auto match = incomingIndex.find(currentCandidates[i]);
+    if (match != incomingIndex.end()) {
+      const size_t index = match->second;
       frozenMeta.push_back(RemovePartialMetaFlag(incomingMeta[index]));
     } else {
       frozenMeta.push_back(RemovePartialMetaFlag(i < currentMeta.size() ? currentMeta[i]
@@ -164,10 +174,7 @@ inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandi
 
   for (size_t i = 0; i < incomingCandidates.size() && frozenCandidates.size() < candidateLimit;
        ++i) {
-    if (std::find(frozenCandidates.begin(), frozenCandidates.end(), incomingCandidates[i]) !=
-        frozenCandidates.end()) {
-      continue;
-    }
+    if (!frozenSet.insert(incomingCandidates[i]).second) continue;
     frozenCandidates.push_back(incomingCandidates[i]);
     frozenMeta.push_back(incomingMeta[i]);
   }

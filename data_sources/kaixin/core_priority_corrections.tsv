@@ -1,0 +1,41 @@
+# 多音校正中需要保持 Core 排序优先级的明确读音。
+# 其余校正仅在普通词库缺失该读音时进入始终启用的召回词库。
+# 格式：词语<TAB>无声调拼音
+银行	yin hang
+行业	hang ye
+行长	hang zhang
+行家	hang jia
+行列	hang lie
+行情	hang qing
+行为	xing wei
+行动	xing dong
+行走	xing zou
+重庆	chong qing
+重新	chong xin
+重复	chong fu
+重叠	chong die
+重要	zhong yao
+重量	zhong liang
+音乐	yin yue
+乐器	yue qi
+乐曲	yue qu
+乐队	yue dui
+快乐	kuai le
+长江	chang jiang
+长大	zhang da
+长相	zhang xiang
+长高	zhang gao
+了解	liao jie
+觉得	jue de
+睡觉	shui jiao
+教师	jiao shi
+教室	jiao shi
+角色	jue se
+主角	zhu jue
+调查	diao cha
+调整	tiao zheng
+调节	tiao jie
+空调	kong tiao
+便宜	pian yi
+出差	chu chai
+下载	xia zai

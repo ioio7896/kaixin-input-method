@@ -1596,6 +1596,11 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   }
 
   const bool previousHadAnchor = m_hasAnchorRect;
+  const bool sameCandidatePage = wasVisible && m_hasAnchorRect && m_title == title &&
+      m_modeTags == modeTags && m_pageIndex == nextPageIndex && m_dpi == nextDpi &&
+      EqualRect(&m_anchorRect, &anchorRect) && !m_pendingStyleUpdate && !m_layoutDirty &&
+      m_lastLayoutHorizontal == m_style.candidateHorizontal &&
+      m_lastLayoutVariant == m_style.candidateLayoutVariant;
   const bool sameInteractiveContext =
       m_hasAnchorRect && m_title == title && m_modeTags == modeTags &&
       m_totalPages == nextTotalPages && EqualRect(&m_anchorRect, &anchorRect) &&
@@ -1625,6 +1630,14 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   if (!deferImmediatePaint) m_lastShowTick = showTick;
 
   const bool itemsChanged = m_items != pageItems;
+  if ((!sameCandidatePage || itemsChanged) &&
+      (m_pressedIndex >= 0 || m_rightPressedIndex >= 0)) {
+    // A new reading can replace the list between mouse-down and mouse-up.
+    // Never reinterpret that old press as a click on the new phrase.
+    if (GetCapture() == m_hwnd) ReleaseCapture();
+    UpdatePressedIndex(-1);
+    m_rightPressedIndex = -1;
+  }
   const bool commentsChanged = m_comments != nextComments;
   const bool labelsChanged = m_labels != nextLabels;
   const bool clipboardItemsChanged = m_clipboardItems != nextClipboard;
@@ -1708,15 +1721,25 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   const bool delayHorizontalShrink = ShouldDelayHorizontalCandidateShrink(
       m_style.candidateHorizontal, wasVisible, previousHadAnchor,
       previousMeasuredClientSize.cx, naturalMeasuredClientSize.cx,
-      updateKind == CandidateWindowUpdateKind::Content);
+      updateKind == CandidateWindowUpdateKind::Content) && !sameCandidatePage;
   const bool keepPreviousWidth =
       wasVisible && previousHadAnchor && previousMeasuredClientSize.cx > 0 &&
-      (delayHorizontalShrink ||
+      (sameCandidatePage || delayHorizontalShrink ||
        (!m_style.candidateHorizontal && updateKind != CandidateWindowUpdateKind::Style));
   if (keepPreviousWidth) {
     m_measuredClientSize.cx = std::min<LONG>(
         static_cast<LONG>(maxWidth),
         std::max<LONG>(m_measuredClientSize.cx, previousMeasuredClientSize.cx));
+  }
+  if (sameCandidatePage && !HasClipboardCandidateItems(m_clipboardItems)) {
+    // Complete batches may change footer/page counts. Keep the current page's
+    // outer size until the reading/page changes; growth remains allowed.
+    m_measuredClientSize.cy = std::max<LONG>(
+        m_measuredClientSize.cy, previousMeasuredClientSize.cy);
+    if (!itemsChanged && !commentsChanged && !labelsChanged && !abbreviateChanged &&
+        !pinnedItemsChanged && previousItemRects.size() == m_itemRects.size()) {
+      m_itemRects = previousItemRects;
+    }
   }
   if (delayHorizontalShrink) {
     SchedulePendingHorizontalShrink(anchorRect, naturalMeasuredClientSize, naturalItemRects);
@@ -4040,6 +4063,9 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
         return 0;
       }
       if (!self->m_style.candidateLeftClick) return 0;
+      if (self->HitTest(pt) >= 0 && self->m_events) {
+        self->m_events->OnCandidateInteractionStarted();
+      }
       SetCapture(hwnd);
       self->UpdatePressedIndex(self->HitTest(pt));
       return 0;
@@ -4121,6 +4147,7 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
       self->m_rightPressedIndex = hit;
       self->UpdatePressedIndex(hit);
       if (hit >= 0) {
+        if (self->m_events) self->m_events->OnCandidateInteractionStarted();
         SetCapture(hwnd);
       }
       return 0;

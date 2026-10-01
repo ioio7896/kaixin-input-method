@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$PackageRoot = $PSScriptRoot,
     [string]$InstallationRoot,
     [switch]$Machine,
@@ -19,6 +19,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'config_defaults.generated.ps1')
 
 $TextServiceClsid = '{E5A91C40-7B2D-4F8A-9C11-8F3E6D2A1B00}'
 $ProfileGuid = '{A3F0B2C1-4D5E-6789-ABCD-EF0123456789}'
@@ -32,7 +33,7 @@ $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $PackageManifestName = 'package_manifest.sha256'
 $RuntimeSuccessManifestName = 'successful_runtime_payload.txt'
 $RuntimePayloadRootName = 'runtime'
-$CurrentConfigVersion = 13
+$CurrentConfigVersion = $KaixinConfigVersion
 $script:InstallLogPath = $null
 
 function Get-DefaultInstallRoot {
@@ -466,56 +467,7 @@ function Invoke-ConfigMigration {
         }
     }
 
-    $defaults = @(
-        @{ Section = 'general'; Key = 'config_version'; Value = [string]$CurrentConfigVersion },
-        @{ Section = 'diagnostics'; Key = 'log_level'; Value = 'basic' },
-        @{ Section = 'style'; Key = 'candidate_horizontal'; Value = '1' },
-        @{ Section = 'style'; Key = 'candidate_density'; Value = 'comfortable' },
-        @{ Section = 'style'; Key = 'candidate_vertical_layout_variant'; Value = 'compact' },
-        @{ Section = 'style'; Key = 'candidate_horizontal_layout_variant'; Value = 'classic' },
-        @{ Section = 'compatibility'; Key = 'fullscreen_detection'; Value = '1' },
-        @{ Section = 'compatibility'; Key = 'fullscreen_policy'; Value = 'show_ui' },
-        @{ Section = 'compatibility'; Key = 'commit_transport'; Value = 'tsf' },
-        @{ Section = 'compatibility'; Key = 'builtin_game_list'; Value = '1' },
-        @{ Section = 'compatibility'; Key = 'auto_suggest_app_options'; Value = '1' },
-        @{ Section = 'privacy'; Key = 'never_learn_processes'; Value = '' },
-        @{ Section = 'privacy'; Key = 'never_clipboard_processes'; Value = '' },
-        @{ Section = 'privacy'; Key = 'never_candidate_processes'; Value = '' },
-        @{ Section = 'clipboard'; Key = 'background_enabled'; Value = '1' },
-        @{ Section = 'clipboard'; Key = 'max_history_items'; Value = '60' },
-        @{ Section = 'clipboard'; Key = 'max_pinned_items'; Value = '24' },
-        @{ Section = 'clipboard'; Key = 'max_text_utf16_units'; Value = '20000' },
-        @{ Section = 'clipboard'; Key = 'max_age_days'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'hotkey'; Value = 'off' },
-        @{ Section = 'screenshot'; Key = 'auto_save'; Value = '1' },
-        @{ Section = 'screenshot'; Key = 'save_dir'; Value = '' },
-        @{ Section = 'screenshot'; Key = 'silent_copy_enabled'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'silent_copy_dir'; Value = '' },
-        @{ Section = 'screenshot'; Key = 'name_pattern'; Value = '{datetime}' },
-        @{ Section = 'screenshot'; Key = 'format'; Value = 'png' },
-        @{ Section = 'screenshot'; Key = 'copy_after_capture'; Value = '1' },
-        @{ Section = 'screenshot'; Key = 'ocr_after_capture'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'translate_after_capture'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'mode'; Value = 'manual_region' },
-        @{ Section = 'screenshot'; Key = 'confirm_on_release'; Value = '0' },
-        @{ Section = 'screenshot'; Key = 'show_instructions'; Value = '1' },
-        @{ Section = 'clipboard'; Key = 'hotkey'; Value = 'off' },
-        @{ Section = 'tools'; Key = 'settings_hotkey'; Value = 'off' },
-        @{ Section = 'tools'; Key = 'handwrite_hotkey'; Value = 'off' },
-        @{ Section = 'tools'; Key = 'ocr_hotkey'; Value = 'off' },
-        @{ Section = 'tools'; Key = 'translate_hotkey'; Value = 'off' },
-        @{ Section = 'input'; Key = 'traditional_hotkey'; Value = 'off' },
-        @{ Section = 'input'; Key = 'game_mode_hotkey'; Value = 'off' },
-        @{ Section = 'input'; Key = 'temporary_ascii_hotkey'; Value = 'off' },
-        @{ Section = 'input'; Key = 'shift_tap_hotkey'; Value = '1' },
-        @{ Section = 'input'; Key = 'candidate_number_select'; Value = '1' },
-        @{ Section = 'input'; Key = 'symbol_fullwidth'; Value = '0' },
-        @{ Section = 'input'; Key = 'shift_symbol_temporary_ascii'; Value = '0' },
-        @{ Section = 'input'; Key = 'page_minus_equal'; Value = '1' },
-        @{ Section = 'input'; Key = 'page_comma_period'; Value = '1' },
-        @{ Section = 'engine'; Key = 'retry_on_failure'; Value = '1' },
-        @{ Section = 'engine'; Key = 'long_lookup_soft_budget_ms'; Value = '16' }
-    )
+    $defaults = Get-KaixinConfigDefaults
 
     foreach ($entry in $defaults) {
         if (Add-IniDefaultIfMissing -Lines ([ref]$lines) -Section $entry.Section -Key $entry.Key -Value $entry.Value) {
@@ -1250,23 +1202,20 @@ function Write-TrayRunEntry {
     $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
     New-Item -Path $runKey -Force | Out-Null
     $trayExe = Join-Path $InstallRoot 'srf_ime_tray.exe'
-    $engineExe = Join-Path $InstallRoot 'srf_ime_engine.exe'
     if (Test-Path -LiteralPath $trayExe) {
         $command = ('"{0}"' -f $trayExe)
         New-ItemProperty -Path $runKey -Name $TrayRunEntryName -Value $command -PropertyType String -Force | Out-Null
     }
-    if (Test-Path -LiteralPath $engineExe) {
-        # The engine derives its per-install IPC names from its own path when
-        # started without TSF-provided arguments.
-        $engineCommand = ('"{0}" --startup-warmup-delay-ms 750' -f $engineExe)
-        New-ItemProperty -Path $runKey -Name $EngineRunEntryName -Value $engineCommand -PropertyType String -Force | Out-Null
-    }
+    # The tray starts the engine with the same per-install IPC names and lexicon
+    # directory.  Keep one Run entry so Windows does not show duplicate apps.
+    Remove-ItemProperty -Path $runKey -Name $EngineRunEntryName -ErrorAction SilentlyContinue
     Remove-ItemProperty -Path $runKey -Name $LegacyTrayRunEntryName -ErrorAction SilentlyContinue
     $startupApprovedRunKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run'
     if (Test-Path -Path $startupApprovedRunKey) {
+        Remove-ItemProperty -Path $startupApprovedRunKey -Name $EngineRunEntryName -ErrorAction SilentlyContinue
         Remove-ItemProperty -Path $startupApprovedRunKey -Name $LegacyTrayRunEntryName -ErrorAction SilentlyContinue
     }
-    Write-InstallLog 'OK: wrote tray and engine autorun entries'
+    Write-InstallLog 'OK: wrote single tray autorun entry; removed legacy engine autorun entry'
 }
 
 function Start-TrayHelper {

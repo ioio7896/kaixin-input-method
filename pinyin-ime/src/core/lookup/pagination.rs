@@ -1,9 +1,8 @@
 use super::*;
 
 /// Three-letter abbreviations can recall many exact three-character phrases.
-/// Interleave shorter candidates page by page so later pages remain useful for
-/// composing words, while allowing a confident exact intent to occupy more of
-/// the first page.
+/// Keep the confidence layout on the first page, then retain the score order
+/// so later pages do not become source-specific candidate blocks.
 pub(in crate::core) fn arrange_three_char_intent_page_density(
     ranked: &mut Vec<RankedCandidate>,
     page_size: usize,
@@ -20,89 +19,77 @@ pub(in crate::core) fn arrange_three_char_intent_page_density_with_lexicon(
         return;
     }
     let page_size = page_size.clamp(3, TSF_PAGE_SIZE);
+    let original = std::mem::take(ranked);
     let mut exact = Vec::new();
     let mut two_char = Vec::new();
     let mut single_char = Vec::new();
     let mut rest = Vec::new();
-    for item in std::mem::take(ranked) {
+    for item in &original {
         match phrase_char_count(&item.phrase) {
-            3 => exact.push(item),
-            2 => two_char.push(item),
-            1 => single_char.push(item),
-            _ => rest.push(item),
+            3 => exact.push(item.clone()),
+            2 => two_char.push(item.clone()),
+            1 => single_char.push(item.clone()),
+            _ => rest.push(item.clone()),
         }
     }
 
     let policy = three_char_density_policy(&exact, &two_char, &single_char, &rest, lexicon);
 
-    let total = exact.len() + two_char.len() + single_char.len() + rest.len();
-    ranked.reserve(total);
-    let mut page_index = 0usize;
-    while ranked.len() < total {
-        let before = ranked.len();
-        let page_start = page_index.saturating_mul(page_size);
-        let page_end = (page_index + 1).saturating_mul(page_size).min(total);
-        let page_capacity = page_end.saturating_sub(page_start);
-        let single_quota = usize::from(!single_char.is_empty()).min(page_capacity);
-        let non_single_capacity = page_capacity.saturating_sub(single_quota);
-        let exact_cap = (if page_index == 0 {
-            policy.first_exact_cap
-        } else {
-            policy.later_exact_cap
-        })
-        .min(non_single_capacity);
-        let exact_quota = exact_cap.min(exact.len());
-        let two_quota = (if page_index == 0 {
-            policy.first_two_char_quota
-        } else {
-            policy.later_two_char_quota
-        })
-        .min(non_single_capacity.saturating_sub(exact_quota));
-
-        drain_front(&mut exact, ranked, exact_quota);
-        drain_front(&mut two_char, ranked, two_quota);
-        drain_front(&mut single_char, ranked, single_quota);
-
-        while ranked.len() < page_end {
-            let page_exact_count = ranked[page_start.min(ranked.len())..]
-                .iter()
-                .filter(|item| phrase_char_count(&item.phrase) == 3)
-                .count();
-            let future_exact_cap = policy.later_exact_cap.max(1);
-            let future_pages = exact.len().div_ceil(future_exact_cap);
-            let has_surplus_two =
-                two_char.len() > future_pages.saturating_mul(policy.later_two_char_quota);
-            let has_surplus_single = single_char.len() > future_pages;
-            let added = (page_exact_count < exact_cap && drain_one(&mut exact, ranked))
-                || drain_one(&mut rest, ranked)
-                || (has_surplus_two && drain_one(&mut two_char, ranked))
-                || (has_surplus_single && drain_one(&mut single_char, ranked))
-                || drain_one(&mut exact, ranked)
-                || drain_one(&mut two_char, ranked)
-                || drain_one(&mut single_char, ranked);
-            if added {
-                continue;
+    // Shape only the first page. Rebuilding every later page from separate
+    // exact/two-character/single-character queues creates visible blocks of
+    // low-frequency words before ordinary candidates. Keep the original score
+    // order after the first page instead.
+    let mut selected = std::collections::HashSet::new();
+    let mut front = Vec::with_capacity(page_size);
+    let exact_cap = policy.first_exact_cap.min(page_size);
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 3)
+    {
+        if front.len() >= exact_cap || !selected.insert(item.phrase.clone()) {
+            continue;
+        }
+        front.push(item.clone());
+    }
+    let two_quota = policy
+        .first_two_char_quota
+        .min(page_size.saturating_sub(front.len()));
+    let mut selected_two = 0usize;
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 2)
+    {
+        if selected_two >= two_quota || !selected.insert(item.phrase.clone()) {
+            continue;
+        }
+        selected_two += 1;
+        front.push(item.clone());
+    }
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 1)
+    {
+        if front.len() >= page_size || !selected.insert(item.phrase.clone()) {
+            continue;
+        }
+        front.push(item.clone());
+    }
+    if front.len() < page_size {
+        for item in &original {
+            if selected.insert(item.phrase.clone()) {
+                front.push(item.clone());
+                if front.len() >= page_size {
+                    break;
+                }
             }
-            break;
         }
-        if ranked.len() == before {
-            break;
-        }
-        page_index += 1;
     }
-}
-
-fn drain_front(source: &mut Vec<RankedCandidate>, target: &mut Vec<RankedCandidate>, count: usize) {
-    let take = count.min(source.len());
-    target.extend(source.drain(..take));
-}
-
-fn drain_one(source: &mut Vec<RankedCandidate>, target: &mut Vec<RankedCandidate>) -> bool {
-    if source.is_empty() {
-        return false;
-    }
-    target.push(source.remove(0));
-    true
+    ranked.extend(front);
+    ranked.extend(
+        original
+            .into_iter()
+            .filter(|item| !selected.contains(&item.phrase)),
+    );
 }
 
 pub(in crate::core) fn apply_two_char_intent_page_density(ranked: &mut Vec<RankedCandidate>) {
@@ -126,60 +113,42 @@ pub(in crate::core) fn arrange_two_char_intent_page_density(
     }
 
     let page_size = page_size.clamp(3, TSF_PAGE_SIZE);
-    let two_char_count = ranked
+    let original = std::mem::take(ranked);
+    let two_char_count = original
         .iter()
         .filter(|item| phrase_char_count(&item.phrase) == 2)
         .count();
-    let mut two_char = Vec::new();
-    let mut single_char = Vec::new();
-    let mut rest = Vec::new();
-
-    for item in std::mem::take(ranked) {
-        match phrase_char_count(&item.phrase) {
-            2 => two_char.push(item),
-            1 => single_char.push(item),
-            _ => rest.push(item),
-        }
-    }
-
     if two_char_count == 0 {
-        ranked.extend(single_char);
-        ranked.extend(rest);
+        ranked.extend(original);
         return;
     }
-
-    let total_len = two_char.len() + single_char.len() + rest.len();
-    ranked.reserve(total_len);
-
-    let mut two_iter = two_char.into_iter();
-    let mut single_iter = single_char.into_iter();
     let front_two_slots = page_size.saturating_sub(1).max(1);
-    // 全部分页保持"整词在前、单字填空"的交错，而不是只保证前 3 页：
-    // 第 4 页起二字词成块出现会破坏翻页体验的一致性。
-    let reserve_pages = two_iter.len().div_ceil(front_two_slots);
-
-    for _ in 0..reserve_pages {
-        let page_start = ranked.len();
-        for _ in 0..front_two_slots {
-            if let Some(item) = two_iter.next() {
-                ranked.push(item);
-            }
+    let mut selected = std::collections::HashSet::new();
+    let mut front = Vec::with_capacity(page_size);
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 2)
+    {
+        if front.len() >= front_two_slots || !selected.insert(item.phrase.clone()) {
+            continue;
         }
-        // When there are fewer than four exact two-character candidates,
-        // fill the remaining visible slots with single-character building
-        // blocks. Ordinary three-character predictions stay behind the page
-        // instead of leaking into it merely because the exact group is short.
-        while ranked.len().saturating_sub(page_start) < page_size {
-            let Some(item) = single_iter.next() else {
-                break;
-            };
-            ranked.push(item);
-        }
+        front.push(item.clone());
     }
-
-    ranked.extend(two_iter);
-    ranked.extend(rest);
-    ranked.extend(single_iter);
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 1)
+    {
+        if front.len() >= page_size || !selected.insert(item.phrase.clone()) {
+            continue;
+        }
+        front.push(item.clone());
+    }
+    ranked.extend(front);
+    ranked.extend(
+        original
+            .into_iter()
+            .filter(|item| !selected.contains(&item.phrase)),
+    );
 }
 
 pub(in crate::core) fn arrange_two_char_intent_minimum_page_density(
@@ -191,26 +160,13 @@ pub(in crate::core) fn arrange_two_char_intent_minimum_page_density(
     }
 
     let page_size = page_size.clamp(3, TSF_PAGE_SIZE);
-    let two_char_count = ranked
+    let original = std::mem::take(ranked);
+    let two_char_count = original
         .iter()
         .filter(|item| phrase_char_count(&item.phrase) == 2)
         .count();
-
-    let mut two_char = Vec::new();
-    let mut single_char = Vec::new();
-    let mut rest = Vec::new();
-
-    for item in std::mem::take(ranked) {
-        match phrase_char_count(&item.phrase) {
-            2 => two_char.push(item),
-            1 => single_char.push(item),
-            _ => rest.push(item),
-        }
-    }
-
     if two_char_count == 0 {
-        ranked.extend(single_char);
-        ranked.extend(rest);
+        ranked.extend(original);
         return;
     }
 
@@ -225,49 +181,32 @@ pub(in crate::core) fn arrange_two_char_intent_minimum_page_density(
         2usize.min(page_size).min(two_char_count)
     };
 
-    let total_len = two_char.len() + single_char.len() + rest.len();
-    ranked.reserve(total_len);
-
-    let mut two_iter = two_char.into_iter();
-    let mut single_iter = single_char.into_iter();
-    let mut pending_two = two_iter.len();
-
-    while pending_two > 0 {
-        let page_start = ranked.len();
-        let mut take_two = min_two_char_per_page.min(pending_two);
-        let leftover_after_min = pending_two.saturating_sub(take_two);
-        if leftover_after_min > 0 && leftover_after_min < min_two_char_per_page {
-            take_two = (take_two + leftover_after_min)
-                .min(page_size)
-                .min(pending_two);
+    let mut selected = std::collections::HashSet::new();
+    let mut front = Vec::with_capacity(page_size);
+    let mut selected_two = 0usize;
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 2)
+    {
+        if selected_two >= min_two_char_per_page || !selected.insert(item.phrase.clone()) {
+            continue;
         }
-
-        for _ in 0..take_two {
-            if let Some(item) = two_iter.next() {
-                ranked.push(item);
-                pending_two -= 1;
-            }
-        }
-
-        while ranked.len().saturating_sub(page_start) < page_size {
-            let Some(item) = single_iter.next() else {
-                break;
-            };
-            ranked.push(item);
-        }
-        while ranked.len().saturating_sub(page_start) < page_size && pending_two > 0 {
-            let Some(item) = two_iter.next() else {
-                break;
-            };
-            ranked.push(item);
-            pending_two -= 1;
-        }
+        selected_two += 1;
+        front.push(item.clone());
     }
-
-    // The first pages are already filled with exact words and composition
-    // singles. Keep ordinary predictions immediately after those pages so
-    // they remain reachable instead of falling behind a very large single-
-    // character tail and being truncated from the result entirely.
-    ranked.extend(rest);
-    ranked.extend(single_iter);
+    for item in original
+        .iter()
+        .filter(|item| phrase_char_count(&item.phrase) == 1)
+    {
+        if front.len() >= page_size || !selected.insert(item.phrase.clone()) {
+            continue;
+        }
+        front.push(item.clone());
+    }
+    ranked.extend(front);
+    ranked.extend(
+        original
+            .into_iter()
+            .filter(|item| !selected.contains(&item.phrase)),
+    );
 }

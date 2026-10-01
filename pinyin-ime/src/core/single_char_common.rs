@@ -12,14 +12,20 @@ const SINGLE_CHAR_COMMON_FILE: &str = "single_char_common_8105.txt";
 /// lexicon keeps only a bounded head per key and merges duplicate weights from
 /// pronunciation aliases. Both behaviours are useful for phrases, but they
 /// must not rewrite the frequency order of the dedicated 8,105-character list.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub(super) struct SingleCharCommonIndex {
     by_pinyin: HashMap<String, Vec<char>>,
     by_initial: HashMap<char, Vec<char>>,
+    indexed_chars: HashSet<char>,
     character_count: usize,
 }
 
 impl SingleCharCommonIndex {
+    pub(super) fn bundled() -> Self {
+        Self::from_text(include_str!("../../../lexicon/zh/single_char_common_8105.txt"), None)
+            .expect("bundled common-character list must be valid")
+    }
+
     pub(super) fn from_lexicon_dir(dir: &Path) -> io::Result<Self> {
         let candidates = [
             dir.join("zh").join(SINGLE_CHAR_COMMON_FILE),
@@ -77,6 +83,7 @@ impl SingleCharCommonIndex {
             if !seen.insert(ch) {
                 return Err(invalid_row(&path, line_index, "duplicate character"));
             }
+            out.indexed_chars.insert(ch);
             out.character_count += 1;
 
             let readings = pinyin_plain_options(ch);
@@ -106,6 +113,30 @@ impl SingleCharCommonIndex {
             ));
         }
         Ok(out)
+    }
+
+    /// Preserve the curated common-character order, then append every
+    /// character from the compiled supported-character dictionary. This makes
+    /// uncommon characters reachable without letting Unicode order disturb
+    /// the visible common head.
+    pub(super) fn extend_supported(&mut self, dict: &HashMap<String, Vec<char>>) {
+        let mut keys = dict.keys().collect::<Vec<_>>();
+        keys.sort_unstable();
+        for key in keys {
+            let Some(chars) = dict.get(key) else {
+                continue;
+            };
+            let values = self.by_pinyin.entry((*key).clone()).or_default();
+            let mut seen_for_key = values.iter().copied().collect::<HashSet<_>>();
+            for &ch in chars {
+                if seen_for_key.insert(ch) {
+                    values.push(ch);
+                }
+                self.indexed_chars.insert(ch);
+            }
+        }
+
+        self.character_count = self.indexed_chars.len();
     }
 
     pub(super) fn pinyin_order(&self, key: &str) -> &[char] {

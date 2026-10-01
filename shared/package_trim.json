@@ -1,0 +1,9 @@
+{
+  "directories": [
+    ".python-packages/onnxruntime/tools",
+    ".python-packages/cv2/samples"
+  ],
+  "file_globs": [
+    ".python-packages/cv2/data/*.xml"
+  ]
+}

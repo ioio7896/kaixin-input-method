@@ -1,0 +1,62 @@
+# 开心输入法专业小词库：生物
+# 项目原创整理；默认关闭，在设置页按需开启。
+细胞生物学	xi bao sheng wu xue	6000
+分子生物学	fen zi sheng wu xue	6000
+遗传学	yi chuan xue	6000
+生态学	sheng tai xue	6000
+植物学	zhi wu xue	6000
+动物学	dong wu xue	6000
+微生物学	wei sheng wu xue	6000
+生物化学	sheng wu hua xue	6000
+细胞膜	xi bao mo	6000
+细胞核	xi bao he	6000
+细胞质	xi bao zhi	6000
+线粒体	xian li ti	6000
+叶绿体	ye lv ti	6000
+核糖体	he tang ti	6000
+内质网	nei zhi wang	6000
+高尔基体	gao er ji ti	6000
+溶酶体	rong mei ti	6000
+有丝分裂	you si fen lie	6000
+减数分裂	jian shu fen lie	6000
+细胞分化	xi bao fen hua	6000
+细胞凋亡	xi bao diao wang	6000
+光合作用	guang he zuo yong	6000
+细胞呼吸	xi bao hu xi	6000
+三羧酸循环	san suo suan xun huan	6000
+糖酵解	tang jiao jie	6000
+酶	mei	6000
+蛋白质	dan bai zhi	6000
+核酸	he suan	6000
+脱氧核糖核酸	tuo yang he tang he suan	6000
+核糖核酸	he tang he suan	6000
+基因	ji yin	6000
+染色体	ran se ti	6000
+基因组	ji yin zu	6000
+转录	zhuan lu	6000
+翻译	fan yi	6000
+基因表达	ji yin biao da	6000
+基因突变	ji yin tu bian	6000
+基因重组	ji yin chong zu	6000
+表观遗传	biao guan yi chuan	6000
+遗传密码	yi chuan mi ma	6000
+等位基因	deng wei ji yin	6000
+显性遗传	xian xing yi chuan	6000
+隐性遗传	yin xing yi chuan	6000
+自然选择	zi ran xuan ze	6000
+生物进化	sheng wu jin hua	6000
+物种形成	wu zhong xing cheng	6000
+种群	zhong qun	6000
+群落	qun luo	6000
+生态系统	sheng tai xi tong	6000
+食物链	shi wu lian	6000
+食物网	shi wu wang	6000
+生物多样性	sheng wu duo yang xing	6000
+能量流动	neng liang liu dong	6000
+物质循环	wu zhi xun huan	6000
+抗原	kang yuan	6000
+抗体	kang ti	6000
+免疫系统	mian yi xi tong	6000
+干细胞	gan xi bao	6000
+生物技术	sheng wu ji shu	6000
+聚合酶链式反应	ju he mei lian shi fan ying	6000

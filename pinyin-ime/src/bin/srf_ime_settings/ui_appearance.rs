@@ -75,19 +75,26 @@ fn with_preview_opacity(color: Color32, opacity: usize) -> Color32 {
         color.r(),
         color.g(),
         color.b(),
-        ((opacity.clamp(10, 100) as f32 / 100.0) * 255.0).round() as u8,
+        ((color.a() as f32) * (opacity.clamp(10, 100) as f32 / 100.0)).round() as u8,
     )
 }
 
 #[derive(Clone, Copy, Debug)]
 struct CandidatePreviewLayoutSpec {
+    outer_pad_x: f32,
     outer_pad_y: f32,
     header_pad_y: f32,
     header_gap: f32,
     item_gap: f32,
+    item_pad_x: f32,
     item_pad_y: f32,
     label_width: f32,
+    label_gap: f32,
     comment_gap: f32,
+    min_width: f32,
+    preferred_width: f32,
+    max_width: f32,
+    min_horizontal_card_width: f32,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -113,40 +120,68 @@ fn candidate_preview_layout_spec(
     };
     let mut spec = match (layout, model.candidate_horizontal) {
         ("compact", true) => CandidatePreviewLayoutSpec {
+            outer_pad_x: 7.0,
             outer_pad_y: 5.0,
             header_pad_y: 5.0,
             header_gap: 3.0,
             item_gap: 1.0,
+            item_pad_x: 5.0,
             item_pad_y: 4.0,
             label_width: 22.0,
+            label_gap: 5.0,
             comment_gap: 2.0,
+            min_width: 180.0,
+            preferred_width: 270.0,
+            max_width: 460.0,
+            min_horizontal_card_width: 72.0,
         },
         ("compact", false) => CandidatePreviewLayoutSpec {
+            outer_pad_x: 10.0,
             outer_pad_y: 7.0,
             header_pad_y: 6.0,
             header_gap: 5.0,
             item_gap: 3.0,
+            item_pad_x: 9.0,
             item_pad_y: 6.0,
             label_width: 28.0,
+            label_gap: 8.0,
             comment_gap: 4.0,
+            min_width: 230.0,
+            preferred_width: 350.0,
+            max_width: 580.0,
+            min_horizontal_card_width: 80.0,
         },
         ("card", _) => CandidatePreviewLayoutSpec {
+            outer_pad_x: 10.0,
             outer_pad_y: 8.0,
             header_pad_y: 8.0,
             header_gap: 6.0,
             item_gap: 3.0,
+            item_pad_x: 8.0,
             item_pad_y: 6.0,
             label_width: 28.0,
+            label_gap: 8.0,
             comment_gap: 3.0,
+            min_width: 240.0,
+            preferred_width: 360.0,
+            max_width: 600.0,
+            min_horizontal_card_width: 92.0,
         },
         _ => CandidatePreviewLayoutSpec {
+            outer_pad_x: 8.0,
             outer_pad_y: 6.0,
             header_pad_y: 5.0,
             header_gap: 4.0,
             item_gap: 2.0,
+            item_pad_x: 8.0,
             item_pad_y: 5.0,
             label_width: 26.0,
+            label_gap: 6.0,
             comment_gap: 3.0,
+            min_width: 220.0,
+            preferred_width: 330.0,
+            max_width: 560.0,
+            min_horizontal_card_width: 80.0,
         },
     };
 
@@ -172,29 +207,51 @@ fn candidate_preview_layout_spec(
         if let Some(value) = skin.comment_gap {
             spec.comment_gap = value;
         }
+        // The C++ renderer gives themed windows a roomier baseline than the
+        // generic layout. Keep the mock preview close to that sizing even
+        // though not every theme's private layout overrides are exposed here.
+        spec.outer_pad_x = spec.outer_pad_x.max(8.0);
+        spec.item_pad_x = spec.item_pad_x.max(8.0);
+        spec.min_width = spec.min_width.max(225.0);
+        spec.preferred_width = spec.preferred_width.max(350.0);
+        spec.max_width = spec.max_width.max(600.0);
+        spec.min_horizontal_card_width = spec.min_horizontal_card_width.max(112.0);
     }
 
     match model.candidate_density.as_str() {
         "compact" => {
+            spec.outer_pad_x = (spec.outer_pad_x - 2.0).max(4.0);
             spec.outer_pad_y = (spec.outer_pad_y - 2.0).max(4.0);
             spec.header_pad_y = (spec.header_pad_y - 1.0).max(4.0);
             spec.header_gap = (spec.header_gap - 1.0).max(2.0);
             spec.item_gap = (spec.item_gap - 1.0).max(1.0);
+            spec.item_pad_x = (spec.item_pad_x - 2.0).max(4.0);
             spec.item_pad_y = (spec.item_pad_y - 1.0).max(3.0);
             spec.label_width = (spec.label_width - 2.0).max(20.0);
+            spec.label_gap = (spec.label_gap - 1.0).max(4.0);
             spec.comment_gap = (spec.comment_gap - 1.0).max(1.0);
+            spec.preferred_width = (spec.preferred_width - 24.0).max(spec.min_width);
+            spec.max_width = (spec.max_width - 48.0).max(spec.preferred_width);
+            spec.min_horizontal_card_width = (spec.min_horizontal_card_width - 8.0).max(64.0);
         }
         "comfortable" => {
+            spec.outer_pad_x += 2.0;
             spec.outer_pad_y += 1.0;
             spec.header_pad_y += 1.0;
             spec.header_gap += 1.0;
             spec.item_gap += 1.0;
+            spec.item_pad_x += 1.0;
             spec.item_pad_y += 1.0;
             spec.label_width += 2.0;
+            spec.label_gap += 1.0;
             spec.comment_gap += 1.0;
+            spec.preferred_width += 12.0;
+            spec.max_width += 20.0;
         }
         _ => {}
     }
+    spec.preferred_width = spec.preferred_width.max(spec.min_width);
+    spec.max_width = spec.max_width.max(spec.preferred_width);
     spec
 }
 
@@ -272,54 +329,38 @@ fn candidate_preview_metrics(
 }
 
 fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
+    let palette = fluent_palette(ui);
+    egui::Frame::none()
+        .fill(palette.app_bg)
+        .stroke(Stroke::new(1.0, palette.border_subtle))
+        .rounding(10.0)
+        .inner_margin(egui::Margin::same(14.0))
+        .show(ui, |ui| {
+            ui.set_width((ui.available_width()).max(1.0));
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("候选窗效果").small().color(palette.muted));
+                status_badge(ui, StatusTone::Info, if model.candidate_horizontal { "横排" } else { "竖排" });
+            });
+            ui.add_space(16.0);
+            egui::ScrollArea::both()
+                .id_salt("candidate_preview_canvas")
+                .max_height(420.0)
+                .auto_shrink([false, true])
+                .show(ui, |ui| candidate_live_preview_contents(ui, model, skins));
+            ui.add_space(12.0);
+            ui.label(RichText::new(if model.candidate_horizontal {
+                "候选较多时可横向滚动查看；实际显示以真实候选窗为准。"
+            } else {
+                "字体、间距与皮肤随设置实时更新。"
+            }).small().color(palette.muted));
+        });
+}
+
+fn candidate_live_preview_contents(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
     let colors = candidate_preview_colors(ui, model, skins);
     let horizontal = model.candidate_horizontal;
-    let width = ui.available_width().min(720.0);
     let metrics = candidate_preview_metrics(model, skins);
-    let height = metrics.height;
-    let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
-    let painter = ui.painter();
-    let window = with_preview_opacity(colors.window, model.candidate_opacity);
-    painter.rect(rect, 9.0, window, Stroke::new(1.0, colors.border));
-
-    let content = rect.shrink2(egui::vec2(9.0, metrics.outer_pad_y));
-    let body_top = if horizontal {
-        content.top()
-    } else {
-        let header = egui::Rect::from_min_size(
-            content.min,
-            egui::vec2(content.width(), metrics.header_height),
-        );
-        painter.rect(
-            header,
-            6.0,
-            with_preview_opacity(colors.header, model.candidate_opacity),
-            Stroke::new(1.0, colors.divider),
-        );
-        painter.text(
-            egui::pos2(header.left() + 4.0, header.center().y),
-            egui::Align2::LEFT_CENTER,
-            "shurufa",
-            FontId::proportional(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT)),
-            colors.muted,
-        );
-        if model.show_mode_in_candidate_header {
-            let chip = egui::Rect::from_min_size(
-                egui::pos2(header.right() - 40.0, header.center().y - 11.0),
-                egui::vec2(36.0, 22.0),
-            );
-            painter.rect(chip, 6.0, colors.chip, Stroke::new(1.0, colors.chip_border));
-            painter.text(
-                chip.center(),
-                egui::Align2::CENTER_CENTER,
-                "中文",
-                FontId::proportional(SETTINGS_MIN_HINT_FONT.max(11.0)),
-                colors.chip_text,
-            );
-        }
-        header.bottom() + metrics.header_gap
-    };
-
+    let spec = candidate_preview_layout_spec(model, skins);
     let candidates = [
         ("输入法", "常用"),
         ("输入", "全拼"),
@@ -332,11 +373,157 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
         ("输入状态", "联想"),
         ("输入设置", "用户词"),
     ];
-    let body =
-        egui::Rect::from_min_max(egui::pos2(content.left(), body_top), content.right_bottom());
     let font_size = (model.candidate_font_size as f32).clamp(12.0, 28.0);
     let meta_font_size = (font_size * 0.75).clamp(9.0, 13.0);
-    let count = metrics.count;
+    let count = metrics.count.min(candidates.len());
+    let horizontal_gap = (spec.item_gap + 4.0).max(6.0);
+    let label_leading = (spec.label_width + spec.label_gap).max(28.0);
+    let horizontal_card_widths = if horizontal {
+        candidates
+            .iter()
+            .take(count)
+            .enumerate()
+            .map(|(idx, (candidate, meta))| {
+                let body_width = ui
+                    .painter()
+                    .layout_no_wrap(
+                        (*candidate).to_string(),
+                        FontId::proportional(font_size),
+                        colors.text,
+                    )
+                    .size()
+                    .x;
+                let meta_width = if idx == 0 && metrics.has_comment {
+                    ui.painter()
+                        .layout_no_wrap(
+                            (*meta).to_string(),
+                            FontId::proportional(meta_font_size),
+                            colors.muted,
+                        )
+                        .size()
+                        .x
+                } else {
+                    0.0
+                };
+                (label_leading + body_width.max(meta_width) + spec.item_pad_x + 4.0)
+                    .max(spec.min_horizontal_card_width)
+            })
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
+    let vertical_content_width = if horizontal {
+        0.0
+    } else {
+        candidates
+            .iter()
+            .take(count)
+            .map(|(candidate, meta)| {
+                let body_width = ui
+                    .painter()
+                    .layout_no_wrap(
+                        (*candidate).to_string(),
+                        FontId::proportional(font_size),
+                        colors.text,
+                    )
+                    .size()
+                    .x;
+                let meta_width = if metrics.has_comment {
+                    ui.painter()
+                        .layout_no_wrap(
+                            (*meta).to_string(),
+                            FontId::proportional(meta_font_size),
+                            colors.muted,
+                        )
+                        .size()
+                        .x
+                } else {
+                    0.0
+                };
+                body_width.max(meta_width)
+            })
+            .fold(0.0_f32, f32::max)
+            + spec.outer_pad_x * 2.0
+            + spec.label_width
+            + spec.label_gap
+            + spec.item_pad_x * 2.0
+            + 20.0
+    };
+    let natural_width = if horizontal {
+        spec.outer_pad_x * 2.0
+            + horizontal_card_widths.iter().sum::<f32>()
+            + horizontal_gap * count.saturating_sub(1) as f32
+    } else {
+        spec.preferred_width.max(vertical_content_width)
+    };
+    // The live preview used to fill a 720-point rectangle and divide it evenly
+    // between candidates. Real horizontal windows size cards from their text,
+    // so the preview appeared stretched and unlike the C++ candidate window.
+    let width = if horizontal {
+        // Preserve text-sized cards. The surrounding canvas scrolls instead of
+        // squeezing all candidates into the narrow preview dock.
+        natural_width.max(spec.min_width)
+    } else {
+        natural_width.max(spec.min_width).min(spec.max_width.min(720.0))
+            .min(ui.available_width().max(40.0))
+    };
+    let height = metrics.height;
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
+    let apply_opacity = |color| with_preview_opacity(color, model.candidate_opacity);
+    let painter = ui.painter().with_clip_rect(rect);
+    let window = apply_opacity(colors.window);
+    painter.rect(
+        rect,
+        9.0,
+        window,
+        Stroke::new(1.0, apply_opacity(colors.border)),
+    );
+
+    let content = rect.shrink2(egui::vec2(spec.outer_pad_x, metrics.outer_pad_y));
+    let body_top = if horizontal {
+        content.top()
+    } else {
+        let header = egui::Rect::from_min_size(
+            content.min,
+            egui::vec2(content.width(), metrics.header_height),
+        );
+        painter.rect(
+            header,
+            6.0,
+            apply_opacity(colors.header),
+            Stroke::new(1.0, apply_opacity(colors.divider)),
+        );
+        painter.text(
+            egui::pos2(header.left() + 4.0, header.center().y),
+            egui::Align2::LEFT_CENTER,
+            "shurufa",
+            FontId::proportional(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT)),
+            apply_opacity(colors.muted),
+        );
+        if model.show_mode_in_candidate_header {
+            let chip = egui::Rect::from_min_size(
+                egui::pos2(header.right() - 40.0, header.center().y - 11.0),
+                egui::vec2(36.0, 22.0),
+            );
+            painter.rect(
+                chip,
+                6.0,
+                apply_opacity(colors.chip),
+                Stroke::new(1.0, apply_opacity(colors.chip_border)),
+            );
+            painter.text(
+                chip.center(),
+                egui::Align2::CENTER_CENTER,
+                "中文",
+                FontId::proportional(SETTINGS_MIN_HINT_FONT.max(11.0)),
+                apply_opacity(colors.chip_text),
+            );
+        }
+        header.bottom() + metrics.header_gap
+    };
+
+    let body =
+        egui::Rect::from_min_max(egui::pos2(content.left(), body_top), content.right_bottom());
 
     let paint_row = |painter: &egui::Painter,
                      idx: usize,
@@ -344,89 +531,65 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
                      meta: &str,
                      row: egui::Rect,
                      selected: bool| {
+        let painter = &painter.with_clip_rect(row.intersect(painter.clip_rect()));
         let fill = if selected {
-            colors.selected
+            apply_opacity(colors.selected)
         } else {
-            colors.item
+            apply_opacity(colors.item)
         };
         let stroke = if selected {
-            Stroke::new(1.0, colors.selected_border)
+            Stroke::new(1.0, apply_opacity(colors.selected_border))
+        } else if !horizontal {
+            Stroke::new(1.0, apply_opacity(colors.item_border))
         } else {
             Stroke::new(0.0, Color32::TRANSPARENT)
         };
         painter.rect(row, 6.0, fill, stroke);
-        if selected {
-            painter.rect(
-                egui::Rect::from_min_max(
-                    row.left_top(),
-                    egui::pos2(row.left() + 4.0, row.bottom()),
-                ),
-                2.0,
-                colors.selected_border,
-                Stroke::new(0.0, Color32::TRANSPARENT),
-            );
-            painter.circle_filled(
-                egui::pos2(row.left() + 12.0, row.center().y),
-                9.0,
-                colors.selected_border,
-            );
-            painter.text(
-                egui::pos2(row.left() + 12.0, row.center().y),
-                egui::Align2::CENTER_CENTER,
-                format!("{}", idx + 1),
-                FontId::proportional(11.0),
-                colors.selected_text,
-            );
-        } else {
-            painter.text(
-                egui::pos2(row.left() + 10.0, row.center().y),
-                egui::Align2::LEFT_CENTER,
-                format!("{}", idx + 1),
-                FontId::proportional(11.0),
-                colors.muted,
-            );
-        }
-        let text_left = row.left() + 28.0;
+        painter.text(
+            egui::pos2(row.left() + 10.0, row.center().y),
+            egui::Align2::LEFT_CENTER,
+            format!("{}", idx + 1),
+            FontId::proportional(meta_font_size),
+            apply_opacity(if selected { colors.selected_muted } else { colors.muted }),
+        );
+        let text_left = row.left() + label_leading;
         painter.text(
             egui::pos2(text_left, row.top() + 7.0),
             egui::Align2::LEFT_TOP,
             candidate,
             FontId::proportional(font_size),
             if selected {
-                colors.selected_text
+                apply_opacity(colors.selected_text)
             } else {
-                colors.text
+                apply_opacity(colors.text)
             },
         );
-        if metrics.has_comment {
+        if metrics.has_comment && (!horizontal || selected) {
             painter.text(
-                egui::pos2(row.left() + 28.0, row.bottom() - 6.0),
+                egui::pos2(row.left() + label_leading, row.bottom() - 6.0),
                 egui::Align2::LEFT_BOTTOM,
                 meta,
                 FontId::proportional(meta_font_size),
                 if selected {
-                    colors.selected_muted
+                    apply_opacity(colors.selected_muted)
                 } else {
-                    colors.muted
+                    apply_opacity(colors.muted)
                 },
             );
         }
     };
 
     if horizontal {
-        let gap = if model.candidate_horizontal_compact {
-            3.0
-        } else {
-            6.0
-        };
-        let card_width = (body.width() - gap * (count.saturating_sub(1)) as f32) / count as f32;
+        let gap = horizontal_gap;
+        let mut x = body.left();
         for (idx, (candidate, meta)) in candidates.iter().take(count).enumerate() {
             let card = egui::Rect::from_min_size(
-                egui::pos2(body.left() + idx as f32 * (card_width + gap), body.top()),
-                egui::vec2(card_width, body.height()),
+                egui::pos2(x, body.top()),
+                egui::vec2(horizontal_card_widths[idx], body.height()),
             );
             let selected = idx == 0;
             paint_row(&painter, idx, candidate, meta, card, selected);
+            x = card.right() + gap;
         }
     } else {
         let gap = metrics.item_gap;
@@ -465,72 +628,31 @@ fn skin_preview_card(
     );
     ui.painter()
         .rect(preview, 5.0, colors.window, Stroke::new(1.0, colors.border));
-    let marker_radius = 9.0;
     let preview_items = [("输入法", "常用"), ("输入", "全拼"), ("输入方式", "词库")];
-    let row_height = ((preview.height() - 12.0) / 3.0).max(18.0);
+    let gap = 3.0;
+    let row_height = (preview.height() - 10.0 - gap * 2.0) / 3.0;
     for (idx, (candidate, meta)) in preview_items.iter().enumerate() {
         let row = egui::Rect::from_min_size(
-            egui::pos2(
-                preview.left() + 6.0,
-                preview.top() + 6.0 + idx as f32 * (row_height + 3.0),
-            ),
-            egui::vec2(preview.width() - 12.0, row_height - 3.0),
-        );
+            preview.min + egui::vec2(5.0, 5.0 + idx as f32 * (row_height + gap)),
+            egui::vec2(preview.width() - 10.0, row_height));
         let selected = idx == 0;
-        if selected {
-            ui.painter().rect(
-                row,
-                3.0,
-                colors.selected,
-                Stroke::new(1.0, colors.selected_border),
-            );
-            ui.painter().rect(
-                egui::Rect::from_min_size(row.left_top(), egui::vec2(3.0, row.height())),
-                0.0,
-                colors.selected_border,
-                Stroke::new(0.0, Color32::TRANSPARENT),
-            );
-            ui.painter().circle_filled(
-                egui::pos2(row.left() + 10.0, row.center().y),
-                marker_radius,
-                colors.selected_border,
-            );
-            ui.painter().text(
-                egui::pos2(row.left() + 10.0, row.center().y),
-                egui::Align2::CENTER_CENTER,
-                format!("{}", idx + 1),
-                FontId::proportional(11.0),
-                colors.selected_text,
-            );
-        } else {
-            ui.painter().rect(
-                row,
-                3.0,
-                colors.item,
-                Stroke::new(0.0, Color32::TRANSPARENT),
-            );
+        let painter = ui.painter().with_clip_rect(row.intersect(ui.clip_rect()));
+        painter.rect(row, 3.0, if selected { colors.selected } else { colors.item },
+            Stroke::new(if selected { 1.0 } else { 0.0 }, colors.selected_border));
+        let text_color = if selected { colors.selected_text } else { colors.text };
+        let muted = if selected { colors.selected_muted } else { colors.muted };
+        painter.text(egui::pos2(row.left() + 5.0, row.center().y), egui::Align2::LEFT_CENTER,
+            format!("{}", idx + 1), FontId::proportional(10.0), muted);
+        painter.text(egui::pos2(row.left() + 18.0, row.center().y), egui::Align2::LEFT_CENTER,
+            *candidate, FontId::proportional(10.5), text_color);
+        // One baseline per row; metadata only appears when it has its own space.
+        if row.width() >= 130.0 {
+            let meta_rect = egui::Rect::from_min_max(
+                egui::pos2(row.left() + 85.0, row.top()), row.right_bottom());
+            painter.with_clip_rect(meta_rect.intersect(painter.clip_rect())).text(
+                egui::pos2(row.right() - 5.0, row.center().y), egui::Align2::RIGHT_CENTER,
+                *meta, FontId::proportional(9.0), muted);
         }
-        ui.painter().text(
-            egui::pos2(
-                row.left() + if idx == 0 { 22.0 } else { 10.0 },
-                row.top() + 3.0,
-            ),
-            egui::Align2::LEFT_TOP,
-            candidate,
-            FontId::proportional(SETTINGS_MIN_HINT_FONT.max(10.5)),
-            if selected {
-                colors.selected_text
-            } else {
-                colors.text
-            },
-        );
-        ui.painter().text(
-            egui::pos2(row.left() + 28.0, row.bottom() - 5.0),
-            egui::Align2::LEFT_BOTTOM,
-            *meta,
-            FontId::proportional(SETTINGS_MIN_HINT_FONT.max(8.5)),
-            colors.muted,
-        );
     }
     let title = if key.is_empty() {
         "跟随系统推荐"
@@ -538,7 +660,7 @@ fn skin_preview_card(
         localized_skin_name(key, label)
     };
     ui.painter().text(
-        egui::pos2(rect.left() + 9.0, rect.bottom() - 24.0),
+        egui::pos2(rect.left() + 9.0, rect.bottom() - 26.0),
         egui::Align2::LEFT_CENTER,
         title,
         FontId::proportional(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT)),
@@ -555,7 +677,7 @@ fn skin_preview_card(
     };
     if !english.is_empty() {
         ui.painter().text(
-            egui::pos2(rect.left() + 9.0, rect.bottom() - 12.0),
+            egui::pos2(rect.left() + 9.0, rect.bottom() - 10.0),
             egui::Align2::LEFT_CENTER,
             english,
             FontId::proportional(SETTINGS_MIN_HINT_FONT),
@@ -704,28 +826,31 @@ pub(super) fn candidate_appearance_ui(
     skins: &[SkinPreview],
     chinese_fonts: &[String],
     request_real_preview: &mut bool,
+    show_inline_preview: bool,
 ) {
-    section_panel(ui, "候选栏实时预览", |ui| {
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("下方预览会跟随横竖布局、字号、透明度、候选信息和皮肤设置变化。")
-                .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
-                .color(palette.muted),
-        );
-        ui.add_space(8.0);
-        candidate_live_preview(ui, model, skins);
-        ui.add_space(8.0);
-        ui.horizontal_wrapped(|ui| {
-            if outline_button(ui, "保存并用真实候选窗试用").clicked() {
-                *request_real_preview = true;
-            }
+    if show_inline_preview {
+        section_panel(ui, "候选栏实时预览", |ui| {
+            let palette = fluent_palette(ui);
             ui.label(
-                RichText::new("调用与输入时相同的 C++ 渲染器，10 秒后自动关闭。")
-                    .small()
+                RichText::new("下方预览会跟随横竖布局、字号、透明度、候选信息和皮肤设置变化。")
+                    .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
                     .color(palette.muted),
             );
+            ui.add_space(8.0);
+            candidate_live_preview(ui, model, skins);
+            ui.add_space(8.0);
+            ui.horizontal_wrapped(|ui| {
+                if outline_button(ui, "保存并用真实候选窗试用").clicked() {
+                    *request_real_preview = true;
+                }
+                ui.label(
+                    RichText::new("调用与输入时相同的 C++ 渲染器，10 秒后自动关闭。")
+                        .small()
+                        .color(palette.muted),
+                );
+            });
         });
-    });
+    }
 
     ui.add_space(10.0);
     section_panel(ui, "推荐外观", |ui| {
@@ -766,20 +891,24 @@ pub(super) fn candidate_appearance_ui(
             "开启后以横排卡片显示候选。",
             &mut model.candidate_horizontal,
         );
-        setting_slider_usize(
-            ui,
-            "横向候选数",
-            "横排模式下每页显示的候选数量。",
-            &mut model.candidate_horizontal_count,
-            3..=9,
-        );
-        ui.collapsing("高级布局与交互", |ui| {
-            setting_toggle(
+        ui.add_enabled_ui(model.candidate_horizontal, |ui| {
+            setting_slider_usize(
                 ui,
-                "横排紧凑",
-                "减少横排候选卡片间距。",
-                &mut model.candidate_horizontal_compact,
+                "横向候选数",
+                "横排模式下每页显示的候选数量。",
+                &mut model.candidate_horizontal_count,
+                3..=9,
             );
+        });
+        ui.collapsing("高级布局与交互", |ui| {
+            ui.add_enabled_ui(model.candidate_horizontal, |ui| {
+                setting_toggle(
+                    ui,
+                    "横排紧凑",
+                    "减少横排候选卡片间距。",
+                    &mut model.candidate_horizontal_compact,
+                );
+            });
             setting_combo_row(
                 ui,
                 "外观密度",
@@ -834,33 +963,35 @@ pub(super) fn candidate_appearance_ui(
                     );
                 },
             );
-            setting_combo_row(
-                ui,
-                "横排布局",
-                "控制横向候选栏的间距、分块感和单行显示效果。",
-                horizontal_layout_label(&model.candidate_horizontal_layout_variant).to_owned(),
-                "horizontal_layout",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_horizontal_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[0],
-                        "单行舒适",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_horizontal_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[1],
-                        "单行紧凑",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_horizontal_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[2],
-                        "分块卡片",
-                    );
-                },
-            );
+            ui.add_enabled_ui(model.candidate_horizontal, |ui| {
+                setting_combo_row(
+                    ui,
+                    "横排布局",
+                    "控制横向候选栏的间距、分块感和单行显示效果。",
+                    horizontal_layout_label(&model.candidate_horizontal_layout_variant).to_owned(),
+                    "horizontal_layout",
+                    |ui| {
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_horizontal_layout_variant,
+                            schema_options::CANDIDATE_LAYOUTS[0],
+                            "单行舒适",
+                        );
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_horizontal_layout_variant,
+                            schema_options::CANDIDATE_LAYOUTS[1],
+                            "单行紧凑",
+                        );
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_horizontal_layout_variant,
+                            schema_options::CANDIDATE_LAYOUTS[2],
+                            "分块卡片",
+                        );
+                    },
+                );
+            });
             setting_toggle(
                 ui,
                 "候选窗置顶",
@@ -1099,7 +1230,37 @@ pub(super) fn candidate_appearance_ui(
     });
 }
 
-fn apply_candidate_recommended_defaults(model: &mut SettingsModel) {
+pub(super) fn candidate_preview_dock_ui(
+    ui: &mut egui::Ui,
+    model: &mut SettingsModel,
+    skins: &[SkinPreview],
+    request_real_preview: &mut bool,
+) {
+    let palette = fluent_palette(ui);
+    ui.label(
+        RichText::new("实时预览")
+            .strong()
+            .size(SETTINGS_FONT_SECTION_TITLE)
+            .color(palette.text),
+    );
+    ui.label(
+        RichText::new("修改后立即更新，无需先保存。")
+            .small()
+            .color(palette.muted),
+    );
+    ui.add_space(12.0);
+    candidate_live_preview(ui, model, skins);
+    ui.add_space(12.0);
+    if outline_button(ui, "恢复默认外观").clicked() {
+        apply_candidate_recommended_defaults(model);
+    }
+    ui.add_space(8.0);
+    if outline_button(ui, "保存并用真实候选窗试用").clicked() {
+        *request_real_preview = true;
+    }
+}
+
+pub(super) fn apply_candidate_recommended_defaults(model: &mut SettingsModel) {
     let default = SettingsModel::default();
     model.candidate_page_size = default.candidate_page_size;
     model.candidate_horizontal = default.candidate_horizontal;

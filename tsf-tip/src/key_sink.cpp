@@ -1,4 +1,5 @@
 #include "key_sink.h"
+#include "game_input_policy.h"
 
 #include <cstdio>
 #include <filesystem>
@@ -96,14 +97,20 @@ class CEditSessionProcessKey final : public ITfEditSession {
   LPARAM m_lParam = 0;
   bool m_shiftDown = false;
   bool m_handled = false;
+  bool m_executed = false;
+  SrfFocusSnapshot m_focus = {};
+  HWND m_foreground = nullptr;
 
  public:
   CEditSessionProcessKey(CSrfTip* tip, ITfContext* pic, UINT vk, LPARAM lParam, bool shiftDown)
       : m_pTip(tip), m_vk(vk), m_lParam(lParam), m_shiftDown(shiftDown) {
     m_pic = pic;
+    m_foreground = GetForegroundWindow();
+    if (m_pTip) { m_pTip->AddRef(); m_focus = m_pTip->CaptureFocusSnapshot(pic); }
     if (m_pic) m_pic->AddRef();
   }
   ~CEditSessionProcessKey() {
+    if (m_pTip) m_pTip->Release();
     if (m_pic) m_pic->Release();
   }
 
@@ -125,12 +132,16 @@ class CEditSessionProcessKey final : public ITfEditSession {
   }
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+    m_executed = true;
     if (!m_pTip || !m_pic) return E_FAIL;
+    if (GetForegroundWindow() != m_foreground || !m_pTip->FocusSnapshotMatches(m_focus)) return S_OK;
     m_handled = false;
+    if (!m_pTip->EnsureEngineInputReady()) return S_OK;
     return m_pTip->ProcessKey(ec, m_pic, m_vk, m_lParam, m_shiftDown, &m_handled);
   }
 
   bool Consumed() const { return m_handled; }
+  bool Executed() const { return m_executed; }
 };
 
 /// 请求编辑会话，先 SYNC 后 ASYNC 回退。
@@ -139,9 +150,10 @@ bool RequestEditSessionWithFallback(ITfContext* pic, TfClientId tid,
                                     CEditSessionProcessKey* pEdit) {
   HRESULT hrSession = E_FAIL;
   HRESULT hr = pic->RequestEditSession(tid, pEdit, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
-  if (SUCCEEDED(hr) && SUCCEEDED(hrSession)) {
-    return pEdit->Consumed();
-  }
+  // A callback failure may follow a partial commit. Replaying that physical
+  // key in ASYNC would deliver text twice, even with transport fallback disabled.
+  if (!SrfShouldRetryKeyEditSession(pEdit->Executed())) return pEdit->Consumed();
+  if (SUCCEEDED(hr) && SUCCEEDED(hrSession)) return pEdit->Consumed();
 
   // 同步请求失败 — 回退到异步。
   // 异步模式下 DoEditSession 尚未执行，无法通过 Consumed() 判断结果，
@@ -195,6 +207,13 @@ STDMETHODIMP CKeyEventSink::OnSetFocus(BOOL fForeground) {
   if (!fForeground) {
     m_leftShiftDown = false;
     m_rightShiftDown = false;
+    for (auto& down : m_passthroughKeyDown) down = false;
+    if (m_pTip) {
+      m_pTip->m_shiftTapActive = false;
+      m_pTip->m_shiftTapUsedWithOtherKey = false;
+      m_pTip->SetGameChatActive(false);
+      m_pTip->EndInputSession(L"key-sink-focus-loss");
+    }
   }
   return S_OK;
 }
@@ -208,7 +227,16 @@ STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LP
   if (IsVkShift(vk)) {
     UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
   }
-  if (m_pTip->WouldEatKey(vk)) *pfEaten = TRUE;
+  if (m_pTip->ObserveGameChatExit(vk, lParam)) {
+    if (vk < 256) m_passthroughKeyDown[vk] = true;
+    return S_OK;
+  }
+  if (vk < 256 && SrfGameKeepHeldKey(m_passthroughKeyDown[vk], (lParam & 0x40000000) != 0)) return S_OK;
+  if (m_pTip->WouldEatKey(vk)) {
+    *pfEaten = TRUE;
+  } else if (vk < 256) {
+    m_passthroughKeyDown[vk] = true;
+  }
   return S_OK;
 }
 
@@ -218,6 +246,12 @@ STDMETHODIMP CKeyEventSink::OnTestKeyUp(ITfContext* /*pic*/, WPARAM wParam, LPAR
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
+  const bool passedDown = vk < 256 && m_passthroughKeyDown[vk];
+  if (vk < 256) m_passthroughKeyDown[vk] = false;
+  if (passedDown && IsVkShift(vk)) {
+    UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
+    return S_OK;
+  }
   // Only Shift KeyUp is handled by the IME. If it will be handled, keep the
   // tracked state until OnKeyUp consumes the real release event.
   if (IsVkShift(vk)) {
@@ -238,6 +272,20 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
   if (!pic || !m_pTip) return S_OK;
 
   const UINT vk = static_cast<UINT>(wParam);
+  if (m_pTip->ObserveGameChatExit(vk, lParam)) return S_OK;
+  if (vk < 256 && SrfGameKeepHeldKey(m_passthroughKeyDown[vk], (lParam & 0x40000000) != 0)) return S_OK;
+  if (m_pTip->ShouldHandleGameChatHotkey() &&
+      m_pTip->IsConfiguredHotkey(vk, m_pTip->m_config.input.gameModeHotkey)) {
+    if ((lParam & 0x40000000) == 0) {
+      const ULONGLONG now = GetTickCount64();
+      if (now - m_pTip->m_lastManualToggleTick >= CSrfTip::kManualToggleDedupMs) {
+        m_pTip->m_lastManualToggleTick = now;
+        m_pTip->ToggleManualGameCompat(TF_INVALID_COOKIE);
+      }
+    }
+    *pfEaten = TRUE;
+    return S_OK;
+  }
   if (IsVkShift(vk)) {
     UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
   }
@@ -261,6 +309,7 @@ STDMETHODIMP CKeyEventSink::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lPara
   if (!pic || !m_pTip) return S_OK;
 
   const UINT vk = static_cast<UINT>(wParam);
+  if (vk < 256) m_passthroughKeyDown[vk] = false;
   if (!IsVkShift(vk)) return S_OK;
   const bool shiftDown = CaptureShiftDown(vk, lParam, m_leftShiftDown || m_rightShiftDown);
   UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
@@ -285,7 +334,9 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
   // PreserveKey is global to the active TSF profile. Keep a final runtime
   // guard as foreground transitions can race dynamic unregistration.
   m_pTip->RefreshKeyHotPathState();
-  if (!m_pTip->ShouldHandleImeHotkeys()) return S_OK;
+  const bool gameChatKey = IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE) &&
+                           m_pTip->ShouldHandleGameChatHotkey();
+  if (!gameChatKey && !m_pTip->ShouldHandleImeHotkeys()) return S_OK;
 
   const bool hasReading = m_pTip->m_imeOpen && !m_pTip->m_reading.empty();
   if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_IME) ||

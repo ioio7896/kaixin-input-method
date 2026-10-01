@@ -11,17 +11,15 @@ const SETTINGS_MIN_HINT_FONT: f32 = 10.0;
 const SETTINGS_FONT_SMALL: f32 = 14.0;
 const SETTINGS_FONT_MONOSPACE: f32 = 14.0;
 const SETTINGS_FONT_LOG: f32 = 12.0;
-const SETTINGS_CONTROL_WIDTH: f32 = 320.0;
-const SETTINGS_CONTROL_MIN_WIDTH: f32 = 280.0;
-const SETTINGS_CONTROL_HEIGHT: f32 = 52.0;
-const SETTINGS_ROW_HEIGHT: f32 = 52.0;
-const SETTINGS_ROW_PAD_Y: f32 = 8.0;
+const SETTINGS_CONTROL_WIDTH: f32 = 260.0;
+const SETTINGS_CONTROL_MIN_WIDTH: f32 = 240.0;
+const SETTINGS_ROW_HEIGHT: f32 = 40.0;
+const SETTINGS_ROW_PAD_Y: f32 = 5.0;
 const SETTINGS_RADIUS_CONTROL: f32 = 6.0;
-const SETTINGS_RADIUS_CARD: f32 = 10.0;
+const SETTINGS_RADIUS_CARD: f32 = 8.0;
 const SETTINGS_RADIUS_FULL: f32 = 999.0;
-const SETTINGS_ROW_STACK_WIDTH: f32 = 640.0;
+const SETTINGS_ROW_STACK_WIDTH: f32 = 520.0;
 const SETTINGS_BUTTON_WIDTH: f32 = 82.0;
-const SETTINGS_TOAST_MS: u64 = 2_400;
 const DEFAULT_SCREENSHOT_DIR_DESCRIPTION: &str = "留空时使用“图片\\Kaixin Screenshots”。";
 const DEFAULT_SCREENSHOT_DIR_HINT: &str = "默认：图片\\Kaixin Screenshots";
 
@@ -35,24 +33,49 @@ fn screenshot_capture_scheme_label(mode: &str) -> &'static str {
 
 impl eframe::App for SettingsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if let Some(rx) = &self.diagnostics_rx {
+            match rx.try_recv() {
+                Ok(mut snapshot) => {
+                    snapshot.refreshed_at = Instant::now();
+                    self.diagnostics_cache = Some(snapshot);
+                    self.diagnostics_rx = None;
+                }
+                Err(mpsc::TryRecvError::Disconnected) => self.diagnostics_rx = None,
+                Err(mpsc::TryRecvError::Empty) => {
+                    ctx.request_repaint_after(Duration::from_millis(100))
+                }
+            }
+        }
+        if let Some(rx) = &self.performance_export_rx {
+            match rx.try_recv() {
+                Ok(status) => {
+                    self.status = status;
+                    self.performance_export_rx = None;
+                }
+                Err(mpsc::TryRecvError::Disconnected) => {
+                    self.status = "性能日志导出任务异常结束，请重试。".to_string();
+                    self.performance_export_rx = None;
+                }
+                Err(mpsc::TryRecvError::Empty) => {
+                    ctx.request_repaint_after(Duration::from_millis(100))
+                }
+            }
+        }
         self.poll_user_dict_task();
         if self.user_dict_task_rx.is_some() {
             ctx.request_repaint_after(Duration::from_millis(100));
         }
+        enforce_settings_min_font_size(ctx);
         let palette = FluentPalette::from_visuals(&ctx.style().visuals);
         // `SettingsModel` is already `PartialEq`; comparing it avoids cloning
         // and rendering the whole INI file on every egui repaint.  Rendering
         // is deliberately kept on the save path, where it belongs.
         let is_dirty = self.model != self.last_saved_model;
         let mut request_real_candidate_preview = false;
-        let mut save_toast = None;
-        if let Some((text, shown_at)) = &self.save_toast {
-            if shown_at.elapsed() > Duration::from_millis(SETTINGS_TOAST_MS) {
-                self.save_toast = None;
-            } else {
-                save_toast = Some(text.clone());
-            }
+        if is_dirty {
+            self.save_toast = None;
         }
+        let save_toast = self.save_toast.as_ref().map(|(text, _)| text.clone());
         let save_toast = save_toast.as_deref();
         if ctx.input(|input| input.viewport().close_requested()) && is_dirty {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
@@ -110,6 +133,12 @@ impl eframe::App for SettingsApp {
                             )
                             .wrap(),
                         );
+                    } else if is_dirty {
+                        ui.label(
+                            RichText::new("● 有未保存的修改")
+                                .small()
+                                .color(palette.warning),
+                        );
                     } else if let Some(message) = save_toast {
                         ui.add(
                             egui::Label::new(
@@ -155,6 +184,12 @@ impl eframe::App for SettingsApp {
                                 )
                                     .wrap(),
                                 );
+                            } else if is_dirty {
+                                ui.label(
+                                    RichText::new("● 有未保存的修改")
+                                        .small()
+                                        .color(palette.warning),
+                                );
                             } else if let Some(message) = save_toast {
                                 ui.add(
                                     egui::Label::new(
@@ -170,7 +205,11 @@ impl eframe::App for SettingsApp {
                                     .wrap(),
                                 );
                             }
-                            if conflicts.is_empty() && save_toast.is_none() && self.status.is_empty() {
+                            if conflicts.is_empty()
+                                && !is_dirty
+                                && save_toast.is_none()
+                                && self.status.is_empty()
+                            {
                             ui.add(
                                 egui::Label::new(
                                     RichText::new("设置保存在本机配置文件中；多数设置热加载，热键/兼容规则可能需要切换一次焦点。")
@@ -225,6 +264,7 @@ impl eframe::App for SettingsApp {
                     if self.active_section != previous_section {
                         self.reset_section_scroll = true;
                     }
+                    settings_search_ui(ui, self, true);
                 });
         } else {
             egui::SidePanel::left("settings_nav")
@@ -239,7 +279,11 @@ impl eframe::App for SettingsApp {
                 .show(ctx, |ui| {
                     fluent_nav_header(ui);
                     ui.add_space(8.0);
+                    settings_search_ui(ui, self, false);
+                    ui.add_space(8.0);
+                    let nav_height = (ui.available_height() - 145.0).max(80.0);
                     egui::ScrollArea::vertical()
+                        .max_height(nav_height)
                         .id_salt("settings_navigation_scroll")
                         .auto_shrink([false, false])
                         .show(ui, |ui| {
@@ -272,22 +316,66 @@ impl eframe::App for SettingsApp {
                                     .color(palette.muted),
                             );
                         });
+                    ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
+                        ui.label(RichText::new("设置页主题").small().color(palette.muted));
+                        let mut preference = ui.ctx().options(|options| options.theme_preference);
+                        let previous = preference;
+                        ui.radio_value(&mut preference, egui::ThemePreference::System, "跟随系统");
+                        ui.radio_value(&mut preference, egui::ThemePreference::Dark, "深色");
+                        ui.radio_value(&mut preference, egui::ThemePreference::Light, "浅色");
+                        if preference != previous {
+                            ui.ctx().set_theme(preference);
+                            ui.ctx().request_repaint();
+                        }
+                        ui.separator();
+                    });
                 });
         }
 
-        if self.active_section == SettingsSection::Diagnostics {
+        if self.active_section == SettingsSection::System
+            && self.system_page == SystemSettingsPage::Diagnostics
+        {
             let needs_refresh = self
                 .diagnostics_cache
                 .as_ref()
                 .map(|snapshot| snapshot.refreshed_at.elapsed() >= Duration::from_secs(2))
                 .unwrap_or(true);
-            if needs_refresh {
-                self.diagnostics_cache = Some(build_diagnostics_snapshot(self));
+            if needs_refresh && self.diagnostics_rx.is_none() {
+                let foreground = self.foreground_process.clone();
+                let (tx, rx) = mpsc::channel();
+                self.diagnostics_rx = Some(rx);
+                let repaint = ctx.clone();
+                std::thread::spawn(move || {
+                    let _ = tx.send(build_diagnostics_snapshot(foreground));
+                    repaint.request_repaint();
+                });
             }
             // Diagnostics are intentionally sampled, not rebuilt for every
             // mouse move or scroll event.  This keeps the page responsive
             // while still showing fresh runtime data.
             ctx.request_repaint_after(Duration::from_secs(2));
+        }
+
+        let docked_candidate_preview = self.active_section == SettingsSection::Appearance
+            && ctx.available_rect().width() >= 900.0;
+        if docked_candidate_preview {
+            egui::SidePanel::right("candidate_preview_dock")
+                .resizable(false)
+                .exact_width(300.0)
+                .frame(
+                    egui::Frame::none()
+                        .fill(palette.surface_alt)
+                        .stroke(Stroke::new(1.0, palette.border_subtle))
+                        .inner_margin(egui::Margin::symmetric(14.0, 16.0)),
+                )
+                .show(ctx, |ui| {
+                    candidate_preview_dock_ui(
+                        ui,
+                        &mut self.model,
+                        &self.available_skins,
+                        &mut request_real_candidate_preview,
+                    );
+                });
         }
 
         egui::CentralPanel::default()
@@ -304,7 +392,12 @@ impl eframe::App for SettingsApp {
                     ))
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
-                        section_header(ui, self.active_section);
+                        section_header(ui, self);
+                        match self.active_section {
+                            SettingsSection::Tools => tool_page_tabs(ui, self),
+                            SettingsSection::System => system_page_tabs(ui, self),
+                            _ => {}
+                        }
                         ui.add_space(14.0);
 
                         let reset_scroll = self.reset_section_scroll;
@@ -318,19 +411,18 @@ impl eframe::App for SettingsApp {
                         scroll_area.show(ui, |ui| {
                             ui.set_width(ui.available_width());
                             match self.active_section {
-                                SettingsSection::Appearance => {
-                                    candidate_page_ui(ui, self, &mut request_real_candidate_preview)
-                                }
+                                SettingsSection::Input => input_page_ui(ui, self),
+                                SettingsSection::Appearance => candidate_page_ui(
+                                    ui,
+                                    self,
+                                    &mut request_real_candidate_preview,
+                                    !docked_candidate_preview,
+                                ),
                                 SettingsSection::Lexicon => lexicon_page_ui(ui, self),
                                 SettingsSection::Hotkeys => hotkeys_ui(ui, &mut self.model),
-                                SettingsSection::Clipboard => clipboard_settings_ui(ui, self),
+                                SettingsSection::Tools => tools_page_ui(ui, self),
                                 SettingsSection::Compatibility => compatibility_ui(ui, self),
-                                SettingsSection::Screenshot => screenshot_page_ui(ui, self),
-                                SettingsSection::Ocr => ocr_page_ui(ui, self),
-                                SettingsSection::Translation => translation_page_ui(ui, self),
-                                SettingsSection::Privacy => privacy_data_ui(ui, self),
-                                SettingsSection::Diagnostics => diagnostics_page_ui(ui, self),
-                                SettingsSection::Advanced => advanced_page_ui(ui, self),
+                                SettingsSection::System => system_page_ui(ui, self),
                             }
                         });
                     });
@@ -389,12 +481,12 @@ impl FluentPalette {
                 border_subtle: Color32::from_rgb(48, 48, 48),
                 text: Color32::from_rgb(245, 245, 245),
                 muted: Color32::from_rgb(200, 200, 200),
-                accent: Color32::from_rgb(76, 209, 151),
-                accent_hover: Color32::from_rgb(111, 224, 176),
-                accent_pressed: Color32::from_rgb(47, 180, 126),
+                accent: Color32::from_rgb(96, 180, 255),
+                accent_hover: Color32::from_rgb(135, 199, 255),
+                accent_pressed: Color32::from_rgb(67, 156, 235),
                 accent_text: Color32::from_rgb(0, 0, 0),
                 warning: Color32::from_rgb(255, 202, 109),
-                success: Color32::from_rgb(76, 209, 151),
+                success: Color32::from_rgb(96, 180, 255),
                 danger: Color32::from_rgb(255, 112, 112),
                 warning_bg: Color32::from_rgb(66, 52, 30),
                 success_bg: Color32::from_rgb(28, 58, 48),
@@ -403,25 +495,25 @@ impl FluentPalette {
             }
         } else {
             Self {
-                app_bg: Color32::from_rgb(241, 244, 246),
-                nav_bg: Color32::from_rgb(235, 239, 242),
-                command_bar: Color32::from_rgb(246, 248, 250),
-                surface: Color32::from_rgb(252, 253, 253),
-                surface_alt: Color32::from_rgb(240, 245, 245),
+                app_bg: Color32::from_rgb(245, 247, 250),
+                nav_bg: Color32::from_rgb(240, 244, 249),
+                command_bar: Color32::from_rgb(255, 255, 255),
+                surface: Color32::from_rgb(255, 255, 255),
+                surface_alt: Color32::from_rgb(248, 250, 253),
                 control_bg: Color32::from_rgb(252, 253, 254),
-                control_hover: Color32::from_rgb(242, 248, 247),
-                nav_hover: Color32::from_rgb(224, 233, 234),
-                nav_selected: Color32::from_rgb(218, 238, 234),
+                control_hover: Color32::from_rgb(241, 246, 253),
+                nav_hover: Color32::from_rgb(230, 238, 248),
+                nav_selected: Color32::from_rgb(225, 238, 255),
                 border: Color32::from_rgb(205, 213, 223),
-                border_subtle: Color32::from_rgb(229, 235, 232),
+                border_subtle: Color32::from_rgb(229, 234, 242),
                 text: Color32::from_rgb(31, 41, 55),
                 muted: Color32::from_rgb(96, 110, 128),
-                accent: Color32::from_rgb(0, 137, 110),
-                accent_hover: Color32::from_rgb(0, 120, 96),
-                accent_pressed: Color32::from_rgb(0, 96, 79),
+                accent: Color32::from_rgb(0, 120, 212),
+                accent_hover: Color32::from_rgb(0, 103, 184),
+                accent_pressed: Color32::from_rgb(0, 87, 158),
                 accent_text: Color32::WHITE,
                 warning: Color32::from_rgb(157, 93, 0),
-                success: Color32::from_rgb(0, 137, 110),
+                success: Color32::from_rgb(0, 120, 212),
                 danger: Color32::from_rgb(190, 45, 45),
                 warning_bg: Color32::from_rgb(255, 246, 224),
                 success_bg: Color32::from_rgb(226, 246, 240),
@@ -444,44 +536,44 @@ fn fluent_primary_button<'a>(label: &'a str, palette: FluentPalette) -> egui::Bu
         .min_size(egui::vec2(104.0, 34.0))
 }
 
-fn outline_icon_button<'a>(icon: &str, label: &'a str, palette: FluentPalette) -> egui::Button<'a> {
-    egui::Button::new(RichText::new(format!("{icon}  {label}")).color(palette.text))
-        .fill(Color32::TRANSPARENT)
-        .stroke(Stroke::new(1.0, palette.border))
-        .rounding(SETTINGS_RADIUS_CONTROL)
-        .min_size(egui::vec2(126.0, 34.0))
-}
-
 fn settings_action_buttons(
     ui: &mut egui::Ui,
     app: &mut SettingsApp,
     palette: FluentPalette,
     is_dirty: bool,
-    save_toast: Option<&str>,
+    _save_toast: Option<&str>,
 ) {
     ui.horizontal(|ui| {
-        if ui.add(fluent_primary_button(SAVE_CN, palette)).clicked() {
+        if ui
+            .add_enabled(is_dirty, fluent_primary_button(SAVE_CN, palette))
+            .clicked()
+        {
             let _ = app.save();
         }
-        if is_dirty {
-            status_dot(ui, palette.warning);
-            ui.label(
-                RichText::new("有未保存更改")
-                    .size(SETTINGS_FONT_SMALL)
-                    .color(palette.warning),
-            );
+        if is_dirty && outline_button(ui, "放弃修改").clicked() {
+            app.model = app.last_saved_model.clone();
+            app.status = "已撤销未保存更改。".to_string();
         }
     });
-    if ui
-        .add(outline_icon_button("📁", OPEN_CFG_CN, palette))
-        .clicked()
-    {
-        app.open_config_dir();
-    }
     ui.menu_button("更多", |ui| {
         ui.set_min_width(150.0);
-        if ui.button(RESET_CN).clicked() {
-            app.reset_defaults();
+        if ui.button(OPEN_CFG_CN).clicked() {
+            app.open_config_dir();
+            ui.close_menu();
+        }
+        if ui.button("恢复全部默认").clicked() {
+            let confirmed = matches!(
+                rfd::MessageDialog::new()
+                    .set_title("恢复全部默认设置")
+                    .set_description("这会重置所有输入、外观、工具、兼容和隐私选项。用户词库和历史数据不会被删除。")
+                    .set_level(rfd::MessageLevel::Warning)
+                    .set_buttons(rfd::MessageButtons::OkCancel)
+                    .show(),
+                rfd::MessageDialogResult::Ok
+            );
+            if confirmed {
+                app.reset_defaults();
+            }
             ui.close_menu();
         }
     });
@@ -499,7 +591,7 @@ fn fluent_nav_header(ui: &mut egui::Ui) {
                 let (mark, _) =
                     ui.allocate_exact_size(egui::vec2(34.0, 34.0), egui::Sense::hover());
                 ui.painter()
-                    .circle_filled(mark.center(), 17.0, palette.accent);
+                    .rect_filled(mark, egui::Rounding::same(8.0), palette.accent);
                 ui.painter().text(
                     mark.center(),
                     egui::Align2::CENTER_CENTER,
@@ -509,16 +601,12 @@ fn fluent_nav_header(ui: &mut egui::Ui) {
                 );
                 ui.vertical(|ui| {
                     ui.label(
-                        RichText::new(TITLE_CN)
+                        RichText::new("开心输入法")
                             .strong()
                             .size(SETTINGS_FONT_BRAND_TITLE)
                             .color(palette.text),
                     );
-                    ui.label(
-                        RichText::new("本地、干净、可控")
-                            .small()
-                            .color(palette.muted),
-                    );
+                    ui.label(RichText::new("让输入更开心").small().color(palette.muted));
                     ui.label(
                         RichText::new(format!("v{}", env!("CARGO_PKG_VERSION")))
                             .small()
@@ -529,9 +617,10 @@ fn fluent_nav_header(ui: &mut egui::Ui) {
         });
 }
 
-fn section_header(ui: &mut egui::Ui, section: SettingsSection) {
+fn section_header(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let palette = fluent_palette(ui);
     ui.horizontal(|ui| {
+        let section = app.active_section;
         ui.vertical(|ui| {
             ui.label(
                 RichText::new(section.label())
@@ -546,7 +635,149 @@ fn section_header(ui: &mut egui::Ui, section: SettingsSection) {
                     .color(palette.muted),
             );
         });
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if outline_button(ui, "恢复本页推荐").clicked() {
+                reset_active_page_defaults(app);
+            }
+        });
     });
+}
+
+fn reset_active_page_defaults(app: &mut SettingsApp) {
+    let defaults = SettingsModel::default();
+    macro_rules! copy_fields {
+        ($($field:ident),+ $(,)?) => {{
+            $(app.model.$field = defaults.$field.clone();)+
+        }};
+    }
+    match app.active_section {
+        SettingsSection::Input => copy_fields!(
+            default_ascii,
+            global_ascii,
+            default_full_shape,
+            default_chinese_punct,
+            curly_punct,
+            auto_pair_punct,
+            number_fullwidth,
+            symbol_fullwidth,
+            shift_symbol_temporary_ascii,
+            date_auto_format,
+            english_word_input,
+            traditional_output,
+            default_fuzzy_pinyin,
+            fuzzy_zh_z,
+            fuzzy_ch_c,
+            fuzzy_sh_s,
+            fuzzy_n_l,
+            fuzzy_f_h,
+            fuzzy_an_ang,
+            fuzzy_en_eng,
+            fuzzy_in_ing,
+            default_double_pinyin,
+            double_pinyin_schema,
+            jianpin,
+            mixed_pinyin,
+            mixed_pinyin_aggressive,
+            correction_enabled,
+            retry_on_failure,
+            u_mode,
+        ),
+        SettingsSection::Appearance => apply_candidate_recommended_defaults(&mut app.model),
+        SettingsSection::Lexicon => copy_fields!(learning_sensitivity, user_hotword_boost),
+        SettingsSection::Hotkeys => copy_fields!(
+            cn_en_hotkey,
+            full_shape_hotkey,
+            punct_hotkey,
+            fuzzy_hotkey,
+            double_pinyin_hotkey,
+            shift_tap_hotkey,
+            candidate_number_select,
+            page_minus_equal,
+            page_comma_period,
+            page_pgup_pgdn,
+            screenshot_hotkey,
+            clipboard_hotkey,
+            settings_hotkey,
+            handwrite_hotkey,
+            ocr_hotkey,
+            ocr_translate_hotkey,
+            translate_hotkey,
+            traditional_hotkey,
+            game_mode_hotkey,
+            temporary_ascii_hotkey,
+        ),
+        SettingsSection::Tools => match app.tool_page {
+            ToolSettingsPage::Clipboard => copy_fields!(
+                clipboard_background_enabled,
+                clipboard_max_history_items,
+                clipboard_max_pinned_items,
+                clipboard_max_text_utf16_units,
+                clipboard_max_age_days,
+                clipboard_candidate_preview_enabled,
+                clipboard_record_source_app,
+                clipboard_pinned_respects_max_age,
+            ),
+            ToolSettingsPage::Screenshot => copy_fields!(
+                screenshot_auto_save,
+                screenshot_copy_after_capture,
+                screenshot_ocr_after_capture,
+                screenshot_translate_after_capture,
+                screenshot_save_dir,
+                screenshot_silent_copy_enabled,
+                screenshot_silent_copy_dir,
+                screenshot_name_pattern,
+                screenshot_date_subdirs,
+                screenshot_conflict_strategy,
+                screenshot_format,
+                screenshot_mode,
+                screenshot_confirm_on_release,
+                screenshot_show_instructions,
+            ),
+            ToolSettingsPage::Ocr => copy_fields!(
+                ocr_result_action,
+                ocr_keep_alive,
+                ocr_profile,
+                ocr_translate_keep_window,
+                ocr_screenshot_auto_save,
+                ocr_screenshot_save_dir,
+                ocr_screenshot_name_pattern,
+            ),
+            ToolSettingsPage::Handwrite => {}
+            ToolSettingsPage::Commands => copy_fields!(v_assist, symbol_toolbox, emoji_input),
+            ToolSettingsPage::Translation => {
+                copy_fields!(wintranslator_path, translate_result_action)
+            }
+        },
+        SettingsSection::Compatibility => copy_fields!(
+            fullscreen_detection,
+            fullscreen_policy,
+            commit_transport,
+            builtin_game_list,
+            auto_suggest_app_options,
+        ),
+        SettingsSection::System => match app.system_page {
+            SystemSettingsPage::General => copy_fields!(
+                show_status_notifications,
+                show_notifications,
+                show_notifications_time
+            ),
+            SystemSettingsPage::About => {}
+            SystemSettingsPage::Privacy => copy_fields!(
+                privacy_enabled,
+                privacy_never_learn_processes,
+                privacy_never_clipboard_processes,
+                privacy_never_candidate_processes,
+            ),
+            SystemSettingsPage::Diagnostics => {
+                copy_fields!(log_level)
+            }
+            SystemSettingsPage::Advanced => {
+                app.reset_rank_defaults();
+                app.reset_engine_tuning_defaults();
+            }
+        },
+    }
+    app.status = "当前页面已恢复推荐设置；保存后生效。".to_string();
 }
 
 pub(super) fn enforce_settings_min_font_size(ctx: &egui::Context) {
@@ -675,7 +906,9 @@ fn nav_status_summary(section: SettingsSection, model: &SettingsModel) -> Option
             let conflicts = hotkey_conflicts(model).len();
             (conflicts > 0).then(|| format!("{conflicts} 冲突"))
         }
-        SettingsSection::Clipboard => None,
+        SettingsSection::Tools => model
+            .clipboard_background_enabled
+            .then(|| "剪贴板开".to_string()),
         // "词库与个性化"本身较长；在窄侧栏同一行追加数量会挤压标题。
         // 词库统计保留在页面内，导航只显示不会破坏布局的状态摘要。
         SettingsSection::Lexicon => None,
@@ -683,33 +916,288 @@ fn nav_status_summary(section: SettingsSection, model: &SettingsModel) -> Option
             let count = model.compat_rules.len();
             (count > 0).then(|| format!("{count} 规则"))
         }
-        SettingsSection::Privacy => model.privacy_enabled.then(|| "隐私模式".to_string()),
+        SettingsSection::System => model.privacy_enabled.then(|| "隐私模式".to_string()),
         _ => None,
+    }
+}
+
+#[derive(Clone, Copy)]
+struct SettingsSearchEntry {
+    title: &'static str,
+    hint: &'static str,
+    keywords: &'static str,
+    section: SettingsSection,
+    tool_page: Option<ToolSettingsPage>,
+    system_page: Option<SystemSettingsPage>,
+}
+
+const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
+    SettingsSearchEntry {
+        title: "手写查字",
+        hint: "独立手写工具",
+        keywords: "handwrite 手写",
+        section: SettingsSection::Tools,
+        tool_page: Some(ToolSettingsPage::Handwrite),
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "VV 命令",
+        hint: "日期、符号和 Emoji",
+        keywords: "vv 日期 时间 符号 emoji",
+        section: SettingsSection::Tools,
+        tool_page: Some(ToolSettingsPage::Commands),
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "通知",
+        hint: "状态提示与显示时长",
+        keywords: "notification 通知",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::General),
+    },
+    SettingsSearchEntry {
+        title: "系统输入法",
+        hint: "Windows 输入法与键盘管理",
+        keywords: "微软拼音 键盘 系统输入法",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::General),
+    },
+    SettingsSearchEntry {
+        title: "关于",
+        hint: "版本信息",
+        keywords: "version 版本 关于",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::About),
+    },
+    SettingsSearchEntry {
+        title: "模糊音",
+        hint: "拼音能力与模糊音细项",
+        keywords: "z zh c ch s sh n l",
+        section: SettingsSection::Input,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "双拼方案",
+        hint: "双拼开关与方案",
+        keywords: "double pinyin",
+        section: SettingsSection::Input,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "简拼与混拼",
+        hint: "简拼、混拼和输入纠错",
+        keywords: "jianpin mixed correction",
+        section: SettingsSection::Input,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "中文标点",
+        hint: "全角、弯引号和符号补全",
+        keywords: "punctuation 全角",
+        section: SettingsSection::Input,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "英文候选",
+        hint: "英文单词候选与输入工具",
+        keywords: "english",
+        section: SettingsSection::Input,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "候选数量",
+        hint: "每页数量和横竖布局",
+        keywords: "page size 分页",
+        section: SettingsSection::Appearance,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "候选字体",
+        hint: "字体、字号和字重",
+        keywords: "font",
+        section: SettingsSection::Appearance,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "皮肤主题",
+        hint: "主题、透明度和材质",
+        keywords: "theme opacity",
+        section: SettingsSection::Appearance,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "用户词库",
+        hint: "学习偏好、自定义词条和屏蔽词",
+        keywords: "dictionary learning",
+        section: SettingsSection::Lexicon,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "快捷键冲突",
+        hint: "全局快捷键和翻页按键",
+        keywords: "hotkey",
+        section: SettingsSection::Hotkeys,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "剪贴板历史",
+        hint: "采集、上限和敏感应用",
+        keywords: "clipboard",
+        section: SettingsSection::Tools,
+        tool_page: Some(ToolSettingsPage::Clipboard),
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "截图目录",
+        hint: "截图保存、命名和格式",
+        keywords: "screenshot save path",
+        section: SettingsSection::Tools,
+        tool_page: Some(ToolSettingsPage::Screenshot),
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "OCR 模型",
+        hint: "本地识别档位和结果操作",
+        keywords: "识别",
+        section: SettingsSection::Tools,
+        tool_page: Some(ToolSettingsPage::Ocr),
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "WinTranslator",
+        hint: "翻译程序和译文处理",
+        keywords: "翻译 translate",
+        section: SettingsSection::Tools,
+        tool_page: Some(ToolSettingsPage::Translation),
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "游戏兼容",
+        hint: "应用规则、Overlay 和上屏方式",
+        keywords: "fullscreen overlay",
+        section: SettingsSection::Compatibility,
+        tool_page: None,
+        system_page: None,
+    },
+    SettingsSearchEntry {
+        title: "隐私模式",
+        hint: "敏感应用和本地数据",
+        keywords: "privacy",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::Privacy),
+    },
+    SettingsSearchEntry {
+        title: "诊断日志",
+        hint: "运行状态、延迟和日志",
+        keywords: "diagnostics log",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::Diagnostics),
+    },
+    SettingsSearchEntry {
+        title: "缓存容量",
+        hint: "候选缓存和性能预算",
+        keywords: "cache performance",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::Advanced),
+    },
+    SettingsSearchEntry {
+        title: "候选排序权重",
+        hint: "单字、词组和语言模型权重",
+        keywords: "ranking weight",
+        section: SettingsSection::System,
+        tool_page: None,
+        system_page: Some(SystemSettingsPage::Advanced),
+    },
+];
+
+fn settings_search_ui(ui: &mut egui::Ui, app: &mut SettingsApp, compact: bool) {
+    let palette = fluent_palette(ui);
+    ui.horizontal(|ui| {
+        let width = if compact {
+            ui.available_width() - 34.0
+        } else {
+            ui.available_width() - 30.0
+        };
+        ui.add_sized(
+            [width.max(120.0), 30.0],
+            TextEdit::singleline(&mut app.settings_search).hint_text("搜索设置"),
+        );
+        if !app.settings_search.is_empty()
+            && ui.small_button("×").on_hover_text("清除搜索").clicked()
+        {
+            app.settings_search.clear();
+        }
+    });
+    let query = app.settings_search.trim().to_lowercase();
+    if query.is_empty() {
+        return;
+    }
+    ui.add_space(4.0);
+    let mut matches = 0usize;
+    for entry in SETTINGS_SEARCH_ENTRIES {
+        let haystack = format!("{} {} {}", entry.title, entry.hint, entry.keywords).to_lowercase();
+        if !haystack.contains(&query) {
+            continue;
+        }
+        matches += 1;
+        if matches > 6 {
+            break;
+        }
+        let response = ui.selectable_label(false, format!("{}  ·  {}", entry.title, entry.hint));
+        if response.clicked() {
+            app.active_section = entry.section;
+            if let Some(page) = entry.tool_page {
+                app.tool_page = page;
+            }
+            if let Some(page) = entry.system_page {
+                app.system_page = page;
+            }
+            app.status = format!("已定位到：{}", entry.title);
+            app.settings_search.clear();
+            app.reset_section_scroll = true;
+        }
+    }
+    if matches == 0 {
+        ui.label(RichText::new("没有匹配的设置").small().color(palette.muted));
     }
 }
 
 fn section_panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut egui::Ui)) {
     let palette = fluent_palette(ui);
-    ui.add_space(4.0);
     let available_width = ui.available_width();
     egui::Frame::none()
         .fill(palette.surface)
-        .stroke(Stroke::new(0.5, palette.border_subtle))
+        .stroke(Stroke::new(1.0, palette.border_subtle))
         .rounding(SETTINGS_RADIUS_CARD)
-        .inner_margin(egui::Margin::symmetric(16.0, 14.0))
+        .inner_margin(egui::Margin::symmetric(18.0, 14.0))
         .show(ui, |ui| {
-            ui.set_width((available_width - 36.0).max(160.0));
+            ui.set_width((available_width - 38.0).max(1.0));
             ui.label(
                 RichText::new(title)
                     .strong()
                     .size(SETTINGS_FONT_SECTION_TITLE)
                     .color(palette.text),
             );
-            ui.add_space(10.0);
+            ui.add_space(8.0);
             add_contents(ui);
-            ui.add_space(4.0);
         });
-    ui.add_space(16.0);
+    ui.add_space(12.0);
 }
 
 fn quiet_section(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut egui::Ui)) {
@@ -852,65 +1340,6 @@ fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, co
                 center + egui::vec2(2.0, 5.0),
             );
         }
-        SettingsIcon::Screenshot => {
-            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(17.0, 17.0)));
-            painter.add(egui::Shape::line(
-                vec![
-                    center + egui::vec2(-7.0, 5.0),
-                    center + egui::vec2(-2.0, 0.0),
-                    center + egui::vec2(1.0, 3.0),
-                    center + egui::vec2(4.0, -1.0),
-                    center + egui::vec2(7.0, 5.0),
-                ],
-                stroke,
-            ));
-            painter.circle_filled(center + egui::vec2(4.5, -5.0), 1.3, color);
-        }
-        SettingsIcon::Ocr => {
-            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(17.0, 17.0)));
-            painter.circle_stroke(center + egui::vec2(-1.5, -1.5), 4.5, stroke);
-            line(center + egui::vec2(2.0, 2.0), center + egui::vec2(6.5, 6.5));
-        }
-        SettingsIcon::Translation => {
-            painter.circle_stroke(center, 8.0, stroke);
-            line(
-                center + egui::vec2(-8.0, 0.0),
-                center + egui::vec2(8.0, 0.0),
-            );
-            line(
-                center + egui::vec2(0.0, -8.0),
-                center + egui::vec2(0.0, 8.0),
-            );
-            line(
-                center + egui::vec2(-4.0, -5.0),
-                center + egui::vec2(-4.0, 5.0),
-            );
-        }
-        SettingsIcon::Privacy => {
-            let points = vec![
-                center + egui::vec2(0.0, -9.0),
-                center + egui::vec2(7.0, -6.0),
-                center + egui::vec2(6.0, 2.0),
-                center + egui::vec2(0.0, 9.0),
-                center + egui::vec2(-6.0, 2.0),
-                center + egui::vec2(-7.0, -6.0),
-            ];
-            painter.add(egui::Shape::closed_line(points, stroke));
-            line(
-                center + egui::vec2(-3.0, 0.0),
-                center + egui::vec2(-0.5, 2.5),
-            );
-            line(
-                center + egui::vec2(-0.5, 2.5),
-                center + egui::vec2(4.0, -2.5),
-            );
-        }
-        SettingsIcon::Diagnostics => {
-            for (y, knob_x) in [(-6.0, -2.0), (0.0, 4.0), (6.0, -4.0)] {
-                line(center + egui::vec2(-8.0, y), center + egui::vec2(8.0, y));
-                painter.circle_filled(center + egui::vec2(knob_x, y), 2.0, color);
-            }
-        }
         SettingsIcon::Advanced => {
             painter.circle_stroke(center, 7.0, stroke);
             painter.circle_filled(center, 2.0, color);
@@ -942,111 +1371,12 @@ fn tool_symbol(ui: &mut egui::Ui, symbol: &str, fill: Color32) {
 
 fn tool_row(
     ui: &mut egui::Ui,
-    symbol: &str,
+    _symbol: &str,
     title: &str,
     description: &str,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
-    let palette = fluent_palette(ui);
-    let show_description = ui.available_width() >= SETTINGS_ROW_STACK_WIDTH;
-    let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
-        .show(ui, |ui| {
-            let total_width = ui.available_width();
-            if total_width < SETTINGS_ROW_STACK_WIDTH {
-                ui.vertical(|ui| {
-                    ui.set_width(total_width);
-                    ui.horizontal(|ui| {
-                        tool_symbol(ui, symbol, palette.surface_alt);
-                        ui.vertical(|ui| {
-                            ui.set_width((total_width - 42.0).max(160.0));
-                            let title_response = ui.label(
-                                RichText::new(title)
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            if show_description {
-                                ui.add(
-                                    egui::Label::new(
-                                        RichText::new(description)
-                                            .size(SETTINGS_FONT_SMALL)
-                                            .color(palette.muted),
-                                    )
-                                    .wrap(),
-                                );
-                            } else {
-                                if !description.is_empty() {
-                                    title_response.on_hover_text(description);
-                                }
-                            }
-                        });
-                    });
-                    ui.add_space(6.0);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(total_width, SETTINGS_CONTROL_HEIGHT),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(total_width);
-                            add_control(ui);
-                        },
-                    );
-                });
-            } else {
-                let spacing = ui.spacing().item_spacing.x;
-                let control_width = SETTINGS_CONTROL_WIDTH
-                    .min((total_width * 0.40).max(SETTINGS_CONTROL_MIN_WIDTH));
-                let text_width = (total_width - control_width - 30.0 - spacing * 2.0).max(160.0);
-                ui.horizontal(|ui| {
-                    ui.set_min_height(SETTINGS_ROW_HEIGHT);
-                    tool_symbol(ui, symbol, palette.surface_alt);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, SETTINGS_ROW_HEIGHT),
-                        egui::Layout::top_down(egui::Align::Min),
-                        |ui| {
-                            ui.set_width(text_width);
-                            let title_response = ui.label(
-                                RichText::new(title)
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            if show_description {
-                                ui.add(
-                                    egui::Label::new(
-                                        RichText::new(description)
-                                            .size(SETTINGS_FONT_SMALL)
-                                            .color(palette.muted),
-                                    )
-                                    .wrap(),
-                                );
-                            } else {
-                                if !description.is_empty() {
-                                    title_response.on_hover_text(description);
-                                }
-                            }
-                        },
-                    );
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, SETTINGS_ROW_HEIGHT),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(control_width);
-                            ui.set_max_width(control_width);
-                            add_control(ui);
-                        },
-                    );
-                });
-            }
-        });
-    let y = row.response.rect.bottom();
-    ui.painter().line_segment(
-        [
-            egui::pos2(row.response.rect.left(), y),
-            egui::pos2(row.response.rect.right(), y),
-        ],
-        Stroke::new(0.6, palette.border_subtle),
-    );
+    compact_leading_control_row(ui, title, description, add_control);
 }
 
 fn status_dot(ui: &mut egui::Ui, color: Color32) {
@@ -1203,9 +1533,44 @@ impl<'a> SettingSpec<'a> {
 }
 
 fn setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut bool) {
-    setting_spec_row(ui, SettingSpec::new(title, description), |ui| {
+    compact_leading_control_row(ui, title, description, |ui| {
         capsule_switch(ui, value);
     });
+}
+
+fn compact_leading_control_row(
+    ui: &mut egui::Ui,
+    title: &str,
+    description: &str,
+    add_control: impl FnOnce(&mut egui::Ui),
+) {
+    let palette = fluent_palette(ui);
+    egui::Frame::none()
+        .inner_margin(egui::Margin::symmetric(0.0, 6.0))
+        .show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.spacing_mut().item_spacing.x = 12.0;
+                add_control(ui);
+                ui.vertical(|ui| {
+                    ui.spacing_mut().item_spacing.y = 3.0;
+                    ui.label(
+                        RichText::new(title)
+                            .strong()
+                            .size(SETTINGS_FONT_SETTING_TITLE)
+                            .color(palette.text),
+                    );
+                    if !description.is_empty() {
+                        ui.add(
+                            egui::Label::new(
+                                RichText::new(description).small().color(palette.muted),
+                            )
+                            .wrap(),
+                        );
+                    }
+                });
+            });
+        });
+    ui.separator();
 }
 
 pub(super) fn capsule_switch(ui: &mut egui::Ui, value: &mut bool) -> egui::Response {
@@ -1309,7 +1674,7 @@ fn setting_spec_row_enabled(
     let title = spec.title;
     let description = spec.description;
     let palette = fluent_palette(ui);
-    let show_description = ui.available_width() >= SETTINGS_ROW_STACK_WIDTH;
+    let show_description = true;
     let row = egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y - 1.0))
         .show(ui, |ui| {
@@ -1350,7 +1715,7 @@ fn setting_spec_row_enabled(
                 let spacing = ui.spacing().item_spacing.x;
                 let control_width = SETTINGS_CONTROL_WIDTH
                     .min((total_width * 0.42).max(SETTINGS_CONTROL_MIN_WIDTH));
-                let text_width = (total_width - control_width - spacing).max(160.0);
+                let text_width = (total_width - control_width - spacing).clamp(160.0, 300.0);
                 ui.horizontal(|ui| {
                     ui.set_min_height(SETTINGS_ROW_HEIGHT);
                     ui.allocate_ui_with_layout(
@@ -1500,55 +1865,57 @@ fn input_habits_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
             "启动后默认启用 z/zh、s/sh 等模糊匹配。",
             &mut model.default_fuzzy_pinyin,
         );
-        ui.collapsing("模糊音细项", |ui| {
-            setting_toggle(
-                ui,
-                "z / zh",
-                "允许 z 和 zh 双向模糊匹配。",
-                &mut model.fuzzy_zh_z,
-            );
-            setting_toggle(
-                ui,
-                "c / ch",
-                "允许 c 和 ch 双向模糊匹配。",
-                &mut model.fuzzy_ch_c,
-            );
-            setting_toggle(
-                ui,
-                "s / sh",
-                "允许 s 和 sh 双向模糊匹配。",
-                &mut model.fuzzy_sh_s,
-            );
-            setting_toggle(
-                ui,
-                "n / l",
-                "允许 n 和 l 双向模糊匹配。",
-                &mut model.fuzzy_n_l,
-            );
-            setting_toggle(
-                ui,
-                "f / h",
-                "允许 f 和 h 双向模糊匹配。",
-                &mut model.fuzzy_f_h,
-            );
-            setting_toggle(
-                ui,
-                "an / ang",
-                "允许 an 和 ang 双向模糊匹配。",
-                &mut model.fuzzy_an_ang,
-            );
-            setting_toggle(
-                ui,
-                "en / eng",
-                "允许 en 和 eng 双向模糊匹配。",
-                &mut model.fuzzy_en_eng,
-            );
-            setting_toggle(
-                ui,
-                "in / ing",
-                "允许 in 和 ing 双向模糊匹配。",
-                &mut model.fuzzy_in_ing,
-            );
+        ui.add_enabled_ui(model.default_fuzzy_pinyin, |ui| {
+            ui.collapsing("模糊音细项", |ui| {
+                setting_toggle(
+                    ui,
+                    "z / zh",
+                    "允许 z 和 zh 双向模糊匹配。",
+                    &mut model.fuzzy_zh_z,
+                );
+                setting_toggle(
+                    ui,
+                    "c / ch",
+                    "允许 c 和 ch 双向模糊匹配。",
+                    &mut model.fuzzy_ch_c,
+                );
+                setting_toggle(
+                    ui,
+                    "s / sh",
+                    "允许 s 和 sh 双向模糊匹配。",
+                    &mut model.fuzzy_sh_s,
+                );
+                setting_toggle(
+                    ui,
+                    "n / l",
+                    "允许 n 和 l 双向模糊匹配。",
+                    &mut model.fuzzy_n_l,
+                );
+                setting_toggle(
+                    ui,
+                    "f / h",
+                    "允许 f 和 h 双向模糊匹配。",
+                    &mut model.fuzzy_f_h,
+                );
+                setting_toggle(
+                    ui,
+                    "an / ang",
+                    "允许 an 和 ang 双向模糊匹配。",
+                    &mut model.fuzzy_an_ang,
+                );
+                setting_toggle(
+                    ui,
+                    "en / eng",
+                    "允许 en 和 eng 双向模糊匹配。",
+                    &mut model.fuzzy_en_eng,
+                );
+                setting_toggle(
+                    ui,
+                    "in / ing",
+                    "允许 in 和 ing 双向模糊匹配。",
+                    &mut model.fuzzy_in_ing,
+                );
+            });
         });
         setting_toggle(
             ui,
@@ -1568,12 +1935,14 @@ fn input_habits_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
             "允许全拼和声母混合输入词语，默认使用保守匹配。",
             &mut model.mixed_pinyin,
         );
-        setting_toggle(
-            ui,
-            "宽松混拼",
-            "放开低可信混拼路径和更多短输入展开，可能增加重码。",
-            &mut model.mixed_pinyin_aggressive,
-        );
+        ui.add_enabled_ui(model.mixed_pinyin, |ui| {
+            setting_toggle(
+                ui,
+                "宽松混拼",
+                "放开低可信混拼路径和更多短输入展开，可能增加重码。",
+                &mut model.mixed_pinyin_aggressive,
+            );
+        });
         setting_toggle(
             ui,
             "启用纠错",
@@ -1600,35 +1969,7 @@ fn input_habits_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
 }
 
 fn input_tools_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let mut open_handwrite = false;
-    quiet_section(ui, "输入辅助工具", |ui| {
-        tool_row(
-            ui,
-            "VV",
-            "VV 直输助手",
-            "启用日期、时间、符号、网址和 Markdown 等直输命令。",
-            |ui| {
-                capsule_switch(ui, &mut app.model.v_assist);
-            },
-        );
-        tool_row(
-            ui,
-            "SYM",
-            "符号输入工具箱",
-            "使用 vv sym/fh 打开常用标点、括号、箭头、数学和编号符号；支持 dunhao、douhao 等单个符号名。",
-            |ui| {
-                capsule_switch(ui, &mut app.model.symbol_toolbox);
-            },
-        );
-        tool_row(
-            ui,
-            "EM",
-            "Emoji 表情输入",
-            "使用 vv emoji、vv emoji smile 或 vv sym emoji 输入单个 emoji 表情候选。",
-            |ui| {
-                capsule_switch(ui, &mut app.model.emoji_input);
-            },
-        );
+    quiet_section(ui, "辅助输入", |ui| {
         tool_row(
             ui,
             "U",
@@ -1647,104 +1988,6 @@ fn input_tools_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 capsule_switch(ui, &mut app.model.english_word_input);
             },
         );
-        tool_row(
-            ui,
-            "中",
-            "状态提示",
-            "显示中英、全角、标点等输入状态提示。",
-            |ui| {
-                capsule_switch(ui, &mut app.model.show_status_notifications);
-            },
-        );
-        tool_row(
-            ui,
-            "手",
-            "手写查字",
-            "独立浮窗，识别后可复制或粘贴候选字。",
-            |ui| {
-                if outline_button(ui, "打开")
-                    .on_hover_text("打开手写查字")
-                    .clicked()
-                {
-                    open_handwrite = true;
-                }
-            },
-        );
-    });
-
-    if open_handwrite {
-        app.open_handwrite();
-    }
-    ui.add_space(10.0);
-    section_panel(ui, "系统输入法", |ui| {
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("管理 Windows 用户语言列表中的常用输入法和键盘。")
-                .small()
-                .color(palette.muted),
-        );
-        ui.add_space(6.0);
-        ui.horizontal_wrapped(|ui| {
-            if outline_button(ui, "添加微软拼音").clicked() {
-                app.add_microsoft_pinyin();
-            }
-            if outline_button(ui, "删除微软拼音").clicked() {
-                app.remove_microsoft_pinyin();
-            }
-            if outline_button(ui, "添加美式键盘").clicked() {
-                app.add_us_keyboard();
-            }
-            if outline_button(ui, "删除美式键盘").clicked() {
-                app.remove_us_keyboard();
-            }
-        });
-        ui.add_space(4.0);
-        ui.horizontal_wrapped(|ui| {
-            if outline_button(ui, "置顶开心输入法").clicked() {
-                app.pin_kaixin_input();
-            }
-            if outline_button(ui, "取消置顶").clicked() {
-                app.unpin_kaixin_input();
-            }
-        });
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "VV 命令速查", |ui| {
-        let palette = fluent_palette(ui);
-        ui.horizontal(|ui| {
-            ui.label(RichText::new("筛选").small().color(palette.muted));
-            ui.add_sized(
-                [260.0, 26.0],
-                TextEdit::singleline(&mut app.vv_command_filter).hint_text("mail / rq / md"),
-            );
-        });
-        ui.add_space(6.0);
-        let filter = app.vv_command_filter.trim().to_lowercase();
-        egui::Grid::new("vv_command_help")
-            .num_columns(4)
-            .striped(true)
-            .spacing([18.0, 7.0])
-            .show(ui, |ui| {
-                ui.strong("命令");
-                ui.strong("用途");
-                ui.strong("示例");
-                ui.strong("学习");
-                ui.end_row();
-                for (command, usage, example) in VV_COMMAND_HELP {
-                    if !filter.is_empty() {
-                        let haystack = format!("{command} {usage} {example}").to_lowercase();
-                        if !haystack.contains(&filter) {
-                            continue;
-                        }
-                    }
-                    ui.monospace(*command);
-                    ui.label(*usage);
-                    ui.monospace(*example);
-                    ui.label(RichText::new("不记录").small().color(palette.muted));
-                    ui.end_row();
-                }
-            });
     });
 }
 
@@ -2180,25 +2423,6 @@ fn lexicon_learning_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
             );
         },
     );
-    ui.horizontal_wrapped(|ui| {
-        if outline_button(ui, "导入").clicked() {
-            app.import_user_dict();
-        }
-        if outline_button(ui, "覆盖导入").clicked() {
-            app.replace_user_dict();
-        }
-        if outline_button(ui, "导出完整备份").clicked() {
-            app.export_user_dict();
-        }
-        if outline_button(ui, "导出便携词表").clicked() {
-            app.export_user_dict_tsv();
-        }
-    });
-    ui.label(
-        RichText::new("导出的用户词库是明文文件，请妥善保管，使用后及时删除。")
-            .color(palette.muted),
-    );
-
     ui.add_space(6.0);
     ui.label(
         RichText::new("自定义短语")
@@ -2214,12 +2438,6 @@ fn lexicon_learning_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
             app.add_user_phrase();
         }
     });
-    ui.label(
-        RichText::new("导出的用户词库为明文 SQLite，请只保存到可信位置。")
-            .small()
-            .color(palette.muted),
-    );
-
     ui.add_space(8.0);
     ui.horizontal_wrapped(|ui| {
         ui.label(
@@ -2279,20 +2497,127 @@ fn lexicon_learning_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
     if !app.model.lexicon_tags.is_empty() {
         ui.add_space(8.0);
         ui.label(
-            RichText::new("仅 zh-ext 扩展词库可以关闭；zh 热门主词库始终启用。关闭不常用扩展可让日常候选更靠前。")
+            RichText::new("基础词库与读音修正始终启用。扩展词库按需选择，修改后保存设置生效。")
                 .small()
                 .color(palette.muted),
         );
         ui.label(
-            RichText::new("扩展词库（可关闭）")
+            RichText::new("扩展词库")
                 .strong()
                 .size(SETTINGS_FONT_SECTION_TITLE),
         );
         ui.horizontal_wrapped(|ui| {
-            for (tag, enabled) in &mut app.model.lexicon_tags {
-                ui.checkbox(enabled, lexicon_tag_label(tag));
+            ui.add(
+                egui::TextEdit::singleline(&mut app.lexicon_filter)
+                    .hint_text("搜索词库名称、用途或文件标识")
+                    .desired_width(280.0),
+            );
+            if outline_button(ui, "恢复词库默认").clicked() {
+                for (tag, enabled) in &mut app.model.lexicon_tags {
+                    *enabled = pinyin_ime::lexicon_prefs::default_optional_lexicon_tag_enabled(tag);
+                }
+            }
+            if outline_button(ui, "刷新列表与统计").clicked() {
+                merge_discovered_lexicon_tags_compat(&mut app.model);
+                app.lexicon_catalog = None;
+                app.lexicon_catalog_rx = None;
             }
         });
+        if app.lexicon_catalog.is_none() && app.lexicon_catalog_rx.is_none() {
+            if let Some(root) = pinyin_ime::core::default_phrase_lexicon_dir() {
+                let (tx, rx) = std::sync::mpsc::channel();
+                app.lexicon_catalog_rx = Some(rx);
+                std::thread::spawn(move || {
+                    let _ = tx.send(pinyin_ime::lexicon_prefs::discover_optional_lexicon_info(
+                        &root,
+                    ));
+                });
+            }
+        }
+        if let Some(rx) = &app.lexicon_catalog_rx {
+            match rx.try_recv() {
+                Ok(catalog) => {
+                    app.lexicon_catalog = Some(catalog);
+                    app.lexicon_catalog_rx = None;
+                }
+                Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                    app.lexicon_catalog = Some(Vec::new());
+                    app.lexicon_catalog_rx = None;
+                }
+                Err(std::sync::mpsc::TryRecvError::Empty) => {
+                    ui.ctx()
+                        .request_repaint_after(std::time::Duration::from_millis(100));
+                }
+            }
+        }
+        let filter = app.lexicon_filter.trim().to_lowercase();
+        let mut visible = 0;
+        for group in [
+            "日常生活",
+            "专业领域",
+            "地区词库 · 全国与世界",
+            "地区词库 · 杭州",
+            "旧版扩展",
+            "其他扩展",
+        ] {
+            let tags: Vec<_> = app
+                .model
+                .lexicon_tags
+                .keys()
+                .filter(|tag| {
+                    pinyin_ime::lexicon_prefs::optional_lexicon_group(tag) == group
+                        && format!(
+                            "{} {} {} {}",
+                            lexicon_tag_label(tag),
+                            tag,
+                            group,
+                            pinyin_ime::lexicon_prefs::optional_lexicon_description(tag)
+                        )
+                        .to_lowercase()
+                        .contains(&filter)
+                })
+                .cloned()
+                .collect();
+            if tags.is_empty() {
+                continue;
+            }
+            visible += tags.len();
+            egui::CollapsingHeader::new(format!("{group}（{} 项）", tags.len()))
+                .id_source(("lexicon_group", group))
+                .default_open(group != "旧版扩展" && group != "地区词库 · 杭州")
+                .open(if filter.is_empty() { None } else { Some(true) })
+                .show(ui, |ui| {
+                    if group == "旧版扩展" {
+                        ui.label("发现旧版文件，已保留原开关。相似名称不代表内容完全相同，请按用途选择。");
+                    }
+                    for tag in tags {
+                        let info = app.lexicon_catalog.as_ref().and_then(|items| items.iter().find(|item| item.tag == tag));
+                        let count = match info {
+                            Some(info) if !info.incomplete => format!("{} 条", info.entries),
+                            Some(_) => "统计不完整".to_string(),
+                            None if app.lexicon_catalog_rx.is_some() => "统计中…".to_string(),
+                            None => "统计不可用".to_string(),
+                        };
+                        ui.horizontal_wrapped(|ui| {
+                            if let Some(enabled) = app.model.lexicon_tags.get_mut(&tag) {
+                                ui.checkbox(enabled, lexicon_tag_label(&tag));
+                            }
+                            ui.label(RichText::new(count).small().color(palette.muted))
+                                .on_hover_text("按源文件非注释条目统计，同词不同读音分别计数；不代表净新增词数。");
+                            if let Some(info) = info {
+                                ui.label(RichText::new("来源").small().color(palette.muted))
+                                    .on_hover_text(info.files.join("\n"));
+                            }
+                        });
+                        ui.label(RichText::new(pinyin_ime::lexicon_prefs::optional_lexicon_description(&tag))
+                            .small().color(palette.muted));
+                        ui.add_space(4.0);
+                    }
+                });
+        }
+        if visible == 0 {
+            ui.label("没有匹配的扩展词库。");
+        }
         ui.horizontal_wrapped(|ui| {
             if outline_button(ui, "导入词库").clicked() {
                 app.import_lexicon_text();
@@ -2354,7 +2679,7 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
 
             match wizard.step {
                 GameTestStep::Prepare => {
-                    ui.label("第一步：应用游戏推荐配置并保存。该配置会显示候选栏、启用紧凑游戏档，先测试标准 TSF 上屏，并自动选择 Overlay 后端。");
+                    ui.label("第一步：应用游戏推荐配置并保存。该配置会显示候选栏、启用紧凑游戏档，默认键盘直通，手动开启中文聊天；新游戏先测试标准 TSF 上屏，已保存的方式保持；自动选择 Overlay 后端。");
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
                         if ui.button("应用推荐配置并保存").clicked() {
@@ -2369,7 +2694,7 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     let backend = matching_compat_rule(&app.model.compat_rules, &wizard.process)
                         .map(|rule| overlay_backend_label(&rule.overlay_backend))
                         .unwrap_or("自动（全屏时独立）");
-                    ui.label("第二步：切换到游戏，切到中文模式并键入“nihao”，观察候选栏是否出现。");
+                    ui.label("第二步：切换到游戏，打开游戏聊天框，使用配置的游戏中文聊天快捷键，再键入“nihao”，观察候选栏是否出现。");
                     ui.label(
                         RichText::new(format!("当前 Overlay 后端：{backend}"))
                             .small()
@@ -2452,7 +2777,10 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
         Some(GameTestWizardAction::ActivateGame) => {
             match activate_process_window(&wizard.process) {
                 Ok(()) => {
-                    app.status = format!("已切换到 {}，请键入 nihao 测试候选栏。", wizard.process)
+                    app.status = format!(
+                        "已切换到 {}，请打开聊天框并用游戏聊天快捷键开启中文，再键入 nihao。",
+                        wizard.process
+                    )
                 }
                 Err(err) => app.status = err,
             }
@@ -2509,8 +2837,60 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
     }
 }
 
+fn game_input_mode_label(mode: &str) -> &'static str {
+    match mode {
+        "passthrough" => "完全直通（英文游戏）",
+        "chinese" => "中文输入（始终启用）",
+        "auto_text" => "自动识别标准聊天框",
+        "inherit" => "使用全局游戏策略",
+        _ => "默认直通，手动中文聊天",
+    }
+}
+
+fn game_input_mode_combo(
+    ui: &mut egui::Ui,
+    value: &mut String,
+    id: impl std::hash::Hash,
+    per_app: bool,
+) {
+    *value = normalize_game_input_mode(value, per_app);
+    ComboBox::from_id_salt(id)
+        .selected_text(game_input_mode_label(value))
+        .show_ui(ui, |ui| {
+            if per_app {
+                ui.selectable_value(
+                    value,
+                    "inherit".to_string(),
+                    game_input_mode_label("inherit"),
+                );
+            }
+            for mode in ["manual", "passthrough", "chinese", "auto_text"] {
+                ui.selectable_value(value, mode.to_string(), game_input_mode_label(mode));
+            }
+        });
+}
+
 fn compatibility_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     section_panel(ui, "应用兼容", |ui| {
+        ui.label("游戏输入策略");
+        game_input_mode_combo(
+            ui,
+            &mut app.model.game_input_mode,
+            "global_game_input_mode",
+            false,
+        );
+        ui.label("默认直通：使用游戏聊天快捷键开启中文；无拼音时 Enter / Esc 返回直通，原按键仍交给游戏。切窗口后恢复原输入状态。");
+        ui.label("完全直通：关闭所有输入法与工具快捷键；自动识别仅支持可写的标准 Edit / RichEdit 聊天框，自绘聊天框请手动开启。");
+        ui.horizontal(|ui| {
+            ui.label("游戏中文聊天快捷键");
+            hotkey_combo(
+                ui,
+                "",
+                "compat_game_chat_hotkey",
+                &mut app.model.game_mode_hotkey,
+                "G",
+            );
+        });
         setting_toggle(
             ui,
             "检测全屏",
@@ -2553,7 +2933,7 @@ fn compatibility_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_combo_row(
             ui,
             "上屏方式",
-            "自动模式会在游戏或全屏兼容档中优先使用 Unicode，上屏失败时也会尝试降级。",
+            "自动模式先用标准 TSF；游戏中一次上屏只用一种方式，失败时请用测试向导选择并保存。",
             commit_transport_label(&app.model.commit_transport),
             "commit_transport",
             |ui| {
@@ -2659,7 +3039,7 @@ fn compatibility_match_status_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let recommended = recommended_compat_policy_for_process(&foreground);
     let likely_game = is_likely_game_process(&foreground);
     let recommended_text = if likely_game {
-        "显示候选栏 / 紧凑游戏档 / 标准 TSF 优先 / 自动 Overlay".to_string()
+        "默认键盘直通 / 手动中文聊天 / 紧凑固定候选栏 / 标准 TSF 优先".to_string()
     } else {
         recommended.label().to_string()
     };
@@ -2757,8 +3137,9 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 process: String::new(),
                 policy: CompatRulePolicy::ShowUi,
                 commit_transport: "auto".to_string(),
+                game_input_mode: "manual".to_string(),
                 game_profile: true,
-                overlay_anchor: schema_default::OVERLAY_ANCHOR.to_string(),
+                overlay_anchor: "bottom_left".to_string(),
                 overlay_offset_x: 0,
                 overlay_offset_y: 0,
                 overlay_scale_percent: schema_default::OVERLAY_SCALE_PERCENT,
@@ -2784,6 +3165,7 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 
     let mut remove_index = None;
     let mut test_process = None;
+    let mut edit_index = None;
     egui::Grid::new("compat_rules_grid")
         .num_columns(6)
         .striped(true)
@@ -2829,6 +3211,9 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     });
                 ui.checkbox(&mut rule.game_profile, "");
                 ui.horizontal(|ui| {
+                    if ui.button("编辑").clicked() {
+                        edit_index = Some(idx);
+                    }
                     if ui
                         .add_enabled(!rule.process.trim().is_empty(), egui::Button::new("测试"))
                         .clicked()
@@ -2843,8 +3228,15 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             }
         });
 
+    if let Some(idx) = edit_index {
+        app.compat_selected_rule = idx;
+    }
+
     if let Some(idx) = remove_index {
         app.model.compat_rules.remove(idx);
+        app.compat_selected_rule = app
+            .compat_selected_rule
+            .min(app.model.compat_rules.len().saturating_sub(1));
     }
     if !app.model.compat_rules.is_empty() {
         ui.add_space(10.0);
@@ -2861,18 +3253,81 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             .color(palette.muted),
         );
 
-        for (idx, rule) in app.model.compat_rules.iter_mut().enumerate() {
+        app.compat_selected_rule = app
+            .compat_selected_rule
+            .min(app.model.compat_rules.len().saturating_sub(1));
+        let selected_rule_label = app
+            .model
+            .compat_rules
+            .get(app.compat_selected_rule)
+            .map(|rule| {
+                if rule.process.trim().is_empty() {
+                    format!("未命名规则 {}", app.compat_selected_rule + 1)
+                } else {
+                    rule.process.trim().to_string()
+                }
+            })
+            .unwrap_or_else(|| "选择应用".to_string());
+        ComboBox::from_id_salt("compat_overlay_selected_rule")
+            .selected_text(selected_rule_label)
+            .width(260.0)
+            .show_ui(ui, |ui| {
+                for (idx, rule) in app.model.compat_rules.iter().enumerate() {
+                    let label = if rule.process.trim().is_empty() {
+                        format!("未命名规则 {}", idx + 1)
+                    } else {
+                        rule.process.trim().to_string()
+                    };
+                    ui.selectable_value(&mut app.compat_selected_rule, idx, label);
+                }
+            });
+        ui.add_space(6.0);
+
+        if let Some((idx, rule)) = app
+            .model
+            .compat_rules
+            .iter_mut()
+            .enumerate()
+            .nth(app.compat_selected_rule)
+        {
             let process_label = if rule.process.trim().is_empty() {
                 format!("未命名规则 {}", idx + 1)
             } else {
                 rule.process.trim().to_string()
             };
+            ui.label("该游戏输入策略");
+            game_input_mode_combo(
+                ui,
+                &mut rule.game_input_mode,
+                ("app_game_input_mode", idx),
+                true,
+            );
             rule.overlay_anchor = normalize_overlay_anchor_value(&rule.overlay_anchor);
             rule.overlay_monitor = normalize_overlay_monitor_value(&rule.overlay_monitor);
             rule.overlay_backend = normalize_overlay_backend_value(&rule.overlay_backend);
             rule.overlay_offset_x = rule.overlay_offset_x.clamp(-4000, 4000);
             rule.overlay_offset_y = rule.overlay_offset_y.clamp(-4000, 4000);
             rule.overlay_scale_percent = rule.overlay_scale_percent.clamp(50, 200);
+            let overlay_customized = rule.overlay_anchor != schema_default::OVERLAY_ANCHOR
+                || rule.overlay_offset_x != 0
+                || rule.overlay_offset_y != 0
+                || rule.overlay_scale_percent != schema_default::OVERLAY_SCALE_PERCENT
+                || rule.overlay_monitor != schema_default::OVERLAY_MONITOR
+                || rule.overlay_backend != schema_default::OVERLAY_BACKEND;
+
+            status_badge(
+                ui,
+                if overlay_customized {
+                    StatusTone::Warning
+                } else {
+                    StatusTone::Success
+                },
+                if overlay_customized {
+                    "Overlay 已自定义"
+                } else {
+                    "Overlay 推荐值"
+                },
+            );
 
             egui::CollapsingHeader::new(format!(
                 "{} · {} · {}%",
@@ -3042,13 +3497,124 @@ fn recent_process_suggestions_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     );
 }
 
+fn tool_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    ui.horizontal_wrapped(|ui| {
+        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Clipboard, "剪贴板");
+        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Screenshot, "截图");
+        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Ocr, "OCR");
+        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Translation, "翻译");
+        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Handwrite, "手写");
+        ui.selectable_value(
+            &mut app.tool_page,
+            ToolSettingsPage::Commands,
+            "VV 命令与符号",
+        );
+    });
+}
+
+fn system_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    ui.horizontal_wrapped(|ui| {
+        ui.selectable_value(&mut app.system_page, SystemSettingsPage::General, "常规");
+        ui.selectable_value(
+            &mut app.system_page,
+            SystemSettingsPage::Privacy,
+            "隐私与数据",
+        );
+        ui.selectable_value(
+            &mut app.system_page,
+            SystemSettingsPage::Diagnostics,
+            "诊断",
+        );
+        ui.selectable_value(
+            &mut app.system_page,
+            SystemSettingsPage::Advanced,
+            "高级调优",
+        );
+        ui.selectable_value(&mut app.system_page, SystemSettingsPage::About, "关于");
+    });
+}
+
+fn input_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    input_experience_ui(ui, app);
+}
+
+fn tools_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    tool_hotkey_link(ui, app);
+    match app.tool_page {
+        ToolSettingsPage::Handwrite => handwrite_settings_ui(ui, app),
+        ToolSettingsPage::Commands => command_settings_ui(ui, app),
+        ToolSettingsPage::Clipboard => clipboard_settings_ui(ui, app),
+        ToolSettingsPage::Screenshot => screenshot_page_ui(ui, app),
+        ToolSettingsPage::Ocr => {
+            if resolve_runtime_exe_path(OCR_EXE).is_none() {
+                inline_notice(
+                    ui,
+                    StatusTone::Warning,
+                    "当前安装未包含 OCR 组件。安装 OCR 集合包后可用。",
+                );
+            } else {
+                ocr_page_ui(ui, app);
+            }
+        }
+        ToolSettingsPage::Translation => {
+            if !translation_available() {
+                inline_notice(
+                    ui,
+                    StatusTone::Warning,
+                    "未检测到 WinTranslator；可先设置程序路径，再检测联动状态。",
+                );
+            }
+            translation_page_ui(ui, app);
+        }
+    }
+}
+
+fn system_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    match app.system_page {
+        SystemSettingsPage::General => {
+            section_panel(ui, "状态提示", |ui| {
+                setting_toggle(
+                    ui,
+                    "输入状态提示",
+                    "显示中英、全角和标点等输入状态。",
+                    &mut app.model.show_status_notifications,
+                );
+            });
+            general_notifications_ui(ui, app);
+            system_keyboard_ui(ui, app);
+        }
+        SystemSettingsPage::About => section_panel(ui, "关于开心输入法", |ui| {
+            ui.heading("开心输入法");
+            ui.label(format!("版本 {}", env!("CARGO_PKG_VERSION")));
+            ui.label("本地优先的中文输入法");
+            ui.label("配置、用户词库和学习数据保存在本机。");
+        }),
+        SystemSettingsPage::Privacy => privacy_data_ui(ui, app),
+        SystemSettingsPage::Diagnostics => diagnostics_page_ui(ui, app),
+        SystemSettingsPage::Advanced => advanced_page_ui(ui, app),
+    }
+}
+
 fn input_experience_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     input_habits_ui(ui, &mut app.model);
+    section_panel(ui, "输出方式", |ui| {
+        setting_toggle(
+            ui,
+            "默认繁体输出",
+            "开启后候选输出为繁体；也可使用下方快捷键临时切换。",
+            &mut app.model.traditional_output,
+        );
+    });
     ui.add_space(2.0);
     input_tools_ui(ui, app);
 }
 
-fn candidate_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp, request_real_preview: &mut bool) {
+fn candidate_page_ui(
+    ui: &mut egui::Ui,
+    app: &mut SettingsApp,
+    request_real_preview: &mut bool,
+    show_inline_preview: bool,
+) {
     candidate_appearance_ui(
         ui,
         &mut app.model,
@@ -3056,6 +3622,7 @@ fn candidate_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp, request_real_prev
         &app.available_skins,
         &app.available_chinese_fonts,
         request_real_preview,
+        show_inline_preview,
     );
 }
 
@@ -3074,8 +3641,6 @@ fn diagnostics_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 }
 
 fn advanced_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    input_experience_ui(ui, app);
-    ui.add_space(2.0);
     advanced_rank_ui(ui, app);
     ui.add_space(2.0);
     advanced_engine_tuning_ui(ui, app);
@@ -3103,11 +3668,30 @@ fn settings_collapsing_section(
 }
 
 fn advanced_rank_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    let defaults = SettingsModel::default();
+    let customized = app.model.w_single_lm != defaults.w_single_lm
+        || app.model.w_phrase_path != defaults.w_phrase_path
+        || app.model.lm_single_scale != defaults.lm_single_scale;
     settings_collapsing_section(ui, "候选排序权重", "candidate_ranking_section", |ui| {
         section_panel(ui, "候选排序高级参数", |ui| {
-            if outline_button(ui, "恢复排序推荐").clicked() {
-                app.reset_rank_defaults();
-            }
+            ui.horizontal(|ui| {
+                if outline_button(ui, "恢复排序推荐").clicked() {
+                    app.reset_rank_defaults();
+                }
+                status_badge(
+                    ui,
+                    if customized {
+                        StatusTone::Warning
+                    } else {
+                        StatusTone::Success
+                    },
+                    if customized {
+                        "已自定义"
+                    } else {
+                        "推荐值"
+                    },
+                );
+            });
             setting_slider_f64(
                 ui,
                 "单字权重",
@@ -3134,11 +3718,33 @@ fn advanced_rank_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 }
 
 fn advanced_engine_tuning_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    let defaults = SettingsModel::default();
+    let customized = app.model.prefix_cache_capacity != defaults.prefix_cache_capacity
+        || app.model.final_lookup_cache_capacity != defaults.final_lookup_cache_capacity
+        || app.model.short_lookup_cache_capacity != defaults.short_lookup_cache_capacity
+        || app.model.long_lookup_soft_budget_ms != defaults.long_lookup_soft_budget_ms
+        || app.model.long_lookup_min_first_batch_candidates
+            != defaults.long_lookup_min_first_batch_candidates;
     settings_collapsing_section(ui, "引擎与缓存调优", "engine_tuning_section", |ui| {
         section_panel(ui, "候选首屏延迟参数", |ui| {
-            if outline_button(ui, "恢复性能推荐").clicked() {
-                app.reset_engine_tuning_defaults();
-            }
+            ui.horizontal(|ui| {
+                if outline_button(ui, "恢复性能推荐").clicked() {
+                    app.reset_engine_tuning_defaults();
+                }
+                status_badge(
+                    ui,
+                    if customized {
+                        StatusTone::Warning
+                    } else {
+                        StatusTone::Success
+                    },
+                    if customized {
+                        "已自定义"
+                    } else {
+                        "推荐值"
+                    },
+                );
+            });
             ui.label(
                 RichText::new(
                     "长输入先返回首屏候选；纠错和完整重排只在首屏后继续，避免连续输入被慢路径阻塞。",
@@ -3188,7 +3794,9 @@ fn advanced_engine_tuning_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 #[path = "ui_diagnostics.rs"]
 mod diagnostics;
 use diagnostics::*;
-pub(super) use diagnostics::{export_diagnostic_package_to, DiagnosticsSnapshot};
+pub(super) use diagnostics::{
+    export_diagnostic_package_to, export_performance_log_to, DiagnosticsSnapshot,
+};
 
 #[path = "ui_screenshot.rs"]
 mod screenshot;
@@ -3210,3 +3818,150 @@ use hotkeys_clipboard::*;
 mod privacy;
 use privacy::*;
 pub(super) use privacy::{diagnostic_log_paths, privacy_statement_text};
+
+fn system_keyboard_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    ui.add_space(10.0);
+    section_panel(ui, "系统输入法", |ui| {
+        let palette = fluent_palette(ui);
+        ui.label(
+            RichText::new("管理 Windows 用户语言列表中的常用输入法和键盘。")
+                .small()
+                .color(palette.muted),
+        );
+        ui.add_space(6.0);
+        ui.horizontal_wrapped(|ui| {
+            if outline_button(ui, "添加微软拼音").clicked() {
+                app.add_microsoft_pinyin();
+            }
+            if outline_button(ui, "删除微软拼音").clicked() {
+                app.remove_microsoft_pinyin();
+            }
+            if outline_button(ui, "添加美式键盘").clicked() {
+                app.add_us_keyboard();
+            }
+            if outline_button(ui, "删除美式键盘").clicked() {
+                app.remove_us_keyboard();
+            }
+        });
+        ui.add_space(4.0);
+        ui.horizontal_wrapped(|ui| {
+            if outline_button(ui, "置顶开心输入法").clicked() {
+                app.pin_kaixin_input();
+            }
+            if outline_button(ui, "取消置顶").clicked() {
+                app.unpin_kaixin_input();
+            }
+        });
+    });
+}
+
+fn command_help_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    ui.add_space(10.0);
+    section_panel(ui, "VV 命令速查", |ui| {
+        let palette = fluent_palette(ui);
+        ui.horizontal(|ui| {
+            ui.label(RichText::new("筛选").small().color(palette.muted));
+            ui.add_sized(
+                [260.0, 26.0],
+                TextEdit::singleline(&mut app.vv_command_filter).hint_text("mail / rq / md"),
+            );
+        });
+        ui.add_space(6.0);
+        let filter = app.vv_command_filter.trim().to_lowercase();
+        egui::Grid::new("vv_command_help")
+            .num_columns(4)
+            .striped(true)
+            .spacing([18.0, 7.0])
+            .show(ui, |ui| {
+                ui.strong("命令");
+                ui.strong("用途");
+                ui.strong("示例");
+                ui.strong("学习");
+                ui.end_row();
+                for (command, usage, example) in VV_COMMAND_HELP {
+                    if !filter.is_empty() {
+                        let haystack = format!("{command} {usage} {example}").to_lowercase();
+                        if !haystack.contains(&filter) {
+                            continue;
+                        }
+                    }
+                    ui.monospace(*command);
+                    ui.label(*usage);
+                    ui.monospace(*example);
+                    ui.label(RichText::new("不记录").small().color(palette.muted));
+                    ui.end_row();
+                }
+            });
+    });
+}
+
+fn command_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    section_panel(ui, "直输命令与符号", |ui| {
+        tool_row(
+            ui,
+            "VV",
+            "VV 直输助手",
+            "启用日期、时间、符号、网址和 Markdown 等直输命令。",
+            |ui| {
+                capsule_switch(ui, &mut app.model.v_assist);
+            },
+        );
+        tool_row(
+            ui,
+            "SYM",
+            "符号输入工具箱",
+            "使用 vv sym/fh 打开常用标点、括号、箭头、数学和编号符号；支持 dunhao、douhao 等单个符号名。",
+            |ui| {
+                capsule_switch(ui, &mut app.model.symbol_toolbox);
+            },
+        );
+        tool_row(
+            ui,
+            "EM",
+            "Emoji 表情输入",
+            "使用 vv emoji、vv emoji smile 或 vv sym emoji 输入单个 emoji 表情候选。",
+            |ui| {
+                capsule_switch(ui, &mut app.model.emoji_input);
+            },
+        );
+    });
+    command_help_ui(ui, app);
+}
+
+fn handwrite_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    let mut open_handwrite = false;
+    section_panel(ui, "手写查字", |ui| {
+        tool_row(
+            ui,
+            "手",
+            "手写查字",
+            "独立浮窗，识别后可复制或粘贴候选字。",
+            |ui| {
+                if outline_button(ui, "打开")
+                    .on_hover_text("打开手写查字")
+                    .clicked()
+                {
+                    open_handwrite = true;
+                }
+            },
+        );
+    });
+    if open_handwrite {
+        app.open_handwrite();
+    }
+}
+
+fn tool_hotkey_link(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    ui.horizontal_wrapped(|ui| {
+        ui.label(
+            RichText::new("工具启动快捷键统一在“快捷键”页面设置。")
+                .small()
+                .color(fluent_palette(ui).muted),
+        );
+        if ui.link("设置快捷键").clicked() {
+            app.active_section = SettingsSection::Hotkeys;
+            app.reset_section_scroll = true;
+        }
+    });
+    ui.add_space(8.0);
+}

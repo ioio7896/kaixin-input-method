@@ -72,8 +72,8 @@ TEXT_FILES = {
         3,
     ),
     "data_sources/kaixin/common_phrases.tsv": (
-        "62dfdd47eaf3f9d18f216079f6ad7ba24f20ceac2d72f198d2761183429d71b3",
-        55,
+        "871a706af6b67451c4c145c225fedc2ed4706f8ea80a3d7face6b42660f90bfa",
+        41,
         3,
     ),
     "data_sources/kaixin/polyphone_corrections.tsv": (
@@ -82,10 +82,13 @@ TEXT_FILES = {
         2,
     ),
     "data_sources/kaixin/pronunciation_aliases.tsv": (
-        "110b59eb4b4a14c57ebf0145c4503428965e23f1aa506586e1efdbec5697c67b",
+        "0f02157dab25eeca3552e0963d8203d1fee584e5bfd6e20d88f610c2462a49fd",
         123,
         4,
     ),
+    "data_sources/kaixin/core_priority_corrections.tsv": ("0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765", 38, 2),
+    "data_sources/kaixin/pronunciation_exclusions.tsv": ("37528c72f8d2c770dbf86a40a86e23b8b49b8d5f2af2fd7f176b13c2369b927d", 12, 4),
+    "data_sources/kaixin/recall_phrases.tsv": ("55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8", 7, 3),
 }
 SQLITE_FILE = "pinyin-ime/data/s2t_chars.sqlite"
 SQLITE_SHA256 = "f09b4aa90b1569a22c49d222e7930bf98406b81a1a12c581a6b67f9e3915cc3a"
@@ -141,7 +144,7 @@ def main() -> int:
                 except ValueError:
                     fail(f"{relative}: data row {number} has an invalid weight")
                     errors += 1
-            elif relative.endswith("pronunciation_aliases.tsv"):
+            elif columns == 4:
                 try:
                     if int(fields[2]) <= 0:
                         raise ValueError

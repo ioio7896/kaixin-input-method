@@ -1,7 +1,7 @@
 # 开心输入法原生词库：15000 个热门三字词（长尾）
 # Source: wordfreq 中文原始全局排名；完整集合共 20000 条。
 # 格式：词语<TAB>全拼<TAB>万分制排序分数；范围 1-10000，按来源与原频次排序归一化。
-# 粗俗词已剔除；热头降级的句段碎片保留在本层。
+# 来源资料，不参与运行时词库；热头降级的句段碎片保留在本层。
 是因为	shi yin wei	7000
 不得不	bu de bu	6999
 之所以	zhi suo yi	6998
@@ -724,7 +724,7 @@
 小龙女	xiao long nv	6473
 尼维斯	ni wei si	6473
 崇拜者	chong bai zhe	6472
-库尔勒	ku er lei	6471
+库尔勒	ku er le	6471
 异构体	yi gou ti	6470
 张敬轩	zhang jing xuan	6470
 弹药库	dan yao ku	6470
@@ -2539,7 +2539,7 @@
 邮电局	you dian ju	5247
 金融街	jin rong jie	5246
 铁道兵	tie dao bing	5245
-阿勒泰	a lei tai	5244
+阿勒泰	a le tai	5244
 陈凯歌	chen kai ge	5243
 陕甘宁	shan gan ning	5242
 陪伴着	pei ban zhe	5242
@@ -13143,7 +13143,7 @@
 阜宁县	fu ning xian	537
 阮玲玉	ruan ling yu	537
 防御战	fang yu zhan	536
-阿图什	a tu shen	536
+阿图什	a tu shi	536
 阿斯旺	a si wang	536
 阿瓦尔	a wa er	536
 阿鲁沙	a lu sha	536

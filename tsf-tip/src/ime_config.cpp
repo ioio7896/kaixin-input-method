@@ -387,6 +387,7 @@ SrfHotkeyScope ParseHotkeyScope(const std::wstring& value, SrfHotkeyScope fallba
 
 std::wstring ReadIniString(const std::filesystem::path& path, const wchar_t* section,
                            const wchar_t* key, const wchar_t* fallback = L"") {
+  if (const auto* canonical = SrfConfigSchema::DefaultValue(section, key)) fallback = canonical;
   std::wstring value;
   if (ActiveIniDocumentMatches(path) &&
       TryReadIniValue(*g_activeIniDocument, section, key, &value)) {
@@ -959,7 +960,7 @@ void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
     config.input.traditionalHotkey = traditionalHotkey;
   }
   SrfHotkeyOptions gameModeHotkey = config.input.gameModeHotkey;
-  if (TryParseHotkey(ReadIniString(path, L"input", L"game_mode_hotkey", L"off"),
+  if (TryParseHotkey(ReadIniString(path, L"input", L"game_mode_hotkey", L"Ctrl+Shift+Alt+G"),
                      'G', TF_MOD_CONTROL | TF_MOD_SHIFT | TF_MOD_ALT, &gameModeHotkey)) {
     config.input.gameModeHotkey = gameModeHotkey;
   }
@@ -1022,7 +1023,17 @@ void LoadScreenshot(const std::filesystem::path& path, SrfConfig& config) {
   config.screenshot.format = std::move(format);
 }
 
+SrfGameInputMode ParseGameInputMode(const std::wstring& value) {
+  const auto mode = ToLower(Trim(value));
+  if (mode == L"passthrough") return SrfGameInputMode::Passthrough;
+  if (mode == L"chinese") return SrfGameInputMode::Chinese;
+  if (mode == L"auto_text") return SrfGameInputMode::AutoText;
+  return SrfGameInputMode::Manual;
+}
+
 void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
+  config.compatibility.gameInputMode = ParseGameInputMode(
+      ReadIniString(path, L"compatibility", L"game_input_mode", L"manual"));
   config.compatibility.fullscreenDetection =
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kCompatibility,
                               SrfConfigSchema::key::kFullscreenDetection, L"1"),
@@ -1111,6 +1122,11 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
         options.candidateTopmost = false;
       }
 
+      const auto gameInputMode = ReadIniString(path, section.c_str(), L"game_input_mode");
+      if (!Trim(gameInputMode).empty() && ToLower(Trim(gameInputMode)) != L"inherit") {
+        options.hasGameInputMode = true;
+        options.gameInputMode = ParseGameInputMode(gameInputMode);
+      }
       const std::wstring asciiMode = ReadIniString(path, section.c_str(), L"ascii_mode");
       if (!Trim(asciiMode).empty()) {
         options.hasAsciiMode = true;

@@ -8,6 +8,7 @@ struct CKeyEventSink : public ITfKeyEventSink {
   CSrfTip* m_pTip = nullptr;
   bool m_leftShiftDown = false;
   bool m_rightShiftDown = false;
+  bool m_passthroughKeyDown[256] = {};
 
   explicit CKeyEventSink(CSrfTip* tip);
 

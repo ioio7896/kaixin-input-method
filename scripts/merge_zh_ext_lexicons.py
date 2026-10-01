@@ -73,6 +73,13 @@ CATEGORIES = OrderedDict(
 )
 
 
+# Preserve independent professional switches during regeneration.
+from build_professional_lexicons import CATEGORIES as PROFESSIONAL_CATEGORIES
+for tag, (title, _) in PROFESSIONAL_CATEGORIES.items():
+    name = f"professional_{tag}.txt"
+    CATEGORIES[name] = Category(title, (name,))
+
+
 def parse_row(path: Path, line_number: int, line: str) -> tuple[str, str, int]:
     fields = [field.strip() for field in line.split("\t")]
     if len(fields) != 3 or not fields[0] or not fields[1]:

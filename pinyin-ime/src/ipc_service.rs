@@ -72,7 +72,7 @@ const LOOKUP_SLOW_THRESHOLD_US: u128 = 20_000;
 const LOOKUP_FAST_SAMPLE_MASK: usize = 0x3f;
 const LOOKUP_INTERACTIVE_BUSY_WAIT: Duration = Duration::from_millis(20);
 const LOOKUP_BACKGROUND_BUSY_WAIT: Duration = Duration::from_millis(3);
-const FULL_LOAD_INSTALL_IDLE: Duration = Duration::from_millis(500);
+const FULL_LOAD_INSTALL_IDLE: Duration = Duration::from_millis(1500);
 const FULL_LOAD_INSTALL_RETRY_SLEEP: Duration = Duration::from_millis(25);
 // The full prebaked lexicon is deliberately not promoted into the interactive
 // shared engine.  It is much larger than the hot lexicon and loading it in the
@@ -589,6 +589,15 @@ fn process_async_learning_request(
         ));
     }
 
+    // Give queued keystrokes a short head start before mutating shared data.
+    // Bound the yield so continuous typing cannot starve learning or shutdown.
+    let yield_started = Instant::now();
+    while lookup_scheduler().has_interactive_pressure()
+        && yield_started.elapsed() < Duration::from_millis(50)
+        && !ASYNC_LEARNING_SHUTDOWN.load(Ordering::Acquire)
+    {
+        std::thread::sleep(Duration::from_millis(2));
+    }
     let mut state = lock_shared_engine_recover();
     let engine = state.engine_mut().map_err(|err| {
         (
@@ -968,6 +977,7 @@ fn lookup_scheduler() -> &'static LookupScheduler {
 
 struct ClientLookupSession {
     id: u64,
+    last_request_id: u64,
     client_process_id: u32,
     lookup: LookupSession,
 }
@@ -985,6 +995,7 @@ impl ClientLookupSession {
                 .fetch_add(1, Ordering::Relaxed)
                 .max(1),
             client_process_id,
+            last_request_id: 0,
             lookup: LookupSession::default(),
         }
     }
@@ -1119,6 +1130,12 @@ fn lock_shared_engine_for_lookup(
     };
     let mut waited = false;
     loop {
+        if cancellation.map_or_else(
+            || crate::core::lookup_request_superseded(lookup_generation),
+            |token| token.is_superseded(lookup_generation),
+        ) {
+            return Err((-8, error_payload("lookup superseded")));
+        }
         match shared_engine().try_lock() {
             Ok(guard) => {
                 if waited && perf_log_enabled() {
@@ -1945,6 +1962,7 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
     }
     let mut lookup_session = ClientLookupSession::new(client_process_id);
     while let Some((command, payload)) = read_request(pipe) {
+        lookup_session.last_request_id = 0;
         let (status, response) =
             match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 dispatch_request_with_session(command, &payload, Some(&mut lookup_session))
@@ -1953,7 +1971,15 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
                 Err(_) => (ENGINE_PANIC_RC, Vec::new()),
             };
         let shutdown_requested = command == EngineCommand::Shutdown && status == 0;
-        if !write_response(pipe, command, status, &response) {
+        let write_started = Instant::now();
+        let written = write_response(pipe, command, status, &response);
+        if command == EngineCommand::Lookup && perf_log_enabled() {
+            runtime_log::log_engine(RuntimeLogLevel::Perf, "srf_ipc_lookup_write",
+                format!("session_id={} request_id={} client_pid={} bytes={} write={}us status={} written={}",
+                    lookup_session.id, lookup_session.last_request_id, client_process_id, response.len(),
+                    write_started.elapsed().as_micros(), status, written));
+        }
+        if !written {
             break;
         }
         if shutdown_requested {
@@ -2212,7 +2238,7 @@ fn handle_init(payload: &[u8]) -> (i32, Vec<u8>) {
 
 fn handle_lookup(
     payload: &[u8],
-    lookup_session: Option<&mut ClientLookupSession>,
+    mut lookup_session: Option<&mut ClientLookupSession>,
 ) -> (i32, Vec<u8>) {
     static FIRST_LOOKUP_LOGGED: OnceLock<()> = OnceLock::new();
     let lookup_started = Instant::now();
@@ -2258,6 +2284,9 @@ fn handle_lookup(
     // Each pipe owns an independent cancellation domain. Client request ids
     // are compared only inside the calling process, whose PID is obtained from
     // the pipe rather than trusted from the payload.
+    if let Some(session) = lookup_session.as_deref_mut() {
+        session.last_request_id = request_id;
+    }
     let (session_id, lookup_generation, cancellation) =
         if let Some(session) = lookup_session.as_deref() {
             let generation = session.lookup.next_lookup_generation();
@@ -2386,7 +2415,8 @@ fn handle_lookup(
         return (-5, error_payload("shared engine busy"));
     }
 
-    let (ranked, lexicon_state, full_in_flight, engine_us) = {
+    let lock_started = Instant::now();
+    let (ranked, lexicon_state, full_in_flight, engine_us, lock_wait_us, init_us) = {
         let mut state = match lock_shared_engine_for_lookup(
             &reading,
             request_id,
@@ -2397,11 +2427,16 @@ fn handle_lookup(
             Ok(guard) => guard,
             Err(result) => return result,
         };
+        let mut lock_wait_us = lock_started.elapsed().as_micros();
+        let mut init_us = 0;
         if state.engine.is_none() {
             drop(state);
+            let init_started = Instant::now();
             if let Err(err) = ensure_shared_engine_loaded(None) {
                 return (-3, error_payload(&err));
             }
+            init_us = init_started.elapsed().as_micros();
+            let retry_lock_started = Instant::now();
             state = match lock_shared_engine_for_lookup(
                 &reading,
                 request_id,
@@ -2412,6 +2447,7 @@ fn handle_lookup(
                 Ok(guard) => guard,
                 Err(result) => return result,
             };
+            lock_wait_us += retry_lock_started.elapsed().as_micros();
         } else {
             state.schedule_full_load_if_needed();
         }
@@ -2443,10 +2479,21 @@ fn handle_lookup(
             lexicon_state,
             full_in_flight,
             engine_started.elapsed().as_micros(),
+            lock_wait_us,
+            init_us,
         )
     };
     let scheduler_after_engine = lookup_scheduler().snapshot();
     drop(permit);
+
+    if cancellation
+        .as_ref()
+        .is_some_and(|token| token.is_superseded(lookup_generation))
+    {
+        lookup_scheduler().note_superseded();
+        return (-8, error_payload("lookup superseded"));
+    }
+    let serialize_started = Instant::now();
 
     let result_limit = if full_result {
         LOOKUP_FULL_MAX_CANDIDATES
@@ -2463,6 +2510,7 @@ fn handle_lookup(
         append_utf16_field_u16(&mut payload, &meta, ROW_META_UNITS - 1);
     }
     append_u32(&mut payload, if has_more { 1 } else { 0 });
+    let serialize_us = serialize_started.elapsed().as_micros();
     let total_us = lookup_started.elapsed().as_micros();
     if perf_log_enabled() {
         let scheduler = scheduler_after_engine;
@@ -2472,7 +2520,7 @@ fn handle_lookup(
                 RuntimeLogLevel::Perf,
                 "srf_ipc_lookup",
                 format!(
-                    "request_id={} lookup_generation={} {} candidates={} first={} response_format={} response_bytes={} lexicon_state={} full_in_flight={} queue_wait={}us queue_p50={}us queue_p95={}us queue_p99={}us admitted={} coalesced={} superseded={} busy={} background_yields={} active_workers={} engine={}us total={}us status=ok",
+                    "request_id={} lookup_generation={} {} candidates={} first={} response_format={} response_bytes={} lexicon_state={} full_in_flight={} queue_wait={}us queue_p50={}us queue_p95={}us queue_p99={}us admitted={} coalesced={} superseded={} busy={} background_yields={} active_workers={} engine={}us lock_wait={}us init={}us serialize={}us total={}us session_id={} status=ok",
                     request_id,
                     lookup_generation,
                     runtime_log::input_fingerprint(&reading),
@@ -2493,7 +2541,11 @@ fn handle_lookup(
                     scheduler.background_yields,
                     scheduler.active_workers,
                     engine_us,
-                    total_us
+                    lock_wait_us,
+                    init_us,
+                    serialize_us,
+                    total_us,
+                    session_id
                 ),
             );
         }

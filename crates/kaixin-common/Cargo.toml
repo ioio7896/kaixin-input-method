@@ -1,0 +1,5 @@
+[package]
+name = "kaixin-common"
+version = "2.0.0"
+edition = "2021"
+license = "Apache-2.0"

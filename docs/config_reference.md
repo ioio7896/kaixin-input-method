@@ -40,7 +40,7 @@ new setting is added or a default changes.
 | `app:<process>` | `overlay_offset_x` / `overlay_offset_y` | `0` | `-4000..=4000` logical pixels | settings, TSF |
 | `app:<process>` | `overlay_scale` | `100` | `50..=200` percent; decimal scale such as `1.25` is accepted as `125` by settings | settings, TSF |
 | `app:<process>` | `overlay_monitor` | `auto` | `auto`, `primary`, or zero-based monitor index | settings, TSF |
-| `app:<process>` | `overlay_backend` | `auto` | `auto`, `in_process`, `external`; auto uses the independent helper only for fullscreen or UI-less hosts, `external` always requests it | settings, TSF |
+| `app:<process>` | `overlay_backend` | `auto` | `auto`, `in_process`, `external`; auto uses the independent helper for game, fullscreen or UI-less hosts, `external` always requests it | settings, TSF |
 | `clipboard` | `background_enabled` | `1` | boolean | settings, engine, clipboard manager |
 | `clipboard` | `max_history_items` | `60` | `0..=300` | settings, engine, clipboard manager |
 | `clipboard` | `max_pinned_items` | `24` | `0..=100` | settings, engine, clipboard manager |
@@ -81,10 +81,12 @@ new setting is added or a default changes.
 | `lexicon` | `lexicon_<tag>` | `1` | boolean; controls optional text dictionaries by tag | settings, engine |
 | `input` | `traditional_output` | `0` | boolean | settings, TSF, engine ranking |
 | `input` | `traditional_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
-| `input` | `game_mode_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
+| `input` | `game_mode_hotkey` | `Ctrl+Shift+Alt+G` | Configurable explicit game chat switch; disabled in `passthrough` and `chinese` game modes; an existing explicit `off` is preserved | settings, TSF |
+| `compatibility` | `game_input_mode` | `manual` | `manual` starts games in keyboard pass-through; `passthrough` never enables IME; `chinese` always enables Chinese; `auto_text` recognizes writable native Edit/RichEdit controls only | settings, TSF |
+| `app:<process>` | `game_input_mode` | inherited | Same modes, or `inherit`; saved independently per game along with tested commit transport and candidate placement | settings, TSF |
 | `input` | `temporary_ascii_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
-| `input` | `hotkey_scope` | `disabled_in_game` | `global`, `text_only`, `disabled_in_game`, or `per_app`; controls every TSF IME hotkey, including Shift tap and preserved keys | TSF |
-| `app:<process>` | `hotkey_scope` | inherited | Per-app override of `input.hotkey_scope`; set `global` only when this game/application should explicitly receive IME hotkeys | TSF |
+| `input` | `hotkey_scope` | `disabled_in_game` | `global`, `text_only`, `disabled_in_game`, or `per_app`; controls ordinary TSF IME hotkeys; games always suppress these and retain only the explicitly configured game chat switch | TSF |
+| `app:<process>` | `hotkey_scope` | inherited | Per-app override of `input.hotkey_scope`; game keyboard safety takes precedence over `global`; use the game chat switch for Chinese input | TSF |
 | `input` | `shift_tap_hotkey` | `1` | boolean | settings, TSF |
 | `input` | `candidate_number_select` | `1` | boolean | settings, TSF |
 | `input` | `date_auto_format` | `1` | boolean | settings, TSF, engine ranking |
@@ -127,8 +129,8 @@ Fullscreen display notes:
 
 | Rule | Value |
 | --- | --- |
-| Fullscreen default | `[compatibility] fullscreen_policy=show_ui` uses the compact, click-through game candidate overlay; `hide_ui` remains available as an explicit compatibility fallback. |
-| Fullscreen candidate overlay | Set `[compatibility] fullscreen_policy=show_ui` to keep candidates visible in fullscreen without forcing ASCII. |
+| Fullscreen default | Unknown fullscreen applications follow `fullscreen_policy`; recognized games follow `game_input_mode` first and start in keyboard pass-through by default. Chinese chat uses the compact, click-through game overlay. |
+| Fullscreen candidate overlay | Unknown fullscreen applications use `fullscreen_policy=show_ui`. In recognized games, explicitly enter Chinese chat or select `game_input_mode=chinese`; `passthrough` never shows candidates. |
 | ASCII direct mode | ASCII compatibility passes letters, digits, punctuation, keypad input, and game shortcuts directly to the target; it is not limited to English letters. |
 | Manual compatibility scope | Manual game/ASCII mode and the recovery override are bound to the current foreground window, process ID, and process path; changing windows clears them. |
 | Per-game candidate overlay | Set `[app:<process>] policy=show_ui`, or equivalently `ascii_mode=0`, `hide_ui=0`, and `candidate_topmost=1`. |

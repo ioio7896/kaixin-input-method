@@ -130,6 +130,9 @@ void ApplyCompactGameStyle(SrfUIStyle* style, bool forceHorizontal = true) {
   style->candidateMaterial = SrfCandidateMaterial::Solid;
   style->candidateDensity = SrfCandidateDensity::Compact;
   style->candidateLayoutVariant = SrfCandidateLayoutVariant::Compact;
+  style->skinAnimationsEnabled = false;
+  if (style->candidateOverlayAnchor == SrfOverlayAnchor::Auto)
+    style->candidateOverlayAnchor = SrfOverlayAnchor::BottomLeft;
   style->candidateLeftClick = false;
   style->candidateRightClick = false;
   style->showCandidateReading = false;

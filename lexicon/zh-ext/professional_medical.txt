@@ -1,0 +1,62 @@
+# 开心输入法专业小词库：医疗
+# 项目原创整理；默认关闭，在设置页按需开启。
+临床医学	lin chuang yi xue	6000
+诊断学	zhen duan xue	6000
+病理学	bing li xue	6000
+内科学	nei ke xue	6000
+外科学	wai ke xue	6000
+儿科学	er ke xue	6000
+妇产科学	fu chan ke xue	6000
+急诊医学	ji zhen yi xue	6000
+全科医学	quan ke yi xue	6000
+预防医学	yu fang yi xue	6000
+循证医学	xun zheng yi xue	6000
+康复医学	kang fu yi xue	6000
+影像学	ying xiang xue	6000
+超声检查	chao sheng jian cha	6000
+磁共振成像	ci gong zhen cheng xiang	6000
+血常规	xue chang gui	6000
+尿常规	niao chang gui	6000
+肝功能	gan gong neng	6000
+肾功能	shen gong neng	6000
+心电图	xin dian tu	6000
+血压	xue ya	6000
+血糖	xue tang	6000
+血脂	xue zhi	6000
+心肌梗死	xin ji geng si	6000
+脑卒中	nao zu zhong	6000
+高血压	gao xue ya	6000
+糖尿病	tang niao bing	6000
+冠心病	guan xin bing	6000
+肺炎	fei yan	6000
+哮喘	xiao chuan	6000
+肺栓塞	fei shuan se	6000
+肾功能不全	shen gong neng bu quan	6000
+免疫反应	mian yi fan ying	6000
+炎症反应	yan zheng fan ying	6000
+抗生素	kang sheng su	6000
+抗凝治疗	kang ning zhi liao	6000
+放射治疗	fang she zhi liao	6000
+化学治疗	hua xue zhi liao	6000
+靶向治疗	ba xiang zhi liao	6000
+免疫治疗	mian yi zhi liao	6000
+手术指征	shou shu zhi zheng	6000
+鉴别诊断	jian bie zhen duan	6000
+生命体征	sheng ming ti zheng	6000
+不良反应	bu liang fan ying	6000
+禁忌证	jin ji zheng	6000
+适应证	shi ying zheng	6000
+病历	bing li	6000
+处方	chu fang	6000
+随访	sui fang	6000
+转诊	zhuan zhen	6000
+知情同意	zhi qing tong yi	6000
+无菌操作	wu jun cao zuo	6000
+心肺复苏	xin fei fu su	6000
+气管插管	qi guan cha guan	6000
+静脉输液	jing mai shu ye	6000
+组织活检	zu zhi huo jian	6000
+病原体	bing yuan ti	6000
+潜伏期	qian fu qi	6000
+发病率	fa bing lv	6000
+病死率	bing si lv	6000

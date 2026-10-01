@@ -1,0 +1,63 @@
+# 开心输入法专业小词库：地理
+# 项目原创整理；默认关闭，在设置页按需开启。
+自然地理	zi ran di li	6000
+人文地理	ren wen di li	6000
+经济地理	jing ji di li	6000
+地理信息系统	di li xin xi xi tong	6000
+遥感	yao gan	6000
+地图学	di tu xue	6000
+经纬度	jing wei du	6000
+海拔	hai ba	6000
+等高线	deng gao xian	6000
+比例尺	bi li chi	6000
+地图投影	di tu tou ying	6000
+地形	di xing	6000
+地貌	di mao	6000
+板块构造	ban kuai gou zao	6000
+地壳	di qiao	6000
+地幔	di man	6000
+地核	di he	6000
+岩石圈	yan shi quan	6000
+水圈	shui quan	6000
+大气圈	da qi quan	6000
+生物圈	sheng wu quan	6000
+地震	di zhen	6000
+火山	huo shan	6000
+风化	feng hua	6000
+侵蚀	qin shi	6000
+沉积	chen ji	6000
+喀斯特地貌	ka si te di mao	6000
+冰川地貌	bing chuan di mao	6000
+冲积平原	chong ji ping yuan	6000
+河流流域	he liu liu yu	6000
+分水岭	fen shui ling	6000
+地下水	di xia shui	6000
+洋流	yang liu	6000
+潮汐	chao xi	6000
+季风	ji feng	6000
+气旋	qi xuan	6000
+反气旋	fan qi xuan	6000
+冷锋	leng feng	6000
+暖锋	nuan feng	6000
+气压	qi ya	6000
+降水	jiang shui	6000
+蒸发	zheng fa	6000
+水循环	shui xun huan	6000
+气候带	qi hou dai	6000
+热带	re dai	6000
+温带	wen dai	6000
+寒带	han dai	6000
+大陆性气候	da lu xing qi hou	6000
+海洋性气候	hai yang xing qi hou	6000
+季风气候	ji feng qi hou	6000
+人口密度	ren kou mi du	6000
+城市化	cheng shi hua	6000
+土地利用	tu di li yong	6000
+区域规划	qu yu gui hua	6000
+产业布局	chan ye bu ju	6000
+资源环境	zi yuan huan jing	6000
+可持续发展	ke chi xu fa zhan	6000
+生态承载力	sheng tai cheng zai li	6000
+荒漠化	huang mo hua	6000
+水土流失	shui tu liu shi	6000
+全球定位系统	quan qiu ding wei xi tong	6000

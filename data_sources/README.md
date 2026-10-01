@@ -29,6 +29,8 @@
 ## 自维护数据
 
 - `kaixin/polyphone_corrections.tsv`：用于给其他词库生成标准拼音的多音词校正表；可选第三列为 `exact` 或 `substring`，省略时按 `substring` 处理。
+- `kaixin/core_priority_corrections.tsv`：多音校正中需要 Core 排序优先级的读音；其余已在 `lexicon/zh` 存在的读音直接沿用普通词库，缺失的读音生成到始终启用的 `lexicon/zh/kaixin_recall.txt`。
+- `kaixin/recall_phrases.tsv`：从高优先级基础候选移出的低优先级词语和单字读音。
 - `kaixin/pronunciation_aliases.tsv`：运行时可接受读音与多音字表；同一个词语或单字可以用不同拼音和独立权重出现多次，不会传播到其他词条。
 - `kaixin/common_phrases.tsv`：基础日常候选覆盖表；用于补足分类词表不覆盖的常用词和候选质量回归用例。
 - `lexicon_fragments/zh-ext/animal_common_5000.txt`：项目作者使用生成式 AI 辅助生成、整理并人工筛选的
@@ -40,6 +42,11 @@
 `lexicon_fragments/zh-ext/` 保存分类词库的可追溯源片段；
 `scripts/merge_zh_ext_lexicons.py` 按“词语 + 输入码”去重、同项保留最高权重，生成
 `lexicon/zh-ext/` 下 7 个用户可关闭的分类词库。
+
+`lexicon_fragments/zh/life_common_3char_tail_15000.txt` 保存 wordfreq 三字词长尾的
+来源记录，由 `scripts/build_life_common_3char_20000.py` 生成。当前 15,000 个词语已全部
+存在于运行时热词库，因此该文件不参与运行时加载或安装包打包；旧安装目录若仍有同名文件，
+词库加载器也会忽略。
 
 项目自维护中文词库和字符表可通过 `scripts/regenerate_lexicons.ps1` 重现；英文词库通过
 `scripts/generate_common_english.py` 单独重现。

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Build ranked three-character Simplified Chinese lexicons.
 
-The first ``hot_size`` safe, word-like phrases are written to the base layer.
-The remaining phrases are written to the large layer.  This matches the
-existing loader profiles: Hot reads ``base`` while Standard/Full also read
-``large``.
+The first ``hot_size`` safe, word-like phrases are written to the runtime
+lexicon. The remaining phrases are archived under ``data_sources`` for source
+traceability; they add no unique runtime phrases to the current lexicon.
 
 ``wordfreq`` deliberately rounds low Zipf scores, which used to collapse most
 of this list to weight 1.  We instead map the source's original global rank to
@@ -28,6 +27,14 @@ from wordfreq import top_n_list
 DEFAULT_SIZE = 20_000
 DEFAULT_HOT_SIZE = 5_000
 RANK_WEIGHT_SCALE = 6_000_000
+
+# pypinyin's per-character reading misses these place names. Keep the source
+# archive aligned with the curated readings in lexicon/zh-ext/geography_admin.txt.
+EXACT_READING_OVERRIDES = {
+    "阿勒泰": "a le tai",
+    "阿图什": "a tu shi",
+    "库尔勒": "ku er le",
+}
 
 # These fragments are unsuitable in either shipped layer.  Substring matching
 # deliberately catches inflected profanity such as "你妈的" without trying to
@@ -188,7 +195,9 @@ def validate_partition(
 
 
 def render_reading(phrase: str) -> str:
-    return " ".join(lazy_pinyin(phrase, style=Style.NORMAL))
+    return EXACT_READING_OVERRIDES.get(phrase) or " ".join(
+        lazy_pinyin(phrase, style=Style.NORMAL)
+    )
 
 
 def write_lexicon(
@@ -212,7 +221,7 @@ def write_lexicon(
         if label == "热头":
             stream.write("# 粗俗词已剔除；明显句段碎片降级到长尾。\n")
         else:
-            stream.write("# 粗俗词已剔除；热头降级的句段碎片保留在本层。\n")
+            stream.write("# 来源资料，不参与运行时词库；热头降级的句段碎片保留在本层。\n")
         for candidate in rows:
             stream.write(
                 f"{candidate.phrase}\t{render_reading(candidate.phrase)}\t"
@@ -223,7 +232,13 @@ def write_lexicon(
 
 def default_tail_output_for(hot_output: Path) -> Path:
     if hot_output.parent.name == "zh" and hot_output.parent.parent.name == "lexicon":
-        return hot_output.parent / "life_common_3char_tail_15000.txt"
+        return (
+            hot_output.parent.parent.parent
+            / "data_sources"
+            / "lexicon_fragments"
+            / "zh"
+            / "life_common_3char_tail_15000.txt"
+        )
     return hot_output.with_name(f"{hot_output.stem}_tail.txt")
 
 
@@ -275,7 +290,7 @@ def main() -> int:
     parser.add_argument(
         "--tail-output",
         type=Path,
-        default=repo / "lexicon" / "zh" / "life_common_3char_tail_15000.txt",
+        default=repo / "data_sources" / "lexicon_fragments" / "zh" / "life_common_3char_tail_15000.txt",
     )
     parser.add_argument("--size", type=int, default=DEFAULT_SIZE)
     parser.add_argument("--hot-size", type=int, default=DEFAULT_HOT_SIZE)

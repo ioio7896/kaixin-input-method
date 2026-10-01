@@ -165,6 +165,7 @@ STDMETHODIMP CSrfCandidateListUIElement::GetPageIndex(UINT* pIndex, UINT uSize, 
 STDMETHODIMP CSrfCandidateListUIElement::SetPageIndex(UINT* pIndex, UINT uPageCnt) {
   if (!m_tip || !pIndex || uPageCnt == 0) return E_INVALIDARG;
   if (m_tip->m_candidatesReading != m_tip->m_reading) return S_OK;
+  OnCandidateInteractionStarted();
   const UINT requestedPage = std::min(uPageCnt - 1, m_tip->CandidatePageForIndex(pIndex[0]));
   m_tip->m_candPage = std::min(requestedPage, m_tip->MaxCandidatePage());
   const UINT pageStart = m_tip->CandidatePageStart(m_tip->m_candPage);
@@ -188,6 +189,7 @@ STDMETHODIMP CSrfCandidateListUIElement::SetSelection(UINT nIndex) {
   if (!m_tip) return E_FAIL;
   if (m_tip->m_candidatesReading != m_tip->m_reading) return S_OK;
   if (nIndex >= m_tip->m_context.candidates.items.size()) return E_INVALIDARG;
+  OnCandidateInteractionStarted();
   m_tip->m_candSel = nIndex;
   m_tip->ClampCandidateState();
   m_tip->SyncCandidateContextState();
@@ -204,6 +206,14 @@ STDMETHODIMP CSrfCandidateListUIElement::Abort() {
   if (!m_tip) return E_FAIL;
   m_tip->RequestCancelCompositionOnFocusLoss();
   return S_OK;
+}
+
+void CSrfCandidateListUIElement::OnCandidateInteractionStarted() {
+  if (m_tip && m_tip->m_candidatesReading == m_tip->m_reading) {
+    // Mouse-down is already an interaction, even if the selected index is 0.
+    // Freeze the selectable snapshot before an asynchronous batch can arrive.
+    ++m_tip->m_candidateInteractionVersion;
+  }
 }
 
 void CSrfCandidateListUIElement::OnCandidateClicked(UINT indexInPage) {

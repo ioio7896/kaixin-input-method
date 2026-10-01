@@ -12,6 +12,7 @@ $ProfileGuid = '{A3F0B2C1-4D5E-6789-ABCD-EF0123456789}'
 $SimplifiedChineseTip = ('0804:{0}{1}' -f $TextServiceClsid, $ProfileGuid)
 $AppDisplayName = '开心输入法'
 $RunEntryName = $AppDisplayName
+$EngineRunEntryName = $AppDisplayName + (-join ([char[]](0x5F15, 0x64CE)))
 
 function Assert-PathExists {
     param([string]$Path)
@@ -117,6 +118,9 @@ try {
     if ([string]::IsNullOrWhiteSpace($runValue)) {
         throw "Tray Run entry was not created"
     }
+    if (Get-ItemProperty -Path $runKey -Name $EngineRunEntryName -ErrorAction SilentlyContinue) {
+        throw "Engine Run entry should not be created separately"
+    }
 
     if ($ExerciseLanguageList -and -not (Test-LanguageListContainsTip)) {
         throw "TIP was not added to the current user's language list"
@@ -147,6 +151,9 @@ try {
     }
     if ((Get-ItemProperty -Path $runKey -Name $RunEntryName -ErrorAction SilentlyContinue)) {
         throw "Tray Run entry remains after uninstall"
+    }
+    if ((Get-ItemProperty -Path $runKey -Name $EngineRunEntryName -ErrorAction SilentlyContinue)) {
+        throw "Engine Run entry remains after uninstall"
     }
     if ($ExerciseLanguageList -and (Test-LanguageListContainsTip)) {
         throw "TIP remains in language list after uninstall"

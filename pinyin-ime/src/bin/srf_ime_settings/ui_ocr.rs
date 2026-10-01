@@ -10,7 +10,21 @@ pub(super) fn ocr_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let mut open_ocr = false;
     let mut open_ocr_translate = false;
     let mut check_ocr = false;
+    let default_ocr_profile = SettingsModel::default().ocr_profile;
     section_panel(ui, "本地 OCR", |ui| {
+        status_badge(
+            ui,
+            if app.model.ocr_profile == default_ocr_profile {
+                StatusTone::Success
+            } else {
+                StatusTone::Warning
+            },
+            if app.model.ocr_profile == default_ocr_profile {
+                "推荐档位"
+            } else {
+                "已自定义档位"
+            },
+        );
         setting_row(
             ui,
             "截图 OCR",

@@ -88,7 +88,7 @@ impl PinyinEngine {
         let started = Instant::now();
         let lex_started = Instant::now();
         let phrase_lexicon = dir.and_then(load_phrase_lexicon);
-        let single_char_common = dir.map(load_single_char_common_index).unwrap_or_default();
+        let single_char_common = dir.map(load_single_char_common_index).unwrap_or_else(|| Arc::new(single_char_common::SingleCharCommonIndex::bundled()));
         let lex_us = lex_started.elapsed().as_micros();
         Self::with_phrase_lexicon_and_single_chars(
             phrase_lexicon,
@@ -103,15 +103,19 @@ impl PinyinEngine {
         let started = Instant::now();
         let lex_started = Instant::now();
         let phrase_lexicon = dir.and_then(load_hot_phrase_lexicon);
-        let single_char_common = dir.map(load_single_char_common_index).unwrap_or_default();
+        let single_char_common = dir.map(load_single_char_common_index).unwrap_or_else(|| Arc::new(single_char_common::SingleCharCommonIndex::bundled()));
         let lex_us = lex_started.elapsed().as_micros();
-        Self::with_phrase_lexicon_and_single_chars(
+        let mut engine = Self::with_phrase_lexicon_and_single_chars(
             phrase_lexicon,
             single_char_common,
             "hot",
             started,
             lex_us,
-        )
+        );
+        if !crate::lexicon_prefs::has_custom_optional_lexicon_prefs() {
+            engine.cold_lexicon = dir.and_then(crate::cold_lexicon::ColdLexicon::open);
+        }
+        engine
     }
 
     fn with_phrase_lexicon_and_single_chars(
@@ -123,6 +127,8 @@ impl PinyinEngine {
     ) -> Self {
         let model_started = Instant::now();
         let model = shared_engine_model();
+        let mut single_char_common = single_char_common;
+        Arc::make_mut(&mut single_char_common).extend_supported(model.dict.as_ref());
         let model_us = model_started.elapsed().as_micros();
         let user_lexicon = UserLexicon::load_default();
         let user_lexicon_stamp = user_lexicon_disk_stamp();
@@ -156,6 +162,7 @@ impl PinyinEngine {
             lm: Arc::clone(&model.lm),
             single_char_common,
             phrase_lexicon,
+            cold_lexicon: None,
             user_lexicon,
             user_lexicon_stamp,
             user_lexicon_generation,
@@ -373,6 +380,7 @@ impl PinyinEngine {
         };
         self.clear_lookup_caches();
         self.phrase_lexicon = next_lexicon;
+        self.cold_lexicon = None;
         self.single_char_common = next_single_chars;
         self.last_lookup = None;
         self.advance_shared_data_generation();
@@ -442,6 +450,13 @@ impl PinyinEngine {
             }
         }
         self.note_user_phrases_updated(&affected);
+    }
+
+    pub(super) fn invalidate_lookup_readings(&mut self, readings: &[String]) {
+        // Newly learned aliases may be absent from the old cached candidate
+        // list, so phrase-based eviction alone cannot invalidate those misses.
+        self.short_lookup_cache.evict_readings(readings);
+        self.final_lookup_cache.evict_readings(readings);
     }
 
     /// 定向失效：只驱逐依赖受影响词条的缓存项，保留其余输入的结果，
@@ -560,6 +575,7 @@ impl PinyinEngine {
         stage: &'static str,
     ) -> (Vec<RankedCandidate>, Option<String>) {
         self.arm_full_lookup_retry(raw);
+        let protected_direct_words = self.merge_direct_word_recall(raw, compact_key, now, merged);
         let mut ranked = std::mem::take(&mut self.ranked_buf);
         ranked.clear();
         ranked.reserve(merged.len().min(TSF_MAX_CANDIDATES));
@@ -584,7 +600,7 @@ impl PinyinEngine {
                 meta: merged_candidate.meta,
             });
         }
-        let partial_mixed_hot_phrases = self
+        let mut partial_mixed_hot_phrases = self
             .phrase_lexicon
             .as_ref()
             .filter(|_| self.mixed_pinyin_enabled() && compact_key.chars().count() >= 4)
@@ -600,8 +616,10 @@ impl PinyinEngine {
                     .collect::<Vec<_>>()
             })
             .unwrap_or_default();
+        partial_mixed_hot_phrases.splice(0..0, protected_direct_words);
         let partial_keep = TSF_MAX_CANDIDATES.min(TSF_PAGE_SIZE * 2);
         self.apply_selection_feedback(compact_key, &mut ranked);
+        self.apply_final_negative_selection_feedback(compact_key, &mut ranked);
         sort_ranked_candidates_top_k_preserving(
             &mut ranked,
             partial_keep,
@@ -624,6 +642,7 @@ impl PinyinEngine {
         if self.mode_flags & MODE_TRADITIONAL_OUTPUT != 0 {
             apply_traditional_output(&mut ranked);
         }
+        self.finalize_candidate_presentation(raw, compact_key, &mut ranked);
         if lookup_request_superseded(request_id) {
             self.ranked_buf = ranked;
             self.merged_buf = std::mem::take(merged);
@@ -1001,24 +1020,7 @@ impl PinyinEngine {
                     );
                 }
                 self.reserve_datetime_collision_slot(raw, &mut cached);
-                if let Some((intent, phrase_len)) =
-                    self.strict_lexicon_frequency_order_context(raw, &compact_key)
-                {
-                    if phrase_len >= 2 {
-                        enforce_strict_system_lexicon_frequency_order(
-                            &mut cached,
-                            &compact_key,
-                            intent,
-                            phrase_len,
-                            self.phrase_lexicon.as_ref(),
-                        );
-                    }
-                    demote_cold_non_full_lexicon_candidates(
-                        &mut cached,
-                        intent,
-                        self.phrase_lexicon.as_ref(),
-                    );
-                }
+                self.finalize_candidate_presentation(raw, &compact_key, &mut cached);
                 self.last_lookup = lookup_stability_state_from_candidates(&compact_key, &cached);
                 if let Some(profiler) = profiler.as_mut() {
                     profiler.mark("short_cache_hit");
@@ -1075,24 +1077,7 @@ impl PinyinEngine {
                     );
                 }
                 self.reserve_datetime_collision_slot(raw, &mut cached);
-                if let Some((intent, phrase_len)) =
-                    self.strict_lexicon_frequency_order_context(raw, &compact_key)
-                {
-                    if phrase_len >= 2 {
-                        enforce_strict_system_lexicon_frequency_order(
-                            &mut cached,
-                            &compact_key,
-                            intent,
-                            phrase_len,
-                            self.phrase_lexicon.as_ref(),
-                        );
-                    }
-                    demote_cold_non_full_lexicon_candidates(
-                        &mut cached,
-                        intent,
-                        self.phrase_lexicon.as_ref(),
-                    );
-                }
+                self.finalize_candidate_presentation(raw, &compact_key, &mut cached);
                 self.last_lookup = lookup_stability_state_from_candidates(&compact_key, &cached);
                 if let Some(profiler) = profiler.as_mut() {
                     profiler.mark("final_cache_hit");
@@ -1191,6 +1176,8 @@ impl PinyinEngine {
         let mut merged = std::mem::take(&mut self.merged_buf);
         merged.clear();
         let now = user_clock;
+        let protected_direct_words =
+            self.merge_direct_word_recall(raw, &compact_key, now, &mut merged);
         let mut mixed_intent_char_count: Option<usize> = None;
         let mut mixed_intent_syllables: Option<Vec<String>> = None;
         let mut mixed_prefix_intent = false;
@@ -1212,7 +1199,9 @@ impl PinyinEngine {
         let mut preserved_exact_lexicon_phrases = Vec::new();
         let mut preserved_exact_user_phrases = Vec::new();
         let mut preserved_mixed_user_phrases = Vec::new();
+        let mut preserved_short_abbrev_user_phrases = Vec::new();
         let mut preserved_pinned_user_phrases = Vec::new();
+        let user_hotword_front_limit = user_hotword_prefs::get_user_hotword_prefs().front_limit;
         let mut final_preferred_phrases = Vec::new();
         let mut deferred_first_batch_stage: Option<&'static str> = None;
         let mut exact_primary_decoded = false;
@@ -1228,6 +1217,44 @@ impl PinyinEngine {
                 }
                 return (Vec::new(), Some("lookup superseded".to_string()));
             }};
+        }
+
+        // Only exact full pinyin may consult disk; never scan cold prefixes or
+        // corrections. Keep custom dictionary preferences authoritative.
+        if !direct_input_shortcut
+            && !crate::lexicon_prefs::has_custom_optional_lexicon_prefs()
+            && exact_full_pinyin_syllables
+                .as_ref()
+                .is_some_and(|s| s.len() >= 2)
+        {
+            let hot_count = self
+                .phrase_lexicon
+                .as_ref()
+                .and_then(|lex| lex.lookup_pinyin(&compact_key))
+                .map_or(0, |entries| entries.len());
+            if hot_count < 3 && !lookup_request_superseded(request_id) {
+                if let Some(cold) = &self.cold_lexicon {
+                    for entry in cold.lookup(&compact_key) {
+                        if lookup_request_superseded(request_id) {
+                            return_lookup_superseded!();
+                        }
+                        if !self.user_lexicon.phrase_is_blocked(&entry.phrase) {
+                            preserved_exact_lexicon_phrases.push(entry.phrase.clone());
+                            merge_phrase_entries(
+                                &mut merged,
+                                std::iter::once(&entry),
+                                PHRASE_DIRECT_PINYIN_LOOKUP_BONUS,
+                                1,
+                                &self.user_lexicon,
+                                now,
+                                Some("全拼\tcold_exact=1"),
+                                self.phrase_lexicon.as_ref(),
+                                None,
+                            );
+                        }
+                    }
+                }
+            }
         }
 
         if should_preserve_ascii_input(raw) {
@@ -1303,27 +1330,81 @@ impl PinyinEngine {
                     );
                 }
                 if let Some(entries) = self.user_lexicon.lookup_mixed_input(&compact_key) {
-                    // A mixed-pinyin key is already more specific than a pure
-                    // abbreviation.  Do not hide a newly selected user phrase
-                    // until it has been selected a second time: doing so makes
-                    // the first learned hotword appear to have no effect in the
-                    // candidate window.
-                    preserved_mixed_user_phrases.extend(
-                        entries
-                            .iter()
-                            .take(user_hotword_prefs::get_user_hotword_prefs().front_limit)
-                            .map(|entry| entry.phrase.clone()),
-                    );
-                    merge_user_entries(
-                        &mut merged,
-                        entries.iter(),
-                        USER_MIXED_INPUT_BONUS,
-                        8,
-                        now,
-                        Some(MIXED_USER_CANDIDATE_META),
-                        self.phrase_lexicon.as_ref(),
-                        None,
-                    );
+                    let explicit = self.user_lexicon.lookup_input(&compact_key);
+                    for entry in entries.iter().take(12) {
+                        let selected_here = explicit.is_some_and(|items| {
+                            items.iter().any(|item| item.phrase == entry.phrase)
+                        });
+                        if selected_here {
+                            preserved_mixed_user_phrases.push(entry.phrase.clone());
+                            merge_user_entries(
+                                &mut merged,
+                                std::iter::once(entry),
+                                USER_MIXED_INPUT_BONUS,
+                                1,
+                                now,
+                                Some(MIXED_USER_CANDIDATE_META),
+                                self.phrase_lexicon.as_ref(),
+                                None,
+                            );
+                        } else if (self.mixed_pinyin_enabled()
+                            || (self.jianpin_enabled()
+                                && compact_key.len() == phrase_char_count(&entry.phrase)))
+                            && !self.user_lexicon.phrase_is_blocked(&entry.phrase)
+                        {
+                            // Generated aliases provide recall. Repeatedly
+                            // selected pure abbreviations also receive a
+                            // bounded user-frequency boost and hotword priority.
+                            let meta = if compact_key.len() == phrase_char_count(&entry.phrase) {
+                                ABBREV_CANDIDATE_META
+                            } else {
+                                MIXED_HIGH_CANDIDATE_META
+                            };
+                            let shared = signal_bonus(
+                                self.user_lexicon.phrase_signal(&entry.phrase),
+                                now,
+                                1.2,
+                                0.5,
+                            )
+                            .min(2.0);
+                            let short_abbrev_alias = self.jianpin_enabled()
+                                // A compact key can also be a complete full-pinyin reading
+                                // (notably when it contains one-letter syllables). Preserve
+                                // that exact route instead of treating it as learned initials.
+                                && !exact_complete_full_pinyin
+                                && is_pure_short_abbrev_initial_input(raw, &compact_key)
+                                && compact_key.len() == phrase_char_count(&entry.phrase);
+                            let frequent_user_alias = short_abbrev_alias
+                                && entry.freq >= USER_SHORT_ABBREV_ALIAS_MIN_FREQ;
+                            let alias_frequency_bonus = if frequent_user_alias {
+                                input_entry_bonus(entry, now).min(USER_SHORT_ABBREV_BONUS_CAP)
+                            } else {
+                                0.0
+                            };
+                            let score = USER_MIXED_INPUT_BONUS + shared + alias_frequency_bonus;
+                            if frequent_user_alias {
+                                if user_hotword_front_limit > 0
+                                    && preserved_short_abbrev_user_phrases.len()
+                                        < user_hotword_front_limit
+                                {
+                                    preserved_short_abbrev_user_phrases.push(entry.phrase.clone());
+                                }
+                                merge_candidate_meta(
+                                    &mut merged,
+                                    entry.phrase.clone(),
+                                    score,
+                                    CandidateMeta::user_with_freq(false, entry.freq),
+                                );
+                            } else {
+                                merge_candidate(
+                                    &mut merged,
+                                    entry.phrase.clone(),
+                                    score,
+                                    Some(meta),
+                                );
+                            }
+                        }
+                    }
                 }
                 if let Some(entries) = self.user_lexicon.lookup_observed_input(&compact_key) {
                     merge_user_entries(
@@ -2804,6 +2885,7 @@ impl PinyinEngine {
                 rerank_soft_cap,
                 preserved_direct_phrases
                     .iter()
+                    .chain(protected_direct_words.iter())
                     .chain(preserved_short_phrases.iter())
                     .chain(preserved_daily_short_two_char_phrases.iter())
                     .chain(preserved_daily_short_three_char_phrases.iter())
@@ -2876,7 +2958,11 @@ impl PinyinEngine {
                     self.phrase_lexicon.as_ref(),
                     input_intent,
                 )
-                + self.single_syllable_common_char_prior(&phrase, input_intent)
+                + self.single_syllable_common_char_prior(
+                    &phrase,
+                    input_intent,
+                    &merged_candidate.meta,
+                )
                 + mixed_prefix_core_phrase_bonus(input_intent, &phrase, &merged_candidate.meta)
                 - abbrev_length_penalty(short_ascii_input, input_chars, &phrase)
                 - short_ascii_multi_char_rerank_discount(short_ascii_input, input_chars, &phrase);
@@ -2890,14 +2976,22 @@ impl PinyinEngine {
             self.ranked_buf = ranked;
             return_lookup_superseded!();
         }
-        sort_ranked_candidates_top_k(&mut ranked, TSF_MAX_CANDIDATES * 2);
+        sort_ranked_candidates_top_k_preserving(
+            &mut ranked,
+            TSF_MAX_CANDIDATES * 2,
+            &protected_direct_words,
+        );
         if lookup_request_superseded(request_id) {
             self.ranked_buf = ranked;
             return_lookup_superseded!();
         }
         let selection_feedback_applied = self.apply_selection_feedback(&compact_key, &mut ranked);
         if selection_feedback_applied {
-            sort_ranked_candidates_top_k(&mut ranked, TSF_MAX_CANDIDATES * 2);
+            sort_ranked_candidates_top_k_preserving(
+                &mut ranked,
+                TSF_MAX_CANDIDATES * 2,
+                &protected_direct_words,
+            );
         }
         drop_disabled_english_word_candidates(
             &mut ranked,
@@ -2946,6 +3040,7 @@ impl PinyinEngine {
         dedup_preserved_phrase_order(&mut preserved_separator_phrases);
         dedup_preserved_phrase_order(&mut preserved_exact_user_phrases);
         dedup_preserved_phrase_order(&mut preserved_mixed_user_phrases);
+        dedup_preserved_phrase_order(&mut preserved_short_abbrev_user_phrases);
         dedup_preserved_phrase_order(&mut preserved_pinned_user_phrases);
         dedup_preserved_phrase_order(&mut final_preferred_phrases);
         if !preserved_pinned_user_phrases.is_empty() {
@@ -3019,7 +3114,6 @@ impl PinyinEngine {
             || should_preserve_ascii_input(raw)
             || mixed_prefix_unbounded_long_input
             || mixed_direct_cross_length_collision;
-        let user_hotword_front_limit = user_hotword_prefs::get_user_hotword_prefs().front_limit;
         let exact_guard_syllables = if !direct_input_shortcut
             && !should_preserve_ascii_input(raw)
             && preserved_pinned_user_phrases.is_empty()
@@ -3072,6 +3166,7 @@ impl PinyinEngine {
                 preserved_exact_lexicon_phrases: &preserved_exact_lexicon_phrases,
                 preserved_exact_user_phrases: &preserved_exact_user_phrases,
                 preserved_mixed_user_phrases: &preserved_mixed_user_phrases,
+                preserved_short_abbrev_user_phrases: &preserved_short_abbrev_user_phrases,
                 preserved_pinned_user_phrases: &preserved_pinned_user_phrases,
                 preserved_high_priority_two_char_phrases: &preserved_high_priority_two_char_phrases,
                 preserved_chat_priority_two_char_phrases: &preserved_chat_priority_two_char_phrases,
@@ -3079,6 +3174,10 @@ impl PinyinEngine {
                 final_preferred_phrases: &final_preferred_phrases,
             },
         );
+        if lookup_request_superseded(request_id) {
+            self.ranked_buf = ranked;
+            return_lookup_superseded!();
+        }
         stabilize_top1_by_confidence(
             &mut ranked,
             &exact_full_pinyin_score_phrases,
@@ -3140,25 +3239,28 @@ impl PinyinEngine {
         // so phrase/English frequency scales, LM counts and pronunciation
         // aliases cannot rewrite that order. Explicit user priority and
         // learned per-reading feedback remain in control.
-        if !self.has_selection_feedback_for_reading(&compact_key) {
-            let common_full_pinyin_single = exact_single_syllable_input
-                || (compact_key.chars().count() == 1 && self.syllables.contains(&compact_key));
-            let common_order = if common_full_pinyin_single {
-                self.single_char_common.pinyin_order(&compact_key).to_vec()
-            } else if self.jianpin_enabled()
-                && raw.chars().count() == 1
-                && compact_key.chars().count() == 1
-                && raw.chars().all(|ch| ch.is_ascii_alphabetic())
-            {
-                compact_key
-                    .chars()
-                    .next()
-                    .map(|initial| self.single_char_common.initial_order(initial).to_vec())
-                    .unwrap_or_default()
-            } else {
-                Vec::new()
-            };
-            if !common_order.is_empty() {
+        let has_selection_feedback = self.has_selection_feedback_for_reading(&compact_key);
+        let common_full_pinyin_single = exact_single_syllable_input
+            || (compact_key.chars().count() == 1 && self.syllables.contains(&compact_key));
+        let common_order = if common_full_pinyin_single {
+            self.single_char_common.pinyin_order(&compact_key).to_vec()
+        } else if self.jianpin_enabled()
+            && raw.chars().count() == 1
+            && compact_key.chars().count() == 1
+            && raw.chars().all(|ch| ch.is_ascii_alphabetic())
+        {
+            compact_key
+                .chars()
+                .next()
+                .map(|initial| self.single_char_common.initial_order(initial).to_vec())
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+        if !common_order.is_empty() {
+            if has_selection_feedback && common_full_pinyin_single {
+                append_missing_single_chars(&mut ranked, &common_order);
+            } else if !has_selection_feedback {
                 promote_common_single_chars_after_user_priority(
                     &mut ranked,
                     &common_order,
@@ -3245,6 +3347,12 @@ impl PinyinEngine {
             })
             .cloned()
             .collect::<Vec<_>>();
+        promote_learned_short_abbrev_hotwords_front(
+            &mut ranked,
+            &preserved_short_abbrev_user_phrases,
+            Some(compact_key.chars().count()),
+            user_hotword_front_limit,
+        );
         promote_exact_user_hotwords_front(
             &mut ranked,
             &final_exact_user_phrases,
@@ -3252,27 +3360,12 @@ impl PinyinEngine {
             user_hotword_front_limit,
         );
 
-        let strict_frequency_phrase_len = match input_intent {
-            InputIntent::FullPinyin => exact_complete_intent_syllables,
-            InputIntent::ShortAbbrev if jianpin_enabled => Some(compact_key.chars().count()),
-            _ => None,
-        };
-        if !self.has_selection_feedback_for_reading(&compact_key) {
-            if let Some(phrase_len) = strict_frequency_phrase_len {
-                enforce_strict_system_lexicon_frequency_order(
-                    &mut ranked,
-                    &compact_key,
-                    input_intent,
-                    phrase_len,
-                    self.phrase_lexicon.as_ref(),
-                );
-            }
+        self.finalize_candidate_presentation(raw, &compact_key, &mut ranked);
+
+        if lookup_request_superseded(request_id) {
+            self.ranked_buf = ranked;
+            return_lookup_superseded!();
         }
-        demote_cold_non_full_lexicon_candidates(
-            &mut ranked,
-            input_intent,
-            self.phrase_lexicon.as_ref(),
-        );
 
         let lookup_was_limited = soft_budget.was_limited();
         if lookup_was_limited {

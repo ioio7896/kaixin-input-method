@@ -11,17 +11,20 @@ pub const ENGINE_PANIC_RC: i32 = -100;
 pub mod app_paths;
 pub mod candidate_prefs;
 pub mod clipboard_store;
+mod cold_lexicon;
 mod compiled_data;
 pub mod config_schema;
 pub mod core;
 pub mod correction_prefs;
 pub mod custom_shortcuts;
 pub mod dict;
+#[cfg(feature = "desktop")]
 pub mod dxgi_capture;
 pub mod engine;
 pub mod english_words;
 pub mod external_translation;
 pub mod fuzzy_prefs;
+pub mod game_keyboard_policy;
 pub mod handwrite_lookup;
 #[cfg(windows)]
 pub mod ipc_service;
@@ -31,6 +34,7 @@ pub mod rapidocr_paths;
 pub mod rerank_prefs;
 pub mod runtime_config;
 pub mod runtime_log;
+#[cfg(feature = "desktop")]
 pub mod screenshot_region_selector;
 pub mod screenshot_store;
 pub mod segment;
@@ -40,6 +44,7 @@ pub mod text_norm;
 pub mod thuocl;
 pub mod tool_prefs;
 pub mod traditional;
+#[cfg(feature = "desktop")]
 pub mod ui_theme;
 pub mod user_dict;
 pub mod user_dict_io;
@@ -50,5 +55,6 @@ pub mod v_tools;
 pub mod win_handle;
 pub mod win_paste;
 pub mod win_single_instance;
+#[cfg(feature = "desktop")]
 pub mod windows_graphics_capture;
 pub mod windows_security;

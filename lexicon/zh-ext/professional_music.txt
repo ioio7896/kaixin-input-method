@@ -1,0 +1,68 @@
+# 开心输入法专业小词库：音乐
+# 项目原创整理；默认关闭，在设置页按需开启。
+乐理	yue li	6000
+和声	he sheng	6000
+对位	dui wei	6000
+曲式	qu shi	6000
+配器	pei qi	6000
+音阶	yin jie	6000
+调式	diao shi	6000
+调性	diao xing	6000
+音程	yin cheng	6000
+和弦	he xian	6000
+三和弦	san he xian	6000
+七和弦	qi he xian	6000
+转位	zhuan wei	6000
+主和弦	zhu he xian	6000
+属和弦	shu he xian	6000
+下属和弦	xia shu he xian	6000
+大调	da diao	6000
+小调	xiao diao	6000
+五声音阶	wu sheng yin jie	6000
+半音	ban yin	6000
+全音	quan yin	6000
+节奏	jie zou	6000
+节拍	jie pai	6000
+速度	su du	6000
+力度	li du	6000
+旋律	xuan lv	6000
+复调	fu diao	6000
+主调	zhu diao	6000
+五线谱	wu xian pu	6000
+简谱	jian pu	6000
+高音谱号	gao yin pu hao	6000
+低音谱号	di yin pu hao	6000
+升号	sheng hao	6000
+降号	jiang hao	6000
+还原号	huan yuan hao	6000
+附点	fu dian	6000
+切分音	qie fen yin	6000
+连音	lian yin	6000
+休止符	xiu zhi fu	6000
+延音线	yan yin xian	6000
+弱起	ruo qi	6000
+变奏	bian zou	6000
+奏鸣曲	zou ming qu	6000
+交响曲	jiao xiang qu	6000
+协奏曲	xie zou qu	6000
+室内乐	shi nei yue	6000
+歌剧	ge ju	6000
+清唱剧	qing chang ju	6000
+合唱	he chang	6000
+独唱	du chang	6000
+重唱	chong chang	6000
+管弦乐	guan xian yue	6000
+打击乐	da ji yue	6000
+弦乐	xian yue	6000
+木管	mu guan	6000
+铜管	tong guan	6000
+钢琴	gang qin	6000
+小提琴	xiao ti qin	6000
+大提琴	da ti qin	6000
+长笛	chang di	6000
+单簧管	dan huang guan	6000
+二胡	er hu	6000
+古筝	gu zheng	6000
+琵琶	pi pa	6000
+民族音乐	min zu yin yue	6000
+爵士乐	jue shi yue	6000

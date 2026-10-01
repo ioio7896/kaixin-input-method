@@ -10,16 +10,18 @@ description = "Local-first Chinese input method engine and tools for Windows"
 repository = "https://github.com/ioio7896/kaixin-input-method"
 
 [features]
-default = []
+default = ["desktop"]
+desktop = ["kaixin-core/desktop", "dep:eframe", "dep:egui", "dep:fontdb", "dep:rfd", "dep:xcap"]
 dev-tools = []
 
 [lib]
 name = "pinyin_ime"
-path = "src/lib.rs"
+path = "src/facade.rs"
 
 [[bin]]
 # 与库名 pinyin_ime 区分，避免 Windows 上 release 的 PDB 文件名冲突
 name = "pinyin_ime_gui"
+required-features = ["desktop"]
 path = "src/main.rs"
 
 [[bin]]
@@ -29,10 +31,12 @@ required-features = ["dev-tools"]
 
 [[bin]]
 name = "srf_ime_settings"
+required-features = ["desktop"]
 path = "src/bin/srf_ime_settings.rs"
 
 [[bin]]
 name = "srf_ime_tray"
+required-features = ["desktop"]
 path = "src/bin/srf_ime_tray.rs"
 
 [[bin]]
@@ -45,14 +49,17 @@ path = "src/bin/srf_ime_clipboard_svc.rs"
 
 [[bin]]
 name = "srf_ime_clipboard"
+required-features = ["desktop"]
 path = "src/bin/srf_ime_clipboard.rs"
 
 [[bin]]
 name = "srf_ime_handwrite"
+required-features = ["desktop"]
 path = "src/bin/srf_ime_handwrite.rs"
 
 [[bin]]
 name = "srf_ime_ocr"
+required-features = ["desktop"]
 path = "src/bin/srf_ime_ocr.rs"
 
 [[bin]]
@@ -96,18 +103,20 @@ path = "src/bin/build_blind_corpus.rs"
 required-features = ["dev-tools"]
 
 [dependencies]
+kaixin-common = { path = "../crates/kaixin-common" }
+kaixin-core = { path = "../crates/kaixin-core", default-features = false }
 base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
-eframe = "0.29"
-egui = "0.29"
+eframe = { version = "0.29", optional = true }
+egui = { version = "0.29", optional = true }
 encoding_rs = "0.8"
-fontdb = "0.23"
+fontdb = { version = "0.23", optional = true }
 fs2 = "0.4"
 image = { version = "0.25", default-features = false, features = ["bmp", "png", "jpeg"] }
 lru = "0.18.2"
 memmap2 = "0.9.11"
 pinyin = "0.10"
-rfd = "0.15"
+rfd = { version = "0.15", optional = true }
 regex = "1"
 rusqlite = { version = "0.32", features = ["bundled", "serialize"] }
 serde = { version = "1", features = ["derive"] }
@@ -121,10 +130,6 @@ embed-resource = "3"
 
 [target.'cfg(windows)'.dependencies]
 clipboard-win = "5.4.1"
-windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_DataExchange", "Win32_System_IO", "Win32_System_JobObjects", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Registry", "Win32_System_SystemInformation", "Win32_System_Threading", "Win32_UI_Controls", "Win32_UI_HiDpi", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_Security", "Win32_Security_Authorization", "Win32_Security_Cryptography", "Win32_Storage_FileSystem", "Win32_System_Com", "Win32_System_DataExchange", "Win32_System_IO", "Win32_System_JobObjects", "Win32_System_LibraryLoader", "Win32_System_Memory", "Win32_System_Ole", "Win32_System_Pipes", "Win32_System_Registry", "Win32_System_SystemInformation", "Win32_System_Threading", "Win32_UI_Controls", "Win32_UI_Accessibility", "Win32_UI_HiDpi", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 windows = { version = "0.62", features = ["Graphics_Capture", "Win32_Foundation", "Win32_Graphics_Direct3D", "Win32_Graphics_Direct3D11", "Win32_Graphics_Dwm", "Win32_Graphics_Dxgi", "Win32_Graphics_Dxgi_Common", "Win32_Graphics_Gdi", "Win32_System_Com", "Win32_System_Com_StructuredStorage", "Win32_System_Ole", "Win32_UI_Accessibility", "Win32_UI_WindowsAndMessaging"] }
-xcap = { version = "0.9.6", default-features = false, features = ["wgc"] }
-
-[profile.release]
-lto = true
-codegen-units = 1
+xcap = { optional = true, version = "0.9.6", default-features = false, features = ["wgc"] }

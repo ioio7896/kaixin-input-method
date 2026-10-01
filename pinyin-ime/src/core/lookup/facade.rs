@@ -12,7 +12,16 @@ impl PinyinEngine {
             | self.apply_final_negative_selection_feedback(compact_key, cached);
         changed |= feedback_changed;
         if changed {
-            sort_ranked_candidates_top_k(cached, TSF_MAX_CANDIDATES * 2);
+            // Exact single-syllable lookups use the larger pool so uncommon
+            // characters remain reachable after paging. A cached context
+            // rerank must not shrink that completed pool back to the ordinary
+            // 256-row ranking limit.
+            let keep = if self.syllables.contains(compact_key) {
+                LOOKUP_FULL_MAX_CANDIDATES
+            } else {
+                TSF_MAX_CANDIDATES * 2
+            };
+            sort_ranked_candidates_top_k(cached, keep);
         }
         self.promote_confident_top1_over_stability(compact_key, cached);
         if !feedback_changed {

@@ -367,7 +367,9 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   }
   DebugLogPerfMs(L"CommitCandidate/text-write", textWriteStart);
 
-  if (FAILED(hr) && EffectiveCommitTransport() != SrfCommitTransport::UnicodeSendInput) {
+  if (FAILED(hr) && !IsGameHotkeyPassthroughActive() &&
+      hr != HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) &&
+      EffectiveCommitTransport() != SrfCommitTransport::UnicodeSendInput) {
     bool appGameProfile = false;
     const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName());
     if (appOptions && appOptions->hasGameProfile && appOptions->gameCompactProfile) {
@@ -465,6 +467,16 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   }
 
   if (FAILED(hr)) {
+    if (IsGameHotkeyPassthroughActive()) {
+      if (hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY)) {
+        CancelCompositionEdit(ec);
+        SetGameChatActive(false);
+      }
+      ShowNotification(SrfNotificationKind::AppOptions,
+          hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) ?
+          L"部分上屏，已停止重试；请检查游戏聊天框" :
+          L"上屏失败，请用游戏测试向导选择上屏方式");
+    }
     RecordCompatibilityFallback(L"CommitCandidate", hr);
     wchar_t hrBuf[16] = {};
     swprintf_s(hrBuf, L"%08lX", static_cast<unsigned long>(hr));

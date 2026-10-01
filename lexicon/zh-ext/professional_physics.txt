@@ -1,0 +1,62 @@
+# 开心输入法专业小词库：物理
+# 项目原创整理；默认关闭，在设置页按需开启。
+经典力学	jing dian li xue	6000
+量子力学	liang zi li xue	6000
+相对论	xiang dui lun	6000
+热力学	re li xue	6000
+统计物理	tong ji wu li	6000
+电磁学	dian ci xue	6000
+光学	guang xue	6000
+声学	sheng xue	6000
+牛顿定律	niu dun ding lv	6000
+动量	dong liang	6000
+角动量	jiao dong liang	6000
+动量守恒	dong liang shou heng	6000
+能量守恒	neng liang shou heng	6000
+万有引力	wan you yin li	6000
+加速度	jia su du	6000
+向心力	xiang xin li	6000
+简谐运动	jian xie yun dong	6000
+阻尼振动	zu ni zhen dong	6000
+共振	gong zhen	6000
+波动	bo dong	6000
+干涉	gan she	6000
+衍射	yan she	6000
+偏振	pian zhen	6000
+折射	zhe she	6000
+全反射	quan fan she	6000
+电场	dian chang	6000
+磁场	ci chang	6000
+电势	dian shi	6000
+电流	dian liu	6000
+电阻	dian zu	6000
+电容	dian rong	6000
+电感	dian gan	6000
+电磁感应	dian ci gan ying	6000
+洛伦兹力	luo lun zi li	6000
+麦克斯韦方程	mai ke si wei fang cheng	6000
+欧姆定律	ou mu ding lv	6000
+焦耳定律	jiao er ding lv	6000
+熵	shang	6000
+内能	nei neng	6000
+焓	han	6000
+热容	re rong	6000
+绝对零度	jue dui ling du	6000
+理想气体	li xiang qi ti	6000
+状态方程	zhuang tai fang cheng	6000
+黑体辐射	hei ti fu she	6000
+光电效应	guang dian xiao ying	6000
+波粒二象性	bo li er xiang xing	6000
+不确定性原理	bu que ding xing yuan li	6000
+薛定谔方程	xue ding e fang cheng	6000
+波函数	bo han shu	6000
+量子态	liang zi tai	6000
+能级	neng ji	6000
+隧穿效应	sui chuan xiao ying	6000
+原子核	yuan zi he	6000
+核裂变	he lie bian	6000
+核聚变	he ju bian	6000
+基本粒子	ji ben li zi	6000
+半导体	ban dao ti	6000
+超导体	chao dao ti	6000
+引力波	yin li bo	6000

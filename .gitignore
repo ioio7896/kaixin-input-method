@@ -21,31 +21,9 @@ dist/
 **/obj/
 **/publish/
 
-# The .NET rule above also matches Rust's source-tool convention. Keep the
-# three-character ranking evaluator versioned without exposing other local
-# src/bin helpers that predate this repository rule.
+# Rust executable sources and their modules are source code.
 !pinyin-ime/src/bin/
-pinyin-ime/src/bin/*
-!pinyin-ime/src/bin/phrase_len_eval.rs
-!pinyin-ime/src/bin/learning_replay_eval.rs
-!pinyin-ime/src/bin/input_perf.rs
-!pinyin-ime/src/bin/input_perf/
-!pinyin-ime/src/bin/input_perf/metrics.rs
-!pinyin-ime/src/bin/srf_ime_clipboard.rs
-!pinyin-ime/src/bin/srf_ime_clipboard_svc.rs
-!pinyin-ime/src/bin/srf_ime_tray.rs
-!pinyin-ime/src/bin/srf_ime_tray/
-!pinyin-ime/src/bin/srf_ime_tray/input_state.rs
-!pinyin-ime/src/bin/srf_ime_settings.rs
-!pinyin-ime/src/bin/srf_ime_settings/
-pinyin-ime/src/bin/srf_ime_settings/config.rs
-!pinyin-ime/src/bin/srf_ime_settings/model.rs
-!pinyin-ime/src/bin/srf_ime_settings/ui.rs
-!pinyin-ime/src/bin/srf_ime_settings/ui_appearance.rs
-!pinyin-ime/src/bin/srf_ime_settings/ui_hotkeys_clipboard.rs
-!pinyin-ime/src/bin/srf_ime_settings/ui_privacy.rs
-!pinyin-ime/src/bin/srf_ime_ocr/
-!pinyin-ime/src/bin/srf_ime_ocr/history_store.rs
+!pinyin-ime/src/bin/**
 
 # Python caches
 __pycache__/
@@ -96,3 +74,23 @@ pinyin-ime/data/corpus.txt
 
 # Accidental command-output scratch file
 /--help
+
+# Generated disk lexicon index
+lexicon/cold_lexicon.sqlite*
+
+# Private runtime data and publication scratch copies
+user_dict.sqlite*
+clipboard_store.sqlite*
+ocr_history.sqlite*
+engine_capability.dat
+engine_capability.token
+config.private.ini
+*.local.ini
+.lexicon_cache/
+lexicon/lexicon.bin
+lexicon/hot_lexicon.bin
+lexicon/lexicon.pack
+
+# Local audit notes and private development history
+docs/git-history-timeline.md
+docs/lexicon-settings-audit.md

@@ -1,0 +1,64 @@
+# 开心输入法专业小词库：哲学
+# 项目原创整理；默认关闭，在设置页按需开启。
+本体论	ben ti lun	6000
+认识论	ren shi lun	6000
+方法论	fang fa lun	6000
+伦理学	lun li xue	6000
+美学	mei xue	6000
+逻辑学	luo ji xue	6000
+形而上学	xing er shang xue	6000
+辩证法	bian zheng fa	6000
+唯物主义	wei wu zhu yi	6000
+唯心主义	wei xin zhu yi	6000
+历史唯物主义	li shi wei wu zhu yi	6000
+辩证唯物主义	bian zheng wei wu zhu yi	6000
+经验主义	jing yan zhu yi	6000
+理性主义	li xing zhu yi	6000
+实证主义	shi zheng zhu yi	6000
+现象学	xian xiang xue	6000
+存在主义	cun zai zhu yi	6000
+实用主义	shi yong zhu yi	6000
+结构主义	jie gou zhu yi	6000
+后现代主义	hou xian dai zhu yi	6000
+物质	wu zhi	6000
+意识	yi shi	6000
+实践	shi jian	6000
+真理	zhen li	6000
+客观性	ke guan xing	6000
+主观性	zhu guan xing	6000
+因果关系	yin guo guan xi	6000
+必然性	bi ran xing	6000
+偶然性	ou ran xing	6000
+可能性	ke neng xing	6000
+现实性	xian shi xing	6000
+同一性	tong yi xing	6000
+矛盾	mao dun	6000
+普遍性	pu bian xing	6000
+特殊性	te shu xing	6000
+量变	liang bian	6000
+质变	zhi bian	6000
+否定之否定	fou ding zhi fou ding	6000
+自由意志	zi you yi zhi	6000
+决定论	jue ding lun	6000
+价值判断	jia zhi pan duan	6000
+道德责任	dao de ze ren	6000
+功利主义	gong li zhu yi	6000
+义务论	yi wu lun	6000
+德性伦理	de xing lun li	6000
+社会契约	she hui qi yue	6000
+正义	zheng yi	6000
+平等	ping deng	6000
+自由	zi you	6000
+异化	yi hua	6000
+主体性	zhu ti xing	6000
+他者	ta zhe	6000
+意向性	yi xiang xing	6000
+先验	xian yan	6000
+先天	xian tian	6000
+后天	hou tian	6000
+分析命题	fen xi ming ti	6000
+综合命题	zong he ming ti	6000
+演绎推理	yan yi tui li	6000
+归纳推理	gui na tui li	6000
+形式逻辑	xing shi luo ji	6000
+辩证逻辑	bian zheng luo ji	6000

@@ -1,0 +1,1415 @@
+{
+  "version": 13,
+  "rust_modules": {
+    "section": {
+      "STYLE": {
+        "type": "&str",
+        "expression": "\"style\""
+      },
+      "COMPATIBILITY": {
+        "type": "&str",
+        "expression": "\"compatibility\""
+      },
+      "PRIVACY": {
+        "type": "&str",
+        "expression": "\"privacy\""
+      },
+      "ENGINE": {
+        "type": "&str",
+        "expression": "\"engine\""
+      }
+    },
+    "key": {
+      "THEME": {
+        "type": "&str",
+        "expression": "\"theme\""
+      },
+      "CANDIDATE_MATERIAL": {
+        "type": "&str",
+        "expression": "\"candidate_material\""
+      },
+      "CANDIDATE_DENSITY": {
+        "type": "&str",
+        "expression": "\"candidate_density\""
+      },
+      "CANDIDATE_LAYOUT_VARIANT": {
+        "type": "&str",
+        "expression": "\"candidate_layout_variant\""
+      },
+      "CANDIDATE_VERTICAL_LAYOUT_VARIANT": {
+        "type": "&str",
+        "expression": "\"candidate_vertical_layout_variant\""
+      },
+      "CANDIDATE_HORIZONTAL_LAYOUT_VARIANT": {
+        "type": "&str",
+        "expression": "\"candidate_horizontal_layout_variant\""
+      },
+      "CANDIDATE_REDUCE_MOTION": {
+        "type": "&str",
+        "expression": "\"candidate_reduce_motion\""
+      },
+      "HIGHLIGHT_TYPO_CANDIDATES": {
+        "type": "&str",
+        "expression": "\"highlight_typo_candidates\""
+      },
+      "SHOW_CANDIDATE_SOURCE": {
+        "type": "&str",
+        "expression": "\"show_candidate_source\""
+      },
+      "LEARNING_SENSITIVITY": {
+        "type": "&str",
+        "expression": "\"learning_sensitivity\""
+      },
+      "USER_HOTWORD_BOOST": {
+        "type": "&str",
+        "expression": "\"user_hotword_boost\""
+      },
+      "FULLSCREEN_DETECTION": {
+        "type": "&str",
+        "expression": "\"fullscreen_detection\""
+      },
+      "FULLSCREEN_POLICY": {
+        "type": "&str",
+        "expression": "\"fullscreen_policy\""
+      },
+      "COMMIT_TRANSPORT": {
+        "type": "&str",
+        "expression": "\"commit_transport\""
+      },
+      "GAME_PROFILE": {
+        "type": "&str",
+        "expression": "\"game_profile\""
+      },
+      "OVERLAY_ANCHOR": {
+        "type": "&str",
+        "expression": "\"overlay_anchor\""
+      },
+      "OVERLAY_OFFSET_X": {
+        "type": "&str",
+        "expression": "\"overlay_offset_x\""
+      },
+      "OVERLAY_OFFSET_Y": {
+        "type": "&str",
+        "expression": "\"overlay_offset_y\""
+      },
+      "OVERLAY_SCALE": {
+        "type": "&str",
+        "expression": "\"overlay_scale\""
+      },
+      "OVERLAY_MONITOR": {
+        "type": "&str",
+        "expression": "\"overlay_monitor\""
+      },
+      "OVERLAY_BACKEND": {
+        "type": "&str",
+        "expression": "\"overlay_backend\""
+      },
+      "BUILTIN_GAME_LIST": {
+        "type": "&str",
+        "expression": "\"builtin_game_list\""
+      },
+      "AUTO_SUGGEST_APP_OPTIONS": {
+        "type": "&str",
+        "expression": "\"auto_suggest_app_options\""
+      },
+      "GAME_PROCESSES": {
+        "type": "&str",
+        "expression": "\"game_processes\""
+      },
+      "NEVER_LEARN_PROCESSES": {
+        "type": "&str",
+        "expression": "\"never_learn_processes\""
+      },
+      "NEVER_CLIPBOARD_PROCESSES": {
+        "type": "&str",
+        "expression": "\"never_clipboard_processes\""
+      },
+      "NEVER_CANDIDATE_PROCESSES": {
+        "type": "&str",
+        "expression": "\"never_candidate_processes\""
+      },
+      "PRIVACY_ENABLED": {
+        "type": "&str",
+        "expression": "\"enabled\""
+      },
+      "PREFIX_CACHE_CAPACITY": {
+        "type": "&str",
+        "expression": "\"prefix_cache_capacity\""
+      },
+      "FINAL_LOOKUP_CACHE_CAPACITY": {
+        "type": "&str",
+        "expression": "\"final_lookup_cache_capacity\""
+      },
+      "SHORT_LOOKUP_CACHE_CAPACITY": {
+        "type": "&str",
+        "expression": "\"short_lookup_cache_capacity\""
+      },
+      "LONG_LOOKUP_SOFT_BUDGET_MS": {
+        "type": "&str",
+        "expression": "\"long_lookup_soft_budget_ms\""
+      },
+      "LONG_LOOKUP_MIN_FIRST_BATCH_CANDIDATES": {
+        "type": "&str",
+        "expression": "\"long_lookup_min_first_batch_candidates\""
+      },
+      "GAME_INPUT_MODE": {
+        "type": "&str",
+        "expression": "\"game_input_mode\""
+      }
+    },
+    "default": {
+      "THEME": {
+        "type": "&str",
+        "entry": [
+          "style",
+          "theme"
+        ]
+      },
+      "CANDIDATE_MATERIAL": {
+        "type": "&str",
+        "entry": [
+          "style",
+          "candidate_material"
+        ]
+      },
+      "CANDIDATE_DENSITY": {
+        "type": "&str",
+        "entry": [
+          "style",
+          "candidate_density"
+        ]
+      },
+      "CANDIDATE_LAYOUT_VARIANT": {
+        "type": "&str",
+        "entry": [
+          "style",
+          "candidate_vertical_layout_variant"
+        ]
+      },
+      "CANDIDATE_HORIZONTAL_LAYOUT_VARIANT": {
+        "type": "&str",
+        "entry": [
+          "style",
+          "candidate_horizontal_layout_variant"
+        ]
+      },
+      "FULLSCREEN_POLICY": {
+        "type": "&str",
+        "entry": [
+          "compatibility",
+          "fullscreen_policy"
+        ]
+      },
+      "COMMIT_TRANSPORT": {
+        "type": "&str",
+        "entry": [
+          "compatibility",
+          "commit_transport"
+        ]
+      },
+      "OVERLAY_ANCHOR": {
+        "type": "&str",
+        "expression": "\"auto\""
+      },
+      "OVERLAY_SCALE_PERCENT": {
+        "type": "usize",
+        "expression": "100"
+      },
+      "OVERLAY_MONITOR": {
+        "type": "&str",
+        "expression": "\"auto\""
+      },
+      "OVERLAY_BACKEND": {
+        "type": "&str",
+        "expression": "\"auto\""
+      },
+      "LEARNING_SENSITIVITY": {
+        "type": "&str",
+        "entry": [
+          "engine",
+          "learning_sensitivity"
+        ]
+      },
+      "USER_HOTWORD_BOOST": {
+        "type": "&str",
+        "entry": [
+          "engine",
+          "user_hotword_boost"
+        ]
+      },
+      "PREFIX_CACHE_CAPACITY": {
+        "type": "usize",
+        "entry": [
+          "engine",
+          "prefix_cache_capacity"
+        ]
+      },
+      "FINAL_LOOKUP_CACHE_CAPACITY": {
+        "type": "usize",
+        "entry": [
+          "engine",
+          "final_lookup_cache_capacity"
+        ]
+      },
+      "SHORT_LOOKUP_CACHE_CAPACITY": {
+        "type": "usize",
+        "entry": [
+          "engine",
+          "short_lookup_cache_capacity"
+        ]
+      },
+      "LONG_LOOKUP_SOFT_BUDGET_MS": {
+        "type": "usize",
+        "entry": [
+          "engine",
+          "long_lookup_soft_budget_ms"
+        ]
+      },
+      "LONG_LOOKUP_MIN_FIRST_BATCH_CANDIDATES": {
+        "type": "usize",
+        "entry": [
+          "engine",
+          "long_lookup_min_first_batch_candidates"
+        ]
+      },
+      "GAME_INPUT_MODE": {
+        "type": "&str",
+        "entry": [
+          "compatibility",
+          "game_input_mode"
+        ]
+      },
+      "GAME_MODE_HOTKEY": {
+        "type": "&str",
+        "entry": [
+          "input",
+          "game_mode_hotkey"
+        ]
+      }
+    },
+    "options": {
+      "THEMES": {
+        "type": "&[&str]",
+        "expression": "&[\"auto\", \"light\", \"dark\", \"high_contrast\"]"
+      },
+      "CANDIDATE_MATERIALS": {
+        "type": "&[&str]",
+        "expression": "&[\"auto\", \"solid\", \"gradient\", \"mist\"]"
+      },
+      "CANDIDATE_DENSITIES": {
+        "type": "&[&str]",
+        "expression": "&[\"compact\", \"standard\", \"comfortable\"]"
+      },
+      "CANDIDATE_LAYOUTS": {
+        "type": "&[&str]",
+        "expression": "&[\"classic\", \"compact\", \"card\"]"
+      },
+      "FULLSCREEN_POLICIES": {
+        "type": "&[&str]",
+        "expression": "&[\"show_ui\", \"ascii\", \"hide_ui\", \"off\"]"
+      },
+      "COMMIT_TRANSPORTS": {
+        "type": "&[&str]",
+        "expression": "&[\"auto\", \"tsf\", \"clipboard_paste\", \"unicode_sendinput\"]"
+      },
+      "OVERLAY_ANCHORS": {
+        "type": "&[&str]",
+        "expression": "&[\n        \"auto\",\n        \"caret\",\n        \"top_left\",\n        \"top_center\",\n        \"top_right\",\n        \"bottom_left\",\n        \"bottom_center\",\n        \"bottom_right\",\n    ]"
+      },
+      "OVERLAY_BACKENDS": {
+        "type": "&[&str]",
+        "expression": "&[\"auto\", \"in_process\", \"external\"]"
+      },
+      "LEARNING_SENSITIVITY": {
+        "type": "&[&str]",
+        "expression": "&[\"conservative\", \"standard\", \"aggressive\"]"
+      },
+      "USER_HOTWORD_BOOST": {
+        "type": "&[&str]",
+        "expression": "&[\"conservative\", \"standard\", \"strong\", \"aggressive\"]"
+      },
+      "GAME_INPUT_MODES": {
+        "type": "&[&str]",
+        "expression": "&[\"manual\", \"passthrough\", \"chinese\", \"auto_text\"]"
+      }
+    }
+  },
+  "cpp_namespaces": {
+    "key": {
+      "kTheme": "theme",
+      "kCandidateMaterial": "candidate_material",
+      "kCandidateDensity": "candidate_density",
+      "kCandidateLayoutVariant": "candidate_layout_variant",
+      "kCandidateVerticalLayoutVariant": "candidate_vertical_layout_variant",
+      "kCandidateHorizontalLayoutVariant": "candidate_horizontal_layout_variant",
+      "kCandidateReduceMotion": "candidate_reduce_motion",
+      "kHighlightTypoCandidates": "highlight_typo_candidates",
+      "kShowCandidateSource": "show_candidate_source",
+      "kFullscreenDetection": "fullscreen_detection",
+      "kFullscreenPolicy": "fullscreen_policy",
+      "kCommitTransport": "commit_transport",
+      "kGameProfile": "game_profile",
+      "kOverlayAnchor": "overlay_anchor",
+      "kOverlayOffsetX": "overlay_offset_x",
+      "kOverlayOffsetY": "overlay_offset_y",
+      "kOverlayScale": "overlay_scale",
+      "kOverlayMonitor": "overlay_monitor",
+      "kOverlayBackend": "overlay_backend",
+      "kBuiltinGameList": "builtin_game_list",
+      "kAutoSuggestAppOptions": "auto_suggest_app_options",
+      "kGameProcesses": "game_processes",
+      "kHotkeyScope": "hotkey_scope",
+      "kNeverLearnProcesses": "never_learn_processes",
+      "kNeverClipboardProcesses": "never_clipboard_processes",
+      "kNeverCandidateProcesses": "never_candidate_processes",
+      "kPrivacyEnabled": "enabled"
+    },
+    "defaults": {
+      "kTheme": "auto",
+      "kCandidateMaterial": "auto",
+      "kCandidateDensity": "standard",
+      "kCandidateLayoutVariant": "compact",
+      "kCandidateHorizontalLayoutVariant": "classic",
+      "kFullscreenPolicy": "show_ui",
+      "kCommitTransport": "tsf"
+    },
+    "section": {
+      "kStyle": "style",
+      "kCompatibility": "compatibility",
+      "kPrivacy": "privacy"
+    }
+  },
+  "entries": [
+    {
+      "section": "diagnostics",
+      "key": "log_level",
+      "default": "error",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_horizontal",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_density",
+      "default": "standard",
+      "type": "string",
+      "aliases": [],
+      "options": [
+        "compact",
+        "standard",
+        "comfortable"
+      ]
+    },
+    {
+      "section": "style",
+      "key": "candidate_vertical_layout_variant",
+      "default": "compact",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_horizontal_layout_variant",
+      "default": "classic",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "compatibility",
+      "key": "fullscreen_detection",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "compatibility",
+      "key": "fullscreen_policy",
+      "default": "show_ui",
+      "type": "string",
+      "aliases": [],
+      "options": [
+        "show_ui",
+        "ascii",
+        "hide_ui",
+        "off"
+      ]
+    },
+    {
+      "section": "compatibility",
+      "key": "game_input_mode",
+      "default": "manual",
+      "type": "string",
+      "aliases": [],
+      "options": [
+        "manual",
+        "passthrough",
+        "chinese",
+        "auto_text"
+      ]
+    },
+    {
+      "section": "compatibility",
+      "key": "commit_transport",
+      "default": "tsf",
+      "type": "string",
+      "aliases": [],
+      "options": [
+        "auto",
+        "tsf",
+        "clipboard_paste",
+        "unicode_sendinput"
+      ]
+    },
+    {
+      "section": "compatibility",
+      "key": "builtin_game_list",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "compatibility",
+      "key": "auto_suggest_app_options",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "privacy",
+      "key": "never_learn_processes",
+      "default": "",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "privacy",
+      "key": "never_clipboard_processes",
+      "default": "",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "privacy",
+      "key": "never_candidate_processes",
+      "default": "",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "background_enabled",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "max_history_items",
+      "default": "60",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "max_pinned_items",
+      "default": "24",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "max_text_utf16_units",
+      "default": "20000",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "max_age_days",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "auto_save",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "save_dir",
+      "default": "",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "silent_copy_enabled",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "silent_copy_dir",
+      "default": "",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "name_pattern",
+      "default": "{timestamp}",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "format",
+      "default": "png",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "copy_after_capture",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "ocr_after_capture",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "translate_after_capture",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "mode",
+      "default": "manual_region",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "confirm_on_release",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "show_instructions",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "tools",
+      "key": "settings_hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "tools",
+      "key": "handwrite_hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "tools",
+      "key": "ocr_hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "tools",
+      "key": "translate_hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "traditional_hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "game_mode_hotkey",
+      "default": "Ctrl+Shift+Alt+G",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "temporary_ascii_hotkey",
+      "default": "off",
+      "type": "string",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "shift_tap_hotkey",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "candidate_number_select",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "symbol_fullwidth",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "shift_symbol_temporary_ascii",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "page_minus_equal",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "page_comma_period",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "retry_on_failure",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "long_lookup_soft_budget_ms",
+      "default": "4",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "general",
+      "key": "config_version",
+      "default": "13",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "default_ascii",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "general",
+      "key": "global_ascii",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "default_full_shape",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "default_chinese_punct",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "curly_punct",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "auto_pair_punct",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "number_fullwidth",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "date_auto_format",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "english_word_input",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "traditional_output",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "default_fuzzy_pinyin",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "zh_z",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "ch_c",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "sh_s",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "n_l",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "f_h",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "an_ang",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "en_eng",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "fuzzy",
+      "key": "in_ing",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "default_double_pinyin",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "jianpin",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "mixed_pinyin",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "mixed_pinyin_aggressive",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "v_assist",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "symbol_toolbox",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "emoji_input",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "u_mode",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "engine",
+      "key": "show_status_notifications",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "correction",
+      "key": "enabled",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "inline_preedit",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "enhanced_position",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "paging_on_scroll",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_page_size",
+      "default": "9",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_horizontal_count",
+      "default": "5",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_horizontal_compact",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_font_size",
+      "default": "16",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_opacity",
+      "default": "100",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_reduce_motion",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_font_weight",
+      "default": "500",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_selected_font_weight",
+      "default": "600",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_label_font_weight",
+      "default": "600",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_chip_font_weight",
+      "default": "500",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_topmost",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "show_candidate_reading",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "show_candidate_score",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "show_mode_in_candidate_header",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "candidate_abbreviate_length",
+      "default": "64",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "full_shape_hotkey",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "punct_hotkey",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "fuzzy_hotkey",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "double_pinyin_hotkey",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "candidate_left_click",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "candidate_right_click",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "input",
+      "key": "page_pgup_pgdn",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "screenshot",
+      "key": "date_subdirs",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "ocr",
+      "key": "keep_alive",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "tools",
+      "key": "ocr_translate_keep_window",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "ocr",
+      "key": "screenshot_auto_save",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "candidate_preview_enabled",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "record_source_app",
+      "default": "0",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "clipboard",
+      "key": "pinned_respects_max_age",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
+      "section": "general",
+      "key": "show_notifications_time",
+      "default": "1200",
+      "type": "integer",
+      "aliases": []
+    },
+    {
+      "section": "style",
+      "key": "theme",
+      "default": "auto",
+      "type": "string",
+      "aliases": [],
+      "options": [
+        "auto",
+        "light",
+        "dark",
+        "high_contrast"
+      ]
+    },
+    {
+      "section": "style",
+      "key": "candidate_material",
+      "default": "auto",
+      "type": "string",
+      "aliases": [],
+      "options": [
+        "auto",
+        "solid",
+        "gradient",
+        "mist"
+      ]
+    },
+    {
+      "section": "engine",
+      "key": "final_lookup_cache_capacity",
+      "type": "integer",
+      "aliases": [],
+      "default": "128"
+    },
+    {
+      "section": "engine",
+      "key": "learning_sensitivity",
+      "type": "string",
+      "aliases": [],
+      "default": "standard"
+    },
+    {
+      "section": "engine",
+      "key": "long_lookup_min_first_batch_candidates",
+      "type": "integer",
+      "aliases": [],
+      "default": "6"
+    },
+    {
+      "section": "engine",
+      "key": "prefix_cache_capacity",
+      "type": "integer",
+      "aliases": [],
+      "default": "384"
+    },
+    {
+      "section": "engine",
+      "key": "short_lookup_cache_capacity",
+      "type": "integer",
+      "aliases": [],
+      "default": "192"
+    },
+    {
+      "section": "engine",
+      "key": "user_hotword_boost",
+      "type": "string",
+      "aliases": [],
+      "default": "standard"
+    },
+    {
+      "section": "general",
+      "key": "show_notifications",
+      "type": "string",
+      "aliases": [],
+      "default": "true"
+    },
+    {
+      "section": "input",
+      "key": "cn_en_hotkey",
+      "type": "string",
+      "aliases": [],
+      "default": "none"
+    },
+    {
+      "section": "input",
+      "key": "double_pinyin_schema",
+      "type": "string",
+      "aliases": [],
+      "default": "builtin"
+    },
+    {
+      "section": "ocr",
+      "key": "profile",
+      "type": "string",
+      "aliases": [],
+      "default": "balanced"
+    },
+    {
+      "section": "ocr",
+      "key": "screenshot_name_pattern",
+      "type": "string",
+      "aliases": [],
+      "default": "ocr-{datetime}"
+    },
+    {
+      "section": "ocr",
+      "key": "screenshot_save_dir",
+      "type": "string",
+      "aliases": [],
+      "default": ""
+    },
+    {
+      "section": "privacy",
+      "key": "enabled",
+      "type": "bool",
+      "aliases": [],
+      "default": "0"
+    },
+    {
+      "section": "rank",
+      "key": "lm_single_scale",
+      "type": "string",
+      "aliases": [],
+      "default": "3.350"
+    },
+    {
+      "section": "rank",
+      "key": "w_phrase_path",
+      "type": "string",
+      "aliases": [],
+      "default": "0.160"
+    },
+    {
+      "section": "rank",
+      "key": "w_single_lm",
+      "type": "string",
+      "aliases": [],
+      "default": "0.820"
+    },
+    {
+      "section": "screenshot",
+      "key": "conflict_strategy",
+      "type": "string",
+      "aliases": [],
+      "default": "increment"
+    },
+    {
+      "section": "style",
+      "key": "candidate_font_file",
+      "type": "string",
+      "aliases": [],
+      "default": "Microsoft YaHei"
+    },
+    {
+      "section": "style",
+      "key": "candidate_skin_file",
+      "type": "string",
+      "aliases": [],
+      "default": ""
+    },
+    {
+      "section": "style",
+      "key": "highlight_typo_candidates",
+      "type": "bool",
+      "aliases": [],
+      "default": "1"
+    },
+    {
+      "section": "style",
+      "key": "show_candidate_source",
+      "type": "bool",
+      "aliases": [],
+      "default": "0"
+    },
+    {
+      "section": "tools",
+      "key": "ocr_result_action",
+      "type": "string",
+      "aliases": [],
+      "default": "show"
+    },
+    {
+      "section": "tools",
+      "key": "ocr_translate_hotkey",
+      "type": "string",
+      "aliases": [],
+      "default": "off"
+    },
+    {
+      "section": "tools",
+      "key": "translate_result_action",
+      "type": "string",
+      "aliases": [],
+      "default": "show"
+    },
+    {
+      "section": "tools",
+      "key": "wintranslator_path",
+      "type": "string",
+      "aliases": [],
+      "default": ""
+    }
+  ],
+  "cpp_default_entries": {
+    "kTheme": [
+      "style",
+      "theme"
+    ],
+    "kCandidateMaterial": [
+      "style",
+      "candidate_material"
+    ],
+    "kCandidateDensity": [
+      "style",
+      "candidate_density"
+    ],
+    "kCandidateLayoutVariant": [
+      "style",
+      "candidate_vertical_layout_variant"
+    ],
+    "kCandidateHorizontalLayoutVariant": [
+      "style",
+      "candidate_horizontal_layout_variant"
+    ],
+    "kFullscreenPolicy": [
+      "compatibility",
+      "fullscreen_policy"
+    ],
+    "kCommitTransport": [
+      "compatibility",
+      "commit_transport"
+    ]
+  }
+}

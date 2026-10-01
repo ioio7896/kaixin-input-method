@@ -305,8 +305,108 @@ pub(super) enum TwoCharDensityReplay {
     Minimum,
 }
 
+const LOOKUP_CACHE_MAX_BYTES: usize = 8 * 1024 * 1024;
+
+#[cfg(test)]
+mod memory_budget_tests {
+    use super::*;
+
+    #[test]
+    fn candidate_cache_evicts_by_bytes_and_keeps_latest() {
+        let mut cache = FinalLookupCache::new(512);
+        for index in 0..12 {
+            let key = FinalLookupCacheKey {
+                input: index.to_string(),
+                mode_flags: 0,
+                cache_epoch: 0,
+            };
+            cache.insert(
+                key,
+                vec![RankedCandidate {
+                    phrase: "a".repeat(1024 * 1024),
+                    score: 1.0,
+                    meta: CandidateMeta::default(),
+                }],
+                None,
+                None,
+            );
+        }
+        assert!(
+            cache
+                .map
+                .iter()
+                .map(|(_, entry)| entry.bytes)
+                .sum::<usize>()
+                <= LOOKUP_CACHE_MAX_BYTES
+        );
+        assert!(cache.map.len() < 12);
+        assert!(cache
+            .get(&FinalLookupCacheKey {
+                input: "11".into(),
+                mode_flags: 0,
+                cache_epoch: 0
+            })
+            .is_some());
+    }
+
+    #[test]
+    fn oversized_candidate_does_not_displace_useful_short_cache() {
+        let mut cache = ShortLookupCache::new(512);
+        let key = ShortLookupCacheKey {
+            input: "ni".into(),
+            mode_flags: 0,
+            cache_epoch: 0,
+        };
+        cache.insert(
+            key.clone(),
+            vec![RankedCandidate {
+                phrase: "你".into(),
+                score: 1.0,
+                meta: CandidateMeta::default(),
+            }],
+            None,
+            None,
+        );
+        cache.insert(
+            ShortLookupCacheKey {
+                input: "large".into(),
+                mode_flags: 0,
+                cache_epoch: 0,
+            },
+            vec![RankedCandidate {
+                phrase: "a".repeat(LOOKUP_CACHE_MAX_BYTES),
+                score: 1.0,
+                meta: CandidateMeta::default(),
+            }],
+            None,
+            None,
+        );
+        assert_eq!(cache.map.len(), 1);
+        assert_eq!(cache.get(&key).unwrap().0[0].phrase, "你");
+    }
+}
+
+fn lookup_cache_entry_bytes(input: &str, candidates: &[RankedCandidate]) -> usize {
+    input.len()
+        + std::mem::size_of::<CachedLookupResult>()
+        + candidates
+            .iter()
+            .map(|candidate| {
+                std::mem::size_of::<RankedCandidate>()
+                    + candidate.phrase.capacity()
+                    + candidate
+                        .meta
+                        .correction_target
+                        .as_ref()
+                        .map_or(0, String::capacity)
+                    + candidate.meta.display.as_ref().map_or(0, String::capacity)
+            })
+            .sum::<usize>()
+}
+
 #[derive(Clone)]
 struct CachedLookupResult {
+    bytes: usize,
     candidates: Arc<[RankedCandidate]>,
     visible_short_intent: Option<usize>,
     two_char_density_replay: Option<TwoCharDensityReplay>,
@@ -404,17 +504,44 @@ impl FinalLookupCache {
         if candidates.is_empty() {
             return;
         }
+        let bytes = lookup_cache_entry_bytes(&key.input, &candidates);
+        if bytes > LOOKUP_CACHE_MAX_BYTES {
+            return;
+        }
         self.map.put(
             key,
             CachedLookupResult {
+                bytes,
                 candidates: Arc::from(candidates),
                 visible_short_intent,
                 two_char_density_replay,
             },
         );
+        let mut total_bytes: usize = self.map.iter().map(|(_, value)| value.bytes).sum();
+        while total_bytes > LOOKUP_CACHE_MAX_BYTES {
+            let Some((_, removed)) = self.map.pop_lru() else {
+                break;
+            };
+            total_bytes = total_bytes.saturating_sub(removed.bytes);
+        }
     }
 
-    /// 驱逐候选列表含任一受影响词条的缓存项，其余输入的结果保持命中。
+    /// 新增读音可能尚未出现在旧候选池中，按输入键驱逐这些缓存。
+    pub(super) fn evict_readings(&mut self, readings: &[String]) {
+        let keys = self
+            .map
+            .iter()
+            .filter(|(key, _)| {
+                let compact = compact_lookup_key(&key.input);
+                readings.iter().any(|reading| reading == &compact)
+            })
+            .map(|(key, _)| key.clone())
+            .collect::<Vec<_>>();
+        for key in keys {
+            self.map.pop(&key);
+        }
+    }
+
     pub(super) fn evict_affected(&mut self, affected: &[String]) {
         if affected.is_empty() {
             return;
@@ -473,17 +600,44 @@ impl ShortLookupCache {
         if candidates.is_empty() {
             return;
         }
+        let bytes = lookup_cache_entry_bytes(&key.input, &candidates);
+        if bytes > LOOKUP_CACHE_MAX_BYTES {
+            return;
+        }
         self.map.put(
             key,
             CachedLookupResult {
+                bytes,
                 candidates: Arc::from(candidates),
                 visible_short_intent,
                 two_char_density_replay,
             },
         );
+        let mut total_bytes: usize = self.map.iter().map(|(_, value)| value.bytes).sum();
+        while total_bytes > LOOKUP_CACHE_MAX_BYTES {
+            let Some((_, removed)) = self.map.pop_lru() else {
+                break;
+            };
+            total_bytes = total_bytes.saturating_sub(removed.bytes);
+        }
     }
 
-    /// 驱逐候选列表含任一受影响词条的缓存项，其余输入的结果保持命中。
+    /// 新增读音可能尚未出现在旧候选池中，按输入键驱逐这些缓存。
+    pub(super) fn evict_readings(&mut self, readings: &[String]) {
+        let keys = self
+            .map
+            .iter()
+            .filter(|(key, _)| {
+                let compact = compact_lookup_key(&key.input);
+                readings.iter().any(|reading| reading == &compact)
+            })
+            .map(|(key, _)| key.clone())
+            .collect::<Vec<_>>();
+        for key in keys {
+            self.map.pop(&key);
+        }
+    }
+
     pub(super) fn evict_affected(&mut self, affected: &[String]) {
         if affected.is_empty() {
             return;

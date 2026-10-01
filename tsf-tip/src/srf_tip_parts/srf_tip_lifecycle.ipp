@@ -3,10 +3,11 @@
 class CEditSessionDeferredRefresh final : public ITfEditSession {
   LONG m_cRef = 1;
   CSrfTip* m_tip = nullptr;
+  SrfFocusSnapshot m_focus = {};
 
  public:
   explicit CEditSessionDeferredRefresh(CSrfTip* tip) : m_tip(tip) {
-    if (m_tip) m_tip->AddRef();
+    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
   }
   ~CEditSessionDeferredRefresh() {
     if (m_tip) m_tip->Release();
@@ -31,6 +32,7 @@ class CEditSessionDeferredRefresh final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
+    if (!m_tip->FocusSnapshotMatches(m_focus)) return S_OK;
     if (m_tip->m_reading.empty()) return S_OK;
     m_tip->RefreshCandidatesAsync();
     m_tip->UpdateCandidateWindow(ec);
@@ -76,9 +78,9 @@ class CEditSessionCandidateAnchorRefresh final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
+    if (!m_tip->FocusSnapshotMatches(m_focus)) return S_OK;
     m_tip->m_candidateAnchorRefreshEditPending = false;
     m_tip->m_candidateAnchorRefreshRequestTick = 0;
-    if (!m_tip->FocusSnapshotMatches(m_focus)) return S_OK;
     if (m_tip->m_candidateUi) {
       m_tip->m_candidateUi->OnCandidateAnchorRefreshed();
     }
@@ -92,10 +94,11 @@ class CEditSessionCandidateAnchorRefresh final : public ITfEditSession {
 class CEditSessionApplyAsyncCandidates final : public ITfEditSession {
   LONG m_cRef = 1;
   CSrfTip* m_tip = nullptr;
+  SrfFocusSnapshot m_focus = {};
 
  public:
   explicit CEditSessionApplyAsyncCandidates(CSrfTip* tip) : m_tip(tip) {
-    if (m_tip) m_tip->AddRef();
+    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
   }
   ~CEditSessionApplyAsyncCandidates() {
     if (m_tip) m_tip->Release();
@@ -120,6 +123,7 @@ class CEditSessionApplyAsyncCandidates final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
+    if (!m_tip->FocusSnapshotMatches(m_focus)) return S_OK;
     m_tip->ApplyAsyncCandidateResult(ec);
     return S_OK;
   }
@@ -301,6 +305,9 @@ STDMETHODIMP CSrfTip::ActivateEx(ITfThreadMgr* ptim, TfClientId tid, DWORD dwFla
     m_candidateUi->PrepareWindowResources();
     DebugLogPerfMs(L"ActivateEx/prewarm-candidate-resources", prepStart);
   }
+  if (EnsureDeferredTimerWindow()) {
+    SetTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId, 250, nullptr);
+  }
   DebugLogPerfMs(L"ActivateEx/total", activateStart);
 
   return S_OK;
@@ -320,7 +327,45 @@ STDMETHODIMP CSrfTip::GetDisplayAttributeInfo(REFGUID guid, ITfDisplayAttributeI
   return *ppInfo ? S_OK : E_OUTOFMEMORY;
 }
 
+void CSrfTip::EndInputSession(const wchar_t* reason, TfEditCookie ec, bool cancelComposition) {
+  if (m_endingInputSession) return;
+  m_endingInputSession = true;
+  // Invalidate all input work without changing physical focus identity.
+  m_inputSession.End();
+  CancelDeferredCandidateRefresh();
+  CancelDeferredFocusContextClear();
+  m_pendingLearnNotifications.clear();
+  CancelScheduledCandidateUiRedraw();
+  CancelCandidateWindowAnchorRefreshRetry();
+  SrfTip_CancelPendingLookupBefore(SrfTip_NextLookupRequestId());
+  ClearFocusBoundCandidateState(reason);
+  ClearCompositionBufferState();
+  if (cancelComposition) {
+    if (ec != TF_INVALID_COOKIE) CancelCompositionEdit(ec);
+    else if (m_pComposition) RequestCancelCompositionOnFocusLoss();
+  }
+  m_endingInputSession = false;
+}
+
+bool CSrfTip::EnsureEngineInputReady() {
+  const auto state = SrfTip_GetEngineState();
+  if (state == SrfEngineState::Ready) {
+    m_engineInputSuspended = false;
+    // The old composition must finish cancellation before starting a new one.
+    return m_reading.empty() ? !m_pComposition : true;
+  }
+  if (!m_engineInputSuspended) {
+    m_engineInputSuspended = true;
+    EndInputSession(L"engine-unavailable");
+    ShowNotification(SrfNotificationKind::Ime, L"输入引擎暂不可用，键盘已放行");
+  }
+  SrfTip_WarmupEngineAsync();
+  return false;
+}
+
 void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
+  m_shiftTapActive = false;
+  m_shiftTapUsedWithOtherKey = false;
   m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel);
   CancelDeferredCandidateRefresh();
   m_candidates.clear();
@@ -380,6 +425,8 @@ void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
 void CSrfTip::SetFocusContext(ITfContext* pic) {
   CancelDeferredFocusContextClear();
   if (m_pFocusContext == pic) return;
+  if (m_gameChatActive) SetGameChatActive(false);
+  m_autoGameChatFocus = nullptr;
   const SrfFocusSnapshot oldFocus = CaptureFocusSnapshot(m_pFocusContext);
   ++m_focusGeneration;
   if (m_pFocusContext) m_pFocusContext->Release();
@@ -388,7 +435,7 @@ void CSrfTip::SetFocusContext(ITfContext* pic) {
   m_cachedFocusedHwnd = nullptr;
   m_cachedFocusedProcessId = 0;
   m_cachedFocusedProcessName.clear();
-  ClearFocusBoundCandidateState(L"focus-context-change");
+  EndInputSession(L"focus-context-change");
   InvalidateHotPathStateCache();
   const SrfFocusSnapshot newFocus = CaptureFocusSnapshot(m_pFocusContext);
   std::wstring line = L"old=";
@@ -476,7 +523,7 @@ void CSrfTip::ApplyAppOptionsForFocusedContext(bool showNotification) {
   stageStart = GetTickCount64();
 
   bool usedAppOptions = false;
-  if (m_manualCompatibilityBypass) {
+  if (m_gameChatActive || m_manualCompatibilityBypass) {
     // “恢复中文”暂时覆盖应用的 ASCII 兼容配置；窗口离开后由 owner
     // reconciliation 清掉该覆盖，下一次聚焦会重新应用原配置。
     m_imeOpen = true;
@@ -609,6 +656,8 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
     const wchar_t* description;
   };
 
+  const bool suppressOrdinary = IsGameHotkeyPassthroughActive() ||
+      ShouldForceAsciiForCompatibility() || EffectiveHotkeyScope() == SrfHotkeyScope::PerApp;
   std::vector<PreservedKeyEntry> entries;
   if (m_config.input.cnEnHotkey == 0 || m_config.input.cnEnHotkey == 1) {
     entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_IME, {VK_SHIFT, TF_MOD_CONTROL},
@@ -636,6 +685,7 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
                        L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Double Pinyin"});
   }
 
+  if (suppressOrdinary) entries.clear();
   for (const auto& entry : entries) {
     const HRESULT hr =
         m_pKeystrokeMgr->PreserveKey(m_tid, *entry.guid, &entry.key, entry.description,
@@ -644,7 +694,7 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
   }
 
   m_hasRegisteredScreenshotKey = false;
-  if (m_config.screenshot.hotkey.enabled && m_config.screenshot.hotkey.vk != 0) {
+  if (!suppressOrdinary && m_config.screenshot.hotkey.enabled && m_config.screenshot.hotkey.vk != 0) {
     const TF_PRESERVEDKEY key = {m_config.screenshot.hotkey.vk,
                                  m_config.screenshot.hotkey.modifiers};
     const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Screenshot";
@@ -664,7 +714,8 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
   // \uff08ImmAssociateContext/TF_DISABLECONTEXT\uff09\u4e0d\u6d3e\u53d1\u6b63\u5e38\u6309\u952e\uff0c\u70ed\u952e\u6070\u5728\u8be5\u7c7b
   // \u573a\u666f\u6700\u9700\u8981\uff1bpreserved key \u4e0e OnKeyDown \u662f\u4e92\u65a5\u8def\u5f84\uff0c\u4e0d\u4f1a\u53cc\u89e6\u53d1\u3002
   m_hasRegisteredGameModeKey = false;
-  if (m_config.input.gameModeHotkey.enabled && m_config.input.gameModeHotkey.vk != 0) {
+  m_registeredGameChatPolicy = ShouldHandleGameChatHotkey();
+  if ((ShouldHandleGameChatHotkey() || ShouldHandleImeHotkeys()) && m_config.input.gameModeHotkey.enabled && m_config.input.gameModeHotkey.vk != 0) {
     const TF_PRESERVEDKEY key = {m_config.input.gameModeHotkey.vk,
                                  m_config.input.gameModeHotkey.modifiers};
     const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Game Compatibility";
@@ -678,7 +729,7 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
     }
   }
   m_hasRegisteredTemporaryAsciiKey = false;
-  if (m_config.input.temporaryAsciiHotkey.enabled && m_config.input.temporaryAsciiHotkey.vk != 0) {
+  if (!suppressOrdinary && m_config.input.temporaryAsciiHotkey.enabled && m_config.input.temporaryAsciiHotkey.vk != 0) {
     const TF_PRESERVEDKEY key = {m_config.input.temporaryAsciiHotkey.vk,
                                  m_config.input.temporaryAsciiHotkey.modifiers};
     const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Temporary ASCII";
@@ -693,7 +744,7 @@ HRESULT CSrfTip::RegisterPreservedKeys() {
   }
 
   m_preservedKeysRegistered = true;
-  m_preservedKeysSuppressedForHotkeyScope = false;
+  m_preservedKeysSuppressedForHotkeyScope = suppressOrdinary;
   return S_OK;
 }
 
@@ -787,7 +838,7 @@ void CSrfTip::ClearCompositionBufferState() {
   if (SrfTsfDebugTraceEnabled()) {
     SrfTsfDebugLog(L"ClearCompositionBufferState");
   }
-  ApplyPendingRuntimeConfigIfSafe();
+  if (!m_endingInputSession) ApplyPendingRuntimeConfigIfSafe();
 }
 
 void CSrfTip::ReleaseCompositionObjects() {

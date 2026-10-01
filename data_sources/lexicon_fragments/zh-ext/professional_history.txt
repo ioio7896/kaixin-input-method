@@ -1,0 +1,64 @@
+# 开心输入法专业小词库：历史
+# 项目原创整理；默认关闭，在设置页按需开启。
+历史学	li shi xue	6000
+史料	shi liao	6000
+史学	shi xue	6000
+史料考证	shi liao kao zheng	6000
+历史文献	li shi wen xian	6000
+编年体	bian nian ti	6000
+纪传体	ji zhuan ti	6000
+国别体	guo bie ti	6000
+断代史	duan dai shi	6000
+通史	tong shi	6000
+考古学	kao gu xue	6000
+文物	wen wu	6000
+年代学	nian dai xue	6000
+史前时代	shi qian shi dai	6000
+旧石器时代	jiu shi qi shi dai	6000
+新石器时代	xin shi qi shi dai	6000
+青铜时代	qing tong shi dai	6000
+铁器时代	tie qi shi dai	6000
+夏朝	xia chao	6000
+商朝	shang chao	6000
+西周	xi zhou	6000
+东周	dong zhou	6000
+春秋	chun qiu	6000
+战国	zhan guo	6000
+秦朝	qin chao	6000
+汉朝	han chao	6000
+三国	san guo	6000
+魏晋南北朝	wei jin nan bei chao	6000
+隋朝	sui chao	6000
+唐朝	tang chao	6000
+宋朝	song chao	6000
+元朝	yuan chao	6000
+明朝	ming chao	6000
+清朝	qing chao	6000
+辛亥革命	xin hai ge ming	6000
+五四运动	wu si yun dong	6000
+洋务运动	yang wu yun dong	6000
+戊戌变法	wu xu bian fa	6000
+新文化运动	xin wen hua yun dong	6000
+丝绸之路	si chou zhi lu	6000
+科举制度	ke ju zhi du	6000
+郡县制	jun xian zhi	6000
+分封制	fen feng zhi	6000
+中央集权	zhong yang ji quan	6000
+土地制度	tu di zhi du	6000
+古代文明	gu dai wen ming	6000
+古埃及	gu ai ji	6000
+古希腊	gu xi la	6000
+古罗马	gu luo ma	6000
+中世纪	zhong shi ji	6000
+文艺复兴	wen yi fu xing	6000
+宗教改革	zong jiao gai ge	6000
+启蒙运动	qi meng yun dong	6000
+工业革命	gong ye ge ming	6000
+法国大革命	fa guo da ge ming	6000
+资产阶级革命	zi chan jie ji ge ming	6000
+殖民主义	zhi min zhu yi	6000
+世界大战	shi jie da zhan	6000
+冷战	leng zhan	6000
+历史唯物主义	li shi wei wu zhu yi	6000
+口述史	kou shu shi	6000
+历史地理	li shi di li	6000

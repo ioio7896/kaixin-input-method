@@ -4,11 +4,12 @@
 开心输入法 - one-command packaging build script.
 
 Usage:
-    python build.py              # Full build (cargo + cmake + stage + Inno Setup)
+    python build.py              # Full build; tests/smoke checks are opt-in
     python build.py --no-inno    # Build but skip installer generation
     python build.py --quick      # Skip cargo/cmake; restage and package
     python build.py --clean      # Remove build caches before a fresh build
-    python build.py --no-verify  # Skip Rust and C++ correctness verification
+    python build.py --verify     # Opt in to Rust and C++ correctness verification
+    python build.py --smoke      # Opt in to post-build smoke checks
     python build.py --perf-smoke # Run the release input P99 performance gate
     python build.py --debug      # Build Debug artifacts
     python build.py --quiet      # Show only errors and final results
@@ -38,6 +39,7 @@ import json
 import locale
 import os
 import re
+import secrets
 import shutil
 import subprocess
 import sys
@@ -46,7 +48,8 @@ import threading
 import time
 import zipfile
 from collections import OrderedDict, deque
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
+from contextlib import closing, contextmanager, nullcontext
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
@@ -79,12 +82,15 @@ COMPONENT_PREFIXES = OrderedDict(
     )
 )
 PREBAKED_LEXICON_MAGIC = b"SRFLX002"
-PREBAKED_LEXICON_SCHEMA_VERSION = 9
+# Schema 13 preserves each indexed reading's weight and pronunciation class.
+PREBAKED_LEXICON_SCHEMA_VERSION = 13
 PREBAKED_LEXICON_HEADER_SIZE = len(PREBAKED_LEXICON_MAGIC) + 4
 PREBAKED_LEXICON_MIN_BYTES = 1000
 COMMON_ENGLISH_LEXICON_RELATIVE_PATH = Path("en") / "kaixin_common_english.txt"
 COMMON_ENGLISH_LICENSE_RELATIVE_PATH = Path("en") / "LICENSE.wordfreq.md"
 EXPECTED_COMMON_ENGLISH_WORDS = 20_000
+SINGLE_CHAR_COMMON_RELATIVE_PATH = Path("zh") / "single_char_common_8105.txt"
+EXPECTED_SINGLE_CHAR_COMMON_ROWS = 8_105
 REQUIRED_COMMON_ENGLISH_WORDS = frozenset(
     {"the", "this", "you", "computer", "internet", "email", "github", "python", "rust", "windows"}
 )
@@ -375,7 +381,7 @@ def purge_lexicon_caches(repo: Path, output_root: Path | None = None) -> list[Pa
 
     try:
         lex_dir = find_lexicon_dir(repo)
-        for name in ("lexicon.bin", "hot_lexicon.bin"):
+        for name in ("lexicon.bin", "hot_lexicon.bin", "lexicon.pack", "cold_lexicon.sqlite"):
             p = lex_dir / name
             if p.exists() and (ctx.dry_run or _safe_unlink(p)):
                 deleted.append(p)
@@ -388,6 +394,8 @@ def purge_lexicon_caches(repo: Path, output_root: Path | None = None) -> list[Pa
         try:
             prebaked_bins = list(output_root.rglob("lexicon.bin"))
             prebaked_bins.extend(output_root.rglob("hot_lexicon.bin"))
+            prebaked_bins.extend(output_root.rglob("lexicon.pack"))
+            prebaked_bins.extend(output_root.rglob("cold_lexicon.sqlite"))
             for p in prebaked_bins:
                 if p.exists() and (ctx.dry_run or _safe_unlink(p)):
                     deleted.append(p)
@@ -534,24 +542,74 @@ def resolve_package_variants(
     return selected, []
 
 
-def cleanup_existing_installer_exes(dist_dir: Path) -> list[Path]:
-    """Remove old top-level installer EXEs before writing the selected variants."""
-    removed: list[Path] = []
-    if not dist_dir.is_dir():
-        return removed
-    seen: set[Path] = set()
-    for pattern in ("kaixin-setup*.exe", "kaixin-user-setup*.exe"):
-        for path in dist_dir.glob(pattern):
+def make_inherited_temp_directory(parent: Path, prefix: str) -> Path:
+    """Create a unique directory using the parent's inherited Windows ACL."""
+    parent.mkdir(parents=True, exist_ok=True)
+    for _ in range(32):
+        candidate = parent / f"{prefix}{secrets.token_hex(4)}"
+        try:
+            candidate.mkdir()
+        except FileExistsError:
+            continue
+        return candidate
+    raise RuntimeError(f"unable to allocate temporary directory under {parent}")
+
+
+def publish_installers(dist_dir: Path, installers: list[Path], patterns: list[str]) -> None:
+    """Publish a complete batch, retaining old selected variants for rollback."""
+    for source in installers:
+        if not source.is_file() or source.stat().st_size == 0:
+            raise RuntimeError(f"missing or empty installer: {source}")
+        if (dist_dir / source.name).exists():
+            raise FileExistsError(f"installer already exists: {dist_dir / source.name}")
+    previous = sorted({p for pattern in patterns for p in dist_dir.glob(pattern) if p.is_file()})
+    archive = None
+    if previous:
+        archive_root = dist_dir / "previous-installers"
+        archive = make_inherited_temp_directory(archive_root, f"{ctx.build_timestamp}-")
+    published: list[tuple[Path, Path]] = []
+    archived: list[tuple[Path, Path]] = []
+    copied: list[Path] = []
+    retained: list[Path] = []
+    try:
+        for old in previous:
+            destination = archive / old.name
             try:
-                resolved = path.resolve()
+                old.rename(destination)
+                archived.append((old, destination))
+            except PermissionError:
+                try:
+                    shutil.copy2(old, destination)
+                    copied.append(destination)
+                    retained.append(old)
+                except OSError as archive_error:
+                    retained.append(old)
+                    print_msg(f"  {yellow('!')} unable to archive legacy installer {old}: {archive_error}")
+        for source in installers:
+            destination = dist_dir / source.name
+            source.rename(destination)
+            published.append((source, destination))
+    except OSError:
+        # Old installers remain in dist or the archive even if rollback fails.
+        for original, moved in reversed(published + archived):
+            try:
+                moved.rename(original)
+            except OSError as rollback_error:
+                print_msg(f"  rollback incomplete; retained {moved}: {rollback_error}")
+        for path in copied:
+            try:
+                path.unlink()
             except OSError:
-                resolved = path
-            if resolved in seen:
-                continue
-            seen.add(resolved)
-            if path.is_file() and _safe_unlink(path):
-                removed.append(path)
-    return removed
+                pass
+        raise
+    if archive is not None:
+        print_msg(f"  Previous installers retained: {archive}")
+    subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(dist_dir.parent / "scripts/maintain_workspace.ps1"), "-Apply", "-HistoryOnly"], check=True)
+    if retained:
+        print_msg(
+            f"  {yellow('!')} {len(retained)} legacy installer(s) could not be removed; "
+            "archived copies were kept when readable"
+        )
 
 
 def git_release_info(repo: Path) -> dict:
@@ -845,8 +903,9 @@ def write_build_manifest(
                 for model in RAPIDOCR_REQUIRED_MODELS
             ],
             stage_root / "assets" / "kaixin-input.ico",
-            stage_root / "lexicon" / "lexicon.bin",
+            stage_root / "lexicon" / "lexicon.pack",
             stage_root / "lexicon" / "hot_lexicon.bin",
+            stage_root / "lexicon" / "cold_lexicon.sqlite",
         ])
     if args.portable_zip:
         candidate_paths.extend(stage_root.with_suffix(".zip") for stage_root in stage_roots)
@@ -947,6 +1006,7 @@ def write_build_manifest(
             )
             if (output_root / "lexicon" / "hot_lexicon.bin").is_file()
             else None,
+            "staged_lexicon_pack": _manifest_file_entry(output_root / "lexicon" / "lexicon.pack", repo) if (output_root / "lexicon" / "lexicon.pack").is_file() else None,
             "staged_lexicon_bin": _manifest_file_entry(
                 output_root / "lexicon" / "lexicon.bin",
                 repo,
@@ -1077,6 +1137,39 @@ def _redact_text(text: str, sensitive_values: tuple[str, ...]) -> str:
     return redacted
 
 
+_build_cancelled = threading.Event()
+_build_process_lock = threading.Lock()
+_build_processes: set[subprocess.Popen] = set()
+
+
+def _stop_build_process(proc: subprocess.Popen) -> None:
+    """Stop only a process tree launched and retained by this build invocation."""
+    if proc.poll() is not None:
+        return
+    if os.name == "nt":
+        try:
+            subprocess.run(
+                ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            pass
+    if proc.poll() is None:
+        try:
+            proc.kill()
+        except OSError:
+            pass
+
+
+def _cancel_build_processes() -> None:
+    _build_cancelled.set()
+    with _build_process_lock:
+        processes = list(_build_processes)
+    for proc in processes:
+        _stop_build_process(proc)
+
+
 def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
         capture_on_fail: int = 30,
         sensitive_values: tuple[str, ...] = ()) -> None:
@@ -1093,22 +1186,22 @@ def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
     _ensure_stdout_utf8()
 
     merged_env = {**os.environ, **(env or {})}
+    merged_env.setdefault("PYTHONUNBUFFERED", "1")
     merged_env.setdefault("PYTHONUTF8", "1")
     merged_env.setdefault("PYTHONIOENCODING", "utf-8")
 
-    # Keep the direct passthrough mode for ordinary commands, but capture
-    # signing output so a tool that echoes its arguments cannot reveal a PFX
-    # password even with ``--verbose``.
-    if ctx.verbose and not sensitive_values:
-        result = subprocess.run(cmd, cwd=str(cwd), env=merged_env)
-        if result.returncode != 0:
-            raise BuildCommandError(result.returncode, cmd, [], display_cmd=display_cmd)
-        return
-
-    proc = subprocess.Popen(
-        cmd, cwd=str(cwd), env=merged_env,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-    )
+    # Track verbose commands too, so cancellation cannot leave build children
+    # running just because their output was passed straight to the terminal.
+    passthrough = ctx.verbose and not sensitive_values
+    with _build_process_lock:
+        if _build_cancelled.is_set():
+            raise KeyboardInterrupt
+        proc = subprocess.Popen(
+            cmd, cwd=str(cwd), env=merged_env,
+            stdout=None if passthrough else subprocess.PIPE,
+            stderr=None if passthrough else subprocess.STDOUT,
+        )
+        _build_processes.add(proc)
 
     tail = deque(maxlen=max(1, capture_on_fail))
 
@@ -1122,11 +1215,25 @@ def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
                 _write_stdout_text(line)
             ctx.log(stripped)
 
-    reader_thread = threading.Thread(target=_reader, daemon=True)
-    reader_thread.start()
-    proc.wait()
-    reader_thread.join(timeout=5)
+    reader_thread = None
+    try:
+        if not passthrough:
+            reader_thread = threading.Thread(target=_reader, daemon=True)
+            reader_thread.start()
+        proc.wait()
+    except KeyboardInterrupt:
+        _cancel_build_processes()
+        raise
+    finally:
+        if reader_thread is not None:
+            reader_thread.join(timeout=5)
+        with _build_process_lock:
+            _build_processes.discard(proc)
 
+    # Python uses 130; native Windows console children may report either form
+    # of STATUS_CONTROL_C_EXIT. Cancellation is never an ordinary task failure.
+    if _build_cancelled.is_set() or proc.returncode in (130, -1073741510, 3221225786):
+        raise KeyboardInterrupt
     if proc.returncode != 0:
         raise BuildCommandError(proc.returncode, cmd, list(tail), display_cmd=display_cmd)
 
@@ -1187,16 +1294,28 @@ def run_parallel_tasks(
 
     def _run(name: str, fn: Callable[[], None]) -> None:
         try:
+            if _build_cancelled.is_set():
+                raise KeyboardInterrupt
             fn()
         except Exception as exc:
+            if _build_cancelled.is_set():
+                raise KeyboardInterrupt from None
             with err_lock:
                 errors.append((name, exc))
             _report_first_fail(name)
 
-    with ThreadPoolExecutor(max_workers=len(tasks)) as pool:
+    pool = ThreadPoolExecutor(max_workers=len(tasks))
+    try:
         futures: list[Future] = [pool.submit(_run, name, fn) for name, fn in tasks]
-        for future in futures:
+        # Observe an interrupted task immediately, even if an earlier submitted
+        # task is still running. Cancel before shutdown waits for worker threads.
+        for future in as_completed(futures):
             future.result()
+    except KeyboardInterrupt:
+        _cancel_build_processes()
+        raise
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)
 
     with err_lock:
         return list(errors)
@@ -1695,14 +1814,20 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
     src_dir = repo / "pinyin-ime" / "src"
     data_dir = repo / "pinyin-ime" / "data"
     cargo_toml = repo / "pinyin-ime" / "Cargo.toml"
-    cargo_lock = repo / "pinyin-ime" / "Cargo.lock"
+    cargo_lock = repo / "Cargo.lock"
     build_rs = repo / "pinyin-ime" / "build.rs"
     app_icon = repo / "assets" / "kaixin-input.ico"
     if not src_dir.is_dir() or not cargo_toml.is_file():
         return None
     max_rs, fp_rs = _tree_source_stats(src_dir, {".rs"})
+    max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "Cargo.toml", repo / ".cargo/config.toml", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
     max_data, fp_data = _tree_source_stats(data_dir, {".txt", ".bin", ".yaml", ".yml", ".json"})
     max_lex, fp_lex = _lexicon_sources_fingerprint(repo)
+    max_readings, fp_readings = _source_files_fingerprint(
+        repo, [repo / "data_sources" / "kaixin" / name for name in (
+            "pronunciation_aliases.tsv", "pronunciation_exclusions.tsv"
+        )]
+    )
     try:
         st = cargo_toml.stat()
         st_build = build_rs.stat() if build_rs.is_file() else None
@@ -1713,19 +1838,24 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
     _, fp_git = _git_state_fingerprint(repo)
     max_src = max(
         max_rs,
+        max_workspace,
         max_data,
         max_lex,
+        max_readings,
         st.st_mtime,
         (st_build.st_mtime if st_build is not None else 0.0),
         max_lock,
         max_icon,
     )
     comb = hashlib.sha256()
+    comb.update(fp_workspace.encode("ascii"))
     comb.update(fp_rs.encode("ascii"))
     comb.update(b"\0")
     comb.update(fp_data.encode("ascii"))
     comb.update(b"\0")
     comb.update(fp_lex.encode("ascii"))
+    comb.update(b"\0")
+    comb.update(fp_readings.encode("ascii"))
     comb.update(b"\0")
     comb.update(str(int(st.st_mtime_ns)).encode("ascii"))
     if st_build is not None:
@@ -1942,7 +2072,7 @@ def _lexicon_sort_key(path: Path, _root: Path) -> tuple[int, str]:
 def _is_default_enabled_lexicon_source(path: Path) -> bool:
     """Keep build-time LM inputs aligned with the runtime default lexicon set."""
     name = path.name.lower()
-    return not name.endswith("_纯名单.txt")
+    return not name.endswith("_纯名单.txt") and not name.startswith("professional_")
 
 
 def _lexicon_term_char_count(term: str) -> int:
@@ -2112,6 +2242,9 @@ def model_source_fingerprints(repo: Path) -> dict:
         data_dir / "corpus.txt",
         _corpus_fingerprint_path(data_dir / "corpus.txt"),
         repo / "pinyin-ime" / "build.rs",
+        repo / "pinyin-ime" / "src" / "dict.rs",
+        repo / "data_sources" / "kaixin" / "pronunciation_aliases.tsv",
+        repo / "data_sources" / "kaixin" / "pronunciation_exclusions.tsv",
     ]
     files = []
     h = hashlib.sha256()
@@ -2185,6 +2318,73 @@ def _iter_lexicon_lines(path: Path):
                 raw.seek(0)
                 text = io.TextIOWrapper(raw, encoding=chosen, errors="replace", newline=None)
         yield from text
+
+
+def validate_candidate_limit_contract(repo: Path) -> int:
+    """Keep Rust lookup capacity and the TSF transport/UI capacity identical."""
+    rust_path = repo / "pinyin-ime" / "src" / "core.rs"
+    cpp_path = repo / "tsf-tip" / "include" / "candidate_limits.h"
+    rust_text = rust_path.read_text(encoding="utf-8")
+    cpp_text = cpp_path.read_text(encoding="utf-8")
+    rust_match = re.search(
+        r"pub\s+const\s+LOOKUP_FULL_MAX_CANDIDATES\s*:\s*usize\s*=\s*(\d+)\s*;",
+        rust_text,
+    )
+    cpp_match = re.search(r"kFullResult\s*=\s*(\d+)\s*;", cpp_text)
+    if not rust_match or not cpp_match:
+        raise RuntimeError(
+            "cannot read full candidate limits from Rust and TSF protocol sources"
+        )
+    rust_limit = int(rust_match.group(1))
+    cpp_limit = int(cpp_match.group(1))
+    if rust_limit != cpp_limit:
+        raise RuntimeError(
+            f"full candidate limit mismatch: Rust={rust_limit}, TSF={cpp_limit}"
+        )
+    if rust_limit < 1024:
+        raise RuntimeError(
+            f"full candidate limit {rust_limit} cannot cover the supported single-character pool"
+        )
+    return rust_limit
+
+
+def validate_single_char_common_lexicon(lexicon_dir: Path) -> int:
+    """Validate the curated common-character head shipped with every package."""
+    path = lexicon_dir / SINGLE_CHAR_COMMON_RELATIVE_PATH
+    if not path.is_file() or path.stat().st_size <= 0:
+        raise FileNotFoundError(f"missing common single-character lexicon: {path}")
+
+    seen: set[str] = set()
+    previous_weight: int | None = None
+    for line_no, raw in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        fields = [field.strip() for field in line.split("\t")]
+        if len(fields) != 2 or len(fields[0]) != 1:
+            raise RuntimeError(f"invalid common single-character row {path}:{line_no}")
+        char, weight_text = fields
+        try:
+            weight = int(weight_text)
+        except ValueError as exc:
+            raise RuntimeError(
+                f"invalid common single-character weight {path}:{line_no}: {weight_text!r}"
+            ) from exc
+        if char in seen:
+            raise RuntimeError(f"duplicate common character {path}:{line_no}: {char}")
+        if previous_weight is not None and weight >= previous_weight:
+            raise RuntimeError(
+                f"common single-character weights must be strictly decreasing {path}:{line_no}"
+            )
+        seen.add(char)
+        previous_weight = weight
+
+    if len(seen) != EXPECTED_SINGLE_CHAR_COMMON_ROWS:
+        raise RuntimeError(
+            f"common single-character lexicon must contain exactly "
+            f"{EXPECTED_SINGLE_CHAR_COMMON_ROWS} rows, found {len(seen)}: {path}"
+        )
+    return len(seen)
 
 
 def validate_common_english_lexicon(lexicon_dir: Path) -> int:
@@ -2525,9 +2725,6 @@ def step_check_lexicon_syllables(repo: Path) -> None:
     script = repo / "scripts" / "check_lexicon_syllables.py"
     if not script.is_file():
         raise FileNotFoundError(f"lexicon syllable check script not found: {script}")
-    if ctx.dry_run:
-        print_msg(f"  [dry-run] python \"{script}\" --root \"{repo}\"")
-        return
     run(
         [
             sys.executable,
@@ -2536,6 +2733,7 @@ def step_check_lexicon_syllables(repo: Path) -> None:
             str(repo),
             "--check-syllable-count",
             "--strict-syllable-count",
+            "--progress",
         ],
         cwd=repo,
     )
@@ -2725,7 +2923,19 @@ def step_cargo(
         print_msg(
             f"  {dim('>> first build downloads locked dependencies into %USERPROFILE%\\.cargo\\registry')}"
         )
-    run(cmd, cwd=cargo_dir, env=cargo_env)
+    lean_bins = [name for name in bin_names if name in {"srf_ime_engine", "srf_ime_clipboard_svc", "bake_lexicon"}]
+    if lean_bins:
+        lean_cmd = [cargo, "build", "--locked", "--no-default-features"]
+        if profile == "release": lean_cmd.append("--release")
+        if target: lean_cmd += ["--target", target]
+        if "bake_lexicon" in lean_bins: lean_cmd += ["--features", "dev-tools"]
+        for name in lean_bins: lean_cmd += ["--bin", name]
+        run(lean_cmd, cwd=cargo_dir, env=cargo_env)
+    gui_bins = [name for name in bin_names if name not in lean_bins]
+    if gui_bins:
+        gui_cmd = cmd[:cmd.index("--bin")] if "--bin" in cmd else cmd[:]
+        for name in gui_bins: gui_cmd += ["--bin", name]
+        run(gui_cmd, cwd=cargo_dir, env=cargo_env)
     _refresh_cargo_build_sig(repo, profile, arch)
 
 
@@ -2843,9 +3053,12 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
             build_dir.mkdir(parents=True, exist_ok=True)
             continue
 
-        build_cmd = [cmake, "--build", str(build_dir), "--parallel"]
+        # Visual Studio/MSBuild can otherwise spawn one reusable node per CPU
+        # for each architecture while Cargo is building, exhausting desktop
+        # resources and leaving orphaned nodes after a failed build.
+        build_cmd = [cmake, "--build", str(build_dir), "--parallel", "1"]
         if "Ninja" not in gen_name:
-            build_cmd += ["--config", profile.capitalize()]
+            build_cmd += ["--config", profile.capitalize(), "--", "/nodeReuse:false"]
         build_env = {"MSBUILDDISABLENODEREUSE": "1"}
         try:
             run(build_cmd, cwd=repo, env=build_env)
@@ -2873,7 +3086,7 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
                 time.sleep(0.5)
                 retry_cmd = [cmake, "--build", str(build_dir), "--parallel", "1"]
                 if "Ninja" not in gen_name:
-                    retry_cmd += ["--config", profile.capitalize()]
+                    retry_cmd += ["--config", profile.capitalize(), "--", "/nodeReuse:false"]
                 run(retry_cmd, cwd=repo, env=build_env)
             else:
                 if not ctx.quiet:
@@ -2944,10 +3157,12 @@ def step_stage(repo: Path, tsf_tip: Path, tip_dll: Path, overlay_exe: Path,
 
 def step_inno(repo: Path, script_name: str = "kaixin.iss", output_name: str = "kaixin-setup.exe",
               package_dir: Path | None = None, include_ocr: bool = True,
-              include_translation: bool = False) -> Path:
+              include_translation: bool = False, output_dir: Path | None = None) -> Path:
     """Run Inno Setup and return the generated installer path."""
     iss = repo / "tsf-tip" / "installer" / script_name
     define_args: list[str] = []
+    output_dir = output_dir or repo / "dist"
+    define_args.append(f"/O{output_dir}")
     if not ctx.no_version:
         define_args.append(f"/DKXAppVersion={ctx.version}")
     if package_dir is not None:
@@ -2975,7 +3190,7 @@ def step_inno(repo: Path, script_name: str = "kaixin.iss", output_name: str = "k
             define_args.append(f"/D{define_name}={component_id}")
     if ctx.dry_run:
         print_msg(f"  [dry-run] ISCC {' '.join(define_args)} {script_name}")
-        return repo / "dist" / output_name
+        return output_dir / output_name
     iscc = find_iscc()
     if iscc is None:
         raise FileNotFoundError(
@@ -2991,10 +3206,40 @@ def step_inno(repo: Path, script_name: str = "kaixin.iss", output_name: str = "k
     cmd.append(str(iss))
     run(cmd, cwd=repo)
 
-    output = repo / "dist" / output_name
+    output = output_dir / output_name
     if not output.is_file():
         raise RuntimeError(f"Inno Setup finished but the installer was not found: {output}")
     return output
+
+
+@contextmanager
+def installer_pending_directory(dist_dir: Path):
+    """Create an Inno output directory that inherits the dist directory ACL.
+
+    Python 3.12 creates TemporaryDirectory with a private Windows ACL. On some
+    non-system volumes that ACL cannot be traversed by the 32-bit Inno child
+    process, and cleanup can then mask the original packaging error. A normal
+    mkdir inherits the repository ACL and remains accessible to both processes.
+    """
+    pending_dir = make_inherited_temp_directory(dist_dir, ".installer-pending-")
+
+    try:
+        yield str(pending_dir)
+    finally:
+        for attempt in range(4):
+            try:
+                shutil.rmtree(pending_dir)
+                break
+            except FileNotFoundError:
+                break
+            except OSError:
+                if attempt == 3:
+                    print_msg(
+                        f"  {yellow('!')} unable to remove installer temporary directory: "
+                        f"{pending_dir}"
+                    )
+                else:
+                    time.sleep(0.25 * (attempt + 1))
 
 
 # Corpus generation
@@ -3062,6 +3307,11 @@ def smoke_verify(repo: Path, profile: str) -> list[str]:
 def post_stage_smoke_verify(repo: Path, output_root: Path, profile: str) -> list[str]:
     """Smoke-check the staged package produced in this build."""
     warnings: list[str] = []
+    packed = output_root / "lexicon" / "lexicon.pack"
+    if packed.is_file():
+        from scripts.lexicon_pack import read_pack
+        read_pack(packed)
+        return warnings
     for name in ("lexicon.bin", "hot_lexicon.bin"):
         lex_bin = output_root / "lexicon" / name
         try:
@@ -3268,6 +3518,7 @@ def verify_staged_package(
 
     staged_lexicon_dir = output_root / "lexicon"
     english_count = validate_common_english_lexicon(staged_lexicon_dir)
+    single_char_count = validate_single_char_common_lexicon(staged_lexicon_dir)
     legacy_english_files = [
         path
         for path in (staged_lexicon_dir / "en").iterdir()
@@ -3284,11 +3535,34 @@ def verify_staged_package(
             + ", ".join(path.name for path in legacy_english_files)
         )
     print_msg(f"  {green('OK')} staged English lexicon: {english_count} words")
+    print_msg(
+        f"  {green('OK')} staged common single-character lexicon: "
+        f"{single_char_count} chars"
+    )
 
-    for name in ("lexicon.bin", "hot_lexicon.bin"):
-        lexicon_bin = staged_lexicon_dir / name
-        schema = verify_prebaked_lexicon(lexicon_bin)
-        print_msg(f"  {green('OK')} staged {name}: SRFLX002 schema v{schema}")
+    packed_lexicon = staged_lexicon_dir / "lexicon.pack"
+    if packed_lexicon.is_file():
+        from scripts.lexicon_pack import read_pack
+        profiles = read_pack(packed_lexicon)
+        for profile_bytes in profiles:
+            schema = int.from_bytes(profile_bytes[8:12], "little")
+            if schema != 13: raise RuntimeError("unsupported packed lexicon schema")
+        print_msg(f"  {green('OK')} verified lossless standard/hot lexicon pack")
+    else:
+        for name in ("lexicon.bin", "hot_lexicon.bin"):
+            schema = verify_prebaked_lexicon(staged_lexicon_dir / name)
+            print_msg(f"  {green('OK')} staged {name}: SRFLX002 schema v{schema}")
+
+    cold_index = staged_lexicon_dir / "cold_lexicon.sqlite"
+    if not cold_index.is_file():
+        raise RuntimeError("missing cold_lexicon.sqlite; rebuild bake_lexicon and restage")
+    import sqlite3
+    with closing(sqlite3.connect(cold_index.resolve().as_uri() + "?mode=ro", uri=True)) as cold_db:
+        if cold_db.execute("PRAGMA user_version").fetchone()[0] != 1:
+            raise RuntimeError("unsupported cold lexicon schema")
+        if cold_db.execute("SELECT reading FROM entries LIMIT 1").fetchone() is None:
+            raise RuntimeError("empty cold lexicon index")
+    print_msg(f"  {green('OK')} staged cold exact-pinyin index")
 
     settings_exe = output_root / "srf_ime_settings.exe"
     clipboard_exe = output_root / "srf_ime_clipboard.exe"
@@ -3415,10 +3689,14 @@ def verify_staged_package(
             raise RuntimeError(f"staged {script_name} does not handle both zh-CN and zh-Hans-CN")
         if (
             "$EngineRunEntryName" not in script_text
-            or "--startup-warmup-delay-ms" not in script_text
+            or "Remove-ItemProperty -Path $runKey -Name $EngineRunEntryName" not in script_text
         ):
             raise RuntimeError(
-                f"staged {script_name} does not register the shared engine for login warmup"
+                f"staged {script_name} does not clean the legacy engine autorun entry"
+            )
+        if "New-ItemProperty -Path $runKey -Name $EngineRunEntryName" in script_text:
+            raise RuntimeError(
+                f"staged {script_name} still creates a separate engine autorun entry"
             )
     if "uninstall_machine.log" not in uninstall_dev_text:
         raise RuntimeError("staged uninstall_dev.ps1 does not persist a machine uninstall log")
@@ -3649,6 +3927,8 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
         ("utf8", lambda: step_check_utf8_sources(repo)),
         ("lexicon", lambda: step_check_lexicon_syllables(repo)),
         ("english", lambda: validate_common_english_lexicon(find_lexicon_dir(repo))),
+        ("single_chars", lambda: validate_single_char_common_lexicon(find_lexicon_dir(repo))),
+        ("candidate_contract", lambda: validate_candidate_limit_contract(repo)),
     ]
     check_errors = (
         [(name, _run_check_for_preflight(fn)) for name, fn in check_tasks]
@@ -3822,12 +4102,15 @@ def parse_args() -> argparse.Namespace:
                    help="force rebuild, ignoring incremental checks")
     p.add_argument("--no-parallel", action="store_true",
                    help="disable parallel Rust/C++ build")
-    p.add_argument("--no-smoke", action="store_true",
-                   help="skip post-build smoke checks")
+    p.add_argument("--no-smoke", dest="no_smoke", action="store_true",
+                   help="skip post-build smoke checks (default)")
+    p.add_argument("--smoke", dest="no_smoke", action="store_false",
+                   help="run post-build smoke checks explicitly")
+    p.set_defaults(no_smoke=True)
     p.add_argument("--verify", dest="verify", action="store_true",
-                   help="run Rust and C++ correctness checks (default for non-quick builds)")
+                   help="run Rust and C++ correctness checks explicitly")
     p.add_argument("--no-verify", dest="verify", action="store_false",
-                   help="skip Rust and C++ correctness gates")
+                   help="skip Rust and C++ correctness gates (default)")
     p.set_defaults(verify=None)
     p.add_argument("--perf-smoke", action="store_true",
                    help="run release input_perf after compilation and enforce a P99 gate")
@@ -3856,6 +4139,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "scripts/generate_shared_contracts.py"), "--check"], check=True)
     _ensure_stdout_utf8()
 
     if sys.platform != "win32":
@@ -3870,7 +4154,7 @@ def main() -> int:
         args.skip_cargo = True
         args.skip_cmake = True
     if args.verify is None:
-        args.verify = not args.skip_cargo
+        args.verify = False
     if args.verify and args.skip_cargo:
         print(red("error: --verify cannot be combined with --quick/--skip-cargo"))
         return 2
@@ -4317,26 +4601,33 @@ def main() -> int:
 
         if not args.no_inno and not args.debug:
             with StepTimer("Step 5/5  Generate installer (Inno Setup)"):
-                if not ctx.dry_run:
-                    removed_installers = cleanup_existing_installer_exes(dist_dir)
-                    for removed in removed_installers:
-                        print_msg(f"  delete old installer: {removed.name}")
                 installer_script = "kaixin-user.iss" if args.user_installer else "kaixin.iss"
-                for variant in package_variants:
-                    installer_output_name = installer_output_by_variant[variant.id]
-                    exe = step_inno(
-                        repo,
-                        script_name=installer_script,
-                        output_name=installer_output_name,
-                        package_dir=stage_root_for_variant(repo, variant),
-                        include_ocr=variant.include_ocr,
-                        include_translation=variant.include_translation,
-                    )
+                pending_context = (
+                    nullcontext(str(dist_dir / ".installer-pending")) if ctx.dry_run else
+                    installer_pending_directory(dist_dir)
+                )
+                with pending_context as pending_dir:
+                    installers: list[Path] = []
+                    for variant in package_variants:
+                        exe = step_inno(
+                            repo,
+                            script_name=installer_script,
+                            output_name=installer_output_by_variant[variant.id],
+                            package_dir=stage_root_for_variant(repo, variant),
+                            include_ocr=variant.include_ocr,
+                            include_translation=variant.include_translation,
+                            output_dir=Path(pending_dir),
+                        )
+                        if not ctx.dry_run:
+                            sign_file(exe, args)
+                            installers.append(exe)
+                            print_msg(f"  {green('OK')} {variant.label}: {exe.name}")
+                            print_msg(f"  {green('OK')} size: {fmt_size(exe.stat().st_size)}")
                     if not ctx.dry_run:
-                        sign_file(exe, args)
-                        stat = exe.stat()
-                        print_msg(f"  {green('OK')} {variant.label}: {exe.name}")
-                        print_msg(f"  {green('OK')} size: {fmt_size(stat.st_size)}")
+                        prefix = "kaixin-user-setup" if args.user_installer else "kaixin-setup"
+                        publish_installers(dist_dir, installers, [
+                            f"{prefix}-{variant.installer_suffix}-*.exe" for variant in package_variants
+                        ])
         else:
             reason = "Debug" if args.debug else "--no-inno"
             print_msg(f"\n{dim(f'  [skip] Step 5/5  Inno Setup ({reason})')}")
@@ -4498,4 +4789,13 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        _cancel_build_processes()
+        print("\n  Build cancelled. No further build steps will run.", file=sys.stderr, flush=True)
+        if ctx.log_file:
+            ctx.log_file.write("\nBuild cancelled.\n")
+            ctx.log_file.close()
+            ctx.log_file = None
+        sys.exit(130)

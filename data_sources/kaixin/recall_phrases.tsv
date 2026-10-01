@@ -1,0 +1,9 @@
+# 从基础高优先级词表移出的低权重召回项。
+# 格式：词语<TAB>无声调拼音<TAB>权重
+盥洗室	guan xi shi	100000
+跷跷板	qiao qiao ban	105000
+闲适	xian shi	1500000
+闲事	xian shi	1400000
+嚼食	jiao shi	1500000
+率	lv	7000000
+这	zhei	7000000

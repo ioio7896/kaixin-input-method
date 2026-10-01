@@ -1,0 +1,64 @@
+# 开心输入法专业小词库：计算机
+# 项目原创整理；默认关闭，在设置页按需开启。
+计算机科学	ji suan ji ke xue	6000
+操作系统	cao zuo xi tong	6000
+数据结构	shu ju jie gou	6000
+算法	suan fa	6000
+编译原理	bian yi yuan li	6000
+计算机网络	ji suan ji wang luo	6000
+计算机体系结构	ji suan ji ti xi jie gou	6000
+软件工程	ruan jian gong cheng	6000
+数据库	shu ju ku	6000
+分布式系统	fen bu shi xi tong	6000
+并行计算	bing xing ji suan	6000
+云计算	yun ji suan	6000
+边缘计算	bian yuan ji suan	6000
+人工智能	ren gong zhi neng	6000
+机器学习	ji qi xue xi	6000
+深度学习	shen du xue xi	6000
+神经网络	shen jing wang luo	6000
+自然语言处理	zi ran yu yan chu li	6000
+计算机视觉	ji suan ji shi jue	6000
+二进制	er jin zhi	6000
+位运算	wei yun suan	6000
+时间复杂度	shi jian fu za du	6000
+空间复杂度	kong jian fu za du	6000
+数组	shu zu	6000
+链表	lian biao	6000
+栈	zhan	6000
+队列	dui lie	6000
+哈希表	ha xi biao	6000
+二叉树	er cha shu	6000
+图论	tu lun	6000
+动态规划	dong tai gui hua	6000
+贪心算法	tan xin suan fa	6000
+递归	di gui	6000
+排序算法	pai xu suan fa	6000
+搜索算法	sou suo suan fa	6000
+进程	jin cheng	6000
+线程	xian cheng	6000
+协程	xie cheng	6000
+死锁	si suo	6000
+互斥锁	hu chi suo	6000
+信号量	xin hao liang	6000
+虚拟内存	xu ni nei cun	6000
+内存管理	nei cun guan li	6000
+垃圾回收	la ji hui shou	6000
+缓存	huan cun	6000
+文件系统	wen jian xi tong	6000
+网络协议	wang luo xie yi	6000
+路由	lu you	6000
+域名解析	yu ming jie xi	6000
+网络安全	wang luo an quan	6000
+密码学	mi ma xue	6000
+身份认证	shen fen ren zheng	6000
+访问控制	fang wen kong zhi	6000
+关系数据库	guan xi shu ju ku	6000
+事务	shi wu	6000
+索引	suo yin	6000
+一致性	yi zhi xing	6000
+可用性	ke yong xing	6000
+容错	rong cuo	6000
+单元测试	dan yuan ce shi	6000
+版本控制	ban ben kong zhi	6000
+持续集成	chi xu ji cheng	6000

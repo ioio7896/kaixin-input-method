@@ -1,0 +1,62 @@
+# 开心输入法专业小词库：数学
+# 项目原创整理；默认关闭，在设置页按需开启。
+集合	ji he	6000
+映射	ying she	6000
+函数	han shu	6000
+定义域	ding yi yu	6000
+值域	zhi yu	6000
+极限	ji xian	6000
+连续性	lian xu xing	6000
+导数	dao shu	6000
+微分	wei fen	6000
+积分	ji fen	6000
+定积分	ding ji fen	6000
+不定积分	bu ding ji fen	6000
+偏导数	pian dao shu	6000
+全微分	quan wei fen	6000
+梯度	ti du	6000
+散度	san du	6000
+旋度	xuan du	6000
+微分方程	wei fen fang cheng	6000
+常微分方程	chang wei fen fang cheng	6000
+偏微分方程	pian wei fen fang cheng	6000
+线性代数	xian xing dai shu	6000
+矩阵	ju zhen	6000
+行列式	hang lie shi	6000
+特征值	te zheng zhi	6000
+特征向量	te zheng xiang liang	6000
+向量空间	xiang liang kong jian	6000
+线性变换	xian xing bian huan	6000
+正交矩阵	zheng jiao ju zhen	6000
+逆矩阵	ni ju zhen	6000
+秩	zhi	6000
+概率论	gai lv lun	6000
+随机变量	sui ji bian liang	6000
+概率分布	gai lv fen bu	6000
+数学期望	shu xue qi wang	6000
+方差	fang cha	6000
+标准差	biao zhun cha	6000
+条件概率	tiao jian gai lv	6000
+贝叶斯公式	bei ye si gong shi	6000
+正态分布	zheng tai fen bu	6000
+二项分布	er xiang fen bu	6000
+泊松分布	po song fen bu	6000
+大数定律	da shu ding lv	6000
+中心极限定理	zhong xin ji xian ding li	6000
+数理统计	shu li tong ji	6000
+假设检验	jia she jian yan	6000
+置信区间	zhi xin qu jian	6000
+回归分析	hui gui fen xi	6000
+数论	shu lun	6000
+素数	su shu	6000
+同余	tong yu	6000
+最大公约数	zui da gong yue shu	6000
+拓扑学	tuo pu xue	6000
+度量空间	du liang kong jian	6000
+群论	qun lun	6000
+环论	huan lun	6000
+复数	fu shu	6000
+复变函数	fu bian han shu	6000
+傅里叶变换	fu li ye bian huan	6000
+拉普拉斯变换	la pu la si bian huan	6000
+泰勒展开	tai lei zhan kai	6000

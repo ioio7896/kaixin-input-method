@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$OutputRoot,
     [string]$TipDllPath,
     [string]$OverlayExePath,
@@ -45,6 +45,8 @@ $PythonPackageExcludePatterns = @(
     '*.cxx',
     '*.pxd',
     '*.pyi',
+    # Screenshot OCR uses OpenCV image functions, not its optional FFmpeg video backend.
+    'opencv_videoio_ffmpeg*.dll',
     'pip-*.dist-info',
     'setuptools-*.dist-info'
 )
@@ -566,6 +568,7 @@ $managedRootEntries = @(
     'VERSION',
     'install_dev.ps1',
     'install_current_user.ps1',
+    'config_defaults.generated.ps1',
     'restart_stale_hosts.ps1',
     'invoke_registration.ps1',
     'repair_install.ps1',
@@ -649,6 +652,7 @@ if ($IncludeOcr) {
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_translate.exe')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $TsfTipRoot 'invoke_registration.ps1') -DestinationPath (Join-Path $OutputRoot 'invoke_registration.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'install_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'install_dev.ps1')
+Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'config_defaults.generated.ps1') -DestinationPath (Join-Path $OutputRoot 'config_defaults.generated.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'install_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'install_current_user.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'restart_stale_hosts.ps1') -DestinationPath (Join-Path $OutputRoot 'restart_stale_hosts.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath $repairInstallScript -DestinationPath (Join-Path $OutputRoot 'repair_install.ps1')
@@ -696,11 +700,19 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $lexiconBin)) {
     throw "Failed to prebake lexicon.bin: $lexiconBin"
 }
 
+$coldLexiconIndex = Join-Path $lexiconTarget 'cold_lexicon.sqlite'
+if (-not (Test-Path -LiteralPath $coldLexiconIndex)) {
+    throw "Missing cold exact-pinyin index; rebuild bake_lexicon.exe: $coldLexiconIndex"
+}
+
 $hotLexiconBin = Join-Path $lexiconTarget 'hot_lexicon.bin'
 & $bakeLexiconExe $lexiconDir.FullName $hotLexiconBin --profile hot
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $hotLexiconBin)) {
     throw "Failed to prebake hot_lexicon.bin: $hotLexiconBin"
 }
+
+& python (Join-Path $RepoRoot 'scripts\lexicon_pack.py') $lexiconTarget
+if ($LASTEXITCODE -ne 0) { throw 'Lossless lexicon packing failed' }
 
 if (Test-Path -LiteralPath $fontDir) {
     Sync-DirectoryContents -SourceDir $fontDir -DestinationDir (Join-Path $OutputRoot 'font1')
@@ -771,6 +783,9 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
 } else {
     Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'RapidOCR-3.9.0')
 }
+& python (Join-Path $RepoRoot 'scripts\trim_package.py') $OutputRoot
+if ($LASTEXITCODE -ne 0) { throw 'Verified package trim failed' }
+
 $componentManifestPath = Join-Path $OutputRoot $ComponentManifestName
 Remove-ItemWithRetry -Path $componentManifestPath
 Write-PackageHashManifest -Root $OutputRoot -ManifestName $PackageManifestName

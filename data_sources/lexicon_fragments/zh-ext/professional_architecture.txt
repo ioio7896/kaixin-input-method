@@ -1,0 +1,63 @@
+# 开心输入法专业小词库：建筑
+# 项目原创整理；默认关闭，在设置页按需开启。
+建筑学	jian zhu xue	6000
+建筑设计	jian zhu she ji	6000
+建筑结构	jian zhu jie gou	6000
+建筑施工	jian zhu shi gong	6000
+城市规划	cheng shi gui hua	6000
+景观设计	jing guan she ji	6000
+室内设计	shi nei she ji	6000
+总平面图	zong ping mian tu	6000
+平面图	ping mian tu	6000
+立面图	li mian tu	6000
+剖面图	pou mian tu	6000
+施工图	shi gong tu	6000
+建筑面积	jian zhu mian ji	6000
+容积率	rong ji lv	6000
+建筑密度	jian zhu mi du	6000
+绿地率	lv di lv	6000
+日照分析	ri zhao fen xi	6000
+建筑节能	jian zhu jie neng	6000
+绿色建筑	lv se jian zhu	6000
+被动式建筑	bei dong shi jian zhu	6000
+地基	di ji	6000
+基础	ji chu	6000
+桩基础	zhuang ji chu	6000
+承重墙	cheng zhong qiang	6000
+剪力墙	jian li qiang	6000
+框架结构	kuang jia jie gou	6000
+钢结构	gang jie gou	6000
+钢筋混凝土	gang jin hun ning tu	6000
+砌体结构	qi ti jie gou	6000
+梁	liang	6000
+板	ban	6000
+柱	zhu	6000
+楼梯	lou ti	6000
+屋面	wu mian	6000
+幕墙	mu qiang	6000
+门窗	men chuang	6000
+防水	fang shui	6000
+保温	bao wen	6000
+隔热	ge re	6000
+隔声	ge sheng	6000
+防火分区	fang huo fen qu	6000
+消防疏散	xiao fang shu san	6000
+抗震设计	kang zhen she ji	6000
+结构荷载	jie gou he zai	6000
+恒载	heng zai	6000
+活载	huo zai	6000
+风荷载	feng he zai	6000
+雪荷载	xue he zai	6000
+配筋	pei jin	6000
+混凝土强度	hun ning tu qiang du	6000
+建筑材料	jian zhu cai liao	6000
+水泥	shui ni	6000
+砂浆	sha jiang	6000
+脚手架	jiao shou jia	6000
+模板	mu ban	6000
+工程量	gong cheng liang	6000
+施工组织设计	shi gong zu zhi she ji	6000
+建筑信息模型	jian zhu xin xi mo xing	6000
+无障碍设计	wu zhang ai she ji	6000
+装配式建筑	zhuang pei shi jian zhu	6000
+竣工验收	jun gong yan shou	6000

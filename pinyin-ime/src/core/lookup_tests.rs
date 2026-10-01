@@ -29,7 +29,7 @@ fn xiong_does_not_offer_neng_character() {
         .iter()
         .take(crate::core::TSF_PAGE_SIZE)
         .any(|(phrase, _, _)| phrase == "能"));
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");
@@ -72,7 +72,7 @@ fn composed_polyphonic_user_phrase_is_available_on_next_lookup() {
 
 #[test]
 fn composed_phrase_respects_hotword_front_policy_on_the_next_full_pinyin_lookup() {
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");
@@ -84,6 +84,12 @@ fn composed_phrase_respects_hotword_front_policy_on_the_next_full_pinyin_lookup(
         .learn_commit_with_flags("shishi", "湿十", LEARN_FLAG_COMPOSED_PHRASE)
         .expect("learn composed user phrase");
 
+    // Standard learning deliberately observes a two-character composition
+    // once before promoting it. Assert both sides of that confidence gate.
+    let observed = engine.lookup_full_explain("shishi").0;
+    assert!(observed.iter().any(|(phrase, _, _)| phrase == "湿十"));
+    engine.learn_commit_with_flags("shishi", "湿十", LEARN_FLAG_COMPOSED_PHRASE)
+        .expect("confirm composed user phrase");
     let candidates = engine.lookup_full_explain("shishi").0;
     let learned_rank = candidates
         .iter()
@@ -103,7 +109,7 @@ fn composed_phrase_respects_hotword_front_policy_on_the_next_full_pinyin_lookup(
 
 #[test]
 fn repeated_unselected_top_two_cool_while_selected_candidate_moves_forward() {
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");
@@ -158,7 +164,7 @@ fn repeated_unselected_top_two_cool_while_selected_candidate_moves_forward() {
 
 #[test]
 fn two_syllable_full_pinyin_keeps_two_char_words_on_later_pages() {
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");
@@ -188,7 +194,7 @@ fn two_syllable_full_pinyin_keeps_two_char_words_on_later_pages() {
 
 #[test]
 fn two_char_intent_page_density_matches_between_cold_and_cached_lookup() {
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");
@@ -238,7 +244,7 @@ fn two_char_intent_page_density_matches_between_cold_and_cached_lookup() {
 
 #[test]
 fn exact_full_pinyin_single_syllable_keeps_cold_chars_reachable() {
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");
@@ -298,6 +304,7 @@ fn cold_extension_words_are_tail_only_for_non_full_input() {
             phrase: "高频词".to_string(),
             freq: 9_000,
             code: Some("gao pin ci".to_string()),
+            pronunciation_kind: Default::default(),
         },
         LexiconLayer::Base,
     ));
@@ -306,6 +313,7 @@ fn cold_extension_words_are_tail_only_for_non_full_input() {
             phrase: "冷门词".to_string(),
             freq: 3_500,
             code: Some("leng men ci".to_string()),
+            pronunciation_kind: Default::default(),
         },
         LexiconLayer::Ext,
     ));
@@ -342,7 +350,7 @@ fn cold_extension_words_are_tail_only_for_non_full_input() {
     );
     assert_eq!(full_pinyin[0].phrase, "冷门词");
 
-    let repo_lexicon = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
         .parent()
         .expect("repository root")
         .join("lexicon");

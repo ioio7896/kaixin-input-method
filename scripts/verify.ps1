@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$Fast,
     [switch]$SkipEval,
     [switch]$SkipTsfBuild
@@ -87,7 +87,7 @@ try {
 Push-Location $cargoDir
 try {
     Invoke-Checked { cargo fmt "--" --check }
-    Invoke-Checked { cargo test --locked --lib }
+    Invoke-Checked { cargo test --workspace --locked --lib }
     Invoke-Checked {
         $clippyArgs = @("clippy", "--locked", "--lib", "--", "-D", "warnings", "-A", "clippy::too-many-arguments", "-A", "clippy::manual-is-multiple-of", "-A", "clippy::incompatible-msrv")
         & cargo @clippyArgs

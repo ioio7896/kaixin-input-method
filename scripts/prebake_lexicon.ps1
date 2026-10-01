@@ -32,7 +32,7 @@ if (-not (Test-Path -LiteralPath $CargoToml)) {
 
 Push-Location (Join-Path $RepoRoot 'pinyin-ime')
 try {
-    cargo build --release --bin bake_lexicon
+    cargo build --release --locked --features dev-tools --bin bake_lexicon
     if ($LASTEXITCODE -ne 0) { throw "cargo build bake_lexicon 失败" }
 } finally {
     Pop-Location
@@ -57,3 +57,5 @@ if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $HotOutBin)) {
 
 Write-Output "已写入: $OutBin ($LexiconProfile)"
 Write-Output "已写入: $HotOutBin (hot)"
+
+Write-Output "已写入: $(Join-Path $LexiconDir 'cold_lexicon.sqlite') (exact fallback)"

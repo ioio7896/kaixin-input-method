@@ -216,7 +216,6 @@ pub struct UserLexicon {
     recent_commits: Vec<RecentCommit>,
     recent_word_tokens: Vec<String>,
     persistence: Option<PersistenceWorker>,
-    learns_since_snapshot: usize,
     reset_stamp: SharedResetStamp,
 }
 
@@ -224,8 +223,6 @@ pub struct UserLexicon {
 const MAX_USER_DICT_LINES: usize = 2_000_000;
 /// 单行最大字节（超长行跳过）。
 const MAX_USER_DICT_LINE_BYTES: usize = 65_536;
-/// SQLite 增量写达到这个学习次数后，后台顺手做一次完整快照，压平历史更新。
-const SNAPSHOT_EVERY_LEARNS: usize = 48;
 /// 后台写线程的攒批窗口，减少高频 commit 的磁盘抖动。
 const PERSIST_BATCH_WINDOW_MS: u64 = 160;
 const PERSIST_FAILURE_LOG_INTERVAL: Duration = Duration::from_secs(60);
@@ -260,14 +257,15 @@ type SharedResetStamp = Arc<Mutex<UserDictResetStamp>>;
 
 #[derive(Debug)]
 struct PersistenceWorker {
+    reset_stamp: SharedResetStamp,
     tx: mpsc::Sender<PersistenceCommand>,
     join: Option<thread::JoinHandle<()>>,
 }
 
 #[derive(Debug)]
 enum PersistenceCommand {
-    Append(Vec<String>),
-    Snapshot(String),
+    Append(Vec<String>, UserDictResetStamp),
+    Snapshot(Box<UserLexicon>, UserDictResetStamp),
     Flush(mpsc::Sender<Result<(), String>>),
     Shutdown,
 }
@@ -294,7 +292,6 @@ impl Default for UserLexicon {
             recent_commits: Vec::new(),
             recent_word_tokens: Vec::new(),
             persistence: None,
-            learns_since_snapshot: 0,
             reset_stamp: Arc::new(Mutex::new(UserDictResetStamp::default())),
         }
     }
@@ -371,7 +368,6 @@ impl UserLexicon {
             recent_commits: Vec::new(),
             recent_word_tokens: Vec::new(),
             persistence: None,
-            learns_since_snapshot: 0,
             reset_stamp,
         }
     }
@@ -1502,29 +1498,40 @@ impl UserLexicon {
         phrase: &str,
         delta: u64,
     ) -> io::Result<()> {
-        let Some((key, phrase)) = validate_user_phrase_parts(key, phrase)? else {
-            return Ok(());
-        };
-        if self.blocked_phrases.contains_key(&phrase) {
+        self.learn_mixed_aliases(&[key.to_string()], phrase, delta)
+    }
+
+    /// Persist generated readings as one event. Alias count must not advance
+    /// the learning clock or multiply global phrase frequency.
+    pub(crate) fn learn_mixed_aliases(
+        &mut self,
+        keys: &[String],
+        phrase: &str,
+        delta: u64,
+    ) -> io::Result<()> {
+        let mut valid = Vec::new();
+        for key in keys.iter().take(128) {
+            if let Some(parts) = validate_user_phrase_parts(key, phrase)? {
+                if !self.blocked_phrases.contains_key(&parts.1) && !valid.contains(&parts) {
+                    valid.push(parts);
+                }
+            }
+        }
+        if valid.is_empty() {
             return Ok(());
         }
-        let delta = delta.max(1);
-
         let now = self.bump_clock();
-        let mixed_entries = self.mixed_input.entry(key.clone()).or_default();
-        upsert_entry(mixed_entries, phrase.to_string(), now, delta);
-
-        let updates = mixed_entries
-            .iter()
-            .find(|entry| entry.phrase == phrase)
-            .map(|entry| {
-                vec![format!(
+        let mut updates = Vec::with_capacity(valid.len());
+        for (key, phrase) in valid {
+            let entries = self.mixed_input.entry(key.clone()).or_default();
+            upsert_entry(entries, phrase.clone(), now, delta.max(1));
+            if let Some(entry) = entries.iter().find(|entry| entry.phrase == phrase) {
+                updates.push(format!(
                     "M\t{}\t{}\t{}\t{}",
                     key, entry.phrase, entry.freq, entry.last_used
-                )]
-            })
-            .unwrap_or_default();
-
+                ));
+            }
+        }
         if self.prune_for_memory() {
             self.persist_snapshot_now()
         } else {
@@ -2264,19 +2271,49 @@ impl UserLexicon {
         Ok(())
     }
 
+    // Copy only persisted state; formatting and joining happen on the worker.
+    // The worker has no watcher, file path, or persistence thread of its own.
+    fn snapshot_state(&self) -> Box<UserLexicon> {
+        let mut snapshot = Box::new(UserLexicon::default());
+        snapshot.exact_input = self.exact_input.clone();
+        snapshot.mixed_input = self.mixed_input.clone();
+        snapshot.observed_input = self.observed_input.clone();
+        snapshot.correction_pairs = self.correction_pairs.clone();
+        snapshot.novel_phrases = self.novel_phrases.clone();
+        snapshot.blocked_phrases = self.blocked_phrases.clone();
+        snapshot.selection_feedback = self.selection_feedback.clone();
+        snapshot.context_selection_feedback = self.context_selection_feedback.clone();
+        snapshot.weak_unselected_feedback = self.weak_unselected_feedback.clone();
+        snapshot.context_weak_unselected_feedback = self.context_weak_unselected_feedback.clone();
+        snapshot.phrase_stats = self.phrase_stats.clone();
+        snapshot.context_links = self.context_links.clone();
+        snapshot.context_trigrams = self.context_trigrams.clone();
+        snapshot.clock = self.clock;
+        snapshot
+    }
+
     fn persist_snapshot_now(&mut self) -> io::Result<()> {
         if self.path.as_os_str().is_empty() {
             return Ok(());
         }
-        let snapshot = self.serialize_snapshot();
+        let snapshot = self.snapshot_state();
         if let Some(persistence) = &self.persistence {
             if persistence.snapshot(snapshot).is_ok() {
-                self.learns_since_snapshot = 0;
                 return Ok(());
             }
         }
-        self.learns_since_snapshot = 0;
-        self.write_snapshot_sync()
+        self.restart_persistence()
+    }
+
+    fn restart_persistence(&mut self) -> io::Result<()> {
+        self.persistence = Some(PersistenceWorker::spawn(
+            self.path.clone(),
+            self.reset_stamp.clone(),
+        ));
+        self.persistence
+            .as_ref()
+            .ok_or_else(|| io::Error::other("persistence unavailable"))?
+            .snapshot(self.snapshot_state())
     }
 
     fn persist_updates(&mut self, updates: Vec<String>) -> io::Result<()> {
@@ -2293,16 +2330,12 @@ impl UserLexicon {
         };
 
         if persistence.append(updates).is_err() {
-            return self.write_snapshot_sync();
+            return self.restart_persistence();
         }
 
-        self.learns_since_snapshot = self.learns_since_snapshot.saturating_add(1);
-        if self.learns_since_snapshot >= SNAPSHOT_EVERY_LEARNS {
-            self.learns_since_snapshot = 0;
-            if persistence.snapshot(self.serialize_snapshot()).is_err() {
-                return self.write_snapshot_sync();
-            }
-        }
+        // Each worker batch already reads, prunes and writes a complete SQLite
+        // snapshot. A second full snapshot every 48 learns duplicated that work
+        // and formatted the entire dictionary under the shared engine lock.
         Ok(())
     }
 
@@ -2691,14 +2724,16 @@ pub fn preview_user_dict_import(path: &Path) -> io::Result<UserDictImportPreview
     let contents = read_user_dict_import_text(path)?;
     let incoming = lexicon_from_export_text(&contents);
     let current = UserLexicon::load_from_path(default_user_dict_path())?;
-    let mut preview = UserDictImportPreview::default();
-    preview.blocked_entries = incoming.blocked_phrases.len();
-    preview.context_entries = incoming.context_links.values().map(Vec::len).sum::<usize>()
-        + incoming
-            .context_trigrams
-            .values()
-            .map(Vec::len)
-            .sum::<usize>();
+    let mut preview = UserDictImportPreview {
+        blocked_entries: incoming.blocked_phrases.len(),
+        context_entries: incoming.context_links.values().map(Vec::len).sum::<usize>()
+            + incoming
+                .context_trigrams
+                .values()
+                .map(Vec::len)
+                .sum::<usize>(),
+        ..UserDictImportPreview::default()
+    };
     for (key, entries) in &incoming.exact_input {
         for entry in entries {
             preview.total_entries += 1;
@@ -3058,8 +3093,10 @@ impl Drop for UserLexicon {
 impl PersistenceWorker {
     fn spawn(path: PathBuf, reset_stamp: SharedResetStamp) -> Self {
         let (tx, rx) = mpsc::channel();
-        let join = thread::spawn(move || persistence_worker_loop(path, reset_stamp, rx));
+        let worker_reset = reset_stamp.clone();
+        let join = thread::spawn(move || persistence_worker_loop(path, worker_reset, rx));
         Self {
+            reset_stamp,
             tx,
             join: Some(join),
         }
@@ -3067,13 +3104,19 @@ impl PersistenceWorker {
 
     fn append(&self, lines: Vec<String>) -> io::Result<()> {
         self.tx
-            .send(PersistenceCommand::Append(lines))
+            .send(PersistenceCommand::Append(
+                lines,
+                current_reset_stamp(&self.reset_stamp),
+            ))
             .map_err(persistence_send_error)
     }
 
-    fn snapshot(&self, snapshot: String) -> io::Result<()> {
+    fn snapshot(&self, snapshot: Box<UserLexicon>) -> io::Result<()> {
         self.tx
-            .send(PersistenceCommand::Snapshot(snapshot))
+            .send(PersistenceCommand::Snapshot(
+                snapshot,
+                current_reset_stamp(&self.reset_stamp),
+            ))
             .map_err(persistence_send_error)
     }
 
@@ -3115,17 +3158,29 @@ fn persistence_worker_loop(
     rx: mpsc::Receiver<PersistenceCommand>,
 ) {
     let mut pending_lines: Vec<String> = Vec::new();
-    let mut pending_snapshot: Option<String> = None;
+    let mut pending_snapshot: Option<Box<UserLexicon>> = None;
+    let mut retry_at = None;
+    let mut retry_delay = Duration::from_millis(PERSIST_BATCH_WINDOW_MS);
+    let mut pending_reset = None;
 
     loop {
         let mut should_stop = false;
         let mut flush_waiters = Vec::new();
+
+        if pending_reset.is_some_and(|stamp| stamp != current_reset_stamp(&reset_stamp)) {
+            pending_lines.clear();
+            pending_snapshot = None;
+            retry_at = None;
+            pending_reset = None;
+        }
 
         match rx.recv_timeout(Duration::from_millis(PERSIST_BATCH_WINDOW_MS)) {
             Ok(cmd) => handle_persistence_command(
                 cmd,
                 &mut pending_lines,
                 &mut pending_snapshot,
+                &mut pending_reset,
+                &reset_stamp,
                 &mut flush_waiters,
                 &mut should_stop,
             ),
@@ -3139,28 +3194,61 @@ fn persistence_worker_loop(
             }
         }
 
-        while let Ok(cmd) = rx.try_recv() {
-            handle_persistence_command(
-                cmd,
-                &mut pending_lines,
-                &mut pending_snapshot,
-                &mut flush_waiters,
-                &mut should_stop,
-            );
+        // Coalesce for a real, bounded window rather than merely draining
+        // messages that happened to arrive before the first recv returned.
+        let batch_deadline = Instant::now() + Duration::from_millis(PERSIST_BATCH_WINDOW_MS);
+        for _ in 0..256 {
+            if should_stop || !flush_waiters.is_empty() {
+                break;
+            }
+            let remaining = batch_deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                break;
+            }
+            match rx.recv_timeout(remaining) {
+                Ok(cmd) => handle_persistence_command(
+                    cmd,
+                    &mut pending_lines,
+                    &mut pending_snapshot,
+                    &mut pending_reset,
+                    &reset_stamp,
+                    &mut flush_waiters,
+                    &mut should_stop,
+                ),
+                Err(mpsc::RecvTimeoutError::Timeout) => break,
+                Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    should_stop = true;
+                    break;
+                }
+            }
         }
 
+        if !should_stop
+            && flush_waiters.is_empty()
+            && retry_at.is_some_and(|deadline| Instant::now() < deadline)
+        {
+            continue;
+        }
+        let batch_reset = pending_reset.unwrap_or_else(|| current_reset_stamp(&reset_stamp));
         let result = flush_persistence_batch(
             &path,
             &reset_stamp,
+            batch_reset,
             &mut pending_lines,
             &mut pending_snapshot,
         );
         let status = match &result {
             Ok(()) => {
                 USER_DICT_DURABILITY_FAILURES.store(0, Ordering::Relaxed);
+                retry_at = None;
+                pending_reset = None;
+                retry_delay = Duration::from_millis(PERSIST_BATCH_WINDOW_MS);
                 Ok(())
             }
             Err(err) => {
+                pending_reset = Some(batch_reset);
+                retry_at = Some(Instant::now() + retry_delay);
+                retry_delay = (retry_delay * 2).min(Duration::from_secs(5));
                 let failures = USER_DICT_DURABILITY_FAILURES.fetch_add(1, Ordering::Relaxed) + 1;
                 // 学习在内存模型里已生效，但落盘失败会让重启后的用户词丢失。
                 // 定期写 engine 日志（磁盘满等持续失败按 60 秒合并成一条），
@@ -3206,13 +3294,27 @@ fn memory_log_persist_failure(err: &io::Error, failures: u64, pending: usize) {
 fn handle_persistence_command(
     cmd: PersistenceCommand,
     pending_lines: &mut Vec<String>,
-    pending_snapshot: &mut Option<String>,
+    pending_snapshot: &mut Option<Box<UserLexicon>>,
+    pending_reset: &mut Option<UserDictResetStamp>,
+    reset_stamp: &SharedResetStamp,
     flush_waiters: &mut Vec<mpsc::Sender<Result<(), String>>>,
     should_stop: &mut bool,
 ) {
+    // Bind every queued mutation to the reset epoch observed by its producer.
+    // A reset during batching or retry must not revive an older dictionary.
+    if let PersistenceCommand::Append(_, stamp) | PersistenceCommand::Snapshot(_, stamp) = &cmd {
+        if *stamp != current_reset_stamp(reset_stamp) {
+            return;
+        }
+        if pending_reset.as_ref() != Some(stamp) {
+            pending_lines.clear();
+            *pending_snapshot = None;
+            *pending_reset = Some(*stamp);
+        }
+    }
     match cmd {
-        PersistenceCommand::Append(lines) => pending_lines.extend(lines),
-        PersistenceCommand::Snapshot(snapshot) => {
+        PersistenceCommand::Append(lines, _) => pending_lines.extend(lines),
+        PersistenceCommand::Snapshot(snapshot, _) => {
             pending_lines.clear();
             *pending_snapshot = Some(snapshot);
         }
@@ -3224,34 +3326,36 @@ fn handle_persistence_command(
 fn flush_persistence_batch(
     path: &Path,
     reset_stamp: &SharedResetStamp,
+    expected_reset: UserDictResetStamp,
     pending_lines: &mut Vec<String>,
-    pending_snapshot: &mut Option<String>,
+    pending_snapshot: &mut Option<Box<UserLexicon>>,
 ) -> io::Result<()> {
-    if let Some(snapshot) = pending_snapshot.take() {
+    if let Some(snapshot) = pending_snapshot.as_mut() {
+        // A snapshot supersedes preceding updates, never the following ones.
+        for line in pending_lines.iter() {
+            snapshot.parse_line(line);
+        }
         pending_lines.clear();
         let wrote = write_user_dict_sqlite_snapshot_checked(
             path,
-            current_reset_stamp(reset_stamp),
-            snapshot.as_bytes(),
+            expected_reset,
+            snapshot.serialize_snapshot().as_bytes(),
         )?;
         if !wrote {
             refresh_reset_stamp(path, reset_stamp);
         }
+        *pending_snapshot = None;
         return Ok(());
     }
     if pending_lines.is_empty() {
         return Ok(());
     }
-    let lines = std::mem::take(pending_lines);
-    let wrote =
-        apply_user_dict_sqlite_updates_checked(path, current_reset_stamp(reset_stamp), &lines)?;
+    let wrote = apply_user_dict_sqlite_updates_checked(path, expected_reset, pending_lines)?;
     if !wrote {
-        let refreshed = refresh_reset_stamp(path, reset_stamp);
-        let wrote = apply_user_dict_sqlite_updates_checked(path, refreshed, &lines)?;
-        if !wrote {
-            refresh_reset_stamp(path, reset_stamp);
-        }
+        // A reset invalidates queued data; do not resurrect cleared phrases.
+        refresh_reset_stamp(path, reset_stamp);
     }
+    pending_lines.clear();
     Ok(())
 }
 

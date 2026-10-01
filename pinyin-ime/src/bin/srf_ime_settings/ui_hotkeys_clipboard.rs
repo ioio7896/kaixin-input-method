@@ -2,7 +2,15 @@ use super::*;
 
 pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
     let translate_available = translation_available();
-    section_panel(ui, "快捷键", |ui| {
+    let conflicts = hotkey_conflicts(model);
+    if !conflicts.is_empty() {
+        inline_notice(
+            ui,
+            StatusTone::Warning,
+            &format!("检测到快捷键冲突：{}", conflicts.join("；")),
+        );
+    }
+    section_panel(ui, "输入快捷键", |ui| {
         setting_combo_row(
             ui,
             "中英切换",
@@ -51,12 +59,6 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
             "单击 Shift 临时进入英文直输。",
             &mut model.shift_tap_hotkey,
         );
-        setting_toggle(
-            ui,
-            "默认繁体输出",
-            "开启后候选输出为繁体；也可使用下方快捷键临时切换。",
-            &mut model.traditional_output,
-        );
         setting_row(
             ui,
             "简繁切换",
@@ -73,8 +75,8 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
         );
         setting_row(
             ui,
-            "游戏兼容模式",
-            "手动切换游戏兼容策略，适合临时进入全屏游戏前使用。",
+            "游戏中文聊天 / 兼容开关",
+            "游戏中切换中文聊天与键盘直通；完全直通和始终中文档禁用此热键。",
             |ui| {
                 hotkey_combo(ui, "", "game_mode_hotkey", &mut model.game_mode_hotkey, "G");
             },
@@ -116,6 +118,22 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
             "翻页 PgUp / PgDn",
             "使用 PageUp 和 PageDown 翻页。",
             &mut model.page_pgup_pgdn,
+        );
+    });
+    section_panel(ui, "工具快捷键", |ui| {
+        setting_row(
+            ui,
+            "剪贴板快捷键",
+            "打开独立剪贴板管理器。",
+            |ui| {
+                fixed_letter_hotkey_combo(
+                    ui,
+                    "",
+                    "clipboard_hotkey_letter",
+                    &mut model.clipboard_hotkey,
+                    'V',
+                );
+            },
         );
         setting_row(
             ui,
@@ -188,33 +206,15 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 });
             },
         );
-        let palette = fluent_palette(ui);
         ui.label(
-            RichText::new("快捷键冲突会以橙色提示。")
+            RichText::new("点击“按键录入”后直接按组合键；Esc 可取消录入。")
                 .small()
-                .color(palette.muted),
+                .color(fluent_palette(ui).muted),
         );
     });
 }
 
 pub(super) fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    section_panel(ui, "剪贴板快捷键", |ui| {
-        setting_row(
-            ui,
-            "剪贴板快捷键",
-            "打开独立剪贴板管理器；组合键固定为修饰键 + 字母。",
-            |ui| {
-                fixed_letter_hotkey_combo(
-                    ui,
-                    "",
-                    "clipboard_hotkey_letter",
-                    &mut app.model.clipboard_hotkey,
-                    'V',
-                );
-            },
-        );
-    });
-
     section_panel(ui, "历史记录", |ui| {
         setting_toggle(
             ui,
@@ -222,52 +222,62 @@ pub(super) fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             "关闭后不再记录系统剪贴板文本；已保存内容仍可在下方清空。",
             &mut app.model.clipboard_background_enabled,
         );
-        setting_slider_usize(
-            ui,
-            "历史记录上限",
-            "最多保留的普通剪贴板条数；设为 0 表示不保留普通历史。",
-            &mut app.model.clipboard_max_history_items,
-            0..=300,
-        );
-        setting_slider_usize(
-            ui,
-            "置顶记录上限",
-            "最多保留的置顶剪贴板条数；设为 0 表示不保留置顶记录。",
-            &mut app.model.clipboard_max_pinned_items,
-            0..=100,
-        );
-        setting_slider_usize(
-            ui,
-            "单条文本上限",
-            "单条文本最多保存的 UTF-16 单元数，过长内容会被截断。",
-            &mut app.model.clipboard_max_text_utf16_units,
-            20..=20_000,
-        );
-        setting_toggle(
-            ui,
-            "候选栏显示剪贴板片段",
-            "关闭后仍可使用剪贴板候选，但候选栏不显示复制文本预览。",
-            &mut app.model.clipboard_candidate_preview_enabled,
-        );
-        setting_toggle(
-            ui,
-            "记录来源应用",
-            "开启后会在剪贴板历史中保存复制来源进程路径。",
-            &mut app.model.clipboard_record_source_app,
-        );
-        setting_slider_usize(
-            ui,
-            "自动清理天数",
-            "用于剪贴板管理器的自动清理参考；0 表示不按天数清理。",
-            &mut app.model.clipboard_max_age_days,
-            0..=3650,
-        );
-        setting_toggle(
-            ui,
-            "置顶也按天数清理",
-            "开启后，按天数清理时也会处理置顶记录；清理天数为 0 时不按天数清理。",
-            &mut app.model.clipboard_pinned_respects_max_age,
-        );
+        let history_enabled = app.model.clipboard_background_enabled;
+        ui.add_enabled_ui(history_enabled, |ui| {
+            setting_slider_usize(
+                ui,
+                "历史记录上限",
+                "最多保留的普通剪贴板条数；设为 0 表示不保留普通历史。",
+                &mut app.model.clipboard_max_history_items,
+                0..=300,
+            );
+            setting_slider_usize(
+                ui,
+                "置顶记录上限",
+                "最多保留的置顶剪贴板条数；设为 0 表示不保留置顶记录。",
+                &mut app.model.clipboard_max_pinned_items,
+                0..=100,
+            );
+            setting_slider_usize(
+                ui,
+                "单条文本上限",
+                "单条文本最多保存的 UTF-16 单元数，过长内容会被截断。",
+                &mut app.model.clipboard_max_text_utf16_units,
+                20..=20_000,
+            );
+            setting_toggle(
+                ui,
+                "候选栏显示剪贴板片段",
+                "关闭后仍可使用剪贴板候选，但候选栏不显示复制文本预览。",
+                &mut app.model.clipboard_candidate_preview_enabled,
+            );
+            setting_toggle(
+                ui,
+                "记录来源应用",
+                "开启后会在剪贴板历史中保存复制来源进程路径。",
+                &mut app.model.clipboard_record_source_app,
+            );
+            setting_slider_usize(
+                ui,
+                "自动清理天数",
+                "用于剪贴板管理器的自动清理参考；0 表示不按天数清理。",
+                &mut app.model.clipboard_max_age_days,
+                0..=3650,
+            );
+            setting_toggle(
+                ui,
+                "置顶也按天数清理",
+                "开启后，按天数清理时也会处理置顶记录；清理天数为 0 时不按天数清理。",
+                &mut app.model.clipboard_pinned_respects_max_age,
+            );
+        });
+        if !history_enabled {
+            ui.label(
+                RichText::new("开启后台保存后可调整历史容量、来源应用和自动清理规则。")
+                    .small()
+                    .color(fluent_palette(ui).muted),
+            );
+        }
     });
 
     let clipboard_path = pinyin_ime::clipboard_store::store_path();

@@ -1,6 +1,9 @@
-﻿#include "pinyin_stub.h"
+#include "pinyin_stub.h"
 
 #include <windows.h>
+
+#include "candidate_limits.h"
+#include "engine_recovery_policy.h"
 
 #include <sddl.h>
 #include <wincrypt.h>
@@ -40,10 +43,6 @@ extern "C" void SrfTip_BackgroundWorkerRelease();
 
 namespace {
 
-// 与 Rust 侧 LOOKUP_FULL_MAX_CANDIDATES 保持一致：完整候选池扩展为 256
-// 条（精确单音节输入如 si/shi/yi 的候选全是单字，冷门单字需要翻页可达，
-// 不能再按高频词场景截断在 128 条）。
-constexpr size_t kRustRows = 256;
 constexpr size_t kRustRowTextUnits = 512;
 constexpr size_t kRustRowMetaUnits = 512;
 constexpr size_t kRustRowWidth = kRustRowTextUnits + kRustRowMetaUnits;
@@ -76,14 +75,16 @@ constexpr wchar_t kDefaultEnginePipeName[] = LR"(\\.\pipe\KaixinInput_Engine_V5)
 constexpr wchar_t kDefaultEngineMutexName[] = L"Local\\KaixinInput_Engine_Mutex_V5";
 constexpr wchar_t kEnginePipePrefix[] = LR"(\\.\pipe\KaixinInput_Engine_V5_)";
 constexpr wchar_t kEngineMutexPrefix[] = L"Local\\KaixinInput_Engine_Mutex_V5_";
-constexpr std::array<DWORD, 3> kRetryBackoffMs = {1500, 3000, 6000};
+constexpr auto kRetryBackoffMs = kSrfRecoveryBackoffMs;
 constexpr DWORD kIdleKeepaliveTimeoutMs = 5 * 60 * 1000;
 constexpr DWORD kIdleCheckIntervalMs = 60 * 1000;
-constexpr DWORD kEngineWatchdogIntervalMs = 30 * 1000;
+constexpr DWORD kEngineWatchdogIntervalMs = 2 * 1000;
 constexpr DWORD kInstallMaintenanceMaxAgeMs = 30 * 60 * 1000;
 constexpr DWORD kFailedStateWarmupCooldownMs = 1500;
 constexpr unsigned kLookupTimeoutRestartThreshold = 3;
 constexpr DWORD kLookupTimeoutRestartCooldownMs = 10000;
+constexpr ULONGLONG kLookupRestartWindowMs = 5 * 60 * 1000;
+constexpr size_t kLookupRestartWindowLimit = 3;
 constexpr SIZE_T kEngineHelperMemoryLimitBytes = 2ull * 1024ull * 1024ull * 1024ull;
 constexpr size_t kMaxBridgeInputUnits = 256;
 constexpr size_t kMaxLearnPhraseUnits = 512;
@@ -93,7 +94,8 @@ constexpr size_t kMaxLexiconPathUnits = 4096;
 constexpr uint32_t kRustModeTraditionalOutput = 0x0200;
 constexpr size_t kEnginePipeResponseHeaderBytes = 16;
 constexpr size_t kEnginePipeMaxResponseBytes =
-    kEnginePipeResponseHeaderBytes + 4 + kRustRows * kRustRowWidth * sizeof(uint16_t) + 4;
+    kEnginePipeResponseHeaderBytes + 4 +
+    srf_candidate_limits::kFullResult * kRustRowWidth * sizeof(uint16_t) + 4;
 constexpr int kRustFfiPanicRc = -100;
 constexpr int kRustLearnPendingRc = -7;
 constexpr wchar_t kAppPathName[] = L"kaixin";
@@ -145,6 +147,7 @@ std::atomic<uint32_t> g_pendingModeFlagsMirror{0};
 std::atomic<SrfEngineState> g_engineState = SrfEngineState::Idle;
 std::atomic<bool> g_warmupInFlight = false;
 std::atomic<bool> g_retryOnFailureEnabled = false;
+SrfEngineRecoveryBudget g_recoveryBudget;
 std::atomic<bool> g_retryLoopInFlight = false;
 std::atomic<unsigned long long> g_retryLoopGeneration = 0;
 std::atomic<ULONGLONG> g_lastEngineUseTime{0};
@@ -190,6 +193,7 @@ struct LocalLookupCacheEntry {
   std::vector<std::wstring> meta;
   ULONGLONG tick = 0;
   bool hasMore = false;
+  size_t bytes = 0;
 };
 
 std::mutex g_localLookupCacheMutex;
@@ -197,6 +201,7 @@ std::unordered_map<LocalLookupCacheKey, LocalLookupCacheEntry, LocalLookupCacheK
     g_localLookupCache;
 std::wstring g_localLookupCacheSignature;
 constexpr size_t kLocalLookupCacheCapacity = 512;
+constexpr size_t kLocalLookupCacheMaxBytes = 8 * 1024 * 1024;
 constexpr ULONGLONG kLocalLookupCacheTtlMs = 60 * 1000;
 constexpr ULONGLONG kLocalLookupCacheStaleTtlMs = 5 * 60 * 1000;
 std::array<LocalLookupCacheEntry, 26> g_singleLetterLookupCache;
@@ -544,17 +549,27 @@ void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
   if (metaScores) entry.meta = *metaScores;
   entry.tick = GetTickCount64();
   entry.hasMore = hasMore;
+  entry.bytes = sizeof(LocalLookupCacheEntry) +
+      (entry.key.reading.capacity() + entry.key.cacheSignature.capacity()) * sizeof(wchar_t) +
+      (entry.candidates.capacity() + entry.meta.capacity()) * sizeof(std::wstring);
+  for (const auto& text : entry.candidates) entry.bytes += text.capacity() * sizeof(wchar_t);
+  for (const auto& text : entry.meta) entry.bytes += text.capacity() * sizeof(wchar_t);
+  if (entry.bytes > kLocalLookupCacheMaxBytes / 4) return;
   const int singleIndex = SingleLetterIndex(entry.key.reading);
-  if (singleIndex >= 0) {
+  if (singleIndex >= 0 && entry.bytes <= 128 * 1024) {
     g_singleLetterLookupCache[static_cast<size_t>(singleIndex)] = entry;
     g_singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] = true;
   }
   g_localLookupCache.insert_or_assign(entry.key, entry);
-  while (g_localLookupCache.size() > kLocalLookupCacheCapacity) {
+  size_t cacheBytes = 0;
+  for (const auto& item : g_localLookupCache) cacheBytes += item.second.bytes;
+  while (g_localLookupCache.size() > kLocalLookupCacheCapacity ||
+         cacheBytes > kLocalLookupCacheMaxBytes) {
     auto oldest = g_localLookupCache.begin();
     for (auto it = std::next(g_localLookupCache.begin()); it != g_localLookupCache.end(); ++it) {
       if (it->second.tick < oldest->second.tick) oldest = it;
     }
+    cacheBytes -= oldest->second.bytes;
     g_localLookupCache.erase(oldest);
   }
 }
@@ -1664,7 +1679,7 @@ bool ParseCompactLookupResponse(const std::vector<BYTE>& response,
     if (error) *error = L"shared engine compact lookup response was truncated";
     return false;
   }
-  if (rawCount > kRustRows) {
+  if (rawCount > srf_candidate_limits::kFullResult) {
     if (error) *error = L"shared engine compact lookup response contained too many candidates";
     return false;
   }
@@ -1788,11 +1803,20 @@ bool ShouldRestartHelperAfterLookupTimeout() {
   if (streak < kLookupTimeoutRestartThreshold) return false;
 
   const ULONGLONG now = GetTickCount64();
+  // Limit repeated restarts even when a machine remains slow for minutes.
+  static std::mutex restartWindowMutex;
+  static std::deque<ULONGLONG> restarts;
+  std::lock_guard<std::mutex> windowGuard(restartWindowMutex);
+  while (!restarts.empty() && now - restarts.front() >= kLookupRestartWindowMs) {
+    restarts.pop_front();
+  }
+  if (restarts.size() >= kLookupRestartWindowLimit) return false;
   ULONGLONG last = g_lastLookupTimeoutRestartTick.load(std::memory_order_acquire);
   while (last == 0 || now < last || now - last >= kLookupTimeoutRestartCooldownMs) {
     if (g_lastLookupTimeoutRestartTick.compare_exchange_weak(last, now, std::memory_order_acq_rel,
                                                              std::memory_order_acquire)) {
       ResetLookupTimeoutStreak();
+      restarts.push_back(now);
       return true;
     }
   }
@@ -2925,7 +2949,9 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
       CloseHandle(mutex);
       continue;
     }
-    (void)EnsureEngineHelperRunning(moduleDir);
+    // All restart attempts go through the bounded recovery scheduler.
+    PublishEngineState(SrfEngineState::Failed);
+    EnsureRetryLoopScheduled();
   }
 }
 
@@ -2939,6 +2965,7 @@ void EnsureEngineWatchdogStarted(const std::filesystem::path& moduleDir) {
 }
 
 void ResetRetryLoopState() {
+  g_recoveryBudget.Reset();
   g_retryLoopGeneration.fetch_add(1, std::memory_order_acq_rel);
   g_retryLoopInFlight.store(false, std::memory_order_release);
 }
@@ -2953,7 +2980,7 @@ void WarmupEngineWorker();
 
 void RetryLoopWorker(unsigned long long generation) {
   size_t attempt = 0;
-  while (true) {
+  while (attempt < kRetryBackoffMs.size()) {
     if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) break;
     if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) break;
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
@@ -2965,17 +2992,24 @@ void RetryLoopWorker(unsigned long long generation) {
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
 
     if (g_warmupInFlight.exchange(true, std::memory_order_acq_rel)) continue;
+    if (!g_recoveryBudget.TryAcquire()) {
+      g_warmupInFlight.store(false, std::memory_order_release);
+      break;
+    }
     PublishEngineState(SrfEngineState::Loading);
     WarmupEngineWorker();
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
     ++attempt;
   }
 
-  g_retryLoopInFlight.store(false, std::memory_order_release);
+  if (generation == g_retryLoopGeneration.load(std::memory_order_acquire)) {
+    g_retryLoopInFlight.store(false, std::memory_order_release);
+  }
 }
 
 void EnsureRetryLoopScheduled() {
   if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) return;
+  if (g_recoveryBudget.Exhausted()) return;
   if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) return;
 
   bool expected = false;
@@ -3120,9 +3154,6 @@ void SrfTip_WarmupEngineAsync() {
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state == SrfEngineState::Ready) return;
   if (state == SrfEngineState::Failed) {
-    if (ShouldStartUserTriggeredWarmup()) {
-      if (StartWarmupWorkerAsync()) return;
-    }
     EnsureRetryLoopScheduled();
     return;
   }
@@ -3852,9 +3883,9 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
           SetFailureDetailLocked(restartDetail);
           WriteEngineRecoveryState(restartDetail);
         }
-        PublishEngineState(SrfEngineState::Loading);
+        PublishEngineState(SrfEngineState::Failed);
         guard.unlock();
-        SrfTip_WarmupEngineAsync();
+        EnsureRetryLoopScheduled();
         AppendEngineFailureLogDeduped(restartDetail);
         if (tryStale(L"lookup_timeout_restart")) {
           return SrfLookupCandidatesStatus::TransientFailure;
@@ -3863,9 +3894,9 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
       }
       if (IsTransientRemoteLookupError(failureSnap)) {
         if (!IsLookupTimeoutError(failureSnap)) ResetLookupTimeoutStreak();
-        PublishEngineState(SrfEngineState::Loading);
+        PublishEngineState(SrfEngineState::Failed);
         guard.unlock();
-        SrfTip_WarmupEngineAsync();
+        EnsureRetryLoopScheduled();
         AppendEngineFailureLogDeduped(failureSnap);
         if (tryStale(L"transient_remote_error")) {
           return SrfLookupCandidatesStatus::TransientFailure;

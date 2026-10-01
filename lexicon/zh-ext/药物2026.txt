@@ -1,0 +1,303 @@
+# 开心输入法扩展词库：截至 2026 年常用及热门西药
+# 格式：词语<TAB>全拼或混合输入码<TAB>权重。
+# 以药品通用名为主，涵盖慢病、代谢、呼吸、消化、感染、神经精神及肿瘤等类别。
+替尔泊肽	ti er po tai	5000
+司美格鲁肽	si mei ge lu tai	5000
+利拉鲁肽	li la lu tai	5000
+度拉糖肽	du la tang tai	5000
+艾塞那肽	ai sai na tai	5000
+贝那鲁肽	bei na lu tai	5000
+利司那肽	li si na tai	5000
+玛仕度肽	ma shi du tai	5000
+利格列汀	li ge lie ting	5000
+维格列汀	wei ge lie ting	5000
+沙格列汀	sha ge lie ting	5000
+阿格列汀	a ge lie ting	5000
+曲格列汀	qu ge lie ting	5000
+卡格列净	ka ge lie jing	5000
+恒格列净	heng ge lie jing	5000
+瑞格列净	rui ge lie jing	5000
+艾托格列净	ai tuo ge lie jing	5000
+索格列净	suo ge lie jing	5000
+吡格列酮	bi ge lie tong	5000
+罗格列酮	luo ge lie tong	5000
+瑞格列奈	rui ge lie nai	5000
+那格列奈	na ge lie nai	5000
+米格列奈	mi ge lie nai	5000
+伏格列波糖	fu ge lie bo tang	5000
+米格列醇	mi ge lie chun	5000
+格列喹酮	ge lie kui tong	5000
+格列吡嗪	ge lie bi qin	5000
+格列本脲	ge lie ben niao	5000
+甘精胰岛素	gan jing yi dao su	5000
+地特胰岛素	di te yi dao su	5000
+阿哌沙班	a pai sha ban	5000
+利伐沙班	li fa sha ban	5000
+达比加群酯	da bi jia qun zhi	5000
+艾多沙班	ai duo sha ban	5000
+华法林	hua fa lin	5000
+氯吡格雷	lv bi ge lei	5000
+替格瑞洛	ti ge rui luo	5000
+普拉格雷	pu la ge lei	5000
+沙库巴曲缬沙坦	sha ku ba qu xie sha tan	5000
+卡维地洛	ka wei di luo	5000
+奈必洛尔	nai bi luo er	5000
+非洛地平	fei luo di ping	5000
+尼群地平	ni qun di ping	5000
+地尔硫卓	di er liu zhuo	5000
+维拉帕米	wei la pa mi	5000
+贝尼地平	bei ni di ping	5000
+吲达帕胺	yin da pa an	5000
+呋塞米	fu sai mi	5000
+托拉塞米	tuo la sai mi	5000
+布美他尼	bu mei ta ni	5000
+依普利酮	yi pu li tong	5000
+氨苯蝶啶	an ben die ding	5000
+胺碘酮	an dian tong	5000
+普罗帕酮	pu luo pa tong	5000
+索他洛尔	suo ta luo er	5000
+地高辛	di gao xin	5000
+硝酸甘油	xiao suan gan you	5000
+单硝酸异山梨酯	dan xiao suan yi shan li zhi	5000
+曲美他嗪	qu mei ta qin	5000
+尼可地尔	ni ke di er	5000
+伊伐布雷定	yi fa bu lei ding	5000
+雷诺嗪	lei nuo qin	5000
+左西孟旦	zuo xi meng dan	5000
+福辛普利	fu xin pu li	5000
+培哚普利	pei duo pu li	5000
+赖诺普利	lai nuo pu li	5000
+坎地沙坦	kan di sha tan	5000
+阿利沙坦酯	a li sha tan zhi	5000
+特拉唑嗪	te la zuo qin	5000
+多沙唑嗪	duo sha zuo qin	5000
+可乐定	ke le ding	5000
+甲基多巴	jia ji duo ba	5000
+乌拉地尔	wu la di er	5000
+肼屈嗪	jing qu qin	5000
+硝普钠	xiao pu na	5000
+依折麦布	yi zhe mai bu	5000
+非诺贝特	fei nuo bei te	5000
+苯扎贝特	ben zha bei te	5000
+吉非贝齐	ji fei bei qi	5000
+匹伐他汀	pi fa ta ting	5000
+普伐他汀	pu fa ta ting	5000
+氟伐他汀	fu fa ta ting	5000
+依洛尤单抗	yi luo you dan kang	5000
+阿利西尤单抗	a li xi you dan kang	5000
+英克司兰钠	ying ke si lan na	5000
+考来烯胺	kao lai xi an	5000
+考来维仑	kao lai wei lun	5000
+替罗非班	ti luo fei ban	5000
+依替巴肽	yi ti ba tai	5000
+阿昔单抗	a xi dan kang	5000
+氯雷他定	lv lei ta ding	5000
+西替利嗪	xi ti li qin	5000
+左西替利嗪	zuo xi ti li qin	5000
+地氯雷他定	di lv lei ta ding	5000
+非索非那定	fei suo fei na ding	5000
+依巴斯汀	yi ba si ting	5000
+咪唑斯汀	mi zuo si ting	5000
+氮卓斯汀	dan zhuo si ting	5000
+孟鲁司特	meng lu si te	5000
+扎鲁司特	zha lu si te	5000
+茶碱	cha jian	5000
+氨茶碱	an cha jian	5000
+多索茶碱	duo suo cha jian	5000
+噻托溴铵	sai tuo xiu an	5000
+格隆溴铵	ge long xiu an	5000
+异丙托溴铵	yi bing tuo xiu an	5000
+沙丁胺醇	sha ding an chun	5000
+特布他林	te bu ta lin	5000
+福莫特罗	fu mo te luo	5000
+沙美特罗	sha mei te luo	5000
+茚达特罗	yin da te luo	5000
+奥达特罗	ao da te luo	5000
+布地奈德	bu di nai de	5000
+氟替卡松	fu ti ka song	5000
+倍氯米松	bei lv mi song	5000
+糠酸莫米松	kang suan mo mi song	5000
+环索奈德	huan suo nai de	5000
+布地奈德福莫特罗	bu di nai de fu mo te luo	5000
+沙美特罗替卡松	sha mei te luo ti ka song	5000
+氟替卡松维兰特罗	fu ti ka song wei lan te luo	5000
+莫沙必利	mo sha bi li	5000
+多潘立酮	duo pan li tong	5000
+伊托必利	yi tuo bi li	5000
+枸橼酸铋钾	ju yuan suan bi jia	5000
+胶体果胶铋	jiao ti guo jiao bi	5000
+铝碳酸镁	lv tan suan mei	5000
+硫糖铝	liu tang lv	5000
+蒙脱石	meng tuo shi	5000
+乳果糖	ru guo tang	5000
+聚乙二醇	ju yi er chun	5000
+比沙可啶	bi sha ke ding	5000
+洛哌丁胺	luo pai ding an	5000
+昂丹司琼	ang dan si qiong	5000
+托烷司琼	tuo wan si qiong	5000
+帕洛诺司琼	pa luo nuo si qiong	5000
+阿瑞匹坦	a rui pi tan	5000
+消旋卡多曲	xiao xuan ka duo qu	5000
+熊去氧胆酸	xiong qu yang dan suan	5000
+腺苷蛋氨酸	xian gan dan an suan	5000
+水飞蓟素	shui fei ji su	5000
+美沙拉嗪	mei sha la qin	5000
+柳氮磺吡啶	liu dan huang bi ding	5000
+奥沙拉嗪	ao sha la qin	5000
+奥曲肽	ao qu tai	5000
+生长抑素	sheng zhang yi su	5000
+胰酶	yi mei	5000
+复方消化酶	fu fang xiao hua mei	5000
+二甲硅油	er jia gui you	5000
+利那洛肽	li na luo tai	5000
+利福昔明	li fu xi ming	5000
+玛巴洛沙韦	ma ba luo sha wei	5000
+帕拉米韦	pa la mi wei	5000
+利巴韦林	li ba wei lin	5000
+法匹拉韦	fa pi la wei	5000
+奈玛特韦	nai ma te wei	5000
+利托那韦	li tuo na wei	5000
+莫诺拉韦	mo nuo la wei	5000
+阿兹夫定	a zi fu ding	5000
+来瑞特韦	lai rui te wei	5000
+索磷布韦	suo lin bu wei	5000
+维帕他韦	wei pa ta wei	5000
+格卡瑞韦	ge ka rui wei	5000
+哌仑他韦	pai lun ta wei	5000
+达卡他韦	da ka ta wei	5000
+恩曲他滨	en qu ta bin	5000
+比克替拉韦	bi ke ti la wei	5000
+达芦那韦	da lu na wei	5000
+拉替拉韦	la ti la wei	5000
+依非韦伦	yi fei wei lun	5000
+奈韦拉平	nai wei la ping	5000
+多替拉韦	duo ti la wei	5000
+替诺福韦艾拉酚胺	ti nuo fu wei ai la fen an	5000
+替诺福韦二吡呋酯	ti nuo fu wei er bi fu zhi	5000
+恩曲他滨替诺福韦	en qu ta bin ti nuo fu wei	5000
+头孢曲松	tou bao qu song	5000
+头孢他啶	tou bao ta ding	5000
+头孢吡肟	tou bao bi wo	5000
+头孢哌酮舒巴坦	tou bao pai tong shu ba tan	5000
+哌拉西林他唑巴坦	pai la xi lin ta zuo ba tan	5000
+美罗培南	mei luo pei nan	5000
+奥氮平	ao dan ping	5000
+利培酮	li pei tong	5000
+喹硫平	kui liu ping	5000
+阿立哌唑	a li pai zuo	5000
+氨磺必利	an huang bi li	5000
+帕利哌酮	pa li pai tong	5000
+齐拉西酮	qi la xi tong	5000
+氯氮平	lv dan ping	5000
+丁螺环酮	ding luo huan tong	5000
+劳拉西泮	lao la xi pan	5000
+阿普唑仑	a pu zuo lun	5000
+地西泮	di xi pan	5000
+艾司唑仑	ai si zuo lun	5000
+右佐匹克隆	you zuo pi ke long	5000
+唑吡坦	zuo bi tan	5000
+曲唑酮	qu zuo tong	5000
+阿戈美拉汀	a ge mei la ting	5000
+安非他酮	an fei ta tong	5000
+伏硫西汀	fu liu xi ting	5000
+氯米帕明	lv mi pa ming	5000
+多塞平	duo sai ping	5000
+多奈哌齐	duo nai pai qi	5000
+美金刚	mei jin gang	5000
+卡巴拉汀	ka ba la ting	5000
+加兰他敏	jia lan ta min	5000
+普拉克索	pu la ke suo	5000
+罗匹尼罗	luo pi ni luo	5000
+左旋多巴苄丝肼	zuo xuan duo ba bian si jing	5000
+左旋多巴卡比多巴	zuo xuan duo ba ka bi duo ba	5000
+恩他卡朋	en ta ka peng	5000
+帕博利珠单抗	pa bo li zhu dan kang	5000
+纳武利尤单抗	na wu li you dan kang	5000
+信迪利单抗	xin di li dan kang	5000
+替雷利珠单抗	ti lei li zhu dan kang	5000
+特瑞普利单抗	te rui pu li dan kang	5000
+卡瑞利珠单抗	ka rui li zhu dan kang	5000
+度伐利尤单抗	du fa li you dan kang	5000
+阿替利珠单抗	a ti li zhu dan kang	5000
+斯鲁利单抗	si lu li dan kang	5000
+派安普利单抗	pai an pu li dan kang	5000
+奥希替尼	ao xi ti ni	5000
+阿美替尼	a mei ti ni	5000
+阿来替尼	a lai ti ni	5000
+克唑替尼	ke zuo ti ni	5000
+埃克替尼	ai ke ti ni	5000
+吉非替尼	ji fei ti ni	5000
+厄洛替尼	e luo ti ni	5000
+伏美替尼	fu mei ti ni	5000
+阿帕替尼	a pa ti ni	5000
+仑伐替尼	lun fa ti ni	5000
+安罗替尼	an luo ti ni	5000
+呋喹替尼	fu kui ti ni	5000
+瑞戈非尼	rui ge fei ni	5000
+索拉非尼	suo la fei ni	5000
+奥拉帕利	ao la pa li	5000
+氟唑帕利	fu zuo pa li	5000
+尼拉帕利	ni la pa li	5000
+吡咯替尼	bi ge ti ni	5000
+曲妥珠单抗	qu tuo zhu dan kang	5000
+帕妥珠单抗	pa tuo zhu dan kang	5000
+恩美曲妥珠单抗	en mei qu tuo zhu dan kang	5000
+德曲妥珠单抗	de qu tuo zhu dan kang	5000
+利妥昔单抗	li tuo xi dan kang	5000
+贝伐珠单抗	bei fa zhu dan kang	5000
+西妥昔单抗	xi tuo xi dan kang	5000
+来那度胺	lai na du an	5000
+泊马度胺	po ma du an	5000
+伊布替尼	yi bu ti ni	5000
+奥布替尼	ao bu ti ni	5000
+泽布替尼	ze bu ti ni	5000
+阿可替尼	a ke ti ni	5000
+维奈克拉	wei nai ke la	5000
+阿扎胞苷	a zha bao gan	5000
+地西他滨	di xi ta bin	5000
+硼替佐米	peng ti zuo mi	5000
+奥沙利铂	ao sha li bo	5000
+紫杉醇	zi shan chun	5000
+多西他赛	duo xi ta sai	5000
+卡培他滨	ka pei ta bin	5000
+替吉奥	ti ji ao	5000
+培美曲塞	pei mei qu sai	5000
+吉西他滨	ji xi ta bin	5000
+依托泊苷	yi tuo po gan	5000
+环磷酰胺	huan lin xian an	5000
+顺铂	shun bo	5000
+卡铂	ka bo	5000
+阿糖胞苷	a tang bao gan	5000
+氟尿嘧啶	fu niao mi ding	5000
+伊立替康	yi li ti kang	5000
+多柔比星	duo rou bi xing	5000
+英夫利昔单抗	ying fu li xi dan kang	5000
+阿达木单抗	a da mu dan kang	5000
+依那西普	yi na xi pu	5000
+托珠单抗	tuo zhu dan kang	5000
+司库奇尤单抗	si ku qi you dan kang	5000
+乌司奴单抗	wu si nu dan kang	5000
+达雷妥尤单抗	da lei tuo you dan kang	5000
+托法替布	tuo fa ti bu	5000
+乌帕替尼	wu pa ti ni	5000
+巴瑞替尼	ba rui ti ni	5000
+阿布昔替尼	a bu xi ti ni	5000
+度普利尤单抗	du pu li you dan kang	5000
+地舒单抗	di shu dan kang	5000
+唑来膦酸	zuo lai lin suan	5000
+阿仑膦酸钠	a lun lin suan na	5000
+利塞膦酸钠	li sai lin suan na	5000
+特立帕肽	te li pa tai	5000
+罗莫佐单抗	luo mo zuo dan kang	5000
+骨化三醇	gu hua san chun	5000
+阿法骨化醇	a fa gu hua chun	5000
+德谷胰岛素	de gu yi dao su	5000
+门冬胰岛素	men dong yi dao su	5000
+赖脯胰岛素	lai pu yi dao su	5000
+依柯胰岛素	yi ke yi dao su	5000
+重组人促红素	chong zu ren cu hong su	5000
+艾曲泊帕	ai qu po pa	5000
+阿伐曲泊帕	a fa qu po pa	5000
+坦索罗辛	tan suo luo xin	5000
+非那雄胺	fei na xiong an	5000
+度他雄胺	du ta xiong an	5000

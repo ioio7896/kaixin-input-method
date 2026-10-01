@@ -4,14 +4,29 @@ pub(crate) const DEFAULT_CANDIDATE_FONT_FAMILY: &str = "Microsoft YaHei";
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SettingsSection {
-    Hotkeys,
+    Input,
     Appearance,
     Lexicon,
+    Hotkeys,
+    Tools,
+    Compatibility,
+    System,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ToolSettingsPage {
     Clipboard,
     Screenshot,
     Ocr,
     Translation,
-    Compatibility,
+    Handwrite,
+    Commands,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SystemSettingsPage {
+    General,
+    About,
     Privacy,
     Diagnostics,
     Advanced,
@@ -23,84 +38,63 @@ pub(crate) enum SettingsIcon {
     Lexicon,
     Hotkeys,
     Clipboard,
-    Screenshot,
-    Ocr,
-    Translation,
     Compatibility,
-    Privacy,
-    Diagnostics,
     Advanced,
 }
 
 impl SettingsSection {
-    pub(crate) const ALL: [Self; 11] = [
-        Self::Hotkeys,
+    pub(crate) const ALL: [Self; 7] = [
+        Self::Input,
         Self::Appearance,
         Self::Lexicon,
-        Self::Clipboard,
-        Self::Screenshot,
-        Self::Ocr,
-        Self::Translation,
+        Self::Hotkeys,
+        Self::Tools,
         Self::Compatibility,
-        Self::Privacy,
-        Self::Diagnostics,
-        Self::Advanced,
+        Self::System,
     ];
 
     pub(crate) fn label(self) -> &'static str {
         match self {
-            Self::Appearance => "外观主题",
-            Self::Lexicon => "词库",
+            Self::Input => "输入",
+            Self::Appearance => "外观",
+            Self::Lexicon => "词库与学习",
             Self::Hotkeys => "快捷键",
-            Self::Clipboard => "剪贴板",
+            Self::Tools => "工具",
             Self::Compatibility => "应用兼容",
-            Self::Screenshot => "截图",
-            Self::Ocr => "OCR",
-            Self::Translation => "翻译",
-            Self::Privacy => "隐私",
-            Self::Diagnostics => "诊断",
-            Self::Advanced => "高级",
+            Self::System => "系统与维护",
         }
     }
 
     pub(crate) fn icon(self) -> SettingsIcon {
         match self {
+            Self::Input => SettingsIcon::Hotkeys,
             Self::Appearance => SettingsIcon::Appearance,
             Self::Lexicon => SettingsIcon::Lexicon,
             Self::Hotkeys => SettingsIcon::Hotkeys,
-            Self::Clipboard => SettingsIcon::Clipboard,
+            Self::Tools => SettingsIcon::Clipboard,
             Self::Compatibility => SettingsIcon::Compatibility,
-            Self::Screenshot => SettingsIcon::Screenshot,
-            Self::Ocr => SettingsIcon::Ocr,
-            Self::Translation => SettingsIcon::Translation,
-            Self::Privacy => SettingsIcon::Privacy,
-            Self::Diagnostics => SettingsIcon::Diagnostics,
-            Self::Advanced => SettingsIcon::Advanced,
+            Self::System => SettingsIcon::Advanced,
         }
     }
 
     pub(crate) fn hint(self) -> &'static str {
         match self {
-            Self::Appearance => "皮肤、字体、透明度和候选动画。",
+            Self::Input => "全拼、双拼、模糊音、标点和输入习惯。",
+            Self::Appearance => "候选窗布局、字体与间距、皮肤与配色；右侧实时预览。",
             Self::Lexicon => "用户词库、学习策略、自定义短语和扩展词库。",
             Self::Hotkeys => "切换、翻页和功能快捷键。",
-            Self::Clipboard => "剪贴板历史、候选、快捷键和隐私规则。",
+            Self::Tools => "剪贴板、截图与 OCR、手写、翻译和 VV 命令。",
             Self::Compatibility => "全屏和应用规则。",
-            Self::Screenshot => "智能框选、保存和后续处理。",
-            Self::Ocr => "本地文字识别、模型和 OCR 截图。",
-            Self::Translation => "WinTranslator 联动和译文处理方式。",
-            Self::Privacy => "隐私规则、用户数据和配置备份。",
-            Self::Diagnostics => "运行状态、延迟和诊断日志。",
-            Self::Advanced => "输入、候选排序、缓存和性能调优。",
+            Self::System => "常规、隐私与数据、诊断、高级调优和版本信息。",
         }
     }
 
     pub(crate) fn nav_group(self) -> &'static str {
         match self {
-            Self::Hotkeys | Self::Appearance | Self::Lexicon | Self::Clipboard => "设置",
-            Self::Screenshot | Self::Ocr | Self::Translation => "工具",
-            Self::Compatibility | Self::Privacy => "安全与兼容",
-            Self::Diagnostics | Self::Advanced => "系统",
+            Self::Input | Self::Appearance | Self::Lexicon | Self::Hotkeys => "输入法",
+            Self::Tools => "工具",
+            Self::Compatibility => "兼容",
+            Self::System => "系统",
         }
     }
 }
@@ -253,6 +247,7 @@ pub(crate) struct SettingsModel {
     pub(crate) clipboard_candidate_preview_enabled: bool,
     pub(crate) clipboard_record_source_app: bool,
     pub(crate) clipboard_pinned_respects_max_age: bool,
+    pub(crate) game_input_mode: String,
     pub(crate) fullscreen_detection: bool,
     pub(crate) fullscreen_policy: String,
     pub(crate) commit_transport: String,
@@ -354,6 +349,7 @@ pub(crate) struct CompatRule {
     pub(crate) process: String,
     pub(crate) policy: CompatRulePolicy,
     pub(crate) commit_transport: String,
+    pub(crate) game_input_mode: String,
     pub(crate) game_profile: bool,
     pub(crate) overlay_anchor: String,
     pub(crate) overlay_offset_x: i32,
@@ -501,7 +497,7 @@ impl Default for SettingsModel {
             translate_result_action: "show".to_string(),
             translate_hotkey: "off".to_string(),
             traditional_hotkey: "off".to_string(),
-            game_mode_hotkey: "off".to_string(),
+            game_mode_hotkey: "Ctrl+Shift+Alt+G".to_string(),
             temporary_ascii_hotkey: "off".to_string(),
             clipboard_background_enabled: false,
             clipboard_max_history_items: 60,
@@ -511,6 +507,7 @@ impl Default for SettingsModel {
             clipboard_candidate_preview_enabled: false,
             clipboard_record_source_app: false,
             clipboard_pinned_respects_max_age: true,
+            game_input_mode: "manual".to_string(),
             fullscreen_detection: true,
             fullscreen_policy: schema_default::FULLSCREEN_POLICY.to_string(),
             commit_transport: schema_default::COMMIT_TRANSPORT.to_string(),

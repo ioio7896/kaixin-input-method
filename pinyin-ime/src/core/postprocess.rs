@@ -2,6 +2,8 @@ use super::*;
 
 #[path = "postprocess_pipeline.rs"]
 mod pipeline;
+#[path = "postprocess_stages.rs"]
+mod stages;
 use pipeline::{run_candidate_pipeline, CandidatePipelineContext, CandidateStage};
 
 impl PinyinEngine {
@@ -489,7 +491,7 @@ impl PinyinEngine {
         ensure_single_char_visible_on_first_page(ranked, page_size);
     }
 
-    /// 多音节完整输入：优先展示若干“等长整词 head”，并保证每页都能看到单字候选用于拼词。
+    /// 多音节完整输入：优先展示若干“等长整词 head”，首屏保留少量单字候选用于拼词。
 
     /// 同时保留其他非等长候选，避免用户翻页时只剩整词路径。
 
@@ -581,7 +583,7 @@ impl PinyinEngine {
             }
         }
 
-        // 先给整词 head，再插入单字；并确保每页有最少单字槽位，便于用户逐字造词。
+        // 先给整词 head，再在首屏插入少量单字，便于用户逐字造词。
 
         let mut prefix_support = if has_exact_full_pinyin {
             self.full_pinyin_prefix_phrase_support_candidates(syllables, full_compact_key, now)
@@ -590,19 +592,20 @@ impl PinyinEngine {
         };
         let page_size =
             candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
-        let reserve_single_slots_per_page = if composing_phrase {
+        let reserve_single_slots = if composing_phrase {
             3usize.min(page_size.saturating_sub(1))
         } else {
             1usize.min(page_size.saturating_sub(1))
         };
-        let front_limit = page_size
-            .saturating_sub(reserve_single_slots_per_page)
-            .max(1)
-            .min(if has_exact_full_pinyin {
-                exact_head_max
-            } else {
-                MULTI_SYLL_PHRASE_HEAD_MAX
-            });
+        let front_limit =
+            page_size
+                .saturating_sub(reserve_single_slots)
+                .max(1)
+                .min(if has_exact_full_pinyin {
+                    exact_head_max
+                } else {
+                    MULTI_SYLL_PHRASE_HEAD_MAX
+                });
         ranked.reserve(
             exact_head
                 .len()
@@ -615,6 +618,7 @@ impl PinyinEngine {
         );
         let mut emitted = HashSet::with_capacity(ranked.capacity().min(512));
         let mut pending_multi = Vec::new();
+        let mut trailing_exact = Vec::new();
         if has_exact_full_pinyin {
             let exact_front = exact_head.len().min(front_limit);
             for item in exact_head.drain(..exact_front) {
@@ -628,7 +632,7 @@ impl PinyinEngine {
             }
             if syllable_count == 2 && !composing_phrase {
                 let mut front_fill = page_size
-                    .saturating_sub(reserve_single_slots_per_page)
+                    .saturating_sub(reserve_single_slots)
                     .saturating_sub(ranked.len());
                 while front_fill > 0 {
                     let item = if !exact_head.is_empty() {
@@ -661,10 +665,12 @@ impl PinyinEngine {
                 }
             }
             pending_multi.extend(exact_head);
-            pending_multi.extend(exact_tail);
             pending_multi.extend(prefix_support);
             pending_multi.extend(composed_head);
             pending_multi.extend(composed_tail);
+            // Keep low-confidence exact words reachable, but after the normal
+            // tail instead of creating a separate rare-word page block.
+            trailing_exact = exact_tail;
         } else {
             let composed_front = composed_head.len().min(front_limit);
             for item in composed_head.drain(..composed_front) {
@@ -674,11 +680,15 @@ impl PinyinEngine {
             pending_multi.extend(composed_tail);
         }
 
-        // 多字词与单字逐页交错，既保留造词入口，也避免单字池挡住后续整词。
+        // The first page keeps a small single-character composition reserve.
+        // Later pages retain the original score order; repeatedly injecting
+        // singles at every page boundary made low-frequency exact words appear
+        // as a separate block before ordinary candidates.
 
         let mut single_idx = 0;
         for item in pending_multi.into_iter().chain(others) {
-            while ranked.len() % page_size >= page_size - reserve_single_slots_per_page
+            while ranked.len() < page_size
+                && ranked.len() % page_size >= page_size - reserve_single_slots
                 && single_idx < singles.len()
             {
                 push_unique_ranked_candidate(ranked, &mut emitted, singles[single_idx].clone());
@@ -687,6 +697,9 @@ impl PinyinEngine {
             push_unique_ranked_candidate(ranked, &mut emitted, item);
         }
         for item in singles.into_iter().skip(single_idx) {
+            push_unique_ranked_candidate(ranked, &mut emitted, item);
+        }
+        for item in trailing_exact {
             push_unique_ranked_candidate(ranked, &mut emitted, item);
         }
     }
@@ -909,361 +922,40 @@ impl PinyinEngine {
         ranked: &mut Vec<RankedCandidate>,
         ctx: CandidatePostprocessContext<'_>,
     ) {
-        if ctx.exact_single_syllable_input {
-            keep_only_single_char_candidates(ranked);
-            // Pinned single-character user phrases should still be forced to
-            // the top even under the single-syllable fast path, otherwise a
-            // high-frequency unpinned candidate (e.g. "了" for "le") can
-            // outrank a manually pinned candidate (e.g. "乐" for "le").
-            let pinned_single_char_phrases: Vec<String> = ctx
-                .preserved_pinned_user_phrases
-                .iter()
-                .filter(|phrase| phrase_char_count(phrase) == 1)
-                .cloned()
-                .collect();
-            if !pinned_single_char_phrases.is_empty() {
-                promote_candidate_priority_groups(ranked, &[pinned_single_char_phrases.as_slice()]);
-            }
-            return;
-        }
-
-        let has_direct = !ctx.preserved_direct_phrases.is_empty();
-        let has_exact_user = !ctx.preserved_exact_user_phrases.is_empty();
-        let has_pinned = !ctx.preserved_pinned_user_phrases.is_empty();
-        let has_user_or_direct_lock = has_direct || has_exact_user || has_pinned;
-
-        if ctx.applied_multi_syllable_phrase_layout {
-            limit_typo_corrections_first_page(
+        let context = CandidatePipelineContext::default();
+        if ctx.exact_single_syllable_input || ctx.applied_multi_syllable_phrase_layout {
+            run_candidate_pipeline(
+                &context,
                 ranked,
-                ctx.correction_prefs,
-                ctx.suppress_correction,
+                &[&pipeline::NamedStage(
+                    "special_layout",
+                    |rows: &mut Vec<RankedCandidate>| self.stage_special_layout(rows, &ctx),
+                )],
             );
-            drop_single_char_corrections_for_two_char_intent(
-                ranked,
-                (ctx.final_short_phrase_intent == Some(2)
-                    || ctx.exact_guard_syllables == Some(2)
-                    || ctx.overlong_pinned_exact_guard_syllables == Some(2))
-                .then_some(2),
-            );
-
-            let exact_len_guard = ctx
-                .exact_guard_syllables
-                .or(ctx.overlong_pinned_exact_guard_syllables);
-            let filtered_exact_user_phrases;
-            let exact_user_priority_group = if let Some(max_len) = exact_len_guard {
-                filtered_exact_user_phrases = ctx
-                    .preserved_exact_user_phrases
-                    .iter()
-                    .filter(|phrase| phrase_char_count(phrase) <= max_len)
-                    .cloned()
-                    .collect::<Vec<_>>();
-                filtered_exact_user_phrases.as_slice()
-            } else {
-                ctx.preserved_exact_user_phrases
-            };
-            let filtered_pinned_user_phrases;
-            let pinned_priority_group = if let Some(max_len) = ctx.exact_guard_syllables {
-                filtered_pinned_user_phrases = ctx
-                    .preserved_pinned_user_phrases
-                    .iter()
-                    .filter(|phrase| phrase_char_count(phrase) <= max_len)
-                    .cloned()
-                    .collect::<Vec<_>>();
-                filtered_pinned_user_phrases.as_slice()
-            } else {
-                ctx.preserved_pinned_user_phrases
-            };
-            let exact_full_pinyin_priority_phrases;
-            let exact_full_pinyin_priority_group = if let Some(syllable_count) = exact_len_guard {
-                let mut phrases = self.exact_full_pinyin_phrases(ctx.compact_key, syllable_count);
-                phrases.truncate(1);
-                exact_full_pinyin_priority_phrases = phrases;
-                exact_full_pinyin_priority_phrases.as_slice()
-            } else {
-                &[]
-            };
-
-            promote_candidate_priority_groups(
+        } else {
+            run_candidate_pipeline(
+                &context,
                 ranked,
                 &[
-                    ctx.preserved_direct_phrases,
-                    ctx.final_preferred_phrases,
-                    exact_user_priority_group,
-                    ctx.preserved_separator_phrases,
-                    exact_full_pinyin_priority_group,
-                    pinned_priority_group,
-                    ctx.preserved_high_priority_two_char_phrases,
-                    ctx.preserved_chat_priority_two_char_phrases,
-                    ctx.preserved_daily_short_two_char_phrases,
-                    ctx.preserved_daily_short_three_char_phrases,
-                ],
-            );
-            promote_exact_user_hotwords_front(
-                ranked,
-                exact_user_priority_group,
-                exact_len_guard,
-                ctx.user_hotword_front_limit,
-            );
-            if !ctx.skip_final_short_density
-                && !has_pinned
-                && ctx.input_intent == InputIntent::FullPinyin
-                && ctx.preserved_daily_short_three_char_phrases.is_empty()
-                && (ctx.exact_guard_syllables == Some(2)
-                    || ctx.final_short_phrase_intent == Some(2))
-            {
-                // The multi-syllable layout gathers a large first-syllable
-                // character pool.  Always redistribute exact two-character
-                // words afterwards; gating this on an overlong prediction
-                // left page two and later filled almost entirely with singles.
-                apply_two_char_intent_page_density(ranked);
-            }
-            return;
-        }
-
-        let preserve_ascii = should_preserve_ascii_input(ctx.raw);
-        let empty_short_priority_group: &[String] = &[];
-        let short_priority_group = if ctx.input_intent == InputIntent::MixedPrefix
-            && ctx.compact_key.chars().count() >= 4
-        {
-            empty_short_priority_group
-        } else {
-            ctx.preserved_short_phrases
-        };
-
-        // Keep protected short candidates available before density shaping can
-        // trim noisy overlong expansions.
-        promote_candidate_priority_groups(
-            ranked,
-            &[
-                ctx.preserved_exact_lexicon_phrases,
-                ctx.preserved_high_priority_two_char_phrases,
-                ctx.preserved_chat_priority_two_char_phrases,
-                ctx.preserved_daily_short_two_char_phrases,
-                ctx.preserved_daily_short_three_char_phrases,
-                short_priority_group,
-            ],
-        );
-
-        if !has_direct {
-            apply_small_input_candidate_policy(ranked, ctx.short_phrase_intent);
-        }
-
-        limit_typo_corrections_first_page(ranked, ctx.correction_prefs, ctx.suppress_correction);
-
-        if !has_user_or_direct_lock {
-            limit_short_input_first_page_density(
-                ranked,
-                ctx.short_phrase_intent,
-                self.phrase_lexicon.as_ref(),
-            );
-        }
-
-        if !has_user_or_direct_lock {
-            ensure_strong_typo_correction_in_top_three(
-                ranked,
-                ctx.correction_prefs,
-                ctx.suppress_correction,
-            );
-        }
-        drop_single_char_corrections_for_two_char_intent(
-            ranked,
-            (ctx.final_short_phrase_intent == Some(2)
-                || ctx.exact_guard_syllables == Some(2)
-                || ctx.overlong_pinned_exact_guard_syllables == Some(2))
-            .then_some(2),
-        );
-
-        if !ctx.skip_final_short_density {
-            promote_preserved_short_intent_expansions(
-                ranked,
-                ctx.final_short_phrase_intent,
-                ctx.preserved_short_phrases,
-            );
-            promote_short_intent_abbrev_prefix_expansions(
-                ranked,
-                ctx.compact_key,
-                ctx.final_short_phrase_intent,
-                self.phrase_lexicon.as_ref(),
-            );
-            apply_short_intent_final_candidate_density(
-                ranked,
-                ctx.final_short_phrase_intent,
-                self.phrase_lexicon.as_ref(),
-            );
-        }
-
-        if !ctx.direct_input_shortcut {
-            promote_ranked_high_priority_two_char_candidates(
-                ranked,
-                ctx.raw,
-                ctx.compact_key,
-                self.syllables.as_ref(),
-                self.phrase_lexicon.as_ref(),
-            );
-        }
-
-        if let Some(syllable_count) = ctx.exact_guard_syllables {
-            self.promote_exact_full_pinyin_candidates(ranked, ctx.compact_key, syllable_count);
-        }
-        if let Some(syllable_count) = ctx.overlong_pinned_exact_guard_syllables {
-            self.promote_exact_full_pinyin_over_overlong_front(
-                ranked,
-                ctx.compact_key,
-                syllable_count,
-            );
-        }
-
-        if !ctx.skip_final_short_density && !has_pinned && ctx.final_short_phrase_intent == Some(2)
-        {
-            if ctx.input_intent == InputIntent::FullPinyin {
-                apply_two_char_intent_page_density(ranked);
-            } else {
-                apply_two_char_intent_minimum_page_density(ranked);
-            }
-        }
-        promote_high_score_exact_short_front(ranked, ctx.final_short_phrase_intent);
-
-        let exact_short_guard_intent = ctx.exact_guard_syllables.or_else(|| {
-            (ctx.final_short_phrase_intent == Some(2)
-                && !ctx.direct_input_shortcut
-                && !preserve_ascii
-                && !has_pinned)
-                .then_some(2)
-        });
-        if let Some(intent) = exact_short_guard_intent {
-            ensure_exact_short_intent_before_expansion(ranked, Some(intent));
-        }
-
-        if !has_user_or_direct_lock && !ctx.direct_input_shortcut && !preserve_ascii {
-            ensure_strong_two_char_correction_before_expansion(
-                ranked,
-                ctx.correction_prefs,
-                ctx.suppress_correction,
-            );
-        }
-
-        let exact_len_guard = ctx
-            .exact_guard_syllables
-            .or(ctx.overlong_pinned_exact_guard_syllables);
-        let filtered_exact_user_phrases;
-        let exact_user_priority_group = if let Some(max_len) = exact_len_guard {
-            filtered_exact_user_phrases = ctx
-                .preserved_exact_user_phrases
-                .iter()
-                .filter(|phrase| phrase_char_count(phrase) <= max_len)
-                .cloned()
-                .collect::<Vec<_>>();
-            filtered_exact_user_phrases.as_slice()
-        } else {
-            ctx.preserved_exact_user_phrases
-        };
-        let filtered_pinned_user_phrases;
-        let pinned_priority_group = if let Some(max_len) = ctx.exact_guard_syllables {
-            filtered_pinned_user_phrases = ctx
-                .preserved_pinned_user_phrases
-                .iter()
-                .filter(|phrase| phrase_char_count(phrase) <= max_len)
-                .cloned()
-                .collect::<Vec<_>>();
-            filtered_pinned_user_phrases.as_slice()
-        } else {
-            ctx.preserved_pinned_user_phrases
-        };
-        let exact_full_pinyin_priority_phrases;
-        let exact_full_pinyin_priority_group = if let Some(syllable_count) = exact_len_guard {
-            exact_full_pinyin_priority_phrases =
-                self.exact_full_pinyin_phrases(ctx.compact_key, syllable_count);
-            exact_full_pinyin_priority_phrases.as_slice()
-        } else {
-            &[]
-        };
-        // An exact user mixed-input key is explicit user intent even when the
-        // parser classifies its short form as an abbreviation rather than a
-        // mixed-prefix input.
-        let mixed_user_priority_group = ctx.preserved_mixed_user_phrases;
-
-        // Final explicit priority table. Broad short-abbrev candidates are not
-        // locked here, so density shaping can still limit noisy expansions.
-        if ctx.overlong_pinned_exact_guard_syllables.is_some() {
-            promote_candidate_priority_groups(
-                ranked,
-                &[
-                    ctx.preserved_direct_phrases,
-                    ctx.final_preferred_phrases,
-                    mixed_user_priority_group,
-                    exact_user_priority_group,
-                    ctx.preserved_separator_phrases,
-                    exact_full_pinyin_priority_group,
-                    ctx.preserved_exact_lexicon_phrases,
-                    pinned_priority_group,
-                    ctx.preserved_high_priority_two_char_phrases,
-                    ctx.preserved_chat_priority_two_char_phrases,
-                    ctx.preserved_daily_short_two_char_phrases,
-                    ctx.preserved_daily_short_three_char_phrases,
-                ],
-            );
-        } else if ctx.exact_guard_syllables.is_some() {
-            promote_candidate_priority_groups(
-                ranked,
-                &[
-                    pinned_priority_group,
-                    ctx.preserved_direct_phrases,
-                    ctx.final_preferred_phrases,
-                    mixed_user_priority_group,
-                    exact_user_priority_group,
-                    ctx.preserved_separator_phrases,
-                    exact_full_pinyin_priority_group,
-                    ctx.preserved_exact_lexicon_phrases,
-                    ctx.preserved_high_priority_two_char_phrases,
-                    ctx.preserved_chat_priority_two_char_phrases,
-                    ctx.preserved_daily_short_two_char_phrases,
-                    ctx.preserved_daily_short_three_char_phrases,
-                ],
-            );
-        } else {
-            promote_candidate_priority_groups(
-                ranked,
-                &[
-                    pinned_priority_group,
-                    ctx.preserved_direct_phrases,
-                    ctx.final_preferred_phrases,
-                    mixed_user_priority_group,
-                    ctx.preserved_separator_phrases,
-                    ctx.preserved_exact_lexicon_phrases,
-                    ctx.preserved_high_priority_two_char_phrases,
-                    ctx.preserved_chat_priority_two_char_phrases,
-                    ctx.preserved_daily_short_two_char_phrases,
-                    ctx.preserved_daily_short_three_char_phrases,
-                    exact_user_priority_group,
+                    &pipeline::NamedStage("recall_density", |rows: &mut Vec<RankedCandidate>| {
+                        self.stage_recall_density(rows, &ctx)
+                    }),
+                    &pipeline::NamedStage("exact_guards", |rows: &mut Vec<RankedCandidate>| {
+                        self.stage_exact_guards(rows, &ctx)
+                    }),
+                    &pipeline::NamedStage(
+                        "explicit_priority",
+                        |rows: &mut Vec<RankedCandidate>| self.stage_explicit_priority(rows, &ctx),
+                    ),
+                    &pipeline::NamedStage(
+                        "correction_demotion",
+                        |rows: &mut Vec<RankedCandidate>| {
+                            demote_corrections_after_confident_long_exact(rows)
+                        },
+                    ),
                 ],
             );
         }
-        promote_preserved_exact_short_abbrev_top1(
-            ranked,
-            ctx.raw,
-            ctx.compact_key,
-            &[
-                ctx.final_preferred_phrases,
-                ctx.preserved_high_priority_two_char_phrases,
-                ctx.preserved_chat_priority_two_char_phrases,
-                ctx.preserved_daily_short_two_char_phrases,
-                ctx.preserved_daily_short_three_char_phrases,
-            ],
-            self.phrase_lexicon.as_ref(),
-        );
-        promote_exact_user_hotwords_front(
-            ranked,
-            exact_user_priority_group,
-            exact_len_guard,
-            ctx.user_hotword_front_limit,
-        );
-        if ctx.input_intent == InputIntent::MixedPrefix {
-            promote_mixed_prefix_core_phrase_front(
-                ranked,
-                ctx.final_short_phrase_intent.or(ctx.short_phrase_intent),
-            );
-        }
-        demote_corrections_after_confident_long_exact(ranked);
     }
 
     pub(super) fn promote_exact_full_pinyin_candidates(
@@ -1571,7 +1263,21 @@ pub(super) fn enforce_strict_system_lexicon_frequency_order(
     intent: InputIntent,
     phrase_len: usize,
     lexicon: Option<&AbbrevLexicon>,
+    traditional: bool,
 ) {
+    if intent == InputIntent::MixedPrefix && phrase_len == 0 {
+        for len in 2..=7 {
+            enforce_strict_system_lexicon_frequency_order(
+                ranked,
+                compact_key,
+                intent,
+                len,
+                lexicon,
+                traditional,
+            );
+        }
+        return;
+    }
     if ranked.len() <= 1 || phrase_len < 2 {
         return;
     }
@@ -1581,6 +1287,7 @@ pub(super) fn enforce_strict_system_lexicon_frequency_order(
     let Some(entries) = (match intent {
         InputIntent::FullPinyin => lexicon.lookup_pinyin(compact_key),
         InputIntent::ShortAbbrev => lexicon.lookup(compact_key),
+        InputIntent::MixedPrefix => lexicon.lookup_mixed_hot(compact_key),
         _ => None,
     }) else {
         return;
@@ -1589,10 +1296,16 @@ pub(super) fn enforce_strict_system_lexicon_frequency_order(
     let mut frequency_by_phrase = HashMap::with_capacity(entries.len());
     for entry in entries.iter() {
         if phrase_char_count(&entry.phrase) == phrase_len {
-            frequency_by_phrase.insert(
-                entry.phrase.clone(),
-                lexicon.phrase_frequency(&entry.phrase),
-            );
+            let display_phrase = if traditional {
+                crate::traditional::to_traditional(&entry.phrase)
+            } else {
+                entry.phrase.clone()
+            };
+            let frequency = lexicon.phrase_frequency(&entry.phrase);
+            frequency_by_phrase
+                .entry(display_phrase)
+                .and_modify(|value: &mut u64| *value = (*value).max(frequency))
+                .or_insert(frequency);
         }
     }
     if frequency_by_phrase.len() <= 1 {
@@ -1623,7 +1336,15 @@ pub(super) fn enforce_strict_system_lexicon_frequency_order(
         frequency_by_phrase
             .get(&b.phrase)
             .cmp(&frequency_by_phrase.get(&a.phrase))
-            .then_with(|| a.phrase.cmp(&b.phrase))
+            .then_with(|| {
+                // Equal three-character frequencies preserve the previous order;
+                // a Unicode tie-break is not evidence of everyday frequency.
+                if phrase_len == 3 {
+                    std::cmp::Ordering::Equal
+                } else {
+                    a.phrase.cmp(&b.phrase)
+                }
+            })
     });
     for (index, (_, item)) in eligible_positions.into_iter().zip(eligible) {
         ranked[index] = item;
@@ -2075,25 +1796,64 @@ pub(super) fn promote_exact_user_hotwords_front(
     exact_len_guard: Option<usize>,
     front_limit: usize,
 ) {
+    promote_user_hotwords_front(
+        ranked,
+        phrases,
+        exact_len_guard,
+        SHORT_HOTWORD_MAX_CHARS,
+        front_limit,
+        true,
+    );
+}
+
+pub(super) fn promote_learned_short_abbrev_hotwords_front(
+    ranked: &mut Vec<RankedCandidate>,
+    phrases: &[String],
+    input_len_guard: Option<usize>,
+    front_limit: usize,
+) {
+    promote_user_hotwords_front(
+        ranked,
+        phrases,
+        input_len_guard,
+        MAX_USER_LEARNED_ABBREV_CHARS,
+        front_limit,
+        false,
+    );
+}
+
+fn promote_user_hotwords_front(
+    ranked: &mut Vec<RankedCandidate>,
+    phrases: &[String],
+    input_len_guard: Option<usize>,
+    max_phrase_chars: usize,
+    front_limit: usize,
+    require_user_priority: bool,
+) {
     if ranked.is_empty() || phrases.is_empty() || front_limit == 0 {
         return;
     }
 
-    let user_phrases = ranked
-        .iter()
-        .filter(|item| candidate_has_user_priority(item))
-        .map(|item| item.phrase.clone())
-        .collect::<HashSet<_>>();
+    let user_phrases = require_user_priority.then(|| {
+        ranked
+            .iter()
+            .filter(|item| candidate_has_user_priority(item))
+            .map(|item| item.phrase.clone())
+            .collect::<HashSet<_>>()
+    });
     let mut desired = Vec::new();
     for phrase in phrases {
-        if !user_phrases.contains(phrase) {
+        if user_phrases
+            .as_ref()
+            .is_some_and(|user_phrases| !user_phrases.contains(phrase))
+        {
             continue;
         }
         let chars = phrase_char_count(phrase);
-        if !(2..=SHORT_HOTWORD_MAX_CHARS).contains(&chars) {
+        if !(2..=max_phrase_chars).contains(&chars) {
             continue;
         }
-        if exact_len_guard.is_some_and(|guard| guard != chars) {
+        if input_len_guard.is_some_and(|guard| guard != chars) {
             continue;
         }
         if !desired.iter().any(|seen| seen == phrase) {
@@ -2682,9 +2442,7 @@ enum ThreeCharDensityConfidence {
 #[derive(Clone, Copy, Debug)]
 struct ThreeCharDensityPolicy {
     first_exact_cap: usize,
-    later_exact_cap: usize,
     first_two_char_quota: usize,
-    later_two_char_quota: usize,
 }
 
 const THREE_CHAR_CONFIDENT_SCORE_MARGIN: f64 = 18.0;
@@ -2754,9 +2512,7 @@ fn three_char_density_policy(
     match confidence {
         ThreeCharDensityConfidence::Locked => ThreeCharDensityPolicy {
             first_exact_cap: THREE_CHAR_CONFIDENT_FRONT_MAX,
-            later_exact_cap: THREE_CHAR_CONFIDENT_FRONT_MAX,
             first_two_char_quota: 1,
-            later_two_char_quota: 1,
         },
         ThreeCharDensityConfidence::Confident => {
             let evidence_count = competitive_exact_count.max(
@@ -2769,16 +2525,12 @@ fn three_char_density_policy(
             );
             ThreeCharDensityPolicy {
                 first_exact_cap,
-                later_exact_cap: first_exact_cap.max(6),
                 first_two_char_quota: 1,
-                later_two_char_quota: 1,
             }
         }
         ThreeCharDensityConfidence::Ambiguous => ThreeCharDensityPolicy {
             first_exact_cap: 3,
-            later_exact_cap: 4,
             first_two_char_quota: 3,
-            later_two_char_quota: 2,
         },
     }
 }
@@ -3325,8 +3077,9 @@ pub(super) fn candidate_has_user_priority(item: &RankedCandidate) -> bool {
 
 /// Put common system single characters in the exact order of the dedicated
 /// 8,105-character frequency list while keeping pinned/learned candidates in
-/// front. Missing rows are injected from the independent index so the general
-/// lexicon's per-key Top-K limit cannot remove a valid hot single character.
+/// front. The compiled supported-character dictionary follows as a stable
+/// tail, so the general lexicon's per-key Top-K limit cannot make uncommon
+/// single characters unreachable.
 pub(super) fn promote_common_single_chars_after_user_priority(
     ranked: &mut Vec<RankedCandidate>,
     common_order: &[char],
@@ -3350,7 +3103,14 @@ pub(super) fn promote_common_single_chars_after_user_priority(
         }
     }
 
-    let common_capacity = TSF_MAX_CANDIDATES.saturating_sub(user_priority.len());
+    // Full single-syllable lookup exposes a larger pool than abbreviation
+    // lookup. Keep the frequency order consistent throughout that pool.
+    let candidate_limit = if exact_full_pinyin {
+        LOOKUP_FULL_MAX_CANDIDATES
+    } else {
+        TSF_MAX_CANDIDATES
+    };
+    let common_capacity = candidate_limit.saturating_sub(user_priority.len());
     let top_score = user_priority
         .first()
         .map(|item| item.score - 1.0)
@@ -3367,11 +3127,17 @@ pub(super) fn promote_common_single_chars_after_user_priority(
         ABBREV_CANDIDATE_META
     };
     let mut common = Vec::with_capacity(common_capacity.min(common_order.len()));
-    for (rank, ch) in common_order.iter().take(common_capacity).enumerate() {
+    for ch in common_order {
+        if common.len() >= common_capacity {
+            break;
+        }
         let phrase = ch.to_string();
         if user_phrases.contains(&phrase) {
             continue;
         }
+        // User-priority rows already occupy their own slots; do not count
+        // them again against the ordinary-character budget.
+        let rank = common.len();
         let item = ordinary_by_phrase
             .remove(&phrase)
             .unwrap_or_else(|| RankedCandidate {
@@ -3391,6 +3157,33 @@ pub(super) fn promote_common_single_chars_after_user_priority(
     ranked.extend(user_priority);
     ranked.extend(common);
     ranked.extend(rest);
+}
+
+/// Selection feedback owns the existing order, but it must not reduce the
+/// reachable character set. Append missing supported characters behind the
+/// learned order without reranking any candidate the user has already seen.
+pub(super) fn append_missing_single_chars(
+    ranked: &mut Vec<RankedCandidate>,
+    common_order: &[char],
+) {
+    let mut seen = ranked
+        .iter()
+        .map(|item| item.phrase.clone())
+        .collect::<HashSet<_>>();
+    for &ch in common_order {
+        if ranked.len() >= LOOKUP_FULL_MAX_CANDIDATES {
+            break;
+        }
+        let phrase = ch.to_string();
+        if seen.insert(phrase.clone()) {
+            ranked.push(RankedCandidate {
+                phrase,
+                score: 0.0,
+                meta: CandidateMeta::legacy(PINYIN_CANDIDATE_META)
+                    .with_source_layer(LexiconLayer::Base),
+            });
+        }
+    }
 }
 
 pub(super) fn radical_pinyin_candidates(input: &str) -> Vec<RankedCandidate> {
@@ -3464,12 +3257,16 @@ pub(super) fn load_radical_pinyin_rows() -> Vec<(String, String)> {
 }
 
 pub(super) fn keep_only_single_char_candidates(ranked: &mut Vec<RankedCandidate>) {
-    run_candidate_pipeline(&CandidatePipelineContext, ranked, &[&SingleCharacterStage]);
+    run_candidate_pipeline(
+        &CandidatePipelineContext::default(),
+        ranked,
+        &[&SingleCharacterStage],
+    );
 }
 
 pub(super) fn apply_traditional_output(ranked: &mut Vec<RankedCandidate>) {
     run_candidate_pipeline(
-        &CandidatePipelineContext,
+        &CandidatePipelineContext::default(),
         ranked,
         &[&TraditionalOutputStage],
     );

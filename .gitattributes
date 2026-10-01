@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.tsv text eol=lf
+lexicon/**/*.txt text eol=lf
+data_sources/**/*.txt text eol=lf
+*.sqlite binary
+*.bin binary
+*.png binary
+*.ico binary
+*.ttf binary

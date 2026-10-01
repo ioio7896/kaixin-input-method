@@ -143,13 +143,110 @@ SrfHotkeyScope CSrfTip::EffectiveHotkeyScope() const {
 bool CSrfTip::IsGameHotkeyPassthroughActive() const {
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = options->hasGameProfile && options->gameCompactProfile;
+    appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
   }
   return appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
          m_builtinGameCompatActive || m_manualGameCompatActive;
 }
 
+SrfGameInputMode CSrfTip::EffectiveGameInputMode() const {
+  if (const auto* options = FindAppOptions(m_config, CompatibilityAppName())) {
+    if (options->hasGameInputMode) return options->gameInputMode;
+    if (options->hasAsciiMode && options->asciiMode) return SrfGameInputMode::Passthrough;
+  }
+  return m_config.compatibility.gameInputMode;
+}
+
+bool CSrfTip::ShouldHandleGameChatHotkey() const {
+  return IsGameHotkeyPassthroughActive() &&
+         (EffectiveGameInputMode() == SrfGameInputMode::Manual ||
+          EffectiveGameInputMode() == SrfGameInputMode::AutoText) &&
+         !m_config.privacy.enabled && !m_sensitiveInputActive;
+}
+
+void CSrfTip::SetGameChatActive(bool active) {
+  if (m_gameChatActive == active) return;
+  if (active) {
+    if (m_pComposition) { RequestCancelCompositionOnFocusLoss(); return; }
+    m_gameChatSavedImeOpen = m_imeOpen;
+    m_gameChatOwner = m_compatibilityHwnd;
+    m_gameChatOwnerProcessId = m_compatibilityProcessId;
+    m_gameChatActive = true;
+    m_imeOpen = true;
+  } else {
+    if (EffectiveGameInputMode() == SrfGameInputMode::AutoText) {
+      GUITHREADINFO info = {sizeof(info)};
+      const DWORD threadId = GetWindowThreadProcessId(m_compatibilityHwnd, nullptr);
+      if (threadId && GetGUIThreadInfo(threadId, &info)) m_autoGameChatDismissedFocus = info.hwndFocus;
+    }
+    ++m_focusGeneration;
+    m_gameChatActive = false;
+    m_imeOpen = m_gameChatSavedImeOpen;
+    m_gameChatOwner = nullptr;
+    m_gameChatOwnerProcessId = 0;
+    m_shiftTapActive = false;
+    m_shiftTapUsedWithOtherKey = false;
+    EndInputSession(L"game-chat-exit");
+  }
+  ApplyDefaultPunctuationForImeMode();
+  SyncCompartmentState();
+  SyncStatusModel();
+}
+
+void CSrfTip::RefreshGameChatFocus() {
+  if (m_gameChatActive && (m_gameChatOwner != m_compatibilityHwnd ||
+      m_gameChatOwnerProcessId != m_compatibilityProcessId ||
+      !IsGameHotkeyPassthroughActive() ||
+      EffectiveGameInputMode() == SrfGameInputMode::Passthrough)) {
+    SetGameChatActive(false);
+    m_autoGameChatFocus = nullptr;
+  }
+  GUITHREADINFO info = {sizeof(info)};
+  const DWORD threadId = m_compatibilityHwnd ?
+      GetWindowThreadProcessId(m_compatibilityHwnd, nullptr) : 0;
+  HWND editable = nullptr;
+  if (threadId && GetGUIThreadInfo(threadId, &info) && info.hwndFocus &&
+      GetAncestor(info.hwndFocus, GA_ROOT) == m_compatibilityHwnd) {
+    const auto cls = LowerAscii(WindowClassName(info.hwndFocus));
+    const LONG_PTR style = GetWindowLongPtrW(info.hwndFocus, GWL_STYLE);
+    TF_STATUS status = {};
+    const bool contextWritable = m_pFocusContext &&
+        SUCCEEDED(m_pFocusContext->GetStatus(&status)) &&
+        !(status.dwDynamicFlags & TF_SD_READONLY);
+    if (contextWritable && !(style & (ES_READONLY | ES_PASSWORD)) &&
+        (cls == L"edit" || cls.find(L"richedit") == 0)) editable = info.hwndFocus;
+  }
+  if (info.hwndFocus != m_autoGameChatDismissedFocus) m_autoGameChatDismissedFocus = nullptr;
+  const bool autoMode = IsGameHotkeyPassthroughActive() &&
+      EffectiveGameInputMode() == SrfGameInputMode::AutoText;
+  if (m_autoGameChatFocus && (!autoMode || editable != m_autoGameChatFocus)) {
+    SetGameChatActive(false);
+    m_autoGameChatFocus = nullptr;
+  }
+  if (((autoMode && editable && editable != m_autoGameChatDismissedFocus) ||
+       (IsGameHotkeyPassthroughActive() && EffectiveGameInputMode() == SrfGameInputMode::Chinese)) && !m_gameChatActive &&
+      !m_config.privacy.enabled && !m_sensitiveInputActive) {
+    SetGameChatActive(true);
+    m_autoGameChatFocus = autoMode ? editable : nullptr;
+  }
+}
+
+bool CSrfTip::ObserveGameChatExit(UINT vk, LPARAM lParam) {
+  RefreshKeyHotPathState();
+  if (EffectiveGameInputMode() == SrfGameInputMode::Chinese) return false;
+  if (!SrfGameShouldExitChat(IsGameHotkeyPassthroughActive(), m_gameChatActive,
+      !m_reading.empty(), vk == VK_RETURN || vk == VK_ESCAPE, HasCtrlOrAltDown() ||
+      (GetKeyState(VK_SHIFT) & 0x8000) != 0, (lParam & 0x40000000) != 0)) return false;
+  m_autoGameChatDismissedFocus = m_autoGameChatFocus;
+  m_autoGameChatFocus = nullptr;
+  SetGameChatActive(false);
+  return true;
+}
+
 bool CSrfTip::ShouldHandleImeHotkeys() const {
+  // Games retain only their explicitly configured chat switch.
+  if (IsGameHotkeyPassthroughActive()) return false;
+  if (ShouldForceAsciiForCompatibility()) return false;
   switch (EffectiveHotkeyScope()) {
     case SrfHotkeyScope::Global:
       return true;
@@ -167,13 +264,17 @@ void CSrfTip::UpdatePreservedKeysForHotkeyScope() {
   const SrfHotkeyScope scope = EffectiveHotkeyScope();
   // Text-only keys remain registered so they can become available while a
   // composition is active; OnPreservedKey lets the idle keystroke pass on.
-  const bool suppress = scope == SrfHotkeyScope::PerApp ||
+  const bool suppress = IsGameHotkeyPassthroughActive() || ShouldForceAsciiForCompatibility() ||
+                        scope == SrfHotkeyScope::PerApp ||
                         (scope == SrfHotkeyScope::DisabledInGame &&
                          IsGameHotkeyPassthroughActive());
   if (!m_preservedKeysRegistered && !m_preservedKeysSuppressedForHotkeyScope) return;
-  if (suppress == m_preservedKeysSuppressedForHotkeyScope) return;
+  const bool wantsGameKey = ShouldHandleGameChatHotkey();
+  if (suppress == m_preservedKeysSuppressedForHotkeyScope &&
+      wantsGameKey == m_registeredGameChatPolicy) return;
   if (suppress) {
     UnregisterPreservedKeys();
+    (void)RegisterPreservedKeys();
   } else {
     (void)RegisterPreservedKeys();
   }
@@ -182,7 +283,7 @@ void CSrfTip::UpdatePreservedKeysForHotkeyScope() {
 
 void CSrfTip::ToggleImeOpen() {
   m_imeOpen = !m_imeOpen;
-  if (!m_imeOpen && m_pComposition) RequestCancelCompositionOnFocusLoss();
+  if (!m_imeOpen) EndInputSession(L"english-mode");
   ApplyDefaultPunctuationForImeMode();
   // Scheme-A: always persist global ASCII state.
   SaveGlobalAsciiState(!m_imeOpen);
@@ -333,6 +434,17 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
   // 非 TSF 宿主可能长期不触发兼容刷新；先刷新前台窗口，避免手动 owner
   // 抓到过期窗口而被下一次对账误清。
   RefreshCompatibilityState();
+  if (ShouldHandleGameChatHotkey()) {
+    m_autoGameChatDismissedFocus = m_autoGameChatFocus;
+    m_autoGameChatFocus = nullptr;
+    SetGameChatActive(!m_gameChatActive);
+    UpdatePreservedKeysForHotkeyScope();
+    if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
+      ShowNotification(SrfNotificationKind::AppOptions,
+                       m_gameChatActive ? L"游戏中文聊天开" : L"游戏键盘直通");
+    }
+    return;
+  }
   ReconcileManualModeOwner();
   const bool forcedByAutomaticPolicy = ShouldForceAsciiForCompatibility() &&
                                         !m_config.privacy.enabled &&
@@ -373,18 +485,7 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
   // 手动开启后若策略为强制 ASCII，同步清理组合与候选窗（与临时英文开关一致）。
   // preserved-key 路径没有 EditSession cookie，改走异步 cleanup。
   if (ShouldForceAsciiForCompatibility()) {
-    m_compatibilityAsciiCleanupPending = false;
-    if (m_candidateUi) m_candidateUi->End();
-    if (ec != TF_INVALID_COOKIE) {
-      if (m_pComposition) {
-        CancelCompositionEdit(ec);
-      } else {
-        ReleaseCompositionState();
-      }
-    } else {
-      m_compatibilityAsciiCleanupPending = true;
-      RequestCompatibilityAsciiCleanup();
-    }
+    EndInputSession(L"manual-game-ascii", ec);
   }
   SyncStatusModel();
   RebuildContextModel();
@@ -424,17 +525,7 @@ void CSrfTip::ToggleManualAsciiMode(TfEditCookie ec) {
     notificationText = L"临时英文开";
   }
   if (m_manualAsciiModeActive) {
-    if (m_candidateUi) m_candidateUi->End();
-    if (ec != TF_INVALID_COOKIE) {
-      if (m_pComposition) {
-        CancelCompositionEdit(ec);
-      } else {
-        ReleaseCompositionState();
-      }
-    } else {
-      m_compatibilityAsciiCleanupPending = true;
-      RequestCompatibilityAsciiCleanup();
-    }
+    EndInputSession(L"manual-ascii-enter", ec);
   }
   if (m_manualAsciiModeActive || m_manualCompatibilityBypass) {
     CaptureManualModeOwner();
@@ -819,6 +910,7 @@ bool CSrfTip::ReloadConfigurationIfChanged() {
     return false;
   }
 
+  EndInputSession(L"configuration-reload");
   LoadConfiguration();
   return true;
 }
@@ -933,9 +1025,16 @@ void CSrfTip::RefreshRuntimeConfig() {
 
 void CSrfTip::RefreshKeyHotPathState() {
   const ULONGLONG now = GetTickCount64();
+  const HWND foreground = GetForegroundWindow();
+  if (foreground != m_keyHotPathForeground) {
+    m_keyHotPathForeground = foreground;
+    m_lastKeyHotPathRefreshTick = 0;
+  }
   if (m_lastKeyHotPathRefreshTick != 0 &&
       now - m_lastKeyHotPathRefreshTick < kKeyHotPathRefreshMs) {
     ApplyPendingRuntimeConfigIfSafe();
+    if (IsGameHotkeyPassthroughActive() && EffectiveGameInputMode() == SrfGameInputMode::AutoText)
+      RefreshGameChatFocus();
     SyncStatusModel();
     return;
   }
@@ -965,6 +1064,15 @@ void CSrfTip::RefreshCompatibilityState() {
   HWND root = hwnd ? GetAncestor(hwnd, GA_ROOT) : nullptr;
   if (root && IsWindowVisible(root)) hwnd = root;
 
+  if (m_compatibilityHwnd != hwnd) {
+    m_gameCompatActive = false;
+    m_configuredGameCompatActive = false;
+    m_builtinGameCompatActive = false;
+    m_fullscreenCompatActive = false;
+    m_compatLastRawHitTick = 0;
+    m_fullscreenCompatCandidateHwnd = nullptr;
+    m_fullscreenCompatCandidateSince = 0;
+  }
   m_compatibilityHwnd = hwnd;
   m_compatibilityAppName = ProcessNameForWindow(hwnd, &m_compatibilityProcessId);
   if (m_compatibilityAppName.empty()) m_compatibilityAppName = m_activeAppName;
@@ -1038,16 +1146,16 @@ void CSrfTip::RefreshCompatibilityState() {
     m_runtimeAsciiFallbackAppName.clear();
   }
 
+  RefreshGameChatFocus();
   const SrfFullscreenPolicy policy = EffectiveCompatibilityPolicy();
   const bool enteredAscii =
-      m_hasLastCompatibilityPolicy && m_lastCompatibilityPolicy != SrfFullscreenPolicy::Ascii &&
+      (!m_hasLastCompatibilityPolicy || m_lastCompatibilityPolicy != SrfFullscreenPolicy::Ascii) &&
       policy == SrfFullscreenPolicy::Ascii;
   m_lastCompatibilityPolicy = policy;
   m_hasLastCompatibilityPolicy = true;
   if (enteredAscii) {
     m_compatibilityAsciiCleanupPending = true;
-    ClearFocusBoundCandidateState(L"compatibility-ascii-enter");
-    RequestCompatibilityAsciiCleanup();
+    EndInputSession(L"compatibility-ascii-enter");
   }
   const bool compatibilityHidesUi =
       policy == SrfFullscreenPolicy::Ascii || policy == SrfFullscreenPolicy::HideUi;
@@ -1127,6 +1235,11 @@ SrfFullscreenPolicy CSrfTip::EffectiveCompatibilityPolicy() const {
   if (m_config.privacy.enabled) return SrfFullscreenPolicy::Ascii;
   if (m_manualAsciiModeActive) return SrfFullscreenPolicy::Ascii;
   if (m_sensitiveInputActive) return SrfFullscreenPolicy::Ascii;
+  if (IsGameHotkeyPassthroughActive()) {
+    if (SrfGameShouldPassThrough(true, EffectiveGameInputMode(), m_gameChatActive, false))
+      return SrfFullscreenPolicy::Ascii;
+    return SrfFullscreenPolicy::ShowUi;
+  }
   if (m_manualCompatibilityBypass) return SrfFullscreenPolicy::Off;
   if (m_manualGameCompatActive) return m_config.compatibility.fullscreenPolicy;
   if (m_runtimeAsciiFallbackActive) return SrfFullscreenPolicy::Ascii;
@@ -1178,7 +1291,7 @@ SrfOverlayBackend CSrfTip::EffectiveCandidateOverlayBackend() const {
 
 bool CSrfTip::ShouldUseExternalCandidateOverlay() const {
   return ShouldUseExternalCandidateOverlayBackend(
-      EffectiveCandidateOverlayBackend(), FullscreenCandidateOverlayActive(),
+      EffectiveCandidateOverlayBackend(), CandidateGameOverlayActive(),
       m_uiLessMode, ShouldHideUiForCompatibility());
 }
 
@@ -1193,16 +1306,8 @@ SrfCommitTransport CSrfTip::EffectiveCommitTransport() const {
     appGameProfile = true;
   }
   if (requested == SrfCommitTransport::Auto) {
-    const bool compatibilityActive =
-        appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
-        m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
-    if (compatibilityActive) {
-      // Probe games with the low-latency path first.  A failed injection (or a
-      // target process that disappears immediately after it) trips the
-      // process-local circuit breaker; subsequent commits use ClipboardPaste.
-      return IsUnicodeFallbackApp(CompatibilityAppName()) ? SrfCommitTransport::ClipboardPaste
-                                                   : SrfCommitTransport::UnicodeSendInput;
-    }
+    // An explicit tested per-game transport overrides Auto above. Do not
+    // guess whether a game accepted injected text or replay it via another path.
     return SrfCommitTransport::Tsf;
   }
   return requested;
@@ -1228,6 +1333,8 @@ bool CSrfTip::ShouldForceAsciiForCompatibility() const {
 
 const wchar_t* CSrfTip::EffectiveInputModeSource() const {
   if (m_config.privacy.enabled || m_sensitiveInputActive) return L"privacy";
+  if (m_gameChatActive) return L"game_chat";
+  if (IsGameHotkeyPassthroughActive()) return L"game";
   if (m_manualCompatibilityBypass) return L"recovery";
   if (m_manualAsciiModeActive) return L"manual";
   if (m_runtimeAsciiFallbackActive) return L"fallback";
@@ -1504,11 +1611,12 @@ SrfFocusSnapshot CSrfTip::CaptureFocusSnapshot(ITfContext* context) const {
   }
   snapshot.processName = m_activeAppName;
   snapshot.generation = m_focusGeneration;
+  snapshot.inputSession = m_inputSession.Capture();
   return snapshot;
 }
 
 bool CSrfTip::FocusSnapshotMatches(const SrfFocusSnapshot& snapshot) const {
-  if (snapshot.generation != m_focusGeneration) return false;
+  if (snapshot.generation != m_focusGeneration || !m_inputSession.Matches(snapshot.inputSession)) return false;
 
   const SrfFocusSnapshot current =
       CaptureFocusSnapshot(m_pCompositionContext ? m_pCompositionContext : m_pFocusContext);
@@ -1665,13 +1773,15 @@ void CSrfTip::SaveGlobalAsciiState(bool asciiMode) const {
 }
 
 void CSrfTip::ApplyGlobalAsciiStateFromRegistry() {
+  if (m_gameChatActive) return;
   const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName());
   if (options && options->hasAsciiMode) return;
 
   bool asciiMode = false;
   if (!TryLoadGlobalAsciiState(&asciiMode)) return;
   const bool nextImeOpen = !asciiMode;
-  if (nextImeOpen == m_imeOpen || !m_reading.empty()) return;
+  if (nextImeOpen == m_imeOpen) return;
+  if (!nextImeOpen) EndInputSession(L"global-english-mode");
 
   m_imeOpen = nextImeOpen;
   ApplyDefaultPunctuationForImeMode();

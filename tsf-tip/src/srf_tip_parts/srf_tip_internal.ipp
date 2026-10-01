@@ -1080,8 +1080,17 @@ HRESULT SendCtrlVPaste() {
   inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
   inputs[3] = inputs[0];
   inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-  if (SendInput(static_cast<UINT>(std::size(inputs)), inputs, sizeof(INPUT)) == std::size(inputs)) {
+  const UINT sent = SendInput(static_cast<UINT>(std::size(inputs)), inputs, sizeof(INPUT));
+  if (sent == std::size(inputs)) {
     return S_OK;
+  }
+  if (sent != 0) {
+    INPUT releases[2] = {};
+    UINT count = 0;
+    if (sent == 2) releases[count++] = inputs[2];
+    releases[count++] = inputs[3];
+    (void)SendInput(count, releases, sizeof(INPUT));
+    return HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY);
   }
   const DWORD err = GetLastError();
   return HRESULT_FROM_WIN32(err != 0 ? err : ERROR_GEN_FAILURE);
@@ -1245,12 +1254,15 @@ HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
 }
 
 HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text) {
+  const HWND target = GetForegroundWindow();
   const ULONGLONG pasteStart = GetTickCount64();
   ScopedOleClipboardRestore restore;
   DWORD temporary_sequence = 0;
   HRESULT hr = SetUnicodeClipboardTextForPaste(text, &temporary_sequence);
   if (SUCCEEDED(hr)) restore.MarkTemporaryClipboard(temporary_sequence);
-  if (SUCCEEDED(hr)) hr = SendCtrlVPaste();
+  if (SUCCEEDED(hr)) {
+    hr = GetForegroundWindow() == target ? SendCtrlVPaste() : HRESULT_FROM_WIN32(ERROR_CANCELLED);
+  }
   if (restore.HasData()) {
     const HRESULT restoreHr = restore.RestoreAfterPaste();
     if (FAILED(restoreHr)) {
@@ -1282,6 +1294,14 @@ HRESULT SendUnicodeTextInput(const std::wstring& text) {
   const UINT sent =
       SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
   if (sent == inputs.size()) return S_OK;
+  if (sent != 0) {
+    if ((sent & 1u) != 0) {
+      INPUT release = inputs[sent - 1];
+      release.ki.dwFlags |= KEYEVENTF_KEYUP;
+      (void)SendInput(1, &release, sizeof(INPUT));
+    }
+    return HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY);
+  }
   const DWORD err = GetLastError();
   return HRESULT_FROM_WIN32(err != 0 ? err : ERROR_GEN_FAILURE);
 }
@@ -1806,188 +1826,67 @@ bool WildcardMatchNoCase(const std::wstring& pattern, const std::wstring& value)
 }
 
 bool IsBuiltinStrictFocusProcessName(const std::wstring& appName) {
-  if (appName.empty()) return false;
-  const std::wstring baseName = BaseName(appName);
-  const wchar_t* patterns[] = {
-      L"winword.exe",
-      L"excel.exe",
-      L"powerpnt.exe",
-      L"outlook.exe",
-      L"onenote.exe",
-      L"wps.exe",
-      L"wpp.exe",
-      L"et.exe",
-      L"chrome.exe",
-      L"msedge.exe",
-      L"firefox.exe",
-      L"applicationframehost.exe",
-      L"wechat.exe",
-      L"wechatapp.exe",
-      L"qq.exe",
-      L"dingding.exe",
-      L"feishu.exe",
-      L"lark.exe",
-      L"slack.exe",
-      L"teams.exe",
-      L"code.exe",
-      L"cursor.exe",
-  };
-  for (const wchar_t* pattern : patterns) {
-    if (WildcardMatchNoCase(pattern, baseName)) return true;
-  }
+  const wchar_t* patterns[] = {L"winword.exe", L"excel.exe", L"powerpnt.exe", L"outlook.exe",
+      L"onenote.exe", L"wps.exe", L"wpp.exe", L"et.exe", L"chrome.exe", L"msedge.exe",
+      L"firefox.exe", L"applicationframehost.exe", L"wechat.exe", L"wechatapp.exe", L"qq.exe",
+      L"dingding.exe", L"feishu.exe", L"lark.exe", L"slack.exe", L"teams.exe", L"code.exe", L"cursor.exe"};
+  const auto baseName = BaseName(appName);
+  for (const auto* pattern : patterns) if (WildcardMatchNoCase(pattern, baseName)) return true;
   return false;
 }
 
 std::wstring WindowClassName(HWND hwnd) {
-  wchar_t name[128] = {};
-  if (!hwnd || GetClassNameW(hwnd, name, static_cast<int>(_countof(name))) <= 0) return {};
-  return name;
-}
-
-std::wstring SanitizeDiagnosticValue(std::wstring value, size_t maxUnits = 64) {
-  if (value.empty()) return L"(none)";
-  for (wchar_t& ch : value) {
-    if (ch == L' ' || ch == L',' || ch == L';' || ch == L'=' || ch == L'\r' || ch == L'\n' ||
-        ch == L'\t') {
-      ch = L'_';
-    }
-  }
-  if (value.size() > maxUnits) {
-    value.resize(maxUnits);
-  }
-  return value;
+  wchar_t name[256] = {};
+  return hwnd && GetClassNameW(hwnd, name, 256) ? std::wstring(name) : std::wstring();
 }
 
 bool CurrentProcessAppContainerState(bool* known) {
   if (known) *known = false;
   HANDLE token = nullptr;
   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) return false;
-
-  DWORD value = 0;
-  DWORD bytes = sizeof(value);
-  const BOOL ok =
-      GetTokenInformation(token, TokenIsAppContainer, &value, sizeof(value), &bytes);
+  DWORD value = 0, bytes = 0;
+  const BOOL ok = GetTokenInformation(token, TokenIsAppContainer, &value, sizeof(value), &bytes);
   CloseHandle(token);
-  if (!ok) return false;
-  if (known) *known = true;
-  return value != 0;
+  if (known) *known = ok != FALSE;
+  return ok && value != 0;
 }
 
 std::wstring CurrentProcessIntegrityLabel() {
   HANDLE token = nullptr;
   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) return L"unknown";
-
   DWORD bytes = 0;
-  (void)GetTokenInformation(token, TokenIntegrityLevel, nullptr, 0, &bytes);
-  if (bytes == 0) {
-    CloseHandle(token);
-    return L"unknown";
-  }
-
+  GetTokenInformation(token, TokenIntegrityLevel, nullptr, 0, &bytes);
   std::vector<BYTE> buffer(bytes);
-  if (!GetTokenInformation(token, TokenIntegrityLevel, buffer.data(), bytes, &bytes)) {
-    CloseHandle(token);
-    return L"unknown";
+  std::wstring result = L"unknown";
+  if (bytes && GetTokenInformation(token, TokenIntegrityLevel, buffer.data(), bytes, &bytes)) {
+    auto* label = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(buffer.data());
+    if (IsValidSid(label->Label.Sid)) {
+      const auto count = *GetSidSubAuthorityCount(label->Label.Sid);
+      const auto rid = count ? *GetSidSubAuthority(label->Label.Sid, count-1) : 0;
+      result = rid >= SECURITY_MANDATORY_SYSTEM_RID ? L"system" :
+               rid >= SECURITY_MANDATORY_HIGH_RID ? L"high" :
+               rid >= SECURITY_MANDATORY_MEDIUM_RID ? L"medium" : L"low";
+    }
   }
   CloseHandle(token);
+  return result;
+}
 
-  const auto* label = reinterpret_cast<const TOKEN_MANDATORY_LABEL*>(buffer.data());
-  if (!label || !label->Label.Sid) return L"unknown";
-  const UCHAR subAuthCount = *GetSidSubAuthorityCount(label->Label.Sid);
-  if (subAuthCount == 0) return L"unknown";
-  const DWORD rid = *GetSidSubAuthority(label->Label.Sid, subAuthCount - 1);
-  if (rid < SECURITY_MANDATORY_MEDIUM_RID) return L"low";
-  if (rid < SECURITY_MANDATORY_HIGH_RID) return L"medium";
-  if (rid < SECURITY_MANDATORY_SYSTEM_RID) return L"high";
-  return L"system";
+std::wstring SanitizeDiagnosticValue(std::wstring value) {
+  for (auto& ch : value) if (ch < L' ' || ch == L',' || ch == L'{' || ch == L'}') ch = L' ';
+  return value;
 }
 
 bool IsBuiltinGameWindowClass(const std::wstring& className) {
-  if (className.empty()) return false;
-  const wchar_t* classes[] = {
-      L"UnityWndClass",
-      L"UnrealWindow",
-      L"SDL_app",
-      L"GLFW30",
-      L"Valve001",
-      L"LaunchUnrealUWindowsClient",
-  };
-  for (const wchar_t* cls : classes) {
-    if (_wcsicmp(className.c_str(), cls) == 0) return true;
-  }
+  for (const auto* name : SrfGameRules::BUILTIN_GAME_CLASSES)
+    if (_wcsicmp(className.c_str(), name) == 0) return true;
   return false;
 }
 
 bool IsBuiltinGameProcessName(const std::wstring& appName) {
-  if (appName.empty()) return false;
-  const wchar_t* patterns[] = {
-      L"*-win64-shipping.exe",
-      L"*-win32-shipping.exe",
-      L"cs2.exe",
-      L"dota2.exe",
-      L"valorant-win64-shipping.exe",
-      L"fortniteclient-win64-shipping.exe",
-      L"league of legends.exe",
-      L"eldenring.exe",
-      L"genshinimpact.exe",
-      L"yuanshen.exe",
-      L"starrail.exe",
-      L"zenlesszonezero.exe",
-      L"minecraft*.exe",
-      L"r5apex.exe",
-      L"overwatch.exe",
-      L"wow.exe",
-      L"ffxiv_dx11.exe",
-      L"ffxiv.exe",
-      L"ffxivboot.exe",
-      L"ffxivlauncher.exe",
-      L"destiny2.exe",
-      L"helldivers2.exe",
-      L"cyberpunk2077.exe",
-      L"witcher3.exe",
-      L"blackmythwukong-win64-shipping.exe",
-      L"palworld-win64-shipping.exe",
-      L"hogwartslegacy.exe",
-      L"starfield.exe",
-      L"forzahorizon*.exe",
-      L"forzamotorsport.exe",
-      L"cod.exe",
-      L"cod22-cod.exe",
-      L"modernwarfare*.exe",
-      L"bf*.exe",
-      L"titanfall2.exe",
-      L"pubg*.exe",
-      L"tarkov.exe",
-      L"escapefromtarkov.exe",
-      L"rainbowsix.exe",
-      L"rainbowsix_vulkan.exe",
-      L"deadbydaylight-win64-shipping.exe",
-      L"left4dead2.exe",
-      L"gta5.exe",
-      L"rdr2.exe",
-      L"warframe.x64.exe",
-      L"pathofexile*.exe",
-      L"poe*.exe",
-      L"diablo iv.exe",
-      L"diabloiii64.exe",
-      L"sekiro.exe",
-      L"armoredcore6.exe",
-      L"monsterhunterworld.exe",
-      L"monsterhunterwilds.exe",
-      L"re4.exe",
-      L"re8.exe",
-      L"re2.exe",
-      L"re3.exe",
-      L"tekken8.exe",
-      L"streetfighter6.exe",
-      L"nba2k*.exe",
-      L"fc*.exe",
-      L"eafc*.exe",
-  };
-  const std::wstring baseName = BaseName(appName);
-  for (const wchar_t* pattern : patterns) {
+  const auto baseName = BaseName(appName);
+  for (const auto* pattern : SrfGameRules::BUILTIN_GAME_PROCESSES)
     if (WildcardMatchNoCase(pattern, baseName)) return true;
-  }
   return false;
 }
 
@@ -2374,10 +2273,11 @@ class CEditSessionCancelFocus final : public ITfEditSession {
 class CEditSessionCompatibilityAsciiCleanup final : public ITfEditSession {
   LONG m_cRef = 1;
   CSrfTip* m_tip = nullptr;
+  SrfFocusSnapshot m_focus = {};
 
  public:
   explicit CEditSessionCompatibilityAsciiCleanup(CSrfTip* tip) : m_tip(tip) {
-    if (m_tip) m_tip->AddRef();
+    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
   }
 
   ~CEditSessionCompatibilityAsciiCleanup() {
@@ -2405,6 +2305,7 @@ class CEditSessionCompatibilityAsciiCleanup final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
+    if (!m_tip->FocusSnapshotMatches(m_focus)) return S_OK;
     m_tip->HandleCompatibilityAsciiCleanupEditSession(ec);
     return S_OK;
   }
@@ -2413,6 +2314,7 @@ class CEditSessionCompatibilityAsciiCleanup final : public ITfEditSession {
 class CEditSessionCommitCandidate final : public ITfEditSession {
   LONG m_cRef = 1;
   CSrfTip* m_tip = nullptr;
+  SrfFocusSnapshot m_focus = {};
   ITfContext* m_context = nullptr;
   size_t m_index = 0;
   std::wstring m_reading;
@@ -2434,7 +2336,7 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
         m_meta(std::move(meta)),
         m_skippedCandidates(std::move(skippedCandidates)),
         m_explicitSelection(explicitSelection) {
-    if (m_tip) m_tip->AddRef();
+    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
     if (m_context) m_context->AddRef();
   }
 
@@ -2464,6 +2366,7 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
+    if (!m_tip->FocusSnapshotMatches(m_focus) || !m_tip->EnsureEngineInputReady()) return S_OK;
     return m_tip->CommitCandidateSnapshot(ec, m_context, m_index, m_reading, m_committed, m_meta,
                                           m_skippedCandidates, m_explicitSelection);
   }
@@ -2472,10 +2375,11 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
 class CEditSessionCommitReadingText final : public ITfEditSession {
   LONG m_cRef = 1;
   CSrfTip* m_tip = nullptr;
+  SrfFocusSnapshot m_focus = {};
 
  public:
   explicit CEditSessionCommitReadingText(CSrfTip* tip) : m_tip(tip) {
-    if (m_tip) m_tip->AddRef();
+    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
   }
 
   ~CEditSessionCommitReadingText() {
@@ -2503,6 +2407,7 @@ class CEditSessionCommitReadingText final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_tip) return E_FAIL;
+    if (!m_tip->FocusSnapshotMatches(m_focus) || !m_tip->EnsureEngineInputReady()) return S_OK;
     return m_tip->CommitReadingText(ec, nullptr);
   }
 };

@@ -11,8 +11,10 @@ use std::sync::Arc;
 
 /// Packaged lexicon without a source-path digest.
 const PREBAKED_MAGIC: &[u8; 8] = b"SRFLX002";
-const PREBAKED_SCHEMA_VERSION: u32 = 9;
-const PREBAKED_MIN_SUPPORTED_SCHEMA_VERSION: u32 = 5;
+// Revision 13 preserves per-reading weights and pronunciation classes in
+// prebaked indexes. Older payloads flatten them to phrase-level weights.
+const PREBAKED_SCHEMA_VERSION: u32 = 13;
+const PREBAKED_MIN_SUPPORTED_SCHEMA_VERSION: u32 = 13;
 
 const PREBAKED_MAX_STRING_BYTES: usize = 16_384;
 const PREBAKED_MAX_MAP_KEYS: usize = 12_000_000;
@@ -25,15 +27,15 @@ const DELETION_INDEX_MAX_KEY_LEN: usize = 40;
 const DELETION_INDEX_MAX_KEYS_TO_BUILD: usize = 250_000;
 const MAX_HETERONYM_KEYS_PER_PHRASE: usize = 64;
 const MAX_MIXED_KEYS_PER_PHRASE: usize = 128;
-const MAX_MIXED_KEY_PHRASE_CHARS: usize = 4;
+const MAX_MIXED_KEY_PHRASE_CHARS: usize = 7;
 /// All curated text lexicons use this normalized frequency scale.
 pub(crate) const MAX_LEXICON_FREQ: u64 = 10_000;
 /// Base contains both common words and a sizeable tail. Keep the direct mixed
 /// index focused on entries that can plausibly affect the interactive head;
 /// Core remains an explicit, always-indexed override layer.
 const MIXED_HOT_BASE_MIN_FREQ: u64 = MAX_LEXICON_FREQ * 35 / 100;
-/// Long phrases stay out of the mixed-initial index, but the most common
-/// explicit 5–7 character entries get a small full-pinyin/prefix hot index.
+/// Only curated/frequent explicit 5–7 character entries enter the long-word
+/// full-pinyin and mixed indexes. A seven-syllable code has at most 126 aliases.
 const LONG_PHRASE_HOT_MIN_CHARS: usize = 5;
 const LONG_PHRASE_HOT_MAX_CHARS: usize = 7;
 const LONG_PHRASE_HOT_MIN_FREQ: u64 = MAX_LEXICON_FREQ * 60 / 100;
@@ -103,6 +105,7 @@ pub struct ThuoclEntry {
     pub phrase: String,
     pub freq: u64,
     pub code: Option<String>,
+    pub pronunciation_kind: PronunciationKind,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -209,10 +212,65 @@ impl LexiconLayer {
     }
 }
 
+#[repr(u8)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum PronunciationKind {
+    #[default]
+    Unspecified,
+    Primary,
+    Alternate,
+    Colloquial,
+    Historical,
+}
+
+impl PronunciationKind {
+    fn from_label(value: &str) -> Self {
+        match value {
+            "primary" => Self::Primary,
+            "alternate" => Self::Alternate,
+            "colloquial" => Self::Colloquial,
+            "historical" => Self::Historical,
+            _ => Self::Unspecified,
+        }
+    }
+
+    fn to_u8(self) -> u8 {
+        self as u8
+    }
+
+    fn from_u8(value: u8) -> io::Result<Self> {
+        match value {
+            0 => Ok(Self::Unspecified),
+            1 => Ok(Self::Primary),
+            2 => Ok(Self::Alternate),
+            3 => Ok(Self::Colloquial),
+            4 => Ok(Self::Historical),
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "invalid pronunciation class",
+            )),
+        }
+    }
+
+    pub(crate) fn candidate_layer(self, phrase_layer: LexiconLayer) -> LexiconLayer {
+        // This is a ranking tier for a specific reading, not a change to its
+        // source file or the user's optional-dictionary preferences.
+        match self {
+            Self::Unspecified => phrase_layer,
+            Self::Primary => LexiconLayer::Core,
+            Self::Alternate => LexiconLayer::Base,
+            Self::Colloquial => LexiconLayer::Ext,
+            Self::Historical => LexiconLayer::Large,
+        }
+    }
+}
+
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct CompactEntry {
-    phrase_id: u32,
     freq: u64,
+    phrase_id: u32,
+    pronunciation_kind: PronunciationKind,
 }
 
 pub fn abbrev_for_phrase(phrase: &str) -> Option<String> {
@@ -321,16 +379,16 @@ fn mixed_pinyin_keys_from_options(syllable_options: Vec<Vec<String>>) -> Vec<Str
     }
 
     let mut full_keys: Vec<Vec<String>> = vec![Vec::new()];
-    'outer: for options in syllable_options {
+    for options in syllable_options {
         let mut next = Vec::new();
-        for prefix in &full_keys {
+        'prefixes: for prefix in &full_keys {
             for option in &options {
                 let mut key = prefix.clone();
                 key.push(option.clone());
                 if !next.iter().any(|seen| seen == &key) {
                     next.push(key);
                     if next.len() >= MAX_HETERONYM_KEYS_PER_PHRASE {
-                        break 'outer;
+                        break 'prefixes;
                     }
                 }
             }
@@ -445,6 +503,7 @@ pub fn parse_line(line: &str) -> Option<ThuoclEntry> {
         phrase: phrase.to_string(),
         freq,
         code: None,
+        pronunciation_kind: PronunciationKind::Unspecified,
     })
 }
 
@@ -513,6 +572,10 @@ pub fn parse_lexicon_entry_line(line: &str) -> Option<ThuoclEntry> {
         phrase: phrase.to_string(),
         freq,
         code,
+        pronunciation_kind: freq_index
+            .and_then(|index| fields.get(index + 1))
+            .map(|label| PronunciationKind::from_label(label))
+            .unwrap_or_default(),
     })
 }
 
@@ -549,13 +612,29 @@ fn phrase_contains_cjk(phrase: &str) -> bool {
     })
 }
 
-fn merge_compact_entry(vec: &mut Vec<CompactEntry>, phrase_id: u32, freq: u64) {
+fn merge_compact_entry_with_kind(
+    vec: &mut Vec<CompactEntry>,
+    phrase_id: u32,
+    freq: u64,
+    pronunciation_kind: PronunciationKind,
+) {
     if let Some(i) = vec.iter().position(|e| e.phrase_id == phrase_id) {
-        if freq > vec[i].freq {
+        let existing_kind = vec[i].pronunciation_kind;
+        // A declared reading class owns this exact phrase/key pair even when
+        // a later ordinary dictionary supplies a larger phrase frequency.
+        if (pronunciation_kind != PronunciationKind::Unspecified
+            && existing_kind == PronunciationKind::Unspecified)
+            || (pronunciation_kind == existing_kind && freq > vec[i].freq)
+        {
             vec[i].freq = freq;
+            vec[i].pronunciation_kind = pronunciation_kind;
         }
     } else {
-        vec.push(CompactEntry { phrase_id, freq });
+        vec.push(CompactEntry {
+            phrase_id,
+            freq,
+            pronunciation_kind,
+        });
     }
     vec.sort_by_key(|entry| Reverse(entry.freq));
 }
@@ -777,7 +856,9 @@ fn merge_prefix_top(top: &mut Vec<CompactEntry>, entries: &[CompactEntry]) {
             .iter_mut()
             .find(|seen| seen.phrase_id == entry.phrase_id)
         {
-            existing.freq = existing.freq.max(entry.freq);
+            if entry.freq > existing.freq {
+                *existing = *entry;
+            }
         } else {
             top.push(*entry);
         }
@@ -936,6 +1017,34 @@ impl AbbrevLexicon {
         self.pinyin_inner.len()
     }
 
+    /// Build an indexed disk fallback alongside the full prebaked lexicon.
+    pub fn save_cold_index(&self, path: &Path) -> rusqlite::Result<()> {
+        let mut db = rusqlite::Connection::open(path)?;
+        let tx = db.transaction()?;
+        tx.execute_batch("DROP TABLE IF EXISTS entries; CREATE TABLE entries (reading TEXT NOT NULL, ordinal INTEGER NOT NULL, phrase TEXT NOT NULL, freq INTEGER NOT NULL, PRIMARY KEY(reading, ordinal)) WITHOUT ROWID; PRAGMA user_version=1;")?;
+        {
+            let mut insert = tx.prepare("INSERT INTO entries VALUES (?1, ?2, ?3, ?4)")?;
+            for key in self
+                .pinyin_inner
+                .keys()
+                .chain(self.long_pinyin_hot_inner.keys())
+                .collect::<std::collections::BTreeSet<_>>()
+            {
+                if let Some(entries) = self.lookup_pinyin(key) {
+                    for (ordinal, entry) in entries.iter().take(16).enumerate() {
+                        insert.execute(rusqlite::params![
+                            key,
+                            ordinal as i64,
+                            entry.phrase,
+                            entry.freq.min(i64::MAX as u64) as i64
+                        ])?;
+                    }
+                }
+            }
+        }
+        tx.commit()
+    }
+
     pub fn is_empty(&self) -> bool {
         self.inner.is_empty() && self.pinyin_inner.is_empty()
     }
@@ -996,7 +1105,7 @@ impl AbbrevLexicon {
             .unwrap_or_else(|| abbrev_keys_for_phrase(&entry.phrase));
         for key in abbrev_keys {
             let v = self.inner.entry(key).or_default();
-            merge_compact_entry(v, phrase_id, entry.freq);
+            merge_compact_entry_with_kind(v, phrase_id, entry.freq, entry.pronunciation_kind);
             trim_compact_entries(v, PREBAKED_ENTRIES_PER_KEY_TOP_K);
             inserted = true;
         }
@@ -1006,7 +1115,7 @@ impl AbbrevLexicon {
             .unwrap_or_else(|| pinyin_keys_for_phrase(&entry.phrase));
         for key in &pinyin_keys {
             let v = self.pinyin_inner.entry(key.clone()).or_default();
-            merge_compact_entry(v, phrase_id, entry.freq);
+            merge_compact_entry_with_kind(v, phrase_id, entry.freq, entry.pronunciation_kind);
             trim_compact_entries(v, PREBAKED_ENTRIES_PER_KEY_TOP_K);
             inserted = true;
         }
@@ -1018,11 +1127,16 @@ impl AbbrevLexicon {
         ) {
             for key in pinyin_keys {
                 let v = self.long_pinyin_hot_inner.entry(key).or_default();
-                merge_compact_entry(v, phrase_id, entry.freq);
+                merge_compact_entry_with_kind(v, phrase_id, entry.freq, entry.pronunciation_kind);
                 trim_compact_entries(v, LONG_PHRASE_HOT_TOP_K);
             }
         }
-        if should_index_mixed_hot(source_layer, entry.freq) {
+        let mixed_hot_eligible = if lexicon_phrase_char_count(&entry.phrase) <= 4 {
+            should_index_mixed_hot(source_layer, entry.freq)
+        } else {
+            should_index_long_phrase_hot(source_layer, entry.freq, &entry.phrase, explicit_code)
+        };
+        if mixed_hot_eligible {
             if let Some(code) = explicit_code {
                 let phrase_char_count = lexicon_phrase_char_count(&entry.phrase);
                 let syllable_count = explicit_pinyin_syllables(code).len();
@@ -1031,7 +1145,12 @@ impl AbbrevLexicon {
                 {
                     for key in mixed_pinyin_keys_for_code(code) {
                         let v = self.mixed_hot_inner.entry(key).or_default();
-                        merge_compact_entry(v, phrase_id, entry.freq);
+                        merge_compact_entry_with_kind(
+                            v,
+                            phrase_id,
+                            entry.freq,
+                            entry.pronunciation_kind,
+                        );
                         trim_compact_entries(v, HOT_EXACT_TOP_K);
                     }
                 }
@@ -1068,8 +1187,8 @@ impl AbbrevLexicon {
     }
 
     /// Looks up an exact partial-full/partial-initial key for a curated hot
-    /// system phrase. The index is built only from explicit 2–4-syllable codes
-    /// in Core and sufficiently frequent Base entries.
+    /// system phrase. Explicit 2–4-syllable Core/frequent Base codes and curated
+    /// 5–7-syllable long hotwords are indexed without runtime beam expansion.
     pub(crate) fn lookup_mixed_hot(&self, mixed_lower: &str) -> Option<Arc<[ThuoclEntry]>> {
         {
             let runtime = self.runtime.borrow();
@@ -1330,6 +1449,7 @@ impl AbbrevLexicon {
                     phrase: phrase.to_string(),
                     freq: *freq,
                     code: None,
+                    pronunciation_kind: PronunciationKind::Unspecified,
                 },
                 source_layer,
             );
@@ -1342,7 +1462,12 @@ impl AbbrevLexicon {
                 else {
                     continue;
                 };
-                merge_compact_entry(target, *phrase_id, entry.freq);
+                merge_compact_entry_with_kind(
+                    target,
+                    *phrase_id,
+                    entry.freq,
+                    entry.pronunciation_kind,
+                );
             }
             trim_compact_entries(target, HOT_EXACT_TOP_K);
         }
@@ -1353,7 +1478,12 @@ impl AbbrevLexicon {
                 else {
                     continue;
                 };
-                merge_compact_entry(target, *phrase_id, entry.freq);
+                merge_compact_entry_with_kind(
+                    target,
+                    *phrase_id,
+                    entry.freq,
+                    entry.pronunciation_kind,
+                );
             }
             trim_compact_entries(target, LONG_PHRASE_HOT_TOP_K);
         }
@@ -1472,6 +1602,7 @@ impl AbbrevLexicon {
                         phrase: phrase.to_string(),
                         freq: entry.freq,
                         code: None,
+                        pronunciation_kind: entry.pronunciation_kind,
                     })
                 })
                 .collect::<Vec<_>>(),
@@ -1561,12 +1692,22 @@ impl AbbrevLexicon {
         };
         if let Some(entries) = regular {
             for entry in entries.iter().take(regular_limit) {
-                merge_compact_entry(&mut merged, entry.phrase_id, entry.freq);
+                merge_compact_entry_with_kind(
+                    &mut merged,
+                    entry.phrase_id,
+                    entry.freq,
+                    entry.pronunciation_kind,
+                );
             }
         }
         if let Some(entries) = long_hot {
             for entry in entries.iter().take(LONG_PHRASE_HOT_TOP_K.min(limit)) {
-                merge_compact_entry(&mut merged, entry.phrase_id, entry.freq);
+                merge_compact_entry_with_kind(
+                    &mut merged,
+                    entry.phrase_id,
+                    entry.freq,
+                    entry.pronunciation_kind,
+                );
             }
         }
         trim_compact_entries(&mut merged, limit);
@@ -1744,6 +1885,7 @@ fn approximate_lookup_scored_until(
                 phrase: phrase.to_string(),
                 freq: entry.freq,
                 code: None,
+                pronunciation_kind: entry.pronunciation_kind,
             },
             dist,
         ));
@@ -1804,7 +1946,11 @@ fn should_include_file(path: &Path) -> bool {
         return false;
     }
     let normalized = file_name.to_ascii_lowercase();
-    !normalized.starts_with("readme") && !normalized.ends_with("_纯名单.txt")
+    // Ignore copies left in old installation directories after the source
+    // moved to data_sources; the tail adds no unique runtime phrases.
+    !normalized.starts_with("readme")
+        && !normalized.ends_with("_纯名单.txt")
+        && normalized != "life_common_3char_tail_15000.txt"
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -1899,6 +2045,7 @@ pub fn discover_lexicon_inventory(dir: &Path) -> io::Result<LexiconInventory> {
         .into_iter()
         .filter(|path| path.is_file())
         .collect::<Vec<_>>();
+    prebaked.extend(prebaked_lexicon_candidate_paths_for(dir, "lexicon.pack").into_iter().filter(|path| path.is_file()));
     prebaked.sort();
     prebaked.dedup();
     for path in prebaked {
@@ -2044,7 +2191,7 @@ fn write_prefix_map<W: Write>(
         let entries = &map[key];
         write_count(writer, entries.len())?;
         for entry in entries {
-            write_u32(writer, entry.phrase_id)?;
+            write_compact_entry(writer, entry)?;
         }
     }
     Ok(())
@@ -2074,23 +2221,7 @@ fn read_prefix_map<R: Read>(
         }
         let mut entries = Vec::with_capacity(entry_count);
         for _ in 0..entry_count {
-            let id = read_u32(reader)? as usize;
-            let Some(&freq) = phrase_freq.get(id) else {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "prebaked prefix phrase id out of range",
-                ));
-            };
-            if phrases.get(id).is_none() {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "prebaked prefix phrase missing",
-                ));
-            }
-            entries.push(CompactEntry {
-                phrase_id: id as u32,
-                freq,
-            });
+            entries.push(read_compact_entry(reader, phrases, phrase_freq)?);
         }
         map.insert(key, entries);
     }
@@ -2098,15 +2229,14 @@ fn read_prefix_map<R: Read>(
 }
 
 fn write_compact_prebaked<W: Write>(writer: &mut W, lexicon: &AbbrevLexicon) -> io::Result<()> {
-    write_compact_prebaked_v7_fields(writer, lexicon)?;
+    write_compact_prebaked_base_fields(writer, lexicon)?;
     write_compact_map(writer, &lexicon.mixed_hot_inner)?;
     write_compact_map(writer, &lexicon.long_pinyin_hot_inner)?;
     Ok(())
 }
 
-/// Fields shared with schema v7. Kept separate so compatibility tests can
-/// prove that current readers still accept already-packaged v7 dictionaries.
-fn write_compact_prebaked_v7_fields<W: Write>(
+/// Phrase table and common indexes shared by both prebaked build profiles.
+fn write_compact_prebaked_base_fields<W: Write>(
     writer: &mut W,
     lexicon: &AbbrevLexicon,
 ) -> io::Result<()> {
@@ -2152,7 +2282,7 @@ fn write_compact_map<W: Write>(
         let kept = entries.len().min(PREBAKED_ENTRIES_PER_KEY_TOP_K);
         write_count(writer, kept)?;
         for entry in entries.iter().take(kept) {
-            write_u32(writer, entry.phrase_id)?;
+            write_compact_entry(writer, entry)?;
         }
     }
     Ok(())
@@ -2272,29 +2402,55 @@ fn read_compact_map<R: Read>(
         let keep_count = entry_count.min(PREBAKED_ENTRIES_PER_KEY_TOP_K);
         let mut entries = Vec::with_capacity(keep_count);
         for idx in 0..entry_count {
-            let id = read_u32(reader)? as usize;
-            let Some(_phrase) = phrases.get(id) else {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "prebaked compact phrase id out of range",
-                ));
-            };
-            let Some(&freq) = phrase_freq.get(id) else {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "prebaked compact phrase freq out of range",
-                ));
-            };
+            let entry = read_compact_entry(reader, phrases, phrase_freq)?;
             if idx < keep_count {
-                entries.push(CompactEntry {
-                    phrase_id: id as u32,
-                    freq,
-                });
+                entries.push(entry);
             }
         }
         map.insert(key, entries);
     }
     Ok(map)
+}
+
+fn write_compact_entry<W: Write>(writer: &mut W, entry: &CompactEntry) -> io::Result<()> {
+    write_u32(writer, entry.phrase_id)?;
+    write_u8(writer, entry.pronunciation_kind.to_u8())?;
+    if entry.pronunciation_kind != PronunciationKind::Unspecified {
+        write_u64(writer, entry.freq)?;
+    }
+    Ok(())
+}
+
+fn read_compact_entry<R: Read>(
+    reader: &mut R,
+    phrases: &[Arc<str>],
+    phrase_freq: &[u64],
+) -> io::Result<CompactEntry> {
+    let phrase_id = read_u32(reader)?;
+    if phrases.get(phrase_id as usize).is_none() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "prebaked phrase id out of range",
+        ));
+    }
+    let pronunciation_kind = PronunciationKind::from_u8(read_u8(reader)?)?;
+    // Preserve the existing phrase-level behavior for ordinary entries while
+    // retaining distinct scores for explicitly classified readings.
+    let freq = if pronunciation_kind == PronunciationKind::Unspecified {
+        *phrase_freq.get(phrase_id as usize).ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "prebaked phrase freq out of range",
+            )
+        })?
+    } else {
+        read_u64(reader)?
+    };
+    Ok(CompactEntry {
+        phrase_id,
+        freq,
+        pronunciation_kind,
+    })
 }
 
 /// Write a merged `lexicon.bin` (SRFLX002) for fast runtime loading.
@@ -2370,7 +2526,27 @@ pub fn try_load_hot_prebaked_near(dir: &Path) -> io::Result<Option<AbbrevLexicon
     try_load_prebaked_named_near(dir, "hot_lexicon.bin")
 }
 
+fn load_packed_profile(path: &Path, hot: bool) -> io::Result<AbbrevLexicon> {
+    let data = fs::read(path)?;
+    let invalid = || io::Error::new(io::ErrorKind::InvalidData, "invalid lexicon.pack");
+    if data.len() < 40 || &data[..8] != b"KXLP0001" { return Err(invalid()); }
+    let number = |offset| u64::from_le_bytes(data[offset..offset+8].try_into().unwrap());
+    let a = number(8); let b = number(16);
+    let raw_len = number(if hot {32} else {24});
+    if a.checked_add(b).and_then(|v| v.checked_add(40)) != Some(data.len() as u64)
+        || raw_len > 512*1024*1024 { return Err(invalid()); }
+    let payload = if hot { &data[40+a as usize..] } else { &data[40..40+a as usize] };
+    let mut reader = flate2::read::ZlibDecoder::new(payload).take(raw_len + 1);
+    let lex = read_prebaked_lexicon(&mut reader)?;
+    let mut tail = [0u8;1];
+    if reader.read(&mut tail)? != 0 || reader.limit() != 1 { return Err(invalid()); }
+    Ok(lex)
+}
+
 fn try_load_prebaked_named_near(dir: &Path, file_name: &str) -> io::Result<Option<AbbrevLexicon>> {
+    for pack in prebaked_lexicon_candidate_paths_for(dir, "lexicon.pack") {
+        if pack.is_file() { return load_packed_profile(&pack, file_name == "hot_lexicon.bin").map(Some); }
+    }
     for path in prebaked_lexicon_candidate_paths_for(dir, file_name) {
         if !path.is_file() {
             continue;
@@ -2659,6 +2835,14 @@ fn index_entry(
     entry.freq = calibrator
         .map(|calibrator| calibrator.normalize(&entry.phrase, entry.freq.max(1)))
         .unwrap_or_else(|| entry.freq.max(1));
+    // Reading categories describe how strongly a spelling should compete,
+    // while the entry remains available for recall on its explicit key.
+    entry.freq = match entry.pronunciation_kind {
+        PronunciationKind::Alternate => entry.freq.min(6_000),
+        PronunciationKind::Colloquial => entry.freq.min(3_000),
+        PronunciationKind::Historical => entry.freq.min(1_000),
+        _ => entry.freq,
+    };
     if lex.insert_parsed_with_layer(entry, LexiconLayer::from_path(path)) {
         report.entries_indexed += 1;
     } else {
@@ -2845,11 +3029,40 @@ mod tests {
             // A shifted neighbouring row: four syllables for a three-char word.
             code: Some("jia xiao zuo pian".to_string()),
             freq: 5_000,
+            pronunciation_kind: PronunciationKind::Unspecified,
         });
 
         assert!(lexicon
             .lookup_pinyin("buluofen")
             .is_some_and(|entries| entries.iter().any(|entry| entry.phrase == "布洛芬")));
         assert!(lexicon.lookup_pinyin("jiaxiaozuopian").is_none());
+    }
+}
+
+#[cfg(test)] mod packed_profile_tests {
+    use super::*;
+    #[test] fn packed_profiles_retain_distinct_weights_and_reject_corruption() {
+        let dir=std::env::temp_dir().join(format!("kaixin-pack-{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("test.txt"), "测试\t100\n").unwrap();
+        let (mut lex,_) = load_dir_txt(&dir).unwrap();
+        save_prebaked_lexicon(&dir.join("standard.bin"), &lex).unwrap();
+        lex.phrase_freq.fill(999);
+        save_prebaked_lexicon(&dir.join("hot.bin"), &lex).unwrap();
+        let mut profiles=Vec::new(); let mut raw_lengths=Vec::new();
+        for name in ["standard.bin","hot.bin"] {
+            let bytes=fs::read(dir.join(name)).unwrap();raw_lengths.push(bytes.len() as u64);
+            let mut encoder=flate2::write::ZlibEncoder::new(Vec::new(),flate2::Compression::best());
+            encoder.write_all(&bytes).unwrap();profiles.push(encoder.finish().unwrap());
+        }
+        let mut data=b"KXLP0001".to_vec();
+        for n in [profiles[0].len() as u64,profiles[1].len() as u64,raw_lengths[0],raw_lengths[1]] { data.extend_from_slice(&n.to_le_bytes()); }
+        for bytes in profiles { data.extend(bytes); }
+        let path=dir.join("lexicon.pack");fs::write(&path,&data).unwrap();
+        assert_ne!(load_packed_profile(&path,false).unwrap().phrase_frequency("测试"),load_packed_profile(&path,true).unwrap().phrase_frequency("测试"));
+        data[8]=255;fs::write(&path,&data).unwrap();assert!(load_packed_profile(&path,false).is_err());
+        fs::remove_file(&path).unwrap();
+        for name in ["test.txt","standard.bin","hot.bin"] { fs::remove_file(dir.join(name)).unwrap(); }
+        fs::remove_dir(dir).unwrap();
     }
 }

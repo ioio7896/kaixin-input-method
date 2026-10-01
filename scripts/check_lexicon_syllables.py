@@ -4,11 +4,17 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import time
 from pathlib import Path
 
 
 PINYIN_TOKEN_RE = re.compile(r"[A-Za-z]+")
 SKIP_LEXICON_GROUPS = {"en"}
+MIXED_ENTITY_RE = re.compile(r"[A-Za-z0-9]")
+CHINESE_CHAR_RE = re.compile(
+    r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff"
+    r"\U00020000-\U0002a6df\U0002a700-\U0002ebef]"
+)
 
 
 def resolve_repo_root() -> Path:
@@ -42,76 +48,61 @@ def iter_lexicon_lines(path: Path):
 
 def _chinese_char_count(phrase: str) -> int:
     """Count Chinese characters in a phrase (excluding whitespace and ASCII)."""
-    count = 0
-    for ch in phrase:
-        if ch.isspace():
-            continue
-        if "一" <= ch <= "鿿" or "㐀" <= ch <= "䶿":
-            count += 1
-        # Also count rare/historical CJK
-        elif (
-            "豈" <= ch <= "﫿"
-            or "\U00020000" <= ch <= "\U0002a6df"
-            or "\U0002a700" <= ch <= "\U0002ebef"
-        ):
-            count += 1
-    return count
+    return len(CHINESE_CHAR_RE.findall(phrase))
 
 
 def _is_mixed_entity(phrase: str) -> bool:
     """True when phrase contains ASCII letters/digits (e.g. ChatGPT, B站)."""
-    return any(ch.isascii() and (ch.isalpha() or ch.isdigit()) for ch in phrase)
+    return MIXED_ENTITY_RE.search(phrase) is not None
+
+
+def scan_lexicons(lexicon_dir: Path, syllables: set[str] | None, *,
+                  check_counts: bool = False, progress: bool = False):
+    """Read/tokenize each row once for both checks; retain existing diagnostics."""
+    unknown: dict[str, list[tuple[Path, int, str, str]]] = {}
+    mismatches: list[tuple[Path, int, str, str, int, int]] = []
+    files = list(iter_chinese_lexicon_files(lexicon_dir))
+    started = time.monotonic()
+    for index, path in enumerate(files, 1):
+        relative = path.relative_to(lexicon_dir).as_posix()
+        if progress:
+            print(f"  Lexicon [{index}/{len(files)}]: {relative}", flush=True)
+        last_progress = time.monotonic()
+        for line_no, line in iter_lexicon_lines(path):
+            if progress and line_no % 10000 == 0:
+                now = time.monotonic()
+                if now - last_progress >= 2:
+                    print(f"    {relative}: {line_no:,} lines scanned", flush=True)
+                    last_progress = now
+            fields = [field.strip() for field in line.split("\t") if field.strip()]
+            if len(fields) < 2:
+                continue
+            phrase, code = fields[0], fields[1]
+            if _is_mixed_entity(phrase):
+                continue
+            tokens = PINYIN_TOKEN_RE.findall(code.lower())
+            if not tokens:
+                continue
+            if syllables is not None:
+                for token in tokens:
+                    if token not in syllables:
+                        unknown.setdefault(token, []).append((path, line_no, phrase, code))
+            if check_counts:
+                char_count = _chinese_char_count(phrase)
+                if char_count and len(tokens) != char_count:
+                    mismatches.append((path, line_no, phrase, code, char_count, len(tokens)))
+    if progress:
+        print(f"  Lexicon scan complete: {len(files)} file(s), "
+              f"{time.monotonic() - started:.1f}s", flush=True)
+    return unknown, mismatches, len(files)
 
 
 def scan_unknown_syllables(lexicon_dir: Path, syllables: set[str]) -> dict[str, list[tuple[Path, int, str, str]]]:
-    unknown: dict[str, list[tuple[Path, int, str, str]]] = {}
-    for path in iter_chinese_lexicon_files(lexicon_dir):
-        for line_no, line in iter_lexicon_lines(path):
-            fields = [field.strip() for field in line.split("\t") if field.strip()]
-            if len(fields) < 2:
-                continue
-            phrase, code = fields[0], fields[1]
-            if _is_mixed_entity(phrase):
-                continue
-            if not any(ch.isascii() and ch.isalpha() for ch in code):
-                continue
-            for match in PINYIN_TOKEN_RE.finditer(code.lower()):
-                token = match.group(0)
-                if token and token not in syllables:
-                    unknown.setdefault(token, []).append((path, line_no, phrase, code))
-    return unknown
+    return scan_lexicons(lexicon_dir, syllables)[0]
 
 
-def scan_syllable_count_mismatches(
-    lexicon_dir: Path,
-) -> list[tuple[Path, int, str, str, int, int]]:
-    """Find entries where pinyin syllable count != Chinese character count.
-
-    Returns list of (path, line_no, phrase, code, char_count, syllable_count).
-    """
-    mismatches: list[tuple[Path, int, str, str, int, int]] = []
-    for path in iter_chinese_lexicon_files(lexicon_dir):
-        for line_no, line in iter_lexicon_lines(path):
-            fields = [field.strip() for field in line.split("\t") if field.strip()]
-            if len(fields) < 2:
-                continue
-            phrase, code = fields[0], fields[1]
-            if _is_mixed_entity(phrase):
-                continue
-            if not any(ch.isascii() and ch.isalpha() for ch in code):
-                continue
-            char_count = _chinese_char_count(phrase)
-            if char_count == 0:
-                continue
-            syllable_tokens = PINYIN_TOKEN_RE.findall(code.lower())
-            syllable_count = len(syllable_tokens)
-            # Allow erhua: 儿 may add a syllable (e.g., 花儿 -> hua er)
-            # Allow 多音字 entries where one char maps to two readings
-            if syllable_count != char_count:
-                mismatches.append(
-                    (path, line_no, phrase, code, char_count, syllable_count)
-                )
-    return mismatches
+def scan_syllable_count_mismatches(lexicon_dir: Path) -> list[tuple[Path, int, str, str, int, int]]:
+    return scan_lexicons(lexicon_dir, None, check_counts=True)[1]
 
 
 def parse_args() -> argparse.Namespace:
@@ -119,6 +110,7 @@ def parse_args() -> argparse.Namespace:
         description="Check that native Chinese lexicon pinyin codes use known syllables.",
     )
     parser.add_argument("--root", type=Path, default=None, help="repository root")
+    parser.add_argument("--progress", action="store_true", help="show file and scan progress")
     parser.add_argument("--max-samples", type=int, default=12, help="samples to print")
     parser.add_argument(
         "--check-syllable-count",
@@ -153,7 +145,11 @@ def main() -> int:
 
     exit_code = 0
 
-    unknown = scan_unknown_syllables(lexicon_dir, load_syllables(syllables_path))
+    check_counts = args.check_syllable_count or args.strict_syllable_count
+    unknown, mismatches, checked = scan_lexicons(
+        lexicon_dir, load_syllables(syllables_path),
+        check_counts=check_counts, progress=args.progress,
+    )
     if unknown:
         total_refs = sum(len(items) for items in unknown.values())
         print(
@@ -168,11 +164,9 @@ def main() -> int:
             print(f"  - {token}: {len(hits)} refs; first {rel}:{line_no} {phrase}\t{code}")
         exit_code = 1
     else:
-        checked = sum(1 for _ in iter_chinese_lexicon_files(lexicon_dir))
         print(f"Lexicon syllable check passed: {checked} Chinese text file(s) scanned")
 
-    if args.check_syllable_count:
-        mismatches = scan_syllable_count_mismatches(lexicon_dir)
+    if check_counts:
         if mismatches:
             print(
                 f"Lexicon syllable count check: {len(mismatches)} mismatch(es) found"
@@ -198,4 +192,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except KeyboardInterrupt:
+        print("\nLexicon check cancelled.", file=sys.stderr, flush=True)
+        raise SystemExit(130)

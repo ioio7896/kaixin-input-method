@@ -362,6 +362,7 @@ fn rc_string(value: &str) -> String {
 fn compile_windows_app_resource(out_dir: &Path, manifest_dir: &Path, app_version: &str) {
     #[cfg(windows)]
     {
+        if env::var("CARGO_PKG_NAME").ok().as_deref() == Some("kaixin-core") { return; }
         let repo_root = manifest_dir
             .parent()
             .map(Path::to_path_buf)
@@ -446,7 +447,11 @@ END
 fn main() {
     let manifest = env::var("CARGO_MANIFEST_DIR").expect("manifest dir");
     let out_dir = env::var("OUT_DIR").expect("out dir");
-    let manifest = Path::new(&manifest);
+    let source_manifest = if Path::new(&manifest).join("data").is_dir() {
+        PathBuf::from(&manifest)
+    } else { PathBuf::from(&manifest).join("../../pinyin-ime") };
+    let manifest = source_manifest.as_path();
+    println!("cargo:rustc-env=KAIXIN_SOURCE_DIR={}", manifest.display());
     let out_dir = Path::new(&out_dir);
     let repo = manifest.parent().unwrap_or(manifest);
 
@@ -527,6 +532,16 @@ fn main() {
     compile_windows_app_resource(out_dir, manifest, &app_version);
 
     println!("cargo:rerun-if-changed={}", supported_chars.display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        repo.join("data_sources/kaixin/pronunciation_aliases.tsv")
+            .display()
+    );
+    println!(
+        "cargo:rerun-if-changed={}",
+        repo.join("data_sources/kaixin/pronunciation_exclusions.tsv")
+            .display()
+    );
     println!("cargo:rerun-if-changed={}", corpus.display());
     println!("cargo:rerun-if-changed={}", syllables.display());
     println!("cargo:rerun-if-changed={}", version_path.display());

@@ -16,9 +16,13 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check repository hygiene and license records
-        run: python scripts/check_open_source_readiness.py
+        run: |
+          python scripts/check_open_source_readiness.py --release
+          python scripts/check_public_privacy.py
+          python -m unittest discover -s scripts -p test_public_privacy.py
+          python scripts/generate_shared_contracts.py --check
       - name: Check Python syntax
-        run: python -m py_compile scripts/check_open_source_readiness.py
+        run: python -m py_compile scripts/check_open_source_readiness.py scripts/check_public_privacy.py scripts/generate_shared_contracts.py scripts/lexicon_pack.py scripts/trim_package.py
 
   rust-licenses:
     runs-on: ubuntu-latest
@@ -37,4 +41,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.88.0
       - name: Check the source-only Rust build
-        run: cargo check --manifest-path pinyin-ime/Cargo.toml --lib --locked
+        run: cargo check --workspace --all-targets --all-features --locked
+      - name: Test shared contracts and the input core
+        run: cargo test -p kaixin-common -p kaixin-core --lib --no-default-features --locked

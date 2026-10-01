@@ -1,0 +1,63 @@
+# 开心输入法专业小词库：金融
+# 项目原创整理；默认关闭，在设置页按需开启。
+金融市场	jin rong shi chang	6000
+货币市场	huo bi shi chang	6000
+资本市场	zi ben shi chang	6000
+证券市场	zheng quan shi chang	6000
+股票	gu piao	6000
+债券	zhai quan	6000
+基金	ji jin	6000
+期货	qi huo	6000
+期权	qi quan	6000
+衍生品	yan sheng pin	6000
+外汇	wai hui	6000
+汇率	hui lv	6000
+利率	li lv	6000
+贴现率	tie xian lv	6000
+收益率	shou yi lv	6000
+风险溢价	feng xian yi jia	6000
+无风险利率	wu feng xian li lv	6000
+资产配置	zi chan pei zhi	6000
+投资组合	tou zi zu he	6000
+分散投资	fen san tou zi	6000
+系统性风险	xi tong xing feng xian	6000
+非系统性风险	fei xi tong xing feng xian	6000
+流动性	liu dong xing	6000
+信用风险	xin yong feng xian	6000
+市场风险	shi chang feng xian	6000
+操作风险	cao zuo feng xian	6000
+套期保值	tao qi bao zhi	6000
+对冲	dui chong	6000
+杠杆	gang gan	6000
+保证金	bao zheng jin	6000
+久期	jiu qi	6000
+凸性	tu xing	6000
+净现值	jing xian zhi	6000
+内部收益率	nei bu shou yi lv	6000
+现金流	xian jin liu	6000
+资产负债表	zi chan fu zhai biao	6000
+利润表	li run biao	6000
+现金流量表	xian jin liu liang biao	6000
+资本充足率	zi ben chong zu lv	6000
+存款准备金	cun kuan zhun bei jin	6000
+货币政策	huo bi zheng ce	6000
+财政政策	cai zheng zheng ce	6000
+通货膨胀	tong huo peng zhang	6000
+通货紧缩	tong huo jin suo	6000
+公开市场操作	gong kai shi chang cao zuo	6000
+量化宽松	liang hua kuan song	6000
+再贴现	zai tie xian	6000
+市盈率	shi ying lv	6000
+市净率	shi jing lv	6000
+股息	gu xi	6000
+估值	gu zhi	6000
+市值	shi zhi	6000
+指数基金	zhi shu ji jin	6000
+私募基金	si mu ji jin	6000
+公募基金	gong mu ji jin	6000
+资产证券化	zi chan zheng quan hua	6000
+信托	xin tuo	6000
+融资租赁	rong zi zu lin	6000
+风险管理	feng xian guan li	6000
+行为金融	xing wei jin rong	6000
+复利	fu li	6000

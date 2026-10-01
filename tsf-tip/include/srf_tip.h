@@ -1,4 +1,5 @@
 #pragma once
+#include "input_session.h"
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -34,6 +35,7 @@ struct SrfFocusSnapshot {
   DWORD processId = 0;
   std::wstring processName;
   uint64_t generation = 0;
+  uint64_t inputSession = 0;
 };
 
 // Parsed once when a lookup result is accepted.  Candidate UI, commit and
@@ -160,6 +162,13 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_fuzzyPinyin = false;
   bool m_doublePinyin = false;
   bool m_traditionalOutput = false;
+  bool m_gameChatActive = false;
+  bool m_gameChatSavedImeOpen = true;
+  HWND m_gameChatOwner = nullptr;
+  DWORD m_gameChatOwnerProcessId = 0;
+  HWND m_autoGameChatFocus = nullptr;
+  HWND m_autoGameChatDismissedFocus = nullptr;
+  HWND m_keyHotPathForeground = nullptr;
   bool m_manualGameCompatActive = false;
   bool m_manualAsciiModeActive = false;
   // 手动兼容状态只对触发它的前台窗口有效；bypass 是“恢复中文”的临时覆盖。
@@ -215,6 +224,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_hasRegisteredScreenshotKey = false;
   TF_PRESERVEDKEY m_registeredGameModeKey = {};
   bool m_hasRegisteredGameModeKey = false;
+  bool m_registeredGameChatPolicy = false;
   TF_PRESERVEDKEY m_registeredTemporaryAsciiKey = {};
   bool m_hasRegisteredTemporaryAsciiKey = false;
   /// preserved-key 路径的自动重复去重时间戳（仅 OnPreservedKey 更新）。
@@ -294,6 +304,10 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void UnregisterPreservedKeys();
   void ClearCompositionBufferState();
   void ClearFocusBoundCandidateState(const wchar_t* reason);
+  void EndInputSession(const wchar_t* reason, TfEditCookie ec = TF_INVALID_COOKIE, bool cancelComposition = true);
+  SrfInputSession m_inputSession;
+  bool m_endingInputSession = false;
+  bool m_engineInputSuspended = false;
   void ReleaseCompositionObjects();
   void ReleaseCompositionState();
   void RefreshCandidates();
@@ -372,6 +386,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const;
   SrfHotkeyScope EffectiveHotkeyScope() const;
   bool IsGameHotkeyPassthroughActive() const;
+  SrfGameInputMode EffectiveGameInputMode() const;
+  bool ShouldHandleGameChatHotkey() const;
+  void SetGameChatActive(bool active);
+  void RefreshGameChatFocus();
+  bool ObserveGameChatExit(UINT vk, LPARAM lParam);
   bool ShouldHandleImeHotkeys() const;
   void UpdatePreservedKeysForHotkeyScope();
   void LearnCommittedText(const std::wstring& committedText);
@@ -433,8 +452,12 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void SyncCandidateContextState(const CandidatePageLayoutMetrics* layout = nullptr);
   void RebuildContextModel();
   std::wstring FocusedProcessName();
+ public:
+  bool EnsureEngineInputReady();
   SrfFocusSnapshot CaptureFocusSnapshot(ITfContext* context) const;
   bool FocusSnapshotMatches(const SrfFocusSnapshot& snapshot) const;
+
+ private:
   std::wstring FormatFocusSnapshotForLog(const SrfFocusSnapshot& snapshot) const;
   void EnsureTrayHelperRunningAsync();
   void ShowNotification(SrfNotificationKind kind, const std::wstring& text);
@@ -540,6 +563,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   static constexpr UINT_PTR kDeferredFocusClearTimerId = 45;
   static constexpr UINT_PTR kExternalOverlayHealthTimerId = 46;
   static constexpr UINT_PTR kCandidateAnchorRefreshTimerId = 47;
+  static constexpr UINT_PTR kEngineInputHealthTimerId = 48;
   static constexpr DWORD kDeferredCandidateRetryMs = 24;
   static constexpr DWORD kCandidateUiRedrawCoalesceMs = 4;
   static constexpr DWORD kCandidateUiTransientHideGraceMs = 140;

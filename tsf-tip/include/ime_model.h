@@ -1,4 +1,5 @@
 #pragma once
+#include "game_input_policy.h"
 
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -327,6 +328,7 @@ struct SrfScreenshotOptions {
 };
 
 struct SrfCompatibilityOptions {
+  SrfGameInputMode gameInputMode = SrfGameInputMode::Manual;
   bool fullscreenDetection = true;
   SrfFullscreenPolicy fullscreenPolicy = SrfFullscreenPolicy::ShowUi;
   SrfCommitTransport commitTransport = SrfCommitTransport::Tsf;
@@ -336,6 +338,8 @@ struct SrfCompatibilityOptions {
 };
 
 struct SrfAppOptions {
+  bool hasGameInputMode = false;
+  SrfGameInputMode gameInputMode = SrfGameInputMode::Manual;
   bool hasAsciiMode = false;
   bool asciiMode = false;
   bool hasHideUi = false;

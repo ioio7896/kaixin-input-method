@@ -68,8 +68,15 @@ status: verified
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_new_places.txt` | 131 | `c47fc6428fdc481d8389e5c0ce0657fb46fb782aad19c08fd22e07f8ad2b7e62` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_public_services.txt` | 165 | `e25892eb12a1e83bc26e0e4e888e74258db28263a68a156edfc63df67a1b5dae` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt` | 145 | `5a6032ad99f69af1ebab90e075b5eac1bdf7c44b9a3a3031528ed0226ca8952a` |
-| `data_sources/kaixin/common_phrases.tsv` | 46 | `d4890760141edacfaa443d1ef6c250b75f6d7b9cfb73ae6914e473ead9d07328` |
-| `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `b40830a7560d63feeaeeda79c2e5f15cdda35078100d918a543e7c2dff60be6d` |
+| `data_sources/kaixin/common_phrases.tsv` | 41 | `871a706af6b67451c4c145c225fedc2ed4706f8ea80a3d7face6b42660f90bfa` |
+| `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `89d7a621ef5befe38ef8ebcb84b956d663a0d80186ec8f51a97e9568307f2df3` |
+| `data_sources/kaixin/pronunciation_aliases.tsv` | 123 | `0f02157dab25eeca3552e0963d8203d1fee584e5bfd6e20d88f610c2462a49fd` |
+| `data_sources/kaixin/core_priority_corrections.tsv` | 38 | `0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765` |
+| `data_sources/kaixin/pronunciation_exclusions.tsv` | 12 | `37528c72f8d2c770dbf86a40a86e23b8b49b8d5f2af2fd7f176b13c2369b927d` |
+| `data_sources/kaixin/recall_phrases.tsv` | 7 | `55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8` |
 
-`common_phrases.tsv` 中“简略”和“暴虐”各有两种拼音，属于有意保留的异读，不是完全
-重复。其余文本文件的词语字段均无重复；所有文件的“词语 + 拼音”组合均无重复。
+2026-10-02 更新了冻结清单与脚本：基础高优先级覆盖表为 41 行，从旧表移出的 14 条读音仍保留在其他运行时词库；读音别名表仅修改说明注释，123 行数据未改变。Core 优先级、旧读排除和低优先级召回表纳入检查。
+
+本次补充核验覆盖 17 个文本文件及一个 SQLite 文件，仅验证当前文件身份、结构和条目迁移，不重新断言现实名称的时效性，也不推测历史生成过程。TSV 固定 UTF-8/LF；Git 属性保持 LF，避免平台换行影响哈希。
+
+同词不同读音可以多行保留，每个文件的词语与拼音组合不得重复。权重必须为正整数；四列读音表只接受 primary、alternate、colloquial、historical 类别。

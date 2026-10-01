@@ -1,9 +1,11 @@
-use pinyin::ToPinyin;
+use pinyin::ToPinyinMulti;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
 const PRONUNCIATION_ALIASES: &str =
     include_str!("../../data_sources/kaixin/pronunciation_aliases.tsv");
+const PRONUNCIATION_EXCLUSIONS: &str =
+    include_str!("../../data_sources/kaixin/pronunciation_exclusions.tsv");
 
 fn normalize_pinyin_key(key: &str) -> String {
     key.replace('ü', "v")
@@ -11,11 +13,20 @@ fn normalize_pinyin_key(key: &str) -> String {
         .replace("lue", "lve")
 }
 
-fn pronunciation_aliases() -> &'static HashMap<char, Vec<String>> {
-    static ALIASES: OnceLock<HashMap<char, Vec<String>>> = OnceLock::new();
+#[derive(Default)]
+struct PronunciationOverrides {
+    accepted: HashMap<char, Vec<String>>,
+    excluded: HashMap<char, Vec<String>>,
+}
+
+fn pronunciation_aliases() -> &'static PronunciationOverrides {
+    static ALIASES: OnceLock<PronunciationOverrides> = OnceLock::new();
     ALIASES.get_or_init(|| {
-        let mut aliases: HashMap<char, Vec<String>> = HashMap::new();
-        for line in PRONUNCIATION_ALIASES.lines() {
+        let mut aliases = PronunciationOverrides::default();
+        for line in PRONUNCIATION_ALIASES
+            .lines()
+            .chain(PRONUNCIATION_EXCLUSIONS.lines())
+        {
             let line = line.trim();
             if line.is_empty() || line.starts_with('#') {
                 continue;
@@ -36,14 +47,16 @@ fn pronunciation_aliases() -> &'static HashMap<char, Vec<String>> {
             };
             let _weight = fields.next();
             let category = fields.next().unwrap_or("alternate");
-            if category.eq_ignore_ascii_case("historical") {
-                continue;
-            }
             let reading = normalize_pinyin_key(&reading.to_ascii_lowercase());
             if reading.is_empty() {
                 continue;
             }
-            let values = aliases.entry(ch).or_default();
+            let target = if category.eq_ignore_ascii_case("historical") {
+                &mut aliases.excluded
+            } else {
+                &mut aliases.accepted
+            };
+            let values = target.entry(ch).or_default();
             if !values.iter().any(|value| value == &reading) {
                 values.push(reading);
             }
@@ -52,26 +65,32 @@ fn pronunciation_aliases() -> &'static HashMap<char, Vec<String>> {
     })
 }
 
-/// Return the modern Mandarin readings used by the input engine.
+/// Return all available readings, with project additions and exclusions.
 ///
 /// `pinyin` is generated from a merged historical/etymological table, so its
 /// multi-reading iterator also contains obsolete readings such as `xiong` for
-/// 能 and `neng` for 而.  Keep the primary reading from the package and add
-/// only the project's explicitly accepted modern single-character aliases.
+/// 能 and `neng` for 而. Explicit historical rows exclude those readings;
+/// unlisted characters no longer lose every non-primary pronunciation.
 pub(crate) fn pinyin_plain_options(c: char) -> Vec<String> {
     let mut out = Vec::new();
-    if let Some(py) = c.to_pinyin() {
-        let plain = normalize_pinyin_key(&py.plain().to_ascii_lowercase());
-        if !plain.is_empty() {
-            out.push(plain);
+    let overrides = pronunciation_aliases();
+    if let Some(readings) = c.to_pinyin_multi() {
+        for py in readings {
+            let plain = normalize_pinyin_key(&py.plain().to_ascii_lowercase());
+            if !plain.is_empty() && !out.contains(&plain) {
+                out.push(plain);
+            }
         }
     }
-    if let Some(aliases) = pronunciation_aliases().get(&c) {
+    if let Some(aliases) = overrides.accepted.get(&c) {
         for alias in aliases {
             if !out.iter().any(|seen| seen == alias) {
                 out.push(alias.clone());
             }
         }
+    }
+    if let Some(excluded) = overrides.excluded.get(&c) {
+        out.retain(|reading| !excluded.contains(reading));
     }
     out
 }

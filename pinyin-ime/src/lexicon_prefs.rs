@@ -4,6 +4,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::{BTreeMap, HashMap};
 use std::hash::{Hash, Hasher};
 use std::io;
+use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
@@ -185,6 +186,11 @@ pub fn optional_lexicon_path_tag(path: &Path) -> Option<String> {
         return None;
     }
     let file_name = path.file_name().and_then(|name| name.to_str())?;
+    // Old installations may still have these correction tables under zh-ext.
+    // Their placement must not turn mandatory pronunciation data into switches.
+    if is_foundation_lexicon(file_name) {
+        return None;
+    }
     if let Some(tag) = thuocl_basename_tag(file_name) {
         return Some(tag);
     }
@@ -237,8 +243,147 @@ fn lexicon_toggle_map() -> Option<HashMap<String, bool>> {
     Some(parse_lexicon_section_bool(&text))
 }
 
-pub fn default_optional_lexicon_tag_enabled(_tag: &str) -> bool {
-    true
+pub fn default_optional_lexicon_tag_enabled(tag: &str) -> bool {
+    !tag.to_ascii_lowercase().starts_with("hangzhou_")
+        && !tag.to_ascii_lowercase().starts_with("professional_")
+}
+
+fn is_foundation_lexicon(file_name: &str) -> bool {
+    if let Some(tag) = thuocl_basename_tag(file_name) {
+        if matches!(
+            tag.as_str(),
+            "kaixin_explicit" | "kaixin_polyphone" | "kaixin_pronunciation_aliases"
+        ) {
+            return true;
+        }
+    }
+    matches!(
+        file_name.to_ascii_lowercase().as_str(),
+        "kaixin_explicit.txt" | "kaixin_polyphone.txt" | "kaixin_pronunciation_aliases.txt"
+    )
+}
+
+pub struct OptionalLexiconInfo {
+    pub tag: String,
+    pub entries: usize,
+    pub files: Vec<String>,
+    pub incomplete: bool,
+}
+
+/// Count source records on demand, outside the per-frame settings rendering.
+/// Counts are records (including alternate readings), not unique words.
+pub fn discover_optional_lexicon_info(root: &Path) -> Vec<OptionalLexiconInfo> {
+    fn visit(dir: &Path, items: &mut BTreeMap<String, OptionalLexiconInfo>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                if !should_skip_lexicon_subdir(
+                    path.file_name().and_then(|s| s.to_str()).unwrap_or(""),
+                ) {
+                    visit(&path, items);
+                }
+                continue;
+            }
+            let Some(tag) = optional_lexicon_path_tag(&path) else {
+                continue;
+            };
+            let item = items
+                .entry(tag.clone())
+                .or_insert_with(|| OptionalLexiconInfo {
+                    tag,
+                    entries: 0,
+                    files: Vec::new(),
+                    incomplete: false,
+                });
+            item.files.push(path.display().to_string());
+            match std::fs::File::open(&path) {
+                Ok(file) => {
+                    for line in io::BufReader::new(file).lines() {
+                        match line {
+                            Ok(line) => {
+                                let line = line.trim_start_matches('\u{feff}').trim();
+                                if !line.is_empty()
+                                    && !line.starts_with('#')
+                                    && !line.starts_with(';')
+                                {
+                                    item.entries += 1;
+                                }
+                            }
+                            Err(_) => {
+                                item.incomplete = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                Err(_) => item.incomplete = true,
+            }
+        }
+    }
+    let mut items = BTreeMap::new();
+    visit(root, &mut items);
+    items.into_values().collect()
+}
+
+pub fn optional_lexicon_group(tag: &str) -> &'static str {
+    if tag.starts_with("professional_") {
+        return "专业领域";
+    }
+    if tag.starts_with("hangzhou_") {
+        return "地区词库 · 杭州";
+    }
+    match tag {
+        "daily_communication" | "animals" | "people_names" => "日常生活",
+        "technology" | "medicine" => "专业领域",
+        "geography_admin" => "地区词库 · 全国与世界",
+        "ai_and_machine_learning"
+        | "internet_products"
+        | "programming_frameworks"
+        | "software_and_cloud"
+        | "chat_common_phrases"
+        | "office_common_phrases"
+        | "china_prefecture_level_admin_333"
+        | "county_admin_short_names_2024"
+        | "world_countries_major_cities"
+        | "chinese_surnames"
+        | "name1"
+        | "animal_common_5000"
+        | "yaowu"
+        | "animal"
+        | "caijing"
+        | "car"
+        | "chengyu"
+        | "diming"
+        | "food"
+        | "it"
+        | "kaixin_common"
+        | "law"
+        | "lishimingren"
+        | "medical"
+        | "poem" => "旧版扩展",
+        _ => "其他扩展",
+    }
+}
+
+pub fn optional_lexicon_description(tag: &str) -> &'static str {
+    if tag.starts_with("professional_") {
+        return "精选专业基础术语小词库；默认关闭，按需勾选后保存生效。";
+    }
+    if tag.starts_with("hangzhou_") {
+        return "杭州地名、交通、公共设施与本地生活；建议按需开启。";
+    }
+    match tag {
+        "daily_communication" => "聊天与办公常用表达；包含与主词库交叠的常用词。",
+        "animals" => "精选 500 条常见动物名称与相关用语。",
+        "people_names" => "姓氏、人物姓名及相应读音。",
+        "technology" => "人工智能、互联网产品、编程框架与云服务。",
+        "medicine" => "常见药物名称。",
+        "geography_admin" => "行政区划、国家及主要城市名称。",
+        _ => "按实际安装的词库文件加载；可通过名称或文件标识搜索。",
+    }
 }
 
 pub fn legacy_optional_lexicon_tags(tag: &str) -> &'static [&'static str] {

@@ -10,6 +10,10 @@ LRESULT CALLBACK CSrfTip::DeferredTimerWndProc(HWND hwnd, UINT msg, WPARAM wPara
     SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
     return TRUE;
   }
+  if (msg == WM_TIMER && wParam == kEngineInputHealthTimerId && self) {
+    if (!self->m_reading.empty()) self->EnsureEngineInputReady();
+    return 0;
+  }
   if (msg == WM_TIMER && wParam == kDeferredCandidateTimerId && self) {
     self->OnDeferredCandidateRefreshTimer();
     return 0;

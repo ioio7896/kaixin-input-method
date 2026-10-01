@@ -41,9 +41,64 @@ struct CachedWordGraphState {
     cache_epoch: u64,
     initial_prev_token: Option<String>,
     initial_last_token: Option<String>,
-    edges_by_pos: Vec<Vec<WordGraphEdge>>,
-    beams: Vec<Vec<WordGraphState>>,
-    results: Vec<(String, f64)>,
+    edges_by_pos: Vec<Arc<Vec<WordGraphEdge>>>,
+    beams: Vec<Arc<Vec<WordGraphState>>>,
+    results: Arc<Vec<(String, f64)>>,
+    estimated_bytes: usize,
+}
+
+impl CachedWordGraphState {
+    // Count shared buckets in each snapshot deliberately: this conservative
+    // payload estimate avoids a pointer-deduplication pass on every keystroke.
+    fn estimate_bytes(&self) -> usize {
+        use std::mem::size_of;
+        let optional_string = |value: &Option<String>| value.as_ref().map_or(0, String::capacity);
+        size_of::<Self>()
+            + self.syllables.capacity() * size_of::<String>()
+            + self.syllables.iter().map(String::capacity).sum::<usize>()
+            + optional_string(&self.initial_prev_token)
+            + optional_string(&self.initial_last_token)
+            + self.edges_by_pos.capacity() * size_of::<Arc<Vec<WordGraphEdge>>>()
+            + self.beams.capacity() * size_of::<Arc<Vec<WordGraphState>>>()
+            + self
+                .edges_by_pos
+                .iter()
+                .map(|bucket| {
+                    size_of::<Vec<WordGraphEdge>>()
+                        + 2 * size_of::<usize>()
+                        + bucket.capacity() * size_of::<WordGraphEdge>()
+                        + bucket
+                            .iter()
+                            .map(|edge| edge.phrase.capacity())
+                            .sum::<usize>()
+                })
+                .sum::<usize>()
+            + self
+                .beams
+                .iter()
+                .map(|bucket| {
+                    size_of::<Vec<WordGraphState>>()
+                        + 2 * size_of::<usize>()
+                        + bucket.capacity() * size_of::<WordGraphState>()
+                        + bucket
+                            .iter()
+                            .map(|state| {
+                                state.phrase.capacity()
+                                    + optional_string(&state.prev_token)
+                                    + optional_string(&state.last_token)
+                            })
+                            .sum::<usize>()
+                })
+                .sum::<usize>()
+            + size_of::<Vec<(String, f64)>>()
+            + 2 * size_of::<usize>()
+            + self.results.capacity() * size_of::<(String, f64)>()
+            + self
+                .results
+                .iter()
+                .map(|(text, _)| text.capacity())
+                .sum::<usize>()
+    }
 }
 
 /// Composition-local word-lattice snapshots. On append, prior beams stay
@@ -52,6 +107,7 @@ struct CachedWordGraphState {
 pub(super) struct IncrementalWordGraphCache {
     states: VecDeque<CachedWordGraphState>,
     capacity: usize,
+    byte_budget: usize,
 }
 
 impl Default for IncrementalWordGraphCache {
@@ -59,6 +115,7 @@ impl Default for IncrementalWordGraphCache {
         Self {
             states: VecDeque::new(),
             capacity: 16,
+            byte_budget: 8 * 1024 * 1024,
         }
     }
 }
@@ -94,7 +151,7 @@ impl IncrementalWordGraphCache {
                 && state.initial_last_token == initial_last_token
         }) {
             let state = self.states.remove(index).expect("word graph state exists");
-            let results = state.results.clone();
+            let results = state.results.as_ref().clone();
             self.states.push_front(state);
             return results;
         }
@@ -128,10 +185,19 @@ impl IncrementalWordGraphCache {
                 &mut transition,
             )
         };
-        state.results = word_graph_results(&state.beams, syllables.len());
-        let results = state.results.clone();
+        state.results = Arc::new(word_graph_results(&state.beams, syllables.len()));
+        state.estimated_bytes = state.estimate_bytes();
+        let results = state.results.as_ref().clone();
+        // Oversized results remain usable but are not retained in the cache.
+        if state.estimated_bytes > self.byte_budget {
+            return results;
+        }
         self.states.push_front(state);
-        while self.states.len() > self.capacity {
+        let mut retained_bytes: usize = self.states.iter().map(|s| s.estimated_bytes).sum();
+        while self.states.len() > self.capacity || retained_bytes > self.byte_budget {
+            if let Some(evicted) = self.states.back() {
+                retained_bytes = retained_bytes.saturating_sub(evicted.estimated_bytes);
+            }
             self.states.pop_back();
         }
         results
@@ -155,11 +221,15 @@ impl IncrementalWordGraphCache {
         for (start, edges) in edges_by_pos.iter_mut().enumerate() {
             populate(syllables, start, edges);
         }
-        let mut beams = empty_word_graph_beams(
+        let edges_by_pos: Vec<_> = edges_by_pos.into_iter().map(Arc::new).collect();
+        let mut beams: Vec<_> = empty_word_graph_beams(
             syllables.len(),
             initial_prev_token.clone(),
             initial_last_token.clone(),
-        );
+        )
+        .into_iter()
+        .map(Arc::new)
+        .collect();
         expand_word_graph_range(&edges_by_pos, &mut beams, 0, 0, transition);
         CachedWordGraphState {
             syllables: syllables.to_vec(),
@@ -169,7 +239,8 @@ impl IncrementalWordGraphCache {
             initial_last_token,
             edges_by_pos,
             beams,
-            results: Vec::new(),
+            results: Arc::new(Vec::new()),
+            estimated_bytes: 0,
         }
     }
 
@@ -185,17 +256,20 @@ impl IncrementalWordGraphCache {
         Transition: FnMut(Option<char>, Option<&str>, Option<&str>, &str) -> f64,
     {
         let prefix_len = state.syllables.len();
-        state.edges_by_pos.resize_with(syllables.len(), Vec::new);
-        state.beams.resize_with(syllables.len() + 1, Vec::new);
+        state
+            .edges_by_pos
+            .resize_with(syllables.len(), || Arc::new(Vec::new()));
+        state
+            .beams
+            .resize_with(syllables.len() + 1, || Arc::new(Vec::new()));
 
         // Only starts close enough to span into the new suffix can gain edges.
         let affected_start = prefix_len.saturating_sub(WORD_GRAPH_MAX_SPAN.saturating_sub(1));
         for start in affected_start..syllables.len() {
-            state.edges_by_pos[start].clear();
-            populate(syllables, start, &mut state.edges_by_pos[start]);
-        }
-        for bucket in state.beams.iter_mut().skip(prefix_len + 1) {
-            bucket.clear();
+            // Rebuild changed buckets without cloning the old contents first.
+            let mut edges = Vec::new();
+            populate(syllables, start, &mut edges);
+            state.edges_by_pos[start] = Arc::new(edges);
         }
 
         // Old beams are complete. For old positions, expand only newly possible
@@ -232,8 +306,8 @@ fn empty_word_graph_beams(
 }
 
 fn expand_word_graph_range(
-    edges_by_pos: &[Vec<WordGraphEdge>],
-    beams: &mut [Vec<WordGraphState>],
+    edges_by_pos: &[Arc<Vec<WordGraphEdge>>],
+    beams: &mut [Arc<Vec<WordGraphState>>],
     start_at: usize,
     old_end: usize,
     transition: &mut impl FnMut(Option<char>, Option<&str>, Option<&str>, &str) -> f64,
@@ -251,7 +325,7 @@ fn expand_word_graph_range(
         let state_count = current.len();
         for state_idx in 0..state_count {
             let state = &current[state_idx];
-            for edge in &edges_by_pos[start] {
+            for edge in edges_by_pos[start].iter() {
                 if start < old_end && edge.end <= old_end {
                     continue;
                 }
@@ -259,7 +333,7 @@ fn expand_word_graph_range(
                 phrase.push_str(&state.phrase);
                 phrase.push_str(&edge.phrase);
                 let consecutive_single = state.last_token_was_single && edge.single_char;
-                let dest = &mut right[edge.end - (start + 1)];
+                let dest = Arc::make_mut(&mut right[edge.end - (start + 1)]);
                 dest.push(WordGraphState {
                     phrase,
                     score: state.score
@@ -284,19 +358,23 @@ fn expand_word_graph_range(
                 });
             }
         }
-        for bucket in right.iter_mut() {
+        // Old prefix buckets are already ranked and must stay shared.
+        for bucket in right.iter_mut().skip(old_end.saturating_sub(start)) {
             if !bucket.is_empty() {
-                truncate_top_k_word_states(bucket, WORD_GRAPH_BEAM);
+                truncate_top_k_word_states(Arc::make_mut(bucket), WORD_GRAPH_BEAM);
             }
         }
     }
 }
 
-fn word_graph_results(beams: &[Vec<WordGraphState>], syllable_count: usize) -> Vec<(String, f64)> {
+fn word_graph_results(
+    beams: &[Arc<Vec<WordGraphState>>],
+    syllable_count: usize,
+) -> Vec<(String, f64)> {
     let mut results = beams
         .get(syllable_count)
         .into_iter()
-        .flatten()
+        .flat_map(|bucket| bucket.iter())
         .map(|state| {
             (
                 state.phrase.clone(),
@@ -366,6 +444,7 @@ impl PinyinEngine {
         &self,
         phrase: &str,
         intent: InputIntent,
+        meta: &CandidateMeta,
     ) -> f64 {
         if intent != InputIntent::SingleSyllable || phrase_char_count(phrase) != 1 {
             return 0.0;
@@ -380,7 +459,12 @@ impl PinyinEngine {
             return 0.0;
         }
 
-        let layer_scale = match lexicon.phrase_layer(phrase) {
+        let source_layer = if meta.source_layer == LexiconLayer::Unknown {
+            lexicon.phrase_layer(phrase)
+        } else {
+            meta.source_layer
+        };
+        let layer_scale = match source_layer {
             LexiconLayer::Core => 1.0,
             LexiconLayer::Base => 0.92,
             LexiconLayer::Unknown => 0.65,
@@ -1290,11 +1374,11 @@ pub(super) fn merge_phrase_entries<'a>(
                 USER_RECENCY_SCALE,
             )
             - rank as f64 * 0.01;
-        let candidate_meta = candidate_meta_from_legacy(meta).with_source_layer(
-            source_lexicon
-                .map(|lexicon| lexicon.phrase_layer(&entry.phrase))
-                .unwrap_or_default(),
-        );
+        let phrase_layer = source_lexicon
+            .map(|lexicon| lexicon.phrase_layer(&entry.phrase))
+            .unwrap_or_default();
+        let candidate_meta = candidate_meta_from_legacy(meta)
+            .with_source_layer(entry.pronunciation_kind.candidate_layer(phrase_layer));
         if let Some(phrase_id) = source_lexicon.and_then(|lexicon| lexicon.phrase_id(&entry.phrase))
         {
             merge_system_candidate_meta(
@@ -1671,41 +1755,36 @@ fn merge_system_candidate_meta(
 }
 
 pub(super) fn merge_into_candidate(current: &mut MergedCandidate, incoming: MergedCandidate) {
-    const EPSILON: f64 = 1e-9;
-
-    let current_priority = merged_meta_priority(&current.meta);
-    let incoming_priority = merged_meta_priority(&incoming.meta);
     let has_user_signal = current.meta.user_signal
         || incoming.meta.user_signal
         || current.meta.match_kind == CandidateMatchKind::User
         || incoming.meta.match_kind == CandidateMatchKind::User;
-
-    if incoming.score > current.score + EPSILON {
-        if current_priority > incoming_priority
-            && incoming.score - current.score <= META_STICKY_SCORE_MARGIN
-        {
-            current.score = incoming.score;
-        } else {
-            *current = incoming;
-        }
-        current.meta.user_signal |= has_user_signal;
-        return;
-    }
-
-    if current.score > incoming.score + EPSILON {
-        if incoming_priority > current_priority
-            && current.score - incoming.score <= META_STICKY_SCORE_MARGIN
-        {
-            current.meta = incoming.meta;
-        }
-        // 同词的用户候选与系统候选无论按什么顺序合并，都保留用户
-        // 学习信号，避免系统高分覆盖元数据后热词无法前置。
-        current.meta.user_signal |= has_user_signal;
-        return;
-    }
-
-    if incoming_priority > current_priority {
-        *current = incoming;
+    // Scores use the best path once; metadata uses the strongest evidence.
+    // In particular, a higher-scoring correction must not erase an exact hit
+    // or a pin. Tie-breaking is independent of HashMap/decoder arrival order.
+    let incoming_wins = incoming
+        .meta
+        .pinned
+        .cmp(&current.meta.pinned)
+        .then_with(|| {
+            merged_meta_priority(&incoming.meta).cmp(&merged_meta_priority(&current.meta))
+        })
+        .then_with(|| {
+            current
+                .meta
+                .display_text()
+                .cmp(&incoming.meta.display_text())
+        })
+        .then_with(|| {
+            current
+                .meta
+                .correction_target
+                .cmp(&incoming.meta.correction_target)
+        })
+        == std::cmp::Ordering::Greater;
+    current.score = current.score.max(incoming.score);
+    if incoming_wins {
+        current.meta = incoming.meta;
     }
     current.meta.user_signal |= has_user_signal;
 }

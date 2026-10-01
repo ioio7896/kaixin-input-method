@@ -18,6 +18,8 @@ void CSrfTip::EnsureTrayHelperRunningAsync() {
 }
 
 HRESULT CSrfTip::_UnadviseSinks() {
+  if (m_deferredTimerHwnd) KillTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId);
+  EndInputSession(L"host-deactivate", TF_INVALID_COOKIE, false);
   CancelDeferredCandidateRefresh();
   CancelScheduledCandidateUiRedraw();
   StopCandidateLookupWorker();
@@ -147,7 +149,7 @@ HWND CSrfTip::CandidateOverlayTargetWindow() const {
 
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = options->hasGameProfile && options->gameCompactProfile;
+    appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
   }
   if (appGameProfile || m_fullscreenCompatActive || m_gameCompatActive ||
       m_configuredGameCompatActive || m_builtinGameCompatActive ||
@@ -166,7 +168,7 @@ bool CSrfTip::CandidateGameOverlayActive() const {
   if (EffectiveCompatibilityPolicy() != SrfFullscreenPolicy::ShowUi) return false;
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = options->hasGameProfile && options->gameCompactProfile;
+    appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
   }
   return appGameProfile || m_fullscreenCompatActive || m_gameCompatActive ||
          m_configuredGameCompatActive || m_builtinGameCompatActive || m_manualGameCompatActive;
@@ -747,6 +749,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
                                             const std::wstring& text, LONG cursorOffset) {
   if (!pic) return E_INVALIDARG;
   if (text.empty()) return S_OK;
+  if (m_gameChatActive && GetAncestor(GetForegroundWindow(), GA_ROOT) != m_gameChatOwner)
+    return HRESULT_FROM_WIN32(ERROR_CANCELLED);
 
   const LONG textLength = static_cast<LONG>(text.size());
   if (cursorOffset < 0 || cursorOffset > textLength) cursorOffset = textLength;
@@ -796,7 +800,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
                               L"from=unicode_sendinput, reason=target_disappeared");
         }
       }
-      if (FAILED(transportHr) && !unicodeTargetDisappeared &&
+      if (FAILED(transportHr) && transportHr != HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) &&
+          !IsGameHotkeyPassthroughActive() && !unicodeTargetDisappeared &&
           !ShouldSuppressClipboardForPrivacy()) {
         if (unicodeGameProbe) MarkUnicodeFallbackApp(CompatibilityAppName());
         const HRESULT pasteHr = PasteUnicodeTextViaClipboard(text);
@@ -828,6 +833,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
     SrfTsfDiagnosticLog(L"commit-transport", line.c_str());
 
     if (SUCCEEDED(transportHr)) return S_OK;
+    if (IsGameHotkeyPassthroughActive() || transportHr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY))
+      return transportHr;
   }
 
   auto insertAtSelectionOnly = [&]() -> HRESULT {

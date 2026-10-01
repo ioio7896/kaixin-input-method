@@ -1,7 +1,46 @@
 use super::*;
 
+// Limit work per file even when old installations contain oversized logs.
+fn read_diagnostic_log_tail(path: &Path) -> String {
+    use std::io::{Read, Seek, SeekFrom};
+    const MAX_BYTES: u64 = 512 * 1024;
+    let Ok(mut file) = fs::File::open(path) else {
+        return String::new();
+    };
+    let start = file
+        .metadata()
+        .map_or(0, |meta| meta.len().saturating_sub(MAX_BYTES));
+    if file.seek(SeekFrom::Start(start)).is_err() {
+        return String::new();
+    }
+    let mut bytes = Vec::new();
+    if file.take(MAX_BYTES).read_to_end(&mut bytes).is_err() {
+        return String::new();
+    }
+    if start > 0 {
+        if let Some(end) = bytes.iter().position(|byte| *byte == b'\n') {
+            bytes.drain(..=end);
+        } else {
+            return String::new();
+        }
+    }
+    String::from_utf8_lossy(&bytes).into_owned()
+}
+
 fn recent_perf_log_lines(limit: usize) -> Vec<String> {
+    recent_perf_log_lines_impl(limit, false)
+}
+
+fn recent_perf_log_lines_for_export(limit: usize) -> Vec<String> {
+    recent_perf_log_lines_impl(limit, true)
+}
+
+fn recent_perf_log_lines_impl(limit: usize, include_files_when_full: bool) -> Vec<String> {
+    if limit == 0 {
+        return Vec::new();
+    }
     let patterns = [
+        "[perf]",
         "srf_engine_load",
         "srf_engine_lexicon_mode",
         "srf_engine_ensure_loaded",
@@ -9,14 +48,19 @@ fn recent_perf_log_lines(limit: usize) -> Vec<String> {
         "engine_helper_start",
         "srf_ipc_lookup",
         "srf_lookup_profile",
+        "srf_candidate_stage",
+        "rapidocr_warmup",
+        "rapidocr_idle_release",
         "candidate-refresh",
+        "tsf_bridge_failure",
+        "shared helper health busy",
     ];
     let mut lines = runtime_log::recent_lines_matching(limit, &patterns);
-    if lines.len() >= limit {
+    if lines.len() >= limit && !include_files_when_full {
         return lines;
     }
     for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
+        let text = read_diagnostic_log_tail(&path);
         lines.extend(
             text.lines()
                 .filter(|line| patterns.iter().any(|pattern| line.contains(pattern)))
@@ -29,10 +73,21 @@ fn recent_perf_log_lines(limit: usize) -> Vec<String> {
                 }),
         );
     }
+    if include_files_when_full {
+        lines.sort_by(|left, right| perf_log_timestamp(left).cmp(&perf_log_timestamp(right)));
+    }
     if lines.len() > limit {
         lines.drain(0..lines.len() - limit);
     }
     lines
+}
+
+fn perf_log_timestamp(line: &str) -> Option<&str> {
+    let content = line
+        .split_once('\t')
+        .map(|(_, content)| content)
+        .or_else(|| line.split_once("  ").map(|(_, content)| content))?;
+    content.get(..23)
 }
 
 pub(super) fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
@@ -48,7 +103,7 @@ pub(super) fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
         return lines;
     }
     for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
+        let text = read_diagnostic_log_tail(&path);
         let file_name = path.file_name().unwrap_or_default().to_string_lossy();
         for line in text.lines() {
             let lower = line.to_ascii_lowercase();
@@ -67,7 +122,7 @@ pub(super) fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
 fn latest_log_line_matching(patterns: &[&str]) -> Option<String> {
     let mut found = None;
     for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
+        let text = read_diagnostic_log_tail(&path);
         for line in text.lines() {
             if patterns.iter().any(|pattern| line.contains(pattern)) {
                 found = Some(format!(
@@ -114,6 +169,7 @@ struct LatencyStatsRow {
     count: usize,
     p50_ms: f64,
     p90_ms: f64,
+    p95_ms: f64,
     p99_ms: f64,
     max_ms: f64,
 }
@@ -153,6 +209,11 @@ fn push_latency_sample(
 }
 
 fn collect_latency_line(series: &mut BTreeMap<&'static str, Vec<f64>>, line: &str) {
+    if line.contains("event=srf_ipc_lookup_write ") {
+        if let Some(value) = metric_number_after(line, "write=") {
+            push_latency_sample(series, "IPC 响应写入", value / 1000.0);
+        }
+    }
     if line.contains("[perf]") {
         if let (Some(stage), Some(elapsed_ms)) = (
             metric_token_after(line, "stage="),
@@ -176,6 +237,16 @@ fn collect_latency_line(series: &mut BTreeMap<&'static str, Vec<f64>>, line: &st
     }
 
     if line.contains("event=srf_ipc_lookup ") {
+        for (key, label) in [
+            ("queue_wait=", "IPC 排队"),
+            ("lock_wait=", "共享引擎等待"),
+            ("init=", "IPC 初始化"),
+            ("serialize=", "IPC 序列化"),
+        ] {
+            if let Some(value) = metric_number_after(line, key) {
+                push_latency_sample(series, label, value / 1000.0);
+            }
+        }
         if let Some(total_us) = metric_number_after(line, "total=") {
             push_latency_sample(series, "IPC 查询总计", total_us / 1000.0);
         }
@@ -218,7 +289,7 @@ fn percentile(sorted: &[f64], pct: f64) -> f64 {
 fn typing_latency_stats() -> Vec<LatencyStatsRow> {
     let mut series: BTreeMap<&'static str, Vec<f64>> = BTreeMap::new();
     for path in diagnostic_log_paths() {
-        let text = fs::read_to_string(&path).unwrap_or_default();
+        let text = read_diagnostic_log_tail(&path);
         for line in text.lines() {
             collect_latency_line(&mut series, line);
         }
@@ -230,6 +301,10 @@ fn typing_latency_stats() -> Vec<LatencyStatsRow> {
         "按键到候选应用",
         "候选查询(worker)",
         "IPC 查询总计",
+        "IPC 排队",
+        "IPC 初始化",
+        "IPC 序列化",
+        "IPC 响应写入",
         "IPC 引擎内部",
         "Rust 查询总计",
         "Rust 准备",
@@ -256,6 +331,7 @@ fn typing_latency_stats() -> Vec<LatencyStatsRow> {
             count,
             p50_ms: percentile(&values, 0.50),
             p90_ms: percentile(&values, 0.90),
+            p95_ms: percentile(&values, 0.95),
             p99_ms: percentile(&values, 0.99),
             max_ms: values.last().copied().unwrap_or_default(),
         });
@@ -540,7 +616,7 @@ pub(crate) fn export_diagnostic_package_to(
         dest.join("recent-events.log"),
         redact_diagnostic_text(&recent_events),
     )?;
-    let recent = recent_perf_log_lines(80).join("\n");
+    let recent = recent_perf_log_lines_for_export(80).join("\n");
     fs::write(
         dest.join("recent-perf.log"),
         redact_diagnostic_text(&recent),
@@ -556,6 +632,54 @@ pub(crate) fn export_diagnostic_package_to(
         &latency_rows,
     )?;
     Ok(())
+}
+
+pub(crate) fn export_performance_log_to(
+    dest: &Path,
+    current_log_level: &str,
+) -> std::io::Result<usize> {
+    const PERFORMANCE_LOG_LIMIT: usize = 5_000;
+    let events = recent_perf_log_lines_for_export(PERFORMANCE_LOG_LIMIT);
+    let mut output = String::new();
+    output.push_str("Kaixin IME performance log\n");
+    output.push_str(&format!("created={}\n", chrono::Local::now().to_rfc3339()));
+    output.push_str(&format!("version={}\n", env!("CARGO_PKG_VERSION")));
+    output.push_str(&format!(
+        "arch={}\nlogical_cpus={}\n",
+        std::env::consts::ARCH,
+        std::thread::available_parallelism().map_or(1, |count| count.get())
+    ));
+    output.push_str(&format!("log_level={}\n", current_log_level.trim()));
+    output.push_str("\nlatency_summary_ms (recent local log samples)\n");
+    output.push_str("stage\tsamples\tp50\tp90\tp95\tp99\tmax\n");
+    for row in typing_latency_stats()
+        .into_iter()
+        .filter(|row| row.count > 0)
+    {
+        output.push_str(&format!(
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+            row.label,
+            row.count,
+            format_latency_ms(row.p50_ms),
+            format_latency_ms(row.p90_ms),
+            format_latency_ms(row.p95_ms),
+            format_latency_ms(row.p99_ms),
+            format_latency_ms(row.max_ms)
+        ));
+    }
+    output.push_str("\nperformance_events\n");
+    if events.is_empty() {
+        output.push_str(
+            "No performance events were found. Set the settings log level to 'perf', reproduce the issue, then export again.\n",
+        );
+    } else {
+        for event in &events {
+            output.push_str(event);
+            output.push('\n');
+        }
+    }
+    fs::write(dest, redact_diagnostic_text(&output))?;
+    Ok(events.len())
 }
 
 fn log_level_label(value: &str) -> &'static str {
@@ -656,7 +780,9 @@ pub(crate) struct DiagnosticsSnapshot {
     latest_candidate_refresh: Option<String>,
 }
 
-pub(super) fn build_diagnostics_snapshot(app: &SettingsApp) -> DiagnosticsSnapshot {
+pub(super) fn build_diagnostics_snapshot(
+    foreground: Option<ProcessSuggestion>,
+) -> DiagnosticsSnapshot {
     DiagnosticsSnapshot {
         refreshed_at: Instant::now(),
         recovery: engine_recovery_state_summary(),
@@ -664,7 +790,7 @@ pub(super) fn build_diagnostics_snapshot(app: &SettingsApp) -> DiagnosticsSnapsh
         recent_lines: recent_perf_log_lines(12),
         compat_lines: recent_compatibility_log_lines(12),
         latency_rows: typing_latency_stats(),
-        foreground: app.foreground_process.clone(),
+        foreground,
         latest_candidate_refresh: latest_log_line_matching(&["candidate-refresh"]),
     }
 }
@@ -818,7 +944,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             );
         } else {
             egui::Grid::new("typing_latency_stats_grid")
-                .num_columns(6)
+                .num_columns(7)
                 .striped(true)
                 .spacing([14.0, 7.0])
                 .show(ui, |ui| {
@@ -826,6 +952,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     ui.label(RichText::new("样本").strong().color(palette.text));
                     ui.label(RichText::new("P50 ms").strong().color(palette.text));
                     ui.label(RichText::new("P90 ms").strong().color(palette.text));
+                    ui.label(RichText::new("P95 ms").strong().color(palette.text));
                     ui.label(RichText::new("P99 ms").strong().color(palette.text));
                     ui.label(RichText::new("Max ms").strong().color(palette.text));
                     ui.end_row();
@@ -834,6 +961,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                         ui.label(RichText::new(row.count.to_string()).monospace());
                         ui.label(RichText::new(format_latency_ms(row.p50_ms)).monospace());
                         ui.label(RichText::new(format_latency_ms(row.p90_ms)).monospace());
+                        ui.label(RichText::new(format_latency_ms(row.p95_ms)).monospace());
                         ui.label(RichText::new(format_latency_ms(row.p99_ms)).monospace());
                         ui.label(RichText::new(format_latency_ms(row.max_ms)).monospace());
                         ui.end_row();
@@ -856,7 +984,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_combo_row(
             ui,
             "日志级别",
-            "off/error/basic/perf/verbose；默认 basic，性能日志建议排障时临时开启。",
+            "off/error/basic/perf/verbose；性能日志建议排障时临时开启。",
             log_level_label(&app.model.log_level).to_string(),
             "diagnostic_log_level",
             |ui| {
@@ -867,7 +995,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 selectable_string(ui, &mut app.model.log_level, "verbose", "详细");
             },
         );
-        ui.horizontal(|ui| {
+        ui.horizontal_wrapped(|ui| {
             if outline_button(ui, "打开日志").clicked() {
                 app.open_data_location(diagnostic_log_dir());
             }
@@ -877,9 +1005,14 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             if outline_button(ui, "导出诊断包").clicked() {
                 app.export_diagnostic_package();
             }
+            if outline_button(ui, "导出性能日志").clicked() {
+                app.export_performance_log();
+            }
         });
         ui.label(
-            RichText::new("日志默认脱敏；排障时临时切到“性能”，完成后建议改回“基础”。")
+            RichText::new(
+                "日志默认脱敏；导出仅收集性能事件和延迟统计。排障时切到“性能”并保存设置，复现后导出，完成后建议改回“基础”。",
+            )
                 .small()
                 .color(palette.muted),
         );
@@ -952,4 +1085,31 @@ fn diagnostic_log_group(ui: &mut egui::Ui, title: &str, lines: &[String]) {
         ui.add_space(2.0);
     }
     ui.add_space(8.0);
+}
+
+#[cfg(test)]
+mod performance_tests {
+    use super::*;
+
+    #[test]
+    fn ipc_timings_keep_microseconds_and_write_stage_separate() {
+        let mut series = BTreeMap::new();
+        collect_latency_line(&mut series,
+            "event=srf_ipc_lookup request_id=1 queue_wait=2000us lock_wait=3000us init=0us serialize=500us engine=4000us total=9500us");
+        collect_latency_line(&mut series, "event=srf_ipc_lookup_write write=1500us");
+        assert_eq!(series["IPC 排队"], vec![2.0]);
+        assert_eq!(series["共享引擎等待"], vec![3.0]);
+        assert_eq!(series["IPC 序列化"], vec![0.5]);
+        assert_eq!(series["IPC 查询总计"], vec![9.5]);
+        assert_eq!(series["IPC 响应写入"], vec![1.5]);
+    }
+
+    #[test]
+    fn invalid_latency_samples_are_excluded() {
+        let mut series = BTreeMap::new();
+        push_latency_sample(&mut series, "stage", f64::NAN);
+        push_latency_sample(&mut series, "stage", -1.0);
+        push_latency_sample(&mut series, "stage", f64::INFINITY);
+        assert!(series.is_empty());
+    }
 }

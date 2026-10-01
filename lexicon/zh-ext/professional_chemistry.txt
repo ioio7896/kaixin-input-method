@@ -1,0 +1,62 @@
+# 开心输入法专业小词库：化学
+# 项目原创整理；默认关闭，在设置页按需开启。
+无机化学	wu ji hua xue	6000
+有机化学	you ji hua xue	6000
+分析化学	fen xi hua xue	6000
+物理化学	wu li hua xue	6000
+高分子化学	gao fen zi hua xue	6000
+化学键	hua xue jian	6000
+共价键	gong jia jian	6000
+离子键	li zi jian	6000
+金属键	jin shu jian	6000
+氢键	qing jian	6000
+分子间作用力	fen zi jian zuo yong li	6000
+原子轨道	yuan zi gui dao	6000
+杂化轨道	za hua gui dao	6000
+元素周期表	yuan su zhou qi biao	6000
+摩尔质量	mo er zhi liang	6000
+物质的量	wu zhi di liang	6000
+化学计量	hua xue ji liang	6000
+化学平衡	hua xue ping heng	6000
+平衡常数	ping heng chang shu	6000
+反应速率	fan ying su lv	6000
+活化能	huo hua neng	6000
+催化剂	cui hua ji	6000
+氧化还原	yang hua huan yuan	6000
+氧化剂	yang hua ji	6000
+还原剂	huan yuan ji	6000
+电解质	dian jie zhi	6000
+酸碱中和	suan jian zhong he	6000
+缓冲溶液	huan chong rong ye	6000
+溶解度	rong jie du	6000
+溶度积	rong du ji	6000
+滴定	di ding	6000
+色谱	se pu	6000
+质谱	zhi pu	6000
+光谱	guang pu	6000
+核磁共振	he ci gong zhen	6000
+同分异构体	tong fen yi gou ti	6000
+官能团	guan neng tuan	6000
+烷烃	wan ting	6000
+烯烃	xi ting	6000
+炔烃	gui ting	6000
+芳香烃	fang xiang ting	6000
+醇	chun	6000
+酚	fen	6000
+醛	quan	6000
+酮	tong	6000
+羧酸	suo suan	6000
+酯	zhi	6000
+胺	an	6000
+聚合反应	ju he fan ying	6000
+缩合反应	suo he fan ying	6000
+加成反应	jia cheng fan ying	6000
+取代反应	qu dai fan ying	6000
+消去反应	xiao qu fan ying	6000
+水解反应	shui jie fan ying	6000
+配位化合物	pei wei hua he wu	6000
+配位数	pei wei shu	6000
+晶体结构	jing ti jie gou	6000
+结晶	jie jing	6000
+蒸馏	zheng liu	6000
+萃取	cui qu	6000

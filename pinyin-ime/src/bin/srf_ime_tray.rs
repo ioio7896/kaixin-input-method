@@ -71,6 +71,39 @@ mod win {
         WS_OVERLAPPED,
     };
 
+    use std::sync::atomic::AtomicIsize;
+    use windows_sys::Win32::UI::Accessibility::{SetWinEventHook, UnhookWinEvent};
+    static HOTKEY_TRAY_HWND: AtomicIsize = AtomicIsize::new(0);
+    const WM_FOREGROUND_CHANGED: u32 = WM_APP + 19;
+
+    unsafe extern "system" fn on_foreground_changed(
+        _: isize,
+        _: u32,
+        _: HWND,
+        _: i32,
+        _: i32,
+        _: u32,
+        _: u32,
+    ) {
+        let hwnd = HOTKEY_TRAY_HWND.load(Ordering::Relaxed);
+        if hwnd != 0 {
+            PostMessageW(hwnd, WM_FOREGROUND_CHANGED, 0, 0);
+        }
+    }
+
+    unsafe fn foreground_suppresses_tool_hotkeys() -> bool {
+        let hwnd = GetForegroundWindow();
+        let name = process_name_for_hwnd(hwnd);
+        let process = if name.is_empty() {
+            String::new()
+        } else {
+            format!("{name}.exe")
+        };
+        let class = window_class_name(hwnd);
+        let content = fs::read_to_string(config_path()).unwrap_or_default();
+        pinyin_ime::game_keyboard_policy::suppress_tool_hotkeys(&content, &process, &class)
+    }
+
     const CLASS_NAME: &str = "KaixinImeTrayWindow";
     const WINDOW_TITLE: &str = "开心输入法 托盘";
     const MUTEX_NAME: &str = "Local\\KaixinInput_Tray_Mutex";
@@ -216,6 +249,8 @@ mod win {
         ocr_translate_hotkey: Option<HotkeySpec>,
         translate_hotkey: Option<HotkeySpec>,
         hotkey_config_mtime: Option<SystemTime>,
+        tool_hotkeys_suppressed: bool,
+        foreground_hook: isize,
         clipboard_config_mtime: Option<SystemTime>,
         clipboard_background_enabled: Option<bool>,
         last_capture_target: HWND,
@@ -452,6 +487,8 @@ mod win {
                 ocr_translate_hotkey: None,
                 translate_hotkey: None,
                 hotkey_config_mtime: None,
+                tool_hotkeys_suppressed: false,
+                foreground_hook: 0,
                 clipboard_config_mtime: None,
                 clipboard_background_enabled: None,
                 last_capture_target: 0,
@@ -635,18 +672,47 @@ mod win {
         unsafe fn refresh_screenshot_hotkey_if_needed(&mut self, hwnd: HWND, force: bool) {
             let path = config_path();
             let mtime = fs::metadata(&path).and_then(|m| m.modified()).ok();
-            if !force && mtime == self.hotkey_config_mtime {
+            let suppressed = foreground_suppresses_tool_hotkeys();
+            if !force
+                && mtime == self.hotkey_config_mtime
+                && suppressed == self.tool_hotkeys_suppressed
+            {
                 return;
             }
             self.hotkey_config_mtime = mtime;
-            let next_screenshot = read_hotkey_config("screenshot", "hotkey", "off");
-            let next_clipboard = read_hotkey_config("clipboard", "hotkey", "off");
-            let next_settings = read_hotkey_config("tools", "settings_hotkey", "off");
-            let next_handwrite = read_hotkey_config("tools", "handwrite_hotkey", "off");
-            let next_ocr = read_hotkey_config("tools", "ocr_hotkey", "off");
-            let next_ocr_translate = read_hotkey_config("tools", "ocr_translate_hotkey", "off");
+            self.tool_hotkeys_suppressed = suppressed;
+            let next_screenshot = if suppressed {
+                None
+            } else {
+                read_hotkey_config("screenshot", "hotkey", "off")
+            };
+            let next_clipboard = if suppressed {
+                None
+            } else {
+                read_hotkey_config("clipboard", "hotkey", "off")
+            };
+            let next_settings = if suppressed {
+                None
+            } else {
+                read_hotkey_config("tools", "settings_hotkey", "off")
+            };
+            let next_handwrite = if suppressed {
+                None
+            } else {
+                read_hotkey_config("tools", "handwrite_hotkey", "off")
+            };
+            let next_ocr = if suppressed {
+                None
+            } else {
+                read_hotkey_config("tools", "ocr_hotkey", "off")
+            };
+            let next_ocr_translate = if suppressed {
+                None
+            } else {
+                read_hotkey_config("tools", "ocr_translate_hotkey", "off")
+            };
             let translate_available = is_translate_available();
-            let next_translate = if translate_available {
+            let next_translate = if translate_available && !suppressed {
                 read_hotkey_config("tools", "translate_hotkey", "off")
             } else {
                 None
@@ -815,6 +881,11 @@ mod win {
                     (*app).refresh_clipboard_background_if_needed(true);
                 }
                 // 轮询注册表中的 AsciiMode，更新托盘图标为「中 / 英」。
+                HOTKEY_TRAY_HWND.store(hwnd, Ordering::Relaxed);
+                if !app.is_null() {
+                    (*app).foreground_hook =
+                        SetWinEventHook(3, 3, 0, Some(on_foreground_changed), 0, 0, 0);
+                }
                 let _ = SetTimer(hwnd, TIMER_ID_STATE_POLL, STATE_POLL_MS, None);
                 0
             }
@@ -887,6 +958,10 @@ mod win {
                 0
             }
             WM_DESTROY => {
+                HOTKEY_TRAY_HWND.store(0, Ordering::Relaxed);
+                if !app.is_null() && (*app).foreground_hook != 0 {
+                    UnhookWinEvent((*app).foreground_hook);
+                }
                 let _ = KillTimer(hwnd, TIMER_ID_STATE_POLL);
                 let _ = UnregisterHotKey(hwnd, SCREENSHOT_HOTKEY_ID);
                 let _ = UnregisterHotKey(hwnd, CLIPBOARD_HOTKEY_ID);
@@ -903,7 +978,19 @@ mod win {
                 PostQuitMessage(0);
                 0
             }
+            WM_FOREGROUND_CHANGED => {
+                if !app.is_null() {
+                    (*app).refresh_screenshot_hotkey_if_needed(hwnd, false);
+                }
+                0
+            }
             WM_HOTKEY => {
+                if foreground_suppresses_tool_hotkeys() {
+                    if !app.is_null() {
+                        (*app).refresh_screenshot_hotkey_if_needed(hwnd, false);
+                    }
+                    return 0;
+                }
                 let target_hwnd = if !app.is_null() {
                     (*app).capture_target_or_foreground(hwnd)
                 } else {
@@ -1291,7 +1378,7 @@ mod win {
         let visual_state = read_tray_visual_state();
         let game_compat_on = matches!(
             visual_state.mode_source.as_deref(),
-            Some("game" | "fullscreen")
+            Some("game" | "game_chat" | "fullscreen")
         );
         let mode_label = match visual_state.input_mode() {
             TrayInputMode::Chinese => "中文",
@@ -1303,7 +1390,7 @@ mod win {
             "{mode_label}  ·  {source_label}  ·  引擎{}",
             visual_state.engine_state.label()
         ));
-        let game_compat = wide("游戏兼容模式（ASCII直通）");
+        let game_compat = wide("游戏输入设置…");
         append_owner_draw_menu_item(
             menu,
             MF_STRING | MF_GRAYED,
@@ -1460,7 +1547,7 @@ mod win {
 
     unsafe fn handle_menu_command(hwnd: HWND, command: usize, target_hwnd: HWND) {
         match command {
-            ID_GAME_COMPAT_MODE => toggle_game_compat_mode(hwnd),
+            ID_GAME_COMPAT_MODE => open_settings_section(true),
             ID_SETTINGS => open_settings(),
             ID_CLIPBOARD_MANAGER => open_clipboard_manager(),
             ID_HANDWRITE => open_handwrite(),
@@ -1481,6 +1568,10 @@ mod win {
     }
 
     fn open_settings() {
+        open_settings_section(false);
+    }
+
+    fn open_settings_section(game_settings: bool) {
         let Some(path) = resolve_settings_path() else {
             show_error_message(
                 "未找到设置程序 srf_ime_settings.exe。\n\
@@ -1512,6 +1603,9 @@ mod win {
             .map(Path::to_path_buf);
 
         let mut cmd = Command::new(&path);
+        if game_settings {
+            cmd.arg("--game-settings");
+        }
         if let Some(ref dir) = work_dir {
             cmd.current_dir(dir);
         }
@@ -1521,13 +1615,6 @@ mod win {
                 *last = None;
             }
             show_error_message(&format!("无法启动设置程序：{e}\n{}", path.display()));
-        }
-    }
-
-    unsafe fn toggle_game_compat_mode(hwnd: HWND) {
-        let next_ascii = !read_ascii_mode().unwrap_or(false);
-        if write_ascii_mode(next_ascii) {
-            let _ = PostMessageW(hwnd, WM_STATE_CHANGED, if next_ascii { 1 } else { 0 }, 0);
         }
     }
 

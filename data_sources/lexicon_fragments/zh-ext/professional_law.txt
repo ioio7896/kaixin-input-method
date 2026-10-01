@@ -1,0 +1,62 @@
+# 开心输入法专业小词库：法律
+# 项目原创整理；默认关闭，在设置页按需开启。
+宪法	xian fa	6000
+民法典	min fa dian	6000
+刑法	xing fa	6000
+行政法	xing zheng fa	6000
+诉讼法	su song fa	6000
+商法	shang fa	6000
+经济法	jing ji fa	6000
+国际法	guo ji fa	6000
+劳动法	lao dong fa	6000
+知识产权	zhi shi chan quan	6000
+著作权	zhu zuo quan	6000
+专利权	zhuan li quan	6000
+商标权	shang biao quan	6000
+法律关系	fa lv guan xi	6000
+法律责任	fa lv ze ren	6000
+权利义务	quan li yi wu	6000
+民事主体	min shi zhu ti	6000
+法人	fa ren	6000
+自然人	zi ran ren	6000
+诉讼时效	su song shi xiao	6000
+举证责任	ju zheng ze ren	6000
+证据规则	zheng ju gui ze	6000
+证明标准	zheng ming biao zhun	6000
+合同效力	he tong xiao li	6000
+违约责任	wei yue ze ren	6000
+侵权责任	qin quan ze ren	6000
+缔约过失	di yue guo shi	6000
+不当得利	bu dang de li	6000
+无因管理	wu yin guan li	6000
+物权	wu quan	6000
+债权	zhai quan	6000
+抵押权	di ya quan	6000
+质权	zhi quan	6000
+留置权	liu zhi quan	6000
+所有权	suo you quan	6000
+用益物权	yong yi wu quan	6000
+善意取得	shan yi qu de	6000
+行政复议	xing zheng fu yi	6000
+行政处罚	xing zheng chu fa	6000
+行政许可	xing zheng xu ke	6000
+行政诉讼	xing zheng su song	6000
+民事诉讼	min shi su song	6000
+刑事诉讼	xing shi su song	6000
+仲裁	zhong cai	6000
+调解	tiao jie	6000
+管辖权	guan xia quan	6000
+司法解释	si fa jie shi	6000
+正当防卫	zheng dang fang wei	6000
+紧急避险	jin ji bi xian	6000
+犯罪构成	fan zui gou cheng	6000
+主观故意	zhu guan gu yi	6000
+过失犯罪	guo shi fan zui	6000
+无罪推定	wu zui tui ding	6000
+罪刑法定	zui xing fa ding	6000
+缓刑	huan xing	6000
+假释	jia shi	6000
+取保候审	qu bao hou shen	6000
+强制执行	qiang zhi zhi xing	6000
+财产保全	cai chan bao quan	6000
+法律援助	fa lv yuan zhu	6000
