@@ -1,477 +1,419 @@
+可以在使用本输入法之前，用你的AI检测我的源代码再用。谢谢
 # 开心输入法
 
-![开心输入法图标](assets/kaixin-input-icon.png)
+![开心输入法图标](https://raw.githubusercontent.com/ioio7896/kaixin-input-method/main/assets/kaixin-input-icon.png)
 
-开心输入法是一款面向 Windows 的本地中文输入法。C++/Win32 前端通过 Windows
-TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音解析、候选排序、
-用户学习和辅助工具。
+**一款适用于 Windows 的中文输入法，支持拼音输入、手写查字、剪贴板管理、截图和本地图片文字识别。**
 
-项目强调三个方向：
+日常打字时，你可以输入完整拼音，也可以只输入拼音首字母。遇到不会读的字，可以用手写查找；需要提取截图里的文字，可以使用带 OCR 的版本。
 
-- **本地优先**：拼音计算、词库、手写和 OCR 均在本机运行。
-- **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
-- **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
+拼音输入和图片文字识别在电脑本地完成，不需要把输入内容或图片上传到云端。
 
-当前版本为 **2.0.0**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
-TSF/辅助组件，以适配不同位数的宿主程序。
+[下载安装包](https://github.com/ioio7896/kaixin-input-method/releases/latest) · [反馈问题](https://github.com/ioio7896/kaixin-input-method/issues) · [查看更新记录](https://github.com/ioio7896/kaixin-input-method/blob/main/CHANGELOG.md)
 
-当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
-以及早于 Windows 10 的版本不在正式支持范围内。
+## 可以用它做什么？
 
-> [!IMPORTANT]
-> 拼音核心和本地 OCR 不会上传输入内容。翻译功能通过另行安装的 WinTranslator
-> 完成，是否联网及其数据处理方式由 WinTranslator 自身决定；本仓库不打包翻译模型
-> 或翻译运行时。
-
-## 功能概览
-
-### 拼音输入
-
-- 全拼、简拼和全拼/声母混拼。
-- 整句、长词、短词和单字候选联合排序。
-- 字符 Bigram、词频、用户频次、上下文和近期选择信号。
-- 邻键、漏键、调序和近音等输入纠错。
-- `z/zh`、`c/ch`、`s/sh`、`n/l`、`f/h`、`an/ang`、`en/eng`、
-  `in/ing` 等可选模糊音。
-- 内置双拼方案、简繁输出和自定义短语。
-- 英文词候选、日期时间直输、符号和 Emoji。
-- 用户词条学习、置顶、移除、导入、明文导出和清空。
-
-### 候选窗口与兼容性
-
-- 竖排或横排，每页 3～9 项。
-- 经典、紧凑、卡片布局及多种密度。
-- 字体、字号、字重、透明度、浅色、深色、高对比度和材质设置。
-- 鼠标提交、滚轮翻页、增强定位和候选来源/读音调试信息。
-- 全屏及游戏应用候选覆盖层。
-- 按应用设置候选策略、覆盖层位置、缩放、显示器和提交方式。
-- TSF、Unicode SendInput、剪贴板粘贴等提交兼容方案。
-
-### 本地工具
-
-- **剪贴板管理器**：搜索、置顶、复制、粘贴、快粘和清空文本历史。
-- **手写查字**：独立画布、候选复制和直接粘贴。
-- **截图**：原生 Windows Graphics Capture，支持智能框选、自由区域和当前窗口截图。
-- **OCR**：本地 RapidOCR/ONNXRuntime，支持预处理、二次框选、历史和结果整理。
-- **翻译联动**：输入法只采集文本并通过当前用户命名管道发起请求；翻译、展示和结果操作均由外部 WinTranslator 完成。
-- **托盘与设置**：统一管理输入、外观、工具、应用兼容和隐私选项。
-
-## 架构
-
-```text
-Windows 应用 / TSF 宿主
-        │
-        ▼
-tsf-tip/srf_tsf_tip.dll       C++：按键、composition、候选窗、应用兼容
-        │  本地命名管道 + capability
-        ▼
-srf_ime_engine.exe            Rust：解析、候选、学习、词库和剪贴板查询
-        │
-        ├── srf_ime_settings.exe
-        ├── srf_ime_tray.exe
-        ├── srf_ime_clipboard.exe
-        ├── srf_ime_handwrite.exe
-        └── srf_ime_ocr.exe
-        └── 翻译请求（候选词 / 托盘 / OCR） ──► 外部 WinTranslator
-```
-
-候选窗口通常由 TSF 进程内渲染；全屏或无 UI 宿主可按策略切换到独立的
-`srf_ime_overlay.exe`。
-
-交互引擎优先使用热词索引。精确全拼的热词候选少于 3 项时，会查询随安装包生成的
-`lexicon/cold_lexicon.sqlite`，每次最多召回 16 项，SQLite 页缓存限额为 512 KiB，
-另保留最近 64 个查询结果。该索引沿用构建选择的 standard/full 词库范围，不做前缀、
-简拼或纠错扫描；自定义可选词库配置时停用默认冷词索引，避免绕过词库开关。
-旧安装目录缺少该文件时仍可使用热词输入，重新完整构建安装包后可获得冷词召回。
-
-性能诊断中，`srf_ipc_lookup` 区分排队、锁等待、初始化、引擎计算和序列化耗时；
-`srf_ipc_lookup_write` 记录服务端响应写入耗时，以 session/request ID 对应查询。
-候选绘制耗时继续使用 TSF 的 `CandidateWindow/Paint` 记录。响应写入耗时不等于完整
-往返延迟，也不包含绘制时间。verbose 级别新增 `srf_candidate_stage`，记录阶段名称、
-候选数量和首屏位置变化，新增字段不记录输入或候选正文。
-
-## 安装
-
-完整构建会在 `dist/` 生成两类安装包：
-
-```text
-kaixin-setup-ime-<version>-<timestamp>.exe   纯输入法
-kaixin-setup-ocr-<version>-<timestamp>.exe   输入法 + 本地 OCR
-```
-
-运行所需安装包，完成后从 Windows 输入法切换面板选择“开心输入法”。如果输入法没有
-立即出现在列表中，可注销并重新登录，或在 Windows 语言设置中检查
-“中文（简体，中国）”下的键盘。
-
-默认生成机器范围安装包。开发者也可使用 `python build.py --user-installer` 生成
-当前用户安装包。
-
-卸载默认保留用户数据。静默卸载可使用：
-
-- `/RemoveTransientUserData=1`：删除缓存和日志等临时数据。
-- `/RemoveUserData=1` 或 `/DeleteUserData=1`：删除配置和全部用户数据。
-
-## 基本使用
-
-| 操作 | 默认按键 |
+| 功能 | 可以帮你做什么 |
 | --- | --- |
-| 输入拼音 | `a-z` |
-| 选择候选 | `1-9` |
-| 提交首选 | `Space` / `Enter` |
-| 取消 composition | `Esc` |
-| 删除输入 | `Backspace` |
-| 翻页 | `-` / `=`、`,` / `.`、`PageUp` / `PageDown` |
-| 轻按切换中英文 | `Shift` |
+| 拼音输入 | 输入汉字、词语和句子，支持全拼、简拼、混合拼音和双拼 |
+| 常用词学习 | 根据你选过的词调整候选顺序，方便再次输入 |
+| 自定义短语 | 为常用文字设置输入码，例如邮箱、地址和固定回复 |
+| 手写查字 | 遇到不会读的字，用鼠标写出来查找 |
+| 剪贴板管理 | 查找、置顶和再次粘贴保存过的文本 |
+| 截图 | 截取屏幕区域或当前窗口 |
+| 图片文字识别 | 把图片、截图里的文字提取出来，方便复制和整理 |
+| 外观设置 | 调整候选栏的方向、字体、大小、颜色和布局 |
+| 游戏输入设置 | 为不同游戏调整中文聊天方式和候选栏位置 |
 
-截图、剪贴板、设置、手写、OCR 和翻译等全局功能热键**默认关闭**，请在设置页按需
-启用，避免与其他程序冲突。
+图片文字识别需要安装“输入法＋OCR”版本。
 
-## VV 直输助手
+## 下载哪个版本？
 
-输入 `vv` 加命令可生成常用文本或打开工具：
+开心输入法提供两个安装包，**选择其中一个安装即可**。
 
-| 命令 | 功能 | 示例 |
+| 版本 | 适合谁 | 文件名中的标识 |
 | --- | --- | --- |
-| `vv rq` / `vv date` / `vv jr` | 当前或相对日期 | `vv rq mingtian`、`vv rq +3` |
-| `vv sj` / `vv time` | 当前时间 | `vv sj` |
-| `vv xq` / `vv week` / `vv zhou` | 星期 | `vv xq` |
-| `vv num` / `vv upper` / `vv full` | 中文数字、大写或全角转换 | `vv num 12345` |
-| `vv roman` / `vv hex` | 罗马数字或进制转换 | `vv hex 255` |
-| `vv percent` / `vv bytes` | 百分比或容量格式 | `vv bytes 1048576` |
-| `vv calc` / `vv convert` | 计算与单位换算 | `vv calc (2+3)*4` |
-| `vv sym` / `vv fh` | 符号 | `vv sym punct` |
-| `vv emoji` / `vv face` | Emoji | `vv emoji smile` |
-| `vv unit` / `vv dw` | 常用单位 | `vv unit` |
-| `vv dx` / `vv rmb` / `vv money` | 人民币大写 | `vv rmb 123.45` |
-| `vv mail` / `vv email` | 邮箱片段 | `vv mail` |
-| `vv url` / `vv site` | 网址片段 | `vv url` |
-| `vv md` / `vv markdown` | Markdown 片段 | `vv md` |
-| `vv cb` / `vv clip` / `vv paste` | 剪贴板候选 | `vv cb` |
-| `vv hw` / `vv handwrite` / `vv sx` | 手写查字 | `vv hw` |
-| `vvu` | 打开剪贴板管理器/快粘 | `vvu` |
+| 纯输入法版 | 主要用来打字，也需要手写、剪贴板和截图工具 | `kaixin-setup-ime` |
+| 输入法＋OCR 版 | 除了打字，还经常需要提取图片或截图里的文字 | `kaixin-setup-ocr` |
 
-`rq`、`sj` 等也可以不加 `vv` 直接输入。相对日期支持 `jintian`、`mingtian`、
-`houtian`、`zuotian`、`+N`、`-N`、`xiazhouyi`、`monthstart`、
-`monthend`、`nextmonthstart` 和 `nextmonthend` 等写法。
+两个版本的拼音输入功能相同。OCR 版带有本地识别所需的组件，因此安装包和安装后的占用空间更大。
 
-自定义短语示例：
+**不知道怎么选？** 平时只是打字，选纯输入法版；经常从图片里复制文字，选 OCR 版。
 
-```ini
-;qq = name@example.com
-;;r = 此致，敬礼
-;sig = 此致\n敬礼
-```
+👉 [前往下载页面](https://github.com/ioio7896/kaixin-input-method/releases/latest)
 
-保存后可输入 `;qq`、`;;r`、`;sig` 或 `vv ;qq` 调出。
+进入页面后，在 **Assets（附件）** 中找到对应的 `.exe` 安装包。
 
-## 剪贴板
+`Source code (zip)` 和 `Source code (tar.gz)` 是源码压缩包，普通用户下载安装包即可。
 
-剪贴板后台采集默认关闭。启用后：
+## 支持哪些电脑？
 
-- 默认最多保留 60 条普通记录和 24 条置顶记录。
-- 单条文本最多 20,000 个 UTF-16 单元。
-- 默认不按时间自动过期。
-- 默认不记录来源进程，也不在候选元数据中展示内容预览。
+目前支持：
 
-即使后台采集关闭，主动打开剪贴板管理器、刷新或使用 `vvu` 仍会读取一次当前系统
-文本剪贴板。全局隐私模式会同时禁止后台采集和按需披露。
+- 64 位 Windows 10。
+- 64 位 Windows 11。
 
-## OCR 与截图
+安装包同时包含适配 64 位和 32 位应用程序的输入法组件。
 
-OCR 安装包要求以下内容完整存在于安装目录：
+暂未正式支持 macOS、Linux、Windows on ARM、Windows Server，以及早于 Windows 10 的系统。
+
+## 如何安装？
+
+1. 在下载页面选择需要的 `.exe` 安装包。
+2. 双击安装包，按照提示完成安装。
+3. 按 `Win + 空格`，在输入法列表中选择“开心输入法”。
+4. 打开记事本，输入 `nihao`，试着选择“你好”。
+
+如果安装后没有立即看到开心输入法，可以先注销并重新登录。
+
+也可以在 Windows 的“设置 → 时间和语言 → 语言”相关页面中，查看“中文（简体，中国）”下的键盘列表。不同 Windows 版本的菜单名称可能略有差别。
+
+## 开始打字
+
+### 输入拼音，选择文字
+
+像使用其他拼音输入法一样，输入拼音后，从候选栏中选择需要的文字。
+
+支持以下输入方式：
+
+- **全拼**：输入每个字的完整拼音，例如 `nihao`。
+- **简拼**：输入拼音首字母，例如 `nh`。
+- **混合输入**：一部分输入完整拼音，一部分输入首字母。
+- **双拼**：熟悉双拼的用户可以在设置中启用并选择方案。
+
+简拼可能对应多个词，实际显示顺序会受到词频和个人使用习惯的影响。
+
+### 常用按键
+
+以下是默认操作，部分按键可以在设置中调整。
+
+| 操作 | 按键 |
+| --- | --- |
+| 选择候选文字 | 数字键 `1～9` |
+| 确认当前首选项 | `空格` |
+| 确认输入 | `Enter` |
+| 取消当前拼音 | `Esc` |
+| 删除刚输入的拼音 | `Backspace` |
+| 上一页／下一页 | `-`／`=` |
+| 上一页／下一页 | `,`／`.` |
+| 上一页／下一页 | `PageUp`／`PageDown` |
+| 切换中文／英文 | 轻按 `Shift` |
+
+也可以用鼠标点击候选文字，或使用滚轮翻页。
+
+### 让常用词更容易找到
+
+开心输入法支持学习你选择过的词，让常用表达更容易再次出现。
+
+你也可以管理用户词条，包括置顶、移除、导入、导出和清空。导出的词库是明文文件，分享前请检查其中是否有姓名、地址等个人信息。
+
+### 拼音分不清怎么办？
+
+可以在设置中开启“模糊音”。
+
+例如，你经常混淆 `z` 和 `zh`，或者 `n` 和 `l`，可以只开启对应的选项，让输入法帮助匹配。
+
+建议按自己的习惯选择需要的项目，避免候选范围过大。
+
+## 调整输入法外观
+
+你可以在设置中调整：
+
+- 候选栏横排或竖排。
+- 每页显示的候选数量。
+- 字体、字号和字重。
+- 浅色、深色和高对比度显示。
+- 候选栏透明度。
+- 经典、紧凑和卡片布局。
+- 内置主题。
+
+如果候选文字看起来太小，可以先调大字号；如果候选栏占用空间较多，可以尝试紧凑布局。
+
+## 手写查字
+
+遇到一个认识字形、却不知道怎么读的字，可以打开手写工具，用鼠标写出来，再从识别结果中选择。
+
+选中的文字可以复制，也可以直接粘贴到正在使用的程序中。
+
+在中文输入状态下，也可以输入 `vv hw` 调出手写入口。
+
+## 剪贴板管理
+
+剪贴板管理器可以保存和查找文本记录，方便重复使用常用内容。
+
+支持：
+
+- 搜索历史文本。
+- 置顶常用内容。
+- 复制或再次粘贴。
+- 删除记录和清空历史。
+
+**剪贴板后台记录默认关闭。** 需要连续保存复制记录时，可以在设置中开启。
+
+默认最多保存 60 条普通记录和 24 条置顶记录；默认不会按时间自动删除，可以自行调整保存规则。
+
+需要注意：即使后台记录关闭，主动打开剪贴板管理器、刷新或使用快粘功能时，程序仍会读取当前剪贴板中的文本。
+
+在中文输入状态下，输入 `vvu` 可以打开剪贴板管理器或快粘入口。
+
+## 截图与图片文字识别
+
+### 截图
+
+可以截取屏幕上的一块区域，也可以截取当前窗口。
+
+截图的保存目录和相关操作可以在设置中调整。默认保存位置是 Windows 用户“图片”目录下的 `Kaixin Screenshots` 文件夹。
+
+### 图片文字识别（OCR）
+
+OCR 就是“把图片里的文字识别出来”。
+
+例如：
+
+- 提取聊天截图中的文字。
+- 复制网页图片里的内容。
+- 整理扫描件或文档截图中的文字。
+
+使用这项功能需要安装 **输入法＋OCR 版**。
+
+识别提供快速、均衡和高精度三种模式，可以根据图片情况切换。识别结果可以复制、整理，再粘贴到其他程序中。
+
+识别在本机完成。图片是否清晰、文字是否太小，以及版面是否复杂，都会影响结果；用于重要资料时，请核对识别后的文字。
+
+OCR 截图默认保存在 Windows 用户“图片”目录下的 `Kaixin OCR` 文件夹，也可以修改。
+
+## 输入几个字母，快速调出常用内容
+
+开心输入法内置一些快捷命令，方便输入日期、时间、符号等内容。
+
+在中文输入状态下，输入下面的命令，再从候选栏选择结果。
+
+| 想做什么 | 输入示例 |
+| --- | --- |
+| 输入今天的日期 | `vv rq` |
+| 输入明天的日期 | `vv rq mingtian` |
+| 输入当前时间 | `vv sj` |
+| 输入星期 | `vv xq` |
+| 简单计算 | `vv calc (2+3)*4` |
+| 转换人民币大写 | `vv rmb 123.45` |
+| 查找符号 | `vv sym` |
+| 查找 Emoji | `vv emoji` |
+| 查找常用单位 | `vv unit` |
+| 调出剪贴板候选 | `vv cb` |
+| 打开手写查字 | `vv hw` |
+| 打开剪贴板管理器／快粘 | `vvu` |
+
+这些功能按需使用即可，不需要一次记住所有命令。
+
+## 在游戏里输入中文
+
+开心输入法提供专门的游戏输入设置。
+
+默认的游戏策略会把普通游戏按键交给游戏，例如 `Shift`、方向键和数字键。需要聊天时，再手动开启中文输入。
+
+新配置的默认游戏聊天快捷键为：
+
+**`Ctrl + Shift + Alt + G`**
+
+基本用法：
+
+1. 先打开游戏里的聊天框。
+2. 按游戏聊天快捷键，开启中文输入。
+3. 输入拼音，选择文字。
+4. 当前没有待选拼音时，按 `Enter` 或 `Esc` 结束这次中文聊天。
+
+如果当前还有拼音，`Enter` 或 `Esc` 会先处理当前输入。
+
+在“应用兼容”设置中，还可以为不同游戏单独调整：
+
+- 中文输入策略。
+- 候选栏位置。
+- 候选栏大小和显示器。
+- 文字提交方式。
+
+不同游戏的聊天框实现不同，兼容效果可能有差异。可以使用游戏测试向导，在目标游戏中确认哪种方式可用。
+
+已有配置如果关闭或修改过快捷键，会保留原来的选择。
+
+## 快捷键为什么默认关闭？
+
+截图、剪贴板、手写、OCR、设置和翻译等工具的全局快捷键默认关闭，方便你根据自己的习惯设置，也减少与其他软件快捷键冲突的情况。
+
+需要时，在设置中为相应工具启用即可。
+
+中英文切换和游戏聊天快捷键有各自的默认规则。
+
+## 关于翻译功能
+
+开心输入法支持与 **WinTranslator** 联动。
+
+使用翻译功能前，需要另外安装 WinTranslator，并在相关设置中配置。
+
+开心输入法安装包不包含翻译程序、翻译模型或翻译运行环境。翻译是否需要联网，以及文字如何处理，取决于 WinTranslator 的配置和所使用的服务。
+
+## 隐私与本地数据
+
+### 输入内容会上传吗？
+
+拼音输入、词库计算、手写查字和本地 OCR 在电脑上完成。
+
+如果使用外部翻译功能，所选文字会交给 WinTranslator 处理，具体行为由它的设置决定。
+
+### 默认会记录剪贴板吗？
+
+不会持续记录。剪贴板后台采集默认关闭。
+
+如果主动使用剪贴板管理器或快粘功能，程序会读取当前剪贴板文本；如果开启后台记录，则会按设置保存文本历史。
+
+### 个人数据存在哪里？
+
+配置、用户词库、剪贴板历史和 OCR 历史等，默认保存在当前 Windows 用户的本地应用数据目录中：
 
 ```text
-RapidOCR-3.9.0/
-.python-runtime/
-.python-packages/
-tools/kaixin_ocr_engine.py
-RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_det_medium.onnx
-RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_det_small.onnx
-RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_rec_medium.onnx
+%LOCALAPPDATA%\kaixin
 ```
 
-程序会根据 `package_manifest.sha256` 校验模型哈希。快速档使用 `det_small`，均衡和
-高精度档使用 PP-OCRv6 `det_medium`。
+可以把这段路径粘贴到文件资源管理器的地址栏中打开。
 
-开发环境首次准备或模型缺失时，运行
-`powershell -ExecutionPolicy Bypass -File scripts/fetch_rapidocr_models.ps1` 下载并校验全部必需模型。
+用户词库、剪贴板历史和 OCR 历史等使用 Windows 提供的本地加密保护。配置文件是明文文件。
 
-截图默认保存到 `%USERPROFILE%\Pictures\Kaixin Screenshots`，OCR 截图默认保存到
-`%USERPROFILE%\Pictures\Kaixin OCR`；两者都可在设置中修改。截图图片本身是普通
-PNG/JPEG 文件，不由 DPAPI 加密，请将保存目录视为敏感数据目录。
+**截图图片是普通图片文件，不会因为使用开心输入法而自动加密。** 如果截图包含私人信息，请留意保存目录及其共享、备份设置。
 
-## 隐私与安全
+### 可以停止学习和剪贴板访问吗？
 
-### 安全默认值
+可以。
 
-- 剪贴板后台采集默认关闭。
-- 所有工具全局热键默认关闭。
-- 运行诊断默认仅记录 `error` 级别。
-- 密码输入框和常见密码管理器进程自动视为敏感上下文。
-- 可为进程配置“永不学习”“永不读取剪贴板”“永不显示候选”。
-- `[privacy] enabled=1` 会强制 ASCII、隐藏候选、停止学习并禁止剪贴板访问。
+设置中提供隐私模式，也支持对指定程序设置“不学习”“不读取剪贴板”或“不显示候选”。
 
-建议的隐私配置：
+全局隐私模式开启后，会切换为英文输入、隐藏中文候选、停止学习，并禁止输入法访问剪贴板。
 
-```ini
-[privacy]
-enabled=1
+### 分享日志前要注意什么？
 
-[clipboard]
-background_enabled=0
+反馈问题时，请先检查日志和截图中是否包含：
 
-[diagnostics]
-log_level=error
-```
+- 输入过的私人文字。
+- 姓名、账号或联系方式。
+- 文件路径和窗口标题。
+- 剪贴板内容。
 
-### 本地数据
+本地保存和加密保护不能代替电脑本身的安全措施。如果其他程序已经控制了你的 Windows 账户，仍可能接触到该账户下的数据。
 
-| 数据 | 默认位置 | Windows 上的保护 |
-| --- | --- | --- |
-| 配置 | `%LOCALAPPDATA%\kaixin\kaixin.ini` | 当前用户目录 ACL；内容为明文 |
-| IPC capability | `%LOCALAPPDATA%\kaixin\engine_capability.dat` | DPAPI + 文件 ACL |
-| 用户词库 | `%LOCALAPPDATA%\kaixin\user_dict.sqlite` | 整库 DPAPI |
-| 剪贴板历史 | `%LOCALAPPDATA%\kaixin\clipboard_store.sqlite` | 整库 DPAPI |
-| OCR 历史 | `%LOCALAPPDATA%\kaixin\ocr_history.sqlite` | 整库 DPAPI |
-| 截图库索引 | `%LOCALAPPDATA%\kaixin\screenshot_library.sqlite` | 整库 DPAPI |
-| 运行事件 | `%LOCALAPPDATA%\kaixin\runtime_events.sqlite` | 消息及详情字段 DPAPI |
-| 截图图片 | 用户设置目录 | 普通 PNG/JPEG，不加密 |
-| 诊断日志 | `%LOCALAPPDATA%\kaixin\logs` | 可能包含明文诊断信息 |
+## 常见问题
 
-当前开发格式会拒绝旧版明文用户词库、剪贴板、OCR 和截图库数据库，不再自动读取或
-迁移。升级本开发版本前，如不需要旧数据，可关闭输入法相关进程后删除对应旧文件。
+### 安装后找不到开心输入法
 
-### IPC 与进程加固
+先按 `Win + 空格` 查看输入法列表。
 
-- 引擎命名管道拒绝远程客户端。
-- 管道 DACL 仅允许 SYSTEM、管理员和当前登录会话。
-- Lookup、学习、剪贴板解析等命令统一校验 DPAPI capability。
-- Rust GUI/工具进程限制 DLL 搜索路径，并启用严格句柄、扩展点禁用和镜像加载策略。
-- MSVC 目标启用 `/GS`、`/sdl`、Control Flow Guard、DEP、ASLR、CET 和高熵 ASLR。
+如果没有出现，注销并重新登录，再检查 Windows 中文语言设置中的键盘列表。
 
-这些措施主要防止其他 Windows 账户、远程管道客户端、离线复制和普通未授权调用。
-它们不能防止已经以同一 Windows 用户身份运行的恶意程序读取剪贴板、模拟输入或调用
-该用户可解密的 DPAPI 数据；管理员权限和已入侵的同用户会话也不在此隔离边界内。
+### 打字时没有中文候选
 
-分享诊断包之前，应检查日志、窗口标题、进程路径和截图路径是否含有隐私信息。
+可以依次检查：
 
-## 主题
+1. 是否已经切换到开心输入法。
+2. 是否处于英文状态，尝试轻按 `Shift`。
+3. 是否开启了隐私模式。
+4. 当前程序是否设置为“不显示候选”或游戏键盘直通模式。
 
-主题位于 `skins/<id>/theme.json`。当前内置：
+可以先在记事本中测试，判断问题是否只出现在某个程序里。
 
-`light`、`dark`、`cherry-pop`、`forest-ink`、`high-visibility`、
-`ink-violet`、`mint-glass`、`moon-ink`、`neon-night`、`nordic-frost`、
-`paper-latte`、`retro-terminal`、`rose-gold`、`sea-salt`、
-`sunlit-amber`。
+### 为什么没有剪贴板历史？
 
-主题格式参见 [皮肤主题规范](docs/skin_theme_schema.md)。
+剪贴板后台记录默认关闭。开启后，才会按设置持续保存后续复制的文本。
 
-## 从源码构建
+### 为什么工具快捷键没有反应？
 
-构建脚本仅支持 Windows。基础依赖：
+截图、手写、OCR 等工具的全局快捷键默认关闭。请在设置中启用，并检查是否与其他程序冲突。
 
-- Python 3
-- Rust/Cargo（MSVC 工具链及 `i686-pc-windows-msvc` 目标）
-- CMake 3.20 或更高版本
-- Visual Studio C++/MSVC 构建工具
-- PowerShell
-- Inno Setup 6（生成安装包时）
-- OCR 变体所需的本地 RapidOCR、Python 环境及模型
+### 为什么不能识别图片文字？
 
-完整 Release 构建默认同时构建 `ime` 和 `ocr` 变体，不运行代码测试及冒烟检查；
-仍执行构建所需的产物完整性检查：
+先确认安装的是“输入法＋OCR 版”。
+
+如果已经安装 OCR 版，仍提示缺少组件，可以使用完整 OCR 安装包重新安装，避免手动删除安装目录里的组件。
+
+### 游戏里能看到候选，但文字没有进入聊天框
+
+不同游戏接受文字的方式不同。
+
+请在“应用兼容”中使用游戏测试向导，尝试并确认适合该游戏的文字提交方式。
+
+### 升级时需要注意什么？
+
+升级前，建议先导出需要保留的用户词条，并备份自己的设置和短语。
+
+当前版本不会自动读取或迁移部分旧版明文历史数据库。如果你使用过较早的开发版本，请先查看对应版本的更新说明。
+
+### 卸载后，个人数据会删除吗？
+
+默认卸载会保留用户数据，方便以后重新安装使用。
+
+如果希望彻底清理，需要另外删除对应的本地用户数据和截图文件。删除前请先备份需要保留的内容。
+
+## 反馈问题与提出建议
+
+欢迎报告使用中遇到的问题，也欢迎提出功能和体验建议。
+
+👉 [前往问题反馈页面](https://github.com/ioio7896/kaixin-input-method/issues)
+
+为了方便定位问题，可以说明：
+
+- 使用的 Windows 版本。
+- 开心输入法版本。
+- 出问题的软件或游戏名称。
+- 具体操作步骤。
+- 你期望出现什么结果，以及实际发生了什么。
+
+如果是候选问题，可以提供不含私人信息的拼音示例；如果是显示问题，可以附上已遮挡个人信息的截图。
+
+安全漏洞请按照 [安全问题说明](https://github.com/ioio7896/kaixin-input-method/blob/main/SECURITY.md) 中的方式报告。
+
+## 源码与开发
+
+开心输入法开放源码。普通用户下载安装包即可使用；希望研究或修改程序的开发者，可以查看源码和开发文档。
+
+主要组成：
+
+- C++：连接 Windows 输入法系统、处理按键和显示候选栏。
+- Rust：处理拼音、词库、候选排序和本地工具。
+- Python 与 RapidOCR：提供本地图片文字识别。
+
+源码构建需要 Windows、Python 3、Rust、CMake、Visual Studio C++ 构建工具、PowerShell，以及用于生成安装器的 Inno Setup 6。OCR 版还需要准备识别模型和相关运行组件。
+
+构建两个版本的安装包：
 
 ```powershell
 python build.py
 ```
 
-`build_latest_installers.cmd` 使用相同默认参数，并透传命令行参数，例如
-`build_latest_installers.cmd --package-variants ime`。自动化调用前设置环境变量
-`KX_BUILD_NO_PAUSE=1` 可关闭结束暂停。需要检查时可显式传入 `--verify`、`--smoke`
-或 `--perf-smoke`。
-
-安装包先在临时目录全部生成并完成配置的签名步骤，再发布到 `dist/`。
-被替换变体的旧安装包保存在 `dist/previous-installers/`，其他变体保持原位置。
-归档不自动删除，可按需手动清理；构建或签名失败不会提前删除旧安装包。
-
-没有 OCR 运行时或只需要输入法时：
+只构建纯输入法版：
 
 ```powershell
 python build.py --package-variants ime
 ```
 
-常用参数：
+执行代码验证和运行检查：
 
 ```powershell
-python build.py --debug
-python build.py --clean
-python build.py --no-inno
-python build.py --user-installer
-python build.py --package-variants ime
-python build.py --package-variants ocr
-python build.py --portable-zip
-python build.py --perf-smoke
-python build.py --dry-run
+python build.py --verify --smoke
 ```
 
-`--quick` 仅复用已有 Rust/C++ 产物重新 stage/package，不适合首次或正式构建。
-正式发布建议强制代码签名：
+也可以使用项目中的 `build_latest_installers.cmd` 启动构建。
 
-```powershell
-$env:KX_SIGN_CERT_SHA1 = '<certificate thumbprint>'
-python build.py --sign --sign-required
-```
+相关说明：
 
-也可通过 `KX_SIGN_PFX` 和相关密码环境变量使用 PFX；执行
-`python build.py --help` 查看当前参数。
+- [参与开发](https://github.com/ioio7896/kaixin-input-method/blob/main/CONTRIBUTING.md)
+- [配置项参考](https://github.com/ioio7896/kaixin-input-method/blob/main/docs/config_reference.md)
+- [主题格式说明](https://github.com/ioio7896/kaixin-input-method/blob/main/docs/skin_theme_schema.md)
+- [词库来源说明](https://github.com/ioio7896/kaixin-input-method/blob/main/data_sources/README.md)
+- [更新记录](https://github.com/ioio7896/kaixin-input-method/blob/main/CHANGELOG.md)
 
-主要产物：
+## 开源许可与致谢
 
-```text
-dist/kaixin-setup-ime-<version>-<timestamp>.exe
-dist/kaixin-setup-ocr-<version>-<timestamp>.exe
-dist/kaixin-package-ime/
-dist/kaixin-package-ocr/
-dist/kaixin-package-*.zip
-```
+开心输入法自行开发的代码和文档采用 [Apache License 2.0](https://github.com/ioio7896/kaixin-input-method/blob/main/LICENSE) 许可。
 
-## 验证
+项目使用的第三方组件、识别模型和词库有各自的许可证，具体见：
 
-项目级验证：
+- [许可证范围说明](https://github.com/ioio7896/kaixin-input-method/blob/main/LICENSE_SCOPE.md)
+- [第三方组件与数据声明](https://github.com/ioio7896/kaixin-input-method/blob/main/THIRD_PARTY_NOTICES.md)
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify-fast.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify-full.ps1
-```
-
-Rust：
-
-```powershell
-cd pinyin-ime
-cargo check --all-targets
-cargo build --bin srf_ime_engine
-target\debug\srf_ime_engine.exe --install-health-check --probe nihao
-```
-
-性能与运行时检查：
-
-```powershell
-cd pinyin-ime
-cargo run --bin phrase_len_eval -- --limit 500
-```
-
-性能检查：
-
-```powershell
-python build.py --perf-smoke
-```
-
-需要交互桌面的截图/WGC 测试在无桌面环境中会跳过。
-
-在设置的“系统 / 诊断”页将日志级别切换到“性能”并保存，复现问题后点击
-“导出性能日志”，可选择 `.log` 或 `.txt` 保存位置。导出在后台执行，包含版本、
-架构、逻辑 CPU 数、最近性能事件和 P50/P90/P95/P99/最大延迟统计；排队、锁等待、
-初始化、序列化和响应写入分别统计。响应写入不是完整往返延迟。未采集到样本时，
-导出文件会给出开启性能日志的提示。排障结束后可将日志级别恢复为原来的级别。
-
-候选结果缓存同时限制条数和估算内存：TSF 通用结果缓存及 Rust 完整/短查询缓存
-各自最多 8 MiB，超限时驱逐旧结果，不改变候选查询结果。TSF 单字母缓存另保留
-最多 26 项，每项最多 128 KiB。查询超时触发的引擎自动重启每 5 分钟最多 3 次，
-已有的超时阈值和重启冷却仍生效。
-
-OCR 默认最多使用 4 个推理线程；仍可通过 `KAIXIN_OCR_INTRA_OP_THREADS` 或
-辅助脚本的 `--intra-op-threads` 参数覆盖。常驻 OCR 子进程连续空闲 3 分钟后
-释放，最长约 30 秒检查间隔，下次使用时自动重新启动；正在识别时不会释放。
-
-## 词库
-
-| 目录 | 内容 |
-| --- | --- |
-| `lexicon/zh` | 中文主词库：热门基础候选和单字表，候选排序优先级较高 |
-| `lexicon/zh-ext` | 中文扩展词库：分类、地域、纠音等补充词，频率会校准且排序优先级较低 |
-| `lexicon/en` | 可重建的 20,000 词英文词库 |
-| `data_sources` | 固定上游版本、许可证、哈希和生成说明 |
-
-中文词库格式：
-
-```text
-词语<TAB>拼音<TAB>权重
-```
-
-英文词库格式：
-
-```text
-word<TAB>input-code<TAB>weight
-```
-
-来源和重建说明参见 [data_sources/README.md](data_sources/README.md)、
-[lexicon/en/README.md](lexicon/en/README.md) 与
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
-
-## 仓库结构
-
-```text
-assets/          应用图标
-data_sources/    词库上游数据、许可和生成说明
-docs/            配置、皮肤、质量评测和开发文档
-icons/           Windows 多尺寸图标
-lexicon/         运行时中文及英文词库
-pinyin-ime/      Rust 引擎、GUI 工具和评测程序
-scripts/         验证、词库生成和安装检查脚本
-skins/           候选窗主题
-tools/           本地 OCR 辅助脚本
-tsf-tip/         C++ TSF 前端、候选覆盖层和安装器
-build.py         一键构建、验证、stage、签名和打包
-```
-
-## 相关文档
-
-- [配置项参考](docs/config_reference.md)
-- [皮肤主题规范](docs/skin_theme_schema.md)
-- [高 DPI / GDI 检查清单](docs/high_dpi_gdi_checklist.md)
-- [第三方组件声明](THIRD_PARTY_NOTICES.md)
-- [TSF 前端说明](tsf-tip/README.txt)
-- [公开仓库与发行资产布局](docs/repository_layout.md)
-
-## 安全问题
-
-输入法会在本地处理用户输入、剪贴板和截图。请不要在公开 Issue 中粘贴输入内容、
-诊断数据库、日志或截图。安全漏洞请按照 [SECURITY.md](SECURITY.md) 提供的方式私下
-报告。
-
-## 许可证
-
-开心输入法自行开发的代码和文档采用
-[Apache License 2.0](LICENSE) 授权。RapidOCR、OCR 模型、词库和手写数据等
-第三方内容不自动适用该许可证，详细边界见 [LICENSE_SCOPE.md](LICENSE_SCOPE.md) 和
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
-
-正式发布的安装包和便携包应同时提供 SHA-256 校验值。项目的
-已知限制包括：仅支持 Windows；部分截图测试需要交互式桌面；OCR 变体依赖体积较大的
-第三方运行时及模型；未提供已核验的 `s2t_chars.sqlite` 时源码构建会停用简繁映射并
-保持原文输出；管理员权限或已被入侵的同用户会话不在本项目的隐私隔离边界内。
-
-欢迎提交问题和改进，开发及提交要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-### 游戏键盘直通与中文聊天
-
-游戏默认采用键盘直通，Shift 奔跑、Ctrl/Alt 组合、数字与方向键交给游戏。
-“应用兼容”中可选择全局及每游戏的输入策略：
-
-- 默认直通、手动中文聊天：打开游戏聊天框后，按游戏聊天快捷键启用中文。
-  新配置默认 `Ctrl+Shift+Alt+G`，已有明确关闭或自定义的快捷键保持原设置。
-  拼音为空时 Enter/Esc 结束聊天并把原按键交给游戏；有拼音时先处理选词或取消。
-- 完全直通：普通按键、输入法热键和托盘工具热键均不接管，适合英文游戏。
-- 始终中文：游戏中启用中文输入，Shift 与工具热键仍交给游戏。
-- 自动识别标准聊天框：仅在已确认可写、非密码的 Edit/RichEdit 控件中启用中文；
-  自绘或无法确认的聊天框继续直通，使用手动聊天快捷键开启。
-
-聊天会话只属于当前游戏窗口与进程，焦点或窗口切换后恢复之前的输入状态。
-在直通期间已经按住的游戏键不会因进入聊天而被输入法接管自动重复。
-候选查询在退出聊天时失效，避免旧查询结果重新显示候选栏。
-托盘通过前台切换事件释放游戏中的工具快捷键，离开后恢复；此逻辑无需游戏提供 TSF 上下文。
-游戏推荐档使用紧凑横排、固定左下角位置；位置、缩放、显示器和上屏方式可逐游戏保存。
-
-游戏测试向导先测试标准 TSF，再由用户确认选择 Unicode SendInput 或剪贴板粘贴并保存。
-游戏内一次上屏只使用一种方式，部分按键注入或失败不会立即换方式重试，避免重复文字。
-系统接受注入事件不代表游戏已收到文本，仍需在目标游戏中确认。
+感谢相关开源项目、数据提供者，以及参与测试和反馈的用户。
