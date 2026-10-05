@@ -31,6 +31,7 @@ const MAX_HISTORY_ITEMS: usize = 60;
 const MAX_PINNED_ITEMS: usize = 24;
 const MAX_TEXT_UTF16_UNITS: usize = 20_000;
 const MAX_AGE_DAYS: usize = 0;
+const RESOLVE_ALIAS_LIMIT: usize = 64;
 
 static BACKGROUND_POLLING_ENABLED: AtomicBool = AtomicBool::new(false);
 static CLIPBOARD_REQUEST_COUNTER: AtomicU64 = AtomicU64::new(1);
@@ -104,10 +105,45 @@ fn publish_snapshot_with_pending(mut snapshot: ClipboardSnapshot) {
         return;
     };
     merge_pending_ops_into(&mut snapshot, &prefs);
+    replace_runtime_snapshot(&mut runtime, snapshot);
+}
+
+fn replace_runtime_snapshot(runtime: &mut ClipboardRuntime, snapshot: ClipboardSnapshot) {
+    let entries = snapshot
+        .pinned
+        .iter()
+        .chain(snapshot.history.iter())
+        .collect::<Vec<_>>();
+    runtime
+        .resolve_aliases
+        .retain(|alias| entries.iter().any(|entry| entry.text == alias.text));
+    if let Some(previous) = &runtime.snapshot_cache {
+        for old in previous.pinned.iter().chain(previous.history.iter()) {
+            // A concurrent process may already have persisted this text under
+            // an older id. Keep the provisional id returned in a candidate
+            // resolvable when the writer merges into that persisted entry.
+            if !entries.iter().any(|entry| entry.id == old.id)
+                && entries.iter().any(|entry| entry.text == old.text)
+                && !runtime
+                    .resolve_aliases
+                    .iter()
+                    .any(|alias| alias.id == old.id)
+            {
+                runtime.resolve_aliases.push_back(old.clone());
+            }
+        }
+    }
+    while runtime.resolve_aliases.len() > RESOLVE_ALIAS_LIMIT {
+        runtime.resolve_aliases.pop_front();
+    }
     runtime.snapshot_cache = Some(Arc::new(snapshot));
 }
 
 static STORE_WRITER_STARTED: OnceLock<()> = OnceLock::new();
+
+// Serialize queue drains with reads and mutations. A drained batch remains
+// owned by its writer until its save and cache publication have completed.
+static STORE_IO: Mutex<()> = Mutex::new(());
 
 fn kick_store_writer() {
     STORE_WRITER_STARTED.get_or_init(|| {
@@ -122,15 +158,17 @@ fn store_writer_loop() {
     let (ops, wake) = pending_ops();
     loop {
         {
-            let Ok(queue) = ops.lock() else {
+            let Ok(mut queue) = ops.lock() else {
                 return;
             };
-            if queue.is_empty() {
-                // The debounce timeout bounds flush latency for bursts and
-                // also recovers any notify lost to a start-up race.
-                let _ = wake.wait_timeout(queue, STORE_WRITE_DEBOUNCE);
+            while queue.is_empty() {
+                queue = match wake.wait(queue) {
+                    Ok(queue) => queue,
+                    Err(_) => return,
+                };
             }
         }
+        std::thread::sleep(STORE_WRITE_DEBOUNCE);
         if let Err(err) = flush_pending_store_ops() {
             runtime_log::log_clipboard(
                 RuntimeLogLevel::Error,
@@ -145,6 +183,9 @@ fn store_writer_loop() {
 /// Flushes queued records to disk. Failed saves requeue the ops so a transient
 /// write error does not lose captures; the loop backs off between attempts.
 fn flush_pending_store_ops() -> Result<(), String> {
+    let _io = STORE_IO
+        .lock()
+        .map_err(|_| "lock clipboard store IO".to_string())?;
     let ops = {
         let Ok(mut queue) = pending_ops().0.lock() else {
             return Err("lock clipboard store op queue".to_string());
@@ -165,20 +206,20 @@ fn flush_pending_store_ops() -> Result<(), String> {
 /// loses captures the writer has not flushed yet.
 pub fn flush_pending_ops_sync() {
     for _ in 0..8 {
-        let empty = pending_ops()
-            .0
-            .lock()
-            .map(|queue| queue.is_empty())
-            .unwrap_or(true);
-        if empty {
-            break;
-        }
         if let Err(err) = flush_pending_store_ops() {
             runtime_log::log_clipboard(
                 RuntimeLogLevel::Error,
                 "clipboard_store_flush",
                 format!("status=failed reason={err}"),
             );
+            break;
+        }
+        if pending_ops()
+            .0
+            .lock()
+            .map(|queue| queue.is_empty())
+            .unwrap_or(true)
+        {
             break;
         }
     }
@@ -188,7 +229,6 @@ fn flush_store_ops_to_path(path: &Path, ops: &[StoreOp]) -> Result<(), String> {
     if ops.is_empty() {
         return Ok(());
     }
-    let lock_path = lock_path_for(path);
     let lock_file = open_lock_file(path)?;
     lock_file
         .lock_exclusive()
@@ -205,7 +245,6 @@ fn flush_store_ops_to_path(path: &Path, ops: &[StoreOp]) -> Result<(), String> {
     publish_snapshot_with_pending(snapshot);
     let _ = lock_file.unlock();
     drop(lock_file);
-    let _ = fs::remove_file(lock_path);
     Ok(())
 }
 
@@ -290,6 +329,8 @@ struct ClipboardRuntime {
     last_seen_text: Option<String>,
     last_seen_sequence: Option<u32>,
     snapshot_cache: Option<Arc<ClipboardSnapshot>>,
+    // Resolution-only aliases never enter candidate lists or the on-disk store.
+    resolve_aliases: VecDeque<ClipboardEntry>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -330,12 +371,6 @@ fn runtime() -> &'static Mutex<ClipboardRuntime> {
     RUNTIME.get_or_init(|| Mutex::new(ClipboardRuntime::default()))
 }
 
-fn update_snapshot_cache(snapshot: ClipboardSnapshot) {
-    if let Ok(mut runtime) = runtime().lock() {
-        runtime.snapshot_cache = Some(Arc::new(snapshot));
-    }
-}
-
 /// Returns the most recently loaded clipboard snapshot without touching the
 /// filesystem. Candidate lookup uses this path so a key event never waits on
 /// the encrypted SQLite store or its cross-process lock.
@@ -353,8 +388,8 @@ fn refresh_snapshot_cache(capture_system: bool) {
     if capture_system {
         let _ = capture_system_clipboard(true);
     }
-    match load_snapshot_at_path(&store_path()) {
-        Ok(snapshot) => publish_snapshot_with_pending(snapshot),
+    match snapshot() {
+        Ok(_) => {}
         Err(err) => runtime_log::log_clipboard(
             RuntimeLogLevel::Error,
             "clipboard_snapshot_cache",
@@ -1246,6 +1281,17 @@ fn new_entry(text: String, captured_at: u64, source_app: Option<String>) -> Clip
 }
 
 fn prune_snapshot(snapshot: &mut ClipboardSnapshot, prefs: &ClipboardPrefs) {
+    prune_snapshot_at_time(snapshot, prefs, current_timestamp_secs());
+}
+
+fn prune_snapshot_at_time(snapshot: &mut ClipboardSnapshot, prefs: &ClipboardPrefs, now: u64) {
+    if prefs.max_age_days > 0 {
+        let cutoff = now.saturating_sub((prefs.max_age_days as u64).saturating_mul(86_400));
+        snapshot.history.retain(|entry| entry.captured_at >= cutoff);
+        if prefs.pinned_respects_max_age {
+            snapshot.pinned.retain(|entry| entry.captured_at >= cutoff);
+        }
+    }
     if snapshot.history.len() > prefs.max_history_items {
         snapshot.history.truncate(prefs.max_history_items);
     }
@@ -1482,25 +1528,45 @@ fn with_store_mut_at_path_impl<R>(
     publish_runtime_cache: bool,
     f: impl FnOnce(&mut ClipboardSnapshot) -> Result<R, String>,
 ) -> Result<R, String> {
-    let lock_path = lock_path_for(path);
+    with_store_mut_at_path_with_pending(
+        path,
+        publish_runtime_cache,
+        || {
+            if path == store_path() {
+                drain_pending_ops()
+            } else {
+                Vec::new()
+            }
+        },
+        f,
+    )
+}
+
+fn with_store_mut_at_path_with_pending<R>(
+    path: &Path,
+    publish_runtime_cache: bool,
+    take_pending: impl FnOnce() -> Vec<StoreOp>,
+    f: impl FnOnce(&mut ClipboardSnapshot) -> Result<R, String>,
+) -> Result<R, String> {
+    let _io = STORE_IO
+        .lock()
+        .map_err(|_| "lock clipboard store IO".to_string())?;
     let lock_file = open_lock_file(path)?;
     lock_file
         .lock_exclusive()
         .map_err(|e| format!("lock clipboard store: {e}"))?;
     let prefs = clipboard_prefs();
     let mut snapshot = restore_backup_if_needed(path)?;
+    // Compare against disk, before merging the queue: even a no-op mutation
+    // must persist the records it drains.
+    let before = snapshot.clone();
     prune_snapshot(&mut snapshot, &prefs);
     // Queued records must be part of the base state the mutation sees: they
     // are removed from the queue here because this path saves the merged
     // result, and leaving them queued would apply them a second time.
-    let pending = if path == store_path() {
-        drain_pending_ops()
-    } else {
-        Vec::new()
-    };
+    let pending = take_pending();
     apply_store_ops(&mut snapshot, &pending, &prefs);
     prune_snapshot(&mut snapshot, &prefs);
-    let before = snapshot.clone();
     let result = f(&mut snapshot);
     prune_snapshot(&mut snapshot, &prefs);
     if result.is_ok() && snapshot != before {
@@ -1508,7 +1574,6 @@ fn with_store_mut_at_path_impl<R>(
             requeue_store_ops(pending);
             let _ = lock_file.unlock();
             drop(lock_file);
-            let _ = fs::remove_file(lock_path);
             return Err(err);
         }
     }
@@ -1523,20 +1588,36 @@ fn with_store_mut_at_path_impl<R>(
     }
     let _ = lock_file.unlock();
     drop(lock_file);
-    let _ = fs::remove_file(lock_path);
     result
 }
 
 fn load_snapshot_at_path(path: &Path) -> Result<ClipboardSnapshot, String> {
-    let lock_path = lock_path_for(path);
+    let _io = STORE_IO
+        .lock()
+        .map_err(|_| "lock clipboard store IO".to_string())?;
     let lock_file = open_lock_file(path)?;
     lock_file
         .lock_exclusive()
         .map_err(|e| format!("lock clipboard store: {e}"))?;
-    let snapshot = restore_backup_if_needed(path);
+    let snapshot = restore_backup_if_needed(path).and_then(|mut snapshot| {
+        let prefs = clipboard_prefs();
+        let before = snapshot.clone();
+        prune_snapshot(&mut snapshot, &prefs);
+        if snapshot != before {
+            save_snapshot_atomically(path, &snapshot)?;
+        }
+        if path == store_path() {
+            let mut runtime = runtime()
+                .lock()
+                .map_err(|_| "lock clipboard runtime".to_string())?;
+            merge_pending_ops_into(&mut snapshot, &prefs);
+            prune_snapshot(&mut snapshot, &prefs);
+            replace_runtime_snapshot(&mut runtime, snapshot.clone());
+        }
+        Ok(snapshot)
+    });
     let _ = lock_file.unlock();
     drop(lock_file);
-    let _ = fs::remove_file(lock_path);
     snapshot
 }
 
@@ -1653,19 +1734,6 @@ fn apply_record_entry(
     );
 }
 
-/// Makes a freshly recorded entry visible to the next clipboard candidate
-/// lookup immediately, without waiting for the writer flush.
-fn optimistic_record_into_cache(entry: &ClipboardEntry, prefs: &ClipboardPrefs) {
-    let Ok(mut runtime) = runtime().lock() else {
-        return;
-    };
-    let Some(cache) = runtime.snapshot_cache.as_mut() else {
-        return;
-    };
-    let snapshot = Arc::make_mut(cache);
-    apply_record_entry(snapshot, entry, prefs);
-}
-
 fn record_text_at_path_with_mode_and_cache(
     path: &Path,
     text: &str,
@@ -1693,7 +1761,15 @@ fn record_text_at_path_with_mode_and_cache(
         // Hot path: queue the record for the background writer and update the
         // runtime cache optimistically. Per-copy events never touch the disk,
         // the store lock, or the DPAPI round trip from the caller's thread.
-        let base = cached_snapshot().unwrap_or_else(|| Arc::new(ClipboardSnapshot::default()));
+        // Initialize once from disk so an existing entry keeps its persisted
+        // id even when the first copy races the asynchronous warmup.
+        if cached_snapshot().is_none() {
+            snapshot()?;
+        }
+        let mut runtime = runtime()
+            .lock()
+            .map_err(|_| "lock clipboard runtime".to_string())?;
+        let base = runtime.snapshot_cache.clone().unwrap_or_default();
         if duplicate_mode == DuplicateRecordMode::CoalesceRecentSystemEvent
             && is_recent_system_duplicate(&base, &text, current_timestamp_secs())
         {
@@ -1709,8 +1785,12 @@ fn record_text_at_path_with_mode_and_cache(
             });
         }
         if publish_runtime_cache {
-            optimistic_record_into_cache(&entry, &prefs);
+            let cache = runtime
+                .snapshot_cache
+                .get_or_insert_with(|| Arc::new(ClipboardSnapshot::default()));
+            apply_record_entry(Arc::make_mut(cache), &entry, &prefs);
         }
+        drop(runtime);
         kick_store_writer();
         return Ok(true);
     }
@@ -1833,6 +1913,9 @@ fn clear_all_at_path(path: &Path) -> Result<(), String> {
 }
 
 fn clear_older_than_days_at_path(path: &Path, days: u64) -> Result<usize, String> {
+    if days == 0 {
+        return Ok(0);
+    }
     let cutoff = current_timestamp_secs().saturating_sub(days.saturating_mul(86_400));
     let prefs = clipboard_prefs();
     with_store_mut_at_path_impl(path, true, |snapshot| {
@@ -2512,12 +2595,7 @@ pub fn snapshot() -> Result<ClipboardSnapshot, String> {
     if clipboard_prefs().privacy_enabled {
         return Ok(ClipboardSnapshot::default());
     }
-    let mut snapshot = load_snapshot_at_path(&store_path())?;
-    // Include records the writer has not flushed yet so callers (manager GUI,
-    // resolve fallback) see the newest captures immediately.
-    merge_pending_ops_into(&mut snapshot, &clipboard_prefs());
-    update_snapshot_cache(snapshot.clone());
-    Ok(snapshot)
+    load_snapshot_at_path(&store_path())
 }
 
 /// Snapshot for clipboard id resolution. Serves the runtime cache when warm
@@ -2525,10 +2603,24 @@ pub fn snapshot() -> Result<ClipboardSnapshot, String> {
 /// correct for any id it contains) and falls back to a full load on cold
 /// start. Keeps the 750 ms pipe budget off the disk path entirely.
 pub fn resolve_snapshot() -> Result<ClipboardSnapshot, String> {
-    if let Some(snapshot) = cached_snapshot() {
-        return Ok(snapshot.as_ref().clone());
+    if clipboard_prefs().privacy_enabled {
+        return Ok(ClipboardSnapshot::default());
     }
-    snapshot()
+    if cached_snapshot().is_none() {
+        snapshot()?;
+    }
+    let runtime = runtime()
+        .lock()
+        .map_err(|_| "lock clipboard runtime".to_string())?;
+    let mut snapshot = runtime
+        .snapshot_cache
+        .as_deref()
+        .cloned()
+        .unwrap_or_default();
+    snapshot
+        .history
+        .extend(runtime.resolve_aliases.iter().cloned());
+    Ok(snapshot)
 }
 
 pub fn pin_current_clipboard() -> Result<Option<String>, String> {
@@ -2738,5 +2830,179 @@ mod tests {
         assert_sorted(&snapshot.history);
         // Newest survives truncation.
         assert_eq!(snapshot.history[0].text, "text 4");
+    }
+
+    #[test]
+    fn noop_mutation_persists_drained_records() {
+        let path = std::env::temp_dir().join(format!(
+            "kaixin-clipboard-audit-{}-{}.sqlite",
+            std::process::id(),
+            new_clipboard_entry_id(0)
+        ));
+        let entry = make_entry("queued copy must survive", 1);
+        let id = entry.id.clone();
+        with_store_mut_at_path_with_pending(
+            &path,
+            false,
+            || vec![StoreOp::Record { entry }],
+            |_| Ok(false),
+        )
+        .expect("no-op mutation succeeds");
+        let loaded = load_snapshot_at_path(&path).expect("reload persisted records");
+        assert_eq!(
+            resolve_entry_text(&loaded, &id).as_deref(),
+            Some("queued copy must survive")
+        );
+        std::fs::remove_file(&path).unwrap();
+        std::fs::remove_file(lock_path_for(&path)).unwrap();
+    }
+
+    #[test]
+    fn clearing_drained_records_persists_empty_state() {
+        let path = std::env::temp_dir().join(format!(
+            "kaixin-clipboard-clear-audit-{}-{}.sqlite",
+            std::process::id(),
+            new_clipboard_entry_id(0)
+        ));
+        let mut initial = ClipboardSnapshot::default();
+        initial.history.push(make_entry("on disk", 1));
+        save_snapshot_atomically(&path, &initial).unwrap();
+        with_store_mut_at_path_with_pending(
+            &path,
+            false,
+            || {
+                vec![StoreOp::Record {
+                    entry: make_entry("in queue", 2),
+                }]
+            },
+            |snapshot| {
+                snapshot.history.clear();
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert!(load_snapshot_at_path(&path).unwrap().history.is_empty());
+        std::fs::remove_file(&path).unwrap();
+        std::fs::remove_file(lock_path_for(&path)).unwrap();
+    }
+
+    #[test]
+    fn concurrent_duplicate_merge_keeps_provisional_long_text_id_resolvable() {
+        let text = "😀中文\n".repeat(200);
+        let provisional = make_entry(&text, 2);
+        let persisted = make_entry(&text, 1);
+        let provisional_id = provisional.id.clone();
+        let mut runtime = ClipboardRuntime {
+            last_poll: None,
+            last_seen_text: None,
+            last_seen_sequence: None,
+            snapshot_cache: Some(Arc::new(ClipboardSnapshot {
+                pinned: vec![],
+                history: vec![provisional],
+            })),
+            resolve_aliases: VecDeque::new(),
+        };
+        replace_runtime_snapshot(
+            &mut runtime,
+            ClipboardSnapshot {
+                pinned: vec![],
+                history: vec![persisted],
+            },
+        );
+        assert_eq!(runtime.snapshot_cache.as_ref().unwrap().history.len(), 1);
+        assert_eq!(runtime.resolve_aliases.len(), 1);
+        assert_eq!(runtime.resolve_aliases[0].id, provisional_id);
+        assert_eq!(runtime.resolve_aliases[0].text, text);
+        replace_runtime_snapshot(&mut runtime, ClipboardSnapshot::default());
+        assert!(
+            runtime.resolve_aliases.is_empty(),
+            "cleared entries drop their aliases too"
+        );
+    }
+
+    #[test]
+    fn age_cleanup_honors_disabled_and_pinned_preferences() {
+        let initial = ClipboardSnapshot {
+            pinned: vec![make_entry("old pinned", 1)],
+            history: vec![
+                make_entry("old history", 1),
+                make_entry("recent history", 86_500),
+            ],
+        };
+        let mut snapshot = initial.clone();
+        let mut prefs = ClipboardPrefs::default();
+        prune_snapshot_at_time(&mut snapshot, &prefs, 86_600);
+        assert_eq!(snapshot, initial, "zero days disables age cleanup");
+        prefs.max_age_days = 1;
+        prefs.pinned_respects_max_age = false;
+        prune_snapshot_at_time(&mut snapshot, &prefs, 86_600);
+        assert_eq!(snapshot.history.len(), 1);
+        assert_eq!(
+            snapshot.pinned.len(),
+            1,
+            "protected pins survive age cleanup"
+        );
+        prefs.pinned_respects_max_age = true;
+        prune_snapshot_at_time(&mut snapshot, &prefs, 86_600);
+        assert!(snapshot.pinned.is_empty());
+    }
+
+    #[test]
+    fn manual_zero_day_cleanup_cannot_delete_records() {
+        let path = std::env::temp_dir().join(format!(
+            "kaixin-clipboard-zero-audit-{}-{}.sqlite",
+            std::process::id(),
+            new_clipboard_entry_id(0)
+        ));
+        let initial = ClipboardSnapshot {
+            pinned: vec![],
+            history: vec![make_entry("keep", 1)],
+        };
+        save_snapshot_atomically(&path, &initial).unwrap();
+        assert_eq!(clear_older_than_days_at_path(&path, 0).unwrap(), 0);
+        assert_eq!(read_snapshot_from_path(&path).unwrap(), initial);
+        std::fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    #[ignore = "requires an isolated LOCALAPPDATA and KAIXIN_CLIPBOARD_AUDIT_ROOT"]
+    fn async_records_survive_refresh_mutation_and_shutdown() {
+        let root = PathBuf::from(
+            std::env::var("KAIXIN_CLIPBOARD_AUDIT_ROOT").expect("isolated audit root"),
+        );
+        let path = store_path();
+        assert!(
+            path.starts_with(&root),
+            "audit must never write the user's clipboard store"
+        );
+        assert!(!path.exists(), "audit requires a fresh store");
+        let mut ids = Vec::new();
+        for index in 0..32 {
+            let text = format!("audit record {index}: {}", "😀中文\n".repeat(100));
+            assert!(record_text(&text).unwrap());
+            let visible = snapshot().unwrap();
+            let item = visible
+                .history
+                .iter()
+                .find(|entry| entry.text == text)
+                .unwrap();
+            ids.push((item.id.clone(), text));
+            // A no-op deletion drains pending writes too; this used to lose
+            // the newest captures or briefly remove them from the cache.
+            assert!(!remove_saved_text("absent audit entry").unwrap());
+            assert!(resolve_entry_text(&resolve_snapshot().unwrap(), &ids[index].0).is_some());
+        }
+        flush_pending_ops_sync();
+        let persisted = read_snapshot_from_path(&path).unwrap();
+        assert_eq!(persisted.history.len(), 32);
+        for (id, text) in ids {
+            assert_eq!(
+                resolve_entry_text(&persisted, &id).as_deref(),
+                Some(text.as_str())
+            );
+        }
+        clear_all().unwrap();
+        flush_pending_ops_sync();
+        assert!(read_snapshot_from_path(&path).unwrap().history.is_empty());
     }
 }

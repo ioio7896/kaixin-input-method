@@ -38,10 +38,10 @@ mod cache;
 mod learning;
 mod lookup;
 mod postprocess;
+mod presentation;
 mod ranking;
 mod single_char_common;
 mod stable_words;
-mod presentation;
 
 use cache::*;
 pub(crate) use cache::{
@@ -51,7 +51,7 @@ pub(crate) use cache::{
 pub(crate) use cache::{parse_engine_tuning_ini, EngineTuning};
 use learning::*;
 pub use lookup::default_phrase_lexicon_dir;
-pub(crate) use lookup::validate_trusted_phrase_dir;
+pub use lookup::validate_trusted_phrase_dir;
 use lookup::*;
 use postprocess::*;
 use ranking::*;
@@ -358,7 +358,7 @@ const MULTI_SYLL_PHRASE_HEAD_FREQ_MIN: u64 = MAX_LEXICON_FREQ * 60 / 100;
 const FULL_PINYIN_PREFIX_SUPPORT_LIMIT: usize = 3;
 const SHORT_INPUT_EXACT_FRONT_FREQ_MIN: u64 = MAX_LEXICON_FREQ * 50 / 100;
 const SHORT_INPUT_EXACT_FRONT_LIMIT_TWO: usize = 4;
-const SHORT_INPUT_EXACT_FRONT_LIMIT_THREE: usize = 3;
+const SHORT_INPUT_EXACT_FRONT_LIMIT_THREE: usize = 4;
 const SHORT_INPUT_EXACT_FRONT_LIMIT_FOUR: usize = 3;
 const SHORT_INPUT_LOW_FREQ_EXACT_FRONT_LIMIT: usize = 1;
 const SHORT_PHRASE_SINGLE_RERANK_EXTRA: f64 = 20.0;

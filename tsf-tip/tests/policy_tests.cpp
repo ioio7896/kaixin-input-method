@@ -5,7 +5,9 @@
 
 #include "candidate_layout_policy.h"
 #include "candidate_result_stability.h"
+#include "clipboard_quick_policy.h"
 #include "input_mode_policy.h"
+#include "direct_text_conversion.h"
 #include "game_input_policy.h"
 #include "engine_recovery_policy.h"
 #include "input_session.h"
@@ -19,6 +21,25 @@ void Check(bool condition, const char* message) {
     std::cerr << "FAILED: " << message << '\n';
     std::exit(1);
   }
+}
+
+void TestChineseHalfwidth() {
+  SrfInputOptions input;
+  bool doubleOpen = true, singleOpen = true;
+  input.symbolFullwidth = input.numberFullwidth = true;
+  Check(SrfConvertDirectText(L"-1A", input, true, true, doubleOpen, singleOpen) == L"\uff0d\uff11\uff21",
+        "disabled option preserves fullwidth conversion");
+  input.chineseHalfwidth = true;
+  std::wstring ascii;
+  for (wchar_t ch = 0x20; ch <= 0x7e; ++ch) ascii.push_back(ch);
+  Check(SrfConvertDirectText(ascii, input, true, true, doubleOpen, singleOpen) == ascii,
+        "halfwidth overrides Chinese punctuation and all fullwidth options");
+  Check(doubleOpen && singleOpen, "halfwidth quotes do not alter Chinese quote state");
+  Check(SrfConvertDirectText(L"\u4e2d\u6587-", input, true, true, doubleOpen, singleOpen) == L"\u4e2d\u6587-",
+        "Chinese text remains intact beside halfwidth hyphen");
+  input.chineseHalfwidth = false;
+  Check(SrfConvertDirectText(L",", input, true, false, doubleOpen, singleOpen) == L"\uff0c",
+        "turning off halfwidth restores Chinese punctuation");
 }
 
 void TestGameInputPolicy() {
@@ -39,6 +60,23 @@ void TestGameInputPolicy() {
   Check(!SrfGameShouldExitChat(true, true, true, true, false, false), "Enter selects reading first");
   Check(!SrfGameShouldExitChat(true, true, false, true, true, false), "modified keys retain session");
   Check(!SrfGameShouldExitChat(true, true, false, true, false, true), "held Enter cannot close chat");
+}
+
+void TestClipboardQuickPolicy() {
+  unsigned int page = 99;
+  Check(ParseClipboardQuickPageToken(L"p2", &page) && page == 1, "filtered second batch");
+  Check(!ParseClipboardQuickPageToken(L"0", &page), "zero clipboard page rejected");
+  Check(!ParseClipboardQuickPageToken(L"4294967297", &page), "overflow cannot wrap to first page");
+  Check(!ParseClipboardQuickPageToken(L"p-1", &page), "negative clipboard page rejected");
+  Check(!ShouldChangeClipboardQuickBatch(true, 0, 1), "small screen visits remaining three rows first");
+  Check(ShouldChangeClipboardQuickBatch(true, 1, 1), "next batch after all eight rows");
+  Check(!ShouldChangeClipboardQuickBatch(false, 1, 1), "previous key visits first five rows first");
+  Check(ShouldChangeClipboardQuickBatch(false, 0, 1), "previous batch at first visible page");
+  Check(ShouldChangeClipboardQuickBatch(true, 0, 0), "large screen visits eight rows in one page");
+  Check(!ClipboardQuickBatchHasNext(0, 0), "empty history cannot advance to a phantom batch");
+  Check(!ClipboardQuickBatchHasNext(0, 1), "single batch cannot advance past its end");
+  Check(ClipboardQuickBatchHasNext(0, 2), "two batches allow one forward transition");
+  Check(!ClipboardQuickBatchHasNext(1, 2), "last batch cannot advance past its end");
 }
 
 void TestInputModePolicy() {
@@ -128,7 +166,9 @@ int main() {
   Check(!recovery.Exhausted() && recovery.TryAcquire(), "successful readiness permits a new recovery episode");
   Check(kSrfRecoveryBackoffMs[0] < kSrfRecoveryBackoffMs[1] &&
         kSrfRecoveryBackoffMs[1] < kSrfRecoveryBackoffMs[2], "recovery delays increase");
+  TestChineseHalfwidth();
   TestGameInputPolicy();
+  TestClipboardQuickPolicy();
   TestInputModePolicy();
   TestCandidateLayoutPolicy();
   TestCandidateResultStability();

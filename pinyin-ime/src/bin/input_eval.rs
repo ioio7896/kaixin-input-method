@@ -1,7 +1,8 @@
 use pinyin_ime::core::{
-    PinyinEngine, MODE_DATE_AUTO_FORMAT, MODE_EMOJI_INPUT, MODE_JIANPIN, MODE_MIXED_PINYIN,
-    MODE_SYMBOL_TOOLBOX, MODE_V_ASSIST,
+    MODE_DATE_AUTO_FORMAT, MODE_EMOJI_INPUT, MODE_JIANPIN, MODE_MIXED_PINYIN, MODE_SYMBOL_TOOLBOX,
+    MODE_V_ASSIST,
 };
+use pinyin_ime::eval_profile::EvaluationProfile;
 use regex::Regex;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -16,6 +17,8 @@ struct Case {
 
 #[derive(Debug)]
 struct EvalArgs {
+    engine_profile: EvaluationProfile,
+    lexicon_dir: PathBuf,
     cases_path: PathBuf,
     explain_case_id: Option<String>,
     explain_limit: usize,
@@ -79,8 +82,16 @@ fn parse_args(repo: &Path) -> EvalArgs {
     let mut min_top1 = None;
     let mut min_top3 = None;
     let mut min_top9 = None;
+    let mut engine_profile = EvaluationProfile::default();
+    let mut lexicon_dir = repo.join("lexicon");
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--engine-profile" => {
+                engine_profile =
+                    EvaluationProfile::parse(&args.next().expect("--engine-profile value"))
+                        .unwrap_or_else(|err| panic!("{err}"))
+            }
+            "--lexicon" => lexicon_dir = PathBuf::from(args.next().expect("--lexicon dir")),
             "--mixed" => {
                 cases_path = Some(repo.join("tests").join("mixed_pinyin_cases.sqlite"));
             }
@@ -117,6 +128,7 @@ fn parse_args(repo: &Path) -> EvalArgs {
                 eprintln!(
                     "usage: input_eval [cases.sqlite] [--cases cases.sqlite] [--mixed] [--quality] [--explain case_id] [--explain-limit N] [--explain-all]\n\
                      optional gates: --min-top1 PCT --min-top3 PCT --min-top9 PCT\n\
+                     engine: --engine-profile runtime-hot-cold|full --lexicon DIR\n\
                      case table: cases(case_id, category, input, expected, sort_order)\n\
                      expected supports @TOPN:<text>, @DATE, @TIME, @REGEX:<regex>"
                 );
@@ -128,6 +140,8 @@ fn parse_args(repo: &Path) -> EvalArgs {
         }
     }
     EvalArgs {
+        engine_profile,
+        lexicon_dir,
         cases_path: cases_path.unwrap_or_else(|| repo.join("tests").join("input_cases.sqlite")),
         explain_case_id,
         explain_limit,
@@ -216,9 +230,8 @@ fn main() {
         .expect("repo root")
         .to_path_buf();
     let args = parse_args(&repo);
-    let lexicon_dir = repo.join("lexicon");
-    let mut engine = PinyinEngine::with_phrase_dir(Some(&lexicon_dir));
-    engine.clear_user_lexicon_for_eval();
+    args.engine_profile.report(&args.lexicon_dir);
+    let mut engine = args.engine_profile.create_engine(&args.lexicon_dir);
     engine.set_mode_flags(
         MODE_V_ASSIST
             | MODE_SYMBOL_TOOLBOX

@@ -47,6 +47,34 @@ fn xiong_does_not_offer_neng_character() {
 }
 
 #[test]
+fn uncommon_single_character_readings_do_not_displace_primary_candidates() {
+    let mut engine = PinyinEngine::with_phrase_dir(None);
+    engine.clear_user_lexicon_for_eval();
+    engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
+    for (input, expected) in [
+        ("nai", "乃"),
+        ("ru", "如"),
+        ("chi", "吃"),
+        ("cuo", "错"),
+        ("zi", "自"),
+        ("dai", "大"),
+    ] {
+        let candidates = engine.lookup_full_explain(input).0;
+        assert_eq!(
+            candidates.first().map(|candidate| candidate.0.as_str()),
+            Some(expected),
+            "unexpected first candidate for {input}"
+        );
+    }
+    let nai_candidates = engine.lookup_full_explain("nai").0;
+    assert!(nai_candidates.iter().any(|candidate| candidate.0 == "能"));
+    let tai_candidates = engine.lookup_full_explain("tai").0;
+    assert!(!tai_candidates
+        .iter()
+        .any(|candidate| candidate.0 == "大" || candidate.0 == "能"));
+}
+
+#[test]
 fn composed_polyphonic_user_phrase_is_available_on_next_lookup() {
     let mut engine = PinyinEngine::with_phrase_dir(None);
     engine.clear_user_lexicon_for_eval();
@@ -88,7 +116,8 @@ fn composed_phrase_respects_hotword_front_policy_on_the_next_full_pinyin_lookup(
     // once before promoting it. Assert both sides of that confidence gate.
     let observed = engine.lookup_full_explain("shishi").0;
     assert!(observed.iter().any(|(phrase, _, _)| phrase == "湿十"));
-    engine.learn_commit_with_flags("shishi", "湿十", LEARN_FLAG_COMPOSED_PHRASE)
+    engine
+        .learn_commit_with_flags("shishi", "湿十", LEARN_FLAG_COMPOSED_PHRASE)
         .expect("confirm composed user phrase");
     let candidates = engine.lookup_full_explain("shishi").0;
     let learned_rank = candidates
@@ -366,6 +395,14 @@ fn cold_extension_words_are_tail_only_for_non_full_input() {
     assert!(
         cold_position.is_none_or(|position| position >= crate::core::TSF_PAGE_SIZE),
         "cold extension phrase entered the short-input page: {abbreviated:?}"
+    );
+    let daily = engine.lookup_full("jqzx").0;
+    assert!(
+        daily
+            .iter()
+            .take(crate::core::TSF_PAGE_SIZE)
+            .any(|(phrase, _)| phrase == "敬请知悉"),
+        "high-frequency daily four-character phrase fell behind the cold tail: {daily:?}"
     );
     let full_pinyin = engine.lookup_tsf_candidates("hupiyingwu");
     assert!(

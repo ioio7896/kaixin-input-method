@@ -22,6 +22,7 @@ pub mod dict;
 pub mod dxgi_capture;
 pub mod engine;
 pub mod english_words;
+pub mod eval_profile;
 pub mod external_translation;
 pub mod fuzzy_prefs;
 pub mod game_keyboard_policy;

@@ -352,8 +352,12 @@ pub(crate) fn parse_ini(text: &str) -> IniDoc {
     }
     doc.original_text = original_text;
     for e in pinyin_ime::config_schema::ENTRIES {
-        if e.section == "general" && e.key == "config_version" { continue; }
-        if doc.get(e.section, e.key).is_none() { doc.set(e.section, e.key, e.default); }
+        if e.section == "general" && e.key == "config_version" {
+            continue;
+        }
+        if doc.get(e.section, e.key).is_none() {
+            doc.set(e.section, e.key, e.default);
+        }
     }
     doc
 }

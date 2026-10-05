@@ -1,4 +1,5 @@
 #include "ime_config.h"
+#include "overlapped_io.h"
 
 #include "config_schema.h"
 
@@ -898,6 +899,8 @@ void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
       ParseBool(ReadIniString(path, L"input", L"auto_pair_punct", L"1"), config.input.autoPairPunct);
   config.input.numberFullwidth = ParseBool(
       ReadIniString(path, L"input", L"number_fullwidth", L"0"), config.input.numberFullwidth);
+  config.input.chineseHalfwidth = ParseBool(
+      ReadIniString(path, L"input", L"chinese_halfwidth", L"0"), config.input.chineseHalfwidth);
   config.input.symbolFullwidth = ParseBool(
       ReadIniString(path, L"input", L"symbol_fullwidth", L"0"), config.input.symbolFullwidth);
   config.input.shiftSymbolTemporaryAscii =
@@ -1322,41 +1325,24 @@ bool WaitForConfigDirectoryChange(const std::filesystem::path& dir) {
                                 FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
   if (directory == INVALID_HANDLE_VALUE) return false;
 
-  HANDLE event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-  if (!event) {
-    CloseHandle(directory);
-    return false;
-  }
-
-  BYTE buffer[4096] = {};
-  OVERLAPPED overlapped = {};
-  overlapped.hEvent = event;
+  auto operation = SrfOverlappedIo::Create(directory, 4096);
+  CloseHandle(directory);
+  if (!operation) return false;
   const BOOL started = ReadDirectoryChangesW(
-      directory, buffer, sizeof(buffer), FALSE,
+      operation->handle, operation->buffer.data(), static_cast<DWORD>(operation->buffer.size()), FALSE,
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SIZE |
           FILE_NOTIFY_CHANGE_CREATION,
-      nullptr, &overlapped, nullptr);
+      nullptr, &operation->overlapped, nullptr);
   if (!started) {
-    CloseHandle(event);
-    CloseHandle(directory);
     return false;
   }
+  operation->pending = true;
 
-  const DWORD wait = WaitForSingleObject(event, kConfigWatchFallbackIntervalMs);
   DWORD transferred = 0;
-  if (wait == WAIT_TIMEOUT) {
-    CancelIoEx(directory, &overlapped);
-    WaitForSingleObject(event, 200);
-    GetOverlappedResult(directory, &overlapped, &transferred, FALSE);
-    CloseHandle(event);
-    CloseHandle(directory);
+  const bool changed = operation->Await(kConfigWatchFallbackIntervalMs, &transferred);
+  if (!changed && GetLastError() == ERROR_TIMEOUT) {
     return true;
   }
-
-  const bool changed =
-      wait == WAIT_OBJECT_0 && GetOverlappedResult(directory, &overlapped, &transferred, FALSE);
-  CloseHandle(event);
-  CloseHandle(directory);
   if (changed) Sleep(kConfigWatchDebounceMs);
   return changed;
 }

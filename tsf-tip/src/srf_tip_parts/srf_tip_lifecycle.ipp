@@ -373,6 +373,7 @@ void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
   m_candidateRows.clear();
   m_candidateHasMore = false;
   m_candidatesReading.clear();
+  m_clipboardQuickLastPageReading.clear();
   SetCandidateViewState(SrfCandidateViewState::Empty, reason ? reason : L"focus-bound-clear");
   m_candSel = 0;
   m_candPage = 0;
@@ -631,7 +632,9 @@ void CSrfTip::CancelCompositionEdit(TfEditCookie ec) {
   }
   const HRESULT endHr = m_pComposition->EndComposition(ec);
   if (SUCCEEDED(endHr)) {
-    ClearCompositionBufferState();
+    // EndComposition does not require a termination callback. Drop our
+    // references explicitly so EnsureEngineInputReady can accept the next key.
+    ReleaseCompositionState();
     if (SrfTsfDebugTraceEnabled()) {
       SrfTsfDebugLog(L"CancelCompositionEdit EndComposition OK + ClearCompositionBufferState");
     }
@@ -795,6 +798,7 @@ void CSrfTip::ClearCompositionBufferState() {
   m_candidateRows.clear();
   m_candidateHasMore = false;
   m_candidatesReading.clear();
+  m_clipboardQuickLastPageReading.clear();
   SetCandidateViewState(SrfCandidateViewState::Empty, L"composition-clear");
   m_candSel = 0;
   m_candPage = 0;

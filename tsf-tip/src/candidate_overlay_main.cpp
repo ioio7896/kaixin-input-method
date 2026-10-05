@@ -753,10 +753,13 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
 
   (void)SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
   const HRESULT comResult = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-  CandidateOverlayHost host;
-  const bool initialized = host.Initialize(instance, options.clientProcessId,
-                                           options.controlToken, authSecret);
-  const int result = initialized ? host.Run() : 2;
+  int result = 2;
+  {
+    CandidateOverlayHost host;
+    const bool initialized = host.Initialize(instance, options.clientProcessId,
+                                             options.controlToken, authSecret);
+    if (initialized) result = host.Run();
+  }
   ShutdownCandidateWindowRendering();
   if (SUCCEEDED(comResult)) CoUninitialize();
   return result;

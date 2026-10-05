@@ -28,6 +28,55 @@ pub(super) fn duration_us(value: Duration) -> u128 {
     value.as_micros()
 }
 
+pub(super) fn check_latency_gate(
+    label: &str,
+    samples: usize,
+    p95: u128,
+    p99: u128,
+    max_p95: Option<u128>,
+    max_p99: Option<u128>,
+) -> Result<(), String> {
+    if samples == 0 {
+        return Err(format!("FAIL {label}: no performance samples"));
+    }
+    if max_p95.is_some_and(|limit| p95 > limit) {
+        return Err(format!(
+            "FAIL {label} p95 exceeded gate: actual={p95}us limit={}us",
+            max_p95.unwrap()
+        ));
+    }
+    if max_p99.is_some_and(|limit| p99 > limit) {
+        return Err(format!(
+            "FAIL {label} p99 exceeded gate: actual={p99}us limit={}us",
+            max_p99.unwrap()
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn modern_learning_scenarios_fail_independently() {
+        for label in [
+            "post_feedback_same",
+            "post_feedback_next",
+            "post_commit_next",
+        ] {
+            assert!(check_latency_gate(label, 100, 10, 30, Some(20), Some(20)).is_err());
+            assert!(check_latency_gate(label, 100, 30, 30, Some(20), Some(40)).is_err());
+            assert!(check_latency_gate(label, 100, 20, 30, Some(20), Some(30)).is_ok());
+        }
+    }
+
+    #[test]
+    fn empty_sample_set_cannot_pass() {
+        assert!(check_latency_gate("post_feedback_same", 0, 0, 0, None, None).is_err());
+    }
+}
+
 pub(super) fn print_stats(
     json_path: Option<&Path>,
     label: &str,

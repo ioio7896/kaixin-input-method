@@ -97,8 +97,10 @@ struct ICandidateWindowEvents {
 
 class CCandidateWindow {
  public:
-  CCandidateWindow() = default;
+  CCandidateWindow();
   ~CCandidateWindow();
+  CCandidateWindow(const CCandidateWindow&) = delete;
+  CCandidateWindow& operator=(const CCandidateWindow&) = delete;
 
   void SetEvents(ICandidateWindowEvents* events);
   void SetStyle(const SrfUIStyle& style);

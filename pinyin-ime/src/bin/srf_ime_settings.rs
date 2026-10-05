@@ -1994,6 +1994,7 @@ fn input_behavior_settings_changed(before: &SettingsModel, after: &SettingsModel
         || before.auto_pair_punct != after.auto_pair_punct
         || before.number_fullwidth != after.number_fullwidth
         || before.symbol_fullwidth != after.symbol_fullwidth
+        || before.chinese_halfwidth != after.chinese_halfwidth
         || before.shift_symbol_temporary_ascii != after.shift_symbol_temporary_ascii
         || before.date_auto_format != after.date_auto_format
         || before.english_word_input != after.english_word_input
@@ -2662,7 +2663,9 @@ fn acquire_settings_instance() -> Option<SettingsInstanceGuard> {
 fn main() -> eframe::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).map(String::as_str) == Some("--export-default-config") {
-        let path = args.get(2).expect("--export-default-config requires an output path");
+        let path = args
+            .get(2)
+            .expect("--export-default-config requires an output path");
         let defaults = rendered_config_for_model(&IniDoc::default(), &SettingsModel::default());
         fs::write(path, defaults).expect("write default configuration");
         return Ok(());

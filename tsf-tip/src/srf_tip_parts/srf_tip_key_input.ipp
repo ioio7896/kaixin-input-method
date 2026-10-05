@@ -476,17 +476,27 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
           m_candidateMeta.begin(), m_candidateMeta.end(),
           [](const std::wstring& meta) { return IsClipboardQuickMeta(meta); });
       if (!hasQuickCandidates && page == 0 && m_reading != L"vvu") return false;
+      if (!candidatesReadyForCurrentReading()) return true;
+      if (!ShouldChangeClipboardQuickBatch(nextPage, m_candPage, MaxCandidatePage())) {
+        return false;
+      }
 
       if (!nextPage && page == 0) return true;
       if (nextPage) {
+        bool hasNextBatch = false;
         for (const auto& rawMeta : m_candidateMeta) {
           if (rawMeta.empty()) continue;
           const CandidateMetaParts meta = SplitCandidateMeta(rawMeta);
-          if (meta.clipboardQuick && page + 1 >= meta.clipboardPages) return true;
+          if (meta.clipboardQuick && ClipboardQuickBatchHasNext(page, meta.clipboardPages)) {
+            hasNextBatch = true;
+            break;
+          }
         }
+        if (!hasNextBatch) return true;
       }
       const UINT targetPage = nextPage ? page + 1 : page - 1;
       m_reading = BuildClipboardQuickReading(targetPage, filter);
+      m_clipboardQuickLastPageReading = nextPage ? L"" : m_reading;
       m_readingCursor = m_reading.size();
       clipboardQuickPageHr = SyncCompositionText(ec, pic, true);
       return true;
@@ -584,7 +594,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
           *pHandled = true;
           return clipboardQuickPageHr;
         }
-        if (!m_config.input.pagePgUpDown) {
+        if (!m_config.input.pagePgUpDown && !CurrentCandidatesClipboardQuickMode()) {
           *pHandled = true;
           return S_OK;
         }
@@ -613,7 +623,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
           *pHandled = true;
           return S_OK;
         }
-        if (!m_config.input.pagePgUpDown) {
+        if (!m_config.input.pagePgUpDown && !CurrentCandidatesClipboardQuickMode()) {
           *pHandled = true;
           return S_OK;
         }
@@ -631,11 +641,15 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
         return S_OK;
       case VK_OEM_MINUS:
         if (!m_candidates.empty()) {
+          if (!candidatesReadyForCurrentReading()) {
+            *pHandled = true;
+            return S_OK;
+          }
           if (applyClipboardQuickPageControl(false)) {
             *pHandled = true;
             return clipboardQuickPageHr;
           }
-          if (m_config.input.pageMinusEqual) {
+          if (m_config.input.pageMinusEqual || CurrentCandidatesClipboardQuickMode()) {
             if (m_candPage > 0) {
               const UINT offset = CandidateIndexInPage(m_candSel);
               --m_candPage;
@@ -654,6 +668,10 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
         break;
       case VK_OEM_PLUS:
         if (!m_candidates.empty()) {
+          if (!candidatesReadyForCurrentReading()) {
+            *pHandled = true;
+            return S_OK;
+          }
           if (applyClipboardQuickPageControl(true)) {
             *pHandled = true;
             return clipboardQuickPageHr;
@@ -662,7 +680,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
             *pHandled = true;
             return S_OK;
           }
-          if (m_config.input.pageMinusEqual) {
+          if (m_config.input.pageMinusEqual || CurrentCandidatesClipboardQuickMode()) {
             if (m_candPage < MaxCandidatePage()) {
               const UINT offset = CandidateIndexInPage(m_candSel);
               ++m_candPage;

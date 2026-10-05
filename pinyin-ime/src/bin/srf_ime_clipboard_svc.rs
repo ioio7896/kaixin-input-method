@@ -12,12 +12,13 @@ use pinyin_ime::win_paste;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::io;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, OnceLock};
-use std::time::{Duration, UNIX_EPOCH};
+use std::time::Duration;
 
 #[cfg(windows)]
 use windows_sys::Win32::Foundation::{
@@ -66,7 +67,7 @@ fn capture_system_clipboard_with_log(force: bool, phase: &str) {
     }
 }
 
-fn load_snapshot_with_log(phase: &str) -> ClipboardSnapshot {
+fn load_snapshot_with_log(phase: &str) -> Result<ClipboardSnapshot, String> {
     match clipboard_store::snapshot() {
         Ok(snapshot) => {
             runtime_log::log_clipboard(
@@ -79,7 +80,7 @@ fn load_snapshot_with_log(phase: &str) -> ClipboardSnapshot {
                     snapshot.pinned.len()
                 ),
             );
-            snapshot
+            Ok(snapshot)
         }
         Err(err) => {
             runtime_log::log_clipboard(
@@ -87,16 +88,36 @@ fn load_snapshot_with_log(phase: &str) -> ClipboardSnapshot {
                 "clipboard_snapshot",
                 format!("status=failed phase={} reason={err}", phase),
             );
-            ClipboardSnapshot::default()
+            Err(err)
         }
     }
 }
 
-fn store_modified_string() -> String {
-    clipboard_store::store_modified()
-        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-        .map(|duration| duration.as_millis().to_string())
-        .unwrap_or_default()
+fn snapshot_revision(snapshot: &serde_json::Value) -> String {
+    // The returned snapshot includes pending writes and privacy filtering;
+    // its revision must not depend on the file's still-unchanged mtime.
+    format!("{:x}", Sha256::digest(snapshot.to_string().as_bytes()))
+}
+
+#[cfg(test)]
+mod revision_tests {
+    use super::*;
+
+    #[test]
+    fn pending_or_privacy_changes_invalidate_refresh_revision() {
+        let empty = snapshot_dto(&ClipboardSnapshot::default());
+        let populated = json!({"history": [{"id": "audit", "text": "new copy"}], "pinned": []});
+        assert_ne!(snapshot_revision(&empty), snapshot_revision(&populated));
+        assert_eq!(
+            snapshot_revision(&populated),
+            snapshot_revision(&populated.clone())
+        );
+        let used_again = json!({"history": [{"id": "audit", "text": "new copy", "copy_count": 2}], "pinned": []});
+        assert_ne!(
+            snapshot_revision(&populated),
+            snapshot_revision(&used_again)
+        );
+    }
 }
 
 fn snapshot_dto(snapshot: &ClipboardSnapshot) -> serde_json::Value {
@@ -117,11 +138,15 @@ fn snapshot_dto(snapshot: &ClipboardSnapshot) -> serde_json::Value {
 }
 
 #[cfg(windows)]
-fn copy_to_system_clipboard(text: &str) -> Result<(), String> {
+fn copy_to_system_clipboard(text: &str) -> Result<Option<u32>, String> {
     let mut last_error = None;
     for attempt in 0..12 {
-        match clipboard_win::set_clipboard(clipboard_win::formats::Unicode, text) {
-            Ok(()) => return Ok(()),
+        let result = clipboard_win::Clipboard::new().and_then(|_guard| {
+            clipboard_win::raw::set_string(text)?;
+            Ok(clipboard_win::raw::seq_num().map(|sequence| sequence.get()))
+        });
+        match result {
+            Ok(sequence) => return Ok(sequence),
             Err(e) => {
                 last_error = Some(e.to_string());
                 std::thread::sleep(Duration::from_millis(10 + attempt * 8));
@@ -143,7 +168,11 @@ fn current_system_clipboard_text() -> Option<String> {
 }
 
 #[cfg(windows)]
-fn restore_system_clipboard_text_after_paste(previous: Option<String>, pasted: &str) {
+fn restore_system_clipboard_text_after_paste(
+    previous: Option<String>,
+    pasted: &str,
+    sequence: Option<u32>,
+) {
     let Some(previous) = previous else {
         return;
     };
@@ -151,11 +180,18 @@ fn restore_system_clipboard_text_after_paste(previous: Option<String>, pasted: &
         return;
     }
     std::thread::sleep(Duration::from_millis(80));
-    let _ = copy_to_system_clipboard(&previous);
+    // Hold the clipboard open from the sequence check through the write so
+    // another copy cannot land between the check and restoration.
+    if let Ok(_guard) = clipboard_win::Clipboard::new_attempts(12) {
+        let current = clipboard_win::raw::seq_num().map(|sequence| sequence.get());
+        if sequence.is_some() && sequence == current {
+            let _ = clipboard_win::raw::set_string(&previous);
+        }
+    }
 }
 
 #[cfg(not(windows))]
-fn copy_to_system_clipboard(_text: &str) -> Result<(), String> {
+fn copy_to_system_clipboard(_text: &str) -> Result<Option<u32>, String> {
     Err("当前平台不支持系统剪贴板快速粘贴".to_string())
 }
 
@@ -165,13 +201,18 @@ fn current_system_clipboard_text() -> Option<String> {
 }
 
 #[cfg(not(windows))]
-fn restore_system_clipboard_text_after_paste(_previous: Option<String>, _pasted: &str) {}
+fn restore_system_clipboard_text_after_paste(
+    _previous: Option<String>,
+    _pasted: &str,
+    _sequence: Option<u32>,
+) {
+}
 
 /// 完整粘贴链：保存旧剪贴板 → 写入待粘贴文本 → 记录到历史 → 向目标窗口发
 /// Ctrl+V → 恢复旧剪贴板。任何一步失败都会把错误带回客户端显示。
 fn paste_text_worker(text: &str, target_hwnd: isize) -> Result<(), String> {
     let previous_clipboard = current_system_clipboard_text();
-    copy_to_system_clipboard(text)?;
+    let temporary_sequence = copy_to_system_clipboard(text)?;
     if let Err(err) = clipboard_store::record_text(text) {
         runtime_log::log_clipboard(
             RuntimeLogLevel::Error,
@@ -184,7 +225,7 @@ fn paste_text_worker(text: &str, target_hwnd: isize) -> Result<(), String> {
     }
     match win_paste::send_ctrl_v_to_target(target_hwnd) {
         Ok(()) => {
-            restore_system_clipboard_text_after_paste(previous_clipboard, text);
+            restore_system_clipboard_text_after_paste(previous_clipboard, text, temporary_sequence);
             Ok(())
         }
         Err(e) => Err(format!("{e}，文本已复制到剪贴板")),
@@ -365,14 +406,14 @@ fn message_data(message: &str) -> serde_json::Value {
 
 fn refresh_data(force: bool, last_modified: Option<&str>) -> Result<serde_json::Value, String> {
     capture_system_clipboard_with_log(force, "refresh");
-    let snapshot = load_snapshot_with_log("refresh");
-    let modified = store_modified_string();
+    let snapshot = snapshot_dto(&load_snapshot_with_log("refresh")?);
+    let modified = snapshot_revision(&snapshot);
     let changed = last_modified.map_or(true, |previous| previous != modified);
     Ok(json!({
         "changed": changed,
         "modified": modified,
         "max_age_days": clipboard_store::configured_max_age_days(),
-        "snapshot": snapshot_dto(&snapshot),
+        "snapshot": snapshot,
     }))
 }
 

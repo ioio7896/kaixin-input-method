@@ -59,8 +59,9 @@ pub fn suppress_tool_hotkeys(config: &str, process: &str, class: &str) -> bool {
         && (BUILTIN_GAME_PROCESSES
             .iter()
             .any(|p| wildcard_match(p, process))
-            || BUILTIN_GAME_CLASSES.iter()
-            .any(|c| c.eq_ignore_ascii_case(class)));
+            || BUILTIN_GAME_CLASSES
+                .iter()
+                .any(|c| c.eq_ignore_ascii_case(class)));
     let configured_game = compatibility
         .and_then(|s| s.get("game_processes"))
         .is_some_and(|list| {
@@ -90,7 +91,7 @@ pub fn suppress_tool_hotkeys(config: &str, process: &str, class: &str) -> bool {
     builtin_game || configured_game || profile_game || ascii
 }
 
-use kaixin_common::game_rules::{BUILTIN_GAME_PROCESSES, BUILTIN_GAME_CLASSES};
+use kaixin_common::game_rules::{BUILTIN_GAME_CLASSES, BUILTIN_GAME_PROCESSES};
 
 #[cfg(test)]
 mod tests {
@@ -134,7 +135,10 @@ mod tests {
     #[test]
     fn builtin_rules_are_generated_for_both_languages() {
         let cpp = include_str!("../../tsf-tip/include/game_rules.generated.h");
-        for value in BUILTIN_GAME_PROCESSES.iter().chain(BUILTIN_GAME_CLASSES.iter()) {
+        for value in BUILTIN_GAME_PROCESSES
+            .iter()
+            .chain(BUILTIN_GAME_CLASSES.iter())
+        {
             assert!(cpp.contains(&format!("L\"{value}\"")));
         }
     }

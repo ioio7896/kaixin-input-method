@@ -16,7 +16,7 @@ int main() {
   bool ok = true;
   for (int i = 0; i < 4; ++i) {
     const std::string ini = std::string("[compatibility]\r\ngame_input_mode=") + modes[i] +
-        "\r\n[app:mygame.exe]\r\ngame_profile=compact\r\ngame_input_mode=" + modes[i] +
+        "\r\n[input]\r\nchinese_halfwidth=" + (i % 2 ? "1" : "0") + "\r\n[app:mygame.exe]\r\ngame_profile=compact\r\ngame_input_mode=" + modes[i] +
         "\r\ncommit_transport=clipboard_paste\r\noverlay_anchor=bottom_left\r\n";
     HANDLE handle = CreateFileW(file, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     DWORD written = 0;
@@ -26,7 +26,7 @@ int main() {
     if (!saved) { ok = false; break; }
     const auto config = LoadSrfConfigFromPath(file);
     const auto* app = FindAppOptions(config, L"mygame.exe");
-    ok = ok && config.compatibility.gameInputMode == expected[i] && app && app->hasGameInputMode &&
+    ok = ok && config.input.chineseHalfwidth == (i % 2 != 0) && config.compatibility.gameInputMode == expected[i] && app && app->hasGameInputMode &&
         app->gameInputMode == expected[i] && app->hasCommitTransport &&
         app->commitTransport == SrfCommitTransport::ClipboardPaste &&
         app->overlayAnchor == SrfOverlayAnchor::BottomLeft && config.input.gameModeHotkey.enabled;

@@ -1,5 +1,13 @@
 use super::*;
 
+#[path = "ui_layout.rs"]
+mod layout;
+use layout::{bounded_control_width, responsive_settings_row};
+
+#[cfg(test)]
+#[path = "ui_layout_tests.rs"]
+mod layout_tests;
+
 const SETTINGS_FONT_HEADING: f32 = 20.0;
 const SETTINGS_FONT_PAGE_TITLE: f32 = 23.0;
 const SETTINGS_FONT_BRAND_TITLE: f32 = 17.0;
@@ -11,14 +19,12 @@ const SETTINGS_MIN_HINT_FONT: f32 = 10.0;
 const SETTINGS_FONT_SMALL: f32 = 14.0;
 const SETTINGS_FONT_MONOSPACE: f32 = 14.0;
 const SETTINGS_FONT_LOG: f32 = 12.0;
-const SETTINGS_CONTROL_WIDTH: f32 = 260.0;
-const SETTINGS_CONTROL_MIN_WIDTH: f32 = 240.0;
+const SETTINGS_CONTROL_WIDTH: f32 = 320.0;
 const SETTINGS_ROW_HEIGHT: f32 = 40.0;
 const SETTINGS_ROW_PAD_Y: f32 = 5.0;
 const SETTINGS_RADIUS_CONTROL: f32 = 6.0;
 const SETTINGS_RADIUS_CARD: f32 = 8.0;
 const SETTINGS_RADIUS_FULL: f32 = 999.0;
-const SETTINGS_ROW_STACK_WIDTH: f32 = 520.0;
 const SETTINGS_BUTTON_WIDTH: f32 = 82.0;
 const DEFAULT_SCREENSHOT_DIR_DESCRIPTION: &str = "留空时使用“图片\\Kaixin Screenshots”。";
 const DEFAULT_SCREENSHOT_DIR_HINT: &str = "默认：图片\\Kaixin Screenshots";
@@ -660,6 +666,7 @@ fn reset_active_page_defaults(app: &mut SettingsApp) {
             auto_pair_punct,
             number_fullwidth,
             symbol_fullwidth,
+            chinese_halfwidth,
             shift_symbol_temporary_ascii,
             date_auto_format,
             english_word_input,
@@ -998,8 +1005,8 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
     },
     SettingsSearchEntry {
         title: "中文标点",
-        hint: "全角、弯引号和符号补全",
-        keywords: "punctuation 全角",
+        hint: "半角字符、全角、弯引号和符号补全",
+        keywords: "punctuation 全角 半角 halfwidth",
         section: SettingsSection::Input,
         tool_page: None,
         system_page: None,
@@ -1376,7 +1383,7 @@ fn tool_row(
     description: &str,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
-    compact_leading_control_row(ui, title, description, add_control);
+    setting_row(ui, title, description, add_control);
 }
 
 fn status_dot(ui: &mut egui::Ui, color: Color32) {
@@ -1548,16 +1555,19 @@ fn compact_leading_control_row(
     egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, 6.0))
         .show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 12.0;
-                add_control(ui);
-                ui.vertical(|ui| {
-                    ui.spacing_mut().item_spacing.y = 3.0;
-                    ui.label(
-                        RichText::new(title)
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
+            responsive_settings_row(
+                ui,
+                50.0,
+                true,
+                |ui| {
+                    ui.add(
+                        egui::Label::new(
+                            RichText::new(title)
+                                .strong()
+                                .size(SETTINGS_FONT_SETTING_TITLE)
+                                .color(palette.text),
+                        )
+                        .wrap(),
                     );
                     if !description.is_empty() {
                         ui.add(
@@ -1567,8 +1577,9 @@ fn compact_leading_control_row(
                             .wrap(),
                         );
                     }
-                });
-            });
+                },
+                add_control,
+            );
         });
     ui.separator();
 }
@@ -1628,7 +1639,10 @@ fn setting_slider_usize(
     range: std::ops::RangeInclusive<usize>,
 ) {
     setting_row(ui, title, description, |ui| {
-        ui.add_sized([240.0, 24.0], Slider::new(value, range).show_value(true));
+        ui.add_sized(
+            [bounded_control_width(ui, 240.0), 24.0],
+            Slider::new(value, range).show_value(true),
+        );
     });
 }
 
@@ -1640,7 +1654,10 @@ fn setting_slider_f64(
     range: std::ops::RangeInclusive<f64>,
 ) {
     setting_row(ui, title, description, |ui| {
-        ui.add_sized([240.0, 24.0], Slider::new(value, range).show_value(true));
+        ui.add_sized(
+            [bounded_control_width(ui, 240.0), 24.0],
+            Slider::new(value, range).show_value(true),
+        );
     });
 }
 
@@ -1671,90 +1688,38 @@ fn setting_spec_row_enabled(
     spec: SettingSpec<'_>,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
-    let title = spec.title;
-    let description = spec.description;
     let palette = fluent_palette(ui);
-    let show_description = true;
     let row = egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y - 1.0))
         .show(ui, |ui| {
-            let total_width = ui.available_width();
-            if total_width < SETTINGS_ROW_STACK_WIDTH {
-                ui.vertical(|ui| {
-                    ui.set_width(total_width);
-                    let title_response = ui.label(
-                        RichText::new(title)
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
+            responsive_settings_row(
+                ui,
+                SETTINGS_CONTROL_WIDTH,
+                false,
+                |ui| {
+                    ui.add(
+                        egui::Label::new(
+                            RichText::new(spec.title)
+                                .strong()
+                                .size(SETTINGS_FONT_SETTING_TITLE)
+                                .color(palette.text),
+                        )
+                        .wrap(),
                     );
-                    if !description.is_empty() && show_description {
+                    render_restart_requirement(ui, spec.restart_requirement, palette);
+                    if !spec.description.is_empty() {
                         ui.add(
                             egui::Label::new(
-                                RichText::new(description)
+                                RichText::new(spec.description)
                                     .size(SETTINGS_FONT_SMALL)
                                     .color(palette.muted),
                             )
                             .wrap(),
                         );
-                    } else if !description.is_empty() {
-                        title_response.on_hover_text(description);
                     }
-                    render_restart_requirement(ui, spec.restart_requirement, palette);
-                    ui.add_space(6.0);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(total_width, SETTINGS_ROW_HEIGHT),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(total_width);
-                            add_control(ui);
-                        },
-                    );
-                });
-            } else {
-                let spacing = ui.spacing().item_spacing.x;
-                let control_width = SETTINGS_CONTROL_WIDTH
-                    .min((total_width * 0.42).max(SETTINGS_CONTROL_MIN_WIDTH));
-                let text_width = (total_width - control_width - spacing).clamp(160.0, 300.0);
-                ui.horizontal(|ui| {
-                    ui.set_min_height(SETTINGS_ROW_HEIGHT);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, SETTINGS_ROW_HEIGHT),
-                        egui::Layout::top_down(egui::Align::Min),
-                        |ui| {
-                            ui.set_width(text_width);
-                            let title_response = ui.label(
-                                RichText::new(title)
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            render_restart_requirement(ui, spec.restart_requirement, palette);
-                            if !description.is_empty() && show_description {
-                                ui.add(
-                                    egui::Label::new(
-                                        RichText::new(description)
-                                            .size(SETTINGS_FONT_SMALL)
-                                            .color(palette.muted),
-                                    )
-                                    .wrap(),
-                                );
-                            } else if !description.is_empty() {
-                                title_response.on_hover_text(description);
-                            }
-                        },
-                    );
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, SETTINGS_ROW_HEIGHT),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(control_width);
-                            ui.set_max_width(control_width);
-                            add_control(ui);
-                        },
-                    );
-                });
-            }
+                },
+                add_control,
+            );
         });
     let y = row.response.rect.bottom();
     ui.painter().line_segment(
@@ -1794,7 +1759,7 @@ fn setting_combo_row(
     setting_row(ui, title, description, |ui| {
         ComboBox::from_id_salt(id)
             .selected_text(selected_text)
-            .width(230.0)
+            .width(bounded_control_width(ui, 230.0))
             .show_ui(ui, add_options);
     });
 }
@@ -1812,6 +1777,12 @@ fn input_habits_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
             "全局英文模式",
             "中英状态在所有应用之间共享。",
             &mut model.global_ascii,
+        );
+        setting_toggle(
+            ui,
+            "中文拼音模式采用半角字符",
+            "字母、数字和符号保留半角形式，如 - 而非 －；优先于全角和中文标点设置，符号补全仍可用。",
+            &mut model.chinese_halfwidth,
         );
         setting_toggle(
             ui,

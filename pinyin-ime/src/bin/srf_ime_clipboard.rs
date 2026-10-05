@@ -1146,7 +1146,14 @@ impl ClipboardApp {
                         ui.close_menu();
                     }
                     if ui
-                        .button(format!("清空 {} 天前记录", self.max_age_days))
+                        .add_enabled(
+                            self.max_age_days > 0,
+                            egui::Button::new(if self.max_age_days == 0 {
+                                "不按天数清理".to_string()
+                            } else {
+                                format!("清空 {} 天前记录", self.max_age_days)
+                            }),
+                        )
                         .clicked()
                     {
                         self.confirm_clear = Some(ClearKind::Older);

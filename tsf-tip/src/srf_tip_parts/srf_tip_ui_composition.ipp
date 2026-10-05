@@ -642,6 +642,7 @@ HRESULT CSrfTip::SyncCompositionText(TfEditCookie ec, ITfContext* pic, bool refr
 
   bool updateCandidateWindowNow = true;
   if (refreshCandidates) {
+    if (m_clipboardQuickLastPageReading != m_reading) m_clipboardQuickLastPageReading.clear();
     // 用户继续输入/回删导致 reading 变化时，应回到第一页候选。
     // 否则“翻页后再输入第二个音节”会停留在旧页码，造成候选视图不符合预期。
     m_candSel = 0;

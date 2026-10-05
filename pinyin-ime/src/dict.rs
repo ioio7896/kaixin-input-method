@@ -71,6 +71,13 @@ fn pronunciation_aliases() -> &'static PronunciationOverrides {
 /// multi-reading iterator also contains obsolete readings such as `xiong` for
 /// 能 and `neng` for 而. Explicit historical rows exclude those readings;
 /// unlisted characters no longer lose every non-primary pronunciation.
+pub(crate) fn is_project_approved_reading(c: char, reading: &str) -> bool {
+    pronunciation_aliases()
+        .accepted
+        .get(&c)
+        .is_some_and(|readings| readings.iter().any(|approved| approved == reading))
+}
+
 pub(crate) fn pinyin_plain_options(c: char) -> Vec<String> {
     let mut out = Vec::new();
     let overrides = pronunciation_aliases();
@@ -159,6 +166,13 @@ mod tests {
             ('她', "jie"),
             ('它', "tuo"),
             ('能', "xiong"),
+            ('大', "tai"),
+            ('能', "tai"),
+            ('不', "fu"),
+            ('事', "zi"),
+            ('她', "chi"),
+            ('最', "cuo"),
+            ('月', "ru"),
         ];
         for (ch, reading) in historical {
             assert!(
@@ -175,6 +189,8 @@ mod tests {
         assert!(pinyin_plain_options('重').contains(&"chong".to_string()));
         assert!(pinyin_plain_options('行').contains(&"hang".to_string()));
         assert!(pinyin_plain_options('着').contains(&"zhao".to_string()));
+        assert!(pinyin_plain_options('大').contains(&"da".to_string()));
+        assert!(pinyin_plain_options('大').contains(&"dai".to_string()));
     }
 
     #[test]

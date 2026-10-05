@@ -2,7 +2,7 @@
 
 status: verified
 
-核验日期：2026-07-27  
+核验日期：2026-10-05
 核验负责人：项目作者  
 核验脚本：`python scripts/verify_ai_generated_data.py`
 
@@ -72,7 +72,7 @@ status: verified
 | `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `89d7a621ef5befe38ef8ebcb84b956d663a0d80186ec8f51a97e9568307f2df3` |
 | `data_sources/kaixin/pronunciation_aliases.tsv` | 123 | `0f02157dab25eeca3552e0963d8203d1fee584e5bfd6e20d88f610c2462a49fd` |
 | `data_sources/kaixin/core_priority_corrections.tsv` | 38 | `0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765` |
-| `data_sources/kaixin/pronunciation_exclusions.tsv` | 12 | `37528c72f8d2c770dbf86a40a86e23b8b49b8d5f2af2fd7f176b13c2369b927d` |
+| `data_sources/kaixin/pronunciation_exclusions.tsv` | 19 | `e10c95ce4999b9e3d252e91f4c8c28b9ca512f88632f61b08b30e33be3de1a0f` |
 | `data_sources/kaixin/recall_phrases.tsv` | 7 | `55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8` |
 
 2026-10-02 更新了冻结清单与脚本：基础高优先级覆盖表为 41 行，从旧表移出的 14 条读音仍保留在其他运行时词库；读音别名表仅修改说明注释，123 行数据未改变。Core 优先级、旧读排除和低优先级召回表纳入检查。
@@ -80,3 +80,5 @@ status: verified
 本次补充核验覆盖 17 个文本文件及一个 SQLite 文件，仅验证当前文件身份、结构和条目迁移，不重新断言现实名称的时效性，也不推测历史生成过程。TSV 固定 UTF-8/LF；Git 属性保持 LF，避免平台换行影响哈希。
 
 同词不同读音可以多行保留，每个文件的词语与拼音组合不得重复。权重必须为正整数；四列读音表只接受 primary、alternate、colloquial、historical 类别。
+
+2026-10-05 更新旧读排除表：新增“不→fu、事→zi、她→chi、最→cuo、月→ru”五条单字排除项；先前新增的“大→tai、能→tai”两条一并纳入此冻结记录。已重新计算哈希并运行核验脚本。常用多音词的完整词条不受单字排除表影响。

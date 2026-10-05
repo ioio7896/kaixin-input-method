@@ -1,6 +1,8 @@
 use pinyin_ime::core::{
-    PinyinEngine, LEARN_FLAG_COMPOSED_PHRASE, LEARN_FLAG_WEAK, MODE_JIANPIN, MODE_MIXED_PINYIN,
+    LEARN_FLAG_COMPOSED_PHRASE, LEARN_FLAG_EXPLICIT_SELECTION, LEARN_FLAG_NO_LEARN,
+    LEARN_FLAG_WEAK, MODE_JIANPIN, MODE_MIXED_PINYIN,
 };
+use pinyin_ime::eval_profile::EvaluationProfile;
 use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::fs;
@@ -15,6 +17,37 @@ struct Metrics {
     reciprocal_rank_sum: f64,
     page_turn_sum: usize,
     missing: usize,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_count_matches_bucket_total() {
+        let mut total = Metrics::default();
+        let mut bucket = Metrics::default();
+        for rank in [Some(1), None, Some(10)] {
+            total.record(rank, 9);
+            bucket.record(rank, 9);
+        }
+        assert_eq!(total.lookups, 3);
+        assert_eq!(total.missing, 1);
+        assert_eq!(total.missing, bucket.missing);
+        assert_eq!(total.page_turn_sum, 1);
+    }
+
+    #[test]
+    fn numeric_and_named_learning_flags_agree() {
+        assert_eq!(parse_flags("0"), Ok(0));
+        assert_eq!(parse_flags("2"), Ok(LEARN_FLAG_COMPOSED_PHRASE));
+        assert_eq!(parse_flags("weak|composed"), parse_flags("3"));
+        assert!(parse_flags("typo").is_err());
+        assert_eq!(parse_flags("4"), Ok(LEARN_FLAG_NO_LEARN));
+        assert_eq!(parse_flags("8"), Ok(LEARN_FLAG_EXPLICIT_SELECTION));
+        assert!(parse_flags("16").is_err());
+        assert!(parse_flags("weak|").is_err());
+    }
 }
 
 impl Metrics {
@@ -66,14 +99,33 @@ fn infer_bucket(reading: &str, explicit: Option<&str>) -> String {
     }
 }
 
-fn parse_flags(value: &str) -> u32 {
-    value
-        .split(['|', ','])
-        .fold(0, |flags, part| match part.trim() {
-            "weak" => flags | LEARN_FLAG_WEAK,
-            "composed" => flags | LEARN_FLAG_COMPOSED_PHRASE,
-            _ => flags,
-        })
+fn parse_flags(value: &str) -> Result<u32, String> {
+    let value = value.trim();
+    if value.is_empty() {
+        return Ok(0);
+    }
+    value.split(['|', ',']).try_fold(0, |flags, part| {
+        let part = part.trim();
+        let parsed = match part {
+            "weak" => LEARN_FLAG_WEAK,
+            "composed" => LEARN_FLAG_COMPOSED_PHRASE,
+            "no_learn" => LEARN_FLAG_NO_LEARN,
+            "explicit_selection" => LEARN_FLAG_EXPLICIT_SELECTION,
+            _ => part
+                .parse::<u32>()
+                .map_err(|_| format!("unknown learning flag: {part}"))?,
+        };
+        if parsed
+            & !(LEARN_FLAG_WEAK
+                | LEARN_FLAG_COMPOSED_PHRASE
+                | LEARN_FLAG_NO_LEARN
+                | LEARN_FLAG_EXPLICIT_SELECTION)
+            != 0
+        {
+            return Err(format!("unsupported learning flag bits: {part}"));
+        }
+        Ok(flags | parsed)
+    })
 }
 
 fn parse_usize(value: Option<&&str>, field: &str, line_no: usize) -> usize {
@@ -87,6 +139,7 @@ fn usage() -> ! {
         "usage: learning_replay_eval [events.tsv] [--events path] [--lexicon dir] \
          [--min-top1 percent] [--min-top3 percent] [--min-mrr value] \\
          [--max-missing count] [--max-avg-page-turns value] [--page-size count] [--show-top count]\n\
+         [--engine-profile runtime-hot-cold|full]\n\
          events: commit<TAB>reading<TAB>phrase<TAB>flags\n\
                  select<TAB>reading<TAB>phrase<TAB>index<TAB>page<TAB>skipped1|skipped2\n\
                  lookup<TAB>case_id<TAB>reading<TAB>expected<TAB>optional_bucket\n\
@@ -110,11 +163,17 @@ fn main() {
     let mut max_avg_page_turns = None;
     let mut page_size = 9usize;
     let mut show_top = 0usize;
+    let mut engine_profile = EvaluationProfile::default();
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--events" => events_path = PathBuf::from(args.next().expect("--events path")),
             "--lexicon" => lexicon_dir = PathBuf::from(args.next().expect("--lexicon dir")),
+            "--engine-profile" => {
+                engine_profile =
+                    EvaluationProfile::parse(&args.next().expect("--engine-profile value"))
+                        .unwrap_or_else(|err| panic!("{err}"))
+            }
             "--min-top1" => min_top1 = args.next().and_then(|value| value.parse::<f64>().ok()),
             "--min-top3" => min_top3 = args.next().and_then(|value| value.parse::<f64>().ok()),
             "--min-mrr" => min_mrr = args.next().and_then(|value| value.parse::<f64>().ok()),
@@ -153,6 +212,7 @@ fn main() {
         max_avg_page_turns,
         page_size,
         show_top,
+        engine_profile,
     );
 }
 
@@ -166,11 +226,12 @@ fn run_replay(
     max_avg_page_turns: Option<f64>,
     page_size: usize,
     show_top: usize,
+    engine_profile: EvaluationProfile,
 ) {
     let text = fs::read_to_string(events_path)
         .unwrap_or_else(|err| panic!("read replay {}: {err}", events_path.display()));
-    let mut engine = PinyinEngine::with_phrase_dir(Some(lexicon_dir));
-    engine.clear_user_lexicon_for_eval();
+    engine_profile.report(lexicon_dir);
+    let mut engine = engine_profile.create_engine(lexicon_dir);
     engine.set_mode_flags(MODE_JIANPIN | MODE_MIXED_PINYIN);
 
     let mut metrics = Metrics::default();
@@ -190,7 +251,10 @@ fn run_replay(
             "commit" => {
                 let reading = fields.get(1).expect("commit reading").trim();
                 let phrase = fields.get(2).expect("commit phrase").trim();
-                let flags = fields.get(3).map_or(0, |value| parse_flags(value));
+                let flags = fields
+                    .get(3)
+                    .map_or(Ok(0), |value| parse_flags(value))
+                    .unwrap_or_else(|err| panic!("line {line_no}: {err}"));
                 engine
                     .learn_commit_with_flags(reading, phrase, flags)
                     .unwrap_or_else(|err| panic!("line {line_no}: commit: {err}"));
@@ -243,8 +307,6 @@ fn run_replay(
                             .entry((reading.to_string(), expected.to_string()))
                             .or_insert(commits);
                     }
-                } else {
-                    metrics.missing += 1;
                 }
                 println!(
                     "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",

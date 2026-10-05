@@ -220,82 +220,7 @@ std::wstring FormatTraceTimestamp(const SYSTEMTIME& st) {
   return buf;
 }
 
-std::wstring TrimDiagnosticToken(std::wstring token) {
-  while (!token.empty() && (token.front() == L',' || token.front() == L';' || token.front() == L' ')) {
-    token.erase(token.begin());
-  }
-  while (!token.empty() && (token.back() == L',' || token.back() == L';' || token.back() == L' ')) {
-    token.pop_back();
-  }
-  return token;
-}
-
-std::wstring LowerAsciiForDiagnostics(std::wstring value) {
-  for (wchar_t& ch : value) {
-    if (ch >= L'A' && ch <= L'Z') ch = static_cast<wchar_t>(ch - L'A' + L'a');
-  }
-  return value;
-}
-
-bool IsSafeDiagnosticKey(const std::wstring& key) {
-  const std::wstring lower = LowerAsciiForDiagnostics(key);
-  static constexpr const wchar_t* kSafeKeys[] = {
-      L"anchor",       L"anchored",      L"appcontainer", L"async",
-      L"class",
-      L"candidateempty", L"compat",      L"compathide",   L"composing",
-      L"contextempty", L"count",         L"current",      L"currentserial",
-      L"cursor",       L"delayms",       L"direct",      L"dwflags",
-      L"elapsed",      L"elapsed_ms",    L"engine",       L"fallback",
-      L"flags",        L"full",          L"generation",    L"grace_ms_left", L"hasanchor",
-      L"hasrect",      L"hr",            L"immersive",    L"integrity",
-      L"items",        L"lookup_status",
-      L"offset",       L"page",          L"pages",        L"partial",
-      L"pid",          L"prefix_placeholder",
-      L"process",      L"reason",        L"request_id",   L"refreshcandidates",
-      L"result",       L"retained",      L"retry",        L"raw_fallback_suppressed",
-      L"secure",
-      L"selected",
-      L"selectedinpage", L"sensitive",   L"show",         L"shown",
-      L"showwindow",   L"stage",         L"status",
-      L"state",        L"tid",           L"total",        L"uielement",
-      L"uielementid",  L"uiless",        L"uilessmode",   L"visible"};
-  for (const wchar_t* safe : kSafeKeys) {
-    if (lower == safe) return true;
-  }
-  return false;
-}
-
-std::wstring RedactDiagnosticMessage(const wchar_t* msg) {
-  if (!msg || !*msg) return L"(empty)";
-
-  std::wstring text(msg);
-  std::wstring out = L"redacted chars=" + std::to_wstring(text.size());
-  size_t kept = 0;
-  size_t pos = 0;
-  while (pos < text.size() && kept < 16) {
-    while (pos < text.size() && (text[pos] == L' ' || text[pos] == L',' || text[pos] == L';')) {
-      ++pos;
-    }
-    const size_t start = pos;
-    while (pos < text.size() && text[pos] != L' ' && text[pos] != L',' && text[pos] != L';') {
-      ++pos;
-    }
-    if (start == pos) continue;
-
-    std::wstring token = TrimDiagnosticToken(text.substr(start, pos - start));
-    const size_t eq = token.find(L'=');
-    if (eq == std::wstring::npos || eq == 0) continue;
-
-    const std::wstring key = TrimDiagnosticToken(token.substr(0, eq));
-    if (!IsSafeDiagnosticKey(key)) continue;
-
-    out.push_back(L' ');
-    out += token;
-    ++kept;
-  }
-  return out;
-}
-
+#include "diagnostic_privacy.h"
 
 enum class TsfAsyncLogKind : unsigned char {
   Debug,
@@ -1363,22 +1288,6 @@ std::wstring TrimAsciiWhitespace(std::wstring value) {
 
 bool IsClipboardQuickMeta(const std::wstring& meta) {
   return meta.find(L"clipboard_quick") != std::wstring::npos;
-}
-
-bool ParseClipboardQuickPageToken(const std::wstring& token, UINT* outPage) {
-  if (!outPage || token.empty()) return false;
-  size_t pos = 0;
-  if (token[0] == L'p' || token[0] == L'P') pos = 1;
-  if (pos >= token.size()) return false;
-  UINT pageOneBased = 0;
-  for (; pos < token.size(); ++pos) {
-    const wchar_t ch = token[pos];
-    if (ch < L'0' || ch > L'9') return false;
-    pageOneBased = pageOneBased * 10 + static_cast<UINT>(ch - L'0');
-  }
-  if (pageOneBased == 0) return false;
-  *outPage = pageOneBased - 1;
-  return true;
 }
 
 bool ParseClipboardQuickReading(const std::wstring& reading, UINT* outPage,

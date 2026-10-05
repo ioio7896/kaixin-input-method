@@ -282,6 +282,7 @@ struct SrfInputOptions {
   bool autoPairPunct = true;
   bool numberFullwidth = false;
   bool symbolFullwidth = false;
+  bool chineseHalfwidth = false;
   bool shiftSymbolTemporaryAscii = false;
   bool dateAutoFormat = true;
   bool englishWordInput = false;

@@ -2448,7 +2448,7 @@ struct ThreeCharDensityPolicy {
 const THREE_CHAR_CONFIDENT_SCORE_MARGIN: f64 = 18.0;
 const THREE_CHAR_COMPETITIVE_SCORE_MARGIN: f64 = 6.0;
 pub(super) const THREE_CHAR_CONFIDENT_FRONT_MIN: usize = 5;
-pub(super) const THREE_CHAR_CONFIDENT_FRONT_MAX: usize = 7;
+pub(super) const THREE_CHAR_CONFIDENT_FRONT_MAX: usize = 8;
 
 fn three_char_density_policy(
     exact: &[RankedCandidate],
@@ -2653,10 +2653,17 @@ pub(super) fn demote_cold_non_full_lexicon_candidates(
                 | CandidateSource::Correction
                 | CandidateSource::DateTime
         );
+        // Optional four-character vocabulary needs stronger evidence to enter
+        // an ordinary hot abbreviation slot. High-frequency daily expressions
+        // and explicit user choices keep their priority.
+        let freq = lexicon.phrase_frequency(&item.phrase);
+        let optional_four_char = phrase_char_count(&item.phrase) == 4
+            && matches!(layer, LexiconLayer::Ext | LexiconLayer::Large)
+            && freq < MAX_LEXICON_FREQ * 80 / 100;
         let cold = !protected_source
             && !candidate_has_user_priority(&item)
             && matches!(layer, LexiconLayer::Ext | LexiconLayer::Large)
-            && non_full_cold_lexicon_penalty(lexicon.phrase_frequency(&item.phrase)) > 0.0;
+            && (optional_four_char || non_full_cold_lexicon_penalty(freq) > 0.0);
         if cold {
             cold_tail.push(item);
         } else {

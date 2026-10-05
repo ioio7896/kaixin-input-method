@@ -488,11 +488,10 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     return hr;
   }
 
-  if (usedComposition) {
-    ClearCompositionBufferState();
-  } else {
-    ReleaseCompositionState();
-  }
+  // A successful final commit has ended the composition. TSF hosts need not
+  // send OnCompositionTerminated for an EndComposition initiated by this TIP.
+  // Retaining it would make EnsureEngineInputReady reject every following key.
+  ReleaseCompositionState();
   std::wstring line = L"status=ok, total_ms=";
   line += std::to_wstring(GetTickCount64() - commitStart);
   line += L", committed_len=";

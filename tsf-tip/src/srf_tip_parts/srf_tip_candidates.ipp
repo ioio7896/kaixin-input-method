@@ -237,10 +237,10 @@ void CSrfTip::CandidateLookupWorkerMain() {
     const unsigned long long currentBeforeLookup =
         m_candidateLookupSerial.load(std::memory_order_acquire);
     if (serial != currentBeforeLookup) {
-      std::wstring line = L"reading=" + ShortenForLog(reading, 24);
+      std::wstring line = L"reading_units=" + std::to_wstring(reading.size());
       line += L", request_id=";
       line += std::to_wstring(serial);
-      line += L", current=";
+      line += L", currentserial=";
       line += std::to_wstring(currentBeforeLookup);
       SrfTsfPerfLog(L"candidate-worker.drop-before", line.c_str());
       continue;
@@ -291,10 +291,10 @@ void CSrfTip::CandidateLookupWorkerMain() {
     } else {
       m_candidateLookupBackpressureUntilTick.store(GetTickCount64() + kCandidateLookupBackpressureMs,
                                                    std::memory_order_release);
-      std::wstring line = L"reading=" + ShortenForLog(reading, 24);
+      std::wstring line = L"reading_units=" + std::to_wstring(reading.size());
       line += L", request_id=";
       line += std::to_wstring(serial);
-      line += L", current=";
+      line += L", currentserial=";
       line += std::to_wstring(m_candidateLookupSerial.load(std::memory_order_acquire));
       SrfTsfPerfLog(L"candidate-worker.drop-after", line.c_str());
     }
@@ -513,8 +513,8 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
 
   if (skipAsyncLookupAfterCacheHit) {
     std::wstring line = L"request_id=" + std::to_wstring(serial);
-    line += L", reading=";
-    line += ShortenForLog(reading, 24);
+    line += L", reading_units=";
+    line += std::to_wstring(reading.size());
     line += L", reason=cache_hit";
     SrfTsfPerfLog(L"candidate-refresh.cache-skip-async", line.c_str());
     return true;
@@ -697,11 +697,11 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
         SetCandidateViewState(SrfCandidateViewState::Pending, L"result-reading-mismatch");
       }
     }
-    std::wstring line = L"result=" + ShortenForLog(reading, 24);
+    std::wstring line = L"result_reading_units=" + std::to_wstring(reading.size());
     line += L", request_id=";
     line += std::to_wstring(requestId);
-    line += L", current=";
-    line += ShortenForLog(m_reading, 24);
+    line += L", current_reading_units=";
+    line += std::to_wstring(m_reading.size());
     SrfTsfPerfLog(asyncResult ? L"candidate-refresh.async-stale"
                               : L"candidate-refresh.stale",
                   line.c_str());
@@ -888,6 +888,16 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
   MaybeNotifyEngineHealth();
   RebuildContextModel();
   SyncStatusModel();
+  if (!retainedPrevious && lookupStatus == SrfLookupCandidatesStatus::Ok &&
+      m_clipboardQuickLastPageReading == reading && CurrentCandidatesClipboardQuickMode()) {
+    // Crossing back into an earlier eight-entry batch lands on its last
+    // visible page, so consecutive previous-page presses never skip rows.
+    m_candPage = MaxCandidatePage();
+    m_candSel = CandidatePageStart(m_candPage);
+    m_clipboardQuickLastPageReading.clear();
+    ClampCandidateState();
+    SyncCandidateContextState();
+  }
   if (!retainedPrevious && !unchangedCandidates && partialResult && !prefixPlaceholder &&
       !m_candidates.empty()) {
     if (m_candSel == 0 && m_candPage == 0) {
@@ -1074,13 +1084,13 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
         SetCandidateViewState(SrfCandidateViewState::Pending, L"async-drop-pending");
       }
     }
-    std::wstring line = L"reading=" + ShortenForLog(reading, 24);
+    std::wstring line = L"reading_units=" + std::to_wstring(reading.size());
     line += L", request_id=";
     line += std::to_wstring(serial);
     line += L", currentSerial=";
     line += std::to_wstring(currentSerial);
-    line += L", current=";
-    line += ShortenForLog(m_reading, 24);
+    line += L", current_reading_units=";
+    line += std::to_wstring(m_reading.size());
     if (serial != currentSerial) {
       line += L", reason=serial";
     } else if (reading != m_reading) {
@@ -1099,8 +1109,8 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
       SetCandidateViewState(SrfCandidateViewState::Pending, L"async-drop-focus");
     }
     std::wstring line = L"request_id=" + std::to_wstring(serial);
-    line += L", reading=";
-    line += ShortenForLog(reading, 24);
+    line += L", reading_units=";
+    line += std::to_wstring(reading.size());
     line += L", requested=";
     line += FormatFocusSnapshotForLog(focus);
     line += L", current=";

@@ -438,34 +438,33 @@ struct GdiplusRuntime {
   bool ready = false;
 };
 
-GdiplusRuntime*& GdiplusRuntimeStorage() {
-  static GdiplusRuntime* runtime = nullptr;
-  return runtime;
+std::mutex g_candidateRenderingLifetimeMutex;
+size_t g_candidateRenderingUsers = 0;
+
+void AcquireCandidateWindowRendering() {
+  std::lock_guard<std::mutex> lock(g_candidateRenderingLifetimeMutex);
+  ++g_candidateRenderingUsers;
 }
 
-std::mutex& GdiplusRuntimeStorageMutex() {
-  static std::mutex mutex;
-  return mutex;
-}
-
-GdiplusRuntime& GetGdiplusRuntime() {
-  std::lock_guard<std::mutex> lock(GdiplusRuntimeStorageMutex());
-  GdiplusRuntime*& runtime = GdiplusRuntimeStorage();
-  if (!runtime) runtime = new GdiplusRuntime();
-  return *runtime;
-}
-
-void ShutdownGdiplusRuntime() {
-  std::lock_guard<std::mutex> lock(GdiplusRuntimeStorageMutex());
-  GdiplusRuntime*& runtime = GdiplusRuntimeStorage();
-  delete runtime;
-  runtime = nullptr;
+void ReleaseCandidateWindowRendering() {
+  std::lock_guard<std::mutex> lock(g_candidateRenderingLifetimeMutex);
+  if (g_candidateRenderingUsers != 0 && --g_candidateRenderingUsers == 0) {
+    ShutdownDirectTextRenderer();
+  }
 }
 
 void ShutdownCandidateWindowRendering() {
-  ShutdownDirectTextRenderer();
-  ShutdownGdiplusRuntime();
+  std::lock_guard<std::mutex> lock(g_candidateRenderingLifetimeMutex);
+  if (g_candidateRenderingUsers == 0) ShutdownDirectTextRenderer();
 }
+
+class CandidateRenderingLease {
+ public:
+  CandidateRenderingLease() { AcquireCandidateWindowRendering(); }
+  ~CandidateRenderingLease() { ReleaseCandidateWindowRendering(); }
+  CandidateRenderingLease(const CandidateRenderingLease&) = delete;
+  CandidateRenderingLease& operator=(const CandidateRenderingLease&) = delete;
+};
 
 std::vector<std::filesystem::path> CandidateFontSearchRoots() {
   std::vector<std::filesystem::path> roots;
@@ -565,7 +564,11 @@ std::wstring FontCacheKey(const std::filesystem::path& path) {
 }
 
 std::wstring ReadFontFamilyName(const std::filesystem::path& fontPath) {
-  if (fontPath.empty() || !GetGdiplusRuntime().ready) return {};
+  if (fontPath.empty()) return {};
+  // All GDI+ objects below die before the scoped runtime. No GDI+ teardown is
+  // needed in DllMain, including when the host exits without releasing its TIP.
+  GdiplusRuntime runtime;
+  if (!runtime.ready) return {};
   Gdiplus::PrivateFontCollection collection;
   if (collection.AddFontFile(fontPath.c_str()) != Gdiplus::Ok) return {};
   const int familyCount = collection.GetFamilyCount();
@@ -1285,6 +1288,7 @@ CandidatePageLayoutMetrics BuildCandidatePageLayoutMetrics(const SrfUIStyle& sty
                                                            const RECT* anchorRect,
                                                            const std::vector<std::wstring>& items,
                                                            UINT dpi) {
+  CandidateRenderingLease renderingLease;
   CandidatePageLayoutMetrics metrics = {};
   metrics.itemWidths.resize(items.size(), 0);
   if (items.empty()) return metrics;
@@ -1327,7 +1331,12 @@ CandidatePageLayoutMetrics BuildCandidatePageLayoutMetrics(const SrfUIStyle& sty
   return metrics;
 }
 
-CCandidateWindow::~CCandidateWindow() { Destroy(); }
+CCandidateWindow::CCandidateWindow() { AcquireCandidateWindowRendering(); }
+
+CCandidateWindow::~CCandidateWindow() {
+  Destroy();
+  ReleaseCandidateWindowRendering();
+}
 
 void CCandidateWindow::SetEvents(ICandidateWindowEvents* events) { m_events = events; }
 

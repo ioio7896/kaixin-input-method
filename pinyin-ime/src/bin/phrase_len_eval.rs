@@ -1,4 +1,5 @@
 use pinyin_ime::core::{PinyinEngine, MODE_JIANPIN, MODE_MIXED_PINYIN, TSF_PAGE_SIZE};
+use pinyin_ime::eval_profile::EvaluationProfile;
 use pinyin_ime::thuocl::{
     load_dir_txt_with_profile_default_enabled, primary_pinyin_syllables_for_phrase,
     LexiconBuildProfile,
@@ -48,7 +49,8 @@ fn main() {
         .parent()
         .expect("repo root")
         .to_path_buf();
-    let lexicon_dir = repo.join("lexicon");
+    let mut lexicon_dir = repo.join("lexicon");
+    let mut engine_profile = EvaluationProfile::default();
     let mut limit = 500usize;
     let mut popular_limit = usize::MAX;
     let mut popular_three_limit = usize::MAX;
@@ -65,6 +67,12 @@ fn main() {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--engine-profile" => {
+                engine_profile =
+                    EvaluationProfile::parse(&args.next().expect("--engine-profile value"))
+                        .unwrap_or_else(|err| panic!("{err}"))
+            }
+            "--lexicon" => lexicon_dir = PathBuf::from(args.next().expect("--lexicon dir")),
             "--limit" => {
                 limit = args
                     .next()
@@ -123,12 +131,11 @@ fn main() {
             .collect::<Vec<_>>()
     };
 
-    let mut engine = PinyinEngine::with_phrase_dir(Some(&lexicon_dir));
-    engine.clear_user_lexicon_for_eval();
+    engine_profile.report(&lexicon_dir);
+    let mut engine = engine_profile.create_engine(&lexicon_dir);
     engine.set_mode_flags(MODE_JIANPIN | MODE_MIXED_PINYIN);
     let mut incremental_engine = incremental.then(|| {
-        let mut engine = PinyinEngine::with_phrase_dir(Some(&lexicon_dir));
-        engine.clear_user_lexicon_for_eval();
+        let mut engine = engine_profile.create_engine(&lexicon_dir);
         engine.set_mode_flags(MODE_JIANPIN | MODE_MIXED_PINYIN);
         engine
     });
@@ -498,11 +505,13 @@ fn render_mixed(
     out
 }
 
+type PopularPhraseCase = (String, String, Vec<String>, u64);
+
 fn load_popular_phrase_cases(
     path: &PathBuf,
     expected_len: usize,
     syllable_set: &std::collections::HashSet<String>,
-) -> Result<Vec<(String, String, Vec<String>, u64)>, String> {
+) -> Result<Vec<PopularPhraseCase>, String> {
     let text = fs::read_to_string(path).map_err(|err| err.to_string())?;
     let mut out = Vec::new();
     for (line_no, line) in text.lines().enumerate() {

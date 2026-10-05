@@ -1,4 +1,5 @@
 #include "srf_tip.h"
+#include "direct_text_conversion.h"
 #include "input_mode_policy.h"
 #include "game_rules.generated.h"
 
@@ -26,6 +27,7 @@
 #include "candidate_overlay_client.h"
 #include "candidate_overlay_placement.h"
 #include "candidate_result_stability.h"
+#include "clipboard_quick_policy.h"
 #include "composition_sink.h"
 #include "guids.h"
 #include "ime_config.h"

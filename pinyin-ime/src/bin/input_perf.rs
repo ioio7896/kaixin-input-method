@@ -6,6 +6,7 @@ use pinyin_ime::core::{
     PinyinEngine, MODE_DATE_AUTO_FORMAT, MODE_EMOJI_INPUT, MODE_JIANPIN, MODE_MIXED_PINYIN,
     MODE_SYMBOL_TOOLBOX, MODE_V_ASSIST,
 };
+use pinyin_ime::eval_profile::EvaluationProfile;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -14,6 +15,8 @@ use std::time::{Duration, Instant};
 
 #[derive(Debug)]
 struct PerfArgs {
+    engine_profile: EvaluationProfile,
+    lexicon_dir: Option<PathBuf>,
     cases_paths: Vec<PathBuf>,
     inline_inputs: Vec<String>,
     workload_size: usize,
@@ -84,9 +87,17 @@ fn parse_args() -> PerfArgs {
     let mut mode = BenchMode::Plain;
     let mut threads = 4usize;
     let mut json_path = None;
+    let mut engine_profile = EvaluationProfile::default();
+    let mut lexicon_dir = None;
 
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--engine-profile" => {
+                engine_profile =
+                    EvaluationProfile::parse(&args.next().expect("--engine-profile value"))
+                        .unwrap_or_else(|err| panic!("{err}"))
+            }
+            "--lexicon" => lexicon_dir = Some(PathBuf::from(args.next().expect("--lexicon dir"))),
             "--cases" => {
                 if let Some(path) = args.next() {
                     cases_paths.push(PathBuf::from(path));
@@ -161,6 +172,7 @@ fn parse_args() -> PerfArgs {
                      modes: --mode plain|post-feedback|post-commit|concurrent|e2e-pipe|e2e-direct\n\
                      concurrent: --threads N\n\
                      diagnostics: --slow N --startup-warmup\n\
+                     engine: --engine-profile runtime-hot-cold|full --lexicon DIR\n\
                      output: --json PATH (newline-delimited JSON metrics)\n\
                      optional gates: --max-p95-us US --max-p99-us US"
                 );
@@ -178,6 +190,8 @@ fn parse_args() -> PerfArgs {
     iterations = iterations.clamp(1, 50);
 
     PerfArgs {
+        engine_profile,
+        lexicon_dir,
         cases_paths,
         inline_inputs,
         workload_size,
@@ -226,8 +240,8 @@ fn build_workload(inputs: &[String], target_len: usize, incremental: bool) -> Ve
     workload
 }
 
-fn build_engine(lexicon_dir: &Path) -> PinyinEngine {
-    let mut engine = PinyinEngine::with_phrase_dir(Some(lexicon_dir));
+fn build_engine(lexicon_dir: &Path, profile: EvaluationProfile) -> PinyinEngine {
+    let mut engine = profile.create_engine(lexicon_dir);
     engine.set_mode_flags(
         MODE_V_ASSIST
             | MODE_SYMBOL_TOOLBOX
@@ -394,23 +408,14 @@ fn run_post_feedback(args: &PerfArgs, workload: &[String], engine: &mut PinyinEn
         feedback_applied,
         run_started.elapsed().as_millis()
     );
-    let (p95, p99) = print_stats(args.json_path.as_deref(), "plain", &plain_samples);
-    print_stats(
-        args.json_path.as_deref(),
-        "post_feedback_same",
-        &post_same_samples,
-    );
-    print_stats(
-        args.json_path.as_deref(),
-        "post_feedback_next",
-        &post_next_samples,
-    );
+    print_and_gate(args, "plain", &plain_samples);
+    print_and_gate(args, "post_feedback_same", &post_same_samples);
+    print_and_gate(args, "post_feedback_next", &post_next_samples);
     print_stats(
         args.json_path.as_deref(),
         "post_feedback_full_clear_legacy",
         &full_clear_samples,
     );
-    gate_p95_p99(args, p95, p99);
 }
 
 /// 上屏提交后的下一键，分三个独立 pass：
@@ -496,18 +501,13 @@ fn run_post_commit(args: &PerfArgs, workload: &[String], engine: &mut PinyinEngi
         commits_applied,
         run_started.elapsed().as_millis()
     );
-    let (p95, p99) = print_stats(args.json_path.as_deref(), "plain", &plain_samples);
-    print_stats(
-        args.json_path.as_deref(),
-        "post_commit_next",
-        &post_commit_samples,
-    );
+    print_and_gate(args, "plain", &plain_samples);
+    print_and_gate(args, "post_commit_next", &post_commit_samples);
     print_stats(
         args.json_path.as_deref(),
         "post_commit_full_clear_legacy",
         &full_clear_samples,
     );
-    gate_p95_p99(args, p95, p99);
 }
 
 /// 同引擎多线程并发 lookup。引擎包在全局 Mutex 里，与引擎服务的
@@ -640,6 +640,21 @@ fn print_slow_samples(args: &PerfArgs, slow_samples: &[(Duration, String)]) {
     }
 }
 
+fn print_and_gate(args: &PerfArgs, label: &str, samples: &[Duration]) {
+    let (p95, p99) = print_stats(args.json_path.as_deref(), label, samples);
+    if let Err(message) = metrics::check_latency_gate(
+        label,
+        samples.len(),
+        p95,
+        p99,
+        args.max_p95_us,
+        args.max_p99_us,
+    ) {
+        eprintln!("{message}");
+        std::process::exit(1);
+    }
+}
+
 fn gate_p95_p99(args: &PerfArgs, p95: u128, p99: u128) {
     let mut failed = false;
     if let Some(limit) = args.max_p95_us {
@@ -729,25 +744,40 @@ fn main() {
         std::process::exit(1);
     }
 
-    let lexicon_dir = repo.join("lexicon");
+    let lexicon_dir = args
+        .lexicon_dir
+        .clone()
+        .unwrap_or_else(|| repo.join("lexicon"));
+    args.engine_profile.report(&lexicon_dir);
+    if matches!(args.mode, BenchMode::E2EPipe | BenchMode::E2EDirect) {
+        if args.engine_profile != EvaluationProfile::RuntimeHotCold {
+            eprintln!("E2E service benchmarks require --engine-profile runtime-hot-cold");
+            std::process::exit(2);
+        }
+        let trusted =
+            pinyin_ime::core::validate_trusted_phrase_dir(&lexicon_dir).unwrap_or_else(|| {
+                panic!("untrusted E2E lexicon directory: {}", lexicon_dir.display())
+            });
+        env::set_var("SRF_LEXICON_DIR", trusted);
+    }
     match args.mode {
         BenchMode::Plain => {
-            let mut engine = build_engine(&lexicon_dir);
+            let mut engine = build_engine(&lexicon_dir, args.engine_profile);
             if args.startup_warmup {
                 engine.warmup_interactive_paths();
             }
             run_plain(&args, &workload, &mut engine);
         }
         BenchMode::PostFeedback => {
-            let mut engine = build_engine(&lexicon_dir);
+            let mut engine = build_engine(&lexicon_dir, args.engine_profile);
             run_post_feedback(&args, &workload, &mut engine);
         }
         BenchMode::PostCommit => {
-            let mut engine = build_engine(&lexicon_dir);
+            let mut engine = build_engine(&lexicon_dir, args.engine_profile);
             run_post_commit(&args, &workload, &mut engine);
         }
         BenchMode::Concurrent => {
-            let engine = build_engine(&lexicon_dir);
+            let engine = build_engine(&lexicon_dir, args.engine_profile);
             run_concurrent(&args, &workload, engine);
         }
         BenchMode::E2EPipe => run_e2e_pipe(&args, &workload),

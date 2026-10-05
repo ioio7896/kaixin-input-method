@@ -104,6 +104,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_candidateHasMore = false;
   bool m_candidateFullLookupPending = false;
   UINT m_candidatePageAfterLoad = 0;
+  std::wstring m_clipboardQuickLastPageReading;
   enum class SrfCandidateViewState : UINT {
     Empty = 0,
     Stable = 1,

@@ -1,4 +1,4 @@
-use crate::dict::pinyin_plain_options;
+use crate::dict::{is_project_approved_reading, pinyin_plain_options};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io;
@@ -22,8 +22,11 @@ pub(super) struct SingleCharCommonIndex {
 
 impl SingleCharCommonIndex {
     pub(super) fn bundled() -> Self {
-        Self::from_text(include_str!("../../../lexicon/zh/single_char_common_8105.txt"), None)
-            .expect("bundled common-character list must be valid")
+        Self::from_text(
+            include_str!("../../../lexicon/zh/single_char_common_8105.txt"),
+            None,
+        )
+        .expect("bundled common-character list must be valid")
     }
 
     pub(super) fn from_lexicon_dir(dir: &Path) -> io::Result<Self> {
@@ -48,6 +51,8 @@ impl SingleCharCommonIndex {
     fn from_text(text: &str, path: Option<PathBuf>) -> io::Result<Self> {
         let mut out = Self::default();
         let mut seen = HashSet::new();
+        let mut secondary_by_pinyin: HashMap<String, Vec<char>> = HashMap::new();
+        let mut secondary_by_initial: HashMap<char, Vec<char>> = HashMap::new();
         let mut previous_weight = None;
         for (line_index, raw) in text.lines().enumerate() {
             let line = raw.trim_start_matches('\u{feff}').trim();
@@ -90,14 +95,42 @@ impl SingleCharCommonIndex {
             if readings.is_empty() {
                 return Err(invalid_row(&path, line_index, "character has no pinyin"));
             }
+            let primary = readings.first().cloned();
             for key in readings {
                 if key.is_empty() {
                     continue;
                 }
-                push_unique(out.by_pinyin.entry(key.clone()).or_default(), ch);
+                let is_primary =
+                    primary.as_ref() == Some(&key) || is_project_approved_reading(ch, &key);
+                let by_pinyin = if is_primary {
+                    &mut out.by_pinyin
+                } else {
+                    &mut secondary_by_pinyin
+                };
+                push_unique(by_pinyin.entry(key.clone()).or_default(), ch);
                 if let Some(initial) = key.chars().next().filter(char::is_ascii_alphabetic) {
-                    push_unique(out.by_initial.entry(initial).or_default(), ch);
+                    let by_initial = if is_primary {
+                        &mut out.by_initial
+                    } else {
+                        &mut secondary_by_initial
+                    };
+                    push_unique(by_initial.entry(initial).or_default(), ch);
                 }
+            }
+        }
+        // Global character frequency is not a frequency for each pronunciation.
+        // Keep every secondary reading reachable, but place it after characters
+        // whose primary reading matches the input.
+        for (key, chars) in secondary_by_pinyin {
+            let ordered = out.by_pinyin.entry(key).or_default();
+            for ch in chars {
+                push_unique(ordered, ch);
+            }
+        }
+        for (initial, chars) in secondary_by_initial {
+            let ordered = out.by_initial.entry(initial).or_default();
+            for ch in chars {
+                push_unique(ordered, ch);
             }
         }
         if out.character_count == 0 {
@@ -179,5 +212,22 @@ mod tests {
             .expect("single-character index");
         assert_eq!(index.pinyin_order("neng"), &['能']);
         assert_eq!(index.pinyin_order("xiong"), &['熊']);
+    }
+
+    #[test]
+    fn secondary_readings_follow_primary_readings_without_losing_recall() {
+        let index = SingleCharCommonIndex::from_text("能\t5\n乃\t4\n奶\t3\n说\t2\n月\t1\n", None)
+            .expect("single-character index");
+        assert_eq!(index.pinyin_order("nai"), &['乃', '奶', '能']);
+        assert_eq!(index.pinyin_order("yue"), &['月', '说']);
+        assert_eq!(index.initial_order('y'), &['月', '说']);
+        assert_eq!(index.pinyin_order("neng"), &['能']);
+    }
+
+    #[test]
+    fn project_approved_alternate_keeps_frequency_priority() {
+        let index = SingleCharCommonIndex::from_text("大\t2\n带\t1\n", None)
+            .expect("single-character index");
+        assert_eq!(index.pinyin_order("dai"), &['大', '带']);
     }
 }

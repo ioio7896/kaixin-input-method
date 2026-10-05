@@ -87,7 +87,7 @@ TEXT_FILES = {
         4,
     ),
     "data_sources/kaixin/core_priority_corrections.tsv": ("0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765", 38, 2),
-    "data_sources/kaixin/pronunciation_exclusions.tsv": ("37528c72f8d2c770dbf86a40a86e23b8b49b8d5f2af2fd7f176b13c2369b927d", 12, 4),
+    "data_sources/kaixin/pronunciation_exclusions.tsv": ("e10c95ce4999b9e3d252e91f4c8c28b9ca512f88632f61b08b30e33be3de1a0f", 19, 4),
     "data_sources/kaixin/recall_phrases.tsv": ("55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8", 7, 3),
 }
 SQLITE_FILE = "pinyin-ime/data/s2t_chars.sqlite"

@@ -1751,7 +1751,91 @@ fn parse_u_clipboard_quick_command<'a>(cmd: &str, arg: &'a str) -> Option<(usize
     if tail.is_empty() || !tail.chars().all(|ch| ch.is_ascii_digit()) {
         return None;
     }
-    Some((parse_clipboard_quick_page(tail).unwrap_or(0), arg.trim()))
+    Some((parse_clipboard_quick_page(tail)?, arg.trim()))
+}
+
+#[cfg(test)]
+mod clipboard_quick_tests {
+    use super::*;
+
+    fn entry(id: usize) -> clipboard_store::ClipboardEntry {
+        clipboard_store::ClipboardEntry {
+            id: format!("audit-{id}"),
+            text: format!("text {id}"),
+            captured_at: 1,
+            first_captured_at: 1,
+            copy_count: 1,
+            source_app: None,
+        }
+    }
+
+    #[test]
+    fn paging_visits_all_entries_once_with_pins_first() {
+        let snapshot = clipboard_store::ClipboardSnapshot {
+            pinned: vec![entry(10), entry(11)],
+            history: (0..17).map(entry).collect(),
+        };
+        let pages: Vec<_> = (0..3)
+            .map(|page| quick_clipboard_candidates_from_snapshot(&snapshot, page, ""))
+            .collect();
+        assert_eq!(
+            pages.iter().map(Vec::len).collect::<Vec<_>>(),
+            vec![8, 8, 1]
+        );
+        assert_eq!(pages[0][0].phrase, "text 10");
+        assert_eq!(pages[0][1].phrase, "text 11");
+        let texts: HashSet<_> = pages.iter().flatten().map(|item| &item.phrase).collect();
+        assert_eq!(texts.len(), 17);
+        for (page, items) in pages.iter().enumerate() {
+            for item in items {
+                let meta = item.meta.as_ref().unwrap();
+                assert!(meta.contains("clipboard_pages=3"));
+                assert!(meta.contains(&format!("clipboard_page={}", page + 1)));
+                assert!(meta.contains("no_learn=1"));
+            }
+        }
+    }
+
+    #[test]
+    fn long_text_uses_resolvable_id_without_truncating_content() {
+        let mut item = entry(0);
+        item.text = "😀中文\n".repeat(200);
+        let snapshot = clipboard_store::ClipboardSnapshot {
+            pinned: vec![],
+            history: vec![item],
+        };
+        let candidates = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "");
+        assert_eq!(candidates[0].phrase, "clipboard://audit-0");
+        assert_eq!(
+            clipboard_store::resolve_entry_text(&snapshot, "audit-0").as_deref(),
+            Some(snapshot.history[0].text.as_str())
+        );
+    }
+
+    #[test]
+    fn invalid_page_cannot_fall_back_to_first_page() {
+        assert_eq!(parse_u_clipboard_quick_command("u0", ""), None);
+        assert_eq!(
+            parse_u_clipboard_quick_command("u999999999999999999999999999999", ""),
+            None
+        );
+        assert_eq!(
+            parse_u_clipboard_quick_command("u", "p2 type:url"),
+            Some((1, "type:url"))
+        );
+    }
+
+    #[test]
+    fn type_filter_is_applied_before_pagination() {
+        let mut snapshot = clipboard_store::ClipboardSnapshot::default();
+        snapshot.history.push(entry(0));
+        let mut url = entry(1);
+        url.text = "https://example.com".to_string();
+        snapshot.history.push(url);
+        let candidates = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "type:url");
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(candidates[0].phrase, "https://example.com");
+    }
 }
 
 pub fn is_clipboard_command(rest: &str) -> bool {

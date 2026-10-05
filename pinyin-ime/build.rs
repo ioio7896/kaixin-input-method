@@ -362,7 +362,9 @@ fn rc_string(value: &str) -> String {
 fn compile_windows_app_resource(out_dir: &Path, manifest_dir: &Path, app_version: &str) {
     #[cfg(windows)]
     {
-        if env::var("CARGO_PKG_NAME").ok().as_deref() == Some("kaixin-core") { return; }
+        if env::var("CARGO_PKG_NAME").ok().as_deref() == Some("kaixin-core") {
+            return;
+        }
         let repo_root = manifest_dir
             .parent()
             .map(Path::to_path_buf)
@@ -449,7 +451,9 @@ fn main() {
     let out_dir = env::var("OUT_DIR").expect("out dir");
     let source_manifest = if Path::new(&manifest).join("data").is_dir() {
         PathBuf::from(&manifest)
-    } else { PathBuf::from(&manifest).join("../../pinyin-ime") };
+    } else {
+        PathBuf::from(&manifest).join("../../pinyin-ime")
+    };
     let manifest = source_manifest.as_path();
     println!("cargo:rustc-env=KAIXIN_SOURCE_DIR={}", manifest.display());
     let out_dir = Path::new(&out_dir);

@@ -155,6 +155,8 @@ impl LexiconLayer {
                 | "kaixin_polyphone.txt"
                 | "kaixin_pronunciation_aliases.txt"
                 | "lfie-common-3char.txt"
+                | "life_hot_3char_curated.txt"
+                | "life_hot_4char_curated.txt"
         ) {
             Self::Core
         } else if name.contains("_tail_") || name.starts_with("large_") {
@@ -2045,7 +2047,11 @@ pub fn discover_lexicon_inventory(dir: &Path) -> io::Result<LexiconInventory> {
         .into_iter()
         .filter(|path| path.is_file())
         .collect::<Vec<_>>();
-    prebaked.extend(prebaked_lexicon_candidate_paths_for(dir, "lexicon.pack").into_iter().filter(|path| path.is_file()));
+    prebaked.extend(
+        prebaked_lexicon_candidate_paths_for(dir, "lexicon.pack")
+            .into_iter()
+            .filter(|path| path.is_file()),
+    );
     prebaked.sort();
     prebaked.dedup();
     for path in prebaked {
@@ -2529,23 +2535,37 @@ pub fn try_load_hot_prebaked_near(dir: &Path) -> io::Result<Option<AbbrevLexicon
 fn load_packed_profile(path: &Path, hot: bool) -> io::Result<AbbrevLexicon> {
     let data = fs::read(path)?;
     let invalid = || io::Error::new(io::ErrorKind::InvalidData, "invalid lexicon.pack");
-    if data.len() < 40 || &data[..8] != b"KXLP0001" { return Err(invalid()); }
-    let number = |offset| u64::from_le_bytes(data[offset..offset+8].try_into().unwrap());
-    let a = number(8); let b = number(16);
-    let raw_len = number(if hot {32} else {24});
+    if data.len() < 40 || &data[..8] != b"KXLP0001" {
+        return Err(invalid());
+    }
+    let number = |offset| u64::from_le_bytes(data[offset..offset + 8].try_into().unwrap());
+    let a = number(8);
+    let b = number(16);
+    let raw_len = number(if hot { 32 } else { 24 });
     if a.checked_add(b).and_then(|v| v.checked_add(40)) != Some(data.len() as u64)
-        || raw_len > 512*1024*1024 { return Err(invalid()); }
-    let payload = if hot { &data[40+a as usize..] } else { &data[40..40+a as usize] };
+        || raw_len > 512 * 1024 * 1024
+    {
+        return Err(invalid());
+    }
+    let payload = if hot {
+        &data[40 + a as usize..]
+    } else {
+        &data[40..40 + a as usize]
+    };
     let mut reader = flate2::read::ZlibDecoder::new(payload).take(raw_len + 1);
     let lex = read_prebaked_lexicon(&mut reader)?;
-    let mut tail = [0u8;1];
-    if reader.read(&mut tail)? != 0 || reader.limit() != 1 { return Err(invalid()); }
+    let mut tail = [0u8; 1];
+    if reader.read(&mut tail)? != 0 || reader.limit() != 1 {
+        return Err(invalid());
+    }
     Ok(lex)
 }
 
 fn try_load_prebaked_named_near(dir: &Path, file_name: &str) -> io::Result<Option<AbbrevLexicon>> {
     for pack in prebaked_lexicon_candidate_paths_for(dir, "lexicon.pack") {
-        if pack.is_file() { return load_packed_profile(&pack, file_name == "hot_lexicon.bin").map(Some); }
+        if pack.is_file() {
+            return load_packed_profile(&pack, file_name == "hot_lexicon.bin").map(Some);
+        }
     }
     for path in prebaked_lexicon_candidate_paths_for(dir, file_name) {
         if !path.is_file() {
@@ -3022,6 +3042,27 @@ mod tests {
     use super::*;
 
     #[test]
+    fn curated_short_hot_layers_preserve_existing_three_char_head() {
+        let zh = Path::new("lexicon").join("zh");
+        assert_eq!(
+            LexiconLayer::from_path(&zh.join("lfie-common-3char.txt")),
+            LexiconLayer::Core
+        );
+        assert_eq!(
+            LexiconLayer::from_path(&zh.join("life_hot_3char_curated.txt")),
+            LexiconLayer::Core
+        );
+        assert_eq!(
+            LexiconLayer::from_path(&zh.join("life_hot_4char_curated.txt")),
+            LexiconLayer::Core
+        );
+        assert_eq!(
+            LexiconLayer::from_path(&zh.join("life_common_4char.txt")),
+            LexiconLayer::Base
+        );
+    }
+
+    #[test]
     fn mismatched_explicit_pinyin_falls_back_to_character_readings() {
         let mut lexicon = AbbrevLexicon::default();
         lexicon.insert_parsed(ThuoclEntry {
@@ -3039,30 +3080,74 @@ mod tests {
     }
 }
 
-#[cfg(test)] mod packed_profile_tests {
+#[cfg(test)]
+mod packed_profile_tests {
     use super::*;
-    #[test] fn packed_profiles_retain_distinct_weights_and_reject_corruption() {
-        let dir=std::env::temp_dir().join(format!("kaixin-pack-{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+    #[test]
+    fn packed_profiles_retain_distinct_weights_and_reject_corruption() {
+        let dir = std::env::temp_dir().join(format!(
+            "kaixin-pack-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
         fs::create_dir_all(&dir).unwrap();
         fs::write(dir.join("test.txt"), "测试\t100\n").unwrap();
-        let (mut lex,_) = load_dir_txt(&dir).unwrap();
+        let (mut lex, _) = load_dir_txt(&dir).unwrap();
         save_prebaked_lexicon(&dir.join("standard.bin"), &lex).unwrap();
         lex.phrase_freq.fill(999);
         save_prebaked_lexicon(&dir.join("hot.bin"), &lex).unwrap();
-        let mut profiles=Vec::new(); let mut raw_lengths=Vec::new();
-        for name in ["standard.bin","hot.bin"] {
-            let bytes=fs::read(dir.join(name)).unwrap();raw_lengths.push(bytes.len() as u64);
-            let mut encoder=flate2::write::ZlibEncoder::new(Vec::new(),flate2::Compression::best());
-            encoder.write_all(&bytes).unwrap();profiles.push(encoder.finish().unwrap());
+        let mut profiles = Vec::new();
+        let mut raw_lengths = Vec::new();
+        for name in ["standard.bin", "hot.bin"] {
+            let bytes = fs::read(dir.join(name)).unwrap();
+            raw_lengths.push(bytes.len() as u64);
+            let mut encoder =
+                flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::best());
+            encoder.write_all(&bytes).unwrap();
+            profiles.push(encoder.finish().unwrap());
         }
-        let mut data=b"KXLP0001".to_vec();
-        for n in [profiles[0].len() as u64,profiles[1].len() as u64,raw_lengths[0],raw_lengths[1]] { data.extend_from_slice(&n.to_le_bytes()); }
-        for bytes in profiles { data.extend(bytes); }
-        let path=dir.join("lexicon.pack");fs::write(&path,&data).unwrap();
-        assert_ne!(load_packed_profile(&path,false).unwrap().phrase_frequency("测试"),load_packed_profile(&path,true).unwrap().phrase_frequency("测试"));
-        data[8]=255;fs::write(&path,&data).unwrap();assert!(load_packed_profile(&path,false).is_err());
+        let mut data = b"KXLP0001".to_vec();
+        for n in [
+            profiles[0].len() as u64,
+            profiles[1].len() as u64,
+            raw_lengths[0],
+            raw_lengths[1],
+        ] {
+            data.extend_from_slice(&n.to_le_bytes());
+        }
+        for bytes in profiles {
+            data.extend(bytes);
+        }
+        let path = dir.join("lexicon.pack");
+        fs::write(&path, &data).unwrap();
+        assert_ne!(
+            load_packed_profile(&path, false)
+                .unwrap()
+                .phrase_frequency("测试"),
+            load_packed_profile(&path, true)
+                .unwrap()
+                .phrase_frequency("测试")
+        );
+        data[8] = 255;
+        fs::write(&path, &data).unwrap();
+        assert!(load_packed_profile(&path, false).is_err());
         fs::remove_file(&path).unwrap();
-        for name in ["test.txt","standard.bin","hot.bin"] { fs::remove_file(dir.join(name)).unwrap(); }
-        fs::remove_dir(dir).unwrap();
+        for name in ["test.txt", "standard.bin", "hot.bin"] {
+            fs::remove_file(dir.join(name)).unwrap();
+        }
+        // Windows can report a nonempty directory while the last file deletion
+        // is still completing. Retry this cleanup error for at most 500 ms.
+        for attempt in 0..=50 {
+            match fs::remove_dir(&dir) {
+                Ok(()) => break,
+                Err(err) if err.kind() == io::ErrorKind::DirectoryNotEmpty && attempt < 50 => {
+                    std::thread::sleep(std::time::Duration::from_millis(10));
+                }
+                Err(err) => panic!("remove test directory {}: {err}", dir.display()),
+            }
+        }
     }
 }

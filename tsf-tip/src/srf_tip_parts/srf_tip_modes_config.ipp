@@ -748,93 +748,8 @@ bool SrfBuildCompletedPunctuationPair(wchar_t ch, std::wstring* pair) {
 }  // namespace
 
 std::wstring CSrfTip::ConvertDirectText(std::wstring text) {
-  std::wstring converted;
-  converted.reserve(text.size() * 2);
-
-  for (wchar_t ch : text) {
-    std::wstring replacement;
-    if (m_cnPunct) {
-      switch (ch) {
-        case L',':
-          replacement = L"，";
-          break;
-        case L'.':
-          replacement = L"。";
-          break;
-        case L'?':
-          replacement = L"？";
-          break;
-        case L'!':
-          replacement = L"！";
-          break;
-        case L';':
-          replacement = L"；";
-          break;
-        case L':':
-          replacement = L"：";
-          break;
-        case L'(':
-          replacement = L"（";
-          break;
-        case L')':
-          replacement = L"）";
-          break;
-        case L'[':
-          replacement = L"【";
-          break;
-        case L']':
-          replacement = L"】";
-          break;
-        case L'<':
-          replacement = L"《";
-          break;
-        case L'>':
-          replacement = L"》";
-          break;
-        case L'\\':
-          replacement = L"、";
-          break;
-        case L'/':
-          replacement = L"、";
-          break;
-        case L'"':
-          replacement = m_nextDoubleQuoteOpen ? L"“" : L"”";
-          m_nextDoubleQuoteOpen = !m_nextDoubleQuoteOpen;
-          break;
-        case L'\'':
-          replacement = m_nextSingleQuoteOpen ? L"‘" : L"’";
-          m_nextSingleQuoteOpen = !m_nextSingleQuoteOpen;
-          break;
-        default:
-          break;
-      }
-    }
-
-    if (m_cnPunct && !m_config.input.curlyPunct && ch == L'"') {
-      replacement = L"\uff02";
-    } else if (m_cnPunct && !m_config.input.curlyPunct && ch == L'\'') {
-      replacement = L"\uff07";
-    }
-
-    if (replacement.empty() && m_config.input.symbolFullwidth && IsAsciiPunctuationChar(ch)) {
-      replacement.push_back(static_cast<wchar_t>(0xff01 + (ch - 0x21)));
-    }
-
-    if (replacement.empty() && m_config.input.numberFullwidth && ch >= L'0' && ch <= L'9') {
-      replacement.push_back(static_cast<wchar_t>(0xff10 + (ch - L'0')));
-    }
-
-    if (replacement.empty() && m_fullShape) {
-      if (ch >= 0x21 && ch <= 0x7e && !(ch >= L'0' && ch <= L'9')) {
-        replacement.push_back(static_cast<wchar_t>(0xff01 + (ch - 0x21)));
-      }
-    }
-
-    if (replacement.empty()) replacement.push_back(ch);
-    converted += replacement;
-  }
-
-  return converted;
+  return SrfConvertDirectText(text, m_config.input, m_cnPunct, m_fullShape,
+                              m_nextDoubleQuoteOpen, m_nextSingleQuoteOpen);
 }
 
 std::wstring CSrfTip::ConvertDirectTextWithCompletion(std::wstring text, LONG* cursorOffset) {
@@ -844,9 +759,10 @@ std::wstring CSrfTip::ConvertDirectTextWithCompletion(std::wstring text, LONG* c
     std::wstring pair;
     const wchar_t raw = text[0];
     if (raw == L'"') {
-      if (m_cnPunct && m_config.input.curlyPunct) {
+      if (!m_config.input.chineseHalfwidth && m_cnPunct && m_config.input.curlyPunct) {
         pair.assign(L"\u201c\u201d");
-      } else if (m_cnPunct || m_config.input.symbolFullwidth || m_fullShape) {
+      } else if (!m_config.input.chineseHalfwidth &&
+                 (m_cnPunct || m_config.input.symbolFullwidth || m_fullShape)) {
         pair.assign(L"\uff02\uff02");
       } else {
         pair.assign(L"\"\"");
@@ -855,9 +771,10 @@ std::wstring CSrfTip::ConvertDirectTextWithCompletion(std::wstring text, LONG* c
       return pair;
     }
     if (raw == L'\'') {
-      if (m_cnPunct && m_config.input.curlyPunct) {
+      if (!m_config.input.chineseHalfwidth && m_cnPunct && m_config.input.curlyPunct) {
         pair.assign(L"\u2018\u2019");
-      } else if (m_cnPunct || m_config.input.symbolFullwidth || m_fullShape) {
+      } else if (!m_config.input.chineseHalfwidth &&
+                 (m_cnPunct || m_config.input.symbolFullwidth || m_fullShape)) {
         pair.assign(L"\uff07\uff07");
       } else {
         pair.assign(L"''");

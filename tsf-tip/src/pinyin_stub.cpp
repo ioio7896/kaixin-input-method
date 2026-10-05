@@ -4,6 +4,7 @@
 
 #include "candidate_limits.h"
 #include "engine_recovery_policy.h"
+#include "overlapped_io.h"
 
 #include <sddl.h>
 #include <wincrypt.h>
@@ -1900,46 +1901,23 @@ void InvalidateRemoteBackendLocked() {
   }
 }
 
-bool AwaitPipeIo(HANDLE handle, OVERLAPPED* overlapped, DWORD timeoutMs, DWORD* transferred,
+bool AwaitPipeIo(SrfOverlappedIo& operation, DWORD timeoutMs, DWORD* transferred,
                  EnginePipeCommand command, const wchar_t* stage, std::wstring* error) {
-  const DWORD wait = WaitForSingleObject(overlapped->hEvent, timeoutMs);
-  if (wait == WAIT_OBJECT_0) {
-    if (GetOverlappedResult(handle, overlapped, transferred, FALSE)) return true;
-    if (error) {
-      *error = L"shared engine pipe ";
-      *error += RemoteCommandLabel(command);
-      *error += L" ";
-      *error += stage;
-      *error += L" failed: ";
-      *error += FormatSystemError(GetLastError());
-    }
-    return false;
-  }
-
-  if (wait == WAIT_TIMEOUT) {
-    CancelIoEx(handle, overlapped);
-    DWORD ignored = 0;
-    const DWORD cancelWait = WaitForSingleObject(overlapped->hEvent, 200);
-    if (cancelWait == WAIT_OBJECT_0) {
-      (void)GetOverlappedResult(handle, overlapped, &ignored, FALSE);
-    }
-    if (error) {
-      *error = L"shared engine pipe ";
-      *error += RemoteCommandLabel(command);
-      *error += L" ";
-      *error += stage;
-      *error += L" timed out after ";
-      *error += std::to_wstring(timeoutMs);
-      *error += L" ms";
-    }
-    return false;
-  }
-
+  if (operation.Await(timeoutMs, transferred)) return true;
+  const DWORD lastError = GetLastError();
   if (error) {
     *error = L"shared engine pipe ";
     *error += RemoteCommandLabel(command);
-    *error += L" wait failed: ";
-    *error += FormatSystemError(GetLastError());
+    *error += L" ";
+    *error += stage;
+    if (lastError == ERROR_TIMEOUT) {
+      *error += L" timed out after ";
+      *error += std::to_wstring(timeoutMs);
+      *error += L" ms";
+    } else {
+      *error += L" failed: ";
+      *error += FormatSystemError(lastError);
+    }
   }
   return false;
 }
@@ -1949,24 +1927,23 @@ bool WritePipeMessageWithTimeout(HANDLE handle, const void* buffer, size_t bytes
                                  std::wstring* error) {
   if (!buffer || bytes == 0) return true;
 
-  HANDLE event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-  if (!event) {
+  auto operation = SrfOverlappedIo::Create(handle, bytes);
+  if (!operation) {
     if (error) {
-      *error = L"CreateEventW failed for shared engine pipe write: ";
+      *error = L"Create I/O operation failed for shared engine pipe write: ";
       *error += FormatSystemError(GetLastError());
     }
     return false;
   }
 
-  OVERLAPPED overlapped = {};
-  overlapped.hEvent = event;
+  std::copy_n(static_cast<const BYTE*>(buffer), bytes, operation->buffer.data());
 
   DWORD transferred = 0;
-  const BOOL ok = WriteFile(handle, buffer, static_cast<DWORD>(bytes), &transferred, &overlapped);
+  const BOOL ok = WriteFile(operation->handle, operation->buffer.data(), static_cast<DWORD>(bytes),
+                            &transferred, &operation->overlapped);
   if (!ok) {
     const DWORD lastError = GetLastError();
     if (lastError != ERROR_IO_PENDING) {
-      CloseHandle(event);
       if (error) {
         *error = L"shared engine pipe ";
         *error += RemoteCommandLabel(command);
@@ -1979,13 +1956,12 @@ bool WritePipeMessageWithTimeout(HANDLE handle, const void* buffer, size_t bytes
       return false;
     }
 
-    if (!AwaitPipeIo(handle, &overlapped, timeoutMs, &transferred, command, stage, error)) {
-      CloseHandle(event);
+    operation->pending = true;
+    if (!AwaitPipeIo(*operation, timeoutMs, &transferred, command, stage, error)) {
       return false;
     }
   }
 
-  CloseHandle(event);
   if (transferred != bytes) {
     if (error) {
       *error = L"shared engine pipe ";
@@ -2003,24 +1979,21 @@ bool ReadPipeMessageWithTimeout(HANDLE handle, void* buffer, size_t bytes, DWORD
                                 EnginePipeCommand command, const wchar_t* stage, std::wstring* error) {
   if (!buffer || bytes == 0) return true;
 
-  HANDLE event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-  if (!event) {
+  auto operation = SrfOverlappedIo::Create(handle, bytes);
+  if (!operation) {
     if (error) {
-      *error = L"CreateEventW failed for shared engine pipe read: ";
+      *error = L"Create I/O operation failed for shared engine pipe read: ";
       *error += FormatSystemError(GetLastError());
     }
     return false;
   }
 
-  OVERLAPPED overlapped = {};
-  overlapped.hEvent = event;
-
   DWORD transferred = 0;
-  const BOOL ok = ReadFile(handle, buffer, static_cast<DWORD>(bytes), &transferred, &overlapped);
+  const BOOL ok = ReadFile(operation->handle, operation->buffer.data(), static_cast<DWORD>(bytes),
+                           &transferred, &operation->overlapped);
   if (!ok) {
     const DWORD lastError = GetLastError();
     if (lastError != ERROR_IO_PENDING) {
-      CloseHandle(event);
       if (error) {
         *error = L"shared engine pipe ";
         *error += RemoteCommandLabel(command);
@@ -2033,13 +2006,12 @@ bool ReadPipeMessageWithTimeout(HANDLE handle, void* buffer, size_t bytes, DWORD
       return false;
     }
 
-    if (!AwaitPipeIo(handle, &overlapped, timeoutMs, &transferred, command, stage, error)) {
-      CloseHandle(event);
+    operation->pending = true;
+    if (!AwaitPipeIo(*operation, timeoutMs, &transferred, command, stage, error)) {
       return false;
     }
   }
 
-  CloseHandle(event);
   if (transferred != bytes) {
     if (error) {
       *error = L"shared engine pipe ";
@@ -2050,6 +2022,7 @@ bool ReadPipeMessageWithTimeout(HANDLE handle, void* buffer, size_t bytes, DWORD
     }
     return false;
   }
+  std::copy_n(operation->buffer.data(), bytes, static_cast<BYTE*>(buffer));
   return true;
 }
 

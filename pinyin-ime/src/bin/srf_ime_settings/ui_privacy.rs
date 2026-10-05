@@ -67,59 +67,45 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 
     ui.add_space(10.0);
     section_panel(ui, "维护", |ui| {
-        let palette = fluent_palette(ui);
         inline_notice(
             ui,
             StatusTone::Danger,
             "清理会删除所选的本机数据，请确认后操作。",
         );
         ui.add_space(6.0);
-        egui::Grid::new("maintenance_actions_grid")
-            .num_columns(3)
-            .striped(true)
-            .spacing([12.0, 8.0])
-            .show(ui, |ui| {
-                ui.label(
-                    RichText::new("用户词库")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label("清空本地学习词和上下文排序信号。");
-                ui.horizontal(|ui| {
-                    if danger_button(ui, "清空").clicked() {
-                        app.clear_user_dict();
-                    }
-                });
-                ui.end_row();
-
-                ui.label(
-                    RichText::new("剪贴板历史")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label(format!(
-                    "删除本机历史和置顶项；不可恢复。{}",
-                    clipboard_path.display()
-                ));
+        setting_row(
+            ui,
+            "用户词库",
+            "清空本地学习词和上下文排序信号。",
+            |ui| {
+                if danger_button(ui, "清空").clicked() {
+                    app.clear_user_dict();
+                }
+            },
+        );
+        setting_row(
+            ui,
+            "剪贴板历史",
+            &format!(
+                "删除本机历史和置顶项；不可恢复。{}",
+                clipboard_path.display()
+            ),
+            |ui| {
                 if danger_button(ui, "清空").clicked() {
                     app.clear_clipboard();
                 }
-                ui.end_row();
-
-                ui.label(
-                    RichText::new("日志")
-                        .strong()
-                        .size(SETTINGS_FONT_SETTING_TITLE)
-                        .color(palette.text),
-                );
-                ui.label("清空 TSF 和运行时诊断日志；不可恢复，不需要重启。");
+            },
+        );
+        setting_row(
+            ui,
+            "日志",
+            "清空 TSF 和运行时诊断日志；不可恢复，不需要重启。",
+            |ui| {
                 if danger_button(ui, "清空").clicked() {
                     app.clear_tsf_log();
                 }
-                ui.end_row();
-            });
+            },
+        );
     });
 
     ui.add_space(10.0);
@@ -144,8 +130,6 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             &mut app.model.privacy_never_candidate_processes,
         );
     });
-
-
 }
 
 pub(super) fn privacy_process_list_row(
@@ -165,7 +149,7 @@ pub(super) fn privacy_process_list_row(
     ui.label(RichText::new(description).small().color(palette.muted));
     ui.add(
         TextEdit::multiline(value)
-            .desired_width(ui.available_width().max(320.0))
+            .desired_width(ui.available_width().max(1.0))
             .desired_rows(2)
             .hint_text("app.exe, password*.exe"),
     );
@@ -191,78 +175,42 @@ pub(super) fn data_location_row(
     let row = egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, 7.0))
         .show(ui, |ui| {
-            let total_width = ui.available_width();
-            let path_text = path.display().to_string();
-            if total_width < SETTINGS_ROW_STACK_WIDTH {
-                ui.vertical(|ui| {
-                    ui.set_width(total_width);
-                    ui.label(
-                        RichText::new(title)
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
+            responsive_settings_row(
+                ui,
+                560.0,
+                false,
+                |ui| {
+                    ui.add(
+                        egui::Label::new(
+                            RichText::new(title)
+                                .strong()
+                                .size(SETTINGS_FONT_SETTING_TITLE)
+                                .color(palette.text),
+                        )
+                        .wrap(),
                     );
-                    ui.label(RichText::new(description).small().color(palette.muted));
-                    ui.add_space(6.0);
-                    ui.horizontal_wrapped(|ui| {
-                        let field_width =
-                            (total_width - SETTINGS_BUTTON_WIDTH * 2.0 - 32.0).clamp(180.0, 420.0);
-                        let mut readonly_path = path_text.clone();
-                        ui.add_sized(
-                            [field_width, 24.0],
-                            TextEdit::singleline(&mut readonly_path)
-                                .font(TextStyle::Monospace)
-                                .interactive(false),
-                        );
-                        if outline_button(ui, "复制").clicked() {
-                            ui.ctx().copy_text(path_text.clone());
-                        }
-                        add_actions(ui);
-                    });
-                });
-            } else {
-                let spacing = ui.spacing().item_spacing.x;
-                let control_width = 560.0_f32.min((total_width * 0.54).max(390.0));
-                let text_width = (total_width - control_width - spacing).max(180.0);
-                ui.horizontal(|ui| {
-                    ui.set_min_height(50.0);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, 50.0),
-                        egui::Layout::top_down(egui::Align::Min),
-                        |ui| {
-                            ui.set_width(text_width);
-                            ui.label(
-                                RichText::new(title)
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            ui.label(RichText::new(description).small().color(palette.muted));
-                        },
+                    ui.add(
+                        egui::Label::new(RichText::new(description).small().color(palette.muted))
+                            .wrap(),
                     );
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, 50.0),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(control_width);
-                            ui.set_max_width(control_width);
-                            let mut readonly_path = path_text;
-                            let field_width = (control_width - SETTINGS_BUTTON_WIDTH * 2.0 - 24.0)
-                                .clamp(180.0, 360.0);
-                            ui.add_sized(
-                                [field_width, 24.0],
-                                TextEdit::singleline(&mut readonly_path)
-                                    .font(TextStyle::Monospace)
-                                    .interactive(false),
-                            );
-                            if outline_button(ui, "复制").clicked() {
-                                ui.ctx().copy_text(readonly_path.clone());
-                            }
-                            add_actions(ui);
-                        },
+                },
+                |ui| {
+                    let preferred = (ui.available_width() - SETTINGS_BUTTON_WIDTH * 2.0 - 32.0)
+                        .clamp(160.0, 360.0);
+                    let field_width = bounded_control_width(ui, preferred);
+                    let mut readonly_path = path.display().to_string();
+                    ui.add_sized(
+                        [field_width, 24.0],
+                        TextEdit::singleline(&mut readonly_path)
+                            .font(TextStyle::Monospace)
+                            .interactive(false),
                     );
-                });
-            }
+                    if outline_button(ui, "复制").clicked() {
+                        ui.ctx().copy_text(readonly_path);
+                    }
+                    add_actions(ui);
+                },
+            );
         });
     let y = row.response.rect.bottom();
     ui.painter().line_segment(
@@ -282,7 +230,8 @@ pub(super) fn folder_path_row(
     empty_hint: &str,
 ) {
     setting_row(ui, title, description, |ui| {
-        let field_width = (ui.available_width() - SETTINGS_BUTTON_WIDTH - 16.0).clamp(180.0, 320.0);
+        let preferred = (ui.available_width() - SETTINGS_BUTTON_WIDTH - 16.0).clamp(160.0, 320.0);
+        let field_width = bounded_control_width(ui, preferred);
         ui.add_sized(
             [field_width, 24.0],
             TextEdit::singleline(value).hint_text(empty_hint),
@@ -303,7 +252,11 @@ pub(super) fn executable_path_row(
     empty_hint: &str,
 ) {
     setting_row(ui, title, description, |ui| {
-        let field_width = (ui.available_width() - 110.0).max(180.0);
+        let buttons = if value.is_empty() { 1.0 } else { 2.0 };
+        let preferred = (ui.available_width()
+            - buttons * (SETTINGS_BUTTON_WIDTH + ui.spacing().item_spacing.x))
+            .clamp(160.0, 320.0);
+        let field_width = bounded_control_width(ui, preferred);
         ui.add_sized(
             [field_width, 24.0],
             TextEdit::singleline(value).hint_text(empty_hint),
@@ -331,7 +284,7 @@ pub(super) fn filename_pattern_row(
 ) {
     setting_row(ui, title, description, |ui| {
         ui.add_sized(
-            [260.0, 24.0],
+            [bounded_control_width(ui, 260.0), 24.0],
             TextEdit::singleline(value).hint_text(empty_hint),
         );
     });
@@ -339,95 +292,12 @@ pub(super) fn filename_pattern_row(
 
 #[allow(dead_code)]
 fn screenshot_dir_row(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let palette = fluent_palette(ui);
-    let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, 7.0))
-        .show(ui, |ui| {
-            let total_width = ui.available_width();
-            if total_width < SETTINGS_ROW_STACK_WIDTH {
-                ui.vertical(|ui| {
-                    ui.set_width(total_width);
-                    ui.label(
-                        RichText::new("截图保存目录")
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
-                    );
-                    ui.label(
-                        RichText::new(DEFAULT_SCREENSHOT_DIR_DESCRIPTION)
-                            .small()
-                            .color(palette.muted),
-                    );
-                    ui.add_space(6.0);
-                    ui.horizontal_wrapped(|ui| {
-                        let field_width =
-                            (total_width - SETTINGS_BUTTON_WIDTH - 20.0).clamp(180.0, 420.0);
-                        ui.add_sized(
-                            [field_width, 24.0],
-                            TextEdit::singleline(&mut app.model.screenshot_save_dir)
-                                .hint_text(DEFAULT_SCREENSHOT_DIR_HINT),
-                        );
-                        if outline_button(ui, "选择").clicked() {
-                            if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                                app.model.screenshot_save_dir = path.display().to_string();
-                            }
-                        }
-                    });
-                });
-            } else {
-                let spacing = ui.spacing().item_spacing.x;
-                let control_width = 430.0_f32.min((total_width * 0.44).max(320.0));
-                let text_width = (total_width - control_width - spacing).max(180.0);
-                ui.horizontal(|ui| {
-                    ui.set_min_height(50.0);
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(text_width, 50.0),
-                        egui::Layout::top_down(egui::Align::Min),
-                        |ui| {
-                            ui.set_width(text_width);
-                            ui.label(
-                                RichText::new("截图保存目录")
-                                    .strong()
-                                    .size(SETTINGS_FONT_SETTING_TITLE)
-                                    .color(palette.text),
-                            );
-                            ui.label(
-                                RichText::new(DEFAULT_SCREENSHOT_DIR_DESCRIPTION)
-                                    .small()
-                                    .color(palette.muted),
-                            );
-                        },
-                    );
-                    ui.allocate_ui_with_layout(
-                        egui::vec2(control_width, 50.0),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            ui.set_width(control_width);
-                            ui.set_max_width(control_width);
-                            let field_width =
-                                (control_width - SETTINGS_BUTTON_WIDTH - 16.0).clamp(180.0, 320.0);
-                            ui.add_sized(
-                                [field_width, 24.0],
-                                TextEdit::singleline(&mut app.model.screenshot_save_dir)
-                                    .hint_text(DEFAULT_SCREENSHOT_DIR_HINT),
-                            );
-                            if outline_button(ui, "选择").clicked() {
-                                if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                                    app.model.screenshot_save_dir = path.display().to_string();
-                                }
-                            }
-                        },
-                    );
-                });
-            }
-        });
-    let y = row.response.rect.bottom();
-    ui.painter().line_segment(
-        [
-            egui::pos2(row.response.rect.left(), y),
-            egui::pos2(row.response.rect.right(), y),
-        ],
-        Stroke::new(1.0, palette.border_subtle),
+    folder_path_row(
+        ui,
+        "截图保存目录",
+        DEFAULT_SCREENSHOT_DIR_DESCRIPTION,
+        &mut app.model.screenshot_save_dir,
+        DEFAULT_SCREENSHOT_DIR_HINT,
     );
 }
 

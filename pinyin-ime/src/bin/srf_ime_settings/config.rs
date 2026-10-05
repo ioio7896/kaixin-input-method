@@ -77,6 +77,12 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "number_fullwidth",
             defaults.number_fullwidth,
         ),
+        chinese_halfwidth: read_bool(
+            config,
+            "input",
+            "chinese_halfwidth",
+            defaults.chinese_halfwidth,
+        ),
         symbol_fullwidth: read_bool(
             config,
             "input",
@@ -796,6 +802,11 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         "input",
         "symbol_fullwidth",
         bool_text(model.symbol_fullwidth),
+    );
+    config.set(
+        "input",
+        "chinese_halfwidth",
+        bool_text(model.chinese_halfwidth),
     );
     config.set(
         "input",
@@ -2553,16 +2564,46 @@ mod game_policy_tests {
     }
 }
 
-#[cfg(test)] mod shared_config_tests {
+#[cfg(test)]
+mod shared_config_tests {
     use super::*;
-    #[test] fn defaults_preserve_comments_extensions_and_migration_version() {
-        let doc = parse_ini("; personal comment\n[style]\ncandidate_density=compact\n[extension]\nfuture=keep\n");
+    #[test]
+    fn defaults_preserve_comments_extensions_and_migration_version() {
+        let doc = parse_ini(
+            "; personal comment\n[style]\ncandidate_density=compact\n[extension]\nfuture=keep\n",
+        );
         assert_eq!(read_config_version(&doc), 0);
         assert_eq!(doc.get("style", "candidate_density"), Some("compact"));
         assert_eq!(doc.get("compatibility", "game_input_mode"), Some("manual"));
-        let text=doc.render();
+        let text = doc.render();
         assert!(text.contains("; personal comment"));
         assert!(text.contains("future=keep"));
         assert_eq!(parse_ini(&text).get("extension", "future"), Some("keep"));
+    }
+}
+
+#[cfg(test)]
+mod halfwidth_tests {
+    use super::*;
+
+    #[test]
+    fn chinese_halfwidth_defaults_off_and_survives_save_reload() {
+        assert!(!model_from_config(&parse_ini("")).chinese_halfwidth);
+        for enabled in [true, false] {
+            let mut doc = parse_ini(
+                "[input]\ndefault_full_shape=1\nsymbol_fullwidth=1\nnumber_fullwidth=1\n",
+            );
+            let mut model = model_from_config(&doc);
+            model.chinese_halfwidth = enabled;
+            apply_model_to_config(&mut doc, &model);
+            let saved = rendered_config_for_model(&doc, &model);
+            let reloaded = model_from_config(&parse_ini(&saved));
+            assert_eq!(reloaded.chinese_halfwidth, enabled);
+            assert!(
+                reloaded.default_full_shape
+                    && reloaded.symbol_fullwidth
+                    && reloaded.number_fullwidth
+            );
+        }
     }
 }

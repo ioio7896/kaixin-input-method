@@ -339,7 +339,15 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
             ui.set_width((ui.available_width()).max(1.0));
             ui.horizontal(|ui| {
                 ui.label(RichText::new("候选窗效果").small().color(palette.muted));
-                status_badge(ui, StatusTone::Info, if model.candidate_horizontal { "横排" } else { "竖排" });
+                status_badge(
+                    ui,
+                    StatusTone::Info,
+                    if model.candidate_horizontal {
+                        "横排"
+                    } else {
+                        "竖排"
+                    },
+                );
             });
             ui.add_space(16.0);
             egui::ScrollArea::both()
@@ -348,15 +356,23 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
                 .auto_shrink([false, true])
                 .show(ui, |ui| candidate_live_preview_contents(ui, model, skins));
             ui.add_space(12.0);
-            ui.label(RichText::new(if model.candidate_horizontal {
-                "候选较多时可横向滚动查看；实际显示以真实候选窗为准。"
-            } else {
-                "字体、间距与皮肤随设置实时更新。"
-            }).small().color(palette.muted));
+            ui.label(
+                RichText::new(if model.candidate_horizontal {
+                    "候选较多时可横向滚动查看；实际显示以真实候选窗为准。"
+                } else {
+                    "字体、间距与皮肤随设置实时更新。"
+                })
+                .small()
+                .color(palette.muted),
+            );
         });
 }
 
-fn candidate_live_preview_contents(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
+fn candidate_live_preview_contents(
+    ui: &mut egui::Ui,
+    model: &SettingsModel,
+    skins: &[SkinPreview],
+) {
     let colors = candidate_preview_colors(ui, model, skins);
     let horizontal = model.candidate_horizontal;
     let metrics = candidate_preview_metrics(model, skins);
@@ -464,7 +480,9 @@ fn candidate_live_preview_contents(ui: &mut egui::Ui, model: &SettingsModel, ski
         // squeezing all candidates into the narrow preview dock.
         natural_width.max(spec.min_width)
     } else {
-        natural_width.max(spec.min_width).min(spec.max_width.min(720.0))
+        natural_width
+            .max(spec.min_width)
+            .min(spec.max_width.min(720.0))
             .min(ui.available_width().max(40.0))
     };
     let height = metrics.height;
@@ -550,7 +568,11 @@ fn candidate_live_preview_contents(ui: &mut egui::Ui, model: &SettingsModel, ski
             egui::Align2::LEFT_CENTER,
             format!("{}", idx + 1),
             FontId::proportional(meta_font_size),
-            apply_opacity(if selected { colors.selected_muted } else { colors.muted }),
+            apply_opacity(if selected {
+                colors.selected_muted
+            } else {
+                colors.muted
+            }),
         );
         let text_left = row.left() + label_leading;
         painter.text(
@@ -634,24 +656,59 @@ fn skin_preview_card(
     for (idx, (candidate, meta)) in preview_items.iter().enumerate() {
         let row = egui::Rect::from_min_size(
             preview.min + egui::vec2(5.0, 5.0 + idx as f32 * (row_height + gap)),
-            egui::vec2(preview.width() - 10.0, row_height));
+            egui::vec2(preview.width() - 10.0, row_height),
+        );
         let selected = idx == 0;
         let painter = ui.painter().with_clip_rect(row.intersect(ui.clip_rect()));
-        painter.rect(row, 3.0, if selected { colors.selected } else { colors.item },
-            Stroke::new(if selected { 1.0 } else { 0.0 }, colors.selected_border));
-        let text_color = if selected { colors.selected_text } else { colors.text };
-        let muted = if selected { colors.selected_muted } else { colors.muted };
-        painter.text(egui::pos2(row.left() + 5.0, row.center().y), egui::Align2::LEFT_CENTER,
-            format!("{}", idx + 1), FontId::proportional(10.0), muted);
-        painter.text(egui::pos2(row.left() + 18.0, row.center().y), egui::Align2::LEFT_CENTER,
-            *candidate, FontId::proportional(10.5), text_color);
+        painter.rect(
+            row,
+            3.0,
+            if selected {
+                colors.selected
+            } else {
+                colors.item
+            },
+            Stroke::new(if selected { 1.0 } else { 0.0 }, colors.selected_border),
+        );
+        let text_color = if selected {
+            colors.selected_text
+        } else {
+            colors.text
+        };
+        let muted = if selected {
+            colors.selected_muted
+        } else {
+            colors.muted
+        };
+        painter.text(
+            egui::pos2(row.left() + 5.0, row.center().y),
+            egui::Align2::LEFT_CENTER,
+            format!("{}", idx + 1),
+            FontId::proportional(10.0),
+            muted,
+        );
+        painter.text(
+            egui::pos2(row.left() + 18.0, row.center().y),
+            egui::Align2::LEFT_CENTER,
+            *candidate,
+            FontId::proportional(10.5),
+            text_color,
+        );
         // One baseline per row; metadata only appears when it has its own space.
         if row.width() >= 130.0 {
             let meta_rect = egui::Rect::from_min_max(
-                egui::pos2(row.left() + 85.0, row.top()), row.right_bottom());
-            painter.with_clip_rect(meta_rect.intersect(painter.clip_rect())).text(
-                egui::pos2(row.right() - 5.0, row.center().y), egui::Align2::RIGHT_CENTER,
-                *meta, FontId::proportional(9.0), muted);
+                egui::pos2(row.left() + 85.0, row.top()),
+                row.right_bottom(),
+            );
+            painter
+                .with_clip_rect(meta_rect.intersect(painter.clip_rect()))
+                .text(
+                    egui::pos2(row.right() - 5.0, row.center().y),
+                    egui::Align2::RIGHT_CENTER,
+                    *meta,
+                    FontId::proportional(9.0),
+                    muted,
+                );
         }
     }
     let title = if key.is_empty() {

@@ -25,9 +25,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID /*lpReserved*/) {
       g_hModule = hModule;
       DisableThreadLibraryCalls(hModule);
       break;
-    case DLL_PROCESS_DETACH:
-      ShutdownCandidateWindowRendering();
-      break;
   }
   return TRUE;
 }

@@ -2057,6 +2057,8 @@ def _lexicon_layer(path: Path) -> str | None:
         "kaixin_polyphone.txt",
         "kaixin_pronunciation_aliases.txt",
         "lfie-common-3char.txt",
+        "life_hot_3char_curated.txt",
+        "life_hot_4char_curated.txt",
     }:
         return "core"
     if "_tail_" in name or name.startswith("large_"):

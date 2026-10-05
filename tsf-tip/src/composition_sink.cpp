@@ -25,10 +25,8 @@ STDMETHODIMP_(ULONG) CCompositionSink::Release() {
 STDMETHODIMP CCompositionSink::OnCompositionTerminated(TfEditCookie /*ecWrite*/,
                                                        ITfComposition* pComposition) {
   if (!m_pTip) return S_OK;
-  if (m_pTip->m_pComposition == pComposition) {
-    m_pTip->m_pComposition->Release();
-    m_pTip->m_pComposition = nullptr;
-  }
+  // A delayed callback for an ended composition must not cancel a new one.
+  if (m_pTip->m_pComposition != pComposition) return S_OK;
   m_pTip->ReleaseCompositionState();
   return S_OK;
 }

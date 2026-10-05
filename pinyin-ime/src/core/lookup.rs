@@ -88,7 +88,9 @@ impl PinyinEngine {
         let started = Instant::now();
         let lex_started = Instant::now();
         let phrase_lexicon = dir.and_then(load_phrase_lexicon);
-        let single_char_common = dir.map(load_single_char_common_index).unwrap_or_else(|| Arc::new(single_char_common::SingleCharCommonIndex::bundled()));
+        let single_char_common = dir
+            .map(load_single_char_common_index)
+            .unwrap_or_else(|| Arc::new(single_char_common::SingleCharCommonIndex::bundled()));
         let lex_us = lex_started.elapsed().as_micros();
         Self::with_phrase_lexicon_and_single_chars(
             phrase_lexicon,
@@ -99,11 +101,15 @@ impl PinyinEngine {
         )
     }
 
-    pub(crate) fn with_hot_phrase_dir(dir: Option<&Path>) -> Self {
+    /// Runtime constructor shared by the IPC service and release evaluators.
+    /// Cold exact recall follows the same optional-lexicon configuration rules.
+    pub fn with_hot_phrase_dir(dir: Option<&Path>) -> Self {
         let started = Instant::now();
         let lex_started = Instant::now();
         let phrase_lexicon = dir.and_then(load_hot_phrase_lexicon);
-        let single_char_common = dir.map(load_single_char_common_index).unwrap_or_else(|| Arc::new(single_char_common::SingleCharCommonIndex::bundled()));
+        let single_char_common = dir
+            .map(load_single_char_common_index)
+            .unwrap_or_else(|| Arc::new(single_char_common::SingleCharCommonIndex::bundled()));
         let lex_us = lex_started.elapsed().as_micros();
         let mut engine = Self::with_phrase_lexicon_and_single_chars(
             phrase_lexicon,
@@ -3635,7 +3641,8 @@ pub(super) fn find_trusted_lexicon_under(root: &Path) -> Option<PathBuf> {
     None
 }
 
-pub(crate) fn validate_trusted_phrase_dir(path: &Path) -> Option<PathBuf> {
+/// Resolve a lexicon directory only when the production service trusts its location.
+pub fn validate_trusted_phrase_dir(path: &Path) -> Option<PathBuf> {
     let path = normalize_existing_path(path)?;
     let module_dir = current_module_dir();
     let user_root = trusted_user_lexicon_root();
