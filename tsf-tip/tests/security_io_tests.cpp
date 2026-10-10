@@ -7,6 +7,7 @@
 
 #include "diagnostic_privacy.h"
 #include "overlapped_io.h"
+#include "translation_response.h"
 
 void Require(bool condition, const char* message) {
   if (!condition) {
@@ -52,6 +53,12 @@ struct PipePair {
 };
 
 int main() {
+  Require(translation_response::accepted(R"({"ok":true,"request_id":"abc","provider":"hy-mt2","queued":2})", "abc", true), "accept matching HY2 response");
+  Require(!translation_response::accepted(R"({"ok":false,"request_id":"abc","message":"\"ok\":true"})", "abc", false), "reject text spoofing");
+  Require(!translation_response::accepted(R"({"ok":true,"request_id":"other"})", "abc", false), "reject mismatched identity");
+  Require(!translation_response::accepted(R"({"ok":true,"request_id":"abc","provider":"other"})", "abc", true), "reject wrong provider");
+  Require(!translation_response::accepted(R"({"ok":true,"ok":false,"request_id":"abc"})", "abc", false), "reject duplicate acknowledgement keys");
+  Require(!translation_response::accepted(R"({"ok":true,"request_id":"abc"} garbage)", "abc", false), "reject trailing junk");
   const std::wstring marker = L"KX_PRIVATE_MARKER_9a";
   const std::wstring redacted = RedactDiagnosticMessage(
       (L"reading=" + marker + L" current=" + marker + L" result=" + marker +

@@ -330,6 +330,9 @@ struct SrfScreenshotOptions {
 
 struct SrfCompatibilityOptions {
   SrfGameInputMode gameInputMode = SrfGameInputMode::Manual;
+  SrfGameEnterBehavior gameEnterBehavior = SrfGameEnterBehavior::Auto;
+  bool gameAutoUia = true;
+  bool gameStatusIndicator = true;
   bool fullscreenDetection = true;
   SrfFullscreenPolicy fullscreenPolicy = SrfFullscreenPolicy::ShowUi;
   SrfCommitTransport commitTransport = SrfCommitTransport::Tsf;
@@ -339,6 +342,15 @@ struct SrfCompatibilityOptions {
 };
 
 struct SrfAppOptions {
+  bool hasGameEnterBehavior = false;
+  SrfGameEnterBehavior gameEnterBehavior = SrfGameEnterBehavior::Auto;
+  bool hasGameAutoUia = false;
+  bool gameAutoUia = true;
+  bool hasGameStatusIndicator = false;
+  bool gameStatusIndicator = true;
+  SrfHotkeyOptions gameChatOpenKey = {};
+  SrfHotkeyOptions gameChatCloseKey = {true, VK_ESCAPE, 0};
+  bool overlayForceUi = false;
   bool hasGameInputMode = false;
   SrfGameInputMode gameInputMode = SrfGameInputMode::Manual;
   bool hasAsciiMode = false;

@@ -1,0 +1,53 @@
+# 开心离线输入法分类补充：日程时间
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+下周一	xia zhou yi	6900
+下周三	xia zhou san	6100
+下周二	xia zhou er	6100
+下周五	xia zhou wu	6100
+下周四	xia zhou si	6100
+下周末	xia zhou mo	6100
+今天下班前	jin tian xia ban qian	6100
+今天之内	jin tian zhi nei	6100
+任务优先级	ren wu you xian ji	6100
+会议提醒	hui yi ti xing	6100
+具体时间待定	ju ti shi jian dai ding	6100
+出发时间	chu fa shi jian	6100
+到达时间	dao da shi jian	6100
+办理时间	ban li shi jian	6100
+后天上午	hou tian shang wu	6100
+后天下午	hou tian xia wu	6100
+年度计划	nian du ji hua	6100
+开始时间	kai shi shi jian	6100
+待办提醒	dai ban ti xing	6100
+截止时间	jie zhi shi jian	6100
+提交时间	ti jiao shi jian	6100
+日历提醒	ri li ti xing	6100
+日程共享	ri cheng gong xiang	6100
+日程同步	ri cheng tong bu	6100
+日程安排	ri cheng an pai	6100
+日程提醒	ri cheng ti xing	6100
+时间冲突	shi jian chong tu	6100
+时间另行通知	shi jian ling xing tong zhi	6100
+时间确认	shi jian que ren	6100
+时间管理	shi jian guan li	6100
+时间规划	shi jian gui hua	6100
+时间调整	shi jian tiao zheng	6100
+明天上午	ming tian shang wu	6100
+明天上班前	ming tian shang ban qian	6100
+明天下午	ming tian xia wu	6100
+明天之前	ming tian zhi qian	6100
+明天晚上	ming tian wan shang	6100
+本周末	ben zhou mo	6100
+每周计划	mei zhou ji hua	6100
+每日计划	mei ri ji hua	6100
+每月计划	mei yue ji hua	6100
+生日提醒	sheng ri ti xing	6100
+目标管理	mu biao guan li	6100
+纪念日提醒	ji nian ri ti xing	6100
+结束时间	jie shu shi jian	6100
+计划安排	ji hua an pai	6100
+预约提醒	yu yue ti xing	6100
+预约时间	yu yue shi jian	6100

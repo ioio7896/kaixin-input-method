@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：运动健身
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+体脂率	ti zhi lv	6100
+体重管理	ti zhong guan li	6100
+健身房会员	jian shen fang hui yuan	6100
+健身计划	jian shen ji hua	6100
+力量训练	li liang xun lian	6100
+动作要领	dong zuo yao ling	6100
+动作规范	dong zuo gui fan	6100
+动态拉伸	dong tai la shen	6100
+卧推训练	wo tui xun lian	6100
+哑铃训练	ya ling xun lian	6100
+团体课程	tuan ti ke cheng	6100
+基础代谢	ji chu dai xie	6100
+增肌减脂	zeng ji jian zhi	6100
+平板支撑	ping ban zhi cheng	6100
+引体向上	yin ti xiang shang	6100
+心肺耐力	xin fei nai li	6100
+抗阻训练	kang zu xun lian	6100
+拉伸运动	la shen yun dong	6100
+无氧训练	wu yang xun lian	6100
+最大心率	zui da xin lv	6100
+有氧训练	you yang xun lian	6100
+杠铃训练	gang ling xun lian	6100
+核心训练	he xin xun lian	6100
+深蹲训练	shen dun xun lian	6100
+游泳训练	you yong xun lian	6100
+热身运动	re shen yun dong	6100
+热量缺口	re liang que kou	6100
+目标心率	mu biao xin lv	6100
+硬拉训练	ying la xun lian	6100
+私教课程	si jiao ke cheng	6100
+肌肉力量	ji rou li liang	6100
+肌肉耐力	ji rou nai li	6100
+自重训练	zi zhong xun lian	6100
+蛋白质摄入	dan bai zhi she ru	6100
+训练动作	xun lian dong zuo	6100
+训练强度	xun lian qiang du	6100
+训练计划	xun lian ji hua	6100
+训练频率	xun lian pin lv	6100
+跑步距离	pao bu ju li	6100
+跑步路线	pao bu lu xian	6100
+跑步配速	pao bu pei su	6100
+运动心率	yun dong xin lv	6100
+运动恢复	yun dong hui fu	6100
+运动手表	yun dong shou biao	6100
+运动损伤	yun dong sun shang	6100
+运动记录	yun dong ji lu	6100
+间歇训练	jian xie xun lian	6100
+静态拉伸	jing tai la shen	6100
+饮食记录	yin shi ji lu	6100
+骑行训练	qi xing xun lian	6100

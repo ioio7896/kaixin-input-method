@@ -1,0 +1,53 @@
+# 开心离线输入法分类补充：学术科研
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+数据处理	shu ju chu li	7021
+学术会议	xue shu hui yi	7014
+中期报告	zhong qi bao gao	6100
+参考文献	can kao wen xian	6100
+可重复性	ke chong fu xing	6100
+同行评审	tong hang ping shen	6100
+学位论文	xue wei lun wen	6100
+学术报告	xue shu bao gao	6100
+学术诚信	xue shu cheng xin	6100
+实验结果	shi yan jie guo	6100
+实验设计	shi yan she ji	6100
+审稿意见	shen gao yi jian	6100
+开放数据	kai fang shu ju	6100
+开题报告	kai ti bao gao	6100
+引用格式	yin yong ge shi	6100
+引用规范	yin yong gui fan	6100
+数据采集	shu ju cai ji	6100
+文献检索	wen xian jian suo	6100
+文献管理	wen xian guan li	6100
+文献综述	wen xian zong shu	6100
+期刊投稿	qi kan tou gao	6100
+期刊论文	qi kan lun wen	6100
+研究伦理	yan jiu lun li	6100
+研究意义	yan jiu yi yi	6100
+研究方法	yan jiu fang fa	6100
+研究目标	yan jiu mu biao	6100
+研究结论	yan jiu jie lun	6100
+研究背景	yan jiu bei jing	6100
+研究课题	yan jiu ke ti	6100
+研究进展	yan jiu jin zhan	6100
+科研经费	ke yan jing fei	6100
+科研计划	ke yan ji hua	6100
+答辩准备	da bian zhun bei	6100
+结果讨论	jie guo tao lun	6100
+结题报告	jie ti bao gao	6100
+论文修改	lun wen xiu gai	6100
+论文关键词	lun wen guan jian ci	6100
+论文审稿	lun wen shen gao	6100
+论文投稿	lun wen tou gao	6100
+论文提纲	lun wen ti gang	6100
+论文摘要	lun wen zhai yao	6100
+论文查重	lun wen cha zhong	6100
+论文选题	lun wen xuan ti	6100
+返修意见	fan xiu yi jian	6100
+科研成果	ke yan cheng guo	4105
+学术交流	xue shu jiao liu	2700
+统计分析	tong ji fen xi	2460
+科研项目	ke yan xiang mu	742

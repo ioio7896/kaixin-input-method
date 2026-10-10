@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：户外露营
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+保暖层	bao nuan ceng	6100
+冲锋衣	chong feng yi	6100
+头灯电池	tou deng dian chi	6100
+岩壁攀爬	yan bi pan pa	6100
+应急装备	ying ji zhuang bei	6100
+徒步登山	tu bu deng shan	6100
+徒步装备	tu bu zhuang bei	6100
+徒步路线	tu bu lu xian	6100
+徒步轨迹	tu bu gui ji	6100
+户外救援	hu wai jiu yuan	6100
+户外服装	hu wai fu zhuang	6100
+户外炊具	hu wai chui ju	6100
+户外电源	hu wai dian yuan	6100
+户外背包	hu wai bei bao	6100
+攀岩装备	pan yan zhuang bei	6100
+无痕山野	wu hen shan ye	6100
+海拔爬升	hai ba pa sheng	6100
+涉水鞋	she shui xie	6100
+炉头气罐	lu tou qi guan	6100
+登山杖	deng shan zhang	6100
+登山背包	deng shan bei bao	6100
+登山路线	deng shan lu xian	6100
+移动电源	yi dong dian yuan	6100
+累计爬升	lei ji pa sheng	6100
+结伴出行	jie ban chu xing	6100
+营地停车	ying di ting che	6100
+营地设施	ying di she shi	6100
+营地费用	ying di fei yong	6100
+营地预约	ying di yu yue	6100
+路线导航	lu xian dao hang	6100
+速干衣	su gan yi	6100
+野外防蚊	ye wai fang wen	6100
+野餐垫	ye can dian	6100
+防晒衣	fang shai yi	6100
+防水收纳	fang shui shou na	6100
+防潮垫	fang chao dian	6100
+防蚊喷雾	fang wen pen wu	6100
+防风层	fang feng ceng	6100
+露营地点	lu ying di dian	6100
+露营天幕	lu ying tian mu	6100
+露营帐篷	lu ying zhang peng	6100
+露营桌椅	lu ying zhuo yi	6100
+露营灯	lu ying deng	6100
+露营装备	lu ying zhuang bei	6100
+领队向导	ling dui xiang dao	6100
+急救包	ji jiu bao	4864
+保温杯	bao wen bei	3867
+睡袋	shui dai	3565
+保温箱	bao wen xiang	2906
+防水层	fang shui ceng	769
+登山鞋	deng shan xie	702

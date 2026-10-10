@@ -1,0 +1,69 @@
+# 开心离线输入法分类补充：日常聊天
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+下次再约吧	xia ci zai yue ba	9836
+我先去忙了	wo xian qu mang le	9672
+早点休息吧	zao dian xiu xi ba	9444
+注意安全啊	zhu yi an quan a	9392
+路上小心点	lu shang xiao xin dian	9124
+你到哪里了	ni dao na li le	8719
+我已经到家了	wo yi jing dao jia le	8463
+我先去吃饭了	wo xian qu chi fan le	8447
+下次请你吃饭	xia ci qing ni chi fan	6500
+今天先这样	jin tian xian zhe yang	6500
+今天有点忙	jin tian you dian mang	6500
+你先忙你的	ni xian mang ni de	6500
+你几点到家	ni ji dian dao jia	6500
+你方便接电话吗	ni fang bian jie dian hua ma	6500
+你现在有空吗	ni xian zai you kong ma	6500
+信号不太好	xin hao bu tai hao	6500
+刚刚没看手机	gang gang mei kan shou ji	6500
+别熬夜了	bie ao ye le	6500
+到家告诉我	dao jia gao su wo	6500
+回头再联系	hui tou zai lian xi	6500
+多喝点水	duo he dian shui	6500
+帮我带一份	bang wo dai yi fen	6500
+我一会儿过来	wo yi hui er guo lai	6500
+我们一起去吧	wo men yi qi qu ba	6500
+我先休息了	wo xian xiu xi le	6500
+我刚刚到家	wo gang gang dao jia	6500
+我刚吃完饭	wo gang chi wan fan	6500
+我已经出门了	wo yi jing chu men le	6500
+我快到家了	wo kuai dao jia le	6500
+我晚点再回你	wo wan dian zai hui ni	6500
+我正在上课	wo zheng zai shang ke	6500
+我正在开会	wo zheng zai kai hui	6500
+我没看到消息	wo mei kan dao xiao xi	6500
+我现在不方便	wo xian zai bu fang bian	6500
+我现在过去	wo xian zai guo qu	6500
+我稍后打给你	wo shao hou da gei ni	6500
+我等会儿回复	wo deng hui er hui fu	6500
+我等你一下	wo deng ni yi xia	6500
+我给你打电话	wo gei ni da dian hua	6500
+我还在路上	wo hai zai lu shang	6500
+我陪你一起去	wo pei ni yi qi qu	6500
+我马上就到	wo ma shang jiu dao	6500
+手机没电了	shou ji mei dian le	6500
+改天再联系	gai tian zai lian xi	6500
+明天再说吧	ming tian zai shuo ba	6500
+晚点再联系	wan dian zai lian xi	6500
+有空一起吃饭	you kong yi qi chi fan	6500
+看到消息回我	kan dao xiao xi hui wo	6500
+记得吃饭	ji de chi fan	6500
+我们刚刚到公司	wo men gang gang dao gong si	5200
+我们已经出门了	wo men yi jing chu men le	5200
+我们已经到家了	wo men yi jing dao jia le	5200
+我们晚点再联系	wo men wan dian zai lian xi	5200
+我们正在吃饭	wo men zheng zai chi fan	5200
+我们正在开会	wo men zheng zai kai hui	5200
+我们正在路上	wo men zheng zai lu shang	5200
+我们现在有点忙	wo men xian zai you dian mang	5200
+我们马上就到	wo men ma shang jiu dao	5200
+我刚刚到公司	wo gang gang dao gong si	5200
+我晚点再联系	wo wan dian zai lian xi	5200
+我正在吃饭	wo zheng zai chi fan	5200
+我正在路上	wo zheng zai lu shang	5200
+我现在有点忙	wo xian zai you dian mang	5200
+到了给我发消息	dao le gei wo fa xiao xi	3481

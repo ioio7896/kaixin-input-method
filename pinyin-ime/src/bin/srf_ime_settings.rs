@@ -59,8 +59,9 @@ const CANDIDATE_OVERLAY_EXE: &str = "srf_ime_overlay.exe";
 const SETTINGS_WINDOW_SIZE: [f32; 2] = [1160.0, 860.0];
 const SETTINGS_MAX_WINDOW_SIZE: [f32; 2] = [1440.0, 1040.0];
 const SETTINGS_MIN_WINDOW_SIZE: [f32; 2] = [780.0, 680.0];
-const SETTINGS_NAV_WIDTH: f32 = 212.0;
-const SETTINGS_PANEL_RADIUS: f32 = 8.0;
+const SETTINGS_NAV_WIDTH: f32 = 184.0;
+const SETTINGS_CONTENT_MAX_WIDTH: f32 = 1200.0;
+const SETTINGS_PANEL_RADIUS: f32 = 4.0;
 const SETTINGS_USER_DICT_LIST_LIMIT: usize = 100;
 const MS_PINYIN_TIP: &str =
     r"0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411F-A5AC-CA038EC515D7}";
@@ -104,6 +105,8 @@ struct SettingsApp {
     game_test_wizard: Option<GameTestWizard>,
     compat_selected_rule: usize,
     active_section: SettingsSection,
+    appearance_page: AppearanceSettingsPage,
+    lexicon_page: LexiconSettingsPage,
     tool_page: ToolSettingsPage,
     system_page: SystemSettingsPage,
     settings_search: String,
@@ -115,6 +118,7 @@ struct SettingsApp {
     diagnostics_cache: Option<ui::DiagnosticsSnapshot>,
     diagnostics_rx: Option<mpsc::Receiver<ui::DiagnosticsSnapshot>>,
     performance_export_rx: Option<mpsc::Receiver<String>>,
+    translation_check_rx: Option<mpsc::Receiver<String>>,
 }
 
 enum UserDictTaskResult {
@@ -175,6 +179,8 @@ impl SettingsApp {
             } else {
                 SettingsSection::Input
             },
+            appearance_page: AppearanceSettingsPage::Layout,
+            lexicon_page: LexiconSettingsPage::Learning,
             tool_page: ToolSettingsPage::Clipboard,
             system_page: SystemSettingsPage::General,
             settings_search: String::new(),
@@ -186,6 +192,7 @@ impl SettingsApp {
             diagnostics_cache: None,
             diagnostics_rx: None,
             performance_export_rx: None,
+            translation_check_rx: None,
         }
     }
 
@@ -294,9 +301,6 @@ impl SettingsApp {
             if rule.game_input_mode == "inherit" {
                 rule.game_input_mode = "manual".to_string();
             }
-            if rule.overlay_anchor == "auto" {
-                rule.overlay_anchor = "bottom_left".to_string();
-            }
             if existing.is_none() {
                 rule.overlay_backend = schema_default::OVERLAY_BACKEND.to_string();
             }
@@ -315,6 +319,8 @@ impl SettingsApp {
             .find(|rule| rule.process.eq_ignore_ascii_case(&normalized))
         {
             rule.overlay_backend = normalize_overlay_backend_value(backend);
+            rule.game_chat.tested_candidate = false;
+            rule.game_chat.tested_exit = false;
             sync_compat_rules_to_legacy_fields(&mut self.model);
         }
     }
@@ -328,6 +334,8 @@ impl SettingsApp {
             .find(|rule| rule.process.eq_ignore_ascii_case(&normalized))
         {
             rule.commit_transport = normalize_commit_transport_value(transport, "auto");
+            rule.game_chat.tested_commit = false;
+            rule.game_chat.tested_exit = false;
             sync_compat_rules_to_legacy_fields(&mut self.model);
         }
     }
@@ -347,6 +355,32 @@ impl SettingsApp {
 
     fn save(&mut self) -> Result<(), String> {
         let mut next_model = self.model.clone();
+        invalidate_changed_game_test_results(&model_from_config(&self.config), &mut next_model);
+        for rule in &next_model.compat_rules {
+            for (label, value) in [
+                ("聊天开启键", &rule.game_chat.open_key),
+                ("聊天关闭键", &rule.game_chat.close_key),
+            ] {
+                if !is_hotkey_disabled(value) && parse_fixed_letter_hotkey(value).is_none() {
+                    let message = format!(
+                        "保存已取消：{} 的{label}无效。请填写 Enter、Escape、T、Y 或有效组合键。",
+                        rule.process
+                    );
+                    self.status = message.clone();
+                    return Err(message);
+                }
+                if !is_hotkey_disabled(value)
+                    && normalize_hotkey(value) == normalize_hotkey(&next_model.game_mode_hotkey)
+                {
+                    let message = format!(
+                        "保存已取消：{} 的{label}与中文聊天切换热键冲突。",
+                        rule.process
+                    );
+                    self.status = message.clone();
+                    return Err(message);
+                }
+            }
+        }
         sync_compat_rules_to_legacy_fields(&mut next_model);
         normalize_combo_values(&mut next_model);
 
@@ -753,7 +787,15 @@ impl SettingsApp {
     }
 
     fn check_translation_environment(&mut self) {
-        self.status = check_translation_environment();
+        if self.translation_check_rx.is_some() {
+            return;
+        }
+        let (tx, rx) = mpsc::channel();
+        self.translation_check_rx = Some(rx);
+        self.status = "正在检测翻译服务…".into();
+        std::thread::spawn(move || {
+            let _ = tx.send(check_translation_environment());
+        });
     }
 }
 
@@ -1179,84 +1221,98 @@ fn hotkey_combo(
     let mut enabled = !is_hotkey_disabled(value);
     let capture_id = egui::Id::new(("hotkey_capture", combo_id));
     let mut capturing = ui.data(|data| data.get_temp::<bool>(capture_id).unwrap_or(false));
-    let available_width = ui.available_width().max(160.0);
+    let available_width = ui.available_width().max(1.0);
     ui.set_max_width(available_width);
-    ui.horizontal_wrapped(|ui| {
-        ui.set_max_width(available_width);
-        if !label.is_empty() {
-            ui.label(label);
-        }
-        let enabled_changed = capsule_switch(ui, &mut enabled)
-            .on_hover_text("启用或关闭此快捷键")
-            .changed();
-        ui.label(
-            RichText::new(if enabled { "已启用" } else { "已关闭" })
-                .small()
-                .color(fluent_palette(ui).muted),
-        );
-        let mut changed = false;
-        changed |= ui
-            .add_enabled(enabled, egui::Checkbox::new(&mut parts.ctrl, "Ctrl"))
-            .changed();
-        changed |= ui
-            .add_enabled(enabled, egui::Checkbox::new(&mut parts.shift, "Shift"))
-            .changed();
-        changed |= ui
-            .add_enabled(enabled, egui::Checkbox::new(&mut parts.alt, "Alt"))
-            .changed();
-        if !parts.ctrl && !parts.shift && !parts.alt {
-            parts.ctrl = true;
-            changed = true;
-        }
-        ui.add_enabled_ui(enabled, |ui| {
-            ComboBox::from_id_salt(combo_id)
-                .selected_text(hotkey_key_label(&parts.key))
-                .width(78.0)
-                .show_ui(ui, |ui| {
-                    for (key, label) in hotkey_key_options() {
-                        changed |= ui
-                            .selectable_value(&mut parts.key, key.to_string(), label)
-                            .changed();
-                    }
-                });
+    let mut enabled_changed = false;
+    let mut changed = false;
+    ui.vertical(|ui| {
+        ui.set_width(available_width);
+        ui.horizontal_wrapped(|ui| {
+            if !label.is_empty() {
+                ui.add(egui::Label::new(label).truncate());
+            }
+            enabled_changed = capsule_switch(ui, &mut enabled)
+                .on_hover_text("启用或关闭此快捷键")
+                .changed();
+            ui.add(
+                egui::Label::new(
+                    RichText::new(if enabled { "已启用" } else { "已关闭" })
+                        .small()
+                        .color(fluent_palette(ui).muted),
+                )
+                .truncate(),
+            );
+            changed |= ui
+                .add_enabled(enabled, egui::Checkbox::new(&mut parts.ctrl, "Ctrl"))
+                .changed();
+            changed |= ui
+                .add_enabled(enabled, egui::Checkbox::new(&mut parts.shift, "Shift"))
+                .changed();
+            changed |= ui
+                .add_enabled(enabled, egui::Checkbox::new(&mut parts.alt, "Alt"))
+                .changed();
+            if !parts.ctrl && !parts.shift && !parts.alt {
+                parts.ctrl = true;
+                changed = true;
+            }
+            // A nested enabled UI cannot relocate painted children when the
+            // parent wraps. Start its combo on a fresh line before allocating it.
+            if ui.available_size_before_wrap().x < 100.0 {
+                ui.end_row();
+            }
+            ui.add_enabled_ui(enabled, |ui| {
+                ComboBox::from_id_salt(combo_id)
+                    .selected_text(hotkey_key_label(&parts.key))
+                    .width(78.0)
+                    .truncate()
+                    .show_ui(ui, |ui| {
+                        for (key, label) in hotkey_key_options() {
+                            changed |= ui
+                                .selectable_value(&mut parts.key, key.to_string(), label)
+                                .changed();
+                        }
+                    });
+            });
         });
-        if ui
-            .add_enabled(
-                enabled,
-                egui::SelectableLabel::new(
-                    capturing,
-                    if capturing {
-                        "请按组合键…"
-                    } else {
-                        "按键录入"
-                    },
-                ),
-            )
-            .clicked()
-        {
-            capturing = !capturing;
-            ui.data_mut(|data| data.insert_temp(capture_id, capturing));
-        }
-        if ui
-            .add_enabled(enabled, egui::Button::new("清除"))
-            .on_hover_text("关闭此快捷键")
-            .clicked()
-        {
-            *value = "off".to_string();
-            enabled = false;
-            capturing = false;
-            ui.data_mut(|data| data.insert_temp(capture_id, false));
-        }
-        if ui
-            .add_enabled(enabled, egui::Button::new("默认"))
-            .on_hover_text("恢复推荐组合键")
-            .clicked()
-        {
-            *value = "off".to_string();
-            enabled = false;
-            capturing = false;
-            ui.data_mut(|data| data.insert_temp(capture_id, false));
-        }
+        ui.horizontal_wrapped(|ui| {
+            if ui
+                .add_enabled(
+                    enabled,
+                    egui::SelectableLabel::new(
+                        capturing,
+                        if capturing {
+                            "请按组合键…"
+                        } else {
+                            "按键录入"
+                        },
+                    ),
+                )
+                .clicked()
+            {
+                capturing = !capturing;
+                ui.data_mut(|data| data.insert_temp(capture_id, capturing));
+            }
+            if ui
+                .add_enabled(enabled, egui::Button::new("清除"))
+                .on_hover_text("关闭此快捷键")
+                .clicked()
+            {
+                *value = "off".to_string();
+                enabled = false;
+                capturing = false;
+                ui.data_mut(|data| data.insert_temp(capture_id, false));
+            }
+            if ui
+                .add_enabled(enabled, egui::Button::new("默认"))
+                .on_hover_text("恢复推荐组合键")
+                .clicked()
+            {
+                *value = "off".to_string();
+                enabled = false;
+                capturing = false;
+                ui.data_mut(|data| data.insert_temp(capture_id, false));
+            }
+        });
         if capturing {
             let captured = ui.input(|input| {
                 input.events.iter().find_map(|event| match event {
@@ -2114,6 +2170,7 @@ fn tool_data_settings_changed(before: &SettingsModel, after: &SettingsModel) -> 
         || before.ocr_screenshot_name_pattern != after.ocr_screenshot_name_pattern
         || before.wintranslator_path != after.wintranslator_path
         || before.translate_result_action != after.translate_result_action
+        || before.translate_target_language != after.translate_target_language
 }
 
 fn notification_settings_changed(before: &SettingsModel, after: &SettingsModel) -> bool {
@@ -2144,7 +2201,8 @@ fn global_hotkey_settings_changed(before: &SettingsModel, after: &SettingsModel)
 }
 
 fn compatibility_settings_changed(before: &SettingsModel, after: &SettingsModel) -> bool {
-    before.game_input_mode != after.game_input_mode
+    before.game_chat != after.game_chat
+        || before.game_input_mode != after.game_input_mode
         || before.fullscreen_detection != after.fullscreen_detection
         || before.fullscreen_policy != after.fullscreen_policy
         || before.commit_transport != after.commit_transport
@@ -2161,6 +2219,7 @@ fn tool_window_runtime_settings_changed(before: &SettingsModel, after: &Settings
         || before.ocr_translate_keep_window != after.ocr_translate_keep_window
         || before.wintranslator_path != after.wintranslator_path
         || before.translate_result_action != after.translate_result_action
+        || before.translate_target_language != after.translate_target_language
 }
 
 fn hotkey_conflicts(model: &SettingsModel) -> Vec<String> {
@@ -2392,6 +2451,9 @@ fn merge_discovered_lexicon_tags_compat(model: &mut SettingsModel) {
 }
 
 fn lexicon_tag_label(tag: &str) -> &str {
+    if let Some((label, _)) = pinyin_ime::lexicon_prefs::category_lexicon_info(tag) {
+        return label;
+    }
     match tag {
         "professional_medical" => "医疗",
         "professional_law" => "法律",
@@ -2400,37 +2462,12 @@ fn lexicon_tag_label(tag: &str) -> &str {
         "professional_chemistry" => "化学",
         "professional_biology" => "生物",
         "professional_history" => "历史",
-        "professional_geography" => "地理",
+        "professional_geography" => "地理学术语",
         "professional_philosophy" => "哲学",
         "professional_finance" => "金融",
         "professional_architecture" => "建筑",
         "professional_computing" => "计算机",
         "professional_music" => "音乐",
-        "ai_and_machine_learning" => "人工智能与机器学习（旧版）",
-        "internet_products" => "互联网产品（旧版）",
-        "programming_frameworks" => "编程框架（旧版）",
-        "software_and_cloud" => "软件与云服务（旧版）",
-        "chat_common_phrases" => "聊天常用语（旧版）",
-        "office_common_phrases" => "办公常用语（旧版）",
-        "china_prefecture_level_admin_333" => "全国地级行政区划（旧版）",
-        "county_admin_short_names_2024" => "全国区县简称（旧版）",
-        "world_countries_major_cities" => "世界国家与主要城市（旧版）",
-        "chinese_surnames" => "中华姓氏（旧版）",
-        "name1" => "人物姓名（旧版）",
-        "animal" => "动物词汇（旧版）",
-        "animal_common_5000" => "常见动物扩展（旧版）",
-        "yaowu" => "药物名称（旧版）",
-        "caijing" => "财经词汇（旧版）",
-        "car" => "汽车词汇（旧版）",
-        "chengyu" => "成语（旧版）",
-        "diming" => "地名（旧版）",
-        "food" => "饮食词汇（旧版）",
-        "it" => "信息技术（旧版）",
-        "kaixin_common" => "常用词汇（旧版）",
-        "law" => "法律词汇（旧版）",
-        "lishimingren" => "历史人物（旧版）",
-        "medical" => "医学词汇（旧版）",
-        "poem" => "诗词（旧版）",
         "hangzhou_metro_stations_262" => "杭州地铁站点（旧版）",
         "hangzhou_new_places" => "杭州新增地名（旧版）",
         "technology" => "科技、互联网与编程",
@@ -2439,7 +2476,7 @@ fn lexicon_tag_label(tag: &str) -> &str {
         "hangzhou_local" => "杭州本地生活与地理",
         "people_names" => "姓氏与人物姓名",
         "animals" => "常见动物",
-        "medicine" => "常见药物",
+        "medicine" => "药物名称",
         "daily_large" => "日常扩展词库",
         "county_admin" => "区县行政区划",
         "county_admin_short_names" => "区县简称",

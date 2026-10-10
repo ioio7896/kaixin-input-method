@@ -1,0 +1,51 @@
+# 开心离线输入法分类补充：情感社交
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+最近怎么样	zui jin zen me yang	10000
+今天辛苦了	jin tian xin ku le	9820
+注意身体啊	zhu yi shen ti a	9388
+好久不见	hao jiu bu jian	9300
+很高兴认识你	hen gao xing ren shi ni	9300
+我理解你的心情	wo li jie ni de xin qing	9300
+祝你天天开心	zhu ni tian tian kai xin	9300
+祝你工作顺利	zhu ni gong zuo shun li	9300
+希望你开心	xi wang ni kai xin	9080
+一切都会好起来的	yi qie du hui hao qi lai de	6500
+下次见面聊	xia ci jian mian liao	6500
+今天过得怎么样	jin tian guo de zen me yang	6500
+你今天开心吗	ni jin tian kai xin ma	6500
+你已经很努力了	ni yi jing hen nu li le	6500
+别一个人扛着	bie yi ge ren kang zhe	6500
+别太着急了	bie tai zhao ji le	6500
+别忘了照顾自己	bie wang le zhao gu zi ji	6500
+别给自己太大压力	bie gei zi ji tai da ya li	6500
+周末愉快呀	zhou mo yu kuai ya	6500
+好好照顾自己	hao hao zhao gu zi ji	6500
+好想见到你	hao xiang jian dao ni	6500
+常联系呀	chang lian xi ya	6500
+慢慢来就好	man man lai jiu hao	6500
+我一直都在	wo yi zhi dou zai	6500
+我也想你了	wo ye xiang ni le	6500
+我有点担心你	wo you dian dan xin ni	6500
+我能理解你	wo neng li jie ni	6500
+我陪着你	wo pei zhe ni	6500
+放轻松一点	fang qing song yi dian	6500
+新年快乐呀	xin nian kuai le ya	6500
+早点睡个好觉	zao dian shui ge hao jue	6500
+最近还好吗	zui jin hai hao ma	6500
+有事和我说	you shi he wo shuo	6500
+有空多联系	you kong duo lian xi	6500
+期待下次见面	qi dai xia ci jian mian	6500
+生日快乐啊	sheng ri kuai le a	6500
+祝你一切顺利	zhu ni yi qie shun li	6500
+祝你早日康复	zhu ni zao ri kang fu	6500
+祝你考试顺利	zhu ni kao shi shun li	6500
+祝你面试顺利	zhu ni mian shi shun li	6500
+给你一个拥抱	gei ni yi ge yong bao	6500
+节日快乐呀	jie ri kuai le ya	6500
+谢谢你一直支持我	xie xie ni yi zhi zhi chi wo	6500
+谢谢你的关心	xie xie ni de guan xin	6500
+谢谢你的陪伴	xie xie ni de pei ban	6500
+辛苦你了	xin ku ni le	6500

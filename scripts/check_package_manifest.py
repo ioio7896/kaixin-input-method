@@ -142,6 +142,28 @@ def validate_package_hash_manifest(package: Path, errors: list[str]) -> None:
 
 
 def validate_slim_package_layout(package: Path, errors: list[str]) -> None:
+    retired_files = json.loads(
+        (Path(__file__).resolve().parents[1] / "shared" / "retired_lexicon_files.json")
+        .read_text(encoding="utf-8")
+    )
+    for relative in retired_files:
+        if (package / "lexicon" / relative).exists():
+            errors.append(f"migrated lexicon is still packaged: {relative}")
+    retired_tags = set(json.loads(
+        (Path(__file__).resolve().parents[1] / "shared" / "retired_optional_lexicons.json")
+        .read_text(encoding="utf-8")
+    ))
+    for path in (package / "lexicon").rglob("*.txt"):
+        if not any(part.casefold() in {"zh-ext", "ext"} for part in path.relative_to(package).parts[:-1]):
+            continue
+        tag = path.stem.casefold()
+        if tag.startswith("thuocl_"):
+            tag = tag[len("thuocl_"):]
+        elif "__thuocl_" in tag:
+            tag = tag.split("__thuocl_", 1)[1]
+        if tag in retired_tags:
+            errors.append(f"retired optional lexicon is still packaged: {path.relative_to(package)}")
+
     for name in ("LICENSE", "LICENSE_SCOPE.md", "NOTICE", "THIRD_PARTY_NOTICES.md"):
         path = package / name
         if not path.is_file() or path.stat().st_size <= 0:

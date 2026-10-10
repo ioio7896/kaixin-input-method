@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：环境环保
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+大气污染	da qi wu ran	6284
+低碳生活	di tan sheng huo	6100
+再生资源	zai sheng zi yuan	6100
+医疗废物	yi liao fei wu	6100
+危险废物	wei xian fei wu	6100
+噪声污染	zao sheng wu ran	6100
+噪声监测	zao sheng jian ce	6100
+固体废物	gu ti fei wu	6100
+固废处理	gu fei chu li	6100
+在线监测	zai xian jian ce	6100
+垃圾分类	la ji fen lei	6100
+废气处理	fei qi chu li	6100
+废水处理	fei shui chu li	6100
+循环利用	xun huan li yong	6100
+循环经济	xun huan jing ji	6100
+扬尘治理	yang chen zhi li	6100
+排放标准	pai fang biao zhun	6100
+排污登记	pai wu deng ji	6100
+排污许可	pai wu xu ke	6100
+水体污染	shui ti wu ran	6100
+水质监测	shui zhi jian ce	6100
+污染防治	wu ran fang zhi	6100
+污水管网	wu shui guan wang	6100
+油烟治理	you yan zhi li	6100
+清洁能源	qing jie neng yuan	6100
+温室气体	wen shi qi ti	6100
+环保设施	huan bao she shi	6100
+环保验收	huan bao yan shou	6100
+环境影响评价	huan jing ying xiang ping jia	6100
+环境检测	huan jing jian ce	6100
+环境治理	huan jing zhi li	6100
+环境管理	huan jing guan li	6100
+生态保护	sheng tai bao hu	6100
+生态修复	sheng tai xiu fu	6100
+碳中和	tan zhong he	6100
+碳排放	tan pai fang	6100
+碳核算	tan he suan	6100
+碳足迹	tan zu ji	6100
+碳达峰	tan da feng	6100
+空气监测	kong qi jian ce	6100
+绿色发展	lv se fa zhan	6100
+节能减排	jie neng jian pai	6100
+资源回收	zi yuan hui shou	6100
+雨污分流	yu wu fen liu	6100
+垃圾回收	la ji hui shou	6000
+生物多样性	sheng wu duo yang xing	6000
+污水处理	wu shui chu li	5163
+环境监测	huan jing jian ce	2799
+土壤污染	tu rang wu ran	803
+排污口	pai wu kou	209

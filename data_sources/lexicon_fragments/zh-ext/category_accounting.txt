@@ -1,0 +1,60 @@
+# 开心离线输入法分类补充：财务会计
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+交通报销	jiao tong bao xiao	6100
+会计凭证	kuai ji ping zheng	6100
+凭证审核	ping zheng shen he	6100
+凭证装订	ping zheng zhuang ding	6100
+原始凭证	yuan shi ping zheng	6100
+原材料盘点	yuan cai liao pan dian	6100
+固定资产折旧	gu ding zi chan zhe jiu	6100
+坏账准备	huai zhang zhun bei	6100
+坏账损失	huai zhang sun shi	6100
+存货盘点	cun huo pan dian	6100
+存货跌价	cun huo die jia	6100
+差旅报销	chai lv bao xiao	6100
+年末结账	nian mo jie zhang	6100
+库存商品	ku cun shang pin	6100
+应付票据	ying fu piao ju	6100
+应付账款	ying fu zhang kuan	6100
+应收票据	ying shou piao ju	6100
+应收账款	ying shou zhang kuan	6100
+待摊费用	dai tan fei yong	6100
+总账明细	zong zhang ming xi	6100
+成本分摊	cheng ben fen tan	6100
+成本核算	cheng ben he suan	6100
+所得税汇算	suo de shui hui suan	6100
+报销凭证	bao xiao ping zheng	6100
+报销单据	bao xiao dan ju	6100
+报销流程	bao xiao liu cheng	6100
+无形资产摊销	wu xing zi chan tan xiao	6100
+月末结账	yue mo jie zhang	6100
+未分配利润	wei fen pei li run	6100
+汇算清缴	hui suan qing jiao	6100
+科目余额	ke mu yu e	6100
+税额抵扣	shui e di kou	6100
+累计折旧	lei ji zhe jiu	6100
+纳税申报	na shui shen bao	6100
+营业利润	ying ye li run	6100
+营业成本	ying ye cheng ben	6100
+营业收入	ying ye shou ru	6100
+计提折旧	ji ti zhe jiu	6100
+记账凭证	ji zhang ping zheng	6100
+财务分析	cai wu fen xi	6100
+财务审计	cai wu shen ji	6100
+财务报表	cai wu bao biao	6100
+财务预算	cai wu yu suan	6100
+账实核对	zhang shi he dui	6100
+费用报销	fei yong bao xiao	6100
+进项税额	jin xiang shui e	6100
+银行对账	yin hang dui zhang	6100
+销项税额	xiao xiang shui e	6100
+预付账款	yu fu zhang kuan	6100
+预提费用	yu ti fei yong	6100
+预收账款	yu shou zhang kuan	6100
+预算执行	yu suan zhi xing	6100
+预算编制	yu suan bian zhi	6100
+预算调整	yu suan tiao zheng	6100
+明细账	ming xi zhang	1613

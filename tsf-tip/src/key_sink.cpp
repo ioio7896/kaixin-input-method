@@ -1,5 +1,7 @@
 #include "key_sink.h"
 #include "game_input_policy.h"
+#include "tsf_edit_policy.h"
+#include "input_injection_policy.h"
 
 #include <cstdio>
 #include <filesystem>
@@ -97,19 +99,32 @@ class CEditSessionProcessKey final : public ITfEditSession {
   LPARAM m_lParam = 0;
   bool m_shiftDown = false;
   bool m_handled = false;
-  bool m_executed = false;
+  SrfEditSessionOnce m_execution;
   SrfFocusSnapshot m_focus = {};
   HWND m_foreground = nullptr;
+  CKeyEventSink* m_sink = nullptr;
+  bool m_pending = true;
+  std::uint64_t m_pendingGeneration = 0;
+
+  void FinishPending() {
+    if (!m_pending) return;
+    m_pending = false;
+    m_sink->m_pendingKeyEdits.Complete(m_pendingGeneration);
+  }
 
  public:
-  CEditSessionProcessKey(CSrfTip* tip, ITfContext* pic, UINT vk, LPARAM lParam, bool shiftDown)
-      : m_pTip(tip), m_vk(vk), m_lParam(lParam), m_shiftDown(shiftDown) {
+  CEditSessionProcessKey(CSrfTip* tip, ITfContext* pic, UINT vk, LPARAM lParam, bool shiftDown, CKeyEventSink* sink)
+      : m_pTip(tip), m_vk(vk), m_lParam(lParam), m_shiftDown(shiftDown), m_sink(sink) {
+    m_sink->AddRef();
+    m_pendingGeneration = m_sink->m_pendingKeyEdits.Begin(GetTickCount64());
     m_pic = pic;
     m_foreground = GetForegroundWindow();
     if (m_pTip) { m_pTip->AddRef(); m_focus = m_pTip->CaptureFocusSnapshot(pic); }
     if (m_pic) m_pic->AddRef();
   }
   ~CEditSessionProcessKey() {
+    FinishPending();
+    m_sink->Release();
     if (m_pTip) m_pTip->Release();
     if (m_pic) m_pic->Release();
   }
@@ -132,7 +147,8 @@ class CEditSessionProcessKey final : public ITfEditSession {
   }
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
-    m_executed = true;
+    if (!m_execution.Begin()) return S_OK;
+    struct PendingGuard { CEditSessionProcessKey* edit; ~PendingGuard() { edit->FinishPending(); } } guard{this};
     if (!m_pTip || !m_pic) return E_FAIL;
     if (GetForegroundWindow() != m_foreground || !m_pTip->FocusSnapshotMatches(m_focus)) return S_OK;
     m_handled = false;
@@ -141,7 +157,7 @@ class CEditSessionProcessKey final : public ITfEditSession {
   }
 
   bool Consumed() const { return m_handled; }
-  bool Executed() const { return m_executed; }
+  bool Executed() const { return m_execution.Executed(); }
 };
 
 /// 请求编辑会话，先 SYNC 后 ASYNC 回退。
@@ -184,11 +200,30 @@ bool RequestEditSessionWithFallback(ITfContext* pic, TfClientId tid,
 
 CKeyEventSink::CKeyEventSink(CSrfTip* tip) : m_pTip(tip) {}
 
+void CKeyEventSink::ResetKeyState() {
+  m_leftShiftDown = m_rightShiftDown = false;
+  m_keyOwnership.Reset();
+  m_pendingKeyEdits.Cancel();
+  m_gameToggleLatched = m_asciiToggleLatched = false;
+  m_gameToggleRepeated = m_asciiToggleRepeated = false;
+}
+
+void CKeyEventSink::RefreshToggleLatches() {
+  if (!m_pTip) return;
+  if (!(GetAsyncKeyState(m_pTip->m_config.input.gameModeHotkey.vk) & 0x8000)) m_gameToggleLatched = false;
+  if (!(GetAsyncKeyState(m_pTip->m_config.input.temporaryAsciiHotkey.vk) & 0x8000)) m_asciiToggleLatched = false;
+}
+
 STDMETHODIMP CKeyEventSink::QueryInterface(REFIID riid, void** ppv) {
   if (!ppv) return E_POINTER;
   *ppv = nullptr;
   if (riid == IID_IUnknown || riid == IID_ITfKeyEventSink) {
     *ppv = static_cast<ITfKeyEventSink*>(this);
+    AddRef();
+    return S_OK;
+  }
+  if (riid == IID_ITfKeyTraceEventSink) {
+    *ppv = static_cast<ITfKeyTraceEventSink*>(this);
     AddRef();
     return S_OK;
   }
@@ -205,9 +240,7 @@ STDMETHODIMP_(ULONG) CKeyEventSink::Release() {
 
 STDMETHODIMP CKeyEventSink::OnSetFocus(BOOL fForeground) {
   if (!fForeground) {
-    m_leftShiftDown = false;
-    m_rightShiftDown = false;
-    for (auto& down : m_passthroughKeyDown) down = false;
+    ResetKeyState();
     if (m_pTip) {
       m_pTip->m_shiftTapActive = false;
       m_pTip->m_shiftTapUsedWithOtherKey = false;
@@ -218,24 +251,54 @@ STDMETHODIMP CKeyEventSink::OnSetFocus(BOOL fForeground) {
   return S_OK;
 }
 
+STDMETHODIMP CKeyEventSink::OnKeyTraceDown(WPARAM wParam, LPARAM lParam) {
+  if (!m_pTip) return S_OK;
+  const UINT vk = static_cast<UINT>(wParam);
+  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  if (vk == m_pTip->m_config.input.gameModeHotkey.vk) m_gameToggleRepeated = (lParam & 0x40000000) != 0;
+  if (vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk) m_asciiToggleRepeated = (lParam & 0x40000000) != 0;
+  if (IsVkShift(vk)) UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
+  // Trace notifications describe a real keyboard event. TestKey callbacks can
+  // be repeated or abandoned and therefore must not exit a chat or own a key.
+  const bool exited = m_pTip->ObserveGameChatExit(vk, lParam);
+  const bool repeated = (lParam & 0x40000000) != 0;
+  if (!m_keyOwnership.KeepDown(vk, repeated, m_pTip->IsGameHotkeyPassthroughActive())) {
+    m_keyOwnership.ObserveDown(vk, repeated, exited || !m_pTip->WouldEatKey(vk));
+  }
+  if (!exited) m_pTip->ObserveGameChatOpen(vk, lParam);
+  return S_OK;
+}
+
+STDMETHODIMP CKeyEventSink::OnKeyTraceUp(WPARAM wParam, LPARAM lParam) {
+  const UINT vk = static_cast<UINT>(wParam);
+  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  if (m_pTip && vk == m_pTip->m_config.input.gameModeHotkey.vk) {
+    m_gameToggleLatched = false; m_gameToggleRepeated = false;
+  }
+  if (m_pTip && vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk) {
+    m_asciiToggleLatched = false; m_asciiToggleRepeated = false;
+  }
+  m_keyOwnership.ObserveUp(vk);
+  if (IsVkShift(vk)) UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
+  return S_OK;
+}
+
 STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LPARAM lParam,
                                           BOOL* pfEaten) {
   if (!pfEaten) return E_POINTER;
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
-  if (IsVkShift(vk)) {
-    UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
-  }
-  if (m_pTip->ObserveGameChatExit(vk, lParam)) {
-    if (vk < 256) m_passthroughKeyDown[vk] = true;
+  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  if (m_traceAvailable && m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
+      m_pTip->IsGameHotkeyPassthroughActive())) return S_OK;
+  if ((vk == VK_RETURN || vk == VK_ESCAPE) && m_keyOwnership.ConsumeRepeat(vk,
+      (lParam & 0x40000000) != 0, m_pTip->IsGameHotkeyPassthroughActive())) {
+    *pfEaten = TRUE;
     return S_OK;
   }
-  if (vk < 256 && SrfGameKeepHeldKey(m_passthroughKeyDown[vk], (lParam & 0x40000000) != 0)) return S_OK;
   if (m_pTip->WouldEatKey(vk)) {
     *pfEaten = TRUE;
-  } else if (vk < 256) {
-    m_passthroughKeyDown[vk] = true;
   }
   return S_OK;
 }
@@ -246,20 +309,15 @@ STDMETHODIMP CKeyEventSink::OnTestKeyUp(ITfContext* /*pic*/, WPARAM wParam, LPAR
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
-  const bool passedDown = vk < 256 && m_passthroughKeyDown[vk];
-  if (vk < 256) m_passthroughKeyDown[vk] = false;
-  if (passedDown && IsVkShift(vk)) {
-    UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
-    return S_OK;
-  }
+  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  const bool passedDown = m_keyOwnership.PassRelease(vk);
+  if (passedDown) return S_OK;
   // Only Shift KeyUp is handled by the IME. If it will be handled, keep the
   // tracked state until OnKeyUp consumes the real release event.
   if (IsVkShift(vk)) {
     const bool wouldEat = m_pTip->WouldEatKey(vk);
     if (wouldEat) {
       *pfEaten = TRUE;
-    } else {
-      UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
     }
   }
   return S_OK;
@@ -271,15 +329,27 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
   *pfEaten = FALSE;
   if (!pic || !m_pTip) return S_OK;
 
+  // Some hosts deliver the actual callback without a test or focus callback.
+  // Bind before capturing the edit session so old candidates cannot cross fields.
+  if (m_pTip->m_pFocusContext != pic) m_pTip->SetFocusContext(pic);
+
   const UINT vk = static_cast<UINT>(wParam);
-  if (m_pTip->ObserveGameChatExit(vk, lParam)) return S_OK;
-  if (vk < 256 && SrfGameKeepHeldKey(m_passthroughKeyDown[vk], (lParam & 0x40000000) != 0)) return S_OK;
+  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  if (!m_traceAvailable) OnKeyTraceDown(wParam, lParam);
+  if (m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
+      m_pTip->IsGameHotkeyPassthroughActive())) return S_OK;
+  if ((vk == VK_RETURN || vk == VK_ESCAPE) && m_keyOwnership.ConsumeRepeat(vk,
+      (lParam & 0x40000000) != 0, m_pTip->IsGameHotkeyPassthroughActive())) {
+    *pfEaten = TRUE;
+    return S_OK;
+  }
   if (m_pTip->ShouldHandleGameChatHotkey() &&
       m_pTip->IsConfiguredHotkey(vk, m_pTip->m_config.input.gameModeHotkey)) {
-    if ((lParam & 0x40000000) == 0) {
+    if ((lParam & 0x40000000) == 0 && !m_gameToggleLatched) {
       const ULONGLONG now = GetTickCount64();
       if (now - m_pTip->m_lastManualToggleTick >= CSrfTip::kManualToggleDedupMs) {
         m_pTip->m_lastManualToggleTick = now;
+        m_gameToggleLatched = true;
         m_pTip->ToggleManualGameCompat(TF_INVALID_COOKIE);
       }
     }
@@ -293,7 +363,7 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
 
   const bool shiftDown = CaptureShiftDown(vk, lParam, m_leftShiftDown || m_rightShiftDown);
   CEditSessionProcessKey* pEdit =
-      new (std::nothrow) CEditSessionProcessKey(m_pTip, pic, vk, lParam, shiftDown);
+      new (std::nothrow) CEditSessionProcessKey(m_pTip, pic, vk, lParam, shiftDown, this);
   if (!pEdit) return S_OK;
 
   const bool consumed = RequestEditSessionWithFallback(pic, m_pTip->m_tid, pEdit);
@@ -309,14 +379,15 @@ STDMETHODIMP CKeyEventSink::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lPara
   if (!pic || !m_pTip) return S_OK;
 
   const UINT vk = static_cast<UINT>(wParam);
-  if (vk < 256) m_passthroughKeyDown[vk] = false;
+  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  if (!m_traceAvailable) OnKeyTraceUp(wParam, lParam);
   if (!IsVkShift(vk)) return S_OK;
   const bool shiftDown = CaptureShiftDown(vk, lParam, m_leftShiftDown || m_rightShiftDown);
   UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
   if (!m_pTip->WouldEatKey(vk)) return S_OK;
 
   CEditSessionProcessKey* pEdit =
-      new (std::nothrow) CEditSessionProcessKey(m_pTip, pic, vk, lParam, shiftDown);
+      new (std::nothrow) CEditSessionProcessKey(m_pTip, pic, vk, lParam, shiftDown, this);
   if (!pEdit) return S_OK;
 
   const bool consumed = RequestEditSessionWithFallback(pic, m_pTip->m_tid, pEdit);
@@ -373,10 +444,14 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
              IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TEMP_ASCII)) {
     // preserved key 对所有注册 TIP 派发；非本 TIP 激活时按键让给激活方。
     if (!m_pTip->IsActiveTextServiceProfile()) return S_OK;
-    // OnPreservedKey 无 lParam 可判重复，用时间窗防按住自动重复连翻。
+    const bool gameToggle = IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE);
+    bool& latched = gameToggle ? m_gameToggleLatched : m_asciiToggleLatched;
+    const bool repeated = gameToggle ? m_gameToggleRepeated : m_asciiToggleRepeated;
+    if (latched || (m_traceAvailable && repeated)) { *pfEaten = TRUE; return S_OK; }
     const ULONGLONG now = GetTickCount64();
     if (now - m_pTip->m_lastManualToggleTick >= CSrfTip::kManualToggleDedupMs) {
       m_pTip->m_lastManualToggleTick = now;
+      latched = true;
       if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE)) {
         SrfTsfDiagnosticLog(L"manual-compatibility.hotkey", L"source=preserved-key,action=game");
         m_pTip->ToggleManualGameCompat(TF_INVALID_COOKIE);

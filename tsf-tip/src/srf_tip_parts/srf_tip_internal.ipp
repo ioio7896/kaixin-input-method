@@ -992,15 +992,20 @@ bool SendVirtualKeyTap(UINT vk) {
     inputs[1] = inputs[0];
     inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
   }
+  inputs[0].ki.dwExtraInfo = kSrfInjectedInputMarker;
+  inputs[1].ki.dwExtraInfo = kSrfInjectedInputMarker;
   return SendInput(static_cast<UINT>(std::size(inputs)), inputs, sizeof(INPUT)) == std::size(inputs);
 }
 
 HRESULT SendCtrlVPaste() {
+  if (!SrfInjectionModifiersClear()) return HRESULT_FROM_WIN32(ERROR_BUSY);
   INPUT inputs[4] = {};
   inputs[0].type = INPUT_KEYBOARD;
   inputs[0].ki.wVk = VK_CONTROL;
+  inputs[0].ki.dwExtraInfo = kSrfInjectedInputMarker;
   inputs[1].type = INPUT_KEYBOARD;
   inputs[1].ki.wVk = 'V';
+  inputs[1].ki.dwExtraInfo = kSrfInjectedInputMarker;
   inputs[2] = inputs[1];
   inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
   inputs[3] = inputs[0];
@@ -1021,9 +1026,38 @@ HRESULT SendCtrlVPaste() {
   return HRESULT_FROM_WIN32(err != 0 ? err : ERROR_GEN_FAILURE);
 }
 
+// Restoration runs on the original STA's message loop, after the target has
+// had a chance to process Ctrl+V. Never wait or pump messages inside a TSF lock.
+struct SrfClipboardRestoreTask {
+  IDataObject* previous = nullptr;
+  DWORD sequence = 0;
+  CSrfTip* owner = nullptr;
+  UINT_PTR timer = 0;
+};
+thread_local SrfClipboardRestoreTask* g_clipboardRestoreTask = nullptr;
+
+void CALLBACK RestoreClipboardTimer(HWND, UINT, UINT_PTR timer, DWORD) {
+  auto* task = g_clipboardRestoreTask;
+  if (!task || task->timer != timer) return;
+  KillTimer(nullptr, timer);
+  const DWORD current = GetClipboardSequenceNumber();
+  if (task->sequence != 0 && current == task->sequence) {
+    HRESULT hr = OleSetClipboard(task->previous);
+    if (SUCCEEDED(hr)) hr = OleFlushClipboard();
+    SrfTsfDiagnosticLog(L"clipboard-paste.restore", SUCCEEDED(hr) ? L"status=restored" : L"status=restore_failed");
+  } else {
+    SrfTsfDiagnosticLog(L"clipboard-paste.restore", L"status=skipped reason=clipboard_changed_during_paste");
+  }
+  task->previous->Release();
+  g_clipboardRestoreTask = nullptr;
+  CSrfTip* owner = task->owner;
+  delete task;
+  owner->Release();
+}
+
 class ScopedOleClipboardRestore {
  public:
-  ScopedOleClipboardRestore() {
+  explicit ScopedOleClipboardRestore(CSrfTip* owner) : owner_(owner) {
     original_sequence_ = GetClipboardSequenceNumber();
     IDataObject* previous = nullptr;
     if (SUCCEEDED(OleGetClipboard(&previous))) previous_ = previous;
@@ -1045,39 +1079,24 @@ class ScopedOleClipboardRestore {
 
   HRESULT RestoreAfterPaste() {
     if (!previous_) return S_FALSE;
-    // Give the target a brief chance to consume Ctrl+V, but never restore over
-    // content copied by the user while the paste was in flight.  Poll the
-    // clipboard sequence so a fast target short-circuits the wait instead of
-    // paying a fixed sleep on the key thread; total wait is bounded at ~40 ms.
-    const DWORD expected_sequence =
-        temporary_sequence_valid_ ? temporary_sequence_ : original_sequence_;
-    for (int wait = 0; wait < 4; ++wait) {
-      const DWORD current = GetClipboardSequenceNumber();
-      if (current != 0 && expected_sequence != 0 && current != expected_sequence) {
-        break;
-      }
-      Sleep(10);
-    }
-    const DWORD current_sequence = GetClipboardSequenceNumber();
-    if (expected_sequence != 0 && current_sequence != 0 &&
-        current_sequence != expected_sequence) {
-      SrfTsfDiagnosticLog(L"clipboard-paste.restore",
-                          L"status=skipped reason=clipboard_changed_during_paste");
-      previous_->Release();
-      previous_ = nullptr;
-      return S_FALSE;
-    }
-    HRESULT hr = OleSetClipboard(previous_);
-    if (SUCCEEDED(hr)) {
-      HRESULT flushHr = OleFlushClipboard();
-      if (FAILED(flushHr)) hr = flushHr;
-    }
-    previous_->Release();
+    const DWORD expected = temporary_sequence_valid_ ? temporary_sequence_ : original_sequence_;
+    if (!expected || GetClipboardSequenceNumber() != expected) return S_FALSE;
+    if (g_clipboardRestoreTask) return HRESULT_FROM_WIN32(ERROR_BUSY);
+    auto* task = new (std::nothrow) SrfClipboardRestoreTask;
+    if (!task) return E_OUTOFMEMORY;
+    task->sequence = expected;
+    task->previous = previous_;
+    task->owner = owner_;
+    task->timer = SetTimer(nullptr, 0, 120, RestoreClipboardTimer);
+    if (!task->timer) { delete task; return E_FAIL; }
+    task->owner->AddRef();
+    g_clipboardRestoreTask = task;
     previous_ = nullptr;
-    return hr;
+    return S_OK;
   }
 
  private:
+  CSrfTip* owner_ = nullptr;
   IDataObject* previous_ = nullptr;
   DWORD original_sequence_ = 0;
   DWORD temporary_sequence_ = 0;
@@ -1111,20 +1130,9 @@ HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
                                         DWORD* out_sequence = nullptr) {
   HWND owner = ClipboardOwnerWindow();
   if (!owner) owner = GetForegroundWindow();
-  bool opened = false;
-  // Bounded retry: this runs on the key-sink thread, so the previous long
-  // backoff (up to ~470 ms) stalled typing whenever a clipboard owner held
-  // the lock.  Worst case is now ~48 ms.
-  for (int attempt = 0; attempt < 8; ++attempt) {
-    if (OpenClipboard(owner)) {
-      opened = true;
-      break;
-    }
-    Sleep(std::min<DWORD>(4 + static_cast<DWORD>(attempt), 20));
-  }
-  if (!opened) {
+  if (!OpenClipboard(owner)) {
     const DWORD err = GetLastError();
-    return HRESULT_FROM_WIN32(err != 0 ? err : ERROR_ACCESS_DENIED);
+    return HRESULT_FROM_WIN32(err != 0 ? err : ERROR_BUSY);
   }
 
   const SIZE_T bytes = (text.size() + 1) * sizeof(wchar_t);
@@ -1174,19 +1182,30 @@ HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
   if (out_sequence) *out_sequence = GetClipboardSequenceNumber();
   // Let the clipboard owner publish both CF_UNICODETEXT and the temporary
   // marker before the listener receives WM_CLIPBOARDUPDATE.
-  Sleep(2);
   return hr;
 }
 
-HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text) {
+template <class Valid>
+HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text, CSrfTip* tip, Valid valid) {
+  if (g_clipboardRestoreTask) return HRESULT_FROM_WIN32(ERROR_BUSY);
   const HWND target = GetForegroundWindow();
+  DWORD targetPid = 0;
+  const DWORD targetThread = GetWindowThreadProcessId(target, &targetPid);
+  GUITHREADINFO initialFocus = {sizeof(initialFocus)};
+  if (!target || !targetPid || !GetGUIThreadInfo(targetThread, &initialFocus) ||
+      !SrfInjectionModifiersClear()) return HRESULT_FROM_WIN32(ERROR_BUSY);
   const ULONGLONG pasteStart = GetTickCount64();
-  ScopedOleClipboardRestore restore;
+  ScopedOleClipboardRestore restore(tip);
   DWORD temporary_sequence = 0;
   HRESULT hr = SetUnicodeClipboardTextForPaste(text, &temporary_sequence);
   if (SUCCEEDED(hr)) restore.MarkTemporaryClipboard(temporary_sequence);
   if (SUCCEEDED(hr)) {
-    hr = GetForegroundWindow() == target ? SendCtrlVPaste() : HRESULT_FROM_WIN32(ERROR_CANCELLED);
+    DWORD currentPid = 0;
+    GUITHREADINFO currentFocus = {sizeof(currentFocus)};
+    GetWindowThreadProcessId(target, &currentPid);
+    const bool matches = GetForegroundWindow() == target && currentPid == targetPid &&
+        GetGUIThreadInfo(targetThread, &currentFocus) && currentFocus.hwndFocus == initialFocus.hwndFocus;
+    hr = matches && valid() ? SendCtrlVPaste() : HRESULT_FROM_WIN32(ERROR_CANCELLED);
   }
   if (restore.HasData()) {
     const HRESULT restoreHr = restore.RestoreAfterPaste();
@@ -1204,6 +1223,13 @@ HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text) {
 
 HRESULT SendUnicodeTextInput(const std::wstring& text) {
   if (text.empty()) return S_OK;
+  if (!SrfInjectionModifiersClear()) return HRESULT_FROM_WIN32(ERROR_BUSY);
+  const HWND target = GetForegroundWindow();
+  DWORD targetPid = 0;
+  const DWORD targetThread = GetWindowThreadProcessId(target, &targetPid);
+  GUITHREADINFO initialFocus = {sizeof(initialFocus)};
+  if (!target || !targetPid || !GetGUIThreadInfo(targetThread, &initialFocus))
+    return HRESULT_FROM_WIN32(ERROR_CANCELLED);
   std::vector<INPUT> inputs;
   inputs.reserve(text.size() * 2);
   for (wchar_t ch : text) {
@@ -1211,11 +1237,18 @@ HRESULT SendUnicodeTextInput(const std::wstring& text) {
     down.type = INPUT_KEYBOARD;
     down.ki.wScan = static_cast<WORD>(ch);
     down.ki.dwFlags = KEYEVENTF_UNICODE;
+    down.ki.dwExtraInfo = kSrfInjectedInputMarker;
     INPUT up = down;
     up.ki.dwFlags = KEYEVENTF_UNICODE | KEYEVENTF_KEYUP;
     inputs.push_back(down);
     inputs.push_back(up);
   }
+  DWORD currentPid = 0;
+  GUITHREADINFO currentFocus = {sizeof(currentFocus)};
+  GetWindowThreadProcessId(target, &currentPid);
+  if (GetForegroundWindow() != target || currentPid != targetPid ||
+      !GetGUIThreadInfo(targetThread, &currentFocus) || currentFocus.hwndFocus != initialFocus.hwndFocus ||
+      !SrfInjectionModifiersClear()) return HRESULT_FROM_WIN32(ERROR_CANCELLED);
   const UINT sent =
       SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
   if (sent == inputs.size()) return S_OK;

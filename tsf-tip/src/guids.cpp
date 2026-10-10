@@ -1,4 +1,5 @@
 #include <initguid.h>
+#include <inputscope.h>
 
 #include "guids.h"
 

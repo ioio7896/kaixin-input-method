@@ -23,10 +23,13 @@
 #include "ime_model.h"
 #include "notification_window.h"
 #include "pinyin_stub.h"
+#include "game_focus_probe.h"
 
 struct CKeyEventSink;
 struct CThreadMgrEventSink;
 class CCompositionSink;
+class CTextEditSink;
+class CEditSessionGameTextProbe;
 class CSrfCandidateListUIElement;
 
 struct SrfFocusSnapshot {
@@ -84,11 +87,18 @@ class CSrfTip : public ITfTextInputProcessorEx,
   TfClientId m_tid = 0;
 
   DWORD m_dwThreadMgrSinkCookie = TF_INVALID_COOKIE;
+  DWORD m_dwKeyTraceSinkCookie = TF_INVALID_COOKIE;
   TfGuidAtom m_displayAttrAtom = TF_INVALID_GUIDATOM;
 
   CKeyEventSink* m_pKeySink = nullptr;
   CThreadMgrEventSink* m_pThreadMgrSink = nullptr;
   CCompositionSink* m_pCompSink = nullptr;
+  CTextEditSink* m_pTextEditSink = nullptr;
+  ITfSource* m_pTextEditSource = nullptr;
+  ITfContext* m_pTextEditContext = nullptr;
+  DWORD m_textEditCookie = TF_INVALID_COOKIE;
+  DWORD m_textLayoutCookie = TF_INVALID_COOKIE;
+  unsigned m_internalCompositionEndDepth = 0;
 
   ITfContext* m_pFocusContext = nullptr;
 
@@ -164,6 +174,19 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_doublePinyin = false;
   bool m_traditionalOutput = false;
   bool m_gameChatActive = false;
+  SrfGameChatPhase m_gameChatPhase = SrfGameChatPhase::Passive;
+  SrfGameTextSource m_gameChatSource = SrfGameTextSource::None;
+  std::uint64_t m_gameEditableIdentity = 0;
+  std::uint64_t m_gameChatEditableIdentity = 0;
+  std::uint64_t m_gameDismissedIdentity = 0;
+  RECT m_gameEditableBounds = {};
+  bool m_gameEditableVerified = false;
+  SrfGameFocusEvidence m_gameTsfEvidence = {};
+  ULONGLONG m_gameTsfProbeTick = 0;
+  bool m_gameTsfProbePending = false;
+  std::uint64_t m_gameTsfProbeSerial = 0;
+  ULONGLONG m_gameAwaitingUntil = 0;
+  HWND m_gameLastNativeFocus = nullptr;
   bool m_gameChatSavedImeOpen = true;
   HWND m_gameChatOwner = nullptr;
   DWORD m_gameChatOwnerProcessId = 0;
@@ -294,6 +317,9 @@ class CSrfTip : public ITfTextInputProcessorEx,
   friend struct CKeyEventSink;
   friend struct CThreadMgrEventSink;
   friend class CCompositionSink;
+  friend class CTextEditSink;
+  friend class CEditSessionGameTextProbe;
+  friend class CEditSessionFinishComposition;
   friend class CSrfCandidateListUIElement;
   friend class CEditSessionDeferredRefresh;
   friend class CEditSessionApplyAsyncCandidates;
@@ -301,6 +327,10 @@ class CSrfTip : public ITfTextInputProcessorEx,
 
  private:
   HRESULT _UnadviseSinks();
+  void BindTextContextSinks(ITfContext* context);
+  void UnbindTextContextSinks();
+  void ScheduleHostCompositionEnd(bool clearPreedit);
+  HRESULT FinishCompositionPreservingText(TfEditCookie ec);
   HRESULT RegisterPreservedKeys();
   void UnregisterPreservedKeys();
   void ClearCompositionBufferState();
@@ -438,6 +468,14 @@ class CSrfTip : public ITfTextInputProcessorEx,
   const wchar_t* EffectiveCompatibilityPolicyName() const;
   SrfOverlayBackend EffectiveCandidateOverlayBackend() const;
   bool ShouldUseExternalCandidateOverlay() const;
+  bool ShouldOverrideHostCandidateVisibility() const;
+  SrfGameEnterBehavior EffectiveGameEnterBehavior() const;
+  bool EffectiveGameAutoUia() const;
+  bool EffectiveGameStatusIndicator() const;
+  void ObserveGameChatOpen(UINT vk, LPARAM lParam);
+  void ScheduleGameTextProbe();
+  void RefreshGameInputHealth();
+  void ShowGameInputStatus(const wchar_t* text);
   SrfCommitTransport EffectiveCommitTransport() const;
   const wchar_t* EffectiveCommitTransportName() const;
   bool ShouldHideUiForCompatibility() const;

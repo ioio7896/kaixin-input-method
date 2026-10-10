@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：安全应急
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+食品安全	shi pin an quan	9358
+人身安全	ren shen an quan	9034
+灭火器	mie huo qi	7749
+安全检查	an quan jian cha	6556
+医疗救援	yi liao jiu yuan	6100
+安全出口	an quan chu kou	6100
+安全提醒	an quan ti xing	6100
+应急出口	ying ji chu kou	6100
+应急处置	ying ji chu zhi	6100
+应急演练	ying ji yan lian	6100
+应急照明	ying ji zhao ming	6100
+应急物资	ying ji wu zi	6100
+应急电话	ying ji dian hua	6100
+应急联系人	ying ji lian xi ren	6100
+应急预案	ying ji yu an	6100
+急救培训	ji jiu pei xun	6100
+急救电话	ji jiu dian hua	6100
+断电保护	duan dian bao hu	6100
+消防器材	xiao fang qi cai	6100
+消防设施	xiao fang she shi	6100
+漏水报警	lou shui bao jing	6100
+火灾报警	huo zai bao jing	6100
+烟雾报警	yan wu bao jing	6100
+燃气报警	ran qi bao jing	6100
+燃气泄漏	ran qi xie lou	6100
+现场救援	xian chang jiu yuan	6100
+生产安全	sheng chan an quan	6100
+电气火灾	dian qi huo zai	6100
+疏散指示	shu san zhi shi	6100
+疏散路线	shu san lu xian	6100
+疏散通道	shu san tong dao	6100
+紧急疏散	jin ji shu san	6100
+紧急联系人	jin ji lian xi ren	6100
+自动体外除颤	zi dong ti wai chu chan	6100
+财产安全	cai chan an quan	6100
+防坠落	fang zhui luo	6100
+防溺水	fang ni shui	6100
+防火防盗	fang huo fang dao	6100
+防触电	fang chu dian	6100
+防踩踏	fang cai ta	6100
+隐患排查	yin huan pai cha	6100
+隐患整改	yin huan zheng gai	6100
+风险识别	feng xian shi bie	6100
+风险预警	feng xian yu jing	6100
+心肺复苏	xin fei fu su	6000
+紧急避险	jin ji bi xian	6000
+交通安全	jiao tong an quan	4739
+安全隐患	an quan yin huan	3419
+消防栓	xiao fang shuan	3399

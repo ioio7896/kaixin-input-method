@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：物理化学
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+化学反应	hua xue fan ying	8843
+电磁场	dian ci chang	7951
+电容器	dian rong qi	7827
+激光器	ji guang qi	7750
+电化学	dian hua xue	7010
+核磁共振	he ci gong zhen	6726
+电导率	dian dao lv	6107
+仪器分析	yi qi fen xi	6100
+催化反应	cui hua fan ying	6100
+光学仪器	guang xue yi qi	6100
+光学成像	guang xue cheng xiang	6100
+光纤通信	guang xian tong xin	6100
+光谱分析	guang pu fen xi	6100
+分子轨道	fen zi gui dao	6100
+化学分析	hua xue fen xi	6100
+化学电池	hua xue dian chi	6100
+半导体器件	ban dao ti qi jian	6100
+反应动力学	fan ying dong li xue	6100
+反应机理	fan ying ji li	6100
+干涉衍射	gan she yan she	6100
+波动方程	bo dong fang cheng	6100
+波长频率	bo chang pin lv	6100
+溶解平衡	rong jie ping heng	6100
+电场强度	dian chang qiang du	6100
+电解反应	dian jie fan ying	6100
+磁感应强度	ci gan ying qiang du	6100
+能带结构	neng dai jie gou	6100
+色谱分析	se pu fen xi	6100
+质谱分析	zhi pu fen xi	6100
+酸碱平衡	suan jian ping heng	6100
+量子纠缠	liang zi jiu chan	6100
+量子计算	liang zi ji suan	6100
+高分子材料	gao fen zi cai liao	6100
+化学平衡	hua xue ping heng	6000
+晶体结构	jing ti jie gou	6000
+氧化还原	yang hua huan yuan	6000
+活化能	huo hua neng	6000
+电磁感应	dian ci gan ying	6000
+量子态	liang zi tai	6000
+热传导	re chuan dao	5186
+热辐射	re fu she	5186
+电阻率	dian zu lv	4693
+热膨胀	re peng zhang	3792
+热平衡	re ping heng	2409
+分子结构	fen zi jie gou	2264
+电感器	dian gan qi	1395
+热对流	re dui liu	1269
+电势差	dian shi cha	1066
+原电池	yuan dian chi	681
+热容量	re rong liang	584

@@ -85,7 +85,7 @@ pub mod options {
     pub const USER_HOTWORD_BOOST: &[&str] = &["conservative", "standard", "strong", "aggressive"];
     pub const GAME_INPUT_MODES: &[&str] = &["manual", "passthrough", "chinese", "auto_text"];
 }
-pub const CONFIG_VERSION: usize = 13;
+pub const CONFIG_VERSION: usize = 14;
 pub struct ConfigEntry { pub section: &'static str, pub key: &'static str, pub default: &'static str, pub kind: &'static str, pub options: &'static [&'static str] }
 pub const ENTRIES: &[ConfigEntry] = &[
 ConfigEntry { section: "diagnostics", key: "log_level", default: "error", kind: "string", options: &[] },
@@ -136,7 +136,7 @@ ConfigEntry { section: "input", key: "page_minus_equal", default: "1", kind: "bo
 ConfigEntry { section: "input", key: "page_comma_period", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "engine", key: "retry_on_failure", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "engine", key: "long_lookup_soft_budget_ms", default: "4", kind: "integer", options: &[] },
-ConfigEntry { section: "general", key: "config_version", default: "13", kind: "integer", options: &[] },
+ConfigEntry { section: "general", key: "config_version", default: "14", kind: "integer", options: &[] },
 ConfigEntry { section: "input", key: "default_ascii", default: "0", kind: "bool", options: &[] },
 ConfigEntry { section: "general", key: "global_ascii", default: "0", kind: "bool", options: &[] },
 ConfigEntry { section: "input", key: "default_full_shape", default: "0", kind: "bool", options: &[] },
@@ -226,4 +226,8 @@ ConfigEntry { section: "tools", key: "ocr_result_action", default: "show", kind:
 ConfigEntry { section: "tools", key: "ocr_translate_hotkey", default: "off", kind: "string", options: &[] },
 ConfigEntry { section: "tools", key: "translate_result_action", default: "show", kind: "string", options: &[] },
 ConfigEntry { section: "tools", key: "wintranslator_path", default: "", kind: "string", options: &[] },
+ConfigEntry { section: "tools", key: "translate_target_language", default: "auto-opposite", kind: "string", options: &[] },
+ConfigEntry { section: "compatibility", key: "game_enter_behavior", default: "auto", kind: "string", options: &["auto","close","stay"] },
+ConfigEntry { section: "compatibility", key: "game_auto_uia", default: "1", kind: "bool", options: &[] },
+ConfigEntry { section: "compatibility", key: "game_status_indicator", default: "1", kind: "bool", options: &[] },
 ];

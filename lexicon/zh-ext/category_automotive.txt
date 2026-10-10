@@ -1,0 +1,60 @@
+# 开心离线输入法分类补充：汽车驾驶
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+智能驾驶	zhi neng jia shi	8800
+充电站	chong dian zhan	6746
+交车手续	jiao che shou xu	6100
+交通罚款	jiao tong fa kuan	6100
+保养周期	bao yang zhou qi	6100
+停车优惠	ting che you hui	6100
+停车缴费	ting che jiao fei	6100
+充电功率	chong dian gong lv	6100
+充电接口	chong dian jie kou	6100
+充电枪	chong dian qiang	6100
+充电记录	chong dian ji lu	6100
+充电费用	chong dian fei yong	6100
+充电预约	chong dian yu yue	6100
+四轮定位	si lun ding wei	6100
+增程汽车	zeng cheng qi che	6100
+定速巡航	ding su xun hang	6100
+小米汽车	xiao mi qi che	6100
+快充慢充	kuai chong man chong	6100
+提车时间	ti che shi jian	6100
+插电混动	cha dian hun dong	6100
+故障灯	gu zhang deng	6100
+救援服务	jiu yuan fu wu	6100
+新能源汽车	xin neng yuan qi che	6100
+机油更换	ji you geng huan	6100
+电池保修	dian chi bao xiu	6100
+电池健康	dian chi jian kang	6100
+电池容量	dian chi rong liang	6100
+纯电汽车	chun dian qi che	6100
+胎压监测	tai ya jian ce	6100
+自动泊车	zi dong bo che	6100
+自适应巡航	zi shi ying xun hang	6100
+行车记录仪	xing che ji lu yi	6100
+试驾体验	shi jia ti yan	6100
+车机系统	che ji xi tong	6100
+车载导航	che zai dao hang	6100
+车辆上牌	che liang shang pai	6100
+车辆保养	che liang bao yang	6100
+车辆保险	che liang bao xian	6100
+车辆年检	che liang nian jian	6100
+车辆故障	che liang gu zhang	6100
+车辆续航	che liang xu hang	6100
+车辆过户	che liang guo hu	6100
+轮胎更换	lun tai geng huan	6100
+轮胎气压	lun tai qi ya	6100
+辅助驾驶	fu zhu jia shi	6100
+违章处理	wei zhang chu li	6100
+违章查询	wei zhang cha xun	6100
+道路救援	dao lu jiu yuan	6100
+预约试驾	yu yue shi jia	6100
+驾驶证换证	jia shi zheng huan zheng	6100
+驾驶证补办	jia shi zheng bu ban	6100
+充电桩	chong dian zhuang	5001
+刹车片	sha che pian	2065
+行驶证	xing shi zheng	1858
+雨刮器	yu gua qi	229

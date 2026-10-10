@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：仓储供应链
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+交货周期	jiao huo zhou qi	6100
+交货日期	jiao huo ri qi	6100
+仓储管理	cang chu guan li	6100
+仓库出入库	cang ku chu ru ku	6100
+仓库盘点	cang ku pan dian	6100
+仓库管理	cang ku guan li	6100
+供应商交付	gong ying shang jiao fu	6100
+供应商评估	gong ying shang ping gu	6100
+先进先出	xian jin xian chu	6100
+入库单	ru ku dan	6100
+入库登记	ru ku deng ji	6100
+入库验收	ru ku yan shou	6100
+冷链仓储	leng lian cang chu	6100
+出库单	chu ku dan	6100
+出库复核	chu ku fu he	6100
+出库登记	chu ku deng ji	6100
+到货计划	dao huo ji hua	6100
+到货验收	dao huo yan shou	6100
+包装作业	bao zhuang zuo ye	6100
+发货清单	fa huo qing dan	6100
+安全库存	an quan ku cun	6100
+库位管理	ku wei guan li	6100
+库存冻结	ku cun dong jie	6100
+库存周转	ku cun zhou zhuan	6100
+库存差异	ku cun cha yi	6100
+库存数量	ku cun shu liang	6100
+库存积压	ku cun ji ya	6100
+库存调拨	ku cun diao bo	6100
+库存预警	ku cun yu jing	6100
+打包作业	da bao zuo ye	6100
+批次管理	pi ci guan li	6100
+批次追溯	pi ci zhui su	6100
+拣货任务	jian huo ren wu	6100
+拣货单	jian huo dan	6100
+拣货复核	jian huo fu he	6100
+装卸作业	zhuang xie zuo ye	6100
+装箱清单	zhuang xiang qing dan	6100
+货位管理	huo wei guan li	6100
+货架管理	huo jia guan li	6100
+车辆调度	che liang diao du	6100
+运力调度	yun li diao du	6100
+运输时效	yun shu shi xiao	6100
+运输计划	yun shu ji hua	6100
+运输路线	yun shu lu xian	6100
+配载计划	pei zai ji hua	6100
+配送计划	pei song ji hua	6100
+采购周期	cai gou zhou qi	6100
+采购成本	cai gou cheng ben	6100
+采购验收	cai gou yan shou	6100

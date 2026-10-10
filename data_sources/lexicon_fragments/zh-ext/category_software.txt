@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：软件系统
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+数据备份	shu ju bei fen	8800
+数据恢复	shu ju hui fu	8800
+权限管理	quan xian guan li	8800
+文件格式	wen jian ge shi	7005
+下载地址	xia zai di zhi	6100
+九键输入	jiu jian shu ru	6100
+云端同步	yun duan tong bu	6100
+候选词	hou xuan ci	6100
+全拼输入	quan pin shu ru	6100
+剪贴板管理	jian tie ban guan li	6100
+双拼输入	shuang pin shu ru	6100
+后台运行	hou tai yun xing	6100
+字体安装	zi ti an zhuang	6100
+字符编码	zi fu bian ma	6100
+安全设置	an quan she zhi	6100
+应用无响应	ying yong wu xiang ying	6100
+应用闪退	ying yong shan tui	6100
+开机启动	kai ji qi dong	6100
+快捷键设置	kuai jie jian she zhi	6100
+手写输入	shou xie shu ru	6100
+拼音输入	pin yin shu ru	6100
+数据清理	shu ju qing li	6100
+文件导入	wen jian dao ru	6100
+文件导出	wen jian dao chu	6100
+文本编码	wen ben bian ma	6100
+更新日志	geng xin ri zhi	6100
+格式转换	ge shi zhuan huan	6100
+离线模式	li xian mo shi	6100
+程序崩溃	cheng xu beng kui	6100
+程序异常	cheng xu yi chang	6100
+简拼输入	jian pin shu ru	6100
+系统修复	xi tong xiu fu	6100
+系统备份	xi tong bei fen	6100
+系统恢复	xi tong hui fu	6100
+系统日志	xi tong ri zhi	6100
+系统更新	xi tong geng xin	6100
+系统设置	xi tong she zhi	6100
+缓存清理	huan cun qing li	6100
+词库管理	ci ku guan li	6100
+账号同步	zhang hao tong bu	6100
+软件卸载	ruan jian xie zai	6100
+软件安装	ruan jian an zhuang	6100
+软件更新	ruan jian geng xin	6100
+软件权限	ruan jian quan xian	6100
+软件版本	ruan jian ban ben	6100
+软件设置	ruan jian she zhi	6100
+输入法设置	shu ru fa she zhi	6100
+隐私模式	yin si mo shi	6100
+安装包	an zhuang bao	5479

@@ -11,6 +11,8 @@ LRESULT CALLBACK CSrfTip::DeferredTimerWndProc(HWND hwnd, UINT msg, WPARAM wPara
     return TRUE;
   }
   if (msg == WM_TIMER && wParam == kEngineInputHealthTimerId && self) {
+    self->RefreshGameInputHealth();
+    if (self->m_pKeySink) self->m_pKeySink->RefreshToggleLatches();
     if (!self->m_reading.empty()) self->EnsureEngineInputReady();
     return 0;
   }

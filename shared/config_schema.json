@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "rust_modules": {
     "section": {
       "STYLE": {
@@ -742,7 +742,7 @@
     {
       "section": "general",
       "key": "config_version",
-      "default": "13",
+      "default": "14",
       "type": "integer",
       "aliases": []
     },
@@ -1380,6 +1380,38 @@
       "type": "string",
       "aliases": [],
       "default": ""
+    },
+    {
+      "section": "tools",
+      "key": "translate_target_language",
+      "type": "string",
+      "aliases": [],
+      "default": "auto-opposite"
+    },
+    {
+      "section": "compatibility",
+      "key": "game_enter_behavior",
+      "default": "auto",
+      "type": "string",
+      "options": [
+        "auto",
+        "close",
+        "stay"
+      ]
+    },
+    {
+      "section": "compatibility",
+      "key": "game_auto_uia",
+      "default": "1",
+      "type": "bool",
+      "options": []
+    },
+    {
+      "section": "compatibility",
+      "key": "game_status_indicator",
+      "default": "1",
+      "type": "bool",
+      "options": []
     }
   ],
   "cpp_default_entries": {

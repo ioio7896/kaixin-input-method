@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：家电日用
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+吸尘器	xi chen qi	8722
+家用电器	jia yong dian qi	7161
+洗碗机	xi wan ji	7105
+烘干机	hong gan ji	6110
+一次性用品	yi ci xing yong pin	6100
+冰箱冷冻	bing xiang leng dong	6100
+冰箱冷藏	bing xiang leng cang	6100
+冰箱除霜	bing xiang chu shuang	6100
+净水滤芯	jing shui lv xin	6100
+垃圾分类	la ji fen lei	6100
+备用钥匙	bei yong yao shi	6100
+家居收纳	jia ju shou na	6100
+家电保修	jia dian bao xiu	6100
+家电安装	jia dian an zhuang	6100
+家电清洗	jia dian qing xi	6100
+家电维修	jia dian wei xiu	6100
+扫地机器人	sao di ji qi ren	6100
+扫拖机器人	sao tuo ji qi ren	6100
+智能家电	zhi neng jia dian	6100
+智能门锁	zhi neng men suo	6100
+油烟机清洗	you yan ji qing xi	6100
+洗地机	xi di ji	6100
+洗碗耗材	xi wan hao cai	6100
+洗衣凝珠	xi yi ning zhu	6100
+洗衣机清洗	xi yi ji qing xi	6100
+洗衣机脱水	xi yi ji tuo shui	6100
+洗衣程序	xi yi cheng xu	6100
+清洁工具	qing jie gong ju	6100
+滤芯更换	lv xin geng huan	6100
+烘干程序	hong gan cheng xu	6100
+热水器清洗	re shui qi qing xi	6100
+燃气热水器	ran qi re shui qi	6100
+电热水器	dian re shui qi	6100
+空气净化器	kong qi jing hua qi	6100
+空气加湿器	kong qi jia shi qi	6100
+空调内机	kong tiao nei ji	6100
+空调制冷	kong tiao zhi leng	6100
+空调制热	kong tiao zhi re	6100
+空调外机	kong tiao wai ji	6100
+空调清洗	kong tiao qing xi	6100
+空调滤网	kong tiao lv wang	6100
+空调遥控器	kong tiao yao kong qi	6100
+空调除湿	kong tiao chu shi	6100
+衣物柔顺剂	yi wu rou shun ji	6100
+门锁电池	men suo dian chi	6100
+除菌消毒	chu jun xiao du	6100
+燃气灶	ran qi zao	5017
+除湿机	chu shi ji	1215
+净水器	jing shui qi	1128
+油烟机	you yan ji	1029

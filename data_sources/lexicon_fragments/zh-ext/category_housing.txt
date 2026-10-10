@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：房产物业
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+不动产权证	bu dong chan quan zheng	6100
+二手房交易	er shou fang jiao yi	6100
+交房验收	jiao fang yan shou	6100
+产权年限	chan quan nian xian	6100
+公摊面积	gong tan mian ji	6100
+合租室友	he zu shi you	6100
+套内面积	tao nei mian ji	6100
+小区停车	xiao qu ting che	6100
+小区门禁	xiao qu men jin	6100
+屋顶漏水	wu ding lou shui	6100
+房屋中介	fang wu zhong jie	6100
+房屋交接	fang wu jiao jie	6100
+房屋产权	fang wu chan quan	6100
+房屋出售	fang wu chu shou	6100
+房屋出租	fang wu chu zu	6100
+房屋租赁	fang wu zu lin	6100
+房屋评估	fang wu ping gu	6100
+房屋过户	fang wu guo hu	6100
+房屋面积	fang wu mian ji	6100
+房源信息	fang yuan xin xi	6100
+房贷利率	fang dai li lv	6100
+房贷还款	fang dai huan kuan	6100
+提前还贷	ti qian huan dai	6100
+整租房源	zheng zu fang yuan	6100
+新房交付	xin fang jiao fu	6100
+月供金额	yue gong jin e	6100
+楼道照明	lou dao zhao ming	6100
+水电煤气	shui dian mei qi	6100
+水费账单	shui fei zhang dan	6100
+燃气缴费	ran qi jiao fei	6100
+物业报修	wu ye bao xiu	6100
+物业服务	wu ye fu wu	6100
+物业通知	wu ye tong zhi	6100
+电梯故障	dian ti gu zhang	6100
+电梯维修	dian ti wei xiu	6100
+电费账单	dian fei zhang dan	6100
+看房时间	kan fang shi jian	6100
+看房预约	kan fang yu yue	6100
+租房合同	zu fang he tong	6100
+租房押金	zu fang ya jin	6100
+租赁备案	zu lin bei an	6100
+租金上涨	zu jin shang zhang	6100
+租金支付	zu jin zhi fu	6100
+管道漏水	guan dao lou shui	6100
+购房合同	gou fang he tong	6100
+贷款余额	dai kuan yu e	6100
+贷款审批	dai kuan shen pi	6100
+车位租赁	che wei zu lin	6100
+车位管理	che wei guan li	6100
+物业费	wu ye fei	2043
+首付款	shou fu kuan	1942

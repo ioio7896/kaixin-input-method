@@ -1,0 +1,59 @@
+# 开心离线输入法分类补充：人工智能
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+上下文窗口	shang xia wen chuang kou	8800
+向量数据库	xiang liang shu ju ku	8800
+向量检索	xiang liang jian suo	8800
+图像生成	tu xiang sheng cheng	8800
+多模态模型	duo mo tai mo xing	8800
+大语言模型	da yu yan mo xing	8800
+开源模型	kai yuan mo xing	8800
+推理服务	tui li fu wu	8800
+提示词	ti shi ci	8800
+提示词优化	ti shi ci you hua	8800
+智能体	zhi neng ti	8800
+检索增强生成	jian suo zeng qiang sheng cheng	8800
+模型微调	mo xing wei diao	8800
+模型权重	mo xing quan zhong	8800
+模型蒸馏	mo xing zheng liu	8800
+模型训练	mo xing xun lian	8800
+模型部署	mo xing bu shu	8800
+生成式人工智能	sheng cheng shi ren gong zhi neng	8800
+知识库问答	zhi shi ku wen da	8800
+自然语言处理	zi ran yu yan chu li	8800
+视觉语言模型	shi jue yu yan mo xing	8800
+视频生成	shi pin sheng cheng	8800
+计算机视觉	ji suan ji shi jue	8800
+语音合成	yu yin he cheng	8800
+语音识别	yu yin shi bie	8800
+上下文压缩	shang xia wen ya suo	6100
+上下文长度	shang xia wen chang du	6100
+事实核查	shi shi he cha	6100
+函数调用	han shu diao yong	6100
+工作流	gong zuo liu	6100
+工具调用	gong ju diao yong	6100
+幻觉问题	huan jue wen ti	6100
+推理接口	tui li jie kou	6100
+推理模型	tui li mo xing	6100
+推理能力	tui li neng li	6100
+推理速度	tui li su du	6100
+文字识别	wen zi shi bie	6100
+文本嵌入	wen ben qian ru	6100
+文档分块	wen dang fen kuai	6100
+文档解析	wen dang jie xi	6100
+本地推理	ben di tui li	6100
+本地模型	ben di mo xing	6100
+模型参数	mo xing can shu	6100
+模型评估	mo xing ping gu	6100
+模型量化	mo xing liang hua	6100
+流式输出	liu shi shu chu	6100
+离线推理	li xian tui li	6100
+系统提示词	xi tong ti shi ci	6100
+结构化输出	jie gou hua shu chu	6100
+自动化流程	zi dong hua liu cheng	6100
+语义检索	yu yi jian suo	6100
+通义千问	tong yi qian wen	6100
+知识库	zhi shi ku	5674
+深度求索	shen du qiu suo	4000

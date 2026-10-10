@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：药品护理
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+处方药	chu fang yao	7555
+冰敷热敷	bing fu re fu	6100
+创口贴	chuang kou tie	6100
+医用口罩	yi yong kou zhao	6100
+医用手套	yi yong shou tao	6100
+医用纱布	yi yong sha bu	6100
+压力绷带	ya li beng dai	6100
+口服片剂	kou fu pian ji	6100
+复健护理	fu jian hu li	6100
+外用药膏	wai yong yao gao	6100
+康复训练	kang fu xun lian	6100
+弹力绷带	tan li beng dai	6100
+护理记录	hu li ji lu	6100
+日常护理	ri chang hu li	6100
+服药时间	fu yao shi jian	6100
+消毒棉片	xiao du mian pian	6100
+滴耳液	di er ye	6100
+漏服药物	lou fu yao wu	6100
+用药咨询	yong yao zi xun	6100
+用药记录	yong yao ji lu	6100
+电子处方	dian zi chu fang	6100
+碘伏消毒	dian fu xiao du	6100
+缓释片	huan shi pian	6100
+药品储存	yao pin chu cun	6100
+药品剂量	yao pin ji liang	6100
+药品名称	yao pin ming cheng	6100
+药品复购	yao pin fu gou	6100
+药品批号	yao pin pi hao	6100
+药品有效期	yao pin you xiao qi	6100
+药品规格	yao pin gui ge	6100
+药品说明书	yao pin shuo ming shu	6100
+药品配送	yao pin pei song	6100
+药房取药	yao fang qu yao	6100
+药物相互作用	yao wu xiang hu zuo yong	6100
+药物过敏	yao wu guo min	6100
+药盒分装	yao he fen zhuang	6100
+血氧仪	xue yang yi	6100
+血糖仪	xue tang yi	6100
+酒精棉片	jiu jing mian pian	6100
+非处方药	fei chu fang yao	6100
+鼻喷剂	bi pen ji	6100
+不良反应	bu liang fan ying	6000
+禁忌证	jin ji zheng	6000
+适应证	shi ying zheng	6000
+血压计	xue ya ji	2873
+体温计	ti wen ji	2434
+滴眼液	di yan ye	2136
+胶囊剂	jiao nang ji	1144
+颗粒剂	ke li ji	1014
+肠溶片	chang rong pian	658

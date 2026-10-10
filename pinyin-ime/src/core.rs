@@ -374,6 +374,7 @@ const FOUR_CHAR_ABBREV_CONTEXT_EXTRA_SCALE: f64 = 1.05;
 const ABBREV_STABILITY_EXTRA_BONUS: f64 = 7.0;
 const ABBREV_OVERLONG_BASE_PENALTY: f64 = 18.0;
 const ABBREV_OVERLONG_STEP_PENALTY: f64 = 7.0;
+const SHORT_ABBREV_FIVE_CHAR_EXPANSION_PENALTY: f64 = 28.0;
 
 fn common_missing_letter_phrase_bonus(compact_key: &str, corrected_key: &str, phrase: &str) -> f64 {
     match (compact_key, corrected_key, phrase) {

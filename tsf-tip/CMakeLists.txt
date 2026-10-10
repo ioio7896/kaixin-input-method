@@ -99,6 +99,7 @@ add_library(srf_tsf_tip SHARED
   src/dllmain.cpp
   src/factory.cpp
   src/guids.cpp
+  src/game_focus_probe.cpp
   src/candidate_overlay_client.cpp
   src/candidate_overlay_placement.cpp
   src/candidate_ui.cpp
@@ -111,6 +112,7 @@ add_library(srf_tsf_tip SHARED
   src/key_sink.cpp
   src/notification_window.cpp
   src/thread_mgr_sink.cpp
+  src/text_edit_sink.cpp
   src/register.cpp
 )
 

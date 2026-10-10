@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：门店经营
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+销售额	xiao shou e	9535
+会员权益	hui yuan quan yi	8800
+营业执照	ying ye zhi zhao	7616
+客流量	ke liu liang	6483
+营业时间	ying ye shi jian	6150
+优惠套餐	you hui tao can	6100
+会员回访	hui yuan hui fang	6100
+会员注册	hui yuan zhu ce	6100
+会员活动	hui yuan huo dong	6100
+会员管理	hui yuan guan li	6100
+供应商管理	gong ying shang guan li	6100
+供应链管理	gong ying lian guan li	6100
+员工排班	yuan gong pai ban	6100
+售后回访	shou hou hui fang	6100
+商品促销	shang pin cu xiao	6100
+商品定价	shang pin ding jia	6100
+商品盘点	shang pin pan dian	6100
+商品补货	shang pin bu huo	6100
+商品采购	shang pin cai gou	6100
+商品陈列	shang pin chen lie	6100
+团购套餐	tuan gou tao can	6100
+客单价	ke dan jia	6100
+客户回访	ke hu hui fang	6100
+客户维护	ke hu wei hu	6100
+库存周转	ku cun zhou zhuan	6100
+库存盘点	ku cun pan dian	6100
+库存管理	ku cun guan li	6100
+库存预警	ku cun yu jing	6100
+收款记录	shou kuan ji lu	6100
+收银小票	shou yin xiao piao	6100
+收银系统	shou yin xi tong	6100
+经营成本	jing ying cheng ben	6100
+经营范围	jing ying fan wei	6100
+营业收入	ying ye shou ru	6100
+进销存管理	jin xiao cun guan li	6100
+采购合同	cai gou he tong	6100
+采购订单	cai gou ding dan	6100
+销售报表	xiao shou bao biao	6100
+销售记录	xiao shou ji lu	6100
+门店地址	men dian di zhi	6100
+门店电话	men dian dian hua	6100
+门店管理	men dian guan li	6100
+门店营业	men dian ying ye	6100
+门店装修	men dian zhuang xiu	6100
+门店评价	men dian ping jia	6100
+门店运营	men dian yun ying	6100
+门店陈列	men dian chen lie	6100
+门店预约	men dian yu yue	6100
+收银台	shou yin tai	3456

@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：社保公积金
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+个人账户	ge ren zhang hu	6100
+住院报销	zhu yuan bao xiao	6100
+公积金余额	gong ji jin yu e	6100
+公积金提取	gong ji jin ti qu	6100
+公积金缴存	gong ji jin jiao cun	6100
+公积金账户	gong ji jin zhang hu	6100
+公积金贷款	gong ji jin dai kuan	6100
+公积金转移	gong ji jin zhuan yi	6100
+养老金领取	yang lao jin ling qu	6100
+劳动能力鉴定	lao dong neng li jian ding	6100
+医保报销	yi bao bao xiao	6100
+医保目录	yi bao mu lu	6100
+医保结算	yi bao jie suan	6100
+医保统筹	yi bao tong chou	6100
+医保缴费	yi bao jiao fei	6100
+医保账户	yi bao zhang hu	6100
+参保证明	can bao zheng ming	6100
+失业保险	shi ye bao xian	6100
+失业登记	shi ye deng ji	6100
+失业金申领	shi ye jin shen ling	6100
+工伤保险	gong shang bao xian	6100
+工伤认定	gong shang ren ding	6100
+异地备案	yi di bei an	6100
+异地就医	yi di jiu yi	6100
+异地结算	yi di jie suan	6100
+提取额度	ti qu e du	6100
+灵活就业	ling huo jiu ye	6100
+灵活就业人员	ling huo jiu ye ren yuan	6100
+生育保险	sheng yu bao xian	6100
+生育津贴	sheng yu jin tie	6100
+社保卡激活	she bao ka ji huo	6100
+社保卡补办	she bao ka bu ban	6100
+社保断缴	she bao duan jiao	6100
+社保查询	she bao cha xun	6100
+社保缴费	she bao jiao fei	6100
+社保补缴	she bao bu jiao	6100
+社保转移	she bao zhuan yi	6100
+租房提取	zu fang ti qu	6100
+缴存基数	jiao cun ji shu	6100
+缴存比例	jiao cun bi li	6100
+缴费基数	jiao fei ji shu	6100
+缴费年限	jiao fei nian xian	6100
+缴费记录	jiao fei ji lu	6100
+贷款额度	dai kuan e du	6100
+还贷提取	huan dai ti qu	6100
+退休手续	tui xiu shou xu	6100
+退休认证	tui xiu ren zheng	6100
+门诊报销	men zhen bao xiao	6100
+门诊统筹	men zhen tong chou	6100
+养老保险	yang lao bao xian	5816
+社保卡	she bao ka	2358

@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：数码连接
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+充电协议	chong dian xie yi	6100
+充电头	chong dian tou	6100
+充电线	chong dian xian	6100
+内存容量	nei cun rong liang	6100
+固件更新	gu jian geng xin	6100
+固态硬盘	gu tai ying pan	6100
+外接显示器	wai jie xian shi qi	6100
+存储清理	cun chu qing li	6100
+存储空间	cun chu kong jian	6100
+屏幕共享	ping mu gong xiang	6100
+屏幕分辨率	ping mu fen bian lv	6100
+屏幕刷新率	ping mu shua xin lv	6100
+屏幕录制	ping mu lu zhi	6100
+屏幕截图	ping mu jie tu	6100
+快速充电	kuai su chong dian	6100
+性能模式	xing neng mo shi	6100
+扩展坞	kuo zhan wu	6100
+无线投屏	wu xian tou ping	6100
+无线网卡	wu xian wang ka	6100
+无线键盘	wu xian jian pan	6100
+无线鼠标	wu xian shu biao	6100
+显示器亮度	xian shi qi liang du	6100
+显示设置	xian shi she zhi	6100
+有线投屏	you xian tou ping	6100
+机械硬盘	ji xie ying pan	6100
+热点共享	re dian gong xiang	6100
+电池健康	dian chi jian kang	6100
+电池循环	dian chi xun huan	6100
+电源管理	dian yuan guan li	6100
+电量显示	dian liang xian shi	6100
+硬盘容量	ying pan rong liang	6100
+磁盘分区	ci pan fen qu	6100
+网络共享	wang luo gong xiang	6100
+色彩校准	se cai jiao zhun	6100
+节能模式	jie neng mo shi	6100
+蓝牙耳机	lan ya er ji	6100
+蓝牙连接	lan ya lian jie	6100
+蓝牙配对	lan ya pei dui	6100
+蓝牙音箱	lan ya yin xiang	6100
+蓝牙鼠标	lan ya shu biao	6100
+设备温度	she bei wen du	6100
+设备配对	she bei pei dui	6100
+路由器设置	lu you qi she zhi	6100
+风扇转速	feng shan zhuan su	6100
+驱动安装	qu dong an zhuang	6100
+驱动更新	qu dong geng xin	6100
+数据线	shu ju xian	5735
+无线网络	wu xian wang luo	4939
+网络连接	wang luo lian jie	3963
+转接头	zhuan jie tou	1018

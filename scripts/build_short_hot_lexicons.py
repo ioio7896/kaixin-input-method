@@ -26,9 +26,9 @@ TARGETS = (
     ),
     (
         ZH / "life_hot_3char_curated.txt",
-        (ROOT / "data_sources" / "lexicon_fragments" / "zh-ext" / "chat_common_phrases.txt",),
+        (ZH / "life_common_3char.txt",),
         400,
-        24,
+        400,
         3,
         8_400,
         9_000,

@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：网络安全
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+网络安全	wang luo an quan	9681
+信息安全	xin xi an quan	9097
+入侵检测	ru qin jian ce	8800
+安全审计	an quan shen ji	8800
+数据加密	shu ju jia mi	8800
+数据备份	shu ju bei fen	8800
+漏洞修复	lou dong xiu fu	8800
+访问控制	fang wen kong zhi	8800
+身份认证	shen fen ren zheng	8800
+恶意软件	e yi ruan jian	6461
+个人信息保护	ge ren xin xi bao hu	6100
+入侵防御	ru qin fang yu	6100
+动态口令	dong tai kou ling	6100
+勒索软件	le suo ruan jian	6100
+双因素认证	shuang yin su ren zheng	6100
+反诈提醒	fan zha ti xing	6100
+备份恢复	bei fen hui fu	6100
+多因素认证	duo yin su ren zheng	6100
+安全告警	an quan gao jing	6100
+安全密钥	an quan mi yao	6100
+安全日志	an quan ri zhi	6100
+安全更新	an quan geng xin	6100
+安全补丁	an quan bu ding	6100
+密码强度	mi ma qiang du	6100
+密码泄露	mi ma xie lou	6100
+密码管理	mi ma guan li	6100
+密码重置	mi ma zhong zhi	6100
+异地登录	yi di deng lu	6100
+数字证书	shu zi zheng shu	6100
+数据脱敏	shu ju tuo min	6100
+最小权限	zui xiao quan xian	6100
+木马病毒	mu ma bing du	6100
+权限分配	quan xian fen pei	6100
+漏洞扫描	lou dong sao miao	6100
+登录提醒	deng lu ti xing	6100
+端口扫描	duan kou sao miao	6100
+端口转发	duan kou zhuan fa	6100
+网络访问	wang luo fang wen	6100
+网络诈骗	wang luo zha pian	6100
+网络隔离	wang luo ge li	6100
+证书续签	zheng shu xu qian	6100
+证书过期	zheng shu guo qi	6100
+证书验证	zheng shu yan zheng	6100
+账号密码	zhang hao mi ma	6100
+账号盗用	zhang hao dao yong	6100
+身份验证	shen fen yan zheng	6100
+钓鱼邮件	diao yu you jian	6100
+防火墙规则	fang huo qiang gui ze	6100
+隐私保护	yin si bao hu	6100
+风险登录	feng xian deng lu	6100
+数据安全	shu ju an quan	2006

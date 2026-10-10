@@ -1,0 +1,61 @@
+# 开心离线输入法分类补充：烹饪食材
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+橄榄油	gan lan you	8684
+番茄酱	fan qie jiang	7949
+食用油	shi yong you	7906
+调味料	tiao wei liao	7658
+电饭煲	dian fan bao	6719
+剩菜保存	sheng cai bao cun	6100
+厨房秤	chu fang cheng	6100
+口感酥脆	kou gan su cui	6100
+外酥里嫩	wai su li nen	6100
+大火收汁	da huo shou zhi	6100
+小火慢炖	xiao huo man dun	6100
+少盐少油	shao yan shao you	6100
+放凉备用	fang liang bei yong	6100
+水淀粉	shui dian fen	6100
+沥干水分	li gan shui fen	6100
+油温控制	you wen kong zhi	6100
+淀粉勾芡	dian fen gou qian	6100
+火候控制	huo hou kong zhi	6100
+烤箱预热	kao xiang yu re	6100
+焯水去腥	chao shui qu xing	6100
+生熟分开	sheng shu fen kai	6100
+空气炸锅	kong qi zha guo	6100
+翻炒均匀	fan chao jun yun	6100
+蒜蓉酱	suan rong jiang	6100
+蒸汽烹饪	zheng qi peng ren	6100
+蒸烤箱	zheng kao xiang	6100
+量勺	liang shao	6100
+铸铁锅	zhu tie guo	6100
+面粉发酵	mian fen fa jiao	6100
+食材保存	shi cai bao cun	6100
+食材切配	shi cai qie pei	6100
+食材处理	shi cai chu li	6100
+食材清洗	shi cai qing xi	6100
+食材腌制	shi cai yan zhi	6100
+食材解冻	shi cai jie dong	6100
+食材采购	shi cai cai gou	6100
+花生油	hua sheng you	5668
+平底锅	ping di guo	4978
+辣椒粉	la jiao fen	4893
+老抽	lao chou	4624
+量杯	liang bei	4603
+生抽	sheng chou	4583
+高压锅	gao ya guo	4583
+料酒	liao jiu	4278
+小苏打	xiao su da	3958
+芝麻油	zhi ma you	3439
+黑胡椒	hei hu jiao	2817
+豆瓣酱	dou ban jiang	2305
+沙拉酱	sha la jiang	1651
+蚝油	hao you	1630
+不粘锅	bu nian guo	1133
+酵母粉	jiao mu fen	808
+玉米油	yu mi you	780
+五香粉	wu xiang fen	605
+泡打粉	pao da fen	241
+白胡椒	bai hu jiao	91

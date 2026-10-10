@@ -94,17 +94,16 @@ STDMETHODIMP CSrfCandidateListUIElement::GetGUID(GUID* pguid) {
 }
 
 STDMETHODIMP CSrfCandidateListUIElement::Show(BOOL bShow) {
-  m_showWindow =
-      (m_tip && (m_tip->m_uiLessMode || m_tip->ShouldUseExternalCandidateOverlay()))
-          ? TRUE
-          : bShow;
+  m_hostRequestedShow = bShow;
+  m_showWindow = SrfCandidateHostMayShow(bShow != FALSE,
+      m_tip && m_tip->ShouldOverrideHostCandidateVisibility()) ? TRUE : FALSE;
   RefreshWindow();
   return S_OK;
 }
 
 STDMETHODIMP CSrfCandidateListUIElement::IsShown(BOOL* pbShow) {
   if (!pbShow) return E_POINTER;
-  *pbShow = m_showWindow;
+  *pbShow = m_showWindow && (m_window.IsVisible() || m_externalOverlayVisible);
   return S_OK;
 }
 
@@ -412,7 +411,8 @@ HRESULT CSrfCandidateListUIElement::BeginOrUpdate() {
       m_tip->m_pThreadMgr->QueryInterface(IID_ITfUIElementMgr, reinterpret_cast<void**>(&manager));
   if (FAILED(hr) || !manager) {
     const HRESULT failHr = FAILED(hr) ? hr : E_FAIL;
-    if (m_tip->ShouldUseExternalCandidateOverlay()) {
+    if (m_tip->ShouldUseExternalCandidateOverlay() &&
+        (!m_tip->m_uiLessMode || m_tip->ShouldOverrideHostCandidateVisibility())) {
       RefreshWindow();
       return S_OK;
     }
@@ -427,10 +427,16 @@ HRESULT CSrfCandidateListUIElement::BeginOrUpdate() {
   if (m_uiElementId == TF_INVALID_UIELEMENTID) {
     BOOL show = TRUE;
     hr = manager->BeginUIElement(this, &show, &m_uiElementId);
-    m_showWindow =
-        (m_tip->m_uiLessMode || show || m_tip->ShouldUseExternalCandidateOverlay())
-            ? TRUE
-            : FALSE;
+    m_hostRequestedShow = show;
+    m_showWindow = SrfCandidateHostMayShow(show != FALSE,
+        m_tip->ShouldOverrideHostCandidateVisibility()) ? TRUE : FALSE;
+    if (SUCCEEDED(hr) && !show) {
+      // A host taking over drawing starts reading after BeginUIElement.
+      m_updatedFlags = TF_CLUIE_DOCUMENTMGR | TF_CLUIE_COUNT | TF_CLUIE_SELECTION |
+          TF_CLUIE_STRING | TF_CLUIE_PAGEINDEX | TF_CLUIE_CURRENTPAGE;
+      hr = manager->UpdateUIElement(m_uiElementId);
+      SrfTsfDiagnosticLog(L"game-candidate.host", L"renderer=host reason=host_requested_hide");
+    }
     std::wstring line = L"begin show=";
     line += show ? L"1" : L"0";
     line += L", uiElementId=";
@@ -549,6 +555,7 @@ void CSrfCandidateListUIElement::End() {
 
   m_uiElementId = TF_INVALID_UIELEMENTID;
   m_showWindow = TRUE;
+  m_hostRequestedShow = TRUE;
 }
 
 void CSrfCandidateListUIElement::HideExternalOverlay() {
@@ -562,6 +569,8 @@ void CSrfCandidateListUIElement::HideExternalOverlay() {
 }
 
 void CSrfCandidateListUIElement::RefreshWindow() {
+  if (m_tip) m_showWindow = SrfCandidateHostMayShow(m_hostRequestedShow != FALSE,
+      m_tip->ShouldOverrideHostCandidateVisibility()) ? TRUE : FALSE;
   if (!m_tip || m_tip->ShouldHideUiForCompatibility() || !m_showWindow ||
       !m_tip->m_hasLastCandidateRect || !m_tip->m_status.composing ||
       m_tip->m_context.candidates.Empty()) {
@@ -570,9 +579,9 @@ void CSrfCandidateListUIElement::RefreshWindow() {
         m_tip->EffectiveCompatibilityPolicy() == SrfFullscreenPolicy::ShowUi;
     if (fullscreenShowUi && m_tip->m_status.composing &&
         !m_tip->m_context.candidates.Empty() &&
-        (!m_showWindow || !m_tip->m_hasLastCandidateRect)) {
+        m_showWindow && !m_tip->m_hasLastCandidateRect) {
       m_tip->RecordCompatibilityUiFallback(
-          !m_showWindow ? L"CandidateUIHostHidden" : L"CandidateAnchorMissing", E_FAIL);
+          L"CandidateAnchorMissing", E_FAIL);
     }
     std::wstring line = L"tip=";
     line += m_tip ? L"1" : L"0";
@@ -619,6 +628,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   }
 
   const auto& displayItems = m_tip->BuildCandidateDisplayItems();
+  m_tip->m_notificationWindow.Hide();
   const RECT& anchor = m_tip->m_lastCandidateRect;
   const SrfUIStyle st = m_tip->EffectiveCandidateUiStyle();
   const bool gameOverlay = m_tip->CandidateGameOverlayActive();

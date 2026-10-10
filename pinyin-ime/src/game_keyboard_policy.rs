@@ -37,7 +37,7 @@ fn enabled(value: Option<&String>, default: bool) -> bool {
     }
 }
 
-pub fn suppress_tool_hotkeys(config: &str, process: &str, class: &str) -> bool {
+pub fn suppress_tool_hotkeys(config: &str, process: &str, _class: &str) -> bool {
     let mut sections: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
     let mut section = String::new();
     for line in config.lines().map(str::trim) {
@@ -58,10 +58,7 @@ pub fn suppress_tool_hotkeys(config: &str, process: &str, class: &str) -> bool {
     let builtin_game = builtin
         && (BUILTIN_GAME_PROCESSES
             .iter()
-            .any(|p| wildcard_match(p, process))
-            || BUILTIN_GAME_CLASSES
-                .iter()
-                .any(|c| c.eq_ignore_ascii_case(class)));
+            .any(|p| wildcard_match(p, process)));
     let configured_game = compatibility
         .and_then(|s| s.get("game_processes"))
         .is_some_and(|list| {
@@ -91,7 +88,9 @@ pub fn suppress_tool_hotkeys(config: &str, process: &str, class: &str) -> bool {
     builtin_game || configured_game || profile_game || ascii
 }
 
-use kaixin_common::game_rules::{BUILTIN_GAME_CLASSES, BUILTIN_GAME_PROCESSES};
+#[cfg(test)]
+use kaixin_common::game_rules::BUILTIN_GAME_CLASSES;
+use kaixin_common::game_rules::BUILTIN_GAME_PROCESSES;
 
 #[cfg(test)]
 mod tests {
@@ -99,7 +98,7 @@ mod tests {
     #[test]
     fn releases_games_without_an_active_tsf_host() {
         assert!(suppress_tool_hotkeys("", "CS2.EXE", ""));
-        assert!(suppress_tool_hotkeys("", "custom.exe", "UnityWndClass"));
+        assert!(!suppress_tool_hotkeys("", "custom.exe", "UnityWndClass"));
         assert!(!suppress_tool_hotkeys("", "notepad.exe", ""));
         assert!(!suppress_tool_hotkeys(
             "[compatibility]\nbuiltin_game_list=0",

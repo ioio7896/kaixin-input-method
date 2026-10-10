@@ -1035,6 +1035,11 @@ SrfGameInputMode ParseGameInputMode(const std::wstring& value) {
 }
 
 void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
+  const auto enter = ToLower(Trim(ReadIniString(path, L"compatibility", L"game_enter_behavior", L"auto")));
+  config.compatibility.gameEnterBehavior = enter == L"stay" ? SrfGameEnterBehavior::Stay :
+      enter == L"close" ? SrfGameEnterBehavior::Close : SrfGameEnterBehavior::Auto;
+  config.compatibility.gameAutoUia = ParseBool(ReadIniString(path, L"compatibility", L"game_auto_uia", L"1"), true);
+  config.compatibility.gameStatusIndicator = ParseBool(ReadIniString(path, L"compatibility", L"game_status_indicator", L"1"), true);
   config.compatibility.gameInputMode = ParseGameInputMode(
       ReadIniString(path, L"compatibility", L"game_input_mode", L"manual"));
   config.compatibility.fullscreenDetection =
@@ -1126,6 +1131,27 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
       }
 
       const auto gameInputMode = ReadIniString(path, section.c_str(), L"game_input_mode");
+      const auto enter = ToLower(Trim(ReadIniString(path, section.c_str(), L"game_enter_behavior")));
+      if (enter == L"auto" || enter == L"close" || enter == L"stay") {
+        options.hasGameEnterBehavior = true;
+        options.gameEnterBehavior = enter == L"stay" ? SrfGameEnterBehavior::Stay :
+            enter == L"close" ? SrfGameEnterBehavior::Close : SrfGameEnterBehavior::Auto;
+      }
+      const auto uia = ToLower(Trim(ReadIniString(path, section.c_str(), L"game_auto_uia")));
+      if (!uia.empty() && uia != L"inherit") {
+        options.hasGameAutoUia = true;
+        options.gameAutoUia = ParseBool(uia, true);
+      }
+      const auto indicator = ToLower(Trim(ReadIniString(path, section.c_str(), L"game_status_indicator")));
+      if (!indicator.empty() && indicator != L"inherit") {
+        options.hasGameStatusIndicator = true;
+        options.gameStatusIndicator = ParseBool(indicator, true);
+      }
+      (void)TryParseHotkey(ReadIniString(path, section.c_str(), L"game_chat_open_key", L"off"),
+                           'T', 0, &options.gameChatOpenKey);
+      (void)TryParseHotkey(ReadIniString(path, section.c_str(), L"game_chat_close_key", L"Escape"),
+                           VK_ESCAPE, 0, &options.gameChatCloseKey);
+      options.overlayForceUi = ParseBool(ReadIniString(path, section.c_str(), L"overlay_force_ui", L"0"), false);
       if (!Trim(gameInputMode).empty() && ToLower(Trim(gameInputMode)) != L"inherit") {
         options.hasGameInputMode = true;
         options.gameInputMode = ParseGameInputMode(gameInputMode);

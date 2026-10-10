@@ -7,6 +7,16 @@
 extern bool SrfTsfDebugTraceEnabled();
 extern void SrfTsfDebugLog(const wchar_t* msg);
 
+namespace {
+bool ContextBelongsToDocument(ITfContext* context, ITfDocumentMgr* document) {
+  if (!context || !document) return false;
+  ITfDocumentMgr* owner = nullptr;
+  const bool matches = SUCCEEDED(context->GetDocumentMgr(&owner)) && owner == document;
+  if (owner) owner->Release();
+  return matches;
+}
+}
+
 CThreadMgrEventSink::CThreadMgrEventSink(CSrfTip* tip) : m_pTip(tip) {}
 
 STDMETHODIMP CThreadMgrEventSink::QueryInterface(REFIID riid, void** ppv) {
@@ -30,7 +40,15 @@ STDMETHODIMP_(ULONG) CThreadMgrEventSink::Release() {
 
 STDMETHODIMP CThreadMgrEventSink::OnInitDocumentMgr(ITfDocumentMgr* /*pdim*/) { return S_OK; }
 
-STDMETHODIMP CThreadMgrEventSink::OnUninitDocumentMgr(ITfDocumentMgr* /*pdim*/) { return S_OK; }
+STDMETHODIMP CThreadMgrEventSink::OnUninitDocumentMgr(ITfDocumentMgr* pdim) {
+  if (!m_pTip || !pdim) return S_OK;
+  const bool focused = ContextBelongsToDocument(m_pTip->m_pFocusContext, pdim);
+  if (ContextBelongsToDocument(m_pTip->m_pCompositionContext, pdim)) {
+    m_pTip->ScheduleHostCompositionEnd(false);
+  }
+  if (focused) m_pTip->SetFocusContext(nullptr);
+  return S_OK;
+}
 
 STDMETHODIMP CThreadMgrEventSink::OnSetFocus(ITfDocumentMgr* pdimFocus, ITfDocumentMgr* pdimPrevFocus) {
   const ULONGLONG start = GetTickCount64();
@@ -39,13 +57,7 @@ STDMETHODIMP CThreadMgrEventSink::OnSetFocus(ITfDocumentMgr* pdimFocus, ITfDocum
         pdimFocus != pdimPrevFocus && (pdimFocus != nullptr || pdimPrevFocus != nullptr);
     const bool deferredNullFocusClear =
         !pdimFocus && focusChanged && m_pTip->ScheduleDeferredFocusContextClear();
-    // 当文档管理器切换时取消未完成的组合。
-    // 放宽条件：pdimPrevFocus 可能为 nullptr（部分宿主如 WebView2、Java 应用），
-    // 此时只要焦点确实变了（pdimFocus != pdimPrevFocus）就应取消组合，
-    // 但 pdimFocus == nullptr 且 pdimPrevFocus == nullptr 的情况排除（无意义的空切换）。
-    if (!deferredNullFocusClear && m_pTip->m_pComposition && focusChanged) {
-      m_pTip->RequestCancelCompositionOnFocusLoss();
-    }
+    // SetFocusContext owns composition cleanup after the transient-null grace.
     if (deferredNullFocusClear) {
       // Some hosts briefly report a null TSF focus while the same text field is still active.
       // Keep the current context alive for one short grace window; a real loss is handled by
@@ -57,6 +69,8 @@ STDMETHODIMP CThreadMgrEventSink::OnSetFocus(ITfDocumentMgr* pdimFocus, ITfDocum
         m_pTip->SetFocusContext(pTop);
         pTop->Release();
         m_pTip->ApplyAppOptionsForFocusedContext(pdimPrevFocus && pdimFocus != pdimPrevFocus);
+      } else {
+        m_pTip->SetFocusContext(nullptr);
       }
     } else {
       m_pTip->CancelDeferredFocusContextClear();
@@ -76,10 +90,33 @@ STDMETHODIMP CThreadMgrEventSink::OnSetFocus(ITfDocumentMgr* pdimFocus, ITfDocum
 
 STDMETHODIMP CThreadMgrEventSink::OnPushContext(ITfContext* pic) {
   if (m_pTip && pic) {
-    m_pTip->SetFocusContext(pic);
-    m_pTip->ApplyAppOptionsForFocusedContext(false);
+    ITfDocumentMgr* focused = nullptr;
+    if (m_pTip->m_pThreadMgr && SUCCEEDED(m_pTip->m_pThreadMgr->GetFocus(&focused)) && focused) {
+      if (ContextBelongsToDocument(pic, focused)) {
+        m_pTip->SetFocusContext(pic);
+        m_pTip->ApplyAppOptionsForFocusedContext(false);
+      }
+    }
+    if (focused) focused->Release();
   }
   return S_OK;
 }
 
-STDMETHODIMP CThreadMgrEventSink::OnPopContext(ITfContext* /*pic*/) { return S_OK; }
+STDMETHODIMP CThreadMgrEventSink::OnPopContext(ITfContext* pic) {
+  if (!m_pTip || !pic) return S_OK;
+  const bool focused = m_pTip->m_pFocusContext == pic;
+  if (m_pTip->m_pCompositionContext == pic) m_pTip->ScheduleHostCompositionEnd(false);
+  if (!focused) return S_OK;
+  m_pTip->SetFocusContext(nullptr);
+  ITfDocumentMgr* document = nullptr;
+  if (m_pTip->m_pThreadMgr && SUCCEEDED(m_pTip->m_pThreadMgr->GetFocus(&document)) && document) {
+    ITfContext* top = nullptr;
+    if (SUCCEEDED(document->GetTop(&top)) && top && top != pic) {
+      m_pTip->SetFocusContext(top);
+      m_pTip->ApplyAppOptionsForFocusedContext(false);
+    }
+    if (top) top->Release();
+  }
+  if (document) document->Release();
+  return S_OK;
+}

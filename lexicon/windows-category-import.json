@@ -1,0 +1,727 @@
+{
+  "category_count": 78,
+  "source_category_rows": 39047,
+  "source_unique_readings": 38938,
+  "windows_added_readings": 38491,
+  "windows_added_words": 38491,
+  "added_by_length": {
+    "2": 6,
+    "3": 4386,
+    "4": 29234,
+    "5": 1371,
+    "6": 709,
+    "7": 648,
+    "8": 448,
+    "9": 604,
+    "10": 570,
+    "11": 269,
+    "12": 240,
+    "13": 6
+  },
+  "android_manifest_sha256": "1d7f9943cee8fb8de8f40099ab9fc3c4c0868f35b7a52710cc6b01f7c767e176",
+  "all_categories_enabled_by_default": true,
+  "files": [
+    {
+      "tag": "category_shopping",
+      "file": "category_shopping.txt",
+      "title": "电商购物",
+      "group": "日常表达",
+      "rows": 68,
+      "default_enabled": true,
+      "sha256": "a2b392209a17a895ce28e653acb2ee556933d8c1bc5cd615ff9b371fc4003e63"
+    },
+    {
+      "tag": "category_delivery",
+      "file": "category_delivery.txt",
+      "title": "快递物流",
+      "group": "日常表达",
+      "rows": 337,
+      "default_enabled": true,
+      "sha256": "140339d01c85ebab5bcc9556ec2c3e0e8e82b49d8627f7a57ffd3eda9a5d69a7"
+    },
+    {
+      "tag": "category_aftersales",
+      "file": "category_aftersales.txt",
+      "title": "退换售后",
+      "group": "日常表达",
+      "rows": 270,
+      "default_enabled": true,
+      "sha256": "c124324b7c8f483a726a888d9effacbd38617691fa82854c8b62f340f49dd2e7"
+    },
+    {
+      "tag": "category_payment",
+      "file": "category_payment.txt",
+      "title": "支付票据",
+      "group": "日常表达",
+      "rows": 60,
+      "default_enabled": true,
+      "sha256": "91a10b9cef237d6ad72d8160b13cccee2af13964deb03eb02098eb4185597546"
+    },
+    {
+      "tag": "category_office",
+      "file": "category_office.txt",
+      "title": "办公协作",
+      "group": "日常表达",
+      "rows": 1008,
+      "default_enabled": true,
+      "sha256": "1a3c30feb16ad61359fd0bd90a84b72285957f60aac47b0fe6373265ab9066f7"
+    },
+    {
+      "tag": "category_project",
+      "file": "category_project.txt",
+      "title": "项目产品",
+      "group": "日常表达",
+      "rows": 566,
+      "default_enabled": true,
+      "sha256": "7ea127e422ae89a83c532923ec6e86bc8339e07e04d15f9893180295a5f4f5e8"
+    },
+    {
+      "tag": "category_human_resources",
+      "file": "category_human_resources.txt",
+      "title": "人事考勤",
+      "group": "日常表达",
+      "rows": 57,
+      "default_enabled": true,
+      "sha256": "86f6a3b58b185c7bf7c41bc15426464aaba01e4110a87f104dbc166f262ca532"
+    },
+    {
+      "tag": "category_government",
+      "file": "category_government.txt",
+      "title": "政务办事",
+      "group": "日常表达",
+      "rows": 286,
+      "default_enabled": true,
+      "sha256": "75bf8134767499fa30d4b5cdd2a99db19e256a3cffcf670e877e8de55da29ec2"
+    },
+    {
+      "tag": "category_social_insurance",
+      "file": "category_social_insurance.txt",
+      "title": "社保公积金",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "b3c9d85e2c3dcd036a4dacbff3716d82093ca63ba75ae6091f14743a50e307a9"
+    },
+    {
+      "tag": "category_law",
+      "file": "category_law.txt",
+      "title": "法律合同",
+      "group": "专业领域",
+      "rows": 56,
+      "default_enabled": true,
+      "sha256": "48fb2f33d279355be7b2146d573d4ef6d93fabef4738669b8616f550746f1efb"
+    },
+    {
+      "tag": "category_finance",
+      "file": "category_finance.txt",
+      "title": "金融投资",
+      "group": "专业领域",
+      "rows": 57,
+      "default_enabled": true,
+      "sha256": "38dbad8e4ced5a60b176de176c4ad4e4e2f17f4fa6691fdbe147433bd6a92d23"
+    },
+    {
+      "tag": "category_accounting",
+      "file": "category_accounting.txt",
+      "title": "财务会计",
+      "group": "专业领域",
+      "rows": 55,
+      "default_enabled": true,
+      "sha256": "ee015a286de9f925116743da9950fac823bc33dd32f49cb9256b61fec6e8b341"
+    },
+    {
+      "tag": "category_insurance",
+      "file": "category_insurance.txt",
+      "title": "保险理赔",
+      "group": "专业领域",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "fffac13de91df2d2a6c3277a344c7d260012a2e8c9d7774c744e1efecb4107e0"
+    },
+    {
+      "tag": "category_travel",
+      "file": "category_travel.txt",
+      "title": "旅游订票",
+      "group": "日常表达",
+      "rows": 52,
+      "default_enabled": true,
+      "sha256": "c1aa31810021523fed5d7aeb17daa29f31915a24e9f7f1b24b9f5b6acc62a4bf"
+    },
+    {
+      "tag": "category_transit",
+      "file": "category_transit.txt",
+      "title": "公共交通",
+      "group": "日常表达",
+      "rows": 54,
+      "default_enabled": true,
+      "sha256": "dcb5c52b14f288bbd44e79555b11cdf5f06979568fcee8889b85c6c5e22b3841"
+    },
+    {
+      "tag": "category_automotive",
+      "file": "category_automotive.txt",
+      "title": "汽车驾驶",
+      "group": "日常表达",
+      "rows": 55,
+      "default_enabled": true,
+      "sha256": "f66d78ba2aad35da2a6c05e5938aa27df43e73a69232084d6cf9b93e3dcc8a04"
+    },
+    {
+      "tag": "category_hotel",
+      "file": "category_hotel.txt",
+      "title": "住宿酒店",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "01f67a1bcc8d9fab472865c9dc365d927d9d59acc271857c88b4e01a673bc225"
+    },
+    {
+      "tag": "category_dining",
+      "file": "category_dining.txt",
+      "title": "餐饮外卖",
+      "group": "日常表达",
+      "rows": 52,
+      "default_enabled": true,
+      "sha256": "e0dba214c7082a4b54e60e00472be3ae117787dc00fe632ecd1528eaa5ef9bd8"
+    },
+    {
+      "tag": "category_cooking",
+      "file": "category_cooking.txt",
+      "title": "烹饪食材",
+      "group": "日常表达",
+      "rows": 56,
+      "default_enabled": true,
+      "sha256": "afd78947645ba775666ac7b59d197d2992dcb28ac8c70d3a4f0f90cd6bbc3b0c"
+    },
+    {
+      "tag": "category_groceries",
+      "file": "category_groceries.txt",
+      "title": "商超生鲜",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "d27266a8ea73f390f540bcf7a3fa649319d3e8dcf086d368a508d94712552005"
+    },
+    {
+      "tag": "category_appliances",
+      "file": "category_appliances.txt",
+      "title": "家电日用",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "6bf444264e0db58d41d191e875fd482a14ede16f5f51ad577670b47a6d95d01b"
+    },
+    {
+      "tag": "category_housing",
+      "file": "category_housing.txt",
+      "title": "房产物业",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "8155f82743d5a0f43b954269d22e4b01129fd089c2795ade242da8f881e25f65"
+    },
+    {
+      "tag": "category_renovation",
+      "file": "category_renovation.txt",
+      "title": "装修家居",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "2573688a87b28134758c16223a1c7d9cda28c871f07dae9573e2d28baa296223"
+    },
+    {
+      "tag": "category_parenting",
+      "file": "category_parenting.txt",
+      "title": "家庭育儿",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "29ed45a7bf4df443e6d80ffeec68424c303cb676cf86266161e8552a56f78f2c"
+    },
+    {
+      "tag": "category_education",
+      "file": "category_education.txt",
+      "title": "学校教育",
+      "group": "日常表达",
+      "rows": 218,
+      "default_enabled": true,
+      "sha256": "154b9fce2db6ce74a686407c48426e8eae8ad41b05ff3b9234a60db16676f08c"
+    },
+    {
+      "tag": "category_exams",
+      "file": "category_exams.txt",
+      "title": "考试升学",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "4113d5ab61f143ac04bda72d5c5ce692a229a047dacfa2c8c342a24a39a283ee"
+    },
+    {
+      "tag": "category_medical",
+      "file": "category_medical.txt",
+      "title": "就医检查",
+      "group": "专业领域",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "e4b8ecc2a1aee4d9dc082b30dc7fb84de2f839239f57a6aea43528936e599f5f"
+    },
+    {
+      "tag": "category_pharmacy",
+      "file": "category_pharmacy.txt",
+      "title": "药品护理",
+      "group": "药物名称",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "e2d03415d1da93492c0f09594fba62ff471d122328afbbe23050d8cd8f0c238b"
+    },
+    {
+      "tag": "category_fitness",
+      "file": "category_fitness.txt",
+      "title": "运动健身",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "a36d9c566842368cb054bcc625c25da325fdc26f9b104f3c613de4e368f5d18a"
+    },
+    {
+      "tag": "category_outdoor",
+      "file": "category_outdoor.txt",
+      "title": "户外露营",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "32c1a76841a90ab775c9293b42eca7b2d8346afdeebbfe8c331ebaeaf5e7dc9a"
+    },
+    {
+      "tag": "category_weather",
+      "file": "category_weather.txt",
+      "title": "天气季节",
+      "group": "日常表达",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "a6c2fac1db69652bce5505762d9d89995e28a75930cf91543ca82e4e87f0f363"
+    },
+    {
+      "tag": "category_agriculture",
+      "file": "category_agriculture.txt",
+      "title": "农业园艺",
+      "group": "专业领域",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "d814624664e8e5abeb7209d6be7b206042dc37e35fef8e308afe2554ad59e799"
+    },
+    {
+      "tag": "category_pets",
+      "file": "category_pets.txt",
+      "title": "宠物养护",
+      "group": "名称与实体",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "308a9464eb9091e6633e03abda7ad7a5617396d106ddcf42dd10d1f580d50c0a"
+    },
+    {
+      "tag": "category_chat_daily",
+      "file": "category_chat_daily.txt",
+      "title": "日常聊天",
+      "group": "日常表达",
+      "rows": 64,
+      "default_enabled": true,
+      "sha256": "f3393b10bfdffb610fb9bec2eabb2c156ecab4c79e82b7e4fd46c44f1f4d3986"
+    },
+    {
+      "tag": "category_chat_requests",
+      "file": "category_chat_requests.txt",
+      "title": "请求沟通",
+      "group": "日常表达",
+      "rows": 48,
+      "default_enabled": true,
+      "sha256": "90ad297eea6e119f331b4bf96ca38d6ac106b6df3b0472c57f962a75df05324c"
+    },
+    {
+      "tag": "category_chat_emotions",
+      "file": "category_chat_emotions.txt",
+      "title": "情感社交",
+      "group": "日常表达",
+      "rows": 46,
+      "default_enabled": true,
+      "sha256": "9c467b85e8ba5481b56efd8fbd61a61b29aeac6e7cc3b3c9ac00b77186ff0ceb"
+    },
+    {
+      "tag": "category_etiquette",
+      "file": "category_etiquette.txt",
+      "title": "礼貌祝福",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "9e98d69935b0668fbb276e5f969485048150bee9ac5ef55847867edc9d390e0e"
+    },
+    {
+      "tag": "category_slang",
+      "file": "category_slang.txt",
+      "title": "网络口语",
+      "group": "日常表达",
+      "rows": 54,
+      "default_enabled": true,
+      "sha256": "17b13ab76054b52bd0f4ff768881183a8c7a093ca457ac0a59c2f1b91f1e9f79"
+    },
+    {
+      "tag": "category_brands",
+      "file": "category_brands.txt",
+      "title": "品牌应用",
+      "group": "名称与实体",
+      "rows": 55,
+      "default_enabled": true,
+      "sha256": "3548ff05dbe2ee4b0295850ab2e7a309d250ccd33444114223bfe48c0ad0f28e"
+    },
+    {
+      "tag": "category_social_media",
+      "file": "category_social_media.txt",
+      "title": "内容社媒",
+      "group": "科技与开发",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "36e5da03f524259e7c377c0cba6c285c3c02b1dd1586884b343cd0129cfcc41b"
+    },
+    {
+      "tag": "category_games",
+      "file": "category_games.txt",
+      "title": "游戏电竞",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "922488af8c1cd8ee034baa505feea5523d4ed18d2f522df3819e05a88914c59c"
+    },
+    {
+      "tag": "category_arts",
+      "file": "category_arts.txt",
+      "title": "文娱艺术",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "067587f92eab1f936f91f326e20b4f23ceabff2375b2ff008d39b2782deb7968"
+    },
+    {
+      "tag": "category_software",
+      "file": "category_software.txt",
+      "title": "软件系统",
+      "group": "科技与开发",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "52b9d5d87c464cef89e68b6aaa3b37499ec9a29feacccf095ad4858cbb957284"
+    },
+    {
+      "tag": "category_programming",
+      "file": "category_programming.txt",
+      "title": "开发编程",
+      "group": "科技与开发",
+      "rows": 54,
+      "default_enabled": true,
+      "sha256": "6b48a15419143c6967b94d65b2a07805d33683daabfe0af656b50beb8e099d96"
+    },
+    {
+      "tag": "category_ai",
+      "file": "category_ai.txt",
+      "title": "人工智能",
+      "group": "科技与开发",
+      "rows": 54,
+      "default_enabled": true,
+      "sha256": "3b6ce1e4df6b499e749ba9fc1ac50efb170f3cf10fdab09b4fb3b788927e3ed0"
+    },
+    {
+      "tag": "category_security",
+      "file": "category_security.txt",
+      "title": "网络安全",
+      "group": "科技与开发",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "e93fbb441175ce46d52d54a5e026d64e813e15b49792a0339de69e99b2727973"
+    },
+    {
+      "tag": "category_photography",
+      "file": "category_photography.txt",
+      "title": "摄影影像",
+      "group": "科技与开发",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "4a3da82d9505222fcc79235eb31f8e837f2ea0206fcd1705a82aae98a8f4372d"
+    },
+    {
+      "tag": "category_devices",
+      "file": "category_devices.txt",
+      "title": "数码连接",
+      "group": "科技与开发",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "13991931a94d028353fe3851a75669f58a8189c233f7642d1255f34db2edcb68"
+    },
+    {
+      "tag": "category_architecture",
+      "file": "category_architecture.txt",
+      "title": "建筑施工",
+      "group": "专业领域",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "3e09f12bbd3271b2d6e64ee9e08a1ed370045f21ca4c24db9ecd64b816848381"
+    },
+    {
+      "tag": "category_manufacturing",
+      "file": "category_manufacturing.txt",
+      "title": "制造机械",
+      "group": "专业领域",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "ac143c6a714c0f59cbc01767e7eacf73aa44bac6ed07a9e2589947091df59785"
+    },
+    {
+      "tag": "category_energy",
+      "file": "category_energy.txt",
+      "title": "能源电气",
+      "group": "专业领域",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "c8091509f843dee3634447feffb41c6e3c8334165fd389225ca45422cff94105"
+    },
+    {
+      "tag": "category_environment",
+      "file": "category_environment.txt",
+      "title": "环境环保",
+      "group": "专业领域",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "da4d722e17d132211c6edc5fd4b316fbcbc7fd9f09ff78fefa950d059c807f0a"
+    },
+    {
+      "tag": "category_math_statistics",
+      "file": "category_math_statistics.txt",
+      "title": "数学统计",
+      "group": "专业领域",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "1f8af63d9e4c58e94ba50f9583de0adfe37cdf5c1c65242775e5ef79bab4f916"
+    },
+    {
+      "tag": "category_physics_chemistry",
+      "file": "category_physics_chemistry.txt",
+      "title": "物理化学",
+      "group": "专业领域",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "ba2f72a40be3d7a3815db4bfcaca7b1ed3b70a27acd39d0344d47f5a7bea2c0a"
+    },
+    {
+      "tag": "category_biology",
+      "file": "category_biology.txt",
+      "title": "生物实验",
+      "group": "专业领域",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "eea06f47f8f1b126bd96ec69734dd713a8ee52fb2829a1a6ba9b183cb10731da"
+    },
+    {
+      "tag": "category_literature",
+      "file": "category_literature.txt",
+      "title": "阅读写作",
+      "group": "日常表达",
+      "rows": 51,
+      "default_enabled": true,
+      "sha256": "de1ecaf1f8c880936ddcf16646369c1501d96de4aa4660de755ea2471c01ca8a"
+    },
+    {
+      "tag": "category_emergency",
+      "file": "category_emergency.txt",
+      "title": "安全应急",
+      "group": "日常表达",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "662d9378e47420a6d21b09a64f772e6bf275da22e2d22ee36e0df8ae4787d561"
+    },
+    {
+      "tag": "category_sports",
+      "file": "category_sports.txt",
+      "title": "体育赛事",
+      "group": "日常表达",
+      "rows": 48,
+      "default_enabled": true,
+      "sha256": "a6ada3adf246a7c315c098563391d9069d3cfc869242da46ca6ff5fca1c65588"
+    },
+    {
+      "tag": "category_beauty",
+      "file": "category_beauty.txt",
+      "title": "美妆个护",
+      "group": "日常表达",
+      "rows": 50,
+      "default_enabled": true,
+      "sha256": "b4731dcabe04692e5ae537fe682a32e157395133507530ac63ecbf2a4e17d334"
+    },
+    {
+      "tag": "category_clothing",
+      "file": "category_clothing.txt",
+      "title": "服饰穿搭",
+      "group": "日常表达",
+      "rows": 53,
+      "default_enabled": true,
+      "sha256": "95fe0931d9c0501820d4c2db5efcb41ea8230cdbb7da56dc1f74025b1429f590"
+    },
+    {
+      "tag": "category_events",
+      "file": "category_events.txt",
+      "title": "活动会务",
+      "group": "日常表达",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "9a226970bdbae983d25af5b7b4ff49ead3e650cd9d346fc99dec8e063178f8cc"
+    },
+    {
+      "tag": "category_retail",
+      "file": "category_retail.txt",
+      "title": "门店经营",
+      "group": "日常表达",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "c8c0462e15af1cb852da3b52349517bf3bd8604dfc3cde692e535ba0cf532f0d"
+    },
+    {
+      "tag": "category_warehousing",
+      "file": "category_warehousing.txt",
+      "title": "仓储供应链",
+      "group": "专业领域",
+      "rows": 49,
+      "default_enabled": true,
+      "sha256": "92a605d0499bb5e77bb189056b3c0d94665904bd1bde2b36155dc264a3e70a3c"
+    },
+    {
+      "tag": "category_research",
+      "file": "category_research.txt",
+      "title": "学术科研",
+      "group": "专业领域",
+      "rows": 48,
+      "default_enabled": true,
+      "sha256": "0bd524dddd8562e660808438fc011f2e3ff8f0dd08ad0112762992f894c59b30"
+    },
+    {
+      "tag": "category_geography",
+      "file": "category_geography.txt",
+      "title": "地理地质",
+      "group": "专业领域",
+      "rows": 45,
+      "default_enabled": true,
+      "sha256": "81932b39e4817ab509c5d12daa32daba28af9bdca66fd9ed5552eb50de77419c"
+    },
+    {
+      "tag": "category_history",
+      "file": "category_history.txt",
+      "title": "历史考古",
+      "group": "专业领域",
+      "rows": 45,
+      "default_enabled": true,
+      "sha256": "af06470ea2eade184adf0f0011ce638ba65463b3403129135e0a62c35279e970"
+    },
+    {
+      "tag": "category_philosophy",
+      "file": "category_philosophy.txt",
+      "title": "哲学心理",
+      "group": "专业领域",
+      "rows": 45,
+      "default_enabled": true,
+      "sha256": "3991020c32aad701db0ef1a655c93f7e2311e4c023fceb7a460671b5a636f116"
+    },
+    {
+      "tag": "category_music",
+      "file": "category_music.txt",
+      "title": "音乐乐理",
+      "group": "专业领域",
+      "rows": 47,
+      "default_enabled": true,
+      "sha256": "4cf7326292370bab6689b2ea57602a70fe265330412175519dae37b0eab85029"
+    },
+    {
+      "tag": "category_crafts",
+      "file": "category_crafts.txt",
+      "title": "手工爱好",
+      "group": "日常表达",
+      "rows": 46,
+      "default_enabled": true,
+      "sha256": "4fad4491196b47a425e425e3306e21df590861ba379b55fc2d377cdef38676dc"
+    },
+    {
+      "tag": "category_accessibility",
+      "file": "category_accessibility.txt",
+      "title": "无障碍服务",
+      "group": "日常表达",
+      "rows": 44,
+      "default_enabled": true,
+      "sha256": "8a9d13516ba15dc0635183b1ad6ace7d592f9bd4e9f34a6f5c672fffdf2a9d04"
+    },
+    {
+      "tag": "category_dates_planning",
+      "file": "category_dates_planning.txt",
+      "title": "日程时间",
+      "group": "日常表达",
+      "rows": 48,
+      "default_enabled": true,
+      "sha256": "12b548ce1f3765d4b6e6f98a4a2a19e96811c6fe46b77b14d4a082267a1bc4ee"
+    },
+    {
+      "tag": "category_idioms",
+      "file": "category_idioms.txt",
+      "title": "成语惯用语",
+      "group": "日常表达",
+      "rows": 22932,
+      "default_enabled": true,
+      "sha256": "8b3d9427b061a9c257e1c1b985843ed019dd7019775e0fda971eb313db62ccc5"
+    },
+    {
+      "tag": "category_common_three",
+      "file": "category_common_three.txt",
+      "title": "三字通用补充",
+      "group": "日常表达",
+      "rows": 1162,
+      "default_enabled": true,
+      "sha256": "0065028a0f84886c7f68390a1675d9c256a0bd243d21122f773bb470fc46ce8c"
+    },
+    {
+      "tag": "category_common_four",
+      "file": "category_common_four.txt",
+      "title": "四字常用补充",
+      "group": "日常表达",
+      "rows": 4985,
+      "default_enabled": true,
+      "sha256": "98a20dfe526e43bc7eba98b3ae451723ac5af78d52ee1423ccf4d39558b98047"
+    },
+    {
+      "tag": "category_common_long",
+      "file": "category_common_long.txt",
+      "title": "通用长词补充",
+      "group": "日常表达",
+      "rows": 738,
+      "default_enabled": true,
+      "sha256": "875f2345664486fee3a1f714875b9d7b824dcd5f5a14a0b92da9c5ec891de2f7"
+    },
+    {
+      "tag": "category_proper_people",
+      "file": "category_proper_people.txt",
+      "title": "语料人名补充",
+      "group": "名称与实体",
+      "rows": 1380,
+      "default_enabled": true,
+      "sha256": "895511963706460a9f8e9cd760459dc52931030e5d0bad82757cab756c1cb1dd"
+    },
+    {
+      "tag": "category_proper_places",
+      "file": "category_proper_places.txt",
+      "title": "语料地名补充",
+      "group": "地区词库 · 全国与世界",
+      "rows": 916,
+      "default_enabled": true,
+      "sha256": "1da296e1edb7597ebbe43b6ff7dc303e349516362b725669793563282bee6fee"
+    },
+    {
+      "tag": "category_proper_organizations",
+      "file": "category_proper_organizations.txt",
+      "title": "语料机构名称补充",
+      "group": "名称与实体",
+      "rows": 930,
+      "default_enabled": true,
+      "sha256": "d3f00e384919819d1489c889e4972110ef9a1a406627e5371f0501d8034d4dd4"
+    }
+  ]
+}

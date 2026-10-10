@@ -1,0 +1,57 @@
+# 开心离线输入法分类补充：餐饮外卖
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+不放香菜	bu fang xiang cai	6100
+不要葱花	bu yao cong hua	6100
+不要餐具	bu yao can ju	6100
+中辣	zhong la	6100
+免辣备注	mian la bei zhu	6100
+到店自取	dao dian zi qu	6100
+加一份饭	jia yi fen fan	6100
+包厢预订	bao xiang yu ding	6100
+去冰饮料	qu bing yin liao	6100
+取餐号码	qu can hao ma	6100
+叫号通知	jiao hao tong zhi	6100
+堂食自取	tang shi zi qu	6100
+外卖取餐	wai mai qu can	6100
+外卖备注	wai mai bei zhu	6100
+外卖订单	wai mai ding dan	6100
+外卖配送	wai mai pei song	6100
+外卖骑手	wai mai qi shou	6100
+套餐优惠	tao can you hui	6100
+套餐内容	tao can nei rong	6100
+少放辣椒	shao fang la jiao	6100
+少油少盐	shao you shao yan	6100
+少糖饮料	shao tang yin liao	6100
+常温饮料	chang wen yin liao	6100
+我在店里等你	wo zai dian li deng ni	6100
+打包带走	da bao dai zou	6100
+打包费用	da bao fei yong	6100
+扫码点餐	sao ma dian can	6100
+排队取号	pai dui qu hao	6100
+无糖饮料	wu tang yin liao	6100
+点餐小程序	dian can xiao cheng xu	6100
+甜度选择	tian du xuan ze	6100
+用餐人数	yong can ren shu	6100
+用餐时间	yong can shi jian	6100
+用餐评价	yong can ping jia	6100
+菜品分量	cai pin fen liang	6100
+菜品口味	cai pin kou wei	6100
+菜品推荐	cai pin tui jian	6100
+请帮我打包	qing bang wo da bao	6100
+请放在门口	qing fang zai men kou	6100
+送到楼下即可	song dao lou xia ji ke	6100
+预约订餐	yu yue ding can	6100
+食品过敏	shi pin guo min	6100
+食物禁忌	shi wu jin ji	6100
+餐位预订	can wei yu ding	6100
+餐具数量	can ju shu liang	6100
+餐具费用	can ju fei yong	6100
+餐厅预订	can ting yu ding	6100
+麻烦快一点	ma fan kuai yi dian	6100
+冷饮	leng yin	3707
+热饮	re yin	3606
+微辣	wei la	3544
+招牌菜	zhao pai cai	3120

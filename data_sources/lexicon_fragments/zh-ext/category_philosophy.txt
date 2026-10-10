@@ -1,0 +1,50 @@
+# 开心离线输入法分类补充：哲学心理
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+人际关系	ren ji guan xi	9166
+心理健康	xin li jian kang	8140
+人格特质	ren ge te zhi	6100
+人际沟通	ren ji gou tong	6100
+价值取向	jia zhi qu xiang	6100
+伦理困境	lun li kun jing	6100
+伦理规范	lun li gui fan	6100
+依恋关系	yi lian guan xi	6100
+公共伦理	gong gong lun li	6100
+分配正义	fen pei zheng yi	6100
+创造性思维	chuang zao xing si wei	6100
+动机理论	dong ji li lun	6100
+压力管理	ya li guan li	6100
+因果推断	yin guo tui duan	6100
+心理支持	xin li zhi chi	6100
+心理韧性	xin li ren xing	6100
+情绪管理	qing xu guan li	6100
+情绪识别	qing xu shi bie	6100
+情绪调节	qing xu tiao jie	6100
+批判性思维	pi pan xing si wei	6100
+沟通边界	gou tong bian jie	6100
+注意力管理	zhu yi li guan li	6100
+理性判断	li xing pan duan	6100
+生命伦理	sheng ming lun li	6100
+社会正义	she hui zheng yi	6100
+程序正义	cheng xu zheng yi	6100
+经验判断	jing yan pan duan	6100
+职业伦理	zhi ye lun li	6100
+自我觉察	zi wo jue cha	6100
+自我认知	zi wo ren zhi	6100
+行为习惯	xing wei xi guan	6100
+认知偏差	ren zhi pian cha	6100
+认知结构	ren zhi jie gou	6100
+认知能力	ren zhi neng li	6100
+认知行为	ren zhi xing wei	6100
+认识过程	ren shi guo cheng	6100
+逻辑推理	luo ji tui li	6100
+道德判断	dao de pan duan	6100
+价值判断	jia zhi pan duan	6000
+因果关系	yin guo guan xi	6000
+归纳推理	gui na tui li	6000
+演绎推理	yan yi tui li	6000
+道德责任	dao de ze ren	6000
+心理咨询	xin li zi xun	3407
+价值观念	jia zhi guan nian	1777

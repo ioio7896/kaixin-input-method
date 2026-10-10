@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：家庭育儿
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+家庭教育	jia ting jiao yu	7250
+家长会	jia zhang hui	7204
+纸尿裤	zhi niao ku	6104
+亲子活动	qin zi huo dong	6100
+亲子阅读	qin zi yue du	6100
+亲子陪伴	qin zi pei ban	6100
+儿童体检	er tong ti jian	6100
+儿童保健	er tong bao jian	6100
+儿童安全	er tong an quan	6100
+儿童牙刷	er tong ya shua	6100
+儿童玩具	er tong wan ju	6100
+儿童绘本	er tong hui ben	6100
+儿童防护	er tong fang hu	6100
+儿童餐椅	er tong can yi	6100
+入园体检	ru yuan ti jian	6100
+喂养记录	wei yang ji lu	6100
+奶瓶消毒	nai ping xiao du	6100
+奶瓶清洗	nai ping qing xi	6100
+奶粉冲泡	nai fen chong pao	6100
+婴儿护理	ying er hu li	6100
+婴儿推车	ying er tui che	6100
+婴儿湿巾	ying er shi jin	6100
+安全座椅	an quan zuo yi	6100
+家园沟通	jia yuan gou tong	6100
+家园联系	jia yuan lian xi	6100
+家长群	jia zhang qun	6100
+幼儿园报名	you er yuan bao ming	6100
+幼儿接送	you er jie song	6100
+托班报名	tuo ban bao ming	6100
+托育服务	tuo yu fu wu	6100
+接种记录	jie zhong ji lu	6100
+接种预约	jie zhong yu yue	6100
+接送时间	jie song shi jian	6100
+新生儿护理	xin sheng er hu li	6100
+新生儿筛查	xin sheng er shai cha	6100
+早教课程	zao jiao ke cheng	6100
+母乳喂养	mu ru wei yang	6100
+混合喂养	hun he wei yang	6100
+玩具清洗	wan ju qing xi	6100
+生长曲线	sheng zhang qu xian	6100
+疫苗接种	yi miao jie zhong	6100
+睡眠记录	shui mian ji lu	6100
+育儿经验	yu er jing yan	6100
+身高体重	shen gao ti zhong	6100
+辅食制作	fu shi zhi zuo	6100
+辅食喂养	fu shi wei yang	6100
+辅食添加	fu shi tian jia	6100
+防走失绳	fang zou shi sheng	6100
+预防接种	yu fang jie zhong	6100
+尿不湿	niao bu shi	4361

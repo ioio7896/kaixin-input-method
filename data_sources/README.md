@@ -2,6 +2,13 @@
 
 本目录只保存构建内置词库所需的可追溯原始数据，不会被运行时词库加载器直接扫描。
 
+## 安卓分类词库同步至 Windows（2026-10-07）
+
+- `lexicon_fragments/zh-ext/category_*.txt` 保存安卓本轮扩充的 78 个分类快照；来源、数量和 SHA-256 见 `shared/category_lexicons.json` 及 `lexicon/windows-category-import.json`。
+- 项目词表及匹配的请求/状态模板由生成式 AI 辅助整理，未使用用户消息或私人输入；语料补充来自固定版本 jieba 0.42.1 的本地 `dict.txt`，按词频、词性和简体拼音有效性筛选。拼音由 pypinyin 0.55.0 生成并应用项目多音词校正。
+- 随 Windows 包保留 `lexicon/category-LICENSE.jieba.md` 和 `lexicon/category-LICENSE.pypinyin.md`。Windows 自身重建只使用已归档的 UTF-8 源片段，不依赖安卓目录或额外 Python 包。
+- 同步：`python scripts/sync_android_category_lexicons.py --android-root "../开心输入法and"`。常规分类重建继续使用 `scripts/merge_zh_ext_lexicons.py`；分类频次不重复百分位归一化。
+
 ## rust-pinyin
 
 - crate：`pinyin 0.10.0`

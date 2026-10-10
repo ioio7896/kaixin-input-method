@@ -6,6 +6,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
+import json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -68,7 +69,7 @@ CATEGORIES = OrderedDict(
             limit=500,
             fixed_weight=6_000,
         ),
-        "medicine.txt": Category("常见药物", ("yaowu.txt",)),
+        "medicine.txt": Category("药物名称", ("yaowu.txt", "medicine_supplement.txt")),
     }
 )
 
@@ -78,6 +79,12 @@ from build_professional_lexicons import CATEGORIES as PROFESSIONAL_CATEGORIES
 for tag, (title, _) in PROFESSIONAL_CATEGORIES.items():
     name = f"professional_{tag}.txt"
     CATEGORIES[name] = Category(title, (name,))
+
+# Keep frozen category sources available during normal regeneration.
+_category_catalog = ROOT / "shared/category_lexicons.json"
+if _category_catalog.is_file():
+    for item in json.loads(_category_catalog.read_text(encoding="utf-8"))["categories"]:
+        CATEGORIES[item["file"]] = Category(item["title"], (item["file"],))
 
 
 def parse_row(path: Path, line_number: int, line: str) -> tuple[str, str, int]:
@@ -127,6 +134,9 @@ def merge_category(category: Category) -> list[tuple[str, str, int]]:
 
 
 def write_category(path: Path, category: Category, rows: list[tuple[str, str, int]]) -> None:
+    if path.name.startswith("category_") and category.sources == (path.name,):
+        path.write_bytes((SOURCE_DIR / path.name).read_bytes())
+        return
     source_names = ", ".join(category.sources)
     text = (
         f"# 开心输入法扩展词库：{category.title}\n"
@@ -138,6 +148,10 @@ def write_category(path: Path, category: Category, rows: list[tuple[str, str, in
 
 
 def merge_lexicons() -> dict[str, int]:
+    supplement = SOURCE_DIR / "medicine_supplement.txt"
+    legacy = OUTPUT_DIR / "药物2026.txt"
+    if not supplement.exists() and legacy.is_file():
+        supplement.write_text(legacy.read_text(encoding="utf-8-sig"), encoding="utf-8")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     counts: dict[str, int] = {}
     for output_name, category in CATEGORIES.items():

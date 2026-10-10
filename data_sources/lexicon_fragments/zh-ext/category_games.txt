@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：游戏电竞
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+实名认证	shi ming ren zheng	8800
+排位赛	pai wei sai	6227
+主线任务	zhu xian ren wu	6100
+任务奖励	ren wu jiang li	6100
+充值记录	chong zhi ji lu	6100
+公会任务	gong hui ren wu	6100
+公会活动	gong hui huo dong	6100
+副本挑战	fu ben tiao zhan	6100
+匹配模式	pi pei mo shi	6100
+周常任务	zhou chang ren wu	6100
+团队配合	tuan dui pei he	6100
+好友邀请	hao you yao qing	6100
+战令奖励	zhan ling jiang li	6100
+战队招募	zhan dui zhao mu	6100
+技能冷却	ji neng leng que	6100
+技能升级	ji neng sheng ji	6100
+掉线重连	diao xian zhong lian	6100
+支线任务	zhi xian ren wu	6100
+日常任务	ri chang ren wu	6100
+服务器维护	fu wu qi wei hu	6100
+每日签到	mei ri qian dao	6100
+活动任务	huo dong ren wu	6100
+活动奖励	huo dong jiang li	6100
+游戏副本	you xi fu ben	6100
+游戏客服	you xi ke fu	6100
+游戏延迟	you xi yan chi	6100
+游戏昵称	you xi ni cheng	6100
+游戏更新	you xi geng xin	6100
+游戏服务器	you xi fu wu qi	6100
+游戏活动	you xi huo dong	6100
+游戏补丁	you xi bu ding	6100
+游戏角色	you xi jue se	6100
+游戏账号	you xi zhang hao	6100
+游戏道具	you xi dao ju	6100
+皮肤碎片	pi fu sui pian	6100
+组队邀请	zu dui yao qing	6100
+网络延迟	wang luo yan chi	6100
+装备升级	zhuang bei sheng ji	6100
+装备属性	zhuang bei shu xing	6100
+装备强化	zhuang bei qiang hua	6100
+装备搭配	zhuang bei da pei	6100
+角色养成	jue se yang cheng	6100
+角色创建	jue se chuang jian	6100
+角色技能	jue se ji neng	6100
+账号找回	zhang hao zhao hui	6100
+赛季奖励	sai ji jiang li	6100
+赛季更新	sai ji geng xin	6100
+赛季结算	sai ji jie suan	6100
+队伍频道	dui wu pin dao	6100
+队友配合	dui you pei he	6100
+防沉迷系统	fang chen mi xi tong	6100

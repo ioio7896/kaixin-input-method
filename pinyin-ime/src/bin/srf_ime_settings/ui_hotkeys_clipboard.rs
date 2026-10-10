@@ -11,55 +11,59 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
         );
     }
     section_panel(ui, "输入快捷键", |ui| {
-        setting_combo_row(
+        hotkey_setting_row(
             ui,
             "中英切换",
             "切换中文输入与英文直输模式。",
-            cn_en_hotkey_label(&model.cn_en_hotkey),
-            "cn_en_hotkey",
             |ui| {
-                selectable_string(
-                    ui,
-                    &mut model.cn_en_hotkey,
-                    "both",
-                    "Ctrl+Shift / Ctrl+Space",
-                );
-                selectable_string(ui, &mut model.cn_en_hotkey, "shift", "Ctrl+Shift");
-                selectable_string(ui, &mut model.cn_en_hotkey, "ctrl_space", "Ctrl+Space");
-                selectable_string(ui, &mut model.cn_en_hotkey, "none", "关闭");
+                ComboBox::from_id_salt("cn_en_hotkey")
+                    .selected_text(cn_en_hotkey_label(&model.cn_en_hotkey))
+                    .width(bounded_control_width(ui, SETTINGS_CONTROL_WIDTH))
+                    .wrap()
+                    .show_ui(ui, |ui| {
+                        selectable_string(
+                            ui,
+                            &mut model.cn_en_hotkey,
+                            "both",
+                            "Ctrl+Shift / Ctrl+Space",
+                        );
+                        selectable_string(ui, &mut model.cn_en_hotkey, "shift", "Ctrl+Shift");
+                        selectable_string(ui, &mut model.cn_en_hotkey, "ctrl_space", "Ctrl+Space");
+                        selectable_string(ui, &mut model.cn_en_hotkey, "none", "关闭");
+                    });
             },
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "全半角切换",
             "使用 Shift+Space 在全角和半角之间切换；默认全角开启时会自动启用。",
             &mut model.full_shape_hotkey,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "标点切换",
             "使用 Ctrl+. 在中文标点和英文标点之间切换。",
             &mut model.punct_hotkey,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "模糊音切换",
             "使用 Ctrl+Shift+F 快速开关模糊音。",
             &mut model.fuzzy_hotkey,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "双拼切换",
             "使用 Ctrl+Shift+D 快速开关双拼。",
             &mut model.double_pinyin_hotkey,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "轻按 Shift 切换英文",
             "单击 Shift 临时进入英文直输。",
             &mut model.shift_tap_hotkey,
         );
-        setting_row(
+        hotkey_setting_row(
             ui,
             "简繁切换",
             "在当前输入法会话中切换简体/繁体输出。",
@@ -73,7 +77,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 );
             },
         );
-        setting_row(
+        hotkey_setting_row(
             ui,
             "游戏中文聊天 / 兼容开关",
             "游戏中切换中文聊天与键盘直通；完全直通和始终中文档禁用此热键。",
@@ -81,7 +85,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 hotkey_combo(ui, "", "game_mode_hotkey", &mut model.game_mode_hotkey, "G");
             },
         );
-        setting_row(
+        hotkey_setting_row(
             ui,
             "临时强制英文",
             "手动切换临时英文直输。",
@@ -95,25 +99,25 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 );
             },
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "候选数字直选",
             "按数字键直接提交对应候选。",
             &mut model.candidate_number_select,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "翻页 - / =",
             "使用 - 和 = 翻页。",
             &mut model.page_minus_equal,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "翻页 , / .",
             "使用逗号和句号翻页。",
             &mut model.page_comma_period,
         );
-        setting_toggle(
+        hotkey_setting_toggle(
             ui,
             "翻页 PgUp / PgDn",
             "使用 PageUp 和 PageDown 翻页。",
@@ -121,7 +125,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
         );
     });
     section_panel(ui, "工具快捷键", |ui| {
-        setting_row(
+        hotkey_setting_row(
             ui,
             "剪贴板快捷键",
             "打开独立剪贴板管理器。",
@@ -135,7 +139,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 );
             },
         );
-        setting_row(
+        hotkey_setting_row(
             ui,
             "截图快捷键",
             "组合键固定为修饰键 + 字母。",
@@ -152,7 +156,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 });
             },
         );
-        setting_row(ui, "设置页快捷键", "全局打开设置页。", |ui| {
+        hotkey_setting_row(ui, "设置页快捷键", "全局打开设置页。", |ui| {
             hotkey_combo(
                 ui,
                 "",
@@ -161,7 +165,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 "Comma",
             );
         });
-        setting_row(
+        hotkey_setting_row(
             ui,
             "手写查字快捷键",
             "全局打开手写查字工具。",
@@ -169,13 +173,13 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 hotkey_combo(ui, "", "handwrite_hotkey", &mut model.handwrite_hotkey, "H");
             },
         );
-        setting_row(ui, "OCR 快捷键", "全局打开 OCR 工具。", |ui| {
+        hotkey_setting_row(ui, "OCR 快捷键", "全局打开 OCR 工具。", |ui| {
             ui.vertical(|ui| {
                 hotkey_combo(ui, "", "ocr_hotkey", &mut model.ocr_hotkey, "O");
                 hotkey_registration_status_label(ui, "ocr_registered");
             });
         });
-        setting_row(
+        hotkey_setting_row(
             ui,
             "截图翻译快捷键",
             "截图识别后自动送入中英翻译。",
@@ -192,7 +196,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 });
             },
         );
-        setting_row(
+        hotkey_setting_row(
             ui,
             "中英翻译快捷键",
             "全局打开中英翻译浮窗。",
@@ -211,6 +215,34 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                 .small()
                 .color(fluent_palette(ui).muted),
         );
+    });
+}
+
+// Keep every control aligned while reserving enough space for the editor.
+// Narrow windows place the editor below the wrapped description.
+const HOTKEY_CONTROL_WIDTH: f32 = 400.0;
+
+fn hotkey_setting_row(
+    ui: &mut egui::Ui,
+    title: &str,
+    description: &str,
+    add_control: impl FnOnce(&mut egui::Ui),
+) {
+    egui::Frame::none()
+        .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
+        .show(ui, |ui| {
+            responsive_settings_row(
+                ui,
+                HOTKEY_CONTROL_WIDTH,
+                |ui| setting_text(ui, title, description, RestartRequirement::None),
+                add_control,
+            );
+        });
+}
+
+fn hotkey_setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut bool) {
+    hotkey_setting_row(ui, title, description, |ui| {
+        capsule_switch(ui, value);
     });
 }
 

@@ -123,11 +123,13 @@ mod win {
     const ID_OCR_TRANSLATE: usize = 1010;
     const ID_LAST_SCREENSHOT_OCR: usize = 1011;
     const ID_LAST_SCREENSHOT_TRANSLATE: usize = 1012;
+    const ID_SYMBOLS: usize = 1013;
     const ICON_SIZE: i32 = 32;
     const SETTINGS_EXE: &str = "srf_ime_settings.exe";
     const CLIPBOARD_MANAGER_EXE: &str = "srf_ime_clipboard.exe";
     const ENGINE_EXE: &str = "srf_ime_engine.exe";
     const HANDWRITE_EXE: &str = "srf_ime_handwrite.exe";
+    const SYMBOLS_EXE: &str = "srf_ime_symbols.exe";
     const OCR_EXE: &str = "srf_ime_ocr.exe";
     const TIMER_ID_STATE_POLL: usize = 1;
     const STATE_POLL_MS: u32 = 600;
@@ -304,6 +306,7 @@ mod win {
         Settings,
         Clipboard,
         Handwrite,
+        Symbols,
         Translate,
         Calculator,
         Screenshot,
@@ -1322,6 +1325,13 @@ mod win {
                 menu_line(hdc, rect, 5, 18, 4, 21);
                 menu_line(hdc, rect, 4, 21, 7, 19);
             }
+            TrayMenuIcon::Symbols => {
+                menu_rect(hdc, rect, 3, 3, 21, 21);
+                for offset in [9, 15] {
+                    menu_line(hdc, rect, offset, 3, offset, 21);
+                    menu_line(hdc, rect, 3, offset, 21, offset);
+                }
+            }
             TrayMenuIcon::Translate => {
                 menu_path(hdc, rect, &[(4, 18), (8, 6), (12, 18)]);
                 menu_line(hdc, rect, 6, 14, 10, 14);
@@ -1439,6 +1449,15 @@ mod win {
             false,
             &mut items,
         );
+        append_owner_draw_menu_item(
+            menu,
+            MF_STRING,
+            ID_SYMBOLS,
+            &wide("符号大全"),
+            TrayMenuIcon::Symbols,
+            false,
+            &mut items,
+        );
         if is_translate_available() {
             append_owner_draw_menu_item(
                 menu,
@@ -1551,6 +1570,7 @@ mod win {
             ID_SETTINGS => open_settings(),
             ID_CLIPBOARD_MANAGER => open_clipboard_manager(),
             ID_HANDWRITE => open_handwrite(),
+            ID_SYMBOLS => open_symbols(target_hwnd),
             ID_TRANSLATE => open_translate(target_hwnd),
             ID_SCREENSHOT => open_screenshot_autosave(target_hwnd),
             ID_LAST_SCREENSHOT_OCR => open_last_screenshot_ocr(target_hwnd, false),
@@ -1714,6 +1734,21 @@ mod win {
         }
         if let Err(e) = cmd.spawn() {
             show_error_message(&format!("无法启动手写查字：{e}\n{}", path.display()));
+        }
+    }
+
+    fn open_symbols(target_hwnd: HWND) {
+        let Some(path) = resolve_runtime_exe_path(SYMBOLS_EXE, RuntimeExeKind::Symbols) else {
+            show_error_message("未找到符号大全程序 srf_ime_symbols.exe，请重新安装完整安装包。");
+            return;
+        };
+        let mut cmd = Command::new(&path);
+        if let Some(dir) = path.parent() {
+            cmd.current_dir(dir);
+        }
+        cmd.args(["--target-hwnd", &target_hwnd.to_string()]);
+        if let Err(error) = cmd.spawn() {
+            show_error_message(&format!("无法启动符号大全：{error}\n{}", path.display()));
         }
     }
 
@@ -3618,6 +3653,7 @@ mod win {
         Settings,
         ClipboardManager,
         Handwrite,
+        Symbols,
         Ocr,
     }
 
@@ -3690,6 +3726,7 @@ mod win {
             }
             RuntimeExeKind::ClipboardManager => has_clipboard_title,
             RuntimeExeKind::Handwrite => has_handwrite_title,
+            RuntimeExeKind::Symbols => contains_bytes(&bytes, "开心输入法 符号大全".as_bytes()),
             RuntimeExeKind::Ocr => has_ocr_title,
         }
     }

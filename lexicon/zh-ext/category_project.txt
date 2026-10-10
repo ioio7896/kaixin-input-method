@@ -1,0 +1,571 @@
+# 开心离线输入法分类补充：项目产品
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+方案需要调整	fang an xu yao tiao zheng	9300
+项目需要跟进	xiang mu xu yao gen jin	9300
+交互设计	jiao hu she ji	8800
+灰度发布	hui du fa bu	8800
+用户体验	yong hu ti yan	8800
+需求分析	xu qiu fen xi	8800
+上线计划	shang xian ji hua	6100
+业务流程	ye wu liu cheng	6100
+业务需求	ye wu xu qiu	6100
+交付周期	jiao fu zhou qi	6100
+交付清单	jiao fu qing dan	6100
+产品原型	chan pin yuan xing	6100
+产品定位	chan pin ding wei	6100
+产品规划	chan pin gui hua	6100
+产品迭代	chan pin die dai	6100
+产品需求	chan pin xu qiu	6100
+产品验收	chan pin yan shou	6100
+任务拆解	ren wu chai jie	6100
+关键路径	guan jian lu jing	6100
+原型设计	yuan xing she ji	6100
+发布计划	fa bu ji hua	6100
+变更记录	bian geng ji lu	6100
+回滚方案	hui gun fang an	6100
+工时预估	gong shi yu gu	6100
+成本控制	cheng ben kong zhi	6100
+排期表	pai qi biao	6100
+流程优化	liu cheng you hua	6100
+测试验收	ce shi yan shou	6100
+版本计划	ban ben ji hua	6100
+用户反馈	yong hu fan kui	6100
+用户画像	yong hu hua xiang	6100
+用户需求	yong hu xu qiu	6100
+视觉设计	shi jue she ji	6100
+评审意见	ping shen yi jian	6100
+资源协调	zi yuan xie tiao	6100
+进度管理	jin du guan li	6100
+迭代周期	die dai zhou qi	6100
+问题清单	wen ti qing dan	6100
+问题跟进	wen ti gen jin	6100
+问题闭环	wen ti bi huan	6100
+需求优先级	xu qiu you xian ji	6100
+需求变更	xu qiu bian geng	6100
+需求文档	xu qiu wen dang	6100
+需求清单	xu qiu qing dan	6100
+需求确认	xu qiu que ren	6100
+需求评审	xu qiu ping shen	6100
+项目交付	xiang mu jiao fu	6100
+项目启动	xiang mu qi dong	6100
+项目复盘	xiang mu fu pan	6100
+项目排期	xiang mu pai qi	6100
+项目立项	xiang mu li xiang	6100
+项目计划	xiang mu ji hua	6100
+项目里程碑	xiang mu li cheng bei	6100
+项目预算	xiang mu yu suan	6100
+项目风险	xiang mu feng xian	6100
+项目验收	xiang mu yan shou	6100
+风险评估	feng xian ping gu	6100
+验收标准	yan shou biao zhun	6100
+任务已经确认	ren wu yi jing que ren	5200
+任务正在推进	ren wu zheng zai tui jin	5200
+任务正在评审	ren wu zheng zai ping shen	5200
+任务需要调整	ren wu xu yao tiao zheng	5200
+任务需要跟进	ren wu xu yao gen jin	5200
+任务需要进一步确认	ren wu xu yao jin yi bu que ren	5200
+方案已经确认	fang an yi jing que ren	5200
+方案正在推进	fang an zheng zai tui jin	5200
+方案正在评审	fang an zheng zai ping shen	5200
+方案需要跟进	fang an xu yao gen jin	5200
+方案需要进一步确认	fang an xu yao jin yi bu que ren	5200
+版本已经确认	ban ben yi jing que ren	5200
+版本正在推进	ban ben zheng zai tui jin	5200
+版本正在评审	ban ben zheng zai ping shen	5200
+版本需要调整	ban ben xu yao tiao zheng	5200
+版本需要跟进	ban ben xu yao gen jin	5200
+版本需要进一步确认	ban ben xu yao jin yi bu que ren	5200
+需求已经确认	xu qiu yi jing que ren	5200
+需求正在推进	xu qiu zheng zai tui jin	5200
+需求正在评审	xu qiu zheng zai ping shen	5200
+需求需要调整	xu qiu xu yao tiao zheng	5200
+需求需要跟进	xu qiu xu yao gen jin	5200
+需求需要进一步确认	xu qiu xu yao jin yi bu que ren	5200
+项目已经确认	xiang mu yi jing que ren	5200
+项目正在推进	xiang mu zheng zai tui jin	5200
+项目正在评审	xiang mu zheng zai ping shen	5200
+项目需要调整	xiang mu xu yao tiao zheng	5200
+项目需要进一步确认	xiang mu xu yao jin yi bu que ren	5200
+请同步上线时间	qing tong bu shang xian shi jian	4900
+请同步上线时间一下	qing tong bu shang xian shi jian yi xia	4900
+请同步交付时间	qing tong bu jiao fu shi jian	4900
+请同步交付时间一下	qing tong bu jiao fu shi jian yi xia	4900
+请同步任务清单	qing tong bu ren wu qing dan	4900
+请同步任务清单一下	qing tong bu ren wu qing dan yi xia	4900
+请同步测试结果	qing tong bu ce shi jie guo	4900
+请同步测试结果一下	qing tong bu ce shi jie guo yi xia	4900
+请同步版本计划	qing tong bu ban ben ji hua	4900
+请同步版本计划一下	qing tong bu ban ben ji hua yi xia	4900
+请同步评审意见	qing tong bu ping shen yi jian	4900
+请同步评审意见一下	qing tong bu ping shen yi jian yi xia	4900
+请同步需求文档	qing tong bu xu qiu wen dang	4900
+请同步需求文档一下	qing tong bu xu qiu wen dang yi xia	4900
+请同步需求清单	qing tong bu xu qiu qing dan	4900
+请同步需求清单一下	qing tong bu xu qiu qing dan yi xia	4900
+请同步项目排期	qing tong bu xiang mu pai qi	4900
+请同步项目排期一下	qing tong bu xiang mu pai qi yi xia	4900
+请同步项目进度	qing tong bu xiang mu jin du	4900
+请同步项目进度一下	qing tong bu xiang mu jin du yi xia	4900
+请同步预算金额	qing tong bu yu suan jin e	4900
+请同步预算金额一下	qing tong bu yu suan jin e yi xia	4900
+请同步验收标准	qing tong bu yan shou biao zhun	4900
+请同步验收标准一下	qing tong bu yan shou biao zhun yi xia	4900
+请帮我同步上线时间	qing bang wo tong bu shang xian shi jian	4900
+请帮我同步上线时间一下	qing bang wo tong bu shang xian shi jian yi xia	4900
+请帮我同步交付时间	qing bang wo tong bu jiao fu shi jian	4900
+请帮我同步交付时间一下	qing bang wo tong bu jiao fu shi jian yi xia	4900
+请帮我同步任务清单	qing bang wo tong bu ren wu qing dan	4900
+请帮我同步任务清单一下	qing bang wo tong bu ren wu qing dan yi xia	4900
+请帮我同步测试结果	qing bang wo tong bu ce shi jie guo	4900
+请帮我同步测试结果一下	qing bang wo tong bu ce shi jie guo yi xia	4900
+请帮我同步版本计划	qing bang wo tong bu ban ben ji hua	4900
+请帮我同步版本计划一下	qing bang wo tong bu ban ben ji hua yi xia	4900
+请帮我同步评审意见	qing bang wo tong bu ping shen yi jian	4900
+请帮我同步评审意见一下	qing bang wo tong bu ping shen yi jian yi xia	4900
+请帮我同步需求文档	qing bang wo tong bu xu qiu wen dang	4900
+请帮我同步需求文档一下	qing bang wo tong bu xu qiu wen dang yi xia	4900
+请帮我同步需求清单	qing bang wo tong bu xu qiu qing dan	4900
+请帮我同步需求清单一下	qing bang wo tong bu xu qiu qing dan yi xia	4900
+请帮我同步项目排期	qing bang wo tong bu xiang mu pai qi	4900
+请帮我同步项目排期一下	qing bang wo tong bu xiang mu pai qi yi xia	4900
+请帮我同步项目进度	qing bang wo tong bu xiang mu jin du	4900
+请帮我同步项目进度一下	qing bang wo tong bu xiang mu jin du yi xia	4900
+请帮我同步预算金额	qing bang wo tong bu yu suan jin e	4900
+请帮我同步预算金额一下	qing bang wo tong bu yu suan jin e yi xia	4900
+请帮我同步验收标准	qing bang wo tong bu yan shou biao zhun	4900
+请帮我同步验收标准一下	qing bang wo tong bu yan shou biao zhun yi xia	4900
+请帮我更新上线时间	qing bang wo geng xin shang xian shi jian	4900
+请帮我更新上线时间一下	qing bang wo geng xin shang xian shi jian yi xia	4900
+请帮我更新交付时间	qing bang wo geng xin jiao fu shi jian	4900
+请帮我更新交付时间一下	qing bang wo geng xin jiao fu shi jian yi xia	4900
+请帮我更新任务清单	qing bang wo geng xin ren wu qing dan	4900
+请帮我更新任务清单一下	qing bang wo geng xin ren wu qing dan yi xia	4900
+请帮我更新测试结果	qing bang wo geng xin ce shi jie guo	4900
+请帮我更新测试结果一下	qing bang wo geng xin ce shi jie guo yi xia	4900
+请帮我更新版本计划	qing bang wo geng xin ban ben ji hua	4900
+请帮我更新版本计划一下	qing bang wo geng xin ban ben ji hua yi xia	4900
+请帮我更新评审意见	qing bang wo geng xin ping shen yi jian	4900
+请帮我更新评审意见一下	qing bang wo geng xin ping shen yi jian yi xia	4900
+请帮我更新需求文档	qing bang wo geng xin xu qiu wen dang	4900
+请帮我更新需求文档一下	qing bang wo geng xin xu qiu wen dang yi xia	4900
+请帮我更新需求清单	qing bang wo geng xin xu qiu qing dan	4900
+请帮我更新需求清单一下	qing bang wo geng xin xu qiu qing dan yi xia	4900
+请帮我更新项目排期	qing bang wo geng xin xiang mu pai qi	4900
+请帮我更新项目排期一下	qing bang wo geng xin xiang mu pai qi yi xia	4900
+请帮我更新项目进度	qing bang wo geng xin xiang mu jin du	4900
+请帮我更新项目进度一下	qing bang wo geng xin xiang mu jin du yi xia	4900
+请帮我更新预算金额	qing bang wo geng xin yu suan jin e	4900
+请帮我更新预算金额一下	qing bang wo geng xin yu suan jin e yi xia	4900
+请帮我更新验收标准	qing bang wo geng xin yan shou biao zhun	4900
+请帮我更新验收标准一下	qing bang wo geng xin yan shou biao zhun yi xia	4900
+请帮我核对上线时间	qing bang wo he dui shang xian shi jian	4900
+请帮我核对上线时间一下	qing bang wo he dui shang xian shi jian yi xia	4900
+请帮我核对交付时间	qing bang wo he dui jiao fu shi jian	4900
+请帮我核对交付时间一下	qing bang wo he dui jiao fu shi jian yi xia	4900
+请帮我核对任务清单	qing bang wo he dui ren wu qing dan	4900
+请帮我核对任务清单一下	qing bang wo he dui ren wu qing dan yi xia	4900
+请帮我核对测试结果	qing bang wo he dui ce shi jie guo	4900
+请帮我核对测试结果一下	qing bang wo he dui ce shi jie guo yi xia	4900
+请帮我核对版本计划	qing bang wo he dui ban ben ji hua	4900
+请帮我核对版本计划一下	qing bang wo he dui ban ben ji hua yi xia	4900
+请帮我核对评审意见	qing bang wo he dui ping shen yi jian	4900
+请帮我核对评审意见一下	qing bang wo he dui ping shen yi jian yi xia	4900
+请帮我核对需求文档	qing bang wo he dui xu qiu wen dang	4900
+请帮我核对需求文档一下	qing bang wo he dui xu qiu wen dang yi xia	4900
+请帮我核对需求清单	qing bang wo he dui xu qiu qing dan	4900
+请帮我核对需求清单一下	qing bang wo he dui xu qiu qing dan yi xia	4900
+请帮我核对项目排期	qing bang wo he dui xiang mu pai qi	4900
+请帮我核对项目排期一下	qing bang wo he dui xiang mu pai qi yi xia	4900
+请帮我核对项目进度	qing bang wo he dui xiang mu jin du	4900
+请帮我核对项目进度一下	qing bang wo he dui xiang mu jin du yi xia	4900
+请帮我核对预算金额	qing bang wo he dui yu suan jin e	4900
+请帮我核对预算金额一下	qing bang wo he dui yu suan jin e yi xia	4900
+请帮我核对验收标准	qing bang wo he dui yan shou biao zhun	4900
+请帮我核对验收标准一下	qing bang wo he dui yan shou biao zhun yi xia	4900
+请帮我确认上线时间	qing bang wo que ren shang xian shi jian	4900
+请帮我确认上线时间一下	qing bang wo que ren shang xian shi jian yi xia	4900
+请帮我确认交付时间	qing bang wo que ren jiao fu shi jian	4900
+请帮我确认交付时间一下	qing bang wo que ren jiao fu shi jian yi xia	4900
+请帮我确认任务清单	qing bang wo que ren ren wu qing dan	4900
+请帮我确认任务清单一下	qing bang wo que ren ren wu qing dan yi xia	4900
+请帮我确认测试结果	qing bang wo que ren ce shi jie guo	4900
+请帮我确认测试结果一下	qing bang wo que ren ce shi jie guo yi xia	4900
+请帮我确认版本计划	qing bang wo que ren ban ben ji hua	4900
+请帮我确认版本计划一下	qing bang wo que ren ban ben ji hua yi xia	4900
+请帮我确认评审意见	qing bang wo que ren ping shen yi jian	4900
+请帮我确认评审意见一下	qing bang wo que ren ping shen yi jian yi xia	4900
+请帮我确认需求文档	qing bang wo que ren xu qiu wen dang	4900
+请帮我确认需求文档一下	qing bang wo que ren xu qiu wen dang yi xia	4900
+请帮我确认需求清单	qing bang wo que ren xu qiu qing dan	4900
+请帮我确认需求清单一下	qing bang wo que ren xu qiu qing dan yi xia	4900
+请帮我确认项目排期	qing bang wo que ren xiang mu pai qi	4900
+请帮我确认项目排期一下	qing bang wo que ren xiang mu pai qi yi xia	4900
+请帮我确认项目进度	qing bang wo que ren xiang mu jin du	4900
+请帮我确认项目进度一下	qing bang wo que ren xiang mu jin du yi xia	4900
+请帮我确认预算金额	qing bang wo que ren yu suan jin e	4900
+请帮我确认预算金额一下	qing bang wo que ren yu suan jin e yi xia	4900
+请帮我确认验收标准	qing bang wo que ren yan shou biao zhun	4900
+请帮我确认验收标准一下	qing bang wo que ren yan shou biao zhun yi xia	4900
+请帮我调整上线时间	qing bang wo tiao zheng shang xian shi jian	4900
+请帮我调整上线时间一下	qing bang wo tiao zheng shang xian shi jian yi xia	4900
+请帮我调整交付时间	qing bang wo tiao zheng jiao fu shi jian	4900
+请帮我调整交付时间一下	qing bang wo tiao zheng jiao fu shi jian yi xia	4900
+请帮我调整任务清单	qing bang wo tiao zheng ren wu qing dan	4900
+请帮我调整任务清单一下	qing bang wo tiao zheng ren wu qing dan yi xia	4900
+请帮我调整测试结果	qing bang wo tiao zheng ce shi jie guo	4900
+请帮我调整测试结果一下	qing bang wo tiao zheng ce shi jie guo yi xia	4900
+请帮我调整版本计划	qing bang wo tiao zheng ban ben ji hua	4900
+请帮我调整版本计划一下	qing bang wo tiao zheng ban ben ji hua yi xia	4900
+请帮我调整评审意见	qing bang wo tiao zheng ping shen yi jian	4900
+请帮我调整评审意见一下	qing bang wo tiao zheng ping shen yi jian yi xia	4900
+请帮我调整需求文档	qing bang wo tiao zheng xu qiu wen dang	4900
+请帮我调整需求文档一下	qing bang wo tiao zheng xu qiu wen dang yi xia	4900
+请帮我调整需求清单	qing bang wo tiao zheng xu qiu qing dan	4900
+请帮我调整需求清单一下	qing bang wo tiao zheng xu qiu qing dan yi xia	4900
+请帮我调整项目排期	qing bang wo tiao zheng xiang mu pai qi	4900
+请帮我调整项目排期一下	qing bang wo tiao zheng xiang mu pai qi yi xia	4900
+请帮我调整项目进度	qing bang wo tiao zheng xiang mu jin du	4900
+请帮我调整项目进度一下	qing bang wo tiao zheng xiang mu jin du yi xia	4900
+请帮我调整预算金额	qing bang wo tiao zheng yu suan jin e	4900
+请帮我调整预算金额一下	qing bang wo tiao zheng yu suan jin e yi xia	4900
+请帮我调整验收标准	qing bang wo tiao zheng yan shou biao zhun	4900
+请帮我调整验收标准一下	qing bang wo tiao zheng yan shou biao zhun yi xia	4900
+请更新上线时间	qing geng xin shang xian shi jian	4900
+请更新上线时间一下	qing geng xin shang xian shi jian yi xia	4900
+请更新交付时间	qing geng xin jiao fu shi jian	4900
+请更新交付时间一下	qing geng xin jiao fu shi jian yi xia	4900
+请更新任务清单	qing geng xin ren wu qing dan	4900
+请更新任务清单一下	qing geng xin ren wu qing dan yi xia	4900
+请更新测试结果	qing geng xin ce shi jie guo	4900
+请更新测试结果一下	qing geng xin ce shi jie guo yi xia	4900
+请更新版本计划	qing geng xin ban ben ji hua	4900
+请更新版本计划一下	qing geng xin ban ben ji hua yi xia	4900
+请更新评审意见	qing geng xin ping shen yi jian	4900
+请更新评审意见一下	qing geng xin ping shen yi jian yi xia	4900
+请更新需求文档	qing geng xin xu qiu wen dang	4900
+请更新需求文档一下	qing geng xin xu qiu wen dang yi xia	4900
+请更新需求清单	qing geng xin xu qiu qing dan	4900
+请更新需求清单一下	qing geng xin xu qiu qing dan yi xia	4900
+请更新项目排期	qing geng xin xiang mu pai qi	4900
+请更新项目排期一下	qing geng xin xiang mu pai qi yi xia	4900
+请更新项目进度	qing geng xin xiang mu jin du	4900
+请更新项目进度一下	qing geng xin xiang mu jin du yi xia	4900
+请更新预算金额	qing geng xin yu suan jin e	4900
+请更新预算金额一下	qing geng xin yu suan jin e yi xia	4900
+请更新验收标准	qing geng xin yan shou biao zhun	4900
+请更新验收标准一下	qing geng xin yan shou biao zhun yi xia	4900
+请核对上线时间	qing he dui shang xian shi jian	4900
+请核对上线时间一下	qing he dui shang xian shi jian yi xia	4900
+请核对交付时间	qing he dui jiao fu shi jian	4900
+请核对交付时间一下	qing he dui jiao fu shi jian yi xia	4900
+请核对任务清单	qing he dui ren wu qing dan	4900
+请核对任务清单一下	qing he dui ren wu qing dan yi xia	4900
+请核对测试结果	qing he dui ce shi jie guo	4900
+请核对测试结果一下	qing he dui ce shi jie guo yi xia	4900
+请核对版本计划	qing he dui ban ben ji hua	4900
+请核对版本计划一下	qing he dui ban ben ji hua yi xia	4900
+请核对评审意见	qing he dui ping shen yi jian	4900
+请核对评审意见一下	qing he dui ping shen yi jian yi xia	4900
+请核对需求文档	qing he dui xu qiu wen dang	4900
+请核对需求文档一下	qing he dui xu qiu wen dang yi xia	4900
+请核对需求清单	qing he dui xu qiu qing dan	4900
+请核对需求清单一下	qing he dui xu qiu qing dan yi xia	4900
+请核对项目排期	qing he dui xiang mu pai qi	4900
+请核对项目排期一下	qing he dui xiang mu pai qi yi xia	4900
+请核对项目进度	qing he dui xiang mu jin du	4900
+请核对项目进度一下	qing he dui xiang mu jin du yi xia	4900
+请核对预算金额	qing he dui yu suan jin e	4900
+请核对预算金额一下	qing he dui yu suan jin e yi xia	4900
+请核对验收标准	qing he dui yan shou biao zhun	4900
+请核对验收标准一下	qing he dui yan shou biao zhun yi xia	4900
+请确认上线时间	qing que ren shang xian shi jian	4900
+请确认上线时间一下	qing que ren shang xian shi jian yi xia	4900
+请确认交付时间	qing que ren jiao fu shi jian	4900
+请确认交付时间一下	qing que ren jiao fu shi jian yi xia	4900
+请确认任务清单	qing que ren ren wu qing dan	4900
+请确认任务清单一下	qing que ren ren wu qing dan yi xia	4900
+请确认测试结果	qing que ren ce shi jie guo	4900
+请确认测试结果一下	qing que ren ce shi jie guo yi xia	4900
+请确认版本计划	qing que ren ban ben ji hua	4900
+请确认版本计划一下	qing que ren ban ben ji hua yi xia	4900
+请确认评审意见	qing que ren ping shen yi jian	4900
+请确认评审意见一下	qing que ren ping shen yi jian yi xia	4900
+请确认需求文档	qing que ren xu qiu wen dang	4900
+请确认需求文档一下	qing que ren xu qiu wen dang yi xia	4900
+请确认需求清单	qing que ren xu qiu qing dan	4900
+请确认需求清单一下	qing que ren xu qiu qing dan yi xia	4900
+请确认项目排期	qing que ren xiang mu pai qi	4900
+请确认项目排期一下	qing que ren xiang mu pai qi yi xia	4900
+请确认项目进度	qing que ren xiang mu jin du	4900
+请确认项目进度一下	qing que ren xiang mu jin du yi xia	4900
+请确认预算金额	qing que ren yu suan jin e	4900
+请确认预算金额一下	qing que ren yu suan jin e yi xia	4900
+请确认验收标准	qing que ren yan shou biao zhun	4900
+请确认验收标准一下	qing que ren yan shou biao zhun yi xia	4900
+请调整上线时间	qing tiao zheng shang xian shi jian	4900
+请调整上线时间一下	qing tiao zheng shang xian shi jian yi xia	4900
+请调整交付时间	qing tiao zheng jiao fu shi jian	4900
+请调整交付时间一下	qing tiao zheng jiao fu shi jian yi xia	4900
+请调整任务清单	qing tiao zheng ren wu qing dan	4900
+请调整任务清单一下	qing tiao zheng ren wu qing dan yi xia	4900
+请调整测试结果	qing tiao zheng ce shi jie guo	4900
+请调整测试结果一下	qing tiao zheng ce shi jie guo yi xia	4900
+请调整版本计划	qing tiao zheng ban ben ji hua	4900
+请调整版本计划一下	qing tiao zheng ban ben ji hua yi xia	4900
+请调整评审意见	qing tiao zheng ping shen yi jian	4900
+请调整评审意见一下	qing tiao zheng ping shen yi jian yi xia	4900
+请调整需求文档	qing tiao zheng xu qiu wen dang	4900
+请调整需求文档一下	qing tiao zheng xu qiu wen dang yi xia	4900
+请调整需求清单	qing tiao zheng xu qiu qing dan	4900
+请调整需求清单一下	qing tiao zheng xu qiu qing dan yi xia	4900
+请调整项目排期	qing tiao zheng xiang mu pai qi	4900
+请调整项目排期一下	qing tiao zheng xiang mu pai qi yi xia	4900
+请调整项目进度	qing tiao zheng xiang mu jin du	4900
+请调整项目进度一下	qing tiao zheng xiang mu jin du yi xia	4900
+请调整预算金额	qing tiao zheng yu suan jin e	4900
+请调整预算金额一下	qing tiao zheng yu suan jin e yi xia	4900
+请调整验收标准	qing tiao zheng yan shou biao zhun	4900
+请调整验收标准一下	qing tiao zheng yan shou biao zhun yi xia	4900
+麻烦同步上线时间	ma fan tong bu shang xian shi jian	4900
+麻烦同步上线时间一下	ma fan tong bu shang xian shi jian yi xia	4900
+麻烦同步交付时间	ma fan tong bu jiao fu shi jian	4900
+麻烦同步交付时间一下	ma fan tong bu jiao fu shi jian yi xia	4900
+麻烦同步任务清单	ma fan tong bu ren wu qing dan	4900
+麻烦同步任务清单一下	ma fan tong bu ren wu qing dan yi xia	4900
+麻烦同步测试结果	ma fan tong bu ce shi jie guo	4900
+麻烦同步测试结果一下	ma fan tong bu ce shi jie guo yi xia	4900
+麻烦同步版本计划	ma fan tong bu ban ben ji hua	4900
+麻烦同步版本计划一下	ma fan tong bu ban ben ji hua yi xia	4900
+麻烦同步评审意见	ma fan tong bu ping shen yi jian	4900
+麻烦同步评审意见一下	ma fan tong bu ping shen yi jian yi xia	4900
+麻烦同步需求文档	ma fan tong bu xu qiu wen dang	4900
+麻烦同步需求文档一下	ma fan tong bu xu qiu wen dang yi xia	4900
+麻烦同步需求清单	ma fan tong bu xu qiu qing dan	4900
+麻烦同步需求清单一下	ma fan tong bu xu qiu qing dan yi xia	4900
+麻烦同步项目排期	ma fan tong bu xiang mu pai qi	4900
+麻烦同步项目排期一下	ma fan tong bu xiang mu pai qi yi xia	4900
+麻烦同步项目进度	ma fan tong bu xiang mu jin du	4900
+麻烦同步项目进度一下	ma fan tong bu xiang mu jin du yi xia	4900
+麻烦同步预算金额	ma fan tong bu yu suan jin e	4900
+麻烦同步预算金额一下	ma fan tong bu yu suan jin e yi xia	4900
+麻烦同步验收标准	ma fan tong bu yan shou biao zhun	4900
+麻烦同步验收标准一下	ma fan tong bu yan shou biao zhun yi xia	4900
+麻烦帮我同步上线时间	ma fan bang wo tong bu shang xian shi jian	4900
+麻烦帮我同步上线时间一下	ma fan bang wo tong bu shang xian shi jian yi xia	4900
+麻烦帮我同步交付时间	ma fan bang wo tong bu jiao fu shi jian	4900
+麻烦帮我同步交付时间一下	ma fan bang wo tong bu jiao fu shi jian yi xia	4900
+麻烦帮我同步任务清单	ma fan bang wo tong bu ren wu qing dan	4900
+麻烦帮我同步任务清单一下	ma fan bang wo tong bu ren wu qing dan yi xia	4900
+麻烦帮我同步测试结果	ma fan bang wo tong bu ce shi jie guo	4900
+麻烦帮我同步测试结果一下	ma fan bang wo tong bu ce shi jie guo yi xia	4900
+麻烦帮我同步版本计划	ma fan bang wo tong bu ban ben ji hua	4900
+麻烦帮我同步版本计划一下	ma fan bang wo tong bu ban ben ji hua yi xia	4900
+麻烦帮我同步评审意见	ma fan bang wo tong bu ping shen yi jian	4900
+麻烦帮我同步评审意见一下	ma fan bang wo tong bu ping shen yi jian yi xia	4900
+麻烦帮我同步需求文档	ma fan bang wo tong bu xu qiu wen dang	4900
+麻烦帮我同步需求文档一下	ma fan bang wo tong bu xu qiu wen dang yi xia	4900
+麻烦帮我同步需求清单	ma fan bang wo tong bu xu qiu qing dan	4900
+麻烦帮我同步需求清单一下	ma fan bang wo tong bu xu qiu qing dan yi xia	4900
+麻烦帮我同步项目排期	ma fan bang wo tong bu xiang mu pai qi	4900
+麻烦帮我同步项目排期一下	ma fan bang wo tong bu xiang mu pai qi yi xia	4900
+麻烦帮我同步项目进度	ma fan bang wo tong bu xiang mu jin du	4900
+麻烦帮我同步项目进度一下	ma fan bang wo tong bu xiang mu jin du yi xia	4900
+麻烦帮我同步预算金额	ma fan bang wo tong bu yu suan jin e	4900
+麻烦帮我同步预算金额一下	ma fan bang wo tong bu yu suan jin e yi xia	4900
+麻烦帮我同步验收标准	ma fan bang wo tong bu yan shou biao zhun	4900
+麻烦帮我同步验收标准一下	ma fan bang wo tong bu yan shou biao zhun yi xia	4900
+麻烦帮我更新上线时间	ma fan bang wo geng xin shang xian shi jian	4900
+麻烦帮我更新上线时间一下	ma fan bang wo geng xin shang xian shi jian yi xia	4900
+麻烦帮我更新交付时间	ma fan bang wo geng xin jiao fu shi jian	4900
+麻烦帮我更新交付时间一下	ma fan bang wo geng xin jiao fu shi jian yi xia	4900
+麻烦帮我更新任务清单	ma fan bang wo geng xin ren wu qing dan	4900
+麻烦帮我更新任务清单一下	ma fan bang wo geng xin ren wu qing dan yi xia	4900
+麻烦帮我更新测试结果	ma fan bang wo geng xin ce shi jie guo	4900
+麻烦帮我更新测试结果一下	ma fan bang wo geng xin ce shi jie guo yi xia	4900
+麻烦帮我更新版本计划	ma fan bang wo geng xin ban ben ji hua	4900
+麻烦帮我更新版本计划一下	ma fan bang wo geng xin ban ben ji hua yi xia	4900
+麻烦帮我更新评审意见	ma fan bang wo geng xin ping shen yi jian	4900
+麻烦帮我更新评审意见一下	ma fan bang wo geng xin ping shen yi jian yi xia	4900
+麻烦帮我更新需求文档	ma fan bang wo geng xin xu qiu wen dang	4900
+麻烦帮我更新需求文档一下	ma fan bang wo geng xin xu qiu wen dang yi xia	4900
+麻烦帮我更新需求清单	ma fan bang wo geng xin xu qiu qing dan	4900
+麻烦帮我更新需求清单一下	ma fan bang wo geng xin xu qiu qing dan yi xia	4900
+麻烦帮我更新项目排期	ma fan bang wo geng xin xiang mu pai qi	4900
+麻烦帮我更新项目排期一下	ma fan bang wo geng xin xiang mu pai qi yi xia	4900
+麻烦帮我更新项目进度	ma fan bang wo geng xin xiang mu jin du	4900
+麻烦帮我更新项目进度一下	ma fan bang wo geng xin xiang mu jin du yi xia	4900
+麻烦帮我更新预算金额	ma fan bang wo geng xin yu suan jin e	4900
+麻烦帮我更新预算金额一下	ma fan bang wo geng xin yu suan jin e yi xia	4900
+麻烦帮我更新验收标准	ma fan bang wo geng xin yan shou biao zhun	4900
+麻烦帮我更新验收标准一下	ma fan bang wo geng xin yan shou biao zhun yi xia	4900
+麻烦帮我核对上线时间	ma fan bang wo he dui shang xian shi jian	4900
+麻烦帮我核对上线时间一下	ma fan bang wo he dui shang xian shi jian yi xia	4900
+麻烦帮我核对交付时间	ma fan bang wo he dui jiao fu shi jian	4900
+麻烦帮我核对交付时间一下	ma fan bang wo he dui jiao fu shi jian yi xia	4900
+麻烦帮我核对任务清单	ma fan bang wo he dui ren wu qing dan	4900
+麻烦帮我核对任务清单一下	ma fan bang wo he dui ren wu qing dan yi xia	4900
+麻烦帮我核对测试结果	ma fan bang wo he dui ce shi jie guo	4900
+麻烦帮我核对测试结果一下	ma fan bang wo he dui ce shi jie guo yi xia	4900
+麻烦帮我核对版本计划	ma fan bang wo he dui ban ben ji hua	4900
+麻烦帮我核对版本计划一下	ma fan bang wo he dui ban ben ji hua yi xia	4900
+麻烦帮我核对评审意见	ma fan bang wo he dui ping shen yi jian	4900
+麻烦帮我核对评审意见一下	ma fan bang wo he dui ping shen yi jian yi xia	4900
+麻烦帮我核对需求文档	ma fan bang wo he dui xu qiu wen dang	4900
+麻烦帮我核对需求文档一下	ma fan bang wo he dui xu qiu wen dang yi xia	4900
+麻烦帮我核对需求清单	ma fan bang wo he dui xu qiu qing dan	4900
+麻烦帮我核对需求清单一下	ma fan bang wo he dui xu qiu qing dan yi xia	4900
+麻烦帮我核对项目排期	ma fan bang wo he dui xiang mu pai qi	4900
+麻烦帮我核对项目排期一下	ma fan bang wo he dui xiang mu pai qi yi xia	4900
+麻烦帮我核对项目进度	ma fan bang wo he dui xiang mu jin du	4900
+麻烦帮我核对项目进度一下	ma fan bang wo he dui xiang mu jin du yi xia	4900
+麻烦帮我核对预算金额	ma fan bang wo he dui yu suan jin e	4900
+麻烦帮我核对预算金额一下	ma fan bang wo he dui yu suan jin e yi xia	4900
+麻烦帮我核对验收标准	ma fan bang wo he dui yan shou biao zhun	4900
+麻烦帮我核对验收标准一下	ma fan bang wo he dui yan shou biao zhun yi xia	4900
+麻烦帮我确认上线时间	ma fan bang wo que ren shang xian shi jian	4900
+麻烦帮我确认上线时间一下	ma fan bang wo que ren shang xian shi jian yi xia	4900
+麻烦帮我确认交付时间	ma fan bang wo que ren jiao fu shi jian	4900
+麻烦帮我确认交付时间一下	ma fan bang wo que ren jiao fu shi jian yi xia	4900
+麻烦帮我确认任务清单	ma fan bang wo que ren ren wu qing dan	4900
+麻烦帮我确认任务清单一下	ma fan bang wo que ren ren wu qing dan yi xia	4900
+麻烦帮我确认测试结果	ma fan bang wo que ren ce shi jie guo	4900
+麻烦帮我确认测试结果一下	ma fan bang wo que ren ce shi jie guo yi xia	4900
+麻烦帮我确认版本计划	ma fan bang wo que ren ban ben ji hua	4900
+麻烦帮我确认版本计划一下	ma fan bang wo que ren ban ben ji hua yi xia	4900
+麻烦帮我确认评审意见	ma fan bang wo que ren ping shen yi jian	4900
+麻烦帮我确认评审意见一下	ma fan bang wo que ren ping shen yi jian yi xia	4900
+麻烦帮我确认需求文档	ma fan bang wo que ren xu qiu wen dang	4900
+麻烦帮我确认需求文档一下	ma fan bang wo que ren xu qiu wen dang yi xia	4900
+麻烦帮我确认需求清单	ma fan bang wo que ren xu qiu qing dan	4900
+麻烦帮我确认需求清单一下	ma fan bang wo que ren xu qiu qing dan yi xia	4900
+麻烦帮我确认项目排期	ma fan bang wo que ren xiang mu pai qi	4900
+麻烦帮我确认项目排期一下	ma fan bang wo que ren xiang mu pai qi yi xia	4900
+麻烦帮我确认项目进度	ma fan bang wo que ren xiang mu jin du	4900
+麻烦帮我确认项目进度一下	ma fan bang wo que ren xiang mu jin du yi xia	4900
+麻烦帮我确认预算金额	ma fan bang wo que ren yu suan jin e	4900
+麻烦帮我确认预算金额一下	ma fan bang wo que ren yu suan jin e yi xia	4900
+麻烦帮我确认验收标准	ma fan bang wo que ren yan shou biao zhun	4900
+麻烦帮我确认验收标准一下	ma fan bang wo que ren yan shou biao zhun yi xia	4900
+麻烦帮我调整上线时间	ma fan bang wo tiao zheng shang xian shi jian	4900
+麻烦帮我调整上线时间一下	ma fan bang wo tiao zheng shang xian shi jian yi xia	4900
+麻烦帮我调整交付时间	ma fan bang wo tiao zheng jiao fu shi jian	4900
+麻烦帮我调整交付时间一下	ma fan bang wo tiao zheng jiao fu shi jian yi xia	4900
+麻烦帮我调整任务清单	ma fan bang wo tiao zheng ren wu qing dan	4900
+麻烦帮我调整任务清单一下	ma fan bang wo tiao zheng ren wu qing dan yi xia	4900
+麻烦帮我调整测试结果	ma fan bang wo tiao zheng ce shi jie guo	4900
+麻烦帮我调整测试结果一下	ma fan bang wo tiao zheng ce shi jie guo yi xia	4900
+麻烦帮我调整版本计划	ma fan bang wo tiao zheng ban ben ji hua	4900
+麻烦帮我调整版本计划一下	ma fan bang wo tiao zheng ban ben ji hua yi xia	4900
+麻烦帮我调整评审意见	ma fan bang wo tiao zheng ping shen yi jian	4900
+麻烦帮我调整评审意见一下	ma fan bang wo tiao zheng ping shen yi jian yi xia	4900
+麻烦帮我调整需求文档	ma fan bang wo tiao zheng xu qiu wen dang	4900
+麻烦帮我调整需求文档一下	ma fan bang wo tiao zheng xu qiu wen dang yi xia	4900
+麻烦帮我调整需求清单	ma fan bang wo tiao zheng xu qiu qing dan	4900
+麻烦帮我调整需求清单一下	ma fan bang wo tiao zheng xu qiu qing dan yi xia	4900
+麻烦帮我调整项目排期	ma fan bang wo tiao zheng xiang mu pai qi	4900
+麻烦帮我调整项目排期一下	ma fan bang wo tiao zheng xiang mu pai qi yi xia	4900
+麻烦帮我调整项目进度	ma fan bang wo tiao zheng xiang mu jin du	4900
+麻烦帮我调整项目进度一下	ma fan bang wo tiao zheng xiang mu jin du yi xia	4900
+麻烦帮我调整预算金额	ma fan bang wo tiao zheng yu suan jin e	4900
+麻烦帮我调整预算金额一下	ma fan bang wo tiao zheng yu suan jin e yi xia	4900
+麻烦帮我调整验收标准	ma fan bang wo tiao zheng yan shou biao zhun	4900
+麻烦帮我调整验收标准一下	ma fan bang wo tiao zheng yan shou biao zhun yi xia	4900
+麻烦更新上线时间	ma fan geng xin shang xian shi jian	4900
+麻烦更新上线时间一下	ma fan geng xin shang xian shi jian yi xia	4900
+麻烦更新交付时间	ma fan geng xin jiao fu shi jian	4900
+麻烦更新交付时间一下	ma fan geng xin jiao fu shi jian yi xia	4900
+麻烦更新任务清单	ma fan geng xin ren wu qing dan	4900
+麻烦更新任务清单一下	ma fan geng xin ren wu qing dan yi xia	4900
+麻烦更新测试结果	ma fan geng xin ce shi jie guo	4900
+麻烦更新测试结果一下	ma fan geng xin ce shi jie guo yi xia	4900
+麻烦更新版本计划	ma fan geng xin ban ben ji hua	4900
+麻烦更新版本计划一下	ma fan geng xin ban ben ji hua yi xia	4900
+麻烦更新评审意见	ma fan geng xin ping shen yi jian	4900
+麻烦更新评审意见一下	ma fan geng xin ping shen yi jian yi xia	4900
+麻烦更新需求文档	ma fan geng xin xu qiu wen dang	4900
+麻烦更新需求文档一下	ma fan geng xin xu qiu wen dang yi xia	4900
+麻烦更新需求清单	ma fan geng xin xu qiu qing dan	4900
+麻烦更新需求清单一下	ma fan geng xin xu qiu qing dan yi xia	4900
+麻烦更新项目排期	ma fan geng xin xiang mu pai qi	4900
+麻烦更新项目排期一下	ma fan geng xin xiang mu pai qi yi xia	4900
+麻烦更新项目进度	ma fan geng xin xiang mu jin du	4900
+麻烦更新项目进度一下	ma fan geng xin xiang mu jin du yi xia	4900
+麻烦更新预算金额	ma fan geng xin yu suan jin e	4900
+麻烦更新预算金额一下	ma fan geng xin yu suan jin e yi xia	4900
+麻烦更新验收标准	ma fan geng xin yan shou biao zhun	4900
+麻烦更新验收标准一下	ma fan geng xin yan shou biao zhun yi xia	4900
+麻烦核对上线时间	ma fan he dui shang xian shi jian	4900
+麻烦核对上线时间一下	ma fan he dui shang xian shi jian yi xia	4900
+麻烦核对交付时间	ma fan he dui jiao fu shi jian	4900
+麻烦核对交付时间一下	ma fan he dui jiao fu shi jian yi xia	4900
+麻烦核对任务清单	ma fan he dui ren wu qing dan	4900
+麻烦核对任务清单一下	ma fan he dui ren wu qing dan yi xia	4900
+麻烦核对测试结果	ma fan he dui ce shi jie guo	4900
+麻烦核对测试结果一下	ma fan he dui ce shi jie guo yi xia	4900
+麻烦核对版本计划	ma fan he dui ban ben ji hua	4900
+麻烦核对版本计划一下	ma fan he dui ban ben ji hua yi xia	4900
+麻烦核对评审意见	ma fan he dui ping shen yi jian	4900
+麻烦核对评审意见一下	ma fan he dui ping shen yi jian yi xia	4900
+麻烦核对需求文档	ma fan he dui xu qiu wen dang	4900
+麻烦核对需求文档一下	ma fan he dui xu qiu wen dang yi xia	4900
+麻烦核对需求清单	ma fan he dui xu qiu qing dan	4900
+麻烦核对需求清单一下	ma fan he dui xu qiu qing dan yi xia	4900
+麻烦核对项目排期	ma fan he dui xiang mu pai qi	4900
+麻烦核对项目排期一下	ma fan he dui xiang mu pai qi yi xia	4900
+麻烦核对项目进度	ma fan he dui xiang mu jin du	4900
+麻烦核对项目进度一下	ma fan he dui xiang mu jin du yi xia	4900
+麻烦核对预算金额	ma fan he dui yu suan jin e	4900
+麻烦核对预算金额一下	ma fan he dui yu suan jin e yi xia	4900
+麻烦核对验收标准	ma fan he dui yan shou biao zhun	4900
+麻烦核对验收标准一下	ma fan he dui yan shou biao zhun yi xia	4900
+麻烦确认上线时间	ma fan que ren shang xian shi jian	4900
+麻烦确认上线时间一下	ma fan que ren shang xian shi jian yi xia	4900
+麻烦确认交付时间	ma fan que ren jiao fu shi jian	4900
+麻烦确认交付时间一下	ma fan que ren jiao fu shi jian yi xia	4900
+麻烦确认任务清单	ma fan que ren ren wu qing dan	4900
+麻烦确认任务清单一下	ma fan que ren ren wu qing dan yi xia	4900
+麻烦确认测试结果	ma fan que ren ce shi jie guo	4900
+麻烦确认测试结果一下	ma fan que ren ce shi jie guo yi xia	4900
+麻烦确认版本计划	ma fan que ren ban ben ji hua	4900
+麻烦确认版本计划一下	ma fan que ren ban ben ji hua yi xia	4900
+麻烦确认评审意见	ma fan que ren ping shen yi jian	4900
+麻烦确认评审意见一下	ma fan que ren ping shen yi jian yi xia	4900
+麻烦确认需求文档	ma fan que ren xu qiu wen dang	4900
+麻烦确认需求文档一下	ma fan que ren xu qiu wen dang yi xia	4900
+麻烦确认需求清单	ma fan que ren xu qiu qing dan	4900
+麻烦确认需求清单一下	ma fan que ren xu qiu qing dan yi xia	4900
+麻烦确认项目排期	ma fan que ren xiang mu pai qi	4900
+麻烦确认项目排期一下	ma fan que ren xiang mu pai qi yi xia	4900
+麻烦确认项目进度	ma fan que ren xiang mu jin du	4900
+麻烦确认项目进度一下	ma fan que ren xiang mu jin du yi xia	4900
+麻烦确认预算金额	ma fan que ren yu suan jin e	4900
+麻烦确认预算金额一下	ma fan que ren yu suan jin e yi xia	4900
+麻烦确认验收标准	ma fan que ren yan shou biao zhun	4900
+麻烦确认验收标准一下	ma fan que ren yan shou biao zhun yi xia	4900
+麻烦调整上线时间	ma fan tiao zheng shang xian shi jian	4900
+麻烦调整上线时间一下	ma fan tiao zheng shang xian shi jian yi xia	4900
+麻烦调整交付时间	ma fan tiao zheng jiao fu shi jian	4900
+麻烦调整交付时间一下	ma fan tiao zheng jiao fu shi jian yi xia	4900
+麻烦调整任务清单	ma fan tiao zheng ren wu qing dan	4900
+麻烦调整任务清单一下	ma fan tiao zheng ren wu qing dan yi xia	4900
+麻烦调整测试结果	ma fan tiao zheng ce shi jie guo	4900
+麻烦调整测试结果一下	ma fan tiao zheng ce shi jie guo yi xia	4900
+麻烦调整版本计划	ma fan tiao zheng ban ben ji hua	4900
+麻烦调整版本计划一下	ma fan tiao zheng ban ben ji hua yi xia	4900
+麻烦调整评审意见	ma fan tiao zheng ping shen yi jian	4900
+麻烦调整评审意见一下	ma fan tiao zheng ping shen yi jian yi xia	4900
+麻烦调整需求文档	ma fan tiao zheng xu qiu wen dang	4900
+麻烦调整需求文档一下	ma fan tiao zheng xu qiu wen dang yi xia	4900
+麻烦调整需求清单	ma fan tiao zheng xu qiu qing dan	4900
+麻烦调整需求清单一下	ma fan tiao zheng xu qiu qing dan yi xia	4900
+麻烦调整项目排期	ma fan tiao zheng xiang mu pai qi	4900
+麻烦调整项目排期一下	ma fan tiao zheng xiang mu pai qi yi xia	4900
+麻烦调整项目进度	ma fan tiao zheng xiang mu jin du	4900
+麻烦调整项目进度一下	ma fan tiao zheng xiang mu jin du yi xia	4900
+麻烦调整预算金额	ma fan tiao zheng yu suan jin e	4900
+麻烦调整预算金额一下	ma fan tiao zheng yu suan jin e yi xia	4900
+麻烦调整验收标准	ma fan tiao zheng yan shou biao zhun	4900
+麻烦调整验收标准一下	ma fan tiao zheng yan shou biao zhun yi xia	4900

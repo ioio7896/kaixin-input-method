@@ -1,0 +1,73 @@
+# 开心离线输入法分类补充：电商购物
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+优惠券	you hui quan	9160
+商品详情	shang pin xiang qing	8800
+积分兑换	ji fen dui huan	8800
+购物车	gou wu che	8800
+旗舰店	qi jian dian	8499
+分期付款	fen qi fu kuan	6582
+买家秀	mai jia xiu	6100
+以旧换新	yi jiu huan xin	6100
+价格保护	jia ge bao hu	6100
+优惠活动	you hui huo dong	6100
+保价申请	bao jia shen qing	6100
+凑单商品	cou dan shang pin	6100
+到手价	dao shou jia	6100
+到货通知	dao huo tong zhi	6100
+加购商品	jia gou shang pin	6100
+包邮商品	bao you shang pin	6100
+卖家秀	mai jia xiu	6100
+发货时间	fa huo shi jian	6100
+合并付款	he bing fu kuan	6100
+同款商品	tong kuan shang pin	6100
+商品上架	shang pin shang jia	6100
+商品下架	shang pin xia jia	6100
+商品参数	shang pin can shu	6100
+商品图片	shang pin tu pian	6100
+商品库存	shang pin ku cun	6100
+商品标题	shang pin biao ti	6100
+商品编号	shang pin bian hao	6100
+商品规格	shang pin gui ge	6100
+商品评价	shang pin ping jia	6100
+商品链接	shang pin lian jie	6100
+团购优惠	tuan gou you hui	6100
+官方店	guan fang dian	6100
+尺码表	chi ma biao	6100
+尾款支付	wei kuan zhi fu	6100
+平台券	ping tai quan	6100
+库存不足	ku cun bu zu	6100
+店铺券	dian pu quan	6100
+待付款	dai fu kuan	6100
+待发货	dai fa huo	6100
+待收货	dai shou huo	6100
+待评价	dai ping jia	6100
+扫码购买	sao ma gou mai	6100
+批量采购	pi liang cai gou	6100
+拍错规格	pai cuo gui ge	6100
+拼团订单	pin tuan ding dan	6100
+收货信息	shou huo xin xi	6100
+正品保障	zheng pin bao zhang	6100
+比价工具	bi jia gong ju	6100
+满减券	man jian quan	6100
+电子购物卡	dian zi gou wu ka	6100
+直播购物	zhi bo gou wu	6100
+积分抵扣	ji fen di kou	6100
+自营店	zi ying dian	6100
+规格选择	gui ge xuan ze	6100
+订单取消	ding dan qu xiao	6100
+订单编号	ding dan bian hao	6100
+订单详情	ding dan xiang qing	6100
+货到付款	huo dao fu kuan	6100
+购买数量	gou mai shu liang	6100
+购买记录	gou mai ji lu	6100
+购物清单	gou wu qing dan	6100
+赠品补发	zeng pin bu fa	6100
+运费说明	yun fei shuo ming	6100
+限时优惠	xian shi you hui	6100
+预售商品	yu shou shang pin	6100
+预售定金	yu shou ding jin	6100
+领券中心	ling quan zhong xin	6100
+收藏夹	shou cang jia	3652

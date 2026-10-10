@@ -3406,6 +3406,12 @@ pub(super) fn abbrev_length_penalty(
         return 0.0;
     }
     let phrase_chars = phrase_char_count(phrase);
+    // A five-character prediction from a short key is weaker evidence than
+    // a fitting three/four-character word, including four-letter -> five-char.
+    if phrase_chars == 5 && input_chars <= 4 {
+        return SHORT_ABBREV_FIVE_CHAR_EXPANSION_PENALTY
+            + input_chars.abs_diff(phrase_chars) as f64 * ABBREV_OVERLONG_STEP_PENALTY;
+    }
     if phrase_chars <= input_chars + 1 {
         return 0.0;
     }

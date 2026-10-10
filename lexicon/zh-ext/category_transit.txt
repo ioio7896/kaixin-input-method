@@ -1,0 +1,59 @@
+# 开心离线输入法分类补充：公共交通
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+出租车	chu zu che	9871
+网约车	wang yue che	8023
+候车室	hou che shi	6196
+一等座	yi deng zuo	6100
+上车地点	shang che di dian	6100
+下车地点	xia che di dian	6100
+临时停靠	lin shi ting kao	6100
+乘车码	cheng che ma	6100
+二等座	er deng zuo	6100
+候补订单	hou bu ding dan	6100
+候补购票	hou bu gou piao	6100
+候车大厅	hou che da ting	6100
+候车时间	hou che shi jian	6100
+公交换乘	gong jiao huan cheng	6100
+公交末班车	gong jiao mo ban che	6100
+公交站台	gong jiao zhan tai	6100
+出行路线	chu xing lu xian	6100
+列车时刻	lie che shi ke	6100
+到站时间	dao zhan shi jian	6100
+刷码乘车	shua ma cheng che	6100
+动车车次	dong che che ci	6100
+发车时间	fa che shi jian	6100
+司机接单	si ji jie dan	6100
+商务座	shang wu zuo	6100
+地铁换乘	di tie huan cheng	6100
+地铁末班车	di tie mo ban che	6100
+地铁站口	di tie zhan kou	6100
+地铁线路	di tie xian lu	6100
+地铁运营	di tie yun ying	6100
+座位号码	zuo wei hao ma	6100
+拼车出行	pin che chu xing	6100
+换乘方案	huan cheng fang an	6100
+接驾地点	jie jia di dian	6100
+无座车票	wu zuo che piao	6100
+火车票预订	huo che piao yu ding	6100
+站台号码	zhan tai hao ma	6100
+站点查询	zhan dian cha xun	6100
+订单行程	ding dan xing cheng	6100
+路线规划	lu xian gui hua	6100
+车厢号码	che xiang hao ma	6100
+车牌号码	che pai hao ma	6100
+车票改签	che piao gai qian	6100
+车票退票	che piao tui piao	6100
+车站入口	che zhan ru kou	6100
+车站出口	che zhan chu kou	6100
+进站口	jin zhan kou	6100
+顺风车	shun feng che	6100
+高铁车次	gao tie che ci	6100
+末班车	mo ban che	5790
+交通卡	jiao tong ka	2667
+出站口	chu zhan kou	2110
+公交线路	gong jiao xian lu	1917
+检票口	jian piao kou	1915
+首班车	shou ban che	1014

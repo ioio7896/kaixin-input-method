@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HY2 current-user IME IPC protocol v2",
+  "type": "object",
+  "required": ["protocol_version", "request_id", "action"],
+  "properties": {
+    "protocol_version": { "const": 2 },
+    "request_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$" },
+    "action": { "enum": ["translate", "ping", "capabilities", "cancel", "status", "ack", "present", "cancel_pending"] },
+    "text": { "type": "string", "maxLength": 200000 },
+    "source": { "type": "string" },
+    "target": { "type": "string" },
+    "presentation": { "enum": ["background", "compact", "full"] },
+    "delivery": { "enum": ["return", "show"] },
+    "reply_pipe": { "type": "string", "pattern": "^Kaixin\\.Translate\\.Result\\.[A-Za-z0-9._-]+$", "maxLength": 160 },
+    "target_hwnd": { "type": "integer" },
+    "target_process_id": { "type": "integer", "minimum": 0 },
+    "focus_generation": { "type": "integer", "minimum": 0 },
+    "replace_selection": { "type": "boolean" },
+    "cancel_request_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$" },
+    "origin": { "type": "string", "maxLength": 128 },
+    "session": { "type": "string", "maxLength": 128 },
+    "generation": { "type": "integer", "minimum": 0 },
+    "callback_ack": { "type": "boolean" },
+    "query_request_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$" },
+    "chunk_index": { "type": "integer", "minimum": 0 }
+  }
+}

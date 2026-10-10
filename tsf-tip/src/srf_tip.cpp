@@ -2,6 +2,7 @@
 #include "direct_text_conversion.h"
 #include "input_mode_policy.h"
 #include "game_rules.generated.h"
+#include "input_injection_policy.h"
 
 #include <algorithm>
 #include <array>
@@ -17,6 +18,7 @@
 #include <mutex>
 #include <new>
 #include <ole2.h>
+#include <inputscope.h>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -35,6 +37,8 @@
 #include "pinyin_stub.h"
 #include "privacy_sensitive_context.h"
 #include "thread_mgr_sink.h"
+#include "text_edit_sink.h"
+#include "tsf_edit_policy.h"
 
 #include "srf_tip_parts/srf_tip_internal.ipp"
 #include "srf_tip_parts/srf_tip_lifecycle.ipp"

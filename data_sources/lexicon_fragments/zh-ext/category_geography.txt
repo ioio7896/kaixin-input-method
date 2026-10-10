@@ -1,0 +1,50 @@
+# 开心离线输入法分类补充：地理地质
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+城市规划	cheng shi gui hua	7582
+经纬度	jing wei du	7187
+国土规划	guo tu gui hua	6100
+土地覆盖	tu di fu gai	6100
+土壤侵蚀	tu rang qin shi	6100
+地下水位	di xia shui wei	6100
+地下水补给	di xia shui bu ji	6100
+地图制图	di tu zhi tu	6100
+地层岩性	di ceng yan xing	6100
+地形测绘	di xing ce hui	6100
+地理坐标	di li zuo biao	6100
+地表变形	di biao bian xing	6100
+地质勘探	di zhi kan tan	6100
+地质构造	di zhi gou zao	6100
+地质调查	di zhi diao cha	6100
+地震监测	di zhen jian ce	6100
+地震预警	di zhen yu jing	6100
+地面沉降	di mian chen jiang	6100
+坐标系统	zuo biao xi tong	6100
+山洪预警	shan hong yu jing	6100
+岩石分类	yan shi fen lei	6100
+工程地质	gong cheng di zhi	6100
+数字高程	shu zi gao cheng	6100
+水文地质	shui wen di zhi	6100
+水文监测	shui wen jian ce	6100
+河流径流	he liu jing liu	6100
+河道治理	he dao zhi li	6100
+洪水预报	hong shui yu bao	6100
+流域管理	liu yu guan li	6100
+海拔高度	hai ba gao du	6100
+滑坡泥石流	hua po ni shi liu	6100
+生态空间	sheng tai kong jian	6100
+矿床勘查	kuang chuang kan cha	6100
+空间分析	kong jian fen xi	6100
+遥感影像	yao gan ying xiang	6100
+遥感监测	yao gan jian ce	6100
+防洪工程	fang hong gong cheng	6100
+区域规划	qu yu gui hua	6000
+土地利用	tu di li yong	6000
+地图投影	di tu tou ying	6000
+地理信息系统	di li xin xi xi tong	6000
+水土流失	shui tu liu shi	6000
+水土保持	shui tu bao chi	4517
+地质灾害	di zhi zai hai	2984
+矿产资源	kuang chan zi yuan	2935

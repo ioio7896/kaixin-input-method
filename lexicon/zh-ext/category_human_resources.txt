@@ -1,0 +1,62 @@
+# 开心离线输入法分类补充：人事考勤
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+试用期	shi yong qi	8197
+事假申请	shi jia shen qing	6100
+产假申请	chan jia shen qing	6100
+值班表	zhi ban biao	6100
+入职体检	ru zhi ti jian	6100
+入职培训	ru zhi pei xun	6100
+入职手续	ru zhi shou xu	6100
+入职材料	ru zhi cai liao	6100
+加班时长	jia ban shi chang	6100
+加班申请	jia ban shen qing	6100
+劳动合同	lao dong he tong	6100
+合同续签	he tong xu qian	6100
+员工档案	yuan gong dang an	6100
+员工福利	yuan gong fu li	6100
+培训计划	pei xun ji hua	6100
+外勤打卡	wai qin da ka	6100
+婚假申请	hun jia shen qing	6100
+岗位职责	gang wei zhi ze	6100
+岗位要求	gang wei yao qiu	6100
+岗位调动	gang wei diao dong	6100
+年假余额	nian jia yu e	6100
+年假申请	nian jia shen qing	6100
+年终奖金	nian zhong jiang jin	6100
+录用通知	lu yong tong zhi	6100
+打卡记录	da ka ji lu	6100
+招聘岗位	zhao pin gang wei	6100
+招聘计划	zhao pin ji hua	6100
+招聘需求	zhao pin xu qiu	6100
+排班表	pai ban biao	6100
+病假申请	bing jia shen qing	6100
+离职交接	li zhi jiao jie	6100
+离职申请	li zhi shen qing	6100
+离职证明	li zhi zheng ming	6100
+简历筛选	jian li shai xuan	6100
+绩效奖金	ji xiao jiang jin	6100
+绩效考核	ji xiao kao he	6100
+绩效评估	ji xiao ping gu	6100
+绩效面谈	ji xiao mian tan	6100
+考勤异常	kao qin yi chang	6100
+考勤记录	kao qin ji lu	6100
+职位描述	zhi wei miao shu	6100
+育儿假	yu er jia	6100
+薪资发放	xin zi fa fang	6100
+薪资结构	xin zi jie gou	6100
+薪资调整	xin zi tiao zheng	6100
+补卡申请	bu ka shen qing	6100
+请假申请	qing jia shen qing	6100
+调休余额	tiao xiu yu e	6100
+调休申请	tiao xiu shen qing	6100
+转正审批	zhuan zheng shen pi	6100
+转正申请	zhuan zheng shen qing	6100
+转正评估	zhuan zheng ping gu	6100
+陪产假	pei chan jia	6100
+面试反馈	mian shi fan kui	6100
+面试安排	mian shi an pai	6100
+面试结果	mian shi jie guo	6100
+面试通知	mian shi tong zhi	6100

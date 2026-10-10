@@ -1,0 +1,275 @@
+# 开心离线输入法分类补充：退换售后
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+售后服务	shou hou fu wu	8800
+退货退款	tui huo tui kuan	8800
+七天无理由	qi tian wu li you	6100
+上门维修	shang men wei xiu	6100
+仅退款	jin tui kuan	6100
+价格差额	jia ge cha e	6100
+保修卡	bao xiu ka	6100
+保修服务	bao xiu fu wu	6100
+协商退款	xie shang tui kuan	6100
+原路退回	yuan lu tui hui	6100
+发票抬头	fa piao tai tou	6100
+同意退款	tong yi tui kuan	6100
+售后凭证	shou hou ping zheng	6100
+售后工单	shou hou gong dan	6100
+售后申请	shou hou shen qing	6100
+售后记录	shou hou ji lu	6100
+售后进度	shou hou jin du	6100
+商品与描述不符	shang pin yu miao shu bu fu	6100
+商品瑕疵	shang pin xia ci	6100
+客服介入	ke fu jie ru	6100
+少件漏件	shao jian lou jian	6100
+差价退款	cha jia tui kuan	6100
+平台介入	ping tai jie ru	6100
+延长保修	yan chang bao xiu	6100
+投诉处理	tou su chu li	6100
+拒绝退款	ju jue tui kuan	6100
+换货单号	huan huo dan hao	6100
+换货商品	huan huo shang pin	6100
+换货地址	huan huo di zhi	6100
+无理由退货	wu li you tui huo	6100
+检测报告	jian ce bao gao	6100
+漏发配件	lou fa pei jian	6100
+申请换货	shen qing huan huo	6100
+申请退款	shen qing tui kuan	6100
+申请退货	shen qing tui huo	6100
+破损补发	po sun bu fa	6100
+纠纷处理	jiu fen chu li	6100
+维修申请	wei xiu shen qing	6100
+维修网点	wei xiu wang dian	6100
+维修费用	wei xiu fei yong	6100
+维修进度	wei xiu jin du	6100
+补发赠品	bu fa zeng pin	6100
+补寄配件	bu ji pei jian	6100
+补开发票	bu kai fa piao	6100
+订单截图	ding dan jie tu	6100
+请帮我申请退款	qing bang wo shen qing tui kuan	6100
+请问能换货吗	qing wen neng huan huo ma	6100
+质量检测	zhi liang jian ce	6100
+质量问题	zhi liang wen ti	6100
+购买凭证	gou mai ping zheng	6100
+返厂维修	fan chang wei xiu	6100
+退换说明	tui huan shuo ming	6100
+退款到账	tui kuan dao zhang	6100
+退款失败	tui kuan shi bai	6100
+退款进度	tui kuan jin du	6100
+退款金额	tui kuan jin e	6100
+退货单号	tui huo dan hao	6100
+退货原因	tui huo yuan yin	6100
+退货地址	tui huo di zhi	6100
+退货运费	tui huo yun fei	6100
+错发商品	cuo fa shang pin	6100
+保修期	bao xiu qi	5431
+售后申请已经提交	shou hou shen qing yi jing ti jiao	5200
+售后申请已经通过	shou hou shen qing yi jing tong guo	5200
+售后申请正在审核	shou hou shen qing zheng zai shen he	5200
+售后申请需要补充材料	shou hou shen qing xu yao bu chong cai liao	5200
+换货申请已经提交	huan huo shen qing yi jing ti jiao	5200
+换货申请已经通过	huan huo shen qing yi jing tong guo	5200
+换货申请正在审核	huan huo shen qing zheng zai shen he	5200
+换货申请需要补充材料	huan huo shen qing xu yao bu chong cai liao	5200
+退款申请已经提交	tui kuan shen qing yi jing ti jiao	5200
+退款申请已经通过	tui kuan shen qing yi jing tong guo	5200
+退款申请正在审核	tui kuan shen qing zheng zai shen he	5200
+退款申请需要补充材料	tui kuan shen qing xu yao bu chong cai liao	5200
+退货申请已经提交	tui huo shen qing yi jing ti jiao	5200
+退货申请已经通过	tui huo shen qing yi jing tong guo	5200
+退货申请正在审核	tui huo shen qing zheng zai shen he	5200
+退货申请需要补充材料	tui huo shen qing xu yao bu chong cai liao	5200
+请帮我查看售后记录	qing bang wo cha kan shou hou ji lu	4900
+请帮我查看售后记录一下	qing bang wo cha kan shou hou ji lu yi xia	4900
+请帮我查看换货进度	qing bang wo cha kan huan huo jin du	4900
+请帮我查看换货进度一下	qing bang wo cha kan huan huo jin du yi xia	4900
+请帮我查看检测报告	qing bang wo cha kan jian ce bao gao	4900
+请帮我查看检测报告一下	qing bang wo cha kan jian ce bao gao yi xia	4900
+请帮我查看维修进度	qing bang wo cha kan wei xiu jin du	4900
+请帮我查看维修进度一下	qing bang wo cha kan wei xiu jin du yi xia	4900
+请帮我查看退款进度	qing bang wo cha kan tui kuan jin du	4900
+请帮我查看退款进度一下	qing bang wo cha kan tui kuan jin du yi xia	4900
+请帮我查看退款金额	qing bang wo cha kan tui kuan jin e	4900
+请帮我查看退款金额一下	qing bang wo cha kan tui kuan jin e yi xia	4900
+请帮我查看退货单号	qing bang wo cha kan tui huo dan hao	4900
+请帮我查看退货单号一下	qing bang wo cha kan tui huo dan hao yi xia	4900
+请帮我查看退货地址	qing bang wo cha kan tui huo di zhi	4900
+请帮我查看退货地址一下	qing bang wo cha kan tui huo di zhi yi xia	4900
+请帮我查询售后记录	qing bang wo cha xun shou hou ji lu	4900
+请帮我查询售后记录一下	qing bang wo cha xun shou hou ji lu yi xia	4900
+请帮我查询换货进度	qing bang wo cha xun huan huo jin du	4900
+请帮我查询换货进度一下	qing bang wo cha xun huan huo jin du yi xia	4900
+请帮我查询检测报告	qing bang wo cha xun jian ce bao gao	4900
+请帮我查询检测报告一下	qing bang wo cha xun jian ce bao gao yi xia	4900
+请帮我查询维修进度	qing bang wo cha xun wei xiu jin du	4900
+请帮我查询维修进度一下	qing bang wo cha xun wei xiu jin du yi xia	4900
+请帮我查询退款进度	qing bang wo cha xun tui kuan jin du	4900
+请帮我查询退款进度一下	qing bang wo cha xun tui kuan jin du yi xia	4900
+请帮我查询退款金额	qing bang wo cha xun tui kuan jin e	4900
+请帮我查询退款金额一下	qing bang wo cha xun tui kuan jin e yi xia	4900
+请帮我查询退货单号	qing bang wo cha xun tui huo dan hao	4900
+请帮我查询退货单号一下	qing bang wo cha xun tui huo dan hao yi xia	4900
+请帮我查询退货地址	qing bang wo cha xun tui huo di zhi	4900
+请帮我查询退货地址一下	qing bang wo cha xun tui huo di zhi yi xia	4900
+请帮我确认售后记录	qing bang wo que ren shou hou ji lu	4900
+请帮我确认售后记录一下	qing bang wo que ren shou hou ji lu yi xia	4900
+请帮我确认换货进度	qing bang wo que ren huan huo jin du	4900
+请帮我确认换货进度一下	qing bang wo que ren huan huo jin du yi xia	4900
+请帮我确认检测报告	qing bang wo que ren jian ce bao gao	4900
+请帮我确认检测报告一下	qing bang wo que ren jian ce bao gao yi xia	4900
+请帮我确认维修进度	qing bang wo que ren wei xiu jin du	4900
+请帮我确认维修进度一下	qing bang wo que ren wei xiu jin du yi xia	4900
+请帮我确认退款进度	qing bang wo que ren tui kuan jin du	4900
+请帮我确认退款进度一下	qing bang wo que ren tui kuan jin du yi xia	4900
+请帮我确认退款金额	qing bang wo que ren tui kuan jin e	4900
+请帮我确认退款金额一下	qing bang wo que ren tui kuan jin e yi xia	4900
+请帮我确认退货单号	qing bang wo que ren tui huo dan hao	4900
+请帮我确认退货单号一下	qing bang wo que ren tui huo dan hao yi xia	4900
+请帮我确认退货地址	qing bang wo que ren tui huo di zhi	4900
+请帮我确认退货地址一下	qing bang wo que ren tui huo di zhi yi xia	4900
+请查看售后记录	qing cha kan shou hou ji lu	4900
+请查看售后记录一下	qing cha kan shou hou ji lu yi xia	4900
+请查看换货进度	qing cha kan huan huo jin du	4900
+请查看换货进度一下	qing cha kan huan huo jin du yi xia	4900
+请查看检测报告	qing cha kan jian ce bao gao	4900
+请查看检测报告一下	qing cha kan jian ce bao gao yi xia	4900
+请查看维修进度	qing cha kan wei xiu jin du	4900
+请查看维修进度一下	qing cha kan wei xiu jin du yi xia	4900
+请查看退款进度	qing cha kan tui kuan jin du	4900
+请查看退款进度一下	qing cha kan tui kuan jin du yi xia	4900
+请查看退款金额	qing cha kan tui kuan jin e	4900
+请查看退款金额一下	qing cha kan tui kuan jin e yi xia	4900
+请查看退货单号	qing cha kan tui huo dan hao	4900
+请查看退货单号一下	qing cha kan tui huo dan hao yi xia	4900
+请查看退货地址	qing cha kan tui huo di zhi	4900
+请查看退货地址一下	qing cha kan tui huo di zhi yi xia	4900
+请查询售后记录	qing cha xun shou hou ji lu	4900
+请查询售后记录一下	qing cha xun shou hou ji lu yi xia	4900
+请查询换货进度	qing cha xun huan huo jin du	4900
+请查询换货进度一下	qing cha xun huan huo jin du yi xia	4900
+请查询检测报告	qing cha xun jian ce bao gao	4900
+请查询检测报告一下	qing cha xun jian ce bao gao yi xia	4900
+请查询维修进度	qing cha xun wei xiu jin du	4900
+请查询维修进度一下	qing cha xun wei xiu jin du yi xia	4900
+请查询退款进度	qing cha xun tui kuan jin du	4900
+请查询退款进度一下	qing cha xun tui kuan jin du yi xia	4900
+请查询退款金额	qing cha xun tui kuan jin e	4900
+请查询退款金额一下	qing cha xun tui kuan jin e yi xia	4900
+请查询退货单号	qing cha xun tui huo dan hao	4900
+请查询退货单号一下	qing cha xun tui huo dan hao yi xia	4900
+请查询退货地址	qing cha xun tui huo di zhi	4900
+请查询退货地址一下	qing cha xun tui huo di zhi yi xia	4900
+请确认售后记录	qing que ren shou hou ji lu	4900
+请确认售后记录一下	qing que ren shou hou ji lu yi xia	4900
+请确认换货进度	qing que ren huan huo jin du	4900
+请确认换货进度一下	qing que ren huan huo jin du yi xia	4900
+请确认检测报告	qing que ren jian ce bao gao	4900
+请确认检测报告一下	qing que ren jian ce bao gao yi xia	4900
+请确认维修进度	qing que ren wei xiu jin du	4900
+请确认维修进度一下	qing que ren wei xiu jin du yi xia	4900
+请确认退款进度	qing que ren tui kuan jin du	4900
+请确认退款进度一下	qing que ren tui kuan jin du yi xia	4900
+请确认退款金额	qing que ren tui kuan jin e	4900
+请确认退款金额一下	qing que ren tui kuan jin e yi xia	4900
+请确认退货单号	qing que ren tui huo dan hao	4900
+请确认退货单号一下	qing que ren tui huo dan hao yi xia	4900
+请确认退货地址	qing que ren tui huo di zhi	4900
+请确认退货地址一下	qing que ren tui huo di zhi yi xia	4900
+麻烦帮我查看售后记录	ma fan bang wo cha kan shou hou ji lu	4900
+麻烦帮我查看售后记录一下	ma fan bang wo cha kan shou hou ji lu yi xia	4900
+麻烦帮我查看换货进度	ma fan bang wo cha kan huan huo jin du	4900
+麻烦帮我查看换货进度一下	ma fan bang wo cha kan huan huo jin du yi xia	4900
+麻烦帮我查看检测报告	ma fan bang wo cha kan jian ce bao gao	4900
+麻烦帮我查看检测报告一下	ma fan bang wo cha kan jian ce bao gao yi xia	4900
+麻烦帮我查看维修进度	ma fan bang wo cha kan wei xiu jin du	4900
+麻烦帮我查看维修进度一下	ma fan bang wo cha kan wei xiu jin du yi xia	4900
+麻烦帮我查看退款进度	ma fan bang wo cha kan tui kuan jin du	4900
+麻烦帮我查看退款进度一下	ma fan bang wo cha kan tui kuan jin du yi xia	4900
+麻烦帮我查看退款金额	ma fan bang wo cha kan tui kuan jin e	4900
+麻烦帮我查看退款金额一下	ma fan bang wo cha kan tui kuan jin e yi xia	4900
+麻烦帮我查看退货单号	ma fan bang wo cha kan tui huo dan hao	4900
+麻烦帮我查看退货单号一下	ma fan bang wo cha kan tui huo dan hao yi xia	4900
+麻烦帮我查看退货地址	ma fan bang wo cha kan tui huo di zhi	4900
+麻烦帮我查看退货地址一下	ma fan bang wo cha kan tui huo di zhi yi xia	4900
+麻烦帮我查询售后记录	ma fan bang wo cha xun shou hou ji lu	4900
+麻烦帮我查询售后记录一下	ma fan bang wo cha xun shou hou ji lu yi xia	4900
+麻烦帮我查询换货进度	ma fan bang wo cha xun huan huo jin du	4900
+麻烦帮我查询换货进度一下	ma fan bang wo cha xun huan huo jin du yi xia	4900
+麻烦帮我查询检测报告	ma fan bang wo cha xun jian ce bao gao	4900
+麻烦帮我查询检测报告一下	ma fan bang wo cha xun jian ce bao gao yi xia	4900
+麻烦帮我查询维修进度	ma fan bang wo cha xun wei xiu jin du	4900
+麻烦帮我查询维修进度一下	ma fan bang wo cha xun wei xiu jin du yi xia	4900
+麻烦帮我查询退款进度	ma fan bang wo cha xun tui kuan jin du	4900
+麻烦帮我查询退款进度一下	ma fan bang wo cha xun tui kuan jin du yi xia	4900
+麻烦帮我查询退款金额	ma fan bang wo cha xun tui kuan jin e	4900
+麻烦帮我查询退款金额一下	ma fan bang wo cha xun tui kuan jin e yi xia	4900
+麻烦帮我查询退货单号	ma fan bang wo cha xun tui huo dan hao	4900
+麻烦帮我查询退货单号一下	ma fan bang wo cha xun tui huo dan hao yi xia	4900
+麻烦帮我查询退货地址	ma fan bang wo cha xun tui huo di zhi	4900
+麻烦帮我查询退货地址一下	ma fan bang wo cha xun tui huo di zhi yi xia	4900
+麻烦帮我确认售后记录	ma fan bang wo que ren shou hou ji lu	4900
+麻烦帮我确认售后记录一下	ma fan bang wo que ren shou hou ji lu yi xia	4900
+麻烦帮我确认换货进度	ma fan bang wo que ren huan huo jin du	4900
+麻烦帮我确认换货进度一下	ma fan bang wo que ren huan huo jin du yi xia	4900
+麻烦帮我确认检测报告	ma fan bang wo que ren jian ce bao gao	4900
+麻烦帮我确认检测报告一下	ma fan bang wo que ren jian ce bao gao yi xia	4900
+麻烦帮我确认维修进度	ma fan bang wo que ren wei xiu jin du	4900
+麻烦帮我确认维修进度一下	ma fan bang wo que ren wei xiu jin du yi xia	4900
+麻烦帮我确认退款进度	ma fan bang wo que ren tui kuan jin du	4900
+麻烦帮我确认退款进度一下	ma fan bang wo que ren tui kuan jin du yi xia	4900
+麻烦帮我确认退款金额	ma fan bang wo que ren tui kuan jin e	4900
+麻烦帮我确认退款金额一下	ma fan bang wo que ren tui kuan jin e yi xia	4900
+麻烦帮我确认退货单号	ma fan bang wo que ren tui huo dan hao	4900
+麻烦帮我确认退货单号一下	ma fan bang wo que ren tui huo dan hao yi xia	4900
+麻烦帮我确认退货地址	ma fan bang wo que ren tui huo di zhi	4900
+麻烦帮我确认退货地址一下	ma fan bang wo que ren tui huo di zhi yi xia	4900
+麻烦查看售后记录	ma fan cha kan shou hou ji lu	4900
+麻烦查看售后记录一下	ma fan cha kan shou hou ji lu yi xia	4900
+麻烦查看换货进度	ma fan cha kan huan huo jin du	4900
+麻烦查看换货进度一下	ma fan cha kan huan huo jin du yi xia	4900
+麻烦查看检测报告	ma fan cha kan jian ce bao gao	4900
+麻烦查看检测报告一下	ma fan cha kan jian ce bao gao yi xia	4900
+麻烦查看维修进度	ma fan cha kan wei xiu jin du	4900
+麻烦查看维修进度一下	ma fan cha kan wei xiu jin du yi xia	4900
+麻烦查看退款进度	ma fan cha kan tui kuan jin du	4900
+麻烦查看退款进度一下	ma fan cha kan tui kuan jin du yi xia	4900
+麻烦查看退款金额	ma fan cha kan tui kuan jin e	4900
+麻烦查看退款金额一下	ma fan cha kan tui kuan jin e yi xia	4900
+麻烦查看退货单号	ma fan cha kan tui huo dan hao	4900
+麻烦查看退货单号一下	ma fan cha kan tui huo dan hao yi xia	4900
+麻烦查看退货地址	ma fan cha kan tui huo di zhi	4900
+麻烦查看退货地址一下	ma fan cha kan tui huo di zhi yi xia	4900
+麻烦查询售后记录	ma fan cha xun shou hou ji lu	4900
+麻烦查询售后记录一下	ma fan cha xun shou hou ji lu yi xia	4900
+麻烦查询换货进度	ma fan cha xun huan huo jin du	4900
+麻烦查询换货进度一下	ma fan cha xun huan huo jin du yi xia	4900
+麻烦查询检测报告	ma fan cha xun jian ce bao gao	4900
+麻烦查询检测报告一下	ma fan cha xun jian ce bao gao yi xia	4900
+麻烦查询维修进度	ma fan cha xun wei xiu jin du	4900
+麻烦查询维修进度一下	ma fan cha xun wei xiu jin du yi xia	4900
+麻烦查询退款进度	ma fan cha xun tui kuan jin du	4900
+麻烦查询退款进度一下	ma fan cha xun tui kuan jin du yi xia	4900
+麻烦查询退款金额	ma fan cha xun tui kuan jin e	4900
+麻烦查询退款金额一下	ma fan cha xun tui kuan jin e yi xia	4900
+麻烦查询退货单号	ma fan cha xun tui huo dan hao	4900
+麻烦查询退货单号一下	ma fan cha xun tui huo dan hao yi xia	4900
+麻烦查询退货地址	ma fan cha xun tui huo di zhi	4900
+麻烦查询退货地址一下	ma fan cha xun tui huo di zhi yi xia	4900
+麻烦确认售后记录	ma fan que ren shou hou ji lu	4900
+麻烦确认售后记录一下	ma fan que ren shou hou ji lu yi xia	4900
+麻烦确认换货进度	ma fan que ren huan huo jin du	4900
+麻烦确认换货进度一下	ma fan que ren huan huo jin du yi xia	4900
+麻烦确认检测报告	ma fan que ren jian ce bao gao	4900
+麻烦确认检测报告一下	ma fan que ren jian ce bao gao yi xia	4900
+麻烦确认维修进度	ma fan que ren wei xiu jin du	4900
+麻烦确认维修进度一下	ma fan que ren wei xiu jin du yi xia	4900
+麻烦确认退款进度	ma fan que ren tui kuan jin du	4900
+麻烦确认退款进度一下	ma fan que ren tui kuan jin du yi xia	4900
+麻烦确认退款金额	ma fan que ren tui kuan jin e	4900
+麻烦确认退款金额一下	ma fan que ren tui kuan jin e yi xia	4900
+麻烦确认退货单号	ma fan que ren tui huo dan hao	4900
+麻烦确认退货单号一下	ma fan que ren tui huo dan hao yi xia	4900
+麻烦确认退货地址	ma fan que ren tui huo di zhi	4900
+麻烦确认退货地址一下	ma fan que ren tui huo di zhi yi xia	4900

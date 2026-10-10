@@ -1,0 +1,49 @@
+# 开心离线输入法分类补充：无障碍服务
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+养老服务	yang lao fu wu	6100
+助听设备	zhu ting she bei	6100
+助视设备	zhu shi she bei	6100
+大字模式	da zi mo shi	6100
+字体放大	zi ti fang da	6100
+字幕设置	zi mu she zhi	6100
+实时字幕	shi shi zi mu	6100
+导盲服务	dao mang fu wu	6100
+屏幕朗读	ping mu lang du	6100
+志愿服务	zhi yuan fu wu	6100
+手势导航	shou shi dao hang	6100
+手语服务	shou yu fu wu	6100
+手语翻译	shou yu fan yi	6100
+护理服务	hu li fu wu	6100
+文字转语音	wen zi zhuan yu yin	6100
+无障碍停车位	wu zhang ai ting che wei	6100
+无障碍出行	wu zhang ai chu xing	6100
+无障碍卫生间	wu zhang ai wei sheng jian	6100
+无障碍模式	wu zhang ai mo shi	6100
+无障碍电梯	wu zhang ai dian ti	6100
+无障碍设施	wu zhang ai she shi	6100
+无障碍通道	wu zhang ai tong dao	6100
+无障碍阅读	wu zhang ai yue du	6100
+服务预约	fu wu yu yue	6100
+焦点导航	jiao dian dao hang	6100
+盲文阅读	mang wen yue du	6100
+触控辅助	chu kong fu zhu	6100
+语音提示	yu yin ti shi	6100
+语音播报	yu yin bo bao	6100
+语音转文字	yu yin zhuai wen zi	6100
+语音输入	yu yin shu ru	6100
+读屏操作	du ping cao zuo	6100
+读屏软件	du ping ruan jian	6100
+轮椅服务	lun yi fu wu	6100
+轮椅通道	lun yi tong dao	6100
+辅助功能	fu zhu gong neng	6100
+适老化	shi lao hua	6100
+适老化改造	shi lao hua gai zao	6100
+键盘导航	jian pan dao hang	6100
+长者服务	zhang zhe fu wu	6100
+陪护服务	pei hu fu wu	6100
+颜色反转	yan se fan zhuan	6100
+高对比度	gao dui bi du	6100
+无障碍设计	wu zhang ai she ji	6000

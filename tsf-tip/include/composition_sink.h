@@ -10,6 +10,7 @@ class CCompositionSink final : public ITfCompositionSink {
 
  public:
   explicit CCompositionSink(CSrfTip* tip);
+  void Detach() { m_pTip = nullptr; }
 
   STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override;
   STDMETHODIMP_(ULONG) AddRef() override;

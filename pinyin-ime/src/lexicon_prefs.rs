@@ -10,6 +10,27 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 use std::time::{Duration, SystemTime};
 
+include!("retired_lexicons.generated.rs");
+include!("category_lexicons.generated.rs");
+
+pub fn is_retired_optional_lexicon_tag(tag: &str) -> bool {
+    RETIRED_OPTIONAL_LEXICON_TAGS
+        .iter()
+        .any(|retired| retired.eq_ignore_ascii_case(tag))
+        || tag == "药物2026"
+}
+
+pub fn is_retired_packaged_lexicon_path(path: &Path) -> bool {
+    RETIRED_PACKAGED_LEXICON_FILES
+        .iter()
+        .any(|relative| path.ends_with(Path::new(relative)))
+}
+
+/// Retirement applies only to optional dictionaries, never the main lexicon.
+pub fn is_retired_optional_lexicon_path(path: &Path) -> bool {
+    optional_lexicon_path_tag(path).is_some_and(|tag| is_retired_optional_lexicon_tag(&tag))
+}
+
 fn user_config_ini_path() -> Option<PathBuf> {
     crate::app_paths::config_ini_path()
 }
@@ -227,6 +248,9 @@ fn walk_optional_lexicon_files(dir: &Path, map: &mut BTreeMap<String, String>) -
         let Some(tag) = optional_lexicon_path_tag(&path) else {
             continue;
         };
+        if is_retired_optional_lexicon_tag(&tag) {
+            continue;
+        }
         let fname = path
             .file_name()
             .and_then(|n| n.to_str())
@@ -244,7 +268,8 @@ fn lexicon_toggle_map() -> Option<HashMap<String, bool>> {
 }
 
 pub fn default_optional_lexicon_tag_enabled(tag: &str) -> bool {
-    !tag.to_ascii_lowercase().starts_with("hangzhou_")
+    !is_retired_optional_lexicon_tag(tag)
+        && !tag.to_ascii_lowercase().starts_with("hangzhou_")
         && !tag.to_ascii_lowercase().starts_with("professional_")
 }
 
@@ -290,6 +315,9 @@ pub fn discover_optional_lexicon_info(root: &Path) -> Vec<OptionalLexiconInfo> {
             let Some(tag) = optional_lexicon_path_tag(&path) else {
                 continue;
             };
+            if is_retired_optional_lexicon_tag(&tag) {
+                continue;
+            }
             let item = items
                 .entry(tag.clone())
                 .or_insert_with(|| OptionalLexiconInfo {
@@ -329,6 +357,9 @@ pub fn discover_optional_lexicon_info(root: &Path) -> Vec<OptionalLexiconInfo> {
 }
 
 pub fn optional_lexicon_group(tag: &str) -> &'static str {
+    if let Some((_, group)) = category_lexicon_info(tag) {
+        return group;
+    }
     if tag.starts_with("professional_") {
         return "专业领域";
     }
@@ -336,39 +367,19 @@ pub fn optional_lexicon_group(tag: &str) -> &'static str {
         return "地区词库 · 杭州";
     }
     match tag {
-        "daily_communication" | "animals" | "people_names" => "日常生活",
-        "technology" | "medicine" => "专业领域",
+        "daily_communication" => "日常表达",
+        "animals" | "people_names" => "名称与实体",
+        "technology" => "科技与开发",
+        "medicine" => "药物名称",
         "geography_admin" => "地区词库 · 全国与世界",
-        "ai_and_machine_learning"
-        | "internet_products"
-        | "programming_frameworks"
-        | "software_and_cloud"
-        | "chat_common_phrases"
-        | "office_common_phrases"
-        | "china_prefecture_level_admin_333"
-        | "county_admin_short_names_2024"
-        | "world_countries_major_cities"
-        | "chinese_surnames"
-        | "name1"
-        | "animal_common_5000"
-        | "yaowu"
-        | "animal"
-        | "caijing"
-        | "car"
-        | "chengyu"
-        | "diming"
-        | "food"
-        | "it"
-        | "kaixin_common"
-        | "law"
-        | "lishimingren"
-        | "medical"
-        | "poem" => "旧版扩展",
         _ => "其他扩展",
     }
 }
 
 pub fn optional_lexicon_description(tag: &str) -> &'static str {
+    if category_lexicon_info(tag).is_some() {
+        return "分类补充词库；保留基础词频与实际读音，默认开启，可独立关闭。";
+    }
     if tag.starts_with("professional_") {
         return "精选专业基础术语小词库；默认关闭，按需勾选后保存生效。";
     }
@@ -376,11 +387,11 @@ pub fn optional_lexicon_description(tag: &str) -> &'static str {
         return "杭州地名、交通、公共设施与本地生活；建议按需开启。";
     }
     match tag {
-        "daily_communication" => "聊天与办公常用表达；包含与主词库交叠的常用词。",
+        "daily_communication" => "精选真实聊天与办公表达；不以通用词凑足条数。",
         "animals" => "精选 500 条常见动物名称与相关用语。",
         "people_names" => "姓氏、人物姓名及相应读音。",
         "technology" => "人工智能、互联网产品、编程框架与云服务。",
-        "medicine" => "常见药物名称。",
+        "medicine" => "统一收录常见及补充药物通用名；可独立开关，与医疗术语分开。",
         "geography_admin" => "行政区划、国家及主要城市名称。",
         _ => "按实际安装的词库文件加载；可通过名称或文件标识搜索。",
     }
@@ -413,12 +424,15 @@ pub fn legacy_optional_lexicon_tags(tag: &str) -> &'static [&'static str] {
         ],
         "people_names" => &["chinese_surnames", "name1"],
         "animals" => &["animal_common_5000"],
-        "medicine" => &["yaowu"],
+        "medicine" => &["yaowu", "药物2026"],
         _ => &[],
     }
 }
 
 fn optional_lexicon_tag_enabled_from_map(tag: &str, map: &HashMap<String, bool>) -> bool {
+    if is_retired_optional_lexicon_tag(tag) {
+        return false;
+    }
     let key = format!("lexicon_{}", tag.to_ascii_lowercase());
     if let Some(enabled) = map.get(&key).copied() {
         return enabled;
@@ -451,7 +465,8 @@ pub fn has_custom_optional_lexicon_prefs() -> bool {
             let Some(tag) = key.strip_prefix("lexicon_") else {
                 return false;
             };
-            enabled != default_optional_lexicon_tag_enabled(tag)
+            !is_retired_optional_lexicon_tag(tag)
+                && enabled != default_optional_lexicon_tag_enabled(tag)
         })
     })
 }
@@ -481,4 +496,38 @@ fn optional_lexicon_path_enabled(path: &Path, map: Option<&HashMap<String, bool>
     };
     map.map(|prefs| optional_lexicon_tag_enabled_from_map(&tag, prefs))
         .unwrap_or_else(|| default_optional_lexicon_tag_enabled(&tag))
+}
+
+#[cfg(test)]
+mod retirement_tests {
+    use super::*;
+
+    #[test]
+    fn stale_enabled_switches_cannot_restore_retired_sources() {
+        let map = parse_lexicon_section_bool(
+            "[lexicon]\nlexicon_animal=1\nlexicon_ai_and_machine_learning=1\n",
+        );
+        assert!(!optional_lexicon_path_enabled(
+            Path::new("lexicon/zh-ext/THUOCL_animal.txt"),
+            Some(&map),
+        ));
+        assert!(!optional_lexicon_tag_enabled_from_map(
+            "ai_and_machine_learning",
+            &map,
+        ));
+        assert!(optional_lexicon_path_enabled(
+            Path::new("lexicon/zh/THUOCL_animal.txt"),
+            Some(&map),
+        ));
+    }
+
+    #[test]
+    fn modern_switches_still_inherit_explicit_legacy_preferences() {
+        let map = parse_lexicon_section_bool("[lexicon]\nlexicon_animal_common_5000=0\n");
+        assert!(!optional_lexicon_tag_enabled_from_map("animals", &map));
+        let map = parse_lexicon_section_bool(
+            "[lexicon]\nlexicon_animal_common_5000=0\nlexicon_animals=1\n",
+        );
+        assert!(optional_lexicon_tag_enabled_from_map("animals", &map));
+    }
 }

@@ -1,0 +1,342 @@
+# 开心离线输入法分类补充：快递物流
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+物流信息	wu liu xin xi	8800
+上门取件	shang men qu jian	6100
+上门派送	shang men pai song	6100
+上门送件	shang men song jian	6100
+中转仓	zhong zhuan cang	6100
+代收包裹	dai shou bao guo	6100
+保价服务	bao jia fu wu	6100
+保价金额	bao jia jin e	6100
+修改收货地址	xiu gai shou huo di zhi	6100
+冷链运输	leng lian yun shu	6100
+冷链配送	leng lian pei song	6100
+分拣中心	fen jian zhong xin	6100
+到付运费	dao fu yun fei	6100
+包装要求	bao zhuang yao qiu	6100
+包裹丢失	bao guo diu shi	6100
+包裹滞留	bao guo zhi liu	6100
+包裹破损	bao guo po sun	6100
+包裹退回	bao guo tui hui	6100
+取件码	qu jian ma	6100
+取件通知	qu jian tong zhi	6100
+同城配送	tong cheng pei song	6100
+大件快递	da jian kuai di	6100
+寄件地址	ji jian di zhi	6100
+快递单号	kuai di dan hao	6100
+快递拒收	kuai di ju shou	6100
+快递拦截	kuai di lan jie	6100
+快递改址	kuai di gai zhi	6100
+快递柜	kuai di gui	6100
+快递签收	kuai di qian shou	6100
+快递网点	kuai di wang dian	6100
+快递转寄	kuai di zhuan ji	6100
+快递驿站	kuai di yi zhan	6100
+揽收记录	lan shou ji lu	6100
+揽收超时	lan shou chao shi	6100
+收货地址	shou huo di zhi	6100
+放在门口	fang zai men kou	6100
+无人签收	wu ren qian shou	6100
+派件通知	pai jian tong zhi	6100
+派送网点	pai song wang dian	6100
+派送范围	pai song fan wei	6100
+物流客服	wu liu ke fu	6100
+物流延迟	wu liu yan chi	6100
+物流异常	wu liu yi chang	6100
+物流更新	wu liu geng xin	6100
+物流轨迹	wu liu gui ji	6100
+生鲜配送	sheng xian pei song	6100
+签收异常	qian shou yi chang	6100
+签收证明	qian shou zheng ming	6100
+续重费用	xu zhong fei yong	6100
+联系快递员	lian xi kuai di yuan	6100
+自提柜	zi ti gui	6100
+自提点	zi ti dian	6100
+运单号码	yun dan hao ma	6100
+运费补贴	yun fei bu tie	6100
+运费险	yun fei xian	6100
+送货上门	song huo shang men	6100
+配送地址	pei song di zhi	6100
+配送时段	pei song shi duan	6100
+配送电话	pei song dian hua	6100
+配送范围	pei song fan wei	6100
+配送进度	pei song jin du	6100
+面单信息	mian dan xin xi	6100
+预约取件	yu yue qu jian	6100
+首重费用	shou zhong fei yong	6100
+收件人	shou jian ren	5414
+包裹已经发出	bao guo yi jing fa chu	5200
+包裹已经签收	bao guo yi jing qian shou	5200
+包裹正在处理中	bao guo zheng zai chu li zhong	5200
+包裹正在配送	bao guo zheng zai pei song	5200
+包裹还没收到	bao guo hai mo shou dao	5200
+快递已经发出	kuai di yi jing fa chu	5200
+快递已经签收	kuai di yi jing qian shou	5200
+快递正在处理中	kuai di zheng zai chu li zhong	5200
+快递正在配送	kuai di zheng zai pei song	5200
+快递还没收到	kuai di hai mo shou dao	5200
+订单已经发出	ding dan yi jing fa chu	5200
+订单已经签收	ding dan yi jing qian shou	5200
+订单正在处理中	ding dan zheng zai chu li zhong	5200
+订单正在配送	ding dan zheng zai pei song	5200
+订单还没收到	ding dan hai mo shou dao	5200
+请修改取件时间	qing xiu gai qu jian shi jian	4900
+请修改取件时间一下	qing xiu gai qu jian shi jian yi xia	4900
+请修改寄件地址	qing xiu gai ji jian di zhi	4900
+请修改寄件地址一下	qing xiu gai ji jian di zhi yi xia	4900
+请修改收件人信息	qing xiu gai shou jian ren xin xi	4900
+请修改收件人信息一下	qing xiu gai shou jian ren xin xi yi xia	4900
+请修改收件电话	qing xiu gai shou jian dian hua	4900
+请修改收件电话一下	qing xiu gai shou jian dian hua yi xia	4900
+请修改收货地址	qing xiu gai shou huo di zhi	4900
+请修改收货地址一下	qing xiu gai shou huo di zhi yi xia	4900
+请修改物流信息	qing xiu gai wu liu xin xi	4900
+请修改物流信息一下	qing xiu gai wu liu xin xi yi xia	4900
+请修改送货地址	qing xiu gai song huo di zhi	4900
+请修改送货地址一下	qing xiu gai song huo di zhi yi xia	4900
+请修改配送时间	qing xiu gai pei song shi jian	4900
+请修改配送时间一下	qing xiu gai pei song shi jian yi xia	4900
+请帮我修改取件时间	qing bang wo xiu gai qu jian shi jian	4900
+请帮我修改取件时间一下	qing bang wo xiu gai qu jian shi jian yi xia	4900
+请帮我修改寄件地址	qing bang wo xiu gai ji jian di zhi	4900
+请帮我修改寄件地址一下	qing bang wo xiu gai ji jian di zhi yi xia	4900
+请帮我修改收件人信息	qing bang wo xiu gai shou jian ren xin xi	4900
+请帮我修改收件人信息一下	qing bang wo xiu gai shou jian ren xin xi yi xia	4900
+请帮我修改收件电话	qing bang wo xiu gai shou jian dian hua	4900
+请帮我修改收件电话一下	qing bang wo xiu gai shou jian dian hua yi xia	4900
+请帮我修改收货地址	qing bang wo xiu gai shou huo di zhi	4900
+请帮我修改收货地址一下	qing bang wo xiu gai shou huo di zhi yi xia	4900
+请帮我修改物流信息	qing bang wo xiu gai wu liu xin xi	4900
+请帮我修改物流信息一下	qing bang wo xiu gai wu liu xin xi yi xia	4900
+请帮我修改送货地址	qing bang wo xiu gai song huo di zhi	4900
+请帮我修改送货地址一下	qing bang wo xiu gai song huo di zhi yi xia	4900
+请帮我修改配送时间	qing bang wo xiu gai pei song shi jian	4900
+请帮我修改配送时间一下	qing bang wo xiu gai pei song shi jian yi xia	4900
+请帮我更新取件时间	qing bang wo geng xin qu jian shi jian	4900
+请帮我更新取件时间一下	qing bang wo geng xin qu jian shi jian yi xia	4900
+请帮我更新寄件地址	qing bang wo geng xin ji jian di zhi	4900
+请帮我更新寄件地址一下	qing bang wo geng xin ji jian di zhi yi xia	4900
+请帮我更新收件人信息	qing bang wo geng xin shou jian ren xin xi	4900
+请帮我更新收件人信息一下	qing bang wo geng xin shou jian ren xin xi yi xia	4900
+请帮我更新收件电话	qing bang wo geng xin shou jian dian hua	4900
+请帮我更新收件电话一下	qing bang wo geng xin shou jian dian hua yi xia	4900
+请帮我更新收货地址	qing bang wo geng xin shou huo di zhi	4900
+请帮我更新收货地址一下	qing bang wo geng xin shou huo di zhi yi xia	4900
+请帮我更新物流信息	qing bang wo geng xin wu liu xin xi	4900
+请帮我更新物流信息一下	qing bang wo geng xin wu liu xin xi yi xia	4900
+请帮我更新送货地址	qing bang wo geng xin song huo di zhi	4900
+请帮我更新送货地址一下	qing bang wo geng xin song huo di zhi yi xia	4900
+请帮我更新配送时间	qing bang wo geng xin pei song shi jian	4900
+请帮我更新配送时间一下	qing bang wo geng xin pei song shi jian yi xia	4900
+请帮我核对取件时间	qing bang wo he dui qu jian shi jian	4900
+请帮我核对取件时间一下	qing bang wo he dui qu jian shi jian yi xia	4900
+请帮我核对寄件地址	qing bang wo he dui ji jian di zhi	4900
+请帮我核对寄件地址一下	qing bang wo he dui ji jian di zhi yi xia	4900
+请帮我核对收件人信息	qing bang wo he dui shou jian ren xin xi	4900
+请帮我核对收件人信息一下	qing bang wo he dui shou jian ren xin xi yi xia	4900
+请帮我核对收件电话	qing bang wo he dui shou jian dian hua	4900
+请帮我核对收件电话一下	qing bang wo he dui shou jian dian hua yi xia	4900
+请帮我核对收货地址	qing bang wo he dui shou huo di zhi	4900
+请帮我核对收货地址一下	qing bang wo he dui shou huo di zhi yi xia	4900
+请帮我核对物流信息	qing bang wo he dui wu liu xin xi	4900
+请帮我核对物流信息一下	qing bang wo he dui wu liu xin xi yi xia	4900
+请帮我核对送货地址	qing bang wo he dui song huo di zhi	4900
+请帮我核对送货地址一下	qing bang wo he dui song huo di zhi yi xia	4900
+请帮我核对配送时间	qing bang wo he dui pei song shi jian	4900
+请帮我核对配送时间一下	qing bang wo he dui pei song shi jian yi xia	4900
+请帮我确认取件时间	qing bang wo que ren qu jian shi jian	4900
+请帮我确认取件时间一下	qing bang wo que ren qu jian shi jian yi xia	4900
+请帮我确认寄件地址	qing bang wo que ren ji jian di zhi	4900
+请帮我确认寄件地址一下	qing bang wo que ren ji jian di zhi yi xia	4900
+请帮我确认收件人信息	qing bang wo que ren shou jian ren xin xi	4900
+请帮我确认收件人信息一下	qing bang wo que ren shou jian ren xin xi yi xia	4900
+请帮我确认收件电话	qing bang wo que ren shou jian dian hua	4900
+请帮我确认收件电话一下	qing bang wo que ren shou jian dian hua yi xia	4900
+请帮我确认收货地址	qing bang wo que ren shou huo di zhi	4900
+请帮我确认收货地址一下	qing bang wo que ren shou huo di zhi yi xia	4900
+请帮我确认物流信息	qing bang wo que ren wu liu xin xi	4900
+请帮我确认物流信息一下	qing bang wo que ren wu liu xin xi yi xia	4900
+请帮我确认送货地址	qing bang wo que ren song huo di zhi	4900
+请帮我确认送货地址一下	qing bang wo que ren song huo di zhi yi xia	4900
+请帮我确认配送时间	qing bang wo que ren pei song shi jian	4900
+请帮我确认配送时间一下	qing bang wo que ren pei song shi jian yi xia	4900
+请更新取件时间	qing geng xin qu jian shi jian	4900
+请更新取件时间一下	qing geng xin qu jian shi jian yi xia	4900
+请更新寄件地址	qing geng xin ji jian di zhi	4900
+请更新寄件地址一下	qing geng xin ji jian di zhi yi xia	4900
+请更新收件人信息	qing geng xin shou jian ren xin xi	4900
+请更新收件人信息一下	qing geng xin shou jian ren xin xi yi xia	4900
+请更新收件电话	qing geng xin shou jian dian hua	4900
+请更新收件电话一下	qing geng xin shou jian dian hua yi xia	4900
+请更新收货地址	qing geng xin shou huo di zhi	4900
+请更新收货地址一下	qing geng xin shou huo di zhi yi xia	4900
+请更新物流信息	qing geng xin wu liu xin xi	4900
+请更新物流信息一下	qing geng xin wu liu xin xi yi xia	4900
+请更新送货地址	qing geng xin song huo di zhi	4900
+请更新送货地址一下	qing geng xin song huo di zhi yi xia	4900
+请更新配送时间	qing geng xin pei song shi jian	4900
+请更新配送时间一下	qing geng xin pei song shi jian yi xia	4900
+请核对取件时间	qing he dui qu jian shi jian	4900
+请核对取件时间一下	qing he dui qu jian shi jian yi xia	4900
+请核对寄件地址	qing he dui ji jian di zhi	4900
+请核对寄件地址一下	qing he dui ji jian di zhi yi xia	4900
+请核对收件人信息	qing he dui shou jian ren xin xi	4900
+请核对收件人信息一下	qing he dui shou jian ren xin xi yi xia	4900
+请核对收件电话	qing he dui shou jian dian hua	4900
+请核对收件电话一下	qing he dui shou jian dian hua yi xia	4900
+请核对收货地址	qing he dui shou huo di zhi	4900
+请核对收货地址一下	qing he dui shou huo di zhi yi xia	4900
+请核对物流信息	qing he dui wu liu xin xi	4900
+请核对物流信息一下	qing he dui wu liu xin xi yi xia	4900
+请核对送货地址	qing he dui song huo di zhi	4900
+请核对送货地址一下	qing he dui song huo di zhi yi xia	4900
+请核对配送时间	qing he dui pei song shi jian	4900
+请核对配送时间一下	qing he dui pei song shi jian yi xia	4900
+请确认取件时间	qing que ren qu jian shi jian	4900
+请确认取件时间一下	qing que ren qu jian shi jian yi xia	4900
+请确认寄件地址	qing que ren ji jian di zhi	4900
+请确认寄件地址一下	qing que ren ji jian di zhi yi xia	4900
+请确认收件人信息	qing que ren shou jian ren xin xi	4900
+请确认收件人信息一下	qing que ren shou jian ren xin xi yi xia	4900
+请确认收件电话	qing que ren shou jian dian hua	4900
+请确认收件电话一下	qing que ren shou jian dian hua yi xia	4900
+请确认收货地址	qing que ren shou huo di zhi	4900
+请确认收货地址一下	qing que ren shou huo di zhi yi xia	4900
+请确认物流信息	qing que ren wu liu xin xi	4900
+请确认物流信息一下	qing que ren wu liu xin xi yi xia	4900
+请确认送货地址	qing que ren song huo di zhi	4900
+请确认送货地址一下	qing que ren song huo di zhi yi xia	4900
+请确认配送时间	qing que ren pei song shi jian	4900
+请确认配送时间一下	qing que ren pei song shi jian yi xia	4900
+麻烦修改取件时间	ma fan xiu gai qu jian shi jian	4900
+麻烦修改取件时间一下	ma fan xiu gai qu jian shi jian yi xia	4900
+麻烦修改寄件地址	ma fan xiu gai ji jian di zhi	4900
+麻烦修改寄件地址一下	ma fan xiu gai ji jian di zhi yi xia	4900
+麻烦修改收件人信息	ma fan xiu gai shou jian ren xin xi	4900
+麻烦修改收件人信息一下	ma fan xiu gai shou jian ren xin xi yi xia	4900
+麻烦修改收件电话	ma fan xiu gai shou jian dian hua	4900
+麻烦修改收件电话一下	ma fan xiu gai shou jian dian hua yi xia	4900
+麻烦修改收货地址	ma fan xiu gai shou huo di zhi	4900
+麻烦修改收货地址一下	ma fan xiu gai shou huo di zhi yi xia	4900
+麻烦修改物流信息	ma fan xiu gai wu liu xin xi	4900
+麻烦修改物流信息一下	ma fan xiu gai wu liu xin xi yi xia	4900
+麻烦修改送货地址	ma fan xiu gai song huo di zhi	4900
+麻烦修改送货地址一下	ma fan xiu gai song huo di zhi yi xia	4900
+麻烦修改配送时间	ma fan xiu gai pei song shi jian	4900
+麻烦修改配送时间一下	ma fan xiu gai pei song shi jian yi xia	4900
+麻烦帮我修改取件时间	ma fan bang wo xiu gai qu jian shi jian	4900
+麻烦帮我修改取件时间一下	ma fan bang wo xiu gai qu jian shi jian yi xia	4900
+麻烦帮我修改寄件地址	ma fan bang wo xiu gai ji jian di zhi	4900
+麻烦帮我修改寄件地址一下	ma fan bang wo xiu gai ji jian di zhi yi xia	4900
+麻烦帮我修改收件人信息	ma fan bang wo xiu gai shou jian ren xin xi	4900
+麻烦帮我修改收件人信息一下	ma fan bang wo xiu gai shou jian ren xin xi yi xia	4900
+麻烦帮我修改收件电话	ma fan bang wo xiu gai shou jian dian hua	4900
+麻烦帮我修改收件电话一下	ma fan bang wo xiu gai shou jian dian hua yi xia	4900
+麻烦帮我修改收货地址	ma fan bang wo xiu gai shou huo di zhi	4900
+麻烦帮我修改收货地址一下	ma fan bang wo xiu gai shou huo di zhi yi xia	4900
+麻烦帮我修改物流信息	ma fan bang wo xiu gai wu liu xin xi	4900
+麻烦帮我修改物流信息一下	ma fan bang wo xiu gai wu liu xin xi yi xia	4900
+麻烦帮我修改送货地址	ma fan bang wo xiu gai song huo di zhi	4900
+麻烦帮我修改送货地址一下	ma fan bang wo xiu gai song huo di zhi yi xia	4900
+麻烦帮我修改配送时间	ma fan bang wo xiu gai pei song shi jian	4900
+麻烦帮我修改配送时间一下	ma fan bang wo xiu gai pei song shi jian yi xia	4900
+麻烦帮我更新取件时间	ma fan bang wo geng xin qu jian shi jian	4900
+麻烦帮我更新取件时间一下	ma fan bang wo geng xin qu jian shi jian yi xia	4900
+麻烦帮我更新寄件地址	ma fan bang wo geng xin ji jian di zhi	4900
+麻烦帮我更新寄件地址一下	ma fan bang wo geng xin ji jian di zhi yi xia	4900
+麻烦帮我更新收件人信息	ma fan bang wo geng xin shou jian ren xin xi	4900
+麻烦帮我更新收件人信息一下	ma fan bang wo geng xin shou jian ren xin xi yi xia	4900
+麻烦帮我更新收件电话	ma fan bang wo geng xin shou jian dian hua	4900
+麻烦帮我更新收件电话一下	ma fan bang wo geng xin shou jian dian hua yi xia	4900
+麻烦帮我更新收货地址	ma fan bang wo geng xin shou huo di zhi	4900
+麻烦帮我更新收货地址一下	ma fan bang wo geng xin shou huo di zhi yi xia	4900
+麻烦帮我更新物流信息	ma fan bang wo geng xin wu liu xin xi	4900
+麻烦帮我更新物流信息一下	ma fan bang wo geng xin wu liu xin xi yi xia	4900
+麻烦帮我更新送货地址	ma fan bang wo geng xin song huo di zhi	4900
+麻烦帮我更新送货地址一下	ma fan bang wo geng xin song huo di zhi yi xia	4900
+麻烦帮我更新配送时间	ma fan bang wo geng xin pei song shi jian	4900
+麻烦帮我更新配送时间一下	ma fan bang wo geng xin pei song shi jian yi xia	4900
+麻烦帮我核对取件时间	ma fan bang wo he dui qu jian shi jian	4900
+麻烦帮我核对取件时间一下	ma fan bang wo he dui qu jian shi jian yi xia	4900
+麻烦帮我核对寄件地址	ma fan bang wo he dui ji jian di zhi	4900
+麻烦帮我核对寄件地址一下	ma fan bang wo he dui ji jian di zhi yi xia	4900
+麻烦帮我核对收件人信息	ma fan bang wo he dui shou jian ren xin xi	4900
+麻烦帮我核对收件人信息一下	ma fan bang wo he dui shou jian ren xin xi yi xia	4900
+麻烦帮我核对收件电话	ma fan bang wo he dui shou jian dian hua	4900
+麻烦帮我核对收件电话一下	ma fan bang wo he dui shou jian dian hua yi xia	4900
+麻烦帮我核对收货地址	ma fan bang wo he dui shou huo di zhi	4900
+麻烦帮我核对收货地址一下	ma fan bang wo he dui shou huo di zhi yi xia	4900
+麻烦帮我核对物流信息	ma fan bang wo he dui wu liu xin xi	4900
+麻烦帮我核对物流信息一下	ma fan bang wo he dui wu liu xin xi yi xia	4900
+麻烦帮我核对送货地址	ma fan bang wo he dui song huo di zhi	4900
+麻烦帮我核对送货地址一下	ma fan bang wo he dui song huo di zhi yi xia	4900
+麻烦帮我核对配送时间	ma fan bang wo he dui pei song shi jian	4900
+麻烦帮我核对配送时间一下	ma fan bang wo he dui pei song shi jian yi xia	4900
+麻烦帮我确认取件时间	ma fan bang wo que ren qu jian shi jian	4900
+麻烦帮我确认取件时间一下	ma fan bang wo que ren qu jian shi jian yi xia	4900
+麻烦帮我确认寄件地址	ma fan bang wo que ren ji jian di zhi	4900
+麻烦帮我确认寄件地址一下	ma fan bang wo que ren ji jian di zhi yi xia	4900
+麻烦帮我确认收件人信息	ma fan bang wo que ren shou jian ren xin xi	4900
+麻烦帮我确认收件人信息一下	ma fan bang wo que ren shou jian ren xin xi yi xia	4900
+麻烦帮我确认收件电话	ma fan bang wo que ren shou jian dian hua	4900
+麻烦帮我确认收件电话一下	ma fan bang wo que ren shou jian dian hua yi xia	4900
+麻烦帮我确认收货地址	ma fan bang wo que ren shou huo di zhi	4900
+麻烦帮我确认收货地址一下	ma fan bang wo que ren shou huo di zhi yi xia	4900
+麻烦帮我确认物流信息	ma fan bang wo que ren wu liu xin xi	4900
+麻烦帮我确认物流信息一下	ma fan bang wo que ren wu liu xin xi yi xia	4900
+麻烦帮我确认送货地址	ma fan bang wo que ren song huo di zhi	4900
+麻烦帮我确认送货地址一下	ma fan bang wo que ren song huo di zhi yi xia	4900
+麻烦帮我确认配送时间	ma fan bang wo que ren pei song shi jian	4900
+麻烦帮我确认配送时间一下	ma fan bang wo que ren pei song shi jian yi xia	4900
+麻烦更新取件时间	ma fan geng xin qu jian shi jian	4900
+麻烦更新取件时间一下	ma fan geng xin qu jian shi jian yi xia	4900
+麻烦更新寄件地址	ma fan geng xin ji jian di zhi	4900
+麻烦更新寄件地址一下	ma fan geng xin ji jian di zhi yi xia	4900
+麻烦更新收件人信息	ma fan geng xin shou jian ren xin xi	4900
+麻烦更新收件人信息一下	ma fan geng xin shou jian ren xin xi yi xia	4900
+麻烦更新收件电话	ma fan geng xin shou jian dian hua	4900
+麻烦更新收件电话一下	ma fan geng xin shou jian dian hua yi xia	4900
+麻烦更新收货地址	ma fan geng xin shou huo di zhi	4900
+麻烦更新收货地址一下	ma fan geng xin shou huo di zhi yi xia	4900
+麻烦更新物流信息	ma fan geng xin wu liu xin xi	4900
+麻烦更新物流信息一下	ma fan geng xin wu liu xin xi yi xia	4900
+麻烦更新送货地址	ma fan geng xin song huo di zhi	4900
+麻烦更新送货地址一下	ma fan geng xin song huo di zhi yi xia	4900
+麻烦更新配送时间	ma fan geng xin pei song shi jian	4900
+麻烦更新配送时间一下	ma fan geng xin pei song shi jian yi xia	4900
+麻烦核对取件时间	ma fan he dui qu jian shi jian	4900
+麻烦核对取件时间一下	ma fan he dui qu jian shi jian yi xia	4900
+麻烦核对寄件地址	ma fan he dui ji jian di zhi	4900
+麻烦核对寄件地址一下	ma fan he dui ji jian di zhi yi xia	4900
+麻烦核对收件人信息	ma fan he dui shou jian ren xin xi	4900
+麻烦核对收件人信息一下	ma fan he dui shou jian ren xin xi yi xia	4900
+麻烦核对收件电话	ma fan he dui shou jian dian hua	4900
+麻烦核对收件电话一下	ma fan he dui shou jian dian hua yi xia	4900
+麻烦核对收货地址	ma fan he dui shou huo di zhi	4900
+麻烦核对收货地址一下	ma fan he dui shou huo di zhi yi xia	4900
+麻烦核对物流信息	ma fan he dui wu liu xin xi	4900
+麻烦核对物流信息一下	ma fan he dui wu liu xin xi yi xia	4900
+麻烦核对送货地址	ma fan he dui song huo di zhi	4900
+麻烦核对送货地址一下	ma fan he dui song huo di zhi yi xia	4900
+麻烦核对配送时间	ma fan he dui pei song shi jian	4900
+麻烦核对配送时间一下	ma fan he dui pei song shi jian yi xia	4900
+麻烦确认取件时间	ma fan que ren qu jian shi jian	4900
+麻烦确认取件时间一下	ma fan que ren qu jian shi jian yi xia	4900
+麻烦确认寄件地址	ma fan que ren ji jian di zhi	4900
+麻烦确认寄件地址一下	ma fan que ren ji jian di zhi yi xia	4900
+麻烦确认收件人信息	ma fan que ren shou jian ren xin xi	4900
+麻烦确认收件人信息一下	ma fan que ren shou jian ren xin xi yi xia	4900
+麻烦确认收件电话	ma fan que ren shou jian dian hua	4900
+麻烦确认收件电话一下	ma fan que ren shou jian dian hua yi xia	4900
+麻烦确认收货地址	ma fan que ren shou huo di zhi	4900
+麻烦确认收货地址一下	ma fan que ren shou huo di zhi yi xia	4900
+麻烦确认物流信息	ma fan que ren wu liu xin xi	4900
+麻烦确认物流信息一下	ma fan que ren wu liu xin xi yi xia	4900
+麻烦确认送货地址	ma fan que ren song huo di zhi	4900
+麻烦确认送货地址一下	ma fan que ren song huo di zhi yi xia	4900
+麻烦确认配送时间	ma fan que ren pei song shi jian	4900
+麻烦确认配送时间一下	ma fan que ren pei song shi jian yi xia	4900
+寄件人	ji jian ren	2895

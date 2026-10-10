@@ -281,7 +281,7 @@ def main() -> int:
         "--hot-output",
         dest="hot_output",
         type=Path,
-        default=repo / "lexicon" / "zh" / "life_common_3char_20000.txt",
+        default=repo / "data_sources" / "lexicon_fragments" / "zh" / "life_common_3char_hot.txt",
         help=(
             "hot-head output; --output is retained for compatibility with the "
             "previous single-file generator"
@@ -308,6 +308,9 @@ def main() -> int:
         tail_output=args.tail_output,
         pool_size=args.pool_size,
     )
+    if args.hot_output.resolve() == (repo / "data_sources/lexicon_fragments/zh/life_common_3char_hot.txt").resolve():
+        from optimize_lexicons import consolidate_three_char
+        consolidate_three_char()
     print(
         f"wrote hot={hot_count} to {args.hot_output}; "
         f"tail={tail_count} to {args.tail_output}"

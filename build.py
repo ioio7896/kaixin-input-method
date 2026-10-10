@@ -56,6 +56,14 @@ from pathlib import Path, PurePosixPath
 from typing import Callable, TextIO
 
 VERSION = "2.0.0"
+RETIRED_OPTIONAL_LEXICON_TAGS = frozenset(json.loads(
+    (Path(__file__).resolve().parent / "shared" / "retired_optional_lexicons.json")
+    .read_text(encoding="utf-8")
+))
+RETIRED_LEXICON_FILES = tuple(json.loads(
+    (Path(__file__).resolve().parent / "shared" / "retired_lexicon_files.json")
+    .read_text(encoding="utf-8")
+))
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 
 # ---------------------------------------------------------------------------
@@ -190,6 +198,7 @@ BASE_STAGED_RUST_ARTIFACTS = (
     "srf_ime_clipboard.exe",
     "srf_ime_clipboard_svc.exe",
     "srf_ime_handwrite.exe",
+    "srf_ime_symbols.exe",
 )
 BASE_PACKAGE_RUST_ARTIFACTS = PACKAGE_BUILD_TOOL_RUST_ARTIFACTS + BASE_STAGED_RUST_ARTIFACTS
 OPTIONAL_OCR_RUST_ARTIFACTS = ("srf_ime_ocr.exe",)
@@ -1821,7 +1830,7 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
         return None
     max_rs, fp_rs = _tree_source_stats(src_dir, {".rs"})
     max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "Cargo.toml", repo / ".cargo/config.toml", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
-    max_data, fp_data = _tree_source_stats(data_dir, {".txt", ".bin", ".yaml", ".yml", ".json"})
+    max_data, fp_data = _tree_source_stats(data_dir, {".txt", ".tsv", ".bin", ".yaml", ".yml", ".json"})
     max_lex, fp_lex = _lexicon_sources_fingerprint(repo)
     max_readings, fp_readings = _source_files_fingerprint(
         repo, [repo / "data_sources" / "kaixin" / name for name in (
@@ -2056,7 +2065,7 @@ def _lexicon_layer(path: Path) -> str | None:
         "kaixin_explicit.txt",
         "kaixin_polyphone.txt",
         "kaixin_pronunciation_aliases.txt",
-        "lfie-common-3char.txt",
+        "life_common_3char.txt",
         "life_hot_3char_curated.txt",
         "life_hot_4char_curated.txt",
     }:
@@ -2074,6 +2083,16 @@ def _lexicon_sort_key(path: Path, _root: Path) -> tuple[int, str]:
 def _is_default_enabled_lexicon_source(path: Path) -> bool:
     """Keep build-time LM inputs aligned with the runtime default lexicon set."""
     name = path.name.lower()
+    if any(path.as_posix().lower().endswith('/' + relative.lower()) for relative in RETIRED_LEXICON_FILES):
+        return False
+    if _lexicon_layer(path) == "ext":
+        tag = path.stem.lower()
+        if tag.startswith("thuocl_"):
+            tag = tag[len("thuocl_"):]
+        elif "__thuocl_" in tag:
+            tag = tag.split("__thuocl_", 1)[1]
+        if tag in RETIRED_OPTIONAL_LEXICON_TAGS:
+            return False
     return not name.endswith("_纯名单.txt") and not name.startswith("professional_")
 
 
@@ -2102,6 +2121,7 @@ def _is_unscaled_lexicon_source(path: Path) -> bool:
     return _is_absolute_priority_lexicon_source(path) or path.name.lower() in {
         "people_names.txt",
         "hangzhou_local.txt",
+        "daily_communication.txt",
     }
 
 
@@ -2135,6 +2155,12 @@ def _build_frequency_calibrators(
                 reference.setdefault(length, []).extend(weights)
         elif not _is_unscaled_lexicon_source(path):
             source_values[path] = values
+    if any(path.name.lower() == "life_common_3char.txt" for path in source_files):
+        fixed_reference = json.loads(
+            (Path(__file__).resolve().parent / "shared/lexicon_frequency_reference.json")
+            .read_text(encoding="utf-8")
+        )
+        reference.update({int(length): weights for length, weights in fixed_reference.items()})
     for weights in reference.values():
         weights.sort()
     for values in source_values.values():
@@ -3581,6 +3607,7 @@ def verify_staged_package(
     settings_bytes = settings_exe.read_bytes()
     clipboard_bytes = clipboard_exe.read_bytes()
     handwrite_bytes = handwrite_exe.read_bytes()
+    symbols_bytes = (output_root / "srf_ime_symbols.exe").read_bytes()
     ocr_bytes = ocr_exe.read_bytes() if include_ocr else b""
     if "开心输入法 剪贴板".encode("utf-8") in settings_bytes:
         raise RuntimeError(
@@ -3600,6 +3627,8 @@ def verify_staged_package(
         )
     if "开心输入法 手写查字".encode("utf-8") not in handwrite_bytes:
         raise RuntimeError("staged srf_ime_handwrite.exe is missing handwriting window title")
+    if "开心输入法 符号大全".encode("utf-8") not in symbols_bytes:
+        raise RuntimeError("staged srf_ime_symbols.exe is missing symbols window title")
     if include_ocr and "开心输入法 OCR".encode("utf-8") not in ocr_bytes:
         raise RuntimeError("staged srf_ime_ocr.exe is missing OCR window title")
 

@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：考试升学
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+分数线	fen shu xian	8533
+准考证	zhun kao zheng	7562
+保研资格	bao yan zi ge	6100
+准考证打印	zhun kao zheng da yin	6100
+合格分数	he ge fen shu	6100
+备考计划	bei kao ji hua	6100
+复试安排	fu shi an pai	6100
+复试通知	fu shi tong zhi	6100
+学业水平考试	xue ye shui ping kao shi	6100
+录取分数	lu qu fen shu	6100
+录取名单	lu qu ming dan	6100
+录取结果	lu qu jie guo	6100
+录取通知	lu qu tong zhi	6100
+志愿填报	zhi yuan tian bao	6100
+志愿征集	zhi yuan zheng ji	6100
+志愿顺序	zhi yuan shun xu	6100
+成人高考	cheng ren gao kao	6100
+成绩复核	cheng ji fu he	6100
+成绩查询	cheng ji cha xun	6100
+托福考试	tuo fu kao shi	6100
+技能等级	ji neng deng ji	6100
+报名时间	bao ming shi jian	6100
+报名材料	bao ming cai liao	6100
+报名条件	bao ming tiao jian	6100
+教师资格证	jiao shi zi ge zheng	6100
+普通话考试	pu tong hua kao shi	6100
+模拟试卷	mo ni shi juan	6100
+真题练习	zhen ti lian xi	6100
+研究生调剂	yan jiu sheng tiao ji	6100
+笔试成绩	bi shi cheng ji	6100
+综合成绩	zong he cheng ji	6100
+考场安排	kao chang an pai	6100
+考研复习	kao yan fu xi	6100
+考研报名	kao yan bao ming	6100
+考试地点	kao shi di dian	6100
+考试大纲	kao shi da gang	6100
+考试报名	kao shi bao ming	6100
+考试时间	kao shi shi jian	6100
+考试科目	kao shi ke mu	6100
+考试题型	kao shi ti xing	6100
+职业资格	zhi ye zi ge	6100
+自学考试	zi xue kao shi	6100
+英语四六级	ying yu si liu ji	6100
+计算机等级	ji suan ji deng ji	6100
+雅思考试	ya si kao shi	6100
+面试准备	mian shi zhun bei	6100
+面试技巧	mian shi ji qiao	6100
+题库练习	ti ku lian xi	6100
+专升本	zhuan sheng ben	5436
+考试成绩	kao shi cheng ji	4911

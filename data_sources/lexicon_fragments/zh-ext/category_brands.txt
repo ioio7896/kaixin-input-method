@@ -1,0 +1,60 @@
+# 开心离线输入法分类补充：品牌应用
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+爱奇艺	ai qi yi	9211
+中国银行	zhong guo yin hang	8890
+京东物流	jing dong wu liu	8800
+哔哩哔哩	bi li bi li	8800
+小红书	xiao hong shu	8800
+微信支付	wei xin zhi fu	8800
+抖音商城	dou yin shang cheng	8800
+拼多多	pin duo duo	8800
+饿了么	e le me	8800
+喜马拉雅	xi ma la ya	8558
+招商银行	zhao shang yin hang	6196
+七猫小说	qi mao xiao shuo	6100
+中国邮政	zhong guo you zheng	6100
+京东到家	jing dong dao jia	6100
+优酷视频	you ku shi pin	6100
+华为手机	hua wei shou ji	6100
+华硕电脑	hua shuo dian nao	6100
+同程旅行	tong cheng lv xing	6100
+哈啰出行	ha luo chu xing	6100
+小米手机	xiao mi shou ji	6100
+小米汽车	xiao mi qi che	6100
+小鹏汽车	xiao peng qi che	6100
+得到课程	de dao ke cheng	6100
+微信读书	wei xin du shu	6100
+快手小店	kuai shou xiao dian	6100
+携程旅行	xie cheng lv xing	6100
+支付宝支付	zhi fu bao zhi fu	6100
+曹操出行	cao cao chu xing	6100
+比亚迪汽车	bi ya di qi che	6100
+淘宝天猫	tao bao tian mao	6100
+滴滴出行	di di chu xing	6100
+理想汽车	li xiang qi che	6100
+番茄小说	fan qie xiao shuo	6100
+百度地图	bai du di tu	6100
+知乎盐选	zhi hu yan xuan	6100
+美团外卖	mei tuan wai mai	6100
+联想电脑	lian xiang dian nao	6100
+腾讯地图	teng xun di tu	6100
+腾讯视频	teng xun shi pin	6100
+芒果视频	mang guo shi pin	6100
+荣耀手机	rong yao shou ji	6100
+菜鸟裹裹	cai niao guo guo	6100
+蔚来汽车	wei lai qi che	6100
+豆瓣读书	dou ban du shu	6100
+通义千问	tong yi qian wen	6100
+酷狗音乐	ku gou yin yue	6100
+闲鱼交易	xian yu jiao yi	6100
+顺丰速运	shun feng su yun	6100
+飞猪旅行	fei zhu lv xing	6100
+高德地图	gao de di tu	6100
+建设银行	jian she yin hang	5556
+农业银行	nong ye yin hang	4303
+网易云音乐	wang yi yun yin yue	4000
+工商银行	gong shang yin hang	2973
+云闪付	yun shan fu	2160

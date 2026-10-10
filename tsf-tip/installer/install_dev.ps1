@@ -502,7 +502,7 @@ function Get-PackagedLexiconDirectories {
 
 function Stop-RunningHelpers {
     $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray')
-    $visibleTools = @('srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_ocr', 'srf_ime_translate_result')
+    $visibleTools = @('srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_symbols', 'srf_ime_ocr', 'srf_ime_translate_result')
     foreach ($processName in @($backgroundHelpers + $visibleTools)) {
         $processes = @(Get-Process -Name $processName -ErrorAction SilentlyContinue)
         foreach ($process in $processes) {
@@ -1819,6 +1819,7 @@ $requiredFiles = @(
     'srf_ime_clipboard.exe',
     'srf_ime_clipboard_svc.exe',
     'srf_ime_handwrite.exe',
+    'srf_ime_symbols.exe',
     'invoke_registration.ps1',
     'install_current_user.ps1',
     'repair_install.ps1',

@@ -128,6 +128,49 @@ pub fn send_ctrl_v_to_target(target_hwnd: isize) -> Result<(), String> {
     send_ctrl_key_to_target(target_hwnd, b'V' as u16, "Ctrl+V")
 }
 
+/// Type literal Unicode without changing the user's clipboard or IME mode.
+#[cfg(windows)]
+pub fn send_unicode_text_to_target(target_hwnd: isize, text: &str) -> Result<(), String> {
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::KEYEVENTF_UNICODE;
+    if target_hwnd == 0 || unsafe { IsWindow(target_hwnd) } == 0 {
+        return Err("请先点击需要输入符号的编辑窗口".to_string());
+    }
+    if text.is_empty() {
+        return Ok(());
+    }
+    focus_target_window(target_hwnd)?;
+    let inputs: Vec<_> = text
+        .encode_utf16()
+        .flat_map(|unit| {
+            [KEYEVENTF_UNICODE, KEYEVENTF_UNICODE | KEYEVENTF_KEYUP].map(|flags| INPUT {
+                r#type: INPUT_KEYBOARD,
+                Anonymous: INPUT_0 {
+                    ki: KEYBDINPUT {
+                        wVk: 0,
+                        wScan: unit,
+                        dwFlags: flags,
+                        time: 0,
+                        dwExtraInfo: 0,
+                    },
+                },
+            })
+        })
+        .collect();
+    if unsafe { GetForegroundWindow() } != target_hwnd {
+        return Err("目标窗口焦点已改变，请重新选择输入位置".to_string());
+    }
+    let sent = unsafe { SendInput(inputs.len() as u32, inputs.as_ptr(), std::mem::size_of::<INPUT>() as i32) };
+    if sent != inputs.len() as u32 {
+        return Err(format!("符号输入被目标程序拒绝（{sent}/{}）；可切换到仅复制后手动粘贴", inputs.len()));
+    }
+    Ok(())
+}
+
+#[cfg(not(windows))]
+pub fn send_unicode_text_to_target(_target_hwnd: isize, _text: &str) -> Result<(), String> {
+    Err("符号直接输入仅支持 Windows".to_string())
+}
+
 #[cfg(windows)]
 pub fn send_ctrl_c_to_target(target_hwnd: isize) -> Result<(), String> {
     send_ctrl_key_to_target(target_hwnd, b'C' as u16, "Ctrl+C")

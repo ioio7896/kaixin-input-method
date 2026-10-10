@@ -1,0 +1,61 @@
+# 开心离线输入法分类补充：法律合同
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+违约金	wei yue jin	6760
+买卖合同	mai mai he tong	6100
+仲裁委员会	zhong cai wei yuan hui	6100
+仲裁申请	zhong cai shen qing	6100
+仲裁裁决	zhong cai cai jue	6100
+保全申请	bao quan shen qing	6100
+保密协议	bao mi xie yi	6100
+借款合同	jie kuan he tong	6100
+劳务合同	lao wu he tong	6100
+劳动仲裁	lao dong zhong cai	6100
+合同争议	he tong zheng yi	6100
+合同审查	he tong shen cha	6100
+合同履行	he tong lv xing	6100
+合同条款	he tong tiao kuan	6100
+合同签署	he tong qian shu	6100
+合同终止	he tong zhong zhi	6100
+合同续签	he tong xu qian	6100
+合同解除	he tong jie chu	6100
+合同违约	he tong wei yue	6100
+庭审记录	ting shen ji lu	6100
+开庭通知	kai ting tong zhi	6100
+执行和解	zhi xing he jie	6100
+执行异议	zhi xing yi yi	6100
+执行申请	zhi xing shen qing	6100
+担保合同	dan bao he tong	6100
+授权委托书	shou quan wei tuo shu	6100
+服务合同	fu wu he tong	6100
+法律咨询	fa lv zi xun	6100
+消费者权益	xiao fei zhe quan yi	6100
+电子送达	dian zi song da	6100
+知识产权侵权	zhi shi chan quan qin quan	6100
+租赁合同	zu lin he tong	6100
+竞业协议	jing ye xie yi	6100
+竞业补偿	jing ye bu chang	6100
+竞业限制	jing ye xian zhi	6100
+管辖法院	guan xia fa yuan	6100
+经济补偿	jing ji bu chang	6100
+经济赔偿	jing ji pei chang	6100
+著作权登记	zhu zuo quan deng ji	6100
+证据保全	zheng ju bao quan	6100
+证据材料	zheng ju cai liao	6100
+诉讼请求	su song qing qiu	6100
+诉讼费用	su song fei yong	6100
+调解协议	tiao jie xie yi	6100
+调解申请	tiao jie shen qing	6100
+送达地址	song da di zhi	6100
+举证责任	ju zheng ze ren	6000
+强制执行	qiang zhi zhi xing	6000
+法律援助	fa lv yuan zhu	6000
+诉讼时效	su song shi xiao	6000
+财产保全	cai chan bao quan	6000
+违约责任	wei yue ze ren	6000
+律师函	lv shi han	3123
+起诉状	qi su zhuang	2445
+上诉状	shang su zhuang	970
+答辩状	da bian zhuang	313

@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：制造机械
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+热处理	re chu li	8062
+不合格品	bu he ge pin	6100
+产能利用	chan neng li yong	6100
+作业指导书	zuo ye zhi dao shu	6100
+加工精度	jia gong jing du	6100
+加工误差	jia gong wu cha	6100
+压铸成型	ya zhu cheng xing	6100
+备件管理	bei jian guan li	6100
+尺寸公差	chi cun gong chai	6100
+工业机器人	gong ye ji qi ren	6100
+工艺优化	gong yi you hua	6100
+工艺参数	gong yi can shu	6100
+工艺文件	gong yi wen jian	6100
+工艺流程	gong yi liu cheng	6100
+工装夹具	gong zhuang jia ju	6100
+形位公差	xing wei gong chai	6100
+成品检验	cheng pin jian yan	6100
+抽样检验	chou yang jian yan	6100
+操作规程	cao zuo gui cheng	6100
+故障排查	gu zhang pai cha	6100
+数控加工	shu kong jia gong	6100
+机械加工	ji xie jia gong	6100
+来料检验	lai liao jian yan	6100
+标准作业	biao zhun zuo ye	6100
+注塑成型	zhu su cheng xing	6100
+焊接工艺	han jie gong yi	6100
+生产工艺	sheng chan gong yi	6100
+生产排程	sheng chan pai cheng	6100
+生产效率	sheng chan xiao lv	6100
+生产计划	sheng chan ji hua	6100
+生产订单	sheng chan ding dan	6100
+生产进度	sheng chan jin du	6100
+磨削加工	mo xue jia gong	6100
+自动化产线	zi dong hua chan xian	6100
+表面处理	biao mian chu li	6100
+设备保养	she bei bao yang	6100
+设备台账	she bei tai zhang	6100
+设备故障	she bei gu zhang	6100
+设备点检	she bei dian jian	6100
+设备维护	she bei wei hu	6100
+质量体系	zhi liang ti xi	6100
+质量改进	zhi liang gai jin	6100
+质量检验	zhi liang jian yan	6100
+质量追溯	zhi liang zhui su	6100
+车削加工	che xiao jia gong	6100
+过程检验	guo cheng jian yan	6100
+返工返修	fan gong fan xiu	6100
+钣金加工	ban jin jia gong	6100
+钻孔加工	zuan kong jia gong	6100
+铣削加工	xi xue jia gong	6100

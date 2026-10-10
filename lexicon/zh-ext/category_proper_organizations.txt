@@ -1,0 +1,935 @@
+# 开心离线输入法分类补充：语料机构名称补充
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+人民代表大会常务委员会	ren min dai biao da hui chang wu wei yuan hui	5500
+湖北省人民政府	hu bei sheng ren min zheng fu	5500
+苏维埃政府	su wei ai zheng fu	5484
+国防委员会	guo fang wei yuan hui	5470
+中央军事委员会	zhong yang jun shi wei yuan hui	5409
+中华人民共和国国务院	zhong hua ren min gong he guo guo wu yuan	5358
+华中师范大学	hua zhong shi fan da xue	5276
+中国人民政治协商会议	zhong guo ren min zheng zhi xie shang hui yi	5148
+财政经济委员会	cai zheng jing ji wei yuan hui	5096
+中国历史博物馆	zhong guo li shi bo wu guan	5086
+中国地质大学	zhong guo di zhi da xue	5081
+中南财经政法大学	zhong nan cai jing zheng fa da xue	5073
+军事检察院	jun shi jian cha yuan	5073
+武汉理工大学	wu han li gong da xue	5067
+湖北省政府	hu bei sheng zheng fu	5062
+上海水产大学	shang hai shui chan da xue	5056
+华中农业大学	hua zhong nong ye da xue	5055
+教育科学文化卫生委员会	jiao yu ke xue wen hua wei sheng wei yuan hui	5053
+农业部渔业局	nong ye bu yu ye ju	5052
+长江水产研究所	chang jiang shui chan yan jiu suo	5052
+上海证券交易所	shang hai zheng quan jiao yi suo	4912
+中国革命博物馆	zhong guo ge ming bo wu guan	4911
+外交部新闻司	wai jiao bu xin wen si	4894
+国民党中央	guo min dang zhong yang	4887
+英国议会	ying guo yi hui	4836
+日本自卫队	ri ben zi wei dui	4785
+国家旅游局	guo jia lv you ju	4779
+中国共产党中央委员会	zhong guo gong chan dang zhong yang wei yuan hui	4769
+陆军大学	lu jun da xue	4740
+外事委员会	wai shi wei yuan hui	4729
+法律委员会	fa lv wei yuan hui	4727
+湖北省委	hu bei sheng wei	4723
+信息产业部	xin xi chan ye bu	4718
+日本国会	ri ben guo hui	4718
+北京市政协	bei jing shi zheng xie	4708
+东风汽车公司	dong feng qi che gong si	4706
+海军工程大学	hai jun gong cheng da xue	4702
+葛洲坝水电站	ge zhou ba shui dian zhan	4702
+中国政协	zhong guo zheng xie	4700
+道教协会	dao jiao xie hui	4700
+湖北省物价局	hu bei sheng wu jia ju	4698
+湖北美术学院	hu bei mei shu xue yuan	4698
+黄埔军校武汉分校	huang pu jun xiao wu han fen xiao	4698
+东湖开发区	dong hu kai fa qu	4696
+中国人民解放军军事科学院	zhong guo ren min jie fang jun jun shi ke xue yuan	4696
+内务司法委员会	nei wu si fa wei yuan hui	4696
+基督教协会	ji du jiao xie hui	4696
+湖北省财政厅	hu bei sheng cai zheng ting	4696
+天主教爱国会	tian zhu jiao ai guo hui	4694
+东湖新技术开发区	dong hu xin ji shu kai fa qu	4692
+东湖高新技术开发区	dong hu gao xin ji shu kai fa qu	4692
+农业与农村委员会	nong ye yu nong cun wei yuan hui	4692
+广东核电集团	guang dong he dian ji tuan	4692
+政协常委会	zheng xie chang wei hui	4692
+武汉东湖新技术开发区	wu han dong hu xin ji shu kai fa qu	4692
+武汉东湖高新技术开发区	wu han dong hu gao xin ji shu kai fa qu	4692
+武汉经济技术开发区	wu han jing ji ji shu kai fa qu	4692
+环境与资源保护委员会	huan jing yu zi yuan bao hu wei yuan hui	4692
+邮科院	you ke yuan	4692
+人力资源部	ren li zi yuan bu	4663
+中央政治局常委	zhong yang zheng zhi ju chang wei	4639
+中央纪律检查委员会	zhong yang ji lv jian cha wei yuan hui	4613
+英格兰银行	ying ge lan yin hang	4589
+晋察冀军区	jin cha ji jun qu	4535
+中央红军	zhong yang hong jun	4518
+中央研究院	zhong yang yan jiu yuan	4515
+中国女队	zhong guo nv dui	4501
+华东野战军	hua dong ye zhan jun	4470
+红四方面军	hong si fang mian jun	4451
+中国空军	zhong guo kong jun	4442
+药品监督管理局	yao pin jian du guan li ju	4442
+八路军总部	ba lu jun zong bu	4425
+大中学校	da zhong xue xiao	4422
+华北军区	hua bei jun qu	4418
+中央顾问委员会	zhong yang gu wen wei yuan hui	4415
+人民解放军总部	ren min jie fang jun zong bu	4415
+北京市政府	bei jing shi zheng fu	4408
+德意志银行	de yi zhi yin hang	4401
+英国皇家学会	ying guo huang jia xue hui	4394
+新民学会	xin min xue hui	4379
+深圳证券交易所	shen zhen zheng quan jiao yi suo	4379
+国际羽联	guo ji yu lian	4372
+国家大剧院	guo jia da ju yuan	4368
+日本防卫厅	ri ben fang wei ting	4368
+英特尔公司	ying te er gong si	4368
+中国人民志愿军	zhong guo ren min zhi yuan jun	4364
+北京卫戍区	bei jing wei shu qu	4360
+北京市人民政府	bei jing shi ren min zheng fu	4360
+中国男队	zhong guo nan dui	4356
+东海舰队	dong hai jian dui	4353
+芝加哥大学	zhi jia ge da xue	4349
+中国电影集团公司	zhong guo dian ying ji tuan gong si	4341
+京广中心	jing guang zhong xin	4333
+北京会议中心	bei jing hui yi zhong xin	4333
+红一方面军	hong yi fang mian jun	4333
+欧洲共同体	ou zhou gong tong ti	4329
+深圳市中级人民法院	shen zhen shi zhong ji ren min fa yuan	4320
+西安交通大学	xi an jiao tong da xue	4304
+北京师范大学	bei jing shi fan da xue	4264
+民航总局	min hang zong ju	4254
+朝鲜人民军	chao xian ren min jun	4240
+北洋水师	bei yang shui shi	4230
+人民公社化	ren min gong she hua	4225
+联想集团	lian xiang ji tuan	4195
+国家体委	guo jia ti wei	4179
+美国防部	mei guo fang bu	4179
+中国民主同盟	zhong guo min zhu tong meng	4162
+巴黎公社	ba li gong she	4162
+中国证券监督管理委员会	zhong guo zheng quan jian du guan li wei yuan hui	4139
+莫斯科大学	mo si ke da xue	4139
+索尼公司	suo ni gong si	4133
+国防科工委	guo fang ke gong wei	4127
+国际奥委会	guo ji ao wei hui	4127
+北海舰队	bei hai jian dui	4115
+南京临时政府	nan jing lin shi zheng fu	4109
+中国作家协会	zhong guo zuo jia xie hui	4097
+中国网通	zhong guo wang tong	4097
+中国羽毛球队	zhong guo yu mao qiu dui	4097
+英国国防部	ying guo guo fang bu	4090
+哈医大二院	ha yi da er yuan	4084
+红六军团	hong liu jun tuan	4084
+上海人民出版社	shang hai ren min chu ban she	4077
+美国科学院	mei guo ke xue yuan	4077
+军事科学	jun shi ke xue	4071
+北大西洋公约组织	bei da xi yang gong yue zu zhi	4071
+巴解组织	ba jie zu zhi	4071
+七中全会	qi zhong quan hui	4057
+华东师范大学	hua dong shi fan da xue	4057
+高通公司	gao tong gong si	4057
+中央人民广播电台	zhong yang ren min guang bo dian tai	4050
+美国哈佛大学	mei guo ha fu da xue	4043
+中华全国总工会	zhong hua quan guo zong gong hui	4036
+国家药监局	guo jia yao jian ju	4036
+中国共产主义青年团	zhong guo gong chan zhu yi qing nian tuan	4029
+中央美术学院	zhong yang mei shu xue yuan	4029
+北京市旅游局	bei jing shi lv you ju	4029
+新生事物	xin sheng shi wu	4029
+联合公报	lian he gong bao	4029
+苏共中央	su gong zhong yang	4029
+英国皇家海军	ying guo huang jia hai jun	4029
+中国国民党革命委员会	zhong guo guo min dang ge ming wei yuan hui	4022
+中华人民共和国政府	zhong hua ren min gong he guo zheng fu	4014
+国家经贸委	guo jia jing mao wei	4014
+中央处理器	zhong yang chu li qi	4007
+长春亚泰队	chang chun ya tai dui	4007
+人民日报社	ren min ri bao she	3999
+安理会常任理事国	an li hui chang ren li shi guo	3999
+中信证券	zhong xin zheng quan	3991
+中国农业银行	zhong guo nong ye yin hang	3991
+中国民主建国会	zhong guo min zhu jian guo hui	3991
+北京协和医院	bei jing xie he yi yuan	3991
+中共中央书记处	zhong gong zhong yang shu ji chu	3983
+中国民主促进会	zhong guo min zhu cu jin hui	3983
+中国美术家协会	zhong guo mei shu jia xie hui	3983
+南京政府	nan jing zheng fu	3983
+国家科委	guo jia ke wei	3983
+北京理工大学	bei jing li gong da xue	3975
+社会科学院	she hui ke xue yuan	3975
+中央办公厅	zhong yang ban gong ting	3967
+北京大学出版社	bei jing da xue chu ban she	3967
+朝鲜民主主义人民共和国	chao xian min zhu zhu yi ren min gong he guo	3967
+中国政法大学	zhong guo zheng fa da xue	3959
+国家教育部	guo jia jiao yu bu	3959
+国旗护卫队	guo qi hu wei dui	3959
+美国财政部	mei guo cai zheng bu	3959
+香港中文大学	xiang gang zhong wen da xue	3959
+东北民主联军	dong bei min zhu lian jun	3951
+全国总工会	quan guo zong gong hui	3951
+国家计委	guo jia ji wei	3951
+协和医院	xie he yi yuan	3942
+建业队	jian ye dui	3942
+德国社会民主党	de guo she hui min zhu dang	3942
+陆军航空兵	lu jun hang kong bing	3942
+国家图书馆	guo jia tu shu guan	3934
+国民政府军事委员会	guo min zheng fu jun shi wei yuan hui	3934
+社会民主工党	she hui min zhu gong dang	3934
+英国牛津大学	ying guo niu jin da xue	3934
+霍普金斯大学	huo pu jin si da xue	3934
+中国棋院	zhong guo qi yuan	3925
+国家文物局	guo jia wen wu ju	3925
+英国剑桥大学	ying guo jian qiao da xue	3925
+三联书店	san lian shu dian	3916
+中国人民外交学会	zhong guo ren min wai jiao xue hui	3916
+东非大裂谷	dong fei da lie gu	3907
+中央气象台	zhong yang qi xiang tai	3907
+中共中央党史研究室	zhong gong zhong yang dang shi yan jiu shi	3898
+北京国安队	bei jing guo an dui	3898
+国家行政学院	guo jia xing zheng xue yuan	3898
+中华医学会	zhong hua yi xue hui	3888
+加利福尼亚大学	jia li fu ni ya da xue	3888
+国家体育总局	guo jia ti yu zong ju	3888
+石化集团	shi hua ji tuan	3888
+空军指挥学院	kong jun zhi hui xue yuan	3888
+上海古籍出版社	shang hai gu ji chu ban she	3869
+中原军区	zhong yuan jun qu	3869
+京师大学堂	jing shi da xue tang	3869
+哈尔滨工业大学	ha er bin gong ye da xue	3869
+陆海空军	lu hai kong jun	3869
+中共中央宣传部	zhong gong zhong yang xuan chuan bu	3859
+日本外务省	ri ben wai wu sheng	3859
+日本航空自卫队	ri ben hang kong zi wei dui	3859
+长春队	chang chun dui	3859
+上海市政府	shang hai shi zheng fu	3839
+中央人民政府政务院	zhong yang ren min zheng fu zheng wu yuan	3839
+华南理工大学	hua nan li gong da xue	3839
+人民文学出版社	ren min wen xue chu ban she	3828
+苏联最高苏维埃	su lian zui gao su wei ai	3828
+国务院学位委员会	guo wu yuan xue wei wei yuan hui	3817
+湖南大学	hu nan da xue	3817
+上海铁路局	shang hai tie lu ju	3807
+中共中央党校	zhong gong zhong yang dang xiao	3807
+中国农工民主党	zhong guo nong gong min zhu dang	3807
+中国同盟会	zhong guo tong meng hui	3807
+中旅总社	zhong lv zong she	3807
+中共中央办公厅	zhong gong zhong yang ban gong ting	3795
+中国史学会	zhong guo shi xue hui	3795
+中国科技大学	zhong guo ke ji da xue	3795
+中央音乐学院	zhong yang yin yue xue yuan	3795
+中国民航	zhong guo min hang	3784
+军事科学院	jun shi ke xue yuan	3784
+劳动和社会保障部	lao dong he she hui bao zhang bu	3784
+北京音乐厅	bei jing yin yue ting	3784
+通用电气公司	tong yong dian qi gong si	3784
+黑海舰队	hei hai jian dui	3784
+东京帝国大学	dong jing di guo da xue	3772
+东芝公司	dong zhi gong si	3772
+国家环保局	guo jia huan bao ju	3772
+国家税务总局	guo jia shui wu zong ju	3772
+大连理工大学	da lian li gong da xue	3772
+康奈尔大学	kang nai er da xue	3772
+新疆生产建设兵团	xin jiang sheng chan jian she bing tuan	3772
+新闻公报	xin wen gong bao	3772
+红二方面军	hong er fang mian jun	3772
+诺基亚公司	nuo ji ya gong si	3772
+通用汽车公司	tong yong qi che gong si	3772
+中国民主政团同盟	zhong guo min zhu zheng tuan tong meng	3760
+云南红塔集团	yun nan hong ta ji tuan	3760
+人民大学	ren min da xue	3760
+国民革命军第八路军	guo min ge ming jun di ba lu jun	3760
+广州军区	guang zhou jun qu	3760
+抗日军政大学	kang ri jun zheng da xue	3760
+科研院所	ke yan yuan suo	3760
+上海电影制片厂	shang hai dian ying zhi pian chang	3748
+中华人民共和国外交部	zhong hua ren min gong he guo wai jiao bu	3748
+中国女篮	zhong guo nv lan	3748
+亚泰队	ya tai dui	3748
+全国假日办	quan guo jia ri ban	3748
+北京火车站	bei jing huo che zhan	3748
+国际共运	guo ji gong yun	3748
+欧安会	ou an hui	3748
+自由贸易区	zi you mao yi qu	3748
+三九集团	san jiu ji tuan	3735
+上海师范大学	shang hai shi fan da xue	3735
+中国音乐家协会	zhong guo yin yue jia xie hui	3735
+北京科技大学	bei jing ke ji da xue	3735
+高级人民法院	gao ji ren min fa yuan	3735
+东吴大学	dong wu da xue	3722
+中国农业大学	zhong guo nong ye da xue	3722
+中央戏剧学院	zhong yang xi ju xue yuan	3722
+中央革命军事委员会	zhong yang ge ming jun shi wei yuan hui	3722
+伊朗外交部	yi lang wai jiao bu	3722
+光大银行	guang da yin hang	3722
+北京邮电大学	bei jing you dian da xue	3722
+四方面军	si fang mian jun	3722
+河外星系	he wai xing xi	3722
+湖南省委	hu nan sheng wei	3722
+紫金山天文台	zi jin shan tian wen tai	3722
+美国有线电视新闻网	mei guo you xian dian shi xin wen wang	3722
+西门子公司	xi men zi gong si	3722
+中国社科院	zhong guo she ke yuan	3709
+北约集团	bei yue ji tuan	3709
+国际田联	guo ji tian lian	3709
+实德俱乐部	shi de ju le bu	3709
+世界旅游组织	shi jie lv you zu zhi	3696
+中国旅行社	zhong guo lv xing she	3696
+农民协会	nong min xie hui	3696
+国务院新闻办公室	guo wu yuan xin wen ban gong shi	3696
+爱丁堡大学	ai ding bao da xue	3696
+自由民主党	zi you min zhu dang	3696
+荷兰银行	he lan yin hang	3696
+西点军校	xi dian jun xiao	3696
+解放军总政治部	jie fang jun zong zheng zhi bu	3696
+远东国际军事法庭	yuan dong guo ji jun shi fa ting	3696
+中国乒乓球队	zhong guo ping pang qiu dui	3682
+九届全国人大	jiu jie quan guo ren da	3682
+光学玻璃	guang xue bo li	3682
+基督教民主联盟	ji du jiao min zhu lian meng	3682
+巴塞罗那队	ba sai luo na dui	3682
+美国宇航局	mei guo yu hang ju	3682
+中国社会主义青年团	zhong guo she hui zhu yi qing nian tuan	3668
+中国致公党	zhong guo zhi gong dang	3668
+中央宣传部	zhong yang xuan chuan bu	3668
+俄通社	e tong she	3668
+全国工商联	quan guo gong shang lian	3668
+国家广电总局	guo jia guang dian zong ju	3668
+外交部亚洲司	wai jiao bu ya zhou si	3668
+新疆大学	xin jiang da xue	3668
+柯达公司	ke da gong si	3668
+河南大学	he nan da xue	3668
+波恩大学	bo en da xue	3668
+深圳石化化纤有限公司	shen zhen shi hua hua xian you xian gong si	3668
+网络通信	wang luo tong xin	3668
+中国医学科学院	zhong guo yi xue ke xue yuan	3653
+中国工商银行	zhong guo gong shang yin hang	3653
+乔家大院	qiao jia da yuan	3653
+日本共同社	ri ben gong tong she	3653
+苏联部长会议	su lian bu zhang hui yi	3653
+高等教育出版社	gao deng jiao yu chu ban she	3653
+中国航空工业第一集团公司	zhong guo hang kong gong ye di yi ji tuan gong si	3638
+北京市公安局	bei jing shi gong an ju	3638
+外交部办公厅	wai jiao bu ban gong ting	3638
+机械工业部	ji xie gong ye bu	3638
+经济科学出版社	jing ji ke xue chu ban she	3638
+英国皇家空军	ying guo huang jia kong jun	3638
+北京人民艺术剧院	bei jing ren min yi shu ju yuan	3622
+南京师范大学	nan jing shi fan da xue	3622
+建交国	jian jiao guo	3622
+经济委员会	jing ji wei yuan hui	3622
+美国中央情报局	mei guo zhong yang qing bao ju	3622
+美国耶鲁大学	mei guo ye lu da xue	3622
+中国建设银行	zhong guo jian she yin hang	3606
+中国残疾人联合会	zhong guo can ji ren lian he hui	3606
+中国清政府	zhong guo qing zheng fu	3606
+云南白药	yun nan bai yao	3606
+北京青年报	bei jing qing nian bao	3606
+华侨城集团	hua qiao cheng ji tuan	3606
+国旅总社	guo lv zong she	3606
+欧洲委员会	ou zhou wei yuan hui	3606
+申花俱乐部	shen hua ju le bu	3606
+福州大学	fu zhou da xue	3606
+红二军团	hong er jun tuan	3606
+美国哥伦比亚大学	mei guo ge lun bi ya da xue	3606
+中国国奥队	zhong guo guo ao dui	3590
+北京军区总医院	bei jing jun qu zong yi yuan	3590
+同仁医院	tong ren yi yuan	3590
+国际会议中心	guo ji hui yi zhong xin	3590
+日本央行	ri ben yang hang	3590
+日本联合舰队	ri ben lian he jian dui	3590
+综合大学	zong he da xue	3590
+美国麻省理工学院	mei guo ma sheng li gong xue yuan	3590
+全国学联	quan guo xue lian	3573
+北京人民大会堂	bei jing ren min da hui tang	3573
+北京铁路局	bei jing tie lu ju	3573
+哥本哈根大学	ge ben ha gen da xue	3573
+国际标准化组织	guo ji biao zhun hua zu zhi	3573
+宝山钢铁总厂	bao shan gang tie zong chang	3573
+山东鲁能队	shan dong lu neng dui	3573
+岭南大学	ling nan da xue	3573
+拜上帝会	bai shang di hui	3573
+民生银行	min sheng yin hang	3573
+西安交大	xi an jiao da	3573
+贵州大学	gui zhou da xue	3573
+迪斯尼公司	di si ni gong si	3573
+三星电子公司	san xing dian zi gong si	3555
+中华民国政府	zhong hua min guo zheng fu	3555
+京都大学	jing du da xue	3555
+俄国防部	e guo fang bu	3555
+北京城乡贸易中心	bei jing cheng xiang mao yi zhong xin	3555
+北京大学历史系	bei jing da xue li shi xi	3555
+北京电视台	bei jing dian shi tai	3555
+北京航空航天大学	bei jing hang kong hang tian da xue	3555
+华东理工大学	hua dong li gong da xue	3555
+国务院研究室	guo wu yuan yan jiu shi	3555
+国家海洋局	guo jia hai yang ju	3555
+外交学院	wai jiao xue yuan	3555
+希腊政府	xi la zheng fu	3555
+中国人民大学出版社	zhong guo ren min da xue chu ban she	3537
+中国化学会	zhong guo hua xue hui	3537
+中国羽毛球	zhong guo yu mao qiu	3537
+中央组织部	zhong yang zu zhi bu	3537
+全国考委	quan guo kao wei	3537
+北京市卫生局	bei jing shi wei sheng ju	3537
+国务院发展研究中心	guo wu yuan fa zhan yan jiu zhong xin	3537
+国家发展计划委员会	guo jia fa zhan ji hua wei yuan hui	3537
+国家知识产权局	guo jia zhi shi chan quan ju	3537
+天津女排	tian jin nv pai	3537
+朝鲜政府	chao xian zheng fu	3537
+美国康奈尔大学	mei guo kang nai er da xue	3537
+联合国粮农组织	lian he guo liang nong zu zhi	3537
+英国伦敦大学	ying guo lun dun da xue	3537
+首都国际机场	shou du guo ji ji chang	3537
+上海医学院	shang hai yi xue yuan	3518
+上海财经大学	shang hai cai jing da xue	3518
+中国人民解放军海军	zhong guo ren min jie fang jun hai jun	3518
+中国公学	zhong guo gong xue	3518
+中国卫生部	zhong guo wei sheng bu	3518
+中央乐团	zhong yang yue tuan	3518
+以色列空军	yi se lie kong jun	3518
+华侨大学	hua qiao da xue	3518
+华源集团	hua yuan ji tuan	3518
+国际劳工组织	guo ji lao gong zu zhi	3518
+广东省政府	guang dong sheng zheng fu	3518
+广船国际	guang chuan guo ji	3518
+早稻田大学	zao dao tian da xue	3518
+晋察冀野战军	jin cha ji ye zhan jun	3518
+红二十五军	hong er shi wu jun	3518
+美国芝加哥大学	mei guo zhi jia ge da xue	3518
+美国通用	mei guo tong yong	3518
+香港理工大学	xiang gang li gong da xue	3518
+中国人民解放军总部	zhong guo ren min jie fang jun zong bu	3498
+中国协和医科大学	zhong guo xie he yi ke da xue	3498
+中国台北队	zhong guo tai bei dui	3498
+中国物理学会	zhong guo wu li xue hui	3498
+中国解放军	zhong guo jie fang jun	3498
+临时中央政治局	lin shi zhong yang zheng zhi ju	3498
+以色列国防军	yi se lie guo fang jun	3498
+信托投资公司	xin tuo tou zi gong si	3498
+北京电影学院	bei jing dian ying xue yuan	3498
+华为公司	hua wei gong si	3498
+华盛顿大学	hua sheng dun da xue	3498
+国际关系学院	guo ji guan xi xue yuan	3498
+威斯康星大学	wei si kang xing da xue	3498
+惠普公司	hui pu gong si	3498
+新华通讯社	xin hua tong xun she	3498
+日内瓦大学	ri nei wa da xue	3498
+上海音乐学院	shang hai yin yue xue yuan	3478
+中国红十字会	zhong guo hong shi zi hui	3478
+中日友好医院	zhong ri you hao yi yuan	3478
+伦敦经济政治学院	lun dun jing ji zheng zhi xue yuan	3478
+北京电影制片厂	bei jing dian ying zhi pian chang	3478
+印度国防部	yin du guo fang bu	3478
+宾夕法尼亚大学	bin xi fa ni ya da xue	3478
+广东省教育厅	guang dong sheng jiao yu ting	3478
+开发计划署	kai fa ji hua shu	3478
+法国社会党	fa guo she hui dang	3478
+海淀法院	hai dian fa yuan	3478
+深圳发展银行	shen zhen fa zhan yin hang	3478
+澳大利亚联邦	ao da li ya lian bang	3478
+空军航空兵	kong jun hang kong bing	3478
+红三军团	hong san jun tuan	3478
+美国参议院	mei guo can yi yuan	3478
+美国宾夕法尼亚大学	mei guo bin xi fa ni ya da xue	3478
+蒙古人民革命党	meng gu ren min ge ming dang	3478
+中共福建省委	zhong gong fu jian sheng wei	3456
+中国国际旅行社	zhong guo guo ji lv xing she	3456
+中等学校	zhong deng xue xiao	3456
+俄罗斯国防部	e luo si guo fang bu	3456
+包头钢铁公司	bao tou gang tie gong si	3456
+北京工业大学	bei jing gong ye da xue	3456
+国土资源部	guo tu zi yuan bu	3456
+国家外汇管理局	guo jia wai hui guan li ju	3456
+国家档案馆	guo jia dang an guan	3456
+国家版权局	guo jia ban quan ju	3456
+国家计划委员会	guo jia ji hua wei yuan hui	3456
+开滦煤矿	kai luan mei kuang	3456
+欧洲经济共同体	ou zhou jing ji gong tong ti	3456
+民盟中央	min meng zhong yang	3456
+河南建业队	he nan jian ye dui	3456
+法国共产党	fa guo gong chan dang	3456
+法国外交部	fa guo wai jiao bu	3456
+美国加利福尼亚大学	mei guo jia li fu ni ya da xue	3456
+美国波音公司	mei guo bo yin gong si	3456
+苏州大学	su zhou da xue	3456
+英国外交部	ying guo wai jiao bu	3456
+西京医院	xi jing yi yuan	3456
+西班牙共产党	xi ban ya gong chan dang	3456
+韩国国防部	han guo guo fang bu	3456
+中共中央顾问委员会	zhong gong zhong yang gu wen wei yuan hui	3434
+中国互联网络信息中心	zhong guo hu lian wang luo xin xi zhong xin	3434
+中国奥委会	zhong guo ao wei hui	3434
+中国青年报社	zhong guo qing nian bao she	3434
+中银国际	zhong yin guo ji	3434
+俄罗斯政府	e luo si zheng fu	3434
+八届全国人大常委会	ba jie quan guo ren da chang wei hui	3434
+内蒙古大学	nei meng gu da xue	3434
+北京联合大学	bei jing lian he da xue	3434
+友谊医院	you yi yi yuan	3434
+国际奥林匹克委员会	guo ji ao lin pi ke wei yuan hui	3434
+广东外语外贸大学	guang dong wai yu wai mao da xue	3434
+弗赖堡大学	fu lai bao da xue	3434
+爱乐乐团	ai le yue tuan	3434
+美国航空公司	mei guo hang kong gong si	3434
+联合共和国	lian he gong he guo	3434
+联合国开发计划署	lian he guo kai fa ji hua shu	3434
+非洲统一组织	fei zhou tong yi zu zhi	3434
+首都师范大学	shou du shi fan da xue	3434
+香港科技大学	xiang gang ke ji da xue	3434
+上海图书馆	shang hai tu shu guan	3411
+上海戏剧学院	shang hai xi ju xue yuan	3411
+中共上海市委	zhong gong shang hai shi wei	3411
+中共十一届三中全会	zhong gong shi yi jie san zhong quan hui	3411
+中医学院	zhong yi xue yuan	3411
+中国画院	zhong guo hua yuan	3411
+北京外国语大学	bei jing wai guo yu da xue	3411
+台湾民主自治同盟	tai wan min zhu zi zhi tong meng	3411
+巴勒斯坦解放组织	ba le si tan jie fang zu zhi	3411
+拜尔公司	bai er gong si	3411
+新东方学校	xin dong fang xue xiao	3411
+法国巴黎大学	fa guo ba li da xue	3411
+海尔集团	hai er ji tuan	3411
+澳大利亚队	ao da li ya dui	3411
+美国斯坦福大学	mei guo si tan fu da xue	3411
+英国航空公司	ying guo hang kong gong si	3411
+香港城市大学	xiang gang cheng shi da xue	3411
+黄河集团	huang he ji tuan	3411
+世界知识产权组织	shi jie zhi shi chan quan zu zhi	3387
+中体西用	zhong ti xi yong	3387
+中共中央文献研究室	zhong gong zhong yang wen xian yan jiu shi	3387
+中共安徽省委	zhong gong an hui sheng wei	3387
+中共广东省委	zhong gong guang dong sheng wei	3387
+中国社会科学出版社	zhong guo she hui ke xue chu ban she	3387
+人民民主党	ren min min zhu dang	3387
+北京工商大学	bei jing gong shang da xue	3387
+北京第二外国语学院	bei jing di er wai guo yu xue yuan	3387
+华北大学	hua bei da xue	3387
+夏普公司	xia pu gong si	3387
+对外经济贸易大学	dui wai jing ji mao yi da xue	3387
+广西师范大学	guang xi shi fan da xue	3387
+政法大学	zheng fa da xue	3387
+武警总部	wu jing zong bu	3387
+渣打银行	zha da yin hang	3387
+空中客车公司	kong zhong ke che gong si	3387
+美国银行	mei guo yin hang	3387
+胜利油田	sheng li you tian	3387
+西班牙政府	xi ban ya zheng fu	3387
+解放军部队	jie fang jun bu dui	3387
+郑州火车站	zheng zhou huo che zhan	3387
+中国人民武装警察部队	zhong guo ren min wu zhuang jing cha bu dui	3361
+中国人民解放军总政治部	zhong guo ren min jie fang jun zong zheng zhi bu	3361
+中国文学艺术界联合会	zhong guo wen xue yi shu jie lian he hui	3361
+中央民族大学	zhong yang min zu da xue	3361
+九届全国人大常委会	jiu jie quan guo ren da chang wei hui	3361
+八届全国人大	ba jie quan guo ren da	3361
+共青团中央	gong qing tuan zhong yang	3361
+内务部队	nei wu bu dui	3361
+华北联合大学	hua bei lian he da xue	3361
+南京航空航天大学	nan jing hang kong hang tian da xue	3361
+国务院新闻办	guo wu yuan xin wen ban	3361
+国际泳联	guo ji yong lian	3361
+朝鲜劳动党	chao xian lao dong dang	3361
+欧安组织	ou an zu zhi	3361
+江防军	jiang fang jun	3361
+沃达丰公司	wo da feng gong si	3361
+海南省旅游局	hai nan sheng lv you ju	3361
+福特汽车公司	fu te qi che gong si	3361
+英国伦敦经济学院	ying guo lun dun jing ji xue yuan	3361
+三总部	san zong bu	3335
+上海中央局	shang hai zhong yang ju	3335
+东北师范大学	dong bei shi fan da xue	3335
+中华全国体育总会	zhong hua quan guo ti yu zong hui	3335
+中国大使馆	zhong guo da shi guan	3335
+中国移动通信集团公司	zhong guo yi dong tong xin ji tuan gong si	3335
+中央政治局常委会	zhong yang zheng zhi ju chang wei hui	3335
+中革军委	zhong ge jun wei	3335
+亚洲开发银行	ya zhou kai fa yin hang	3335
+北京医院	bei jing yi yuan	3335
+北京大学哲学系	bei jing da xue zhe xue xi	3335
+北京市建委	bei jing shi jian wei	3335
+华夏银行	hua xia yin hang	3335
+南通社	nan tong she	3335
+印尼男队	yin ni nan dui	3335
+对外贸易经济合作部	dui wai mao yi jing ji he zuo bu	3335
+延世大学	yan shi da xue	3335
+拜仁慕尼黑队	bai ren mu ni hei dui	3335
+文物出版社	wen wu chu ban she	3335
+新疆军区	xin jiang jun qu	3335
+日本共产党	ri ben gong chan dang	3335
+日本广播协会	ri ben guang bo xie hui	3335
+法国议会	fa guo yi hui	3335
+科学技术部	ke xue ji shu bu	3335
+秦山核电站	qin shan he dian zhan	3335
+第九届全国政协	di jiu jie quan guo zheng xie	3335
+美国军舰	mei guo jun jian	3335
+美国航空航天局	mei guo hang kong hang tian ju	3335
+美洲国家组织	mei zhou guo jia zu zhi	3335
+英国圣公会	ying guo sheng gong hui	3335
+贵宾团	gui bin tuan	3335
+赫尔辛基大学	he er xin ji da xue	3335
+香港特区政府	xiang gang te qu zheng fu	3335
+上海圣约翰大学	shang hai sheng yue han da xue	3306
+上海理工大学	shang hai li gong da xue	3306
+上海银行	shang hai yin hang	3306
+中国农业科学院	zhong guo nong ye ke xue yuan	3306
+中国残联	zhong guo can lian	3306
+中国石油天然气集团	zhong guo shi you tian ran qi ji tuan	3306
+人民教育出版社	ren min jiao yu chu ban she	3306
+俄国政府	e guo zheng fu	3306
+党建读物出版社	dang jian du wu chu ban she	3306
+北京同仁医院	bei jing tong ren yi yuan	3306
+北京电子管厂	bei jing dian zi guan chang	3306
+华北电力大学	hua bei dian li da xue	3306
+司农司	si nong si	3306
+合肥市公安局	he fei shi gong an ju	3306
+国防科学技术工业委员会	guo fang ke xue ji shu gong ye wei yuan hui	3306
+国际商业机器公司	guo ji shang ye ji qi gong si	3306
+国际天文学联合会	guo ji tian wen xue lian he hui	3306
+外交部驻港特派员公署	wai jiao bu zhu gang te pai yuan gong shu	3306
+奥斯陆大学	ao si lu da xue	3306
+广西大学	guang xi da xue	3306
+德国外交部	de guo wai jiao bu	3306
+新进党	xin jin dang	3306
+河南建业	he nan jian ye	3306
+法兰西银行	fa lan xi yin hang	3306
+波士顿大学	bo shi dun da xue	3306
+燕山大学	yan shan da xue	3306
+福建师范大学	fu jian shi fan da xue	3306
+莫斯科中山大学	mo si ke zhong shan da xue	3306
+西欧联盟	xi ou lian meng	3306
+财经委员会	cai jing wei yuan hui	3306
+重工业部	zhong gong ye bu	3306
+首都医科大学	shou du yi ke da xue	3306
+中共北京市委	zhong gong bei jing shi wei	3277
+中国国家队	zhong guo guo jia dui	3277
+中国戏剧家协会	zhong guo xi ju jia xie hui	3277
+中国消费者协会	zhong guo xiao fei zhe xie hui	3277
+中国科学技术协会	zhong guo ke xue ji shu xie hui	3277
+中国食品工业协会	zhong guo shi pin gong ye xie hui	3277
+中国驻韩国大使馆	zhong guo zhu han guo da shi guan	3277
+俄罗斯队	e luo si dui	3277
+全国政协外事委员会	quan guo zheng xie wai shi wei yuan hui	3277
+加州理工学院	jia zhou li gong xue yuan	3277
+南宁糖业	nan ning tang ye	3277
+双汇集团	shuang hui ji tuan	3277
+同业公会	tong ye gong hui	3277
+外交部驻香港特派员公署	wai jiao bu zhu xiang gang te pai yuan gong shu	3277
+德国柏林大学	de guo bo lin da xue	3277
+德国电视一台	de guo dian shi yi tai	3277
+政协全国委员会	zheng xie quan guo wei yuan hui	3277
+日本足协	ri ben zu xie	3277
+曼彻斯特大学	man che si te da xue	3277
+比利时外交部	bi li shi wai jiao bu	3277
+法国电信	fa guo dian xin	3277
+波兰政府	bo lan zheng fu	3277
+湖南队	hu nan dui	3277
+澳大利亚广播公司	ao da li ya guang bo gong si	3277
+爱立信公司	ai li xin gong si	3277
+瑞士联邦	rui shi lian bang	3277
+美国众议院	mei guo zhong yi yuan	3277
+美国普林斯顿大学	mei guo pu lin si dun da xue	3277
+肯尼迪航天中心	ken ni di hang tian zhong xin	3277
+英国工党	ying guo gong dang	3277
+西北农林科技大学	xi bei nong lin ke ji da xue	3277
+西南航空	xi nan hang kong	3277
+郑州大学	zheng zhou da xue	3277
+阿根廷队	a gen ting dui	3277
+陆航团	lu hang tuan	3277
+中国人民解放军空军	zhong guo ren min jie fang jun kong jun	3245
+中国国际贸易促进委员会	zhong guo guo ji mao yi cu jin wei yuan hui	3245
+中国大百科全书出版社	zhong guo da bai ke quan shu chu ban she	3245
+中国摄影家协会	zhong guo she ying jia xie hui	3245
+中国教育电视台	zhong guo jiao yu dian shi tai	3245
+中国民航总局	zhong guo min hang zong ju	3245
+中国登山队	zhong guo deng shan dui	3245
+中国移动通信	zhong guo yi dong tong xin	3245
+中国第一历史档案馆	zhong guo di yi li shi dang an guan	3245
+克林顿政府	ke lin dun zheng fu	3245
+全国青联	quan guo qing lian	3245
+列宁格勒大学	lie ning ge lei da xue	3245
+创维集团	chuang wei ji tuan	3245
+北京人艺	bei jing ren yi	3245
+北京大学第一医院	bei jing da xue di yi yi yuan	3245
+华为技术有限公司	hua wei ji shu you xian gong si	3245
+国际纵队	guo ji zong dui	3245
+大众汽车集团	da zhong qi che ji tuan	3245
+宁夏大学	ning xia da xue	3245
+山西大学	shan xi da xue	3245
+广播电影电视部	guang bo dian ying dian shi bu	3245
+沈阳队	shen yang dui	3245
+澳大利亚政府	ao da li ya zheng fu	3245
+石油输出国组织	shi you shu chu guo zu zhi	3245
+罗马大学	luo ma da xue	3245
+美国国家航空航天局	mei guo guo jia hang kong hang tian ju	3245
+美国密歇根大学	mei guo mi xie gen da xue	3245
+美国电话电报公司	mei guo dian hua dian bao gong si	3245
+美国联邦政府	mei guo lian bang zheng fu	3245
+联合国总部	lian he guo zong bu	3245
+联合国环境规划署	lian he guo huan jing gui hua shu	3245
+苏黎世大学	su li shi da xue	3245
+上海复旦大学	shang hai fu dan da xue	3211
+上海市教委	shang hai shi jiao wei	3211
+东方航空公司	dong fang hang kong gong si	3211
+中央档案馆	zhong yang dang an guan	3211
+中央民族学院	zhong yang min zu xue yuan	3211
+以色列国防部	yi se lie guo fang bu	3211
+全国人大常务委员会	quan guo ren da chang wu wei yuan hui	3211
+八一电影制片厂	ba yi dian ying zhi pian chang	3211
+共产国际执委会	gong chan guo ji zhi wei hui	3211
+北京化工大学	bei jing hua gong da xue	3211
+北京林业大学	bei jing lin ye da xue	3211
+北平协和医学院	bei ping xie he yi xue yuan	3211
+南方航空公司	nan fang hang kong gong si	3211
+四川长虹	si chuan chang hong	3211
+国家科技部	guo jia ke ji bu	3211
+国家集训队	guo jia ji xun dui	3211
+日本自民党	ri ben zi min dang	3211
+杜邦公司	du bang gong si	3211
+河北宣工	he bei xuan gong	3211
+海信集团	hai xin ji tuan	3211
+海军南海舰队	hai jun nan hai jian dui	3211
+海南大学	hai nan da xue	3211
+科隆大教堂	ke long da jiao tang	3211
+美国电影艺术与科学学院	mei guo dian ying yi shu yu ke xue xue yuan	3211
+苏区中央局	su qu zhong yang ju	3211
+西北军政委员会	xi bei jun zheng wei yuan hui	3211
+解放军总后勤部	jie fang jun zong hou qin bu	3211
+通用公司	tong yong gong si	3211
+阳光集团	yang guang ji tuan	3211
+青岛大学	qing dao da xue	3211
+七十七国集团	qi shi qi guo ji tuan	3175
+三星公司	san xing gong si	3175
+中信银行	zhong xin yin hang	3175
+中华人民共和国教育部	zhong hua ren min gong he guo jiao yu bu	3175
+中华全国工商业联合会	zhong hua quan guo gong shang ye lian he hui	3175
+中国中医研究院	zhong guo zhong yi yan jiu yuan	3175
+中国京剧院	zhong guo jing ju yuan	3175
+中国医科大学	zhong guo yi ke da xue	3175
+中国国际广播电台	zhong guo guo ji guang bo dian tai	3175
+中国电子商会	zhong guo dian zi shang hui	3175
+中国福利会	zhong guo fu li hui	3175
+中国美术馆	zhong guo mei shu guan	3175
+中国足球队	zhong guo zu qiu dui	3175
+中航油	zhong hang you	3175
+伦敦经济学院	lun dun jing ji xue yuan	3175
+加州大学洛杉矶分校	jia zhou da xue luo shan ji fen xiao	3175
+北京中医药大学	bei jing zhong yi yao da xue	3175
+北京农业大学	bei jing nong ye da xue	3175
+北京大学光华管理学院	bei jing da xue guang hua guan li xue yuan	3175
+北京旅游局	bei jing lv you ju	3175
+华东政法学院	hua dong zheng fa xue yuan	3175
+古巴共产党	gu ba gong chan dang	3175
+国家中医药管理局	guo jia zhong yi yao guan li ju	3175
+国家信息中心	guo jia xin xi zhong xin	3175
+国家卫生部	guo jia wei sheng bu	3175
+国家开发银行	guo jia kai fa yin hang	3175
+国家财政部	guo jia cai zheng bu	3175
+国富民强	guo fu min qiang	3175
+埃及政府	ai ji zheng fu	3175
+大亚湾核电站	da ya wan he dian zhan	3175
+大韩航空公司	da han hang kong gong si	3175
+奔驰公司	ben chi gong si	3175
+广东政府	guang dong zheng fu	3175
+广东省物价局	guang dong sheng wu jia ju	3175
+庐山管理局	lu shan guan li ju	3175
+德通社	de tong she	3175
+意大利政府	yi da li zheng fu	3175
+意大利队	yi da li dui	3175
+新加坡航空公司	xin jia po hang kong gong si	3175
+杭州大学	hang zhou da xue	3175
+河海大学	he hai da xue	3175
+法国国民议会	fa guo guo min yi hui	3175
+海南航空公司	hai nan hang kong gong si	3175
+福建林学院	fu jian lin xue yuan	3175
+美国最高法院	mei guo zui gao fa yuan	3175
+美国通用电气公司	mei guo tong yong dian qi gong si	3175
+莫斯科大剧院	mo si ke da ju yuan	3175
+西南政法大学	xi nan zheng fa da xue	3175
+解放军总医院	jie fang jun zong yi yuan	3175
+解放军理工大学	jie fang jun li gong da xue	3175
+越南共产党	yue nan gong chan dang	3175
+辽宁教育出版社	liao ning jiao yu chu ban she	3175
+邮电所	you dian suo	3175
+里通外国	li tong wai guo	3175
+长春电影制片厂	chang chun dian ying zhi pian chang	3175
+陕北公学	shan bei gong xue	3175
+高盛集团	gao sheng ji tuan	3175
+黑龙江队	hei long jiang dui	3175
+万国邮政联盟	wan guo you zheng lian meng	3137
+世界气象组织	shi jie qi xiang zu zhi	3137
+中共中央对外联络部	zhong gong zhong yang dui wai lian luo bu	3137
+中共中央组织部	zhong gong zhong yang zu zhi bu	3137
+中国中央政府	zhong guo zhong yang zheng fu	3137
+中国佛教协会	zhong guo fo jiao xie hui	3137
+中国作协	zhong guo zuo xie	3137
+中国国际航空公司	zhong guo guo ji hang kong gong si	3137
+中国旅行社总社	zhong guo lv xing she zong she	3137
+中国气象局	zhong guo qi xiang ju	3137
+中国注册会计师协会	zhong guo zhu ce kuai ji shi xie hui	3137
+中国电子技术标准化研究所	zhong guo dian zi ji shu biao zhun hua yan jiu suo	3137
+利库德集团	li ku de ji tuan	3137
+北京体育大学	bei jing ti yu da xue	3137
+北京医科大学	bei jing yi ke da xue	3137
+北京大学图书馆	bei jing da xue tu shu guan	3137
+北京市教委	bei jing shi jiao wei	3137
+南京金陵大学	nan jing jin ling da xue	3137
+古巴政府	gu ba zheng fu	3137
+国泰君安证券股份有限公司	guo tai jun an zheng quan gu fen you xian gong si	3137
+国际业余田径联合会	guo ji ye yu tian jing lian he hui	3137
+国际电工委员会	guo ji dian gong wei yuan hui	3137
+土耳其政府	tu er qi zheng fu	3137
+大宇公司	da yu gong si	3137
+天安门国旗护卫队	tian an men guo qi hu wei dui	3137
+宋庆龄基金会	song qing ling ji jin hui	3137
+富集区	fu ji qu	3137
+岳麓书院	yue lu shu yuan	3137
+广东发展银行	guang dong fa zhan yin hang	3137
+悉尼歌剧院	xi ni ge ju yuan	3137
+日本银行	ri ben yin hang	3137
+欧洲航天局	ou zhou hang tian ju	3137
+民族委员会	min zu wei yuan hui	3137
+汉堡大学	han bao da xue	3137
+江苏省政府	jiang su sheng zheng fu	3137
+澳门大学	ao men da xue	3137
+理论物理研究所	li lun wu li yan jiu suo	3137
+瑞典皇家科学院	rui dian huang jia ke xue yuan	3137
+石油大学	shi you da xue	3137
+科学出版社	ke xue chu ban she	3137
+粮农组织	liang nong zu zhi	3137
+美军太平洋总部	mei jun tai ping yang zong bu	3137
+美发厅	mei fa ting	3137
+美国伊利诺伊大学	mei guo yi li nuo yi da xue	3137
+美国共和党	mei guo gong he dang	3137
+美国加州大学洛杉矶分校	mei guo jia zhou da xue luo shan ji fen xiao	3137
+美国参谋长联席会议	mei guo can mou zhang lian xi hui yi	3137
+美国司法部	mei guo si fa bu	3137
+美孚石油公司	mei fu shi you gong si	3137
+西北工业大学	xi bei gong ye da xue	3137
+韩国三星电子公司	han guo san xing dian zi gong si	3137
+高等教育部	gao deng jiao yu bu	3137
+上海市政协	shang hai shi zheng xie	3095
+上海第二医科大学	shang hai di er yi ke da xue	3095
+世界妇女大会	shi jie fu nv da hui	3095
+中国保监会	zhong guo bao jian hui	3095
+中国国民党临时行动委员会	zhong guo guo min dang lin shi xing dong wei yuan hui	3095
+中国工会	zhong guo gong hui	3095
+中国科技馆	zhong guo ke ji guan	3095
+中国航天科技集团公司	zhong guo hang tian ke ji ji tuan gong si	3095
+住友银行	zhu you yin hang	3095
+全国人大法律委员会	quan guo ren da fa lv wei yuan hui	3095
+全国侨联	quan guo qiao lian	3095
+公安部出入境管理局	gong an bu chu ru jing guan li ju	3095
+切尔西队	qie er xi dui	3095
+加拿大航空公司	jia na da hang kong gong si	3095
+北京大学人民医院	bei jing da xue ren min yi yuan	3095
+北京市人事局	bei jing shi ren shi ju	3095
+北京市消协	bei jing shi xiao xie	3095
+北京广播学院	bei jing guang bo xue yuan	3095
+北京画院	bei jing hua yuan	3095
+北医三院	bei yi san yuan	3095
+北大图书馆	bei da tu shu guan	3095
+北方交通大学	bei fang jiao tong da xue	3095
+南京艺术学院	nan jing yi shu xue yuan	3095
+印度人民党	yin du ren min dang	3095
+哈佛商学院	ha fu shang xue yuan	3095
+哈医大	ha yi da	3095
+哈药集团	ha yao ji tuan	3095
+国家医药管理局	guo jia yi yao guan li ju	3095
+国家民委	guo jia min wei	3095
+外文出版社	wai wen chu ban she	3095
+大港油田	da gang you tian	3095
+少年中国学会	shao nian zhong guo xue hui	3095
+平展展	ping zhan zhan	3095
+成都电子科技大学	cheng du dian zi ke ji da xue	3095
+抗日红军大学	kang ri hong jun da xue	3095
+新华出版社	xin hua chu ban she	3095
+日本航空公司	ri ben hang kong gong si	3095
+法律出版社	fa lv chu ban she	3095
+深圳经济特区	shen zhen jing ji te qu	3095
+爱尔兰共和军	ai er lan gong he jun	3095
+经济合作与发展组织	jing ji he zuo yu fa zhan zu zhi	3095
+维也纳国家歌剧院	wei ye na guo jia ge ju yuan	3095
+缅甸联邦	mian dian lian bang	3095
+美国农业部	mei guo nong ye bu	3095
+美国加州理工学院	mei guo jia zhou li gong xue yuan	3095
+美国广播公司	mei guo guang bo gong si	3095
+芬兰政府	fen lan zheng fu	3095
+远洋渔业	yuan yang yu ye	3095
+青岛海洋大学	qing dao hai yang da xue	3095
+香港廉政公署	xiang gang lian zheng gong shu	3095
+香港联交所	xiang gang lian jiao suo	3095
+上海医科大学	shang hai yi ke da xue	3050
+上海大众	shang hai da zhong	3050
+上海社科院	shang hai she ke yuan	3050
+世道人心	shi dao ren xin	3050
+东中西部	dong zhong xi bu	3050
+东方航空	dong fang hang kong	3050
+中共江苏省委	zhong gong jiang su sheng wei	3050
+中共湖北省委	zhong gong hu bei sheng wei	3050
+中华全国新闻工作者协会	zhong hua quan guo xin wen gong zuo zhe xie hui	3050
+中国中央电视台	zhong guo zhong yang dian shi tai	3050
+中国使馆	zhong guo shi guan	3050
+中国国家旅游局	zhong guo guo jia lv you ju	3050
+中国戏曲学院	zhong guo xi qu xue yuan	3050
+中国数学会	zhong guo shu xue hui	3050
+中国新民主主义青年团	zhong guo xin min zhu zhu yi qing nian tuan	3050
+中国法学会	zhong guo fa xue hui	3050
+中国电子商务协会	zhong guo dian zi shang wu xie hui	3050
+中国矿业大学	zhong guo kuang ye da xue	3050
+中国羽毛球女队	zhong guo yu mao qiu nv dui	3050
+中国艺术研究院	zhong guo yi shu yan jiu yuan	3050
+中国跳水队	zhong guo tiao shui dui	3050
+中国驻埃及大使馆	zhong guo zhu ai ji da shi guan	3050
+云南省人民政府	yun nan sheng ren min zheng fu	3050
+亚历山大图书馆	ya li shan da tu shu guan	3050
+亚太经合组织	ya tai jing he zu zhi	3050
+亚太经济合作组织	ya tai jing ji he zuo zu zhi	3050
+以色列政府	yi se lie zheng fu	3050
+俄罗斯黑海舰队	e luo si hei hai jian dui	3050
+共产主义青年团	gong chan zhu yi qing nian tuan	3050
+刘家峡水电站	liu jia xia shui dian zhan	3050
+哈尔滨工程大学	ha er bin gong cheng da xue	3050
+国土资源厅	guo tu zi yuan ting	3050
+国安俱乐部	guo an ju le bu	3050
+国家环保总局	guo jia huan bao zong ju	3050
+国家自然科学基金	guo jia zi ran ke xue ji jin	3050
+国际电信联盟	guo ji dian xin lian meng	3050
+国际红十字会	guo ji hong shi zi hui	3050
+城市交通	cheng shi jiao tong	3050
+大通曼哈顿银行	da tong man ha dun yin hang	3050
+工商行政管理局	gong shang hang zheng guan li ju	3050
+希腊共产党	xi la gong chan dang	3050
+广东省公安厅	guang dong sheng gong an ting	3050
+延安鲁迅艺术学院	yan an lu xun yi shu xue yuan	3050
+德国汉莎航空公司	de guo han sha hang kong gong si	3050
+悉尼大学	xi ni da xue	3050
+成都市委	cheng du shi wei	3050
+成都市政府	cheng du shi zheng fu	3050
+教科文卫委员会	jiao ke wen wei wei yuan hui	3050
+松下电器公司	song xia dian qi gong si	3050
+汕头大学	shan tou da xue	3050
+江苏舜天队	jiang su shun tian dui	3050
+河南人民出版社	he nan ren min chu ban she	3050
+法国航空公司	fa guo hang kong gong si	3050
+湖南师范大学	hu nan shi fan da xue	3050
+澳门特别行政区政府	ao men te bie xing zheng qu zheng fu	3050
+澳门特区政府	ao men te qu zheng fu	3050
+缅甸政府	mian dian zheng fu	3050
+美国加州大学	mei guo jia zhou da xue	3050
+美国威斯康星大学	mei guo wei si kang xing da xue	3050
+美国纽约州立大学	mei guo niu yue zhou li da xue	3050
+联邦最高法院	lian bang zui gao fa yuan	3050
+花旗集团	hua qi ji tuan	3050
+英国曼彻斯特大学	ying guo man che si te da xue	3050
+荷兰东印度公司	he lan dong yin du gong si	3050
+西南军政委员会	xi nan jun zheng wei yuan hui	3050
+质量技术监督局	zhi liang ji shu jian du ju	3050
+阿拉伯国家联盟	a la bo guo jia lian meng	3050
+飞利浦公司	fei li pu gong si	3050
+马里兰大学	ma li lan da xue	3050
+高级社	gao ji she	3050
+黄河水利委员会	huang he shui li wei yuan hui	3050

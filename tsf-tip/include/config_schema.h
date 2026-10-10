@@ -95,7 +95,7 @@ inline constexpr Entry entries[] = {
 {L"input",L"page_comma_period",L"1"},
 {L"engine",L"retry_on_failure",L"1"},
 {L"engine",L"long_lookup_soft_budget_ms",L"4"},
-{L"general",L"config_version",L"13"},
+{L"general",L"config_version",L"14"},
 {L"input",L"default_ascii",L"0"},
 {L"general",L"global_ascii",L"0"},
 {L"input",L"default_full_shape",L"0"},
@@ -185,6 +185,10 @@ inline constexpr Entry entries[] = {
 {L"tools",L"ocr_translate_hotkey",L"off"},
 {L"tools",L"translate_result_action",L"show"},
 {L"tools",L"wintranslator_path",L""},
+{L"tools",L"translate_target_language",L"auto-opposite"},
+{L"compatibility",L"game_enter_behavior",L"auto"},
+{L"compatibility",L"game_auto_uia",L"1"},
+{L"compatibility",L"game_status_indicator",L"1"},
 };
 inline const wchar_t* DefaultValue(const wchar_t* section, const wchar_t* key) {
 for (const auto& e : entries) if (_wcsicmp(e.section, section)==0 && _wcsicmp(e.key,key)==0) return e.value;

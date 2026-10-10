@@ -1,0 +1,52 @@
+# 开心离线输入法分类补充：音乐乐理
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+乐器保养	yue qi bao yang	6100
+乐器演奏	yue qi yan zou	6100
+乐器练习	yue qi lian xi	6100
+乐器调音	yue qi tiao yin	6100
+乐队排练	yue dui pai lian	6100
+五线谱读谱	wu xian pu du pu	6100
+共鸣训练	gong ming xun lian	6100
+发声训练	fa sheng xun lian	6100
+合唱排练	he chang pai lian	6100
+吉他弹唱	ji ta dan chang	6100
+听音训练	ting yin xun lian	6100
+呼吸训练	hu xi xun lian	6100
+和声进行	he sheng jin xing	6100
+和弦转位	he xian zhuan wei	6100
+和弦进行	he xian jin xing	6100
+均衡压缩	jun heng ya suo	6100
+声乐练习	sheng yue lian xi	6100
+多轨录音	duo gui lu yin	6100
+对位法	dui wei fa	6100
+弓法	gong fa	6100
+录音设备	lu yin she bei	6100
+旋律写作	xuan lv xie zuo	6100
+曲式分析	qu shi fen xi	6100
+混响延迟	hun xiang yan chi	6100
+演奏技巧	yan zou ji qiao	6100
+简谱读谱	jian pu du pu	6100
+节奏训练	jie zou xun lian	6100
+节拍训练	jie pai xun lian	6100
+视唱练耳	shi chang lian er	6100
+调式音阶	diao shi yin jie	6100
+调性分析	diao xing fen xi	6100
+钢琴伴奏	gang qin ban zou	6100
+音乐创作	yin yue chuang zuo	6100
+音乐制作	yin yue zhi zuo	6100
+音乐录制	yin yue lu zhi	6100
+音乐母带	yin yue mu dai	6100
+音乐混音	yin yue hun yin	6100
+音乐理论	yin yue li lun	6100
+音乐编曲	yin yue bian qu	6100
+音乐鉴赏	yin yue jian shang	6100
+音准节奏	yin zhun jie zou	6100
+音频剪辑	yin pin jian ji	6100
+音频接口	yin pin jie kou	6100
+指法	zhi fa	5744
+音高	yin gao	4440
+音色	yin se	4339
+配器法	pei qi fa	117

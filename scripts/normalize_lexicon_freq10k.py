@@ -104,6 +104,13 @@ def rewrite_file(path: Path) -> tuple[int, int, int]:
     if not parsed:
         return 0, 0, 0
 
+    if path.name.lower().startswith("category_"):
+        values = [row[2] for row in parsed]
+        if any(not 1 <= value <= MAX_SCORE for value in values):
+            raise ValueError(f"Category snapshot has an unbounded score: {path}")
+        # Preserve curated/corpus frequency bands of the frozen snapshot.
+        return len(parsed), min(values), max(values)
+
     low, high = profile(path, [(f[0], f[1], f[2]) for f in parsed])
     old_values = [item[2] for item in parsed]
     new_values = score_by_rank(old_values, low, high)

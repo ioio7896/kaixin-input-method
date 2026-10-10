@@ -23,6 +23,8 @@ OCR 引擎、OCR 模型、Python 运行时依赖、系统 API、外部词库和�
 | RapidOCR | Apache License 2.0 | 可使用、复制、修改和再分发工程代码；可随商业软件分发 | 保留 Apache-2.0 许可证、版权和 NOTICE/README；说明 OCR 模型版权另属模型方；如修改 RapidOCR 源码，标明修改 |
 | chinese-surnames 1.0.0 | MIT License | 可使用、修改和再分发姓氏列表 | `data_sources/lexicon_fragments/zh-ext/chinese_surnames.txt` 为其 `index.json` 的拼音化派生结果，并合并到 `lexicon/zh-ext/people_names.txt`；保留 `data_sources/chinese_surnames/LICENSE` 及上游来源 |
 | rust-pinyin 0.10.0 | MIT License | 可使用、修改和再分发代码 | 保留 MIT 许可证和版权声明；本项目用于生成无声调拼音及支持字符表 |
+| jieba 0.42.1 | MIT License | 分类词库的通用词、成语和部分专名补充来源 | 从本地 `dict.txt` 按词频与词性筛选；源快照及哈希见 `lexicon/category-expansion.json`，完整许可随包见 `lexicon/category-LICENSE.jieba.md` |
+| pypinyin 0.55.0 | MIT License | 用于分类词条的无声调拼音生成 | 沿用已有读音，并应用项目多音词校正；完整许可随包见 `lexicon/category-LICENSE.pypinyin.md` |
 | wordfreq 3.1.1 | Apache License 2.0 | 可使用、修改和再分发代码与随包数据 | 保留版权、许可证和来源；本项目仅派生并分发筛选后的 20,000 词英文排序 |
 
 ## OCR 功能

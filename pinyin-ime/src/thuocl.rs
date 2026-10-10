@@ -154,7 +154,7 @@ impl LexiconLayer {
             "kaixin_explicit.txt"
                 | "kaixin_polyphone.txt"
                 | "kaixin_pronunciation_aliases.txt"
-                | "lfie-common-3char.txt"
+                | "life_common_3char.txt"
                 | "life_hot_3char_curated.txt"
                 | "life_hot_4char_curated.txt"
         ) {
@@ -1953,6 +1953,8 @@ fn should_include_file(path: &Path) -> bool {
     !normalized.starts_with("readme")
         && !normalized.ends_with("_纯名单.txt")
         && normalized != "life_common_3char_tail_15000.txt"
+        && !crate::lexicon_prefs::is_retired_optional_lexicon_path(path)
+        && !crate::lexicon_prefs::is_retired_packaged_lexicon_path(path)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -2768,6 +2770,14 @@ fn is_unscaled_source(path: &Path) -> bool {
             .is_some_and(|name| {
                 name.eq_ignore_ascii_case("people_names.txt")
                     || name.eq_ignore_ascii_case("hangzhou_local.txt")
+                    // Reviewed conversation expressions carry authored bands.
+                    // Their weights must not collapse to a middle percentile
+                    // when unrelated quota filler is removed from the file.
+                    || name.eq_ignore_ascii_case("daily_communication.txt")
+                    // Imported categories already use bounded corpus/curated
+                    // bands. Per-file percentile remapping would promote rare
+                    // idioms and flatten the authored scenario priorities.
+                    || name.to_ascii_lowercase().starts_with("category_")
             })
 }
 
@@ -2807,6 +2817,15 @@ fn build_frequency_calibrators(
         .filter(|path| is_frequency_reference_source(path))
     {
         collect_frequency_values(path, profile, &mut reference_by_len);
+    }
+    if paths.iter().any(|path| {
+        path.file_name().and_then(|name| name.to_str()) == Some("life_common_3char.txt")
+    }) {
+        let fixed_reference: HashMap<usize, Vec<u64>> = serde_json::from_str(include_str!(
+            "../../shared/lexicon_frequency_reference.json"
+        ))
+        .expect("valid maintained lexicon frequency reference");
+        reference_by_len.extend(fixed_reference);
     }
     for values in reference_by_len.values_mut() {
         values.sort_unstable();
@@ -3045,7 +3064,7 @@ mod tests {
     fn curated_short_hot_layers_preserve_existing_three_char_head() {
         let zh = Path::new("lexicon").join("zh");
         assert_eq!(
-            LexiconLayer::from_path(&zh.join("lfie-common-3char.txt")),
+            LexiconLayer::from_path(&zh.join("life_common_3char.txt")),
             LexiconLayer::Core
         );
         assert_eq!(

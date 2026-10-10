@@ -1,0 +1,743 @@
+# 开心离线输入法分类补充：通用长词补充
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+本行政区域	ben hang zheng qu yu	6103
+中华人民共和国宪法	zhong hua ren min gong he guo xian fa	5450
+民主集中制	min zhu ji zhong zhi	5369
+毛主席纪念堂	mao zhu xi ji nian tang	5356
+十一届三中全会	shi yi jie san zhong quan hui	5307
+人民英雄纪念碑	ren min ying xiong ji nian bei	5300
+劳动人民文化宫	lao dong ren min wen hua gong	5268
+新民主主义	xin min zhu zhu yi	5144
+新民主主义革命	xin min zhu zhu yi ge ming	5122
+政治经济学	zheng zhi jing ji xue	5081
+人民解放战争	ren min jie fang zhan zheng	5077
+剩余价值率	sheng yu jia zhi lv	4967
+土地革命战争	tu di ge ming zhan zheng	4883
+劳动生产率	lao dong sheng chan lv	4865
+义和团运动	yi he tuan yun dong	4841
+抗日民族统一战线	kang ri min zu tong yi zhan xian	4758
+高速公路网	gao su gong lu wang	4716
+农林牧渔业	nong lin mu yu ye	4700
+北京市劳动人民文化宫	bei jing shi lao dong ren min wen hua gong	4698
+抗日救亡运动	kang ri jiu wang yun dong	4698
+速生丰产林	su sheng feng chan lin	4696
+武汉职业技术学院	wu han zhi ye ji shu xue yuan	4694
+环境保护部	huan jing bao hu bu	4694
+长江三峡水利枢纽工程	chang jiang san xia shui li shu niu gong cheng	4694
+伊斯兰教协会	yi si lan jiao xie hui	4692
+计划生育率	ji hua sheng yu lv	4692
+殖民主义者	zhi min zhu yi zhe	4627
+世界反法西斯战争	shi jie fan fa xi si zhan zheng	4486
+刑事诉讼法	xing shi su song fa	4477
+欧罗巴人种	ou luo ba ren zhong	4470
+文艺工作者	wen yi gong zuo zhe	4461
+摸不着头脑	mo bu zhao tou nao	4442
+攘外必先安内	rang wai bi xian an nei	4442
+抗美援朝战争	kang mei yuan chao zhan zheng	4415
+交通运输业	jiao tong yun shu ye	4379
+生活必需品	sheng huo bi xu pin	4337
+光华木材厂	guang hua mu cai chang	4333
+劳动密集型	lao dong mi ji xing	4291
+南亚次大陆	nan ya ci da lu	4291
+中国新民主主义革命	zhong guo xin min zhu zhu yi ge ming	4264
+专属经济区	zhuan shu jing ji qu	4254
+奥林匹克运动会	ao lin pi ke yun dong hui	4235
+美帝国主义	mei di guo zhu yi	4225
+五个一工程	wu ge yi gong cheng	4220
+半封建社会	ban feng jian she hui	4215
+电子显微镜	dian zi xian wei jing	4215
+九一八事变	jiu yi ba shi bian	4210
+君主立宪制	jun zhu li xian zhi	4205
+集体所有制	ji ti suo you zhi	4205
+放射性核素	fang she xing he su	4200
+诺贝尔物理学奖	nuo bei er wu li xue jiang	4179
+大百科全书	da bai ke quan shu	4168
+计算机信息	ji suan ji xin xi	4162
+上气不接下气	shang qi bu jie xia qi	4151
+放射性元素	fang she xing yuan su	4151
+无党派人士	wu dang pai ren shi	4139
+商品生产者	shang pin sheng chan zhe	4133
+手扶拖拉机	shou fu tuo la ji	4097
+省港大罢工	sheng gang da ba gong	4077
+斯大林格勒	si da lin ge lei	4064
+过氧化苯甲酰	guo yang hua ben jia xian	4064
+表演艺术家	biao yan yi shu jia	4057
+计算机病毒	ji suan ji bing du	4057
+通货膨胀率	tong huo peng zhang lv	4036
+帝国主义者	di guo zhu yi zhe	4029
+社会心理学	she hui xin li xue	4029
+超现实主义	chao xian shi zhu yi	4029
+南京长江二桥	nan jing chang jiang er qiao	4014
+瓦窑堡会议	wa yao bu hui yi	4014
+个人所得税	ge ren suo de shui	3999
+大连实德队	da lian shi de dui	3999
+社会民主主义	she hui min zhu zhu yi	3999
+社会活动家	she hui huo dong jia	3983
+国际共产主义运动	guo ji gong chan zhu yi yun dong	3959
+无线电通信	wu xian dian tong xin	3959
+诺贝尔化学奖	nuo bei er hua xue jiang	3959
+京沪高速铁路	jing hu gao su tie lu	3951
+二十四节气	er shi si jie qi	3942
+唯物辩证法	wei wu bian zheng fa	3942
+茅盾文学奖	mao dun wen xue jiang	3934
+不费吹灰之力	bu fei chui hui zhi li	3925
+唯物主义者	wei wu zhu yi zhe	3925
+柯尔克孜族	ke er ke zi zu	3925
+义务教育法	yi wu jiao yu fa	3907
+垂直扫描频率	chui zhi sao miao pin lv	3907
+正则表达式	zheng ze biao da shi	3907
+国家自然科学奖	guo jia zi ran ke xue jiang	3898
+国际原子能机构	guo ji yuan zi neng ji gou	3898
+可行性研究	ke xing xing yan jiu	3869
+领事裁判权	ling shi cai pan quan	3869
+一时半会儿	yi shi ban hui er	3859
+反法西斯战争	fan fa xi si zhan zheng	3859
+社会科学家	she hui ke xue jia	3859
+马来西亚队	ma lai xi ya dui	3839
+普罗米修斯	pu luo mi xiu si	3828
+不分青红皂白	bu fen qing hong zao bai	3817
+摩根斯坦利	mo gen si tan li	3817
+股份合作制	gu fen he zuo zhi	3817
+不管三七二十一	bu guan san qi er shi yi	3807
+吃不了兜着走	chi bu liao dou zhe zou	3807
+爱国统一战线	ai guo tong yi zhan xian	3807
+五四新文化运动	wu si xin wen hua yun dong	3795
+第二次国内革命战争	di er ci guo nei ge ming zhan zheng	3795
+企业管理者	qi ye guan li zhe	3784
+碳氢化合物	tan qing hua he wu	3784
+精神分裂症	jing shen fen lie zheng	3784
+脑力劳动者	nao li lao dong zhe	3772
+自由职业者	zi you zhi ye zhe	3772
+国内革命战争	guo nei ge ming zhan zheng	3760
+多媒体技术	duo mei ti ji shu	3760
+桥本龙太郎	qiao ben long tai lang	3760
+不结盟运动	bu jie meng yun dong	3748
+义务兵役制	yi wu bing yi zhi	3748
+全国科学大会奖	quan guo ke xue da hui jiang	3748
+以不变应万变	yi bu bian ying wan bian	3735
+第一次国内革命战争	di yi ci guo nei ge ming zhan zheng	3735
+线性方程组	xian xing fang cheng zu	3735
+考古工作者	kao gu gong zuo zhe	3735
+脊髓灰质炎	ji sui hui zhi yan	3735
+革命英雄主义	ge ming ying xiong zhu yi	3735
+互不侵犯条约	hu bu qin fan tiao yue	3722
+俗话说得好	su hua shuo de hao	3722
+左翼文化运动	zuo yi wen hua yun dong	3722
+泰坦尼克号	tai tan ni ke hao	3722
+阿拉伯数字	a la bo shu zi	3722
+反潜巡逻机	fan qian xun luo ji	3709
+奥林匹克运动	ao lin pi ke yun dong	3709
+工艺美术品	gong yi mei shu pin	3709
+热锅上的蚂蚁	re guo shang de ma yi	3709
+病毒感染者	bing du gan ran zhe	3709
+管理信息系统	guan li xin xi xi tong	3709
+麦克马洪线	mai ke ma hong xian	3709
+一步一个脚印	yi bu yi ge jiao yin	3696
+人生地不熟	ren sheng di bu shu	3696
+穆斯林联盟	mu si lin lian meng	3696
+官僚资本主义	guan liao zi ben zhu yi	3682
+上海申花队	shang hai shen hua dui	3668
+亚美尼亚人	ya mei ni ya ren	3668
+右佥都御史	you qian dou yu shi	3668
+新古典主义	xin gu dian zhu yi	3668
+还治其人之身	hai zhi qi ren zhi shen	3668
+八六三计划	ba liu san ji hua	3653
+延安文艺座谈会	yan an wen yi zuo tan hui	3653
+骨质疏松症	gu zhi shu song zheng	3653
+克罗地亚人	ke luo di ya ren	3638
+卢沟桥事变	lu gou qiao shi bian	3638
+电子游戏机	dian zi you xi ji	3638
+行政管理学	xing zheng guan li xue	3638
+行政诉讼法	xing zheng su song fa	3638
+调制解调器	tiao zhi jie tiao qi	3638
+高等教育法	gao deng jiao yu fa	3638
+古生物学家	gu sheng wu xue jia	3622
+哥德巴赫猜想	ge de ba he cai xiang	3622
+四两拨千斤	si liang bo qian jin	3622
+客观唯心主义	ke guan wei xin zhu yi	3622
+苹果电脑公司	ping guo dian nao gong si	3622
+达尔文主义	da er wen zhu yi	3622
+计划单列市	ji hua dan lie shi	3606
+乌孜别克族	wu zi bie ke zu	3590
+戊戌维新运动	wu xu wei xin yun dong	3590
+聚四氟乙烯	ju si fu yi xi	3590
+一去不复返了	yi qu bu fu fan le	3573
+中石器时代	zhong shi qi shi dai	3573
+二次世界大战	er ci shi jie da zhan	3573
+剩余劳动力	sheng yu lao dong li	3573
+十八般武艺	shi ba ban wu yi	3573
+孟良崮战役	meng liang gu zhan yi	3573
+狮身人面像	shi shen ren mian xiang	3573
+社会契约论	she hui qi yue lun	3573
+第三世界科学院	di san shi jie ke xue yuan	3573
+经营责任制	jing ying ze ren zhi	3573
+艺高人胆大	yi gao ren dan da	3573
+运动神经元	yun dong shen jing yuan	3573
+全国运动会	quan guo yun dong hui	3555
+本初子午线	ben chu zi wu xian	3555
+珍珠港事件	zhen zhu gang shi jian	3555
+理论工作者	li lun gong zuo zhe	3555
+翻脸不认人	fan lian bu ren ren	3555
+艺术工作者	yi shu gong zuo zhe	3555
+诺贝尔经济学奖	nuo bei er jing ji xue jiang	3555
+贝尔实验室	bei er shi yan shi	3555
+几十年如一日	ji shi nian ru yi ri	3537
+摩根士丹利	mo gen shi dan li	3537
+数理经济学	shu li jing ji xue	3537
+第一次鸦片战争	di yi ci ya pian zhan zheng	3537
+以天下为己任	yi tian xia wei ji ren	3518
+保加利亚语	bao jia li ya yu	3518
+关税及贸易总协定	guan shui ji mao yi zong xie ding	3518
+劳动价值论	lao dong jia zhi lun	3518
+可口可乐公司	ke kou ke le gong si	3518
+国际日期变更线	guo ji ri qi bian geng xian	3518
+无机化合物	wu ji hua he wu	3518
+无毒不丈夫	wu du bu zhang fu	3518
+现实主义者	xian shi zhu yi zhe	3518
+破罐子破摔	po guan zi po shuai	3518
+事务所律师	shi wu suo lv shi	3498
+伯克利分校	bo ke li fen xiao	3498
+信息处理系统	xin xi chu li xi tong	3498
+教条主义者	jiao tiao zhu yi zhe	3498
+新民主主义论	xin min zhu zhu yi lun	3498
+火力发电厂	huo li fa dian chang	3498
+热力学温度	re li xue wen du	3498
+皇家马德里队	huang jia ma de li dui	3498
+罗马尼亚语	luo ma ni ya yu	3498
+不明飞行物	bu ming fei xing wu	3478
+中国人民解放战争	zhong guo ren min jie fang zhan zheng	3478
+企业经营者	qi ye jing ying zhe	3478
+决策支持系统	jue ce zhi chi xi tong	3478
+既得利益者	ji de li yi zhe	3478
+留得青山在	liu de qing shan zai	3478
+神经官能症	shen jing guan neng zheng	3478
+自然辩证法	zi ran bian zheng fa	3478
+邻苯二甲酸酐	lin ben er jia suan gan	3478
+重庆力帆队	chong qing li fan dui	3478
+阴极射线管	yin ji she xian guan	3478
+除权除息日	chu quan chu xi ri	3478
+中低收入者	zhong di shou ru zhe	3456
+人文主义者	ren wen zhu yi zhe	3456
+原教旨主义	yuan jiao zhi zhu yi	3456
+抽样合格率	chou yang he ge lv	3456
+比较语言学	bi jiao yu yan xue	3456
+民以食为天	min yi shi wei tian	3456
+物以稀为贵	wu yi xi wei gui	3456
+理想主义者	li xiang zhu yi zhe	3456
+结构化程序	jie gou hua cheng xu	3456
+一浪高过一浪	yi lang gao guo yi lang	3434
+不问青红皂白	bu wen qing hong zao bai	3434
+吉尼斯世界纪录	ji ni si shi jie ji lu	3434
+嵌入式软件	qian ru shi ruan jian	3434
+微生物学家	wei sheng wu xue jia	3434
+澳门特别行政区基本法	ao men te bie xing zheng qu ji ben fa	3434
+火焰喷射器	huo yan pen she qi	3434
+王顾左右而言他	wang gu zuo you er yan ta	3434
+红红绿绿的	hong hong lv lv de	3434
+自然科学家	zi ran ke xue jia	3434
+人口老龄化	ren kou lao ling hua	3411
+太平洋铁路	tai ping yang tie lu	3411
+好汉不吃眼前亏	hao han bu chi yan qian kui	3411
+换汤不换药	huan tang bu huan yao	3411
+资产负债率	zi chan fu zhai lv	3411
+上甘岭战役	shang gan ling zhan yi	3387
+候风地动仪	hou feng di dong yi	3387
+唯心主义者	wei xin zhu yi zhe	3387
+天授礼法延祚	tian shou li fa yan zuo	3387
+得饶人处且饶人	de rao ren chu qie rao ren	3387
+春江花月夜	chun jiang hua yue ye	3387
+港澳台地区	gang ao tai di qu	3387
+理论物理学	li lun wu li xue	3387
+甲基丙烯酸甲酯	jia ji bing xi suan jia zhi	3387
+资本密集型	zi ben mi ji xing	3387
+长途汽车站	chang tu qi che zhan	3387
+隔行如隔山	ge hang ru ge shan	3387
+乙酰乙酸乙酯	yi xian yi suan yi zhi	3361
+他乡遇故知	ta xiang yu gu zhi	3361
+千叮咛万嘱咐	qian ding ning wan zhu fu	3361
+半导体存储器	ban dao ti cun chu qi	3361
+反丁烯二酸	fan ding xi er suan	3361
+奥林匹克公园	ao lin pi ke gong yuan	3361
+平行四边形	ping xing si bian xing	3361
+斯洛伐克人	si luo fa ke ren	3361
+无缝钢管厂	wu feng gang guan chang	3361
+机械唯物主义	ji xie wei wu zhu yi	3361
+民族共同语	min zu gong tong yu	3361
+芳香族化合物	fang xiang zu hua he wu	3361
+装甲运兵车	zhuang jia yun bing che	3361
+计量经济学	ji liang jing ji xue	3361
+三氟氯乙烯	san fu lv yi xi	3335
+半殖民地化	ban zhi min di hua	3335
+南斯拉夫联邦	nan si la fu lian bang	3335
+反托拉斯法	fan tuo la si fa	3335
+多米诺骨牌	duo mi nuo gu pai	3335
+新文学运动	xin wen xue yun dong	3335
+树倒猢狲散	shu dao hu sun san	3335
+民族自决权	min zu zi jue quan	3335
+电气工程师	dian qi gong cheng shi	3335
+神农本草经	shen nong ben cao jing	3335
+网络计算机	wang luo ji suan ji	3335
+联产承包制	lian chan cheng bao zhi	3335
+顺丁烯二酸	shun ding xi er suan	3335
+顺丁烯二酸酐	shun ding xi er suan gan	3335
+中国电子音响工业协会	zhong guo dian zi yin xiang gong ye xie hui	3306
+八路军第一一五师	ba lu jun di yi yi wu shi	3306
+大男子主义	da nan zi zhu yi	3306
+平板显示器	ping ban xian shi qi	3306
+思科系统公司	si ke xi tong gong si	3306
+数据处理系统	shu ju chu li xi tong	3306
+斯匹次卑尔根	si pi ci bei er gen	3306
+无用武之地	wu yong wu zhi di	3306
+有鼻子有眼	you bi zi you yan	3306
+标准大气压	biao zhun da qi ya	3306
+武装到牙齿	wu zhuang dao ya chi	3306
+邻苯二甲酸	lin ben er jia suan	3306
+风湿性关节炎	feng shi xing guan jie yan	3306
+高度自治权	gao du zi zhi quan	3306
+麦卡锡主义	mai ka xi zhu yi	3306
+齐奥塞斯库	qi ao sai si ku	3306
+农业生产者	nong ye sheng chan zhe	3277
+哥伦比亚号	ge lun bi ya hao	3277
+国务院纠风办	guo wu yuan jiu feng ban	3277
+国家科技进步奖	guo jia ke ji jin bu jiang	3277
+天字第一号	tian zi di yi hao	3277
+小儿麻痹症	xiao er ma bi zheng	3277
+帕金森氏症	pa jin sen shi zheng	3277
+捏了一把汗	nie le yi ba han	3277
+磁盘驱动器	ci pan qu dong qi	3277
+禁核试条约	jin he shi tiao yue	3277
+竹筒倒豆子	zhu tong dao dou zi	3277
+足少阴肾经	zu shao yin shen jing	3277
+难于上青天	nan yu shang qing tian	3277
+一石激起千层浪	yi shi ji qi qian ceng lang	3245
+世界园艺博览会	shi jie yuan yi bo lan hui	3245
+二一添作五	er yi tian zuo wu	3245
+吃力不讨好	chi li bu tao hao	3245
+大幅度提高	da fu du ti gao	3245
+心脏起搏器	xin zang qi bo qi	3245
+心脑血管病	xin nao xue guan bing	3245
+摸着石头过河	mo zhe shi tou guo he	3245
+教育部考试中心	jiao yu bu kao shi zhong xin	3245
+百科全书式	bai ke quan shu shi	3245
+空气压缩机	kong qi ya suo ji	3245
+细菌性痢疾	xi jun xing li ji	3245
+自动装弹机	zi dong zhuang dan ji	3245
+英雄无用武之地	ying xiong wu yong wu zhi di	3245
+说不清道不明	shuo bu qing dao bu ming	3245
+资源节约型	zi yuan jie yue xing	3245
+里三层外三层	li san ceng wai san ceng	3245
+香港浸会大学	xiang gang jin hui da xue	3245
+龙羊峡水电站	long yang xia shui dian zhan	3245
+三氧化二铁	san yang hua er tie	3211
+五氧化二钒	wu yang hua er fan	3211
+产品质量法	chan pin zhi liang fa	3211
+偷鸡不着蚀把米	tou ji bu zhe shi ba mi	3211
+公用电话亭	gong yong dian hua ting	3211
+养老保险金	yang lao bao xian jin	3211
+劳动保障部	lao dong bao zhang bu	3211
+可执行文件	ke zhi xing wen jian	3211
+台式机处理器	tai shi ji chu li qi	3211
+和平主义者	he ping zhu yi zhe	3211
+多一事不如少一事	duo yi shi bu ru shao yi shi	3211
+大江健三郎	da jiang jian san lang	3211
+天津泰达队	tian jin tai da dui	3211
+嵌入式操作系统	qian ru shi cao zuo xi tong	3211
+布尔什维主义	bu er shen wei zhu yi	3211
+拧成一股绳	ning cheng yi gu sheng	3211
+文物保护法	wen wu bao hu fa	3211
+机动车行驶	ji dong che xing shi	3211
+柳暗花明又一村	liu an hua ming you yi cun	3211
+活字印刷术	huo zi yin shua shu	3211
+磕头如捣蒜	ke tou ru dao suan	3211
+经营管理者	jing ying guan li zhe	3211
+虚拟存储器	xu ni cun chu qi	3211
+行行出状元	hang hang chu zhuang yuan	3211
+计算机技术	ji suan ji ji shu	3211
+说时迟那时快	shuo shi chi na shi kuai	3211
+长江后浪推前浪	chang jiang hou lang tui qian lang	3211
+非国有经济	fei guo you jing ji	3211
+魔幻现实主义	mo huan xian shi zhu yi	3211
+不看僧面看佛面	bu kan seng mian kan fo mian	3175
+二甲基甲酰胺	er jia ji jia xian an	3175
+人工神经网络	ren gong shen jing wang luo	3175
+党代表大会	dang dai biao da hui	3175
+古人类学家	gu ren lei xue jia	3175
+合成洗涤剂	he cheng xi di ji	3175
+土地管理法	tu di guan li fa	3175
+地缘政治学	di yuan zheng zhi xue	3175
+多媒体业务	duo mei ti ye wu	3175
+山田规三生	shan tian gui san sheng	3175
+托特纳姆热刺	tuo te na mu re ci	3175
+木材加工业	mu cai jia gong ye	3175
+柔性制造系统	rou xing zhi zao xi tong	3175
+植物性神经	zhi wu xing shen jing	3175
+汤姆斯杯赛	tang mu si bei sai	3175
+社会心理学家	she hui xin li xue jia	3175
+系统管理员	xi tong guan li yuan	3175
+缓冲存储器	huan chong cun chu qi	3175
+考试合格者	kao shi he ge zhe	3175
+胡笳十八拍	hu jia shi ba pai	3175
+脸红脖子粗	lian hong bo zi cu	3175
+豆腐渣工程	dou fu zha gong cheng	3175
+青铜器时代	qing tong qi shi dai	3175
+顾左右而言他	gu zuo you er yan ta	3175
+高不成低不就	gao bu cheng di bu jiu	3175
+一碗水端平	yi wan shui duan ping	3137
+世界和平理事会	shi jie he ping li shi hui	3137
+世界大学生运动会	shi jie da xue sheng yun dong hui	3137
+个人所得税法	ge ren suo de shui fa	3137
+个人数字助理	ge ren shu zi zhu li	3137
+克罗地亚语	ke luo di ya yu	3137
+公说公有理	gong shuo gong you li	3137
+刑事侦查学	xing shi zhen cha xue	3137
+初生牛犊不怕虎	chu sheng niu du bu pa hu	3137
+十八般兵器	shi ba ban bing qi	3137
+半导体器件	ban dao ti qi jian	3137
+印度尼西亚语	yin du ni xi ya yu	3137
+印度报业托拉斯	yin du bao ye tuo la si	3137
+君主立宪派	jun zhu li xian pai	3137
+埃菲尔铁塔	ai fei er tie ta	3137
+多处理机系统	duo chu li ji xi tong	3137
+大开方便之门	da kai fang bian zhi men	3137
+女权主义者	nv quan zhu yi zhe	3137
+委内瑞拉人	wei nei rui la ren	3137
+安特卫普队	an te wei pu dui	3137
+承包责任制	cheng bao ze ren zhi	3137
+放长线钓大鱼	fang chang xian diao da yu	3137
+无绳电话机	wu sheng dian hua ji	3137
+有朋自远方来	you peng zi yuan fang lai	3137
+比利时政府	bi li shi zheng fu	3137
+甲骨文公司	jia gu wen gong si	3137
+硫代硫酸钠	liu dai liu suan na	3137
+磁悬浮列车	ci xuan fu lie che	3137
+社会工作者	she hui gong zuo zhe	3137
+科学共产主义	ke xue gong chan zhu yi	3137
+竹篮打水一场空	zhu lan da shui yi chang kong	3137
+第二松花江	di er song hua jiang	3137
+非关税壁垒	fei guan shui bi lei	3137
+非正义战争	fei zheng yi zhan zheng	3137
+一发而不可收	yi fa er bu ke shou	3095
+三氧化二砷	san yang hua er shen	3095
+中华世纪坛	zhong hua shi ji tan	3095
+亚美尼亚语	ya mei ni ya yu	3095
+伊利诺伊大学	yi li nuo yi da xue	3095
+保守党政府	bao shou dang zheng fu	3095
+原子反应堆	yuan zi fan ying dui	3095
+天下第一关	tian xia di yi guan	3095
+天时地利人和	tian shi di li ren he	3095
+好事不出门	hao shi bu chu men	3095
+引以为自豪	yin yi wei zi hao	3095
+得克萨斯大学	de ke sa si da xue	3095
+恩格尔系数	en ge er xi shu	3095
+抬头不见低头见	tai tou bu jian di tou jian	3095
+教育部高校学生司	jiao yu bu gao xiao xue sheng si	3095
+文学工作者	wen xue gong zuo zhe	3095
+水力发电站	shui li fa dian zhan	3095
+环境保护局	huan jing bao hu ju	3095
+网络操作系统	wang luo cao zuo xi tong	3095
+自然科学史	zi ran ke xue shi	3095
+车到山前必有路	che dao shan qian bi you lu	3095
+这山望着那山高	zhe shan wang zhe na shan gao	3095
+阿塞拜疆人	a sai bai jiang ren	3095
+阿尔巴尼亚语	a er ba ni ya yu	3095
+万般皆下品	wan ban jie xia pin	3050
+军事博物馆	jun shi bo wu guan	3050
+军国主义者	jun guo zhu yi zhe	3050
+农林牧副渔	nong lin mu fu yu	3050
+化腐朽为神奇	hua fu xiu wei shen qi	3050
+十三陵水库	shi san ling shui ku	3050
+十年怕井绳	shi nian pa jing sheng	3050
+发展经济学	fa zhan jing ji xue	3050
+吃香的喝辣的	chi xiang de he la de	3050
+图形用户界面	tu xing yong hu jie mian	3050
+塞尔维亚族	sai er wei ya zu	3050
+尤文图斯队	you wen tu si dui	3050
+尽在不言中	jin zai bu yan zhong	3050
+工作组服务器	gong zuo zu fu wu qi	3050
+工艺美术家	gong yi mei shu jia	3050
+应用服务器	ying yong fu wu qi	3050
+强扭的瓜不甜	qiang niu de gua bu tian	3050
+悉尼奥运会	xi ni ao yun hui	3050
+文化教育界	wen hua jiao yu jie	3050
+时势造英雄	shi shi zao ying xiong	3050
+权益保护法	quan yi bao hu fa	3050
+民主革命家	min zhu ge ming jia	3050
+氨基甲酸酯	an ji jia suan zhi	3050
+滑铁卢战役	hua tie lu zhan yi	3050
+犹抱琵琶半遮面	you bao pi pa ban zhe mian	3050
+电子计算机	dian zi ji suan ji	3050
+电视电话会议	dian shi dian hua hui yi	3050
+知识产权局	zhi shi chan quan ju	3050
+社会科学界	she hui ke xue jie	3050
+稳坐钓鱼台	wen zuo diao yu tai	3050
+虹口足球场	hong kou zu qiu chang	3050
+计划生育户	ji hua sheng yu hu	3050
+计算机用户	ji suan ji yong hu	3050
+里外不是人	li wai bu shi ren	3050
+阿尔及利亚人	a er ji li ya ren	3050
+鲁迅文学奖	lu xun wen xue jiang	3050
+一个巴掌拍不响	yi ge ba zhang pai bu xiang	3000
+三峡水利枢纽工程	san xia shui li shu niu gong cheng	3000
+三聚磷酸钠	san ju lin suan na	3000
+不见棺材不掉泪	bu jian guan cai bu diao lei	3000
+交响音乐会	jiao xiang yin yue hui	3000
+京津塘高速公路	jing jin tang gao su gong lu	3000
+人事部人事考试中心	ren shi bu ren shi kao shi zhong xin	3000
+伊斯兰教历	yi si lan jiao li	3000
+信号处理器	xin hao chu li qi	3000
+八竿子打不着	ba gan zi da bu zhao	3000
+分时操作系统	fen shi cao zuo xi tong	3000
+劳动合同制	lao dong he tong zhi	3000
+国家发明奖	guo jia fa ming jiang	3000
+图形工作站	tu xing gong zuo zhan	3000
+地质博物馆	di zhi bo wu guan	3000
+大英百科全书	da ying bai ke quan shu	3000
+客户端程序	ke hu duan cheng xu	3000
+工农兵学员	gong nong bing xue yuan	3000
+康斯坦丁内斯库	kang si tan ding nei si ku	3000
+彩色显示器	cai se xian shi qi	3000
+数以十万计	shu yi shi wan ji	3000
+文学革命论	wen xue ge ming lun	3000
+文献数据库	wen xian shu ju ku	3000
+无风不起浪	wu feng bu qi lang	3000
+歌剧舞剧院	ge ju wu ju yuan	3000
+流氓无产者	liu mang wu chan zhe	3000
+照葫芦画瓢	zhao hu lu hua piao	3000
+直罗镇战役	zhi luo zhen zhan yi	3000
+硬盘驱动器	ying pan qu dong qi	3000
+组织纪律性	zu zhi ji lv xing	3000
+越雷池一步	yue lei chi yi bu	3000
+零点调查公司	ling dian diao cha gong si	3000
+高低贵贱之分	gao di gui jian zhi fen	3000
+一个萝卜一个坑	yi ge luo bo yi ge keng	2945
+一发不可收	yi fa bu ke shou	2945
+一环扣一环	yi huan kou yi huan	2945
+一锤子买卖	yi chui zi mai mai	2945
+七大姑八大姨	qi da gu ba da yi	2945
+不可等闲视之	bu ke deng xian shi zhi	2945
+不登大雅之堂	bu deng da ya zhi tang	2945
+世上无难事	shi shang wu nan shi	2945
+中国交响乐团	zhong guo jiao xiang yue tuan	2945
+亚铁氰化钾	ya tie qing hua jia	2945
+人心隔肚皮	ren xin ge du pi	2945
+依样画葫芦	yi yang hua hu lu	2945
+公安部经济犯罪侦查局	gong an bu jing ji fan zui zhen cha ju	2945
+出口导向型	chu kou dao xiang xing	2945
+分布式计算	fen bu shi ji suan	2945
+动态链接库	dong tai lian jie ku	2945
+可怜天下父母心	ke lian tian xia fu mu xin	2945
+合法性检查	he fa xing jian cha	2945
+唯有读书高	wei you du shu gao	2945
+四氧化二氮	si yang hua er dan	2945
+多媒体扩展	duo mei ti kuo zhan	2945
+天下乌鸦一般黑	tian xia wu ya yi ban hei	2945
+天生我材必有用	tian sheng wo cai bi you yong	2945
+奥斯卡金像奖	ao si ka jin xiang jiang	2945
+安哥拉人民解放运动	an ge la ren min jie fang yun dong	2945
+实时操作系统	shi shi cao zuo xi tong	2945
+平型关大捷	ping xing guan da jie	2945
+异抗坏血酸钠	yi kang huai xue suan na	2945
+弹指一挥间	dan zhi yi hui jian	2945
+强中更有强中手	qiang zhong geng you qiang zhong shou	2945
+必先利其器	bi xian li qi qi	2945
+拉大旗作虎皮	la da qi zuo hu pi	2945
+数据交换机	shu ju jiao huan ji	2945
+文件名扩展	wen jian ming kuo zhan	2945
+斯拉夫主义	si la fu zhu yi	2945
+斯洛文尼亚语	si luo wen ni ya yu	2945
+曲曲弯弯的	qu qu wan wan de	2945
+有百利而无一害	you bai li er wu yi hai	2945
+洪都拉斯人	hong dou la si ren	2945
+浮动汇率制	fu dong hui lv zhi	2945
+润物细无声	run wu xi wu sheng	2945
+爱国主义者	ai guo zhu yi zhe	2945
+男儿有泪不轻弹	nan er you lei bu qing tan	2945
+癞蛤蟆想吃天鹅肉	lai ha ma xiang chi tian e rou	2945
+笔记型电脑	bi ji xing dian nao	2945
+米德尔斯堡队	mi de er si bao dui	2945
+老年痴呆症	lao nian chi dai zheng	2945
+获得性免疫	huo de xing mian yi	2945
+葡萄糖酸钙	pu tao tang suan gai	2945
+解铃还需系铃人	jie ling hai xu xi ling ren	2945
+计算机管理	ji suan ji guan li	2945
+超级服务器	chao ji fu wu qi	2945
+酒逢知己千杯少	jiu feng zhi ji qian bei shao	2945
+针尖对麦芒	zhen jian dui mai mang	2945
+非手术治疗	fei shou shu zhi liao	2945
+非洲金融共同体法郎	fei zhou jin rong gong tong ti fa lang	2945
+鲁能泰山队	lu neng tai shan dui	2945
+麦当劳公司	mai dang lao gong si	2945
+三甲基氯硅烷	san jia ji lv gui wan	2884
+上海展览中心	shang hai zhan lan zhong xin	2884
+不是冤家不聚头	bu shi yuan jia bu ju tou	2884
+丙种球蛋白	bing zhong qiu dan bai	2884
+个体经营者	ge ti jing ying zhe	2884
+事实胜于雄辩	shi shi sheng yu xiong bian	2884
+二桃杀三士	er tao sha san shi	2884
+信息管理系统	xin xi guan li xi tong	2884
+先农坛体育场	xian nong tan ti yu chang	2884
+八宝山革命公墓	ba bao shan ge ming gong mu	2884
+分子生物学家	fen zi sheng wu xue jia	2884
+华西都市报	hua xi du shi bao	2884
+协调世界时	xie tiao shi jie shi	2884
+可吸入颗粒物	ke xi ru ke li wu	2884
+塞尔维亚语	sai er wei ya yu	2884
+多媒体教学	duo mei ti jiao xue	2884
+多媒体电脑	duo mei ti dian nao	2884
+大汉族主义	da han zu zhu yi	2884
+女大十八变	nv da shi ba bian	2884
+对外经贸大学	dui wai jing mao da xue	2884
+工农兵学商	gong nong bing xue shang	2884
+拉脱维亚语	la tuo wei ya yu	2884
+斯洛伐克语	si luo fa ke yu	2884
+新安江水库	xin an jiang shui ku	2884
+普天间机场	pu tian jian ji chang	2884
+柴米油盐酱醋茶	chai mi you yan jiang cu cha	2884
+桌面处理器	zhuo mian chu li qi	2884
+概率密度函数	gai lv mi du han shu	2884
+水杨酸甲酯	shui yang suan jia zhi	2884
+水至清则无鱼	shui zhi qing ze wu yu	2884
+汉城奥运会	han cheng ao yun hui	2884
+浪漫主义者	lang man zhu yi zhe	2884
+理论研究室	li lun yan jiu shi	2884
+生产经营者	sheng chan jing ying zhe	2884
+电影摄影机	dian ying she ying ji	2884
+短日照植物	duan ri zhao zhi wu	2884
+神学目的论	shen xue mu di lun	2884
+第八届全国人民代表大会	di ba jie quan guo ren min dai biao da hui	2884
+网络体系结构	wang luo ti xi jie gou	2884
+美国贝尔实验室	mei guo bei er shi yan shi	2884
+自以为得计	zi yi wei de ji	2884
+达拉斯小牛队	da la si xiao niu dui	2884
+鉴真纪念堂	jian zhen ji nian tang	2884
+长江三峡工程	chang jiang san xia gong cheng	2884
+阿尔巴尼亚族	a er ba ni ya zu	2884
+非领导职务	fei ling dao zhi wu	2884
+马克思列宁主义者	ma ke si lie ning zhu yi zhe	2884
+黑龙江日报	hei long jiang ri bao	2884
+齐家治国平天下	qi jia zhi guo ping tian xia	2884
+三个臭皮匠	san ge chou pi jiang	2814
+三叉神经痛	san cha shen jing tong	2814
+不识庐山真面目	bu shi lu shan zhen mian mu	2814
+东方不亮西方亮	dong fang bu liang xi fang liang	2814
+事后诸葛亮	shi hou zhu ge liang	2814
+五一劳动奖章	wu yi lao dong jiang zhang	2814
+五一国际劳动节	wu yi guo ji lao dong jie	2814
+五氧化二磷	wu yang hua er lin	2814
+信息资源管理	xin xi zi yuan guan li	2814
+儿童文学家	er tong wen xue jia	2814
+八达岭高速公路	ba da ling gao su gong lu	2814
+兼容性问题	jian rong xing wen ti	2814
+切尔诺贝利核电站	qie er nuo bei li he dian zhan	2814
+利用计算机	li yong ji suan ji	2814
+功利主义者	gong li zhu yi zhe	2814
+十年磨一剑	shi nian mo yi jian	2814
+半导体技术	ban dao ti ji shu	2814
+同呼吸共命运	tong hu xi gong ming yun	2814
+吾将上下而求索	wu jiang shang xia er qiu suo	2814
+啮齿类动物	nie chi lei dong wu	2814
+国家图书奖	guo jia tu shu jiang	2814
+大中小城市	da zhong xiao cheng shi	2814
+大中小学生	da zhong xiao xue sheng	2814
+大幅度降低	da fu du jiang di	2814
+大有用武之地	da you yong wu zhi di	2814
+大老爷们儿	da lao ye men er	2814
+太平天国运动	tai ping tian guo yun dong	2814
+好汉做事好汉当	hao han zuo shi hao han dang	2814
+官僚主义者	guan liao zhu yi zhe	2814
+岂因祸福避趋之	qi yin huo fu bi qu zhi	2814
+嵌入式应用	qian ru shi ying yong	2814
+巴勒斯坦伊斯兰抵抗运动	ba le si tan yi si lan di kang yun dong	2814
+市场营销部	shi chang ying xiao bu	2814
+平型关战役	ping xing guan zhan yi	2814
+志同道合者	zhi tong dao he zhe	2814
+手机操作系统	shou ji cao zuo xi tong	2814
+抗干扰能力	kang gan rao neng li	2814
+拆东墙补西墙	chai dong qiang bu xi qiang	2814
+数十年如一日	shu shi nian ru yi ri	2814
+普天间基地	pu tian jian ji di	2814
+晶体振荡器	jing ti zhen dang qi	2814
+有其父必有其子	you qi fu bi you qi zi	2814
+有机化学家	you ji hua xue jia	2814
+服务器软件	fu wu qi ruan jian	2814
+治标不治本	zhi biao bu zhi ben	2814
+清暑益气汤	qing shu yi qi tang	2814
+温度传感器	wen du chuan gan qi	2814
+热力学温标	re li xue wen biao	2814
+福兮祸所伏	fu xi huo suo fu	2814
+符合条件者	fu he tiao jian zhe	2814
+粒粒皆辛苦	li li jie xin ku	2814
+精神分析学家	jing shen fen xi xue jia	2814
+红外光谱仪	hong wai guang pu yi	2814
+美帝国主义者	mei di guo zhu yi zhe	2814
+行式打印机	xing shi da yin ji	2814
+行政处罚法	xing zheng chu fa fa	2814
+计算机服务	ji suan ji fu wu	2814
+计算机程序	ji suan ji cheng xu	2814
+谁知盘中餐	shui zhi pan zhong can	2814
+软件可靠性	ruan jian ke kao xing	2814
+软件生产率	ruan jian sheng chan lv	2814
+辩证唯物论	bian zheng wei wu lun	2814
+通用寄存器	tong yong ji cun qi	2814
+酒石酸钾钠	jiu shi suan jia na	2814
+一方水土养一方人	yi fang shui tu yang yi fang ren	2734
+一棵树上吊死	yi ke shu shang diao si	2734
+三碗不过冈	san wan bu guo gang	2734
+三门峡水库	san men xia shui ku	2734
+上有老下有小	shang you lao xia you xiao	2734
+不敢越雷池一步	bu gan yue lei chi yi bu	2734
+中国惠普有限公司	zhong guo hui pu you xian gong si	2734
+乙酰螺旋霉素	yi xian luo xuan mei su	2734
+乡镇企业局	xiang zhen qi ye ju	2734
+乱点鸳鸯谱	luan dian yuan yang pu	2734
+亚特兰大奥运会	ya te lan da ao yun hui	2734
+兔子不吃窝边草	tu zi bu chi wo bian cao	2734
+全国五一劳动奖章	quan guo wu yi lao dong jiang zhang	2734
+出水才看两腿泥	chu shui cai kan liang tui ni	2734
+刘家峡水库	liu jia xia shui ku	2734
+可更新资源	ke geng xin zi yuan	2734
+史学工作者	shi xue gong zuo zhe	2734
+同是天涯沦落人	tong shi tian ya lun luo ren	2734
+君子成人之美	jun zi cheng ren zhi mei	2734
+唯生产力论	wei sheng chan li lun	2734
+国家队教练组	guo jia dui jiao lian zu	2734
+基础代谢率	ji chu dai xie lv	2734
+多媒体数据库	duo mei ti shu ju ku	2734
+多媒体计算机	duo mei ti ji suan ji	2734
+大批量生产	da pi liang sheng chan	2734
+媒体播放器	mei ti bo fang qi	2734
+定向操作符	ding xiang cao zuo fu	2734
+岁月不饶人	sui yue bu rao ren	2734
+指令和数据	zhi ling he shu ju	2734
+接受投资者	jie shou tou zi zhe	2734
+政策法规司	zheng ce fa gui si	2734
+敢把皇帝拉下马	gan ba huang di la xia ma	2734
+数字图像处理	shu zi tu xiang chu li	2734
+无产阶级化	wu chan jie ji hua	2734
+无锡小天鹅股份有限公司	wu xi xiao tian e gu fen you xian gong si	2734
+杯酒释兵权	bei jiu shi bing quan	2734
+核物理学家	he wu li xue jia	2734
+死猪不怕开水烫	si zhu bu pa kai shui tang	2734
+氮氧化合物	dan yang hua he wu	2734
+泥菩萨过江	ni pu sa guo jiang	2734
+洪湖赤卫队	hong hu chi wei dui	2734
+甲基丙烯酸酯	jia ji bing xi suan zhi	2734
+石家庄战役	shi jia zhuang zhan yi	2734
+磁带驱动器	ci dai qu dong qi	2734
+磷酸二氢钾	lin suan er qing jia	2734
+素食主义者	su shi zhu yi zhe	2734
+老子天下第一	lao zi tian xia di yi	2734
+胎盘球蛋白	tai pan qiu dan bai	2734
+胜读十年书	sheng du shi nian shu	2734
+计算机开启	ji suan ji kai qi	2734
+计算机控制	ji suan ji kong zhi	2734
+金嗓子喉宝	jin sang zi hou bao	2734
+防风固沙林	fang feng gu sha lin	2734
+陆家嘴金融贸易区	lu jia zui jin rong mao yi qu	2734
+雷锋纪念馆	lei feng ji nian guan	2734
+非处方药品	fei chu fang yao pin	2734
+香港凤凰卫视	xiang gang feng huang wei shi	2734
+高等级公路	gao deng ji gong lu	2734

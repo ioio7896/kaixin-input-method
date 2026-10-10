@@ -1145,6 +1145,7 @@ std::wstring CSrfTip::CandidateBarMainTitle() const {
 }
 
 std::vector<std::wstring> CSrfTip::CandidateBarModeTags() const {
+  if (m_gameChatActive && EffectiveGameStatusIndicator()) return {L"中文聊天"};
   if (CurrentCandidatesClipboardQuickMode()) {
     for (const auto& row : m_candidateRows) {
       if (!row.meta.clipboardFilter.empty()) return {row.meta.clipboardFilter};

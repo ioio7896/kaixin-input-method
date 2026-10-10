@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：农业园艺
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+作物轮作	zuo wu lun zuo	6100
+光照条件	guang zhao tiao jian	6100
+农产品检测	nong chan pin jian ce	6100
+农产品溯源	nong chan pin su yuan	6100
+农作物种植	nong zuo wu zhong zhi	6100
+农机作业	nong ji zuo ye	6100
+农药残留	nong yao can liu	6100
+叶面施肥	ye mian shi fei	6100
+园艺工具	yuan yi gong ju	6100
+土壤墒情	tu rang shang qing	6100
+土壤改良	tu rang gai liang	6100
+土壤肥力	tu rang fei li	6100
+多肉植物	duo rou zhi wu	6100
+小麦种植	xiao mai zhong zhi	6100
+扦插繁殖	qian cha fan zhi	6100
+换盆换土	huan pen huan tu	6100
+播种时间	bo zhong shi jian	6100
+智慧农业	zhi hui nong ye	6100
+果实成熟	guo shi cheng shu	6100
+果树修剪	guo shu xiu jian	6100
+果树嫁接	guo shu jia jie	6100
+根系生长	gen xi sheng zhang	6100
+植物补光	zhi wu bu guang	6100
+水溶肥	shui rong fei	6100
+水稻种植	shui dao zhong zhi	6100
+浇水频率	jiao shui pin lv	6100
+温室大棚	wen shi da peng	6100
+灌溉管理	guan gai guan li	6100
+玉米种植	yu mi zhong zhi	6100
+生物防治	sheng wu fang zhi	6100
+病叶清理	bing ye qing li	6100
+病虫害防治	bing chong hai fang zhi	6100
+盆土透气	pen tu tou qi	6100
+盆栽种植	pen zai zhong zhi	6100
+种子发芽	zhong zi fa ya	6100
+种植密度	zhong zhi mi du	6100
+种植管理	zhong zhi guan li	6100
+绿植养护	lv zhi yang hu	6100
+绿色防控	lv se fang kong	6100
+育苗管理	yu miao guan li	6100
+花卉养护	hua hui yang hu	6100
+花期管理	hua qi guan li	6100
+营养土	ying yang tu	6100
+虫害处理	chong hai chu li	6100
+设施农业	she shi nong ye	6100
+追肥施肥	zhui fei shi fei	6100
+阳台种菜	yang tai zhong cai	6100
+有机肥	you ji fei	3698
+复合肥	fu he fei	2944
+喷灌	pen guan	2893
+滴灌	di guan	2771

@@ -1,0 +1,53 @@
+# 开心离线输入法分类补充：请求沟通
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+麻烦看一下	ma fan kan yi xia	9932
+帮我看一下	bang wo kan yi xia	9928
+我没有听清楚	wo mei you ting qing chu	9300
+方便发给我吗	fang bian fa gei wo ma	9300
+有空帮我看看	you kong bang wo kan kan	9300
+请问怎么操作	qing wen zen me cao zuo	9300
+可以再发一次吗	ke yi zai fa yi ci ma	6500
+可以再说一遍吗	ke yi zai shuo yi bian ma	6500
+可以帮我看看吗	ke yi bang wo kan kan ma	6500
+可以稍等一下吗	ke yi shao deng yi xia ma	6500
+可以给我打电话吗	ke yi gei wo da dian hua ma	6500
+帮我修改一下	bang wo xiu gai yi xia	6500
+帮我发一下	bang wo fa yi xia	6500
+帮我带一份	bang wo dai yi fen	6500
+帮我检查一下	bang wo jian cha yi xia	6500
+帮我留一份	bang wo liu yi fen	6500
+帮我确认一下	bang wo que ren yi xia	6500
+感谢你的理解	gan xie ni de li jie	6500
+我再确认一下	wo zai que ren yi xia	6500
+我发你一个位置	wo fa ni yi ge wei zhi	6500
+我帮你问一下	wo bang ni wen yi xia	6500
+我替你看一下	wo ti ni kan yi xia	6500
+我现在去处理	wo xian zai qu chu li	6500
+我稍后处理一下	wo shao hou chu li yi xia	6500
+抱歉打扰你了	bao qian da rao ni le	6500
+方便帮个忙吗	fang bian bang ge mang ma	6500
+能不能晚一点	neng bu neng wan yi dian	6500
+能帮我处理一下吗	neng bang wo chu li yi xia ma	6500
+请告诉我具体情况	qing gao su wo ju ti qing kuang	6500
+请把链接发我	qing ba lian jie fa wo	6500
+请稍等片刻	qing shao deng pian ke	6500
+请问可以预约吗	qing wen ke yi yu yue ma	6500
+请问在哪里办理	qing wen zai na li ban li	6500
+请问还有库存吗	qing wen hai you ku cun ma	6500
+谢谢你的耐心	xie xie ni de nai xin	6500
+还有什么需要补充	hai you shen me xu yao bu chong	6500
+这个问题怎么解决	zhe ge wen ti zen me jie jue	6500
+这件事情怎么处理	zhe jian shi qing zen me chu li	6500
+需要我做什么	xu yao wo zuo shen me	6500
+需要我帮忙吗	xu yao wo bang mang ma	6500
+麻烦发给我	ma fan fa gei wo	6500
+麻烦回复一下	ma fan hui fu yi xia	6500
+麻烦核对一下	ma fan he dui yi xia	6500
+麻烦确认一下	ma fan que ren yi xia	6500
+请把地址发我	qing ba di zhi fa wo	6222
+辛苦你帮忙了	xin ku ni bang mang le	5714
+请问什么时候到	qing wen shen me shi hou dao	4961
+不好意思打扰了	bu hao yi si da rao le	3153

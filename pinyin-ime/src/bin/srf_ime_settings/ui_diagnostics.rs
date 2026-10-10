@@ -97,6 +97,11 @@ pub(super) fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
         "fallback",
         "candidateui",
         "candidate ui",
+        "game-chat",
+        "game-key",
+        "game-candidate",
+        "commit-transport",
+        "sent_unconfirmed",
     ];
     let mut lines = runtime_log::recent_lines_matching(limit, &patterns);
     if lines.len() >= limit {
@@ -117,6 +122,31 @@ pub(super) fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
         lines.drain(0..lines.len() - limit);
     }
     lines
+}
+
+pub(super) fn game_input_event_hint(line: &str) -> Option<&'static str> {
+    if line.contains("sent_unconfirmed") {
+        return Some("文字事件已发送；请确认输入栏实际收到中文，避免重复提交。");
+    }
+    if line.contains("host_requested_hide") {
+        return Some("游戏已接管候选绘制，输入法尊重宿主的隐藏要求。");
+    }
+    if line.contains("unconfirmed_input_field") {
+        return Some("尚未确认可编辑输入栏；可以使用中文聊天切换热键。");
+    }
+    if line.contains("game-chat.state") && line.contains("phase=editing") {
+        return Some("中文聊天已开启。");
+    }
+    if line.contains("game-chat.state") && line.contains("phase=passthrough") {
+        return Some("中文聊天已结束，按键恢复交给游戏。");
+    }
+    if line.contains("game-chat.open") && line.contains("phase=awaiting") {
+        return Some("正在等待游戏输入栏确认，聊天开启键已交给游戏。");
+    }
+    if line.contains("commit-transport") && line.contains("status=failed") {
+        return Some("本次上屏失败。请检查焦点、修饰键和该游戏的提交方式。");
+    }
+    None
 }
 
 fn latest_log_line_matching(patterns: &[&str]) -> Option<String> {
@@ -924,16 +954,11 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             },
         ),
     ];
-    quiet_section(ui, "运行状态", |ui| {
-        ui.columns(2, |columns| {
-            for (idx, (label, value, color)) in status_items.iter().enumerate() {
-                diagnostic_status_card(&mut columns[idx % 2], label, value, *color);
-                columns[idx % 2].add_space(8.0);
-            }
-        });
+    section_panel(ui, "运行状态", |ui| {
+        diagnostic_status_table(ui, &status_items)
     });
 
-    ui.add_space(10.0);
+    ui.add_space(2.0);
     section_panel(ui, "打字延迟统计", |ui| {
         let palette = fluent_palette(ui);
         if latency_rows.is_empty() {
@@ -943,29 +968,33 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     .color(palette.muted),
             );
         } else {
-            egui::Grid::new("typing_latency_stats_grid")
-                .num_columns(7)
-                .striped(true)
-                .spacing([14.0, 7.0])
+            egui::ScrollArea::horizontal()
+                .id_salt("latency_table_scroll")
                 .show(ui, |ui| {
-                    ui.label(RichText::new("阶段").strong().color(palette.text));
-                    ui.label(RichText::new("样本").strong().color(palette.text));
-                    ui.label(RichText::new("P50 ms").strong().color(palette.text));
-                    ui.label(RichText::new("P90 ms").strong().color(palette.text));
-                    ui.label(RichText::new("P95 ms").strong().color(palette.text));
-                    ui.label(RichText::new("P99 ms").strong().color(palette.text));
-                    ui.label(RichText::new("Max ms").strong().color(palette.text));
-                    ui.end_row();
-                    for row in latency_rows {
-                        ui.label(RichText::new(row.label).color(palette.text));
-                        ui.label(RichText::new(row.count.to_string()).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p50_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p90_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p95_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.p99_ms)).monospace());
-                        ui.label(RichText::new(format_latency_ms(row.max_ms)).monospace());
-                        ui.end_row();
-                    }
+                    egui::Grid::new("typing_latency_stats_grid")
+                        .num_columns(7)
+                        .striped(true)
+                        .spacing([12.0, 4.0])
+                        .show(ui, |ui| {
+                            ui.label(RichText::new("阶段").strong().color(palette.text));
+                            ui.label(RichText::new("样本").strong().color(palette.text));
+                            ui.label(RichText::new("P50 ms").strong().color(palette.text));
+                            ui.label(RichText::new("P90 ms").strong().color(palette.text));
+                            ui.label(RichText::new("P95 ms").strong().color(palette.text));
+                            ui.label(RichText::new("P99 ms").strong().color(palette.text));
+                            ui.label(RichText::new("Max ms").strong().color(palette.text));
+                            ui.end_row();
+                            for row in latency_rows {
+                                ui.label(RichText::new(row.label).color(palette.text));
+                                ui.label(RichText::new(row.count.to_string()).monospace());
+                                ui.label(RichText::new(format_latency_ms(row.p50_ms)).monospace());
+                                ui.label(RichText::new(format_latency_ms(row.p90_ms)).monospace());
+                                ui.label(RichText::new(format_latency_ms(row.p95_ms)).monospace());
+                                ui.label(RichText::new(format_latency_ms(row.p99_ms)).monospace());
+                                ui.label(RichText::new(format_latency_ms(row.max_ms)).monospace());
+                                ui.end_row();
+                            }
+                        });
                 });
             ui.add_space(6.0);
             ui.label(
@@ -978,7 +1007,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         }
     });
 
-    ui.add_space(10.0);
+    ui.add_space(2.0);
     section_panel(ui, "诊断控制", |ui| {
         let palette = fluent_palette(ui);
         setting_combo_row(
@@ -1018,7 +1047,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         );
     });
 
-    ui.add_space(10.0);
+    ui.add_space(2.0);
     section_panel(ui, "最近事件", |ui| {
         let palette = fluent_palette(ui);
         ui.horizontal(|ui| {
@@ -1090,6 +1119,45 @@ fn diagnostic_log_group(ui: &mut egui::Ui, title: &str, lines: &[String]) {
 #[cfg(test)]
 mod performance_tests {
     use super::*;
+
+    #[test]
+    fn compact_diagnostics_fit_narrow_windows_with_long_events_and_latency_rows() {
+        use super::super::layout_tests::{footer_test_app, with_layout};
+        for width in [320.0, 480.0, 920.0] {
+            for scale in [1.0, 1.5, 2.0] {
+                let mut app = footer_test_app();
+                app.diagnostics_cache = Some(DiagnosticsSnapshot {
+                    refreshed_at: Instant::now(),
+                    recovery: Some(
+                        "示例：正在等待候选引擎恢复；这一行包含较长状态说明。".repeat(3),
+                    ),
+                    cold_lines: vec!["示例冷启动摘要".repeat(8)],
+                    recent_lines: vec!["示例性能事件 elapsed_ms=2.0".repeat(8)],
+                    compat_lines: vec!["示例兼容事件 unconfirmed_input_field".repeat(8)],
+                    latency_rows: vec![LatencyStatsRow {
+                        label: "按键到候选应用",
+                        count: 100,
+                        p50_ms: 1.0,
+                        p90_ms: 2.0,
+                        p95_ms: 3.0,
+                        p99_ms: 4.0,
+                        max_ms: 5.0,
+                    }],
+                    foreground: None,
+                    latest_candidate_refresh: None,
+                });
+                let model = app.model.clone();
+                with_layout(width, 4.0, scale, |ui| {
+                    let bounds = ui.available_rect_before_wrap();
+                    let rect = ui.scope(|ui| diagnostics_ui(ui, &mut app)).response.rect;
+                    assert!(rect.left() >= bounds.left() - 1.0 && rect.right() <= bounds.right() + 1.0,
+                        "diagnostics overflow at width {width}, scale {scale}: {rect:?} / {bounds:?}");
+                    assert!(model == app.model);
+                    assert!(app.performance_export_rx.is_none());
+                });
+            }
+        }
+    }
 
     #[test]
     fn ipc_timings_keep_microseconds_and_write_stage_separate() {

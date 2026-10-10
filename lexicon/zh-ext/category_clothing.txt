@@ -1,0 +1,58 @@
+# 开心离线输入法分类补充：服饰穿搭
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+运动鞋	yun dong xie	8729
+连衣裙	lian yi qun	8546
+休闲穿搭	xiu xian chuan da	6100
+休闲西装	xiu xian xi zhuang	6100
+休闲长裤	xiu xian chang ku	6100
+半身裙	ban shen qun	6100
+叠穿搭配	die chuan da pei	6100
+围巾帽子	wei jin mao zi	6100
+季节穿搭	ji jie chuan da	6100
+尺寸测量	chi cun ce liang	6100
+尺码选择	chi ma xuan ze	6100
+弹性面料	tan xing mian liao	6100
+换季整理	huan ji zheng li	6100
+日常穿搭	ri chang chuan da	6100
+服装尺码	fu zhuang chi ma	6100
+洗护标签	xi hu biao qian	6100
+洗涤说明	xi di shuo ming	6100
+牛仔外套	niu zai wai tao	6100
+直筒裤	zhi tong ku	6100
+短袖衬衫	duan xiu chen shan	6100
+羊毛大衣	yang mao da yi	6100
+羽绒外套	yu rong wai tao	6100
+腰带皮带	yao dai pi dai	6100
+衣服长度	yi fu chang du	6100
+衣物护理	yi wu hu li	6100
+衣物收纳	yi wu shou na	6100
+衣物晾晒	yi wu liang shai	6100
+衣物熨烫	yi wu yun tang	6100
+裤子长度	ku zi chang du	6100
+试穿效果	shi chuan xiao guo	6100
+运动穿搭	yun dong chuan da	6100
+运动长裤	yun dong chang ku	6100
+透气面料	tou qi mian liao	6100
+通勤穿搭	tong qin chuan da	6100
+配饰搭配	pei shi da pei	6100
+针织开衫	zhen zhi kai shan	6100
+针织毛衣	zhen zhi mao yi	6100
+长袖衬衫	chang xiu chen shan	6100
+阔腿裤	kuo tui ku	6100
+面料成分	mian liao cheng fen	6100
+面料材质	mian liao cai zhi	6100
+鞋包搭配	xie bao da pei	6100
+颜色搭配	yan se da pei	6100
+内衣	nei yi	5683
+袜子	wa zi	5499
+皮鞋	pi xie	4787
+胸围	xiong wei	4420
+凉鞋	liang xie	4155
+腰围	yao wei	3443
+臀围	tun wei	3320
+肩宽	jian kuan	2954
+帆布鞋	fan bu xie	2056
+休闲鞋	xiu xian xie	1758

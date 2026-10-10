@@ -398,6 +398,7 @@ fn cjk_fallback_font_paths() -> &'static [(&'static str, &'static str)] {
             ("fangsong", r"C:\Windows\Fonts\simfang.ttf"),
             ("simsun", r"C:\Windows\Fonts\simsun.ttc"),
             ("segui_symbol", r"C:\Windows\Fonts\seguisym.ttf"),
+            ("cambria_math", r"C:\Windows\Fonts\cambria.ttc"),
             ("segui_emoji", r"C:\Windows\Fonts\seguiemj.ttf"),
         ]
     } else if cfg!(target_os = "macos") {

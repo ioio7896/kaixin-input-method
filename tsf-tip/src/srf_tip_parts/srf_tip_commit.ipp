@@ -45,6 +45,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
                                          const std::vector<std::wstring>* snapshotSkippedCandidates,
                                          bool explicitSelection) {
   const ULONGLONG commitStart = GetTickCount64();
+  const SrfGameCommitScope gameCommit(m_gameChatPhase, m_gameChatActive);
   const bool commitReading = idx == static_cast<size_t>(-1);
   auto snapshotOrCurrentReading = [&]() -> std::wstring {
     if (snapshotReading && !snapshotReading->empty()) return *snapshotReading;
@@ -341,7 +342,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
         (void)CollapseSelectionToRangeEnd(ec, ctx, range);
         range->Release();
       }
-      (void)m_pComposition->EndComposition(ec);
+      (void)FinishCompositionPreservingText(ec);
       ClearCompositionBufferState();
       ReleaseCompositionObjects();
     }
@@ -352,14 +353,21 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     ITfRange* range = nullptr;
     hr = m_pComposition->GetRange(&range);
     if (SUCCEEDED(hr) && range) {
-      hr = range->SetText(ec, 0, committed.c_str(), static_cast<LONG>(committed.size()));
-      if (SUCCEEDED(hr)) {
-        ITfContext* commitContext = m_pCompositionContext ? m_pCompositionContext : pic;
-        (void)CollapseSelectionToRangeEnd(ec, commitContext, range);
-      }
+      const auto result = SrfWriteAndFinishComposition([&]() {
+        const HRESULT write = range->SetText(ec, 0, committed.c_str(), static_cast<LONG>(committed.size()));
+        if (SUCCEEDED(write)) {
+          ITfContext* commitContext = m_pCompositionContext ? m_pCompositionContext : pic;
+          (void)CollapseSelectionToRangeEnd(ec, commitContext, range);
+        }
+        return write;
+      }, [&]() { return FinishCompositionPreservingText(ec); });
+      // A failed EndComposition must never turn a completed write into a
+      // failed commit: compatibility fallback would send the text twice.
+      hr = result.write;
       range->Release();
+    } else if (SUCCEEDED(hr)) {
+      hr = E_FAIL;
     }
-    if (SUCCEEDED(hr)) hr = m_pComposition->EndComposition(ec);
   } else if (m_pCompositionContext) {
     hr = CommitDirectText(ec, m_pCompositionContext, committed);
   } else if (m_pFocusContext) {
@@ -367,39 +375,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   }
   DebugLogPerfMs(L"CommitCandidate/text-write", textWriteStart);
 
-  if (FAILED(hr) && !IsGameHotkeyPassthroughActive() &&
-      hr != HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) &&
-      EffectiveCommitTransport() != SrfCommitTransport::UnicodeSendInput) {
-    bool appGameProfile = false;
-    const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName());
-    if (appOptions && appOptions->hasGameProfile && appOptions->gameCompactProfile) {
-      appGameProfile = true;
-    }
-    const bool compatibilityFallbackAllowed =
-        appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
-        m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
-    if (compatibilityFallbackAllowed) {
-      if (m_pComposition) {
-        CancelCompositionEdit(ec);
-        ReleaseCompositionObjects();
-      }
-      const HRESULT fallbackHr = SendUnicodeTextInput(committed);
-      std::wstring line = L"from=";
-      line += EffectiveCommitTransportName();
-      line += L", to=unicode_sendinput, status=";
-      line += SUCCEEDED(fallbackHr) ? L"ok" : L"failed";
-      line += L", len=";
-      line += std::to_wstring(committed.size());
-      if (FAILED(fallbackHr)) {
-        wchar_t hrBuf[16] = {};
-        swprintf_s(hrBuf, L"%08lX", static_cast<unsigned long>(fallbackHr));
-        line += L", hr=0x";
-        line += hrBuf;
-      }
-      SrfTsfDiagnosticLog(L"commit-transport-fallback", line.c_str());
-      if (SUCCEEDED(fallbackHr)) hr = S_OK;
-    }
-  }
+  // Delivery failure is reported to the user. Never replay the whole text
+  // through another transport: the host may already have accepted a write.
 
   if (SUCCEEDED(hr) && !suppressCandidateLearning && !reading.empty() && committed != reading) {
     if (committedMeta.correctionCandidate && !committedMeta.correctedReading.empty()) {
@@ -472,7 +449,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
         CancelCompositionEdit(ec);
         SetGameChatActive(false);
       }
-      ShowNotification(SrfNotificationKind::AppOptions,
+      ShowGameInputStatus(
           hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) ?
           L"部分上屏，已停止重试；请检查游戏聊天框" :
           L"上屏失败，请用游戏测试向导选择上屏方式");
@@ -492,7 +469,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   // send OnCompositionTerminated for an EndComposition initiated by this TIP.
   // Retaining it would make EnsureEngineInputReady reject every following key.
   ReleaseCompositionState();
-  std::wstring line = L"status=ok, total_ms=";
+  std::wstring line = EffectiveCommitTransport() == SrfCommitTransport::Tsf ?
+      L"status=written, total_ms=" : L"status=sent_unconfirmed, total_ms=";
   line += std::to_wstring(GetTickCount64() - commitStart);
   line += L", committed_len=";
   line += std::to_wstring(committed.size());

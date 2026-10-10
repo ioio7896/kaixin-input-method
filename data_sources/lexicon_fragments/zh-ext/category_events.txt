@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：活动会务
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+注意事项	zhu yi shi xiang	7631
+主持流程	zhu chi liu cheng	6100
+会务安排	hui wu an pai	6100
+会务服务	hui wu fu wu	6100
+会后交流	hui hou jiao liu	6100
+会场导航	hui chang dao hang	6100
+会场布置	hui chang bu zhi	6100
+会场座位	hui chang zuo wei	6100
+会场签到	hui chang qian dao	6100
+会场设备	hui chang she bei	6100
+参与人数	can yu ren shu	6100
+参与方式	can yu fang shi	6100
+参会回执	can hui hui zhi	6100
+参会指南	can hui zhi nan	6100
+参会证件	can hui zheng jian	6100
+合影留念	he ying liu nian	6100
+嘉宾名单	jia bin ming dan	6100
+嘉宾邀请	jia bin yao qing	6100
+圆桌讨论	yuan zhuo tao lun	6100
+志愿者招募	zhi yuan zhe zhao mu	6100
+志愿者服务	zhi yuan zhe fu wu	6100
+报名截止	bao ming jie zhi	6100
+报名链接	bao ming lian jie	6100
+时间安排	shi jian an pai	6100
+活动反馈	huo dong fan kui	6100
+活动地点	huo dong di dian	6100
+活动安排	huo dong an pai	6100
+活动宣传	huo dong xuan chuan	6100
+活动总结	huo dong zong jie	6100
+活动报名	huo dong bao ming	6100
+活动方案	huo dong fang an	6100
+活动时间	huo dong shi jian	6100
+活动流程	huo dong liu cheng	6100
+活动海报	huo dong hai bao	6100
+活动策划	huo dong ce hua	6100
+活动签到	huo dong qian dao	6100
+活动通知	huo dong tong zhi	6100
+活动邀请	huo dong yao qing	6100
+活动预算	huo dong yu suan	6100
+演讲主题	yan jiang zhu ti	6100
+演讲材料	yan jiang cai liao	6100
+演讲顺序	yan jiang shun xu	6100
+物料准备	wu liao zhun bei	6100
+物料清单	wu liao qing dan	6100
+现场互动	xian chang hu dong	6100
+现场提问	xian chang ti wen	6100
+礼品领取	li pin ling qu	6100
+签到二维码	qian dao er wei ma	6100
+报名表	bao ming biao	5360

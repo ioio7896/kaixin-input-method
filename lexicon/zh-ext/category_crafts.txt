@@ -1,0 +1,51 @@
+# 开心离线输入法分类补充：手工爱好
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+缝纫机	feng ren ji	7867
+串珠制作	chuan zhu zhi zuo	6100
+刺绣针法	ci xiu zhen fa	6100
+印章刻制	yin zhang ke zhi	6100
+布料拼接	bu liao pin jie	6100
+布料裁剪	bu liao cai jian	6100
+布艺制作	bu yi zhi zuo	6100
+干花制作	gan hua zhi zuo	6100
+手工刺绣	shou gong ci xiu	6100
+手工材料	shou gong cai liao	6100
+手工皂	shou gong zao	6100
+手工皮具	shou gong pi ju	6100
+手工编织	shou gong bian zhi	6100
+手工缝纫	shou gong feng ren	6100
+手账制作	shou zhang zhi zuo	6100
+手账排版	shou zhang pai ban	6100
+手账贴纸	shou zhang tie zhi	6100
+插花制作	cha hua zhi zuo	6100
+木工制作	mu gong zhi zuo	6100
+木工工具	mu gong gong ju	6100
+木材打磨	mu cai da mo	6100
+木材拼接	mu cai pin jie	6100
+树脂模型	shu zhi mo xing	6100
+棒针编织	bang zhen bian zhi	6100
+模型工具	mo xing gong ju	6100
+模型拼装	mo xing pin zhuang	6100
+模型收纳	mo xing shou na	6100
+模型涂装	mo xing tu zhuang	6100
+橡皮章	xiang pi zhang	6100
+毛线编织	mao xian bian zhi	6100
+珠串配饰	zhu chuan pei shi	6100
+皮革工具	pi ge gong ju	6100
+石膏模型	shi gao mo xing	6100
+编织图解	bian zhi tu jie	6100
+编织针法	bian zhi zhen fa	6100
+花艺设计	hua yi she ji	6100
+蜡烛制作	la zhu zhi zuo	6100
+釉料上色	you liao shang se	6100
+钩针编织	gou zhen bian zhi	6100
+陶泥塑形	tao ni su xing	6100
+陶瓷烧制	tao ci shao zhi	6100
+陶艺制作	tao yi zhi zuo	6100
+香薰蜡烛	xiang xun la zhu	6100
+剪纸	jian zhi	4257
+折纸	zhe zhi	3809
+十字绣	shi zi xiu	1541

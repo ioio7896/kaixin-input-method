@@ -58,6 +58,11 @@ required-features = ["desktop"]
 path = "src/bin/srf_ime_handwrite.rs"
 
 [[bin]]
+name = "srf_ime_symbols"
+required-features = ["desktop"]
+path = "src/bin/srf_ime_symbols.rs"
+
+[[bin]]
 name = "srf_ime_ocr"
 required-features = ["desktop"]
 path = "src/bin/srf_ime_ocr.rs"

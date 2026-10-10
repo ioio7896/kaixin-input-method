@@ -1,0 +1,65 @@
+# 开心离线输入法分类补充：支付票据
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+实名认证	shi ming ren zheng	8800
+验证码	yan zheng ma	8163
+交易明细	jiao yi ming xi	6100
+交易流水	jiao yi liu shui	6100
+付款码	fu kuan ma	6100
+余额不足	yu e bu zu	6100
+余额支付	yu e zhi fu	6100
+免密支付	mian mi zhi fu	6100
+关闭自动续费	guan bi zi dong xu fei	6100
+到账时间	dao zhang shi jian	6100
+发票代码	fa piao dai ma	6100
+发票作废	fa piao zuo fei	6100
+发票内容	fa piao nei rong	6100
+发票冲红	fa piao chong hong	6100
+发票号码	fa piao hao ma	6100
+发票抬头	fa piao tai tou	6100
+发票查验	fa piao cha yan	6100
+取消免密	qu xiao mian mi	6100
+实名信息	shi ming xin xi	6100
+对公账户	dui gong zhang hu	6100
+对公转账	dui gong zhuan zhang	6100
+对账单	dui zhang dan	6100
+开票信息	kai piao xin xi	6100
+开票申请	kai piao shen qing	6100
+扣款记录	kou kuan ji lu	6100
+提现失败	ti xian shi bai	6100
+提现申请	ti xian shen qing	6100
+提现额度	ti xian e du	6100
+支付凭证	zhi fu ping zheng	6100
+支付失败	zhi fu shi bai	6100
+支付密码	zhi fu mi ma	6100
+支付成功	zhi fu cheng gong	6100
+支付手续费	zhi fu shou xu fei	6100
+支付方式	zhi fu fang shi	6100
+支付订单	zhi fu ding dan	6100
+支付记录	zhi fu ji lu	6100
+支付超时	zhi fu chao shi	6100
+支付通知	zhi fu tong zhi	6100
+支付限额	zhi fu xian e	6100
+收款信息	shou kuan xin xi	6100
+收款码	shou kuan ma	6100
+收款账户	shou kuan zhang hu	6100
+数电发票	shu dian fa piao	6100
+电子发票	dian zi fa piao	6100
+短信验证	duan xin yan zheng	6100
+纳税人识别号	na shui ren shi bie hao	6100
+纸质发票	zhi zhi fa piao	6100
+自动扣款	zi dong kou kuan	6100
+账单分期	zhang dan fen qi	6100
+账户余额	zhang hu yu e	6100
+身份验证	shen fen yan zheng	6100
+转账到账	zhuan zhang dao zhang	6100
+转账记录	zhuan zhang ji lu	6100
+转账限额	zhuan zhang xian e	6100
+退款凭证	tui kuan ping zheng	6100
+重复扣款	chong fu kou kuan	6100
+银行卡绑定	yin hang ka bang ding	6100
+银行卡解绑	yin hang ka jie bang	6100
+零钱提现	ling qian ti xian	6100
+零钱支付	ling qian zhi fu	6100

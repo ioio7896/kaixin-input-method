@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：保险理赔
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+医疗保险	yi liao bao xian	9095
+受益人	shou yi ren	8384
+事故证明	shi gu zheng ming	6100
+住院费用	zhu yuan fei yong	6100
+保单变更	bao dan bian geng	6100
+保单号码	bao dan hao ma	6100
+保单查询	bao dan cha xun	6100
+保单续保	bao dan xu bao	6100
+保单贷款	bao dan dai kuan	6100
+保单退保	bao dan tui bao	6100
+保险合同	bao xian he tong	6100
+保险期间	bao xian qi jian	6100
+保险条款	bao xian tiao kuan	6100
+保险责任	bao xian ze ren	6100
+保险费用	bao xian fei yong	6100
+保险金额	bao xian jin e	6100
+健康告知	jian kang gao zhi	6100
+免责条款	mian ze tiao kuan	6100
+免赔率	mian pei lv	6100
+免赔额	mian pei e	6100
+公众责任险	gong zhong ze ren xian	6100
+出险报案	chu xian bao an	6100
+医疗证明	yi liao zheng ming	6100
+商业保险	shang ye bao xian	6100
+定损评估	ding sun ping gu	6100
+寿险保单	shou xian bao dan	6100
+意外保险	yi wai bao xian	6100
+报案号码	bao an hao ma	6100
+核保结果	he bao jie guo	6100
+犹豫期	you yu qi	6100
+理赔审核	li pei shen he	6100
+理赔材料	li pei cai liao	6100
+理赔申请	li pei shen qing	6100
+理赔结案	li pei jie an	6100
+理赔进度	li pei jin du	6100
+理赔金额	li pei jin e	6100
+第三者责任险	di san zhe ze ren xian	6100
+等待期	deng dai qi	6100
+被保险人	bei bao xian ren	6100
+财产保险	cai chan bao xian	6100
+责任免除	ze ren mian chu	6100
+车辆定损	che liang ding sun	6100
+车险续保	che xian xu bao	6100
+重疾保险	zhong ji bao xian	6100
+门诊费用	men zhen fei yong	6100
+雇主责任险	gu zhu ze ren xian	6100
+投保人	tou bao ren	5738
+交强险	jiao qiang xian	1090
+车损险	che sun xian	118

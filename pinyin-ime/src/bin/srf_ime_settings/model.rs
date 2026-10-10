@@ -13,6 +13,20 @@ pub(crate) enum SettingsSection {
     System,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum AppearanceSettingsPage {
+    Layout,
+    Theme,
+    Advanced,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum LexiconSettingsPage {
+    Learning,
+    User,
+    Extensions,
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ToolSettingsPage {
     Clipboard,
@@ -80,7 +94,7 @@ impl SettingsSection {
     pub(crate) fn hint(self) -> &'static str {
         match self {
             Self::Input => "全拼、双拼、模糊音、标点和输入习惯。",
-            Self::Appearance => "候选窗布局、字体与间距、皮肤与配色；右侧实时预览。",
+            Self::Appearance => "布局与显示、字体与主题、高级标记；页内实时预览。",
             Self::Lexicon => "用户词库、学习策略、自定义短语和扩展词库。",
             Self::Hotkeys => "切换、翻页和功能快捷键。",
             Self::Tools => "剪贴板、截图与 OCR、手写、翻译和 VV 命令。",
@@ -236,6 +250,7 @@ pub(crate) struct SettingsModel {
     pub(crate) ocr_screenshot_name_pattern: String,
     pub(crate) wintranslator_path: String,
     pub(crate) translate_result_action: String,
+    pub(crate) translate_target_language: String,
     pub(crate) translate_hotkey: String,
     pub(crate) traditional_hotkey: String,
     pub(crate) game_mode_hotkey: String,
@@ -249,6 +264,7 @@ pub(crate) struct SettingsModel {
     pub(crate) clipboard_record_source_app: bool,
     pub(crate) clipboard_pinned_respects_max_age: bool,
     pub(crate) game_input_mode: String,
+    pub(crate) game_chat: GameChatOptions,
     pub(crate) fullscreen_detection: bool,
     pub(crate) fullscreen_policy: String,
     pub(crate) commit_transport: String,
@@ -345,12 +361,65 @@ impl CompatRulePolicy {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct GameChatOptions {
+    pub(crate) enter_behavior: String,
+    pub(crate) auto_uia: String,
+    pub(crate) status_indicator: String,
+    pub(crate) open_key: String,
+    pub(crate) close_key: String,
+    pub(crate) force_ui: bool,
+    pub(crate) tested_display_mode: String,
+    pub(crate) tested_game_version: String,
+    pub(crate) tested_input: bool,
+    pub(crate) tested_candidate: bool,
+    pub(crate) tested_commit: bool,
+    pub(crate) tested_exit: bool,
+}
+
+impl Default for GameChatOptions {
+    fn default() -> Self {
+        Self {
+            enter_behavior: "auto".to_string(),
+            auto_uia: "1".to_string(),
+            status_indicator: "1".to_string(),
+            open_key: "off".to_string(),
+            close_key: "Escape".to_string(),
+            force_ui: false,
+            tested_display_mode: "unverified".to_string(),
+            tested_game_version: String::new(),
+            tested_input: false,
+            tested_candidate: false,
+            tested_commit: false,
+            tested_exit: false,
+        }
+    }
+}
+
+impl GameChatOptions {
+    pub(crate) fn inherited() -> Self {
+        Self {
+            enter_behavior: "inherit".to_string(),
+            auto_uia: "inherit".to_string(),
+            status_indicator: "inherit".to_string(),
+            ..Self::default()
+        }
+    }
+    pub(crate) fn reset_test_results(&mut self) {
+        self.tested_input = false;
+        self.tested_candidate = false;
+        self.tested_commit = false;
+        self.tested_exit = false;
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct CompatRule {
     pub(crate) enabled: bool,
     pub(crate) process: String,
     pub(crate) policy: CompatRulePolicy,
     pub(crate) commit_transport: String,
     pub(crate) game_input_mode: String,
+    pub(crate) game_chat: GameChatOptions,
     pub(crate) game_profile: bool,
     pub(crate) overlay_anchor: String,
     pub(crate) overlay_offset_x: i32,
@@ -360,12 +429,41 @@ pub(crate) struct CompatRule {
     pub(crate) overlay_backend: String,
 }
 
+pub(crate) fn invalidate_changed_game_test_results(
+    before: &SettingsModel,
+    after: &mut SettingsModel,
+) {
+    let global_changed = before.game_input_mode != after.game_input_mode
+        || before.game_chat != after.game_chat
+        || before.game_mode_hotkey != after.game_mode_hotkey
+        || before.commit_transport != after.commit_transport;
+    let policy_only = |rule: &CompatRule| {
+        let mut rule = rule.clone();
+        rule.process = rule.process.to_ascii_lowercase();
+        rule.game_chat.reset_test_results();
+        rule.game_chat.tested_display_mode.clear();
+        rule.game_chat.tested_game_version.clear();
+        rule
+    };
+    for rule in &mut after.compat_rules {
+        let previous = before
+            .compat_rules
+            .iter()
+            .find(|old| old.process.eq_ignore_ascii_case(&rule.process));
+        if global_changed || previous.is_some_and(|old| policy_only(old) != policy_only(rule)) {
+            rule.game_chat.reset_test_results();
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum GameTestStep {
     Prepare,
+    InputActivation,
     CandidateVisibility,
     Position,
     Commit,
+    ExitAndRestore,
 }
 
 #[derive(Clone)]
@@ -497,6 +595,7 @@ impl Default for SettingsModel {
             ocr_screenshot_name_pattern: "ocr-{datetime}".to_string(),
             wintranslator_path: String::new(),
             translate_result_action: "show".to_string(),
+            translate_target_language: "auto-opposite".into(),
             translate_hotkey: "off".to_string(),
             traditional_hotkey: "off".to_string(),
             game_mode_hotkey: "Ctrl+Shift+Alt+G".to_string(),
@@ -510,6 +609,7 @@ impl Default for SettingsModel {
             clipboard_record_source_app: false,
             clipboard_pinned_respects_max_age: true,
             game_input_mode: "manual".to_string(),
+            game_chat: GameChatOptions::default(),
             fullscreen_detection: true,
             fullscreen_policy: schema_default::FULLSCREEN_POLICY.to_string(),
             commit_transport: schema_default::COMMIT_TRANSPORT.to_string(),

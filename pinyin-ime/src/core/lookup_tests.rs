@@ -2,6 +2,51 @@ use super::*;
 use crate::core::{LEARN_FLAG_COMPOSED_PHRASE, LEARN_FLAG_WEAK};
 
 #[test]
+fn short_abbrev_lookup_keeps_fitting_words_ahead_of_hot_five_char_predictions() {
+    let mut engine = PinyinEngine::with_phrase_dir(None);
+    engine.clear_user_lexicon_for_eval();
+    let mut lexicon = AbbrevLexicon::default();
+    for (phrase, code, freq) in [
+        ("计算机", "ji suan ji", 8_000),
+        ("计算机系", "ji suan ji xi", 8_000),
+        ("计算机系统", "ji suan ji xi tong", 10_000),
+    ] {
+        assert!(lexicon.insert_parsed_with_layer(
+            ThuoclEntry {
+                phrase: phrase.to_string(),
+                code: Some(code.to_string()),
+                freq,
+                pronunciation_kind: Default::default(),
+            },
+            LexiconLayer::Base,
+        ));
+    }
+    engine.phrase_lexicon = Some(lexicon);
+    // Exercise first-batch, complete lookup, and subsequent cache replay.
+    for _ in 0..2 {
+        for (input, expected) in [("jsj", "计算机"), ("jsjx", "计算机系")] {
+            let page = engine.lookup_first_page(input);
+            assert!(
+                page.iter().any(|phrase| phrase == expected),
+                "{input}: {page:?}"
+            );
+            let full = engine.lookup_full_explain(input).0;
+            let short = full.iter().position(|item| item.0 == expected).unwrap();
+            let long = full.iter().position(|item| item.0 == "计算机系统");
+            assert!(long.is_none_or(|long| short < long), "{input}: {full:?}");
+        }
+    }
+    for input in ["jsjxt", "jisuanjixitong"] {
+        let full = engine.lookup_full_explain(input).0;
+        assert_eq!(
+            full.first().map(|item| item.0.as_str()),
+            Some("计算机系统"),
+            "{input}: {full:?}"
+        );
+    }
+}
+
+#[test]
 fn lookup_returns_non_primary_heteronym_readings() {
     let mut engine = PinyinEngine::with_phrase_dir(None);
     for (input, expected) in [("chong", "重"), ("yue", "乐"), ("hang", "行")] {
@@ -44,6 +89,38 @@ fn xiong_does_not_offer_neng_character() {
         .iter()
         .take(crate::core::TSF_PAGE_SIZE)
         .any(|(phrase, _, _)| phrase == "熊"));
+}
+
+#[test]
+fn historical_single_reading_stays_excluded_with_old_learning_and_cached_lookup() {
+    let mut engine = PinyinEngine::with_phrase_dir(None);
+    engine.clear_user_lexicon_for_eval();
+    engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
+    // Older releases could learn this historical reading. Reproduce that
+    // stored evidence without touching the user's on-disk dictionary.
+    engine
+        .user_lexicon
+        .learn_with_delta("tai", "大", 1000)
+        .unwrap();
+    for _ in 0..3 {
+        for input in ["t", "ta", "tai"] {
+            let candidates = engine.lookup_full_explain(input).0;
+            if input == "tai" {
+                assert!(
+                    !candidates.iter().any(|candidate| candidate.0 == "大"),
+                    "old learned reading returned: {candidates:?}"
+                );
+                assert!(candidates.iter().any(|candidate| candidate.0 == "太"));
+            }
+        }
+    }
+    for input in ["da", "dai"] {
+        assert!(engine
+            .lookup_full_explain(input)
+            .0
+            .iter()
+            .any(|candidate| candidate.0 == "大"));
+    }
 }
 
 #[test]

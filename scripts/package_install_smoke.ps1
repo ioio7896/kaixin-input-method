@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$PackageRoot = '',
     [string]$SmokeRoot = (Join-Path $env:TEMP ('kaixin-install-smoke-' + [guid]::NewGuid().ToString('N'))),
     [switch]$ExerciseLanguageList,
@@ -162,7 +162,7 @@ try {
     Write-Host "package install smoke passed: $installRoot"
 } finally {
     $env:LOCALAPPDATA = $previousLocalAppData
-    foreach ($name in @('srf_ime_engine', 'srf_ime_tray', 'srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_ocr')) {
+    foreach ($name in @('srf_ime_engine', 'srf_ime_tray', 'srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_symbols', 'srf_ime_ocr')) {
         Stop-Process -Name $name -Force -ErrorAction SilentlyContinue
     }
     if (-not $KeepSmokeRoot -and (Test-Path -LiteralPath $SmokeRoot)) {

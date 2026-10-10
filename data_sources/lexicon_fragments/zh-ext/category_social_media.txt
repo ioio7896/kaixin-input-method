@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：内容社媒
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+内容审核	nei rong shen he	8800
+点赞收藏	dian zan shou cang	8800
+热门话题	re men hua ti	8800
+直播间互动	zhi bo jian hu dong	8800
+粉丝关注	fen si guan zhu	8800
+转发分享	zhuan fa fen xiang	8800
+主页简介	zhu ye jian jie	6100
+互动数据	hu dong shu ju	6100
+内容创作	nei rong chuang zuo	6100
+内容发布	nei rong fa bu	6100
+内容复盘	nei rong fu pan	6100
+内容推荐	nei rong tui jian	6100
+内容运营	nei rong yun ying	6100
+创作灵感	chuang zuo ling gan	6100
+创作素材	chuang zuo su cai	6100
+图文排版	tu wen pai ban	6100
+图文笔记	tu wen bi ji	6100
+数据看板	shu ju kan ban	6100
+活动运营	huo dong yun ying	6100
+浏览数据	liu lan shu ju	6100
+点击数据	dian ji shu ju	6100
+直播回放	zhi bo hui fang	6100
+直播预告	zhi bo yu gao	6100
+直播预约	zhi bo yu yue	6100
+社群运营	she qun yun ying	6100
+私信回复	si xin hui fu	6100
+私信通知	si xin tong zhi	6100
+笔记分享	bi ji fen xiang	6100
+笔记发布	bi ji fa bu	6100
+笔记收藏	bi ji shou cang	6100
+粉丝互动	fen si hu dong	6100
+素材整理	su cai zheng li	6100
+视频剪辑	shi pin jian ji	6100
+视频发布	shi pin fa bu	6100
+视频字幕	shi pin zi mu	6100
+视频封面	shi pin feng mian	6100
+视频标题	shi pin biao ti	6100
+视频脚本	shi pin jiao ben	6100
+视频配音	shi pin pei yin	6100
+评论回复	ping lun hui fu	6100
+评论管理	ping lun guan li	6100
+评论置顶	ping lun zhi ding	6100
+话题标签	hua ti biao qian	6100
+账号主页	zhang hao zhu ye	6100
+账号昵称	zhang hao ni cheng	6100
+账号注销	zhang hao zhu xiao	6100
+账号申诉	zhang hao shen su	6100
+账号绑定	zhang hao bang ding	6100
+账号认证	zhang hao ren zheng	6100
+转化数据	zhuan hua shu ju	6100
+个人主页	ge ren zhu ye	3178

@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：阅读写作
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+书单推荐	shu dan tui jian	6100
+书评文章	shu ping wen zhang	6100
+人物塑造	ren wu su zao	6100
+人物设定	ren wu she ding	6100
+作品赏析	zuo pin shang xi	6100
+修辞手法	xiu ci shou fa	6100
+写作思路	xie zuo si lu	6100
+写作技巧	xie zuo ji qiao	6100
+写作提纲	xie zuo ti gang	6100
+写作素材	xie zuo su cai	6100
+动作描写	dong zuo miao xie	6100
+叙事结构	xu shi jie gou	6100
+叙事视角	xu shi shi jiao	6100
+古诗鉴赏	gu shi jian shang	6100
+小说创作	xiao shuo chuang zuo	6100
+心理描写	xin li miao xie	6100
+情感表达	qing gan biao da	6100
+情节推进	qing jie tui jin	6100
+情节设计	qing jie she ji	6100
+排比句	pai bi ju	6100
+摘抄积累	zhai chao ji lei	6100
+散文随笔	san wen sui bi	6100
+文学常识	wen xue chang shi	6100
+文稿润色	wen gao run se	6100
+文章主题	wen zhang zhu ti	6100
+文章结构	wen zhang jie gou	6100
+文言文翻译	wen yan wen fan yi	6100
+校对修改	jiao dui xiu gai	6100
+段落排版	duan luo pai ban	6100
+段落衔接	duan luo xian jie	6100
+环境描写	huan jing miao xie	6100
+现代文阅读	xian dai wen yue du	6100
+精读泛读	jing du fan du	6100
+细节描写	xi jie miao xie	6100
+编辑校对	bian ji jiao dui	6100
+诗歌创作	shi ge chuang zuo	6100
+语言描写	yu yan miao xie	6100
+读书笔记	du shu bi ji	6100
+错别字检查	cuo bie zi jian cha	6100
+阅读理解	yue du li jie	6100
+阅读笔记	yue du bi ji	6100
+阅读计划	yue du ji hua	6100
+读后感	du hou gan	5880
+比喻	bi yu	5723
+拟人	ni ren	4522
+记叙文	ji xu wen	4181
+应用文	ying yong wen	3956
+议论文	yi lun wen	3828
+说明文	shuo ming wen	3195
+标点符号	biao dian fu hao	2346
+文学创作	wen xue chuang zuo	1732

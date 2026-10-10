@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：摄影影像
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+产品摄影	chan pin she ying	6100
+人像摄影	ren xiang she ying	6100
+人脸对焦	ren lian dui jiao	6100
+光圈优先	guang quan you xian	6100
+单次对焦	dan ci dui jiao	6100
+变焦镜头	bian jiao jing tou	6100
+后期调色	hou qi tiao se	6100
+图片压缩	tu pian ya suo	6100
+图片裁剪	tu pian cai jian	6100
+图片降噪	tu pian jiang zao	6100
+夜景拍摄	ye jing pai she	6100
+定焦镜头	ding jiao jing tou	6100
+对焦模式	dui jiao mo shi	6100
+广角镜头	guang jiao jing tou	6100
+延时摄影	yan shi she ying	6100
+微距镜头	wei ju jing tou	6100
+快门优先	kuai men you xian	6100
+手动对焦	shou dong dui jiao	6100
+手动曝光	shou dong bao guang	6100
+拍摄参数	pai she can shu	6100
+拍摄构图	pai she gou tu	6100
+拍摄模式	pai she mo shi	6100
+拍摄角度	pai she jiao du	6100
+曝光时间	bao guang shi jian	6100
+曝光补偿	bao guang bu chang	6100
+机身防抖	ji shen fang dou	6100
+焦距选择	jiao ju xuan ze	6100
+照片导出	zhao pian dao chu	6100
+眼部对焦	yan bu dui jiao	6100
+素材备份	su cai bei fen	6100
+自动曝光	zi dong bao guang	6100
+色彩分级	se cai fen ji	6100
+色彩校正	se cai jiao zheng	6100
+色彩空间	se cai kong jian	6100
+色温调节	se wen tiao jie	6100
+街头摄影	jie tou she ying	6100
+视频分辨率	shi pin fen bian lv	6100
+视频帧率	shi pin zhen lv	6100
+视频拍摄	shi pin pai she	6100
+视频码率	shi pin ma lv	6100
+连拍模式	lian pai mo shi	6100
+连续对焦	lian xu dui jiao	6100
+锐化处理	rui hua chu li	6100
+镜头光圈	jing tou guang quan	6100
+镜头防抖	jing tou fang dou	6100
+长焦镜头	zhang jiao jing tou	6100
+风景摄影	feng jing she ying	6100
+感光度	gan guang du	2891
+白平衡	bai ping heng	1268

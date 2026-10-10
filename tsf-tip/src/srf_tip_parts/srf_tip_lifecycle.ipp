@@ -273,11 +273,24 @@ STDMETHODIMP CSrfTip::ActivateEx(ITfThreadMgr* ptim, TfClientId tid, DWORD dwFla
     return hr;
   }
   DebugLogPerfMs(L"ActivateEx/advise-sinks", stageStart);
+  hr = m_pSource->AdviseSink(IID_ITfKeyTraceEventSink,
+      static_cast<ITfKeyTraceEventSink*>(m_pKeySink), &m_dwKeyTraceSinkCookie);
+  m_pKeySink->m_traceAvailable = SUCCEEDED(hr);
+  if (FAILED(hr)) SrfTsfDiagnosticLog(L"game-key.trace", L"status=unavailable");
   stageStart = GetTickCount64();
 
   EnsureDisplayAttributeAtom();
   LoadConfiguration();
   LoadCompartmentState();
+  ITfDocumentMgr* focusedDocument = nullptr;
+  if (SUCCEEDED(m_pThreadMgr->GetFocus(&focusedDocument)) && focusedDocument) {
+    ITfContext* context = nullptr;
+    if (SUCCEEDED(focusedDocument->GetTop(&context)) && context) {
+      SetFocusContext(context);
+      context->Release();
+    }
+    focusedDocument->Release();
+  }
   ApplyAppOptionsForFocusedContext(false);
   SyncCompartmentState();
   RebuildContextModel();
@@ -332,6 +345,11 @@ void CSrfTip::EndInputSession(const wchar_t* reason, TfEditCookie ec, bool cance
   m_endingInputSession = true;
   // Invalidate all input work without changing physical focus identity.
   m_inputSession.End();
+  // Preserve physical key ownership while ending input in the same window.
+  // Actual focus loss/deactivation resets it explicitly.
+  m_shiftTapActive = false;
+  m_shiftTapUsedWithOtherKey = false;
+  m_shiftTapStartTick = 0;
   CancelDeferredCandidateRefresh();
   CancelDeferredFocusContextClear();
   m_pendingLearnNotifications.clear();
@@ -426,9 +444,14 @@ void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
 void CSrfTip::SetFocusContext(ITfContext* pic) {
   CancelDeferredFocusContextClear();
   if (m_pFocusContext == pic) return;
-  if (m_gameChatActive) SetGameChatActive(false);
-  m_autoGameChatFocus = nullptr;
+  if (m_pKeySink) m_pKeySink->m_pendingKeyEdits.Cancel();
   const SrfFocusSnapshot oldFocus = CaptureFocusSnapshot(m_pFocusContext);
+  // Queue cleanup against the old composition identity before changing focus.
+  // The new field must not wait for that host to grant an asynchronous lock.
+  // Capture the preedit before leaving game chat clears the reading buffer.
+  if (m_pComposition) ScheduleHostCompositionEnd(true);
+  if (m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting) SetGameChatActive(false);
+  m_autoGameChatFocus = nullptr;
   ++m_focusGeneration;
   if (m_pFocusContext) m_pFocusContext->Release();
   m_pFocusContext = pic;
@@ -437,6 +460,7 @@ void CSrfTip::SetFocusContext(ITfContext* pic) {
   m_cachedFocusedProcessId = 0;
   m_cachedFocusedProcessName.clear();
   EndInputSession(L"focus-context-change");
+  BindTextContextSinks(m_pFocusContext);
   InvalidateHotPathStateCache();
   const SrfFocusSnapshot newFocus = CaptureFocusSnapshot(m_pFocusContext);
   std::wstring line = L"old=";
@@ -630,7 +654,7 @@ void CSrfTip::CancelCompositionEdit(TfEditCookie ec) {
     (void)range->SetText(ec, 0, L"", 0);
     range->Release();
   }
-  const HRESULT endHr = m_pComposition->EndComposition(ec);
+  const HRESULT endHr = FinishCompositionPreservingText(ec);
   if (SUCCEEDED(endHr)) {
     // EndComposition does not require a termination callback. Drop our
     // references explicitly so EnsureEngineInputReady can accept the next key.
@@ -639,8 +663,9 @@ void CSrfTip::CancelCompositionEdit(TfEditCookie ec) {
       SrfTsfDebugLog(L"CancelCompositionEdit EndComposition OK + ClearCompositionBufferState");
     }
   } else {
-    // 仍清本地缓冲，减轻「幽灵拼音」；ITfComposition 由 OnCompositionTerminated 或后续路径释放
-    ClearCompositionBufferState();
+    // Cleanup retries hold the original object. Do not keep it attached and
+    // block new input while waiting for the host to grant another lock.
+    ReleaseCompositionState();
     if (SrfTsfDebugTraceEnabled()) {
       wchar_t buf[96] = {};
       swprintf_s(buf, L"CancelCompositionEdit EndComposition FAILED hr=0x%08lX, cleared buffer anyway",
@@ -846,14 +871,13 @@ void CSrfTip::ClearCompositionBufferState() {
 }
 
 void CSrfTip::ReleaseCompositionObjects() {
-  if (m_pComposition) {
-    m_pComposition->Release();
-    m_pComposition = nullptr;
-  }
-  if (m_pCompositionContext) {
-    m_pCompositionContext->Release();
-    m_pCompositionContext = nullptr;
-  }
+  ITfComposition* composition = m_pComposition;
+  ITfContext* context = m_pCompositionContext;
+  m_pComposition = nullptr;
+  m_pCompositionContext = nullptr;
+  // COM Release can reenter a host callback. Detach both identities first.
+  if (composition) composition->Release();
+  if (context) context->Release();
 }
 
 void CSrfTip::ReleaseCompositionState() {

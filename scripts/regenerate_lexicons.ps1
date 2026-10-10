@@ -23,9 +23,9 @@ finally {
     Pop-Location
 }
 
-python (Join-Path $PSScriptRoot 'merge_zh_ext_lexicons.py')
+python (Join-Path $PSScriptRoot 'optimize_lexicons.py')
 if ($LASTEXITCODE -ne 0) {
-    throw "merge_zh_ext_lexicons.py failed with exit code $LASTEXITCODE"
+    throw "optimize_lexicons.py failed with exit code $LASTEXITCODE"
 }
 
 python (Join-Path $PSScriptRoot 'build_short_hot_lexicons.py')

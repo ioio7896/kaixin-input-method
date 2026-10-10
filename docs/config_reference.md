@@ -82,7 +82,7 @@ new setting is added or a default changes.
 | `input` | `traditional_output` | `0` | boolean | settings, TSF, engine ranking |
 | `input` | `traditional_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
 | `input` | `game_mode_hotkey` | `Ctrl+Shift+Alt+G` | Configurable explicit game chat switch; disabled in `passthrough` and `chinese` game modes; an existing explicit `off` is preserved | settings, TSF |
-| `compatibility` | `game_input_mode` | `manual` | `manual` starts games in keyboard pass-through; `passthrough` never enables IME; `chinese` always enables Chinese; `auto_text` recognizes writable native Edit/RichEdit controls only | settings, TSF |
+| `compatibility` | `game_input_mode` | `manual` | `manual` starts games in keyboard pass-through; `passthrough` never enables IME; `chinese` always enables Chinese; `auto_text` recognizes writable native Edit/RichEdit, explicit TSF text scopes with valid layout, and UI Automation editable controls; unknown fields remain passive | settings, TSF |
 | `app:<process>` | `game_input_mode` | inherited | Same modes, or `inherit`; saved independently per game along with tested commit transport and candidate placement | settings, TSF |
 | `input` | `temporary_ascii_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
 | `input` | `hotkey_scope` | `disabled_in_game` | `global`, `text_only`, `disabled_in_game`, or `per_app`; controls ordinary TSF IME hotkeys; games always suppress these and retain only the explicitly configured game chat switch | TSF |
@@ -136,7 +136,7 @@ Fullscreen display notes:
 | Per-game candidate overlay | Set `[app:<process>] policy=show_ui`, or equivalently `ascii_mode=0`, `hide_ui=0`, and `candidate_topmost=1`. |
 | Recommended game profile | The settings app writes `policy=show_ui`, `game_profile=compact`, `commit_transport=tsf`, and `overlay_backend=auto`; the test wizard can then switch to Unicode SendInput or clipboard paste as real fallback steps. |
 | Per-game overlay placement | Use `overlay_anchor`, logical-pixel offsets, percentage scale, and `overlay_monitor`; `auto` follows the game window/display. |
-| Overlay backend selection | `auto` keeps low-latency in-process rendering for ordinary windowed games and switches to the independent helper for fullscreen/UI-less hosts; use `external` to force the helper during troubleshooting. |
+| Overlay backend selection | `auto` chooses an in-process or independent renderer; UI-less host visibility requests take precedence. `external` chooses the backend, while `overlay_force_ui=1` separately opts into overriding host hiding. |
 | Per-game commit fallback | Set `[app:<process>] commit_transport=clipboard_paste` or `unicode_sendinput` only for games that do not accept TSF commits. |
 | Best target | Borderless/windowed fullscreen games; exclusive fullscreen may prevent ordinary topmost windows from appearing above the game. |
 
@@ -149,3 +149,27 @@ Font and clipboard notes:
 | Clipboard background capture | Disabled by default. Set `[clipboard] background_enabled=1` to opt in to a listener/poller that writes text history to the local DPAPI-protected SQLite database on Windows. |
 | Global privacy mode | `[privacy] enabled=1` forces ASCII input, suppresses candidates and learning, and prevents clipboard capture or history disclosure. |
 | Clipboard on-demand capture | Opening the clipboard manager, pressing refresh, or using `vvu` reads the current system text clipboard once even when background capture is off. |
+
+Game chat controls (configuration version 14):
+
+| Section | Key | Default | Behavior |
+| --- | --- | --- | --- |
+| `compatibility` / `app:<process>` | `game_enter_behavior` | `auto` / inherited | `auto` keeps Chinese while an editable field is verified; unknown manual fields return to pass-through. `close` always returns to pass-through on empty Enter; `stay` retains chat. Enter with preedit selects a candidate first. |
+| `compatibility` / `app:<process>` | `game_auto_uia` | `1` / inherited | Background, read-only UI Automation detection. Providers without writable Edit/ValuePattern evidence are not automatically enabled. |
+| `compatibility` / `app:<process>` | `game_status_indicator` | `1` / inherited | Brief non-activating chat feedback plus a candidate mode tag. UI-less hosts suppress the separate notification. |
+| `app:<process>` | `game_chat_open_key` | `off` | A key or combination such as `Enter`, `T`, `Y`. The opening event belongs to the game; wait up to 1.2 seconds for editable-field evidence. |
+| `app:<process>` | `game_chat_close_key` | `Escape` | Close an empty chat session and pass the key to the game. With preedit, Escape cancels preedit first. |
+| `app:<process>` | `overlay_force_ui` | `0` | Explicitly override `pbShow=FALSE` / `Show(FALSE)` for that game. Can cause duplicate candidate UI if the game renders its own list; does not guarantee exclusive-fullscreen coverage. |
+| `app:<process>` | `game_tested_display_mode` | `unverified` | Player-confirmed `windowed`, `borderless`, or `exclusive`. Never inferred from window geometry. |
+| `app:<process>` | `game_tested_game_version` | empty | Optional user-entered game version. |
+| `app:<process>` | `game_tested_input`, `game_tested_candidate`, `game_tested_commit`, `game_tested_exit` | `0` | Separate user-confirmed wizard results. Automated builds do not mark games as verified. |
+
+Per-app `game_enter_behavior`, `game_auto_uia` and `game_status_indicator` accept `inherit`.
+The TSF path checks the actual focused context, read-only state, explicit chat/search/email/URL input scope and text layout. A writable default context alone is not sufficient.
+Automation evidence is bound to the root window, PID, native focus, TSF context and focus generation; stale evidence over 350 ms is rejected. The key path only polls cached results.
+Candidate anchor `auto` now tries trusted caret/field geometry before the existing safe game placement; explicit fixed anchors and display overrides remain available.
+Shared Unity/SDL/GLFW classes alone no longer classify an unknown application as a game.
+Explicit commit transports do not silently switch delivery methods. `sent_unconfirmed` means events were accepted by Windows, not that the game displayed Chinese. Focus cancellation and partial delivery are never automatically replayed.
+Clipboard restoration runs later on the originating STA message loop and restores only the clipboard sequence belonging to this paste; a second paste while restoration is pending reports busy. There is no fixed sleep under the TSF edit lock.
+
+Implementation and validation scope: [game chat optimization](game-chat-optimization.md).

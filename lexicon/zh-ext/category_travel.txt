@@ -1,0 +1,57 @@
+# 开心离线输入法分类补充：旅游订票
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+登机口	deng ji kou	6107
+中转航班	zhong zhuan hang ban	6100
+亲子游	qin zi you	6100
+住宿安排	zhu su an pai	6100
+值机手续	zhi ji shou xu	6100
+出发大厅	chu fa da ting	6100
+出发时间	chu fa shi jian	6100
+出游计划	chu you ji hua	6100
+到达大厅	dao da da ting	6100
+到达时间	dao da shi jian	6100
+周边游	zhou bian you	6100
+托运行李	tuo yun xing li	6100
+护照换发	hu zhao huan fa	6100
+护照有效期	hu zhao you xiao qi	6100
+接机服务	jie ji fu wu	6100
+改签费用	gai qian fei yong	6100
+旅游保险	lv you bao xian	6100
+旅游攻略	lv you gong lve	6100
+旅游旺季	lv you wang ji	6100
+旅游淡季	lv you dan ji	6100
+旅游路线	lv you lu xian	6100
+旅行计划	lv xing ji hua	6100
+旅行预算	lv xing yu suan	6100
+景区停车场	jing qu ting che chang	6100
+景区入口	jing qu ru kou	6100
+景区出口	jing qu chu kou	6100
+景区门票	jing qu men piao	6100
+景点预约	jing dian yu yue	6100
+机场接送	ji chang jie song	6100
+机票预订	ji piao yu ding	6100
+游客中心	you ke zhong xin	6100
+电子门票	dian zi men piao	6100
+签证申请	qian zheng shen qing	6100
+网上值机	wang shang zhi ji	6100
+自由行	zi you xing	6100
+航班动态	hang ban dong tai	6100
+航班取消	hang ban qu xiao	6100
+航班延误	hang ban yan wu	6100
+航班查询	hang ban cha xun	6100
+行李提取	xing li ti qu	6100
+行李额度	xing li e du	6100
+行程单	xing cheng dan	6100
+行程安排	xing cheng an pai	6100
+跟团游	gen tuan you	6100
+退改签	tui gai qian	6100
+退票手续费	tui piao shou xu fei	6100
+送机服务	song ji fu wu	6100
+酒店预订	jiu dian yu ding	6100
+门票预订	men piao yu ding	6100
+随身行李	sui shen xing li	6100
+登机牌	deng ji pai	4088
+自驾游	zi jia you	2262

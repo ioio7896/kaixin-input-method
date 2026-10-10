@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：装修家居
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+全包装修	quan bao zhuang xiu	6100
+全屋定制	quan wu ding zhi	6100
+半包装修	ban bao zhuang xiu	6100
+台面安装	tai mian an zhuang	6100
+吊顶安装	diao ding an zhuang	6100
+地板踢脚线	di ban ti jiao xian	6100
+地漏防臭	di lou fang chou	6100
+地面找平	di mian zhao ping	6100
+墙面刷漆	qiang mian shua qi	6100
+墙面找平	qiang mian zhao ping	6100
+定制柜体	ding zhi gui ti	6100
+室内通风	shi nei tong feng	6100
+家具尺寸	jia ju chi cun	6100
+家具组装	jia ju zu zhuang	6100
+家具配送	jia ju pei song	6100
+干湿分离	gan shi fen li	6100
+开关插座	kai guan cha zuo	6100
+插座位置	cha zuo wei zhi	6100
+施工保护	shi gong bao hu	6100
+智能马桶	zhi neng ma tong	6100
+木地板铺装	mu di ban pu zhuang	6100
+橱柜安装	chu gui an zhuang	6100
+水电改造	shui dian gai zao	6100
+清包装修	qing bao zhuang xiu	6100
+灯具安装	deng ju an zhuang	6100
+环保材料	huan bao cai liao	6100
+瓷砖铺贴	ci zhuan pu tie	6100
+甲醛检测	jia quan jian ce	6100
+窗帘安装	chuang lian an zhuang	6100
+窗帘轨道	chuang lian gui dao	6100
+装修合同	zhuang xiu he tong	6100
+装修报价	zhuang xiu bao jia	6100
+装修方案	zhuang xiu fang an	6100
+装修材料	zhuang xiu cai liao	6100
+装修污染	zhuang xiu wu ran	6100
+装修进度	zhuang xiu jin du	6100
+装修预算	zhuang xiu yu suan	6100
+装修风格	zhuang xiu feng ge	6100
+装修验收	zhuang xiu yan shou	6100
+软装搭配	ruan zhuang da pei	6100
+门窗安装	men chuang an zhuang	6100
+闭水试验	bi shui shi yan	6100
+防水施工	fang shui shi gong	6100
+防水验收	fang shui yan shou	6100
+隔音材料	ge yin cai liao	6100
+马桶安装	ma tong an zhuang	6100
+施工现场	shi gong xian chang	2212
+淋浴房	lin yu fang	821
+保温材料	bao wen cai liao	156
+浴室柜	yu shi gui	56

@@ -1,0 +1,50 @@
+# 开心离线输入法分类补充：历史考古
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+文化遗产	wen hua yi chan	9720
+文物保护	wen wu bao hu	7914
+地方志	di fang zhi	6885
+世界文化遗产	shi jie wen hua yi chan	6100
+历史叙事	li shi xu shi	6100
+历史建筑	li shi jian zhu	6100
+历史教育	li shi jiao yu	6100
+历史档案	li shi dang an	6100
+历史研究	li shi yan jiu	6100
+历史街区	li shi jie qu	6100
+口述历史	kou shu li shi	6100
+古代交通	gu dai jiao tong	6100
+古代制度	gu dai zhi du	6100
+古代社会	gu dai she hui	6100
+古代经济	gu dai jing ji	6100
+古代贸易	gu dai mao yi	6100
+古城保护	gu cheng bao hu	6100
+古建筑保护	gu jian zhu bao hu	6100
+古籍修复	gu ji xiu fu	6100
+古籍整理	gu ji zheng li	6100
+古籍版本	gu ji ban ben	6100
+史料分析	shi liao fen xi	6100
+史料整理	shi liao zheng li	6100
+墓葬形制	mu zang xing zhi	6100
+年代测定	nian dai ce ding	6100
+文化遗址	wen hua yi zhi	6100
+文物修复	wen wu xiu fu	6100
+文物出土	wen wu chu tu	6100
+文物展览	wen wu zhan lan	6100
+文物断代	wen wu duan dai	6100
+文物鉴定	wen wu jian ding	6100
+文献校勘	wen xian jiao kan	6100
+方志编纂	fang zhi bian zuan	6100
+石器工具	shi qi gong ju	6100
+碑刻拓片	bei ke ta pian	6100
+考古发掘	kao gu fa jue	6100
+考古调查	kao gu diao cha	6100
+考古遗址	kao gu yi zhi	6100
+陶瓷器物	tao ci qi wu	6100
+青铜器物	qing tong qi wu	6100
+非物质文化遗产	fei wu zhi wen hua yi chan	6100
+历史地理	li shi di li	6000
+历史文献	li shi wen xian	6000
+古代文明	gu dai wen ming	6000
+史料考证	shi liao kao zheng	6000

@@ -1,4 +1,5 @@
 #include "wintranslator_protocol.h"
+#include "translation_response.h"
 
 namespace {
 
@@ -67,9 +68,6 @@ bool WideTextToUtf8(const std::wstring& text, std::string* output) {
 
 std::filesystem::path FindWinTranslatorExecutable() {
   std::vector<std::filesystem::path> candidates;
-  wchar_t configured[MAX_PATH] = {};
-  const DWORD configuredLength = GetEnvironmentVariableW(L"WINTRANSLATOR_EXE", configured, MAX_PATH);
-  if (configuredLength > 0 && configuredLength < MAX_PATH) candidates.emplace_back(configured);
 
   wchar_t localAppData[MAX_PATH] = {};
   const DWORD localLength = GetEnvironmentVariableW(L"LOCALAPPDATA", localAppData, MAX_PATH);
@@ -80,11 +78,27 @@ std::filesystem::path FindWinTranslatorExecutable() {
     const DWORD iniLength = GetPrivateProfileStringW(L"tools", L"wintranslator_path", L"", iniPath,
                                                       MAX_PATH, configPath.c_str());
     if (iniLength > 0 && iniLength < MAX_PATH) candidates.emplace_back(iniPath);
-    candidates.push_back(localRoot / L"Programs" / L"WinTranslator" / L"WinTranslator.exe");
+
   }
 
+  wchar_t registered[32768] = {}; DWORD registeredBytes = sizeof(registered);
+  if (RegGetValueW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\hy-mt2-desktop.exe",
+      nullptr, RRF_RT_REG_SZ, nullptr, registered, &registeredBytes) == ERROR_SUCCESS) candidates.emplace_back(registered);
+  for (const wchar_t* variable : {L"HYMT_TRANSLATOR_EXE", L"WINTRANSLATOR_EXE"}) {
+    wchar_t configured[MAX_PATH] = {};
+    const DWORD length = GetEnvironmentVariableW(variable, configured, MAX_PATH);
+    if (length > 0 && length < MAX_PATH) candidates.emplace_back(configured);
+  }
   const auto moduleDir = ModuleDirFromAddress(reinterpret_cast<const void*>(&FindWinTranslatorExecutable));
-  if (!moduleDir.empty()) candidates.push_back(moduleDir / L"WinTranslator.exe");
+  if (!moduleDir.empty()) {
+    candidates.push_back(moduleDir / L"hy-mt2-desktop.exe");
+    candidates.push_back(moduleDir / L"WinTranslator.exe");
+  }
+  if (localLength > 0 && localLength < MAX_PATH) {
+    const auto localRoot = std::filesystem::path(localAppData);
+    candidates.push_back(localRoot / L"Programs" / L"Hy-MT2" / L"hy-mt2-desktop.exe");
+    candidates.push_back(localRoot / L"Programs" / L"WinTranslator" / L"WinTranslator.exe");
+  }
   for (const auto& candidate : candidates) {
     std::error_code ec;
     if (std::filesystem::is_regular_file(candidate, ec)) return candidate;
@@ -92,32 +106,48 @@ std::filesystem::path FindWinTranslatorExecutable() {
   return {};
 }
 
-bool SendWinTranslatorRequestOnce(const std::string& request) {
-  if (!WaitNamedPipeW(wintranslator_protocol::kRequestPipe,
-                      wintranslator_protocol::kProbeTimeoutMs)) return false;
-  HANDLE pipe = CreateFileW(wintranslator_protocol::kRequestPipe, GENERIC_READ | GENERIC_WRITE, 0, nullptr,
-                            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-  if (pipe == INVALID_HANDLE_VALUE) return false;
-
-  DWORD written = 0;
-  const BOOL writeOk = WriteFile(pipe, request.data(), static_cast<DWORD>(request.size()), &written, nullptr);
-  if (!writeOk || written != request.size()) {
-    CloseHandle(pipe);
-    return false;
+bool TranslationPipeIo(HANDLE pipe, bool writing, void* buffer, DWORD size, DWORD* transferred) {
+  OVERLAPPED io = {}; io.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+  if (!io.hEvent) return false;
+  const BOOL started = writing ? WriteFile(pipe, buffer, size, nullptr, &io) : ReadFile(pipe, buffer, size, nullptr, &io);
+  const DWORD error = started ? ERROR_SUCCESS : GetLastError();
+  bool success = false;
+  if (started || error == ERROR_IO_PENDING) {
+    success = GetOverlappedResultEx(pipe, &io, transferred, 2500, FALSE) != FALSE;
+    if (!success) {
+      CancelIoEx(pipe, &io);
+      GetOverlappedResult(pipe, &io, transferred, TRUE); // buffers must outlive cancellation
+    }
   }
-  // Do not treat a malformed or rejected request as a successful dispatch.
-  // This runs on the background launcher thread and never blocks TSF input.
-  char response[512] = {};
-  DWORD read = 0;
-  const BOOL readOk = ReadFile(pipe, response, sizeof(response) - 1, &read, nullptr);
+  CloseHandle(io.hEvent); return success;
+}
+bool SendWinTranslatorRequestOnce(const std::string& request, const std::wstring& pipeName, const std::string& expectedId) {
+  if (!WaitNamedPipeW(pipeName.c_str(), wintranslator_protocol::kProbeTimeoutMs)) return false;
+  HANDLE pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                            OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+  if (pipe == INVALID_HANDLE_VALUE) return false;
+  DWORD written = 0;
+  if (!TranslationPipeIo(pipe, true, const_cast<char*>(request.data()), static_cast<DWORD>(request.size()), &written) || written != request.size()) {
+    CloseHandle(pipe); return false;
+  }
+  std::string response; bool complete = false;
+  const ULONGLONG deadline = GetTickCount64() + 3000;
+  while (response.size() < 64 * 1024 && GetTickCount64() < deadline) {
+    char buffer[4096]; DWORD count = 0;
+    if (!TranslationPipeIo(pipe, false, buffer, sizeof(buffer), &count) || count == 0) break;
+    const std::string_view part(buffer, count); const auto end = part.find('\n');
+    response.append(part.substr(0, end));
+    if (end != std::string_view::npos) { complete = true; break; }
+  }
   CloseHandle(pipe);
-  return readOk && read > 0 && std::string_view(response, read).find("\"ok\":true") != std::string_view::npos;
+  return complete && translation_response::accepted(response, expectedId, pipeName == wintranslator_protocol::kHyMtRequestPipe);
 }
 
 bool LaunchWinTranslator(const std::filesystem::path& executable) {
   if (executable.empty()) return false;
-  const HINSTANCE launched = ShellExecuteW(nullptr, L"open", executable.c_str(), nullptr,
-                                           executable.parent_path().c_str(), SW_SHOWNORMAL);
+  const bool hyMt = _wcsicmp(executable.filename().c_str(), L"WinTranslator.exe") != 0;
+  const HINSTANCE launched = ShellExecuteW(nullptr, L"open", executable.c_str(), hyMt ? L"--ime-background" : nullptr,
+                                           executable.parent_path().c_str(), hyMt ? SW_HIDE : SW_SHOWNORMAL);
   return reinterpret_cast<INT_PTR>(launched) > 32;
 }
 
@@ -125,8 +155,11 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
                                 uint64_t focusGeneration) {
   if (text.empty() || !targetHwnd) return false;
 
-  const bool pipeReady = WaitNamedPipeW(wintranslator_protocol::kRequestPipe, 0) != FALSE;
   const auto executable = FindWinTranslatorExecutable();
+  const bool hyMt = WaitNamedPipeW(wintranslator_protocol::kHyMtRequestPipe, 0) ||
+      (!executable.empty() && _wcsicmp(executable.filename().c_str(), L"WinTranslator.exe") != 0);
+  const std::wstring pipeName = hyMt ? wintranslator_protocol::kHyMtRequestPipe : wintranslator_protocol::kRequestPipe;
+  const bool pipeReady = WaitNamedPipeW(pipeName.c_str(), 0) != FALSE;
   if (!pipeReady && executable.empty()) return false;
 
   DWORD targetProcessId = 0;
@@ -135,29 +168,38 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
       g_candidateTranslationRequestCounter.fetch_add(1, std::memory_order_relaxed);
   const std::wstring requestId = std::to_wstring(GetCurrentProcessId()) + L"-" +
                                  std::to_wstring(GetTickCount64()) + L"-" + std::to_wstring(counter);
+  std::wstring target = L"auto-opposite";
+  wchar_t localRoot[MAX_PATH] = {}, language[64] = {};
+  if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
+    const auto ini = std::filesystem::path(localRoot) / L"kaixin" / L"kaixin.ini";
+    GetPrivateProfileStringW(L"tools", L"translate_target_language", L"auto-opposite", language, 64, ini.c_str());
+    target = language;
+  }
   const std::wstring json = L"{\"protocol_version\":" +
       std::to_wstring(wintranslator_protocol::kVersion) + L",\"request_id\":\"" + requestId +
       L"\",\"action\":\"translate\",\"text\":\"" + JsonEscapeTranslationText(text) +
-      L"\",\"source\":\"auto\",\"target\":\"auto-opposite\","
+      L"\",\"source\":\"auto\",\"target\":\"" + JsonEscapeTranslationText(target) + L"\","
       L"\"origin\":\"kaixin-ime-candidate\",\"target_hwnd\":" +
       std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) +
       L",\"target_process_id\":" + std::to_wstring(targetProcessId) +
       L",\"result_action\":\"show\",\"interactive\":true,"
-      L"\"presentation\":\"full\",\"delivery\":\"show\","
+      L"\"presentation\":\"compact\",\"delivery\":\"show\","
       L"\"focus_generation\":" + std::to_wstring(focusGeneration) +
       L",\"replace_selection\":false}";
+  std::string expectedId;
+  if (!WideTextToUtf8(requestId, &expectedId)) return false;
   std::string request;
   if (!WideTextToUtf8(json, &request)) return false;
   if (request.size() + 1 > wintranslator_protocol::kMaximumRequestBytes) return false;
   request.push_back('\n');
 
   try {
-    std::thread([request = std::move(request), executable]() {
-      if (SendWinTranslatorRequestOnce(request)) return;
+    std::thread([request = std::move(request), executable, pipeName, expectedId]() {
+      if (SendWinTranslatorRequestOnce(request, pipeName, expectedId)) return;
       if (!LaunchWinTranslator(executable)) return;
       const ULONGLONG deadline = GetTickCount64() + wintranslator_protocol::kStartupTimeoutMs;
       while (GetTickCount64() < deadline) {
-        if (SendWinTranslatorRequestOnce(request)) return;
+        if (SendWinTranslatorRequestOnce(request, pipeName, expectedId)) return;
         Sleep(120);
       }
     }).detach();
@@ -189,6 +231,8 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   // compatibility is active; stealing only the key-down edge can also make
   // exclusive-fullscreen games lose their keyboard/focus state.
   const bool gameCompatibilityActive = IsGameHotkeyPassthroughActive();
+  if (gameCompatibilityActive && m_gameChatActive && m_pKeySink &&
+      m_pKeySink->m_pendingKeyEdits.Pending() && (vk == VK_RETURN || vk == VK_ESCAPE)) return true;
   if (gameCompatibilityActive && IsVkShift(vk)) {
     m_shiftTapActive = false;
     m_shiftTapUsedWithOtherKey = false;

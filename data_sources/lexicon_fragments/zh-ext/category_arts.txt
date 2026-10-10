@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：文娱艺术
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+音乐剧	yin yue ju	9363
+综艺节目	zong yi jie mu	8901
+电影票	dian ying piao	7625
+乐器演奏	yue qi yan zou	6100
+书法练习	shu fa lian xi	6100
+入场检票	ru chang jian piao	6100
+剧场演出	ju chang yan chu	6100
+剧情简介	ju qing jian jie	6100
+剧情讨论	ju qing tao lun	6100
+剧集更新	ju ji geng xin	6100
+博物馆讲解	bo wu guan jiang jie	6100
+博物馆预约	bo wu guan yu yue	6100
+吉他和弦	ji ta he xian	6100
+国画创作	guo hua chuang zuo	6100
+声乐训练	sheng yue xun lian	6100
+展览导览	zhan lan dao lan	6100
+展览预约	zhan lan yu yue	6100
+座位选择	zuo wei xuan ze	6100
+手工制作	shou gong zhi zuo	6100
+插画设计	cha hua she ji	6100
+文创产品	wen chuang chan pin	6100
+文化活动	wen hua huo dong	6100
+文艺演出	wen yi yan chu	6100
+歌单分享	ge dan fen xiang	6100
+歌曲翻唱	ge qu fan chang	6100
+水彩绘画	shui cai hui hua	6100
+油画创作	you hua chuang zuo	6100
+演出场地	yan chu chang di	6100
+演出时间	yan chu shi jian	6100
+演出票	yan chu piao	6100
+演唱会门票	yan chang hui men piao	6100
+电子票	dian zi piao	6100
+电影上映	dian ying shang ying	6100
+电影影评	dian ying ying ping	6100
+电影排片	dian ying pai pian	6100
+电影预告	dian ying yu gao	6100
+电视剧集	dian shi ju ji	6100
+画展门票	hua zhan men piao	6100
+票务平台	piao wu ping tai	6100
+美术展览	mei shu zhan lan	6100
+舞台表演	wu tai biao yan	6100
+舞蹈演出	wu dao yan chu	6100
+艺术展览	yi shu zhan lan	6100
+节目预告	jie mu yu gao	6100
+话剧演出	hua ju yan chu	6100
+钢琴练习	gang qin lian xi	6100
+音乐专辑	yin yue zhuan ji	6100
+音乐推荐	yin yue tui jian	6100
+音乐节门票	yin yue jie men piao	6100
+艺术创作	yi shu chuang zuo	5616

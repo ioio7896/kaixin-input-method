@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：宠物养护
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+体内驱虫	ti nei qu chong	6100
+体外驱虫	ti wai qu chong	6100
+养犬登记	yang quan deng ji	6100
+口腔清洁	kou qiang qing jie	6100
+宠物体检	chong wu ti jian	6100
+宠物保险	chong wu bao xian	6100
+宠物出行	chong wu chu xing	6100
+宠物医院	chong wu yi yuan	6100
+宠物寄养	chong wu ji yang	6100
+宠物应激	chong wu ying ji	6100
+宠物护理	chong wu hu li	6100
+宠物指甲	chong wu zhi jia	6100
+宠物掉毛	chong wu diao mao	6100
+宠物排泄	chong wu pai xie	6100
+宠物梳毛	chong wu shu mao	6100
+宠物洗护	chong wu xi hu	6100
+宠物洗澡	chong wu xi zao	6100
+宠物消毒	chong wu xiao du	6100
+宠物牵引	chong wu qian yin	6100
+宠物用品	chong wu yong pin	6100
+宠物疫苗	chong wu yi miao	6100
+宠物登记	chong wu deng ji	6100
+宠物绝育	chong wu jue yu	6100
+宠物美容	chong wu mei rong	6100
+宠物自动喂食	chong wu zi dong wei shi	6100
+宠物航空箱	chong wu hang kong xiang	6100
+宠物营养	chong wu ying yang	6100
+宠物训练	chong wu xun lian	6100
+宠物过敏	chong wu guo min	6100
+宠物运输	chong wu yun shu	6100
+宠物零食	chong wu ling shi	6100
+宠物领养	chong wu ling yang	6100
+宠物食品	chong wu shi pin	6100
+宠物饮水	chong wu yin shui	6100
+宠物饮水机	chong wu yin shui ji	6100
+宠物驱虫	chong wu qu chong	6100
+幼犬粮	you quan liang	6100
+幼猫粮	you mao liang	6100
+成犬粮	cheng quan liang	6100
+成猫粮	cheng mao liang	6100
+流浪动物	liu lang dong wu	6100
+牙齿护理	ya chi hu li	6100
+狗粮	gou liang	6100
+猫抓板	mao zhua ban	6100
+猫爬架	mao pa jia	6100
+猫砂盆	mao sha pen	6100
+猫砂铲	mao sha chan	6100
+猫粮	mao liang	6100
+胸背带	xiong bei dai	6100
+领养协议	ling yang xie yi	6100
+牵引绳	qian yin sheng	902

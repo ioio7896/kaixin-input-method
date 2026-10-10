@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：商超生鲜
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+临期食品	lin qi shi pin	6100
+产品溯源	chan pin su yuan	6100
+产地直供	chan di zhi gong	6100
+会员价格	hui yuan jia ge	6100
+会员积分	hui yuan ji fen	6100
+低脂牛奶	di zhi niu nai	6100
+保质期限	bao zhi qi xian	6100
+储存条件	chu cun tiao jian	6100
+全麦面包	quan mai mian bao	6100
+冷冻保存	leng dong bao cun	6100
+冷冻食品	leng dong shi pin	6100
+冷藏保存	leng cang bao cun	6100
+冷藏食品	leng cang shi pin	6100
+净含量	jing han liang	6100
+净菜加工	jing cai jia gong	6100
+即食食品	ji shi shi pin	6100
+常温食品	chang wen shi pin	6100
+开封保存	kai feng bao cun	6100
+散装食品	san zhuang shi pin	6100
+新鲜水果	xin xian shui guo	6100
+方便食品	fang bian shi pin	6100
+无公害蔬菜	wu gong hai shu cai	6100
+无糖酸奶	wu tang suan nai	6100
+时令水果	shi ling shui guo	6100
+有机蔬菜	you ji shu cai	6100
+杂粮米	za liang mi	6100
+植物奶	zhi wu nai	6100
+水果成熟度	shui guo cheng shu du	6100
+水果礼盒	shui guo li he	6100
+活鲜水产	huo xian shui chan	6100
+熟食卤味	shu shi lu wei	6100
+燕麦奶	yan mai nai	6100
+生产日期	sheng chan ri qi	6100
+生鲜蔬菜	sheng xian shu cai	6100
+生鲜超市	sheng xian chao shi	6100
+生鲜配送	sheng xian pei song	6100
+肉类分切	rou lei fen qie	6100
+脱脂牛奶	tuo zhi niu nai	6100
+膳食纤维	shan shi xian wei	6100
+营养成分	ying yang cheng fen	6100
+蔬菜拼盘	shu cai pin pan	6100
+计量称重	ji liang cheng zhong	6100
+豆奶饮料	dou nai yin liao	6100
+购物清单	gou wu qing dan	6100
+超市会员	chao shi hui yuan	6100
+进口水果	jin kou shui guo	6100
+速冻水饺	su dong shui jiao	6100
+速冻汤圆	su dong tang yuan	6100
+配料表	pei liao biao	6100
+食品批次	shi pin pi ci	6100
+食品标签	shi pin biao qian	6100

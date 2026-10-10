@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：天气季节
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+天气预报	tian qi yu bao	8998
+降水量	jiang shui liang	8904
+降雨量	jiang yu liang	8675
+空气质量	kong qi zhi liang	8116
+体感温度	ti gan wen du	6100
+入梅出梅	ru mei chu mei	6100
+冰雹天气	bing bao tian qi	6100
+出门带伞	chu men dai san	6100
+台风预警	tai feng yu jing	6100
+回南天气	hui nan tian qi	6100
+多云转晴	duo yun zhuan qing	6100
+大雾预警	da wu yu jing	6100
+大风预警	da feng yu jing	6100
+天气变化	tian qi bian hua	6100
+天气预警	tian qi yu jing	6100
+季节交替	ji jie jiao ti	6100
+寒潮预警	han chao yu jing	6100
+小雨转阴	xiao yu zhuan yin	6100
+强对流天气	qiang dui liu tian qi	6100
+春季过敏	chun ji guo min	6100
+晴转多云	qing zhuan duo yun	6100
+暴雨预警	bao yu yu jing	6100
+最高气温	zui gao qi wen	6100
+梅雨季节	mei yu ji jie	6100
+气温变化	qi wen bian hua	6100
+沙尘天气	sha chen tian qi	6100
+注意保暖	zhu yi bao nuan	6100
+注意防晒	zhu yi fang shai	6100
+空气湿度	kong qi shi du	6100
+紫外线指数	zi wai xian zhi shu	6100
+花粉浓度	hua fen nong du	6100
+衣物晾晒	yi wu liang shai	6100
+路面湿滑	lu mian shi hua	6100
+路面结冰	lu mian jie bing	6100
+防寒保暖	fang han bao nuan	6100
+防晒措施	fang shai cuo shi	6100
+防暑降温	fang shu jiang wen	6100
+防水外套	fang shui wai tao	6100
+阴转多云	yin zhuan duo yun	6100
+阵雨雷雨	zhen yu lei yu	6100
+降雨概率	jiang yu gai lv	6100
+雨衣雨鞋	yu yi yu xie	6100
+雨雪天气	yu xue tian qi	6100
+雷雨天气	lei yu tian qi	6100
+霜冻预警	shuang dong yu jing	6100
+风力等级	feng li deng ji	6100
+风向变化	feng xiang bian hua	6100
+高温预警	gao wen yu jing	6100
+最低气温	zui di qi wen	3534

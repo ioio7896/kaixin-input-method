@@ -16,7 +16,6 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data_sources" / "lexicon_fragments" / "zh-ext"
 T2S = OpenCC("t2s")
 POOL_SIZE = 500_000
-SIZE = 5_000
 
 MIXED_CODES = {
     "AIGC": "aigc", "ChatGPT": "chat gpt", "DeepSeek": "deep seek", "GPU": "gpu",
@@ -95,6 +94,10 @@ def score(phrase: str, rank: int, keywords: tuple[str, ...]) -> int:
 
 
 def write(path: Path, title: str, seeds: list[str], keywords: tuple[str, ...], pool: list[tuple[str, int]]) -> None:
+    # Domain membership is the maintained seed list. Frequency may order a
+    # category, but must never pull unrelated common words in to fill a quota.
+    from optimize_lexicons import read_rows
+    published = {phrase: (code, weight) for phrase, code, weight in read_rows(ROOT / "lexicon/zh-ext/technology.txt")}
     selected: list[tuple[str, int]] = []
     seen: set[str] = set()
     for phrase in seeds:
@@ -103,17 +106,14 @@ def write(path: Path, title: str, seeds: list[str], keywords: tuple[str, ...], p
             continue
         selected.append((phrase, 1))
         seen.add(phrase)
-    ranked = sorted(((phrase, rank) for phrase, rank in pool if phrase not in seen), key=lambda item: (score(item[0], item[1], keywords), item[1], item[0]))
-    selected.extend(ranked[: max(0, SIZE - len(selected))])
-    if len(selected) != SIZE:
-        raise RuntimeError(f"{path.name}: only generated {len(selected)} rows")
     rows = []
     for phrase, rank in selected:
-        rows.append(f"{phrase}\t{code_for(phrase)}\t{max(1_000, int(round(10_000_000 / math.sqrt(rank))))}")
+        code, weight = published.get(phrase, (code_for(phrase), 7_000))
+        rows.append(f"{phrase}\t{code}\t{min(10_000, weight)}")
     path.write_text(
         f"# 开心输入法扩展词库：{title}\n"
         "# 格式：词语<TAB>全拼或混合输入码<TAB>权重；混合实体保留 ASCII 大小写和符号。\n"
-        "# Source: wordfreq 中文频率排序 + 项目维护的现代技术实体与产品名称。\n"
+        "# Source: 项目维护的技术术语与产品名称清单；不以通用词补足条数。\n"
         + "\n".join(rows) + "\n",
         encoding="utf-8",
         newline="\n",
@@ -124,7 +124,7 @@ def write(path: Path, title: str, seeds: list[str], keywords: tuple[str, ...], p
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.parse_args()
-    pool = candidates()
+    pool = []
     OUT.mkdir(parents=True, exist_ok=True)
     for name, (seeds, keywords) in CATEGORIES.items():
         write(OUT / f"{name}.txt", name, seeds, keywords, pool)

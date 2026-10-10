@@ -178,8 +178,11 @@ def build() -> None:
     )
     chat_keywords = ("谢谢", "辛苦", "稍等", "麻烦", "客气", "怎么", "什么", "哈哈", "收到", "明白", "晚安", "加油", "方便", "回复", "联系", "希望", "祝", "抱歉", "不好意思", "没事", "可以吗", "好吗")
     office_keywords = ("项目", "工作", "会议", "邮件", "文件", "资料", "材料", "数据", "客户", "合同", "预算", "审批", "部门", "安排", "提交", "审核", "进度", "报告", "方案", "系统", "通知", "任务", "计划", "发票", "版本", "测试", "发布")
-    chat = select_ranked(candidates, 5_000, range(3, 9), seeds=CHAT_SEEDS, scorer=lambda p, r: category_score(p, r, chat_keywords))
-    office = select_ranked(candidates, 5_000, range(3, 9), seeds=OFFICE_SEEDS, scorer=lambda p, r: category_score(p, r, office_keywords))
+    # Communication categories are authored expressions, not frequency-pool
+    # quotas. Keep this shared with the focused regeneration command.
+    build_communication_fragments()
+    chat = CHAT_SEEDS
+    office = OFFICE_SEEDS
     four_rows = make_rows(four, 9_000_000)
     # Formal discourse connectors remain available but should not dominate
     # ordinary daily input on the first page.
@@ -188,13 +191,28 @@ def build() -> None:
         for row in four_rows
     ]
     write(BASE / "life_common_4char.txt", "5000 条通用四字短语", "wordfreq 中文频率排序 + 高频现代固定搭配", four_rows)
-    write(BASE / "life_common_phrases_5to8.txt", "5000 条五至八字通用短语", "wordfreq 中文频率排序 + 现代工作与生活固定搭配模板", make_rows(long, 8_000_000))
-    write(EXT_SOURCE / "chat_common_phrases.txt", "5000 条聊天口语短语", "wordfreq 中文频率排序 + 常用聊天表达整理", make_rows(chat, 7_000_000))
-    write(EXT_SOURCE / "office_common_phrases.txt", "5000 条办公沟通短语", "wordfreq 中文频率排序 + 常用办公表达整理", make_rows(office, 7_000_000))
+    write(BASE / "life_common_phrases.txt", f"{len(long)} 条五至八字通用短语", "wordfreq 中文频率排序 + 现代工作与生活固定搭配模板", make_rows(long, 8_000_000))
     from merge_zh_ext_lexicons import merge_lexicons
 
     merge_lexicons()
     print("generated:", "four", len(four), "long", len(long), "chat", len(chat), "office", len(office))
+
+
+def build_communication_fragments() -> None:
+    from optimize_lexicons import read_rows
+    existing = {phrase: (code, weight) for phrase, code, weight in read_rows(ROOT / "lexicon/zh-ext/daily_communication.txt")}
+    EXT_SOURCE.mkdir(parents=True, exist_ok=True)
+    for name, title, seeds in (
+        ("chat_common_phrases.txt", "聊天口语表达", CHAT_SEEDS),
+        ("office_common_phrases.txt", "办公沟通表达", OFFICE_SEEDS),
+    ):
+        rows = []
+        for phrase in dict.fromkeys(seeds):
+            if not valid_phrase(phrase, range(2, 13)):
+                raise ValueError(f"Invalid maintained communication expression: {phrase}")
+            code, score = existing.get(phrase, (reading(phrase), 8_500))
+            rows.append(f"{phrase}\t{code}\t{min(10_000, score)}")
+        write(EXT_SOURCE / name, f"{len(rows)} 条{title}", "项目维护的真实沟通表达；不以通用词补足条数", rows)
 
 
 if __name__ == "__main__":

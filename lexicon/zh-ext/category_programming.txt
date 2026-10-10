@@ -1,0 +1,59 @@
+# 开心离线输入法分类补充：开发编程
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+代码仓库	dai ma cang ku	8800
+代码审查	dai ma shen cha	8800
+代码规范	dai ma gui fan	8800
+依赖管理	yi lai guan li	8800
+包管理器	bao guan li qi	8800
+单元测试	dan yuan ce shi	8800
+开发环境	kai fa huan jing	8800
+性能优化	xing neng you hua	8800
+接口文档	jie kou wen dang	8800
+接口设计	jie kou she ji	8800
+数据结构	shu ju jie gou	8800
+消息队列	xiao xi dui lie	8800
+自动化测试	zi dong hua ce shi	8800
+集成测试	ji cheng ce shi	8800
+代码合并	dai ma he bing	6100
+代码提交	dai ma ti jiao	6100
+代码重构	dai ma zhong gou	6100
+任务队列	ren wu dui lie	6100
+依赖冲突	yi lai chong tu	6100
+内存泄漏	nei cun xie lou	6100
+内存溢出	nei cun yi chu	6100
+分支管理	fen zhi guan li	6100
+发布流水线	fa bu liu shui xian	6100
+合并冲突	he bing chong tu	6100
+响应数据	xiang ying shu ju	6100
+堆栈跟踪	dui zhan gen zong	6100
+并发控制	bing fa kong zhi	6100
+异常处理	yi chang chu li	6100
+异步任务	yi bu ren wu	6100
+性能分析	xing neng fen xi	6100
+接口调用	jie kou diao yong	6100
+接口鉴权	jie kou jian quan	6100
+数据反序列化	shu ju fan xu lie hua	6100
+数据序列化	shu ju xu lie hua	6100
+数据库事务	shu ju ku shi wu	6100
+数据库索引	shu ju ku suo yin	6100
+数据库迁移	shu ju ku qian yi	6100
+断点调试	duan dian tiao shi	6100
+断言失败	duan yan shi bai	6100
+构建工具	gou jian gong ju	6100
+构建脚本	gou jian jiao ben	6100
+查询优化	cha xun you hua	6100
+测试覆盖	ce shi fu gai	6100
+版本依赖	ban ben yi lai	6100
+类型检查	lei xing jian cha	6100
+线程安全	xian cheng an quan	6100
+缓存命中	huan cun ming zhong	6100
+缓存失效	huan cun shi xiao	6100
+编译环境	bian yi huan jing	6100
+请求参数	qing qiu can shu	6100
+错误日志	cuo wu ri zhi	6100
+静态检查	jing tai jian cha	6100
+时间复杂度	shi jian fu za du	6000
+空间复杂度	kong jian fu za du	6000

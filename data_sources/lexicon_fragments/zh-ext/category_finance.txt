@@ -1,0 +1,62 @@
+# 开心离线输入法分类补充：金融投资
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+收益率	shou yi lv	8500
+市盈率	shi ying lv	7248
+交易型基金	jiao yi xing ji jin	6100
+交易账户	jiao yi zhang hu	6100
+债券利率	zhai quan li lv	6100
+债券收益	zhai quan shou yi	6100
+债券期限	zhai quan qi xian	6100
+债券评级	zhai quan ping ji	6100
+债权融资	zhai quan rong zi	6100
+净值估算	jing zhi gu suan	6100
+净资产收益率	jing zi chan shou yi lv	6100
+分红派息	fen hong pai xi	6100
+单位净值	dan wei jing zhi	6100
+回撤幅度	hui che fu du	6100
+基金定投	ji jin ding tou	6100
+基金申购	ji jin shen gou	6100
+基金账户	ji jin zhang hu	6100
+基金赎回	ji jin shu hui	6100
+大额存单	da e cun dan	6100
+存款利率	cun kuan li lv	6100
+定期存款	ding qi cun kuan	6100
+宽基指数	kuan ji zhi shu	6100
+年化收益	nian hua shou yi	6100
+开户申请	kai hu shen qing	6100
+投资回报	tou zi hui bao	6100
+投资收益	tou zi shou yi	6100
+投资期限	tou zi qi xian	6100
+最大回撤	zui da hui che	6100
+波动率	bo dong lv	6100
+流动资产	liu dong zi chan	6100
+现金管理	xian jin guan li	6100
+累计净值	lei ji jing zhi	6100
+股东权益	gu dong quan yi	6100
+股权激励	gu quan ji li	6100
+股权融资	gu quan rong zi	6100
+股权转让	gu quan zhuan rang	6100
+股票回购	gu piao hui gou	6100
+融资成本	rong zi cheng ben	6100
+融资渠道	rong zi qu dao	6100
+融资融券	rong zi rong quan	6100
+融资轮次	rong zi lun ci	6100
+行业指数	hang ye zhi shu	6100
+证券账户	zheng quan zhang hu	6100
+账户注销	zhang hu zhu xiao	6100
+货币基金	huo bi ji jin	6100
+资产负债	zi chan fu zhai	6100
+配股增发	pei gu zeng fa	6100
+非流动资产	fei liu dong zi chan	6100
+风险偏好	feng xian pian hao	6100
+风险承受能力	feng xian cheng shou neng li	6100
+风险提示	feng xian ti shi	6100
+市净率	shi jing lv	6000
+投资组合	tou zi zu he	6000
+指数基金	zhi shu ji jin	6000
+资产配置	zi chan pei zhi	6000
+风险溢价	feng xian yi jia	6000
+可转债	ke zhuan zhai	2196

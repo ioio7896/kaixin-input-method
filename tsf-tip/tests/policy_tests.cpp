@@ -9,8 +9,11 @@
 #include "input_mode_policy.h"
 #include "direct_text_conversion.h"
 #include "game_input_policy.h"
+#include "game_key_ownership.h"
+#include "input_injection_policy.h"
 #include "engine_recovery_policy.h"
 #include "input_session.h"
+#include "tsf_edit_policy.h"
 #include <thread>
 #include <atomic>
 
@@ -21,6 +24,68 @@ void Check(bool condition, const char* message) {
     std::cerr << "FAILED: " << message << '\n';
     std::exit(1);
   }
+}
+
+void TestTsfHostFailureSequences() {
+  // Fault injection: the host writes the entire text, then refuses to end the
+  // composition. Compatibility delivery must observe the write result.
+  std::wstring document;
+  unsigned endingDepth = 0;
+  int writes = 0, finishes = 0, fallbackWrites = 0;
+  const auto result = SrfWriteAndFinishComposition([&]() {
+    ++writes;
+    document += L"你好";
+    return S_OK;
+  }, [&]() {
+    ++finishes;
+    const SrfScopedCompositionEnd ending(endingDepth);
+    Check(endingDepth == 1, "synchronous termination callback recognizes our own end");
+    {
+      const SrfScopedCompositionEnd nested(endingDepth);
+      Check(endingDepth == 2, "nested host callback keeps termination guard active");
+    }
+    Check(endingDepth == 1, "inner cleanup cannot clear outer termination guard");
+    return E_FAIL;
+  });
+  if (result.MayRetryText()) { ++fallbackWrites; document += L"你好"; }
+  Check(document == L"你好" && writes == 1 && finishes == 1 && fallbackWrites == 0,
+        "end failure never resends an already written candidate");
+  Check(result.TextWritten() && FAILED(result.finish) && endingDepth == 0,
+        "write success and cleanup failure remain separate");
+
+  const auto denied = SrfWriteAndFinishComposition([]() { return E_ACCESSDENIED; }, [&]() {
+    ++finishes;
+    return S_OK;
+  });
+  Check(denied.MayRetryText() && finishes == 1, "denied write permits fallback without ending preedit");
+  const auto partial = SrfWriteAndFinishComposition([]() {
+    return HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY);
+  }, [&]() { ++finishes; return S_OK; });
+  Check(!partial.MayRetryText() && finishes == 1, "partially delivered input is never replayed");
+
+  SrfEditSessionOnce callback;
+  SrfInputSession input;
+  const auto epoch = input.Capture();
+  int executions = 0;
+  if (callback.Begin()) {
+    ++executions;
+    Check(!callback.Begin(), "reentrant edit callback cannot replay a key");
+  }
+  Check(!SrfShouldRetryKeyEditSession(callback.Executed()),
+        "host failure after execution cannot queue another delivery");
+  Check(!callback.Begin() && executions == 1, "duplicate async delivery runs at most once");
+  SrfEditSessionOnce queued;
+  Check(SrfShouldRetryKeyEditSession(queued.Executed()), "denied sync lock can fall back asynchronously");
+  input.End();
+  if (queued.Begin() && input.Matches(epoch)) ++executions;
+  Check(executions == 1, "queued old-field key cannot run after session end");
+
+  Check(!SrfSelectionOutsideComposition(S_OK, 0, S_OK, 0), "caret on composition boundary stays active");
+  Check(!SrfSelectionOutsideComposition(S_OK, 1, S_OK, -1), "selection inside preedit stays active");
+  Check(SrfSelectionOutsideComposition(S_OK, -1, S_OK, -1), "caret before preedit ends input");
+  Check(SrfSelectionOutsideComposition(S_OK, 1, S_OK, 1), "caret after preedit ends input");
+  Check(SrfSelectionOutsideComposition(S_OK, -1, S_OK, 1), "selection covering preedit ends input");
+  Check(!SrfSelectionOutsideComposition(E_FAIL, -1, S_OK, 1), "unknown range never falsely ends input");
 }
 
 void TestChineseHalfwidth() {
@@ -44,6 +109,63 @@ void TestChineseHalfwidth() {
 
 void TestGameInputPolicy() {
   using M = SrfGameInputMode;
+  SrfPendingKeyEdits pending;
+  const auto oldEdit = pending.Begin(100);
+  const auto secondEdit = pending.Begin(150);
+  pending.Complete(oldEdit);
+  Check(pending.Pending() && pending.TimedOut(1101), "oldest pending key has a bounded wait");
+  pending.Cancel();
+  const auto newEdit = pending.Begin(1200);
+  pending.Complete(secondEdit);
+  Check(pending.Pending() && !pending.TimedOut(1300), "late cancelled callback cannot consume a new chat edit");
+  pending.Complete(newEdit);
+  Check(!pending.Pending() && !pending.TimedOut(9999), "new chat completes independently after timeout cancellation");
+  SrfGameKeyOwnership ownership;
+  // A speculative test is a read: repeated tests cannot change ownership.
+  Check(!ownership.KeepDown('W', false, true), "fresh W can be handled after chat confirmation");
+  Check(!ownership.PassRelease('W'), "abandoned tests never acquire physical ownership");
+  ownership.ObserveDown('W', false, true);
+  Check(ownership.PassDown('W', false, true), "opening event stays with game even if chat activates before testing");
+  Check(ownership.KeepDown('W', true, true), "W held before chat remains game-owned");
+  ownership.ObserveDown('W', true, false);
+  Check(ownership.KeepDown('W', true, true), "state changes cannot steal an existing repeat");
+  ownership.ObserveUp('W');
+  Check(ownership.PassRelease('W'), "game receives W up after the real trace-up notification");
+  Check(ownership.PassRelease('W'), "repeated release tests are read-only");
+  ownership.ObserveDown('W', false, false);
+  Check(ownership.ConsumeRepeat('W', true, true), "IME ownership lasts until physical release");
+  ownership.ObserveDown(VK_RETURN, false, false);
+  Check(ownership.ConsumeRepeat(VK_RETURN, true, true), "held selection Enter cannot become game-send Enter");
+  ownership.ObserveUp(VK_RETURN);
+  ownership.ObserveDown(VK_RETURN, false, true);
+  Check(!ownership.ConsumeRepeat(VK_RETURN, true, true), "fresh empty Enter belongs to game");
+  Check(!ownership.KeepDown('W', true, true), "a fresh W inside chat is IME-owned");
+  ownership.Reset();
+  Check(ownership.KeepDown('W', true, true), "unknown held key after Alt-Tab stays with game");
+  Check(!ownership.KeepDown(256, true, true), "out-of-range events cannot access key arrays");
+  using E = SrfGameEnterBehavior;
+  Check(!SrfGameExitOnEnter(E::Auto, true), "persistent verified field keeps chat after sending");
+  Check(SrfGameExitOnEnter(E::Auto, false), "unverified manual field returns to game on empty Enter");
+  Check(SrfGameExitOnEnter(E::Close, true), "explicit close overrides persistent field");
+  Check(!SrfGameExitOnEnter(E::Stay, false), "explicit stay supports self-drawn chat");
+  Check(!SrfCandidateHostMayShow(false, false), "UI-less host may take over candidate rendering");
+  Check(SrfCandidateHostMayShow(false, true), "explicit per-game override permits troubleshooting overlay");
+  Check(!SrfClassifyGame(false, false, true), "shared Unity/SDL class does not classify a tool as a game");
+  Check(SrfClassifyGame(true, false, false), "explicit game profile remains authoritative");
+  Check(!SrfGameFocusEvidenceFresh(100, 451), "stale provider response cannot enable chat");
+  Check(!SrfGameFocusEvidenceFresh(0, 10), "missing provider evidence remains passive");
+  Check(!SrfGameFocusEvidenceFresh(100, 99), "future provider timestamp is rejected");
+  Check(SrfIsInjectedTextEvent(VK_PACKET, 0), "Unicode packets do not loop back into pinyin");
+  Check(SrfIsInjectedTextEvent('V', kSrfInjectedInputMarker), "tagged paste events bypass the IME");
+  bool active = true;
+  SrfGameChatPhase phase = SrfGameChatPhase::Editing;
+  { SrfGameCommitScope scope(phase, active);
+    Check(phase == SrfGameChatPhase::Committing, "in-flight write is a distinct chat phase");
+    active = false;
+  }
+  Check(phase == SrfGameChatPhase::Passive, "commit cleanup cannot resurrect a lost chat session");
+  Check(!SrfTsfCommitResult{HRESULT_FROM_WIN32(ERROR_CANCELLED)}.MayRetryText(),
+        "focus cancellation never retries into another window");
   Check(!SrfShouldRetryKeyEditSession(true), "failed or partially committed callback is never replayed");
   Check(SrfShouldRetryKeyEditSession(false), "denied sync lock may queue one async callback");
   Check(SrfGameKeepHeldKey(true, true), "held movement repeats stay with game after opening chat");
@@ -145,6 +267,7 @@ void TestCandidateResultStability() {
 }  // namespace
 
 int main() {
+  TestTsfHostFailureSequences();
   SrfInputSession session;
   const auto pendingKey = session.Capture();
   const auto pendingLookup = session.Capture();

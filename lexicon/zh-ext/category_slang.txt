@@ -1,0 +1,59 @@
+# 开心离线输入法分类补充：网络口语
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+安全感	an quan gan	9503
+太真实了	tai zhen shi le	9300
+笑死我了	xiao si wo le	9300
+归属感	gui shu gan	7496
+人间清醒	ren jian qing xing	6100
+代入感	dai ru gan	6100
+停止内耗	ting zhi nei hao	6100
+健身搭子	jian shen da zi	6100
+先收藏了	xian shou cang le	6100
+反差感	fan cha gan	6100
+在线蹲一个	zai xian dun yi ge	6100
+太好笑了	tai hao xiao le	6100
+太有共鸣了	tai you gong ming le	6100
+太离谱了	tai li pu le	6100
+好运加倍	hao yun jia bei	6100
+学习搭子	xue xi da zi	6100
+小确幸	xiao que xing	6100
+快乐加倍	kuai le jia bei	6100
+快乐源泉	kuai le yuan quan	6100
+情绪价值	qing xu jia zhi	6100
+情绪内耗	qing xu nei hao	6100
+情绪稳定	qing xu wen ding	6100
+感觉被治愈了	gan jue bei zhi yu le	6100
+懂的都懂	dong de dou dong	6100
+我直接好家伙	wo zhi jie hao jia huo	6100
+拒绝内耗	ju jue nei hao	6100
+拿捏住了	na nie zhu le	6100
+旅游搭子	lv you da zi	6100
+日常碎片	ri chang sui pian	6100
+有点上头	you dian shang tou	6100
+有被感动到	you bei gan dong dao	6100
+有被笑到	you bei xiao dao	6100
+松弛感	song chi gan	6100
+氛围感	fen wei gan	6100
+沉浸式体验	chen jin shi ti yan	6100
+沉浸式学习	chen jin shi xue xi	6100
+满满仪式感	man man yi shi gan	6100
+班味	ban wei	6100
+生活碎片	sheng huo sui pian	6100
+电子榨菜	dian zi zha cai	6100
+真是服了你了	zhen shi fu le ni le	6100
+真的绝了	zhen de jue le	6100
+笑不活了	xiao bu huo le	6100
+简直不要太好	jian zhi bu yao tai hao	6100
+说走就走	shuo zou jiu zou	6100
+边界感	bian jie gan	6100
+这也太好看了	zhe ye tai hao kan le	6100
+这波稳了	zhe bo wen le	6100
+这谁顶得住	zhe shui ding de zhu	6100
+钝感力	dun gan li	6100
+饭搭子	fan da zi	6100
+精神状态	jing shen zhuang tai	5743
+搭子	da zi	4746
+参与感	can yu gan	3272

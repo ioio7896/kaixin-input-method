@@ -171,55 +171,34 @@ pub(super) fn data_location_row(
     path: &Path,
     add_actions: impl FnOnce(&mut egui::Ui),
 ) {
-    let palette = fluent_palette(ui);
-    let row = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, 7.0))
-        .show(ui, |ui| {
-            responsive_settings_row(
-                ui,
-                560.0,
-                false,
-                |ui| {
-                    ui.add(
-                        egui::Label::new(
-                            RichText::new(title)
-                                .strong()
-                                .size(SETTINGS_FONT_SETTING_TITLE)
-                                .color(palette.text),
-                        )
-                        .wrap(),
-                    );
-                    ui.add(
-                        egui::Label::new(RichText::new(description).small().color(palette.muted))
-                            .wrap(),
-                    );
-                },
-                |ui| {
-                    let preferred = (ui.available_width() - SETTINGS_BUTTON_WIDTH * 2.0 - 32.0)
-                        .clamp(160.0, 360.0);
-                    let field_width = bounded_control_width(ui, preferred);
-                    let mut readonly_path = path.display().to_string();
-                    ui.add_sized(
-                        [field_width, 24.0],
-                        TextEdit::singleline(&mut readonly_path)
-                            .font(TextStyle::Monospace)
-                            .interactive(false),
-                    );
-                    if outline_button(ui, "复制").clicked() {
-                        ui.ctx().copy_text(readonly_path);
-                    }
-                    add_actions(ui);
-                },
-            );
-        });
-    let y = row.response.rect.bottom();
-    ui.painter().line_segment(
-        [
-            egui::pos2(row.response.rect.left(), y),
-            egui::pos2(row.response.rect.right(), y),
-        ],
-        Stroke::new(1.0, palette.border_subtle),
-    );
+    setting_row(ui, title, description, |ui| {
+        let field_width = path_field_width(ui, 2);
+        let mut readonly_path = path.display().to_string();
+        ui.add_sized(
+            [field_width, SETTINGS_ROW_HEIGHT],
+            TextEdit::singleline(&mut readonly_path)
+                .desired_width((field_width - 8.0).max(1.0))
+                .font(TextStyle::Monospace)
+                .interactive(false),
+        )
+        .on_hover_text(&readonly_path);
+        if outline_button(ui, "复制").clicked() {
+            ui.ctx().copy_text(readonly_path);
+        }
+        add_actions(ui);
+    });
+}
+
+// Keep a useful input width; below this threshold the whole field occupies a
+// line and the browser/actions wrap together beneath it.
+fn path_field_width(ui: &egui::Ui, buttons: usize) -> f32 {
+    let width = ui.available_width();
+    let actions = buttons as f32 * (SETTINGS_BUTTON_WIDTH + ui.spacing().item_spacing.x);
+    if width - actions >= 160.0 {
+        width - actions
+    } else {
+        width.max(1.0)
+    }
 }
 
 pub(super) fn folder_path_row(
@@ -230,13 +209,14 @@ pub(super) fn folder_path_row(
     empty_hint: &str,
 ) {
     setting_row(ui, title, description, |ui| {
-        let preferred = (ui.available_width() - SETTINGS_BUTTON_WIDTH - 16.0).clamp(160.0, 320.0);
-        let field_width = bounded_control_width(ui, preferred);
+        let field_width = path_field_width(ui, 1);
         ui.add_sized(
-            [field_width, 24.0],
-            TextEdit::singleline(value).hint_text(empty_hint),
+            [field_width, SETTINGS_ROW_HEIGHT],
+            TextEdit::singleline(value)
+                .desired_width((field_width - 8.0).max(1.0))
+                .hint_text(empty_hint),
         );
-        if outline_button(ui, "选择").clicked() {
+        if outline_button(ui, "浏览").clicked() {
             if let Some(path) = rfd::FileDialog::new().pick_folder() {
                 *value = path.display().to_string();
             }
@@ -252,16 +232,15 @@ pub(super) fn executable_path_row(
     empty_hint: &str,
 ) {
     setting_row(ui, title, description, |ui| {
-        let buttons = if value.is_empty() { 1.0 } else { 2.0 };
-        let preferred = (ui.available_width()
-            - buttons * (SETTINGS_BUTTON_WIDTH + ui.spacing().item_spacing.x))
-            .clamp(160.0, 320.0);
-        let field_width = bounded_control_width(ui, preferred);
+        let buttons = if value.is_empty() { 1 } else { 2 };
+        let field_width = path_field_width(ui, buttons);
         ui.add_sized(
-            [field_width, 24.0],
-            TextEdit::singleline(value).hint_text(empty_hint),
+            [field_width, SETTINGS_ROW_HEIGHT],
+            TextEdit::singleline(value)
+                .desired_width((field_width - 8.0).max(1.0))
+                .hint_text(empty_hint),
         );
-        if outline_button(ui, "选择").clicked() {
+        if outline_button(ui, "浏览").clicked() {
             if let Some(path) = rfd::FileDialog::new()
                 .add_filter("WinTranslator", &["exe"])
                 .pick_file()
@@ -284,8 +263,13 @@ pub(super) fn filename_pattern_row(
 ) {
     setting_row(ui, title, description, |ui| {
         ui.add_sized(
-            [bounded_control_width(ui, 260.0), 24.0],
-            TextEdit::singleline(value).hint_text(empty_hint),
+            [
+                bounded_control_width(ui, SETTINGS_CONTROL_WIDTH),
+                SETTINGS_ROW_HEIGHT,
+            ],
+            TextEdit::singleline(value)
+                .desired_width((bounded_control_width(ui, SETTINGS_CONTROL_WIDTH) - 8.0).max(1.0))
+                .hint_text(empty_hint),
         );
     });
 }

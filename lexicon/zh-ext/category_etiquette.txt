@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：礼貌祝福
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+一路顺风	yi lu shun feng	9300
+敬请知悉	jing qing zhi xi	9300
+烦请回复	fan qing hui fu	9300
+烦请查收	fan qing cha shou	9300
+一路平安	yi lu ping an	6100
+万事顺遂	wan shi shun sui	6100
+不胜感激	bu sheng gan ji	6100
+乔迁之喜	qiao qian zhi xi	6100
+事业顺利	shi ye shun li	6100
+前程似锦	qian cheng shi jin	6100
+喜得贵子	xi de gui zi	6100
+多多关照	duo duo guan zhao	6100
+失礼之处	shi li zhi chu	6100
+学业有成	xue ye you cheng	6100
+岁岁平安	sui sui ping an	6100
+平安喜乐	ping an xi le	6100
+年年有余	nian nian you yu	6100
+幸福安康	xing fu an kang	6100
+开业大吉	kai ye da ji	6100
+感谢帮助	gan xie bang zhu	6100
+感谢支持	gan xie zhi chi	6100
+感谢理解	gan xie li jie	6100
+打扰您了	da rao nin le	6100
+承蒙关照	cheng meng guan zhao	6100
+敬请指教	jing qing zhi jiao	6100
+敬请查收	jing qing cha shou	6100
+敬请谅解	jing qing liang jie	6100
+新婚快乐	xin hun kuai le	6100
+早生贵子	zao sheng gui zi	6100
+永结同心	yong jie tong xin	6100
+烦请确认	fan qing que ren	6100
+生活美满	sheng huo mei man	6100
+百年好合	bai nian hao he	6100
+祝您健康	zhu nin jian kang	6100
+祝您平安	zhu nin ping an	6100
+祝您愉快	zhu nin yu kuai	6100
+祝您顺利	zhu nin shun li	6100
+福气满满	fu qi man man	6100
+请多指教	qing duo zhi jiao	6100
+请您确认	qing nin que ren	6100
+请您稍候	qing nin shao hou	6100
+谢谢配合	xie xie pei he	6100
+身体安康	shen ti an kang	6100
+辛苦您了	xin ku nin le	6100
+金榜题名	jin bang ti ming	6100
+阖家幸福	he jia xing fu	6100
+阖家欢乐	he jia huan le	6100
+马到成功	ma dao cheng gong	6100
+麻烦您了	ma fan nin le	6100
+心想事成	xin xiang shi cheng	1430

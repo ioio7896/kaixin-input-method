@@ -59,6 +59,7 @@ class CSrfCandidateListUIElement : public ITfCandidateListUIElementBehavior,
   CSrfTip* m_tip = nullptr;
   DWORD m_uiElementId = TF_INVALID_UIELEMENTID;
   BOOL m_showWindow = TRUE;
+  BOOL m_hostRequestedShow = TRUE;
   CCandidateWindow m_window;
   DWORD m_updatedFlags = TF_CLUIE_DOCUMENTMGR | TF_CLUIE_COUNT | TF_CLUIE_SELECTION |
                          TF_CLUIE_STRING | TF_CLUIE_PAGEINDEX | TF_CLUIE_CURRENTPAGE;

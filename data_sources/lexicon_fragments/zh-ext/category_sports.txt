@@ -1,0 +1,53 @@
+# 开心离线输入法分类补充：体育赛事
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+半决赛	ban jue sai	9546
+小组赛	xiao zu sai	9063
+运动鞋	yun dong xie	8729
+淘汰赛	tao tai sai	8436
+决赛	jue sai	6742
+加时赛	jia shi sai	6599
+足球比赛	zu qiu bi sai	6418
+主场比赛	zhu chang bi sai	6100
+乒乓球拍	ping pang qiu pai	6100
+乒乓球比赛	ping pang qiu bi sai	6100
+体育场馆	ti yu chang guan	6100
+半程马拉松	ban cheng ma la song	6100
+场地预约	chang di yu yue	6100
+客场比赛	ke chang bi sai	6100
+技术统计	ji shu tong ji	6100
+排球比赛	pai qiu bi sai	6100
+教练团队	jiao lian tuan dui	6100
+暂停时间	zan ting shi jian	6100
+替补队员	ti bu dui yuan	6100
+比赛回放	bi sai hui fang	6100
+比赛报名	bi sai bao ming	6100
+比赛直播	bi sai zhi bo	6100
+比赛结果	bi sai jie guo	6100
+比赛规则	bi sai gui ze	6100
+比赛赛程	bi sai sai cheng	6100
+比赛阵容	bi sai zhen rong	6100
+游泳比赛	you yong bi sai	6100
+点球大战	dian qiu da zhan	6100
+犯规次数	fan gui ci shu	6100
+球场预约	qiu chang yu yue	6100
+田径比赛	tian jing bi sai	6100
+篮球比赛	lan qiu bi sai	6100
+网球比赛	wang qiu bi sai	6100
+羽毛球拍	yu mao qiu pai	6100
+羽毛球比赛	yu mao qiu bi sai	6100
+裁判判罚	cai pan pan fa	6100
+训练基地	xun lian ji di	6100
+赛事安排	sai shi an pai	6100
+赛事积分	sai shi ji fen	6100
+赛前热身	sai qian re shen	6100
+赛后采访	sai hou cai fang	6100
+越野跑比赛	yue ye pao bi sai	6100
+运动护具	yun dong hu ju	6100
+运动装备	yun dong zhuang bei	6100
+首发阵容	shou fa zhen rong	6100
+马拉松比赛	ma la song bi sai	6100
+网球拍	wang qiu pai	1905
+体育中心	ti yu zhong xin	658

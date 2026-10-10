@@ -525,6 +525,12 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "screenshot_name_pattern",
             &defaults.ocr_screenshot_name_pattern,
         ),
+        translate_target_language: read_string(
+            config,
+            "tools",
+            "translate_target_language",
+            "auto-opposite",
+        ),
         wintranslator_path: read_string(config, "tools", "wintranslator_path", ""),
         translate_result_action: read_string(
             config,
@@ -612,6 +618,7 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             &read_string(config, "compatibility", "game_input_mode", "manual"),
             false,
         ),
+        game_chat: game_chat_options_from_values(config.sections.get("compatibility"), false),
         fullscreen_detection: read_bool(
             config,
             schema_section::COMPATIBILITY,
@@ -1197,6 +1204,11 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
     );
     config.set(
         "tools",
+        "translate_target_language",
+        model.translate_target_language.trim(),
+    );
+    config.set(
+        "tools",
         "translate_result_action",
         model.translate_result_action.trim(),
     );
@@ -1246,6 +1258,21 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         bool_text(model.clipboard_pinned_respects_max_age),
     );
 
+    config.set(
+        "compatibility",
+        "game_enter_behavior",
+        normalize_game_enter_behavior(&model.game_chat.enter_behavior, false),
+    );
+    config.set(
+        "compatibility",
+        "game_auto_uia",
+        normalize_game_option_bool(&model.game_chat.auto_uia, false),
+    );
+    config.set(
+        "compatibility",
+        "game_status_indicator",
+        normalize_game_option_bool(&model.game_chat.status_indicator, false),
+    );
     config.set(
         "compatibility",
         "game_input_mode",
@@ -1775,6 +1802,11 @@ pub(crate) fn normalize_combo_values(model: &mut SettingsModel) {
         schema_default::USER_HOTWORD_BOOST,
     );
     for rule in &mut model.compat_rules {
+        rule.game_chat.enter_behavior =
+            normalize_game_enter_behavior(&rule.game_chat.enter_behavior, true);
+        rule.game_chat.auto_uia = normalize_game_option_bool(&rule.game_chat.auto_uia, true);
+        rule.game_chat.status_indicator =
+            normalize_game_option_bool(&rule.game_chat.status_indicator, true);
         rule.commit_transport = normalize_commit_transport_value(&rule.commit_transport, "global");
         rule.overlay_anchor = normalize_overlay_anchor_value(&rule.overlay_anchor);
         rule.overlay_offset_x = rule.overlay_offset_x.clamp(-4000, 4000);
@@ -2075,6 +2107,22 @@ pub(crate) fn app_rules_from_config(config: &IniDoc) -> String {
                 normalize_game_input_mode(mode, true)
             ));
         }
+        if values.keys().any(|key| {
+            key.starts_with("game_chat_")
+                || key.starts_with("game_tested_")
+                || matches!(
+                    key.as_str(),
+                    "game_enter_behavior"
+                        | "game_auto_uia"
+                        | "game_status_indicator"
+                        | "overlay_force_ui"
+                )
+        }) {
+            append_game_chat_parts(
+                &game_chat_options_from_values(Some(values), true),
+                &mut parts,
+            );
+        }
         if !game_profile.is_empty() {
             parts.push(format!("game_profile={game_profile}"));
         }
@@ -2099,6 +2147,126 @@ pub(crate) fn app_rules_from_config(config: &IniDoc) -> String {
         lines.push(parts.join(", "));
     }
     lines.join("\n")
+}
+
+pub(crate) fn normalize_game_enter_behavior(value: &str, per_app: bool) -> String {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "auto" => "auto",
+        "close" => "close",
+        "stay" => "stay",
+        _ if per_app => "inherit",
+        _ => "auto",
+    }
+    .to_string()
+}
+pub(crate) fn normalize_game_option_bool(value: &str, per_app: bool) -> String {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "1" | "true" | "on" | "yes" => "1",
+        "0" | "false" | "off" | "no" => "0",
+        _ if per_app => "inherit",
+        _ => "1",
+    }
+    .to_string()
+}
+fn game_chat_options_from_values(
+    values: Option<&BTreeMap<String, String>>,
+    per_app: bool,
+) -> GameChatOptions {
+    let mut result = if per_app {
+        GameChatOptions::inherited()
+    } else {
+        GameChatOptions::default()
+    };
+    let Some(values) = values else {
+        return result;
+    };
+    if let Some(v) = values.get("game_enter_behavior") {
+        result.enter_behavior = normalize_game_enter_behavior(v, per_app);
+    }
+    if let Some(v) = values.get("game_auto_uia") {
+        result.auto_uia = normalize_game_option_bool(v, per_app);
+    }
+    if let Some(v) = values.get("game_status_indicator") {
+        result.status_indicator = normalize_game_option_bool(v, per_app);
+    }
+    if let Some(v) = values.get("game_chat_open_key") {
+        result.open_key = v.trim().to_string();
+    }
+    if let Some(v) = values.get("game_chat_close_key") {
+        result.close_key = v.trim().to_string();
+    }
+    result.force_ui = values
+        .get("overlay_force_ui")
+        .is_some_and(|v| parse_bool_value(v, false));
+    if let Some(v) = values.get("game_tested_display_mode") {
+        result.tested_display_mode = v.trim().to_string();
+    }
+    if let Some(v) = values.get("game_tested_game_version") {
+        result.tested_game_version = v.trim().to_string();
+    }
+    for (key, flag) in [
+        ("game_tested_input", &mut result.tested_input),
+        ("game_tested_candidate", &mut result.tested_candidate),
+        ("game_tested_commit", &mut result.tested_commit),
+        ("game_tested_exit", &mut result.tested_exit),
+    ] {
+        *flag = values.get(key).is_some_and(|v| parse_bool_value(v, false));
+    }
+    result
+}
+fn append_game_chat_parts(chat: &GameChatOptions, parts: &mut Vec<String>) {
+    if chat.enter_behavior != "inherit" {
+        parts.push(format!(
+            "game_enter_behavior={}",
+            normalize_game_enter_behavior(&chat.enter_behavior, true)
+        ));
+    }
+    if chat.auto_uia != "inherit" {
+        parts.push(format!(
+            "game_auto_uia={}",
+            normalize_game_option_bool(&chat.auto_uia, true)
+        ));
+    }
+    if chat.status_indicator != "inherit" {
+        parts.push(format!(
+            "game_status_indicator={}",
+            normalize_game_option_bool(&chat.status_indicator, true)
+        ));
+    }
+    let clean_key = |v: &str| v.trim().replace([',', '\n', '\r', '='], " ");
+    parts.push(format!("game_chat_open_key={}", clean_key(&chat.open_key)));
+    parts.push(format!(
+        "game_chat_close_key={}",
+        clean_key(&chat.close_key)
+    ));
+    parts.push(format!("overlay_force_ui={}", bool_text(chat.force_ui)));
+    if chat.tested_display_mode != "unverified"
+        || !chat.tested_game_version.is_empty()
+        || chat.tested_input
+        || chat.tested_candidate
+        || chat.tested_commit
+        || chat.tested_exit
+    {
+        // App-rule text uses commas/newlines as separators, so escape metadata
+        // by rejecting those delimiters instead of allowing extra settings.
+        let clean = |v: &str| v.replace([',', '\n', '\r', '='], " ");
+        parts.push(format!(
+            "game_tested_display_mode={}",
+            clean(&chat.tested_display_mode)
+        ));
+        parts.push(format!(
+            "game_tested_game_version={}",
+            clean(&chat.tested_game_version)
+        ));
+        for (key, flag) in [
+            ("game_tested_input", chat.tested_input),
+            ("game_tested_candidate", chat.tested_candidate),
+            ("game_tested_commit", chat.tested_commit),
+            ("game_tested_exit", chat.tested_exit),
+        ] {
+            parts.push(format!("{key}={}", bool_text(flag)));
+        }
+    }
 }
 
 pub(crate) fn normalize_game_input_mode(value: &str, per_app: bool) -> String {
@@ -2156,6 +2324,7 @@ pub(crate) fn compat_rules_from_config(config: &IniDoc, game_processes: &str) ->
                     .unwrap_or("inherit"),
                 true,
             );
+            rule.game_chat = game_chat_options_from_values(Some(values), true);
             apply_overlay_options_to_compat_rule(rule, values);
         }
     }
@@ -2336,6 +2505,7 @@ pub(crate) fn compat_rules_to_app_rules(rules: &[CompatRule]) -> String {
                 normalize_game_input_mode(&rule.game_input_mode, true)
             ));
         }
+        append_game_chat_parts(&rule.game_chat, &mut parts);
         if rule.game_profile {
             parts.push("game_profile=compact".to_string());
         }
@@ -2388,6 +2558,7 @@ pub(crate) fn add_compat_rule_unique(
         policy,
         commit_transport: "global".to_string(),
         game_input_mode: "inherit".to_string(),
+        game_chat: GameChatOptions::inherited(),
         game_profile: false,
         overlay_anchor: schema_default::OVERLAY_ANCHOR.to_string(),
         overlay_offset_x: 0,
@@ -2427,6 +2598,7 @@ pub(crate) fn upsert_compat_rule(
             policy,
             commit_transport,
             game_input_mode: "inherit".to_string(),
+            game_chat: GameChatOptions::inherited(),
             game_profile,
             overlay_anchor: schema_default::OVERLAY_ANCHOR.to_string(),
             overlay_offset_x: 0,
@@ -2503,6 +2675,18 @@ pub(crate) fn apply_app_rules(config: &mut IniDoc, rules: &str) {
                 "backend" | "overlay_backend" => {
                     config.set(&section, schema_key::OVERLAY_BACKEND, value.trim())
                 }
+                "game_enter_behavior"
+                | "game_auto_uia"
+                | "game_status_indicator"
+                | "game_chat_open_key"
+                | "game_chat_close_key"
+                | "overlay_force_ui"
+                | "game_tested_display_mode"
+                | "game_tested_game_version"
+                | "game_tested_input"
+                | "game_tested_candidate"
+                | "game_tested_commit"
+                | "game_tested_exit" => config.set(&section, key.trim(), value.trim()),
                 "game_input_mode" => config.set(
                     &section,
                     "game_input_mode",
@@ -2526,6 +2710,77 @@ pub(crate) fn parse_bool_value(value: &str, default: bool) -> bool {
 #[cfg(test)]
 mod game_policy_tests {
     use super::*;
+    #[test]
+    fn game_chat_options_and_confirmed_results_round_trip() {
+        let doc = parse_ini("[compatibility]\ngame_enter_behavior=close\ngame_auto_uia=0\ngame_status_indicator=1\n[app:mygame.exe]\ngame_profile=compact\ngame_enter_behavior=stay\ngame_auto_uia=inherit\ngame_status_indicator=0\ngame_chat_open_key=Enter\ngame_chat_close_key=Escape\noverlay_force_ui=1\ngame_tested_display_mode=borderless\ngame_tested_game_version=1.2\ngame_tested_input=1\ngame_tested_candidate=1\ngame_tested_commit=1\ngame_tested_exit=1\n");
+        let model = model_from_config(&doc);
+        assert_eq!(model.game_chat.enter_behavior, "close");
+        assert_eq!(model.game_chat.auto_uia, "0");
+        let chat = &model.compat_rules[0].game_chat;
+        assert_eq!(chat.enter_behavior, "stay");
+        assert_eq!(chat.auto_uia, "inherit");
+        assert_eq!(chat.status_indicator, "0");
+        assert_eq!(chat.open_key, "Enter");
+        assert!(
+            chat.force_ui
+                && chat.tested_input
+                && chat.tested_candidate
+                && chat.tested_commit
+                && chat.tested_exit
+        );
+        let rendered = stabilized_rendered_config(&doc, &model);
+        let saved = model_from_config(&parse_ini(&rendered));
+        assert_eq!(saved.game_chat, model.game_chat);
+        assert_eq!(saved.compat_rules[0].game_chat, *chat);
+        assert_eq!(
+            saved.compat_rules[0].game_chat.tested_display_mode,
+            "borderless"
+        );
+        let mut changed = saved.compat_rules[0].game_chat.clone();
+        changed.reset_test_results();
+        assert!(
+            !changed.tested_input
+                && !changed.tested_candidate
+                && !changed.tested_commit
+                && !changed.tested_exit
+        );
+    }
+
+    #[test]
+    fn game_chat_defaults_do_not_forge_compatibility_results() {
+        let model = model_from_config(&parse_ini("[app:unknown.exe]\ngame_profile=compact\n"));
+        let chat = &model.compat_rules[0].game_chat;
+        assert_eq!(chat, &GameChatOptions::inherited());
+        assert_eq!(normalize_game_enter_behavior("bad", false), "auto");
+        assert_eq!(normalize_game_option_bool("bad", true), "inherit");
+        assert!(!chat.force_ui && !chat.tested_input && !chat.tested_commit);
+    }
+
+    #[test]
+    fn confirmed_results_survive_confirmation_but_expire_when_policy_changes() {
+        let before = model_from_config(&parse_ini(
+            "[app:game.exe]\ngame_profile=compact\ngame_tested_display_mode=borderless\n",
+        ));
+        let mut confirmed = before.clone();
+        confirmed.compat_rules[0].game_chat.tested_input = true;
+        confirmed.compat_rules[0].game_chat.tested_candidate = true;
+        invalidate_changed_game_test_results(&before, &mut confirmed);
+        assert!(confirmed.compat_rules[0].game_chat.tested_input);
+        let saved = confirmed.clone();
+        confirmed.compat_rules[0].overlay_backend = "external".into();
+        invalidate_changed_game_test_results(&saved, &mut confirmed);
+        assert!(!confirmed.compat_rules[0].game_chat.tested_input);
+        assert!(!confirmed.compat_rules[0].game_chat.tested_candidate);
+        let mut changed_global = saved.clone();
+        changed_global.game_input_mode = "auto_text".into();
+        invalidate_changed_game_test_results(&saved, &mut changed_global);
+        assert!(!changed_global.compat_rules[0].game_chat.tested_input);
+        assert_eq!(
+            changed_global.compat_rules[0].game_chat.tested_display_mode,
+            "borderless"
+        );
+    }
+
     #[test]
     fn game_modes_survive_settings_save_and_reload() {
         for mode in ["manual", "passthrough", "chinese", "auto_text"] {

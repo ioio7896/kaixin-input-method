@@ -52,7 +52,7 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | input | page_comma_period | 1 | bool |  |
 | engine | retry_on_failure | 1 | bool |  |
 | engine | long_lookup_soft_budget_ms | 4 | integer |  |
-| general | config_version | 13 | integer |  |
+| general | config_version | 14 | integer |  |
 | input | default_ascii | 0 | bool |  |
 | general | global_ascii | 0 | bool |  |
 | input | default_full_shape | 0 | bool |  |
@@ -142,3 +142,7 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | tools | ocr_translate_hotkey | off | string |  |
 | tools | translate_result_action | show | string |  |
 | tools | wintranslator_path |  | string |  |
+| tools | translate_target_language | auto-opposite | string |  |
+| compatibility | game_enter_behavior | auto | string | auto, close, stay |
+| compatibility | game_auto_uia | 1 | bool |  |
+| compatibility | game_status_indicator | 1 | bool |  |

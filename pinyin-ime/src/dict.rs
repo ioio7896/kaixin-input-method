@@ -78,6 +78,13 @@ pub(crate) fn is_project_approved_reading(c: char, reading: &str) -> bool {
         .is_some_and(|readings| readings.iter().any(|approved| approved == reading))
 }
 
+pub(crate) fn is_excluded_reading(c: char, reading: &str) -> bool {
+    pronunciation_aliases()
+        .excluded
+        .get(&c)
+        .is_some_and(|readings| readings.iter().any(|excluded| excluded == reading))
+}
+
 pub(crate) fn pinyin_plain_options(c: char) -> Vec<String> {
     let mut out = Vec::new();
     let overrides = pronunciation_aliases();

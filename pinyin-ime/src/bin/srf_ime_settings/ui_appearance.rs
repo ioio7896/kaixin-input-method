@@ -333,8 +333,8 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
     egui::Frame::none()
         .fill(palette.app_bg)
         .stroke(Stroke::new(1.0, palette.border_subtle))
-        .rounding(10.0)
-        .inner_margin(egui::Margin::same(14.0))
+        .rounding(SETTINGS_RADIUS_CARD)
+        .inner_margin(egui::Margin::same(8.0))
         .show(ui, |ui| {
             ui.set_width((ui.available_width()).max(1.0));
             ui.horizontal(|ui| {
@@ -349,13 +349,13 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
                     },
                 );
             });
-            ui.add_space(16.0);
+            ui.add_space(6.0);
             egui::ScrollArea::both()
                 .id_salt("candidate_preview_canvas")
-                .max_height(420.0)
+                .max_height(160.0)
                 .auto_shrink([false, true])
                 .show(ui, |ui| candidate_live_preview_contents(ui, model, skins));
-            ui.add_space(12.0);
+            ui.add_space(6.0);
             ui.label(
                 RichText::new(if model.candidate_horizontal {
                     "候选较多时可横向滚动查看；实际显示以真实候选窗为准。"
@@ -883,438 +883,461 @@ pub(super) fn candidate_appearance_ui(
     skins: &[SkinPreview],
     chinese_fonts: &[String],
     request_real_preview: &mut bool,
-    show_inline_preview: bool,
+    page: AppearanceSettingsPage,
 ) {
-    if show_inline_preview {
-        section_panel(ui, "候选栏实时预览", |ui| {
-            let palette = fluent_palette(ui);
-            ui.label(
-                RichText::new("下方预览会跟随横竖布局、字号、透明度、候选信息和皮肤设置变化。")
-                    .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
-                    .color(palette.muted),
-            );
-            ui.add_space(8.0);
-            candidate_live_preview(ui, model, skins);
-            ui.add_space(8.0);
-            ui.horizontal_wrapped(|ui| {
-                if outline_button(ui, "保存并用真实候选窗试用").clicked() {
-                    *request_real_preview = true;
-                }
+    match page {
+        AppearanceSettingsPage::Layout => candidate_layout_controls(ui, model),
+        AppearanceSettingsPage::Theme => candidate_theme_controls(ui, model, skins, chinese_fonts),
+        AppearanceSettingsPage::Advanced => candidate_information_controls(ui, model),
+    }
+    egui::CollapsingHeader::new("快捷外观方案")
+        .id_salt("candidate_presets")
+        .show(ui, |ui| {
+            section_panel(ui, "推荐外观", |ui| {
+                ui.horizontal_wrapped(|ui| {
+                    if outline_button(ui, "恢复推荐").clicked() {
+                        apply_candidate_recommended_defaults(model);
+                        *status = "候选栏已恢复推荐外观。".to_string();
+                    }
+                    if outline_button(ui, "游戏紧凑").clicked() {
+                        apply_candidate_game_compact(model);
+                        *status = "候选栏已切到游戏紧凑推荐。".to_string();
+                    }
+                    if outline_button(ui, "低延迟紧凑").clicked() {
+                        apply_candidate_low_latency_compact(model);
+                        *status = "候选栏已切到低延迟紧凑外观。".to_string();
+                    }
+                });
+                let palette = fluent_palette(ui);
                 ui.label(
-                    RichText::new("调用与输入时相同的 C++ 渲染器，10 秒后自动关闭。")
+                    RichText::new("这些按钮只调整候选栏显示，不会改热键、词库或隐私设置。")
                         .small()
                         .color(palette.muted),
                 );
             });
         });
-    }
-
-    ui.add_space(10.0);
-    section_panel(ui, "推荐外观", |ui| {
+    ui.add_space(6.0);
+    section_panel(ui, "候选栏预览", |ui| {
+        candidate_live_preview(ui, model, skins);
         ui.horizontal_wrapped(|ui| {
-            if outline_button(ui, "恢复推荐").clicked() {
-                apply_candidate_recommended_defaults(model);
-                *status = "候选栏已恢复推荐外观。".to_string();
+            if outline_button(ui, "保存并用真实候选窗试用").clicked() {
+                *request_real_preview = true;
             }
-            if outline_button(ui, "游戏紧凑").clicked() {
-                apply_candidate_game_compact(model);
-                *status = "候选栏已切到游戏紧凑推荐。".to_string();
-            }
-            if outline_button(ui, "低延迟紧凑").clicked() {
-                apply_candidate_low_latency_compact(model);
-                *status = "候选栏已切到低延迟紧凑外观。".to_string();
-            }
-        });
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("这些按钮只调整候选栏显示，不会改热键、词库或隐私设置。")
-                .small()
-                .color(palette.muted),
-        );
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "布局与显示", |ui| {
-        setting_slider_usize(
-            ui,
-            "每页候选数",
-            "候选窗口单页显示的候选数量。",
-            &mut model.candidate_page_size,
-            3..=9,
-        );
-        setting_toggle(
-            ui,
-            "横向候选栏",
-            "开启后以横排卡片显示候选。",
-            &mut model.candidate_horizontal,
-        );
-        ui.add_enabled_ui(model.candidate_horizontal, |ui| {
-            setting_slider_usize(
-                ui,
-                "横向候选数",
-                "横排模式下每页显示的候选数量。",
-                &mut model.candidate_horizontal_count,
-                3..=9,
-            );
-        });
-        ui.collapsing("高级布局与交互", |ui| {
-            ui.add_enabled_ui(model.candidate_horizontal, |ui| {
-                setting_toggle(
-                    ui,
-                    "横排紧凑",
-                    "减少横排候选卡片间距。",
-                    &mut model.candidate_horizontal_compact,
-                );
-            });
-            setting_combo_row(
-                ui,
-                "外观密度",
-                "统一调整字号周围的留白、行距和候选间距。",
-                density_label(&model.candidate_density).to_owned(),
-                "candidate_density",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_density,
-                        schema_options::CANDIDATE_DENSITIES[0],
-                        "紧凑",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_density,
-                        schema_options::CANDIDATE_DENSITIES[1],
-                        "标准",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_density,
-                        schema_options::CANDIDATE_DENSITIES[2],
-                        "舒适",
-                    );
-                },
-            );
-            setting_combo_row(
-                ui,
-                "竖排布局",
-                "控制竖向候选窗口的行距、边框和选中样式。",
-                vertical_layout_label(&model.candidate_vertical_layout_variant).to_owned(),
-                "vertical_layout",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_vertical_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[0],
-                        "经典",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_vertical_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[1],
-                        "舒适",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_vertical_layout_variant,
-                        schema_options::CANDIDATE_LAYOUTS[2],
-                        "卡片",
-                    );
-                },
-            );
-            ui.add_enabled_ui(model.candidate_horizontal, |ui| {
-                setting_combo_row(
-                    ui,
-                    "横排布局",
-                    "控制横向候选栏的间距、分块感和单行显示效果。",
-                    horizontal_layout_label(&model.candidate_horizontal_layout_variant).to_owned(),
-                    "horizontal_layout",
-                    |ui| {
-                        selectable_string(
-                            ui,
-                            &mut model.candidate_horizontal_layout_variant,
-                            schema_options::CANDIDATE_LAYOUTS[0],
-                            "单行舒适",
-                        );
-                        selectable_string(
-                            ui,
-                            &mut model.candidate_horizontal_layout_variant,
-                            schema_options::CANDIDATE_LAYOUTS[1],
-                            "单行紧凑",
-                        );
-                        selectable_string(
-                            ui,
-                            &mut model.candidate_horizontal_layout_variant,
-                            schema_options::CANDIDATE_LAYOUTS[2],
-                            "分块卡片",
-                        );
-                    },
-                );
-            });
-            setting_toggle(
-                ui,
-                "候选窗置顶",
-                "候选窗口浮在宿主应用上方。",
-                &mut model.candidate_topmost,
-            );
-            setting_toggle(
-                ui,
-                "候选左键提交",
-                "允许在候选栏用鼠标左键提交候选。",
-                &mut model.candidate_left_click,
-            );
-            setting_toggle(
-                ui,
-                "候选右键菜单",
-                "允许在候选栏用鼠标右键打开固定菜单。",
-                &mut model.candidate_right_click,
-            );
-            setting_toggle(
-                ui,
-                "滚轮翻页",
-                "鼠标滚轮在候选窗口上切换页。",
-                &mut model.paging_on_scroll,
-            );
-            setting_toggle(
-                ui,
-                "输入框内显示预编辑",
-                "拼音串显示在宿主输入框内部。",
-                &mut model.inline_preedit,
-            );
-            setting_toggle(
-                ui,
-                "增强候选窗定位",
-                "优先跟随光标和编辑区域定位候选窗。",
-                &mut model.enhanced_position,
-            );
-            setting_toggle(
-                ui,
-                "减少动态效果",
-                "关闭候选窗出现、切换、悬停和翻页动画；系统关闭动画或启用高对比度时也会自动生效。",
-                &mut model.candidate_reduce_motion,
-            );
-        });
-    });
-
-    ui.add_space(10.0);
-    section_panel(ui, "字体与主题", |ui| {
-        setting_slider_usize(
-            ui,
-            "候选字号",
-            "候选正文的显示字号。",
-            &mut model.candidate_font_size,
-            14..=28,
-        );
-        ui.collapsing("高级字体", |ui| {
-            setting_slider_usize(
-                ui,
-                "透明度",
-                "候选窗整体透明度。",
-                &mut model.candidate_opacity,
-                90..=100,
-            );
-            let current_font = model.candidate_font_file.trim().to_owned();
-            let default_font_label = "默认（Microsoft YaHei）";
-            let uses_default_font =
-                current_font.is_empty() || current_font == DEFAULT_CANDIDATE_FONT_FAMILY;
-            let selected_font = if uses_default_font {
-                default_font_label.to_owned()
-            } else {
-                current_font.clone()
-            };
-            setting_combo_row(
-                ui,
-                "中文字体",
-                "候选窗口使用的字体族。",
-                selected_font,
-                "candidate_font_family",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_font_file,
-                        DEFAULT_CANDIDATE_FONT_FAMILY,
-                        default_font_label,
-                    );
-                    if !uses_default_font && !chinese_fonts.iter().any(|name| name == &current_font)
-                    {
-                        selectable_string(
-                            ui,
-                            &mut model.candidate_font_file,
-                            &current_font,
-                            &current_font,
-                        );
-                    }
-                    for font in chinese_fonts {
-                        selectable_string(ui, &mut model.candidate_font_file, font, font);
-                    }
-                },
-            );
-        });
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("皮肤")
-                .strong()
-                .size(SETTINGS_FONT_SETTING_TITLE)
-                .color(palette.text),
-        );
-        ui.label(
-            RichText::new("点击卡片即可切换；上方候选栏会立即预览实际配色。")
-                .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
-                .color(palette.muted),
-        );
-        ui.add_space(8.0);
-        skin_card_grid(ui, model, skins);
-        ui.add_space(10.0);
-        ui.collapsing("高级主题", |ui| {
-            setting_combo_row(
-                ui,
-                "主题",
-                "跟随系统或固定浅色/深色。",
-                theme_label(&model.theme).to_owned(),
-                "candidate_theme",
-                |ui| {
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[0], "自动");
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[1], "浅色");
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[2], "深色");
-                    selectable_string(ui, &mut model.theme, schema_options::THEMES[3], "高对比度");
-                },
-            );
-        });
-        ui.collapsing("高级材质与字重", |ui| {
-            setting_combo_row(
-                ui,
-                "材质",
-                "候选窗口背景和层次风格。",
-                material_label(&model.candidate_material).to_owned(),
-                "candidate_material",
-                |ui| {
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[0],
-                        "自动",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[1],
-                        "实心",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[2],
-                        "渐变",
-                    );
-                    selectable_string(
-                        ui,
-                        &mut model.candidate_material,
-                        schema_options::CANDIDATE_MATERIALS[3],
-                        "柔雾",
-                    );
-                },
-            );
-            setting_slider_usize(
-                ui,
-                "普通",
-                "未选中候选的字重。",
-                &mut model.candidate_font_weight,
-                300..=700,
-            );
-            setting_slider_usize(
-                ui,
-                "当前",
-                "选中候选的字重。",
-                &mut model.candidate_selected_font_weight,
-                400..=800,
-            );
-            setting_slider_usize(
-                ui,
-                "标签",
-                "序号标签的字重。",
-                &mut model.candidate_label_font_weight,
-                400..=800,
-            );
-            setting_slider_usize(
-                ui,
-                "胶囊",
-                "模式标签的字重。",
-                &mut model.candidate_chip_font_weight,
-                350..=700,
-            );
-        });
-    });
-
-    ui.add_space(10.0);
-    ui.collapsing("高级候选信息", |ui| {
-        section_panel(ui, "候选信息与调试标记", |ui| {
-            setting_toggle(
-                ui,
-                "显示读音 / 拼音",
-                "仅在当前候选下显示读音信息。",
-                &mut model.show_candidate_reading,
-            );
-            setting_toggle(
-                ui,
-                "显示候选分数",
-                "调试排序时仅在当前候选显示分值。",
-                &mut model.show_candidate_score,
-            );
-            setting_toggle(
-                ui,
-                "高亮显示纠错候选",
-                "纠错或音近候选会在候选文本前显示 ~ 标记。",
-                &mut model.highlight_typo_candidates,
-            );
-            setting_toggle(
-                ui,
-                "显示候选来源",
-                "仅在当前候选显示用户、专业词库、纠错等来源。",
-                &mut model.show_candidate_source,
-            );
-            setting_toggle(
-                ui,
-                "在候选栏显示模式",
-                "在候选窗口顶部显示中英、标点、双拼等状态。",
-                &mut model.show_mode_in_candidate_header,
-            );
-            setting_slider_usize(
-                ui,
-                "候选缩略长度",
-                "过长候选在窗口中的截断长度。",
-                &mut model.candidate_abbreviate_length,
-                16..=256,
+            ui.label(
+                RichText::new("原生预览保存设置后显示 10 秒；页内预览无需保存。")
+                    .small()
+                    .color(fluent_palette(ui).muted),
             );
         });
     });
 }
 
-pub(super) fn candidate_preview_dock_ui(
+fn candidate_layout_controls(ui: &mut egui::Ui, model: &mut SettingsModel) {
+    responsive_settings_columns(
+        ui,
+        "candidate_layout_columns",
+        model,
+        |ui, model| {
+            section_panel(ui, "布局与显示", |ui| {
+                setting_slider_usize(
+                    ui,
+                    "每页候选数",
+                    "候选窗口单页显示的候选数量。",
+                    &mut model.candidate_page_size,
+                    3..=9,
+                );
+                setting_toggle(
+                    ui,
+                    "横向候选栏",
+                    "开启后以横排卡片显示候选。",
+                    &mut model.candidate_horizontal,
+                );
+                ui.add_enabled_ui(model.candidate_horizontal, |ui| {
+                    setting_slider_usize(
+                        ui,
+                        "横向候选数",
+                        "横排模式下每页显示的候选数量。",
+                        &mut model.candidate_horizontal_count,
+                        3..=9,
+                    );
+                });
+
+                ui.add_enabled_ui(model.candidate_horizontal, |ui| {
+                    setting_toggle(
+                        ui,
+                        "横排紧凑",
+                        "减少横排候选卡片间距。",
+                        &mut model.candidate_horizontal_compact,
+                    );
+                });
+                setting_combo_row(
+                    ui,
+                    "外观密度",
+                    "统一调整字号周围的留白、行距和候选间距。",
+                    density_label(&model.candidate_density).to_owned(),
+                    "candidate_density",
+                    |ui| {
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_density,
+                            schema_options::CANDIDATE_DENSITIES[0],
+                            "紧凑",
+                        );
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_density,
+                            schema_options::CANDIDATE_DENSITIES[1],
+                            "标准",
+                        );
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_density,
+                            schema_options::CANDIDATE_DENSITIES[2],
+                            "舒适",
+                        );
+                    },
+                );
+                setting_combo_row(
+                    ui,
+                    "竖排布局",
+                    "控制竖向候选窗口的行距、边框和选中样式。",
+                    vertical_layout_label(&model.candidate_vertical_layout_variant).to_owned(),
+                    "vertical_layout",
+                    |ui| {
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_vertical_layout_variant,
+                            schema_options::CANDIDATE_LAYOUTS[0],
+                            "经典",
+                        );
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_vertical_layout_variant,
+                            schema_options::CANDIDATE_LAYOUTS[1],
+                            "舒适",
+                        );
+                        selectable_string(
+                            ui,
+                            &mut model.candidate_vertical_layout_variant,
+                            schema_options::CANDIDATE_LAYOUTS[2],
+                            "卡片",
+                        );
+                    },
+                );
+                ui.add_enabled_ui(model.candidate_horizontal, |ui| {
+                    setting_combo_row(
+                        ui,
+                        "横排布局",
+                        "控制横向候选栏的间距、分块感和单行显示效果。",
+                        horizontal_layout_label(&model.candidate_horizontal_layout_variant)
+                            .to_owned(),
+                        "horizontal_layout",
+                        |ui| {
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_horizontal_layout_variant,
+                                schema_options::CANDIDATE_LAYOUTS[0],
+                                "单行舒适",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_horizontal_layout_variant,
+                                schema_options::CANDIDATE_LAYOUTS[1],
+                                "单行紧凑",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_horizontal_layout_variant,
+                                schema_options::CANDIDATE_LAYOUTS[2],
+                                "分块卡片",
+                            );
+                        },
+                    );
+                });
+            });
+        },
+        |ui, model| {
+            section_panel(ui, "显示与交互", |ui| {
+                setting_toggle(
+                    ui,
+                    "候选窗置顶",
+                    "候选窗口浮在宿主应用上方。",
+                    &mut model.candidate_topmost,
+                );
+                setting_toggle(
+                    ui,
+                    "候选左键提交",
+                    "允许在候选栏用鼠标左键提交候选。",
+                    &mut model.candidate_left_click,
+                );
+                setting_toggle(
+                    ui,
+                    "候选右键菜单",
+                    "允许在候选栏用鼠标右键打开固定菜单。",
+                    &mut model.candidate_right_click,
+                );
+                setting_toggle(
+                    ui,
+                    "滚轮翻页",
+                    "鼠标滚轮在候选窗口上切换页。",
+                    &mut model.paging_on_scroll,
+                );
+                setting_toggle(
+                    ui,
+                    "输入框内显示预编辑",
+                    "拼音串显示在宿主输入框内部。",
+                    &mut model.inline_preedit,
+                );
+                setting_toggle(
+                    ui,
+                    "增强候选窗定位",
+                    "优先跟随光标和编辑区域定位候选窗。",
+                    &mut model.enhanced_position,
+                );
+                setting_toggle(
+                ui,
+                "减少动态效果",
+                "关闭候选窗出现、切换、悬停和翻页动画；系统关闭动画或启用高对比度时也会自动生效。",
+                &mut model.candidate_reduce_motion,
+            );
+            });
+        },
+    );
+}
+
+fn candidate_theme_controls(
     ui: &mut egui::Ui,
     model: &mut SettingsModel,
     skins: &[SkinPreview],
-    request_real_preview: &mut bool,
+    chinese_fonts: &[String],
 ) {
-    let palette = fluent_palette(ui);
-    ui.label(
-        RichText::new("实时预览")
-            .strong()
-            .size(SETTINGS_FONT_SECTION_TITLE)
-            .color(palette.text),
+    responsive_settings_columns(
+        ui,
+        "candidate_theme_columns",
+        model,
+        |ui, model| {
+            section_panel(ui, "字体", |ui| {
+                setting_slider_usize(
+                    ui,
+                    "候选字号",
+                    "候选正文的显示字号。",
+                    &mut model.candidate_font_size,
+                    14..=28,
+                );
+                ui.scope(|ui| {
+                    setting_slider_usize(
+                        ui,
+                        "透明度",
+                        "候选窗整体透明度。",
+                        &mut model.candidate_opacity,
+                        90..=100,
+                    );
+                    let current_font = model.candidate_font_file.trim().to_owned();
+                    let default_font_label = "默认（Microsoft YaHei）";
+                    let uses_default_font =
+                        current_font.is_empty() || current_font == DEFAULT_CANDIDATE_FONT_FAMILY;
+                    let selected_font = if uses_default_font {
+                        default_font_label.to_owned()
+                    } else {
+                        current_font.clone()
+                    };
+                    setting_combo_row(
+                        ui,
+                        "中文字体",
+                        "候选窗口使用的字体族。",
+                        selected_font,
+                        "candidate_font_family",
+                        |ui| {
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_font_file,
+                                DEFAULT_CANDIDATE_FONT_FAMILY,
+                                default_font_label,
+                            );
+                            if !uses_default_font
+                                && !chinese_fonts.iter().any(|name| name == &current_font)
+                            {
+                                selectable_string(
+                                    ui,
+                                    &mut model.candidate_font_file,
+                                    &current_font,
+                                    &current_font,
+                                );
+                            }
+                            for font in chinese_fonts {
+                                selectable_string(ui, &mut model.candidate_font_file, font, font);
+                            }
+                        },
+                    );
+                });
+            });
+        },
+        |ui, model| {
+            section_panel(ui, "主题与字重", |ui| {
+                ui.scope(|ui| {
+                    setting_combo_row(
+                        ui,
+                        "主题",
+                        "跟随系统或固定浅色/深色。",
+                        theme_label(&model.theme).to_owned(),
+                        "candidate_theme",
+                        |ui| {
+                            selectable_string(
+                                ui,
+                                &mut model.theme,
+                                schema_options::THEMES[0],
+                                "自动",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.theme,
+                                schema_options::THEMES[1],
+                                "浅色",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.theme,
+                                schema_options::THEMES[2],
+                                "深色",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.theme,
+                                schema_options::THEMES[3],
+                                "高对比度",
+                            );
+                        },
+                    );
+                });
+                ui.scope(|ui| {
+                    setting_combo_row(
+                        ui,
+                        "材质",
+                        "候选窗口背景和层次风格。",
+                        material_label(&model.candidate_material).to_owned(),
+                        "candidate_material",
+                        |ui| {
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_material,
+                                schema_options::CANDIDATE_MATERIALS[0],
+                                "自动",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_material,
+                                schema_options::CANDIDATE_MATERIALS[1],
+                                "实心",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_material,
+                                schema_options::CANDIDATE_MATERIALS[2],
+                                "渐变",
+                            );
+                            selectable_string(
+                                ui,
+                                &mut model.candidate_material,
+                                schema_options::CANDIDATE_MATERIALS[3],
+                                "柔雾",
+                            );
+                        },
+                    );
+                    setting_slider_usize(
+                        ui,
+                        "普通",
+                        "未选中候选的字重。",
+                        &mut model.candidate_font_weight,
+                        300..=700,
+                    );
+                    setting_slider_usize(
+                        ui,
+                        "当前",
+                        "选中候选的字重。",
+                        &mut model.candidate_selected_font_weight,
+                        400..=800,
+                    );
+                    setting_slider_usize(
+                        ui,
+                        "标签",
+                        "序号标签的字重。",
+                        &mut model.candidate_label_font_weight,
+                        400..=800,
+                    );
+                    setting_slider_usize(
+                        ui,
+                        "胶囊",
+                        "模式标签的字重。",
+                        &mut model.candidate_chip_font_weight,
+                        350..=700,
+                    );
+                });
+            });
+        },
     );
-    ui.label(
-        RichText::new("修改后立即更新，无需先保存。")
-            .small()
-            .color(palette.muted),
-    );
-    ui.add_space(12.0);
-    candidate_live_preview(ui, model, skins);
-    ui.add_space(12.0);
-    if outline_button(ui, "恢复默认外观").clicked() {
-        apply_candidate_recommended_defaults(model);
-    }
-    ui.add_space(8.0);
-    if outline_button(ui, "保存并用真实候选窗试用").clicked() {
-        *request_real_preview = true;
-    }
+
+    egui::CollapsingHeader::new("皮肤库")
+        .id_salt("compact_skin_gallery")
+        .default_open(false)
+        .show(ui, |ui| {
+            let palette = fluent_palette(ui);
+            ui.label(
+                RichText::new("皮肤")
+                    .strong()
+                    .size(SETTINGS_FONT_SETTING_TITLE)
+                    .color(palette.text),
+            );
+            ui.label(
+                RichText::new("点击卡片即可切换；下方候选栏会立即预览实际配色。")
+                    .size(SETTINGS_FONT_SMALL.max(SETTINGS_MIN_HINT_FONT))
+                    .color(palette.muted),
+            );
+            ui.add_space(8.0);
+            skin_card_grid(ui, model, skins);
+            ui.add_space(10.0);
+        });
+}
+
+fn candidate_information_controls(ui: &mut egui::Ui, model: &mut SettingsModel) {
+    section_panel(ui, "候选信息与调试标记", |ui| {
+        setting_toggle(
+            ui,
+            "显示读音 / 拼音",
+            "仅在当前候选下显示读音信息。",
+            &mut model.show_candidate_reading,
+        );
+        setting_toggle(
+            ui,
+            "显示候选分数",
+            "调试排序时仅在当前候选显示分值。",
+            &mut model.show_candidate_score,
+        );
+        setting_toggle(
+            ui,
+            "高亮显示纠错候选",
+            "纠错或音近候选会在候选文本前显示 ~ 标记。",
+            &mut model.highlight_typo_candidates,
+        );
+        setting_toggle(
+            ui,
+            "显示候选来源",
+            "仅在当前候选显示用户、专业词库、纠错等来源。",
+            &mut model.show_candidate_source,
+        );
+        setting_toggle(
+            ui,
+            "在候选栏显示模式",
+            "在候选窗口顶部显示中英、标点、双拼等状态。",
+            &mut model.show_mode_in_candidate_header,
+        );
+        setting_slider_usize(
+            ui,
+            "候选缩略长度",
+            "过长候选在窗口中的截断长度。",
+            &mut model.candidate_abbreviate_length,
+            16..=256,
+        );
+    });
 }
 
 pub(super) fn apply_candidate_recommended_defaults(model: &mut SettingsModel) {

@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：就医检查
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+核磁共振	he ci gong zhen	6726
+脂肪肝	zhi fang gan	6714
+专家门诊	zhuan jia men zhen	6100
+住院手续	zhu yuan shou xu	6100
+住院押金	zhu yuan ya jin	6100
+住院清单	zhu yuan qing dan	6100
+体检套餐	ti jian tao can	6100
+体检报告	ti jian bao gao	6100
+健康档案	jian kang dang an	6100
+入院登记	ru yuan deng ji	6100
+出院小结	chu yuan xiao jie	6100
+出院手续	chu yuan shou xu	6100
+医保结算	yi bao jie suan	6100
+医疗费用	yi liao fei yong	6100
+反流性食管炎	fan liu xing shi guan yan	6100
+发热门诊	fa re men zhen	6100
+呼气试验	hu qi shi yan	6100
+复诊时间	fu zhen shi jian	6100
+复诊预约	fu zhen yu yue	6100
+就诊卡	jiu zhen ka	6100
+就诊流程	jiu zhen liu cheng	6100
+就诊记录	jiu zhen ji lu	6100
+尿酸升高	niao suan sheng gao	6100
+幽门螺杆菌	you men luo gan jun	6100
+影像报告	ying xiang bao gao	6100
+心脏彩超	xin zang cai chao	6100
+急诊挂号	ji zhen gua hao	6100
+慢病管理	man bing guan li	6100
+报告查询	bao gao cha xun	6100
+排队叫号	pai dui jiao hao	6100
+普通门诊	pu tong men zhen	6100
+检查报告	jian cha bao gao	6100
+检查预约	jian cha yu yue	6100
+检验报告	jian yan bao gao	6100
+检验指标	jian yan zhi biao	6100
+甲状腺功能	jia zhuang xian gong neng	6100
+甲状腺结节	jia zhuang xian jie jie	6100
+糖化血红蛋白	tang hua xue hong dan bai	6100
+肝肾功能	gan shen gong neng	6100
+肺部结节	fei bu jie jie	6100
+胰岛素抵抗	yi dao su di kang	6100
+血清铁蛋白	xue qing tie dan bai	6100
+血脂异常	xue zhi yi chang	6100
+过敏原检测	guo min yuan jian ce	6100
+门诊挂号	men zhen gua hao	6100
+门诊时间	men zhen shi jian	6100
+门诊科室	men zhen ke shi	6100
+预约挂号	yu yue gua hao	6100
+骨密度检查	gu mi du jian cha	6100
+磁共振成像	ci gong zhen cheng xiang	6000
+超声检查	chao sheng jian cha	6000

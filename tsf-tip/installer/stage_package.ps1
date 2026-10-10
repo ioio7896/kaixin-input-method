@@ -469,6 +469,7 @@ $engineExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_engine
 $clipboardExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_clipboard.exe"
 $clipboardSvcExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_clipboard_svc.exe"
 $handwriteExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_handwrite.exe"
+$symbolsExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_symbols.exe"
 $ocrExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_ocr.exe"
 $settingsManifest = Join-Path $PSScriptRoot 'srf_ime_settings.exe.manifest'
 $trayManifest = Join-Path $PSScriptRoot 'srf_ime_tray.exe.manifest'
@@ -496,6 +497,7 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
 }
 
 $requiredOutputs = @($tipDll, $bakeLexiconExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $clipboardSvcExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $repairInstallScript, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
+$requiredOutputs += $symbolsExe
 if ($IncludeOcr) {
     $requiredOutputs += $ocrExe
 }
@@ -582,6 +584,7 @@ $managedRootEntries = @(
     'srf_ime_clipboard.exe',
     'srf_ime_clipboard_svc.exe',
     'srf_ime_handwrite.exe',
+    'srf_ime_symbols.exe',
     'uninstall_dev.ps1',
     'uninstall_current_user.ps1',
     'user_data_manifest.json',
@@ -644,6 +647,7 @@ Copy-FileIfChanged -SourcePath $engineExe -DestinationPath (Join-Path $OutputRoo
 Copy-FileIfChanged -SourcePath $clipboardExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard.exe')
 Copy-FileIfChanged -SourcePath $clipboardSvcExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard_svc.exe')
 Copy-FileIfChanged -SourcePath $handwriteExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_handwrite.exe')
+Copy-FileIfChanged -SourcePath $symbolsExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_symbols.exe')
 if ($IncludeOcr) {
     Copy-FileIfChanged -SourcePath $ocrExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_ocr.exe')
 } else {
@@ -690,6 +694,35 @@ $lexiconTarget = Join-Path $OutputRoot $lexiconDir.Name
 $lexiconSyncExcludes = @('translate')
 Sync-DirectoryContents -SourceDir $lexiconDir.FullName -DestinationDir $lexiconTarget -ExcludeNames $lexiconSyncExcludes
 Remove-ItemWithRetry -Path (Join-Path $lexiconTarget 'translate')
+
+# Old upgrades left these optional files behind. Keep them out of new payloads
+# even if a developer restages a source tree containing an older dictionary.
+$retiredLexiconTags = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared\retired_optional_lexicons.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$retiredLexiconFiles = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared\retired_lexicon_files.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$stagedLexiconPrefix = [System.IO.Path]::GetFullPath($lexiconTarget).TrimEnd('\') + '\'
+foreach ($relative in $retiredLexiconFiles) {
+    $retiredFile = [System.IO.Path]::GetFullPath((Join-Path $lexiconTarget $relative))
+    if (-not $retiredFile.StartsWith($stagedLexiconPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Retired lexicon path escaped staged directory: $retiredFile"
+    }
+    if (Test-Path -LiteralPath $retiredFile -PathType Leaf) {
+        Remove-Item -LiteralPath $retiredFile -Force -ErrorAction Stop
+    }
+}
+foreach ($file in @(Get-ChildItem -LiteralPath $lexiconTarget -Recurse -File -Filter '*.txt')) {
+    $fullPath = [System.IO.Path]::GetFullPath($file.FullName)
+    if (-not $fullPath.StartsWith($stagedLexiconPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Lexicon cleanup path escaped staged directory: $fullPath"
+    }
+    $relative = $fullPath.Substring($stagedLexiconPrefix.Length)
+    if (-not ($relative -match '(^|\\)(zh-ext|ext)\\')) { continue }
+    $tag = $file.BaseName.ToLowerInvariant()
+    if ($tag.StartsWith('thuocl_')) { $tag = $tag.Substring(7) }
+    elseif ($tag.Contains('__thuocl_')) { $tag = $tag.Substring($tag.IndexOf('__thuocl_') + 9) }
+    if ($retiredLexiconTags -contains $tag) {
+        Remove-Item -LiteralPath $fullPath -Force -ErrorAction Stop
+    }
+}
 
 # 与仓库 scripts/prebake_lexicon.ps1 相同产物：词库目录内的 lexicon.bin（运行时优先加载）
 # Keep behavior aligned with scripts/prebake_lexicon.ps1:

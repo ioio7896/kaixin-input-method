@@ -1,0 +1,54 @@
+# 开心离线输入法分类补充：生物实验
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+培养基	pei yang ji	6486
+代谢组学	dai xie zu xue	6100
+免疫组化	mian yi zu hua	6100
+免疫荧光	mian yi ying guang	6100
+单细胞测序	dan xi bao ce xu	6100
+培养条件	pei yang tiao jian	6100
+基因敲除	ji yin qiao chu	6100
+基因测序	ji yin ce xu	6100
+基因组学	ji yin zu xue	6100
+基因编辑	ji yin bian ji	6100
+基因调控	ji yin tiao kong	6100
+实时荧光定量	shi shi ying guang ding liang	6100
+实验室管理	shi yan shi guan li	6100
+实验对照	shi yan dui zhao	6100
+实验方案	shi yan fang an	6100
+实验记录	shi yan ji lu	6100
+序列比对	xu lie bi dui	6100
+微生物培养	wei sheng wu pei yang	6100
+抗体检测	kang ti jian ce	6100
+抗原检测	kang yuan jian ce	6100
+样本保存	yang ben bao cun	6100
+样本采集	yang ben cai ji	6100
+核酸提取	he suan ti qu	6100
+核酸检测	he suan jian ce	6100
+流式细胞术	liu shi xi bao shu	6100
+生物信息学	sheng wu xin xi xue	6100
+生物安全	sheng wu an quan	6100
+生物样本	sheng wu yang ben	6100
+细胞传代	xi bao chuan dai	6100
+细胞信号	xi bao xin hao	6100
+细胞周期	xi bao zhou qi	6100
+细胞培养	xi bao pei yang	6100
+细胞增殖	xi bao zeng zhi	6100
+菌株鉴定	jun zhu jian ding	6100
+蛋白质纯化	dan bai zhi chun hua	6100
+蛋白质组学	dan bai zhi zu xue	6100
+蛋白质结构	dan bai zhi jie gou	6100
+蛋白质表达	dan bai zhi biao da	6100
+转录组学	zhuan lu zu xue	6100
+酶促反应	mei cu fan ying	6100
+酶活性	mei huo xing	6100
+阳性对照	yang xing dui zhao	6100
+阴性对照	yin xing dui zhao	6100
+免疫反应	mian yi fan ying	6000
+基因表达	ji yin biao da	6000
+无菌操作	wu jun cao zuo	6000
+细胞凋亡	xi bao diao wang	6000
+细胞分化	xi bao fen hua	6000
+聚合酶链式反应	ju he mei lian shi fan ying	6000

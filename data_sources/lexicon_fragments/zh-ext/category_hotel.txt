@@ -1,0 +1,56 @@
+# 开心离线输入法分类补充：住宿酒店
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+亲子房	qin zi fang	6100
+住宿发票	zhu su fa piao	6100
+住宿评价	zhu su ping jia	6100
+入住凭证	ru zhu ping zheng	6100
+入住时间	ru zhu shi jian	6100
+入住登记	ru zhu deng ji	6100
+加床服务	jia chuang fu wu	6100
+加床费用	jia chuang fei yong	6100
+双床房	shuang chuang fang	6100
+发票开具	fa piao kai ju	6100
+叫醒服务	jiao xing fu wu	6100
+大床房	da chuang fang	6100
+客房升级	ke fang sheng ji	6100
+客房服务	ke fang fu wu	6100
+客房清洁	ke fang qing jie	6100
+客房电话	ke fang dian hua	6100
+客房设施	ke fang she shi	6100
+家庭房	jia ting fang	6100
+延迟退房	yan chi tui fang	6100
+房卡补办	fang ka bu ban	6100
+房费明细	fang fei ming xi	6100
+房间号码	fang jian hao ma	6100
+房间有点吵	fang jian you dian chao	6100
+房间空调	fang jian kong tiao	6100
+房间网络	fang jian wang luo	6100
+押金退还	ya jin tui huan	6100
+提前入住	ti qian ru zhu	6100
+无烟房	wu yan fang	6100
+早餐券	zao can quan	6100
+早餐时间	zao can shi jian	6100
+早餐费用	zao can fei yong	6100
+民宿预订	min su yu ding	6100
+洗衣服务	xi yi fu wu	6100
+自助早餐	zi zhu zao can	6100
+行李保管	xing li bao guan	6100
+行李寄存	xing li ji cun	6100
+退房时间	tui fang shi jian	6100
+酒店停车场	jiu dian ting che chang	6100
+酒店前台	jiu dian qian tai	6100
+酒店地址	jiu dian di zhi	6100
+酒店押金	jiu dian ya jin	6100
+酒店电话	jiu dian dian hua	6100
+酒店评价	jiu dian ping jia	6100
+预订取消	yu ding qu xiao	6100
+预订号码	yu ding hao ma	6100
+预订确认	yu ding que ren	6100
+麻烦换个房间	ma fan huan ge fang jian	6100
+套房	tao fang	5255
+民宿	min su	4522
+标准间	biao zhun jian	2318
+门禁卡	men jin ka	1510

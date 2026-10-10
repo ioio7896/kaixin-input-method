@@ -27,6 +27,8 @@ STDMETHODIMP CCompositionSink::OnCompositionTerminated(TfEditCookie /*ecWrite*/,
   if (!m_pTip) return S_OK;
   // A delayed callback for an ended composition must not cancel a new one.
   if (m_pTip->m_pComposition != pComposition) return S_OK;
+  if (m_pTip->m_internalCompositionEndDepth != 0) return S_OK;
+  m_pTip->EndInputSession(L"host-composition-terminated", TF_INVALID_COOKIE, false);
   m_pTip->ReleaseCompositionState();
   return S_OK;
 }

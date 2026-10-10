@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：数学统计
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+主成分分析	zhu cheng fen fen xi	6100
+偏自相关	pian zi xiang guan	6100
+分层抽样	fen ceng chou yang	6100
+参数估计	can shu gu ji	6100
+回归模型	hui gui mo xing	6100
+回归系数	hui gui xi shu	6100
+多元回归	duo yuan hui gui	6100
+奇异值分解	qi yi zhi fen jie	6100
+平稳序列	ping wen xu lie	6100
+异常值	yi chang zhi	6100
+抽样误差	chou yang wu cha	6100
+推断统计	tui duan tong ji	6100
+描述统计	miao shu tong ji	6100
+数值分析	shu zhi fen xi	6100
+数值积分	shu zhi ji fen	6100
+数据分布	shu ju fen bu	6100
+数据归一化	shu ju gui yi hua	6100
+数据标准化	shu ju biao zhun hua	6100
+方差分析	fang cha fen xi	6100
+时间序列	shi jian xu lie	6100
+显著性检验	xian zhu xing jian yan	6100
+显著性水平	xian zhu xing shui ping	6100
+最大似然	zui da shi ran	6100
+最小二乘	zui xiao er cheng	6100
+标准误	biao zhun wu	6100
+样本均值	yang ben jun zhi	6100
+样本容量	yang ben rong liang	6100
+样本方差	yang ben fang cha	6100
+概率密度	gai lv mi du	6100
+概率模型	gai lv mo xing	6100
+特征分解	te zheng fen jie	6100
+相关分析	xiang guan fen xi	6100
+相关系数	xiang guan xi shu	6100
+矩阵分解	ju zhen fen jie	6100
+线性回归	xian xing hui gui	6100
+缺失值	que shi zhi	6100
+置信估计	zhi xin gu ji	6100
+置信水平	zhi xin shui ping	6100
+联合概率	lian he gai lv	6100
+聚类分析	ju lei fen xi	6100
+自相关	zi xiang guan	6100
+贝叶斯推断	bei ye si tui duan	6100
+逻辑回归	luo ji hui gui	6100
+随机抽样	sui ji chou yang	6100
+假设检验	jia she jian yan	6000
+条件概率	tiao jian gai lv	6000
+标准差	biao zhun cha	6000
+概率分布	gai lv fen bu	6000
+置信区间	zhi xin qu jian	6000
+协方差	xie fang cha	640

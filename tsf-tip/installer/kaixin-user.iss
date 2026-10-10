@@ -1,4 +1,4 @@
-#ifndef KXAppVersion
+﻿#ifndef KXAppVersion
 #error KXAppVersion must be passed by build.py with /DKXAppVersion=<version>
 #endif
 #ifndef KXPackageDir
@@ -67,6 +67,7 @@ Source: "{#KXPackageDir}\RapidOCR-3.9.0\*"; DestDir: "{app}\RapidOCR-3.9.0"; Fla
 Source: "{#KXPackageDir}\component_manifest.ini"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete solidbreak
 
 [InstallDelete]
+#include "retired_lexicons.generated.iss"
 Type: filesandordirs; Name: "{app}\ShareX"
 Type: filesandordirs; Name: "{app}\.python-runtime"; Check: ShouldInstallPythonRuntime
 Type: filesandordirs; Name: "{app}\.python-packages"; Check: ShouldInstallRapidOcrPackages
@@ -97,6 +98,7 @@ Type: dirifempty; Name: "{app}\models"
 Name: "{group}\开心输入法设置"; Filename: "{app}\srf_ime_settings.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法剪贴板"; Filename: "{app}\srf_ime_clipboard.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法手写查字"; Filename: "{app}\srf_ime_handwrite.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\开心输入法符号大全"; Filename: "{app}\srf_ime_symbols.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法 OCR"; Filename: "{app}\srf_ime_ocr.exe"; IconFilename: "{app}\assets\kaixin-input.ico"; Check: OcrIncluded
 Name: "{group}\修复开心输入法"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\repair_install.ps1"" -InstallationRoot ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法日志"; Filename: "{win}\explorer.exe"; Parameters: """{localappdata}\kaixin"""; IconFilename: "{app}\assets\kaixin-input.ico"
@@ -204,7 +206,7 @@ begin
   else
     Result := Result + 'OCR 扩展：未安装' + #13#10;
   if TranslationIncluded() then
-    Result := Result + '外部翻译联动：已启用（需另行安装 WinTranslator）' + #13#10
+    Result := Result + '外部翻译联动：已启用（需另行安装 HY-MT2 翻译机或 WinTranslator）' + #13#10
   else
     Result := Result + '外部翻译联动：未启用' + #13#10;
   Result := Result + #13#10 +
@@ -314,6 +316,7 @@ begin
   RequestCloseHelperProcess('srf_ime_settings.exe');
   RequestCloseHelperProcess('srf_ime_clipboard.exe');
   RequestCloseHelperProcess('srf_ime_handwrite.exe');
+  RequestCloseHelperProcess('srf_ime_symbols.exe');
   RequestCloseHelperProcess('srf_ime_ocr.exe');
   RequestCloseHelperProcess('srf_ime_translate_result.exe');
   RequestCloseHelperProcess('srf_ime_translate.exe');
@@ -321,6 +324,7 @@ begin
   WaitForProcessExit('srf_ime_settings.exe', 10);
   WaitForProcessExit('srf_ime_clipboard.exe', 10);
   WaitForProcessExit('srf_ime_handwrite.exe', 10);
+  WaitForProcessExit('srf_ime_symbols.exe', 10);
   WaitForProcessExit('srf_ime_ocr.exe', 10);
   WaitForProcessExit('srf_ime_translate_result.exe', 10);
   WaitForProcessExit('srf_ime_translate.exe', 10);
@@ -328,6 +332,7 @@ begin
   StopHelperProcess('srf_ime_settings.exe');
   StopHelperProcess('srf_ime_clipboard.exe');
   StopHelperProcess('srf_ime_handwrite.exe');
+  StopHelperProcess('srf_ime_symbols.exe');
   StopHelperProcess('srf_ime_ocr.exe');
   StopHelperProcess('srf_ime_translate_result.exe');
   StopHelperProcess('srf_ime_translate.exe');
@@ -430,6 +435,7 @@ begin
     RequestCloseHelperProcess('srf_ime_settings.exe');
     RequestCloseHelperProcess('srf_ime_clipboard.exe');
     RequestCloseHelperProcess('srf_ime_handwrite.exe');
+  RequestCloseHelperProcess('srf_ime_symbols.exe');
     RequestCloseHelperProcess('srf_ime_ocr.exe');
     RequestCloseHelperProcess('srf_ime_translate.exe');
     StopHelperProcess('srf_ime_clipboard_svc.exe');

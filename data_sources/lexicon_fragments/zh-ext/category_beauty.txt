@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：美妆个护
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+防晒霜	fang shai shuang	7614
+洗发水	xi fa shui	7489
+个人护理	ge ren hu li	6100
+保湿乳	bao shi ru	6100
+化妆刷	hua zhuang shua	6100
+卫生用品	wei sheng yong pin	6100
+卸妆水	xie zhuang shui	6100
+发型设计	fa xing she ji	6100
+发膜护理	fa mo hu li	6100
+唇膏口红	chun gao kou hong	6100
+唇部护理	chun bu hu li	6100
+头皮护理	tou pi hu li	6100
+定妆喷雾	ding zhuang pen wu	6100
+定妆粉	ding zhuang fen	6100
+干性皮肤	gan xing pi fu	6100
+底妆产品	di zhuang chan pin	6100
+彩妆产品	cai zhuang chan pin	6100
+护肤产品	hu fu chan pin	6100
+护肤步骤	hu fu bu zhou	6100
+指甲护理	zhi jia hu li	6100
+敏感肌	min gan ji	6100
+染发烫发	ran fa tang fa	6100
+油性皮肤	you xing pi fu	6100
+混合皮肤	hun he pi fu	6100
+理发预约	li fa yu yue	6100
+电动牙刷	dian dong ya shua	6100
+皮肤保湿	pi fu bao shi	6100
+皮肤护理	pi fu hu li	6100
+皮肤清洁	pi fu qing jie	6100
+眼影盘	yan ying pan	6100
+美妆蛋	mei zhuang dan	6100
+美甲预约	mei jia yu yue	6100
+肤质测试	fu zhi ce shi	6100
+腮红修容	sai hong xiu rong	6100
+身体乳	shen ti ru	6100
+遮瑕膏	zhe xia gao	6100
+面膜护理	mian mo hu li	6100
+粉底液	fen di ye	5833
+洗面奶	xi mian nai	5785
+精华液	jing hua ye	5621
+睫毛膏	jie mao gao	5070
+沐浴露	mu yu lu	4910
+化妆水	hua zhuang shui	4772
+牙线	ya xian	4135
+护发素	hu fa su	3262
+漱口水	shu kou shui	3070
+防晒乳	fang shai ru	2867
+眼线笔	yan xian bi	464
+保湿霜	bao shi shuang	374
+卸妆油	xie zhuang you	72

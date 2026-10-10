@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：能源电气
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+新能源	xin neng yuan	8628
+变电站	bian dian zhan	7931
+断路器	duan lu qi	6727
+保护装置	bao hu zhuang zhi	6100
+储能电池	chu neng dian chi	6100
+储能电站	chu neng dian zhan	6100
+储能系统	chu neng xi tong	6100
+光伏发电	guang fu fa dian	6100
+光伏电站	guang fu dian zhan	6100
+光伏组件	guang fu zu jian	6100
+光伏逆变器	guang fu ni bian qi	6100
+功率因数	gong lv yin shu	6100
+变频控制	bian pin kong zhi	6100
+峰谷电价	feng gu dian jia	6100
+接地保护	jie di bao hu	6100
+接地电阻	jie di dian zu	6100
+无功补偿	wu gong bu chang	6100
+核能发电	he neng fa dian	6100
+漏电保护	lou dian bao hu	6100
+火力发电	huo li fa dian	6100
+用电负荷	yong dian fu he	6100
+电力检修	dian li jian xiu	6100
+电力调度	dian li diao du	6100
+电机驱动	dian ji qu dong	6100
+电气图纸	dian qi tu zhi	6100
+电气安全	dian qi an quan	6100
+电气接线	dian qi jie xian	6100
+电气绝缘	dian qi jue yuan	6100
+电池管理系统	dian chi guan li xi tong	6100
+电缆接头	dian lan jie tou	6100
+电缆敷设	dian lan fu she	6100
+电缆桥架	dian lan qiao jia	6100
+电能质量	dian neng zhi liang	6100
+短路保护	duan lu bao hu	6100
+绝缘电阻	jue yuan dian zu	6100
+继电保护	ji dian bao hu	6100
+能源管理	neng yuan guan li	6100
+节能改造	jie neng gai zao	6100
+谐波治理	xie bo zhi li	6100
+输电线路	shu dian xian lu	6100
+过载保护	guo zai bao hu	6100
+配电房	pei dian fang	6100
+配电柜	pei dian gui	6100
+配电线路	pei dian xian lu	6100
+风力发电	feng li fa dian	6100
+风电机组	feng dian ji zu	6100
+水力发电	shui li fa dian	4661
+风电场	feng dian chang	2722
+自动控制	zi dong kong zhi	1210
+配电箱	pei dian xiang	533

@@ -1,0 +1,55 @@
+# 开心离线输入法分类补充：建筑施工
+# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
+# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
+# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+临边防护	lin bian fang hu	6100
+保温工程	bao wen gong cheng	6100
+吊装作业	diao zhuang zuo ye	6100
+图纸会审	tu zhi hui shen	6100
+土方工程	tu fang gong cheng	6100
+地基处理	di ji chu li	6100
+基坑开挖	ji keng kai wa	6100
+基坑支护	ji keng zhi hu	6100
+安全交底	an quan jiao di	6100
+工程变更	gong cheng bian geng	6100
+工程监理	gong cheng jian li	6100
+工程签证	gong cheng qian zheng	6100
+工程结算	gong cheng jie suan	6100
+工程质量	gong cheng zhi liang	6100
+工程量清单	gong cheng liang qing dan	6100
+工程预算	gong cheng yu suan	6100
+工程验收	gong cheng yan shou	6100
+幕墙工程	mu qiang gong cheng	6100
+技术交底	ji shu jiao di	6100
+文明施工	wen ming shi gong	6100
+施工围挡	shi gong wei dang	6100
+施工图纸	shi gong tu zhi	6100
+施工方案	shi gong fang an	6100
+施工日志	shi gong ri zhi	6100
+施工组织	shi gong zu zhi	6100
+施工进度	shi gong jin du	6100
+材料报验	cai liao bao yan	6100
+材料送检	cai liao song jian	6100
+构件安装	gou jian an zhuang	6100
+桩基施工	zhuang ji shi gong	6100
+模板安装	mu ban an zhuang	6100
+模板拆除	mu ban chai chu	6100
+消防工程	xiao fang gong cheng	6100
+混凝土养护	hun ning tu yang hu	6100
+混凝土浇筑	hun ning tu jiao zhu	6100
+现场管理	xian chang guan li	6100
+电气工程	dian qi gong cheng	6100
+砂浆配比	sha jiang pei bi	6100
+给排水工程	ji pai shui gong cheng	6100
+通风工程	tong feng gong cheng	6100
+钢筋加工	gang jin jia gong	6100
+钢筋绑扎	gang jin bang zha	6100
+钢筋连接	gang jin lian jie	6100
+防水工程	fang shui gong cheng	6100
+隐蔽验收	yin bi yan shou	6100
+验收资料	yan shou zi liao	6100
+高处作业	gao chu zuo ye	6100
+建筑节能	jian zhu jie neng	6000
+竣工验收	jun gong yan shou	6000
+装配式建筑	zhuang pei shi jian zhu	6000

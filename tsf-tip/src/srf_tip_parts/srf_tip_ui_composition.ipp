@@ -18,6 +18,9 @@ void CSrfTip::EnsureTrayHelperRunningAsync() {
 }
 
 HRESULT CSrfTip::_UnadviseSinks() {
+  // A host may retain the sink through an old composition after deactivation.
+  if (m_pCompSink) m_pCompSink->Detach();
+  UnbindTextContextSinks();
   if (m_deferredTimerHwnd) KillTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId);
   EndInputSession(L"host-deactivate", TF_INVALID_COOKIE, false);
   CancelDeferredCandidateRefresh();
@@ -42,6 +45,18 @@ HRESULT CSrfTip::_UnadviseSinks() {
     (void)m_pSource->UnadviseSink(m_dwThreadMgrSinkCookie);
     m_dwThreadMgrSinkCookie = TF_INVALID_COOKIE;
   }
+  if (m_pSource && m_dwKeyTraceSinkCookie != TF_INVALID_COOKIE) {
+    (void)m_pSource->UnadviseSink(m_dwKeyTraceSinkCookie);
+    m_dwKeyTraceSinkCookie = TF_INVALID_COOKIE;
+  }
+  if (m_pKeySink) m_pKeySink->ResetKeyState();
+  m_gameChatActive = false;
+  m_gameChatPhase = SrfGameChatPhase::Passive;
+  m_gameChatSource = SrfGameTextSource::None;
+  m_gameEditableVerified = false;
+  m_gameTsfEvidence = {};
+  ++m_gameTsfProbeSerial;
+  m_gameTsfProbePending = false;
 
   if (m_pThreadMgrSink) {
     m_pThreadMgrSink->Release();
@@ -197,7 +212,9 @@ void CSrfTip::RefreshCandidateWindowEnvironment() {
   bool foundRect = false;
   const wchar_t* source = L"environment-existing";
   UINT quality = m_lastCandidateAnchorQuality;
-  if (gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret) {
+  if (gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret &&
+      (overlayAnchor != SrfOverlayAnchor::Auto || !m_gameEditableVerified ||
+       (overlayOptions && overlayOptions->hasOverlayMonitor && overlayOptions->overlayMonitor != L"auto"))) {
     foundRect = ResolveCandidateGameOverlayAnchor(
         target, fullscreenOverlay, overlayOptions, &rect);
     if (foundRect) {
@@ -279,7 +296,9 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
   const bool fullscreenOverlay = FullscreenCandidateOverlayActive();
   const SrfAppOptions* overlayOptions = FindAppOptions(m_config, CompatibilityAppName());
   const SrfOverlayAnchor overlayAnchor = EffectiveOverlayAnchor(overlayOptions);
-  const bool fixedGameOverlay = gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret;
+  const bool fixedGameOverlay = gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret &&
+      (overlayAnchor != SrfOverlayAnchor::Auto ||
+       (overlayOptions && overlayOptions->hasOverlayMonitor && overlayOptions->overlayMonitor != L"auto"));
   const bool windowFocusPolicy = focusPolicy == SrfFocusPolicy::Window;
   const bool allowTextExt = !fixedGameOverlay && !windowFocusPolicy;
   const bool allowGuiCaret =
@@ -324,6 +343,28 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
     if (foundRect) {
       anchorSource = L"gui-caret";
       anchorQuality = kCandidateAnchorQualityCaret;
+    }
+  }
+  if (!foundRect && gameOverlay && !fixedGameOverlay && m_gameEditableVerified &&
+      IsUsableRect(m_gameEditableBounds)) {
+    RECT visible = {}, target = {};
+    HWND hwnd = CandidateOverlayTargetWindow();
+    GetWindowRect(hwnd, &target);
+    if (IntersectRect(&visible, &target, &m_gameEditableBounds)) {
+      rect = visible;
+      rect.right = rect.left + 1;
+      foundRect = true;
+      anchorSource = L"verified-input-field";
+      anchorQuality = kCandidateAnchorQualityCaret;
+    }
+  }
+  if (!foundRect && gameOverlay && overlayAnchor == SrfOverlayAnchor::Auto) {
+    foundRect = ResolveCandidateGameOverlayAnchor(CandidateOverlayTargetWindow(),
+        fullscreenOverlay, overlayOptions, &rect);
+    if (foundRect) {
+      anchorSource = L"game-overlay-fallback";
+      anchorQuality = kCandidateAnchorQualityWindow;
+      overlayOffsetApplied = true;
     }
   }
   if (!foundRect && context) {
@@ -750,79 +791,54 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
                                             const std::wstring& text, LONG cursorOffset) {
   if (!pic) return E_INVALIDARG;
   if (text.empty()) return S_OK;
-  if (m_gameChatActive && GetAncestor(GetForegroundWindow(), GA_ROOT) != m_gameChatOwner)
-    return HRESULT_FROM_WIN32(ERROR_CANCELLED);
+  const SrfFocusSnapshot commitFocus = CaptureFocusSnapshot(pic);
+  DWORD foregroundPid = 0;
+  GetWindowThreadProcessId(GetForegroundWindow(), &foregroundPid);
+  if (m_gameChatActive && (GetAncestor(GetForegroundWindow(), GA_ROOT) != m_gameChatOwner ||
+      foregroundPid != m_gameChatOwnerProcessId)) return HRESULT_FROM_WIN32(ERROR_CANCELLED);
 
   const LONG textLength = static_cast<LONG>(text.size());
   if (cursorOffset < 0 || cursorOffset > textLength) cursorOffset = textLength;
   const bool cursorAtEnd = cursorOffset == textLength;
+  const SrfCommitTransport commitTransport = EffectiveCommitTransport();
 
-  // Clean up any stale composition first.
+  // End host preedit before external delivery, but keep the local reading and
+  // candidates until delivery succeeds. A rejected paste remains editable.
   if (m_pComposition) {
-    CancelCompositionEdit(ec);
-    ReleaseCompositionObjects();
+    if (cursorAtEnd && commitTransport != SrfCommitTransport::Tsf) {
+      ITfRange* range = nullptr;
+      HRESULT cleanup = m_pComposition->GetRange(&range);
+      if (SUCCEEDED(cleanup) && range) {
+        cleanup = range->SetText(ec, 0, L"", 0);
+        range->Release();
+      } else if (SUCCEEDED(cleanup)) cleanup = E_FAIL;
+      if (FAILED(cleanup)) return cleanup;
+      cleanup = FinishCompositionPreservingText(ec);
+      if (FAILED(cleanup)) return cleanup;
+    } else {
+      CancelCompositionEdit(ec);
+      ReleaseCompositionObjects();
+    }
   }
 
-  const SrfCommitTransport commitTransport = EffectiveCommitTransport();
   if (cursorAtEnd && commitTransport != SrfCommitTransport::Tsf) {
     HRESULT transportHr = E_FAIL;
     if (commitTransport == SrfCommitTransport::ClipboardPaste) {
       if (ShouldSuppressClipboardForPrivacy()) {
         transportHr = HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
       } else {
-        transportHr = PasteUnicodeTextViaClipboard(text);
+        transportHr = PasteUnicodeTextViaClipboard(text, this,
+            [&]() { return FocusSnapshotMatches(commitFocus); });
       }
     } else if (commitTransport == SrfCommitTransport::UnicodeSendInput) {
-      bool appGameProfile = false;
-      if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
-        appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
-      }
-      const bool unicodeGameProbe =
-          appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
-          m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
-      const HWND unicodeTarget = GetForegroundWindow();
-      DWORD unicodeTargetProcessId = 0;
-      if (unicodeTarget) {
-        (void)GetWindowThreadProcessId(unicodeTarget, &unicodeTargetProcessId);
-      }
-      transportHr = SendUnicodeTextInput(text);
-      bool unicodeTargetDisappeared = false;
-      if (SUCCEEDED(transportHr) && unicodeTarget && unicodeTargetProcessId != 0) {
-        // SendInput can report all packets accepted even when an anti-cheat or
-        // elevated host terminates the target immediately afterwards. Treat a
-        // vanished target as a failed probe so the next commit is clipboard-
-        // based instead of repeatedly exercising the crashing path.
-        Sleep(8);
-        if (!UnicodeInputTargetStillAlive(unicodeTarget, unicodeTargetProcessId)) {
-          unicodeTargetDisappeared = true;
-          transportHr = HRESULT_FROM_WIN32(ERROR_PROCESS_ABORTED);
-          if (unicodeGameProbe) MarkUnicodeFallbackApp(CompatibilityAppName());
-          SrfTsfDiagnosticLog(L"commit-transport-fallback",
-                              L"from=unicode_sendinput, reason=target_disappeared");
-        }
-      }
-      if (FAILED(transportHr) && transportHr != HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) &&
-          !IsGameHotkeyPassthroughActive() && !unicodeTargetDisappeared &&
-          !ShouldSuppressClipboardForPrivacy()) {
-        if (unicodeGameProbe) MarkUnicodeFallbackApp(CompatibilityAppName());
-        const HRESULT pasteHr = PasteUnicodeTextViaClipboard(text);
-        std::wstring fallbackLine = L"from=unicode_sendinput, to=clipboard_paste, status=";
-        fallbackLine += SUCCEEDED(pasteHr) ? L"ok" : L"failed";
-        if (FAILED(pasteHr)) {
-          wchar_t hrBuf[16] = {};
-          swprintf_s(hrBuf, L"%08lX", static_cast<unsigned long>(pasteHr));
-          fallbackLine += L", hr=0x";
-          fallbackLine += hrBuf;
-        }
-        SrfTsfDiagnosticLog(L"commit-transport-fallback", fallbackLine.c_str());
-        if (SUCCEEDED(pasteHr)) transportHr = S_OK;
-      }
+      transportHr = FocusSnapshotMatches(commitFocus) ? SendUnicodeTextInput(text) :
+          HRESULT_FROM_WIN32(ERROR_CANCELLED);
     }
 
     std::wstring line = L"transport=";
     line += EffectiveCommitTransportName();
     line += L", status=";
-    line += SUCCEEDED(transportHr) ? L"ok" : L"fallback_tsf";
+    line += SUCCEEDED(transportHr) ? L"sent_unconfirmed" : L"failed";
     line += L", len=";
     line += std::to_wstring(text.size());
     if (FAILED(transportHr)) {
@@ -834,8 +850,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
     SrfTsfDiagnosticLog(L"commit-transport", line.c_str());
 
     if (SUCCEEDED(transportHr)) return S_OK;
-    if (IsGameHotkeyPassthroughActive() || transportHr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY))
-      return transportHr;
+    // An explicit transport never silently changes delivery method.
+    return transportHr;
   }
 
   auto insertAtSelectionOnly = [&]() -> HRESULT {
@@ -891,18 +907,21 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
     ITfRange* range = nullptr;
     hr = m_pComposition->GetRange(&range);
     if (SUCCEEDED(hr) && range) {
-      hr = range->SetText(ec, 0, text.c_str(), static_cast<LONG>(text.size()));
-      if (SUCCEEDED(hr)) {
-        (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
-      }
-      if (SUCCEEDED(hr)) {
-        const HRESULT endHr = m_pComposition->EndComposition(ec);
+      const auto result = SrfWriteAndFinishComposition([&]() {
+        const HRESULT write = range->SetText(ec, 0, text.c_str(), static_cast<LONG>(text.size()));
+        if (SUCCEEDED(write)) (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
+        return write;
+      }, [&]() {
+        const HRESULT endHr = FinishCompositionPreservingText(ec);
         if (SUCCEEDED(endHr)) {
           (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
         }
-        hr = endHr;
-      }
+        return endHr;
+      });
+      hr = result.write;
       range->Release();
+    } else if (SUCCEEDED(hr)) {
+      hr = E_FAIL;
     }
     ClearCompositionBufferState();
     ReleaseCompositionObjects();
