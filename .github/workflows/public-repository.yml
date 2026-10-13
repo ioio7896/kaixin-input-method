@@ -58,6 +58,6 @@ jobs:
       - name: Configure TSF and native policy tests
         run: cmake -S tsf-tip -B dist/ci-tsf-${{ matrix.architecture }} -A ${{ matrix.architecture }}
       - name: Build TSF, overlay, and native tests
-        run: cmake --build dist/ci-tsf-${{ matrix.architecture }} --config Release --parallel 1 --target srf_tsf_tip srf_ime_overlay srf_policy_tests srf_game_config_tests srf_security_io_tests -- /nodeReuse:false
+        run: cmake --build dist/ci-tsf-${{ matrix.architecture }} --config Release --parallel 1 --target srf_tsf_tip srf_ime_overlay srf_policy_tests srf_game_config_tests srf_security_io_tests srf_candidate_window_tests -- /nodeReuse:false
       - name: Run native regression tests
         run: ctest --test-dir dist/ci-tsf-${{ matrix.architecture }} -C Release --output-on-failure
