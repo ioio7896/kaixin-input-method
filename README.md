@@ -11,6 +11,14 @@
 
 [下载安装包](https://github.com/ioio7896/kaixin-input-method/releases/latest) · [反馈问题](https://github.com/ioio7896/kaixin-input-method/issues) · [查看更新记录](https://github.com/ioio7896/kaixin-input-method/blob/main/CHANGELOG.md)
 
+## 2026-10-13 更新
+
+- 明确全拼时优先展示精确整词；首批、完整结果和缓存使用统一规则。
+- 后台补全保持有效候选顺序，发生选词、鼠标或翻页交互后冻结序号。
+- 当前输入习惯的额外提权要求重复选择证据；连续输入合并等待不再反复延后。
+- 补充引擎健康状态、输入稳定性、候选窗回归测试及分类词库更新。
+- 提供纯输入法版和输入法＋OCR版两个安装器，见[最新发布](https://github.com/ioio7896/kaixin-input-method/releases/latest)。
+
 ## 可以用它做什么？
 
 | 功能 | 可以帮你做什么 |

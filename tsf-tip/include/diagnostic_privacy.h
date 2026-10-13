@@ -27,6 +27,7 @@ inline bool IsSafeDiagnosticKey(const std::wstring& key) {
       L"compathide", L"composing", L"contextempty", L"count", L"currentserial", L"cursor",
       L"delayms", L"direct", L"dwflags", L"elapsed", L"elapsed_ms", L"engine", L"fallback",
       L"flags", L"full", L"generation", L"grace_ms_left", L"hasanchor", L"hasrect", L"hr",
+      L"error",
       L"immersive", L"integrity", L"items", L"lookup_status", L"offset", L"page", L"pages",
       L"partial", L"pid", L"prefix_placeholder", L"reason", L"request_id", L"refreshcandidates",
       L"retained", L"retry", L"raw_fallback_suppressed", L"secure", L"selected",
@@ -83,7 +84,8 @@ inline bool IsSafeDiagnosticValue(const std::wstring& key, const std::wstring& v
         L"resolve_failed", L"resolve_failed_fallback_inline", L"syllable_bounds_unavailable",
         L"clipboard_transport", L"clipboard_changed_during_paste", L"single-char-continuation",
         L"candidate-interaction", L"async-drop-stale", L"async-drop-pending",
-        L"result-reading-mismatch", L"async-drop-focus", L"focus", L"cancelled", L"timeout"};
+        L"result-reading-mismatch", L"async-drop-focus", L"focus", L"cancelled", L"timeout",
+        L"watchdog_mutex_missing", L"watchdog_probe_unconfirmed"};
     for (const wchar_t* safe : values) if (lowerValue == safe) return true;
   } else if (lowerKey == L"stage") {
     static constexpr const wchar_t* values[] = {

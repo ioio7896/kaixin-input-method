@@ -3,7 +3,7 @@
 use crate::text_encoding::read_text_file;
 use std::cell::RefCell;
 use std::cmp::Reverse;
-use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
 use std::fs;
 use std::io::{self, BufReader, BufWriter, Cursor, Read, Write};
 use std::path::{Path, PathBuf};
@@ -929,6 +929,9 @@ pub struct AbbrevLexicon {
     phrases: Vec<Arc<str>>,
     phrase_freq: Vec<u64>,
     phrase_layer: Vec<LexiconLayer>,
+    /// Optional category tags per exact reading and phrase for cold recall.
+    /// `None` means a mandatory source also provides this reading.
+    cold_source_tags: BTreeMap<(String, u32), Option<BTreeSet<String>>>,
     phrase_ids: Option<HashMap<Arc<str>, u32>>,
     runtime: RefCell<RuntimeIndexes>,
     /// Build-time counter: number of Base entries skipped from mixed-hot index
@@ -948,6 +951,7 @@ impl Default for AbbrevLexicon {
             phrases: Vec::new(),
             phrase_freq: Vec::new(),
             phrase_layer: Vec::new(),
+            cold_source_tags: BTreeMap::new(),
             phrase_ids: Some(HashMap::new()),
             runtime: RefCell::new(RuntimeIndexes::default()),
             mixed_hot_base_skipped: 0,
@@ -967,6 +971,7 @@ impl Clone for AbbrevLexicon {
             phrases: self.phrases.clone(),
             phrase_freq: self.phrase_freq.clone(),
             phrase_layer: self.phrase_layer.clone(),
+            cold_source_tags: self.cold_source_tags.clone(),
             phrase_ids: self.phrase_ids.clone(),
             runtime: RefCell::new(RuntimeIndexes::default()),
             mixed_hot_base_skipped: self.mixed_hot_base_skipped,
@@ -1019,26 +1024,72 @@ impl AbbrevLexicon {
         self.pinyin_inner.len()
     }
 
-    /// Build an indexed disk fallback alongside the full prebaked lexicon.
+    /// Build an indexed disk fallback with category-aware exact recall.
     pub fn save_cold_index(&self, path: &Path) -> rusqlite::Result<()> {
         let mut db = rusqlite::Connection::open(path)?;
         let tx = db.transaction()?;
-        tx.execute_batch("DROP TABLE IF EXISTS entries; CREATE TABLE entries (reading TEXT NOT NULL, ordinal INTEGER NOT NULL, phrase TEXT NOT NULL, freq INTEGER NOT NULL, PRIMARY KEY(reading, ordinal)) WITHOUT ROWID; PRAGMA user_version=1;")?;
+        tx.execute_batch(
+            "DROP TABLE IF EXISTS entries;
+             DROP TABLE IF EXISTS optional_tags;
+             CREATE TABLE entries (
+               reading TEXT NOT NULL,
+               ordinal INTEGER NOT NULL,
+               phrase TEXT NOT NULL,
+               freq INTEGER NOT NULL,
+               source_tag TEXT NOT NULL,
+               PRIMARY KEY(reading, phrase, source_tag)
+             ) WITHOUT ROWID;
+             CREATE TABLE optional_tags (tag TEXT PRIMARY KEY) WITHOUT ROWID;
+             CREATE INDEX idx_cold_entries_reading_order
+               ON entries(reading, ordinal);
+             PRAGMA user_version=2;",
+        )?;
         {
-            let mut insert = tx.prepare("INSERT INTO entries VALUES (?1, ?2, ?3, ?4)")?;
+            let mut insert =
+                tx.prepare("INSERT OR REPLACE INTO entries VALUES (?1, ?2, ?3, ?4, ?5)")?;
+            let mut insert_tag = tx.prepare("INSERT OR IGNORE INTO optional_tags VALUES (?1)")?;
             for key in self
                 .pinyin_inner
                 .keys()
                 .chain(self.long_pinyin_hot_inner.keys())
                 .collect::<std::collections::BTreeSet<_>>()
             {
-                if let Some(entries) = self.lookup_pinyin(key) {
-                    for (ordinal, entry) in entries.iter().take(16).enumerate() {
+                let Some(entries) = self.merged_pinyin_entries(key, PREBAKED_ENTRIES_PER_KEY_TOP_K)
+                else {
+                    continue;
+                };
+                let mut per_source = BTreeMap::<String, Vec<(usize, &CompactEntry)>>::new();
+                for (ordinal, entry) in entries.iter().enumerate() {
+                    if self.resolve_phrase(entry.phrase_id).is_none() {
+                        continue;
+                    }
+                    match self.cold_source_tags.get(&(key.clone(), entry.phrase_id)) {
+                        Some(Some(tags)) if !tags.is_empty() => {
+                            for tag in tags {
+                                per_source
+                                    .entry(tag.clone())
+                                    .or_default()
+                                    .push((ordinal, entry));
+                                insert_tag.execute([tag])?;
+                            }
+                        }
+                        _ => per_source
+                            .entry(String::new())
+                            .or_default()
+                            .push((ordinal, entry)),
+                    }
+                }
+                for (source_tag, candidates) in per_source {
+                    for (ordinal, entry) in candidates.into_iter().take(16) {
+                        let Some(phrase) = self.resolve_phrase(entry.phrase_id) else {
+                            continue;
+                        };
                         insert.execute(rusqlite::params![
                             key,
                             ordinal as i64,
-                            entry.phrase,
-                            entry.freq.min(i64::MAX as u64) as i64
+                            phrase,
+                            entry.freq.min(i64::MAX as u64) as i64,
+                            source_tag,
                         ])?;
                     }
                 }
@@ -1095,6 +1146,15 @@ impl AbbrevLexicon {
         entry: ThuoclEntry,
         source_layer: LexiconLayer,
     ) -> bool {
+        self.insert_parsed_with_source_tag(entry, source_layer, None)
+    }
+
+    fn insert_parsed_with_source_tag(
+        &mut self,
+        entry: ThuoclEntry,
+        source_layer: LexiconLayer,
+        optional_source_tag: Option<&str>,
+    ) -> bool {
         let mut inserted = false;
         let phrase_id = self.intern_phrase(&entry.phrase, entry.freq, source_layer);
         let explicit_code = entry
@@ -1119,6 +1179,7 @@ impl AbbrevLexicon {
             let v = self.pinyin_inner.entry(key.clone()).or_default();
             merge_compact_entry_with_kind(v, phrase_id, entry.freq, entry.pronunciation_kind);
             trim_compact_entries(v, PREBAKED_ENTRIES_PER_KEY_TOP_K);
+            self.note_cold_source(key, phrase_id, optional_source_tag);
             inserted = true;
         }
         if should_index_long_phrase_hot(
@@ -1167,6 +1228,27 @@ impl AbbrevLexicon {
         }
         self.mark_runtime_dirty();
         inserted
+    }
+
+    fn note_cold_source(&mut self, reading: &str, phrase_id: u32, tag: Option<&str>) {
+        if let Some(tag) = tag {
+            let entry = self
+                .cold_source_tags
+                .entry((reading.to_string(), phrase_id))
+                .or_insert_with(|| Some(BTreeSet::new()));
+            if let Some(tags) = entry {
+                tags.insert(tag.to_string());
+            }
+        } else {
+            // A mandatory source makes this phrase available regardless of
+            // optional category switches. Record that fact even when this is
+            // the first copy seen, so a later optional duplicate cannot
+            // incorrectly hide it when the category is disabled.
+            *self
+                .cold_source_tags
+                .entry((reading.to_string(), phrase_id))
+                .or_insert(None) = None;
+        }
     }
 
     pub fn lookup(&self, abbrev_lower: &str) -> Option<Arc<[ThuoclEntry]>> {
@@ -2370,6 +2452,7 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
         phrases,
         phrase_freq,
         phrase_layer,
+        cold_source_tags: BTreeMap::new(),
         runtime: RefCell::new(runtime),
         mixed_hot_base_skipped: 0,
     })
@@ -2600,6 +2683,7 @@ fn load_paths(
     let mut phrase_first_seen: HashMap<String, (PathBuf, Option<String>, u64)> = HashMap::new();
 
     for path in paths {
+        let optional_source_tag = crate::lexicon_prefs::optional_lexicon_path_tag(path);
         let text = match read_text_file(path) {
             Ok(t) => t,
             Err(e) => {
@@ -2652,6 +2736,7 @@ fn load_paths(
                 line_no + 1,
                 line,
                 parsed,
+                optional_source_tag.as_deref(),
             );
         }
     }
@@ -2864,6 +2949,7 @@ fn index_entry(
     line_no: usize,
     line: &str,
     entry: Option<ThuoclEntry>,
+    optional_source_tag: Option<&str>,
 ) {
     let Some(mut entry) = entry else {
         return;
@@ -2882,7 +2968,8 @@ fn index_entry(
         PronunciationKind::Historical => entry.freq.min(1_000),
         _ => entry.freq,
     };
-    if lex.insert_parsed_with_layer(entry, LexiconLayer::from_path(path)) {
+    if lex.insert_parsed_with_source_tag(entry, LexiconLayer::from_path(path), optional_source_tag)
+    {
         report.entries_indexed += 1;
     } else {
         report.lines_skipped_no_abbrev += 1;
@@ -3096,6 +3183,23 @@ mod tests {
             .lookup_pinyin("buluofen")
             .is_some_and(|entries| entries.iter().any(|entry| entry.phrase == "布洛芬")));
         assert!(lexicon.lookup_pinyin("jiaxiaozuopian").is_none());
+    }
+
+    #[test]
+    fn mandatory_cold_source_wins_over_optional_duplicate() {
+        let mut lexicon = AbbrevLexicon::default();
+        lexicon.note_cold_source("nihao", 7, Some("animals"));
+        assert_eq!(
+            lexicon.cold_source_tags.get(&("nihao".to_string(), 7)),
+            Some(&Some(BTreeSet::from(["animals".to_string()])))
+        );
+
+        lexicon.note_cold_source("nihao", 7, None);
+        lexicon.note_cold_source("nihao", 7, Some("animals"));
+        assert_eq!(
+            lexicon.cold_source_tags.get(&("nihao".to_string(), 7)),
+            Some(&None)
+        );
     }
 }
 

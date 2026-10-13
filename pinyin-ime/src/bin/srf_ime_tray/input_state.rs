@@ -1,5 +1,6 @@
 fn read_tray_visual_state() -> TrayVisualState {
     let sequence_before = read_state_qword(STATE_REG_VALUE_INPUT_SEQUENCE);
+    let engine_health = pinyin_ime::engine_health::current();
     let mut state = TrayVisualState {
         ascii_mode: read_state_dword(STATE_REG_VALUE_INPUT_ASCII).map(|value| value != 0),
         mode_source: read_state_string(STATE_REG_VALUE_INPUT_MODE_SOURCE),
@@ -11,9 +12,8 @@ fn read_tray_visual_state() -> TrayVisualState {
         owner_hwnd: read_state_qword(STATE_REG_VALUE_INPUT_OWNER_HWND),
         updated_tick: read_state_qword(STATE_REG_VALUE_INPUT_UPDATED_TICK),
         sequence: sequence_before,
-        engine_state: TrayEngineState::from_registry(read_state_dword(
-            STATE_REG_VALUE_ENGINE_STATE,
-        )),
+        engine_state: TrayEngineState::from_registry(Some(engine_health.state)),
+        engine_error_code: engine_health.error_code,
         last_recovery_reason: read_state_string(STATE_REG_VALUE_LAST_ENGINE_RECOVERY_REASON),
         last_recovery_time: read_state_string(STATE_REG_VALUE_LAST_ENGINE_RECOVERY_TIME),
     };
@@ -27,6 +27,7 @@ fn read_tray_visual_state() -> TrayVisualState {
     }
     state
 }
+
 fn input_snapshot_matches_foreground(state: &TrayVisualState) -> bool {
     let (Some(owner_pid), Some(owner_hwnd), Some(updated_tick), Some(sequence)) = (
         state.owner_process_id,
@@ -79,12 +80,18 @@ fn tray_tooltip_text(state: &TrayVisualState) -> String {
         None => "未知",
     };
     let source = mode_source_label(state.mode_source.as_deref());
+    let engine = match state.engine_error_code {
+        Some(code) if state.engine_state == TrayEngineState::Failed => {
+            format!("{}（故障码 {code}）", state.engine_state.label())
+        }
+        _ => state.engine_state.label().to_string(),
+    };
 
     let mut lines = vec![
         format!("{TRAY_TIP}  {mode}"),
         format!("标点：{punctuation}  字符：{shape}"),
         format!("来源：{source}"),
-        format!("引擎：{}", state.engine_state.label()),
+        format!("引擎：{engine}"),
     ];
     if let Some(reason) = state.last_recovery_reason.as_deref() {
         let time = state
@@ -92,7 +99,7 @@ fn tray_tooltip_text(state: &TrayVisualState) -> String {
             .as_deref()
             .map(short_time_label)
             .unwrap_or("时间未知");
-        lines.push(format!("最近：{time} {}", shorten_chars(reason, 34)));
+        lines.push(format!("历史恢复：{time} {}", shorten_chars(reason, 30)));
     }
     lines.join("\n")
 }

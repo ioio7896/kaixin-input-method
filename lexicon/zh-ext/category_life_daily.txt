@@ -1,0 +1,551 @@
+# 开心输入法分类补充：生活日常
+# 项目整理的聊天、饮食、家务、出行、家庭照料与身体天气常用表达；未采集私人消息或用户输入。
+# 拼音：pypinyin 0.55.0；格式：词语<TAB>全拼<TAB>万分制基础排序分数。
+我刚看到消息	wo gang kan dao xiao xi	8000
+你忙完了吗	ni mang wan le ma	8000
+我马上下来	wo ma shang xia lai	8000
+我到楼下了	wo dao lou xia le	8000
+我已经出门了	wo yi jing chu men le	8000
+我还在路上	wo hai zai lu shang	8000
+我快到家了	wo kuai dao jia le	8000
+你到哪里了	ni dao na li le	8000
+你什么时候到	ni shen me shi hou dao	8000
+我现在不方便	wo xian zai bu fang bian	8000
+我晚点回复你	wo wan dian hui fu ni	8000
+我一会儿联系你	wo yi hui er lian xi ni	8000
+手机快没电了	shou ji kuai mei dian le	8000
+手机正在充电	shou ji zheng zai chong dian	8000
+信号不太好	xin hao bu tai hao	8000
+你发个定位	ni fa ge ding wei	8000
+把地址发给我	ba di zhi fa gei wo	8000
+我在门口等你	wo zai men kou deng ni	8000
+我已经到了	wo yi jing dao le	8000
+我马上就到	wo ma shang jiu dao	8000
+等我两分钟	deng wo liang fen zhong	8000
+稍等我一下	shao deng wo yi xia	8000
+我马上回来	wo ma shang hui lai	8000
+你先忙你的	ni xian mang ni de	8000
+今天有点累	jin tian you dian lei	8000
+今天有点忙	jin tian you dian mang	8000
+我们改天再约	wo men gai tian zai yue	8000
+下次一起吃饭	xia ci yi qi chi fan	8000
+周末有什么安排	zhou mo you shen me an pai	8000
+明天有时间吗	ming tian you shi jian ma	8000
+我下班就过去	wo xia ban jiu guo qu	8000
+今天早点回家	jin tian zao dian hui jia	8000
+路上注意安全	lu shang zhu yi an quan	8000
+前面有点堵车	qian mian you dian du che	8000
+我已经上车了	wo yi jing shang che le	8000
+车停在楼下	che ting zai lou xia	8000
+帮我看一下门	bang wo kan yi xia men	8000
+别忘了带钥匙	bie wang le dai yao shi	8000
+出门记得关门	chu men ji de guan men	8000
+记得带上雨伞	ji de dai shang yu san	8000
+帮我占个位置	bang wo zhan ge wei zhi	8000
+我先去排队	wo xian qu pai dui	8000
+我陪你一起去	wo pei ni yi qi qu	8000
+我们一起走吧	wo men yi qi zou ba	8000
+我在附近等你	wo zai fu jin deng ni	8000
+刚才没有听见	gang cai mei you ting jian	8000
+刚刚在开车	gang gang zai kai che	8000
+方便的时候回我	fang bian de shi hou hui wo	8000
+我先去吃饭了	wo xian qu chi fan le	8000
+我先去洗澡了	wo xian qu xi zao le	8000
+我准备睡觉了	wo zhun bei shui jiao le	8000
+我刚吃完饭	wo gang chi wan fan	8000
+我还没吃饭	wo hai mei chi fan	8000
+你先吃不用等我	ni xian chi bu yong deng wo	8000
+我先去忙了	wo xian qu mang le	8000
+早点休息别熬夜	zao dian xiu xi bie ao ye	8000
+有事随时给我打电话	you shi sui shi gei wo da dian hua	8000
+到家记得报个平安	dao jia ji de bao ge ping an	8000
+我已经在路上了	wo yi jing zai lu shang le	8000
+我还要十分钟到	wo hai yao shi fen zhong dao	8000
+我在小区门口	wo zai xiao qu men kou	8000
+我刚刚下地铁	wo gang gang xia di tie	8000
+我来接你回家	wo lai jie ni hui jia	8000
+等你有空再说	deng ni you kong zai shuo	8000
+我刚刚才看见	wo gang gang cai kan jian	8000
+今天晚点回家	jin tian wan dian hui jia	8000
+我可能要晚一点	wo ke neng yao wan yi dian	8000
+我已经准备好了	wo yi jing zhun bei hao le	8000
+等会儿一起出门	deng hui er yi qi chu men	8000
+我先去接孩子	wo xian qu jie hai zi	8000
+到了给我发个消息	dao le gei wo fa ge xiao xi	8000
+今天路上特别堵	jin tian lu shang te bie du	8000
+我在地铁站等你	wo zai di tie zhan deng ni	8000
+我刚刚错过电话	wo gang gang cuo guo dian hua	8000
+我这会儿有点事情	wo zhe hui er you dian shi qing	8000
+麻烦你等我一会儿	ma fan ni deng wo yi hui er	8000
+我这就出发	wo zhe jiu chu fa	8000
+我已经叫好车了	wo yi jing jiao hao che le	8000
+车马上就到了	che ma shang jiu dao le	8000
+下楼的时候叫我	xia lou de shi hou jiao wo	8000
+咱们路上再说	zan men lu shang zai shuo	8000
+我顺路给你带	wo shun lu gei ni dai	8000
+今天过得怎么样	jin tian guo de zen me yang	8000
+我先回家一趟	wo xian hui jia yi tang	8000
+吃完我们再回去	chi wan wo men zai hui qu	8000
+我把位置发给你	wo ba wei zhi fa gei ni	8000
+我们几点出发	wo men ji dian chu fa	8000
+附近哪里可以停车	fu jin na li ke yi ting che	8000
+今天中午吃什么	jin tian zhong wu chi shen me	8000
+今天晚上吃什么	jin tian wan shang chi shen me	8000
+晚上想吃什么菜	wan shang xiang chi shen me cai	8000
+我们出去吃饭吧	wo men chu qu chi fan ba	8000
+要不要一起吃饭	yao bu yao yi qi chi fan	8000
+附近有什么好吃的	fu jin you shen me hao chi de	8000
+我想吃清淡一点	wo xiang chi qing dan yi dian	8000
+我想吃点热乎的	wo xiang chi dian re hu de	8000
+我不太能吃辣	wo bu tai neng chi la	8000
+这个有点太咸了	zhe ge you dian tai xian le	8000
+麻烦少放一点辣	ma fan shao fang yi dian la	8000
+少放辣椒和花椒	shao fang la jiao he hua jiao	8000
+不要放香菜	bu yao fang xiang cai	8000
+不要放葱花	bu yao fang cong hua	8000
+葱花少放一点	cong hua shao fang yi dian	8000
+不要加蒜	bu yao jia suan	8000
+麻烦多加一份饭	ma fan duo jia yi fen fan	8000
+米饭少来一点	mi fan shao lai yi dian	8000
+多加一碗米饭	duo jia yi wan mi fan	8000
+帮我打包带走	bang wo da bao dai zou	8000
+剩下的帮我打包	sheng xia de bang wo da bao	8000
+我想要一杯热水	wo xiang yao yi bei re shui	8000
+这杯饮料少放糖	zhe bei yin liao shao fang tang	8000
+不要加冰谢谢	bu yao jia bing xie xie	8000
+少冰常温都可以	shao bing chang wen dou ke yi	8000
+我对花生过敏	wo dui hua sheng guo min	8000
+这道菜里面有花生吗	zhe dao cai li mian you hua sheng ma	8000
+麻烦给我一套餐具	ma fan gei wo yi tao can ju	8000
+不用给我餐具	bu yong gei wo can ju	8000
+可以先上凉菜吗	ke yi xian shang liang cai ma	8000
+我们已经点好菜了	wo men yi jing dian hao cai le	8000
+麻烦帮我催一下菜	ma fan bang wo cui yi xia cai	8000
+菜还没有上齐	cai hai mei you shang qi	8000
+可以加一副碗筷吗	ke yi jia yi fu wan kuai ma	8000
+还有包间吗	hai you bao jian ma	8000
+两个人有位置吗	liang ge ren you wei zhi ma	8000
+帮我预留一个座位	bang wo yu liu yi ge zuo wei	8000
+能不能拼个桌	neng bu neng pin ge zhuo	8000
+可以扫码点餐吗	ke yi sao ma dian can ma	8000
+请问在哪里结账	qing wen zai na li jie zhang	8000
+可以分开付款吗	ke yi fen kai fu kuan ma	8000
+这桌我来买单	zhe zhuo wo lai mai dan	8000
+我已经付款了	wo yi jing fu kuan le	8000
+我去拿外卖	wo qu na wai mai	8000
+外卖送到楼下吧	wai mai song dao lou xia ba	8000
+外卖放在门口就行	wai mai fang zai men kou jiu xing	8000
+送到小区门卫那里	song dao xiao qu men wei na li	8000
+麻烦不要敲门	ma fan bu yao qiao men	8000
+餐到了提醒我一下	can dao le ti xing wo yi xia	8000
+可以再加一份小菜吗	ke yi zai jia yi fen xiao cai ma	8000
+帮我带杯奶茶	bang wo dai bei nai cha	8000
+少糖去冰	shao tang qu bing	8000
+半糖少冰	ban tang shao bing	8000
+微辣就可以了	wei la jiu ke yi le	8000
+不要太油	bu yao tai you	8000
+我吃不下这么多	wo chi bu xia zhe me duo	8000
+我们再加两个菜	wo men zai jia liang ge cai	8000
+再来一份饺子	zai lai yi fen jiao zi	8000
+今天想在家做饭	jin tian xiang zai jia zuo fan	8000
+冰箱里还有鸡蛋吗	bing xiang li hai you ji dan ma	8000
+帮我洗一下青菜	bang wo xi yi xia qing cai	8000
+菜先放进冰箱	cai xian fang jin bing xiang	8000
+米饭已经煮好了	mi fan yi jing zhu hao le	8000
+锅里的水开了吗	guo li de shui kai le ma	8000
+记得关掉燃气	ji de guan diao ran qi	8000
+汤再炖一会儿	tang zai dun yi hui er	8000
+家里没食用油了	jia li mei shi yong you le	8000
+帮我买一袋大米	bang wo mai yi dai da mi	8000
+晚上回家做晚饭	wan shang hui jia zuo wan fan	8000
+我来洗碗你休息	wo lai xi wan ni xiu xi	8000
+吃完记得收拾桌子	chi wan ji de shou shi zhuo zi	8000
+早餐想吃点什么	zao can xiang chi dian shen me	8000
+早饭我已经准备好了	zao fan wo yi jing zhun bei hao le	8000
+我给你留了点饭	wo gei ni liu le dian fan	8000
+今天买点新鲜蔬菜	jin tian mai dian xin xian shu cai	8000
+家里还有水果吗	jia li hai you shui guo ma	8000
+帮我切几个苹果	bang wo qie ji ge ping guo	8000
+多煮一点面条	duo zhu yi dian mian tiao	8000
+饭菜先热一下	fan cai xian re yi xia	8000
+我想喝一碗热汤	wo xiang he yi wan re tang	8000
+这家店需要排队吗	zhe jia dian xu yao pai dui ma	8000
+我们先拿个号吧	wo men xian na ge hao ba	8000
+麻烦给我个打包盒	ma fan gei wo ge da bao he	8000
+今天不想做饭了	jin tian bu xiang zuo fan le	8000
+我去超市买点东西	wo qu chao shi mai dian dong xi	8000
+顺便帮我买瓶水	shun bian bang wo mai ping shui	8000
+帮我带一包纸巾	bang wo dai yi bao zhi jin	8000
+牛奶快喝完了	niu nai kuai he wan le	8000
+鸡蛋还剩几个	ji dan hai sheng ji ge	8000
+买点水果带回家	mai dian shui guo dai hui jia	8000
+我去菜市场看看	wo qu cai shi chang kan kan	8000
+帮我挑几个西红柿	bang wo tiao ji ge xi hong shi	8000
+再买一把青菜	zai mai yi ba qing cai	8000
+家里没有垃圾袋了	jia li mei you la ji dai le	8000
+洗发水用完了	xi fa shui yong wan le	8000
+卫生纸快用完了	wei sheng zhi kuai yong wan le	8000
+需要补充洗洁精了	xu yao bu chong xi jie jing le	8000
+帮我带些厨房纸	bang wo dai xie chu fang zhi	8000
+这个苹果挺新鲜	zhe ge ping guo ting xin xian	8000
+我去楼下便利店	wo qu lou xia bian li dian	8000
+先看看有没有优惠	xian kan kan you mei you you hui	8000
+这个价格可以接受	zhe ge jia ge ke yi jie shou	8000
+有会员折扣吗	you hui yuan zhe kou ma	8000
+可以用优惠券吗	ke yi yong you hui quan ma	8000
+这个颜色还有吗	zhe ge yan se hai you ma	8000
+麻烦帮我找下尺码	ma fan bang wo zhao xia chi ma	8000
+这个尺码有点小	zhe ge chi ma you dian xiao	8000
+能试一下再买吗	neng shi yi xia zai mai ma	8000
+我再考虑一下	wo zai kao lv yi xia	8000
+我已经下单了	wo yi jing xia dan le	8000
+订单什么时候发货	ding dan shen me shi hou fa huo	8000
+这个什么时候能送到	zhe ge shen me shi hou neng song dao	8000
+快递放到快递柜了	kuai di fang dao kuai di gui le	8000
+我去驿站拿快递	wo qu yi zhan na kuai di	8000
+取件码发我一下	qu jian ma fa wo yi xia	8000
+快递帮我放门口	kuai di bang wo fang men kou	8000
+麻烦送到小区门口	ma fan song dao xiao qu men kou	8000
+我现在下来取	wo xian zai xia lai qu	8000
+包裹寄到公司吧	bao guo ji dao gong si ba	8000
+快递到了记得取	kuai di dao le ji de qu	8000
+可以改一下收货地址吗	ke yi gai yi xia shou huo di zhi ma	8000
+我填错电话号码了	wo tian cuo dian hua hao ma le	8000
+麻烦帮忙查一下快递	ma fan bang mang cha yi xia kuai di	8000
+我想申请退货	wo xiang shen qing tui huo	8000
+这个商品不太合适	zhe ge shang pin bu tai he shi	8000
+我刚收到货	wo gang shou dao huo	8000
+东西少了一件	dong xi shao le yi jian	8000
+可以补发一个吗	ke yi bu fa yi ge ma	8000
+我想换一个颜色	wo xiang huan yi ge yan se	8000
+麻烦开一下发票	ma fan kai yi xia fa piao	8000
+我已经付款成功了	wo yi jing fu kuan cheng gong le	8000
+这笔钱扣了两次	zhe bi qian kou le liang ci	8000
+水费该交了	shui fei gai jiao le	8000
+这个月电费多少	zhe ge yue dian fei duo shao	8000
+记得交一下燃气费	ji de jiao yi xia ran qi fei	8000
+物业费在哪里缴	wu ye fei zai na li jiao	8000
+我来付停车费	wo lai fu ting che fei	8000
+我正在收拾房间	wo zheng zai shou shi fang jian	8000
+地上需要拖一下	di shang xu yao tuo yi xia	8000
+客厅帮忙扫一下	ke ting bang mang sao yi xia	8000
+今天轮到我洗碗	jin tian lun dao wo xi wan	8000
+洗好的衣服晾起来	xi hao de yi fu liang qi lai	8000
+衣服已经晒干了	yi fu yi jing shai gan le	8000
+记得把衣服收进来	ji de ba yi fu shou jin lai	8000
+窗户打开通通风	chuang hu da kai tong tong feng	8000
+出门前关好窗户	chu men qian guan hao chuang hu	8000
+今天换一下床单	jin tian huan yi xia chuang dan	8000
+被套需要拿去洗	bei tao xu yao na qu xi	8000
+毛巾用完放洗衣机	mao jin yong wan fang xi yi ji	8000
+洗衣机里的衣服拿出来	xi yi ji li de yi fu na chu lai	8000
+这件衣服要手洗	zhe jian yi fu yao shou xi	8000
+袜子放进洗衣篮里	wa zi fang jin xi yi lan li	8000
+垃圾袋换一个新的	la ji dai huan yi ge xin de	8000
+垃圾记得带下楼	la ji ji de dai xia lou	8000
+家里的垃圾满了	jia li de la ji man le	8000
+洗手间需要打扫	xi shou jian xu yao da sao	8000
+厨房台面擦一下	chu fang tai mian ca yi xia	8000
+桌子有点脏擦一擦	zhuo zi you dian zang ca yi ca	8000
+地板刚拖完别踩	di ban gang tuo wan bie cai	8000
+拖把用完放阳台	tuo ba yong wan fang yang tai	8000
+抹布需要洗干净	ma bu xu yao xi gan jing	8000
+家里的水龙头漏水	jia li de shui long tou lou shui	8000
+马桶堵住了怎么办	ma tong du zhu le zen me ban	8000
+下水道有点不通	xia shui dao you dian bu tong	8000
+帮我修一下门锁	bang wo xiu yi xia men suo	8000
+灯泡好像坏掉了	deng pao hao xiang huai diao le	8000
+客厅的灯忘关了	ke ting de deng wang guan le	8000
+空调温度调低一点	kong tiao wen du diao di yi dian	8000
+晚上开一下除湿	wan shang kai yi xia chu shi	8000
+屋里有点闷开窗吧	wu li you dian men kai chuang ba	8000
+记得把电风扇关掉	ji de ba dian feng shan guan diao	8000
+插座不要同时插太多	cha zuo bu yao tong shi cha tai duo	8000
+遥控器放哪里了	yao kong qi fang na li le	8000
+电视声音小一点	dian shi sheng yin xiao yi dian	8000
+热水器开了吗	re shui qi kai le ma	8000
+我去烧一壶热水	wo qu shao yi hu re shui	8000
+窗帘麻烦拉开一点	chuang lian ma fan la kai yi dian	8000
+把门口的鞋摆好	ba men kou de xie bai hao	8000
+鞋子放到鞋柜里面	xie zi fang dao xie gui li mian	8000
+桌面收拾干净一点	zhuo mian shou shi gan jing yi dian	8000
+东西用完放回原处	dong xi yong wan fang hui yuan chu	8000
+先把地上的东西收好	xian ba di shang de dong xi shou hao	8000
+柜子里还有空位吗	gui zi li hai you kong wei ma	8000
+阳台上有点积水	yang tai shang you dian ji shui	8000
+把晾衣架搬到里面	ba liang yi jia ban dao li mian	8000
+刚洗的衣服还没干	gang xi de yi fu hai mei gan	8000
+床单需要换洗一下	chuang dan xu yao huan xi yi xia	8000
+枕套也一起换掉	zhen tao ye yi qi huan diao	8000
+今天把被子晒一下	jin tian ba bei zi shai yi xia	8000
+房间需要开窗透气	fang jian xu yao kai chuang tou qi	8000
+床头灯别忘了关	chuang tou deng bie wang le guan	8000
+家里有备用电池吗	jia li you bei yong dian chi ma	8000
+帮我找一下剪刀	bang wo zhao yi xia jian dao	8000
+胶带在抽屉里面	jiao dai zai chou ti li mian	8000
+垃圾分类放好再扔	la ji fen lei fang hao zai reng	8000
+快递盒先留着别扔	kuai di he xian liu zhe bie reng	8000
+纸巾放在餐桌上	zhi jin fang zai can zhuo shang	8000
+厨房纸还剩多少	chu fang zhi hai sheng duo shao	8000
+冰箱门记得关好	bing xiang men ji de guan hao	8000
+食物放凉再进冰箱	shi wu fang liang zai jin bing xiang	8000
+冰箱里面有点乱	bing xiang li mian you dian luan	8000
+过期的东西清理一下	guo qi de dong xi qing li yi xia	8000
+水壶里面需要除垢	shui hu li mian xu yao chu gou	8000
+洗洁精快要用完了	xi jie jing kuai yao yong wan le	8000
+洗衣液放在洗衣机旁	xi yi ye fang zai xi yi ji pang	8000
+洗衣机需要清理一下	xi yi ji xu yao qing li yi xia	8000
+阳台门记得锁好	yang tai men ji de suo hao	8000
+家里有人敲门吗	jia li you ren qiao men ma	8000
+我下楼倒一下垃圾	wo xia lou dao yi xia la ji	8000
+浴室地上有点滑	yu shi di shang you dian hua	8000
+把纱窗关严一点	ba sha chuang guan yan yi dian	8000
+家里断网了吗	jia li duan wang le ma	8000
+路由器重启一下试试	lu you qi zhong qi yi xia shi shi	8000
+我现在去坐地铁	wo xian zai qu zuo di tie	8000
+我们在地铁口见吧	wo men zai di tie kou jian ba	8000
+你从哪个出口出来	ni cong na ge chu kou chu lai	8000
+我在公交站等车	wo zai gong jiao zhan deng che	8000
+这班车几点发车	zhe ban che ji dian fa che	8000
+下一班地铁多久到	xia yi ban di tie duo jiu dao	8000
+公交车还有几站	gong jiao che hai you ji zhan	8000
+我刚上公交车	wo gang shang gong jiao che	8000
+我坐过站了	wo zuo guo zhan le	8000
+到站了提醒我一下	dao zhan le ti xing wo yi xia	8000
+今天地铁人好多	jin tian di tie ren hao duo	8000
+早高峰路上很堵	zao gao feng lu shang hen du	8000
+我先去加个油	wo xian qu jia ge you	8000
+停车场入口在哪里	ting che chang ru kou zai na li	8000
+车停在地下车库	che ting zai di xia che ku	8000
+停车费已经交了	ting che fei yi jing jiao le	8000
+这里不能临时停车	zhe li bu neng lin shi ting che	8000
+停车位已经找到了	ting che wei yi jing zhao dao le	8000
+车钥匙放在包里	che yao shi fang zai bao li	8000
+车里的空调太冷了	che li de kong tiao tai leng le	8000
+导航带我绕远了	dao hang dai wo rao yuan le	8000
+前面路口左转就到	qian mian lu kou zuo zhuan jiu dao	8000
+我开车送你过去	wo kai che song ni guo qu	8000
+我叫了网约车	wo jiao le wang yue che	8000
+司机还有几分钟到	si ji hai you ji fen zhong dao	8000
+车牌号发我一下	che pai hao fa wo yi xia	8000
+我已经上出租车了	wo yi jing shang chu zu che le	8000
+下车的时候叫我	xia che de shi hou jiao wo	8000
+我要去火车站接人	wo yao qu huo che zhan jie ren	8000
+去机场要提前出发	qu ji chang yao ti qian chu fa	8000
+我们一起打车过去	wo men yi qi da che guo qu	8000
+附近有共享单车吗	fu jin you gong xiang dan che ma	8000
+我走路过去就可以	wo zou lu guo qu jiu ke yi	8000
+这个路口怎么过	zhe ge lu kou zen me guo	8000
+人行道在马路对面	ren xing dao zai ma lu dui mian	8000
+过马路看一下车辆	guo ma lu kan yi xia che liang	8000
+我到医院门口了	wo dao yi yuan men kou le	8000
+取号之后等着叫号	qu hao zhi hou deng zhe jiao hao	8000
+办事大厅几点下班	ban shi da ting ji dian xia ban	8000
+我忘带身份证了	wo wang dai shen fen zheng le	8000
+证件放在包里了吗	zheng jian fang zai bao li le ma	8000
+先把材料准备好	xian ba cai liao zhun bei hao	8000
+需要复印一下证件	xu yao fu yin yi xia zheng jian	8000
+这里可以打印文件吗	zhe li ke yi da yin wen jian ma	8000
+前面还有几个人	qian mian hai you ji ge ren	8000
+公交卡该充值了	gong jiao ka gai chong zhi le	8000
+手机里可以刷乘车码	shou ji li ke yi shua cheng che ma	8000
+下车从后门出去	xia che cong hou men chu qu	8000
+我在检票口等你	wo zai jian piao kou deng ni	8000
+火车票已经买好了	huo che piao yi jing mai hao le	8000
+检票时间快到了	jian piao shi jian kuai dao le	8000
+我们在哪个站台上车	wo men zai na ge zhan tai shang che	8000
+行李放在上面架子	xing li fang zai shang mian jia zi	8000
+先把行李拿下来	xian ba xing li na xia lai	8000
+我已经到机场了	wo yi jing dao ji chang le	8000
+航班延误了半小时	hang ban yan wu le ban xiao shi	8000
+登机口改到那边了	deng ji kou gai dao na bian le	8000
+前面路口注意红灯	qian mian lu kou zhu yi hong deng	8000
+我去门口接一下你	wo qu men kou jie yi xia ni	8000
+孩子放学几点钟	hai zi fang xue ji dian zhong	8000
+我去接孩子放学	wo qu jie hai zi fang xue	8000
+孩子已经到学校了	hai zi yi jing dao xue xiao le	8000
+今天谁去接孩子	jin tian shui qu jie hai zi	8000
+孩子的书包带了吗	hai zi de shu bao dai le ma	8000
+作业写完了吗	zuo ye xie wan le ma	8000
+明天记得带作业本	ming tian ji de dai zuo ye ben	8000
+校服已经洗好了	xiao fu yi jing xi hao le	8000
+孩子今天有点咳嗽	hai zi jin tian you dian ke sou	8000
+宝宝刚刚睡着了	bao bao gang gang shui zhao le	8000
+宝宝醒了我去看看	bao bao xing le wo qu kan kan	8000
+帮我抱一下孩子	bang wo bao yi xia hai zi	8000
+孩子想要喝牛奶	hai zi xiang yao he niu nai	8000
+给孩子穿件外套	gei hai zi chuan jian wai tao	8000
+外面冷多穿一点	wai mian leng duo chuan yi dian	8000
+孩子的水杯带上了吗	hai zi de shui bei dai shang le ma	8000
+奶瓶需要消毒一下	nai ping xu yao xiao du yi xia	8000
+尿不湿快用完了	niao bu shi kuai yong wan le	8000
+给宝宝换一下尿布	gei bao bao huan yi xia niao bu	8000
+宝宝该喝奶了	bao bao gai he nai le	8000
+孩子今天吃得好吗	hai zi jin tian chi de hao ma	8000
+记得早点接孩子	ji de zao dian jie hai zi	8000
+家长群有新消息吗	jia zhang qun you xin xiao xi ma	8000
+老师发了通知没有	lao shi fa le tong zhi mei you	8000
+明天需要带什么东西	ming tian xu yao dai shen me dong xi	8000
+孩子的鞋子有点小	hai zi de xie zi you dian xiao	8000
+先给孩子洗个澡	xian gei hai zi xi ge zao	8000
+讲个故事哄他睡觉	jiang ge gu shi hong ta shui jiao	8000
+孩子已经睡着了	hai zi yi jing shui zhao le	8000
+今晚我来陪孩子	jin wan wo lai pei hai zi	8000
+孩子正在午睡	hai zi zheng zai wu shui	8000
+周末带孩子出去玩	zhou mo dai hai zi chu qu wan	8000
+我们全家一起吃饭	wo men quan jia yi qi chi fan	8000
+明天回家看爸妈	ming tian hui jia kan ba ma	8000
+给家里打个电话	gei jia li da ge dian hua	8000
+爸妈最近身体还好吗	ba ma zui jin shen ti hai hao ma	8000
+我给爸妈买了水果	wo gei ba ma mai le shui guo	8000
+周末一起回老家吧	zhou mo yi qi hui lao jia ba	8000
+记得给长辈打电话	ji de gei zhang bei da dian hua	8000
+我有点头疼	wo you dian tou teng	8000
+今天嗓子不太舒服	jin tian sang zi bu tai shu fu	8000
+我好像有点感冒	wo hao xiang you dian gan mao	8000
+我先量一下体温	wo xian liang yi xia ti wen	8000
+今天感觉有点发烧	jin tian gan jue you dian fa shao	8000
+咳嗽好几天了	ke sou hao ji tian le	8000
+记得按时吃药	ji de an shi chi yao	8000
+药放在床头柜上	yao fang zai chuang tou gui shang	8000
+我预约了明天的门诊	wo yu yue le ming tian de men zhen	8000
+先去医院看看吧	xian qu yi yuan kan kan ba	8000
+你哪里不舒服	ni na li bu shu fu	8000
+我最近睡得不太好	wo zui jin shui de bu tai hao	8000
+今天早点休息	jin tian zao dian xiu xi	8000
+多喝点温水	duo he dian wen shui	8000
+不要一直熬夜	bu yao yi zhi ao ye	8000
+我想出去透透气	wo xiang chu qu tou tou qi	8000
+今天空气有点闷	jin tian kong qi you dian men	8000
+外面风挺大的	wai mian feng ting da de	8000
+今天太阳特别晒	jin tian tai yang te bie shai	8000
+外面开始下雨了	wai mian kai shi xia yu le	8000
+我忘记带伞了	wo wang ji dai san le	8000
+回家记得带把伞	hui jia ji de dai ba san	8000
+天气预报说有大雨	tian qi yu bao shuo you da yu	8000
+明天可能会降温	ming tian ke neng hui jiang wen	8000
+早晚温差有点大	zao wan wen cha you dian da	8000
+出门记得添件衣服	chu men ji de tian jian yi fu	8000
+今天气温刚刚好	jin tian qi wen gang gang hao	8000
+路面有点湿小心滑	lu mian you dian shi xiao xin hua	8000
+空气质量不太好	kong qi zhi liang bu tai hao	8000
+室内有点太干了	shi nei you dian tai gan le	8000
+皮肤有点干燥	pi fu you dian gan zao	8000
+我刚刚扭到脚了	wo gang gang niu dao jiao le	8000
+脚有点疼先歇会儿	jiao you dian teng xian xie hui er	8000
+肩膀有点酸	jian bang you dian suan	8000
+眼睛看久了很累	yan jing kan jiu le hen lei	8000
+我想休息十分钟	wo xiang xiu xi shi fen zhong	8000
+最近需要多运动	zui jin xu yao duo yun dong	8000
+饭后出去走一走	fan hou chu qu zou yi zou	8000
+记得早点睡觉	ji de zao dian shui jiao	8000
+今天要早点起床	jin tian yao zao dian qi chuang	8000
+我已经吃过药了	wo yi jing chi guo yao le	8000
+需要买点退烧药	xu yao mai dian tui shao yao	8000
+先休息一会儿再说	xian xiu xi yi hui er zai shuo	8000
+外面太冷多穿点	wai mian tai leng duo chuan dian	8000
+出门记得戴口罩	chu men ji de dai kou zhao	8000
+天气热多喝点水	tian qi re duo he dian shui	8000
+明天去医院复查	ming tian qu yi yuan fu cha	8000
+我想预约挂号	wo xiang yu yue gua hao	8000
+记得带上医保卡	ji de dai shang yi bao ka	8000
+少吃一点油炸食品	shao chi yi dian you zha shi pin	8000
+最近胃口不太好	zui jin wei kou bu tai hao	8000
+吃完药再吃东西	chi wan yao zai chi dong xi	8000
+麻烦帮我倒杯温水	ma fan bang wo dao bei wen shui	8000
+开窗的时候注意保暖	kai chuang de shi hou zhu yi bao nuan	8000
+我的钥匙放哪里了	wo de yao shi fang na li le	8000
+钱包忘在家里了	qian bao wang zai jia li le	8000
+手机壳有点脏了	shou ji ke you dian zang le	8000
+充电器借我用一下	chong dian qi jie wo yong yi xia	8000
+数据线放在桌子上	shu ju xian fang zai zhuo zi shang	8000
+耳机放到包里面了	er ji fang dao bao li mian le	8000
+门卡记得带好	men ka ji de dai hao	8000
+我去楼下取个东西	wo qu lou xia qu ge dong xi	8000
+快递已经拿回来了	kuai di yi jing na hui lai le	8000
+家里灯泡不够亮	jia li deng pao bu gou liang	8000
+备用钥匙交给你了	bei yong yao shi jiao gei ni le	8000
+我带了充电宝	wo dai le chong dian bao	8000
+公交卡放哪里了	gong jiao ka fang na li le	8000
+今天先把房间整理好	jin tian xian ba fang jian zheng li hao	8000
+晚饭后出去散步吧	wan fan hou chu qu san bu ba	8000
+我们去公园走走吧	wo men qu gong yuan zou zou ba	8000
+我准备洗个热水澡	wo zhun bei xi ge re shui zao	8000
+先坐下来喝口水	xian zuo xia lai he kou shui	8000
+周末在家休息一天	zhou mo zai jia xiu xi yi tian	8000
+今天不想出门	jin tian bu xiang chu men	8000
+家里需要开一下空调	jia li xu yao kai yi xia kong tiao	8000
+风太大把窗户关上	feng tai da ba chuang hu guan shang	8000
+你帮我拿一下外套	ni bang wo na yi xia wai tao	8000
+围巾放在门口柜子上	wei jin fang zai men kou gui zi shang	8000
+门口的伞是谁的	men kou de san shi shei de	8000
+出门记得拿手机	chu men ji de na shou ji	8000
+家里的钥匙给你一把	jia li de yao shi gei ni yi ba	8000
+东西已经收拾好了	dong xi yi jing shou shi hao le	8000
+我要准备出门了	wo yao zhun bei chu men le	8000
+鞋带松了系一下	xie dai song le xi yi xia	8000
+你的外套落在沙发了	ni de wai tao luo zai sha fa le	8000
+外面天已经黑了	wai mian tian yi jing hei le	8000
+我去附近买点东西	wo qu fu jin mai dian dong xi	8000
+买完东西就回家	mai wan dong xi jiu hui jia	8000
+一会儿把门锁上	yi hui er ba men suo shang	8000
+我们在家看会儿电视	wo men zai jia kan hui er dian shi	8000
+今天想早点睡觉	jin tian xiang zao dian shui jiao	8000
+先把灯打开再找	xian ba deng da kai zai zhao	8000
+你把音量调小一点	ni ba yin liang diao xiao yi dian	8000
+我们去楼下转一圈	wo men qu lou xia zhuan yi quan	8000
+我想在家待一会儿	wo xiang zai jia dai yi hui er	8000
+今天不用做太多家务	jin tian bu yong zuo tai duo jia wu	8000
+休息日不设闹钟	xiu xi ri bu she nao zhong	8000
+我已经把窗户关好了	wo yi jing ba chuang hu guan hao le	8000
+附近有药店吗	fu jin you yao dian ma	8000
+我去买点日用品	wo qu mai dian ri yong pin	8000
+家里还有洗手液吗	jia li hai you xi shou ye ma	8000
+清洁剂放在水池下面	qing jie ji fang zai shui chi xia mian	8000
+今天把冰箱整理一下	jin tian ba bing xiang zheng li yi xia	8000
+出门之前检查一下门锁	chu men zhi qian jian cha yi xia men suo	8000
+记得把外卖拿进来	ji de ba wai mai na jin lai	8000
+我去门口拿个包裹	wo qu men kou na ge bao guo	8000
+把购物袋放在厨房	ba gou wu dai fang zai chu fang	8000
+你帮我找一下遥控器	ni bang wo zhao yi xia yao kong qi	8000
+这是我刚买的东西	zhe shi wo gang mai de dong xi	8000
+家里来了客人	jia li lai le ke ren	8000
+先给客人倒杯水	xian gei ke ren dao bei shui	8000
+别忘了把空调关掉	bie wang le ba kong tiao guan diao	8000
+记得把热水器关了	ji de ba re shui qi guan le	8000
+睡觉前锁好房门	shui jiao qian suo hao fang men	8000
+帮我把窗帘拉上	bang wo ba chuang lian la shang	8000
+洗手液放洗手台旁边	xi shou ye fang xi shou tai pang bian	8000
+牙膏已经快用完了	ya gao yi jing kuai yong wan le	8000
+牙刷记得换新的	ya shua ji de huan xin de	8000
+抽屉里有备用口罩	chou ti li you bei yong kou zhao	8000
+衣架不够用了	yi jia bu gou yong le	8000
+茶几上放了水果	cha ji shang fang le shui guo	8000
+餐桌上有一杯水	can zhuo shang you yi bei shui	8000
+钥匙放在鞋柜上面	yao shi fang zai xie gui shang mian	8000
+快递剪刀放回抽屉	kuai di jian dao fang hui chou ti	8000
+电饭煲里的饭还热着	dian fan bao li de fan hai re zhe	8000
+出门记得关掉电源	chu men ji de guan diao dian yuan	8000
+垃圾桶套好垃圾袋	la ji tong tao hao la ji dai	8000
+楼道里的灯坏了	lou dao li de deng huai le	8000
+家里需要买个插线板	jia li xu yao mai ge cha xian ban	8000
+桌子下面有个纸箱	zhuo zi xia mian you ge zhi xiang	8000
+地垫拿出去晒一下	di dian na chu qu shai yi xia	8000
+枕头套需要换一下	zhen tou tao xu yao huan yi xia	8000
+被子叠好放柜子里	bei zi die hao fang gui zi li	8000
+我把房间打扫好了	wo ba fang jian da sao hao le	8000
+东西送到以后告诉我	dong xi song dao yi hou gao su wo	8000
+我把快递放在门边	wo ba kuai di fang zai men bian	8000
+晚上回家记得关窗	wan shang hui jia ji de guan chuang	8000
+早上起来先开窗通风	zao shang qi lai xian kai chuang tong feng	8000
+今天把衣服洗一下	jin tian ba yi fu xi yi xia	8000
+外套挂在门口就行	wai tao gua zai men kou jiu xing	8000
+我想安静休息一会儿	wo xiang an jing xiu xi yi hui er	8000
+我们明天再收拾吧	wo men ming tian zai shou shi ba	8000
+周末一起去买菜吧	zhou mo yi qi qu mai cai ba	8000
+我正在给手机充电	wo zheng zai gei shou ji chong dian	8000
+手机放在床头柜上	shou ji fang zai chuang tou gui shang	8000
+记得带上门禁卡	ji de dai shang men jin ka	8000
+帮我把鞋拿进来	bang wo ba xie na jin lai	8000
+冰箱里有牛奶和鸡蛋	bing xiang li you niu nai he ji dan	8000
+要不要下楼买点水果	yao bu yao xia lou mai dian shui guo	8000

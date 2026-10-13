@@ -159,9 +159,18 @@ pub fn send_unicode_text_to_target(target_hwnd: isize, text: &str) -> Result<(),
     if unsafe { GetForegroundWindow() } != target_hwnd {
         return Err("目标窗口焦点已改变，请重新选择输入位置".to_string());
     }
-    let sent = unsafe { SendInput(inputs.len() as u32, inputs.as_ptr(), std::mem::size_of::<INPUT>() as i32) };
+    let sent = unsafe {
+        SendInput(
+            inputs.len() as u32,
+            inputs.as_ptr(),
+            std::mem::size_of::<INPUT>() as i32,
+        )
+    };
     if sent != inputs.len() as u32 {
-        return Err(format!("符号输入被目标程序拒绝（{sent}/{}）；可切换到仅复制后手动粘贴", inputs.len()));
+        return Err(format!(
+            "符号输入被目标程序拒绝（{sent}/{}）；可切换到仅复制后手动粘贴",
+            inputs.len()
+        ));
     }
     Ok(())
 }

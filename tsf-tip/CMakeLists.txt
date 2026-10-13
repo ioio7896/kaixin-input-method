@@ -182,3 +182,22 @@ if(MSVC)
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   target_compile_options(srf_ime_overlay PRIVATE /W3 /EHsc /utf-8)
 endif()
+
+if(BUILD_TESTING)
+  add_executable(srf_candidate_window_tests
+    tests/candidate_window_tests.cpp
+    src/candidate_window.cpp
+    src/candidate_overlay_placement.cpp
+    src/ime_config.cpp
+  )
+  target_include_directories(srf_candidate_window_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+  target_compile_definitions(srf_candidate_window_tests PRIVATE UNICODE _UNICODE)
+  target_link_libraries(srf_candidate_window_tests PRIVATE
+    ole32 oleaut32 uuid advapi32 crypt32 d2d1 dwmapi dwrite user32 shell32 gdi32 gdiplus msimg32)
+  if(MSVC)
+    set_property(TARGET srf_candidate_window_tests PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    target_compile_options(srf_candidate_window_tests PRIVATE /W4 /EHsc /utf-8)
+  endif()
+  add_test(NAME srf_candidate_window_tests COMMAND srf_candidate_window_tests)
+  set_tests_properties(srf_candidate_window_tests PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+endif()

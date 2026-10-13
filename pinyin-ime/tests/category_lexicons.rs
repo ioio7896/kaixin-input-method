@@ -16,7 +16,7 @@ fn imported_categories_have_discoverable_chinese_names_and_default_switches() {
     )
     .unwrap();
     let categories = manifest["categories"].as_array().unwrap();
-    assert_eq!(categories.len(), 78);
+    assert_eq!(categories.len(), 79);
     let discovered = discover_optional_lexicon_tags_in_lexicon_dir(&root.join("lexicon"));
     for category in categories {
         let tag = category["tag"].as_str().unwrap();

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source": "Android categorized vocabulary snapshot",
+  "source": "Android category snapshot plus Windows-maintained life vocabulary",
   "categories": [
     {
       "tag": "category_shopping",
@@ -703,6 +703,15 @@
       "rows": 930,
       "default_enabled": true,
       "sha256": "d3f00e384919819d1489c889e4972110ef9a1a406627e5371f0501d8034d4dd4"
+    },
+    {
+      "tag": "category_life_daily",
+      "file": "category_life_daily.txt",
+      "title": "生活日常",
+      "group": "日常表达",
+      "rows": 548,
+      "default_enabled": true,
+      "sha256": "c36991746236f5fdf41a624a9d8e920b46ff674191f0861cd8b4e2a4e663f0c1"
     }
   ]
 }

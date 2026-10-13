@@ -44,3 +44,20 @@ jobs:
         run: cargo check --workspace --all-targets --all-features --locked
       - name: Test shared contracts and the input core
         run: cargo test -p kaixin-common -p kaixin-core --lib --no-default-features --locked
+      - name: Test application library and engine health protocol
+        run: cargo test -p pinyin-ime --lib --no-default-features --locked
+
+  native-tsf:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x64, Win32]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure TSF and native policy tests
+        run: cmake -S tsf-tip -B dist/ci-tsf-${{ matrix.architecture }} -A ${{ matrix.architecture }}
+      - name: Build TSF, overlay, and native tests
+        run: cmake --build dist/ci-tsf-${{ matrix.architecture }} --config Release --parallel 1 --target srf_tsf_tip srf_ime_overlay srf_policy_tests srf_game_config_tests srf_security_io_tests -- /nodeReuse:false
+      - name: Run native regression tests
+        run: ctest --test-dir dist/ci-tsf-${{ matrix.architecture }} -C Release --output-on-failure

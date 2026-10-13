@@ -69,6 +69,15 @@ int main() {
   Require(redacted.find(L"request_id=42") != std::wstring::npos, "keep request id");
   Require(redacted.find(L"status=ok") != std::wstring::npos, "keep enum");
   Require(redacted.find(L"hr=0x80004005") != std::wstring::npos, "keep HRESULT");
+  const std::wstring health = RedactDiagnosticMessage(
+      L"reason=watchdog_mutex_missing status=failed pid=1234 error=2");
+  Require(health.find(L"reason=watchdog_mutex_missing") != std::wstring::npos,
+          "keep bounded watchdog reason");
+  Require(health.find(L"pid=1234") != std::wstring::npos, "keep watchdog owner pid");
+  Require(health.find(L"error=2") != std::wstring::npos, "keep watchdog Win32 error");
+  Require(RedactDiagnosticMessage(L"reason=private-path-sensitive").find(L"private-path-sensitive") ==
+              std::wstring::npos,
+          "reject arbitrary watchdog reason");
   Require(!IsNumericDiagnosticValue(L"12secret"), "reject numeric prefix");
   Require(!IsNumericDiagnosticValue(L"0x"), "reject empty hex");
 

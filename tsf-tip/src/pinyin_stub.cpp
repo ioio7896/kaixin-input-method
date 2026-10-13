@@ -80,6 +80,7 @@ constexpr auto kRetryBackoffMs = kSrfRecoveryBackoffMs;
 constexpr DWORD kIdleKeepaliveTimeoutMs = 5 * 60 * 1000;
 constexpr DWORD kIdleCheckIntervalMs = 60 * 1000;
 constexpr DWORD kEngineWatchdogIntervalMs = 2 * 1000;
+constexpr DWORD kEngineRecoveryCooldownMs = 60 * 1000;
 constexpr DWORD kInstallMaintenanceMaxAgeMs = 30 * 60 * 1000;
 constexpr DWORD kFailedStateWarmupCooldownMs = 1500;
 constexpr unsigned kLookupTimeoutRestartThreshold = 3;
@@ -104,10 +105,27 @@ constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
 constexpr wchar_t kStateInstallMaintenanceValue[] = L"InstallMaintenance";
 constexpr wchar_t kStateInstallMaintenanceTickValue[] = L"InstallMaintenanceTick";
 constexpr wchar_t kStateEngineStateValue[] = L"EngineState";
+constexpr wchar_t kStateEngineHealthV1Value[] = L"EngineHealthV1";
 constexpr wchar_t kStateLastEngineRecoveryReasonValue[] = L"LastEngineRecoveryReason";
 constexpr wchar_t kStateLastEngineRecoveryTimeValue[] = L"LastEngineRecoveryTime";
 constexpr wchar_t kEngineCapabilityFileName[] = L"engine_capability.dat";
 constexpr char kEngineCapabilityMagic[] = "KXIPC-DPAPI-1\n";
+
+#pragma pack(push, 1)
+struct EngineHealthRecordV1 {
+  DWORD magic;
+  WORD version;
+  BYTE state;
+  BYTE reserved;
+  DWORD ownerPid;
+  ULONGLONG updatedTick;
+  DWORD errorCode;
+};
+#pragma pack(pop)
+static_assert(sizeof(EngineHealthRecordV1) == 24);
+constexpr DWORD kEngineHealthRecordMagic = 0x4845584B;  // "KXEH" on disk.
+constexpr DWORD kEngineHealthFailureUnspecified = 0xE0010001;
+std::atomic<DWORD> g_engineHealthErrorCode{ERROR_SUCCESS};
 
 enum class EnginePipeCommand : uint16_t {
   Init = 1,
@@ -1240,10 +1258,41 @@ void WriteStateDwordValue(const wchar_t* name, DWORD value) {
   RegCloseKey(key);
 }
 
-void PublishEngineState(SrfEngineState state) {
+void WriteStateBinaryValue(const wchar_t* name, const BYTE* value, DWORD bytes) {
+  HKEY key = nullptr;
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
+                      &key, nullptr) != ERROR_SUCCESS) {
+    return;
+  }
+  RegSetValueExW(key, name, 0, REG_BINARY, value, bytes);
+  RegCloseKey(key);
+}
+
+void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS) {
   const SrfEngineState previous = g_engineState.exchange(state, std::memory_order_acq_rel);
-  if (previous == state) return;
-  WriteStateDwordValue(kStateEngineStateValue, static_cast<DWORD>(state));
+  if (previous != state) {
+    WriteStateDwordValue(kStateEngineStateValue, static_cast<DWORD>(state));
+  }
+  if (state == SrfEngineState::Failed) {
+    if (errorCode != ERROR_SUCCESS) {
+      g_engineHealthErrorCode.store(errorCode, std::memory_order_release);
+    } else {
+      DWORD expected = ERROR_SUCCESS;
+      g_engineHealthErrorCode.compare_exchange_strong(
+          expected, kEngineHealthFailureUnspecified, std::memory_order_acq_rel);
+    }
+  } else {
+    g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
+  }
+  const EngineHealthRecordV1 record{kEngineHealthRecordMagic,
+                                    1,
+                                    static_cast<BYTE>(state),
+                                    0,
+                                    GetCurrentProcessId(),
+                                    GetTickCount64(),
+                                    g_engineHealthErrorCode.load(std::memory_order_acquire)};
+  WriteStateBinaryValue(kStateEngineHealthV1Value,
+                        reinterpret_cast<const BYTE*>(&record), sizeof(record));
 }
 
 void WriteEngineRecoveryState(const std::wstring& reason) {
@@ -2920,11 +2969,28 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
     HANDLE mutex = OpenMutexW(SYNCHRONIZE, FALSE, mutexName.c_str());
     if (mutex) {
       CloseHandle(mutex);
+      // The tray treats old health records as unknown. Keep this host's
+      // liveness record fresh even when the engine state itself is unchanged.
+      PublishEngineState(g_engineState.load(std::memory_order_acquire));
       continue;
     }
-    // All restart attempts go through the bounded recovery scheduler.
-    PublishEngineState(SrfEngineState::Failed);
-    EnsureRetryLoopScheduled();
+    const DWORD error = GetLastError();
+    if (error == ERROR_FILE_NOT_FOUND || error == ERROR_INVALID_NAME) {
+      AppendEngineStateLogDeduped(L"reason=watchdog_mutex_missing status=failed pid=" +
+                                  std::to_wstring(GetCurrentProcessId()) +
+                                  L" error=" + std::to_wstring(error));
+      // All restart attempts go through the bounded recovery scheduler.
+      PublishEngineState(SrfEngineState::Failed, error);
+      EnsureRetryLoopScheduled();
+      continue;
+    }
+
+    // Access denied and unexpected API failures do not prove the helper is
+    // dead. Let the current record age out to Unknown and retain the error
+    // code for diagnosis instead of triggering a potentially harmful restart.
+    AppendEngineStateLogDeduped(L"reason=watchdog_probe_unconfirmed status=unknown pid=" +
+                                std::to_wstring(GetCurrentProcessId()) +
+                                L" error=" + std::to_wstring(error));
   }
 }
 
@@ -2973,6 +3039,29 @@ void RetryLoopWorker(unsigned long long generation) {
     WarmupEngineWorker();
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
     ++attempt;
+  }
+
+  if (generation == g_retryLoopGeneration.load(std::memory_order_acquire) &&
+      g_retryOnFailureEnabled.load(std::memory_order_acquire) &&
+      g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready &&
+      g_recoveryBudget.Exhausted()) {
+    // Keep a slow health probe after the short recovery budget is consumed.
+    // A transient outage can then recover without an infinite rapid restart
+    // loop or requiring the user to restart Windows.
+    if (StartDetachedBackgroundWorker([generation] {
+          Sleep(kEngineRecoveryCooldownMs);
+          if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) return;
+          if (!g_retryOnFailureEnabled.load(std::memory_order_acquire) ||
+              g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) {
+            g_retryLoopInFlight.store(false, std::memory_order_release);
+            return;
+          }
+          g_recoveryBudget.Reset();
+          g_retryLoopInFlight.store(false, std::memory_order_release);
+          EnsureRetryLoopScheduled();
+        })) {
+      return;
+    }
   }
 
   if (generation == g_retryLoopGeneration.load(std::memory_order_acquire)) {

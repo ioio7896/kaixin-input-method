@@ -1572,6 +1572,12 @@ pub fn probe_shared_engine_via_pipe(input: &str) -> Result<usize, String> {
     Ok(count)
 }
 
+/// Ask the running helper to drain pending learning and exit cleanly.
+/// Used by the tray's explicit recovery action before it starts a replacement.
+pub fn request_engine_shutdown_via_pipe() -> Result<(), String> {
+    EnginePipeClient::connect()?.shutdown()
+}
+
 /// 单次命名管道 lookup 往返（打开新连接 + 读取令牌），要求进程内引擎服务
 /// 已启动（start_engine_service + warmup_shared_engine_sync）。返回
 /// (候选数, 响应字节数)。供健康检查与一次性探测使用；性能基准请用
@@ -1671,6 +1677,50 @@ impl EnginePipeClient {
         let count =
             u32::from_le_bytes([response[0], response[1], response[2], response[3]]) as usize;
         Ok((count, response.len()))
+    }
+
+    pub fn shutdown(&mut self) -> Result<(), String> {
+        let mut payload = Vec::with_capacity(8 + self.capability.len() * 2);
+        append_utf16_string(&mut payload, &self.capability);
+        let mut request = Vec::with_capacity(12 + payload.len());
+        request.extend_from_slice(&PROTOCOL_MAGIC.to_le_bytes());
+        request.extend_from_slice(&PROTOCOL_VERSION.to_le_bytes());
+        request.extend_from_slice(&(EngineCommand::Shutdown as u16).to_le_bytes());
+        request.extend_from_slice(&(payload.len() as u32).to_le_bytes());
+        request.extend_from_slice(&payload);
+        self.file
+            .write_all(&request)
+            .map_err(|err| format!("shutdown pipe write failed: {err}"))?;
+        self.file
+            .flush()
+            .map_err(|err| format!("shutdown pipe flush failed: {err}"))?;
+
+        let mut header = [0u8; 16];
+        self.file
+            .read_exact(&mut header)
+            .map_err(|err| format!("shutdown response read failed: {err}"))?;
+        let magic = u32::from_le_bytes(header[0..4].try_into().expect("fixed header"));
+        let version = u16::from_le_bytes(header[4..6].try_into().expect("fixed header"));
+        let command = u16::from_le_bytes(header[6..8].try_into().expect("fixed header"));
+        let status = i32::from_le_bytes(header[8..12].try_into().expect("fixed header"));
+        let response_len =
+            u32::from_le_bytes(header[12..16].try_into().expect("fixed header")) as usize;
+        if magic != PROTOCOL_MAGIC
+            || version != PROTOCOL_VERSION
+            || command != EngineCommand::Shutdown as u16
+            || response_len > 64 * 1024
+        {
+            return Err("shutdown response header mismatch".to_string());
+        }
+        let mut response = vec![0u8; response_len];
+        self.file
+            .read_exact(&mut response)
+            .map_err(|err| format!("shutdown response body read failed: {err}"))?;
+        if status == 0 {
+            Ok(())
+        } else {
+            Err(format!("shutdown request rejected status={status}"))
+        }
     }
 }
 
@@ -2386,8 +2436,17 @@ fn handle_lookup(
         }
         Err(SchedulerAcquireError::Busy) => {
             let scheduler = lookup_scheduler().snapshot();
+            // Request id zero is reserved for background prewarm/probe work.
+            // Yielding to interactive input is expected scheduling behavior,
+            // so keep it out of the error stream while preserving opt-in
+            // diagnostics for capacity tuning.
+            let log_level = if priority == LookupPriority::Background {
+                RuntimeLogLevel::Perf
+            } else {
+                RuntimeLogLevel::Error
+            };
             runtime_log::log_engine(
-                RuntimeLogLevel::Error,
+                log_level,
                 "srf_ipc_lookup_busy",
                 format!(
                     "request_id={} lookup_generation={} {} queue_p50={}us queue_p95={}us queue_p99={}us admitted={} coalesced={} superseded={} busy={} background_yields={} active_workers={} status=busy",

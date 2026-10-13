@@ -79,6 +79,7 @@ pub fn category_lexicon_info(tag: &str) -> Option<(&'static str, &'static str)> 
         "category_proper_people" => Some(("语料人名补充", "名称与实体")),
         "category_proper_places" => Some(("语料地名补充", "地区词库 · 全国与世界")),
         "category_proper_organizations" => Some(("语料机构名称补充", "名称与实体")),
+        "category_life_daily" => Some(("生活日常", "日常表达")),
         _ => None,
     }
 }

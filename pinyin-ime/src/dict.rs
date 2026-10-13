@@ -71,6 +71,9 @@ fn pronunciation_aliases() -> &'static PronunciationOverrides {
 /// multi-reading iterator also contains obsolete readings such as `xiong` for
 /// 能 and `neng` for 而. Explicit historical rows exclude those readings;
 /// unlisted characters no longer lose every non-primary pronunciation.
+// These predicates are consumed by runtime UI modules, while the build script
+// compiles this source module only to generate the character corpus.
+#[allow(dead_code)]
 pub(crate) fn is_project_approved_reading(c: char, reading: &str) -> bool {
     pronunciation_aliases()
         .accepted
@@ -78,6 +81,7 @@ pub(crate) fn is_project_approved_reading(c: char, reading: &str) -> bool {
         .is_some_and(|readings| readings.iter().any(|approved| approved == reading))
 }
 
+#[allow(dead_code)]
 pub(crate) fn is_excluded_reading(c: char, reading: &str) -> bool {
     pronunciation_aliases()
         .excluded

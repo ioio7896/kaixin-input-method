@@ -243,6 +243,17 @@ void TestCandidateResultStability() {
         "interactive candidate order remains stable");
   Check(completedMeta == std::vector<std::wstring>({L"a", L"b", L"c"}),
         "metadata follows stabilized candidates");
+  completed = {L"丙", L"乙"};
+  completedMeta = {L"c", L"b"};
+  StabilizeCompletedBatch(current, currentMeta, &completed, &completedMeta, 3);
+  Check(completed == std::vector<std::wstring>({L"乙", L"丙"}),
+        "unselected completion removes rejected provisional words but retains survivor order");
+  Check(CanRefreshCompletedPartialSnapshot(true, true, 4, 4),
+        "untouched partial snapshot permits filtered stable merge");
+  Check(!CanRefreshCompletedPartialSnapshot(true, true, 5, 4),
+        "selection or page interaction requires frozen indexes");
+  Check(!CanRefreshCompletedPartialSnapshot(true, false, 4, 4),
+        "changed reading cannot refresh an old partial snapshot");
 
   std::vector<std::wstring> fullCandidates;
   std::vector<std::wstring> fullMeta;

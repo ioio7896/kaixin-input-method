@@ -55,7 +55,9 @@ impl PinyinEngine {
             .user_lexicon
             .lookup_input(key)
             .and_then(|entries| entries.iter().find(|entry| entry.phrase == phrase))
-            .filter(|entry| entry.freq >= 2)
+            .filter(|entry| {
+                entry.pinned || (entry.observation_count >= 2 && entry.selection_count >= 2)
+            })
             .map_or(0.0, |entry| {
                 (signal_bonus(entry.stats(), now, 2.0, 0.8) * entry.suggestion_score_scale())
                     .min(reading_cap)
@@ -551,6 +553,12 @@ impl PinyinEngine {
         if let Some((intent, _)) = context {
             demote_cold_non_full_lexicon_candidates(ranked, intent, self.phrase_lexicon.as_ref());
         }
+        // Unambiguous complete spelling should fill ordinary slots with real
+        // whole words before fallback singles, correction and decoder output.
+        // Keep user/shortcut slots and alternate segmentation layouts intact.
+        if strongest_quality == 3 && strongest_lengths.len() == 1 {
+            prefer_exact_words_in_ordinary_slots(ranked, &direct);
+        }
         // A page made entirely of fallback singles must not hide every exact
         // hot word. Reserve one ordinary slot, leaving explicit priority intact.
         if !ranked.iter().take(page_size).any(|item| {
@@ -577,5 +585,156 @@ impl PinyinEngine {
         }
         // Scores above are rebuilt from evidence on every presentation exit;
         // a final frequency-only pass must not erase personalization/context.
+    }
+}
+
+fn prefer_exact_words_in_ordinary_slots(
+    ranked: &mut [RankedCandidate],
+    direct: &HashMap<String, (u8, f64)>,
+) {
+    let positions = ranked
+        .iter()
+        .enumerate()
+        .filter(|(_, item)| {
+            !candidate_has_user_priority(item)
+                && matches!(
+                    item.meta.source,
+                    CandidateSource::System
+                        | CandidateSource::Pinyin
+                        | CandidateSource::Abbrev
+                        | CandidateSource::Mixed
+                        | CandidateSource::Correction
+                )
+        })
+        .map(|(index, _)| index)
+        .collect::<Vec<_>>();
+    let mut rows = positions
+        .iter()
+        .map(|&index| ranked[index].clone())
+        .collect::<Vec<_>>();
+    rows.sort_by_key(|item| direct.get(&item.phrase).is_none_or(|value| value.0 != 3));
+    for (index, row) in positions.into_iter().zip(rows) {
+        ranked[index] = row;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn complete_spelling_restores_hot_words_before_first_page_truncation() {
+        let mut engine = PinyinEngine::with_phrase_dir(None);
+        engine.clear_user_lexicon_for_eval();
+        let mut lexicon = AbbrevLexicon::default();
+        for (phrase, freq) in [("计算机", 9000), ("计算集", 5000)] {
+            assert!(lexicon.insert_parsed_with_layer(
+                ThuoclEntry {
+                    phrase: phrase.to_string(),
+                    code: Some("ji suan ji".to_string()),
+                    freq,
+                    pronunciation_kind: Default::default(),
+                },
+                LexiconLayer::Base
+            ));
+        }
+        engine.phrase_lexicon = Some(lexicon);
+        let fallback = |phrase: &str| RankedCandidate {
+            phrase: phrase.to_string(),
+            score: 1000.0,
+            meta: CandidateMeta::default(),
+        };
+        let mut rows = vec![
+            fallback("计"),
+            fallback("几"),
+            fallback("及"),
+            fallback("即"),
+        ];
+        engine.finalize_candidate_presentation("jisuanji", "jisuanji", &mut rows);
+        assert_eq!(rows[0].phrase, "计算机");
+        assert_eq!(rows[1].phrase, "计算集");
+        let first = rows
+            .iter()
+            .map(|row| row.phrase.clone())
+            .collect::<Vec<_>>();
+        engine.finalize_candidate_presentation("jisuanji", "jisuanji", &mut rows);
+        assert_eq!(
+            rows.iter()
+                .map(|row| row.phrase.clone())
+                .collect::<Vec<_>>(),
+            first
+        );
+    }
+
+    #[test]
+    fn exact_words_fill_fallback_slots_without_moving_user_or_shortcut_slots() {
+        let row = |phrase: &str, meta| RankedCandidate {
+            phrase: phrase.to_string(),
+            score: 100.0,
+            meta,
+        };
+        let mut rows = vec![
+            row("计", CandidateMeta::default()),
+            row("我的词", CandidateMeta::user(true)),
+            row("纠错词", CandidateMeta::legacy("纠错")),
+            row("快捷短语", CandidateMeta::legacy("custom")),
+            row("计算机", CandidateMeta::legacy(PINYIN_CANDIDATE_META)),
+            row("计算器", CandidateMeta::legacy(PINYIN_CANDIDATE_META)),
+        ];
+        let direct = HashMap::from([
+            ("计算机".to_string(), (3, 10.0)),
+            ("计算器".to_string(), (3, 9.0)),
+        ]);
+        prefer_exact_words_in_ordinary_slots(&mut rows, &direct);
+        let expected = vec!["计算机", "我的词", "计算器", "快捷短语", "计", "纠错词"];
+        assert_eq!(
+            rows.iter()
+                .map(|row| row.phrase.as_str())
+                .collect::<Vec<_>>(),
+            expected
+        );
+        prefer_exact_words_in_ordinary_slots(&mut rows, &direct);
+        assert_eq!(
+            rows.iter()
+                .map(|row| row.phrase.as_str())
+                .collect::<Vec<_>>(),
+            expected
+        );
+    }
+
+    #[test]
+    fn reading_bonus_requires_repeated_selections_not_weighted_frequency() {
+        let mut engine = PinyinEngine::with_phrase_dir(None);
+        engine.clear_user_lexicon_for_eval();
+        engine
+            .user_lexicon
+            .learn_exact_input_without_phrase_signal("jsj", "计算机", 50)
+            .unwrap();
+        let bonus = |engine: &PinyinEngine| {
+            engine
+                .direct_word_preference(
+                    "jsj",
+                    "计算机",
+                    ABBREV_CANDIDATE_META,
+                    engine.user_lexicon.current_clock(),
+                )
+                .0
+        };
+        assert_eq!(bonus(&engine), 0.0);
+        engine
+            .user_lexicon
+            .record_selection("jsj", "计算机", 1)
+            .unwrap();
+        assert_eq!(bonus(&engine), 0.0);
+        engine
+            .user_lexicon
+            .record_selection("jsj", "计算机", 1)
+            .unwrap();
+        assert_eq!(bonus(&engine), 0.0);
+        engine
+            .user_lexicon
+            .learn_exact_input_without_phrase_signal("jsj", "计算机", 1)
+            .unwrap();
+        assert!(bonus(&engine) > 0.0);
     }
 }

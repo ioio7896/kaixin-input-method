@@ -1228,7 +1228,6 @@ impl PinyinEngine {
         // Only exact full pinyin may consult disk; never scan cold prefixes or
         // corrections. Keep custom dictionary preferences authoritative.
         if !direct_input_shortcut
-            && !crate::lexicon_prefs::has_custom_optional_lexicon_prefs()
             && exact_full_pinyin_syllables
                 .as_ref()
                 .is_some_and(|s| s.len() >= 2)

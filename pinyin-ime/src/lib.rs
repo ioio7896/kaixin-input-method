@@ -21,6 +21,7 @@ pub mod dict;
 #[cfg(feature = "desktop")]
 pub mod dxgi_capture;
 pub mod engine;
+pub mod engine_health;
 pub mod english_words;
 pub mod eval_profile;
 pub mod external_translation;

@@ -471,6 +471,33 @@ pub fn has_custom_optional_lexicon_prefs() -> bool {
     })
 }
 
+/// Return enabled names from a precomputed set using one settings-file read.
+pub fn enabled_optional_lexicon_tags(tags: &[String]) -> Vec<String> {
+    optional_lexicon_selection(tags).1
+}
+
+/// Cache discriminator for disk recall results when category switches change.
+pub fn optional_lexicon_prefs_fingerprint() -> u64 {
+    optional_lexicon_selection(&[]).0
+}
+
+/// Resolve active categories and their cache discriminator from one settings
+/// read, keeping exact disk recall consistent when switches change.
+pub fn optional_lexicon_selection(tags: &[String]) -> (u64, Vec<String>) {
+    let map = lexicon_toggle_map().unwrap_or_default();
+    let mut values = map
+        .iter()
+        .map(|(key, value)| (key.clone(), *value))
+        .collect::<Vec<_>>();
+    values.sort_unstable();
+    let enabled = tags
+        .iter()
+        .filter(|tag| optional_lexicon_tag_enabled_from_map(tag, &map))
+        .cloned()
+        .collect();
+    (fingerprint_str(&format!("{values:?}")), enabled)
+}
+
 pub fn has_disabled_optional_lexicon_tags() -> bool {
     has_custom_optional_lexicon_prefs()
 }

@@ -743,7 +743,7 @@ fn engine_recovery_state_summary() -> Option<String> {
     let reason = read_state_string("LastEngineRecoveryReason")?;
     let time =
         read_state_string("LastEngineRecoveryTime").unwrap_or_else(|| "时间未知".to_string());
-    Some(format!("{time}  {reason}"))
+    Some(format!("历史恢复：{time}  {reason}"))
 }
 
 #[cfg(windows)]
@@ -802,6 +802,7 @@ fn read_state_string(_name: &str) -> Option<String> {
 pub(crate) struct DiagnosticsSnapshot {
     pub(super) refreshed_at: Instant,
     recovery: Option<String>,
+    engine_health: pinyin_ime::engine_health::EngineHealthSnapshot,
     cold_lines: Vec<String>,
     recent_lines: Vec<String>,
     compat_lines: Vec<String>,
@@ -816,6 +817,7 @@ pub(super) fn build_diagnostics_snapshot(
     DiagnosticsSnapshot {
         refreshed_at: Instant::now(),
         recovery: engine_recovery_state_summary(),
+        engine_health: pinyin_ime::engine_health::current(),
         cold_lines: cold_start_summary_lines(),
         recent_lines: recent_perf_log_lines(12),
         compat_lines: recent_compatibility_log_lines(12),
@@ -847,9 +849,15 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     });
     let latest_candidate_refresh = snapshot.latest_candidate_refresh.as_ref();
     let palette = fluent_palette(ui);
-    let engine_value = recovery
+    let engine_value = match snapshot.engine_health.error_code {
+        Some(code) if snapshot.engine_health.state == 3 => {
+            format!("{}（故障码 {code}）", snapshot.engine_health.label())
+        }
+        _ => snapshot.engine_health.label().to_string(),
+    };
+    let recovery_value = recovery
         .map(|value| compact_diagnostic_line(value, 52))
-        .unwrap_or_else(|| "正常".to_string());
+        .unwrap_or_else(|| "暂无恢复记录".to_string());
     let foreground_value = foreground
         .map(|process| process.name.clone())
         .unwrap_or_else(|| "未获取".to_string());
@@ -884,12 +892,13 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         (
             "引擎",
             engine_value.as_str(),
-            if recovery.is_some() {
-                palette.warning
-            } else {
+            if snapshot.engine_health.state == 2 {
                 palette.success
+            } else {
+                palette.warning
             },
         ),
+        ("恢复历史", recovery_value.as_str(), palette.muted),
         (
             "前台进程",
             foreground_value.as_str(),
@@ -1131,6 +1140,7 @@ mod performance_tests {
                     recovery: Some(
                         "示例：正在等待候选引擎恢复；这一行包含较长状态说明。".repeat(3),
                     ),
+                    engine_health: pinyin_ime::engine_health::EngineHealthSnapshot::UNKNOWN,
                     cold_lines: vec!["示例冷启动摘要".repeat(8)],
                     recent_lines: vec!["示例性能事件 elapsed_ms=2.0".repeat(8)],
                     compat_lines: vec!["示例兼容事件 unconfirmed_input_field".repeat(8)],

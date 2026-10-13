@@ -953,6 +953,26 @@ def write_build_manifest(
         ]:
             if candidate.is_file():
                 return candidate
+        if name.startswith("srf_tsf_tip-") and name.endswith(".dll"):
+            arch = name.removeprefix("srf_tsf_tip-").removesuffix(".dll")
+            if arch in BUILD_ARCHES:
+                try:
+                    return find_tsf_dll(
+                        repo / "tsf-tip", cmake_build_dir_for(repo / "tsf-tip", arch),
+                        profile.capitalize(),
+                    )
+                except FileNotFoundError:
+                    return None
+        if name.startswith("srf_ime_overlay-") and name.endswith(".exe"):
+            arch = name.removeprefix("srf_ime_overlay-").removesuffix(".exe")
+            if arch in BUILD_ARCHES:
+                try:
+                    return find_overlay_exe(
+                        repo / "tsf-tip", cmake_build_dir_for(repo / "tsf-tip", arch),
+                        profile.capitalize(),
+                    )
+                except FileNotFoundError:
+                    return None
         return None
 
     manifest = {
@@ -2780,6 +2800,23 @@ def step_verify_rust(repo: Path) -> None:
         cwd=cargo_dir,
         env=cargo_env,
     )
+    run([cargo, "test", "--workspace", "--lib", "--locked"], cwd=cargo_dir, env=cargo_env)
+    run(
+        [
+            cargo,
+            "test",
+            "--locked",
+            "--no-default-features",
+            "--features",
+            "dev-tools",
+            "--bin",
+            "learning_replay_eval",
+            "--bin",
+            "input_perf",
+        ],
+        cwd=cargo_dir,
+        env=cargo_env,
+    )
     run(
         [
             cargo,
@@ -2799,6 +2836,7 @@ def step_verify_rust(repo: Path) -> None:
         cwd=cargo_dir,
         env=cargo_env,
     )
+    step_check_lexicon_syllables(repo)
 
 
 # CMake generator cache
@@ -3586,7 +3624,7 @@ def verify_staged_package(
         raise RuntimeError("missing cold_lexicon.sqlite; rebuild bake_lexicon and restage")
     import sqlite3
     with closing(sqlite3.connect(cold_index.resolve().as_uri() + "?mode=ro", uri=True)) as cold_db:
-        if cold_db.execute("PRAGMA user_version").fetchone()[0] != 1:
+        if cold_db.execute("PRAGMA user_version").fetchone()[0] != 2:
             raise RuntimeError("unsupported cold lexicon schema")
         if cold_db.execute("SELECT reading FROM entries LIMIT 1").fetchone() is None:
             raise RuntimeError("empty cold lexicon index")
@@ -4186,8 +4224,8 @@ def main() -> int:
         args.skip_cmake = True
     if args.verify is None:
         args.verify = False
-    if args.verify and args.skip_cargo:
-        print(red("error: --verify cannot be combined with --quick/--skip-cargo"))
+    if args.verify and (args.skip_cargo or args.skip_cmake):
+        print(red("error: --verify cannot be combined with --quick/--skip-cargo/--skip-cmake"))
         return 2
     if args.perf_smoke and args.debug:
         print(red("error: --perf-smoke requires a Release build (remove --debug)"))
@@ -4483,6 +4521,24 @@ def main() -> int:
             print_msg(f"\n{dim('  [skip] Step 3a/5  CMake x86 build (up to date)')}")
         else:
             print_msg(f"\n{dim('  [skip] Step 3a/5  CMake x86 build')}")
+
+        if args.verify:
+            for arch, build_dir in (
+                (ARCH_X64, cmake_build_dir),
+                (ARCH_X86, cmake_build_dir_x86),
+            ):
+                with StepTimer(f"Verify native regression tests ({arch})"):
+                    run(
+                        [
+                            "ctest",
+                            "--test-dir",
+                            str(build_dir),
+                            "-C",
+                            profile_cap,
+                            "--output-on-failure",
+                        ],
+                        cwd=repo,
+                    )
 
         if not args.no_smoke and not args.dry_run:
             warnings = smoke_verify(repo, profile)

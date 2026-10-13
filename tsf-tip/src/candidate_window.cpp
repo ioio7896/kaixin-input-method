@@ -1727,13 +1727,15 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   // different widths; resizing on every pass reads as flicker.
   // Keep the old geometry briefly so an asynchronous pass cannot move a
   // clickable item, then apply the latest natural width once results settle.
+  // Same-page batches must also refresh the shrink target: retaining the old
+  // width while cancelling this timer would leave permanent trailing space.
   const bool delayHorizontalShrink = ShouldDelayHorizontalCandidateShrink(
       m_style.candidateHorizontal, wasVisible, previousHadAnchor,
       previousMeasuredClientSize.cx, naturalMeasuredClientSize.cx,
-      updateKind == CandidateWindowUpdateKind::Content) && !sameCandidatePage;
+      updateKind == CandidateWindowUpdateKind::Content);
   const bool keepPreviousWidth =
       wasVisible && previousHadAnchor && previousMeasuredClientSize.cx > 0 &&
-      (sameCandidatePage || delayHorizontalShrink ||
+      ((!m_style.candidateHorizontal && sameCandidatePage) || delayHorizontalShrink ||
        (!m_style.candidateHorizontal && updateKind != CandidateWindowUpdateKind::Style));
   if (keepPreviousWidth) {
     m_measuredClientSize.cx = std::min<LONG>(

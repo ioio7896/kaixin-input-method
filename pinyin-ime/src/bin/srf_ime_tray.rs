@@ -124,6 +124,7 @@ mod win {
     const ID_LAST_SCREENSHOT_OCR: usize = 1011;
     const ID_LAST_SCREENSHOT_TRANSLATE: usize = 1012;
     const ID_SYMBOLS: usize = 1013;
+    const ID_ENGINE_RESTART: usize = 1014;
     const ICON_SIZE: i32 = 32;
     const SETTINGS_EXE: &str = "srf_ime_settings.exe";
     const CLIPBOARD_MANAGER_EXE: &str = "srf_ime_clipboard.exe";
@@ -157,7 +158,6 @@ mod win {
     const STATE_REG_VALUE_INPUT_SEQUENCE: &str = "InputSequence";
     const STATE_REG_VALUE_FULL_SHAPE: &str = "FullShape";
     const STATE_REG_VALUE_CHINESE_PUNCTUATION: &str = "ChinesePunctuation";
-    const STATE_REG_VALUE_ENGINE_STATE: &str = "EngineState";
     const STATE_REG_VALUE_LAST_ENGINE_RECOVERY_REASON: &str = "LastEngineRecoveryReason";
     const STATE_REG_VALUE_LAST_ENGINE_RECOVERY_TIME: &str = "LastEngineRecoveryTime";
     const STATE_REG_VALUE_INSTALL_MAINTENANCE: &str = "InstallMaintenance";
@@ -292,6 +292,7 @@ mod win {
         updated_tick: Option<u64>,
         sequence: Option<u64>,
         engine_state: TrayEngineState,
+        engine_error_code: Option<u32>,
         last_recovery_reason: Option<String>,
         last_recovery_time: Option<String>,
     }
@@ -1410,6 +1411,15 @@ mod win {
             false,
             &mut items,
         );
+        append_owner_draw_menu_item(
+            menu,
+            MF_STRING,
+            ID_ENGINE_RESTART,
+            &wide("重试输入引擎"),
+            TrayMenuIcon::Status,
+            false,
+            &mut items,
+        );
         let game_flags = MF_STRING | if game_compat_on { MF_CHECKED } else { 0 };
         append_owner_draw_menu_item(
             menu,
@@ -1566,6 +1576,7 @@ mod win {
 
     unsafe fn handle_menu_command(hwnd: HWND, command: usize, target_hwnd: HWND) {
         match command {
+            ID_ENGINE_RESTART => restart_engine_helper(),
             ID_GAME_COMPAT_MODE => open_settings_section(true),
             ID_SETTINGS => open_settings(),
             ID_CLIPBOARD_MANAGER => open_clipboard_manager(),
@@ -3806,6 +3817,55 @@ mod win {
                     format!("spawned=0 error={err}"),
                 )
             });
+    }
+
+    fn restart_engine_helper() {
+        if install_maintenance_active() {
+            runtime_log::log_tray(
+                RuntimeLogLevel::Basic,
+                "engine_helper_restart",
+                "status=skipped reason=install_maintenance",
+            );
+            return;
+        }
+        let Some(install_root) = normalized_install_root() else {
+            return;
+        };
+        let engine = install_root.join(ENGINE_EXE);
+        if !engine.is_file() {
+            show_error_message("未找到输入引擎程序，请修复或重新安装开心输入法。");
+            return;
+        }
+        let suffix =
+            pinyin_ime::shared_rules::engine_instance_suffix_for_install_root(&install_root);
+        let pipe_name = pinyin_ime::shared_rules::engine_pipe_name_for_suffix(&suffix);
+        let mutex_name = pinyin_ime::shared_rules::engine_mutex_name_for_suffix(&suffix);
+        let lexicon_dir = install_root.join("lexicon");
+        let mut command = Command::new(engine);
+        command
+            .arg("--restart")
+            .arg("--pipe-name")
+            .arg(pipe_name)
+            .arg("--mutex-name")
+            .arg(mutex_name);
+        if lexicon_dir.is_dir() {
+            command.arg("--lexicon-dir").arg(&lexicon_dir);
+        }
+        match command.current_dir(install_root).spawn() {
+            Ok(_) => runtime_log::log_tray(
+                RuntimeLogLevel::Basic,
+                "engine_helper_restart",
+                "status=queued",
+            ),
+            Err(err) => {
+                runtime_log::log_tray(
+                    RuntimeLogLevel::Error,
+                    "engine_helper_restart",
+                    format!("status=failed error_kind={:?}", err.kind()),
+                );
+                show_error_message("无法启动引擎恢复程序，请检查安装目录和安全软件拦截记录。");
+            }
+        }
     }
 
     const NIN_SELECT: u32 = WM_USER;

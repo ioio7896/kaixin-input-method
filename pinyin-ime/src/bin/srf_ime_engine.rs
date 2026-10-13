@@ -17,6 +17,7 @@ mod win {
     const LEXICON_DIR_ARG: &str = "--lexicon-dir";
     const INSTALL_HEALTH_CHECK_ARG: &str = "--install-health-check";
     const HEALTH_CHECK_ARG: &str = "--health-check";
+    const RESTART_ARG: &str = "--restart";
     const PROBE_ARG: &str = "--probe";
 
     pub fn run() {
@@ -30,7 +31,11 @@ mod win {
             // per-install IPC names. Derive the same names from our install
             // root so it is immediately reusable when the first TIP loads.
             apply_install_root_ipc_names();
-            let mutex = create_single_instance_mutex();
+            let mutex = if std::env::args().any(|arg| arg == RESTART_ARG) {
+                restart_existing_engine_and_claim_mutex()
+            } else {
+                create_single_instance_mutex()
+            };
             if mutex == 0 {
                 return;
             }
@@ -172,6 +177,20 @@ mod win {
             return 0;
         }
         mutex
+    }
+
+    unsafe fn restart_existing_engine_and_claim_mutex() -> HANDLE {
+        // Shutdown uses the same per-install capability token as TSF requests
+        // and drains pending learning before the old helper releases its lock.
+        let _ = pinyin_ime::ipc_service::request_engine_shutdown_via_pipe();
+        for _ in 0..100 {
+            let mutex = create_single_instance_mutex();
+            if mutex != 0 {
+                return mutex;
+            }
+            thread::sleep(Duration::from_millis(50));
+        }
+        0
     }
 
     fn apply_ipc_name_args() {

@@ -15,7 +15,10 @@ const LOG_MAX_BYTES: u64 = 1024 * 1024;
 pub const LOG_ROTATE_KEEP: usize = 5;
 const EVENT_DB_NAME: &str = "runtime_events.sqlite";
 const EVENT_FIELD_MAGIC: &[u8] = b"KXLOG-DPAPI-1\n";
-const EVENT_DB_MAX_ROWS: i64 = 10_000;
+// Keep failures in a separate retention budget so a busy performance session
+// cannot evict the evidence needed to diagnose a crash or failed recovery.
+const EVENT_DB_ERROR_KEEP_ROWS: i64 = 2_048;
+const EVENT_DB_NORMAL_KEEP_ROWS: i64 = 10_000;
 const EVENT_DB_PRUNE_EVERY_ROWS: usize = 1_024;
 const LOG_QUEUE_CAPACITY: usize = 4_096;
 const LOG_BATCH_MAX: usize = 512;
@@ -592,15 +595,29 @@ fn append_events_batch(
         }
     }
     if prune {
-        transaction.execute(
-            "DELETE FROM runtime_events
-             WHERE id NOT IN (
-               SELECT id FROM runtime_events ORDER BY id DESC LIMIT ?1
-             )",
-            params![EVENT_DB_MAX_ROWS],
-        )?;
+        prune_event_rows(&transaction)?;
     }
     transaction.commit()
+}
+
+fn prune_event_rows(transaction: &rusqlite::Transaction<'_>) -> rusqlite::Result<()> {
+    transaction.execute(
+        "DELETE FROM runtime_events
+             WHERE level != 'error' AND id NOT IN (
+               SELECT id FROM runtime_events
+               WHERE level != 'error' ORDER BY id DESC LIMIT ?1
+             )",
+        params![EVENT_DB_NORMAL_KEEP_ROWS],
+    )?;
+    transaction.execute(
+        "DELETE FROM runtime_events
+             WHERE level = 'error' AND id NOT IN (
+               SELECT id FROM runtime_events
+               WHERE level = 'error' ORDER BY id DESC LIMIT ?1
+             )",
+        params![EVENT_DB_ERROR_KEEP_ROWS],
+    )?;
+    Ok(())
 }
 
 fn open_event_connection(path: &Path) -> rusqlite::Result<Connection> {
@@ -626,6 +643,49 @@ fn open_event_connection(path: &Path) -> rusqlite::Result<Connection> {
            ON runtime_events(component, event);",
     )?;
     Ok(conn)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pruning_keeps_independent_error_and_normal_budgets() {
+        let mut connection = Connection::open_in_memory().expect("open in-memory event store");
+        connection
+            .execute_batch(
+                "CREATE TABLE runtime_events (
+                   id INTEGER PRIMARY KEY,
+                   level TEXT NOT NULL
+                 );
+                 WITH RECURSIVE ids(value) AS (
+                   SELECT 1 UNION ALL SELECT value + 1 FROM ids WHERE value < 24096
+                 )
+                 INSERT INTO runtime_events(id, level)
+                 SELECT value, CASE WHEN value % 2 = 0 THEN 'error' ELSE 'perf' END FROM ids;",
+            )
+            .expect("populate event store");
+        let tx = connection.transaction().expect("begin prune transaction");
+        prune_event_rows(&tx).expect("prune event store");
+        tx.commit().expect("commit prune transaction");
+
+        let errors: i64 = connection
+            .query_row(
+                "SELECT count(*) FROM runtime_events WHERE level='error'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count retained errors");
+        let normal: i64 = connection
+            .query_row(
+                "SELECT count(*) FROM runtime_events WHERE level!='error'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count retained normal rows");
+        assert_eq!(errors, EVENT_DB_ERROR_KEEP_ROWS);
+        assert_eq!(normal, EVENT_DB_NORMAL_KEEP_ROWS);
+    }
 }
 
 fn query_recent_events(

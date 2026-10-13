@@ -207,10 +207,13 @@ void CSrfTip::CandidateLookupWorkerMain() {
         if (m_candidateWorkerRapidRequestCount == 1) return kCandidateLookupWarmCoalesceMs;
         return kCandidateLookupCoalesceMs;
       };
+      const auto coalesceStarted = std::chrono::steady_clock::now();
       for (;;) {
         const unsigned long long observedSerial = m_candidateWorkerRequestSerial;
-        const auto coalesceDelay = std::chrono::milliseconds(coalesceMs());
-        const bool wokeForUpdate = m_candidateWorkerCv.wait_for(lock, coalesceDelay, [&]() {
+        // Bound a burst by its first wait: repeated updates must not restart
+        // the entire debounce interval and postpone useful work indefinitely.
+        const auto deadline = coalesceStarted + std::chrono::milliseconds(coalesceMs());
+        const bool wokeForUpdate = m_candidateWorkerCv.wait_until(lock, deadline, [&]() {
           return m_candidateWorkerStop || m_candidateWorkerRequestSerial != observedSerial;
         });
         if (m_candidateWorkerStop || !wokeForUpdate) break;
@@ -252,6 +255,7 @@ void CSrfTip::CandidateLookupWorkerMain() {
     SrfEngineState stateAfterLookup = SrfEngineState::Idle;
     SrfLookupCandidatesStatus lookupStatus = SrfLookupCandidatesStatus::Failed;
     const ULONGLONG lookupStart = GetTickCount64();
+    if (requestTick != 0) DebugLogPerfMs(L"CandidateWorker/queue-wait", requestTick);
     try {
       lookupStatus =
           SrfTip_LookupCandidates(reading, candidates, &meta, engineRequestId, fullResult,
@@ -826,10 +830,14 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
           currentPartialResult, trackedCurrentPartialSnapshot, m_candidateInteractionVersion,
           m_partialCandidateInteractionVersion);
   bool frozeInteractiveSnapshot = false;
+  if (completingInteractiveSnapshot && canRefreshCompletedPartialSnapshot) {
+    srf_candidate_stability::StabilizeCompletedBatch(
+        m_candidates, m_candidateMeta, &nextCandidates, &nextMeta,
+        srf_candidate_limits::kFullResult);
+  }
   if (completingInteractiveSnapshot && !canRefreshCompletedPartialSnapshot) {
-    // Preserve indexes after the user has navigated the partial batch. If the
-    // reading and request are still current and no selection/page interaction
-    // occurred, the completed batch is safe to apply below.
+    // Preserve exact indexes after interaction. Untouched partial batches use
+    // the filtered stable merge above instead of replacing their visible order.
     frozeInteractiveSnapshot = srf_candidate_stability::FreezeInteractiveBatch(
         m_candidates, m_candidateMeta, &nextCandidates, &nextMeta,
         srf_candidate_limits::kFullResult);
@@ -1132,6 +1140,10 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
   // first time; this branch is only for an already delivered async result.
   if (changed) {
     UpdateCandidateWindow(ec);
+    if (requestTick != 0) {
+      DebugLogPerfMs(fullResult ? L"CandidateWorker/full-request-to-window"
+                                : L"CandidateWorker/first-request-to-window", requestTick);
+    }
   }
 }
 
