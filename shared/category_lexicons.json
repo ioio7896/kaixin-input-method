@@ -16,18 +16,18 @@
       "file": "category_delivery.txt",
       "title": "快递物流",
       "group": "日常表达",
-      "rows": 337,
+      "rows": 241,
       "default_enabled": true,
-      "sha256": "140339d01c85ebab5bcc9556ec2c3e0e8e82b49d8627f7a57ffd3eda9a5d69a7"
+      "sha256": "852de3bae8fb4e341301dbc59f2a5cba20512663677d6d2b9fd8569e7e003f4b"
     },
     {
       "tag": "category_aftersales",
       "file": "category_aftersales.txt",
       "title": "退换售后",
       "group": "日常表达",
-      "rows": 270,
+      "rows": 174,
       "default_enabled": true,
-      "sha256": "c124324b7c8f483a726a888d9effacbd38617691fa82854c8b62f340f49dd2e7"
+      "sha256": "2358b91e99bdd51522bb7880731623ef93e3ad4b174600648e3082140c409cae"
     },
     {
       "tag": "category_payment",
@@ -42,25 +42,25 @@
       "tag": "category_office",
       "file": "category_office.txt",
       "title": "办公协作",
-      "group": "日常表达",
-      "rows": 1008,
+      "group": "办公与办事",
+      "rows": 624,
       "default_enabled": true,
-      "sha256": "1a3c30feb16ad61359fd0bd90a84b72285957f60aac47b0fe6373265ab9066f7"
+      "sha256": "5411331b94059a9e194ee218bd42881d14662cdaa5358dc1f0cb49f7861d1cc1"
     },
     {
       "tag": "category_project",
       "file": "category_project.txt",
       "title": "项目产品",
-      "group": "日常表达",
-      "rows": 566,
+      "group": "办公与办事",
+      "rows": 326,
       "default_enabled": true,
-      "sha256": "7ea127e422ae89a83c532923ec6e86bc8339e07e04d15f9893180295a5f4f5e8"
+      "sha256": "0284a76b992b94fe1919bbb5b2eae99e9fd51331b111915369a92f5fc0db4339"
     },
     {
       "tag": "category_human_resources",
       "file": "category_human_resources.txt",
       "title": "人事考勤",
-      "group": "日常表达",
+      "group": "办公与办事",
       "rows": 57,
       "default_enabled": true,
       "sha256": "86f6a3b58b185c7bf7c41bc15426464aaba01e4110a87f104dbc166f262ca532"
@@ -69,10 +69,10 @@
       "tag": "category_government",
       "file": "category_government.txt",
       "title": "政务办事",
-      "group": "日常表达",
-      "rows": 286,
+      "group": "办公与办事",
+      "rows": 222,
       "default_enabled": true,
-      "sha256": "75bf8134767499fa30d4b5cdd2a99db19e256a3cffcf670e877e8de55da29ec2"
+      "sha256": "f47f5ec00e6209942401a2be0473b390cd288bbc0e4b6e6ff69529aacff3e226"
     },
     {
       "tag": "category_social_insurance",
@@ -223,9 +223,9 @@
       "file": "category_education.txt",
       "title": "学校教育",
       "group": "日常表达",
-      "rows": 218,
+      "rows": 142,
       "default_enabled": true,
-      "sha256": "154b9fce2db6ce74a686407c48426e8eae8ad41b05ff3b9234a60db16676f08c"
+      "sha256": "6de2d599f17e3e0ac15c979d29ae83f9ee12d78452bfe2dded3549fb7fd2571b"
     },
     {
       "tag": "category_exams",
@@ -294,7 +294,7 @@
       "tag": "category_pets",
       "file": "category_pets.txt",
       "title": "宠物养护",
-      "group": "名称与实体",
+      "group": "日常表达",
       "rows": 51,
       "default_enabled": true,
       "sha256": "308a9464eb9091e6633e03abda7ad7a5617396d106ddcf42dd10d1f580d50c0a"
@@ -645,34 +645,34 @@
       "tag": "category_idioms",
       "file": "category_idioms.txt",
       "title": "成语惯用语",
-      "group": "日常表达",
-      "rows": 22932,
+      "group": "成语与固定表达",
+      "rows": 22840,
       "default_enabled": true,
-      "sha256": "8b3d9427b061a9c257e1c1b985843ed019dd7019775e0fda971eb313db62ccc5"
+      "sha256": "89818edf992706c7191577a7c0e9b1e2ef8912afb5988788a21137ac7e51def1"
     },
     {
       "tag": "category_common_three",
       "file": "category_common_three.txt",
       "title": "三字通用补充",
-      "group": "日常表达",
-      "rows": 1162,
+      "group": "通用词语补充",
+      "rows": 1161,
       "default_enabled": true,
-      "sha256": "0065028a0f84886c7f68390a1675d9c256a0bd243d21122f773bb470fc46ce8c"
+      "sha256": "eb817dc69bab000d914c3f8f1bba0655ddedccab494144a09c77a5504d4b8dcf"
     },
     {
       "tag": "category_common_four",
       "file": "category_common_four.txt",
       "title": "四字常用补充",
-      "group": "日常表达",
-      "rows": 4985,
+      "group": "通用词语补充",
+      "rows": 4980,
       "default_enabled": true,
-      "sha256": "98a20dfe526e43bc7eba98b3ae451723ac5af78d52ee1423ccf4d39558b98047"
+      "sha256": "0b9985e55b91560c06814e649bab4043cac23b6c48a1737125848c67c900f339"
     },
     {
       "tag": "category_common_long",
       "file": "category_common_long.txt",
       "title": "通用长词补充",
-      "group": "日常表达",
+      "group": "通用词语补充",
       "rows": 738,
       "default_enabled": true,
       "sha256": "875f2345664486fee3a1f714875b9d7b824dcd5f5a14a0b92da9c5ec891de2f7"
@@ -682,18 +682,18 @@
       "file": "category_proper_people.txt",
       "title": "语料人名补充",
       "group": "名称与实体",
-      "rows": 1380,
+      "rows": 1361,
       "default_enabled": true,
-      "sha256": "895511963706460a9f8e9cd760459dc52931030e5d0bad82757cab756c1cb1dd"
+      "sha256": "62cf386a4ed5906500161c139b333c9c25363a41cc781d02e53876e9b5c75123"
     },
     {
       "tag": "category_proper_places",
       "file": "category_proper_places.txt",
       "title": "语料地名补充",
       "group": "地区词库 · 全国与世界",
-      "rows": 916,
+      "rows": 915,
       "default_enabled": true,
-      "sha256": "1da296e1edb7597ebbe43b6ff7dc303e349516362b725669793563282bee6fee"
+      "sha256": "8d5d7ae4892f1033ea75e49ad4e162d1a9d732dd1f3fcf457f9b081601b5d7cc"
     },
     {
       "tag": "category_proper_organizations",

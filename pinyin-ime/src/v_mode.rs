@@ -855,6 +855,7 @@ fn datetime_candidates_for(key: &str) -> Option<Vec<DirectCandidate>> {
     let now = beijing_now();
     let full = now.format("%Y-%m-%d %H:%M:%S").to_string();
     let date = now.format("%Y-%m-%d").to_string();
+    let filename_datetime = now.format("%Y_%m_%d-%H_%M_%S").to_string();
     let time = now.format("%H:%M:%S").to_string();
     let week = weekday_cn(&now).to_string();
     let week_short = weekday_short_cn(&now).to_string();
@@ -864,9 +865,9 @@ fn datetime_candidates_for(key: &str) -> Option<Vec<DirectCandidate>> {
         "rq" | "date" | "jr" => vec![
             direct_candidate(date.clone(), DIRECT_SHORTCUT_TOP_SCORE, Some("实时日期")),
             direct_candidate(
-                full,
+                filename_datetime,
                 DIRECT_SHORTCUT_TOP_SCORE - DIRECT_SHORTCUT_STEP,
-                Some("北京时间"),
+                Some("文件夹名"),
             ),
             direct_candidate(
                 format!("{} {}", date, week),

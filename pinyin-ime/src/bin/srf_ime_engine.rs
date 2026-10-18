@@ -19,9 +19,23 @@ mod win {
     const HEALTH_CHECK_ARG: &str = "--health-check";
     const RESTART_ARG: &str = "--restart";
     const PROBE_ARG: &str = "--probe";
+    const EXPORT_RUNTIME_EVENTS_ARG: &str = "--export-runtime-events";
 
     pub fn run() {
         unsafe {
+            let mut args = std::env::args().skip(1);
+            if args.next().as_deref() == Some(EXPORT_RUNTIME_EVENTS_ARG) {
+                let Some(path) = args.next() else {
+                    std::process::exit(2)
+                };
+                let lines = pinyin_ime::runtime_log::recent_event_lines(500);
+                let contents = lines.join("\n");
+                std::process::exit(if std::fs::write(path, contents).is_ok() {
+                    0
+                } else {
+                    2
+                });
+            }
             apply_ipc_name_args();
             if let Some(probe_input) = health_check_probe_input() {
                 apply_install_root_ipc_names();

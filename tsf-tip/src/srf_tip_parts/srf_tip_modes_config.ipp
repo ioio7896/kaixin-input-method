@@ -141,6 +141,7 @@ SrfHotkeyScope CSrfTip::EffectiveHotkeyScope() const {
 }
 
 bool CSrfTip::IsGameHotkeyPassthroughActive() const {
+  if (m_pureGameMode) return true;
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
     appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
@@ -150,6 +151,7 @@ bool CSrfTip::IsGameHotkeyPassthroughActive() const {
 }
 
 SrfGameInputMode CSrfTip::EffectiveGameInputMode() const {
+  if (m_pureGameMode) return SrfEffectiveGameInputMode(true, m_config.compatibility.gameInputMode);
   if (const auto* options = FindAppOptions(m_config, CompatibilityAppName())) {
     if (options->hasGameInputMode) return options->gameInputMode;
     if (options->hasAsciiMode && options->asciiMode) return SrfGameInputMode::Passthrough;
@@ -245,6 +247,8 @@ void CSrfTip::SetGameChatActive(bool active) {
   line += source;
   line += L" verified=";
   line += m_gameEditableVerified ? L"1" : L"0";
+  line += L" app=";
+  line += CompatibilityAppName();
   SrfTsfDiagnosticLog(L"game-chat.state", line.c_str());
 }
 
@@ -435,7 +439,14 @@ void CSrfTip::RefreshGameChatFocus() {
   if (m_gameChatPhase == SrfGameChatPhase::Awaiting && GetTickCount64() > m_gameAwaitingUntil) {
     m_gameChatPhase = SrfGameChatPhase::Passive;
     ShowGameInputStatus(L"未确认输入栏，请用中文聊天热键");
-    SrfTsfDiagnosticLog(L"game-chat.open", L"phase=passthrough reason=unconfirmed_input_field");
+    const wchar_t* reason = !nativeFocusValid ? L"no_native_focus" :
+        (!m_pFocusContext || !contextFocused || !contextOwner) ? L"no_tsf_context" :
+        !writable ? L"readonly_tsf_context" : L"editable_not_verified";
+    std::wstring detail = L"phase=passthrough reason=";
+    detail += reason;
+    detail += L" app=";
+    detail += CompatibilityAppName();
+    SrfTsfDiagnosticLog(L"game-chat.open", detail.c_str());
   }
   const bool autoMode = EffectiveGameInputMode() == SrfGameInputMode::AutoText;
   const bool verifiedOpen = (autoMode || m_gameChatPhase == SrfGameChatPhase::Awaiting) &&
@@ -455,7 +466,9 @@ void CSrfTip::ObserveGameChatOpen(UINT vk, LPARAM lParam) {
   m_gameChatOwnerProcessId = m_compatibilityProcessId;
   m_gameAwaitingUntil = GetTickCount64() + 1200;
   m_gameDismissedIdentity = 0;
-  SrfTsfDiagnosticLog(L"game-chat.open", L"phase=awaiting reason=configured_open_key");
+  std::wstring detail = L"phase=awaiting reason=configured_open_key app=";
+  detail += CompatibilityAppName();
+  SrfTsfDiagnosticLog(L"game-chat.open", detail.c_str());
   // The physical opening key remains owned by the game.
 }
 
@@ -476,6 +489,7 @@ bool CSrfTip::ObserveGameChatExit(UINT vk, LPARAM lParam) {
 }
 
 void CSrfTip::RefreshGameInputHealth() {
+  if (RefreshPureGameModeFromRegistry()) return;
   if (!GetForegroundWindow() && (m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting)) {
     SetGameChatActive(false);
   }
@@ -1189,7 +1203,29 @@ void CSrfTip::RefreshRuntimeConfig() {
   ApplyRuntimeConfigReload();
 }
 
+bool CSrfTip::RefreshPureGameModeFromRegistry() {
+  DWORD value = 0;
+  DWORD bytes = sizeof(value);
+  const bool enabled = RegGetValueW(HKEY_CURRENT_USER, kStateRegPath,
+      kStatePureGameModeValue, RRF_RT_REG_DWORD, nullptr, &value, &bytes) == ERROR_SUCCESS && value != 0;
+  if (enabled == m_pureGameMode) return enabled;
+  m_pureGameMode = enabled;
+  m_lastKeyHotPathRefreshTick = 0;
+  if (enabled) {
+    // Cancel rather than commit pending input. Leave m_imeOpen and the saved
+    // normal ASCII preference intact so turning the override off restores it.
+    SetGameChatActive(false);
+    EndInputSession(L"pure-game-mode");
+    if (m_pKeySink) m_pKeySink->m_pendingKeyEdits.Cancel();
+    m_notificationWindow.Hide();
+  }
+  UpdatePreservedKeysForHotkeyScope();
+  SyncStatusModel();
+  return enabled;
+}
+
 void CSrfTip::RefreshKeyHotPathState() {
+  if (RefreshPureGameModeFromRegistry()) return;
   const ULONGLONG now = GetTickCount64();
   const HWND foreground = GetForegroundWindow();
   if (foreground != m_keyHotPathForeground) {
@@ -1224,6 +1260,7 @@ void CSrfTip::RefreshCompatibilityStateThrottled(bool force) {
 }
 
 void CSrfTip::RefreshCompatibilityState() {
+  if (RefreshPureGameModeFromRegistry()) return;
   const SrfUIStyle previousEffectiveStyle = EffectiveCandidateUiStyle();
 
   HWND hwnd = GetForegroundWindow();
@@ -1503,6 +1540,7 @@ bool CSrfTip::ShouldForceAsciiForCompatibility() const {
 }
 
 const wchar_t* CSrfTip::EffectiveInputModeSource() const {
+  if (m_pureGameMode) return L"pure_game";
   if (m_config.privacy.enabled || m_sensitiveInputActive) return L"privacy";
   if (m_gameChatActive) return L"game_chat";
   if (IsGameHotkeyPassthroughActive()) return L"game";

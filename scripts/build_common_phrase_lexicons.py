@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Build the four modern short-phrase lexicons.
 
-The source ordering comes from ``wordfreq``'s Chinese frequency list.  A
-small, deterministic template tail supplies natural 5--8 character workflow
-phrases that are too sparse to appear as standalone entries in wordfreq.
+The four-character list uses wordfreq's Chinese frequency list. Long phrases
+come only from the maintained expression source, with no quota or template tail.
 The output uses the native ``phrase<TAB>pinyin<TAB>weight`` format.
 """
 
@@ -32,13 +31,6 @@ CHAT_SEEDS = [phrase.strip() for phrase in """
 OFFICE_SEEDS = [phrase.strip() for phrase in """
 项目进展顺利|项目已经启动|项目正在进行|项目按计划推进|项目进度正常|项目需要跟进|项目需要复盘|项目情况汇报|项目阶段总结|项目风险评估|项目预算审批|项目需求确认|项目方案讨论|项目计划安排|项目工作计划|项目实施方案|项目验收通过|项目按时完成|项目延期申请|项目交付时间|工作安排如下|工作已经完成|工作正在进行|工作进度汇报|工作内容确认|工作计划调整|工作重点说明|工作任务分配|工作需要配合|工作及时跟进|工作认真负责|工作效率提升|部门工作安排|部门之间协调|部门会议通知|部门负责人确认|部门年度总结|部门季度计划|会议时间调整|会议安排如下|会议内容确认|会议材料准备|会议纪要整理|会议结果汇报|会议已经结束|会议按时召开|请准时参加会议|请提前准备材料|请及时回复邮件|请查收邮件附件|请查看相关文件|请确认收到邮件|请大家知悉|请各位注意查收|请按照要求办理|请在今天完成|请于明天提交|请尽快处理一下|请及时反馈意见|请提供详细资料|请补充相关信息|请核对数据内容|请确认最终版本|请安排人员参加|请做好会议准备|请提前通知大家|请抄送相关人员|请回复处理结果|邮件已经发送|邮件附件如下|邮件内容确认|邮件需要回复|邮件发送成功|邮件发送失败|附件已经上传|附件请查收|附件内容如下|文件已经完成|文件正在审核|文件需要修改|文件版本更新|文件格式错误|文件内容确认|文件已经归档|资料已经准备好|资料需要补充|资料请及时提供|资料内容有误|资料已经提交|材料准备完成|材料需要盖章|材料需要审核|材料已经收到|材料请尽快提交|数据已经更新|数据需要核对|数据分析报告|数据统计结果|数据导出完成|数据安全检查|数据异常情况|数据来源说明|数据请及时同步|客户需求确认|客户反馈意见|客户服务支持|客户关系维护|客户信息更新|客户已经确认|客户需要跟进|客户问题处理|客户满意度调查|供应商联系确认|合同已经签署|合同需要审核|合同条款确认|合同即将到期|合同审批流程|合同附件准备|报价方案确认|报价已经提交|报价需要调整|预算已经批准|预算执行情况|发票已经开具|发票信息核对|费用报销申请|费用报销完成|财务数据核对|付款申请提交|付款已经完成|收款信息确认|审批流程如下|审批已经通过|审批需要补充材料|流程需要优化|流程已经更新|流程执行情况|制度文件发布|制度内容说明|通知已经发布|通知内容如下|通知请及时查看|培训时间安排|培训材料准备|培训计划确认|招聘需求确认|面试时间安排|入职手续办理|离职手续办理|考勤记录核对|请假申请提交|加班申请审批|年终总结会议|季度工作总结|月度工作计划|年度目标完成|目标需要调整|指标完成情况|绩效考核结果|工作日报提交|工作周报发送|工作月报汇总|进度及时同步|进展情况说明|后续工作安排|下一步工作计划|后续安排如下|问题清单整理|问题已经解决|问题需要跟进|问题原因分析|问题处理结果|风险问题提醒|风险控制措施|风险已经解除|需要进一步确认|需要领导审批|需要大家配合|需要统一安排|需要重新检查|建议尽快处理|建议召开会议|建议修改方案|建议补充说明|方案已经确定|方案需要调整|方案内容如下|方案评审通过|版本已经发布|版本更新说明|系统运行正常|系统需要升级|系统故障排查|系统权限申请|账号权限开通|账号信息确认|密码需要重置|网络连接异常|服务已经恢复|服务暂时不可用|平台功能更新|平台使用说明|上线时间确定|上线前检查|上线后观察|测试结果通过|测试环境准备|测试数据清理|测试问题反馈|发布流程确认|发布计划安排|上线计划如下|请勿外传文件|内部资料保密|仅供内部使用|未经允许不得转载|请遵守工作纪律|感谢大家配合|辛苦大家配合|谢谢大家支持|感谢您的理解|如有问题请联系|如有疑问请反馈|后续会及时通知|具体安排另行通知|最终结果另行通知|以上请知悉|特此通知|请审批处理|请领导审阅|请批示意见|烦请审核|烦请查收|烦请回复|敬请知悉|请予以确认|请按时完成任务|请做好记录|请保存相关文件|请勿修改内容|请勿删除数据|请注意查收邮件|请及时更新进度|请同步最新信息
 """.split("|") if phrase.strip()]
-
-# These are deliberately ordinary collocations rather than a second idiom
-# list.  They fill the small long-phrase tail absent from wordfreq's token list.
-LONG_SUBJECTS = "我们|大家|本次活动|这项工作|当前项目|相关部门|项目团队|系统管理员|客户团队|所有人员|现场工作人员|后续安排|当前任务|新的计划|具体情况|最终结果|工作进度|会议安排|申请材料|反馈信息".split("|")
-LONG_ACTIONS = "已经完成|正在处理|需要确认|可以解决|值得关注|请及时查看|已经开始|正在等待|需要继续|可以直接|请大家注意|能够有效|已经做好|正在准备|需要尽快|应该认真|已经提交|正在审核|需要补充|可以按照".split("|")
-LONG_OBJECTS = "相关工作|后续安排|具体情况|新的计划|所有问题|最终结果|下一步工作|资料内容|反馈信息|申请材料|使用方法|安全设置|服务内容|会议安排|时间地点|操作步骤|审核结果|工作进度|处理方式|项目计划|最新消息|实际情况|执行结果|具体要求|相关文件|当前状态|重要信息|详细内容|处理意见|工作任务".split("|")
-
 
 def valid_phrase(phrase: str, lengths: range | tuple[int, ...]) -> bool:
     return (
@@ -78,9 +70,11 @@ def weight(rank: int, scale: int = 9_000_000) -> int:
 
 
 def make_rows(phrases: list[tuple[str, int]], scale: int) -> list[str]:
+    from normalize_lexicon_freq10k import score_by_rank
+    scores = score_by_rank([weight(rank, scale) for _, rank in phrases], 1, 10_000)
     rows: list[str] = []
-    for phrase, rank in phrases:
-        rows.append(f"{phrase}\t{reading(phrase)}\t{weight(rank, scale)}")
+    for (phrase, _), score in zip(phrases, scores):
+        rows.append(f"{phrase}\t{reading(phrase)}\t{score}")
     return rows
 
 
@@ -108,33 +102,6 @@ def select_ranked(
     if len(selected) != size:
         raise RuntimeError(f"only selected {len(selected)} phrases; need {size}")
     return selected
-
-
-def long_tail_extras(existing: set[str], needed: int) -> list[tuple[str, int]]:
-    extras: list[tuple[str, int]] = []
-    rank = POOL_SIZE + 1
-    # Reuse curated chat/office expressions before falling back to templates.
-    # This keeps the generated tail human-readable even when wordfreq has too
-    # few standalone 5--8 character tokens.
-    for phrase in [*CHAT_SEEDS, *OFFICE_SEEDS]:
-        if valid_phrase(phrase, range(5, 9)) and phrase not in existing:
-            extras.append((phrase, rank))
-            existing.add(phrase)
-            rank += 1
-            if len(extras) >= needed:
-                return extras
-    for action in LONG_ACTIONS:
-        for obj in LONG_OBJECTS:
-            # Action + object yields complete, reusable collocations such as
-            # “已经完成相关工作” and “正在处理具体情况”.
-            phrase = action + obj
-            if valid_phrase(phrase, range(5, 9)) and phrase not in existing:
-                extras.append((phrase, rank))
-                existing.add(phrase)
-                rank += 1
-                if len(extras) >= needed:
-                    return extras
-    raise RuntimeError(f"long phrase template tail only produced {len(extras)} rows")
 
 
 def category_score(phrase: str, rank: int, keywords: tuple[str, ...]) -> float:
@@ -166,18 +133,6 @@ def build() -> None:
         seeds=["与此同时", "总的来说", "换句话说"],
         scorer=lambda p, r: category_score(p, r, life_keywords),
     )
-    long_candidates = [(p, r) for p, r in candidates if 5 <= len(p) <= 8]
-    long_existing = {p for p, _ in long_candidates}
-    long_candidates.extend(long_tail_extras(long_existing, max(0, 5_000 - len(long_candidates))))
-    long = select_ranked(
-        long_candidates,
-        5_000,
-        range(5, 9),
-        seeds=[],
-        scorer=lambda p, r: category_score(p, r, life_keywords),
-    )
-    chat_keywords = ("谢谢", "辛苦", "稍等", "麻烦", "客气", "怎么", "什么", "哈哈", "收到", "明白", "晚安", "加油", "方便", "回复", "联系", "希望", "祝", "抱歉", "不好意思", "没事", "可以吗", "好吗")
-    office_keywords = ("项目", "工作", "会议", "邮件", "文件", "资料", "材料", "数据", "客户", "合同", "预算", "审批", "部门", "安排", "提交", "审核", "进度", "报告", "方案", "系统", "通知", "任务", "计划", "发票", "版本", "测试", "发布")
     # Communication categories are authored expressions, not frequency-pool
     # quotas. Keep this shared with the focused regeneration command.
     build_communication_fragments()
@@ -191,11 +146,14 @@ def build() -> None:
         for row in four_rows
     ]
     write(BASE / "life_common_4char.txt", "5000 条通用四字短语", "wordfreq 中文频率排序 + 高频现代固定搭配", four_rows)
-    write(BASE / "life_common_phrases.txt", f"{len(long)} 条五至八字通用短语", "wordfreq 中文频率排序 + 现代工作与生活固定搭配模板", make_rows(long, 8_000_000))
+    from lexicon_quality import write_reviewed_long_lexicon
+    long_count = write_reviewed_long_lexicon()
     from merge_zh_ext_lexicons import merge_lexicons
 
     merge_lexicons()
-    print("generated:", "four", len(four), "long", len(long), "chat", len(chat), "office", len(office))
+    from lexicon_quality import apply_quality
+    apply_quality()
+    print("generated:", "four", len(four), "long", long_count, "chat", len(chat), "office", len(office))
 
 
 def build_communication_fragments() -> None:

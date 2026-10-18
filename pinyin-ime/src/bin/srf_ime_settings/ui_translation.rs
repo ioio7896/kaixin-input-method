@@ -1,12 +1,6 @@
 use super::*;
 
 pub(super) fn translation_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    tool_page_intro(
-        ui,
-        "译",
-        "本地翻译",
-        "统一管理翻译工具、路径和完成后的动作。",
-    );
     let mut open_translate = false;
     let mut check_translate = false;
     section_panel(ui, "本地翻译", |ui| {

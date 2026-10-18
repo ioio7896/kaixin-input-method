@@ -6,6 +6,11 @@ enum class SrfGameEnterBehavior { Auto, Close, Stay };
 enum class SrfGameChatPhase { Passive, Awaiting, Editing, Committing };
 enum class SrfGameTextSource { None, Manual, Native, Tsf, Automation, AlwaysChinese };
 
+inline SrfGameInputMode SrfEffectiveGameInputMode(bool pureGameMode,
+                                                SrfGameInputMode configured) {
+  return pureGameMode ? SrfGameInputMode::Passthrough : configured;
+}
+
 class SrfGameCommitScope {
  public:
   SrfGameCommitScope(SrfGameChatPhase& phase, const bool& active) : phase_(phase), active_(active) {

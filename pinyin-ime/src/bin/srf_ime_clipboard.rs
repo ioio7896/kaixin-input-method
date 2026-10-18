@@ -61,6 +61,8 @@ const WINDOW_WORK_AREA_MARGIN_PX: i32 = 12;
 #[derive(Clone, Deserialize)]
 struct ClipboardEntry {
     #[serde(default)]
+    id: String,
+    #[serde(default)]
     text: String,
     #[serde(default)]
     captured_at: u64,
@@ -713,13 +715,39 @@ struct ClipboardApp {
     window_rect_loaded: bool,
     last_saved_rect: Option<RectDto>,
     last_window_save: Instant,
+    background_enabled: bool,
+    privacy_enabled: bool,
+    capture_notice: Option<String>,
+    search_focused: bool,
+    list_focused: bool,
+    preview: Option<ClipboardEntry>,
+    scroll_to_latest: bool,
+    latest_unseen: bool,
+    near_top: bool,
+    refresh_force_requested: bool,
 }
 
 impl ClipboardApp {
     fn new(cc: &eframe::CreationContext<'_>, target_hwnd: isize) -> Self {
         let _ = fonts::install_cjk_fonts(&cc.egui_ctx);
-        let mut app = Self {
-            client: AsyncServiceClient::new(cc.egui_ctx.clone()),
+        let mut app = Self::with_client(AsyncServiceClient::new(cc.egui_ctx.clone()), target_hwnd);
+        app.request_refresh(true);
+        let prefs = app.client.call("get_prefs", |request| {
+            request.keys = Some(vec![
+                "theme_mode".to_string(),
+                "dense_rows".to_string(),
+                "quick_paste".to_string(),
+            ]);
+        });
+        app.pending.insert(prefs, PendingKind::Preferences);
+        let rect = app.client.call("get_window_rect", |_| {});
+        app.pending.insert(rect, PendingKind::WindowRect);
+        app
+    }
+
+    fn with_client(client: AsyncServiceClient, target_hwnd: isize) -> Self {
+        Self {
+            client,
             pending: HashMap::new(),
             snapshot: Snapshot::default(),
             pinned_texts: HashSet::new(),
@@ -745,23 +773,22 @@ impl ClipboardApp {
             window_rect_loaded: false,
             last_saved_rect: None,
             last_window_save: Instant::now(),
-        };
-        app.request_refresh(true);
-        let prefs = app.client.call("get_prefs", |request| {
-            request.keys = Some(vec![
-                "theme_mode".to_string(),
-                "dense_rows".to_string(),
-                "quick_paste".to_string(),
-            ]);
-        });
-        app.pending.insert(prefs, PendingKind::Preferences);
-        let rect = app.client.call("get_window_rect", |_| {});
-        app.pending.insert(rect, PendingKind::WindowRect);
-        app
+            background_enabled: false,
+            privacy_enabled: false,
+            capture_notice: None,
+            search_focused: false,
+            list_focused: true,
+            preview: None,
+            scroll_to_latest: false,
+            latest_unseen: false,
+            near_top: true,
+            refresh_force_requested: false,
+        }
     }
 
     fn request_refresh(&mut self, force: bool) {
         if self.refresh_pending {
+            self.refresh_force_requested |= force;
             return;
         }
         let previous = self.modified.clone();
@@ -775,7 +802,28 @@ impl ClipboardApp {
     }
 
     fn apply_refresh(&mut self, data: Value) -> Result<(), String> {
-        self.modified = data
+        self.background_enabled = data
+            .get("background_enabled")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+        self.privacy_enabled = data
+            .get("privacy_enabled")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+        if self.privacy_enabled {
+            self.preview = None;
+        }
+        self.capture_notice = data
+            .get("capture_notice")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        let selected_id = self.selected_entry().map(|entry| entry.id);
+        let old_latest = self
+            .snapshot
+            .history
+            .first()
+            .map(|entry| (entry.id.clone(), entry.captured_at, entry.copy_count));
+        let modified = data
             .get("modified")
             .and_then(Value::as_str)
             .unwrap_or_default()
@@ -785,20 +833,40 @@ impl ClipboardApp {
             .and_then(Value::as_u64)
             .unwrap_or(30);
         if data.get("changed").and_then(Value::as_bool).unwrap_or(true) {
-            self.snapshot =
+            let snapshot: Snapshot =
                 serde_json::from_value(data.get("snapshot").cloned().unwrap_or_else(|| json!({})))
                     .map_err(|err| format!("解析剪贴板记录失败：{err}"))?;
+            self.snapshot = snapshot;
+            let latest = self
+                .snapshot
+                .history
+                .first()
+                .map(|entry| (entry.id.clone(), entry.captured_at, entry.copy_count));
+            if old_latest.is_some() && old_latest != latest && self.tab == Tab::Recent {
+                self.latest_unseen = !self.near_top;
+                if self.near_top {
+                    self.scroll_to_latest = true;
+                }
+            }
             self.pinned_texts = self
                 .snapshot
                 .pinned
                 .iter()
                 .map(|entry| entry.text.clone())
                 .collect();
+            if let Some(id) = selected_id {
+                if let Some(index) = self.entries().iter().position(|entry| entry.id == id) {
+                    self.selected = index;
+                }
+            }
             self.clamp_selection();
         }
-        self.status = "就绪".to_string();
-        self.status_error = false;
-        self.notice_until = None;
+        // Publish the revision only after successful parsing.
+        self.modified = modified;
+        if self.notice_until.is_none() {
+            self.status = "就绪".to_string();
+            self.status_error = false;
+        }
         Ok(())
     }
 
@@ -882,6 +950,10 @@ impl ClipboardApp {
                     if let Err(err) = self.apply_refresh(data) {
                         self.set_error(err);
                     }
+                    if self.refresh_force_requested {
+                        self.refresh_force_requested = false;
+                        self.request_refresh(true);
+                    }
                 }
                 PendingKind::Mutation {
                     removed,
@@ -894,7 +966,9 @@ impl ClipboardApp {
                         .to_string();
                     self.status_error = false;
                     self.notice_until = Some(Instant::now() + Duration::from_secs(3));
-                    if let Some(removed) = removed {
+                    if let Some(removed) = removed
+                        .filter(|_| data.get("removed").and_then(Value::as_bool) == Some(true))
+                    {
                         self.last_removed = Some(removed);
                         self.undo_until = Some(Instant::now() + Duration::from_secs(6));
                     }
@@ -1047,6 +1121,31 @@ impl ClipboardApp {
     }
 
     fn handle_keys(&mut self, ctx: &egui::Context) {
+        if self.preview.is_some() {
+            if ctx.input(|input| input.key_pressed(Key::Escape)) {
+                self.preview = None;
+            }
+            return;
+        }
+        if self.search_focused && ctx.input(|input| input.key_pressed(Key::Escape)) {
+            self.search.clear();
+            self.selected = 0;
+            self.list_focused = true;
+            ctx.memory_mut(|memory| memory.surrender_focus(egui::Id::new("clipboard-search")));
+            return;
+        }
+        if !self.list_focused
+            || self.search_focused
+            || self.confirm_clear.is_some()
+            || ctx.memory(|memory| memory.any_popup_open())
+            || self
+                .pending
+                .values()
+                .any(|kind| matches!(kind, PendingKind::Mutation { .. }))
+            || ctx.input(|input| !input.modifiers.is_none())
+        {
+            return;
+        }
         if ctx.input(|input| input.key_pressed(Key::ArrowDown)) {
             self.selected = (self.selected + 1).min(self.entries().len().saturating_sub(1));
         }
@@ -1056,11 +1155,13 @@ impl ClipboardApp {
         if ctx.input(|input| input.key_pressed(Key::Enter)) {
             if let Some(entry) = self.selected_entry() {
                 self.apply_action(Action::Paste, entry, ctx);
+                return;
             }
         }
         if ctx.input(|input| input.key_pressed(Key::Delete)) {
             if let Some(entry) = self.selected_entry() {
                 self.apply_action(Action::Remove, entry, ctx);
+                return;
             }
         }
         if ctx.input(|input| input.key_pressed(Key::Escape)) {
@@ -1082,6 +1183,7 @@ impl ClipboardApp {
                 if ctx.input(|input| input.key_pressed(key)) {
                     if let Some(entry) = self.entries().get(index).map(|entry| (*entry).clone()) {
                         self.apply_action(Action::Paste, entry, ctx);
+                        return;
                     }
                 }
             }
@@ -1166,13 +1268,47 @@ impl ClipboardApp {
                 });
             });
         });
+        ui.horizontal_wrapped(|ui| {
+            ui.label(if self.privacy_enabled {
+                "隐私模式：暂停读取和保存"
+            } else if self.background_enabled {
+                "后台记录已开启"
+            } else {
+                "后台记录已关闭 · 打开本窗口或刷新时读取当前文本"
+            });
+            if ui.link("剪贴板设置").clicked() {
+                self.open_settings();
+            }
+            ui.label(if self.quick_paste {
+                "数字键快粘：开启（列表操作时 1–9）"
+            } else {
+                "数字键快粘：关闭"
+            });
+        });
+        if let Some(notice) = &self.capture_notice {
+            ui.label(RichText::new(notice).color(palette.accent));
+        }
+        if self.latest_unseen && ui.button("有新记录 · 回到最新").clicked() {
+            self.tab = Tab::Recent;
+            self.filter.clear();
+            self.search.clear();
+            self.selected = 0;
+            self.scroll_to_latest = true;
+            self.latest_unseen = false;
+            self.list_focused = true;
+        }
         ui.add_space(SPACE_MD);
         ui.horizontal(|ui| {
             let response = ui.add_sized(
                 [(ui.available_width() - 48.0).max(120.0), 34.0],
                 egui::TextEdit::singleline(&mut self.search)
+                    .id(egui::Id::new("clipboard-search"))
                     .hint_text("⌕  搜索内容、网址、代码或路径…"),
             );
+            self.search_focused = response.has_focus();
+            if self.search_focused {
+                self.list_focused = false;
+            }
             if response.changed() {
                 self.selected = 0;
             }
@@ -1282,14 +1418,19 @@ impl ClipboardApp {
         }
         let previously_hovered = self.hovered;
         self.hovered = None;
-        ScrollArea::vertical().show(ui, |ui| {
+        let scroll_to_latest = std::mem::take(&mut self.scroll_to_latest);
+        let mut scroll = ScrollArea::vertical().id_salt("clipboard-record-list");
+        if scroll_to_latest {
+            scroll = scroll.vertical_scroll_offset(0.0);
+        }
+        let scroll_output = scroll.show(ui, |ui| {
             for (index, entry) in entries.into_iter().enumerate() {
                 let selected = index == self.selected;
                 let was_hovered = previously_hovered == Some(index);
                 let card =
                     clipboard_card(ui, index, selected, was_hovered, self.dense, |ui| {
                         ui.horizontal(|ui| {
-                            if self.tab == Tab::Recent && index < 9 {
+                            if self.tab == Tab::Recent && self.quick_paste && index < 9 {
                                 keycap(ui, index + 1);
                             }
                             ui.label(RichText::new(kind_label(&entry.text)).small().color(
@@ -1306,6 +1447,10 @@ impl ClipboardApp {
                                 }
                                 if selected || was_hovered {
                                     ui.menu_button("⋯", |ui| {
+                                        if ui.button("完整预览").clicked() {
+                                            self.preview = Some(entry.clone());
+                                            ui.close_menu();
+                                        }
                                         if ui.button("复制").clicked() {
                                             self.apply_action(Action::Copy, entry.clone(), ctx);
                                             ui.close_menu();
@@ -1315,6 +1460,9 @@ impl ClipboardApp {
                                             ui.close_menu();
                                         }
                                     });
+                                    if ui.button("预览").clicked() {
+                                        self.preview = Some(entry.clone());
+                                    }
                                     if ui.button("粘贴").clicked() {
                                         self.apply_action(Action::Paste, entry.clone(), ctx);
                                     }
@@ -1345,6 +1493,10 @@ impl ClipboardApp {
                 }
                 if card.clicked() {
                     self.selected = index;
+                    self.list_focused = true;
+                    ui.memory_mut(|memory| {
+                        memory.surrender_focus(egui::Id::new("clipboard-search"))
+                    });
                 }
                 if card.double_clicked() {
                     self.apply_action(Action::Paste, entry, ctx);
@@ -1352,6 +1504,80 @@ impl ClipboardApp {
                 ui.add_space(5.0);
             }
         });
+        self.near_top = scroll_output.state.offset.y < 8.0;
+        if self.near_top {
+            self.latest_unseen = false;
+        }
+    }
+
+    fn open_settings(&mut self) {
+        let path = std::env::current_exe()
+            .ok()
+            .and_then(|exe| exe.parent().map(|dir| dir.join("srf_ime_settings.exe")));
+        let Some(path) = path.filter(|path| path.is_file()) else {
+            self.set_error("未找到设置程序".into());
+            return;
+        };
+        let mut command = Command::new(path);
+        command.arg("--section=clipboard");
+        #[cfg(windows)]
+        command.creation_flags(CREATE_NO_WINDOW);
+        if let Err(err) = command.spawn() {
+            self.set_error(format!("打开设置失败：{err}"));
+        }
+    }
+
+    fn preview_window(&mut self, ctx: &egui::Context) {
+        let Some(entry) = self.preview.clone() else {
+            return;
+        };
+        let mut open = true;
+        egui::Window::new("完整文本预览")
+            .open(&mut open)
+            .default_size(egui::vec2(680.0, 480.0))
+            .show(ctx, |ui| {
+                ui.label(entry_meta(&entry));
+                let mut selected = String::new();
+                ScrollArea::both().max_height(380.0).show(ui, |ui| {
+                    // &str TextBuffer is read-only while retaining native text
+                    // selection and Ctrl+C, including newlines and tabs.
+                    let mut text = entry.text.as_str();
+                    let is_code = looks_like_code(text) || looks_like_path(text);
+                    let mut editor = egui::TextEdit::multiline(&mut text)
+                        .desired_width(f32::INFINITY)
+                        .desired_rows(16);
+                    if is_code {
+                        editor = editor.code_editor();
+                    }
+                    let output = editor.show(ui);
+                    if let Some(range) = output.cursor_range {
+                        let range = range.as_sorted_char_range();
+                        selected = entry
+                            .text
+                            .chars()
+                            .skip(range.start)
+                            .take(range.len())
+                            .collect();
+                    }
+                });
+                ui.horizontal(|ui| {
+                    if ui.button("复制全文").clicked() {
+                        self.apply_action(Action::Copy, entry.clone(), ctx);
+                    }
+                    if ui
+                        .add_enabled(!selected.is_empty(), egui::Button::new("复制选中文字"))
+                        .clicked()
+                    {
+                        self.mutate("copy", |request| request.text = Some(selected), None, false);
+                    }
+                    if ui.button("粘贴全文").clicked() {
+                        self.apply_action(Action::Paste, entry.clone(), ctx);
+                    }
+                });
+            });
+        if !open {
+            self.preview = None;
+        }
     }
 
     fn empty_state_copy(&self) -> (&'static str, &'static str, &'static str) {
@@ -1361,6 +1587,18 @@ impl ClipboardApp {
             ("⌕", "没有匹配内容", "尝试其他关键词，或清除当前筛选")
         } else if self.tab == Tab::Pinned {
             ("☆", "还没有置顶内容", "置顶常用内容，之后可以快速粘贴")
+        } else if self.privacy_enabled {
+            (
+                "▢",
+                "隐私模式已开启",
+                "退出隐私模式后可读取和保存剪贴板文本",
+            )
+        } else if !self.background_enabled {
+            (
+                "▢",
+                "后台记录已关闭",
+                "复制文本后点击刷新；可通过“剪贴板设置”开启后台记录",
+            )
         } else {
             ("▢", "还没有剪贴板记录", "复制文字后，内容会自动出现在这里")
         }
@@ -1426,7 +1664,6 @@ impl eframe::App for ClipboardApp {
             self.request_refresh(false);
         }
         self.maybe_save_window_rect(ctx);
-        self.handle_keys(ctx);
         if self
             .undo_until
             .is_some_and(|deadline| Instant::now() >= deadline)
@@ -1480,6 +1717,8 @@ impl eframe::App for ClipboardApp {
         }
         egui::CentralPanel::default().show(ctx, |ui| self.list(ui, ctx));
         self.clear_confirmation(ctx);
+        self.handle_keys(ctx);
+        self.preview_window(ctx);
         ctx.request_repaint_after(REFRESH_INTERVAL);
     }
 
@@ -1878,6 +2117,128 @@ fn display_text(text: &str) -> String {
             }
         })
         .collect()
+}
+
+#[cfg(test)]
+mod clipboard_ui_tests {
+    use super::*;
+
+    fn fixture() -> ClipboardApp {
+        let (commands, _) = mpsc::channel();
+        let (_, completions) = mpsc::channel();
+        let client = AsyncServiceClient {
+            commands,
+            completions,
+            next_req: 1,
+            stopping: Arc::new(AtomicBool::new(false)),
+            worker: None,
+            capability: String::new(),
+        };
+        let mut app = ClipboardApp::with_client(client, 0);
+        app.snapshot = serde_json::from_value(json!({
+            "history": [{"id":"A","text":"existing A","captured_at":10}]
+        }))
+        .unwrap();
+        app
+    }
+
+    fn key(app: &mut ClipboardApp, key: Key, modifiers: egui::Modifiers) {
+        let ctx = egui::Context::default();
+        let mut input = egui::RawInput::default();
+        input.modifiers = modifiers;
+        input.events.push(egui::Event::Key {
+            key,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        });
+        let _ = ctx.run(input, |ctx| app.handle_keys(ctx));
+    }
+
+    #[test]
+    fn search_and_preview_never_trigger_paste_or_delete() {
+        for key_value in [Key::Num1, Key::Enter, Key::Delete] {
+            let mut app = fixture();
+            app.search_focused = true;
+            key(&mut app, key_value, egui::Modifiers::NONE);
+            assert!(app.pending.is_empty());
+            let mut app = fixture();
+            app.preview = app.selected_entry();
+            key(&mut app, key_value, egui::Modifiers::NONE);
+            assert!(app.pending.is_empty());
+        }
+    }
+
+    #[test]
+    fn quick_paste_requires_list_focus_unmodified_keys_and_enabled_switch() {
+        for state in 0..4 {
+            let mut app = fixture();
+            let mut modifiers = egui::Modifiers::NONE;
+            match state {
+                0 => app.list_focused = false,
+                1 => app.quick_paste = false,
+                2 => modifiers.ctrl = true,
+                _ => app.confirm_clear = Some(ClearKind::All),
+            }
+            key(&mut app, Key::Num1, modifiers);
+            assert!(app.pending.is_empty());
+        }
+        let mut app = fixture();
+        key(&mut app, Key::Num1, egui::Modifiers::NONE);
+        assert_eq!(app.pending.len(), 1);
+    }
+
+    #[test]
+    fn refresh_keeps_selected_record_and_signals_latest_above_scroll() {
+        let mut app = fixture();
+        app.near_top = false;
+        app.apply_refresh(json!({
+            "modified":"next", "changed":true, "background_enabled":true,
+            "snapshot":{"history":[
+                {"id":"B","text":"new B","captured_at":11},
+                {"id":"A","text":"existing A","captured_at":10}
+            ]}
+        }))
+        .unwrap();
+        assert_eq!(app.selected_entry().unwrap().id, "A");
+        assert_eq!(app.selected, 1);
+        assert!(app.latest_unseen);
+        assert!(app.background_enabled);
+        app.near_top = true;
+        app.apply_refresh(json!({
+            "modified":"next2", "changed":true,
+            "snapshot":{"history":[
+                {"id":"C","text":"new C","captured_at":12},
+                {"id":"B","text":"new B","captured_at":11},
+                {"id":"A","text":"existing A","captured_at":10}
+            ]}
+        }))
+        .unwrap();
+        assert!(app.scroll_to_latest);
+    }
+
+    #[test]
+    fn parse_failure_does_not_acknowledge_revision_or_discard_old_records() {
+        let mut app = fixture();
+        app.modified = "previous".into();
+        assert!(app
+            .apply_refresh(json!({
+                "modified":"broken", "snapshot":{"history":"invalid"}
+            }))
+            .is_err());
+        assert_eq!(app.modified, "previous");
+        assert_eq!(app.snapshot.history[0].id, "A");
+    }
+
+    #[test]
+    fn forced_refresh_is_retained_while_previous_refresh_is_pending() {
+        let mut app = fixture();
+        app.refresh_pending = true;
+        app.request_refresh(true);
+        assert!(app.refresh_force_requested);
+        assert!(app.pending.is_empty());
+    }
 }
 
 fn main() -> eframe::Result<()> {

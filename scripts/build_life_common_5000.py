@@ -13,6 +13,7 @@ from pathlib import Path
 
 from pypinyin import Style, lazy_pinyin
 from wordfreq import top_n_list, zipf_frequency
+from lexicon_quality import corrected_reading, phrase_rejection_reason
 
 
 def is_two_cjk(text: str) -> bool:
@@ -34,17 +35,20 @@ def build(output: Path, size: int = 125_000) -> None:
     if len(candidates) != size:
         raise RuntimeError(f"only found {len(candidates)} two-character words")
 
+    # Preserve the original source window; reviewed deletions are not a quota
+    # to refill with other unreviewed tail words.
+    candidates = [word for word in candidates if not phrase_rejection_reason(word)]
+
     output.parent.mkdir(parents=True, exist_ok=True)
+    from normalize_lexicon_freq10k import score_by_rank
+    weights = score_by_rank([max(1, int(round(10 ** zipf_frequency(word, "zh"))))
+                             for word in candidates], 1, 10_000)
     with output.open("w", encoding="utf-8", newline="\n") as stream:
-        stream.write(f"# 开心输入法原生词库：{size} 个生活常用双字词\n")
+        stream.write(f"# 开心输入法原生词库：{len(candidates)} 个生活常用双字词\n")
         stream.write(f"# Source: wordfreq 中文频率排序（取前 {size} 个两字简体中文词）。\n")
-        stream.write("# 格式：词语<TAB>全拼<TAB>词频；词频为 10^Zipf 估计值，保持相对频率顺序。\n")
-        for word in candidates:
-            pinyin = " ".join(lazy_pinyin(word, style=Style.NORMAL))
-            zipf = zipf_frequency(word, "zh")
-            # Zipf is log10 occurrences per billion; retaining that scale gives
-            # useful integer weights (roughly 1e4--1e7 for this list).
-            weight = max(1, int(round(10 ** zipf)))
+        stream.write("# 格式：词语<TAB>全拼<TAB>1-10000 分数；由来源频率排序归一化。\n")
+        for word, weight in zip(candidates, weights):
+            pinyin = corrected_reading(word, " ".join(lazy_pinyin(word, style=Style.NORMAL)))
             stream.write(f"{word}\t{pinyin}\t{weight}\n")
 
 

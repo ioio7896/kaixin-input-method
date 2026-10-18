@@ -3160,7 +3160,6 @@
 情场失意	qing chang shi yi	3095
 情报检索	qing bao jian suo	3095
 感天动地	gan tian dong di	3095
-慕容复笑	mu rong fu xiao	3095
 技术产业	ji shu chan ye	3095
 抑菌作用	yi jun zuo yong	3095
 投亲靠友	tou qin kao you	3095
@@ -3337,7 +3336,6 @@
 情报局长	qing bao ju zhang	3050
 感慨万分	gan kai wan fen	3050
 感慨系之	gan kai xi zhi	3050
-慕容复心	mu rong fu xin	3050
 戈兰高地	ge lan gao di	3050
 技术设备	ji shu she bei	3050
 按需分配	an xu fen pei	3050
@@ -4446,7 +4444,6 @@
 概不负责	gai bu fu ze	2814
 榆木疙瘩	yu mu ge da	2814
 模型表示	mo xing biao shi	2814
-欧阳锋授	ou yang feng shou	2814
 死也不放	si ye bu fang	2814
 比利时队	bi li shi dui	2814
 氨苯喋啶	an ben die ding	2814
@@ -4835,8 +4832,6 @@
 横店集团	heng dian ji tuan	2734
 橡皮图章	xiang pi tu zhang	2734
 次生矿物	ci sheng kuang wu	2734
-欧阳锋掌	ou yang feng zhang	2734
-欧阳锋蛇	ou yang feng she	2734
 止于至善	zhi yu zhi shan	2734
 正月十五	zheng yue shi wu	2734
 武钢股份	wu gang gu fen	2734

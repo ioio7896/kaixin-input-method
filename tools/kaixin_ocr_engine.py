@@ -85,9 +85,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--lang",
-        choices=("mixed", "zh", "en"),
+        choices=("mixed", "zh", "zh_tw", "en"),
         default="mixed",
-        help="Recognition language. mixed and zh use the Chinese/multilingual model.",
+        help="Recognition language. zh_tw uses the bundled PP-OCRv6 multilingual model.",
     )
     parser.add_argument(
         "--profile",
@@ -162,7 +162,9 @@ def enum_params(
 ) -> dict[str, Any]:
     from rapidocr import EngineType, LangDet, LangRec, ModelType, OCRVersion
 
-    rec_lang = LangRec.EN if lang == "en" else LangRec.CH
+    rec_lang = (
+        LangRec.CHINESE_CHT if lang == "zh_tw" else LangRec.EN if lang == "en" else LangRec.CH
+    )
     provider = selected_provider(args.provider)
     params = {
         "Global.model_root_dir": str(model_root),
@@ -480,7 +482,7 @@ class RapidOcrService:
         return self._rapidocr_cls
 
     def _effective_lang(self, lang: str) -> str:
-        return "en" if lang == "en" else "zh"
+        return lang if lang in {"en", "zh_tw"} else "zh"
 
     def _detector_variant(self, profile: str) -> str:
         return "fast" if normalize_profile(profile) == "fast" and self.fast_det_model else "medium"
@@ -605,7 +607,7 @@ class RapidOcrService:
         max_side_len: Any = None,
     ) -> dict[str, Any]:
         request_start = time.perf_counter()
-        if lang not in {"auto", "mixed", "zh", "en"}:
+        if lang not in {"auto", "mixed", "zh", "zh_tw", "en"}:
             raise ValueError(f"unsupported language: {lang!r}")
 
         image_bytes: bytes | None = None
@@ -623,7 +625,7 @@ class RapidOcrService:
         load_start = time.perf_counter()
         print("KAIXIN_OCR_STAGE model-load", file=sys.stderr, flush=True)
         loader, loader_init, loader_cached, loader_variant = self._load_engine(
-            "en" if lang == "en" else "zh", profile
+            self._effective_lang(lang), profile
         )
         with contextlib.redirect_stdout(sys.stderr):
             image_array = loader.load_img(image_bytes if image_bytes is not None else image)
@@ -720,7 +722,7 @@ class RapidOcrService:
                     time.sleep(1.0)
             raise last_error or RuntimeError("RapidOCR inference failed")
 
-        effective_lang = "zh" if lang in {"auto", "mixed", "zh"} else "en"
+        effective_lang = self._effective_lang(lang)
         result, lines, init_seconds, infer_seconds, cached, detector_variant = run_attempt(effective_lang, image_array)
         if init_seconds == 0.0:
             init_seconds, cached, detector_variant = loader_init, loader_cached, loader_variant

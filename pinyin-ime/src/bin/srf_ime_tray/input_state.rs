@@ -25,7 +25,30 @@ fn read_tray_visual_state() -> TrayVisualState {
         state.ascii_mode = None;
         state.mode_source = None;
     }
+    apply_pure_game_visual_override(&mut state, pure_game_mode_enabled());
     state
+}
+
+fn pure_game_mode_enabled() -> bool {
+    read_state_dword(STATE_REG_VALUE_PURE_GAME_MODE).unwrap_or(0) != 0
+}
+
+fn apply_pure_game_visual_override(state: &mut TrayVisualState, enabled: bool) {
+    if enabled {
+        // The explicit user switch is authoritative even without an active
+        // TSF host, or while an old foreground snapshot is being discarded.
+        state.ascii_mode = Some(true);
+        state.mode_source = Some("pure_game".into());
+        state.full_shape = Some(false);
+        state.chinese_punctuation = Some(false);
+    } else if state.mode_source.as_deref() == Some("pure_game") {
+        // Do not advertise a stale TSF snapshot after the user has unchecked
+        // the switch. The next TSF publication supplies the restored mode.
+        state.ascii_mode = None;
+        state.mode_source = None;
+        state.full_shape = None;
+        state.chinese_punctuation = None;
+    }
 }
 
 fn input_snapshot_matches_foreground(state: &TrayVisualState) -> bool {
@@ -64,6 +87,9 @@ fn input_snapshot_matches_foreground(state: &TrayVisualState) -> bool {
 }
 
 fn tray_tooltip_text(state: &TrayVisualState) -> String {
+    if state.mode_source.as_deref() == Some("pure_game") {
+        return format!("{TRAY_TIP}\n纯游戏模式：键盘完全直通\n输入法与工具快捷键已停用\n右键托盘取消勾选即可恢复");
+    }
     let mode = match state.input_mode() {
         TrayInputMode::Chinese => "中文",
         TrayInputMode::English => "英文",
@@ -106,6 +132,7 @@ fn tray_tooltip_text(state: &TrayVisualState) -> String {
 
 fn mode_source_label(source: Option<&str>) -> &'static str {
     match source {
+        Some("pure_game") => "纯游戏模式 · 完全直通",
         Some("manual") => "手动英文",
         Some("game") => "游戏键盘直通",
         Some("game_chat") => "游戏中文聊天",
@@ -234,4 +261,54 @@ fn read_state_string(value_name: &str) -> Option<String> {
         .unwrap_or(buffer.len());
     let text = String::from_utf16_lossy(&buffer[..len]).trim().to_string();
     (!text.is_empty()).then_some(text)
+}
+
+#[cfg(test)]
+mod pure_game_tests {
+    use super::*;
+
+    fn state() -> TrayVisualState {
+        TrayVisualState {
+            ascii_mode: Some(false),
+            mode_source: Some("chinese".into()),
+            full_shape: Some(true),
+            chinese_punctuation: Some(true),
+            owner_process_id: None,
+            owner_thread_id: None,
+            owner_hwnd: None,
+            updated_tick: None,
+            sequence: None,
+            engine_state: TrayEngineState::Ready,
+            engine_error_code: None,
+            last_recovery_reason: None,
+            last_recovery_time: None,
+        }
+    }
+
+    #[test]
+    fn explicit_pure_game_switch_overrides_even_a_missing_host_snapshot() {
+        let mut live = state();
+        live.ascii_mode = None;
+        live.mode_source = None;
+        apply_pure_game_visual_override(&mut live, true);
+        assert!(live.input_mode() == TrayInputMode::English);
+        assert_eq!(live.mode_source.as_deref(), Some("pure_game"));
+        assert_eq!(live.full_shape, Some(false));
+        assert_eq!(live.chinese_punctuation, Some(false));
+        let tooltip = tray_tooltip_text(&live);
+        assert!(tooltip.contains("完全直通") && tooltip.contains("快捷键已停用"));
+        assert!(tooltip.contains("取消勾选"));
+    }
+
+    #[test]
+    fn disabling_override_preserves_normal_modes_and_rejects_stale_game_status() {
+        let normal = state();
+        let mut restored = normal.clone();
+        apply_pure_game_visual_override(&mut restored, false);
+        assert!(restored == normal);
+        apply_pure_game_visual_override(&mut restored, true);
+        apply_pure_game_visual_override(&mut restored, false);
+        assert!(restored.mode_source.is_none() && restored.ascii_mode.is_none());
+        assert!(!tray_tooltip_text(&restored).contains("快捷键已停用"));
+    }
 }

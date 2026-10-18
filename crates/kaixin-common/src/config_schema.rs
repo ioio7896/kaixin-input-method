@@ -120,6 +120,7 @@ ConfigEntry { section: "screenshot", key: "translate_after_capture", default: "0
 ConfigEntry { section: "screenshot", key: "mode", default: "manual_region", kind: "string", options: &[] },
 ConfigEntry { section: "screenshot", key: "confirm_on_release", default: "0", kind: "bool", options: &[] },
 ConfigEntry { section: "screenshot", key: "show_instructions", default: "1", kind: "bool", options: &[] },
+ConfigEntry { section: "screenshot", key: "show_quick_actions", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "clipboard", key: "hotkey", default: "off", kind: "string", options: &[] },
 ConfigEntry { section: "tools", key: "settings_hotkey", default: "off", kind: "string", options: &[] },
 ConfigEntry { section: "tools", key: "handwrite_hotkey", default: "off", kind: "string", options: &[] },

@@ -1,0 +1,26 @@
+# case_id<TAB>category<TAB>input<TAB>expected
+reading-repayment	reading	huankuan	@TOP5:还款
+reading-school-history	reading	xiaoshi	@TOP20:校史
+reading-duyun	reading	duyun	@TOP10:都匀
+# 地名校正验证可召回；常用同音词仍可排在前面，不强推首屏。
+reading-wushi	reading-recall	wushi	@TOP32:乌什
+reading-yidu	reading	yidu	@TOP20:宜都
+reading-luohe	reading	luohe	@TOP10:漯河
+reading-wushi-county	reading	wushixian	@TOP10:乌什县
+reading-luohe-city	reading	luoheshi	@TOP10:漯河市
+reading-duyun-city	reading	duyunshi	@TOP10:都匀市
+reading-repayment-amount	reading	huankuane	@TOP10:还款额
+reading-repayment-term	reading	huankuanqi	@TOP10:还款期
+daily-greeting	full	zuijinzenmeyang	@TOP5:最近怎么样
+daily-on-road	full	lushangzhuyianquan	@TOP5:路上注意安全
+daily-message	full	wogangkandaoxiaoxi	@TOP5:我刚看到消息
+office-attachment	full	fujianqingchashou	@TOP5:附件请查收
+office-meeting	full	qingzhunshicanjiahuiyi	@TOP5:请准时参加会议
+short-no-problem	full	meiwenti	@TOP5:没问题
+short-code	full	yanzhengma	@TOP5:验证码
+short-what-happened	full	zenmehuishi	@TOP5:怎么回事
+short-when	full	shenmeshihou	@TOP5:什么时候
+attachment-initials	abbreviation	fjqcs	@TOP10:附件请查收
+attachment-mixed	mixed	fujianqcs	@TOP10:附件请查收
+common-three	full	jisuanji	@TOP5:计算机
+common-three-initials	abbreviation	jsj	@TOP10:计算机

@@ -495,7 +495,6 @@
 庞丽娜	pang li na	4680
 贝海石	bei hai shi	4678
 薛传薪	xue chuan xin	4665
-黄蓉笑	huang rong xiao	4665
 刘玉尺	liu yu chi	4661
 张宗琪	zhang zong qi	4656
 包天剑	bao tian jian	4654
@@ -672,8 +671,6 @@
 王府井大街	wang fu jing da jie	4379
 袁相公	yuan xiang gong	4379
 赵争争	zhao zheng zheng	4379
-世钧道	shi jun dao	4375
-杨过笑	yang guo xiao	4375
 郑元勋	zheng yuan xun	4375
 山里红	shan li hong	4372
 胥德章	xu de zhang	4372
@@ -799,7 +796,6 @@
 玉真子	yu zhen zi	4320
 白世镜	bai shi jing	4320
 石庄主	shi zhuang zhu	4320
-黄蓉见	huang rong jian	4320
 陆小艺	lu xiao yi	4316
 关宁兵	guan ning bing	4312
 吴承瑛	wu cheng ying	4312
@@ -829,7 +825,6 @@
 王铁口	wang tie kou	4286
 葛尔丹	ge er dan	4286
 薛月儿	xue yue er	4286
-郭靖见	guo jing jian	4286
 乔道清	qiao dao qing	4282
 岳维山	yue wei shan	4282
 陆大有	lu da you	4282
@@ -978,9 +973,7 @@
 温文尔雅	wen wen er ya	4139
 袁督师	yuan du shi	4139
 陈长老	chen zhang lao	4139
-宝钗笑	bao chai xiao	4133
 杨元珍	yang yuan zhen	4133
-杨过心	yang guo xin	4133
 汉密尔	han mi er	4133
 汪洋大海	wang yang da hai	4133
 玉蜂针	yu feng zhen	4133
@@ -1182,7 +1175,6 @@
 白孝武	bai xiao wu	3959
 秦始皇陵	qin shi huang ling	3959
 翁师傅	weng shi fu	3959
-胡斐笑	hu fei xiao	3959
 路易十四	lu yi shi si	3959
 邱四毛	qiu si mao	3959
 陈在竹	chen zai zhu	3959
@@ -1209,7 +1201,6 @@
 萨哈夫	sa ha fu	3942
 金蛇剑	jin she jian	3942
 陈永明	chen yong ming	3942
-黄蓉叹	huang rong tan	3942
 从小儿	cong xiao er	3934
 史保林	shi bao lin	3934
 吕维祺	lv wei qi	3934
@@ -1220,7 +1211,6 @@
 温方义	wen fang yi	3934
 玄幻情	xuan huan qing	3934
 田桂花	tian gui hua	3934
-胡斐见	hu fei jian	3934
 胡永合	hu yong he	3934
 那小丐	na xiao gai	3934
 阮圆海	ruan yuan hai	3934
@@ -1243,7 +1233,6 @@
 张关羽	zhang guan yu	3916
 惠英嫂	hui ying sao	3916
 文武双全	wen wu shuang quan	3916
-曼璐道	man lu dao	3916
 朴茨茅斯	pu ci mao si	3916
 武学之	wu xue zhi	3916
 童百熊	tong bai xiong	3916
@@ -1256,11 +1245,9 @@
 廖思源	liao si yuan	3907
 柯尼斯堡	ke ni si bao	3907
 楚长城	chu chang cheng	3907
-段誉见	duan yu jian	3907
 洪帮主	hong bang zhu	3907
 燕铁木	yan tie mu	3907
 玄德大	xuan de da	3907
-赵敏笑	zhao min xiao	3907
 陆家庄	lu jia zhuang	3907
 魏巍史	wei wei shi	3907
 东林派	dong lin pai	3898
@@ -1298,8 +1285,6 @@
 杨大娘	yang da niang	3888
 柳若菲	liu ruo fei	3888
 梁天柱	liang tian zhu	3888
-段誉心	duan yu xin	3888
-段誉笑	duan yu xiao	3888
 比利亚雷	bi li ya lei	3888
 王姑娘	wang gu niang	3888
 荣中堂	rong zhong tang	3888
@@ -1309,7 +1294,6 @@
 黄梦然	huang meng ran	3888
 侍立在	shi li zai	3879
 博学多才	bo xue duo cai	3879
-宋江便	song jiang bian	3879
 宗维侠	zong wei xia	3879
 希罗多德	xi luo duo de	3879
 弗朗西斯科	fu lang xi si ke	3879
@@ -1320,7 +1304,6 @@
 王任直	wang ren zhi	3879
 王小倜	wang xiao ti	3879
 贺金龙	he jin long	3879
-郭靖听	guo jing ting	3879
 陶冶性情	tao ye xing qing	3879
 黄巾起义	huang jin qi yi	3879
 侯玉英	hou yu ying	3869
@@ -1332,7 +1315,6 @@
 方人智	fang ren zhi	3869
 李春来	li chun lai	3869
 杨百业	yang bai ye	3869
-杨过见	yang guo jian	3869
 林培杰	lin pei jie	3869
 桑土公	sang tu gong	3869
 梁金雄	liang jin xiong	3869
@@ -1348,7 +1330,6 @@
 马宣赞	ma xuan zan	3869
 鹿贺氏	lu he shi	3869
 黄瑞兰	huang rui lan	3869
-黄蓉心	huang rong xin	3869
 黄蕉风	huang jiao feng	3869
 全真剑	quan zhen jian	3859
 凤毛麟角	feng mao lin jiao	3859

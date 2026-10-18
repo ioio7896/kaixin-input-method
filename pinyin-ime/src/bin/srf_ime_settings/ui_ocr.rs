@@ -1,12 +1,6 @@
 use super::*;
 
 pub(super) fn ocr_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    tool_page_intro(
-        ui,
-        "识",
-        "本地文字识别",
-        "截图、识别和结果处理都在本机完成。",
-    );
     let mut open_ocr = false;
     let mut open_ocr_translate = false;
     let mut check_ocr = false;
@@ -48,6 +42,26 @@ pub(super) fn ocr_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 "RapidOCR 环境未找到，OCR 暂不可用。点“检测”可查看缺失项。",
             );
         }
+        setting_combo_row(
+            ui,
+            "识别语言",
+            "繁体中文使用已安装的 PP-OCRv6 多语言模型，无需额外下载。",
+            match app.model.ocr_language.as_str() {
+                "zh_tw" => "繁体中文",
+                "en" => "英文",
+                "mixed" => "中英混合",
+                "auto" => "自动（中英比较）",
+                _ => "简体中文",
+            },
+            "ocr_language",
+            |ui| {
+                selectable_string(ui, &mut app.model.ocr_language, "zh", "简体中文");
+                selectable_string(ui, &mut app.model.ocr_language, "zh_tw", "繁体中文");
+                selectable_string(ui, &mut app.model.ocr_language, "en", "英文");
+                selectable_string(ui, &mut app.model.ocr_language, "mixed", "中英混合");
+                selectable_string(ui, &mut app.model.ocr_language, "auto", "自动（中英比较）");
+            },
+        );
         setting_combo_row(
             ui,
             "OCR 完成后",

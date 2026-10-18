@@ -478,6 +478,12 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "show_instructions",
             defaults.screenshot_show_instructions,
         ),
+        screenshot_show_quick_actions: read_bool(
+            config,
+            "screenshot",
+            "show_quick_actions",
+            defaults.screenshot_show_quick_actions,
+        ),
         clipboard_hotkey: read_string(config, "clipboard", "hotkey", &defaults.clipboard_hotkey),
         settings_hotkey: read_string(
             config,
@@ -504,6 +510,7 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "ocr_result_action",
             &defaults.ocr_result_action,
         ),
+        ocr_language: read_string(config, "ocr", "language", &defaults.ocr_language),
         ocr_keep_alive: read_bool(config, "ocr", "keep_alive", defaults.ocr_keep_alive),
         ocr_profile: read_string(config, "ocr", "profile", &defaults.ocr_profile),
         ocr_translate_keep_window: read_bool(
@@ -588,7 +595,7 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "max_text_utf16_units",
             defaults.clipboard_max_text_utf16_units,
         )
-        .clamp(20, 20_000),
+        .clamp(20, 1_000_000),
         clipboard_max_age_days: read_usize(
             config,
             "clipboard",
@@ -1150,6 +1157,11 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         bool_text(model.screenshot_show_instructions),
     );
     config.set(
+        "screenshot",
+        "show_quick_actions",
+        bool_text(model.screenshot_show_quick_actions),
+    );
+    config.set(
         "clipboard",
         "hotkey",
         normalized_hotkey_value(&model.clipboard_hotkey, "V"),
@@ -1175,6 +1187,7 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         normalized_hotkey_value(&model.ocr_translate_hotkey, "Y"),
     );
     config.set("tools", "ocr_result_action", model.ocr_result_action.trim());
+    config.set("ocr", "language", model.ocr_language.trim());
     config.set("ocr", "keep_alive", bool_text(model.ocr_keep_alive));
     config.set("ocr", "profile", model.ocr_profile.trim());
     config.set(
@@ -1703,6 +1716,11 @@ pub(crate) fn bool_text(value: bool) -> &'static str {
 }
 
 pub(crate) fn normalize_combo_values(model: &mut SettingsModel) {
+    keep_known(
+        &mut model.ocr_language,
+        &["zh", "zh_tw", "en", "mixed", "auto"],
+        "zh",
+    );
     keep_known(
         &mut model.theme,
         schema_options::THEMES,
@@ -2757,7 +2775,7 @@ mod game_policy_tests {
     }
 
     #[test]
-    fn confirmed_results_survive_confirmation_but_expire_when_policy_changes() {
+    fn confirmed_results_expire_only_for_affected_game_steps() {
         let before = model_from_config(&parse_ini(
             "[app:game.exe]\ngame_profile=compact\ngame_tested_display_mode=borderless\n",
         ));
@@ -2769,7 +2787,7 @@ mod game_policy_tests {
         let saved = confirmed.clone();
         confirmed.compat_rules[0].overlay_backend = "external".into();
         invalidate_changed_game_test_results(&saved, &mut confirmed);
-        assert!(!confirmed.compat_rules[0].game_chat.tested_input);
+        assert!(confirmed.compat_rules[0].game_chat.tested_input);
         assert!(!confirmed.compat_rules[0].game_chat.tested_candidate);
         let mut changed_global = saved.clone();
         changed_global.game_input_mode = "auto_text".into();
@@ -2822,6 +2840,16 @@ mod game_policy_tests {
 #[cfg(test)]
 mod shared_config_tests {
     use super::*;
+    #[test]
+    fn traditional_ocr_language_survives_settings_save() {
+        let mut doc = parse_ini("[ocr]\nlanguage=zh_tw\n");
+        let model = model_from_config(&doc);
+        assert_eq!(model.ocr_language, "zh_tw");
+        apply_model_to_config(&mut doc, &model);
+        let saved = rendered_config_for_model(&doc, &model);
+        assert_eq!(model_from_config(&parse_ini(&saved)).ocr_language, "zh_tw");
+    }
+
     #[test]
     fn defaults_preserve_comments_extensions_and_migration_version() {
         let doc = parse_ini(

@@ -25,10 +25,10 @@ const SETTINGS_FONT_MONOSPACE: f32 = 13.0;
 const SETTINGS_FONT_LOG: f32 = 12.0;
 const SETTINGS_CONTROL_WIDTH: f32 = 200.0;
 const SETTINGS_ROW_HEIGHT: f32 = 28.0;
-const SETTINGS_ROW_PAD_Y: f32 = 2.0;
-const SETTINGS_RADIUS_CONTROL: f32 = 4.0;
-const SETTINGS_RADIUS_CARD: f32 = 4.0;
-const SETTINGS_RADIUS_FULL: f32 = 999.0;
+const SETTINGS_ROW_PAD_Y: f32 = 0.0;
+const SETTINGS_RADIUS_CONTROL: f32 = 1.0;
+const SETTINGS_RADIUS_CARD: f32 = 1.0;
+const SETTINGS_RADIUS_FULL: f32 = 1.0;
 const SETTINGS_BUTTON_WIDTH: f32 = 82.0;
 const DEFAULT_SCREENSHOT_DIR_DESCRIPTION: &str = "留空时使用“图片\\Kaixin Screenshots”。";
 const DEFAULT_SCREENSHOT_DIR_HINT: &str = "默认：图片\\Kaixin Screenshots";
@@ -266,9 +266,7 @@ impl eframe::App for SettingsApp {
                 });
         }
 
-        if self.active_section == SettingsSection::System
-            && self.system_page == SystemSettingsPage::Diagnostics
-        {
+        if self.active_section == SettingsSection::Diagnostics {
             let needs_refresh = self
                 .diagnostics_cache
                 .as_ref()
@@ -321,13 +319,20 @@ fn settings_content_ui(
         .show(ui, |ui| {
             let content_width = ui.available_width().min(SETTINGS_CONTENT_MAX_WIDTH);
             ui.set_width(content_width);
+            if let Some(page) = active_tool_page(app) {
+                app.tool_page = page;
+            }
+            if app.active_section == SettingsSection::Learning
+                && app.lexicon_page == LexiconSettingsPage::Extensions
+            {
+                app.lexicon_page = LexiconSettingsPage::Learning;
+            }
             section_header(ui, app);
             settings_search_ui(ui, app, true);
             ui.add_space(4.0);
             match app.active_section {
                 SettingsSection::Appearance => appearance_page_tabs(ui, app),
-                SettingsSection::Lexicon => lexicon_page_tabs(ui, app),
-                SettingsSection::Tools => tool_page_tabs(ui, app),
+                SettingsSection::Learning => lexicon_page_tabs(ui, app),
                 SettingsSection::System => system_page_tabs(ui, app),
                 _ => {}
             }
@@ -348,9 +353,18 @@ fn settings_content_ui(
                     SettingsSection::Appearance => {
                         candidate_page_ui(ui, app, request_real_candidate_preview)
                     }
-                    SettingsSection::Lexicon => lexicon_page_ui(ui, app),
+                    SettingsSection::Lexicon => {
+                        section_panel(ui, "扩展词库", |ui| extension_lexicon_controls(ui, app));
+                    }
+                    SettingsSection::Learning => lexicon_page_ui(ui, app),
+                    SettingsSection::Diagnostics => diagnostics_page_ui(ui, app),
                     SettingsSection::Hotkeys => hotkeys_ui(ui, &mut app.model),
-                    SettingsSection::Tools => tools_page_ui(ui, app),
+                    SettingsSection::Tools
+                    | SettingsSection::Screenshot
+                    | SettingsSection::Ocr
+                    | SettingsSection::Clipboard
+                    | SettingsSection::Translation
+                    | SettingsSection::Handwrite => tools_page_ui(ui, app),
                     SettingsSection::Compatibility => compatibility_ui(ui, app),
                     SettingsSection::System => system_page_ui(ui, app),
                 }
@@ -398,7 +412,7 @@ impl FluentPalette {
                 control_bg: Color32::from_rgb(49, 49, 49),
                 control_hover: Color32::from_rgb(56, 56, 56),
                 nav_hover: Color32::from_rgb(45, 45, 45),
-                nav_selected: Color32::from_rgb(37, 54, 70),
+                nav_selected: Color32::from_rgb(52, 93, 135),
                 border: Color32::from_rgb(64, 64, 64),
                 border_subtle: Color32::from_rgb(48, 48, 48),
                 text: Color32::from_rgb(245, 245, 245),
@@ -406,7 +420,7 @@ impl FluentPalette {
                 accent: Color32::from_rgb(96, 180, 255),
                 accent_hover: Color32::from_rgb(135, 199, 255),
                 accent_pressed: Color32::from_rgb(67, 156, 235),
-                accent_text: Color32::from_rgb(0, 0, 0),
+                accent_text: Color32::WHITE,
                 warning: Color32::from_rgb(255, 202, 109),
                 success: Color32::from_rgb(96, 180, 255),
                 danger: Color32::from_rgb(255, 112, 112),
@@ -417,22 +431,22 @@ impl FluentPalette {
             }
         } else {
             Self {
-                app_bg: Color32::from_rgb(245, 247, 250),
-                nav_bg: Color32::from_rgb(240, 244, 249),
-                command_bar: Color32::from_rgb(255, 255, 255),
-                surface: Color32::from_rgb(255, 255, 255),
-                surface_alt: Color32::from_rgb(248, 250, 253),
-                control_bg: Color32::from_rgb(252, 253, 254),
-                control_hover: Color32::from_rgb(241, 246, 253),
-                nav_hover: Color32::from_rgb(230, 238, 248),
-                nav_selected: Color32::from_rgb(225, 238, 255),
-                border: Color32::from_rgb(205, 213, 223),
-                border_subtle: Color32::from_rgb(229, 234, 242),
-                text: Color32::from_rgb(31, 41, 55),
-                muted: Color32::from_rgb(96, 110, 128),
-                accent: Color32::from_rgb(0, 120, 212),
-                accent_hover: Color32::from_rgb(0, 103, 184),
-                accent_pressed: Color32::from_rgb(0, 87, 158),
+                app_bg: Color32::from_rgb(236, 236, 236),
+                nav_bg: Color32::from_rgb(228, 230, 233),
+                command_bar: Color32::from_rgb(236, 236, 236),
+                surface: Color32::from_rgb(243, 243, 243),
+                surface_alt: Color32::from_rgb(230, 232, 235),
+                control_bg: Color32::WHITE,
+                control_hover: Color32::from_rgb(226, 234, 242),
+                nav_hover: Color32::from_rgb(211, 220, 230),
+                nav_selected: Color32::from_rgb(52, 93, 135),
+                border: Color32::from_rgb(159, 165, 174),
+                border_subtle: Color32::from_rgb(184, 189, 196),
+                text: Color32::from_rgb(32, 36, 42),
+                muted: Color32::from_rgb(88, 94, 104),
+                accent: Color32::from_rgb(52, 93, 135),
+                accent_hover: Color32::from_rgb(43, 80, 119),
+                accent_pressed: Color32::from_rgb(34, 65, 99),
                 accent_text: Color32::WHITE,
                 warning: Color32::from_rgb(157, 93, 0),
                 success: Color32::from_rgb(0, 120, 212),
@@ -613,20 +627,13 @@ fn section_header(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let palette = fluent_palette(ui);
     ui.horizontal_wrapped(|ui| {
         let section = app.active_section;
-        ui.vertical(|ui| {
-            ui.label(
-                RichText::new(section.label())
-                    .strong()
-                    .size(SETTINGS_FONT_PAGE_TITLE)
-                    .color(palette.text),
-            );
-            ui.add_space(4.0);
-            ui.label(
-                RichText::new(section.hint())
-                    .size(SETTINGS_FONT_SMALL)
-                    .color(palette.muted),
-            );
-        });
+        ui.label(
+            RichText::new(section.label())
+                .strong()
+                .size(SETTINGS_FONT_PAGE_TITLE)
+                .color(palette.text),
+        )
+        .on_hover_text(section.hint());
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             if outline_button(ui, "恢复本页推荐").clicked() {
                 reset_active_page_defaults(app);
@@ -676,7 +683,13 @@ fn reset_active_page_defaults(app: &mut SettingsApp) {
             u_mode,
         ),
         SettingsSection::Appearance => apply_candidate_recommended_defaults(&mut app.model),
-        SettingsSection::Lexicon => copy_fields!(learning_sensitivity, user_hotword_boost),
+        SettingsSection::Lexicon => {
+            for (tag, enabled) in &mut app.model.lexicon_tags {
+                *enabled = pinyin_ime::lexicon_prefs::default_optional_lexicon_tag_enabled(tag);
+            }
+        }
+        SettingsSection::Learning => copy_fields!(learning_sensitivity, user_hotword_boost),
+        SettingsSection::Diagnostics => copy_fields!(log_level),
         SettingsSection::Hotkeys => copy_fields!(
             cn_en_hotkey,
             full_shape_hotkey,
@@ -699,7 +712,12 @@ fn reset_active_page_defaults(app: &mut SettingsApp) {
             game_mode_hotkey,
             temporary_ascii_hotkey,
         ),
-        SettingsSection::Tools => match app.tool_page {
+        SettingsSection::Tools
+        | SettingsSection::Screenshot
+        | SettingsSection::Ocr
+        | SettingsSection::Clipboard
+        | SettingsSection::Translation
+        | SettingsSection::Handwrite => match active_tool_page(app).unwrap() {
             ToolSettingsPage::Clipboard => copy_fields!(
                 clipboard_background_enabled,
                 clipboard_max_history_items,
@@ -725,6 +743,7 @@ fn reset_active_page_defaults(app: &mut SettingsApp) {
                 screenshot_mode,
                 screenshot_confirm_on_release,
                 screenshot_show_instructions,
+                screenshot_show_quick_actions,
             ),
             ToolSettingsPage::Ocr => copy_fields!(
                 ocr_result_action,
@@ -798,11 +817,17 @@ pub(super) fn enforce_settings_min_font_size(ctx: &egui::Context) {
         FontId::monospace(SETTINGS_FONT_MONOSPACE),
     );
     style.spacing.item_spacing = egui::vec2(6.0, 4.0);
-    style.spacing.button_padding = egui::vec2(8.0, 4.0);
+    style.spacing.button_padding = egui::vec2(7.0, 3.0);
+    style.spacing.icon_width = 16.0;
+    style.spacing.icon_width_inner = 10.0;
+    style.interaction.tooltip_delay = 0.35;
+    style.spacing.tooltip_width = 420.0;
     style.spacing.interact_size.y = SETTINGS_ROW_HEIGHT;
 
     let palette = FluentPalette::from_visuals(&style.visuals);
     let radius = egui::Rounding::same(SETTINGS_RADIUS_CONTROL);
+    style.visuals.window_rounding = radius;
+    style.visuals.menu_rounding = radius;
     style.visuals.window_fill = palette.app_bg;
     style.visuals.panel_fill = palette.app_bg;
     style.visuals.extreme_bg_color = palette.control_bg;
@@ -813,8 +838,11 @@ pub(super) fn enforce_settings_min_font_size(ctx: &egui::Context) {
     style.visuals.widgets.active.fg_stroke.color = palette.text;
     style.visuals.widgets.open.fg_stroke.color = palette.text;
     style.visuals.widgets.inactive.bg_fill = palette.control_bg;
+    style.visuals.widgets.inactive.weak_bg_fill = palette.control_bg;
     style.visuals.widgets.hovered.bg_fill = palette.control_hover;
+    style.visuals.widgets.hovered.weak_bg_fill = palette.control_hover;
     style.visuals.widgets.active.bg_fill = palette.control_hover;
+    style.visuals.widgets.active.weak_bg_fill = palette.control_hover;
     style.visuals.widgets.inactive.bg_stroke = Stroke::new(1.0, palette.border);
     style.visuals.widgets.hovered.bg_stroke = Stroke::new(1.0, palette.accent_hover);
     style.visuals.widgets.active.bg_stroke = Stroke::new(1.0, palette.accent_pressed);
@@ -837,7 +865,7 @@ fn nav_item(
     let palette = fluent_palette(ui);
     let selected = *current == section;
     let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(ui.available_width(), 34.0), egui::Sense::click());
+        ui.allocate_exact_size(egui::vec2(ui.available_width(), 30.0), egui::Sense::click());
     let hint = nav_status_summary(section, model)
         .map(|summary| format!("{} · {summary}", section.hint()))
         .unwrap_or_else(|| section.hint().to_owned());
@@ -856,16 +884,8 @@ fn nav_item(
             fill,
             Stroke::new(0.0, Color32::TRANSPARENT),
         );
-        if selected {
-            let indicator = egui::Rect::from_min_size(
-                egui::pos2(rect.left() + 3.0, rect.center().y - 11.0),
-                egui::vec2(4.0, 22.0),
-            );
-            ui.painter()
-                .rect_filled(indicator, egui::Rounding::same(2.0), palette.accent);
-        }
         let text_color = if selected {
-            palette.accent
+            palette.accent_text
         } else {
             palette.text
         };
@@ -894,7 +914,7 @@ fn nav_status_summary(section: SettingsSection, model: &SettingsModel) -> Option
             let conflicts = hotkey_conflicts(model).len();
             (conflicts > 0).then(|| format!("{conflicts} 冲突"))
         }
-        SettingsSection::Tools => model
+        SettingsSection::Clipboard => model
             .clipboard_background_enabled
             .then(|| "剪贴板开".to_string()),
         // "词库与个性化"本身较长；在窄侧栏同一行追加数量会挤压标题。
@@ -926,7 +946,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "手写查字",
         hint: "独立手写工具",
         keywords: "handwrite 手写",
-        section: SettingsSection::Tools,
+        section: SettingsSection::Handwrite,
         tool_page: Some(ToolSettingsPage::Handwrite),
         system_page: None,
         appearance_page: None,
@@ -1056,7 +1076,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "用户词库",
         hint: "学习偏好、自定义词条和屏蔽词",
         keywords: "dictionary learning",
-        section: SettingsSection::Lexicon,
+        section: SettingsSection::Learning,
         tool_page: None,
         system_page: None,
         appearance_page: None,
@@ -1076,7 +1096,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "剪贴板历史",
         hint: "采集、上限和敏感应用",
         keywords: "clipboard",
-        section: SettingsSection::Tools,
+        section: SettingsSection::Clipboard,
         tool_page: Some(ToolSettingsPage::Clipboard),
         system_page: None,
         appearance_page: None,
@@ -1086,7 +1106,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "截图目录",
         hint: "截图保存、命名和格式",
         keywords: "screenshot save path",
-        section: SettingsSection::Tools,
+        section: SettingsSection::Screenshot,
         tool_page: Some(ToolSettingsPage::Screenshot),
         system_page: None,
         appearance_page: None,
@@ -1096,7 +1116,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "OCR 模型",
         hint: "本地识别档位和结果操作",
         keywords: "识别",
-        section: SettingsSection::Tools,
+        section: SettingsSection::Ocr,
         tool_page: Some(ToolSettingsPage::Ocr),
         system_page: None,
         appearance_page: None,
@@ -1106,7 +1126,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "HY-MT2 / WinTranslator",
         hint: "翻译程序和译文处理",
         keywords: "翻译 translate",
-        section: SettingsSection::Tools,
+        section: SettingsSection::Translation,
         tool_page: Some(ToolSettingsPage::Translation),
         system_page: None,
         appearance_page: None,
@@ -1135,8 +1155,8 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
     SettingsSearchEntry {
         title: "诊断日志",
         hint: "运行状态、延迟和日志",
-        keywords: "diagnostics log",
-        section: SettingsSection::System,
+        keywords: "diagnostics log 性能 日志 延迟",
+        section: SettingsSection::Diagnostics,
         tool_page: None,
         system_page: Some(SystemSettingsPage::Diagnostics),
         appearance_page: None,
@@ -1176,7 +1196,7 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "学习策略",
         hint: "学习灵敏度和热词提前力度",
         keywords: "learning 学习 热词",
-        section: SettingsSection::Lexicon,
+        section: SettingsSection::Learning,
         tool_page: None,
         system_page: None,
         appearance_page: None,
@@ -1261,7 +1281,7 @@ fn section_panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut 
     let available_width = ui.available_width();
     egui::Frame::none()
         .fill(palette.surface)
-        .stroke(Stroke::new(1.0, palette.border_subtle))
+        .stroke(Stroke::new(1.0, palette.border))
         .rounding(SETTINGS_RADIUS_CARD)
         .inner_margin(egui::Margin::same(8.0))
         .show(ui, |ui| {
@@ -1291,33 +1311,6 @@ fn quiet_section(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut 
     ui.add_space(12.0);
 }
 
-fn tool_page_intro(ui: &mut egui::Ui, symbol: &str, title: &str, hint: &str) {
-    let palette = fluent_palette(ui);
-    egui::Frame::none()
-        .fill(palette.surface_alt)
-        .rounding(SETTINGS_PANEL_RADIUS)
-        .inner_margin(egui::Margin::symmetric(10.0, 10.0))
-        .show(ui, |ui| {
-            ui.horizontal(|ui| {
-                tool_symbol(ui, symbol, palette.nav_selected);
-                ui.vertical(|ui| {
-                    ui.label(
-                        RichText::new(title)
-                            .strong()
-                            .size(SETTINGS_FONT_SECTION_TITLE)
-                            .color(palette.text),
-                    );
-                    ui.label(
-                        RichText::new(hint)
-                            .size(SETTINGS_FONT_SMALL)
-                            .color(palette.muted),
-                    );
-                });
-            });
-        });
-    ui.add_space(10.0);
-}
-
 fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, color: Color32) {
     let painter = ui.painter();
     let stroke = Stroke::new(1.6, color);
@@ -1334,52 +1327,116 @@ fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, co
     };
 
     match icon {
+        SettingsIcon::Input => {
+            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(19.0, 13.0)));
+            for x in [-5.0, -1.0, 3.0] {
+                painter.circle_filled(center + egui::vec2(x, -2.5), 1.0, color);
+            }
+            line(
+                center + egui::vec2(-5.0, 3.0),
+                center + egui::vec2(5.0, 3.0),
+            );
+        }
         SettingsIcon::Appearance => {
-            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(16.0, 18.0)));
-            line(
-                center + egui::vec2(-5.0, -4.0),
-                center + egui::vec2(5.0, -4.0),
-            );
-            line(
-                center + egui::vec2(-5.0, 0.0),
-                center + egui::vec2(5.0, 0.0),
-            );
-            line(
-                center + egui::vec2(-5.0, 4.0),
-                center + egui::vec2(2.0, 4.0),
-            );
+            painter.circle_stroke(center, 8.0, stroke);
+            painter.circle_filled(center + egui::vec2(-4.0, -2.0), 1.5, color);
+            painter.circle_filled(center + egui::vec2(0.0, -5.0), 1.5, color);
+            painter.circle_filled(center + egui::vec2(4.0, -2.0), 1.5, color);
+            painter.circle_stroke(center + egui::vec2(3.0, 4.0), 2.2, stroke);
         }
         SettingsIcon::Lexicon => {
-            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(17.0, 18.0)));
             line(
-                center + egui::vec2(-5.0, -4.5),
-                center + egui::vec2(5.0, -4.5),
+                center + egui::vec2(0.0, -6.0),
+                center + egui::vec2(0.0, 8.0),
+            );
+            line(
+                center + egui::vec2(-8.0, -6.0),
+                center + egui::vec2(-8.0, 6.0),
+            );
+            line(
+                center + egui::vec2(8.0, -6.0),
+                center + egui::vec2(8.0, 6.0),
+            );
+            line(
+                center + egui::vec2(-8.0, -6.0),
+                center + egui::vec2(-2.0, -5.0),
+            );
+            line(
+                center + egui::vec2(8.0, -6.0),
+                center + egui::vec2(2.0, -5.0),
+            );
+            line(
+                center + egui::vec2(-8.0, 6.0),
+                center + egui::vec2(0.0, 8.0),
+            );
+            line(center + egui::vec2(8.0, 6.0), center + egui::vec2(0.0, 8.0));
+        }
+        SettingsIcon::Learning => {
+            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(16.0, 17.0)));
+            line(
+                center + egui::vec2(-5.0, -4.0),
+                center + egui::vec2(2.0, -4.0),
             );
             line(
                 center + egui::vec2(-5.0, 0.0),
-                center + egui::vec2(5.0, 0.0),
+                center + egui::vec2(1.0, 0.0),
             );
             line(
-                center + egui::vec2(-5.0, 4.5),
-                center + egui::vec2(1.0, 4.5),
+                center + egui::vec2(0.0, 5.0),
+                center + egui::vec2(8.0, -3.0),
             );
+            line(center + egui::vec2(0.0, 5.0), center + egui::vec2(3.0, 5.0));
         }
         SettingsIcon::Hotkeys => {
-            rounded_rect(egui::Rect::from_center_size(
-                center + egui::vec2(-3.5, 1.5),
-                egui::vec2(10.0, 10.0),
-            ));
-            rounded_rect(egui::Rect::from_center_size(
-                center + egui::vec2(4.0, -3.0),
-                egui::vec2(7.0, 7.0),
-            ));
             line(
-                center + egui::vec2(-6.0, 1.5),
-                center + egui::vec2(-1.0, 1.5),
+                center + egui::vec2(1.0, -9.0),
+                center + egui::vec2(-5.0, 1.0),
             );
             line(
-                center + egui::vec2(-3.5, -1.0),
-                center + egui::vec2(-3.5, 4.0),
+                center + egui::vec2(-5.0, 1.0),
+                center + egui::vec2(0.0, 1.0),
+            );
+            line(
+                center + egui::vec2(0.0, 1.0),
+                center + egui::vec2(-1.0, 9.0),
+            );
+            line(
+                center + egui::vec2(-1.0, 9.0),
+                center + egui::vec2(6.0, -2.0),
+            );
+            line(
+                center + egui::vec2(6.0, -2.0),
+                center + egui::vec2(1.0, -2.0),
+            );
+            line(
+                center + egui::vec2(1.0, -2.0),
+                center + egui::vec2(1.0, -9.0),
+            );
+        }
+        SettingsIcon::Screenshot => {
+            for (a, b) in [
+                ((-8.0, -3.0), (-8.0, -8.0)),
+                ((-8.0, -8.0), (-3.0, -8.0)),
+                ((8.0, -3.0), (8.0, -8.0)),
+                ((8.0, -8.0), (3.0, -8.0)),
+                ((-8.0, 3.0), (-8.0, 8.0)),
+                ((-8.0, 8.0), (-3.0, 8.0)),
+                ((8.0, 3.0), (8.0, 8.0)),
+                ((8.0, 8.0), (3.0, 8.0)),
+            ] {
+                line(center + egui::vec2(a.0, a.1), center + egui::vec2(b.0, b.1));
+            }
+            painter.circle_stroke(center, 2.5, stroke);
+        }
+        SettingsIcon::Ocr => {
+            rounded_rect(egui::Rect::from_center_size(center, egui::vec2(14.0, 18.0)));
+            line(
+                center + egui::vec2(-9.0, 2.0),
+                center + egui::vec2(9.0, 2.0),
+            );
+            line(
+                center + egui::vec2(-3.0, -4.0),
+                center + egui::vec2(3.0, -4.0),
             );
         }
         SettingsIcon::Clipboard => {
@@ -1401,6 +1458,68 @@ fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, co
                 egui::vec2(7.0, 3.0),
             ));
         }
+        SettingsIcon::Translation => {
+            rounded_rect(egui::Rect::from_center_size(
+                center + egui::vec2(-3.0, -2.0),
+                egui::vec2(11.0, 12.0),
+            ));
+            rounded_rect(egui::Rect::from_center_size(
+                center + egui::vec2(4.0, 3.0),
+                egui::vec2(10.0, 11.0),
+            ));
+            painter.text(
+                center + egui::vec2(-3.0, -2.0),
+                egui::Align2::CENTER_CENTER,
+                "文",
+                FontId::proportional(8.0),
+                color,
+            );
+            painter.text(
+                center + egui::vec2(4.0, 3.0),
+                egui::Align2::CENTER_CENTER,
+                "A",
+                FontId::proportional(8.0),
+                color,
+            );
+        }
+        SettingsIcon::Handwrite => {
+            line(
+                center + egui::vec2(-7.0, 7.0),
+                center + egui::vec2(5.0, -7.0),
+            );
+            line(
+                center + egui::vec2(-4.0, 8.0),
+                center + egui::vec2(8.0, -5.0),
+            );
+            line(
+                center + egui::vec2(5.0, -7.0),
+                center + egui::vec2(8.0, -5.0),
+            );
+            line(
+                center + egui::vec2(-7.0, 7.0),
+                center + egui::vec2(-4.0, 8.0),
+            );
+            line(
+                center + egui::vec2(-8.0, 9.0),
+                center + egui::vec2(4.0, 9.0),
+            );
+        }
+        SettingsIcon::Tools => {
+            line(
+                center + egui::vec2(-4.0, -8.0),
+                center + egui::vec2(-8.0, 0.0),
+            );
+            line(
+                center + egui::vec2(-8.0, 0.0),
+                center + egui::vec2(-4.0, 8.0),
+            );
+            line(
+                center + egui::vec2(4.0, -8.0),
+                center + egui::vec2(8.0, 0.0),
+            );
+            line(center + egui::vec2(8.0, 0.0), center + egui::vec2(4.0, 8.0));
+            painter.circle_filled(center, 1.5, color);
+        }
         SettingsIcon::Compatibility => {
             rounded_rect(egui::Rect::from_center_size(center, egui::vec2(18.0, 14.0)));
             line(
@@ -1418,7 +1537,23 @@ fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, co
                 center + egui::vec2(2.0, 5.0),
             );
         }
-        SettingsIcon::Advanced => {
+        SettingsIcon::Diagnostics => {
+            line(
+                center + egui::vec2(-9.0, 2.0),
+                center + egui::vec2(-5.0, 2.0),
+            );
+            line(
+                center + egui::vec2(-5.0, 2.0),
+                center + egui::vec2(-2.0, -5.0),
+            );
+            line(
+                center + egui::vec2(-2.0, -5.0),
+                center + egui::vec2(1.0, 7.0),
+            );
+            line(center + egui::vec2(1.0, 7.0), center + egui::vec2(4.0, 0.0));
+            line(center + egui::vec2(4.0, 0.0), center + egui::vec2(9.0, 0.0));
+        }
+        SettingsIcon::System => {
             painter.circle_stroke(center, 7.0, stroke);
             painter.circle_filled(center, 2.0, color);
             for angle in [0.0_f32, 1.57, 3.14, 4.71] {
@@ -1427,24 +1562,6 @@ fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, co
             }
         }
     }
-}
-
-fn tool_symbol(ui: &mut egui::Ui, symbol: &str, fill: Color32) {
-    let palette = fluent_palette(ui);
-    let (rect, _) = ui.allocate_exact_size(egui::vec2(30.0, 30.0), egui::Sense::hover());
-    ui.painter().rect(
-        rect,
-        SETTINGS_RADIUS_CONTROL,
-        fill,
-        Stroke::new(1.0, palette.border_subtle),
-    );
-    ui.painter().text(
-        rect.center(),
-        egui::Align2::CENTER_CENTER,
-        symbol,
-        FontId::proportional(SETTINGS_FONT_SMALL),
-        palette.text,
-    );
 }
 
 fn tool_row(
@@ -1594,6 +1711,7 @@ struct SettingSpec<'a> {
     visible: bool,
     enabled: bool,
     restart_requirement: RestartRequirement,
+    control_width: f32,
 }
 
 impl<'a> SettingSpec<'a> {
@@ -1604,6 +1722,7 @@ impl<'a> SettingSpec<'a> {
             visible: true,
             enabled: true,
             restart_requirement: RestartRequirement::None,
+            control_width: SETTINGS_CONTROL_WIDTH,
         }
     }
 }
@@ -1614,193 +1733,69 @@ fn setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut
     });
 }
 
-// Important consequences stay visible even when an ordinary long explanation
-// is shortened. All original text remains available in a keyboard-accessible menu.
-fn setting_description_summary<'a>(title: &str, description: &'a str) -> &'a str {
-    let important = [
-        "隐私",
-        "权限",
-        "加密",
-        "明文",
-        "删除",
-        "不可恢复",
-        "清空",
-        "不学习",
-        "停止",
-        "自动粘贴",
-        "重启",
-        "生效",
-        "禁用",
-        "仅在",
-        "需要",
-        "保存到",
-    ];
-    if description.chars().count() <= 42
-        || important
-            .iter()
-            .any(|word| title.contains(word) || description.contains(word))
-    {
-        return description;
-    }
-    if let Some((end, delimiter)) = description.char_indices().find(|(index, ch)| {
-        description[..*index].chars().count() >= 12 && matches!(ch, '。' | '；' | '，')
-    }) {
-        return &description[..end
-            + if delimiter == '，' {
-                0
-            } else {
-                delimiter.len_utf8()
-            }];
-    }
-    description
-}
-
 fn setting_text(
     ui: &mut egui::Ui,
     title: &str,
     description: &str,
     requirement: RestartRequirement,
 ) {
-    let palette = fluent_palette(ui);
-    let summary = setting_description_summary(title, description);
-    let title_width = ui.fonts(|fonts| {
-        fonts
-            .layout_no_wrap(
-                title.to_string(),
-                FontId::proportional(SETTINGS_FONT_SETTING_TITLE),
-                palette.text,
-            )
-            .size()
-            .x
-    });
-    let summary_width = ui.fonts(|fonts| {
-        fonts
-            .layout_no_wrap(
-                summary.to_string(),
-                FontId::proportional(SETTINGS_FONT_SMALL),
-                palette.muted,
-            )
-            .size()
-            .x
-    });
-    let help_width = if summary != description {
-        ui.fonts(|fonts| {
-            fonts
-                .layout_no_wrap(
-                    "说明".to_string(),
-                    FontId::proportional(SETTINGS_FONT_BODY),
-                    palette.text,
-                )
-                .size()
-                .x
-        }) + ui.spacing().button_padding.x * 2.0
-    } else {
-        0.0
-    };
-    let inline_description = !summary.is_empty()
-        && requirement == RestartRequirement::None
-        && title_width + summary_width + help_width + ui.spacing().item_spacing.x * 3.0
-            <= ui.available_width();
-    ui.horizontal_top(|ui| {
-        let label_width = if inline_description {
-            title_width + 1.0
-        } else {
-            (ui.available_width() - help_width - ui.spacing().item_spacing.x).max(1.0)
-        };
-        ui.allocate_ui_with_layout(
-            egui::vec2(label_width, SETTINGS_ROW_HEIGHT),
-            egui::Layout::left_to_right(egui::Align::Center),
-            |ui| {
-                ui.add(
-                    egui::Label::new(
-                        RichText::new(title)
-                            .strong()
-                            .size(SETTINGS_FONT_SETTING_TITLE)
-                            .color(palette.text),
-                    )
-                    .halign(egui::Align::Min)
-                    .wrap(),
-                )
-            },
-        )
-        .inner
-        .on_hover_text(description);
-        if inline_description {
-            ui.add_sized(
-                [summary_width + 1.0, SETTINGS_ROW_HEIGHT],
+    ui.allocate_ui_with_layout(
+        egui::vec2(ui.available_width(), SETTINGS_ROW_HEIGHT),
+        egui::Layout::left_to_right(egui::Align::Center),
+        |ui| {
+            ui.add(
                 egui::Label::new(
-                    RichText::new(summary)
-                        .size(SETTINGS_FONT_SMALL)
-                        .color(palette.muted),
-                ),
+                    RichText::new(title)
+                        .size(SETTINGS_FONT_SETTING_TITLE)
+                        .color(fluent_palette(ui).text),
+                )
+                .wrap(),
             )
-            .on_hover_text(description);
-        }
-        if summary != description {
-            ui.menu_button("说明", |ui| {
-                ui.set_max_width(360.0);
-                ui.add(egui::Label::new(description).wrap());
-            });
-        }
-    });
-    render_restart_requirement(ui, requirement, palette);
-    if !summary.is_empty() && !inline_description {
-        ui.add(
-            egui::Label::new(
-                RichText::new(summary)
-                    .size(SETTINGS_FONT_SMALL)
-                    .color(palette.muted),
-            )
-            .wrap(),
-        );
+            .on_hover_text(setting_help(description, requirement));
+        },
+    );
+}
+
+fn setting_help(description: &str, requirement: RestartRequirement) -> String {
+    let effect = match requirement {
+        RestartRequirement::None => "",
+        RestartRequirement::FocusChange => "切换窗口后生效。",
+        RestartRequirement::ApplicationRestart => "重启应用后生效。",
+    };
+    if effect.is_empty() {
+        description.to_owned()
+    } else if description.is_empty() {
+        effect.to_owned()
+    } else {
+        format!("{description}\n{effect}")
     }
 }
 
+// Scope responses include the complete row, including blank space and controls.
+// Disabled settings retain their help, and child controls keep their own input.
+fn setting_row_help(response: egui::Response, help: &str) {
+    response.on_hover_text(help).on_disabled_hover_text(help);
+}
+
 pub(super) fn capsule_switch(ui: &mut egui::Ui, value: &mut bool) -> egui::Response {
-    let palette = fluent_palette(ui);
-    let size = egui::vec2(44.0, 24.0);
-    let (rect, mut response) = ui.allocate_exact_size(size, egui::Sense::click());
-    if response.clicked() {
-        *value = !*value;
-        response.mark_changed();
-    }
-
-    let fill = if *value {
-        if response.is_pointer_button_down_on() {
-            palette.accent_pressed
-        } else if response.hovered() {
-            palette.accent_hover
-        } else {
-            palette.accent
+    // Keep the existing shared API while using native egui checkbox interaction,
+    // including keyboard focus and accessibility metadata, for the classic UI.
+    ui.scope(|ui| {
+        if *value {
+            let palette = fluent_palette(ui);
+            let widgets = &mut ui.visuals_mut().widgets;
+            for (visuals, fill) in [
+                (&mut widgets.inactive, palette.accent),
+                (&mut widgets.hovered, palette.accent_hover),
+                (&mut widgets.active, palette.accent_pressed),
+            ] {
+                visuals.bg_fill = fill;
+                visuals.fg_stroke.color = palette.accent_text;
+            }
         }
-    } else if response.hovered() {
-        palette.control_hover
-    } else {
-        palette.control_bg
-    };
-    let stroke = if *value {
-        Stroke::new(1.0, fill)
-    } else {
-        Stroke::new(1.0, palette.border)
-    };
-    let radius = rect.height() / 2.0;
-    ui.painter().rect(rect, radius, fill, stroke);
-
-    let knob_radius = 8.5;
-    let knob_x = if *value {
-        rect.right() - radius
-    } else {
-        rect.left() + radius
-    };
-    let knob_fill = if *value {
-        palette.accent_text
-    } else {
-        palette.text
-    };
-    ui.painter()
-        .circle_filled(egui::pos2(knob_x, rect.center().y), knob_radius, knob_fill);
-
-    response
+        ui.checkbox(value, "")
+    })
+    .inner
 }
 
 fn setting_slider_usize(
@@ -1862,6 +1857,17 @@ fn setting_row(
     setting_spec_row(ui, SettingSpec::new(title, description), add_control);
 }
 
+fn setting_path_row(
+    ui: &mut egui::Ui,
+    title: &str,
+    description: &str,
+    add_control: impl FnOnce(&mut egui::Ui),
+) {
+    let mut spec = SettingSpec::new(title, description);
+    spec.control_width = 460.0;
+    setting_spec_row(ui, spec, add_control);
+}
+
 fn setting_spec_row(
     ui: &mut egui::Ui,
     spec: SettingSpec<'_>,
@@ -1880,32 +1886,26 @@ fn setting_spec_row_enabled(
     spec: SettingSpec<'_>,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
-    egui::Frame::none()
+    let response = egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
         .show(ui, |ui| {
             responsive_settings_row(
                 ui,
-                SETTINGS_CONTROL_WIDTH,
+                spec.control_width,
                 |ui| setting_text(ui, spec.title, spec.description, spec.restart_requirement),
-                add_control,
+                |ui| {
+                    let response = ui.scope(add_control).response;
+                    setting_row_help(
+                        response,
+                        &setting_help(spec.description, spec.restart_requirement),
+                    );
+                },
             );
-        });
-}
-
-fn render_restart_requirement(
-    ui: &mut egui::Ui,
-    requirement: RestartRequirement,
-    palette: FluentPalette,
-) {
-    let label = match requirement {
-        RestartRequirement::None => return,
-        RestartRequirement::FocusChange => "切换窗口后生效",
-        RestartRequirement::ApplicationRestart => "重启应用后生效",
-    };
-    ui.label(
-        RichText::new(label)
-            .size(SETTINGS_FONT_SMALL)
-            .color(palette.muted),
+        })
+        .response;
+    setting_row_help(
+        response,
+        &setting_help(spec.description, spec.restart_requirement),
     );
 }
 
@@ -2126,36 +2126,14 @@ fn input_tools_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 
 fn custom_shortcuts_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     section_panel(ui, "自定义短语 / 快捷码", |ui| {
-        let palette = fluent_palette(ui);
-        ui.label(
-            RichText::new("每行一个：快捷码 = 候选文本。多个候选可用 | 分隔；换行可写成 \\n。")
-                .small()
-                .color(palette.muted),
+        let response = ui.add(
+            TextEdit::multiline(&mut app.model.custom_shortcuts)
+                .font(TextStyle::Monospace)
+                .desired_width(f32::INFINITY)
+                .desired_rows(5)
+                .hint_text(";qq = name@example.com\n;;r = 此致，敬礼"),
         );
-        ui.add_space(6.0);
-        egui::Frame::none()
-            .fill(palette.surface_alt)
-            .stroke(Stroke::new(1.0, palette.border_subtle))
-            .rounding(SETTINGS_RADIUS_CARD)
-            .inner_margin(egui::Margin::symmetric(8.0, 6.0))
-            .show(ui, |ui| {
-                ui.add(
-                    TextEdit::multiline(&mut app.model.custom_shortcuts)
-                        .font(TextStyle::Monospace)
-                        .desired_width(f32::INFINITY)
-                        .desired_rows(7)
-                        .hint_text(
-                            ";qq = name@example.com\\n;;r = 此致，敬礼\\n;sig = 此致\\n敬礼",
-                        ),
-                );
-            });
-        ui.label(
-            RichText::new(
-                "保存后直接输入 ;qq 或 ;;r 即可出候选；也可以输入 vv ;qq 调出同一组候选。",
-            )
-            .small()
-            .color(palette.muted),
-        );
+        setting_row_help(response, "每行一个：快捷码 = 候选文本。多个候选用 | 分隔；换行可写成 \\n。保存后直接输入 ;qq 或 ;;r 即可出候选，也可输入 vv ;qq 调出同一组候选。");
     });
 }
 
@@ -2457,8 +2435,8 @@ fn preview_colors_for_skin(
             selected_border: parse_skin_color(&skin.selected_border, palette.accent),
             text: parse_skin_color(&skin.text, palette.text),
             muted: parse_skin_color(&skin.muted_text, palette.muted),
-            selected_text: parse_skin_color(&skin.selected_text, palette.text),
-            selected_muted: parse_skin_color(&skin.selected_muted_text, palette.muted),
+            selected_text: parse_skin_color(&skin.selected_text, palette.accent_text),
+            selected_muted: parse_skin_color(&skin.selected_muted_text, palette.accent_text),
             chip: parse_skin_color(&skin.chip_bg, palette.surface_alt),
             chip_border: parse_skin_color(&skin.chip_border, palette.border),
             chip_text: parse_skin_color(&skin.chip_text, palette.text),
@@ -2475,8 +2453,8 @@ fn preview_colors_for_skin(
         selected_border: palette.accent,
         text: palette.text,
         muted: palette.muted,
-        selected_text: palette.text,
-        selected_muted: palette.muted,
+        selected_text: palette.accent_text,
+        selected_muted: palette.accent_text,
         chip: palette.surface_alt,
         chip_border: palette.border,
         chip_text: palette.text,
@@ -2555,10 +2533,14 @@ fn user_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
             .size(SETTINGS_FONT_SECTION_TITLE),
     );
     ui.horizontal_wrapped(|ui| {
-        ui.label("编码");
-        ui.add(TextEdit::singleline(&mut app.user_phrase_key).desired_width(120.0));
-        ui.label("短语");
-        ui.add(TextEdit::singleline(&mut app.user_phrase_text).desired_width(180.0));
+        ui.label("编码")
+            .on_hover_text("输入自定义编码；输入该编码时可在候选栏选择对应短语。");
+        ui.add(TextEdit::singleline(&mut app.user_phrase_key).desired_width(120.0))
+            .on_hover_text("输入自定义编码；输入该编码时可在候选栏选择对应短语。");
+        ui.label("短语")
+            .on_hover_text("输入要加入用户词库的文字，点击“添加”保存。");
+        ui.add(TextEdit::singleline(&mut app.user_phrase_text).desired_width(180.0))
+            .on_hover_text("输入要加入用户词库的文字，点击“添加”保存。");
         if outline_button(ui, "添加").clicked() {
             app.add_user_phrase();
         }
@@ -2569,8 +2551,10 @@ fn user_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
             RichText::new("永远不学")
                 .strong()
                 .size(SETTINGS_FONT_SECTION_TITLE),
-        );
-        ui.add(TextEdit::singleline(&mut app.blocked_phrase_text).desired_width(180.0));
+        )
+        .on_hover_text("加入后不再学习该短语；可从下方列表移出，恢复正常学习。");
+        ui.add(TextEdit::singleline(&mut app.blocked_phrase_text).desired_width(180.0))
+            .on_hover_text("输入不希望学习的短语，点击“加入”；点击“刷新”重新读取列表。");
         if outline_button(ui, "加入").clicked() {
             app.block_phrase_from_settings();
         }
@@ -2625,15 +2609,11 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
     if !app.model.lexicon_tags.is_empty() {
         ui.add_space(8.0);
         ui.label(
-            RichText::new("基础词库与读音修正始终启用。扩展词库按需选择，修改后保存设置生效。")
-                .small()
-                .color(palette.muted),
-        );
-        ui.label(
             RichText::new("扩展词库")
                 .strong()
                 .size(SETTINGS_FONT_SECTION_TITLE),
-        );
+        )
+        .on_hover_text("基础词库与读音修正始终启用；扩展词库按需选择，保存设置后生效。");
         ui.horizontal_wrapped(|ui| {
             ui.add(
                 egui::TextEdit::singleline(&mut app.lexicon_filter)
@@ -2753,14 +2733,6 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
                         );
                     }
                 });
-                ui.add(
-                    egui::Label::new(
-                        RichText::new(lexicon_group_hint(group))
-                            .small()
-                            .color(palette.muted),
-                    )
-                    .wrap(),
-                );
                 ui.add_space(4.0);
                 for tag in tags {
                     let info = app
@@ -2788,7 +2760,9 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     }
                 }
                 ui.add_space(12.0);
-            });
+            })
+            .header_response
+            .on_hover_text(lexicon_group_hint(group));
         }
         if visible == 0 {
             ui.label("没有匹配的扩展词库。");
@@ -2881,6 +2855,11 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     }
                     ui.label("第二步：切回游戏，打开输入栏，再按设置的中文聊天热键。确认可以输入拼音、游戏移动键不会误触发。自动识别需要输入栏提供编辑状态；无法识别时可手动开启中文。");
                     ui.label("本向导只记录您确认的结果，不会自动输入文字或发送聊天消息。");
+                    if let Some((line, hint)) = recent_game_input_event(&wizard.process) {
+                        ui.label(format!("该进程最近的诊断：{hint}"));
+                        ui.label(RichText::new(line).monospace().small().color(palette.muted));
+                        ui.label("日志可能来自上一次游戏会话；请以当前游戏里的实际表现为准。");
+                    }
                     ui.horizontal_wrapped(|ui| {
                         if ui.button("切换到游戏窗口").clicked() { action = Some(GameTestWizardAction::ActivateGame); }
                         if ui.button("已进入中文输入").clicked() { action = Some(GameTestWizardAction::InputReady); }
@@ -3018,7 +2997,10 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
             }
         }
         Some(GameTestWizardAction::InputMissing) => {
-            app.status = "尚未确认按键接入。请先选择开心输入法并打开游戏输入栏；仅切换候选显示后端无法修复未启用的输入上下文。".to_string();
+            let detail = recent_game_input_event(&wizard.process)
+                .map(|(_, hint)| format!("最近诊断：{hint}"))
+                .unwrap_or_else(|| "没有该进程的近期输入事件记录；可能未激活输入法，也可能游戏没有向 TSF 提供按键或输入上下文，单凭日志无法确定。".to_string());
+            app.status = format!("尚未确认按键接入。请先选择开心输入法并打开游戏输入栏。{detail} 候选显示和上屏方式不能修复按键接入。");
         }
         Some(GameTestWizardAction::CandidateVisible) => {
             if let Some(rule) = app
@@ -3121,7 +3103,8 @@ fn game_test_metadata_ui(ui: &mut egui::Ui, chat: &mut GameChatOptions) {
         chat.tested_game_version.clone(),
     );
     ui.horizontal_wrapped(|ui| {
-        ui.label("验证显示模式");
+        ui.label("验证显示模式")
+            .on_hover_text("记录实际人工验证时的游戏显示模式；修改后会清除旧的验证结果。");
         ComboBox::from_id_salt("game_test_display_mode")
             .selected_text(match chat.tested_display_mode.as_str() {
                 "windowed" => "窗口",
@@ -3141,7 +3124,8 @@ fn game_test_metadata_ui(ui: &mut egui::Ui, chat: &mut GameChatOptions) {
             });
     });
     ui.horizontal_wrapped(|ui| {
-        ui.label("游戏版本");
+        ui.label("游戏版本")
+            .on_hover_text("填写实际人工验证时的游戏版本；修改后会清除旧的验证结果。");
         ui.add(
             TextEdit::singleline(&mut chat.tested_game_version)
                 .char_limit(80)
@@ -3173,7 +3157,12 @@ fn game_chat_options_ui(ui: &mut egui::Ui, chat: &mut GameChatOptions, per_app: 
         });
         for (key, label, value) in [("game_auto_uia", "辅助识别输入栏", &mut chat.auto_uia),
             ("game_status_indicator", "中文聊天状态提示", &mut chat.status_indicator)] {
-            setting_row(ui, label, "", |ui| {
+            let description = if key == "game_auto_uia" {
+                "通过应用提供的可访问性接口辅助判断输入栏是否可编辑；无法确认时使用手动聊天快捷键。"
+            } else {
+                "进入中文聊天时显示状态提示；遵守应用隐藏输入法界面的要求。"
+            };
+            setting_row(ui, label, description, |ui| {
                 ComboBox::from_id_salt(key).selected_text(match value.as_str() { "0" => "关闭", "inherit" => "使用全局设置", _ => "开启" })
                     .show_ui(ui, |ui| {
                         if per_app { ui.selectable_value(value, "inherit".to_string(), "使用全局设置"); }
@@ -3189,12 +3178,18 @@ fn game_chat_options_ui(ui: &mut egui::Ui, chat: &mut GameChatOptions, per_app: 
             setting_row(ui, "游戏聊天关闭键", "默认 Escape；有拼音时先取消拼音。", |ui| {
                 ui.add(TextEdit::singleline(&mut chat.close_key).char_limit(48));
             });
-            ui.checkbox(&mut chat.force_ui, "强制显示输入法候选（覆盖游戏的隐藏要求）");
-            ui.label("仅在游戏没有自行绘制候选时开启；独立候选窗不能保证覆盖独占全屏。状态提示尊重 UI-less 宿主。");
+            setting_toggle(ui, "强制显示输入法候选", "覆盖游戏的隐藏要求。仅在游戏没有自行绘制候选时开启；独立候选窗不能保证覆盖独占全屏。状态提示尊重 UI-less 宿主。", &mut chat.force_ui);
         }
     });
-    if before != *chat {
+    if before.open_key != chat.open_key || before.auto_uia != chat.auto_uia {
         chat.reset_test_results();
+    } else {
+        if before.force_ui != chat.force_ui {
+            chat.tested_candidate = false;
+        }
+        if before.close_key != chat.close_key || before.enter_behavior != chat.enter_behavior {
+            chat.tested_exit = false;
+        }
     }
 }
 
@@ -3256,7 +3251,7 @@ fn compatibility_game_controls_ui(ui: &mut egui::Ui, model: &mut SettingsModel) 
     setting_row(
         ui,
         "游戏输入策略",
-        "默认直通，按聊天快捷键开启中文。",
+        "默认直通：使用中文聊天热键开启中文；有拼音时 Enter 选词、Esc 取消；无拼音时 Enter 按配置处理，Esc 返回直通。切窗口后恢复原输入状态。完全直通关闭所有输入法与工具快捷键。自动识别支持原生编辑框、有明确文本输入范围的 TSF 编辑区，以及提供可编辑接口的输入栏；无法确认的自绘输入栏使用手动热键。",
         |ui| {
             game_input_mode_combo(
                 ui,
@@ -3266,18 +3261,10 @@ fn compatibility_game_controls_ui(ui: &mut egui::Ui, model: &mut SettingsModel) 
             );
         },
     );
-    egui::CollapsingHeader::new("策略使用说明")
-            .id_salt("game_input_mode_help")
-            .show(ui, |ui| {
-                ui.add(egui::Label::new("默认直通：使用中文聊天热键开启中文；有拼音时 Enter 选词、Esc 取消；无拼音时 Enter 按配置处理，Esc 返回直通。切窗口后恢复原输入状态。").wrap());
-                ui.add(egui::Label::new("完全直通：关闭所有输入法与工具快捷键；自动识别支持原生编辑框、有明确文本输入范围的 TSF 编辑区，以及提供可编辑接口的输入栏。无法确认的自绘输入栏使用手动热键。").wrap());
-            });
-    responsive_settings_row(
+    setting_row(
         ui,
-        SETTINGS_CONTROL_WIDTH,
-        |ui| {
-            ui.label(RichText::new("游戏中文聊天快捷键").strong());
-        },
+        "游戏中文聊天快捷键",
+        "在游戏中切换中文聊天与键盘直通；完全直通和始终中文模式不使用此快捷键。",
         |ui| {
             hotkey_combo(
                 ui,
@@ -3501,7 +3488,7 @@ fn compatibility_recent_logs_ui(ui: &mut egui::Ui) {
     }
     egui::Frame::none()
         .fill(palette.surface_alt)
-        .stroke(Stroke::new(1.0, palette.border_subtle))
+        .stroke(Stroke::new(1.0, palette.border))
         .rounding(SETTINGS_RADIUS_CARD)
         .inner_margin(egui::Margin::same(12.0))
         .show(ui, |ui| {
@@ -3774,7 +3761,7 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     .num_columns(2)
                     .spacing([18.0, 8.0])
                     .show(ui, |ui| {
-                        ui.label("锚点");
+                        ui.label("锚点").on_hover_text("选择独立候选窗相对于游戏窗口的定位基准。");
                         ComboBox::from_id_salt(("compat_overlay_anchor", idx))
                             .selected_text(overlay_anchor_label(&rule.overlay_anchor))
                             .width(220.0)
@@ -3789,7 +3776,7 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                             });
                         ui.end_row();
 
-                        ui.label("位置偏移 X / Y");
+                        ui.label("位置偏移 X / Y").on_hover_text("以像素调整候选窗相对于锚点的水平和垂直位置。");
                         ui.horizontal(|ui| {
                             ui.add(
                                 Slider::new(&mut rule.overlay_offset_x, -4000..=4000)
@@ -3804,11 +3791,11 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                         });
                         ui.end_row();
 
-                        ui.label("缩放");
+                        ui.label("缩放").on_hover_text("单独调整该应用的候选窗大小，范围为 50% 到 200%。");
                         ui.add(Slider::new(&mut rule.overlay_scale_percent, 50..=200).suffix("%"));
                         ui.end_row();
 
-                        ui.label("目标显示器");
+                        ui.label("目标显示器").on_hover_text("自动跟随游戏所在显示器，也可指定主显示器或显示器编号。");
                         ComboBox::from_id_salt(("compat_overlay_monitor", idx))
                             .selected_text(overlay_monitor_label(&rule.overlay_monitor))
                             .width(220.0)
@@ -3833,7 +3820,7 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                             });
                         ui.end_row();
 
-                        ui.label("Overlay 后端");
+                        ui.label("Overlay 后端").on_hover_text("自动选择候选后端，并尊重游戏接管候选绘制；只有启用强制显示才覆盖宿主的隐藏要求。独占全屏可能仍无法显示外部候选。");
                         ComboBox::from_id_salt(("compat_overlay_backend", idx))
                             .selected_text(overlay_backend_label(&rule.overlay_backend))
                             .width(220.0)
@@ -3846,15 +3833,6 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                                     );
                                 }
                             });
-                        ui.end_row();
-                        ui.label("");
-                        ui.label(
-                            RichText::new(
-                                "自动选择候选后端，并尊重游戏接管候选绘制；只有启用强制显示才覆盖宿主的隐藏要求。独占全屏可能仍无法显示外部候选。",
-                            )
-                            .small()
-                            .color(palette.muted),
-                        );
                         ui.end_row();
                     });
                 ui.horizontal_wrapped(|ui| {
@@ -3962,32 +3940,21 @@ fn lexicon_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
             "学习策略",
         );
         ui.selectable_value(&mut app.lexicon_page, LexiconSettingsPage::User, "用户词条");
-        ui.selectable_value(
-            &mut app.lexicon_page,
-            LexiconSettingsPage::Extensions,
-            "扩展词库",
-        );
     });
     app.reset_section_scroll |= app.lexicon_page != previous;
     ui.separator();
 }
 
-fn tool_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let previous = app.tool_page;
-    ui.horizontal_wrapped(|ui| {
-        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Clipboard, "剪贴板");
-        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Screenshot, "截图");
-        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Ocr, "OCR");
-        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Translation, "翻译");
-        ui.selectable_value(&mut app.tool_page, ToolSettingsPage::Handwrite, "手写");
-        ui.selectable_value(
-            &mut app.tool_page,
-            ToolSettingsPage::Commands,
-            "VV 命令与符号",
-        );
-    });
-    app.reset_section_scroll |= previous != app.tool_page;
-    ui.separator();
+fn active_tool_page(app: &SettingsApp) -> Option<ToolSettingsPage> {
+    Some(match app.active_section {
+        SettingsSection::Screenshot => ToolSettingsPage::Screenshot,
+        SettingsSection::Ocr => ToolSettingsPage::Ocr,
+        SettingsSection::Clipboard => ToolSettingsPage::Clipboard,
+        SettingsSection::Translation => ToolSettingsPage::Translation,
+        SettingsSection::Handwrite => ToolSettingsPage::Handwrite,
+        SettingsSection::Tools => ToolSettingsPage::Commands,
+        _ => return None,
+    })
 }
 
 fn system_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
@@ -3998,11 +3965,6 @@ fn system_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
             &mut app.system_page,
             SystemSettingsPage::Privacy,
             "隐私与数据",
-        );
-        ui.selectable_value(
-            &mut app.system_page,
-            SystemSettingsPage::Diagnostics,
-            "诊断",
         );
         ui.selectable_value(
             &mut app.system_page,

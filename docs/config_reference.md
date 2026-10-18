@@ -41,11 +41,11 @@ new setting is added or a default changes.
 | `app:<process>` | `overlay_scale` | `100` | `50..=200` percent; decimal scale such as `1.25` is accepted as `125` by settings | settings, TSF |
 | `app:<process>` | `overlay_monitor` | `auto` | `auto`, `primary`, or zero-based monitor index | settings, TSF |
 | `app:<process>` | `overlay_backend` | `auto` | `auto`, `in_process`, `external`; auto uses the independent helper for game, fullscreen or UI-less hosts, `external` always requests it | settings, TSF |
-| `clipboard` | `background_enabled` | `1` | boolean | settings, engine, clipboard manager |
+| `clipboard` | `background_enabled` | `0` | boolean; clipboard manager shows the current capture state and a settings shortcut | settings, engine, clipboard manager |
 | `clipboard` | `max_history_items` | `60` | `0..=300` | settings, engine, clipboard manager |
 | `clipboard` | `max_pinned_items` | `24` | `0..=100` | settings, engine, clipboard manager |
-| `clipboard` | `max_text_utf16_units` | `20000` | `20..=20000` | settings, engine, clipboard manager |
-| `clipboard` | `max_age_days` | `0` | `0..=3650`; used by manual age cleanup, `0` disables age cleanup | settings, clipboard manager |
+| `clipboard` | `max_text_utf16_units` | `20000` | `20..=1000000`; oversized copies are skipped with a visible notice, never silently truncated | settings, engine, clipboard manager |
+| `clipboard` | `max_age_days` | `0` | `0..=3650`; used by automatic and manual age cleanup, `0` disables age cleanup | settings, clipboard manager |
 | `clipboard` | `candidate_preview_enabled` | `0` | boolean; shows clipboard text snippets in candidate metadata | settings, engine |
 | `clipboard` | `record_source_app` | `0` | boolean; persists source process path in clipboard history | settings, engine, clipboard manager |
 | `clipboard` | `pinned_respects_max_age` | `1` | boolean; manual age cleanup also removes pinned clipboard entries | settings, clipboard manager |

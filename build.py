@@ -1532,8 +1532,26 @@ def rapidocr_runtime_status(repo: Path) -> tuple[bool, list[str]]:
     return not problems, problems
 
 
+def find_cmake() -> Path | None:
+    found = shutil.which("cmake")
+    if found:
+        return Path(found).resolve()
+    program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+    for path in [
+        program_files / "CMake" / "bin" / "cmake.exe",
+        *sorted((program_files / "Microsoft Visual Studio").glob(
+            "*/*/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+        )),
+    ]:
+        if path.is_file():
+            return path
+    return None
+
+
 def find_iscc() -> Path | None:
     for p in [
+        Path(r"C:\Program Files (x86)\Inno Setup 7\ISCC.exe"),
+        Path(r"C:\Program Files\Inno Setup 7\ISCC.exe"),
         Path(r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"),
         Path(r"C:\Program Files\Inno Setup 6\ISCC.exe"),
     ]:
@@ -2085,7 +2103,6 @@ def _lexicon_layer(path: Path) -> str | None:
         "kaixin_explicit.txt",
         "kaixin_polyphone.txt",
         "kaixin_pronunciation_aliases.txt",
-        "life_common_3char.txt",
         "life_hot_3char_curated.txt",
         "life_hot_4char_curated.txt",
     }:
@@ -2113,7 +2130,7 @@ def _is_default_enabled_lexicon_source(path: Path) -> bool:
             tag = tag.split("__thuocl_", 1)[1]
         if tag in RETIRED_OPTIONAL_LEXICON_TAGS:
             return False
-    return not name.endswith("_纯名单.txt") and not name.startswith("professional_")
+    return not name.endswith("_纯名单.txt") and not name.startswith(("professional_", "hangzhou_"))
 
 
 def _lexicon_term_char_count(term: str) -> int:
@@ -2568,7 +2585,13 @@ def ensure_corpus(repo: Path, force: bool = False) -> Path:
                 f.write(term + "\n")
                 count += 1
                 total_line_chars += len(term)
-    os.replace(tmp, corpus)
+    # A reading-only correction changes the source fingerprint but not this
+    # surface-form corpus. Keep its mtime when content is identical so Cargo
+    # does not re-embed the same model for a metadata-only change.
+    if corpus.is_file() and sha256_file(tmp) == sha256_file(corpus):
+        tmp.unlink()
+    else:
+        os.replace(tmp, corpus)
     _write_sig(fp_path, source_fp)
 
     _validate_corpus_from_stats(len(terms), count, total_line_chars)
@@ -2785,6 +2808,8 @@ def step_check_lexicon_syllables(repo: Path) -> None:
         ],
         cwd=repo,
     )
+
+    run([sys.executable, str(repo / "scripts/lexicon_quality.py")], cwd=repo)
 
 
 def step_verify_rust(repo: Path) -> None:
@@ -3069,7 +3094,10 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
     if ctx.dry_run:
         print_msg(f"  [dry-run] cmake configure/build ({profile}, {arch}) at {build_dir}")
         return
-    cmake = which_or_die("cmake", "Install CMake: https://cmake.org/download/")
+    cmake_path = find_cmake()
+    if not cmake_path:
+        raise FileNotFoundError("not found: cmake. Install CMake: https://cmake.org/download/")
+    cmake = str(cmake_path)
 
     if clean and build_dir.exists():
         print_msg(f"  clean: {build_dir}")
@@ -4045,7 +4073,8 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
 
     # CMake
     if not args.skip_cmake:
-        cmake = shutil.which("cmake")
+        cmake_path = find_cmake()
+        cmake = str(cmake_path) if cmake_path else None
         if cmake:
             try:
                 ver = subprocess.check_output([cmake, "--version"], text=True).splitlines()[0].strip()
@@ -4411,6 +4440,9 @@ def main() -> int:
         if args.regenerate_lexicons:
             with StepTimer("Step 1b/5  Regenerate clean lexicons"):
                 step_regenerate_lexicons(repo)
+                # Regeneration may change membership/readings after Step 1.
+                # Embed a corpus derived from the final sources in this build.
+                ensure_corpus(repo, force=args.rebuild_corpus)
 
         if args.verify:
             with StepTimer("Step 1c/5  Verify Rust format and checks"):

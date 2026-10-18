@@ -27,6 +27,7 @@ def read_rows(path: Path) -> list[tuple[str, str, int]]:
 
 
 def consolidate_three_char() -> int:
+    from lexicon_quality import clean_rows
     SOURCE.mkdir(parents=True, exist_ok=True)
     inputs = (
         (ZH / "lfie-common-3char.txt", SOURCE / "life_common_3char_full.txt"),
@@ -55,7 +56,7 @@ def consolidate_three_char() -> int:
             from normalize_lexicon_freq10k import score_by_rank
             weights = score_by_rank([weight for _, _, weight in rows], 1, 10_000)
             rows = [(phrase, code, weight) for (phrase, code, _), weight in zip(rows, weights)]
-        for phrase, code, weight in rows:
+        for phrase, code, weight in clean_rows(rows):
             if len(phrase) != 3:
                 raise ValueError(f"Expected three characters: {phrase}")
             merged.setdefault((phrase, code), weight)
@@ -94,6 +95,9 @@ def main() -> None:
     for name, count in merge_lexicons().items():
         print(name, count)
     retire_migrated_files()
+    from lexicon_quality import apply_quality
+    report = apply_quality()
+    print("reviewed long expressions:", report["reviewed_long_count"])
 
 
 if __name__ == "__main__":

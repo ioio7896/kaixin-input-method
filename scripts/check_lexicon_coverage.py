@@ -89,7 +89,8 @@ def check_coverage(
             length_counts[char_count] += 1
 
             # Track initials for pinyin coverage
-            if len(parts) >= 2:
+            # Two-column single-character rows contain a weight, not pinyin.
+            if len(parts) >= 3:
                 code = parts[1].strip()
                 initial = _first_syllable_initial(code)
                 if initial:
@@ -139,7 +140,7 @@ def check_coverage(
     print(f"Initial coverage: {dict(sorted(initial_counts.items()))}")
     print(f"Unique CJK chars in lexicon: {len(all_chars)}")
     if supported_chars_path:
-        print(f"Supported chars with coverage: {len(all_chars)}")
+        print(f"Supported chars with coverage: {len(supported & all_chars) if supported_chars_path.is_file() else 0}")
 
     for w in warnings:
         print(f"WARNING: {w}")

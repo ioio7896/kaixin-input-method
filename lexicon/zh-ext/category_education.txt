@@ -54,170 +54,94 @@
 集体备课	ji ti bei ke	6100
 课程表	ke cheng biao	4953
 请完成学习任务	qing wan cheng xue xi ren wu	4900
-请完成学习任务一下	qing wan cheng xue xi ren wu yi xia	4900
 请完成学习笔记	qing wan cheng xue xi bi ji	4900
-请完成学习笔记一下	qing wan cheng xue xi bi ji yi xia	4900
 请完成课后作业	qing wan cheng ke hou zuo ye	4900
-请完成课后作业一下	qing wan cheng ke hou zuo ye yi xia	4900
 请完成课堂作业	qing wan cheng ke tang zuo ye	4900
-请完成课堂作业一下	qing wan cheng ke tang zuo ye yi xia	4900
 请帮我完成学习任务	qing bang wo wan cheng xue xi ren wu	4900
-请帮我完成学习任务一下	qing bang wo wan cheng xue xi ren wu yi xia	4900
 请帮我完成学习笔记	qing bang wo wan cheng xue xi bi ji	4900
-请帮我完成学习笔记一下	qing bang wo wan cheng xue xi bi ji yi xia	4900
 请帮我完成课后作业	qing bang wo wan cheng ke hou zuo ye	4900
-请帮我完成课后作业一下	qing bang wo wan cheng ke hou zuo ye yi xia	4900
 请帮我完成课堂作业	qing bang wo wan cheng ke tang zuo ye	4900
-请帮我完成课堂作业一下	qing bang wo wan cheng ke tang zuo ye yi xia	4900
 请帮我提交学习任务	qing bang wo ti jiao xue xi ren wu	4900
 请帮我提交学习笔记	qing bang wo ti jiao xue xi bi ji	4900
 请帮我提交课后作业	qing bang wo ti jiao ke hou zuo ye	4900
 请帮我提交课堂作业	qing bang wo ti jiao ke tang zuo ye	4900
 请帮我查看复习资料	qing bang wo cha kan fu xi zi liao	4900
-请帮我查看复习资料一下	qing bang wo cha kan fu xi zi liao yi xia	4900
 请帮我查看学习笔记	qing bang wo cha kan xue xi bi ji	4900
-请帮我查看学习笔记一下	qing bang wo cha kan xue xi bi ji yi xia	4900
 请帮我查看练习题	qing bang wo cha kan lian xi ti	4900
-请帮我查看练习题一下	qing bang wo cha kan lian xi ti yi xia	4900
 请帮我查看课后作业	qing bang wo cha kan ke hou zuo ye	4900
-请帮我查看课后作业一下	qing bang wo cha kan ke hou zuo ye yi xia	4900
 请帮我查看课堂作业	qing bang wo cha kan ke tang zuo ye	4900
-请帮我查看课堂作业一下	qing bang wo cha kan ke tang zuo ye yi xia	4900
 请帮我查看错题整理	qing bang wo cha kan cuo ti zheng li	4900
-请帮我查看错题整理一下	qing bang wo cha kan cuo ti zheng li yi xia	4900
 请帮我检查复习资料	qing bang wo jian cha fu xi zi liao	4900
-请帮我检查复习资料一下	qing bang wo jian cha fu xi zi liao yi xia	4900
 请帮我检查学习笔记	qing bang wo jian cha xue xi bi ji	4900
-请帮我检查学习笔记一下	qing bang wo jian cha xue xi bi ji yi xia	4900
 请帮我检查练习题	qing bang wo jian cha lian xi ti	4900
-请帮我检查练习题一下	qing bang wo jian cha lian xi ti yi xia	4900
 请帮我检查课后作业	qing bang wo jian cha ke hou zuo ye	4900
-请帮我检查课后作业一下	qing bang wo jian cha ke hou zuo ye yi xia	4900
 请帮我检查课堂作业	qing bang wo jian cha ke tang zuo ye	4900
-请帮我检查课堂作业一下	qing bang wo jian cha ke tang zuo ye yi xia	4900
 请帮我检查错题整理	qing bang wo jian cha cuo ti zheng li	4900
-请帮我检查错题整理一下	qing bang wo jian cha cuo ti zheng li yi xia	4900
 请帮我订正练习题	qing bang wo ding zheng lian xi ti	4900
-请帮我订正练习题一下	qing bang wo ding zheng lian xi ti yi xia	4900
 请帮我订正课后作业	qing bang wo ding zheng ke hou zuo ye	4900
-请帮我订正课后作业一下	qing bang wo ding zheng ke hou zuo ye yi xia	4900
 请帮我订正课堂作业	qing bang wo ding zheng ke tang zuo ye	4900
-请帮我订正课堂作业一下	qing bang wo ding zheng ke tang zuo ye yi xia	4900
 请提交学习任务	qing ti jiao xue xi ren wu	4900
 请提交学习笔记	qing ti jiao xue xi bi ji	4900
 请提交课后作业	qing ti jiao ke hou zuo ye	4900
 请提交课堂作业	qing ti jiao ke tang zuo ye	4900
 请查看复习资料	qing cha kan fu xi zi liao	4900
-请查看复习资料一下	qing cha kan fu xi zi liao yi xia	4900
 请查看学习笔记	qing cha kan xue xi bi ji	4900
-请查看学习笔记一下	qing cha kan xue xi bi ji yi xia	4900
 请查看练习题	qing cha kan lian xi ti	4900
-请查看练习题一下	qing cha kan lian xi ti yi xia	4900
 请查看课后作业	qing cha kan ke hou zuo ye	4900
-请查看课后作业一下	qing cha kan ke hou zuo ye yi xia	4900
 请查看课堂作业	qing cha kan ke tang zuo ye	4900
-请查看课堂作业一下	qing cha kan ke tang zuo ye yi xia	4900
 请查看错题整理	qing cha kan cuo ti zheng li	4900
-请查看错题整理一下	qing cha kan cuo ti zheng li yi xia	4900
 请检查复习资料	qing jian cha fu xi zi liao	4900
-请检查复习资料一下	qing jian cha fu xi zi liao yi xia	4900
 请检查学习笔记	qing jian cha xue xi bi ji	4900
-请检查学习笔记一下	qing jian cha xue xi bi ji yi xia	4900
 请检查练习题	qing jian cha lian xi ti	4900
-请检查练习题一下	qing jian cha lian xi ti yi xia	4900
 请检查课后作业	qing jian cha ke hou zuo ye	4900
-请检查课后作业一下	qing jian cha ke hou zuo ye yi xia	4900
 请检查课堂作业	qing jian cha ke tang zuo ye	4900
-请检查课堂作业一下	qing jian cha ke tang zuo ye yi xia	4900
 请检查错题整理	qing jian cha cuo ti zheng li	4900
-请检查错题整理一下	qing jian cha cuo ti zheng li yi xia	4900
 请订正练习题	qing ding zheng lian xi ti	4900
-请订正练习题一下	qing ding zheng lian xi ti yi xia	4900
 请订正课后作业	qing ding zheng ke hou zuo ye	4900
-请订正课后作业一下	qing ding zheng ke hou zuo ye yi xia	4900
 请订正课堂作业	qing ding zheng ke tang zuo ye	4900
-请订正课堂作业一下	qing ding zheng ke tang zuo ye yi xia	4900
 麻烦完成学习任务	ma fan wan cheng xue xi ren wu	4900
-麻烦完成学习任务一下	ma fan wan cheng xue xi ren wu yi xia	4900
 麻烦完成学习笔记	ma fan wan cheng xue xi bi ji	4900
-麻烦完成学习笔记一下	ma fan wan cheng xue xi bi ji yi xia	4900
 麻烦完成课后作业	ma fan wan cheng ke hou zuo ye	4900
-麻烦完成课后作业一下	ma fan wan cheng ke hou zuo ye yi xia	4900
 麻烦完成课堂作业	ma fan wan cheng ke tang zuo ye	4900
-麻烦完成课堂作业一下	ma fan wan cheng ke tang zuo ye yi xia	4900
 麻烦帮我完成学习任务	ma fan bang wo wan cheng xue xi ren wu	4900
-麻烦帮我完成学习任务一下	ma fan bang wo wan cheng xue xi ren wu yi xia	4900
 麻烦帮我完成学习笔记	ma fan bang wo wan cheng xue xi bi ji	4900
-麻烦帮我完成学习笔记一下	ma fan bang wo wan cheng xue xi bi ji yi xia	4900
 麻烦帮我完成课后作业	ma fan bang wo wan cheng ke hou zuo ye	4900
-麻烦帮我完成课后作业一下	ma fan bang wo wan cheng ke hou zuo ye yi xia	4900
 麻烦帮我完成课堂作业	ma fan bang wo wan cheng ke tang zuo ye	4900
-麻烦帮我完成课堂作业一下	ma fan bang wo wan cheng ke tang zuo ye yi xia	4900
 麻烦帮我提交学习任务	ma fan bang wo ti jiao xue xi ren wu	4900
 麻烦帮我提交学习笔记	ma fan bang wo ti jiao xue xi bi ji	4900
 麻烦帮我提交课后作业	ma fan bang wo ti jiao ke hou zuo ye	4900
 麻烦帮我提交课堂作业	ma fan bang wo ti jiao ke tang zuo ye	4900
 麻烦帮我查看复习资料	ma fan bang wo cha kan fu xi zi liao	4900
-麻烦帮我查看复习资料一下	ma fan bang wo cha kan fu xi zi liao yi xia	4900
 麻烦帮我查看学习笔记	ma fan bang wo cha kan xue xi bi ji	4900
-麻烦帮我查看学习笔记一下	ma fan bang wo cha kan xue xi bi ji yi xia	4900
 麻烦帮我查看练习题	ma fan bang wo cha kan lian xi ti	4900
-麻烦帮我查看练习题一下	ma fan bang wo cha kan lian xi ti yi xia	4900
 麻烦帮我查看课后作业	ma fan bang wo cha kan ke hou zuo ye	4900
-麻烦帮我查看课后作业一下	ma fan bang wo cha kan ke hou zuo ye yi xia	4900
 麻烦帮我查看课堂作业	ma fan bang wo cha kan ke tang zuo ye	4900
-麻烦帮我查看课堂作业一下	ma fan bang wo cha kan ke tang zuo ye yi xia	4900
 麻烦帮我查看错题整理	ma fan bang wo cha kan cuo ti zheng li	4900
-麻烦帮我查看错题整理一下	ma fan bang wo cha kan cuo ti zheng li yi xia	4900
 麻烦帮我检查复习资料	ma fan bang wo jian cha fu xi zi liao	4900
-麻烦帮我检查复习资料一下	ma fan bang wo jian cha fu xi zi liao yi xia	4900
 麻烦帮我检查学习笔记	ma fan bang wo jian cha xue xi bi ji	4900
-麻烦帮我检查学习笔记一下	ma fan bang wo jian cha xue xi bi ji yi xia	4900
 麻烦帮我检查练习题	ma fan bang wo jian cha lian xi ti	4900
-麻烦帮我检查练习题一下	ma fan bang wo jian cha lian xi ti yi xia	4900
 麻烦帮我检查课后作业	ma fan bang wo jian cha ke hou zuo ye	4900
-麻烦帮我检查课后作业一下	ma fan bang wo jian cha ke hou zuo ye yi xia	4900
 麻烦帮我检查课堂作业	ma fan bang wo jian cha ke tang zuo ye	4900
-麻烦帮我检查课堂作业一下	ma fan bang wo jian cha ke tang zuo ye yi xia	4900
 麻烦帮我检查错题整理	ma fan bang wo jian cha cuo ti zheng li	4900
-麻烦帮我检查错题整理一下	ma fan bang wo jian cha cuo ti zheng li yi xia	4900
 麻烦帮我订正练习题	ma fan bang wo ding zheng lian xi ti	4900
-麻烦帮我订正练习题一下	ma fan bang wo ding zheng lian xi ti yi xia	4900
 麻烦帮我订正课后作业	ma fan bang wo ding zheng ke hou zuo ye	4900
-麻烦帮我订正课后作业一下	ma fan bang wo ding zheng ke hou zuo ye yi xia	4900
 麻烦帮我订正课堂作业	ma fan bang wo ding zheng ke tang zuo ye	4900
-麻烦帮我订正课堂作业一下	ma fan bang wo ding zheng ke tang zuo ye yi xia	4900
 麻烦提交学习任务	ma fan ti jiao xue xi ren wu	4900
 麻烦提交学习笔记	ma fan ti jiao xue xi bi ji	4900
 麻烦提交课后作业	ma fan ti jiao ke hou zuo ye	4900
 麻烦提交课堂作业	ma fan ti jiao ke tang zuo ye	4900
 麻烦查看复习资料	ma fan cha kan fu xi zi liao	4900
-麻烦查看复习资料一下	ma fan cha kan fu xi zi liao yi xia	4900
 麻烦查看学习笔记	ma fan cha kan xue xi bi ji	4900
-麻烦查看学习笔记一下	ma fan cha kan xue xi bi ji yi xia	4900
 麻烦查看练习题	ma fan cha kan lian xi ti	4900
-麻烦查看练习题一下	ma fan cha kan lian xi ti yi xia	4900
 麻烦查看课后作业	ma fan cha kan ke hou zuo ye	4900
-麻烦查看课后作业一下	ma fan cha kan ke hou zuo ye yi xia	4900
 麻烦查看课堂作业	ma fan cha kan ke tang zuo ye	4900
-麻烦查看课堂作业一下	ma fan cha kan ke tang zuo ye yi xia	4900
 麻烦查看错题整理	ma fan cha kan cuo ti zheng li	4900
-麻烦查看错题整理一下	ma fan cha kan cuo ti zheng li yi xia	4900
 麻烦检查复习资料	ma fan jian cha fu xi zi liao	4900
-麻烦检查复习资料一下	ma fan jian cha fu xi zi liao yi xia	4900
 麻烦检查学习笔记	ma fan jian cha xue xi bi ji	4900
-麻烦检查学习笔记一下	ma fan jian cha xue xi bi ji yi xia	4900
 麻烦检查练习题	ma fan jian cha lian xi ti	4900
-麻烦检查练习题一下	ma fan jian cha lian xi ti yi xia	4900
 麻烦检查课后作业	ma fan jian cha ke hou zuo ye	4900
-麻烦检查课后作业一下	ma fan jian cha ke hou zuo ye yi xia	4900
 麻烦检查课堂作业	ma fan jian cha ke tang zuo ye	4900
-麻烦检查课堂作业一下	ma fan jian cha ke tang zuo ye yi xia	4900
 麻烦检查错题整理	ma fan jian cha cuo ti zheng li	4900
-麻烦检查错题整理一下	ma fan jian cha cuo ti zheng li yi xia	4900
 麻烦订正练习题	ma fan ding zheng lian xi ti	4900
-麻烦订正练习题一下	ma fan ding zheng lian xi ti yi xia	4900
 麻烦订正课后作业	ma fan ding zheng ke hou zuo ye	4900
-麻烦订正课后作业一下	ma fan ding zheng ke hou zuo ye yi xia	4900
 麻烦订正课堂作业	ma fan ding zheng ke tang zuo ye	4900
-麻烦订正课堂作业一下	ma fan ding zheng ke tang zuo ye yi xia	4900

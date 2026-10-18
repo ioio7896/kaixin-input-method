@@ -8834,7 +8834,7 @@
 日本籍	ri ben ji	5577
 晕过去	yun guo qu	5576
 暗红色	an hong se	5576
-朝阳市	zhao yang shi	5575
+朝阳市	chao yang shi	5575
 杀人罪	sha ren zui	5575
 杨家将	yang jia jiang	5574
 杨玉环	yang yu huan	5574
@@ -9436,7 +9436,7 @@
 昌图县	chang tu xian	5357
 易卜生	yi bo sheng	5356
 普拉特	pu la te	5356
-朝阳门	zhao yang men	5355
+朝阳门	chao yang men	5355
 未免太	wei mian tai	5355
 朵玫瑰	duo mei gui	5355
 权势者	quan shi zhe	5354
@@ -18520,7 +18520,7 @@
 更多关	geng duo guan	3026
 有多美	you duo mei	3026
 望出去	wang chu qu	3025
-朝阳县	zhao yang xian	3025
+朝阳县	chao yang xian	3025
 木华黎	mu hua li	3025
 木棉花	mu mian hua	3025
 李公朴	li gong pu	3024

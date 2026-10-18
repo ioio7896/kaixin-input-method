@@ -53,7 +53,6 @@
 千军万马	qian jun wan ma	4486
 血肉横飞	xue rou heng fei	4467
 降龙十八掌	xiang long shi ba zhang	4458
-令狐冲笑	ling hu chong xiao	4455
 嫣然一笑	yan ran yi xiao	4455
 汹涌澎湃	xiong yong peng pai	4451
 纹丝不动	wen si bu dong	4448
@@ -123,7 +122,6 @@
 喜气洋洋	xi qi yang yang	4286
 唉声叹气	ai sheng tan qi	4282
 奇耻大辱	qi chi da ru	4282
-令狐冲心	ling hu chong xin	4277
 七嘴八舌	qi zui ba she	4273
 大喜过望	da xi guo wang	4268
 聪明伶俐	cong ming ling li	4268
@@ -1496,8 +1494,6 @@
 人仰马翻	ren yang ma fan	3518
 人心涣散	ren xin huan san	3518
 付之东流	fu zhi dong liu	3518
-令狐冲叹	ling hu chong tan	3518
-令狐冲微微	ling hu chong wei wei	3518
 传为美谈	chuan wei mei tan	3518
 兵来将挡	bing lai jiang dang	3518
 切齿痛恨	qie chi tong hen	3518
@@ -1613,7 +1609,6 @@
 于心不忍	yu xin bu ren	3478
 人微言轻	ren wei yan qing	3478
 仗义执言	zhang yi zhi yan	3478
-令狐冲奇	ling hu chong qi	3478
 仰面朝天	yang mian chao tian	3478
 作鸟兽散	zuo niao shou san	3478
 信步而行	xin bu er xing	3478
@@ -2285,8 +2280,6 @@
 东窗事发	dong chuang shi fa	3277
 人心所向	ren xin suo xiang	3277
 令人注目	ling ren zhu mu	3277
-令狐冲剑	ling hu chong jian	3277
-令狐冲喜	ling hu chong xi	3277
 以德报怨	yi de bao yuan	3277
 以讹传讹	yi e chuan e	3277
 以诚相待	yi cheng xiang dai	3277
@@ -2427,7 +2420,6 @@
 人事不省	ren shi bu xing	3245
 人心难测	ren xin nan ce	3245
 人生自古谁无死	ren sheng zi gu shei wu si	3245
-令狐冲身	ling hu chong shen	3245
 依依惜别	yi yi xi bie	3245
 偶一为之	ou yi wei zhi	3245
 光阴荏苒	guang yin ren ran	3245
@@ -2560,7 +2552,6 @@
 乌咀乡	wu ju xiang	3211
 人文荟萃	ren wen hui cui	3211
 从轻发落	cong qing fa luo	3211
-令狐冲知	ling hu chong zhi	3211
 以身殉职	yi shen xun zhi	3211
 传世之作	chuan shi zhi zuo	3211
 作茧自缚	zuo jian zi fu	3211
@@ -2675,10 +2666,6 @@
 义无返顾	yi wu fan gu	3175
 人心大快	ren xin da kuai	3175
 令人心悸	ling ren xin ji	3175
-令狐冲听	ling hu chong ting	3175
-令狐冲大	ling hu chong da	3175
-令狐冲怒	ling hu chong nu	3175
-令狐冲转	ling hu chong zhuan	3175
 以身试法	yi shen shi fa	3175
 侧目而视	ce mu er shi	3175
 六根清净	liu gen qing jing	3175
@@ -2828,7 +2815,6 @@
 人人喊打	ren ren han da	3137
 人心向背	ren xin xiang bei	3137
 今朝有酒今朝醉	jin zhao you jiu jin zhao zui	3137
-令狐冲见	ling hu chong jian	3137
 以德服人	yi de fu ren	3137
 众口一辞	zhong kou yi ci	3137
 众说不一	zhong shuo bu yi	3137
@@ -3122,7 +3108,6 @@
 飞蛾扑火	fei e pu huo	3095
 鬼神莫测	gui shen mo ce	3095
 魑魅魍魉	chi mei wang liang	3095
-鹏笑道	peng xiao dao	3095
 鹤发童颜	he fa tong yan	3095
 一干人犯	yi gan ren fan	3050
 一朝天子一朝臣	yi chao tian zi yi chao chen	3050
@@ -3150,7 +3135,6 @@
 人言可畏	ren yan ke wei	3050
 人面兽心	ren mian shou xin	3050
 从中作梗	cong zhong zuo geng	3050
-令狐冲伸	ling hu chong shen	3050
 以夷制夷	yi yi zhi yi	3050
 倒打一耙	dao da yi pa	3050
 先易后难	xian yi hou nan	3050
@@ -3302,9 +3286,6 @@
 了无生趣	liao wu sheng qu	3000
 五脏俱全	wu zang ju quan	3000
 人心思变	ren xin si bian	3000
-人心悦诚服	ren xin yue cheng fu	3000
-令狐冲好	ling hu chong hao	3000
-令狐冲惊	ling hu chong jing	3000
 休闲地	xiu xian di	3000
 侠肝义胆	xia gan yi dan	3000
 俯拾皆是	fu shi jie shi	3000
@@ -3513,8 +3494,6 @@
 人逢喜事精神爽	ren feng xi shi jing shen shuang	2945
 仓皇失措	cang huang shi cuo	2945
 令人堪忧	ling ren kan you	2945
-令狐冲双	ling hu chong shuang	2945
-令狐冲摇	ling hu chong yao	2945
 以和为贵	yi he wei gui	2945
 以小见大	yi xiao jian da	2945
 以手加额	yi shou jia e	2945
@@ -3717,9 +3696,6 @@
 人才难得	ren cai nan de	2884
 从容自若	cong rong zi ruo	2884
 从心所欲	cong xin suo yu	2884
-令狐冲右	ling hu chong you	2884
-令狐冲耳	ling hu chong er	2884
-令狐冲越	ling hu chong yue	2884
 众怒难犯	zhong nu nan fan	2884
 信马由缰	xin ma you jiang	2884
 先人后己	xian ren hou ji	2884
@@ -3967,7 +3943,6 @@
 人世沧桑	ren shi cang sang	2814
 人多手杂	ren duo shou za	2814
 人才出众	ren cai chu zhong	2814
-令狐冲微	ling hu chong wei	2814
 以及人之老	yi ji ren zhi lao	2814
 以强凌弱	yi qiang ling ruo	2814
 以邻为壑	yi lin wei he	2814
@@ -4271,8 +4246,6 @@
 仇人相见	chou ren xiang jian	2734
 从长计较	cong chang ji jiao	2734
 令人齿冷	ling ren chi leng	2734
-令狐冲提	ling hu chong ti	2734
-令狐冲连	ling hu chong lian	2734
 以势压人	yi shi ya ren	2734
 价格昂贵	jia ge ang gui	2734
 众星拱月	zhong xing gong yue	2734
@@ -4387,7 +4360,6 @@
 我见犹怜	wo jian you lian	2734
 战必危	zhan bi wei	2734
 截长补短	jie chang bu duan	2734
-扬声大	yang sheng da	2734
 扬扬得意	yang yang de yi	2734
 扭亏解困	niu kui jie kun	2734
 抚心自问	fu xin zi wen	2734
@@ -4593,14 +4565,7 @@
 人自为战	ren zi wei zhan	2639
 人至察则无徒	ren zhi cha ze wu tu	2639
 令人称奇	ling ren cheng qi	2639
-令狐冲举	ling hu chong ju	2639
 令狐冲公子	ling hu chong gong zi	2639
-令狐冲喝	ling hu chong he	2639
-令狐冲忙	ling hu chong mang	2639
-令狐冲正	ling hu chong zheng	2639
-令狐冲相	ling hu chong xiang	2639
-令狐冲素	ling hu chong su	2639
-令狐掌	ling hu zhang	2639
 以假充真	yi jia chong zhen	2639
 以苦为乐	yi ku wei le	2639
 休耕地	xiu geng di	2639
@@ -6176,7 +6141,6 @@
 义齿填塞	yi chi tian se	2522
 之死不渝	zhi si bu yu	2522
 之死靡二	zhi si mi er	2522
-之而后快	zhi er hou kuai	2522
 乌之雌雄	wu zhi ci xiong	2522
 乌天黑地	wu tian hei di	2522
 乌焉成马	wu yan cheng ma	2522
@@ -6682,19 +6646,6 @@
 令人疲倦	ling ren pi juan	2522
 令人遗憾	ling ren yi han	2522
 令尊大人	ling zun da ren	2522
-令狐冲吁	ling hu chong xu	2522
-令狐冲学	ling hu chong xue	2522
-令狐冲念	ling hu chong nian	2522
-令狐冲情	ling hu chong qing	2522
-令狐冲招	ling hu chong zhao	2522
-令狐冲放	ling hu chong fang	2522
-令狐冲望	ling hu chong wang	2522
-令狐冲横	ling hu chong heng	2522
-令狐冲疾	ling hu chong ji	2522
-令狐冲背	ling hu chong bei	2522
-令狐冲赞	ling hu chong zan	2522
-令狐冲跃	ling hu chong yue	2522
-令狐冲运	ling hu chong yun	2522
 令狐绝	ling hu jue	2522
 以一儆百	yi yi jing bai	2522
 以一击十	yi yi ji shi	2522
@@ -10659,7 +10610,6 @@
 尺波电谢	chi bo dian xie	2522
 尺瑜寸瑕	chi yu cun xia	2522
 尺短寸长	chi duan cun chang	2522
-尽人事听	jin ren shi ting	2522
 尽全心	jin quan xin	2522
 尽兴而归	jin xing er gui	2522
 尽其在我	jin qi zai wo	2522
@@ -12723,7 +12673,6 @@
 挟人捉将	xie ren zhuo jiang	2522
 挟冰求温	xie bing qiu wen	2522
 挟势弄权	xie shi nong quan	2522
-挟天子以	xie tian zi yi	2522
 挟朋树党	xie peng shu dang	2522
 挟权倚势	xie quan yi shi	2522
 挟细拿粗	xie xi na cu	2522
@@ -13290,7 +13239,6 @@
 敬来敬去	jing lai jing qu	2522
 敬终慎始	jing zhong shen shi	2522
 敬苍牵黄	jing cang qian huang	2522
-敬鬼神而	jing gui shen er	2522
 数九严寒	shu jiu yan han	2522
 数九天气	shu jiu tian qi	2522
 数夜未归	shu ye wei gui	2522
@@ -13627,7 +13575,6 @@
 无私有意	wu si you yi	2522
 无穷乐趣	wu qiong le qu	2522
 无穷动	wu qiong dong	2522
-无立足之	wu li zu zhi	2522
 无章可循	wu zhang ke xun	2522
 无端惹事	wu duan re shi	2522
 无约在身	wu yue zai shen	2522
@@ -14534,7 +14481,6 @@
 树倒根摧	shu dao gen cui	2522
 树功扬名	shu gong yang ming	2522
 树同拔异	shu tong ba yi	2522
-树欲静而	shu yu jing er	2522
 树高招风	shu gao zhao feng	2522
 栩栩如绘	xu xu ru hui	2522
 栩栩欲活	xu xu yu huo	2522
@@ -14781,7 +14727,6 @@
 正身明法	zheng shen ming fa	2522
 正身清心	zheng shen qing xin	2522
 正面攻击	zheng mian gong ji	2522
-此一时彼	ci yi shi bi	2522
 此中三昧	ci zhong san mei	2522
 此事体大	ci shi ti da	2522
 此发彼应	ci fa bi ying	2522
@@ -15969,7 +15914,6 @@
 物理攻击	wu li gong ji	2522
 物离乡贵	wu li xiang gui	2522
 物超所值	wu chao suo zhi	2522
-牵一发而	qian yi fa er	2522
 牵五挂四	qian wu gua si	2522
 牵制行动	qian zhi xing dong	2522
 牵动人心	qian dong ren xin	2522
@@ -17061,7 +17005,6 @@
 礼为情貌	li wei qing mao	2522
 礼乐之邦	li yue zhi bang	2522
 礼先一饭	li xian yi fan	2522
-礼多人不	li duo ren bu	2522
 礼多必诈	li duo bi zha	2522
 礼奢宁俭	li she ning jian	2522
 礼所当然	li suo dang ran	2522
@@ -17072,7 +17015,6 @@
 祖龙一炬	zu long yi ju	2522
 祖龙之虐	zu long zhi nve	2522
 神不收舍	shen bu shou she	2522
-神不知鬼	shen bu zhi gui	2522
 神不附体	shen bu fu ti	2522
 神丹妙药	shen dan miao yao	2522
 神仙鬼怪	shen xian gui guai	2522
@@ -17691,7 +17633,6 @@
 绣虎雕龙	xiu hu diao long	2522
 继世而理	ji shi er li	2522
 继天立极	ji tian li ji	2522
-继往圣之	ji wang sheng zhi	2522
 继绝存亡	ji jue cun wang	2522
 继绝扶倾	ji jue fu qing	2522
 继继存存	ji ji cun cun	2522
@@ -17804,7 +17745,6 @@
 置锥之地	zhi zhui zhi di	2522
 羊入虎口	yang ru hu kou	2522
 羊头狗肉	yang tou gou rou	2522
-羊毛出在	yang mao chu zai	2522
 羊毛毡	yang mao zhan	2522
 羊毫笔	yang hao bi	2522
 羊狠狼贪	yang hen lang tan	2522
@@ -17881,7 +17821,6 @@
 翻脸无情	fan lian wu qing	2522
 耀眼夺目	yao yan duo mu	2522
 耀祖荣宗	yao zu rong zong	2522
-耀笑道	yao xiao dao	2522
 老之将至	lao zhi jiang zhi	2522
 老兵不死	lao bing bu si	2522
 老大无成	lao da wu cheng	2522
@@ -19896,7 +19835,6 @@
 迅猛发展	xun meng fa zhan	2522
 迅猛地	xun meng di	2522
 迅速出击	xun su chu ji	2522
-迅雷不及	xun lei bu ji	2522
 迅雷风烈	xun lei feng lie	2522
 迅风暴雨	xun feng bao yu	2522
 过与不及	guo yu bu ji	2522
@@ -20246,7 +20184,6 @@
 通计熟筹	tong ji shu chou	2522
 通首至尾	tong shou zhi wei	2522
 逞凶肆虐	cheng xiong si nve	2522
-逞匹夫之	cheng pi fu zhi	2522
 逞奇眩异	cheng qi xuan yi	2522
 逞娇呈美	cheng jiao cheng mei	2522
 逞娇斗媚	cheng jiao dou mei	2522
@@ -22250,7 +22187,6 @@
 临深履薄	lin shen lv bo	2373
 举世无敌	ju shi wu di	2373
 举手礼	ju shou li	2373
-之一百二十	zhi yi bai er shi	2373
 乌灯黑火	wu deng hei huo	2373
 乐守天涯	le shou tian ya	2373
 习非成是	xi fei cheng shi	2373
@@ -22270,33 +22206,6 @@
 仆仆风尘	pu pu feng chen	2373
 今日有酒今日醉	jin ri you jiu jin ri zui	2373
 从五开始	cong wu kai shi	2373
-令狐冲久	ling hu chong jiu	2373
-令狐冲倚	ling hu chong yi	2373
-令狐冲决	ling hu chong jue	2373
-令狐冲初	ling hu chong chu	2373
-令狐冲原	ling hu chong yuan	2373
-令狐冲呆	ling hu chong dai	2373
-令狐冲命	ling hu chong ming	2373
-令狐冲定	ling hu chong ding	2373
-令狐冲强	ling hu chong qiang	2373
-令狐冲忍	ling hu chong ren	2373
-令狐冲拔	ling hu chong ba	2373
-令狐冲挥	ling hu chong hui	2373
-令狐冲攻	ling hu chong gong	2373
-令狐冲朗	ling hu chong lang	2373
-令狐冲深	ling hu chong shen	2373
-令狐冲甚	ling hu chong shen	2373
-令狐冲略	ling hu chong lve	2373
-令狐冲直	ling hu chong zhi	2373
-令狐冲确	ling hu chong que	2373
-令狐冲神	ling hu chong shen	2373
-令狐冲记	ling hu chong ji	2373
-令狐冲迎	ling hu chong ying	2373
-令狐冲进	ling hu chong jin	2373
-令狐冲酒	ling hu chong jiu	2373
-令狐冲隔	ling hu chong ge	2373
-令狐冲飞	ling hu chong fei	2373
-令狐楚继	ling hu chu ji	2373
 以求一逞	yi qiu yi cheng	2373
 以苦为荣	yi ku wei rong	2373
 以质取胜	yi zhi qu sheng	2373
@@ -22870,7 +22779,6 @@
 闪烁生辉	shan shuo sheng hui	2373
 闭囊壳	bi nang ke	2373
 闻名不如见面	wen ming bu ru jian mian	2373
-闻声转	wen sheng zhuan	2373
 阖家团圆	he jia tuan yuan	2373
 阮囊羞涩	ruan nang xiu se	2373
 防抱死	fang bao si	2373

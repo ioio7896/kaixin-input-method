@@ -66,37 +66,21 @@
 证明材料正在审核	zheng ming cai liao zheng zai shen he	5200
 证明材料需要重新提交	zheng ming cai liao xu yao chong xin ti jiao	5200
 请准备办理资料	qing zhun bei ban li zi liao	4900
-请准备办理资料一下	qing zhun bei ban li zi liao yi xia	4900
 请准备受理编号	qing zhun bei shou li bian hao	4900
-请准备受理编号一下	qing zhun bei shou li bian hao yi xia	4900
 请准备授权委托书	qing zhun bei shou quan wei tuo shu	4900
-请准备授权委托书一下	qing zhun bei shou quan wei tuo shu yi xia	4900
 请准备申请材料	qing zhun bei shen qing cai liao	4900
-请准备申请材料一下	qing zhun bei shen qing cai liao yi xia	4900
 请准备登记信息	qing zhun bei deng ji xin xi	4900
-请准备登记信息一下	qing zhun bei deng ji xin xi yi xia	4900
 请准备证件照片	qing zhun bei zheng jian zhao pian	4900
-请准备证件照片一下	qing zhun bei zheng jian zhao pian yi xia	4900
 请准备证明材料	qing zhun bei zheng ming cai liao	4900
-请准备证明材料一下	qing zhun bei zheng ming cai liao yi xia	4900
 请准备身份信息	qing zhun bei shen fen xin xi	4900
-请准备身份信息一下	qing zhun bei shen fen xin xi yi xia	4900
 请帮我准备办理资料	qing bang wo zhun bei ban li zi liao	4900
-请帮我准备办理资料一下	qing bang wo zhun bei ban li zi liao yi xia	4900
 请帮我准备受理编号	qing bang wo zhun bei shou li bian hao	4900
-请帮我准备受理编号一下	qing bang wo zhun bei shou li bian hao yi xia	4900
 请帮我准备授权委托书	qing bang wo zhun bei shou quan wei tuo shu	4900
-请帮我准备授权委托书一下	qing bang wo zhun bei shou quan wei tuo shu yi xia	4900
 请帮我准备申请材料	qing bang wo zhun bei shen qing cai liao	4900
-请帮我准备申请材料一下	qing bang wo zhun bei shen qing cai liao yi xia	4900
 请帮我准备登记信息	qing bang wo zhun bei deng ji xin xi	4900
-请帮我准备登记信息一下	qing bang wo zhun bei deng ji xin xi yi xia	4900
 请帮我准备证件照片	qing bang wo zhun bei zheng jian zhao pian	4900
-请帮我准备证件照片一下	qing bang wo zhun bei zheng jian zhao pian yi xia	4900
 请帮我准备证明材料	qing bang wo zhun bei zheng ming cai liao	4900
-请帮我准备证明材料一下	qing bang wo zhun bei zheng ming cai liao yi xia	4900
 请帮我准备身份信息	qing bang wo zhun bei shen fen xin xi	4900
-请帮我准备身份信息一下	qing bang wo zhun bei shen fen xin xi yi xia	4900
 请帮我提交办理资料	qing bang wo ti jiao ban li zi liao	4900
 请帮我提交受理编号	qing bang wo ti jiao shou li bian hao	4900
 请帮我提交授权委托书	qing bang wo ti jiao shou quan wei tuo shu	4900
@@ -114,21 +98,13 @@
 请帮我提供证明材料	qing bang wo ti gong zheng ming cai liao	4900
 请帮我提供身份信息	qing bang wo ti gong shen fen xin xi	4900
 请帮我核对办理资料	qing bang wo he dui ban li zi liao	4900
-请帮我核对办理资料一下	qing bang wo he dui ban li zi liao yi xia	4900
 请帮我核对受理编号	qing bang wo he dui shou li bian hao	4900
-请帮我核对受理编号一下	qing bang wo he dui shou li bian hao yi xia	4900
 请帮我核对授权委托书	qing bang wo he dui shou quan wei tuo shu	4900
-请帮我核对授权委托书一下	qing bang wo he dui shou quan wei tuo shu yi xia	4900
 请帮我核对申请材料	qing bang wo he dui shen qing cai liao	4900
-请帮我核对申请材料一下	qing bang wo he dui shen qing cai liao yi xia	4900
 请帮我核对登记信息	qing bang wo he dui deng ji xin xi	4900
-请帮我核对登记信息一下	qing bang wo he dui deng ji xin xi yi xia	4900
 请帮我核对证件照片	qing bang wo he dui zheng jian zhao pian	4900
-请帮我核对证件照片一下	qing bang wo he dui zheng jian zhao pian yi xia	4900
 请帮我核对证明材料	qing bang wo he dui zheng ming cai liao	4900
-请帮我核对证明材料一下	qing bang wo he dui zheng ming cai liao yi xia	4900
 请帮我核对身份信息	qing bang wo he dui shen fen xin xi	4900
-请帮我核对身份信息一下	qing bang wo he dui shen fen xin xi yi xia	4900
 请帮我补充办理资料	qing bang wo bu chong ban li zi liao	4900
 请帮我补充受理编号	qing bang wo bu chong shou li bian hao	4900
 请帮我补充授权委托书	qing bang wo bu chong shou quan wei tuo shu	4900
@@ -154,21 +130,13 @@
 请提供证明材料	qing ti gong zheng ming cai liao	4900
 请提供身份信息	qing ti gong shen fen xin xi	4900
 请核对办理资料	qing he dui ban li zi liao	4900
-请核对办理资料一下	qing he dui ban li zi liao yi xia	4900
 请核对受理编号	qing he dui shou li bian hao	4900
-请核对受理编号一下	qing he dui shou li bian hao yi xia	4900
 请核对授权委托书	qing he dui shou quan wei tuo shu	4900
-请核对授权委托书一下	qing he dui shou quan wei tuo shu yi xia	4900
 请核对申请材料	qing he dui shen qing cai liao	4900
-请核对申请材料一下	qing he dui shen qing cai liao yi xia	4900
 请核对登记信息	qing he dui deng ji xin xi	4900
-请核对登记信息一下	qing he dui deng ji xin xi yi xia	4900
 请核对证件照片	qing he dui zheng jian zhao pian	4900
-请核对证件照片一下	qing he dui zheng jian zhao pian yi xia	4900
 请核对证明材料	qing he dui zheng ming cai liao	4900
-请核对证明材料一下	qing he dui zheng ming cai liao yi xia	4900
 请核对身份信息	qing he dui shen fen xin xi	4900
-请核对身份信息一下	qing he dui shen fen xin xi yi xia	4900
 请补充办理资料	qing bu chong ban li zi liao	4900
 请补充受理编号	qing bu chong shou li bian hao	4900
 请补充授权委托书	qing bu chong shou quan wei tuo shu	4900
@@ -178,37 +146,21 @@
 请补充证明材料	qing bu chong zheng ming cai liao	4900
 请补充身份信息	qing bu chong shen fen xin xi	4900
 麻烦准备办理资料	ma fan zhun bei ban li zi liao	4900
-麻烦准备办理资料一下	ma fan zhun bei ban li zi liao yi xia	4900
 麻烦准备受理编号	ma fan zhun bei shou li bian hao	4900
-麻烦准备受理编号一下	ma fan zhun bei shou li bian hao yi xia	4900
 麻烦准备授权委托书	ma fan zhun bei shou quan wei tuo shu	4900
-麻烦准备授权委托书一下	ma fan zhun bei shou quan wei tuo shu yi xia	4900
 麻烦准备申请材料	ma fan zhun bei shen qing cai liao	4900
-麻烦准备申请材料一下	ma fan zhun bei shen qing cai liao yi xia	4900
 麻烦准备登记信息	ma fan zhun bei deng ji xin xi	4900
-麻烦准备登记信息一下	ma fan zhun bei deng ji xin xi yi xia	4900
 麻烦准备证件照片	ma fan zhun bei zheng jian zhao pian	4900
-麻烦准备证件照片一下	ma fan zhun bei zheng jian zhao pian yi xia	4900
 麻烦准备证明材料	ma fan zhun bei zheng ming cai liao	4900
-麻烦准备证明材料一下	ma fan zhun bei zheng ming cai liao yi xia	4900
 麻烦准备身份信息	ma fan zhun bei shen fen xin xi	4900
-麻烦准备身份信息一下	ma fan zhun bei shen fen xin xi yi xia	4900
 麻烦帮我准备办理资料	ma fan bang wo zhun bei ban li zi liao	4900
-麻烦帮我准备办理资料一下	ma fan bang wo zhun bei ban li zi liao yi xia	4900
 麻烦帮我准备受理编号	ma fan bang wo zhun bei shou li bian hao	4900
-麻烦帮我准备受理编号一下	ma fan bang wo zhun bei shou li bian hao yi xia	4900
 麻烦帮我准备授权委托书	ma fan bang wo zhun bei shou quan wei tuo shu	4900
-麻烦帮我准备授权委托书一下	ma fan bang wo zhun bei shou quan wei tuo shu yi xia	4900
 麻烦帮我准备申请材料	ma fan bang wo zhun bei shen qing cai liao	4900
-麻烦帮我准备申请材料一下	ma fan bang wo zhun bei shen qing cai liao yi xia	4900
 麻烦帮我准备登记信息	ma fan bang wo zhun bei deng ji xin xi	4900
-麻烦帮我准备登记信息一下	ma fan bang wo zhun bei deng ji xin xi yi xia	4900
 麻烦帮我准备证件照片	ma fan bang wo zhun bei zheng jian zhao pian	4900
-麻烦帮我准备证件照片一下	ma fan bang wo zhun bei zheng jian zhao pian yi xia	4900
 麻烦帮我准备证明材料	ma fan bang wo zhun bei zheng ming cai liao	4900
-麻烦帮我准备证明材料一下	ma fan bang wo zhun bei zheng ming cai liao yi xia	4900
 麻烦帮我准备身份信息	ma fan bang wo zhun bei shen fen xin xi	4900
-麻烦帮我准备身份信息一下	ma fan bang wo zhun bei shen fen xin xi yi xia	4900
 麻烦帮我提交办理资料	ma fan bang wo ti jiao ban li zi liao	4900
 麻烦帮我提交受理编号	ma fan bang wo ti jiao shou li bian hao	4900
 麻烦帮我提交授权委托书	ma fan bang wo ti jiao shou quan wei tuo shu	4900
@@ -226,21 +178,13 @@
 麻烦帮我提供证明材料	ma fan bang wo ti gong zheng ming cai liao	4900
 麻烦帮我提供身份信息	ma fan bang wo ti gong shen fen xin xi	4900
 麻烦帮我核对办理资料	ma fan bang wo he dui ban li zi liao	4900
-麻烦帮我核对办理资料一下	ma fan bang wo he dui ban li zi liao yi xia	4900
 麻烦帮我核对受理编号	ma fan bang wo he dui shou li bian hao	4900
-麻烦帮我核对受理编号一下	ma fan bang wo he dui shou li bian hao yi xia	4900
 麻烦帮我核对授权委托书	ma fan bang wo he dui shou quan wei tuo shu	4900
-麻烦帮我核对授权委托书一下	ma fan bang wo he dui shou quan wei tuo shu yi xia	4900
 麻烦帮我核对申请材料	ma fan bang wo he dui shen qing cai liao	4900
-麻烦帮我核对申请材料一下	ma fan bang wo he dui shen qing cai liao yi xia	4900
 麻烦帮我核对登记信息	ma fan bang wo he dui deng ji xin xi	4900
-麻烦帮我核对登记信息一下	ma fan bang wo he dui deng ji xin xi yi xia	4900
 麻烦帮我核对证件照片	ma fan bang wo he dui zheng jian zhao pian	4900
-麻烦帮我核对证件照片一下	ma fan bang wo he dui zheng jian zhao pian yi xia	4900
 麻烦帮我核对证明材料	ma fan bang wo he dui zheng ming cai liao	4900
-麻烦帮我核对证明材料一下	ma fan bang wo he dui zheng ming cai liao yi xia	4900
 麻烦帮我核对身份信息	ma fan bang wo he dui shen fen xin xi	4900
-麻烦帮我核对身份信息一下	ma fan bang wo he dui shen fen xin xi yi xia	4900
 麻烦帮我补充办理资料	ma fan bang wo bu chong ban li zi liao	4900
 麻烦帮我补充受理编号	ma fan bang wo bu chong shou li bian hao	4900
 麻烦帮我补充授权委托书	ma fan bang wo bu chong shou quan wei tuo shu	4900
@@ -266,21 +210,13 @@
 麻烦提供证明材料	ma fan ti gong zheng ming cai liao	4900
 麻烦提供身份信息	ma fan ti gong shen fen xin xi	4900
 麻烦核对办理资料	ma fan he dui ban li zi liao	4900
-麻烦核对办理资料一下	ma fan he dui ban li zi liao yi xia	4900
 麻烦核对受理编号	ma fan he dui shou li bian hao	4900
-麻烦核对受理编号一下	ma fan he dui shou li bian hao yi xia	4900
 麻烦核对授权委托书	ma fan he dui shou quan wei tuo shu	4900
-麻烦核对授权委托书一下	ma fan he dui shou quan wei tuo shu yi xia	4900
 麻烦核对申请材料	ma fan he dui shen qing cai liao	4900
-麻烦核对申请材料一下	ma fan he dui shen qing cai liao yi xia	4900
 麻烦核对登记信息	ma fan he dui deng ji xin xi	4900
-麻烦核对登记信息一下	ma fan he dui deng ji xin xi yi xia	4900
 麻烦核对证件照片	ma fan he dui zheng jian zhao pian	4900
-麻烦核对证件照片一下	ma fan he dui zheng jian zhao pian yi xia	4900
 麻烦核对证明材料	ma fan he dui zheng ming cai liao	4900
-麻烦核对证明材料一下	ma fan he dui zheng ming cai liao yi xia	4900
 麻烦核对身份信息	ma fan he dui shen fen xin xi	4900
-麻烦核对身份信息一下	ma fan he dui shen fen xin xi yi xia	4900
 麻烦补充办理资料	ma fan bu chong ban li zi liao	4900
 麻烦补充受理编号	ma fan bu chong shou li bian hao	4900
 麻烦补充授权委托书	ma fan bu chong shou quan wei tuo shu	4900

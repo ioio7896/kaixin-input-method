@@ -18,11 +18,7 @@ const POLL_INTERVAL: Duration = Duration::from_millis(1200);
 const FALLBACK_POLL_INTERVAL: Duration = Duration::from_millis(250);
 const BACKGROUND_POLL_TICK: Duration = Duration::from_millis(250);
 #[cfg(windows)]
-const CLIPBOARD_EVENT_DEBOUNCE: Duration = Duration::from_millis(80);
-#[cfg(windows)]
-const CLIPBOARD_EVENT_QUEUE_CAPACITY: usize = 16;
-#[cfg(windows)]
-const CLIPBOARD_LISTENER_IDLE_TICK: Duration = Duration::from_millis(50);
+const CLIPBOARD_LISTENER_IDLE_TICK: Duration = Duration::from_millis(5);
 #[cfg(windows)]
 const CLIPBOARD_READ_MAX_ATTEMPTS: usize = 3;
 const STORE_WRITE_DEBOUNCE: Duration = Duration::from_millis(50);
@@ -30,6 +26,7 @@ const SYSTEM_CLIPBOARD_DUPLICATE_WINDOW_SECS: u64 = 2;
 const MAX_HISTORY_ITEMS: usize = 60;
 const MAX_PINNED_ITEMS: usize = 24;
 const MAX_TEXT_UTF16_UNITS: usize = 20_000;
+const HARD_MAX_TEXT_UTF16_UNITS: usize = 1_000_000;
 const MAX_AGE_DAYS: usize = 0;
 const RESOLVE_ALIAS_LIMIT: usize = 64;
 
@@ -42,12 +39,10 @@ static CLIPBOARD_EVENT_MODE: AtomicBool = AtomicBool::new(false);
 static CLIPBOARD_WORKER_ACTIVE: AtomicBool = AtomicBool::new(false);
 #[cfg(windows)]
 static COM_WARNING_LOGGED: AtomicBool = AtomicBool::new(false);
-#[cfg(windows)]
-static CLIPBOARD_EVENT_QUEUE: ClipboardEventQueue = ClipboardEventQueue::new();
-/// When the event queue is full the latest request id lands here so the worker
-/// captures the newest state once after draining instead of dropping it.
-#[cfg(windows)]
-static CLIPBOARD_COALESCED_REQUEST: AtomicU64 = AtomicU64::new(0);
+// Serialize capture/record boundaries, including synchronous GUI and candidate
+// reads, so an older capture cannot publish its seen state after a newer one.
+static CAPTURE_IO: Mutex<()> = Mutex::new(());
+static CAPTURE_NOTICE: Mutex<Option<String>> = Mutex::new(None);
 
 /// A pending store mutation. Records carry the fully built entry so the id and
 /// timestamp assigned at enqueue time are identical everywhere the entry is
@@ -212,7 +207,8 @@ pub fn flush_pending_ops_sync() {
                 "clipboard_store_flush",
                 format!("status=failed reason={err}"),
             );
-            break;
+            std::thread::sleep(STORE_WRITE_DEBOUNCE);
+            continue;
         }
         if pending_ops()
             .0
@@ -246,24 +242,6 @@ fn flush_store_ops_to_path(path: &Path, ops: &[StoreOp]) -> Result<(), String> {
     let _ = lock_file.unlock();
     drop(lock_file);
     Ok(())
-}
-
-#[cfg(windows)]
-struct ClipboardEventQueue {
-    slots: [AtomicU64; CLIPBOARD_EVENT_QUEUE_CAPACITY],
-    head: AtomicU64,
-    tail: AtomicU64,
-}
-
-#[cfg(windows)]
-impl ClipboardEventQueue {
-    const fn new() -> Self {
-        Self {
-            slots: [const { AtomicU64::new(0) }; CLIPBOARD_EVENT_QUEUE_CAPACITY],
-            head: AtomicU64::new(0),
-            tail: AtomicU64::new(0),
-        }
-    }
 }
 
 #[derive(Clone)]
@@ -444,85 +422,15 @@ fn next_clipboard_request_id() -> u64 {
 }
 
 #[cfg(windows)]
-fn enqueue_clipboard_event_request(request_id: u64) {
-    let head = CLIPBOARD_EVENT_QUEUE.head.load(Ordering::Relaxed);
-    let tail = CLIPBOARD_EVENT_QUEUE.tail.load(Ordering::Acquire);
-    if head.wrapping_sub(tail) >= CLIPBOARD_EVENT_QUEUE_CAPACITY as u64 {
-        // Queue full: remember the latest request so the worker captures the
-        // newest state once after draining, instead of dropping the event.
-        CLIPBOARD_COALESCED_REQUEST.store(request_id, Ordering::Release);
-        runtime_log::log_clipboard_lazy(RuntimeLogLevel::Error, "clipboard_update_queue", || {
-            format!("status=coalesced reason=queue_full capacity={CLIPBOARD_EVENT_QUEUE_CAPACITY}")
-        });
-        return;
-    }
-    let slot = (head as usize) % CLIPBOARD_EVENT_QUEUE_CAPACITY;
-    CLIPBOARD_EVENT_QUEUE.slots[slot].store(request_id, Ordering::Release);
-    CLIPBOARD_EVENT_QUEUE
-        .head
-        .store(head.wrapping_add(1), Ordering::Release);
-}
-
-#[cfg(windows)]
-fn dequeue_clipboard_event_request() -> Option<u64> {
-    let tail = CLIPBOARD_EVENT_QUEUE.tail.load(Ordering::Relaxed);
-    let head = CLIPBOARD_EVENT_QUEUE.head.load(Ordering::Acquire);
-    if tail == head {
-        return None;
-    }
-    let slot = (tail as usize) % CLIPBOARD_EVENT_QUEUE_CAPACITY;
-    let request_id = CLIPBOARD_EVENT_QUEUE.slots[slot].swap(0, Ordering::AcqRel);
-    CLIPBOARD_EVENT_QUEUE
-        .tail
-        .store(tail.wrapping_add(1), Ordering::Release);
-    (request_id != 0).then_some(request_id)
-}
-
-#[cfg(windows)]
-fn clear_clipboard_event_queue() {
-    CLIPBOARD_COALESCED_REQUEST.store(0, Ordering::Release);
-    let tail = CLIPBOARD_EVENT_QUEUE.tail.load(Ordering::Relaxed);
-    let head = CLIPBOARD_EVENT_QUEUE.head.load(Ordering::Acquire);
-    for index in tail..head {
-        CLIPBOARD_EVENT_QUEUE.slots[(index as usize) % CLIPBOARD_EVENT_QUEUE_CAPACITY]
-            .store(0, Ordering::Release);
-    }
-    CLIPBOARD_EVENT_QUEUE.tail.store(head, Ordering::Release);
-}
-
-#[cfg(windows)]
 fn clipboard_background_worker_loop() {
-    // COM must be initialised on this thread so OLE clipboard data
-    // (used by Chrome, Edge, and other Chromium-based browsers) can be
-    // read via OleGetClipboard / IDataObject::GetData.
     let _com = ComGuard::init();
-
+    // The listener captures complete text immediately; this only retries
+    // busy or delayed-render reads, without queuing bare notification ids.
     loop {
-        if !BACKGROUND_POLLING_ENABLED.load(Ordering::Acquire) {
-            clear_clipboard_event_queue();
-            std::thread::sleep(BACKGROUND_POLL_TICK);
-            continue;
-        }
-
-        if CLIPBOARD_EVENT_MODE.load(Ordering::Acquire) {
-            if let Some(request_id) = dequeue_clipboard_event_request() {
-                std::thread::sleep(CLIPBOARD_EVENT_DEBOUNCE);
-                let _ = poll_system_clipboard_changed_event_with_request(request_id);
-                continue;
-            }
-            // A full queue collapses a burst into this single capture request.
-            let coalesced = CLIPBOARD_COALESCED_REQUEST.swap(0, Ordering::AcqRel);
-            if coalesced != 0 {
-                std::thread::sleep(CLIPBOARD_EVENT_DEBOUNCE);
-                let _ = poll_system_clipboard_changed_event_with_request(coalesced);
-                continue;
-            }
+        if BACKGROUND_POLLING_ENABLED.load(Ordering::Acquire) {
             let _ = poll_system_clipboard_if_due(false);
-            std::thread::sleep(BACKGROUND_POLL_TICK);
-        } else {
-            let _ = poll_system_clipboard_if_due(false);
-            std::thread::sleep(BACKGROUND_POLL_TICK);
         }
+        std::thread::sleep(BACKGROUND_POLL_TICK);
     }
 }
 
@@ -609,11 +517,9 @@ fn run_clipboard_listener_or_poll() {
                         )
                     },
                 );
-                if worker_active {
-                    enqueue_clipboard_event_request(request_id);
-                } else {
-                    let _ = poll_system_clipboard_changed_event_with_request(request_id);
-                }
+                // Capture now, before a later copy replaces the text.
+                // Persistence already queues a complete ClipboardEntry.
+                let _ = poll_system_clipboard_changed_event_with_request(request_id);
             }
             return 0;
         }
@@ -701,8 +607,7 @@ fn run_clipboard_listener_or_poll() {
             }
         }
         if !processed {
-            // Short idle tick so a queued WM_CLIPBOARDUPDATE is dispatched
-            // quickly; the capture itself stays debounced on the worker.
+            // Dispatch promptly; text capture is never debounced.
             std::thread::sleep(CLIPBOARD_LISTENER_IDLE_TICK);
         }
     }
@@ -750,6 +655,8 @@ pub fn set_background_polling_enabled(enabled: bool) {
         ),
     );
     if enabled {
+        // Warm once so per-copy records never need a cold disk read.
+        let _ = snapshot();
         ensure_background_poller_started();
         if let Err(err) = poll_system_clipboard(true, false, true) {
             runtime_log::log_clipboard(
@@ -879,7 +786,7 @@ fn parse_clipboard_prefs(text: &str) -> ClipboardPrefs {
             }
             "max_text_utf16_units" => {
                 if let Some(v) = parsed {
-                    prefs.max_text_utf16_units = v.clamp(20, 20_000);
+                    prefs.max_text_utf16_units = v.clamp(20, HARD_MAX_TEXT_UTF16_UNITS);
                 }
             }
             "max_age_days" => {
@@ -1205,24 +1112,24 @@ fn normalize_text_with_limit(text: &str, max_text_utf16_units: usize) -> Option<
         return None;
     }
 
-    let mut truncated = String::new();
-    let mut utf16_units = 0usize;
-    for ch in normalized.chars() {
-        let next = utf16_units + ch.len_utf16();
-        if next > max_text_utf16_units {
-            break;
-        }
-        truncated.push(ch);
-        utf16_units = next;
-    }
-    if truncated.trim().is_empty() {
+    // Never present a shortened copy as a complete saved entry.
+    if normalized.encode_utf16().count() > max_text_utf16_units {
         return None;
     }
-    Some(truncated)
+    Some(normalized)
 }
 
 fn normalize_text(text: &str) -> Option<String> {
-    let normalized = normalize_text_with_limit(text, clipboard_prefs().max_text_utf16_units)?;
+    let prefs = clipboard_prefs();
+    let units = text.encode_utf16().count();
+    if units > prefs.max_text_utf16_units {
+        set_capture_notice(format!(
+            "文本过长，未保存历史（{units} / {} UTF-16 单元）。原剪贴板保持完整，可在设置中提高上限。",
+            prefs.max_text_utf16_units
+        ));
+        return None;
+    }
+    let normalized = normalize_text_with_limit(text, prefs.max_text_utf16_units)?;
     if looks_like_sensitive_clipboard(&normalized) {
         runtime_log::log_clipboard(
             RuntimeLogLevel::Basic,
@@ -1231,7 +1138,24 @@ fn normalize_text(text: &str) -> Option<String> {
         );
         return None;
     }
+    set_capture_notice(String::new());
     Some(normalized)
+}
+
+pub fn capture_status() -> (bool, bool, usize, Option<String>) {
+    let prefs = clipboard_prefs();
+    (
+        prefs.background_enabled,
+        prefs.privacy_enabled,
+        prefs.max_text_utf16_units,
+        CAPTURE_NOTICE.lock().ok().and_then(|notice| notice.clone()),
+    )
+}
+
+fn set_capture_notice(message: String) {
+    if let Ok(mut notice) = CAPTURE_NOTICE.lock() {
+        *notice = (!message.is_empty()).then_some(message);
+    }
 }
 
 fn looks_like_sensitive_clipboard(text: &str) -> bool {
@@ -2079,7 +2003,7 @@ fn read_unicode_clipboard_handle(handle: isize) -> Result<Option<String>, String
             return Ok(None);
         }
         let unit_cap = byte_len / std::mem::size_of::<u16>();
-        let scan_units = unit_cap.min(clipboard_prefs().max_text_utf16_units.saturating_add(1));
+        let scan_units = unit_cap.min(HARD_MAX_TEXT_UTF16_UNITS.saturating_add(1));
         if scan_units == 0 {
             return Ok(None);
         }
@@ -2181,7 +2105,7 @@ unsafe fn read_hglobal_unicode_text(
             return Ok(None);
         }
         let unit_cap = byte_len / std::mem::size_of::<u16>();
-        let scan_units = unit_cap.min(clipboard_prefs().max_text_utf16_units.saturating_add(1));
+        let scan_units = unit_cap.min(HARD_MAX_TEXT_UTF16_UNITS.saturating_add(1));
         if scan_units == 0 {
             return Ok(None);
         }
@@ -2225,7 +2149,7 @@ fn normalize_read_clipboard_text(text: &str, request_id: u64) -> Option<String> 
 }
 
 #[cfg(windows)]
-fn read_system_clipboard_text(request_id: u64) -> Option<String> {
+fn read_system_clipboard_sample(request_id: u64) -> Option<ClipboardSample> {
     // Synchronous callers may not be running on the background STA thread.
     // Balance this per-call COM initialization and disable only the OLE path
     // when the caller already selected an incompatible apartment model.
@@ -2296,7 +2220,12 @@ fn read_system_clipboard_text(request_id: u64) -> Option<String> {
                     },
                 );
             } else {
-                return normalize_read_clipboard_text(&value, request_id);
+                return normalize_read_clipboard_text(&value, request_id).map(|text| {
+                    ClipboardSample {
+                        text,
+                        sequence: sequence_after,
+                    }
+                });
             }
         }
 
@@ -2326,8 +2255,40 @@ fn read_system_clipboard_text(request_id: u64) -> Option<String> {
 }
 
 #[cfg(not(windows))]
-fn read_system_clipboard_text(_request_id: u64) -> Option<String> {
+fn read_system_clipboard_sample(_request_id: u64) -> Option<ClipboardSample> {
     None
+}
+
+#[derive(Clone)]
+struct ClipboardSample {
+    text: String,
+    sequence: Option<u32>,
+}
+
+fn record_clipboard_sample(
+    sample: &ClipboardSample,
+    record_duplicate_text: bool,
+    record: impl FnOnce(&str) -> Result<bool, String>,
+) -> Result<bool, String> {
+    {
+        let runtime = runtime()
+            .lock()
+            .map_err(|_| "lock clipboard runtime".to_string())?;
+        if runtime.last_seen_text.as_deref() == Some(sample.text.as_str())
+            && !record_duplicate_text
+            && sample.sequence == runtime.last_seen_sequence
+        {
+            return Ok(false);
+        }
+    }
+    let recorded = record(&sample.text)?;
+    // Acknowledge only after successful recording, using the read's sequence.
+    let mut runtime = runtime()
+        .lock()
+        .map_err(|_| "lock clipboard runtime".to_string())?;
+    runtime.last_seen_text = Some(sample.text.clone());
+    runtime.last_seen_sequence = sample.sequence;
+    Ok(recorded)
 }
 
 fn poll_system_clipboard_with_request(
@@ -2336,6 +2297,9 @@ fn poll_system_clipboard_with_request(
     require_background_enabled: bool,
     request_id: u64,
 ) -> Result<Option<String>, String> {
+    let _capture = CAPTURE_IO
+        .lock()
+        .map_err(|_| "lock clipboard capture".to_string())?;
     let prefs = clipboard_prefs();
     if prefs.privacy_enabled {
         return Ok(None);
@@ -2364,10 +2328,11 @@ fn poll_system_clipboard_with_request(
         };
         if !force
             && (sequence_unchanged
-                || runtime
-                    .last_poll
-                    .map(|last| last.elapsed() < poll_interval)
-                    .unwrap_or(false))
+                || (sequence.is_none()
+                    && runtime
+                        .last_poll
+                        .map(|last| last.elapsed() < poll_interval)
+                        .unwrap_or(false)))
         {
             runtime_log::log_clipboard_lazy(
                 RuntimeLogLevel::Verbose,
@@ -2389,56 +2354,26 @@ fn poll_system_clipboard_with_request(
         runtime.last_poll = Some(Instant::now());
     }
 
-    let Some(text) = read_system_clipboard_text(request_id) else {
+    let Some(sample) = read_system_clipboard_sample(request_id) else {
         return Ok(None);
     };
-
-    {
-        let mut runtime = runtime()
-            .lock()
-            .map_err(|_| "lock clipboard runtime".to_string())?;
-        let sequence = clipboard_sequence_number();
-        let same_sequence = sequence.is_some()
-            && runtime.last_seen_sequence.is_some()
-            && sequence == runtime.last_seen_sequence;
-        if runtime.last_seen_text.as_deref() == Some(text.as_str())
-            && !record_duplicate_text
-            && (sequence.is_none() || same_sequence)
-        {
-            runtime_log::log_clipboard_lazy(
-                RuntimeLogLevel::Verbose,
-                "clipboard_capture_skip",
-                || {
-                    format!(
-                        "status=skipped request_id={} reason=unchanged units={} force={} background_required={}",
-                        request_id,
-                        text.encode_utf16().count(),
-                        if force { 1 } else { 0 },
-                        if require_background_enabled { 1 } else { 0 }
-                    )
-                },
-            );
-            return Ok(Some(text));
-        }
-        runtime.last_seen_text = Some(text.clone());
-        runtime.last_seen_sequence = sequence;
-    }
-
-    let recorded = match record_text_at_path_with_mode(
-        &store_path(),
-        &text,
-        DuplicateRecordMode::CoalesceRecentSystemEvent,
-    ) {
-        Ok(recorded) => recorded,
-        Err(err) => {
-            runtime_log::log_clipboard(
-                RuntimeLogLevel::Error,
-                "clipboard_capture",
-                format!("status=failed request_id={} reason={err}", request_id),
-            );
-            return Err(err);
-        }
-    };
+    let text = &sample.text;
+    let recorded = record_clipboard_sample(&sample, record_duplicate_text, |text| {
+        record_text_at_path_with_mode(
+            &store_path(),
+            text,
+            DuplicateRecordMode::CoalesceRecentSystemEvent,
+        )
+    })
+    .map_err(|err| {
+        set_capture_notice(format!("记录失败，稍后将重试：{err}"));
+        runtime_log::log_clipboard(
+            RuntimeLogLevel::Error,
+            "clipboard_capture",
+            format!("status=failed request_id={request_id} reason={err}"),
+        );
+        err
+    })?;
     runtime_log::log_clipboard_lazy(RuntimeLogLevel::Basic, "clipboard_capture", || {
         format!(
                 "status=ok request_id={} units={} recorded={} force={} duplicate_event={} background_required={}",
@@ -2450,7 +2385,7 @@ fn poll_system_clipboard_with_request(
                 if require_background_enabled { 1 } else { 0 }
             )
     });
-    Ok(Some(text))
+    Ok(Some(sample.text))
 }
 
 fn poll_system_clipboard(
@@ -2467,15 +2402,21 @@ fn poll_system_clipboard(
 }
 
 fn mark_runtime_seen_text(text: &str) -> Result<(), String> {
-    let Some(text) = normalize_text(text) else {
+    let _capture = CAPTURE_IO
+        .lock()
+        .map_err(|_| "lock clipboard capture".to_string())?;
+    let Some(sample) = read_system_clipboard_sample(next_clipboard_request_id()) else {
         return Ok(());
     };
+    if sample.text != text {
+        return Ok(());
+    }
     let mut runtime = runtime()
         .lock()
         .map_err(|_| "lock clipboard runtime".to_string())?;
     runtime.last_poll = Some(Instant::now());
-    runtime.last_seen_text = Some(text);
-    runtime.last_seen_sequence = clipboard_sequence_number();
+    runtime.last_seen_text = Some(sample.text);
+    runtime.last_seen_sequence = sample.sequence;
     Ok(())
 }
 
@@ -2624,38 +2565,109 @@ pub fn resolve_snapshot() -> Result<ClipboardSnapshot, String> {
 }
 
 pub fn pin_current_clipboard() -> Result<Option<String>, String> {
+    let _capture = CAPTURE_IO
+        .lock()
+        .map_err(|_| "lock clipboard capture".to_string())?;
     let request_id = next_clipboard_request_id();
-    let Some(text) = read_system_clipboard_text(request_id) else {
+    let Some(sample) = read_system_clipboard_sample(request_id) else {
         return Ok(None);
     };
-    pin_text(&text)?;
+    let text = &sample.text;
+    pin_text(text)?;
     let mut runtime = runtime()
         .lock()
         .map_err(|_| "lock clipboard runtime".to_string())?;
     runtime.last_poll = Some(Instant::now());
     runtime.last_seen_text = Some(text.clone());
-    runtime.last_seen_sequence = clipboard_sequence_number();
-    Ok(Some(text))
+    runtime.last_seen_sequence = sample.sequence;
+    Ok(Some(sample.text))
 }
 
 pub fn unpin_current_clipboard() -> Result<Option<String>, String> {
+    let _capture = CAPTURE_IO
+        .lock()
+        .map_err(|_| "lock clipboard capture".to_string())?;
     let request_id = next_clipboard_request_id();
-    let Some(text) = read_system_clipboard_text(request_id) else {
+    let Some(sample) = read_system_clipboard_sample(request_id) else {
         return Ok(None);
     };
-    let _ = unpin_text(&text)?;
+    let text = &sample.text;
+    let _ = unpin_text(text)?;
     let mut runtime = runtime()
         .lock()
         .map_err(|_| "lock clipboard runtime".to_string())?;
     runtime.last_poll = Some(Instant::now());
     runtime.last_seen_text = Some(text.clone());
-    runtime.last_seen_sequence = clipboard_sequence_number();
-    Ok(Some(text))
+    runtime.last_seen_sequence = sample.sequence;
+    Ok(Some(sample.text))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn capture_uses_read_sequence_even_when_clipboard_has_advanced() {
+        let _capture = CAPTURE_IO.lock().unwrap();
+        let saved = std::mem::take(&mut *runtime().lock().unwrap());
+        let first = ClipboardSample {
+            text: "older A".into(),
+            sequence: Some(101),
+        };
+        assert!(record_clipboard_sample(&first, false, |_| Ok(true)).unwrap());
+        assert_eq!(runtime().lock().unwrap().last_seen_sequence, Some(101));
+        let latest = ClipboardSample {
+            text: "latest B".into(),
+            sequence: Some(102),
+        };
+        let mut recorded = Vec::new();
+        assert!(record_clipboard_sample(&latest, false, |text| {
+            recorded.push(text.to_string());
+            Ok(true)
+        })
+        .unwrap());
+        assert_eq!(recorded, vec!["latest B"]);
+        assert_eq!(runtime().lock().unwrap().last_seen_sequence, Some(102));
+        *runtime().lock().unwrap() = saved;
+    }
+
+    #[test]
+    fn failed_capture_is_not_acknowledged_and_retries_unchanged_text() {
+        let _capture = CAPTURE_IO.lock().unwrap();
+        let saved = std::mem::take(&mut *runtime().lock().unwrap());
+        let sample = ClipboardSample {
+            text: "retry me".into(),
+            sequence: Some(777),
+        };
+        assert!(
+            record_clipboard_sample(&sample, false, |_| Err("temporary IO error".into())).is_err()
+        );
+        assert_eq!(runtime().lock().unwrap().last_seen_sequence, None);
+        assert_eq!(runtime().lock().unwrap().last_seen_text, None);
+        assert!(record_clipboard_sample(&sample, false, |_| Ok(true)).unwrap());
+        assert_eq!(
+            runtime().lock().unwrap().last_seen_text.as_deref(),
+            Some("retry me")
+        );
+        // A duplicate only skips the record after the earlier attempt succeeded.
+        assert!(!record_clipboard_sample(&sample, false, |_| panic!("duplicate record")).unwrap());
+        *runtime().lock().unwrap() = saved;
+    }
+
+    #[test]
+    fn long_text_is_complete_or_rejected_never_silently_shortened() {
+        let text = "😀中文\t\n".repeat(10_000);
+        assert!(normalize_text_with_limit(&text, 20_000).is_none());
+        assert_eq!(
+            normalize_text_with_limit(&text, 1_000_000).as_deref(),
+            Some(text.as_str())
+        );
+        assert!(normalize_text_with_limit(&"x".repeat(20_001), 20_000).is_none());
+        assert_eq!(
+            parse_clipboard_prefs("[clipboard]\nmax_text_utf16_units=1000000").max_text_utf16_units,
+            1_000_000
+        );
+    }
 
     fn prefs_with(history: usize, pinned: usize) -> ClipboardPrefs {
         ClipboardPrefs {

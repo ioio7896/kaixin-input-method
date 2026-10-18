@@ -11,76 +11,24 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import re
-from typing import Mapping, Sequence
+from typing import Sequence
 
 from build_life_common_3char_20000 import (
     RankedPhrase,
     collect_candidates,
     rank_weight,
 )
-from pypinyin import Style, lazy_pinyin
+from polyphone_corrections import (
+    PINYIN_SYLLABLE,
+    Correction,
+    corrected_reading,
+    load_corrections,
+)
 
 
 DEFAULT_LIMIT = 1_000
 DEFAULT_HELDOUT_START = 20_001
 DEFAULT_HELDOUT_WINDOW = 10_000
-PINYIN_SYLLABLE = re.compile(r"^[a-z]+$")
-
-
-def load_polyphone_corrections(path: Path) -> dict[str, tuple[str, ...]]:
-    corrections: dict[str, tuple[str, ...]] = {}
-    with path.open("r", encoding="utf-8-sig") as stream:
-        for line_no, raw in enumerate(stream, 1):
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-            fields = line.split("\t")
-            if len(fields) != 2:
-                raise ValueError(f"{path}:{line_no}: expected phrase and pinyin")
-            phrase = fields[0].strip()
-            reading = tuple(fields[1].strip().lower().split())
-            if not phrase or len(reading) != len(phrase):
-                raise ValueError(
-                    f"{path}:{line_no}: correction length does not match phrase"
-                )
-            if any(not PINYIN_SYLLABLE.fullmatch(item) for item in reading):
-                raise ValueError(f"{path}:{line_no}: invalid correction pinyin")
-            corrections[phrase] = reading
-    return corrections
-
-
-def corrected_reading(
-    phrase: str,
-    corrections: Mapping[str, Sequence[str]],
-) -> tuple[str, ...]:
-    """Apply longest matching phrase corrections over pypinyin's base reading."""
-
-    base = tuple(
-        item.lower() for item in lazy_pinyin(phrase, style=Style.NORMAL, errors="default")
-    )
-    ordered = sorted(corrections.items(), key=lambda item: len(item[0]), reverse=True)
-    reading: list[str] = []
-    offset = 0
-    while offset < len(phrase):
-        match = next(
-            (
-                (term, tuple(replacement))
-                for term, replacement in ordered
-                if phrase.startswith(term, offset)
-            ),
-            None,
-        )
-        if match is None:
-            reading.append(base[offset])
-            offset += 1
-        else:
-            term, replacement = match
-            reading.extend(replacement)
-            offset += len(term)
-    return tuple(reading)
-
-
 def evenly_spaced_slice(
     candidates: Sequence[RankedPhrase],
     *,
@@ -114,7 +62,7 @@ def build_rows(
     limit: int,
     heldout_start: int,
     heldout_window: int,
-    corrections: Mapping[str, Sequence[str]],
+    corrections: Sequence[Correction],
     pool_size: int | None = None,
 ) -> list[tuple[str, str, tuple[str, ...], int]]:
     if limit < 1:
@@ -207,7 +155,7 @@ def main() -> int:
         default=repo / "tests" / "popular_three_char_cases.tsv",
     )
     args = parser.parse_args()
-    corrections = load_polyphone_corrections(args.corrections)
+    corrections = load_corrections(args.corrections)
     rows = build_rows(
         limit=args.limit,
         heldout_start=args.heldout_start,

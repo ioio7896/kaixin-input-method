@@ -55,35 +55,37 @@ void ApplySkinLayoutOverrides(const SrfUIStyle& style, LayoutSpec& spec) {
 
 void ApplyDensityOverrides(const SrfUIStyle& style, LayoutSpec& spec) {
   if (style.candidateDensity == SrfCandidateDensity::Compact) {
-    spec.outerPadX = std::max(4, spec.outerPadX - 2);
-    spec.outerPadY = std::max(4, spec.outerPadY - 2);
-    spec.headerPadX = std::max(6, spec.headerPadX - 2);
-    spec.headerPadY = std::max(4, spec.headerPadY - 1);
-    spec.headerGap = std::max(2, spec.headerGap - 1);
-    spec.itemGap = std::max(1, spec.itemGap - 1);
-    spec.itemPadX = std::max(4, spec.itemPadX - 2);
-    spec.itemPadY = std::max(3, spec.itemPadY - 1);
-    spec.labelWidth = std::max(20, spec.labelWidth - 2);
-    spec.labelGap = std::max(4, spec.labelGap - 1);
-    spec.commentGap = std::max(1, spec.commentGap - 1);
-    spec.preferredWidth = std::max(spec.minWidth, spec.preferredWidth - 24);
-    spec.maxWidth = std::max(spec.preferredWidth, spec.maxWidth - 48);
-    spec.minHorizontalCardWidth = std::max(64, spec.minHorizontalCardWidth - 8);
-    spec.maxHorizontalCardWidth = std::max(spec.minHorizontalCardWidth, spec.maxHorizontalCardWidth - 18);
+    spec.outerPadX = std::max(3, spec.outerPadX - 4);
+    spec.outerPadY = std::max(2, spec.outerPadY - 3);
+    spec.headerPadX = std::max(4, spec.headerPadX - 4);
+    spec.headerPadY = std::max(2, spec.headerPadY - 2);
+    spec.headerGap = std::max(1, spec.headerGap - 2);
+    spec.itemGap = std::max(0, spec.itemGap - 2);
+    spec.itemPadX = std::max(2, spec.itemPadX - 4);
+    spec.itemPadY = std::max(1, spec.itemPadY - 2);
+    spec.labelWidth = std::max(17, spec.labelWidth - 4);
+    spec.labelGap = std::max(2, spec.labelGap - 2);
+    spec.commentGap = std::max(1, spec.commentGap - 2);
+    spec.preferredWidth = std::max(spec.minWidth, spec.preferredWidth - 40);
+    spec.maxWidth = std::max(spec.preferredWidth, spec.maxWidth - 64);
+    spec.minHorizontalCardWidth = std::max(56, spec.minHorizontalCardWidth - 12);
+    spec.maxHorizontalCardWidth = std::max(spec.minHorizontalCardWidth, spec.maxHorizontalCardWidth - 24);
   } else if (style.candidateDensity == SrfCandidateDensity::Comfortable) {
-    spec.outerPadX += 2;
-    spec.outerPadY += 1;
-    spec.headerPadX += 2;
-    spec.headerPadY += 1;
-    spec.headerGap += 1;
-    spec.itemGap += 1;
-    spec.itemPadX += 1;
-    spec.itemPadY += 1;
-    spec.labelWidth += 2;
-    spec.labelGap += 1;
-    spec.commentGap += 1;
-    spec.preferredWidth += 12;
-    spec.maxWidth += 20;
+    spec.outerPadX += 4;
+    spec.outerPadY += 3;
+    spec.headerPadX += 4;
+    spec.headerPadY += 2;
+    spec.headerGap += 2;
+    spec.itemGap += 3;
+    spec.itemPadX += 4;
+    spec.itemPadY += 3;
+    spec.labelWidth += 4;
+    spec.labelGap += 2;
+    spec.commentGap += 2;
+    spec.preferredWidth += 30;
+    spec.maxWidth += 48;
+    spec.minHorizontalCardWidth += 12;
+    spec.maxHorizontalCardWidth += 24;
   }
 }
 

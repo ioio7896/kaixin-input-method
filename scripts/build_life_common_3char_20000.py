@@ -82,7 +82,8 @@ def is_three_cjk(text: str) -> bool:
 
 
 def is_blocked_phrase(phrase: str) -> bool:
-    return any(fragment in phrase for fragment in BLOCKED_SUBSTRINGS)
+    from lexicon_quality import phrase_rejection_reason
+    return bool(phrase_rejection_reason(phrase)) or any(fragment in phrase for fragment in BLOCKED_SUBSTRINGS)
 
 
 def is_hot_head_fragment(phrase: str) -> bool:

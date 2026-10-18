@@ -117,6 +117,10 @@ def main():
               '来源快照、数量及哈希见 windows-category-import.json；源片段保存在 data_sources/lexicon_fragments/zh-ext/category_*.txt。\n\n'
               + '\n'.join(f"{c['title']}：{c['rows']:,} 条" for c in catalog) + '\n')
     (ROOT / 'lexicon/windows-category-import-notice.md').write_text(notice, encoding='utf-8')
+    # Keep the upstream report frozen, then apply the maintained Windows policy.
+    # Reimporting an old snapshot must not restore malformed request variants.
+    from lexicon_quality import apply_quality
+    apply_quality()
     print(json.dumps({k: v for k, v in report.items() if k != 'files'}, ensure_ascii=False, indent=2))
 
 

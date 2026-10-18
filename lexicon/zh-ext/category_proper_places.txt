@@ -573,7 +573,6 @@
 跑江湖	pao jiang hu	3335
 长白山区	chang bai shan qu	3335
 阿拉伯河	a la bo he	3335
-黄蓉连	huang rong lian	3335
 黑山共和国	hei shan gong he guo	3335
 三座大山	san zuo da shan	3306
 中国北方地区	zhong guo bei fang di qu	3306

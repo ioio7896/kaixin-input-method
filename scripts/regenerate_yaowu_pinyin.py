@@ -10,51 +10,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-import re
-
-from pypinyin import Style, lazy_pinyin
-
-
-PINYIN_SYLLABLE = re.compile(r"^[a-z]+$")
-
-
-def load_corrections(path: Path) -> dict[str, tuple[str, ...]]:
-    corrections: dict[str, tuple[str, ...]] = {}
-    for line_no, raw in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        fields = [field.strip() for field in line.split("\t")]
-        if len(fields) not in (2, 3):
-            raise ValueError(f"{path}:{line_no}: expected phrase, pinyin[, scope]")
-        phrase, code = fields[:2]
-        reading = tuple(code.lower().split())
-        if len(reading) != len(phrase) or any(
-            not PINYIN_SYLLABLE.fullmatch(item) for item in reading
-        ):
-            raise ValueError(f"{path}:{line_no}: invalid correction")
-        corrections[phrase] = reading
-    return corrections
-
-
-def corrected_reading(phrase: str, corrections: dict[str, tuple[str, ...]]) -> tuple[str, ...]:
-    base = tuple(lazy_pinyin(phrase, style=Style.NORMAL, errors="default"))
-    ordered = sorted(corrections.items(), key=lambda item: len(item[0]), reverse=True)
-    reading: list[str] = []
-    offset = 0
-    while offset < len(phrase):
-        match = next(
-            ((term, value) for term, value in ordered if phrase.startswith(term, offset)),
-            None,
-        )
-        if match is None:
-            reading.append(base[offset].lower())
-            offset += 1
-        else:
-            term, value = match
-            reading.extend(value)
-            offset += len(term)
-    return tuple(reading)
+from polyphone_corrections import corrected_reading, load_corrections
 
 
 def main() -> int:

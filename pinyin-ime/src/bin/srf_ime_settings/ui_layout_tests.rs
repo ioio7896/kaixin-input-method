@@ -407,16 +407,129 @@ fn short_descriptions_keep_wide_settings_rows_compact() {
 }
 
 #[test]
-fn long_help_is_condensed_without_hiding_privacy_or_effect_conditions() {
-    let ordinary = "截图完成后把实际图片文件直接交给本地文字识别工具，并立即显示预览和识别进度；后续结果可复制或发送到翻译工具。";
-    assert!(setting_description_summary("自动识别", ordinary).len() < ordinary.len());
+fn hover_help_preserves_full_explanations_and_effect_conditions() {
     for description in [
         "开启后强制 ASCII，不显示候选、不学习，并停止剪贴板捕获和历史读取；这些限制会持续到关闭隐私模式。",
         "仅在副本目录已配置时保存截图；保存结果会显示在状态栏，用户可打开指定目录查看文件并确认内容。",
         "修改快捷键后需要切换窗口才会生效；正在输入的宿主会继续使用原来的快捷键直到下一次重新获取焦点。",
     ] {
-        assert_eq!(setting_description_summary("设置名称", description), description);
+        assert_eq!(setting_help(description, RestartRequirement::None), description);
     }
+    assert_eq!(
+        setting_help("设置说明。", RestartRequirement::FocusChange),
+        "设置说明。\n切换窗口后生效。"
+    );
+    assert_eq!(
+        setting_help("", RestartRequirement::ApplicationRestart),
+        "重启应用后生效。"
+    );
+}
+
+#[test]
+fn setting_explanations_are_hidden_until_hovering_label_space_or_control() {
+    let description = "开启后记录复制来源进程路径；关闭后保留已有记录。";
+    for enabled in [true, false] {
+        for target in 0..3 {
+            let ctx = egui::Context::default();
+            fonts::install_cjk_fonts(&ctx);
+            enforce_settings_min_font_size(&ctx);
+            ctx.style_mut(|style| style.interaction.show_tooltips_only_when_still = false);
+            let mut row = egui::Rect::NOTHING;
+            let mut control = egui::Rect::NOTHING;
+            let mut pointer = None;
+            let mut visible = false;
+            for frame in 0..8 {
+                let input = egui::RawInput {
+                    screen_rect: Some(egui::Rect::from_min_size(
+                        egui::Pos2::ZERO,
+                        egui::vec2(640.0, 400.0),
+                    )),
+                    time: Some(frame as f64 * 0.25),
+                    events: pointer.map(egui::Event::PointerMoved).into_iter().collect(),
+                    ..Default::default()
+                };
+                let output = ctx.run(input, |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui.set_width(600.0);
+                        row = ui
+                            .add_enabled_ui(enabled, |ui| {
+                                setting_row(ui, "记录来源应用", description, |ui| {
+                                    control = capsule_switch(ui, &mut false).rect;
+                                });
+                            })
+                            .response
+                            .rect;
+                    });
+                });
+                let mut texts = Vec::new();
+                for shape in output.shapes {
+                    painted_text(&shape.shape, &mut texts);
+                }
+                visible = texts.iter().any(|(text, _)| text.contains(description));
+                if frame < 2 {
+                    assert!(!visible, "description was rendered inline");
+                }
+                if frame == 1 {
+                    assert!(
+                        row.height() <= 36.0,
+                        "help expanded the setting row: {row:?}"
+                    );
+                    pointer = Some(match target {
+                        0 => egui::pos2(row.left() + 24.0, row.center().y),
+                        1 => egui::pos2(row.left() + 230.0, row.center().y),
+                        _ => control.center(),
+                    });
+                }
+            }
+            assert!(visible, "missing help: enabled={enabled}, target={target}");
+        }
+    }
+}
+
+#[test]
+fn promoted_navigation_routes_search_and_resets_only_its_own_settings() {
+    for (title, section) in [
+        ("手写查字", SettingsSection::Handwrite),
+        ("剪贴板历史", SettingsSection::Clipboard),
+        ("截图目录", SettingsSection::Screenshot),
+        ("OCR 模型", SettingsSection::Ocr),
+        ("HY-MT2 / WinTranslator", SettingsSection::Translation),
+        ("诊断日志", SettingsSection::Diagnostics),
+        ("学习策略", SettingsSection::Learning),
+        ("用户词库", SettingsSection::Learning),
+        ("扩展词库", SettingsSection::Lexicon),
+    ] {
+        let mut app = footer_test_app();
+        let entry = SETTINGS_SEARCH_ENTRIES
+            .iter()
+            .find(|entry| entry.title == title)
+            .unwrap();
+        navigate_to_search_entry(&mut app, entry);
+        assert!(app.active_section == section, "wrong destination: {title}");
+        assert!(SettingsSection::ALL.contains(&section));
+    }
+    let mut app = footer_test_app();
+    app.model.screenshot_auto_save = !app.model.screenshot_auto_save;
+    app.model.clipboard_background_enabled = !app.model.clipboard_background_enabled;
+    let expected_clipboard = app.model.clipboard_background_enabled;
+    app.active_section = SettingsSection::Screenshot;
+    // A previous tool's subpage must not determine which settings are reset.
+    app.tool_page = ToolSettingsPage::Clipboard;
+    reset_active_page_defaults(&mut app);
+    assert_eq!(
+        app.model.screenshot_auto_save,
+        SettingsModel::default().screenshot_auto_save
+    );
+    assert_eq!(app.model.clipboard_background_enabled, expected_clipboard);
+
+    app.model.ocr_profile = "accurate".to_string();
+    app.model.screenshot_auto_save = !app.model.screenshot_auto_save;
+    let expected_screenshot = app.model.screenshot_auto_save;
+    app.active_section = SettingsSection::Ocr;
+    app.tool_page = ToolSettingsPage::Screenshot;
+    reset_active_page_defaults(&mut app);
+    assert_eq!(app.model.ocr_profile, SettingsModel::default().ocr_profile);
+    assert_eq!(app.model.screenshot_auto_save, expected_screenshot);
 }
 
 pub(super) fn footer_test_app() -> SettingsApp {
@@ -564,30 +677,63 @@ fn export_hotkeys_layout_preview() {
     fonts::install_cjk_fonts(&ctx);
     enforce_settings_min_font_size(&ctx);
     let mut app = footer_test_app();
-    app.active_section = SettingsSection::Hotkeys;
+    app.active_section = SettingsSection::ALL
+        .into_iter()
+        .find(|section| {
+            std::env::var("KX_SETTINGS_PREVIEW_SECTION").as_deref() == Ok(section.label())
+        })
+        .unwrap_or(SettingsSection::Hotkeys);
+    app.blocked_phrases_loaded = true;
+    app.lexicon_catalog = Some(Vec::new());
+    let height: u32 = std::env::var("KX_SETTINGS_PREVIEW_HEIGHT")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(1800);
     let mut textures = Vec::new();
     for _ in 0..2 {
         let output = ctx.run(
             egui::RawInput {
                 screen_rect: Some(egui::Rect::from_min_size(
                     egui::Pos2::ZERO,
-                    egui::vec2(1160.0, 1800.0),
+                    egui::vec2(1160.0, height as f32),
                 )),
                 ..Default::default()
             },
             |ctx| {
+                let palette = FluentPalette::from_visuals(&ctx.style().visuals);
+                egui::TopBottomPanel::bottom("preview_actions")
+                    .frame(
+                        egui::Frame::none()
+                            .fill(palette.command_bar)
+                            .stroke(Stroke::new(1.0, palette.border_subtle))
+                            .inner_margin(egui::Margin::symmetric(16.0, 7.0)),
+                    )
+                    .show(ctx, |ui| {
+                        settings_footer_ui(ui, &mut app, palette, false, None)
+                    });
                 egui::SidePanel::left("preview_navigation")
                     .exact_width(SETTINGS_NAV_WIDTH)
+                    .frame(
+                        egui::Frame::none()
+                            .fill(palette.nav_bg)
+                            .stroke(Stroke::new(1.0, palette.border_subtle))
+                            .inner_margin(egui::Margin::same(10.0)),
+                    )
                     .show(ctx, |ui| {
                         fluent_nav_header(ui);
-                        ui.separator();
-                        ui.label("输入");
-                        ui.label("外观");
-                        ui.label("词库与学习");
-                        ui.label(RichText::new("快捷键").strong());
+                        ui.add_space(8.0);
+                        let mut group = "";
+                        for section in SettingsSection::ALL {
+                            if group != section.nav_group() {
+                                group = section.nav_group();
+                                ui.label(RichText::new(group).size(11.0).color(palette.muted));
+                            }
+                            nav_item(ui, &mut app.active_section, section, &app.model);
+                            ui.add_space(2.0);
+                        }
                     });
                 egui::CentralPanel::default()
-                    .frame(egui::Frame::none())
+                    .frame(egui::Frame::none().fill(palette.app_bg))
                     .show(ctx, |ui| {
                         settings_content_ui(ui, &mut app, &mut false);
                     });
@@ -609,7 +755,7 @@ fn export_hotkeys_layout_preview() {
             let vertices: Vec<_> = mesh.vertices.iter().map(|v| serde_json::json!([v.pos.x, v.pos.y, v.uv.x, v.uv.y, v.color.to_array()])).collect();
             Some(serde_json::json!({"clip": [clipped.clip_rect.min.x, clipped.clip_rect.min.y, clipped.clip_rect.max.x, clipped.clip_rect.max.y], "texture": format!("{:?}", mesh.texture_id), "vertices": vertices, "indices": mesh.indices}))
         }).collect();
-        fs::write(&destination, serde_json::to_vec(&serde_json::json!({"width":1160, "height":1800, "textures":textures, "meshes":meshes})).unwrap()).unwrap();
+        fs::write(&destination, serde_json::to_vec(&serde_json::json!({"width":1160, "height":height, "textures":textures, "meshes":meshes})).unwrap()).unwrap();
     }
 }
 

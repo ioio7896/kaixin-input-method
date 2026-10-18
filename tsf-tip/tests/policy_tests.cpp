@@ -109,6 +109,24 @@ void TestChineseHalfwidth() {
 
 void TestGameInputPolicy() {
   using M = SrfGameInputMode;
+  for (const auto configured : {M::Manual, M::Passthrough, M::Chinese, M::AutoText}) {
+    Check(SrfEffectiveGameInputMode(false, configured) == configured,
+          "disabling pure game override restores the configured policy unchanged");
+    for (const bool chat : {false, true}) {
+      for (const bool editable : {false, true}) {
+        Check(SrfGameShouldPassThrough(true, SrfEffectiveGameInputMode(true, configured), chat, editable),
+              "pure game override cannot be escaped by chat, editable fields, or app Chinese mode");
+      }
+    }
+  }
+  SrfGameKeyOwnership pureOwnership;
+  for (const unsigned key : {unsigned('W'), unsigned(VK_SHIFT), unsigned(VK_RETURN), unsigned(VK_SPACE)}) {
+    pureOwnership.ObserveDown(key, false, true);
+    Check(pureOwnership.PassDown(key, true, false),
+          "game retains a key held while pure mode is turned off");
+    pureOwnership.ObserveUp(key);
+    Check(pureOwnership.PassRelease(key), "game receives both edges of a pure-mode key");
+  }
   SrfPendingKeyEdits pending;
   const auto oldEdit = pending.Begin(100);
   const auto secondEdit = pending.Begin(150);

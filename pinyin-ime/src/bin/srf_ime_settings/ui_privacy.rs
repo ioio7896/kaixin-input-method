@@ -25,7 +25,12 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 }
             },
         );
-        setting_row(ui, "用户词库加密状态", &encryption_status, |ui| {
+        setting_path_row(ui, "用户词库加密状态", &encryption_status, |ui| {
+            let status = encryption_status
+                .split_once('：')
+                .map(|(status, _)| status)
+                .unwrap_or("本地存储");
+            ui.label(status).on_hover_text(&encryption_status);
             if outline_button(ui, "导出隐私说明").clicked() {
                 app.export_privacy_statement();
             }
@@ -116,7 +121,6 @@ pub(super) fn privacy_data_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             "开启后强制 ASCII，不显示候选、不学习，并停止剪贴板捕获和历史读取。",
             &mut app.model.privacy_enabled,
         );
-        ui.label("这些进程名单会以明文保存到 config.ini；需要隐藏使用痕迹时请留空。");
         privacy_process_list_row(
             ui,
             "永不学习",
@@ -138,21 +142,15 @@ pub(super) fn privacy_process_list_row(
     description: &str,
     value: &mut String,
 ) {
-    let palette = fluent_palette(ui);
-    ui.add_space(6.0);
-    ui.label(
-        RichText::new(title)
-            .strong()
-            .size(SETTINGS_FONT_SETTING_TITLE)
-            .color(palette.text),
-    );
-    ui.label(RichText::new(description).small().color(palette.muted));
-    ui.add(
-        TextEdit::multiline(value)
-            .desired_width(ui.available_width().max(1.0))
-            .desired_rows(2)
-            .hint_text("app.exe, password*.exe"),
-    );
+    let help = format!("{description}\n每行或用逗号分隔进程名，可使用 * 通配符。名单以明文保存到 config.ini；需要隐藏使用痕迹时请留空。");
+    setting_path_row(ui, title, &help, |ui| {
+        ui.add(
+            TextEdit::multiline(value)
+                .desired_width(ui.available_width().max(1.0))
+                .desired_rows(2)
+                .hint_text("app.exe, password*.exe"),
+        );
+    });
 }
 
 fn privacy_process_list_text(value: &str) -> String {
@@ -171,7 +169,7 @@ pub(super) fn data_location_row(
     path: &Path,
     add_actions: impl FnOnce(&mut egui::Ui),
 ) {
-    setting_row(ui, title, description, |ui| {
+    setting_path_row(ui, title, description, |ui| {
         let field_width = path_field_width(ui, 2);
         let mut readonly_path = path.display().to_string();
         ui.add_sized(
@@ -208,7 +206,7 @@ pub(super) fn folder_path_row(
     value: &mut String,
     empty_hint: &str,
 ) {
-    setting_row(ui, title, description, |ui| {
+    setting_path_row(ui, title, description, |ui| {
         let field_width = path_field_width(ui, 1);
         ui.add_sized(
             [field_width, SETTINGS_ROW_HEIGHT],
@@ -231,7 +229,7 @@ pub(super) fn executable_path_row(
     value: &mut String,
     empty_hint: &str,
 ) {
-    setting_row(ui, title, description, |ui| {
+    setting_path_row(ui, title, description, |ui| {
         let buttons = if value.is_empty() { 1 } else { 2 };
         let field_width = path_field_width(ui, buttons);
         ui.add_sized(

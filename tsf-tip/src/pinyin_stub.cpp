@@ -126,6 +126,7 @@ static_assert(sizeof(EngineHealthRecordV1) == 24);
 constexpr DWORD kEngineHealthRecordMagic = 0x4845584B;  // "KXEH" on disk.
 constexpr DWORD kEngineHealthFailureUnspecified = 0xE0010001;
 std::atomic<DWORD> g_engineHealthErrorCode{ERROR_SUCCESS};
+std::atomic<DWORD> g_engineHelperPid{0};
 
 enum class EnginePipeCommand : uint16_t {
   Init = 1,
@@ -169,6 +170,7 @@ std::atomic<bool> g_retryOnFailureEnabled = false;
 SrfEngineRecoveryBudget g_recoveryBudget;
 std::atomic<bool> g_retryLoopInFlight = false;
 std::atomic<unsigned long long> g_retryLoopGeneration = 0;
+std::atomic<unsigned long long> g_recoveryTriggerRequestId{0};
 std::atomic<ULONGLONG> g_lastEngineUseTime{0};
 std::atomic<ULONGLONG> g_lastInteractiveLookupTick{0};
 std::atomic<ULONGLONG> g_lastUserTriggeredWarmupTick{0};
@@ -1268,7 +1270,8 @@ void WriteStateBinaryValue(const wchar_t* name, const BYTE* value, DWORD bytes) 
   RegCloseKey(key);
 }
 
-void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS) {
+void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS,
+                        const wchar_t* reasonCode = L"unspecified") {
   const SrfEngineState previous = g_engineState.exchange(state, std::memory_order_acq_rel);
   if (previous != state) {
     WriteStateDwordValue(kStateEngineStateValue, static_cast<DWORD>(state));
@@ -1293,6 +1296,15 @@ void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS) {
                                     g_engineHealthErrorCode.load(std::memory_order_acquire)};
   WriteStateBinaryValue(kStateEngineHealthV1Value,
                         reinterpret_cast<const BYTE*>(&record), sizeof(record));
+  if (previous != state) {
+    AppendEngineLogDeduped(
+        state == SrfEngineState::Failed ? L"error" : L"basic", L"tsf_bridge_transition",
+        L"from=" + std::to_wstring(static_cast<unsigned>(previous)) +
+            L" to=" + std::to_wstring(static_cast<unsigned>(state)) +
+            L" helper_pid=" + std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) +
+            L" error_code=" + std::to_wstring(record.errorCode) +
+            L" reason_code=" + reasonCode);
+  }
 }
 
 void WriteEngineRecoveryState(const std::wstring& reason) {
@@ -1934,6 +1946,7 @@ void CloseRemotePipeOnlyLocked() {
   if (g_bridge.pipe != nullptr && g_bridge.pipe != INVALID_HANDLE_VALUE) {
     CloseHandle(g_bridge.pipe);
     g_bridge.pipe = INVALID_HANDLE_VALUE;
+    g_engineHelperPid.store(0, std::memory_order_release);
   }
 }
 
@@ -2091,6 +2104,9 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
         return false;
       }
       g_bridge.pipe = pipe;
+      DWORD helperPid = 0;
+      (void)GetNamedPipeServerProcessId(pipe, &helperPid);
+      g_engineHelperPid.store(helperPid, std::memory_order_release);
       return true;
     }
 
@@ -2132,11 +2148,23 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
 }
 
 bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>& payload, int* status,
-                             std::vector<BYTE>* responsePayload, std::wstring* error) {
+                             std::vector<BYTE>* responsePayload, std::wstring* error,
+                             unsigned long long requestId = 0) {
+  const auto logFailure = [&](const wchar_t* stage, int result) {
+    AppendEngineLogDeduped(
+        L"error", L"tsf_bridge_request_failed",
+        L"command=" + std::to_wstring(static_cast<unsigned>(command)) +
+            L" request_id=" + std::to_wstring(requestId) +
+            L" helper_pid=" + std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) +
+            L" stage=" + stage + L" status=" + std::to_wstring(result));
+  };
   if (status) *status = -1;
   if (responsePayload) responsePayload->clear();
   const DWORD timeoutMs = TimeoutMsForCommand(command);
-  if (!EnsureRemoteConnectionLocked(command, timeoutMs, error)) return false;
+  if (!EnsureRemoteConnectionLocked(command, timeoutMs, error)) {
+    logFailure(L"connect", -1);
+    return false;
+  }
 
   std::vector<BYTE> header;
   header.reserve(12);
@@ -2148,6 +2176,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
                                    L"request-header", error) ||
       (!payload.empty() && !WritePipeMessageWithTimeout(g_bridge.pipe, payload.data(), payload.size(),
                                                         timeoutMs, command, L"request-payload", error))) {
+    logFailure(L"write", -1);
     InvalidateRemoteBackendLocked();
     return false;
   }
@@ -2164,6 +2193,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
                                         retryTimeoutMs, command, L"response-header(retry)", error);
   }
   if (!readOk) {
+    logFailure(L"read_header", -1);
     InvalidateRemoteBackendLocked();
     return false;
   }
@@ -2185,6 +2215,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
       (static_cast<uint32_t>(responseHeader[14]) << 16) | (static_cast<uint32_t>(responseHeader[15]) << 24);
 
   if (responseSize > kEnginePipeMaxResponseBytes) {
+    logFailure(L"response_size", responseStatus);
     if (error) *error = L"shared engine pipe returned an oversized response payload";
     InvalidateRemoteBackendLocked();
     return false;
@@ -2192,6 +2223,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
 
   if (magic != kEnginePipeMagic || version != kEnginePipeVersion ||
       echoedCommand != static_cast<uint16_t>(command)) {
+    logFailure(L"response_header", responseStatus);
     if (error) *error = L"shared engine pipe returned an invalid response header";
     InvalidateRemoteBackendLocked();
     return false;
@@ -2201,6 +2233,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
     responsePayload->resize(responseSize);
     if (!ReadPipeMessageWithTimeout(g_bridge.pipe, responsePayload->data(), responsePayload->size(),
                                     timeoutMs, command, L"response-payload", error)) {
+      logFailure(L"read_payload", responseStatus);
       InvalidateRemoteBackendLocked();
       return false;
     }
@@ -2208,12 +2241,14 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
     std::vector<BYTE> sink(responseSize);
     if (!ReadPipeMessageWithTimeout(g_bridge.pipe, sink.data(), sink.size(), timeoutMs, command,
                                     L"response-payload", error)) {
+      logFailure(L"read_payload", responseStatus);
       InvalidateRemoteBackendLocked();
       return false;
     }
   }
 
   if (status) *status = responseStatus;
+  if (responseStatus != 0) logFailure(L"remote_status", responseStatus);
   if (command == EnginePipeCommand::Shutdown) CloseRemotePipeOnlyLocked();
   return true;
 }
@@ -2503,7 +2538,8 @@ bool RemoteLookupLocked(const std::wstring& reading, unsigned long long requestI
 
   int status = -1;
   std::vector<BYTE>& response = RemoteLookupResponseScratch();
-  if (!SendRemoteRequestLocked(EnginePipeCommand::Lookup, payload, &status, &response, error)) {
+  if (!SendRemoteRequestLocked(EnginePipeCommand::Lookup, payload, &status, &response, error,
+                               requestId)) {
     return false;
   }
   if (status != 0) {
@@ -2947,7 +2983,7 @@ void IdleKeepaliveCheckWorker() {
       TouchEngineUseTime();
       continue;
     }
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"idle_keepalive_failed");
     EnsureRetryLoopScheduled();
   }
 }
@@ -2980,7 +3016,7 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
                                   std::to_wstring(GetCurrentProcessId()) +
                                   L" error=" + std::to_wstring(error));
       // All restart attempts go through the bounded recovery scheduler.
-      PublishEngineState(SrfEngineState::Failed, error);
+      PublishEngineState(SrfEngineState::Failed, error, L"watchdog_mutex_missing");
       EnsureRetryLoopScheduled();
       continue;
     }
@@ -3005,6 +3041,7 @@ void EnsureEngineWatchdogStarted(const std::filesystem::path& moduleDir) {
 
 void ResetRetryLoopState() {
   g_recoveryBudget.Reset();
+  g_recoveryTriggerRequestId.store(0, std::memory_order_release);
   g_retryLoopGeneration.fetch_add(1, std::memory_order_acq_rel);
   g_retryLoopInFlight.store(false, std::memory_order_release);
 }
@@ -3017,14 +3054,21 @@ DWORD RetryBackoffMsForAttempt(size_t attempt) {
 
 void WarmupEngineWorker();
 
-void RetryLoopWorker(unsigned long long generation) {
+void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRequestId) {
   size_t attempt = 0;
+  const ULONGLONG startedTick = GetTickCount64();
   while (attempt < kRetryBackoffMs.size()) {
     if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) break;
     if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) break;
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
 
-    Sleep(RetryBackoffMsForAttempt(attempt));
+    const DWORD delayMs = RetryBackoffMsForAttempt(attempt);
+    AppendEngineLogDeduped(L"basic", L"tsf_bridge_recovery",
+                           L"generation=" + std::to_wstring(generation) +
+                               L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
+                               L" attempt=" + std::to_wstring(attempt + 1) +
+                               L" phase=wait delay_ms=" + std::to_wstring(delayMs));
+    Sleep(delayMs);
 
     if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) break;
     if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) break;
@@ -3032,11 +3076,24 @@ void RetryLoopWorker(unsigned long long generation) {
 
     if (g_warmupInFlight.exchange(true, std::memory_order_acq_rel)) continue;
     if (!g_recoveryBudget.TryAcquire()) {
+      AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
+                             L"generation=" + std::to_wstring(generation) +
+                                 L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
+                                 L" phase=budget_exhausted attempts=" + std::to_wstring(attempt));
       g_warmupInFlight.store(false, std::memory_order_release);
       break;
     }
-    PublishEngineState(SrfEngineState::Loading);
+    PublishEngineState(SrfEngineState::Loading, ERROR_SUCCESS, L"recovery_attempt");
     WarmupEngineWorker();
+    AppendEngineLogDeduped(
+        g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"basic" : L"error",
+        L"tsf_bridge_recovery",
+        L"generation=" + std::to_wstring(generation) +
+            L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
+            L" attempt=" + std::to_wstring(attempt + 1) +
+            L" phase=result status=" +
+            (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"ready" : L"failed") +
+            L" elapsed_ms=" + std::to_wstring(GetTickCount64() - startedTick));
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
     ++attempt;
   }
@@ -3045,6 +3102,11 @@ void RetryLoopWorker(unsigned long long generation) {
       g_retryOnFailureEnabled.load(std::memory_order_acquire) &&
       g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready &&
       g_recoveryBudget.Exhausted()) {
+    AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
+                           L"generation=" + std::to_wstring(generation) +
+                               L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
+                               L" phase=cooldown delay_ms=" +
+                               std::to_wstring(kEngineRecoveryCooldownMs));
     // Keep a slow health probe after the short recovery budget is consumed.
     // A transient outage can then recover without an infinite rapid restart
     // loop or requiring the user to restart Windows.
@@ -3080,7 +3142,17 @@ void EnsureRetryLoopScheduled() {
   }
 
   const unsigned long long generation = g_retryLoopGeneration.load(std::memory_order_acquire);
-  if (!StartDetachedBackgroundWorker([generation] { RetryLoopWorker(generation); })) {
+  const unsigned long long triggerRequestId =
+      g_recoveryTriggerRequestId.load(std::memory_order_acquire);
+  AppendEngineLogDeduped(L"basic", L"tsf_bridge_recovery",
+                         L"generation=" + std::to_wstring(generation) +
+                             L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
+                             L" phase=scheduled");
+  if (!StartDetachedBackgroundWorker(
+          [generation, triggerRequestId] { RetryLoopWorker(generation, triggerRequestId); })) {
+    AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
+                           L"generation=" + std::to_wstring(generation) +
+                               L" phase=worker_start_failed");
     g_retryLoopInFlight.store(false, std::memory_order_release);
   }
 }
@@ -3100,11 +3172,11 @@ bool ShouldStartUserTriggeredWarmup() {
 bool StartWarmupWorkerAsync() {
   if (g_warmupInFlight.exchange(true, std::memory_order_acq_rel)) return false;
 
-  PublishEngineState(SrfEngineState::Loading);
+  PublishEngineState(SrfEngineState::Loading, ERROR_SUCCESS, L"warmup_started");
   if (StartDetachedBackgroundWorker([] { WarmupEngineWorker(); })) return true;
 
   g_warmupInFlight.store(false, std::memory_order_release);
-  PublishEngineState(SrfEngineState::Failed);
+  PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"warmup_worker_start_failed");
   EnsureRetryLoopScheduled();
   return false;
 }
@@ -3118,7 +3190,8 @@ void WarmupEngineWorker() {
     return ok;
   }();
 
-  PublishEngineState(initialized ? SrfEngineState::Ready : SrfEngineState::Failed);
+  PublishEngineState(initialized ? SrfEngineState::Ready : SrfEngineState::Failed, ERROR_SUCCESS,
+                     initialized ? L"warmup_succeeded" : L"warmup_failed");
   g_warmupInFlight.store(false, std::memory_order_release);
   if (initialized) {
     TouchEngineUseTime();
@@ -3141,7 +3214,8 @@ bool EnsureReadyNow() {
     return ok;
   }();
 
-  PublishEngineState(initialized ? SrfEngineState::Ready : SrfEngineState::Failed);
+  PublishEngineState(initialized ? SrfEngineState::Ready : SrfEngineState::Failed, ERROR_SUCCESS,
+                     initialized ? L"load_succeeded" : L"load_failed");
   g_warmupInFlight.store(false, std::memory_order_release);
   if (initialized) {
     TouchEngineUseTime();
@@ -3251,7 +3325,7 @@ size_t SrfTip_SyllableBoundaryOffsetsUtf16(const wchar_t* text, size_t unitCount
     SetFailureDetailLocked(error.empty() ? L"shared engine syllable bounds failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"syllable_bounds_failed");
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
@@ -3340,12 +3414,12 @@ bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
           SetFailureDetailLocked(error.empty() ? L"shared engine learning request failed" : error);
           failureSnap = g_lastEngineFailure;
           InvalidateRemoteBackendLocked();
-          PublishEngineState(SrfEngineState::Failed);
+          PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"learning_request_failed");
           EnsureRetryLoopScheduled();
         }
       } else {
         failureSnap = L"shared engine backend is not connected";
-        PublishEngineState(SrfEngineState::Failed);
+        PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"learning_backend_disconnected");
         EnsureRetryLoopScheduled();
       }
     }
@@ -3628,7 +3702,7 @@ void SrfTip_ResetLearningContext() {
     SetFailureDetailLocked(error.empty() ? L"shared engine reset learning context failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"reset_learning_failed");
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
@@ -3660,7 +3734,7 @@ bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& com
     SetFailureDetailLocked(error.empty() ? L"shared engine candidate pin failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"candidate_pin_failed");
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
@@ -3698,7 +3772,7 @@ void SrfTip_ApplyCandidateAction(const std::wstring& reading,
     SetFailureDetailLocked(error.empty() ? L"shared engine candidate action failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"candidate_action_failed");
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
@@ -3723,7 +3797,7 @@ void SrfTip_RecordClipboardText(const std::wstring& text) {
     SetFailureDetailLocked(error.empty() ? L"shared engine clipboard record failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"clipboard_record_failed");
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
@@ -3749,7 +3823,7 @@ bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text) {
     SetFailureDetailLocked(error.empty() ? L"shared engine clipboard resolve failed" : error);
     failureSnap = g_lastEngineFailure;
     InvalidateRemoteBackendLocked();
-    PublishEngineState(SrfEngineState::Failed);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"clipboard_resolve_failed");
     EnsureRetryLoopScheduled();
   }
   if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
@@ -3945,7 +4019,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
           SetFailureDetailLocked(restartDetail);
           WriteEngineRecoveryState(restartDetail);
         }
-        PublishEngineState(SrfEngineState::Failed);
+        g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+        PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_timeout_restart");
         guard.unlock();
         EnsureRetryLoopScheduled();
         AppendEngineFailureLogDeduped(restartDetail);
@@ -3956,7 +4031,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
       }
       if (IsTransientRemoteLookupError(failureSnap)) {
         if (!IsLookupTimeoutError(failureSnap)) ResetLookupTimeoutStreak();
-        PublishEngineState(SrfEngineState::Failed);
+        g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+        PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_transient_error");
         guard.unlock();
         EnsureRetryLoopScheduled();
         AppendEngineFailureLogDeduped(failureSnap);
@@ -3967,7 +4043,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
       }
       ResetLookupTimeoutStreak();
       SetFailureDetailLocked(failureSnap);
-      PublishEngineState(SrfEngineState::Failed);
+      g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+      PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_failed");
       EnsureRetryLoopScheduled();
       if (tryStale(L"lookup_failed")) {
         return SrfLookupCandidatesStatus::Failed;
@@ -3980,7 +4057,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
   } else {
     ResetLookupTimeoutStreak();
     failureSnap = L"shared engine backend is not connected";
-    PublishEngineState(SrfEngineState::Failed);
+    g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_backend_disconnected");
     EnsureRetryLoopScheduled();
     if (tryStale(L"backend_not_connected")) {
       return SrfLookupCandidatesStatus::BackendNotConnected;

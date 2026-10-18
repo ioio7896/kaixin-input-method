@@ -79,6 +79,7 @@ inline constexpr Entry entries[] = {
 {L"screenshot",L"mode",L"manual_region"},
 {L"screenshot",L"confirm_on_release",L"0"},
 {L"screenshot",L"show_instructions",L"1"},
+{L"screenshot",L"show_quick_actions",L"1"},
 {L"clipboard",L"hotkey",L"off"},
 {L"tools",L"settings_hotkey",L"off"},
 {L"tools",L"handwrite_hotkey",L"off"},

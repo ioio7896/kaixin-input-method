@@ -12,7 +12,6 @@
 穿着	chuan zhuo	1500
 结果子	jie guo zi	1500
 跷跷板	qiao qiao ban	10
-还款	huan kuan	1286
 这	zhei	700
 闲事	xian shi	140
 闲适	xian shi	150

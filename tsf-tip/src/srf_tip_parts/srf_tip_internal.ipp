@@ -418,6 +418,7 @@ constexpr DWORD kRustModeLearningAggressive = 0x8000;
 constexpr DWORD kRustModeLearningConservative = 0x10000;
 constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
 constexpr wchar_t kStateAsciiValue[] = L"AsciiMode";
+constexpr wchar_t kStatePureGameModeValue[] = L"PureGameMode";
 constexpr wchar_t kStateInputAsciiValue[] = L"InputAsciiMode";
 constexpr wchar_t kStateInputModeSourceValue[] = L"InputModeSource";
 constexpr wchar_t kStateInputOwnerProcessIdValue[] = L"InputOwnerProcessId";

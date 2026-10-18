@@ -1761,7 +1761,7 @@ fn listen_loop_inner() {
             runtime_log::log_engine(
                 RuntimeLogLevel::Error,
                 "srf_ipc_security_init_failed",
-                err.to_string(),
+                format!("reason=token_unavailable io_kind={:?}", err.kind()),
             );
             std::process::exit(1);
         }
@@ -1961,7 +1961,7 @@ fn verify_capability_token(cursor: &mut PayloadCursor<'_>) -> Result<(), i32> {
         runtime_log::log_engine(
             RuntimeLogLevel::Error,
             "srf_ipc_capability_denied",
-            "status=denied",
+            "reason=token_mismatch status=denied",
         );
         Err(-6)
     }
@@ -2021,6 +2021,20 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
                 Err(_) => (ENGINE_PANIC_RC, Vec::new()),
             };
         let shutdown_requested = command == EngineCommand::Shutdown && status == 0;
+        if status != 0
+            && !(command == EngineCommand::Lookup
+                && (status == -8 || (status == -5 && lookup_session.last_request_id == 0)))
+            && status != -7
+        {
+            runtime_log::log_engine(
+                RuntimeLogLevel::Error,
+                "srf_ipc_request_failed",
+                format!(
+                    "client_pid={} command={} request_id={} status={}",
+                    client_process_id, command as u16, lookup_session.last_request_id, status
+                ),
+            );
+        }
         let write_started = Instant::now();
         let written = write_response(pipe, command, status, &response);
         if command == EngineCommand::Lookup && perf_log_enabled() {

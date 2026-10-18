@@ -72,18 +72,18 @@ TEXT_FILES = {
         3,
     ),
     "data_sources/kaixin/common_phrases.tsv": (
-        "871a706af6b67451c4c145c225fedc2ed4706f8ea80a3d7face6b42660f90bfa",
+        "76ebea960afc6618592b9082a80ec96dc929db1897481b0246f6d0254aab2cb5",
         41,
         3,
     ),
     "data_sources/kaixin/polyphone_corrections.tsv": (
-        "89d7a621ef5befe38ef8ebcb84b956d663a0d80186ec8f51a97e9568307f2df3",
+        "dbf0cb652d83005ea997ba298301cfeb906695105104c06048f718f053e11f2a",
         145,
         2,
     ),
     "data_sources/kaixin/pronunciation_aliases.tsv": (
-        "0f02157dab25eeca3552e0963d8203d1fee584e5bfd6e20d88f610c2462a49fd",
-        123,
+        "c8eddab0e56f4b730f8651f7fe51453c1cd3ecdf56045429fbb3fe19c0d50e06",
+        124,
         4,
     ),
     "data_sources/kaixin/core_priority_corrections.tsv": ("0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765", 38, 2),
@@ -125,7 +125,8 @@ def main() -> int:
         keys: set[tuple[str, str]] = set()
         for number, row in enumerate(rows, 1):
             fields = row.split("\t")
-            if len(fields) != columns:
+            scoped_correction = relative == "data_sources/kaixin/polyphone_corrections.tsv"
+            if len(fields) != columns and not (scoped_correction and len(fields) == 3):
                 fail(f"{relative}: data row {number} has {len(fields)} columns")
                 errors += 1
                 continue
@@ -137,6 +138,9 @@ def main() -> int:
                 fail(f"{relative}: duplicate term/pinyin pair at data row {number}")
                 errors += 1
             keys.add(key)
+            if scoped_correction and len(fields) == 3 and fields[2] not in {"exact", "substring"}:
+                fail(f"{relative}: data row {number} has an invalid correction scope")
+                errors += 1
             if columns == 3:
                 try:
                     if int(fields[2]) <= 0:

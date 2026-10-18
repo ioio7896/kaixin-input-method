@@ -630,7 +630,6 @@
 数目字	shu mu zi	3245
 暗星云	an xing yun	3245
 朱幼棣	zhu you di	3245
-段誉身	duan yu shen	3245
 毛驴车	mao lv che	3245
 活泼泼	huo po po	3245
 磁倾角	ci qing jiao	3245

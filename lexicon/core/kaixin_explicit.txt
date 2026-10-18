@@ -22,7 +22,7 @@
 先是	xian shi	1
 教士	jiao shi	2309
 礁石	jiao shi	1540
-校史	jiao shi	771
+校史	xiao shi	771
 浇湿	jiao shi	1
 西安	xi an	8462
 先	xian	10000

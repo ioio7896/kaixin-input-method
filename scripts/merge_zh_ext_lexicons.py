@@ -101,6 +101,7 @@ def parse_row(path: Path, line_number: int, line: str) -> tuple[str, str, int]:
 
 
 def merge_category(category: Category) -> list[tuple[str, str, int]]:
+    from lexicon_quality import clean_rows
     entries: OrderedDict[tuple[str, str], tuple[str, int]] = OrderedDict()
     for source_name in category.sources:
         path = SOURCE_DIR / source_name
@@ -130,12 +131,23 @@ def merge_category(category: Category) -> list[tuple[str, str, int]]:
             (phrase, code, category.fixed_weight)
             for phrase, code, _ in rows
         ]
-    return rows
+    return clean_rows(rows)
 
 
 def write_category(path: Path, category: Category, rows: list[tuple[str, str, int]]) -> None:
     if path.name.startswith("category_") and category.sources == (path.name,):
-        path.write_bytes((SOURCE_DIR / path.name).read_bytes())
+        original = (SOURCE_DIR / path.name).read_bytes()
+        source = original.decode("utf-8-sig")
+        original_rows = [parse_row(SOURCE_DIR / path.name, n, line)
+                         for n, line in enumerate(source.splitlines(), 1)
+                         if line.strip() and not line.startswith("#")]
+        if original_rows == rows:
+            path.write_bytes(original)
+            return
+        comments = [line for line in source.splitlines() if line.startswith("#")]
+        path.write_text("\n".join(comments) + "\n"
+                        + "".join(f"{p}\t{r}\t{s}\n" for p, r, s in rows),
+                        encoding="utf-8", newline="\n")
         return
     source_names = ", ".join(category.sources)
     text = (

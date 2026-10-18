@@ -214,6 +214,7 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
 bool CSrfTip::WouldEatKey(UINT vk) {
   SrfScopedPerfTimer perf(L"Key/WouldEat");
   RefreshKeyHotPathState();
+  if (m_pureGameMode) return false;
   if (!EnsureEngineInputReady()) return false;
   const bool allowImeHotkeys = ShouldHandleImeHotkeys();
   if (ShouldHandleGameChatHotkey() && IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) return true;
@@ -315,6 +316,7 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
   if (!pic) return E_INVALIDARG;
 
   RefreshKeyHotPathState();
+  if (m_pureGameMode) return S_OK;
   const bool keyDownTransition = (lParam & 0x40000000) == 0;
   const bool allowImeHotkeys = ShouldHandleImeHotkeys();
   if (allowImeHotkeys && IsConfiguredHotkey(vk, m_config.input.traditionalHotkey)) {

@@ -219,7 +219,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
 }
 
 // Keep every control aligned while reserving enough space for the editor.
-// Narrow windows place the editor below the wrapped description.
+// Narrow windows place the editor below the setting title.
 const HOTKEY_CONTROL_WIDTH: f32 = 400.0;
 
 fn hotkey_setting_row(
@@ -228,16 +228,18 @@ fn hotkey_setting_row(
     description: &str,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
-    egui::Frame::none()
+    let response = egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
         .show(ui, |ui| {
             responsive_settings_row(
                 ui,
                 HOTKEY_CONTROL_WIDTH,
                 |ui| setting_text(ui, title, description, RestartRequirement::None),
-                add_control,
+                |ui| setting_row_help(ui.scope(add_control).response, description),
             );
-        });
+        })
+        .response;
+    setting_row_help(response, description);
 }
 
 fn hotkey_setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut bool) {
@@ -251,11 +253,10 @@ pub(super) fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_toggle(
             ui,
             "后台保存剪贴板历史",
-            "关闭后不再记录系统剪贴板文本；已保存内容仍可在下方清空。",
+            "关闭后不再记录系统剪贴板文本；已保存内容仍可在下方清空。打开剪贴板窗口或刷新仍可读取当前文本，上述容量规则同样适用。",
             &mut app.model.clipboard_background_enabled,
         );
-        let history_enabled = app.model.clipboard_background_enabled;
-        ui.add_enabled_ui(history_enabled, |ui| {
+        ui.scope(|ui| {
             setting_slider_usize(
                 ui,
                 "历史记录上限",
@@ -273,9 +274,9 @@ pub(super) fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             setting_slider_usize(
                 ui,
                 "单条文本上限",
-                "单条文本最多保存的 UTF-16 单元数，过长内容会被截断。",
+                "单条文本最多保存的 UTF-16 单元数；超限会提示并跳过，原文本不会被截断。",
                 &mut app.model.clipboard_max_text_utf16_units,
-                20..=20_000,
+                20..=1_000_000,
             );
             setting_toggle(
                 ui,
@@ -303,19 +304,18 @@ pub(super) fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 &mut app.model.clipboard_pinned_respects_max_age,
             );
         });
-        if !history_enabled {
-            ui.label(
-                RichText::new("开启后台保存后可调整历史容量、来源应用和自动清理规则。")
-                    .small()
-                    .color(fluent_palette(ui).muted),
-            );
-        }
     });
 
     let clipboard_path = pinyin_ime::clipboard_store::store_path();
     let clipboard_storage_status = clipboard_storage_status_text(&clipboard_path);
     section_panel(ui, "存储与维护", |ui| {
-        setting_row(ui, "加密状态", &clipboard_storage_status, |_| {});
+        setting_row(ui, "加密状态", &clipboard_storage_status, |ui| {
+            let status = clipboard_storage_status
+                .split_once('：')
+                .map(|(status, _)| status)
+                .unwrap_or("本地存储");
+            ui.label(status).on_hover_text(&clipboard_storage_status);
+        });
         data_location_row(
             ui,
             "历史数据库",
@@ -339,11 +339,10 @@ pub(super) fn clipboard_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     });
 
     section_panel(ui, "敏感应用", |ui| {
-        ui.label("以下进程名单会以明文保存到 config.ini；匹配后不解析剪贴板历史候选。");
         privacy_process_list_row(
             ui,
             "永不剪贴板",
-            "匹配这些进程时，不解析剪贴板历史候选。",
+            "进程名单以明文保存到 config.ini；匹配这些进程时，不解析剪贴板历史候选。",
             &mut app.model.privacy_never_clipboard_processes,
         );
     });

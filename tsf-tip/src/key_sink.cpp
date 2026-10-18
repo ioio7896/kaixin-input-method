@@ -255,6 +255,10 @@ STDMETHODIMP CKeyEventSink::OnKeyTraceDown(WPARAM wParam, LPARAM lParam) {
   if (!m_pTip) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  if (m_pTip->RefreshPureGameModeFromRegistry()) {
+    m_keyOwnership.ObserveDown(vk, (lParam & 0x40000000) != 0, true);
+    return S_OK;
+  }
   if (vk == m_pTip->m_config.input.gameModeHotkey.vk) m_gameToggleRepeated = (lParam & 0x40000000) != 0;
   if (vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk) m_asciiToggleRepeated = (lParam & 0x40000000) != 0;
   if (IsVkShift(vk)) UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
@@ -288,6 +292,7 @@ STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LP
   if (!pfEaten) return E_POINTER;
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
+  if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (m_traceAvailable && m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
@@ -308,6 +313,7 @@ STDMETHODIMP CKeyEventSink::OnTestKeyUp(ITfContext* /*pic*/, WPARAM wParam, LPAR
   if (!pfEaten) return E_POINTER;
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
+  if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   const bool passedDown = m_keyOwnership.PassRelease(vk);
@@ -336,6 +342,7 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceDown(wParam, lParam);
+  if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   if (m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
       m_pTip->IsGameHotkeyPassthroughActive())) return S_OK;
   if ((vk == VK_RETURN || vk == VK_ESCAPE) && m_keyOwnership.ConsumeRepeat(vk,
@@ -381,6 +388,7 @@ STDMETHODIMP CKeyEventSink::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lPara
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceUp(wParam, lParam);
+  if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   if (!IsVkShift(vk)) return S_OK;
   const bool shiftDown = CaptureShiftDown(vk, lParam, m_leftShiftDown || m_rightShiftDown);
   UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);

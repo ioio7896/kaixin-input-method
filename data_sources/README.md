@@ -2,6 +2,12 @@
 
 本目录只保存构建内置词库所需的可追溯原始数据，不会被运行时词库加载器直接扫描。
 
+`kaixin/reviewed_long_phrases.tsv` 是当前长短语主库的完整表达维护清单。
+原有组合句经筛选后不再按固定数量补齐；运行 `python scripts/lexicon_quality.py --apply`
+可重建。`shared/lexicon_quality.json` 记录已确认的词级读音修正，分类合并与重导入同时
+应用语序和搭配检查。归档的分类源快照保持原样，当前输出的数量与哈希以
+`shared/category_lexicons.json` 为准，原始导入报告继续用于追溯。
+
 ## 安卓分类词库同步至 Windows（2026-10-07）
 
 - `lexicon_fragments/zh-ext/category_*.txt` 保存安卓本轮扩充的 78 个分类快照；来源、数量和 SHA-256 见 `shared/category_lexicons.json` 及 `lexicon/windows-category-import.json`。
@@ -58,9 +64,13 @@
 项目自维护中文词库和字符表可通过 `scripts/regenerate_lexicons.ps1` 重现；英文词库通过
 `scripts/generate_common_english.py` 单独重现。
 
-8105 个常用单字词库由 `scripts/generate_single_char_lexicon.py` 基于固定版本
-wordfreq 3.1.1 的中文词频顺序生成，并仅保留 `pinyin_supported_chars.txt`
-中引擎可读的汉字。权重按频率名次严格降序映射到 10000～1。
+8105 个常用单字词库由 `scripts/generate_single_char_lexicon.py` 生成。固定版本
+wordfreq 3.1.1 的原始单字顺序保存在 `kaixin/single_char_wordfreq_order.txt`；
+前 500 字维持该顺序，余下字符按 `lexicon/zh/life_common_2char_125000.txt`
+中的词条名次加权排序。同分时依次参考 `lexicon/zh/life_common_3char.txt`
+中的词条名次和原单字顺序。输出仅包含 `pinyin_supported_chars.txt` 中引擎可读的汉字，
+权重按排序名次严格降序映射到 10000～1，并非实测字频。普通重建可离线运行；
+更新原始单字顺序时需安装 wordfreq 3.1.1 并加 `--refresh-source`。
 
 现代短语词库由 `scripts/build_common_phrase_lexicons.py` 从 wordfreq 中文频率排序
 和项目维护的聊天/办公常用表达生成；通用词库输出到 `lexicon/zh/`，聊天和办公源片段

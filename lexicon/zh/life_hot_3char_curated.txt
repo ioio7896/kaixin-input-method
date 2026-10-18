@@ -17,10 +17,8 @@
 先这样	xian zhe yang	9500
 再说吧	zai shuo ba	9500
 怎么了	zen me le	9500
-怎么回事	zen me hui shi	9500
 多少钱	duo shao qian	9500
 在哪里	zai na li	9500
-什么时候	shen me shi hou	9500
 方便吗	fang bian ma	9500
 辛苦了	xin ku le	9500
 谢谢你	xie xie ni	9500
@@ -401,3 +399,5 @@
 发电厂	fa dian chang	8403
 多伦多	duo lun duo	8402
 娱乐场	yu le chang	8400
+他妈的	ta ma de	9000
+客户端	ke hu duan	8400

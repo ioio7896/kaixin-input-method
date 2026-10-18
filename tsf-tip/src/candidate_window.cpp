@@ -2252,7 +2252,9 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
           ? std::max(hBadgeHeight, static_cast<int>(pageSize.cy) +
                                        Scale(kHorizontalPageBadgePaddingY))
           : 0;
-  const int headerHeight = std::max(Scale(30), static_cast<int>(titleSize.cy) + headerPadY * 2);
+  const int headerHeight = std::max(
+      Scale(m_style.candidateDensity == SrfCandidateDensity::Compact ? 26 : 30),
+      static_cast<int>(titleSize.cy) + headerPadY * 2);
   const int headerRightExtras =
       modeChipWidth + (showPageBadge ? pageBadgeWidth + Scale(16) : 0);
   const int headerMinWidth =
@@ -2268,7 +2270,9 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
     const int configuredCount = static_cast<int>(std::clamp(m_style.candidateHorizontalCount, 3u, 9u));
     const int visibleTarget =
         std::max(1, std::min(configuredCount, static_cast<int>(std::max<size_t>(1, m_items.size()))));
-    const int stripGap = std::max(Scale(6), hItemGap + Scale(6));
+    const int stripBaseGap = m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card
+                                 ? 8 : m_style.candidateDensity == SrfCandidateDensity::Compact ? 2 : 6;
+    const int stripGap = std::max(Scale(stripBaseGap), hItemGap + Scale(stripBaseGap));
     int desiredItemsWidth = 0;
     for (int i = 0; i < visibleTarget; ++i) {
       const std::wstring label = i < static_cast<int>(m_labels.size()) ? m_labels[static_cast<size_t>(i)]
@@ -2378,7 +2382,9 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
       // Include badge height in min row height to prevent badge overflow.
       const int contentHeight = itemPadY * 2 + mainHeight + (commentHeight > 0 ? commentGap + commentHeight : 0);
       const int badgeMinHeight = itemPadY * 2 + std::max(badgeHeight, labelWidth);
-      const int rowHeight = std::max(Scale(30), std::max(contentHeight, badgeMinHeight));
+      const int rowFloor = m_style.candidateDensity == SrfCandidateDensity::Compact ? 25 :
+                           m_style.candidateDensity == SrfCandidateDensity::Comfortable ? 34 : 30;
+      const int rowHeight = std::max(Scale(rowFloor), std::max(contentHeight, badgeMinHeight));
       rects.push_back({areaLeft, y, areaLeft + areaWidth, y + rowHeight});
       y += rowHeight + itemGap;
     }
@@ -2387,7 +2393,9 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
     const int configuredCount = static_cast<int>(std::clamp(m_style.candidateHorizontalCount, 3u, 9u));
     const int chosenN =
         std::min(configuredCount, static_cast<int>(m_items.size()));
-    const int usedGap = std::max(Scale(6), hItemGap + Scale(6));
+    const int stripBaseGap = m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card
+                                 ? 8 : m_style.candidateDensity == SrfCandidateDensity::Compact ? 2 : 6;
+    const int usedGap = std::max(Scale(stripBaseGap), hItemGap + Scale(stripBaseGap));
 
     if (chosenN > 0) {
       std::vector<int> itemWidths;
@@ -2448,7 +2456,10 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
         const int commentH = hasComment ? std::max(Scale(12), static_cast<int>(commentSize.cy)) : 0;
         const int stackH = mainH + (commentH > 0 ? commentGap + commentH : 0);
         const int itemW = itemWidths[static_cast<size_t>(idx)];
-        const int itemH = std::max(commentH > 0 ? Scale(42) : Scale(30), hItemPadY * 2 + stackH);
+        const int itemFloor = m_style.candidateDensity == SrfCandidateDensity::Compact ? 25 :
+                              m_style.candidateDensity == SrfCandidateDensity::Comfortable ? 34 : 30;
+        const int itemH = std::max(commentH > 0 ? Scale(itemFloor + 12) : Scale(itemFloor),
+                                   hItemPadY * 2 + stackH);
         RECT rect = {x, y, x + itemW, y + itemH};
         rects.push_back(rect);
         x = rect.right + usedGap;
@@ -2768,7 +2779,9 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
                                    static_cast<int>(pageTextSize.cx) + Scale(12));
       }
       const SIZE titleSize = MeasureSingleLineCached(targetDc, m_titleFont, m_title);
-      const int headerHeight = std::max(Scale(30), static_cast<int>(titleSize.cy) + headerPadY * 2);
+      const int headerHeight = std::max(
+          Scale(m_style.candidateDensity == SrfCandidateDensity::Compact ? 26 : 30),
+          static_cast<int>(titleSize.cy) + headerPadY * 2);
 
       RECT headerRect = {outerPadX, outerPadY, client.right - outerPadX, outerPadY + headerHeight};
       FillHeaderBackgroundClippedToRoundRect(targetDc, headerRect, colors, headerRadius);

@@ -17,12 +17,12 @@ TARGETS = (
     (
         ZH / "life_short_hot_2char.txt",
         (ZH / "life_common_2char_125000.txt",),
-        600,
-        69,
+        597,
+        597,
         2,
         8_200,
         8_800,
-        "生活场景二字高频精选（600 条）",
+        "生活场景二字高频精选（597 条）",
     ),
     (
         ZH / "life_hot_3char_curated.txt",
@@ -69,7 +69,10 @@ def build_one(
     high: int,
     title: str,
 ) -> None:
-    curated = rows(output)[:curated_count]
+    from lexicon_quality import phrase_rejection_reason
+    # A filename's length is a real membership contract, including hand edits.
+    curated = [row for row in rows(output)[:curated_count]
+               if len(row[0]) == fill_length and not phrase_rejection_reason(row[0])]
     selected: list[tuple[str, str, int, bool]] = []
     seen: set[str] = set()
     for phrase, reading, score in curated:
@@ -84,7 +87,7 @@ def build_one(
     needed = target - len(selected)
     additions = [
         (p, r, s) for p, r, s in candidates
-        if p not in seen and len(p) == fill_length
+        if p not in seen and len(p) == fill_length and not phrase_rejection_reason(p)
     ][:needed]
     if len(additions) != needed:
         raise RuntimeError(f"{output}: only found {len(additions)} of {needed} required rows")
@@ -109,7 +112,9 @@ def build_four_char_hot() -> None:
     # strongest band; optional domain dictionaries remain in the cold tail.
     source = ZH / "life_common_4char.txt"
     output = ZH / "life_hot_4char_curated.txt"
-    selected = [row for row in rows(source) if len(row[0]) == 4 and row[2] >= 9_500]
+    from lexicon_quality import phrase_rejection_reason
+    selected = [row for row in rows(source) if len(row[0]) == 4 and row[2] >= 9_500
+                and not phrase_rejection_reason(row[0])]
     selected.sort(key=lambda row: (-row[2], row[0], row[1]))
     body = "\n".join(f"{phrase}\t{reading}\t{score}" for phrase, reading, score in selected)
     output.write_text(

@@ -7,7 +7,14 @@ pub(crate) enum SettingsSection {
     Input,
     Appearance,
     Lexicon,
+    Learning,
     Hotkeys,
+    Screenshot,
+    Ocr,
+    Clipboard,
+    Translation,
+    Handwrite,
+    Diagnostics,
     Tools,
     Compatibility,
     System,
@@ -48,32 +55,54 @@ pub(crate) enum SystemSettingsPage {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SettingsIcon {
+    Input,
     Appearance,
     Lexicon,
+    Learning,
     Hotkeys,
+    Screenshot,
+    Ocr,
     Clipboard,
+    Translation,
+    Handwrite,
+    Tools,
     Compatibility,
-    Advanced,
+    Diagnostics,
+    System,
 }
 
 impl SettingsSection {
-    pub(crate) const ALL: [Self; 7] = [
+    pub(crate) const ALL: [Self; 14] = [
         Self::Input,
         Self::Appearance,
-        Self::Lexicon,
         Self::Hotkeys,
+        Self::Lexicon,
+        Self::Learning,
+        Self::Screenshot,
+        Self::Ocr,
+        Self::Clipboard,
+        Self::Translation,
+        Self::Handwrite,
         Self::Tools,
         Self::Compatibility,
+        Self::Diagnostics,
         Self::System,
     ];
 
     pub(crate) fn label(self) -> &'static str {
         match self {
             Self::Input => "输入",
-            Self::Appearance => "外观",
-            Self::Lexicon => "词库与学习",
+            Self::Appearance => "皮肤",
+            Self::Lexicon => "词库",
+            Self::Learning => "学习词",
             Self::Hotkeys => "快捷键",
-            Self::Tools => "工具",
+            Self::Screenshot => "截图",
+            Self::Ocr => "OCR",
+            Self::Clipboard => "剪贴板",
+            Self::Translation => "翻译",
+            Self::Handwrite => "手写",
+            Self::Diagnostics => "性能日志",
+            Self::Tools => "命令与符号",
             Self::Compatibility => "应用兼容",
             Self::System => "系统与维护",
         }
@@ -81,13 +110,20 @@ impl SettingsSection {
 
     pub(crate) fn icon(self) -> SettingsIcon {
         match self {
-            Self::Input => SettingsIcon::Hotkeys,
+            Self::Input => SettingsIcon::Input,
             Self::Appearance => SettingsIcon::Appearance,
             Self::Lexicon => SettingsIcon::Lexicon,
+            Self::Learning => SettingsIcon::Learning,
             Self::Hotkeys => SettingsIcon::Hotkeys,
-            Self::Tools => SettingsIcon::Clipboard,
+            Self::Screenshot => SettingsIcon::Screenshot,
+            Self::Ocr => SettingsIcon::Ocr,
+            Self::Clipboard => SettingsIcon::Clipboard,
+            Self::Translation => SettingsIcon::Translation,
+            Self::Handwrite => SettingsIcon::Handwrite,
+            Self::Tools => SettingsIcon::Tools,
+            Self::Diagnostics => SettingsIcon::Diagnostics,
             Self::Compatibility => SettingsIcon::Compatibility,
-            Self::System => SettingsIcon::Advanced,
+            Self::System => SettingsIcon::System,
         }
     }
 
@@ -95,20 +131,33 @@ impl SettingsSection {
         match self {
             Self::Input => "全拼、双拼、模糊音、标点和输入习惯。",
             Self::Appearance => "布局与显示、字体与主题、高级标记；页内实时预览。",
-            Self::Lexicon => "用户词库、学习策略、自定义短语和扩展词库。",
+            Self::Lexicon => "搜索、启用、导入扩展词库，查看词条数量和来源。",
+            Self::Learning => "学习策略、用户词条、自定义短语和永远不学的词。",
             Self::Hotkeys => "切换、翻页和功能快捷键。",
-            Self::Tools => "剪贴板、截图与 OCR、手写、翻译和 VV 命令。",
+            Self::Screenshot => "截图范围、确认方式、保存目录和图片格式。",
+            Self::Ocr => "本地文字识别、结果操作、速度和 OCR 截图保存。",
+            Self::Clipboard => "剪贴板采集、历史上限、固定条目和来源记录。",
+            Self::Translation => "翻译工具路径、目标语言、译文操作和联动检测。",
+            Self::Handwrite => "打开独立手写查字窗口，复制或粘贴识别结果。",
+            Self::Diagnostics => "运行状态、输入延迟、日志级别、清理与导出。",
+            Self::Tools => "VV 直输命令、符号和 Emoji。",
             Self::Compatibility => "全屏和应用规则。",
-            Self::System => "常规、隐私与数据、诊断、高级调优和版本信息。",
+            Self::System => "常规、隐私与数据、高级调优和版本信息。",
         }
     }
 
     pub(crate) fn nav_group(self) -> &'static str {
         match self {
-            Self::Input | Self::Appearance | Self::Lexicon | Self::Hotkeys => "输入法",
-            Self::Tools => "工具",
-            Self::Compatibility => "兼容",
-            Self::System => "系统",
+            Self::Input | Self::Appearance | Self::Lexicon | Self::Learning | Self::Hotkeys => {
+                "输入法"
+            }
+            Self::Screenshot
+            | Self::Ocr
+            | Self::Clipboard
+            | Self::Translation
+            | Self::Handwrite
+            | Self::Tools => "工具",
+            Self::Compatibility | Self::Diagnostics | Self::System => "系统",
         }
     }
 }
@@ -236,12 +285,14 @@ pub(crate) struct SettingsModel {
     pub(crate) screenshot_mode: String,
     pub(crate) screenshot_confirm_on_release: bool,
     pub(crate) screenshot_show_instructions: bool,
+    pub(crate) screenshot_show_quick_actions: bool,
     pub(crate) clipboard_hotkey: String,
     pub(crate) settings_hotkey: String,
     pub(crate) handwrite_hotkey: String,
     pub(crate) ocr_hotkey: String,
     pub(crate) ocr_translate_hotkey: String,
     pub(crate) ocr_result_action: String,
+    pub(crate) ocr_language: String,
     pub(crate) ocr_keep_alive: bool,
     pub(crate) ocr_profile: String,
     pub(crate) ocr_translate_keep_window: bool,
@@ -433,25 +484,57 @@ pub(crate) fn invalidate_changed_game_test_results(
     before: &SettingsModel,
     after: &mut SettingsModel,
 ) {
-    let global_changed = before.game_input_mode != after.game_input_mode
-        || before.game_chat != after.game_chat
-        || before.game_mode_hotkey != after.game_mode_hotkey
-        || before.commit_transport != after.commit_transport;
-    let policy_only = |rule: &CompatRule| {
-        let mut rule = rule.clone();
-        rule.process = rule.process.to_ascii_lowercase();
-        rule.game_chat.reset_test_results();
-        rule.game_chat.tested_display_mode.clear();
-        rule.game_chat.tested_game_version.clear();
-        rule
-    };
     for rule in &mut after.compat_rules {
         let previous = before
             .compat_rules
             .iter()
             .find(|old| old.process.eq_ignore_ascii_case(&rule.process));
-        if global_changed || previous.is_some_and(|old| policy_only(old) != policy_only(rule)) {
-            rule.game_chat.reset_test_results();
+        let Some(old) = previous else { continue };
+        let old_chat = &old.game_chat;
+        let chat = &rule.game_chat;
+        let identity_changed = old_chat.tested_display_mode != chat.tested_display_mode
+            || old_chat.tested_game_version != chat.tested_game_version;
+        let input_changed = identity_changed
+            || old.enabled != rule.enabled
+            || old.policy != rule.policy
+            || old.game_profile != rule.game_profile
+            || old.game_input_mode != rule.game_input_mode
+            || old_chat.open_key != chat.open_key
+            || old_chat.auto_uia != chat.auto_uia
+            || before.game_mode_hotkey != after.game_mode_hotkey
+            || (rule.game_input_mode == "inherit"
+                && before.game_input_mode != after.game_input_mode)
+            || (chat.auto_uia == "inherit"
+                && before.game_chat.auto_uia != after.game_chat.auto_uia);
+        let candidate_changed = input_changed
+            || old_chat.force_ui != chat.force_ui
+            || old.overlay_anchor != rule.overlay_anchor
+            || old.overlay_offset_x != rule.overlay_offset_x
+            || old.overlay_offset_y != rule.overlay_offset_y
+            || old.overlay_scale_percent != rule.overlay_scale_percent
+            || old.overlay_monitor != rule.overlay_monitor
+            || old.overlay_backend != rule.overlay_backend;
+        let commit_changed = input_changed
+            || old.commit_transport != rule.commit_transport
+            || (rule.commit_transport == "global"
+                && before.commit_transport != after.commit_transport);
+        let exit_changed = input_changed
+            || commit_changed
+            || old_chat.close_key != chat.close_key
+            || old_chat.enter_behavior != chat.enter_behavior
+            || (chat.enter_behavior == "inherit"
+                && before.game_chat.enter_behavior != after.game_chat.enter_behavior);
+        if input_changed {
+            rule.game_chat.tested_input = false;
+        }
+        if candidate_changed {
+            rule.game_chat.tested_candidate = false;
+        }
+        if commit_changed {
+            rule.game_chat.tested_commit = false;
+        }
+        if exit_changed {
+            rule.game_chat.tested_exit = false;
         }
     }
 }
@@ -581,12 +664,14 @@ impl Default for SettingsModel {
             screenshot_mode: "manual_region".to_string(),
             screenshot_confirm_on_release: false,
             screenshot_show_instructions: true,
+            screenshot_show_quick_actions: true,
             clipboard_hotkey: "off".to_string(),
             settings_hotkey: "off".to_string(),
             handwrite_hotkey: "off".to_string(),
             ocr_hotkey: "off".to_string(),
             ocr_translate_hotkey: "off".to_string(),
             ocr_result_action: "show".to_string(),
+            ocr_language: "zh".to_string(),
             ocr_keep_alive: true,
             ocr_profile: "balanced".to_string(),
             ocr_translate_keep_window: true,

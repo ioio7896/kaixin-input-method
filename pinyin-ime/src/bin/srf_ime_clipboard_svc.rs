@@ -21,6 +21,10 @@ use std::sync::{Arc, OnceLock};
 use std::time::Duration;
 
 #[cfg(windows)]
+#[path = "srf_ime_clipboard_svc/clipboard_backup.rs"]
+mod clipboard_backup;
+
+#[cfg(windows)]
 use windows_sys::Win32::Foundation::{
     CloseHandle, GetLastError, ERROR_ACCESS_DENIED, ERROR_ALREADY_EXISTS, ERROR_PIPE_CONNECTED,
     ERROR_PIPE_LISTENING, HANDLE, INVALID_HANDLE_VALUE,
@@ -53,7 +57,7 @@ static EXPECTED_CAPABILITY: OnceLock<String> = OnceLock::new();
 // 数据操作（自 egui 版原样迁移）
 // ---------------------------------------------------------------------------
 
-fn capture_system_clipboard_with_log(force: bool, phase: &str) {
+fn capture_system_clipboard_with_log(force: bool, phase: &str) -> Result<(), String> {
     if let Err(err) = clipboard_store::capture_system_clipboard(force) {
         runtime_log::log_clipboard(
             RuntimeLogLevel::Error,
@@ -64,7 +68,9 @@ fn capture_system_clipboard_with_log(force: bool, phase: &str) {
                 if force { 1 } else { 0 }
             ),
         );
+        return Err(err);
     }
+    Ok(())
 }
 
 fn load_snapshot_with_log(phase: &str) -> Result<ClipboardSnapshot, String> {
@@ -139,55 +145,7 @@ fn snapshot_dto(snapshot: &ClipboardSnapshot) -> serde_json::Value {
 
 #[cfg(windows)]
 fn copy_to_system_clipboard(text: &str) -> Result<Option<u32>, String> {
-    let mut last_error = None;
-    for attempt in 0..12 {
-        let result = clipboard_win::Clipboard::new().and_then(|_guard| {
-            clipboard_win::raw::set_string(text)?;
-            Ok(clipboard_win::raw::seq_num().map(|sequence| sequence.get()))
-        });
-        match result {
-            Ok(sequence) => return Ok(sequence),
-            Err(e) => {
-                last_error = Some(e.to_string());
-                std::thread::sleep(Duration::from_millis(10 + attempt * 8));
-            }
-        }
-    }
-    Err(format!(
-        "剪贴板被其他程序占用或拒绝写入：{}",
-        last_error.unwrap_or_else(|| "unknown error".to_string())
-    ))
-}
-
-#[cfg(windows)]
-fn current_system_clipboard_text() -> Option<String> {
-    if !clipboard_win::is_format_avail(clipboard_win::formats::CF_UNICODETEXT) {
-        return None;
-    }
-    clipboard_win::get_clipboard(clipboard_win::formats::Unicode).ok()
-}
-
-#[cfg(windows)]
-fn restore_system_clipboard_text_after_paste(
-    previous: Option<String>,
-    pasted: &str,
-    sequence: Option<u32>,
-) {
-    let Some(previous) = previous else {
-        return;
-    };
-    if previous == pasted {
-        return;
-    }
-    std::thread::sleep(Duration::from_millis(80));
-    // Hold the clipboard open from the sequence check through the write so
-    // another copy cannot land between the check and restoration.
-    if let Ok(_guard) = clipboard_win::Clipboard::new_attempts(12) {
-        let current = clipboard_win::raw::seq_num().map(|sequence| sequence.get());
-        if sequence.is_some() && sequence == current {
-            let _ = clipboard_win::raw::set_string(&previous);
-        }
-    }
+    clipboard_backup::copy_text(text)
 }
 
 #[cfg(not(windows))]
@@ -195,41 +153,34 @@ fn copy_to_system_clipboard(_text: &str) -> Result<Option<u32>, String> {
     Err("当前平台不支持系统剪贴板快速粘贴".to_string())
 }
 
-#[cfg(not(windows))]
-fn current_system_clipboard_text() -> Option<String> {
-    None
-}
-
-#[cfg(not(windows))]
-fn restore_system_clipboard_text_after_paste(
-    _previous: Option<String>,
-    _pasted: &str,
-    _sequence: Option<u32>,
-) {
-}
-
-/// 完整粘贴链：保存旧剪贴板 → 写入待粘贴文本 → 记录到历史 → 向目标窗口发
-/// Ctrl+V → 恢复旧剪贴板。任何一步失败都会把错误带回客户端显示。
+#[cfg(windows)]
 fn paste_text_worker(text: &str, target_hwnd: isize) -> Result<(), String> {
-    let previous_clipboard = current_system_clipboard_text();
-    let temporary_sequence = copy_to_system_clipboard(text)?;
-    if let Err(err) = clipboard_store::record_text(text) {
-        runtime_log::log_clipboard(
-            RuntimeLogLevel::Error,
-            "clipboard_manager_record",
-            format!(
-                "status=failed phase=paste units={} reason={err}",
-                text.encode_utf16().count()
-            ),
-        );
+    // Native clipboard handles and sequence are backed up atomically with the
+    // temporary write. Fail before replacing anything if a format is unsupported.
+    let backup = clipboard_backup::ClipboardBackup::replace_with_text(text)?;
+    let paste_result = win_paste::send_ctrl_v_to_target(target_hwnd);
+    if paste_result.is_ok() {
+        std::thread::sleep(Duration::from_millis(180));
     }
-    match win_paste::send_ctrl_v_to_target(target_hwnd) {
-        Ok(()) => {
-            restore_system_clipboard_text_after_paste(previous_clipboard, text, temporary_sequence);
+    let restore_result = backup.restore();
+    match (paste_result, restore_result) {
+        (Ok(()), Ok(())) => {
+            if let Err(err) = clipboard_store::record_text(text) {
+                runtime_log::log_clipboard(RuntimeLogLevel::Error, "clipboard_manager_record", err);
+            }
             Ok(())
         }
-        Err(e) => Err(format!("{e}，文本已复制到剪贴板")),
+        (Err(err), Ok(())) => Err(format!(
+            "{err}；已恢复原剪贴板（期间新复制的内容会被保留）。"
+        )),
+        (Ok(()), Err(err)) => Err(format!("已发送粘贴，{err}")),
+        (Err(paste), Err(restore)) => Err(format!("{paste}；{restore}")),
     }
+}
+
+#[cfg(not(windows))]
+fn paste_text_worker(_text: &str, _target_hwnd: isize) -> Result<(), String> {
+    Err("当前平台不支持快速粘贴".to_string())
 }
 
 // ---------------------------------------------------------------------------
@@ -405,7 +356,9 @@ fn message_data(message: &str) -> serde_json::Value {
 }
 
 fn refresh_data(force: bool, last_modified: Option<&str>) -> Result<serde_json::Value, String> {
-    capture_system_clipboard_with_log(force, "refresh");
+    capture_system_clipboard_with_log(force, "refresh")?;
+    let (background_enabled, privacy_enabled, max_text_utf16_units, capture_notice) =
+        clipboard_store::capture_status();
     let snapshot = snapshot_dto(&load_snapshot_with_log("refresh")?);
     let modified = snapshot_revision(&snapshot);
     let changed = last_modified.map_or(true, |previous| previous != modified);
@@ -413,6 +366,10 @@ fn refresh_data(force: bool, last_modified: Option<&str>) -> Result<serde_json::
         "changed": changed,
         "modified": modified,
         "max_age_days": clipboard_store::configured_max_age_days(),
+        "background_enabled": background_enabled,
+        "privacy_enabled": privacy_enabled,
+        "max_text_utf16_units": max_text_utf16_units,
+        "capture_notice": capture_notice,
         "snapshot": snapshot,
     }))
 }

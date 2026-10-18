@@ -64,7 +64,8 @@ class LexiconOptimizationTests(unittest.TestCase):
 
     def test_all_three_char_and_drug_readings_survive_consolidation(self):
         def keys(path):
-            return {(word, code) for word, code, _ in optimize.read_rows(path)}
+            from lexicon_quality import clean_rows
+            return {(word, code) for word, code, _ in clean_rows(optimize.read_rows(path))}
         source = ROOT / "data_sources/lexicon_fragments"
         expected = keys(source / "zh/life_common_3char_full.txt") | keys(source / "zh/life_common_3char_hot.txt")
         actual = keys(ROOT / "lexicon/zh/life_common_3char.txt")

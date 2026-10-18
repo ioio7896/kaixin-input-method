@@ -18,6 +18,7 @@ pub struct RegionSelectorError {
 pub struct RegionSelectorOptions {
     pub confirm_on_release: bool,
     pub show_instructions: bool,
+    pub show_quick_actions: bool,
 }
 
 impl Default for RegionSelectorOptions {
@@ -25,6 +26,7 @@ impl Default for RegionSelectorOptions {
         Self {
             confirm_on_release: false,
             show_instructions: true,
+            show_quick_actions: true,
         }
     }
 }
@@ -65,6 +67,23 @@ pub fn select_region_with_options(
     select_region_from_image_with_options(&frame.image, frame.origin_x, frame.origin_y, options)
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum RegionAction {
+    Configured,
+    Copy,
+    SaveAs,
+    Ocr,
+    Annotate,
+    Pin,
+}
+
+pub fn select_region_action_with_options(
+    frame: &CapturedFrame,
+    options: RegionSelectorOptions,
+) -> Result<Option<(CaptureRect, RegionAction)>, RegionSelectorError> {
+    platform::select_region_action_from_image(&frame.image, frame.origin_x, frame.origin_y, options)
+}
+
 /// Opens the selector for an RGBA virtual-desktop image.
 ///
 /// `origin_x` and `origin_y` are physical-pixel coordinates in the Windows
@@ -89,19 +108,20 @@ pub fn select_region_from_image_with_options(
     origin_y: i32,
     options: RegionSelectorOptions,
 ) -> Result<Option<CaptureRect>, RegionSelectorError> {
-    platform::select_region_from_image(image, origin_x, origin_y, options)
+    platform::select_region_action_from_image(image, origin_x, origin_y, options)
+        .map(|result| result.map(|(rect, _)| rect))
 }
 
 #[cfg(not(windows))]
 mod platform {
     use super::*;
 
-    pub(super) fn select_region_from_image(
+    pub(super) fn select_region_action_from_image(
         _image: &RgbaImage,
         _origin_x: i32,
         _origin_y: i32,
         _options: RegionSelectorOptions,
-    ) -> Result<Option<CaptureRect>, RegionSelectorError> {
+    ) -> Result<Option<(CaptureRect, RegionAction)>, RegionSelectorError> {
         Err(RegionSelectorError::new("截图区域选择器仅支持 Windows。"))
     }
 }
@@ -174,12 +194,22 @@ mod platform {
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     enum SelectorAction {
+        Copy,
+        SaveAs,
+        Ocr,
+        Annotate,
+        Pin,
         Confirm,
         Cancel,
     }
 
     struct ActionToolbarLayout {
         info: RECT,
+        copy: RECT,
+        save_as: RECT,
+        ocr: RECT,
+        annotate: RECT,
+        pin: RECT,
         confirm: RECT,
         cancel: RECT,
     }
@@ -446,6 +476,7 @@ mod platform {
         manual_selection_locked: bool,
         confirm_on_release: bool,
         show_instructions: bool,
+        show_quick_actions: bool,
         fixed_size: Option<(i32, i32)>,
         locked_ratio: Option<(u32, u32)>,
         back_buffer_dc: isize,
@@ -460,6 +491,7 @@ mod platform {
         completed: bool,
         cancelled: bool,
         result: Option<CaptureRect>,
+        action: RegionAction,
     }
 
     impl SelectorState {
@@ -555,6 +587,7 @@ mod platform {
                 manual_selection_locked: false,
                 confirm_on_release: options.confirm_on_release,
                 show_instructions: options.show_instructions,
+                show_quick_actions: options.show_quick_actions,
                 fixed_size: None,
                 locked_ratio: None,
                 back_buffer_dc: 0,
@@ -569,6 +602,7 @@ mod platform {
                 completed: false,
                 cancelled: false,
                 result: None,
+                action: RegionAction::Configured,
             })
         }
 
@@ -980,12 +1014,12 @@ mod platform {
         }
     }
 
-    pub(super) fn select_region_from_image(
+    pub(super) fn select_region_action_from_image(
         image: &RgbaImage,
         origin_x: i32,
         origin_y: i32,
         options: RegionSelectorOptions,
-    ) -> Result<Option<CaptureRect>, RegionSelectorError> {
+    ) -> Result<Option<(CaptureRect, RegionAction)>, RegionSelectorError> {
         let _dpi_guard = DpiContextGuard::enter();
         let mut state = Box::new(SelectorState::new(image, origin_x, origin_y, options)?);
         let state_ptr: *mut SelectorState = &mut *state;
@@ -1088,7 +1122,7 @@ mod platform {
                 let _ = DestroyWindow(hwnd);
             }
         }
-        Ok(state.result)
+        Ok(state.result.map(|rect| (rect, state.action)))
     }
 
     unsafe extern "system" fn selector_window_proc(
@@ -1110,6 +1144,28 @@ mod platform {
                     if let Some(points) = cursor_points(hwnd, state) {
                         if state.manual_selection_locked {
                             match selector_action_at(hwnd, state, points.client) {
+                                Some(
+                                    SelectorAction::Copy
+                                    | SelectorAction::SaveAs
+                                    | SelectorAction::Ocr
+                                    | SelectorAction::Annotate
+                                    | SelectorAction::Pin,
+                                ) => {
+                                    state.action =
+                                        match selector_action_at(hwnd, state, points.client) {
+                                            Some(SelectorAction::Copy) => RegionAction::Copy,
+                                            Some(SelectorAction::SaveAs) => RegionAction::SaveAs,
+                                            Some(SelectorAction::Ocr) => RegionAction::Ocr,
+                                            Some(SelectorAction::Annotate) => {
+                                                RegionAction::Annotate
+                                            }
+                                            _ => RegionAction::Pin,
+                                        };
+                                    if state.confirm().unwrap_or(false) {
+                                        let _ = DestroyWindow(hwnd);
+                                    }
+                                    return 0;
+                                }
                                 Some(SelectorAction::Confirm) => {
                                     if state.confirm().unwrap_or(false) {
                                         let _ = DestroyWindow(hwnd);
@@ -1205,8 +1261,13 @@ mod platform {
                         state.manual_selection_locked = true;
                         let _ = InvalidateRect(hwnd, null(), 0);
                     } else if state.pressed_snap.take().is_some() {
-                        if state.confirm().unwrap_or(false) {
-                            let _ = DestroyWindow(hwnd);
+                        if state.confirm_on_release {
+                            if state.confirm().unwrap_or(false) {
+                                let _ = DestroyWindow(hwnd);
+                            }
+                        } else {
+                            state.manual_selection_locked = true;
+                            let _ = InvalidateRect(hwnd, null(), 0);
                         }
                     } else if state.confirm_on_release {
                         if state.confirm().unwrap_or(false) {
@@ -1413,8 +1474,19 @@ mod platform {
             client_width,
             client_height,
             GetDpiForWindow(hwnd).max(96),
+            state.show_quick_actions,
         );
-        if point_in_win32_rect(point, layout.confirm) {
+        if state.show_quick_actions && point_in_win32_rect(point, layout.copy) {
+            Some(SelectorAction::Copy)
+        } else if state.show_quick_actions && point_in_win32_rect(point, layout.save_as) {
+            Some(SelectorAction::SaveAs)
+        } else if state.show_quick_actions && point_in_win32_rect(point, layout.ocr) {
+            Some(SelectorAction::Ocr)
+        } else if state.show_quick_actions && point_in_win32_rect(point, layout.annotate) {
+            Some(SelectorAction::Annotate)
+        } else if state.show_quick_actions && point_in_win32_rect(point, layout.pin) {
+            Some(SelectorAction::Pin)
+        } else if point_in_win32_rect(point, layout.confirm) {
             Some(SelectorAction::Confirm)
         } else if point_in_win32_rect(point, layout.cancel) {
             Some(SelectorAction::Cancel)
@@ -1432,13 +1504,17 @@ mod platform {
         client_width: i32,
         client_height: i32,
         dpi: u32,
+        show_quick_actions: bool,
     ) -> ActionToolbarLayout {
         let scale = |value: i32| ((i64::from(value) * i64::from(dpi) + 48) / 96) as i32;
         let margin = scale(8).max(4);
         let available_width = client_width.saturating_sub(margin * 2).max(1);
-        let width = scale(430).min(available_width).max(1);
+        let width = scale(if show_quick_actions { 660 } else { 300 })
+            .min(available_width)
+            .max(1);
         let height = scale(36).min(client_height.max(1)).max(1);
-        let button_width = scale(68).min((width / 3).max(1));
+        let button_count = if show_quick_actions { 7 } else { 2 };
+        let button_width = scale(68).min((width / button_count).max(1));
         let max_left = client_width.saturating_sub(width + margin).max(margin);
         let left = selection.left.clamp(margin, max_left);
         let below = selection.bottom.saturating_add(margin);
@@ -1459,13 +1535,52 @@ mod platform {
             right: cancel.left,
             bottom: cancel.bottom,
         };
+        let ocr = RECT {
+            left: confirm.left.saturating_sub(button_width),
+            right: confirm.left,
+            top,
+            bottom: confirm.bottom,
+        };
+        let save_as = RECT {
+            left: ocr.left.saturating_sub(button_width),
+            right: ocr.left,
+            top,
+            bottom: ocr.bottom,
+        };
+        let copy = RECT {
+            left: save_as.left.saturating_sub(button_width),
+            right: save_as.left,
+            top,
+            bottom: save_as.bottom,
+        };
+        let annotate = RECT {
+            left: copy.left.saturating_sub(button_width),
+            right: copy.left,
+            top,
+            bottom: copy.bottom,
+        };
+        let pin = RECT {
+            left: annotate.left.saturating_sub(button_width),
+            right: annotate.left,
+            top,
+            bottom: annotate.bottom,
+        };
         ActionToolbarLayout {
             info: RECT {
                 left,
                 top,
-                right: confirm.left,
+                right: if show_quick_actions {
+                    pin.left
+                } else {
+                    confirm.left
+                },
                 bottom: confirm.bottom,
             },
+            copy,
+            save_as,
+            ocr,
+            annotate,
+            pin,
             confirm,
             cancel,
         }
@@ -2162,12 +2277,28 @@ mod platform {
         client_height: i32,
     ) {
         let dpi = GetDpiForWindow(hwnd).max(96);
-        let layout = action_toolbar_layout(display_selection, client_width, client_height, dpi);
-        for (rect, color) in [
-            (layout.info, rgb(37, 99, 235)),
+        let layout = action_toolbar_layout(
+            display_selection,
+            client_width,
+            client_height,
+            dpi,
+            state.show_quick_actions,
+        );
+        let mut panels = vec![(layout.info, rgb(37, 99, 235))];
+        if state.show_quick_actions {
+            panels.extend([
+                (layout.copy, rgb(51, 65, 85)),
+                (layout.save_as, rgb(51, 65, 85)),
+                (layout.ocr, rgb(51, 65, 85)),
+                (layout.annotate, rgb(51, 65, 85)),
+                (layout.pin, rgb(51, 65, 85)),
+            ]);
+        }
+        panels.extend([
             (layout.confirm, rgb(22, 163, 74)),
             (layout.cancel, rgb(51, 65, 85)),
-        ] {
+        ]);
+        for (rect, color) in panels {
             let brush = CreateSolidBrush(color);
             if brush != 0 {
                 let _ = FillRect(hdc, &rect, brush);
@@ -2194,11 +2325,23 @@ mod platform {
         };
         let _ = SetBkMode(hdc, TRANSPARENT as i32);
         let _ = SetTextColor(hdc, rgb(255, 255, 255));
-        for (text, mut rect) in [
-            (&info, layout.info),
-            (&confirm, layout.confirm),
-            (&cancel, layout.cancel),
-        ] {
+        let copy = wide("复制");
+        let save_as = wide("另存");
+        let ocr = wide("OCR");
+        let annotate = wide("标注");
+        let pin = wide("固定");
+        let mut labels = vec![(&info, layout.info)];
+        if state.show_quick_actions {
+            labels.extend([
+                (&copy, layout.copy),
+                (&save_as, layout.save_as),
+                (&ocr, layout.ocr),
+                (&annotate, layout.annotate),
+                (&pin, layout.pin),
+            ]);
+        }
+        labels.extend([(&confirm, layout.confirm), (&cancel, layout.cancel)]);
+        for (text, mut rect) in labels {
             let _ = DrawTextW(
                 hdc,
                 text.as_ptr(),

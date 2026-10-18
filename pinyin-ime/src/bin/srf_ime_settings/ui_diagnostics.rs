@@ -125,14 +125,26 @@ pub(super) fn recent_compatibility_log_lines(limit: usize) -> Vec<String> {
 }
 
 pub(super) fn game_input_event_hint(line: &str) -> Option<&'static str> {
+    if line.contains("reason=no_native_focus") {
+        return Some("没有确认游戏聊天框的原生焦点；请先在游戏中打开并聚焦聊天框。");
+    }
+    if line.contains("reason=no_tsf_context") {
+        return Some("游戏没有提供当前可用的 TSF 输入上下文；候选显示和上屏方式无法修复按键接入。");
+    }
+    if line.contains("reason=readonly_tsf_context") {
+        return Some("游戏当前 TSF 输入上下文不可写；请确认聊天框已开启且不是只读区域。");
+    }
+    if line.contains("reason=editable_not_verified") || line.contains("unconfirmed_input_field") {
+        return Some("已收到聊天开启键，但尚未确认可编辑输入栏；可尝试手动中文聊天模式。");
+    }
+    if line.contains("game-key.trace") && line.contains("status=unavailable") {
+        return Some("宿主没有提供按键 trace；请重点检查长按、松键和聊天切换行为。");
+    }
     if line.contains("sent_unconfirmed") {
         return Some("文字事件已发送；请确认输入栏实际收到中文，避免重复提交。");
     }
     if line.contains("host_requested_hide") {
         return Some("游戏已接管候选绘制，输入法尊重宿主的隐藏要求。");
-    }
-    if line.contains("unconfirmed_input_field") {
-        return Some("尚未确认可编辑输入栏；可以使用中文聊天切换热键。");
     }
     if line.contains("game-chat.state") && line.contains("phase=editing") {
         return Some("中文聊天已开启。");
@@ -147,6 +159,15 @@ pub(super) fn game_input_event_hint(line: &str) -> Option<&'static str> {
         return Some("本次上屏失败。请检查焦点、修饰键和该游戏的提交方式。");
     }
     None
+}
+
+pub(super) fn recent_game_input_event(process: &str) -> Option<(String, &'static str)> {
+    let app_tag = format!("app={}", process.to_ascii_lowercase());
+    recent_compatibility_log_lines(160)
+        .into_iter()
+        .rev()
+        .find(|line| line.to_ascii_lowercase().contains(&app_tag))
+        .and_then(|line| game_input_event_hint(&line).map(|hint| (line, hint)))
 }
 
 fn latest_log_line_matching(patterns: &[&str]) -> Option<String> {

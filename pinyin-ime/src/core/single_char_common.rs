@@ -1,4 +1,4 @@
-use crate::dict::{is_project_approved_reading, pinyin_plain_options};
+use crate::dict::{is_project_primary_reading, pinyin_plain_options};
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io;
@@ -101,7 +101,7 @@ impl SingleCharCommonIndex {
                     continue;
                 }
                 let is_primary =
-                    primary.as_ref() == Some(&key) || is_project_approved_reading(ch, &key);
+                    primary.as_ref() == Some(&key) || is_project_primary_reading(ch, &key);
                 let by_pinyin = if is_primary {
                     &mut out.by_pinyin
                 } else {
@@ -225,9 +225,20 @@ mod tests {
     }
 
     #[test]
-    fn project_approved_alternate_keeps_frequency_priority() {
+    fn alternate_reading_follows_primary_reading() {
         let index = SingleCharCommonIndex::from_text("大\t2\n带\t1\n", None)
             .expect("single-character index");
-        assert_eq!(index.pinyin_order("dai"), &['大', '带']);
+        assert_eq!(index.pinyin_order("dai"), &['带', '大']);
+        let index = SingleCharCommonIndex::from_text("会\t2\n快\t1\n", None)
+            .expect("single-character index");
+        assert_eq!(index.pinyin_order("kuai"), &['快', '会']);
+    }
+
+    #[test]
+    fn en_prefers_colloquial_interjection() {
+        let index = SingleCharCommonIndex::bundled();
+        let en = index.pinyin_order("en");
+        assert!(en.contains(&'恩'));
+        assert_eq!(en.first(), Some(&'嗯'));
     }
 }

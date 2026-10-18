@@ -628,6 +628,13 @@
       "aliases": []
     },
     {
+      "section": "screenshot",
+      "key": "show_quick_actions",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
       "section": "clipboard",
       "key": "hotkey",
       "default": "off",

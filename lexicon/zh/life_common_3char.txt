@@ -1,4 +1,4 @@
-# 开心输入法原生词库：49765 条三字词读音记录
+# 开心输入法原生词库：49691 条三字词读音记录
 # Source: data_sources/lexicon_fragments/zh/life_common_3char_full.txt + life_common_3char_hot.txt
 # 同词同读音只收录一次；重合项沿用完整来源权重，合法多音读法保留。
 # 格式：词语<TAB>全拼<TAB>万分制排序分数（1-10000）。
@@ -8834,7 +8834,7 @@
 日本籍	ri ben ji	5577
 晕过去	yun guo qu	5576
 暗红色	an hong se	5576
-朝阳市	zhao yang shi	5575
+朝阳市	chao yang shi	5575
 杀人罪	sha ren zui	5575
 杨家将	yang jia jiang	5574
 杨玉环	yang yu huan	5574
@@ -9436,7 +9436,7 @@
 昌图县	chang tu xian	5357
 易卜生	yi bo sheng	5356
 普拉特	pu la te	5356
-朝阳门	zhao yang men	5355
+朝阳门	chao yang men	5355
 未免太	wei mian tai	5355
 朵玫瑰	duo mei gui	5355
 权势者	quan shi zhe	5354
@@ -11126,7 +11126,7 @@
 湾仔区	wan zai qu	4797
 滨州市	bin zhou shi	4797
 演讲会	yan jiang hui	4797
-漯河市	ta he shi	4797
+漯河市	luo he shi	4797
 火之歌	huo zhi ge	4797
 照明弹	zhao ming dan	4797
 爬上去	pa shang qu	4796
@@ -11745,7 +11745,6 @@
 戴季陶	dai ji tao	4612
 手术刀	shou shu dao	4612
 承受力	cheng shou li	4612
-投无路	tou wu lu	4612
 抵押权	di ya quan	4611
 拥有权	yong you quan	4611
 指挥室	zhi hui shi	4611
@@ -13516,7 +13515,6 @@
 两万块	liang wan kuai	4120
 两万多	liang wan duo	4120
 两公里	liang gong li	4120
-两岸关	liang an guan	4120
 义乌市	yi wu shi	4120
 乍一看	zha yi kan	4119
 云台山	yun tai shan	4119
@@ -15152,7 +15150,6 @@
 五十多	wu shi duo	3721
 京剧院	jing ju yuan	3721
 人头像	ren tou xiang	3720
-人际关	ren ji guan	3720
 企图心	qi tu xin	3720
 伊斯帕	yi si pa	3720
 体系化	ti xi hua	3720
@@ -18100,7 +18097,7 @@
 运动衫	yun dong shan	3102
 运动裤	yun dong ku	3101
 郑贵妃	zheng gui fei	3101
-都匀市	dou yun shi	3101
+都匀市	du yun shi	3101
 酒精度	jiu jing du	3101
 金乡县	jin xiang xian	3100
 金灿灿	jin can can	3100
@@ -18517,10 +18514,9 @@
 春夏季	chun xia ji	3026
 晋怀帝	jin huai di	3026
 普鲁斯	pu lu si	3026
-更多关	geng duo guan	3026
 有多美	you duo mei	3026
 望出去	wang chu qu	3025
-朝阳县	zhao yang xian	3025
+朝阳县	chao yang xian	3025
 木华黎	mu hua li	3025
 木棉花	mu mian hua	3025
 李公朴	li gong pu	3024
@@ -19546,7 +19542,6 @@
 特丽丝	te li si	2835
 玻璃管	bo li guan	2834
 琼海市	qiong hai shi	2834
-生俱来	sheng ju lai	2834
 生态区	sheng tai qu	2834
 电饭锅	dian fan guo	2834
 白先勇	bai xian yong	2834
@@ -19768,7 +19763,6 @@
 文格勒	wen ge lei	2796
 斯塔斯	si ta si	2795
 明星队	ming xing dui	2795
-显而易	xian er yi	2794
 晋宁县	jin ning xian	2794
 更高达	geng gao da	2794
 未来式	wei lai shi	2793
@@ -20260,7 +20254,6 @@
 黑山羊	hei shan yang	2721
 龙泉市	long quan shi	2721
 一个名	yi ge ming	2721
-一无所	yi wu suo	2721
 丁春秋	ding chun qiu	2721
 七十多	qi shi duo	2721
 三万余	san wan yu	2720
@@ -24130,7 +24123,6 @@
 山羊皮	shan yang pi	2148
 嵩明县	song ming xian	2148
 左右两	zuo you liang	2148
-左摇右	zuo yao you	2148
 巫毒教	wu du jiao	2148
 师范类	shi fan lei	2148
 常回家	chang hui jia	2148
@@ -24304,7 +24296,7 @@
 输了钱	shu le qian	2125
 辛烷值	xin wan zhi	2125
 辛纳屈	xin na qu	2125
-还款额	hai kuan e	2124
+还款额	huan kuan e	2124
 进水口	jin shui kou	2124
 远东局	yuan dong ju	2124
 郭子兴	guo zi xing	2123
@@ -25342,7 +25334,6 @@
 通天河	tong tian he	1987
 道外区	dao wai qu	1987
 道路网	dao lu wang	1987
-遗余力	yi yu li	1987
 遗留物	yi liu wu	1987
 遥控车	yao kong che	1987
 避风塘	bi feng tang	1987
@@ -27953,7 +27944,6 @@
 龙珠超	long zhu chao	1677
 一千里	yi qian li	1676
 一口口	yi kou kou	1676
-一无是	yi wu shi	1676
 一点多	yi dian duo	1676
 丁尼生	ding ni sheng	1676
 万源市	wan yuan shi	1676
@@ -29928,7 +29918,6 @@
 亲笔写	qin bi xie	1461
 亿公斤	yi gong jin	1461
 仓库区	cang ku qu	1460
-以三比	yi san bi	1460
 任免权	ren mian quan	1460
 余万册	yu wan ce	1460
 供水量	gong shui liang	1460
@@ -30012,7 +30001,6 @@
 大当家	da dang jia	1452
 大水牛	da shui niu	1452
 大酒楼	da jiu lou	1452
-天而降	tian er jiang	1452
 女主内	nv zhu nei	1452
 婚礼服	hun li fu	1452
 孔蒂尼	kong di ni	1451
@@ -30496,7 +30484,6 @@
 新开通	xin kai tong	1403
 无上装	wu shang zhuang	1403
 无痛苦	wu tong ku	1402
-日俱增	ri ju zeng	1402
 日环食	ri huan shi	1402
 旧货店	jiu huo dian	1402
 春宫图	chun gong tu	1402
@@ -31450,7 +31437,6 @@
 签约率	qian yue lv	1307
 粘稠度	nian chou du	1307
 精华区	jing hua qu	1307
-精疲力	jing pi li	1307
 索取权	suo qu quan	1307
 红莲寺	hong lian si	1307
 组蛋白	zu dan bai	1307
@@ -31597,7 +31583,7 @@
 丹心照	dan xin zhao	1293
 主客体	zhu ke ti	1293
 主攻手	zhu gong shou	1293
-乌什县	wu shen xian	1292
+乌什县	wu shi xian	1292
 乙酰胺	yi xian an	1292
 九把刀	jiu ba dao	1292
 书同文	shu tong wen	1292
@@ -31607,7 +31593,6 @@
 从后面	cong hou mian	1292
 仓山区	cang shan qu	1292
 仕女图	shi nv tu	1292
-以二比	yi er bi	1292
 以台湾	yi tai wan	1292
 会选择	hui xuan ze	1291
 传帮带	chuan bang dai	1291
@@ -31944,7 +31929,7 @@
 轻轨站	qing gui zhan	1259
 辉长岩	hui zhang yan	1259
 过敏史	guo min shi	1259
-还款期	hai kuan qi	1259
+还款期	huan kuan qi	1259
 这三类	zhe san lei	1259
 进一球	jin yi qiu	1259
 进度条	jin du tiao	1258
@@ -32532,7 +32517,6 @@
 唐六典	tang liu dian	1203
 唯心论	wei xin lun	1203
 喻世明	yu shi ming	1203
-喻户晓	yu hu xiao	1203
 四九年	si jiu nian	1203
 回归到	hui gui dao	1203
 固原县	gu yuan xian	1203
@@ -32704,7 +32688,6 @@
 甘夫人	gan fu ren	1187
 甜菜糖	tian cai tang	1187
 田伯光	tian bo guang	1187
-由高到	you gao dao	1187
 电热器	dian re qi	1187
 电解水	dian jie shui	1186
 疾管署	ji guan shu	1186
@@ -33012,7 +32995,6 @@
 惠阳区	hui yang qu	1158
 成人版	cheng ren ban	1157
 成年组	cheng nian zu	1157
-手无寸	shou wu cun	1157
 托尔托	tuo er tuo	1157
 托马森	tuo ma sen	1157
 抓下来	zhua xia lai	1157
@@ -33260,7 +33242,6 @@
 高回报	gao hui bao	1136
 高清晰	gao qing xi	1136
 魏襄王	wei xiang wang	1136
-黄蓉之	huang rong zhi	1135
 黄龙溪	huang long xi	1135
 黏稠度	nian chou du	1135
 黑面包	hei mian bao	1135
@@ -33671,7 +33652,6 @@
 进牢里	jin lao li	1098
 通济渠	tong ji qu	1097
 道不明	dao bu ming	1097
-遥法外	yao fa wai	1097
 遮挡住	zhe dang zhu	1097
 那拉氏	na la shi	1097
 郭泰源	guo tai yuan	1097
@@ -33843,7 +33823,6 @@
 叶永烈	ye yong lie	1083
 叶赫部	ye he bu	1083
 司马玮	si ma wei	1083
-合而为	he er wei	1083
 同音词	tong yin ci	1083
 吴夫人	wu fu ren	1083
 吸铁石	xi tie shi	1083
@@ -34661,7 +34640,6 @@
 三小时	san xiao shi	1012
 上虞县	shang yu xian	1011
 不识货	bu shi huo	1011
-东奔西	dong ben xi	1011
 东山镇	dong shan zhen	1011
 丝织业	si zhi ye	1011
 中药房	zhong yao fang	1011
@@ -35014,7 +34992,6 @@
 美妇人	mei fu ren	981
 美敦力	mei dun li	981
 翘尾巴	qiao wei ba	981
-老无所	lao wu suo	981
 耳塞式	er sai shi	981
 胃黏膜	wei nian mo	981
 胡太后	hu tai hou	981
@@ -35692,7 +35669,6 @@
 书评人	shu ping ren	926
 于北魏	yu bei wei	926
 五十步	wu shi bu	926
-人游戏	ren you xi	926
 什切青	shen qie qing	925
 代步车	dai bu che	925
 以后会	yi hou hui	925
@@ -35930,7 +35906,6 @@
 施里弗	shi li fu	908
 日本社	ri ben she	908
 日知录	ri zhi lu	908
-时俱进	shi ju jin	908
 昆虫记	kun chong ji	908
 明月光	ming yue guang	908
 晋愍帝	jin min di	908
@@ -36197,12 +36172,10 @@
 一两千	yi liang qian	887
 一千只	yi qian zhi	887
 一千户	yi qian hu	887
-一无二	yi wu er	887
 七五折	qi wu zhe	887
 三穗县	san sui xian	886
 上千亿	shang qian yi	886
 上楼去	shang lou qu	886
-不偿失	bu chang shi	886
 不和睦	bu he mu	886
 不定形	bu ding xing	886
 不自禁	bu zi jin	886
@@ -36916,7 +36889,6 @@
 小豆豆	xiao dou dou	832
 尔冬升	er dong sheng	832
 尼格利	ni ge li	831
-居无定	ju wu ding	831
 山野菜	shan ye cai	831
 岳王庙	yue wang miao	831
 工业盐	gong ye yan	831
@@ -37258,7 +37230,6 @@
 青化砭	qing hua bian	806
 非常态	fei chang tai	806
 顾问费	gu wen fei	805
-颜悦色	yan yue se	805
 风萧萧	feng xiao xiao	805
 食虫目	shi chong mu	805
 饶勒斯	rao lei si	805
@@ -37307,7 +37278,6 @@
 于尔根	yu er gen	801
 亚力克	ya li ke	801
 亮堂堂	liang tang tang	801
-人卫生	ren wei sheng	801
 人教版	ren jiao ban	801
 人物志	ren wu zhi	801
 仁和镇	ren he zhen	801
@@ -37606,7 +37576,6 @@
 经典赛	jing dian sai	776
 绕圈赛	rao quan sai	776
 绘图仪	hui tu yi	776
-绰绰有	chuo chuo you	775
 绿黄色	lv huang se	775
 罗伯兹	luo bo zi	775
 罗智强	luo zhi qiang	775
@@ -37754,7 +37723,6 @@
 五代史	wu dai shi	764
 交界线	jiao jie xian	764
 仁安羌	ren an qiang	764
-从小到	cong xiao dao	763
 仙女们	xian nv men	763
 任北平	ren bei ping	763
 伊丽丝	yi li si	763
@@ -37868,7 +37836,6 @@
 安顺场	an shun chang	755
 宋夫人	song fu ren	755
 宋室南	song shi nan	755
-实事求	shi shi qiu	755
 宫廷式	gong ting shi	754
 家居服	jia ju fu	754
 将透过	jiang tou guo	754
@@ -38249,9 +38216,7 @@
 于荣光	yu rong guang	726
 交通图	jiao tong tu	726
 亲口说	qin kou shuo	726
-人主页	ren zhu ye	726
 人头骨	ren tou gu	726
-从北到	cong bei dao	725
 从未能	cong wei neng	725
 以后再	yi hou zai	725
 以后要	yi hou yao	725
@@ -38288,7 +38253,6 @@
 决定将	jue ding jiang	723
 决斗者	jue dou zhe	723
 凑上去	cou shang qu	723
-出不穷	chu bu qiong	723
 出新规	chu xin gui	723
 分流器	fen liu qi	723
 分行业	fen hang ye	723
@@ -38799,7 +38763,6 @@
 介入性	jie ru xing	686
 介绍性	jie shao xing	686
 从军行	cong jun xing	686
-从大到	cong da dao	686
 他们将	ta men jiang	686
 以协助	yi xie zhu	685
 仪式化	yi shi hua	685
@@ -39264,7 +39227,6 @@
 赶得及	gan de ji	654
 越南盾	yue nan dun	654
 转移酶	zhuan yi mei	653
-轻而易	qing er yi	653
 载运量	zai yun liang	653
 输电网	shu dian wang	653
 辛庄村	xin zhuang cun	653
@@ -39557,7 +39519,6 @@
 小青岛	xiao qing dao	634
 尚书令	shang shu ling	634
 尿崩症	niao beng zheng	634
-居高临	ju gao lin	634
 屋久岛	wu jiu dao	634
 屠宰厂	tu zai chang	634
 山羊绒	shan yang rong	634
@@ -39958,7 +39919,6 @@
 五香粉	wu xiang fen	605
 亢进症	kang jin zheng	604
 人与物	ren yu wu	604
-人动漫	ren dong man	604
 从书中	cong shu zhong	604
 以后才	yi hou cai	604
 伊尼戈	yi ni ge	604
@@ -39998,7 +39958,6 @@
 加利波	jia li bo	601
 加查县	jia cha xian	601
 加迪夫	jia di fu	601
-势均力	shi jun li	601
 包尔汉	bao er han	601
 十万多	shi wan duo	601
 十三种	shi san zhong	601
@@ -40173,7 +40132,6 @@
 新都桥	xin dou qiao	589
 施泰尔	shi tai er	589
 施皮茨	shi pi ci	589
-无所适	wu suo shi	589
 无用论	wu yong lun	589
 无肩带	wu jian dai	589
 无脊椎	wu ji zhui	589
@@ -40481,7 +40439,6 @@
 龙阳路	long yang lu	569
 一个关	yi ge guan	569
 一人份	yi ren fen	569
-一箭双	yi jian shuang	569
 一网通	yi wang tong	569
 一面面	yi mian mian	569
 丁字形	ding zi xing	569
@@ -41253,7 +41210,6 @@
 多少度	duo shao du	517
 多尔曼	duo er man	517
 大提速	da ti su	517
-大摇大	da yao da	517
 大智度	da zhi du	517
 大白熊	da bai xiong	517
 大菠萝	da bo luo	517
@@ -41363,7 +41319,6 @@
 斗批改	dou pi gai	510
 斯帕兹	si pa zi	510
 斯皮克	si pi ke	510
-无中生	wu zhong sheng	510
 无理性	wu li xing	510
 无触点	wu chu dian	510
 无风带	wu feng dai	510
@@ -41517,7 +41472,6 @@
 胡厥文	hu jue wen	499
 能进球	neng jin qiu	499
 脑卒中	nao zu zhong	499
-脚踏实	jiao ta shi	499
 自习课	zi xi ke	499
 自动波	zi dong bo	499
 自强号	zi qiang hao	499
@@ -41608,7 +41562,6 @@
 难过地	nan guo di	493
 霎那间	sha na jian	493
 韩国菜	han guo cai	492
-风花雪	feng hua xue	492
 马尔滕	ma er teng	492
 马连道	ma lian dao	492
 高一层	gao yi ceng	492
@@ -41890,12 +41843,10 @@
 排风扇	pai feng shan	473
 接线盒	jie xian he	473
 推动器	tui dong qi	473
-推波助	tui bo zhu	473
 描图纸	miao tu zhi	473
 提上去	ti shang qu	473
 援助者	yuan zhu zhe	473
 搬回来	ban hui lai	473
-操之过	cao zhi guo	472
 支努干	zhi nu gan	472
 收养法	shou yang fa	472
 攻下来	gong xia lai	472
@@ -42067,7 +42018,6 @@
 紫荆山	zi jing shan	462
 红叶谷	hong ye gu	462
 红塔区	hong ta qu	462
-红杏出	hong xing chu	462
 红线女	hong xian nv	462
 纪念封	ji nian feng	462
 纳拉姆	na la mu	462
@@ -42256,7 +42206,6 @@
 仓储业	cang chu ye	449
 代理官	dai li guan	448
 以一己	yi yi ji	448
-以六比	yi liu bi	448
 任伯年	ren bo nian	448
 任御史	ren yu shi	448
 任斯基	ren si ji	448
@@ -42717,7 +42666,6 @@
 一百七	yi bai qi	415
 七三一	qi san yi	415
 七层楼	qi ceng lou	415
-七零八	qi ling ba	415
 万山红	wan shan hong	415
 三合板	san he ban	415
 三四万	san si wan	415
@@ -42953,7 +42901,6 @@
 循环制	xun huan zhi	401
 德修斯	de xiu si	401
 德海姆	de hai mu	401
-心动魄	xin dong po	401
 心肝儿	xin gan er	401
 怀唐伊	huai tang yi	400
 思茅市	si mao shi	400
@@ -43215,7 +43162,6 @@
 追索权	zhui suo quan	383
 送进去	song jin qu	383
 逍遥子	xiao yao zi	382
-途汽车	tu qi che	382
 通古今	tong gu jin	382
 通讯站	tong xun zhan	382
 道德性	dao de xing	382
@@ -43335,7 +43281,6 @@
 仍不愿	reng bu yuan	376
 代代传	dai dai chuan	375
 代理制	dai li zhi	375
-以一敌	yi yi di	375
 以后还	yi hou hai	375
 以美国	yi mei guo	375
 任教授	ren jiao shou	375
@@ -43852,7 +43797,6 @@
 陈文辉	chen wen hui	343
 陈毅任	chen yi ren	343
 陈翰笙	chen han sheng	343
-隐若现	yin ruo xian	343
 雕塑园	diao su yuan	343
 雷尼克	lei ni ke	343
 霍先生	huo xian sheng	343
@@ -43930,7 +43874,6 @@
 交通壕	jiao tong hao	338
 亲生女	qin sheng nv	338
 人之道	ren zhi dao	338
-人漫画	ren man hua	338
 亿兰特	yi lan te	337
 从树林	cong shu lin	337
 任志刚	ren zhi gang	337
@@ -44518,12 +44461,10 @@
 人之间	ren zhi jian	300
 人人乐	ren ren le	300
 人兽交	ren shou jiao	300
-人电影	ren dian ying	300
 亿多吨	yi duo dun	300
 仁布县	ren bu xian	300
 介休县	jie xiu xian	300
 代县长	dai xian zhang	299
-价证券	jia zheng quan	299
 伊塞克	yi sai ke	299
 伏尔铿	fu er keng	299
 传呼台	chuan hu tai	299
@@ -44782,7 +44723,6 @@
 排排坐	pai pai zuo	284
 探矿者	tan kuang zhe	284
 接一个	jie yi ge	284
-接二连	jie er lian	284
 推进者	tui jin zhe	284
 插起来	cha qi lai	284
 搜寻网	sou xun wang	284
@@ -45710,7 +45650,6 @@
 黄子华	huang zi hua	227
 黄文弼	huang wen bi	227
 黄老之	huang lao zhi	227
-黄蓉落	huang rong luo	227
 齐后主	qi hou zhu	227
 齐布尔	qi bu er	227
 龙舟节	long zhou jie	227
@@ -45977,7 +45916,6 @@
 总趋势	zong qu shi	210
 总额近	zong e jin	210
 惊叫声	jing jiao sheng	210
-惊小怪	jing xiao guai	210
 惠蒂尔	hui di er	210
 戈宝权	ge bao quan	210
 成败论	cheng bai lun	210
@@ -46148,7 +46086,6 @@
 米德勒	mi de lei	199
 索妮亚	suo ni ya	199
 紧靠在	jin kao zai	199
-经系统	jing xi tong	199
 绒山羊	rong shan yang	199
 结合为	jie he wei	199
 绝望者	jue wang zhe	199
@@ -46499,7 +46436,6 @@
 大翅鲸	da chi jing	177
 大通县	da tong xian	177
 天津路	tian jin lu	177
-天独厚	tian du hou	177
 夯土墙	hang tu qiang	177
 奥尔塔	ao er ta	177
 奥尔沙	ao er sha	177
@@ -46973,11 +46909,9 @@
 不爱我	bu ai wo	150
 不管部	bu guan bu	150
 专兼职	zhuan jian zhi	150
-世无争	shi wu zheng	150
 业务科	ye wu ke	150
 东平路	dong ping lu	150
 东街村	dong jie cun	150
-两国关	liang guo guan	150
 严仲子	yan zhong zi	150
 中列明	zhong lie ming	149
 中卫县	zhong wei xian	149
@@ -47644,7 +47578,6 @@
 一千份	yi qian fen	112
 一头热	yi tou re	112
 一百回	yi bai hui	112
-一言难	yi yan nan	112
 一贯道	yi guan dao	112
 一项项	yi xiang xiang	112
 上万只	shang wan zhi	112
@@ -47857,7 +47790,6 @@
 弹奏着	dan zou zhe	100
 录象机	lu xiang ji	99
 德格尔	de ge er	99
-心平气	xin ping qi	99
 怀孕时	huai yun shi	99
 怎能说	zen neng shuo	99
 思辨性	si bian xing	99
@@ -48064,7 +47996,6 @@
 红盖头	hong gai tou	89
 结扎术	jie za shu	89
 给民众	gei min zhong	88
-绝无仅	jue wu jin	88
 维甲酸	wei jia suan	88
 罗世文	luo shi wen	88
 罗交怡	luo jiao yi	88
@@ -48077,7 +48008,6 @@
 背不动	bei bu dong	88
 背台词	bei tai ci	88
 能源网	neng yuan wang	88
-能言善	neng yan shan	88
 腐植质	fu zhi zhi	88
 腿肚子	tui du zi	88
 膜电位	mo dian wei	88
@@ -48127,7 +48057,6 @@
 贝洛克	bei luo ke	85
 贝特森	bei te sen	85
 财产法	cai chan fa	85
-货不对	huo bu dui	85
 贮存器	zhu cun qi	85
 贾廷安	jia ting an	85
 赔得起	pei de qi	85
@@ -48231,12 +48160,10 @@
 专门用	zhuan men yong	79
 世足赛	shi zu sai	79
 东皇太	dong huang tai	78
-丝马迹	si ma ji	78
 丢下去	diu xia qu	78
 两性花	liang xing hua	78
 个人性	ge ren xing	78
 个阶段	ge jie duan	78
-中枢神	zhong shu shen	78
 中编办	zhong bian ban	78
 中重度	zhong zhong du	78
 中饰演	zhong shi yan	78
@@ -48408,7 +48335,6 @@
 埃尔门	ai er men	69
 埃斯塔	ai si ta	69
 塔克世	ta ke shi	68
-增无减	zeng wu jian	68
 增高鞋	zeng gao xie	68
 壤塘县	rang tang xian	68
 备案制	bei an zhi	68

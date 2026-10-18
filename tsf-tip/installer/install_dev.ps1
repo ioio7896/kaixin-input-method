@@ -1026,10 +1026,12 @@ function Invoke-TipRegistration {
             $powerShell = 'powershell.exe'
         }
     } else {
-        $powerShell = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+        # A 32-bit Inno Setup process redirects System32 to SysWOW64. Sysnative
+        # is the explicit route to the 64-bit host from that process.
+        $powerShellDir = if ([Environment]::Is64BitProcess) { 'System32' } else { 'Sysnative' }
+        $powerShell = Join-Path $env:WINDIR "$powerShellDir\WindowsPowerShell\v1.0\powershell.exe"
         if (-not (Test-Path -LiteralPath $powerShell)) {
-            Write-InstallLog ("WARN: 64-bit PowerShell not found at {0}; falling back to powershell.exe" -f $powerShell)
-            $powerShell = 'powershell.exe'
+            throw "64-bit PowerShell not found: $powerShell"
         }
     }
 
@@ -1630,18 +1632,25 @@ function Test-InstallHealthComRegistration {
         [bool]$MachineScope
     )
 
-    $classRoot = if ($MachineScope) { 'HKLM:\Software\Classes' } else { 'HKCU:\Software\Classes' }
+    $hive = if ($MachineScope) { [Microsoft.Win32.RegistryHive]::LocalMachine } else { [Microsoft.Win32.RegistryHive]::CurrentUser }
     $entries = @(
-        @{ Arch = 'x64'; Path = "$classRoot\CLSID\$TextServiceClsid\InprocServer32"; Expected = $DllX64 },
-        @{ Arch = 'x86'; Path = "$classRoot\WOW6432Node\CLSID\$TextServiceClsid\InprocServer32"; Expected = $DllX86 }
+        @{ Arch = 'x64'; View = [Microsoft.Win32.RegistryView]::Registry64; Expected = $DllX64 },
+        @{ Arch = 'x86'; View = [Microsoft.Win32.RegistryView]::Registry32; Expected = $DllX86 }
     )
     $failures = New-Object 'System.Collections.Generic.List[string]'
     foreach ($entry in $entries) {
-        if (-not (Test-Path -LiteralPath $entry.Path)) {
+        $base = [Microsoft.Win32.RegistryKey]::OpenBaseKey($hive, $entry.View)
+        try {
+            $key = $base.OpenSubKey("Software\Classes\CLSID\$TextServiceClsid\InprocServer32")
+            $actual = if ($null -ne $key) { [string]$key.GetValue('') } else { '' }
+            if ($null -ne $key) { $key.Close() }
+        } finally {
+            $base.Close()
+        }
+        if ([string]::IsNullOrWhiteSpace($actual)) {
             [void]$failures.Add(($entry.Arch + '_missing'))
             continue
         }
-        $actual = (Get-Item -LiteralPath $entry.Path).GetValue('')
         try {
             $actualFull = [System.IO.Path]::GetFullPath([string]$actual)
             $expectedFull = [System.IO.Path]::GetFullPath($entry.Expected)
@@ -1651,6 +1660,10 @@ function Test-InstallHealthComRegistration {
         }
         if (-not $actualFull.Equals($expectedFull, [System.StringComparison]::OrdinalIgnoreCase)) {
             [void]$failures.Add(($entry.Arch + '_mismatch'))
+            $root = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName([System.IO.Path]::GetDirectoryName($DllX64))))
+            $actualLabel = if ($actualFull.StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)) { '<INSTALL_ROOT>' + $actualFull.Substring($root.Length) } else { '<OTHER_LOCATION>' }
+            $expectedLabel = if ($expectedFull.StartsWith($root + '\', [System.StringComparison]::OrdinalIgnoreCase)) { '<INSTALL_ROOT>' + $expectedFull.Substring($root.Length) } else { '<OTHER_LOCATION>' }
+            Write-InstallLog ("event=install_com_mismatch arch={0} view={1} expected={2} actual={3}" -f $entry.Arch, $entry.View, (Format-InstallHealthValue $expectedLabel), (Format-InstallHealthValue $actualLabel))
         }
     }
     if ($failures.Count -eq 0) { return 'ok' }

@@ -129,12 +129,12 @@ fn uncommon_single_character_readings_do_not_displace_primary_candidates() {
     engine.clear_user_lexicon_for_eval();
     engine.set_mode_flags(crate::core::MODE_JIANPIN | crate::core::MODE_MIXED_PINYIN);
     for (input, expected) in [
-        ("nai", "乃"),
+        ("nai", "奶"),
         ("ru", "如"),
         ("chi", "吃"),
         ("cuo", "错"),
         ("zi", "自"),
-        ("dai", "大"),
+        ("dai", "带"),
     ] {
         let candidates = engine.lookup_full_explain(input).0;
         assert_eq!(

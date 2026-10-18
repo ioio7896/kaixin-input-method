@@ -16,6 +16,7 @@ fn normalize_pinyin_key(key: &str) -> String {
 #[derive(Default)]
 struct PronunciationOverrides {
     accepted: HashMap<char, Vec<String>>,
+    primary: HashMap<char, Vec<String>>,
     excluded: HashMap<char, Vec<String>>,
 }
 
@@ -58,7 +59,13 @@ fn pronunciation_aliases() -> &'static PronunciationOverrides {
             };
             let values = target.entry(ch).or_default();
             if !values.iter().any(|value| value == &reading) {
-                values.push(reading);
+                values.push(reading.clone());
+            }
+            if category.eq_ignore_ascii_case("primary") {
+                let primary = aliases.primary.entry(ch).or_default();
+                if !primary.contains(&reading) {
+                    primary.push(reading);
+                }
             }
         }
         aliases
@@ -74,11 +81,16 @@ fn pronunciation_aliases() -> &'static PronunciationOverrides {
 // These predicates are consumed by runtime UI modules, while the build script
 // compiles this source module only to generate the character corpus.
 #[allow(dead_code)]
-pub(crate) fn is_project_approved_reading(c: char, reading: &str) -> bool {
+pub(crate) fn is_project_primary_reading(c: char, reading: &str) -> bool {
+    // The common spoken standalone form of 嗯 is absent from rust-pinyin's
+    // primary reading. Keep this one interjection ahead of 恩 under `en`.
+    if c == '嗯' && reading == "en" {
+        return true;
+    }
     pronunciation_aliases()
-        .accepted
+        .primary
         .get(&c)
-        .is_some_and(|readings| readings.iter().any(|approved| approved == reading))
+        .is_some_and(|readings| readings.iter().any(|primary| primary == reading))
 }
 
 #[allow(dead_code)]
@@ -207,6 +219,7 @@ mod tests {
     #[test]
     fn keeps_high_frequency_modern_single_character_aliases() {
         for (ch, reading) in [
+            ('嗯', "en"),
             ('了', "liao"),
             ('和', "huo"),
             ('和', "hu"),

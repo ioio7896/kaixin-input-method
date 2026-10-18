@@ -2,7 +2,7 @@
 
 status: verified
 
-核验日期：2026-10-05
+核验日期：2026-10-18
 核验负责人：项目作者  
 核验脚本：`python scripts/verify_ai_generated_data.py`
 
@@ -19,7 +19,8 @@ status: verified
 ## 重建后的明确任务说明
 
 所有任务共用以下约束：只输出 UTF-8 数据；词库采用“词语、无声调且以空格分隔的拼音、
-正整数权重”三个制表符分隔字段；多音词表采用前两个字段；去除完全重复的
+正整数权重”三个制表符分隔字段；多音词表采用前两个字段，并允许第三字段
+`exact` 或 `substring` 指定作用范围；去除完全重复的
 “词语 + 拼音”组合；不复制百科、新闻、地图或商业词库中的介绍性文字。
 
 1. 繁简映射：整理单字级简体到繁体映射，保留一简对多繁的可能，以从 0 连续递增的
@@ -68,9 +69,9 @@ status: verified
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_new_places.txt` | 131 | `c47fc6428fdc481d8389e5c0ce0657fb46fb782aad19c08fd22e07f8ad2b7e62` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_public_services.txt` | 165 | `e25892eb12a1e83bc26e0e4e888e74258db28263a68a156edfc63df67a1b5dae` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt` | 145 | `5a6032ad99f69af1ebab90e075b5eac1bdf7c44b9a3a3031528ed0226ca8952a` |
-| `data_sources/kaixin/common_phrases.tsv` | 41 | `871a706af6b67451c4c145c225fedc2ed4706f8ea80a3d7face6b42660f90bfa` |
-| `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `89d7a621ef5befe38ef8ebcb84b956d663a0d80186ec8f51a97e9568307f2df3` |
-| `data_sources/kaixin/pronunciation_aliases.tsv` | 123 | `0f02157dab25eeca3552e0963d8203d1fee584e5bfd6e20d88f610c2462a49fd` |
+| `data_sources/kaixin/common_phrases.tsv` | 41 | `76ebea960afc6618592b9082a80ec96dc929db1897481b0246f6d0254aab2cb5` |
+| `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `dbf0cb652d83005ea997ba298301cfeb906695105104c06048f718f053e11f2a` |
+| `data_sources/kaixin/pronunciation_aliases.tsv` | 124 | `c8eddab0e56f4b730f8651f7fe51453c1cd3ecdf56045429fbb3fe19c0d50e06` |
 | `data_sources/kaixin/core_priority_corrections.tsv` | 38 | `0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765` |
 | `data_sources/kaixin/pronunciation_exclusions.tsv` | 19 | `e10c95ce4999b9e3d252e91f4c8c28b9ca512f88632f61b08b30e33be3de1a0f` |
 | `data_sources/kaixin/recall_phrases.tsv` | 7 | `55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8` |
@@ -82,3 +83,5 @@ status: verified
 同词不同读音可以多行保留，每个文件的词语与拼音组合不得重复。权重必须为正整数；四列读音表只接受 primary、alternate、colloquial、historical 类别。
 
 2026-10-05 更新旧读排除表：新增“不→fu、事→zi、她→chi、最→cuo、月→ru”五条单字排除项；先前新增的“大→tai、能→tai”两条一并纳入此冻结记录。已重新计算哈希并运行核验脚本。常用多音词的完整词条不受单字排除表影响。
+
+2026-10-18 更新基础候选“校史”的拼音为 `xiao shi`，并在读音别名表新增“嗯→en”口语读音。两份数据重新计算哈希，别名表数据行数更新为 124；结构、去重及固定哈希由核验脚本检查。

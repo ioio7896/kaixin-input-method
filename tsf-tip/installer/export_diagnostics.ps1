@@ -127,6 +127,39 @@ try {
     Copy-TextIfExistsSanitized -Path (Join-Path $appStateRoot 'kaixin.ini') -RelativePath 'user\kaixin.ini'
     Copy-DirectoryTextSanitized -Path (Join-Path $appStateRoot 'logs') -RelativePath 'user\logs'
 
+    # The helper decrypts only the most recent structured events for this user.
+    # Package the redacted text, never a live SQLite database or its WAL files.
+    $engineExe = Join-Path $InstallationRoot 'srf_ime_engine.exe'
+    $eventsText = Join-Path $tempRoot 'runtime-events-raw.txt'
+    if (Test-Path -LiteralPath $engineExe -PathType Leaf) {
+        try {
+            $export = Start-Process -FilePath $engineExe -ArgumentList ('--export-runtime-events "{0}"' -f $eventsText) -WindowStyle Hidden -Wait -PassThru -ErrorAction Stop
+            if ($export.ExitCode -eq 0) {
+                Copy-TextIfExistsSanitized -Path $eventsText -RelativePath 'user\runtime_events_recent.txt'
+            }
+        } catch {
+            # Continue exporting the other diagnostics if the event store is unavailable.
+        } finally {
+            Remove-Item -LiteralPath $eventsText -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    try {
+        $windowsErrors = @(Get-WinEvent -FilterHashtable @{
+            LogName = 'Application'
+            StartTime = (Get-Date).AddDays(-7)
+            Id = @(1000, 1001, 1002)
+        } -MaxEvents 500 -ErrorAction Stop | Where-Object {
+            $_.Message -match '(?i)kaixin|srf_ime'
+        } | Select-Object -First 50)
+        $eventLines = foreach ($event in $windowsErrors) {
+            '{0:o} provider={1} id={2} message={3}' -f $event.TimeCreated, $event.ProviderName, $event.Id, (($event.Message -replace '[\r\n]+', ' ') -replace '\s+', ' ')
+        }
+        Set-Content -LiteralPath (Join-Path $tempRoot 'windows_application_errors.txt') -Value (Sanitize-Text ($eventLines -join "`n")) -Encoding UTF8
+    } catch {
+        # Event Log access is optional for current-user diagnostics.
+    }
+
     Copy-TextIfExistsSanitized -Path (Join-Path $machineStateRoot 'uninstall_machine.log') -RelativePath 'machine\uninstall_machine.log'
 
     $summary = @(

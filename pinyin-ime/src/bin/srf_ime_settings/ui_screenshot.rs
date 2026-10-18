@@ -1,18 +1,12 @@
 use super::*;
 
 pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    tool_page_intro(
-        ui,
-        "截",
-        "截图工具",
-        "用一致的快捷操作完成截图、保存和 OCR 衔接。",
-    );
     section_panel(ui, "截图设置", |ui| {
         let palette = fluent_palette(ui);
         setting_combo_row(
             ui,
             "截图方案",
-            "使用内置原生截图，可智能吸附窗口和控件，也可自由拖动框选。",
+            "使用内置原生截图，可智能吸附窗口和控件，也可自由拖动框选。受保护视频、DRM 和安全桌面无法截取；WGC 不可用时自动回退 DXGI 或系统截图。",
             screenshot_capture_scheme_label(&app.model.screenshot_mode).to_owned(),
             "screenshot_scheme",
             |ui| {
@@ -32,13 +26,6 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 }
             },
         );
-        ui.label(
-            RichText::new(
-                "受保护视频、DRM 和安全桌面无法截取；WGC 不可用时自动回退 DXGI 或系统截图。",
-            )
-            .small()
-            .color(palette.muted),
-        );
         if app.model.screenshot_mode == "manual_region" {
             setting_toggle(
                 ui,
@@ -52,14 +39,11 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 "在框选界面顶部显示吸附、快捷键和确认方式；选区旁的“完成/取消”按钮始终显示。",
                 &mut app.model.screenshot_show_instructions,
             );
-            ui.label(
-                RichText::new(if app.model.screenshot_confirm_on_release {
-                    "当前确认方式：拖动松手后立即截图；单击智能吸附区域同样会立即完成。"
-                } else {
-                    "当前确认方式：拖动松手后保留选区，可调整范围，再点击“完成”、双击或按 Enter。"
-                })
-                .small()
-                .color(palette.muted),
+            setting_toggle(
+                ui,
+                "显示选区快捷操作",
+                "在选区旁显示复制、另存、OCR、标注和固定按钮。标注会打开系统画图，固定会显示可移动的置顶图片；完成和取消始终显示。开启松手立即完成时，拖动后不会停留在工具栏。",
+                &mut app.model.screenshot_show_quick_actions,
             );
         }
         ui.add_space(6.0);
@@ -122,6 +106,16 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             &mut app.model.screenshot_silent_copy_dir,
             "选择副本目录",
         );
+        if outline_button(ui, "副本保存到桌面")
+            .on_hover_text("桌面副本使用与原图相同的文件名；同名时自动递增，不覆盖原有文件。")
+            .clicked()
+        {
+            if let Some(desktop) = screenshot_desktop_dir() {
+                app.model.screenshot_silent_copy_dir = desktop.display().to_string();
+                app.model.screenshot_silent_copy_enabled = true;
+                app.model.screenshot_auto_save = true;
+            }
+        }
         filename_pattern_row(
             ui,
             "截图命名规则",
@@ -173,4 +167,26 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             },
         );
     });
+}
+
+#[cfg(windows)]
+fn screenshot_desktop_dir() -> Option<std::path::PathBuf> {
+    use windows_sys::Win32::System::Com::CoTaskMemFree;
+    use windows_sys::Win32::UI::Shell::{FOLDERID_Desktop, SHGetKnownFolderPath};
+    let mut raw = std::ptr::null_mut();
+    let status = unsafe { SHGetKnownFolderPath(&FOLDERID_Desktop, 0, 0, &mut raw) };
+    if status < 0 || raw.is_null() {
+        return None;
+    }
+    let len = unsafe { (0..).take_while(|&index| *raw.add(index) != 0).count() };
+    let path = std::path::PathBuf::from(String::from_utf16_lossy(unsafe {
+        std::slice::from_raw_parts(raw, len)
+    }));
+    unsafe { CoTaskMemFree(raw.cast()) };
+    Some(path)
+}
+
+#[cfg(not(windows))]
+fn screenshot_desktop_dir() -> Option<std::path::PathBuf> {
+    None
 }

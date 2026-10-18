@@ -60,17 +60,25 @@ const CREATE_NO_WINDOW: u32 = 0x08000000;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum OcrLanguageMode {
     ZhHans,
+    ZhHant,
     English,
     Mixed,
     Auto,
 }
 
 impl OcrLanguageMode {
-    const ALL: [Self; 4] = [Self::ZhHans, Self::English, Self::Mixed, Self::Auto];
+    const ALL: [Self; 5] = [
+        Self::ZhHans,
+        Self::ZhHant,
+        Self::English,
+        Self::Mixed,
+        Self::Auto,
+    ];
 
     fn label(self) -> &'static str {
         match self {
             Self::ZhHans => "简体中文",
+            Self::ZhHant => "繁体中文",
             Self::English => "英文",
             Self::Mixed => "中英混合",
             Self::Auto => "自动（中英比较）",
@@ -80,6 +88,7 @@ impl OcrLanguageMode {
     fn rapidocr_lang(self) -> &'static str {
         match self {
             Self::ZhHans => "zh",
+            Self::ZhHant => "zh_tw",
             Self::English => "en",
             Self::Mixed => "mixed",
             Self::Auto => "auto",
@@ -88,6 +97,7 @@ impl OcrLanguageMode {
 
     fn from_config(value: &str) -> Self {
         match value.trim().to_ascii_lowercase().as_str() {
+            "zh_tw" | "zh-tw" | "chinese_cht" => Self::ZhHant,
             "en" | "english" => Self::English,
             "mixed" => Self::Mixed,
             "auto" => Self::Auto,

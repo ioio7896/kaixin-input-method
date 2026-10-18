@@ -61,7 +61,6 @@ const SETTINGS_MAX_WINDOW_SIZE: [f32; 2] = [1440.0, 1040.0];
 const SETTINGS_MIN_WINDOW_SIZE: [f32; 2] = [780.0, 680.0];
 const SETTINGS_NAV_WIDTH: f32 = 184.0;
 const SETTINGS_CONTENT_MAX_WIDTH: f32 = 1200.0;
-const SETTINGS_PANEL_RADIUS: f32 = 4.0;
 const SETTINGS_USER_DICT_LIST_LIMIT: usize = 100;
 const MS_PINYIN_TIP: &str =
     r"0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411F-A5AC-CA038EC515D7}";
@@ -134,6 +133,7 @@ enum UserDictTaskResult {
 
 impl SettingsApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        cc.egui_ctx.set_theme(egui::ThemePreference::Light);
         let _ = fonts::install_cjk_fonts(&cc.egui_ctx);
         enforce_settings_min_font_size(&cc.egui_ctx);
         let config_path = app_paths::config_ini_path()
@@ -176,10 +176,12 @@ impl SettingsApp {
             compat_selected_rule: 0,
             active_section: if std::env::args().any(|arg| arg == "--game-settings") {
                 SettingsSection::Compatibility
+            } else if std::env::args().any(|arg| arg == "--section=clipboard") {
+                SettingsSection::Clipboard
             } else {
                 SettingsSection::Input
             },
-            appearance_page: AppearanceSettingsPage::Layout,
+            appearance_page: AppearanceSettingsPage::Theme,
             lexicon_page: LexiconSettingsPage::Learning,
             tool_page: ToolSettingsPage::Clipboard,
             system_page: SystemSettingsPage::General,
@@ -320,7 +322,6 @@ impl SettingsApp {
         {
             rule.overlay_backend = normalize_overlay_backend_value(backend);
             rule.game_chat.tested_candidate = false;
-            rule.game_chat.tested_exit = false;
             sync_compat_rules_to_legacy_fields(&mut self.model);
         }
     }
@@ -2159,10 +2160,12 @@ fn tool_data_settings_changed(before: &SettingsModel, after: &SettingsModel) -> 
         || before.screenshot_mode != after.screenshot_mode
         || before.screenshot_confirm_on_release != after.screenshot_confirm_on_release
         || before.screenshot_show_instructions != after.screenshot_show_instructions
+        || before.screenshot_show_quick_actions != after.screenshot_show_quick_actions
         || before.clipboard_max_history_items != after.clipboard_max_history_items
         || before.clipboard_max_pinned_items != after.clipboard_max_pinned_items
         || before.clipboard_max_text_utf16_units != after.clipboard_max_text_utf16_units
         || before.ocr_result_action != after.ocr_result_action
+        || before.ocr_language != after.ocr_language
         || before.ocr_keep_alive != after.ocr_keep_alive
         || before.ocr_translate_keep_window != after.ocr_translate_keep_window
         || before.ocr_screenshot_auto_save != after.ocr_screenshot_auto_save

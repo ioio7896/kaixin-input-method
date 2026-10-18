@@ -154,7 +154,6 @@ impl LexiconLayer {
             "kaixin_explicit.txt"
                 | "kaixin_polyphone.txt"
                 | "kaixin_pronunciation_aliases.txt"
-                | "life_common_3char.txt"
                 | "life_hot_3char_curated.txt"
                 | "life_hot_4char_curated.txt"
         ) {
@@ -3148,11 +3147,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn curated_short_hot_layers_preserve_existing_three_char_head() {
+    fn only_curated_short_hot_lists_receive_core_priority() {
         let zh = Path::new("lexicon").join("zh");
         assert_eq!(
             LexiconLayer::from_path(&zh.join("life_common_3char.txt")),
-            LexiconLayer::Core
+            LexiconLayer::Base
         );
         assert_eq!(
             LexiconLayer::from_path(&zh.join("life_hot_3char_curated.txt")),

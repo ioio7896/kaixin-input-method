@@ -173,6 +173,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_fuzzyPinyin = false;
   bool m_doublePinyin = false;
   bool m_traditionalOutput = false;
+  bool m_pureGameMode = false;
   bool m_gameChatActive = false;
   SrfGameChatPhase m_gameChatPhase = SrfGameChatPhase::Passive;
   SrfGameTextSource m_gameChatSource = SrfGameTextSource::None;
@@ -417,6 +418,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const;
   SrfHotkeyScope EffectiveHotkeyScope() const;
   bool IsGameHotkeyPassthroughActive() const;
+  bool RefreshPureGameModeFromRegistry();
   SrfGameInputMode EffectiveGameInputMode() const;
   bool ShouldHandleGameChatHotkey() const;
   void SetGameChatActive(bool active);

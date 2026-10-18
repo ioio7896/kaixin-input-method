@@ -36,6 +36,7 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | screenshot | mode | manual_region | string |  |
 | screenshot | confirm_on_release | 0 | bool |  |
 | screenshot | show_instructions | 1 | bool |  |
+| screenshot | show_quick_actions | 1 | bool |  |
 | clipboard | hotkey | off | string |  |
 | tools | settings_hotkey | off | string |  |
 | tools | handwrite_hotkey | off | string |  |
