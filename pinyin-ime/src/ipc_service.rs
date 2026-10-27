@@ -1755,7 +1755,7 @@ fn listen_loop() {
 fn listen_loop_inner() {
     let pipe_name_text = engine_pipe_name_from_env();
     let pipe_name = wide(&pipe_name_text);
-    let security = match crate::windows_security::LocalLogonPipeSecurity::new() {
+    let security = match crate::windows_security::LocalLogonPipeSecurity::for_ime_engine() {
         Ok(security) => security,
         Err(err) => {
             runtime_log::log_engine(
@@ -2012,6 +2012,14 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
     }
     let mut lookup_session = ClientLookupSession::new(client_process_id);
     while let Some((command, payload)) = read_request(pipe) {
+        if crate::windows_security::verify_ime_pipe_client(pipe).is_err() {
+            runtime_log::log_engine(
+                RuntimeLogLevel::Error,
+                "srf_ipc_identity_denied",
+                "status=denied",
+            );
+            break;
+        }
         lookup_session.last_request_id = 0;
         let (status, response) =
             match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {

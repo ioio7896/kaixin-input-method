@@ -2095,7 +2095,7 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
   const ULONGLONG deadline = GetTickCount64() + timeoutMs;
   while (true) {
     HANDLE pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
-                              FILE_FLAG_OVERLAPPED, nullptr);
+                              FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION, nullptr);
     if (pipe != INVALID_HANDLE_VALUE) {
       DWORD mode = PIPE_READMODE_MESSAGE;
       if (!SetNamedPipeHandleState(pipe, &mode, nullptr, nullptr)) {

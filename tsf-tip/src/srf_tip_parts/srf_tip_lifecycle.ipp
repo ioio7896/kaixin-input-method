@@ -163,6 +163,8 @@ STDMETHODIMP CSrfTip::QueryInterface(REFIID riid, void** ppv) {
     *ppv = static_cast<ITfFunctionProvider*>(this);
   } else if (riid == IID_ITfFnConfigure) {
     *ppv = static_cast<ITfFnConfigure*>(this);
+  } else if (riid == IID_ITfFnGetPreferredTouchKeyboardLayout) {
+    *ppv = static_cast<ITfFnGetPreferredTouchKeyboardLayout*>(this);
   } else {
     return E_NOINTERFACE;
   }
@@ -202,6 +204,13 @@ STDMETHODIMP CSrfTip::GetFunction(REFGUID rguid, REFIID riid, IUnknown** ppunk) 
     return E_INVALIDARG;
   }
   return QueryInterface(riid, reinterpret_cast<void**>(ppunk));
+}
+
+STDMETHODIMP CSrfTip::GetLayout(TKBLayoutType* type, WORD* layout) {
+  if (!type || !layout) return E_POINTER;
+  *type = TKBLT_OPTIMIZED;
+  *layout = 0x0804;  // TKBL_OPT_SIMPLIFIED_CHINESE_PINYIN
+  return S_OK;
 }
 
 STDMETHODIMP CSrfTip::GetDisplayName(BSTR* pbstrName) {

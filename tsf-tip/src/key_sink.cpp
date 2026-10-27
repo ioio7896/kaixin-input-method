@@ -201,6 +201,7 @@ bool RequestEditSessionWithFallback(ITfContext* pic, TfClientId tid,
 CKeyEventSink::CKeyEventSink(CSrfTip* tip) : m_pTip(tip) {}
 
 void CKeyEventSink::ResetKeyState() {
+  m_touchPagePacketOwned = false;
   m_leftShiftDown = m_rightShiftDown = false;
   m_keyOwnership.Reset();
   m_pendingKeyEdits.Cancel();
@@ -240,6 +241,7 @@ STDMETHODIMP_(ULONG) CKeyEventSink::Release() {
 
 STDMETHODIMP CKeyEventSink::OnSetFocus(BOOL fForeground) {
   if (!fForeground) {
+    m_touchPagePacketOwned = false;
     ResetKeyState();
     if (m_pTip) {
       m_pTip->m_shiftTapActive = false;
@@ -287,13 +289,18 @@ STDMETHODIMP CKeyEventSink::OnKeyTraceUp(WPARAM wParam, LPARAM lParam) {
   return S_OK;
 }
 
-STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* /*pic*/, WPARAM wParam, LPARAM lParam,
+STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lParam,
                                           BOOL* pfEaten) {
   if (!pfEaten) return E_POINTER;
   *pfEaten = FALSE;
   if (!m_pTip) return S_OK;
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
+  if (const UINT pageKey = SrfReadTouchKeyboardPageKey(vk)) {
+    *pfEaten = pic && m_pTip->m_pFocusContext == pic && !m_pTip->m_reading.empty() &&
+        !m_pTip->m_context.candidates.Empty() && m_pTip->WouldEatKey(pageKey);
+    return S_OK;
+  }
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (m_traceAvailable && m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
       m_pTip->IsGameHotkeyPassthroughActive())) return S_OK;
@@ -315,6 +322,10 @@ STDMETHODIMP CKeyEventSink::OnTestKeyUp(ITfContext* /*pic*/, WPARAM wParam, LPAR
   if (!m_pTip) return S_OK;
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
+  if (vk == VK_PACKET && static_cast<ULONG_PTR>(GetMessageExtraInfo()) != kSrfInjectedInputMarker) {
+    *pfEaten = m_touchPagePacketOwned;
+    return S_OK;
+  }
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   const bool passedDown = m_keyOwnership.PassRelease(vk);
   if (passedDown) return S_OK;
@@ -339,8 +350,10 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
   // Bind before capturing the edit session so old candidates cannot cross fields.
   if (m_pTip->m_pFocusContext != pic) m_pTip->SetFocusContext(pic);
 
-  const UINT vk = static_cast<UINT>(wParam);
-  if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
+  const UINT packetPageKey = SrfReadTouchKeyboardPageKey(static_cast<UINT>(wParam));
+  const UINT vk = packetPageKey ? packetPageKey : static_cast<UINT>(wParam);
+  if (packetPageKey && (m_pTip->m_reading.empty() || m_pTip->m_context.candidates.Empty())) return S_OK;
+  if (!packetPageKey && SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceDown(wParam, lParam);
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   if (m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
@@ -376,7 +389,10 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
   const bool consumed = RequestEditSessionWithFallback(pic, m_pTip->m_tid, pEdit);
   pEdit->Release();
 
-  if (consumed) *pfEaten = TRUE;
+  if (consumed) {
+    *pfEaten = TRUE;
+    if (packetPageKey) m_touchPagePacketOwned = true;
+  }
   return S_OK;
 }
 
@@ -386,6 +402,11 @@ STDMETHODIMP CKeyEventSink::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lPara
   if (!pic || !m_pTip) return S_OK;
 
   const UINT vk = static_cast<UINT>(wParam);
+  if (vk == VK_PACKET && static_cast<ULONG_PTR>(GetMessageExtraInfo()) != kSrfInjectedInputMarker) {
+    *pfEaten = m_touchPagePacketOwned;
+    m_touchPagePacketOwned = false;
+    return S_OK;
+  }
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceUp(wParam, lParam);
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;

@@ -174,6 +174,10 @@ void TestGameInputPolicy() {
   Check(!SrfGameFocusEvidenceFresh(0, 10), "missing provider evidence remains passive");
   Check(!SrfGameFocusEvidenceFresh(100, 99), "future provider timestamp is rejected");
   Check(SrfIsInjectedTextEvent(VK_PACKET, 0), "Unicode packets do not loop back into pinyin");
+  Check(SrfTouchKeyboardPageKey(0xf003, 0) == VK_NEXT, "touch keyboard next page");
+  Check(SrfTouchKeyboardPageKey(0xf004, 0) == VK_PRIOR, "touch keyboard previous page");
+  Check(SrfTouchKeyboardPageKey(L'你', 0) == 0, "ordinary Unicode text still bypasses pinyin");
+  Check(SrfTouchKeyboardPageKey(0xf003, kSrfInjectedInputMarker) == 0, "own injected packets cannot trigger paging");
   Check(SrfIsInjectedTextEvent('V', kSrfInjectedInputMarker), "tagged paste events bypass the IME");
   bool active = true;
   SrfGameChatPhase phase = SrfGameChatPhase::Editing;

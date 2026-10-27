@@ -39,6 +39,7 @@ class CSrfCandidateListUIElement : public ITfCandidateListUIElementBehavior,
   STDMETHODIMP Abort() override;
 
   void OnCandidateInteractionStarted() override;
+  void OnCandidateSelected(UINT indexInPage) override;
   void OnCandidateClicked(UINT indexInPage) override;
   void OnCandidateRightClicked(UINT indexInPage, POINT screenPoint) override;
   void OnCandidatePinRequested(UINT indexInPage, bool pinned) override;

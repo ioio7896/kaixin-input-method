@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "ime_model.h"
+#include "candidate_accessibility.h"
+#include "candidate_input_pane.h"
 
 struct CandidatePageLayoutMetrics {
   std::vector<UINT> pageStarts;
@@ -87,6 +89,7 @@ void ShutdownCandidateWindowRendering();
 struct ICandidateWindowEvents {
   virtual ~ICandidateWindowEvents() = default;
   virtual void OnCandidateInteractionStarted() {}
+  virtual void OnCandidateSelected(UINT) {}
   virtual void OnCandidateClicked(UINT indexInPage) = 0;
   virtual void OnCandidateRightClicked(UINT indexInPage, POINT screenPoint) = 0;
   virtual void OnCandidatePinRequested(UINT indexInPage, bool pinned) = 0;
@@ -103,6 +106,7 @@ class CCandidateWindow {
   CCandidateWindow& operator=(const CCandidateWindow&) = delete;
 
   void SetEvents(ICandidateWindowEvents* events);
+  void SetOwnerWindow(HWND owner);
   void SetStyle(const SrfUIStyle& style);
   void SetGameOverlay(bool enabled, bool fullscreen, HWND targetHwnd);
   void PrepareResources();
@@ -124,6 +128,10 @@ class CCandidateWindow {
  private:
   HWND m_hwnd = nullptr;
   HWND m_shadowHwnd = nullptr;
+  HWND m_ownerHwnd = nullptr;
+  SrfCandidateAccessibility m_accessibility;
+  SrfCandidateInputPane m_inputPane;
+  void UpdateAccessibility();
   ICandidateWindowEvents* m_events = nullptr;
   std::wstring m_title;
   std::vector<std::wstring> m_items;

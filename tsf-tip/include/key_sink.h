@@ -15,6 +15,7 @@ struct CKeyEventSink : public ITfKeyEventSink, public ITfKeyTraceEventSink {
   bool m_asciiToggleLatched = false;
   bool m_gameToggleRepeated = false;
   bool m_asciiToggleRepeated = false;
+  bool m_touchPagePacketOwned = false;
   SrfPendingKeyEdits m_pendingKeyEdits;
   void RefreshToggleLatches();
 

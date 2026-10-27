@@ -77,7 +77,8 @@ struct CandidateRow {
 class CSrfTip : public ITfTextInputProcessorEx,
                  public ITfDisplayAttributeProvider,
                  public ITfFunctionProvider,
-                 public ITfFnConfigure {
+                 public ITfFnConfigure,
+                 public ITfFnGetPreferredTouchKeyboardLayout {
   LONG m_cRef = 1;
 
   ITfThreadMgr* m_pThreadMgr = nullptr;
@@ -278,6 +279,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   STDMETHODIMP GetType(GUID* pguid) override;
   STDMETHODIMP GetDescription(BSTR* pbstrDesc) override;
   STDMETHODIMP GetFunction(REFGUID rguid, REFIID riid, IUnknown** ppunk) override;
+  STDMETHODIMP GetLayout(TKBLayoutType* type, WORD* layout) override;
   STDMETHODIMP GetDisplayName(BSTR* pbstrName) override;
   STDMETHODIMP Show(HWND hwndParent, LANGID langid, REFGUID rguidProfile) override;
 

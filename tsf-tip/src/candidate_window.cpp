@@ -1601,6 +1601,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
     m_pendingLayoutStyleUpdate = false;
     m_lastLayoutHorizontal = m_style.candidateHorizontal;
     m_lastLayoutVariant = m_style.candidateLayoutVariant;
+    UpdateAccessibility();
     return;
   }
 
@@ -1813,6 +1814,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   }
   m_pendingStyleUpdate = false;
   m_pendingLayoutStyleUpdate = false;
+  UpdateAccessibility();
 }
 
 void CCandidateWindow::Hide() {
@@ -1845,6 +1847,7 @@ void CCandidateWindow::Hide() {
   m_itemRects.clear();
   m_needsMeasure = true;
   if (m_hwnd) ShowWindow(m_hwnd, SW_HIDE);
+  m_accessibility.Hide();
   HideShadowWindow();
 }
 
@@ -1894,6 +1897,7 @@ void CCandidateWindow::SetPresentationState(bool interactive, bool pendingVisual
   m_interactive = interactive;
   m_pendingVisual = pendingVisual;
   ReleaseItemPaintCaches();
+  UpdateAccessibility();
   m_staticPaintDirty = true;
   m_fullPaintDirty = true;
   if (!m_hwnd || !IsWindowVisible(m_hwnd)) return;
@@ -1903,6 +1907,8 @@ void CCandidateWindow::SetPresentationState(bool interactive, bool pendingVisual
 
 void CCandidateWindow::Destroy() {
   Hide();
+  m_inputPane.Detach();
+  m_accessibility.Destroy();
   ReleasePaintBuffer();
   ReleaseStaticPaintBuffer();
   ReleaseItemPaintCaches();
@@ -1925,16 +1931,37 @@ bool CCandidateWindow::EnsureWindow() {
                         (m_style.candidateTopmost ? WS_EX_TOPMOST : 0);
   m_hwnd = CreateWindowExW(exStyle,
                            kCandidateWndClass, L"", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0,
-                           nullptr, nullptr, DllOrFallbackInstance(), this);
+                           m_ownerHwnd, nullptr, DllOrFallbackInstance(), this);
   ApplyWindowOpacity();
+  if (m_hwnd) m_inputPane.Attach(m_hwnd, m_ownerHwnd);
   return m_hwnd != nullptr;
+}
+
+void CCandidateWindow::SetOwnerWindow(HWND owner) {
+  owner = owner && IsWindow(owner) ? GetAncestor(owner, GA_ROOT) : nullptr;
+  if (owner && (owner == m_hwnd || owner == m_shadowHwnd)) return;
+  if (m_ownerHwnd == owner) return;
+  // Withdraw the previous field's frame before changing ownership.
+  if (IsVisible()) Hide();
+  m_ownerHwnd = owner;
+  if (m_hwnd) {
+    SetWindowLongPtrW(m_hwnd, GWLP_HWNDPARENT, reinterpret_cast<LONG_PTR>(owner));
+    if (m_shadowHwnd) SetWindowLongPtrW(m_shadowHwnd, GWLP_HWNDPARENT, reinterpret_cast<LONG_PTR>(owner));
+    m_inputPane.Attach(m_hwnd, owner);
+  }
+}
+
+void CCandidateWindow::UpdateAccessibility() {
+  if (!m_hwnd) return;
+  m_accessibility.Update(m_hwnd, m_title, m_items, m_comments, m_itemRects,
+      m_pageIndex, m_selectedInPage, m_interactive && !m_pendingVisual);
 }
 
 bool CCandidateWindow::EnsureShadowWindow() {
   if (m_shadowHwnd) return true;
   const DWORD exStyle = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED | WS_EX_TRANSPARENT |
                         (m_style.candidateTopmost ? WS_EX_TOPMOST : 0);
-  m_shadowHwnd = CreateWindowExW(exStyle, L"STATIC", L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr,
+  m_shadowHwnd = CreateWindowExW(exStyle, L"STATIC", L"", WS_POPUP, 0, 0, 0, 0, m_ownerHwnd, nullptr,
                                  DllOrFallbackInstance(), nullptr);
   return m_shadowHwnd != nullptr;
 }
@@ -2505,6 +2532,8 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
 
 RECT CCandidateWindow::CalculateWindowRect(const RECT& anchorRect, SIZE content) {
   const RECT work = PlacementAreaForAnchor(&anchorRect, m_fullscreenOverlayPlacement);
+  const RECT pane = m_inputPane.Location(m_hwnd);
+  const auto avoidPane = [&](RECT rect) { return SrfAvoidInputPane(rect, pane, work, Scale(6)); };
   const int screenMargin = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
   const int gap = Scale(6);
   if (content.cx <= 0 || content.cy <= 0) {
@@ -2535,12 +2564,12 @@ RECT CCandidateWindow::CalculateWindowRect(const RECT& anchorRect, SIZE content)
   int x = preferredX;
   int y = static_cast<int>(anchorRect.bottom) + gap;
   if (y <= maxY) {
-    return {x, y, x + content.cx, y + content.cy};
+    return avoidPane({x, y, x + content.cx, y + content.cy});
   }
 
   y = static_cast<int>(anchorRect.top) - gap - content.cy;
   if (y >= minY) {
-    return {x, y, x + content.cx, y + content.cy};
+    return avoidPane({x, y, x + content.cx, y + content.cy});
   }
 
   if (!SidePlaceCandidateWindow(true, anchorRect, content, work, screenMargin, gap, &x, &y) &&
@@ -2548,7 +2577,7 @@ RECT CCandidateWindow::CalculateWindowRect(const RECT& anchorRect, SIZE content)
     x = preferredX;
     y = std::clamp(static_cast<int>(anchorRect.bottom) + gap, minY, maxY);
   }
-  return {x, y, x + content.cx, y + content.cy};
+  return avoidPane({x, y, x + content.cx, y + content.cy});
 }
 
 void CCandidateWindow::ApplyWindowRegion(int width, int height, bool redraw) {
@@ -3941,6 +3970,63 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
   if (!self) return DefWindowProcW(hwnd, msg, wParam, lParam);
 
   switch (msg) {
+    case WM_GETOBJECT:
+      return self->m_accessibility.GetObject(hwnd, wParam, lParam);
+    case WM_SHOWWINDOW:
+      NotifyWinEvent(wParam ? EVENT_OBJECT_IME_SHOW : EVENT_OBJECT_IME_HIDE,
+                     hwnd, OBJID_CLIENT, CHILDID_SELF);
+      if (wParam) self->UpdateAccessibility();
+      else self->m_accessibility.Hide();
+      break;
+    case WM_WINDOWPOSCHANGED: {
+      const auto* position = reinterpret_cast<const WINDOWPOS*>(lParam);
+      if (position && IsWindowVisible(hwnd) &&
+          ((position->flags & SWP_NOMOVE) == 0 || (position->flags & SWP_NOSIZE) == 0)) {
+        NotifyWinEvent(EVENT_OBJECT_IME_CHANGE, hwnd, OBJID_CLIENT, CHILDID_SELF);
+        self->UpdateAccessibility();
+      }
+      break;
+    }
+    case SrfCandidateInputPane::kChangedMessage:
+      if (self->m_hasAnchorRect && IsWindowVisible(hwnd)) {
+        self->ApplyWindowRect(self->CalculateWindowRect(self->m_anchorRect, self->m_measuredClientSize));
+        self->ScheduleEnvironmentRefresh();
+      }
+      return 0;
+    case SrfCandidateAccessibility::kSelectMessage:
+    case SrfCandidateAccessibility::kInvokeMessage: {
+      const UINT index = static_cast<UINT>(wParam);
+      const bool ownerFocused = self->m_ownerHwnd && IsWindow(self->m_ownerHwnd) &&
+          GetAncestor(GetForegroundWindow(), GA_ROOT) == self->m_ownerHwnd;
+      if (ownerFocused && self->m_events && self->m_interactive && !self->m_pendingVisual &&
+          self->m_accessibility.CanAct(index, static_cast<ULONG>(lParam))) {
+        self->m_events->OnCandidateInteractionStarted();
+        if (msg == SrfCandidateAccessibility::kInvokeMessage) self->m_events->OnCandidateClicked(index);
+        else self->m_events->OnCandidateSelected(index);
+      }
+      return 0;
+    }
+    case WM_DESTROY:
+      if (self->m_shadowHwnd && IsWindow(self->m_shadowHwnd)) DestroyWindow(self->m_shadowHwnd);
+      self->m_shadowHwnd = nullptr;
+      self->m_inputPane.Detach();
+      self->m_accessibility.Destroy();
+      self->m_environmentRefreshTimerPending = false;
+      self->m_animationTimerPending = false;
+      self->m_paintTimerPending = false;
+      self->m_horizontalShrinkTimerPending = false;
+      self->m_pendingIndicatorTimerPending = false;
+      self->m_hasAnchorRect = false;
+      self->m_layoutDirty = true;
+      self->m_needsMeasure = true;
+      break;
+    case WM_NCDESTROY:
+      SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+      if (self->m_hwnd == hwnd) {
+        self->m_hwnd = nullptr;
+        self->m_shadowHwnd = nullptr;
+      }
+      return DefWindowProcW(hwnd, msg, wParam, lParam);
     case WM_NCHITTEST:
       if (self->m_gameOverlay) return HTTRANSPARENT;
       break;

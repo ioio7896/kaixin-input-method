@@ -525,6 +525,7 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     const SrfUIStyle style = ResolveOverlayStyle(config_, snapshot);
     candidateWindow_.SetGameOverlay(true, snapshot.fullscreenPlacement,
                                     snapshot.targetHwnd);
+    candidateWindow_.SetOwnerWindow(snapshot.targetHwnd);
     candidateWindow_.SetStyle(style);
     candidateWindow_.Show(
         snapshot.title, snapshot.items, snapshot.comments, snapshot.labels,

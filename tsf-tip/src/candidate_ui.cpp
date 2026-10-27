@@ -224,6 +224,12 @@ void CSrfCandidateListUIElement::OnCandidateClicked(UINT indexInPage) {
   (void)m_tip->RequestCommitCandidate(idx);
 }
 
+void CSrfCandidateListUIElement::OnCandidateSelected(UINT indexInPage) {
+  if (!m_tip || m_tip->m_candidatesReading != m_tip->m_reading) return;
+  const UINT index = m_tip->CandidatePageStart(m_tip->m_candPage) + indexInPage;
+  if (index < m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) (void)SetSelection(index);
+}
+
 void CSrfCandidateListUIElement::OnCandidateRightClicked(UINT indexInPage, POINT screenPoint) {
   (void)screenPoint;
   if (!m_tip) return;
@@ -640,6 +646,14 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       (gameOverlay || wantsExternalOverlay) ? m_tip->CandidateOverlayTargetWindow()
                                            : nullptr;
   m_window.SetGameOverlay(gameOverlay, fullscreenOverlay, overlayTarget);
+  HWND owner = nullptr;
+  ITfContextView* view = nullptr;
+  if (m_tip->m_pFocusContext && SUCCEEDED(m_tip->m_pFocusContext->GetActiveView(&view)) && view) {
+    (void)view->GetWnd(&owner);
+    view->Release();
+  }
+  if (!owner) owner = GetFocus();
+  m_window.SetOwnerWindow(owner ? owner : overlayTarget);
   RECT layoutAnchor = anchor;
   const bool anchorPhysical =
       wantsExternalOverlay && overlayTarget &&
