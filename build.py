@@ -1855,6 +1855,28 @@ def _write_sig(path: Path, content: str) -> None:
         pass
 
 
+def cargo_build_environment(repo: Path, profile: str) -> dict[str, str]:
+    env = {"CARGO_REGISTRIES_CRATES_IO_PROTOCOL": "sparse"}
+    if profile != "release":
+        return env
+    # Cargo's encoded form keeps paths containing spaces as one rustc argument.
+    # Preserve caller flags and remove local paths from dependency panic sites too.
+    encoded = os.environ.get("CARGO_ENCODED_RUSTFLAGS")
+    flags = encoded.split("\x1f") if encoded is not None else os.environ.get("RUSTFLAGS", "").split()
+    mappings = (
+        (Path.home(), "/build/user"),
+        (repo, "/build/kaixin"),
+        (Path(os.environ.get("CARGO_HOME", str(Path.home() / ".cargo"))), "/build/cargo"),
+        (Path(os.environ.get("RUSTUP_HOME", str(Path.home() / ".rustup"))), "/build/rustup"),
+    )
+    for source, replacement in mappings:
+        source = source.resolve()
+        for spelling in dict.fromkeys((str(source), source.as_posix())):
+            flags.append(f"--remap-path-prefix={spelling}={replacement}")
+    env["CARGO_ENCODED_RUSTFLAGS"] = "\x1f".join(flag for flag in flags if flag)
+    return env
+
+
 def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) -> tuple[float, str, Path] | None:
     """Build helper: _cargo_inputs_fingerprint."""
     target_dir = rust_target_dir(repo, profile, arch)
@@ -1867,7 +1889,7 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
     if not src_dir.is_dir() or not cargo_toml.is_file():
         return None
     max_rs, fp_rs = _tree_source_stats(src_dir, {".rs"})
-    max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "Cargo.toml", repo / ".cargo/config.toml", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
+    max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "build.py", repo / "Cargo.toml", repo / ".cargo/config.toml", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
     max_data, fp_data = _tree_source_stats(data_dir, {".txt", ".tsv", ".bin", ".yaml", ".yml", ".json"})
     max_lex, fp_lex = _lexicon_sources_fingerprint(repo)
     max_readings, fp_readings = _source_files_fingerprint(
@@ -1895,6 +1917,7 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
         max_icon,
     )
     comb = hashlib.sha256()
+    comb.update(json.dumps(cargo_build_environment(repo, profile), sort_keys=True).encode("utf-8"))
     comb.update(fp_workspace.encode("ascii"))
     comb.update(fp_rs.encode("ascii"))
     comb.update(b"\0")
@@ -3002,11 +3025,7 @@ def step_cargo(
             cmd += ["--bin", bin_name]
     elif target:
         cmd.append("--lib")
-    cargo_env = {
-        # Cargo's legacy git index depends on GitHub, which is often much less
-        # reachable than the official sparse index on Windows build machines.
-        "CARGO_REGISTRIES_CRATES_IO_PROTOCOL": "sparse",
-    }
+    cargo_env = cargo_build_environment(repo, profile)
     if not ctx.quiet:
         print_msg(
             f"  {dim('>> Cargo may stay on `Updating crates.io index` while resolving or downloading')}"
