@@ -37,6 +37,7 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | screenshot | confirm_on_release | 0 | bool |  |
 | screenshot | show_instructions | 1 | bool |  |
 | screenshot | show_quick_actions | 1 | bool |  |
+| screenshot | show_result_window | 1 | bool |  |
 | clipboard | hotkey | off | string |  |
 | tools | settings_hotkey | off | string |  |
 | tools | handwrite_hotkey | off | string |  |
@@ -147,3 +148,5 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | compatibility | game_enter_behavior | auto | string | auto, close, stay |
 | compatibility | game_auto_uia | 1 | bool |  |
 | compatibility | game_status_indicator | 1 | bool |  |
+| compatibility | game_status_duration_ms | 1600 | integer |  |
+| compatibility | game_status_scale_percent | 100 | integer |  |

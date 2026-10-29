@@ -169,15 +169,6 @@ begin
   DeleteFile(TempFile);
 end;
 
-function FileContains(const FileName: string; const Needle: string): Boolean;
-var
-  Text: AnsiString;
-begin
-  Result := False;
-  if LoadStringFromFile(FileName, Text) then
-    Result := Pos(Needle, Text) > 0;
-end;
-
 function StatusText(const Ok: Boolean): string;
 begin
   if Ok then
@@ -193,8 +184,8 @@ var
   TrayOk: Boolean;
 begin
   UserLog := ExpandConstant('{localappdata}\kaixin\install_user.log');
-  UserOk := FileContains(UserLog, 'event=install_health_check status=ok');
-  TrayOk := FileContains(UserLog, 'OK: started tray helper');
+  UserOk := CurrentInstallLogContains(UserLog, 'event=install_health_check status=ok');
+  TrayOk := CurrentInstallLogContains(UserLog, 'OK: started tray helper');
 
   Result :=
     '{#KXAppName} 已安装完成。' + #13#10 + #13#10 +

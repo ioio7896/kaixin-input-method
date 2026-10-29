@@ -1441,7 +1441,6 @@
 兵哥	bing ge	200
 兵圣	bing sheng	200
 秉志	bing zhi	200
-并多次	bing duo ci	200
 波爱修斯	bo ai xiu si	200
 波德莱尔	bo de lai er	200
 波尔	bo er	200

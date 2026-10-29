@@ -1807,6 +1807,7 @@ Assert-TrustedInstallRoot -Path $InstallationRoot
 $script:InstallLogPath = Get-DefaultInstallLogPath -InstallRoot $InstallationRoot -MachineScope:$Machine.IsPresent
 $lexiconPrefix = (-join ([char[]](0x8BCD, 0x5E93, 0x002D)))
 
+Write-InstallLog 'event=install_session_start'
 Write-InstallLog ("BEGIN: install_dev.ps1 Machine={0} SkipFileCopy={1} SkipRegistration={2} SkipLanguageList={3} SkipTextServiceRestart={4} SkipTextInputUx={5} SkipUninstallEntry={6} SkipTraySetup={7} SkipStaleHostRestart={8} PromptStaleHostRestart={9}" -f
     $Machine.IsPresent, $SkipFileCopy.IsPresent, $SkipRegistration.IsPresent, $SkipLanguageList.IsPresent,
     $SkipTextServiceRestart.IsPresent, $SkipTextInputUx.IsPresent, $SkipUninstallEntry.IsPresent,
@@ -1884,6 +1885,7 @@ if (-not $SkipFileCopy) {
     Stop-TextInputStackForInstall
     Stop-RunningHelpers
     Clear-TransientUserState
+    Write-InstallLog 'event=install_session_start'
     Clear-InstallRootForPureCopy -InstallRoot $InstallationRoot -SourceRoot $PackageRoot
     New-Item -ItemType Directory -Path $InstallationRoot -Force | Out-Null
 

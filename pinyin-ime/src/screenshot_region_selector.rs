@@ -9,6 +9,23 @@ use crate::windows_graphics_capture::{CaptureRect, CapturedFrame};
 use image::RgbaImage;
 use std::fmt;
 
+/// Caller owns the returned font and must delete it after controls stop using it.
+#[cfg(windows)]
+pub unsafe fn create_screenshot_ui_font(dpi: u32, logical_pixels: i32) -> isize {
+    use windows_sys::Win32::Graphics::Gdi::{CreateFontIndirectW, LOGFONTW};
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        SystemParametersInfoW, NONCLIENTMETRICSW, SPI_GETNONCLIENTMETRICS,
+    };
+    let mut metrics: NONCLIENTMETRICSW = std::mem::zeroed();
+    metrics.cbSize = std::mem::size_of::<NONCLIENTMETRICSW>() as u32;
+    let mut font: LOGFONTW = if SystemParametersInfoW(
+        SPI_GETNONCLIENTMETRICS, metrics.cbSize, (&mut metrics as *mut NONCLIENTMETRICSW).cast(), 0,
+    ) != 0 { metrics.lfMessageFont } else { std::mem::zeroed() };
+    font.lfHeight = -((i64::from(logical_pixels) * i64::from(dpi.max(96)) + 48) / 96) as i32;
+    font.lfWeight = 400;
+    CreateFontIndirectW(&font)
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct RegionSelectorError {
     message: String,
@@ -19,6 +36,8 @@ pub struct RegionSelectorOptions {
     pub confirm_on_release: bool,
     pub show_instructions: bool,
     pub show_quick_actions: bool,
+    pub ocr_available: bool,
+    pub confirm_label: &'static str,
 }
 
 impl Default for RegionSelectorOptions {
@@ -27,6 +46,8 @@ impl Default for RegionSelectorOptions {
             confirm_on_release: false,
             show_instructions: true,
             show_quick_actions: true,
+            ocr_available: true,
+            confirm_label: "完成",
         }
     }
 }
@@ -75,6 +96,33 @@ pub enum RegionAction {
     Ocr,
     Annotate,
     Pin,
+}
+
+fn quick_action_for_key(key: u32, ocr_available: bool) -> Option<RegionAction> {
+    match key {
+        0x43 => Some(RegionAction::Copy),
+        0x53 => Some(RegionAction::SaveAs),
+        0x4F if ocr_available => Some(RegionAction::Ocr),
+        0x41 => Some(RegionAction::Annotate),
+        0x50 => Some(RegionAction::Pin),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod quick_action_tests {
+    use super::{quick_action_for_key, RegionAction};
+
+    #[test]
+    fn shortcut_actions_respect_ocr_availability() {
+        assert_eq!(quick_action_for_key(0x43, false), Some(RegionAction::Copy));
+        assert_eq!(quick_action_for_key(0x53, false), Some(RegionAction::SaveAs));
+        assert_eq!(quick_action_for_key(0x4F, false), None);
+        assert_eq!(quick_action_for_key(0x4F, true), Some(RegionAction::Ocr));
+        assert_eq!(quick_action_for_key(0x41, true), Some(RegionAction::Annotate));
+        assert_eq!(quick_action_for_key(0x50, true), Some(RegionAction::Pin));
+        assert_eq!(quick_action_for_key(0x58, true), None);
+    }
 }
 
 pub fn select_region_action_with_options(
@@ -138,14 +186,14 @@ mod platform {
     };
     use windows_sys::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_EXTENDED_FRAME_BOUNDS};
     use windows_sys::Win32::Graphics::Gdi::{
-        AlphaBlend, BeginPaint, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, CreateFontW,
+        AlphaBlend, BeginPaint, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC,
         CreatePen, CreateSolidBrush, DeleteDC, DeleteObject, DrawTextW, EndPaint, FillRect,
         GetStockObject, IntersectClipRect, InvalidateRect, Rectangle, RestoreDC, SaveDC,
         ScreenToClient, SelectObject, SetBkMode, SetTextColor, StretchDIBits, UpdateWindow,
-        AC_SRC_OVER, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, BLENDFUNCTION, CLIP_DEFAULT_PRECIS,
-        DEFAULT_CHARSET, DEFAULT_PITCH, DIB_RGB_COLORS, DT_CALCRECT, DT_CENTER, DT_NOPREFIX,
-        DT_SINGLELINE, DT_VCENTER, DT_WORDBREAK, FF_DONTCARE, FW_SEMIBOLD, NULL_BRUSH,
-        OUT_DEFAULT_PRECIS, PAINTSTRUCT, PROOF_QUALITY, PS_SOLID, SRCCOPY, TRANSPARENT,
+        AC_SRC_OVER, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, BLENDFUNCTION,
+        DIB_RGB_COLORS, DT_CALCRECT, DT_CENTER, DT_NOPREFIX,
+        DT_SINGLELINE, DT_VCENTER, DT_WORDBREAK, NULL_BRUSH,
+        PAINTSTRUCT, PS_SOLID, SRCCOPY, TRANSPARENT,
     };
     use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
     use windows_sys::Win32::UI::HiDpi::{
@@ -477,6 +525,8 @@ mod platform {
         confirm_on_release: bool,
         show_instructions: bool,
         show_quick_actions: bool,
+        ocr_available: bool,
+        confirm_label: &'static str,
         fixed_size: Option<(i32, i32)>,
         locked_ratio: Option<(u32, u32)>,
         back_buffer_dc: isize,
@@ -588,6 +638,8 @@ mod platform {
                 confirm_on_release: options.confirm_on_release,
                 show_instructions: options.show_instructions,
                 show_quick_actions: options.show_quick_actions,
+                ocr_available: options.ocr_available,
+                confirm_label: options.confirm_label,
                 fixed_size: None,
                 locked_ratio: None,
                 back_buffer_dc: 0,
@@ -1143,6 +1195,17 @@ mod platform {
                 if let Some(state) = state {
                     if let Some(points) = cursor_points(hwnd, state) {
                         if state.manual_selection_locked {
+                            if selector_action_at(hwnd, state, points.client) == Some(SelectorAction::Ocr)
+                                && !state.ocr_available
+                            {
+                                let title = wide("OCR 未安装");
+                                let message = wide("此安装包未包含 OCR，请安装输入法 + OCR 版后使用。当前截图仍可复制或另存。");
+                                windows_sys::Win32::UI::WindowsAndMessaging::MessageBoxW(
+                                    hwnd, message.as_ptr(), title.as_ptr(),
+                                    windows_sys::Win32::UI::WindowsAndMessaging::MB_OK,
+                                );
+                                return 0;
+                            }
                             match selector_action_at(hwnd, state, points.client) {
                                 Some(
                                     SelectorAction::Copy
@@ -1299,6 +1362,16 @@ mod platform {
             }
             WM_KEYDOWN => {
                 if let Some(state) = state {
+                    if state.show_quick_actions && state.manual_selection_locked && ctrl_down() {
+                        let action = super::quick_action_for_key(wparam as u32, state.ocr_available);
+                        if let Some(action) = action {
+                            state.action = action;
+                            if state.confirm().unwrap_or(false) {
+                                let _ = DestroyWindow(hwnd);
+                            }
+                            return 0;
+                        }
+                    }
                     match wparam as u32 {
                         value if value == u32::from(VK_RETURN) => {
                             if state.dragging {
@@ -1512,7 +1585,9 @@ mod platform {
         let width = scale(if show_quick_actions { 660 } else { 300 })
             .min(available_width)
             .max(1);
-        let height = scale(36).min(client_height.max(1)).max(1);
+        let compact = show_quick_actions && width < scale(600);
+        let row_height = scale(36).min(client_height.max(1)).max(1);
+        let height = (row_height * if compact { 2 } else { 1 }).min(client_height.max(1));
         let button_count = if show_quick_actions { 7 } else { 2 };
         let button_width = scale(68).min((width / button_count).max(1));
         let max_left = client_width.saturating_sub(width + margin).max(margin);
@@ -1523,6 +1598,20 @@ mod platform {
         } else {
             selection.top.saturating_sub(height + margin).max(margin)
         };
+        if compact {
+            let cell = (width / 4).max(1);
+            let rect = |column: i32, row: i32| RECT {
+                left: left + column * cell,
+                top: top + row * row_height,
+                right: if column == 3 { left + width } else { left + (column + 1) * cell },
+                bottom: (top + (row + 1) * row_height).min(client_height),
+            };
+            return ActionToolbarLayout {
+                info: RECT { left, top, right: left, bottom: top },
+                pin: rect(0, 0), annotate: rect(1, 0), copy: rect(2, 0), save_as: rect(3, 0),
+                ocr: rect(0, 1), confirm: rect(1, 1), cancel: rect(2, 1),
+            };
+        }
         let cancel = RECT {
             left: left.saturating_add(width - button_width),
             top,
@@ -1583,6 +1672,26 @@ mod platform {
             pin,
             confirm,
             cancel,
+        }
+    }
+
+    #[cfg(test)]
+    mod toolbar_layout_tests {
+        use super::*;
+
+        #[test]
+        fn narrow_toolbar_wraps_without_clipping_buttons() {
+            for dpi in [96, 120, 144, 192] {
+                let width = 350 * dpi / 96;
+                let height = 500 * dpi / 96;
+                let layout = action_toolbar_layout(LocalRect { left: 0, top: 30, right: 100, bottom: 100 }, width, height, dpi as u32, true);
+                for rect in [layout.pin, layout.annotate, layout.copy, layout.save_as, layout.ocr, layout.confirm, layout.cancel] {
+                    assert!(rect.left >= 0 && rect.right <= width);
+                    assert!(rect.bottom <= height && rect.bottom > rect.top);
+                    assert!(rect.right - rect.left >= 70 * dpi / 96);
+                }
+                assert!(layout.ocr.top > layout.copy.top);
+            }
         }
     }
 
@@ -2315,7 +2424,7 @@ mod platform {
             selection.width(),
             selection.height()
         ));
-        let confirm = wide("完成");
+        let confirm = wide(state.confirm_label);
         let cancel = wide("取消");
         let font = create_overlay_font(dpi, 13);
         let old_font = if font != 0 {
@@ -2327,7 +2436,7 @@ mod platform {
         let _ = SetTextColor(hdc, rgb(255, 255, 255));
         let copy = wide("复制");
         let save_as = wide("另存");
-        let ocr = wide("OCR");
+        let ocr = wide(if state.ocr_available { "OCR" } else { "OCR无" });
         let annotate = wide("标注");
         let pin = wide("固定");
         let mut labels = vec![(&info, layout.info)];
@@ -2362,7 +2471,7 @@ mod platform {
         let dpi = GetDpiForWindow(hwnd).max(96);
         let scale = |value: i32| ((i64::from(value) * i64::from(dpi) + 48) / 96) as i32;
         let text = wide(
-            "移动自动吸附 · 拖动框选 · 松手后点击完成或继续调整 · 双击/Enter 确认 · Esc 取消 · Shift 固定比例 · Ctrl 禁用吸附 · Tab 切换层级",
+            "移动自动吸附 · 拖动框选 · Enter 完成 · Esc 取消 · Shift 固定比例 · Ctrl 禁用吸附 · Tab 切换层级 · Ctrl+C 复制 · Ctrl+S 另存 · Ctrl+O OCR · Ctrl+A 标注 · Ctrl+P 固定",
         );
         let width = scale(720)
             .min(client_width.saturating_sub(scale(16)))
@@ -2405,24 +2514,7 @@ mod platform {
     }
 
     unsafe fn create_overlay_font(dpi: u32, points: i32) -> isize {
-        let height = -((i64::from(points) * i64::from(dpi) + 36) / 72) as i32;
-        let face = wide("Microsoft YaHei UI");
-        CreateFontW(
-            height,
-            0,
-            0,
-            0,
-            FW_SEMIBOLD as i32,
-            0,
-            0,
-            0,
-            DEFAULT_CHARSET.into(),
-            OUT_DEFAULT_PRECIS.into(),
-            CLIP_DEFAULT_PRECIS.into(),
-            PROOF_QUALITY.into(),
-            (DEFAULT_PITCH | FF_DONTCARE).into(),
-            face.as_ptr(),
-        )
+        super::create_screenshot_ui_font(dpi, if points >= 13 { 15 } else { 14 })
     }
 
     fn shift_down() -> bool {

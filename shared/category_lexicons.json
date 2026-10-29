@@ -646,45 +646,45 @@
       "file": "category_idioms.txt",
       "title": "成语惯用语",
       "group": "成语与固定表达",
-      "rows": 22840,
+      "rows": 22720,
       "default_enabled": true,
-      "sha256": "89818edf992706c7191577a7c0e9b1e2ef8912afb5988788a21137ac7e51def1"
+      "sha256": "7197819c8bcefb300e15a02d6f12d6f28253aec12dccc6792d62f767cf90df22"
     },
     {
       "tag": "category_common_three",
       "file": "category_common_three.txt",
       "title": "三字通用补充",
       "group": "通用词语补充",
-      "rows": 1161,
+      "rows": 1155,
       "default_enabled": true,
-      "sha256": "eb817dc69bab000d914c3f8f1bba0655ddedccab494144a09c77a5504d4b8dcf"
+      "sha256": "70849830b4f4564097847db4caef9a2656d8e7a5f31908bbcb3e918c686e8202"
     },
     {
       "tag": "category_common_four",
       "file": "category_common_four.txt",
       "title": "四字常用补充",
       "group": "通用词语补充",
-      "rows": 4980,
+      "rows": 4976,
       "default_enabled": true,
-      "sha256": "0b9985e55b91560c06814e649bab4043cac23b6c48a1737125848c67c900f339"
+      "sha256": "008060777c0ac71459f4e4c183cd09f9762c7ae33b46fc283fc9ae5b8a15495e"
     },
     {
       "tag": "category_common_long",
       "file": "category_common_long.txt",
       "title": "通用长词补充",
       "group": "通用词语补充",
-      "rows": 738,
+      "rows": 737,
       "default_enabled": true,
-      "sha256": "875f2345664486fee3a1f714875b9d7b824dcd5f5a14a0b92da9c5ec891de2f7"
+      "sha256": "a77c9f6fc4cd57a6118685f7b0487dcdf7e82f0fad80cb0b3c86da97341544d2"
     },
     {
       "tag": "category_proper_people",
       "file": "category_proper_people.txt",
       "title": "语料人名补充",
       "group": "名称与实体",
-      "rows": 1361,
+      "rows": 1358,
       "default_enabled": true,
-      "sha256": "62cf386a4ed5906500161c139b333c9c25363a41cc781d02e53876e9b5c75123"
+      "sha256": "bbe02aa08311e86d92dee7788411def4e1d567cc8bb988aa37c36b5f5656623a"
     },
     {
       "tag": "category_proper_places",

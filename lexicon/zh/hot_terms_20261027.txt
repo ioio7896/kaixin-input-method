@@ -1,0 +1,503 @@
+# 2026-10-27 用户选定热词和常用表达：500 条
+# 项目整理，生成式 AI 辅助；拼音由 pypinyin 0.55.0 生成并人工校对多音词。
+# 格式：词语<TAB>全拼<TAB>词频（满分 10000；统一 9300，实际排序仍受上下文等影响）
+不烧心	bu shao xin	9300
+大水理论	da shui li lun	9300
+大睡理论	da shui li lun	9300
+薄肌理论	bao ji li lun	9300
+蓝色大肥鱼	lan se da fei yu	9300
+闪身步	shan shen bu	9300
+浪子踢球	lang zi ti qiu	9300
+宿命对视	su ming dui shi	9300
+神之八秒	shen zhi ba miao	9300
+红果体	hong guo ti	9300
+规矩体	gui ju ti	9300
+养龙虾	yang long xia	9300
+赛博养龙虾	sai bo yang long xia	9300
+认祖归洲	ren zu gui zhou	9300
+野生狗奶	ye sheng gou nai	9300
+噜噜操	lu lu cao	9300
+狗熊哆嗦毛	gou xiong duo suo mao	9300
+样人笑幻	yang ren xiao huan	9300
+太阳之子	tai yang zhi zi	9300
+世界巡演	shi jie xun yan	9300
+活人感	huo ren gan	9300
+班味	ban wei	9300
+情绪价值	qing xu jia zhi	9300
+爱你老己	ai ni lao ji	9300
+敬自己一杯	jing zi ji yi bei	9300
+助我破鼎	zhu wo po ding	9300
+浪浪山小妖怪	lang lang shan xiao yao guai	9300
+村咖	cun ka	9300
+预制人生	yu zhi ren sheng	9300
+赛博对账	sai bo dui zhang	9300
+给自己充电	gei zi ji chong dian	9300
+松弛感	song chi gan	9300
+钝感力	dun gan li	9300
+破碎感	po sui gan	9300
+宿命感	su ming gan	9300
+搭子文化	da zi wen hua	9300
+情绪搭子	qing xu da zi	9300
+嘴替文学	zui ti wen xue	9300
+发疯文学	fa feng wen xue	9300
+反向带娃	fan xiang dai wa	9300
+丑东西	chou dong xi	9300
+丑萌	chou meng	9300
+抽象文化	chou xiang wen hua	9300
+电子榨菜	dian zi zha cai	9300
+精神内耗	jing shen nei hao	9300
+情绪稳定	qing xu wen ding	9300
+精神状态	jing shen zhuang tai	9300
+已读乱回	yi du luan hui	9300
+已读不回	yi du bu hui	9300
+沉浸式体验	chen jin shi ti yan	9300
+有事直说	you shi zhi shuo	9300
+这波不亏	zhe bo bu kui	9300
+真的很难评	zhen de hen nan ping	9300
+主打一个	zhu da yi ge	9300
+狠狠共情	hen hen gong qing	9300
+情绪拉满	qing xu la man	9300
+直接拿捏	zhi jie na nie	9300
+一整个爱住	yi zheng ge ai zhu	9300
+狠狠爱了	hen hen ai le	9300
+狠狠期待	hen hen qi dai	9300
+我先缓缓	wo xian huan huan	9300
+让我想想	rang wo xiang xiang	9300
+问题不大	wen ti bu da	9300
+小事一桩	xiao shi yi zhuang	9300
+说来话长	shuo lai hua chang	9300
+此话怎讲	ci hua zen jiang	9300
+我有预感	wo you yu gan	9300
+不出意外	bu chu yi wai	9300
+及时止损	ji shi zhi sun	9300
+适可而止	shi ke er zhi	9300
+顺其自然	shun qi zi ran	9300
+量力而行	liang li er xing	9300
+各有各的难	ge you ge de nan	9300
+慢慢来比较快	man man lai bi jiao kuai	9300
+先把自己照顾好	xian ba zi ji zhao gu hao	9300
+给自己放个假	gei zi ji fang ge jia	9300
+生活需要仪式感	sheng huo xu yao yi shi gan	9300
+好好吃饭	hao hao chi fan	9300
+早点睡觉	zao dian shui jiao	9300
+今天也要开心	jin tian ye yao kai xin	9300
+社交电量	she jiao dian liang	9300
+社交恐惧	she jiao kong ju	9300
+社交疲惫	she jiao pi bei	9300
+情绪出口	qing xu chu kou	9300
+情绪内耗	qing xu nei hao	9300
+情绪劳动	qing xu lao dong	9300
+自我和解	zi wo he jie	9300
+自我接纳	zi wo jie na	9300
+自我关怀	zi wo guan huai	9300
+自我成长	zi wo cheng zhang	9300
+松弛一点	song chi yi dian	9300
+放过自己	fang guo zi ji	9300
+拒绝内耗	ju jue nei hao	9300
+保持热爱	bao chi re ai	9300
+好好生活	hao hao sheng huo	9300
+下次一定	xia ci yi ding	9300
+改天再约	gai tian zai yue	9300
+随时联系	sui shi lian xi	9300
+到家报平安	dao jia bao ping an	9300
+一路平安	yi lu ping an	9300
+人工智能	ren gong zhi neng	9300
+生成式人工智能	sheng cheng shi ren gong zhi neng	9300
+大语言模型	da yu yan mo xing	9300
+多模态模型	duo mo tai mo xing	9300
+开源大模型	kai yuan da mo xing	9300
+基础模型	ji chu mo xing	9300
+推理模型	tui li mo xing	9300
+视觉语言模型	shi jue yu yan mo xing	9300
+世界模型	shi jie mo xing	9300
+端侧模型	duan ce mo xing	9300
+智能体	zhi neng ti	9300
+人工智能智能体	ren gong zhi neng zhi neng ti	9300
+多智能体	duo zhi neng ti	9300
+智能体协作	zhi neng ti xie zuo	9300
+智能体工程化	zhi neng ti gong cheng hua	9300
+智能体终端	zhi neng ti zhong duan	9300
+智能体记忆	zhi neng ti ji yi	9300
+智能体技能	zhi neng ti ji neng	9300
+智能体评测	zhi neng ti ping ce	9300
+智能体基础设施	zhi neng ti ji chu she shi	9300
+模型自进化	mo xing zi jin hua	9300
+模型蒸馏	mo xing zheng liu	9300
+模型微调	mo xing wei diao	9300
+模型量化	mo xing liang hua	9300
+模型幻觉	mo xing huan jue	9300
+模型推理	mo xing tui li	9300
+模型训练	mo xing xun lian	9300
+模型评估	mo xing ping gu	9300
+模型部署	mo xing bu shu	9300
+模型对齐	mo xing dui qi	9300
+上下文窗口	shang xia wen chuang kou	9300
+长上下文	chang shang xia wen	9300
+提示词	ti shi ci	9300
+提示词工程	ti shi ci gong cheng	9300
+系统提示词	xi tong ti shi ci	9300
+检索增强生成	jian suo zeng qiang sheng cheng	9300
+知识库问答	zhi shi ku wen da	9300
+向量数据库	xiang liang shu ju ku	9300
+向量检索	xiang liang jian suo	9300
+语义搜索	yu yi sou suo	9300
+人工智能普惠	ren gong zhi neng pu hui	9300
+智能经济	zhi neng jing ji	9300
+词元	ci yuan	9300
+词元服务	ci yuan fu wu	9300
+数据要素	shu ju yao su	9300
+数据治理	shu ju zhi li	9300
+自主算力	zi zhu suan li	9300
+算力调度	suan li diao du	9300
+开源模型	kai yuan mo xing	9300
+模型调用	mo xing diao yong	9300
+具身智能	ju shen zhi neng	9300
+具身机器人	ju shen ji qi ren	9300
+人形机器人	ren xing ji qi ren	9300
+服务机器人	fu wu ji qi ren	9300
+工业机器人	gong ye ji qi ren	9300
+协作机器人	xie zuo ji qi ren	9300
+机器人训练	ji qi ren xun lian	9300
+机器人灵巧手	ji qi ren ling qiao shou	9300
+机器人末端执行器	ji qi ren mo duan zhi xing qi	9300
+机器人运动控制	ji qi ren yun dong kong zhi	9300
+具身智能实训	ju shen zhi neng shi xun	9300
+实景实训	shi jing shi xun	9300
+机器人仿真	ji qi ren fang zhen	9300
+仿真训练	fang zhen xun lian	9300
+遥操作	yao cao zuo	9300
+运动规划	yun dong gui hua	9300
+路径规划	lu jing gui hua	9300
+环境感知	huan jing gan zhi	9300
+视觉导航	shi jue dao hang	9300
+自主避障	zi zhu bi zhang	9300
+智能眼镜	zhi neng yan jing	9300
+人工智能眼镜	ren gong zhi neng yan jing	9300
+智能手表	zhi neng shou biao	9300
+智能手环	zhi neng shou huan	9300
+智能耳机	zhi neng er ji	9300
+智能音箱	zhi neng yin xiang	9300
+智能手机	zhi neng shou ji	9300
+智能终端	zhi neng zhong duan	9300
+智能家居	zhi neng jia ju	9300
+全屋智能	quan wu zhi neng	9300
+端侧推理	duan ce tui li	9300
+端云协同	duan yun xie tong	9300
+本地模型	ben di mo xing	9300
+离线识别	li xian shi bie	9300
+语音识别	yu yin shi bie	9300
+语音合成	yu yin he cheng	9300
+实时翻译	shi shi fan yi	9300
+图像识别	tu xiang shi bie	9300
+文字识别	wen zi shi bie	9300
+视频理解	shi pin li jie	9300
+自动驾驶	zi dong jia shi	9300
+辅助驾驶	fu zhu jia shi	9300
+智能座舱	zhi neng zuo cang	9300
+智能驾驶	zhi neng jia shi	9300
+车路协同	che lu xie tong	9300
+无人配送	wu ren pei song	9300
+无人机配送	wu ren ji pei song	9300
+低空经济	di kong jing ji	9300
+低空飞行	di kong fei xing	9300
+飞行汽车	fei xing qi che	9300
+人工智能编程	ren gong zhi neng bian cheng	9300
+代码补全	dai ma bu quan	9300
+代码生成	dai ma sheng cheng	9300
+代码审查	dai ma shen cha	9300
+代码重构	dai ma zhong gou	9300
+代码解释	dai ma jie shi	9300
+自动化测试	zi dong hua ce shi	9300
+单元测试	dan yuan ce shi	9300
+集成测试	ji cheng ce shi	9300
+端到端测试	duan dao duan ce shi	9300
+持续集成	chi xu ji cheng	9300
+持续交付	chi xu jiao fu	9300
+持续部署	chi xu bu shu	9300
+版本管理	ban ben guan li	9300
+分支管理	fen zhi guan li	9300
+代码合并	dai ma he bing	9300
+合并冲突	he bing chong tu	9300
+开源社区	kai yuan she qu	9300
+开源协议	kai yuan xie yi	9300
+软件供应链	ruan jian gong ying lian	9300
+需求分析	xu qiu fen xi	9300
+技术方案	ji shu fang an	9300
+接口文档	jie kou wen dang	9300
+接口调用	jie kou diao yong	9300
+接口限流	jie kou xian liu	9300
+接口鉴权	jie kou jian quan	9300
+错误处理	cuo wu chu li	9300
+异常日志	yi chang ri zhi	9300
+性能监控	xing neng jian kong	9300
+链路追踪	lian lu zhui zong	9300
+本地部署	ben di bu shu	9300
+私有化部署	si you hua bu shu	9300
+容器部署	rong qi bu shu	9300
+服务编排	fu wu bian pai	9300
+任务调度	ren wu diao du	9300
+工具调用	gong ju diao yong	9300
+函数调用	han shu diao yong	9300
+工作流	gong zuo liu	9300
+自动化工作流	zi dong hua gong zuo liu	9300
+可观测性	ke guan ce xing	9300
+数据加密	shu ju jia mi	9300
+隐私保护	yin si bao hu	9300
+本地优先	ben di you xian	9300
+数据脱敏	shu ju tuo min	9300
+权限控制	quan xian kong zhi	9300
+身份验证	shen fen yan zheng	9300
+多因素认证	duo yin su ren zheng	9300
+恶意软件	e yi ruan jian	9300
+网络钓鱼	wang luo diao yu	9300
+账号安全	zhang hao an quan	9300
+一人公司	yi ren gong si	9300
+数字游民	shu zi you min	9300
+远程办公	yuan cheng ban gong	9300
+混合办公	hun he ban gong	9300
+弹性办公	tan xing ban gong	9300
+自由职业	zi you zhi ye	9300
+副业收入	fu ye shou ru	9300
+个人品牌	ge ren pin pai	9300
+知识付费	zhi shi fu fei	9300
+内容创业	nei rong chuang ye	9300
+项目管理	xiang mu guan li	9300
+项目复盘	xiang mu fu pan	9300
+工作复盘	gong zuo fu pan	9300
+目标拆解	mu biao chai jie	9300
+任务分工	ren wu fen gong	9300
+时间管理	shi jian guan li	9300
+优先级	you xian ji	9300
+工作节奏	gong zuo jie zou	9300
+工作效率	gong zuo xiao lv	9300
+工作边界	gong zuo bian jie	9300
+会议纪要	hui yi ji yao	9300
+会议记录	hui yi ji lu	9300
+进度同步	jin du tong bu	9300
+方案评审	fang an ping shen	9300
+需求变更	xu qiu bian geng	9300
+风险评估	feng xian ping gu	9300
+成本控制	cheng ben kong zhi	9300
+数据分析	shu ju fen xi	9300
+业务增长	ye wu zeng zhang	9300
+用户反馈	yong hu fan kui	9300
+技能提升	ji neng ti sheng	9300
+终身学习	zhong shen xue xi	9300
+跨界学习	kua jie xue xi	9300
+碎片化学习	sui pian hua xue xi	9300
+深度学习	shen du xue xi	9300
+学习搭子	xue xi da zi	9300
+知识整理	zhi shi zheng li	9300
+学习计划	xue xi ji hua	9300
+备考计划	bei kao ji hua	9300
+错题整理	cuo ti zheng li	9300
+职业规划	zhi ye gui hua	9300
+职业发展	zhi ye fa zhan	9300
+简历优化	jian li you hua	9300
+面试准备	mian shi zhun bei	9300
+岗位匹配	gang wei pi pei	9300
+求职焦虑	qiu zhi jiao lv	9300
+职场倦怠	zhi chang juan dai	9300
+工作生活平衡	gong zuo sheng huo ping heng	9300
+有效沟通	you xiao gou tong	9300
+向上管理	xiang shang guan li	9300
+理性消费	li xing xiao fei	9300
+按需购买	an xu gou mai	9300
+精打细算	jing da xi suan	9300
+性价比	xing jia bi	9300
+平替	ping ti	9300
+品质平替	pin zhi ping ti	9300
+国货之光	guo huo zhi guang	9300
+国产替代	guo chan ti dai	9300
+以旧换新	yi jiu huan xin	9300
+消费补贴	xiao fei bu tie	9300
+直播带货	zhi bo dai huo	9300
+短视频带货	duan shi pin dai huo	9300
+内容电商	nei rong dian shang	9300
+兴趣电商	xing qu dian shang	9300
+即时零售	ji shi ling shou	9300
+社区团购	she qu tuan gou	9300
+跨境电商	kua jing dian shang	9300
+海外购物	hai wai gou wu	9300
+购物分享	gou wu fen xiang	9300
+开箱测评	kai xiang ce ping	9300
+商品测评	shang pin ce ping	9300
+真实测评	zhen shi ce ping	9300
+避雷指南	bi lei zhi nan	9300
+种草清单	zhong cao qing dan	9300
+拔草清单	ba cao qing dan	9300
+购物攻略	gou wu gong lve	9300
+优惠活动	you hui huo dong	9300
+优惠券	you hui quan	9300
+满减活动	man jian huo dong	9300
+价格保护	jia ge bao hu	9300
+售后服务	shou hou fu wu	9300
+退货退款	tui huo tui kuan	9300
+仅退款	jin tui kuan	9300
+运费险	yun fei xian	9300
+七天无理由	qi tian wu li you	9300
+假一赔十	jia yi pei shi	9300
+正品保障	zheng pin bao zhang	9300
+物流追踪	wu liu zhui zong	9300
+快递驿站	kuai di yi zhan	9300
+上门取件	shang men qu jian	9300
+用户体验	yong hu ti yan	9300
+消费者权益	xiao fei zhe quan yi	9300
+消费决策	xiao fei jue ce	9300
+口碑传播	kou bei chuan bo	9300
+品牌联名	pin pai lian ming	9300
+限定款	xian ding kuan	9300
+联名款	lian ming kuan	9300
+会员权益	hui yuan quan yi	9300
+自动续费	zi dong xu fei	9300
+价格透明	jia ge tou ming	9300
+健康生活	jian kang sheng huo	9300
+规律作息	gui lv zuo xi	9300
+早睡早起	zao shui zao qi	9300
+睡眠质量	shui mian zhi liang	9300
+睡眠管理	shui mian guan li	9300
+科学饮食	ke xue yin shi	9300
+均衡营养	jun heng ying yang	9300
+蛋白质摄入	dan bai zhi she ru	9300
+膳食纤维	shan shi xian wei	9300
+低糖饮食	di tang yin shi	9300
+运动打卡	yun dong da ka	9300
+日常锻炼	ri chang duan lian	9300
+力量训练	li liang xun lian	9300
+有氧运动	you yang yun dong	9300
+核心训练	he xin xun lian	9300
+拉伸运动	la shen yun dong	9300
+运动恢复	yun dong hui fu	9300
+身体素质	shen ti su zhi	9300
+体能训练	ti neng xun lian	9300
+运动习惯	yun dong xi guan	9300
+慢跑	man pao	9300
+夜跑	ye pao	9300
+徒步	tu bu	9300
+骑行	qi xing	9300
+游泳	you yong	9300
+瑜伽	yu jia	9300
+普拉提	pu la ti	9300
+羽毛球	yu mao qiu	9300
+匹克球	pi ke qiu	9300
+飞盘	fei pan	9300
+城市漫步	cheng shi man bu	9300
+公园散步	gong yuan san bu	9300
+周末出游	zhou mo chu you	9300
+轻户外	qing hu wai	9300
+户外露营	hu wai lu ying	9300
+徒步路线	tu bu lu xian	9300
+自然教育	zi ran jiao yu	9300
+公园二十分钟	gong yuan er shi fen zhong	9300
+附近的公园	fu jin de gong yuan	9300
+说走就走	shuo zou jiu zou	9300
+健康体检	jian kang ti jian	9300
+定期体检	ding qi ti jian	9300
+心理健康	xin li jian kang	9300
+心理咨询	xin li zi xun	9300
+压力管理	ya li guan li	9300
+情绪调节	qing xu tiao jie	9300
+专注当下	zhuan zhu dang xia	9300
+照顾自己	zhao gu zi ji	9300
+休息一下	xiu xi yi xia	9300
+劳逸结合	lao yi jie he	9300
+国内旅行	guo nei lv xing	9300
+入境旅游	ru jing lv you	9300
+出境旅游	chu jing lv you	9300
+周末旅行	zhou mo lv xing	9300
+短途旅行	duan tu lv xing	9300
+错峰出行	cuo feng chu xing	9300
+反向旅游	fan xiang lv you	9300
+特种兵旅游	te zhong bing lv you	9300
+深度游	shen du you	9300
+自由行	zi you xing	9300
+旅行攻略	lv xing gong lve	9300
+旅行计划	lv xing ji hua	9300
+行程安排	xing cheng an pai	9300
+景点预约	jing dian yu yue	9300
+门票预订	men piao yu ding	9300
+酒店预订	jiu dian yu ding	9300
+民宿预订	min su yu ding	9300
+交通攻略	jiao tong gong lve	9300
+旅游地图	lv you di tu	9300
+旅行清单	lv xing qing dan	9300
+城市打卡	cheng shi da ka	9300
+城市漫游	cheng shi man you	9300
+城市更新	cheng shi geng xin	9300
+夜间经济	ye jian jing ji	9300
+文旅融合	wen lv rong he	9300
+非遗体验	fei yi ti yan	9300
+博物馆打卡	bo wu guan da ka	9300
+文化街区	wen hua jie qu	9300
+地方美食	di fang mei shi	9300
+特色小吃	te se xiao chi	9300
+高铁出行	gao tie chu xing	9300
+地铁换乘	di tie huan cheng	9300
+公交出行	gong jiao chu xing	9300
+共享单车	gong xiang dan che	9300
+网约车	wang yue che	9300
+顺风车	shun feng che	9300
+新能源汽车	xin neng yuan qi che	9300
+充电桩	chong dian zhuang	9300
+充电补能	chong dian bu neng	9300
+智能停车	zhi neng ting che	9300
+目的地	mu di di	9300
+出发时间	chu fa shi jian	9300
+到达时间	dao da shi jian	9300
+实时路况	shi shi lu kuang	9300
+天气预报	tian qi yu bao	9300
+航班延误	hang ban yan wu	9300
+车票候补	che piao hou bu	9300
+行李寄存	xing li ji cun	9300
+出行安全	chu xing an quan	9300
+文明旅游	wen ming lv you	9300
+短视频	duan shi pin	9300
+短视频创作	duan shi pin chuang zuo	9300
+竖屏短剧	shu ping duan ju	9300
+人工智能短剧	ren gong zhi neng duan ju	9300
+网络短剧	wang luo duan ju	9300
+内容创作	nei rong chuang zuo	9300
+视频剪辑	shi pin jian ji	9300
+视频配音	shi pin pei yin	9300
+字幕生成	zi mu sheng cheng	9300
+自动剪辑	zi dong jian ji	9300
+图文创作	tu wen chuang zuo	9300
+文案创作	wen an chuang zuo	9300
+封面设计	feng mian she ji	9300
+账号运营	zhang hao yun ying	9300
+视频号	shi pin hao	9300
+直播间	zhi bo jian	9300
+直播回放	zhi bo hui fang	9300
+弹幕互动	dan mu hu dong	9300
+评论区	ping lun qu	9300
+热门话题	re men hua ti	9300
+二次创作	er ci chuang zuo	9300
+同人创作	tong ren chuang zuo	9300
+角色扮演	jue se ban yan	9300
+表情包	biao qing bao	9300
+头像生成	tou xiang sheng cheng	9300
+数字人	shu zi ren	9300
+虚拟主播	xu ni zhu bo	9300
+虚拟形象	xu ni xing xiang	9300
+虚拟偶像	xu ni ou xiang	9300
+数字藏品	shu zi cang pin	9300
+游戏搭子	you xi da zi	9300
+组队开黑	zu dui kai hei	9300
+排位赛	pai wei sai	9300
+匹配赛	pi pei sai	9300
+竞技游戏	jing ji you xi	9300
+角色养成	jue se yang cheng	9300
+开放世界	kai fang shi jie	9300
+游戏攻略	you xi gong lve	9300
+游戏更新	you xi geng xin	9300
+版本更新	ban ben geng xin	9300
+高清画质	gao qing hua zhi	9300
+沉浸体验	chen jin ti yan	9300
+实时渲染	shi shi xuan ran	9300
+游戏手柄	you xi shou bing	9300
+电竞赛事	dian jing sai shi	9300
+影视推荐	ying shi tui jian	9300
+追剧日历	zhui ju ri li	9300
+音乐现场	yin yue xian chang	9300
+演唱会	yan chang hui	9300
+线下活动	xian xia huo dong	9300

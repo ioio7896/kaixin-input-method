@@ -450,7 +450,6 @@
 缓兵之计	huan bing zhi ji	3925
 能歌善舞	neng ge shan wu	3925
 自惭形秽	zi can xing hui	3925
-荣八耻	rong ba chi	3925
 郁郁寡欢	yu yu gua huan	3925
 非分之想	fei fen zhi xiang	3925
 一知半解	yi zhi ban jie	3916
@@ -1992,7 +1991,6 @@
 为之一变	wei zhi yi bian	3361
 事过境迁	shi guo jing qian	3361
 五马分尸	wu ma fen shi	3361
-以小人之心	yi xiao ren zhi xin	3361
 傲慢无礼	ao man wu li	3361
 先天下之忧而忧	xian tian xia zhi you er you	3361
 先拔头筹	xian ba tou chou	3361
@@ -2370,7 +2368,6 @@
 牛头不对马嘴	niu tou bu dui ma zui	3277
 犯颜直谏	fan yan zhi jian	3277
 琅琅上口	lang lang shang kou	3277
-甘暴弃	gan bao qi	3277
 生吞活剥	sheng tun huo bo	3277
 疑难杂症	yi nan za zheng	3277
 百无禁忌	bai wu jin ji	3277
@@ -3626,7 +3623,6 @@
 虎头虎脑	hu tou hu nao	2945
 蝇营狗苟	ying ying gou gou	2945
 言一动	yan yi dong	2945
-言来语	yan lai yu	2945
 豆蔻年华	dou kou nian hua	2945
 貌似强大	mao si qiang da	2945
 贪天之功	tan tian zhi gong	2945
@@ -3825,7 +3821,6 @@
 独门独户	du men du hu	2884
 琼浆玉液	qiong jiang yu ye	2884
 甘苦与共	gan ku yu gong	2884
-生旦净	sheng dan jing	2884
 用其所长	yong qi suo chang	2884
 画地为牢	hua di wei lao	2884
 疑难病症	yi nan bing zheng	2884
@@ -3943,7 +3938,6 @@
 人世沧桑	ren shi cang sang	2814
 人多手杂	ren duo shou za	2814
 人才出众	ren cai chu zhong	2814
-以及人之老	yi ji ren zhi lao	2814
 以强凌弱	yi qiang ling ruo	2814
 以邻为壑	yi lin wei he	2814
 众口铄金	zhong kou shuo jin	2814
@@ -3972,7 +3966,6 @@
 千里之行	qian li zhi xing	2814
 半自给	ban zi ji	2814
 半自耕农	ban zi geng nong	2814
-卧不安	wo bu an	2814
 卯是卯	mao shi mao	2814
 反躬自省	fan gong zi xing	2814
 口口相传	kou kou xiang chuan	2814
@@ -4047,7 +4040,6 @@
 愁容满面	chou rong man mian	2814
 愤世疾俗	fen shi ji su	2814
 成千上百	cheng qian shang bai	2814
-成千成万条	cheng qian cheng wan tiao	2814
 我为鱼肉	wo wei yu rou	2814
 才气横溢	cai qi heng yi	2814
 扬长补短	yang chang bu duan	2814
@@ -4319,7 +4311,6 @@
 妙笔生花	miao bi sheng hua	2734
 妙语如珠	miao yu ru zhu	2734
 姑妄听之	gu wang ting zhi	2734
-娇声道	jiao sheng dao	2734
 孤苦零丁	gu ku ling ding	2734
 学而不厌	xue er bu yan	2734
 宁缺毋滥	ning que wu lan	2734
@@ -4374,7 +4365,6 @@
 文明冲突论	wen ming chong tu lun	2734
 断井颓垣	duan jing tui yuan	2734
 方寸已乱	fang cun yi luan	2734
-无义之	wu yi zhi	2734
 无事忙	wu shi mang	2734
 无尽无休	wu jin wu xiu	2734
 无往不复	wu wang bu fu	2734
@@ -4476,7 +4466,6 @@
 见神见鬼	jian shen jian gui	2734
 解决目前	jie jue mu qian	2734
 言出必行	yan chu bi xing	2734
-言简意	yan jian yi	2734
 诲淫诲盗	hui yin hui dao	2734
 谈笑自如	tan xiao zi ru	2734
 质朴无华	zhi piao wu hua	2734
@@ -4548,7 +4537,6 @@
 不稳平衡	bu wen ping heng	2639
 不许百姓点灯	bu xu bai xing dian deng	2639
 不食周粟	bu shi zhou su	2639
-两眼一摸黑	liang yan yi mo hei	2639
 临街面	lin jie mian	2639
 为五斗米折腰	wei wu dou mi zhe yao	2639
 为人注意	wei ren zhu yi	2639
@@ -4688,7 +4676,6 @@
 戒急用忍	jie ji yong ren	2639
 才尽其用	cai jin qi yong	2639
 执鞭随镫	zhi bian sui deng	2639
-扶危济	fu wei ji	2639
 扶眉战役	fu mei zhan yi	2639
 承欢膝下	cheng huan xi xia	2639
 抱恨终天	bao hen zhong tian	2639
@@ -4924,10 +4911,8 @@
 一再表示	yi zai biao shi	2522
 一再说明	yi zai shuo ming	2522
 一写出	yi xie chu	2522
-一写到	yi xie dao	2522
 一击必杀	yi ji bi sha	2522
 一分收获	yi fen shou huo	2522
-一分钱一	yi fen qian yi	2522
 一切从严	yi qie cong yan	2522
 一切就简	yi qie jiu jian	2522
 一切照旧	yi qie zhao jiu	2522
@@ -4940,10 +4925,8 @@
 一匡九合	yi kuang jiu he	2522
 一卧不起	yi wo bu qi	2522
 一去不回	yi qu bu hui	2522
-一去不复	yi qu bu fu	2522
 一反其道	yi fan qi dao	2522
 一反既往	yi fan ji wang	2522
-一发不可	yi fa bu ke	2522
 一发千钧	yi fa qian jun	2522
 一口三舌	yi kou san she	2522
 一口同声	yi kou tong sheng	2522
@@ -4976,7 +4959,6 @@
 一夫之勇	yi fu zhi yong	2522
 一夫多妻	yi fu duo qi	2522
 一失一得	yi shi yi de	2522
-一失足成	yi shi zu cheng	2522
 一头儿沉	yi tou er chen	2522
 一头沉	yi tou chen	2522
 一如往昔	yi ru wang xi	2522
@@ -5157,7 +5139,6 @@
 一碧千里	yi bi qian li	2522
 一窥全豹	yi kui quan bao	2522
 一竿子	yi gan zi	2522
-一竿子打	yi gan zi da	2522
 一笑了事	yi xiao le shi	2522
 一笑倾城	yi xiao qing cheng	2522
 一笑百媚	yi xiao bai mei	2522
@@ -5169,7 +5150,6 @@
 一纸千金	yi zhi qian jin	2522
 一网尽扫	yi wang jin sao	2522
 一翻出	yi fan chu	2522
-一而再再	yi er zai zai	2522
 一肉之味	yi rou zhi wei	2522
 一脉香烟	yi mai xiang yan	2522
 一脚不移	yi jiao bu yi	2522
@@ -5268,7 +5248,6 @@
 一麟半爪	yi lin ban zhao	2522
 一鼓一板	yi gu yi ban	2522
 一鼻孔	yi bi kong	2522
-一鼻孔出	yi bi kong chu	2522
 一龙一蛇	yi long yi she	2522
 一龙九种	yi long jiu zhong	2522
 丁公凿井	ding gong zao jing	2522
@@ -5408,7 +5387,6 @@
 三好生	san hao sheng	2522
 三室两厅	san shi liang ting	2522
 三寸丁	san cun ding	2522
-三寸不烂	san cun bu lan	2522
 三寸之舌	san cun zhi she	2522
 三寸半	san cun ban	2522
 三寸舌	san cun she	2522
@@ -5422,7 +5400,6 @@
 三年之艾	san nian zhi ai	2522
 三徙成国	san xi cheng guo	2522
 三徙成都	san xi cheng dou	2522
-三思而后	san si er hou	2522
 三拳两脚	san quan liang jiao	2522
 三振出局	san zhen chu ju	2522
 三星在天	san xing zai tian	2522
@@ -5624,7 +5601,6 @@
 不成比例	bu cheng bi li	2522
 不战不和	bu zhan bu he	2522
 不战自败	bu zhan zi bai	2522
-不打不相	bu da bu xiang	2522
 不扶自直	bu fu zi zhi	2522
 不抗不卑	bu kang bu bei	2522
 不抽烟者	bu chou yan zhe	2522
@@ -5806,7 +5782,6 @@
 不贪为宝	bu tan wei bao	2522
 不费之惠	bu fei zhi hui	2522
 不足与谋	bu zu yu mou	2522
-不足为外	bu zu wei wai	2522
 不足为意	bu zu wei yi	2522
 不足为据	bu zu wei ju	2522
 不足为法	bu zu wei fa	2522
@@ -6205,7 +6180,6 @@
 乘风扬土	cheng feng yang tu	2522
 乘风转舵	cheng feng zhuan duo	2522
 乘龙佳婿	cheng long jia xu	2522
-九一八事	jiu yi ba shi	2522
 九世之仇	jiu shi zhi chou	2522
 九九乘法	jiu jiu cheng fa	2522
 九五至尊	jiu wu zhi zun	2522
@@ -6230,7 +6204,6 @@
 习惯自然	xi guan zi ran	2522
 习故安常	xi gu an chang	2522
 习非胜是	xi fei sheng shi	2522
-书不尽	shu bu jin	2522
 书不尽意	shu bu jin yi	2522
 书不释手	shu bu shi shou	2522
 书信往来	shu xin wang lai	2522
@@ -6263,7 +6236,6 @@
 乱来乱去	luan lai luan qu	2522
 乱涂乱画	luan tu luan hua	2522
 乱涨价	luan zhang jia	2522
-乱点鸳鸯	luan dian yuan yang	2522
 乱猜瞎疑	luan cai xia yi	2522
 乱琼碎玉	luan qiong sui yu	2522
 乱砍乱伐	luan kan luan fa	2522
@@ -6515,7 +6487,6 @@
 人才流动	ren cai liu dong	2522
 人才流失	ren cai liu shi	2522
 人无千日	ren wu qian ri	2522
-人有旦夕	ren you dan xi	2522
 人格分裂	ren ge fen lie	2522
 人格尊严	ren ge zun yan	2522
 人格魅力	ren ge mei li	2522
@@ -6527,7 +6498,6 @@
 人满之患	ren man zhi huan	2522
 人物肖像	ren wu xiao xiang	2522
 人猿泰山	ren yuan tai shan	2522
-人生七十	ren sheng qi shi	2522
 人生七十古来稀	ren sheng qi shi gu lai xi	2522
 人生哲理	ren sheng zhe li	2522
 人生朝露	ren sheng chao lu	2522
@@ -6871,7 +6841,6 @@
 伸回去	shen hui qu	2522
 伸回来	shen hui lai	2522
 伸头探脑	shen tou tan nao	2522
-伸手不见	shen shou bu jian	2522
 伸来伸去	shen lai shen qu	2522
 伸直长度	shen zhi chang du	2522
 伸筋草	shen jin cao	2522
@@ -7396,7 +7365,6 @@
 八窗玲珑	ba chuang ling long	2522
 八花九裂	ba hua jiu lie	2522
 八荒之外	ba huang zhi wai	2522
-八荣八	ba rong ba	2522
 八荣八耻	ba rong ba chi	2522
 八难三灾	ba nan san zai	2522
 八面受敌	ba mian shou di	2522
@@ -7485,7 +7453,6 @@
 兵连祸接	bing lian huo jie	2522
 兵闻拙速	bing wen zhuo su	2522
 兵骄将傲	bing jiao jiang ao	2522
-其中奇	qi zhong qi	2522
 其乐不穷	qi le bu qiong	2522
 其他支出	qi ta zhi chu	2522
 其势凶凶	qi shi xiong xiong	2522
@@ -7991,7 +7958,6 @@
 前臂骨	qian bi gu	2522
 前街后巷	qian jie hou xiang	2522
 前覆后戒	qian fu hou jie	2522
-前言不对	qian yan bu dui	2522
 前言往行	qian yan wang xing	2522
 前跋后疐	qian ba hou zhi	2522
 前进不懈	qian jin bu xie	2522
@@ -8083,7 +8049,6 @@
 功高不赏	gong gao bu shang	2522
 功高望重	gong gao wang zhong	2522
 功高盖世	gong gao gai shi	2522
-加减法非	jia jian fa fei	2522
 加加减减	jia jia jian jian	2522
 加快步伐	jia kuai bu fa	2522
 加快脚步	jia kuai jiao bu	2522
@@ -8210,7 +8175,6 @@
 十八怪	shi ba guai	2522
 十八掌	shi ba zhang	2522
 十八摸	shi ba mo	2522
-十六分音	shi liu fen yin	2522
 十六和弦	shi liu he xian	2522
 十分困难	shi fen kun nan	2522
 十分复杂	shi fen fu za	2522
@@ -8740,7 +8704,6 @@
 叫唤声	jiao huan sheng	2522
 叫苦叫累	jiao ku jiao lei	2522
 可乘之隙	ke cheng zhi xi	2522
-可也没	ke ye mei	2522
 可切除	ke qie chu	2522
 可加可减	ke jia ke jian	2522
 可可托海	ke ke tuo hai	2522
@@ -8890,7 +8853,7 @@
 名人名言	ming ren ming yan	2522
 名人荟萃	ming ren hui cui	2522
 名传千古	ming chuan qian gu	2522
-名列前矛	ming lie qian mao	2522
+名列前茅	ming lie qian mao	2522
 名垂万古	ming chui wan gu	2522
 名垂不朽	ming chui bu xiu	2522
 名垂后世	ming chui hou shi	2522
@@ -9007,7 +8970,6 @@
 含而不露	han er bu lu	2522
 含英咀华	han ying ju hua	2522
 含辛忍苦	han xin ren ku	2522
-含辛茹若	han xin ru ruo	2522
 含霜履雪	han shuang lv xue	2522
 含饴弃孙	han yi qi sun	2522
 含饴弄孙	han yi nong sun	2522
@@ -9145,7 +9107,6 @@
 哑子吃黄连	ya zi chi huang lian	2522
 哑子寻梦	ya zi xun meng	2522
 哑子得梦	ya zi de meng	2522
-哑巴吃黄	ya ba chi huang	2522
 哑言失笑	ya yan shi xiao	2522
 哗世动俗	hua shi dong su	2522
 哗世取名	hua shi qu ming	2522
@@ -9197,7 +9158,6 @@
 善善从长	shan shan cong chang	2522
 善善恶恶	shan shan wu e	2522
 善始令终	shan shi ling zhong	2522
-善小而	shan xiao er	2522
 善心人士	shan xin ren shi	2522
 善恶不分	shan e bu fen	2522
 善恶不变	shan e bu bian	2522
@@ -9208,7 +9168,6 @@
 善纳忠言	shan na zhong yan	2522
 善自为谋	shan zi wei mou	2522
 善自保重	shan zi bao zhong	2522
-善莫大	shan mo da	2522
 善财难舍	shan cai nan she	2522
 善门难开	shan men nan kai	2522
 善马熟人	shan ma shu ren	2522
@@ -9322,7 +9281,6 @@
 回肠寸断	hui chang cun duan	2522
 回肠百转	hui chang bai zhuan	2522
 回船转舵	hui chuan zhuan duo	2522
-回路转	hui lu zhuan	2522
 回避行为	hui bi xing wei	2522
 回邪入正	hui xie ru zheng	2522
 回顾历史	hui gu li shi	2522
@@ -9434,7 +9392,6 @@
 坐失事机	zuo shi shi ji	2522
 坐失机宜	zuo shi ji yi	2522
 坐山吃空	zuo shan chi kong	2522
-坐山观虎	zuo shan guan hu	2522
 坐拥书城	zuo yong shu cheng	2522
 坐拥百城	zuo yong bai cheng	2522
 坐无虚席	zuo wu xu xi	2522
@@ -9695,7 +9652,6 @@
 大才磐磐	da cai pan pan	2522
 大排挡	da pai dang	2522
 大接访	da jie fang	2522
-大无畏精	da wu wei jing	2522
 大显神威	da xian shen wei	2522
 大有好转	da you hao zhuan	2522
 大有径庭	da you jing ting	2522
@@ -9722,7 +9678,6 @@
 大蒜油	da suan you	2522
 大衣无缝	da yi wu feng	2522
 大表惊叹	da biao jing tan	2522
-大规模集	da gui mo ji	2522
 大请大受	da qing da shou	2522
 大谋不谋	da mou bu mou	2522
 大象无形	da xiang wu xing	2522
@@ -9780,14 +9735,10 @@
 天惊石破	tian jing shi po	2522
 天才论	tian cai lun	2522
 天摧地塌	tian cui di ta	2522
-天无绝人	tian wu jue ren	2522
 天昏地惨	tian hun di can	2522
 天昏地转	tian hun di zhuan	2522
-天有不测	tian you bu ce	2522
-天机不可	tian ji bu ke	2522
 天气炎热	tian qi yan re	2522
 天涯咫尺	tian ya zhi chi	2522
-天涯若比	tian ya ruo bi	2522
 天渊之隔	tian yuan zhi ge	2522
 天灾地变	tian zai di bian	2522
 天然屏障	tian ran ping zhang	2522
@@ -9999,7 +9950,6 @@
 如人饮水	ru ren yin shui	2522
 如众所知	ru zhong suo zhi	2522
 如假包换	ru jia bao huan	2522
-如入无人	ru ru wu ren	2522
 如冰似雪	ru bing shi xue	2522
 如出一口	ru chu yi kou	2522
 如切如磋	ru qie ru cuo	2522
@@ -10208,7 +10158,6 @@
 学浅才疏	xue qian cai shu	2522
 学海无涯	xue hai wu ya	2522
 学疏才浅	xue shu cai qian	2522
-孺子不可	ru zi bu ke	2522
 孽子孤臣	nie zi gu chen	2522
 孽根祸胎	nie gen huo tai	2522
 宁为鸡口	ning wei ji kou	2522
@@ -10420,7 +10369,6 @@
 富而好礼	fu er hao li	2522
 富而思进	fu er si jin	2522
 富贵不淫	fu gui bu yin	2522
-富贵不能	fu gui bu neng	2522
 富贵在天	fu gui zai tian	2522
 富贵无常	fu gui wu chang	2522
 富贵逼人	fu gui bi ren	2522
@@ -10529,7 +10477,6 @@
 尊贤爱才	zun xian ai cai	2522
 尊重知识	zun zhong zhi shi	2522
 尊重群众	zun zhong qun zhong	2522
-小不忍则	xiao bu ren ze	2522
 小丑跳梁	xiao chou tiao liang	2522
 小事糊涂	xiao shi hu tu	2522
 小人之交	xiao ren zhi jiao	2522
@@ -10540,7 +10487,6 @@
 小小不言	xiao xiao bu yan	2522
 小屈大伸	xiao qu da shen	2522
 小屈大申	xiao qu da shen	2522
-小巫见大	xiao wu jian da	2522
 小己得失	xiao ji de shi	2522
 小异大同	xiao yi da tong	2522
 小彬彬	xiao bin bin	2522
@@ -10748,7 +10694,6 @@
 巧作名目	qiao zuo ming mu	2522
 巧偷豪夺	qiao tou hao duo	2522
 巧名盖世	qiao ming gai shi	2522
-巧妇难为	qiao fu nan wei	2522
 巧立名色	qiao li ming se	2522
 巧言偏辞	qiao yan pian ci	2522
 巧言利口	qiao yan li kou	2522
@@ -11060,7 +11005,6 @@
 弹指如飞	dan zhi ru fei	2522
 弹指神功	dan zhi shen gong	2522
 弹来弹去	dan lai dan qu	2522
-强将手下	qiang jiang shou xia	2522
 强弩之极	qiang nu zhi ji	2522
 强弩末矢	qiang nu mo shi	2522
 强文假醋	qiang wen jia cu	2522
@@ -11112,7 +11056,6 @@
 当断则断	dang duan ze duan	2522
 当机立决	dang ji li jue	2522
 当来当去	dang lai dang qu	2522
-当爱已	dang ai yi	2522
 当空舞	dang kong wu	2522
 当立之年	dang li zhi nian	2522
 当耳旁风	dang er pang feng	2522
@@ -11483,7 +11426,6 @@
 忠勇双全	zhong yong shuang quan	2522
 忠君报国	zhong jun bao guo	2522
 忠告善道	zhong gao shan dao	2522
-忠孝不能	zhong xiao bu neng	2522
 忠孝两全	zhong xiao liang quan	2522
 忠实可靠	zhong shi ke kao	2522
 忠实听众	zhong shi ting zhong	2522
@@ -11520,7 +11462,6 @@
 快上去	kuai shang qu	2522
 快人一言	kuai ren yi yan	2522
 快人快事	kuai ren kuai shi	2522
-快刀斩乱	kuai dao zhan luan	2522
 快刀斩麻	kuai dao zhan ma	2522
 快又准	kuai you zhun	2522
 快嘴利舌	kuai zui li she	2522
@@ -11688,7 +11629,6 @@
 恩威并行	en wei bing xing	2522
 恩怨分明	en yuan fen ming	2522
 恩怨情天	en yuan qing tian	2522
-恩恩不	en en bu	2522
 恩深义重	en shen yi zhong	2522
 恩甚怨生	en shen yuan sheng	2522
 恩荣并济	en rong bing ji	2522
@@ -11830,7 +11770,7 @@
 情逾骨肉	qing yu gu rou	2522
 情长纸短	qing chang zhi duan	2522
 情随事迁	qing sui shi qian	2522
-情非得以	qing fei dei yi	2522
+情非得已	qing fei de yi	2522
 情颠大圣	qing dian da sheng	2522
 惊世绝俗	jing shi jue su	2522
 惊世震俗	jing shi zhen su	2522
@@ -11928,7 +11868,6 @@
 想都不想	xiang dou bu xiang	2522
 惶恐不已	huang kong bu yi	2522
 惶恐状	huang kong zhuang	2522
-惶惶不可	huang huang bu ke	2522
 惶惶无主	huang huang wu zhu	2522
 惹上身	re shang shen	2522
 惹事招非	re shi zhao fei	2522
@@ -12009,7 +11948,6 @@
 感今思昔	gan jin si xi	2522
 感今惟昔	gan jin wei xi	2522
 感光鼓	gan guang gu	2522
-感兴趣我	gan xing qu wo	2522
 感到悔恨	gan dao hui hen	2522
 感到疲倦	gan dao pi juan	2522
 感到痛心	gan dao tong xin	2522
@@ -12477,7 +12415,6 @@
 拍卖拟	pai mai ni	2522
 拍卖无效	pai mai wu xiao	2522
 拍卖时	pai mai shi	2522
-拍卖行非	pai mai hang fei	2522
 拍得丽	pai de li	2522
 拍手叫绝	pai shou jiao jue	2522
 拍手歌	pai shou ge	2522
@@ -12496,7 +12433,6 @@
 拐过来	guai guo lai	2522
 拒不执行	ju bu zhi xing	2522
 拒之千里	ju zhi qian li	2522
-拒人于千	ju ren yu qian	2522
 拒绝执行	ju jue zhi xing	2522
 拒绝给予	ju jue ji yu	2522
 拒绝请求	ju jue qing qiu	2522
@@ -12723,7 +12659,6 @@
 振笔直书	zhen bi zhi shu	2522
 振耳发聩	zhen er fa kui	2522
 振耳欲聋	zhen er yu long	2522
-振聋发	zhen long fa	2522
 振臂高呼	zhen bi gao hu	2522
 振荡整理	zhen dang zheng li	2522
 振裘持领	zhen qiu chi ling	2522
@@ -12754,7 +12689,6 @@
 捕风弄月	bu feng nong yue	2522
 损之又损	sun zhi you sun	2522
 损亏额	sun kui e	2522
-损人不利	sun ren bu li	2522
 损人利已	sun ren li yi	2522
 损人害己	sun ren hai ji	2522
 损人益己	sun ren yi ji	2522
@@ -12914,7 +12848,6 @@
 揎拳裸袖	xuan quan luo xiu	2522
 描头画角	miao tou hua jiao	2522
 描来描去	miao lai miao qu	2522
-描淡写	miao dan xie	2522
 描神画鬼	miao shen hua gui	2522
 描绘下来	miao hui xia lai	2522
 描绘出来	miao hui chu lai	2522
@@ -13216,12 +13149,10 @@
 敝帷不弃	bi wei bu qi	2522
 敝盖不弃	bi gai bu qi	2522
 敝美扬恶	bi mei yang e	2522
-敢为人	gan wei ren	2522
 敢为敢做	gan wei gan zuo	2522
 敢于胜利	gan yu sheng li	2522
 敢出去	gan chu qu	2522
 敢勇当先	gan yong dang xian	2522
-敢怒不敢	gan nu bu gan	2522
 敢怒敢言	gan nu gan yan	2522
 敢爱敢恨	gan ai gan hen	2522
 敢说敢做	gan shuo gan zuo	2522
@@ -13444,7 +13375,6 @@
 无力招架	wu li zhao jia	2522
 无力自拔	wu li zi ba	2522
 无力进攻	wu li jin gong	2522
-无功不受	wu gong bu shou	2522
 无功而禄	wu gong er lu	2522
 无功而退	wu gong er tui	2522
 无千待万	wu qian dai wan	2522
@@ -13481,7 +13411,6 @@
 无妄之祸	wu wang zhi huo	2522
 无妄之福	wu wang zhi fu	2522
 无始天终	wu shi tian zhong	2522
-无官一身	wu guan yi shen	2522
 无家无室	wu jia wu shi	2522
 无寇暴死	wu kou bao si	2522
 无尘布	wu chen bu	2522
@@ -13490,7 +13419,6 @@
 无尽无穷	wu jin wu qiong	2522
 无尽期	wu jin qi	2522
 无尾礼服	wu wei li fu	2522
-无巧不成	wu qiao bu cheng	2522
 无常鬼	wu chang gui	2522
 无庸讳言	wu yong hui yan	2522
 无形之罪	wu xing zhi zui	2522
@@ -13547,12 +13475,10 @@
 无暇顾及	wu xia gu ji	2522
 无暗影	wu an ying	2522
 无有伦比	wu you lun bi	2522
-无条件投	wu tiao jian tou	2522
 无枉无纵	wu wang wu zong	2522
 无根无蒂	wu gen wu di	2522
 无根而固	wu gen er gu	2522
 无残留	wu can liu	2522
-无毒不丈	wu du bu zhang	2522
 无水石膏	wu shui shi gao	2522
 无泄漏	wu xie lou	2522
 无法可想	wu fa ke xiang	2522
@@ -13622,9 +13548,7 @@
 无须乎	wu xu hu	2522
 无颜落色	wu yan luo se	2522
 无颜见人	wu yan jian ren	2522
-无颜见江	wu yan jian jiang	2522
 无颠无倒	wu dian wu dao	2522
-无风不起	wu feng bu qi	2522
 无风扬波	wu feng yang bo	2522
 无马行空	wu ma xing kong	2522
 既定方针	ji ding fang zhen	2522
@@ -13775,7 +13699,6 @@
 昂首天外	ang shou tian wai	2522
 昂首望天	ang shou wang tian	2522
 明于观人	ming yu guan ren	2522
-明人不做	ming ren bu zuo	2522
 明刑不戮	ming xing bu lu	2522
 明发不寐	ming fa bu mei	2522
 明堂正道	ming tang zheng dao	2522
@@ -14011,9 +13934,7 @@
 有志不在年高	you zhi bu zai nian gao	2522
 有志于此	you zhi yu ci	2522
 有志无时	you zhi wu shi	2522
-有志者事	you zhi zhe shi	2522
 有恃毋恐	you shi wu kong	2522
-有情人终	you qing ren zhong	2522
 有我无敌	you wo wu di	2522
 有房住	you fang zhu	2522
 有所突破	you suo tu po	2522
@@ -14107,7 +14028,6 @@
 未了公案	wei liao gong an	2522
 未了心愿	wei liao xin yuan	2522
 未了缘	wei liao yuan	2522
-未免太没	wei mian tai mei	2522
 未入帐	wei ru zhang	2522
 未分离	wei fen li	2522
 未分裂	wei fen lie	2522
@@ -14207,7 +14127,6 @@
 机智勇敢	ji zhi yong gan	2522
 机缘巧合	ji yuan qiao he	2522
 机能减退	ji neng jian tui	2522
-朽木不可	xiu mu bu ke	2522
 朽木不雕	xiu mu bu diao	2522
 朽木死灰	xiu mu si hui	2522
 朽木难雕	xiu mu nan diao	2522
@@ -14217,8 +14136,6 @@
 朽骨重肉	xiu gu zhong rou	2522
 杀一盘	sha yi pan	2522
 杀人一万	sha ren yi wan	2522
-杀人不眨	sha ren bu zha	2522
-杀人不见	sha ren bu jian	2522
 杀人偿命	sha ren chang ming	2522
 杀人如草	sha ren ru cao	2522
 杀人者死	sha ren zhe si	2522
@@ -14229,7 +14146,6 @@
 杀虎口	sha hu kou	2522
 杀衣缩食	sha yi suo shi	2522
 杀身报国	sha shen bao guo	2522
-杀鸡焉用	sha ji yan yong	2522
 杀鸡骇猴	sha ji hai hou	2522
 杀鼠药	sha shu yao	2522
 杂乱一团	za luan yi tuan	2522
@@ -14525,7 +14441,6 @@
 桃李之教	tao li zhi jiao	2522
 桃李成蹊	tao li cheng qi	2522
 桃李无言	tao li wu yan	2522
-桃李满天	tao li man tian	2522
 桃李精神	tao li jing shen	2522
 桃羞李让	tao xiu li rang	2522
 桃羞杏让	tao xiu xing rang	2522
@@ -14661,7 +14576,6 @@
 欲益反损	yu yi fan sun	2522
 欲盖尔彰	yu gai er zhang	2522
 欲盖而彰	yu gai er zhang	2522
-欲穷千里	yu qiong qian li	2522
 欲谁归罪	yu shui gui zui	2522
 欲跳楼	yu tiao lou	2522
 欲醉欲仙	yu zui yu xian	2522
@@ -14780,7 +14694,6 @@
 死心搭地	si xin da di	2522
 死心落地	si xin luo di	2522
 死无全尸	si wu quan shi	2522
-死无葬身	si wu zang shen	2522
 死有余诛	si you yu zhu	2522
 死欲速朽	si yu su xiu	2522
 死求白赖	si qiu bai lai	2522
@@ -14803,7 +14716,6 @@
 死重泰山	si zhong tai shan	2522
 死顽固	si wan gu	2522
 死马当作	si ma dang zuo	2522
-死马当活	si ma dang huo	2522
 死骨更肉	si gu geng rou	2522
 殃及无辜	yang ji wu gu	2522
 殃国祸家	yang guo huo jia	2522
@@ -14998,7 +14910,6 @@
 水清可鉴	shui qing ke jian	2522
 水满为患	shui man wei huan	2522
 水滴成穿	shui di cheng chuan	2522
-水火不相	shui huo bu xiang	2522
 水火不辞	shui huo bu ci	2522
 水火无交	shui huo wu jiao	2522
 水火无情	shui huo wu qing	2522
@@ -15360,7 +15271,6 @@
 海尾添筹	hai wei tian chou	2522
 海屋添筹	hai wu tian chou	2522
 海枯见底	hai ku jian di	2522
-海水不可	hai shui bu ke	2522
 海沸山崩	hai fei shan beng	2522
 海沸山摇	hai fei shan yao	2522
 海沸山裂	hai fei shan lie	2522
@@ -15895,7 +15805,6 @@
 牙齿拥挤	ya chi yong ji	2522
 牛刀割鸡	niu dao ge ji	2522
 牛口之下	niu kou zhi xia	2522
-牛头不对	niu tou bu dui	2522
 牛头梗	niu tou geng	2522
 牛肉汤面	niu rou tang mian	2522
 牛背上	niu bei shang	2522
@@ -16224,7 +16133,6 @@
 甚为不解	shen wei bu jie	2522
 甜嘴蜜舌	tian zui mi she	2522
 甜情密意	tian qing mi yi	2522
-甜而不	tian er bu	2522
 甜言媚语	tian yan mei yu	2522
 甜言美语	tian yan mei yu	2522
 甜言软语	tian yan ruan yu	2522
@@ -16347,7 +16255,6 @@
 疑团满腹	yi tuan man fu	2522
 疑团莫释	yi tuan mo shi	2522
 疑天徙日	yi tian xi ri	2522
-疑心生暗	yi xin sheng an	2522
 疑点重重	yi dian chong chong	2522
 疑神见鬼	yi shen jian gui	2522
 疑罪从有	yi zui cong you	2522
@@ -16369,7 +16276,6 @@
 疾足先得	ji zu xian de	2522
 疾雨暴风	ji yu bao feng	2522
 疾风甚雨	ji feng shen yu	2522
-疾风知劲	ji feng zhi jin	2522
 疾风骤雨	ji feng zhou yu	2522
 疾首痛心	ji shou tong xin	2522
 病体违和	bing ti wei he	2522
@@ -16484,7 +16390,6 @@
 百凡待举	bai fan dai ju	2522
 百劫红颜	bai jie hong yan	2522
 百口同声	bai kou tong sheng	2522
-百善孝为	bai shan xiao wei	2522
 百堕俱举	bai hui ju ju	2522
 百夫决拾	bai fu jue shi	2522
 百姓生活	bai xing sheng huo	2522
@@ -16550,7 +16455,6 @@
 百里之才	bai li zhi cai	2522
 百问不厌	bai wen bu yan	2522
 百问不烦	bai wen bu fan	2522
-百闻不如	bai wen bu ru	2522
 百顺千随	bai shun qian sui	2522
 百鸟之王	bai niao zhi wang	2522
 百鸟争鸣	bai niao zheng ming	2522
@@ -16743,7 +16647,6 @@
 看人眉睫	kan ren mei jie	2522
 看风使舵	kan feng shi duo	2522
 看风转舵	kan feng zhuan duo	2522
-真人不露	zhen ren bu lu	2522
 真假参半	zhen jia can ban	2522
 真凶实犯	zhen xiong shi fan	2522
 真动知觉	zhen dong zhi jue	2522
@@ -16845,14 +16748,12 @@
 矢石之难	shi shi zhi nan	2522
 矢石如雨	shi shi ru yu	2522
 知义多情	zhi yi duo qing	2522
-知之为知	zhi zhi wei zhi	2522
 知人知面	zhi ren zhi mian	2522
 知其下落	zhi qi xia luo	2522
 知其不可	zhi qi bu ke	2522
 知名之士	zhi ming zhi shi	2522
 知名当世	zhi ming dang shi	2522
 知地知天	zhi di zhi tian	2522
-知子莫若	zhi zi mo ruo	2522
 知子莫若父	zhi zi mo ruo fu	2522
 知小谋大	zhi xiao mou da	2522
 知尽能索	zhi jin neng suo	2522
@@ -17072,7 +16973,6 @@
 神魂不定	shen hun bu ding	2522
 神魂摇荡	shen hun yao dang	2522
 神魂飞越	shen hun fei yue	2522
-神龙见首	shen long jian shou	2522
 神龙马壮	shen long ma zhuang	2522
 祸不旋踵	huo bu xuan zhong	2522
 祸中有福	huo zhong you fu	2522
@@ -17568,7 +17468,6 @@
 纷纷扰扰	fen fen rao rao	2522
 纷纷拥拥	fen fen yong yong	2522
 纷纷攘攘	fen fen rang rang	2522
-纸包不住	zhi bao bu zhu	2522
 纸短情长	zhi duan qing chang	2522
 纸笔迷津	zhi bi mi jin	2522
 纸糊老虎	zhi hu lao hu	2522
@@ -17711,7 +17610,6 @@
 罪不容赦	zui bu rong she	2522
 罪不胜诛	zui bu sheng zhu	2522
 罪不该死	zui bu gai si	2522
-罪与非	zui yu fei	2522
 罪与非罪	zui yu fei zui	2522
 罪业深重	zui ye shen zhong	2522
 罪大容诛	zui da rong zhu	2522
@@ -17777,7 +17675,6 @@
 群蚁附膻	qun yi fu shan	2522
 群贤毕至	qun xian bi zhi	2522
 群起攻之	qun qi gong zhi	2522
-群起而攻	qun qi er gong	2522
 群轻折抽	qun qing zhe chou	2522
 群鸭雀飞	qun ya que fei	2522
 群鸿戏海	qun hong xi hai	2522
@@ -17817,7 +17714,6 @@
 翻老帐	fan lao zhang	2522
 翻肠倒肚	fan chang dao du	2522
 翻肠搅肚	fan chang jiao du	2522
-翻脸不认	fan lian bu ren	2522
 翻脸无情	fan lian wu qing	2522
 耀眼夺目	yao yan duo mu	2522
 耀祖荣宗	yao zu rong zong	2522
@@ -17828,7 +17724,6 @@
 老年痴呆	lao nian chi dai	2522
 老成凋谢	lao cheng diao xie	2522
 老有所终	lao you suo zhong	2522
-老死不相	lao si bu xiang	2522
 老片新看	lao pian xin kan	2522
 老神在在	lao shen zai zai	2522
 老而不死	lao er bu si	2522
@@ -17848,8 +17743,7 @@
 耳目失聪	er mu shi cong	2522
 耳目昭彰	er mu zhao zhang	2522
 耳红面赤	er hong mian chi	2522
-耳聋眼	er long yan	2522
-耳聋眼黒	er long yan hei	2522
+耳聋眼黑	er long yan hei	2522
 耳视目听	er shi mu ting	2522
 耳视目食	er shi mu shi	2522
 耳语般	er yu ban	2522
@@ -18521,7 +18415,6 @@
 虚谈高论	xu tan gao lun	2522
 虚辞滥调	xu ci lan diao	2522
 虚骄恃气	xu jiao shi qi	2522
-虽易输	sui yi shu	2522
 虽死之日	sui si zhi ri	2522
 虽死犹荣	sui si you rong	2522
 虽疾无声	sui ji wu sheng	2522
@@ -18806,7 +18699,6 @@
 解衣磅礴	jie yi pang bo	2522
 解衣般礴	jie yi ban bo	2522
 解解渴	jie jie ke	2522
-解铃还须	jie ling hai xu	2522
 解铃还须系铃人	jie ling hai xu xi ling ren	2522
 解除合同	jie chu he tong	2522
 解除戒严	jie chu jie yan	2522
@@ -19400,7 +19292,6 @@
 贵不凌贱	gui bu ling jian	2522
 贵不期骄	gui bu qi jiao	2522
 贵人善忘	gui ren shan wang	2522
-贵人多忘	gui ren duo wang	2522
 贵人相助	gui ren xiang zhu	2522
 贵人贱己	gui ren jian ji	2522
 贵在知心	gui zai zhi xin	2522
@@ -19902,7 +19793,6 @@
 返老归童	fan lao gui tong	2522
 返辔收帆	fan pei shou fan	2522
 返邪归正	fan xie gui zheng	2522
-进出口可	jin chu kou ke	2522
 进前一步	jin qian yi bu	2522
 进取之心	jin qu zhi xin	2522
 进取精神	jin qu jing shen	2522
@@ -19965,7 +19855,6 @@
 进退路穷	jin tui lu qiong	2522
 进退首鼠	jin tui shou shu	2522
 进道若退	jin dao ruo tui	2522
-远亲不如	yuan qin bu ru	2522
 远亲近友	yuan qin jin you	2522
 远人无目	yuan ren wu mu	2522
 远垂不朽	yuan chui bu xiu	2522
@@ -20059,7 +19948,6 @@
 迷魂夺魄	mi hun duo po	2522
 迷魂淫魄	mi hun yin po	2522
 迷魂计	mi hun ji	2522
-迷魂阵隙	mi hun zhen xi	2522
 追南逐北	zhui nan zhu bei	2522
 追奔逐北	zhui ben zhu bei	2522
 追忆往事	zhui yi wang shi	2522
@@ -20089,7 +19977,6 @@
 追魂夺魄	zhui hun duo po	2522
 追魂摄魄	zhui hun she po	2522
 退一万	tui yi wan	2522
-退一步海	tui yi bu hai	2522
 退兵之计	tui bing zhi ji	2522
 退如山移	tui ru shan yi	2522
 退徙三舍	tui xi san she	2522
@@ -21330,7 +21217,6 @@
 顺风而呼	shun feng er hu	2522
 顺风转舵	shun feng zhuan duo	2522
 顽强不屈	wan qiang bu qu	2522
-顾前不顾	gu qian bu gu	2522
 顾后瞻前	gu hou zhan qian	2522
 顾头不顾尾	gu tou bu gu wei	2522
 顾小失大	gu xiao shi da	2522
@@ -21419,7 +21305,6 @@
 风急浪大	feng ji lang da	2522
 风情月思	feng qing yue si	2522
 风情月意	feng qing yue yi	2522
-风扫落叶	feng sao luo ye	2522
 风旋电掣	feng xuan dian che	2522
 风景优美	feng jing you mei	2522
 风景名胜	feng jing ming sheng	2522
@@ -21585,7 +21470,6 @@
 饱受虚惊	bao shou xu jing	2522
 饱和杂交	bao he za jiao	2522
 饱和色	bao he se	2522
-饱暖思淫	bao nuan si yin	2522
 饱练世故	bao lian shi gu	2522
 饱经世变	bao jing shi bian	2522
 饱经霜雪	bao jing shuang xue	2522
@@ -21790,7 +21674,6 @@
 鬼计百端	gui ji bai duan	2522
 鬼设神使	gui she shen shi	2522
 鬼针草	gui zhen cao	2522
-鬼鬼祟	gui gui sui	2522
 鬼魅伎俩	gui mei ji liang	2522
 魂不赴体	hun bu fu ti	2522
 魂丧神夺	hun sang shen duo	2522
@@ -21923,7 +21806,6 @@
 鸣钟食鼎	ming zhong shi ding	2522
 鸣雁直木	ming yan zhi mu	2522
 鸣鹤之应	ming he zhi ying	2522
-鸣鼓而攻	ming gu er gong	2522
 鸦巢生凤	ya chao sheng feng	2522
 鸦没鹊静	ya mei que jing	2522
 鸦片鬼	ya pian gui	2522
@@ -22327,7 +22209,6 @@
 回天无术	hui tian wu shu	2373
 围城打援	wei cheng da yuan	2373
 国际玉米小麦改良中心	guo ji yu mi xiao mai gai liang zhong xin	2373
-地飘散	di piao san	2373
 坐以待旦	zuo yi dai dan	2373
 坚贞不渝	jian zhen bu yu	2373
 坦诚相待	tan cheng xiang dai	2373
@@ -22468,7 +22349,6 @@
 掩鼻而过	yan bi er guo	2373
 揪人心肺	jiu ren xin fei	2373
 撒手归西	sa shou gui xi	2373
-支官军阻	zhi guan jun zu	2373
 改善目前	gai shan mu qian	2373
 改行从善	gai xing cong shan	2373
 放浪不羁	fang lang bu ji	2373

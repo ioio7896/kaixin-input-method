@@ -545,7 +545,6 @@
 必先利其器	bi xian li qi qi	2945
 拉大旗作虎皮	la da qi zuo hu pi	2945
 数据交换机	shu ju jiao huan ji	2945
-文件名扩展	wen jian ming kuo zhan	2945
 斯拉夫主义	si la fu zhu yi	2945
 斯洛文尼亚语	si luo wen ni ya yu	2945
 曲曲弯弯的	qu qu wan wan de	2945

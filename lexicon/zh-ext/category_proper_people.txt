@@ -743,7 +743,6 @@
 徐啸力	xu xiao li	4333
 徐继斌	xu ji bin	4333
 成祖大	cheng zu da	4333
-承天之	cheng tian zhi	4333
 承露盘	cheng lu pan	4333
 明景宗	ming jing zong	4333
 明正言	ming zheng yan	4333
@@ -751,7 +750,6 @@
 曹萧诗	cao xiao shi	4333
 有双凤	you shuang feng	4333
 木凤衔	mu feng xian	4333
-木梁均	mu liang jun	4333
 朱厚磐	zhu hou pan	4333
 杜里调	du li diao	4333
 查浦诗	cha pu shi	4333
@@ -1234,7 +1232,6 @@
 惠英嫂	hui ying sao	3916
 文武双全	wen wu shuang quan	3916
 朴茨茅斯	pu ci mao si	3916
-武学之	wu xue zhi	3916
 童百熊	tong bai xiong	3916
 范一飞	fan yi fei	3916
 郑科伟	zheng ke wei	3916

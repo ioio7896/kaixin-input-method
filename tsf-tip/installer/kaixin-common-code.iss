@@ -4,6 +4,27 @@ var
   InstallRapidOcrPackagesComponent: Boolean;
   InstallRapidOcrPayloadComponent: Boolean;
 
+function CurrentInstallLogContains(const FileName: string; const Needle: string): Boolean;
+var
+  Text: AnsiString;
+  Marker: AnsiString;
+  P: Integer;
+begin
+  Result := False;
+  Marker := 'event=install_session_start';
+  if not LoadStringFromFile(FileName, Text) then
+    exit;
+  P := Pos(Marker, Text);
+  if P = 0 then
+    exit;
+  { Discard all previous sessions, including a marker left before log cleanup. }
+  while P > 0 do begin
+    Delete(Text, 1, P + Length(Marker) - 1);
+    P := Pos(Marker, Text);
+  end;
+  Result := Pos(Needle, Text) > 0;
+end;
+
 function InstalledComponentDiffers(const ComponentName: string; const ExpectedId: string): Boolean;
 var
   InstalledId: string;

@@ -118,6 +118,7 @@ const
 var
   DeleteUserData: Boolean;
   CleanupTransientUserData: Boolean;
+  MachineRegistrationSucceeded: Boolean;
 
 #include "kaixin-common-code.iss"
 
@@ -170,15 +171,6 @@ begin
   DeleteFile(TempFile);
 end;
 
-function FileContains(const FileName: string; const Needle: string): Boolean;
-var
-  Text: AnsiString;
-begin
-  Result := False;
-  if LoadStringFromFile(FileName, Text) then
-    Result := Pos(Needle, Text) > 0;
-end;
-
 function StatusText(const Ok: Boolean): string;
 begin
   if Ok then
@@ -189,17 +181,15 @@ end;
 
 function BuildFinishedSummary(): string;
 var
-  MachineLog: string;
   UserLog: string;
   MachineOk: Boolean;
   UserOk: Boolean;
   TrayOk: Boolean;
 begin
-  MachineLog := ExpandConstant('{app}\install_machine.log');
   UserLog := ExpandConstant('{localappdata}\kaixin\install_user.log');
-  MachineOk := FileContains(MachineLog, 'event=install_health_check status=ok');
-  UserOk := FileContains(UserLog, 'event=install_health_check status=ok');
-  TrayOk := FileContains(UserLog, 'OK: started tray helper');
+  MachineOk := MachineRegistrationSucceeded;
+  UserOk := CurrentInstallLogContains(UserLog, 'event=install_health_check status=ok');
+  TrayOk := CurrentInstallLogContains(UserLog, 'OK: started tray helper');
 
   Result :=
     '{#KXAppName} 已安装完成。' + #13#10 + #13#10 +
@@ -458,6 +448,7 @@ begin
   if CurStep = ssPostInstall then begin
     if not RunInstallPowerShell(GetInstallDevPs1Params(''), 'machine registration', False) then
       RaiseException('Install failed during machine registration.');
+    MachineRegistrationSucceeded := True;
     SetInstallMaintenance(False);
     if not RunInstallPowerShell(GetInstallCurrentUserPs1Params(''), 'current-user setup', True) then
       RaiseException('Install failed during current-user setup.');

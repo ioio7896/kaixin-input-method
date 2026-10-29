@@ -80,6 +80,7 @@ inline constexpr Entry entries[] = {
 {L"screenshot",L"confirm_on_release",L"0"},
 {L"screenshot",L"show_instructions",L"1"},
 {L"screenshot",L"show_quick_actions",L"1"},
+{L"screenshot",L"show_result_window",L"1"},
 {L"clipboard",L"hotkey",L"off"},
 {L"tools",L"settings_hotkey",L"off"},
 {L"tools",L"handwrite_hotkey",L"off"},
@@ -190,6 +191,8 @@ inline constexpr Entry entries[] = {
 {L"compatibility",L"game_enter_behavior",L"auto"},
 {L"compatibility",L"game_auto_uia",L"1"},
 {L"compatibility",L"game_status_indicator",L"1"},
+{L"compatibility",L"game_status_duration_ms",L"1600"},
+{L"compatibility",L"game_status_scale_percent",L"100"},
 };
 inline const wchar_t* DefaultValue(const wchar_t* section, const wchar_t* key) {
 for (const auto& e : entries) if (_wcsicmp(e.section, section)==0 && _wcsicmp(e.key,key)==0) return e.value;

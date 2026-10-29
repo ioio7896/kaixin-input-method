@@ -1733,6 +1733,7 @@ mod win {
         Cancelled,
     }
 
+    #[derive(Clone)]
     struct CapturedScreenshot {
         image: image::RgbaImage,
         source: SavedScreenshotSource,
@@ -2131,14 +2132,30 @@ mod win {
 
         match captured {
             Ok(ScreenshotCaptureResult::Captured(captured)) => {
+                let retained = captured.clone();
                 let result = finish_captured_screenshot(captured, action_target, &prefs);
-                if let Err(err) = result {
+                let status = match &result {
+                    Ok(false) => "已取消另存，图片仍保留",
+                    Err(_) => "操作失败，图片仍保留",
+                    Ok(true) => match retained.action {
+                        screenshot_region_selector::RegionAction::Copy => "图片已复制",
+                        screenshot_region_selector::RegionAction::SaveAs => "图片已保存",
+                        screenshot_region_selector::RegionAction::Ocr => "OCR 已启动",
+                        screenshot_region_selector::RegionAction::Annotate => "已在画图中打开",
+                        screenshot_region_selector::RegionAction::Pin => "图片已固定",
+                        screenshot_region_selector::RegionAction::Configured => "截图处理完成",
+                    },
+                };
+                if let Err(err) = &result {
                     runtime_log::log_tray(
                         RuntimeLogLevel::Error,
                         "screenshot_postprocess",
                         format!("status=failed reason={err}"),
                     );
                     show_error_message(&format!("截图完成，但后续处理失败：{err}"));
+                }
+                if prefs.show_result_window || !matches!(result, Ok(true)) {
+                    pinned_screenshot::spawn_result(retained, action_target, status);
                 }
             }
             Ok(ScreenshotCaptureResult::Cancelled) => {
@@ -2514,7 +2531,7 @@ mod win {
         captured: CapturedScreenshot,
         action_target: HWND,
         prefs: &ScreenshotPrefs,
-    ) -> Result<(), String> {
+    ) -> Result<bool, String> {
         if captured.action == screenshot_region_selector::RegionAction::SaveAs {
             let Some(destination) = rfd::FileDialog::new()
                 .set_title("另存截图")
@@ -2523,7 +2540,7 @@ mod win {
                 .set_file_name("截图.png")
                 .save_file()
             else {
-                return Ok(());
+                return Ok(false);
             };
             let destination = if destination.extension().is_none() {
                 destination.with_extension("png")
@@ -2541,7 +2558,7 @@ mod win {
                 _ => return Err("另存截图仅支持 PNG 或 JPG 文件名。".to_string()),
             }
             .to_string();
-            return save_screenshot_image(&captured.image, &destination, true, &save_prefs);
+            return save_screenshot_image(&captured.image, &destination, true, &save_prefs).map(|()| true);
         }
         if captured.action == screenshot_region_selector::RegionAction::Annotate {
             let destination = next_temporary_screenshot_path()?;
@@ -2552,11 +2569,11 @@ mod win {
                 .arg(&destination)
                 .spawn()
                 .map_err(|err| format!("打开画图标注失败：{err}"))?;
-            return Ok(());
+            return Ok(true);
         }
         if captured.action == screenshot_region_selector::RegionAction::Pin {
             pinned_screenshot::spawn(captured.image);
-            return Ok(());
+            return Ok(true);
         }
         let mut action_prefs = screenshot_prefs();
         match captured.action {
@@ -2697,7 +2714,7 @@ mod win {
             ),
         );
         if errors.is_empty() {
-            Ok(())
+            Ok(true)
         } else {
             Err(errors.join("\n"))
         }
@@ -3048,6 +3065,7 @@ mod win {
         confirm_on_release: bool,
         show_instructions: bool,
         show_quick_actions: bool,
+        show_result_window: bool,
     }
 
     impl ScreenshotPrefs {
@@ -3056,6 +3074,14 @@ mod win {
                 confirm_on_release: self.confirm_on_release,
                 show_instructions: self.show_instructions,
                 show_quick_actions: self.show_quick_actions,
+                ocr_available: resolve_ocr_path().is_some(),
+                confirm_label: match (self.auto_save, self.copy_after_capture, self.ocr_after_capture, self.translate_after_capture) {
+                    (true, false, false, false) => "保存完成",
+                    (false, true, false, false) => "复制完成",
+                    (false, false, true, false) => "识别完成",
+                    (false, false, false, false) => "完成",
+                    _ => "完成多项",
+                },
             }
         }
     }
@@ -3119,6 +3145,7 @@ mod win {
         let confirm_on_release = ini_bool(text, "screenshot", "confirm_on_release", false);
         let show_instructions = ini_bool(text, "screenshot", "show_instructions", true);
         let show_quick_actions = ini_bool(text, "screenshot", "show_quick_actions", true);
+        let show_result_window = ini_bool(text, "screenshot", "show_result_window", true);
         ScreenshotPrefs {
             auto_save,
             copy_after_capture,
@@ -3139,6 +3166,7 @@ mod win {
             confirm_on_release,
             show_instructions,
             show_quick_actions,
+            show_result_window,
         }
     }
 
@@ -3941,26 +3969,50 @@ mod win {
     mod pinned_screenshot {
         use super::*;
         use windows_sys::Win32::Graphics::Gdi::{
-            BeginPaint, EndPaint, StretchDIBits, BITMAPINFO, BITMAPINFOHEADER, BI_RGB,
+            BeginPaint, EndPaint, GetSysColor, GetSysColorBrush, SetBkColor, StretchDIBits,
+            BITMAPINFO, BITMAPINFOHEADER, BI_RGB, COLOR_WINDOW, COLOR_WINDOWTEXT,
             DIB_RGB_COLORS, PAINTSTRUCT, SRCCOPY,
         };
+        use windows_sys::Win32::UI::Input::KeyboardAndMouse::{EnableWindow, GetKeyState, VK_CONTROL};
+        use windows_sys::Win32::UI::Accessibility::{HIGHCONTRASTW, HCF_HIGHCONTRASTON};
+        use windows_sys::Win32::UI::HiDpi::{GetDpiForSystem, GetDpiForWindow};
         use windows_sys::Win32::UI::WindowsAndMessaging::{
-            GetClientRect, SetWindowPos, ShowWindow, CREATESTRUCTW, GWLP_USERDATA, HWND_TOPMOST,
-            SW_SHOW, WM_CLOSE, WM_NCDESTROY, WM_PAINT, WNDCLASSW, WS_EX_TOOLWINDOW, WS_EX_TOPMOST,
-            WS_OVERLAPPEDWINDOW, WS_VISIBLE,
+            GetClientRect, MoveWindow, SendMessageW, SetWindowPos, SetWindowTextW, ShowWindow,
+            CREATESTRUCTW, GWLP_USERDATA, HWND_TOPMOST, SW_SHOW, WM_CLOSE, WM_NCDESTROY,
+            IsDialogMessageW, SystemParametersInfoW, MINMAXINFO,
+            SPI_GETHIGHCONTRAST, WM_CTLCOLORSTATIC, WM_DPICHANGED, WM_GETMINMAXINFO, WM_KEYDOWN, WM_PAINT, WM_SETFONT, WM_SIZE, WNDCLASSW, WS_CHILD, WS_EX_TOOLWINDOW, WS_EX_TOPMOST,
+            WS_OVERLAPPEDWINDOW, WS_TABSTOP, WS_VISIBLE,
         };
 
         const CLASS: &str = "KaixinPinnedScreenshot_v1";
+        const ID_COPY: usize = 2101;
+        const ID_SAVE: usize = 2102;
+        const ID_OCR: usize = 2103;
+        const ID_ANNOTATE: usize = 2104;
+        const ID_PIN: usize = 2105;
+        const ID_CLOSE: usize = 2106;
+        struct ResultActions {
+            captured: CapturedScreenshot,
+            target: HWND,
+            buttons: Vec<HWND>,
+            status_label: HWND,
+            initial_status: &'static str,
+            button_font: isize,
+            status_font: isize,
+            status_failed: bool,
+        }
         struct State {
+            image: image::RgbaImage,
             pixels: Vec<u8>,
             width: i32,
             height: i32,
             info: BITMAPINFO,
+            actions: Option<ResultActions>,
         }
 
         pub(super) fn spawn(image: image::RgbaImage) {
             thread::spawn(move || {
-                if let Err(err) = run(image) {
+                if let Err(err) = run(image, None) {
                     runtime_log::log_tray(
                         RuntimeLogLevel::Error,
                         "screenshot_pin",
@@ -3970,7 +4022,17 @@ mod win {
             });
         }
 
-        fn run(image: image::RgbaImage) -> Result<(), String> {
+        pub(super) fn spawn_result(captured: CapturedScreenshot, target: HWND, initial_status: &'static str) {
+            thread::spawn(move || {
+                let image = captured.image.clone();
+                if let Err(err) = run(image, Some(ResultActions { captured, target, buttons: Vec::new(), status_label: 0, initial_status, button_font: 0, status_font: 0, status_failed: initial_status.contains("失败") })) {
+                    show_error_message(&format!("无法打开截图操作窗口：{err}"));
+                }
+            });
+        }
+
+        fn run(image: image::RgbaImage, actions: Option<ResultActions>) -> Result<(), String> {
+            let is_result = actions.is_some();
             let width = i32::try_from(image.width()).map_err(|_| "固定截图宽度过大")?;
             let height = i32::try_from(image.height()).map_err(|_| "固定截图高度过大")?;
             let pixels = image
@@ -3992,35 +4054,42 @@ mod win {
                 biClrImportant: 0,
             };
             let class = wide(CLASS);
-            let title = wide("固定截图 · 关闭窗口即可取消固定");
+            let title_text = actions.as_ref().map(|_| "截图结果".to_string())
+                .unwrap_or_else(|| "固定截图 · 拖动边框缩放 · Ctrl+C 复制 · 关闭取消固定".to_string());
+            let title = wide(&title_text);
             let instance = unsafe { GetModuleHandleW(std::ptr::null()) };
             let wc = WNDCLASSW {
                 lpfnWndProc: Some(window_proc),
                 hInstance: instance,
                 lpszClassName: class.as_ptr(),
                 hCursor: unsafe { LoadCursorW(0, IDC_ARROW) },
+                hbrBackground: unsafe { GetSysColorBrush(COLOR_WINDOW) },
+                style: CS_HREDRAW | CS_VREDRAW,
                 ..unsafe { zeroed() }
             };
             unsafe { RegisterClassW(&wc) };
             let state = Box::into_raw(Box::new(State {
+                image,
                 pixels,
                 width,
                 height,
                 info,
+                actions,
             }));
             let scale = (900.0 / width as f64).min(700.0 / height as f64).min(1.0);
             let client_width = (width as f64 * scale).round() as i32;
             let client_height = (height as f64 * scale).round() as i32;
+            let dpi = unsafe { GetDpiForSystem() }.max(96) as i32;
             let hwnd = unsafe {
                 CreateWindowExW(
-                    WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
+                    if is_result { WS_EX_TOOLWINDOW } else { WS_EX_TOPMOST | WS_EX_TOOLWINDOW },
                     class.as_ptr(),
                     title.as_ptr(),
                     WS_OVERLAPPEDWINDOW | WS_VISIBLE,
                     100,
                     100,
-                    client_width.max(160) + 20,
-                    client_height.max(90) + 48,
+                    client_width.max(if is_result { 620 * dpi / 96 } else { 160 }) + 20,
+                    client_height.max(90) + if is_result { 130 * dpi / 96 } else { 48 },
                     0,
                     0,
                     instance,
@@ -4033,7 +4102,7 @@ mod win {
             }
             unsafe {
                 ShowWindow(hwnd, SW_SHOW);
-                SetWindowPos(
+                if !is_result { SetWindowPos(
                     hwnd,
                     HWND_TOPMOST,
                     0,
@@ -4042,13 +4111,15 @@ mod win {
                     0,
                     windows_sys::Win32::UI::WindowsAndMessaging::SWP_NOMOVE
                         | windows_sys::Win32::UI::WindowsAndMessaging::SWP_NOSIZE,
-                );
+                ); }
             }
             let mut msg: MSG = unsafe { zeroed() };
             while unsafe { GetMessageW(&mut msg, 0, 0, 0) } > 0 {
                 unsafe {
-                    TranslateMessage(&msg);
-                    DispatchMessageW(&msg);
+                    if !is_result || IsDialogMessageW(hwnd, &msg) == 0 {
+                        TranslateMessage(&msg);
+                        DispatchMessageW(&msg);
+                    }
                 }
             }
             Ok(())
@@ -4066,18 +4137,151 @@ mod win {
             }
             let ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut State;
             match message {
+                WM_KEYDOWN if wparam == 0x43 && GetKeyState(i32::from(VK_CONTROL)) < 0 => {
+                    if let Some(state) = ptr.as_mut() {
+                        match copy_image_to_clipboard(&state.image) {
+                            Ok(()) => {
+                                if let Some(actions) = &mut state.actions { actions.status_failed = false; SetWindowTextW(actions.status_label, wide("图片已复制").as_ptr()); }
+                                else { SetWindowTextW(hwnd, wide("固定截图 · 图片已复制").as_ptr()); }
+                            }
+                            Err(err) => show_error_message(&format!("复制失败：{err}")),
+                        }
+                    }
+                    0
+                }
+                WM_CREATE => {
+                    if let Some(actions) = ptr.as_mut().and_then(|state| state.actions.as_mut()) {
+                        actions.status_label = CreateWindowExW(0, wide("STATIC").as_ptr(), wide(actions.initial_status).as_ptr(),
+                            WS_CHILD | WS_VISIBLE, 0, 0, 1, 1, hwnd, 0,
+                            GetModuleHandleW(std::ptr::null()), std::ptr::null());
+                        let specs = [(ID_COPY, "复制(&C)"), (ID_SAVE, "另存(&S)"), (ID_OCR, "OCR(&O)"),
+                            (ID_ANNOTATE, "画图(&A)"), (ID_PIN, "固定(&P)"), (ID_CLOSE, "关闭(&X)")];
+                        for (id, label) in specs {
+                            let title = wide(if id == ID_OCR && resolve_ocr_path().is_none() { "OCR未安装" } else { label });
+                            let button = CreateWindowExW(0, wide("BUTTON").as_ptr(), title.as_ptr(),
+                                WS_CHILD | WS_VISIBLE | WS_TABSTOP, 0, 0, 1, 1, hwnd,
+                                id as _, GetModuleHandleW(std::ptr::null()), std::ptr::null());
+                            if id == ID_OCR && resolve_ocr_path().is_none() { EnableWindow(button, 0); }
+                            actions.buttons.push(button);
+                        }
+                        update_fonts(actions, GetDpiForWindow(hwnd).max(96));
+                    }
+                    0
+                }
+                WM_GETMINMAXINFO if ptr.as_ref().is_some_and(|state| state.actions.is_some()) => {
+                    let info = &mut *(lparam as *mut MINMAXINFO);
+                    let dpi = GetDpiForWindow(hwnd).max(96) as i32;
+                    info.ptMinTrackSize.x = 350 * dpi / 96;
+                    info.ptMinTrackSize.y = 260 * dpi / 96;
+                    0
+                }
+                WM_DPICHANGED if ptr.as_ref().is_some_and(|state| state.actions.is_some()) => {
+                    let dpi = (wparam & 0xffff) as u32;
+                    if let Some(actions) = ptr.as_mut().and_then(|state| state.actions.as_mut()) {
+                        update_fonts(actions, dpi);
+                    }
+                    let suggested = &*(lparam as *const RECT);
+                    SetWindowPos(hwnd, 0, suggested.left, suggested.top, suggested.right - suggested.left,
+                        suggested.bottom - suggested.top, windows_sys::Win32::UI::WindowsAndMessaging::SWP_NOZORDER |
+                        windows_sys::Win32::UI::WindowsAndMessaging::SWP_NOACTIVATE);
+                    0
+                }
+                WM_SIZE => {
+                    if let Some((status_label, buttons)) = ptr.as_ref().and_then(|state| state.actions.as_ref())
+                        .map(|actions| (actions.status_label, actions.buttons.clone())) {
+                        let mut rect: RECT = zeroed();
+                        GetClientRect(hwnd, &mut rect);
+                        let dpi = GetDpiForWindow(hwnd).max(96) as i32;
+                        let (gap, button_height, columns, bar_height) = layout_metrics(rect.right, dpi);
+                        let width = ((rect.right - gap * (columns + 1)) / columns).max(1);
+                        MoveWindow(status_label, gap, (rect.bottom - bar_height + gap).max(0),
+                            (rect.right - gap * 2).max(1), 24 * dpi / 96, 1);
+                        for (index, button) in buttons.iter().enumerate() {
+                            let index = index as i32;
+                            MoveWindow(*button, gap + (index % columns) * (width + gap),
+                                (rect.bottom - bar_height + 28 * dpi / 96 + (index / columns) * (button_height + gap)).max(0), width, button_height, 1);
+                        }
+                    }
+                    DefWindowProcW(hwnd, message, wparam, lparam)
+                }
+                WM_COMMAND if (wparam >> 16) == 0 => {
+                    let id = wparam & 0xffff;
+                    if id == ID_CLOSE { DestroyWindow(hwnd); return 0; }
+                    let action = match id {
+                            ID_COPY => Some(screenshot_region_selector::RegionAction::Copy),
+                            ID_SAVE => Some(screenshot_region_selector::RegionAction::SaveAs),
+                            ID_OCR => Some(screenshot_region_selector::RegionAction::Ocr),
+                            ID_ANNOTATE => Some(screenshot_region_selector::RegionAction::Annotate),
+                            ID_PIN => Some(screenshot_region_selector::RegionAction::Pin),
+                            _ => None,
+                    };
+                    if let Some(action) = action {
+                        if let Some((mut captured, target)) = ptr.as_ref().and_then(|state| state.actions.as_ref())
+                            .map(|actions| (actions.captured.clone(), actions.target)) {
+                            captured.action = action;
+                            let result = finish_captured_screenshot(captured, target, &screenshot_prefs());
+                            if IsWindow(hwnd) != 0 && GetWindowLongPtrW(hwnd, GWLP_USERDATA) == ptr as isize {
+                            let (status, failed) = match &result {
+                                Ok(done) => {
+                                    let status = if !done { "已取消，图片仍保留" } else {
+                                        match id { ID_COPY => "图片已复制", ID_SAVE => "图片已保存",
+                                            ID_OCR => "OCR 已启动", ID_ANNOTATE => "已在画图中打开",
+                                            ID_PIN => "图片已固定", _ => "操作完成" }
+                                    };
+                                    (status.to_string(), false)
+                                }
+                                Err(err) => (format!("操作失败：{err}"), true),
+                            };
+                            let status_label = ptr.as_mut().and_then(|state| state.actions.as_mut()).map(|actions| {
+                                actions.status_failed = failed;
+                                actions.status_label
+                            });
+                            if let Some(label) = status_label { SetWindowTextW(label, wide(&status).as_ptr()); }
+                            }
+                            if let Err(err) = result { show_error_message(&format!("截图操作失败，可重试：{err}")); }
+                            return 0;
+                        }
+                    }
+                    DefWindowProcW(hwnd, message, wparam, lparam)
+                }
+                WM_CTLCOLORSTATIC => {
+                    if let Some(actions) = ptr.as_ref().and_then(|state| state.actions.as_ref()) {
+                        if lparam as HWND == actions.status_label {
+                            let mut contrast: HIGHCONTRASTW = zeroed();
+                            contrast.cbSize = size_of::<HIGHCONTRASTW>() as u32;
+                            let high_contrast = SystemParametersInfoW(SPI_GETHIGHCONTRAST, contrast.cbSize,
+                                (&mut contrast as *mut HIGHCONTRASTW).cast(), 0) != 0 &&
+                                (contrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+                            let background = GetSysColor(COLOR_WINDOW);
+                            let brightness = (background & 255) + ((background >> 8) & 255) + ((background >> 16) & 255);
+                            let color = if high_contrast { GetSysColor(COLOR_WINDOWTEXT) }
+                                else if actions.status_failed { if brightness < 384 { rgb(255, 150, 150) } else { rgb(160, 25, 25) } }
+                                else if brightness < 384 { rgb(170, 225, 190) } else { rgb(26, 103, 55) };
+                            SetTextColor(wparam as isize, color);
+                            SetBkColor(wparam as isize, background);
+                            return GetSysColorBrush(COLOR_WINDOW) as isize;
+                        }
+                    }
+                    DefWindowProcW(hwnd, message, wparam, lparam)
+                }
                 WM_PAINT => {
                     let mut paint: PAINTSTRUCT = zeroed();
                     let hdc = BeginPaint(hwnd, &mut paint);
                     if let Some(state) = ptr.as_ref() {
                         let mut rect: RECT = zeroed();
                         GetClientRect(hwnd, &mut rect);
+                        let (_, _, _, bar_height) = layout_metrics(rect.right, GetDpiForWindow(hwnd).max(96) as i32);
+                        let available_h = if state.actions.is_some() { (rect.bottom - bar_height).max(1) } else { rect.bottom.max(1) };
+                        let scale = (rect.right.max(1) as f64 / state.width as f64)
+                            .min(available_h as f64 / state.height as f64);
+                        let draw_width = (state.width as f64 * scale).round() as i32;
+                        let draw_height = (state.height as f64 * scale).round() as i32;
                         StretchDIBits(
                             hdc,
-                            0,
-                            0,
-                            rect.right,
-                            rect.bottom,
+                            (rect.right - draw_width) / 2,
+                            (available_h - draw_height) / 2,
+                            draw_width,
+                            draw_height,
                             0,
                             0,
                             state.width,
@@ -4098,12 +4302,60 @@ mod win {
                 WM_NCDESTROY => {
                     if !ptr.is_null() {
                         SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+                        if let Some(actions) = (*ptr).actions.as_ref() {
+                            if actions.button_font != 0 { DeleteObject(actions.button_font); }
+                            if actions.status_font != 0 { DeleteObject(actions.status_font); }
+                        }
                         drop(Box::from_raw(ptr));
                     }
                     windows_sys::Win32::UI::WindowsAndMessaging::PostQuitMessage(0);
                     DefWindowProcW(hwnd, message, wparam, lparam)
                 }
                 _ => DefWindowProcW(hwnd, message, wparam, lparam),
+            }
+        }
+
+        fn layout_metrics(width: i32, dpi: i32) -> (i32, i32, i32, i32) {
+            let dpi = dpi.max(96);
+            let gap = (6 * dpi / 96).max(1);
+            let button_height = (36 * dpi / 96).max(1);
+            let columns = if width >= 600 * dpi / 96 { 6 } else { 3 };
+            let rows = 6 / columns;
+            (gap, button_height, columns, 28 * dpi / 96 + rows * (button_height + gap) + gap)
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use super::layout_metrics;
+
+            #[test]
+            fn result_buttons_fit_wide_and_narrow_windows_at_common_dpis() {
+                for dpi in [96, 120, 144, 192] {
+                    for (logical_width, expected_columns) in [(350, 3), (620, 6)] {
+                        let width = logical_width * dpi / 96;
+                        let (gap, height, columns, bar) = layout_metrics(width, dpi);
+                        let button_width = (width - gap * (columns + 1)) / columns;
+                        assert_eq!(columns, expected_columns);
+                        assert!(button_width >= 90 * dpi / 96, "dpi={dpi} width={logical_width}");
+                        assert!(height >= 36 * dpi / 96);
+                        assert!(bar >= (28 + 36 * (6 / columns)) * dpi / 96);
+                    }
+                }
+            }
+        }
+
+        unsafe fn update_fonts(actions: &mut ResultActions, dpi: u32) {
+            let button_font = screenshot_region_selector::create_screenshot_ui_font(dpi, 15);
+            let status_font = screenshot_region_selector::create_screenshot_ui_font(dpi, 14);
+            if button_font != 0 {
+                for button in &actions.buttons { SendMessageW(*button, WM_SETFONT, button_font as usize, 1); }
+                if actions.button_font != 0 { DeleteObject(actions.button_font); }
+                actions.button_font = button_font;
+            }
+            if status_font != 0 {
+                SendMessageW(actions.status_label, WM_SETFONT, status_font as usize, 1);
+                if actions.status_font != 0 { DeleteObject(actions.status_font); }
+                actions.status_font = status_font;
             }
         }
     }

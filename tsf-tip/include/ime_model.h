@@ -333,6 +333,8 @@ struct SrfCompatibilityOptions {
   SrfGameEnterBehavior gameEnterBehavior = SrfGameEnterBehavior::Auto;
   bool gameAutoUia = true;
   bool gameStatusIndicator = true;
+  UINT gameStatusDurationMs = 1600;
+  UINT gameStatusScalePercent = 100;
   bool fullscreenDetection = true;
   SrfFullscreenPolicy fullscreenPolicy = SrfFullscreenPolicy::ShowUi;
   SrfCommitTransport commitTransport = SrfCommitTransport::Tsf;

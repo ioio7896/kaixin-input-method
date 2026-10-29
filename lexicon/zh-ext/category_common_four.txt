@@ -1837,7 +1837,6 @@
 联合战线	lian he zhan xian	3456
 腊玛古猿	la ma gu yuan	3456
 见好就收	jian hao jiu shou	3456
-计算机网	ji suan ji wang	3456
 训练场地	xun lian chang di	3456
 走街串巷	zou jie chuan xiang	3456
 躁动不安	zao dong bu an	3456
@@ -2999,7 +2998,6 @@
 平汉铁路	ping han tie lu	3137
 开口闭口	kai kou bi kou	3137
 开山祖师	kai shan zu shi	3137
-式打印机	shi da yin ji	3137
 引黄灌区	yin huang guan qu	3137
 循环小数	xun huan xiao shu	3137
 恭喜发财	gong xi fa cai	3137
@@ -4752,7 +4750,6 @@
 寒风料峭	han feng liao qiao	2734
 封闭疗法	feng bi liao fa	2734
 尸山血海	shi shan xue hai	2734
-尼西亚语	ni xi ya yu	2734
 尽可能少	jin ke neng shao	2734
 尽快恢复	jin kuai hui fu	2734
 屏气凝神	bing qi ning shen	2734
@@ -4898,7 +4895,6 @@
 简单扼要	jian dan e yao	2734
 简政放权	jian zheng fang quan	2734
 管显示器	guan xian shi qi	2734
-级服务器	ji fu wu qi	2734
 细川护熙	xi chuan hu xi	2734
 细微末节	xi wei mo jie	2734
 经义进士	jing yi jin shi	2734

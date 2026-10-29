@@ -3,7 +3,7 @@
 from __future__ import annotations
 import re
 import subprocess
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 ROOT = Path(__file__).resolve().parents[1]
 SECRET_PATTERNS = (
     re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
@@ -16,12 +16,16 @@ SECRET_PATTERNS = (
 HOME_PATH = re.compile(rb"(?i)(?:[a-z]:[\\/]+Users[\\/]+(?!Public(?:[\\/]|$)|Default(?:[\\/]|$))[^\\/\s\"<>]+|/(?:Users|home)/[^/\s\"<>]+)")
 WORKSPACE_PATH = re.compile(rb"(?i)G:[\\/]+code1[\\/]+")
 PRIVATE_NAMES = ("user_dict.sqlite", "clipboard_store.sqlite", "ocr_history.sqlite", "engine_capability.")
-PRIVATE_PARTS = {".git", "dist", "target", "__pycache__", ".venv-rapidocr", ".agents", ".codex", ".aws"}
+PRIVATE_PARTS = {".git", "dist", "target", "__pycache__", ".venv-rapidocr", ".agents", ".codex", ".aws", ".ssh", ".gnupg", ".lexicon_cache"}
+PRIVATE_CONFIGS = {"config.private.ini", ".git-credentials", ".netrc", "_netrc", ".pypirc", "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519"}
 def violations(relative: str, data: bytes) -> list[str]:
-    path = Path(relative)
+    path = PurePosixPath(relative.replace("\\", "/"))
+    parts = tuple(part.lower() for part in path.parts)
+    name = path.name.lower()
     reasons = []
-    if any(part.lower() in PRIVATE_PARTS for part in path.parts): reasons.append("private/generated directory")
+    if any(part in PRIVATE_PARTS or part.startswith((".venv", "kaixin-diagnostics-")) for part in parts): reasons.append("private/generated directory")
     if path.name.lower().startswith(PRIVATE_NAMES): reasons.append("private runtime data")
+    if name in PRIVATE_CONFIGS or name.endswith(".local.ini") or (".cargo" in parts and name in {"credentials", "credentials.toml"}): reasons.append("private configuration/credential file")
     if path.suffix.lower() in {".log", ".pfx", ".p12", ".pem", ".key", ".dmp", ".pdb"} or path.name.startswith('.env'): reasons.append("private/generated file")
     if any(pattern.search(data) for pattern in SECRET_PATTERNS): reasons.append("possible credential")
     if HOME_PATH.search(data) or WORKSPACE_PATH.search(data): reasons.append("personal absolute path")

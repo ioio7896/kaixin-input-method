@@ -635,6 +635,13 @@
       "aliases": []
     },
     {
+      "section": "screenshot",
+      "key": "show_result_window",
+      "default": "1",
+      "type": "bool",
+      "aliases": []
+    },
+    {
       "section": "clipboard",
       "key": "hotkey",
       "default": "off",
@@ -1418,6 +1425,20 @@
       "key": "game_status_indicator",
       "default": "1",
       "type": "bool",
+      "options": []
+    },
+    {
+      "section": "compatibility",
+      "key": "game_status_duration_ms",
+      "default": "1600",
+      "type": "integer",
+      "options": []
+    },
+    {
+      "section": "compatibility",
+      "key": "game_status_scale_percent",
+      "default": "100",
+      "type": "integer",
       "options": []
     }
   ],

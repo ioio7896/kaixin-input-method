@@ -10,6 +10,15 @@ class PublicPrivacyTests(unittest.TestCase):
         self.assertEqual(violations('pinyin-ime/data/s2t_chars.sqlite', b'SQLite format 3'), [])
         self.assertEqual(violations('tests/input_cases.sqlite', b'SQLite format 3'), [])
 
+    def test_private_configuration_and_credential_files_are_excluded(self):
+        for name in ('config.private.ini', 'settings.LOCAL.INI', '.cargo/credentials.toml',
+                     '.cargo/credentials', '.git-credentials', '.netrc', 'id_ed25519',
+                     '.ssh/config', '.gnupg/secring.gpg', '.lexicon_cache/index',
+                     '.venv/pyvenv.cfg', 'kaixin-diagnostics-example/config.ini'):
+            for relative in (name, name.replace('/', chr(92))):
+                self.assertTrue(violations(relative, b''), relative)
+        self.assertEqual(violations('.cargo/config.toml', b'[build]'), [])
+
     def test_home_paths_include_json_escaping(self):
         home = 'C:' + chr(92) + 'Users' + chr(92) + 'PrivateAccount' + chr(92) + 'file.txt'
         for value in (home, home.replace(chr(92), chr(92)*2), '/'+ 'home' +'/PrivateAccount/file.txt'):

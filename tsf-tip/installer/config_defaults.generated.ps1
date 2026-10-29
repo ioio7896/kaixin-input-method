@@ -35,6 +35,7 @@ function Get-KaixinConfigDefaults {
     @{ Section = 'screenshot'; Key = 'confirm_on_release'; Value = '0' },
     @{ Section = 'screenshot'; Key = 'show_instructions'; Value = '1' },
     @{ Section = 'screenshot'; Key = 'show_quick_actions'; Value = '1' },
+    @{ Section = 'screenshot'; Key = 'show_result_window'; Value = '1' },
     @{ Section = 'clipboard'; Key = 'hotkey'; Value = 'off' },
     @{ Section = 'tools'; Key = 'settings_hotkey'; Value = 'off' },
     @{ Section = 'tools'; Key = 'handwrite_hotkey'; Value = 'off' },
@@ -144,6 +145,8 @@ function Get-KaixinConfigDefaults {
     @{ Section = 'tools'; Key = 'translate_target_language'; Value = 'auto-opposite' },
     @{ Section = 'compatibility'; Key = 'game_enter_behavior'; Value = 'auto' },
     @{ Section = 'compatibility'; Key = 'game_auto_uia'; Value = '1' },
-    @{ Section = 'compatibility'; Key = 'game_status_indicator'; Value = '1' }
+    @{ Section = 'compatibility'; Key = 'game_status_indicator'; Value = '1' },
+    @{ Section = 'compatibility'; Key = 'game_status_duration_ms'; Value = '1600' },
+    @{ Section = 'compatibility'; Key = 'game_status_scale_percent'; Value = '100' }
   )
 }

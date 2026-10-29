@@ -3,6 +3,8 @@ use super::*;
 pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     section_panel(ui, "截图设置", |ui| {
         let palette = fluent_palette(ui);
+        ui.label(format!("当前截图快捷键：{}", if app.model.screenshot_hotkey == "off" { "未启用" } else { &app.model.screenshot_hotkey }));
+        tool_hotkey_link(ui, app);
         setting_combo_row(
             ui,
             "截图方案",
@@ -49,6 +51,11 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         ui.add_space(6.0);
         ui.label(RichText::new("截图完成后").strong());
         setting_toggle(
+            ui, "显示截图结果窗口",
+            "保留截图预览并支持连续复制、另存、OCR、标注和固定。关闭后，取消另存或处理失败时仍会显示结果窗口，避免丢失截图。",
+            &mut app.model.screenshot_show_result_window,
+        );
+        setting_toggle(
             ui,
             "保存图片",
             "把最终截图写入本地截图库；OCR 和翻译仍会接收明确的图片路径。",
@@ -75,13 +82,16 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         if app.model.screenshot_translate_after_capture {
             app.model.screenshot_ocr_after_capture = true;
         }
+        if app.model.screenshot_ocr_after_capture && resolve_runtime_exe_path(OCR_EXE).is_none() {
+            ui.label(RichText::new("未找到 OCR 程序；自动识别需要安装输入法 + OCR 版。").small().color(palette.danger));
+        }
         if !app.model.screenshot_auto_save
             && !app.model.screenshot_copy_after_capture
             && !app.model.screenshot_ocr_after_capture
             && !app.model.screenshot_translate_after_capture
         {
             ui.label(
-                RichText::new("请至少开启保存、复制、OCR 或翻译中的一项，否则截图结果不会被保留。")
+                RichText::new(if app.model.screenshot_show_result_window { "未启用自动动作；截图会保留在结果窗口，关闭窗口后不再保留。" } else { "请至少开启保存、复制、OCR 或翻译中的一项，否则截图完成后不会保留。" })
                     .small()
                     .color(palette.danger),
             );
@@ -99,6 +109,9 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             "开启后，截图自动保存成功时会额外复制一份到副本目录；复制失败只写日志。",
             &mut app.model.screenshot_silent_copy_enabled,
         );
+        if app.model.screenshot_silent_copy_enabled && !app.model.screenshot_auto_save {
+            ui.label(RichText::new("副本仅在自动保存原图成功后创建；请同时开启“保存图片”。").small().color(palette.danger));
+        }
         folder_path_row(
             ui,
             "截图副本目录",

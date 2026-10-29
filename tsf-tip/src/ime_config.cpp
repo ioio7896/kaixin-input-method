@@ -1040,6 +1040,11 @@ void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
       enter == L"close" ? SrfGameEnterBehavior::Close : SrfGameEnterBehavior::Auto;
   config.compatibility.gameAutoUia = ParseBool(ReadIniString(path, L"compatibility", L"game_auto_uia", L"1"), true);
   config.compatibility.gameStatusIndicator = ParseBool(ReadIniString(path, L"compatibility", L"game_status_indicator", L"1"), true);
+  int statusSetting = 0;
+  if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_duration_ms", L"1600"), &statusSetting))
+    config.compatibility.gameStatusDurationMs = static_cast<UINT>(std::clamp(statusSetting, 500, 5000));
+  if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_scale_percent", L"100"), &statusSetting))
+    config.compatibility.gameStatusScalePercent = static_cast<UINT>(std::clamp(statusSetting, 70, 200));
   config.compatibility.gameInputMode = ParseGameInputMode(
       ReadIniString(path, L"compatibility", L"game_input_mode", L"manual"));
   config.compatibility.fullscreenDetection =

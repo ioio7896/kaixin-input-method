@@ -63,7 +63,8 @@ def consolidate_three_char() -> int:
     text = (
         f"# 开心输入法原生词库：{len(merged)} 条三字词读音记录\n"
         "# Source: data_sources/lexicon_fragments/zh/life_common_3char_full.txt + life_common_3char_hot.txt\n"
-        "# 同词同读音只收录一次；重合项沿用完整来源权重，合法多音读法保留。\n"
+        "# 已按 shared/short_phrase_quality.json 清理句段碎片；同词同读音只收录一次。\n"
+        "# 重合项沿用完整来源权重，合法多音读法保留。\n"
         "# 格式：词语<TAB>全拼<TAB>万分制排序分数（1-10000）。\n"
     )
     text += "".join(f"{phrase}\t{code}\t{weight}\n" for (phrase, code), weight in merged.items())

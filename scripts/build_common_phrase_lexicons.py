@@ -33,11 +33,13 @@ OFFICE_SEEDS = [phrase.strip() for phrase in """
 """.split("|") if phrase.strip()]
 
 def valid_phrase(phrase: str, lengths: range | tuple[int, ...]) -> bool:
+    from lexicon_quality import phrase_rejection_reason
     return (
         len(phrase) in lengths
         and all("\u4e00" <= char <= "\u9fff" for char in phrase)
         and T2S.convert(phrase) == phrase
         and not any(blocked in phrase for blocked in BLOCKED)
+        and not phrase_rejection_reason(phrase)
     )
 
 
@@ -49,6 +51,7 @@ def reading(phrase: str) -> str:
 
 
 def source_candidates() -> list[tuple[str, int]]:
+    from lexicon_quality import phrase_rejection_reason
     converter = OpenCC("t2s")
     seen: set[str] = set()
     out: list[tuple[str, int]] = []
@@ -59,6 +62,7 @@ def source_candidates() -> list[tuple[str, int]]:
             and all("\u4e00" <= char <= "\u9fff" for char in phrase)
             and converter.convert(phrase) == phrase
             and not any(blocked in phrase for blocked in BLOCKED)
+            and not phrase_rejection_reason(phrase)
         ):
             seen.add(phrase)
             out.append((phrase, rank))

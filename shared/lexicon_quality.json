@@ -254,5 +254,37 @@
     "羊毛出在": "缺少完整表达的关键字，不能作为自然的独立词条；完整表达示例：羊毛出在羊身上",
     "迅雷不及": "缺少完整表达的关键字，不能作为自然的独立词条；完整表达示例：迅雷不及掩耳",
     "逞匹夫之": "缺少完整表达的关键字，不能作为自然的独立词条；完整表达示例：逞匹夫之勇"
-  }
+  },
+  "spelling_corrections": [
+    {
+      "phrase": "耳聋眼黒",
+      "replacement": "耳聋眼黑",
+      "reading": "er long yan hei",
+      "reason": "完整成语的黒字规范为黑，不当作句段碎片"
+    },
+    {
+      "phrase": "含辛茹若",
+      "replacement": "含辛茹苦",
+      "reading": "han xin ru ku",
+      "reason": "纠正成语错字及对应读音"
+    },
+    {
+      "phrase": "名列前矛",
+      "replacement": "名列前茅",
+      "reading": "ming lie qian mao",
+      "reason": "纠正成语错字"
+    },
+    {
+      "phrase": "情非得以",
+      "replacement": "情非得已",
+      "reading": "qing fei de yi",
+      "reason": "纠正固定表达错字"
+    },
+    {
+      "phrase": "两眼一摸黑",
+      "replacement": "两眼一抹黑",
+      "reading": "liang yan yi mo hei",
+      "reason": "规范惯用语的写法"
+    }
+  ]
 }

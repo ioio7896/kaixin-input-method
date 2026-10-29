@@ -61,9 +61,15 @@ NotificationColors ColorsForTone(SrfNotificationTone tone) {
 CNotificationWindow::~CNotificationWindow() { Destroy(); }
 
 void CNotificationWindow::Show(const std::wstring& text, const RECT* anchorRect, UINT timeoutMs,
-                               SrfNotificationTone tone) {
+                               SrfNotificationTone tone, UINT scalePercent) {
   if (text.empty()) return;
   if (!EnsureWindow()) return;
+
+  scalePercent = std::clamp(scalePercent, 70u, 200u);
+  if (m_scalePercent != scalePercent) {
+    m_scalePercent = scalePercent;
+    RefreshFont();
+  }
 
   m_text = text;
   m_tone = tone;
@@ -107,7 +113,7 @@ bool CNotificationWindow::EnsureWindow() {
 void CNotificationWindow::RefreshFont() {
   DestroyFont();
   LOGFONTW font = BaseFont();
-  font.lfHeight = PointToPixels(12, m_dpi);
+  font.lfHeight = PointToPixels(MulDiv(12, static_cast<int>(m_scalePercent), 100), m_dpi);
   font.lfWeight = FW_SEMIBOLD;
   m_font = CreateFontIndirectW(&font);
 }
@@ -129,6 +135,8 @@ RECT CNotificationWindow::CalculateWindowRect(const RECT* anchorRect) const {
   }
 
   const int margin = Scale(10);
+  size.cx = std::min<int>(size.cx, std::max<int>(1, work.right - work.left - margin * 2));
+  size.cy = std::min<int>(size.cy, std::max<int>(1, work.bottom - work.top - margin * 2));
   int x = work.right - size.cx - margin;
   int y = work.bottom - size.cy - margin;
   if (anchorRect) {
@@ -138,8 +146,10 @@ RECT CNotificationWindow::CalculateWindowRect(const RECT* anchorRect) const {
     if (y + size.cy > work.bottom - margin) y = anchorRect->top - size.cy - Scale(10);
   }
 
-  x = std::clamp<int>(x, work.left + margin, work.right - size.cx - margin);
-  y = std::clamp<int>(y, work.top + margin, work.bottom - size.cy - margin);
+  const int maxX = std::max<int>(work.left + margin, work.right - size.cx - margin);
+  const int maxY = std::max<int>(work.top + margin, work.bottom - size.cy - margin);
+  x = std::clamp<int>(x, work.left + margin, maxX);
+  y = std::clamp<int>(y, work.top + margin, maxY);
   return RECT{x, y, x + size.cx, y + size.cy};
 }
 
@@ -162,7 +172,7 @@ SIZE CNotificationWindow::MeasureWindow() const {
 }
 
 int CNotificationWindow::Scale(int value) const {
-  return MulDiv(value, static_cast<int>(m_dpi), 96);
+  return MulDiv(MulDiv(value, static_cast<int>(m_dpi), 96), static_cast<int>(m_scalePercent), 100);
 }
 
 int CNotificationWindow::StrokeWidth() const {

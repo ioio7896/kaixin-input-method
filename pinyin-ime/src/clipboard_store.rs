@@ -1,6 +1,6 @@
 use crate::runtime_log::{self, RuntimeLogLevel};
 use fs2::FileExt;
-use regex::Regex;
+use regex::RegexSet;
 use rusqlite::{params, Connection, DatabaseName};
 use std::collections::VecDeque;
 use std::fs::{self, File, OpenOptions};
@@ -484,6 +484,8 @@ fn run_clipboard_listener_or_poll() {
     // The message-pump thread must initialise COM (apartment-threaded) so
     // OLE clipboard data from Chrome, Edge, etc. can be read.
     let _com = ComGuard::init();
+    // Compile the privacy rules before receiving the first clipboard event.
+    let _ = sensitive_clipboard_patterns();
 
     use windows_sys::Win32::Foundation::{HWND, LPARAM, LRESULT, WPARAM};
     use windows_sys::Win32::System::DataExchange::{
@@ -1131,6 +1133,7 @@ fn normalize_text(text: &str) -> Option<String> {
     }
     let normalized = normalize_text_with_limit(text, prefs.max_text_utf16_units)?;
     if looks_like_sensitive_clipboard(&normalized) {
+        set_capture_notice("检测到可能包含敏感信息，未保存到剪贴板历史。".to_string());
         runtime_log::log_clipboard(
             RuntimeLogLevel::Basic,
             "clipboard_sensitive_skipped",
@@ -1158,19 +1161,19 @@ fn set_capture_notice(message: String) {
     }
 }
 
-fn looks_like_sensitive_clipboard(text: &str) -> bool {
-    let patterns = [
+fn sensitive_clipboard_patterns() -> &'static RegexSet {
+    static PATTERNS: OnceLock<RegexSet> = OnceLock::new();
+    PATTERNS.get_or_init(|| RegexSet::new([
         r"(?i)\b(api[_ -]?key|access[_ -]?token|secret|password|passwd)\s*[:=]",
         r"\bAKIA[0-9A-Z]{16}\b",
         r"\bgh[pousr]_[A-Za-z0-9_]{20,}\b",
         r"\bsk-[A-Za-z0-9]{20,}\b",
         r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
-    ];
-    patterns.iter().any(|pattern| {
-        Regex::new(pattern)
-            .map(|regex| regex.is_match(text))
-            .unwrap_or(false)
-    })
+    ]).expect("valid clipboard privacy patterns"))
+}
+
+fn looks_like_sensitive_clipboard(text: &str) -> bool {
+    sensitive_clipboard_patterns().is_match(text)
 }
 
 fn normalize_existing_text_key(text: &str) -> Option<String> {
@@ -2605,6 +2608,21 @@ pub fn unpin_current_clipboard() -> Result<Option<String>, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cached_sensitive_patterns_preserve_filter_behavior() {
+        let private_key_header = ["-----BEGIN ", "PRIVATE KEY-----"].concat();
+        for text in [
+            "password=example",
+            "api_key: example",
+            private_key_header.as_str(),
+        ] {
+            assert!(looks_like_sensitive_clipboard(text), "{text}");
+        }
+        for text in ["普通剪贴板文本", "password reset instructions", "令牌说明"] {
+            assert!(!looks_like_sensitive_clipboard(text), "{text}");
+        }
+    }
 
     #[test]
     fn capture_uses_read_sequence_even_when_clipboard_has_advanced() {

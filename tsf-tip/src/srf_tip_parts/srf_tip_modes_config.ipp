@@ -190,7 +190,8 @@ void CSrfTip::ShowGameInputStatus(const wchar_t* text) {
   RECT anchor = {};
   if (ResolveCandidateGameOverlayAnchor(m_compatibilityHwnd, m_fullscreenCompatActive,
                                         FindAppOptions(m_config, CompatibilityAppName()), &anchor)) {
-    m_notificationWindow.Show(text, &anchor, 1000, SrfNotificationTone::Chinese);
+    m_notificationWindow.Show(text, &anchor, m_config.compatibility.gameStatusDurationMs,
+                              SrfNotificationTone::Chinese, m_config.compatibility.gameStatusScalePercent);
   }
 }
 
@@ -466,6 +467,7 @@ void CSrfTip::ObserveGameChatOpen(UINT vk, LPARAM lParam) {
   m_gameChatOwnerProcessId = m_compatibilityProcessId;
   m_gameAwaitingUntil = GetTickCount64() + 1200;
   m_gameDismissedIdentity = 0;
+  ShowGameInputStatus(L"等待确认聊天输入栏");
   std::wstring detail = L"phase=awaiting reason=configured_open_key app=";
   detail += CompatibilityAppName();
   SrfTsfDiagnosticLog(L"game-chat.open", detail.c_str());

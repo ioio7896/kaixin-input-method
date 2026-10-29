@@ -15,7 +15,18 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = json.loads((ROOT / "shared/lexicon_quality.json").read_text(encoding="utf-8"))
 CORRECTIONS = {(r["phrase"], r["rejected"]): r["reading"] for r in POLICY["reading_corrections"]}
-REJECTED_PHRASES = POLICY.get("rejected_phrases", {})
+SHORT_POLICY = json.loads((ROOT / "shared/short_phrase_quality.json").read_text(encoding="utf-8"))
+SHORT_REJECTIONS = {
+    phrase: reason
+    for reason, phrases in SHORT_POLICY["rejected_groups"].items()
+    for phrase in phrases
+}
+if any(not 3 <= len(phrase) <= 5 for phrase in SHORT_REJECTIONS):
+    raise ValueError("Short-phrase review contains an entry outside three to five characters")
+REJECTED_PHRASES = {**POLICY.get("rejected_phrases", {}), **SHORT_REJECTIONS}
+SPELLING_CORRECTIONS = {rule["phrase"]: rule for rule in POLICY.get("spelling_corrections", [])}
+if set(SHORT_POLICY["preserved_phrases"]) & REJECTED_PHRASES.keys():
+    raise ValueError("Short-phrase rejection conflicts with a preserved expression")
 # In these old templates 一下 was appended after the object. Keep explicitly
 # authored expressions such as 请看一下文件 and 帮我看一下 unchanged.
 MISPLACED_YIXIA = re.compile(
@@ -43,6 +54,14 @@ def corrected_reading(phrase: str, reading: str) -> str:
     return CORRECTIONS.get((phrase, normalized), normalized)
 
 
+def canonical_entry(phrase: str, reading: str) -> tuple[str, str]:
+    """Normalize only reviewed full spellings, never a matching substring."""
+    rule = SPELLING_CORRECTIONS.get(phrase)
+    if rule:
+        phrase, reading = rule["replacement"], rule["reading"]
+    return phrase, corrected_reading(phrase, reading)
+
+
 def reviewed_long_rows() -> list[tuple[str, str, int]]:
     path = ROOT / POLICY["reviewed_long_phrases"]
     result = []
@@ -51,6 +70,7 @@ def reviewed_long_rows() -> list[tuple[str, str, int]]:
         if not line.strip() or line.startswith("#"):
             continue
         phrase, reading, score = line.split("\t")
+        phrase, reading = canonical_entry(phrase, reading)
         key = (phrase, reading)
         if (not 5 <= len(phrase) <= 8 or len(reading.split()) != len(phrase)
                 or not 1 <= int(score) <= 10_000 or key in seen
@@ -67,6 +87,7 @@ def clean_rows(rows):
     """Filter known malformed requests; merge only identical phrase/readings."""
     result = {}
     for phrase, reading, score in rows:
+        phrase, reading = canonical_entry(phrase, reading)
         if phrase_rejection_reason(phrase):
             continue
         key = (phrase, corrected_reading(phrase, reading))
@@ -123,6 +144,8 @@ def check_quality(root: Path) -> list[str]:
                 continue
             fields = line.split("\t")
             phrase = fields[0]
+            if phrase in SPELLING_CORRECTIONS:
+                errors.append(f"{path.relative_to(root)}:{number}: noncanonical spelling: {phrase} -> {SPELLING_CORRECTIONS[phrase]['replacement']}")
             try:
                 score = int(fields[1] if len(fields) == 2 else fields[2])
                 if not 1 <= score <= 10_000:
@@ -153,7 +176,7 @@ def check_quality(root: Path) -> list[str]:
 
 
 def apply_quality() -> dict:
-    report = {"removed": [], "corrected": [], "files": {}}
+    report = {"removed": [], "corrected": [], "spelling_corrected": [], "files": {}}
     for path in sorted((ROOT / "lexicon").rglob("*.txt")):
         if "en" in path.relative_to(ROOT / "lexicon").parts or path.name == "life_common_phrases.txt":
             continue
@@ -165,6 +188,10 @@ def apply_quality() -> dict:
                 output.append(line)
                 continue
             fields = line.split("\t")
+            if fields[0] in SPELLING_CORRECTIONS and len(fields) >= 3:
+                phrase, reading = canonical_entry(fields[0], fields[1])
+                report["spelling_corrected"].append({"file": path.relative_to(ROOT).as_posix(), "row": line, "replacement": phrase, "reading": reading})
+                fields[0], fields[1] = phrase, reading
             if phrase_rejection_reason(fields[0]):
                 report["removed"].append({"file": path.relative_to(ROOT).as_posix(), "row": line})
                 continue
@@ -179,6 +206,8 @@ def apply_quality() -> dict:
                 output.append(revised)
                 seen.add(revised)
         if output != lines:
+            if output:
+                output[0] = re.sub(r"(?<=：)\d+(?=\s*(?:条|个))", str(len(seen)), output[0])
             path.write_text("\n".join(output) + "\n", encoding="utf-8", newline="\n")
             report["files"][path.relative_to(ROOT).as_posix()] = len(seen)
     old = ROOT / "lexicon/zh/life_common_phrases.txt"
@@ -189,6 +218,11 @@ def apply_quality() -> dict:
             if (p, r) not in approved:
                 report["removed"].append({"file": old.relative_to(ROOT).as_posix(), "row": line})
     report["reviewed_long_count"] = write_reviewed_long_lexicon()
+    removed_by_length = {}
+    for item in report["removed"]:
+        length = str(len(item["row"].split("\t", 1)[0]))
+        removed_by_length[length] = removed_by_length.get(length, 0) + 1
+    report["removed_by_length"] = removed_by_length
     # The upstream import report stays frozen. This manifest describes the
     # maintained output, whose hash may now differ from the archived source.
     update_category_catalog()

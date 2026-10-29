@@ -63,6 +63,20 @@ kaixin-diagnostics-*/
 *.key
 .env
 .env.*
+.aws/
+.ssh/
+.gnupg/
+.codex/
+.git-credentials
+.netrc
+_netrc
+.pypirc
+.cargo/credentials
+.cargo/credentials.toml
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
 
 # Locally generated compliance reports
 docs/licenses/generated/

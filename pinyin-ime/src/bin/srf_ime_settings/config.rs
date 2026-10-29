@@ -484,6 +484,7 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "show_quick_actions",
             defaults.screenshot_show_quick_actions,
         ),
+        screenshot_show_result_window: read_bool(config, "screenshot", "show_result_window", defaults.screenshot_show_result_window),
         clipboard_hotkey: read_string(config, "clipboard", "hotkey", &defaults.clipboard_hotkey),
         settings_hotkey: read_string(
             config,
@@ -1161,6 +1162,7 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         "show_quick_actions",
         bool_text(model.screenshot_show_quick_actions),
     );
+    config.set("screenshot", "show_result_window", bool_text(model.screenshot_show_result_window));
     config.set(
         "clipboard",
         "hotkey",
@@ -1286,6 +1288,8 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         "game_status_indicator",
         normalize_game_option_bool(&model.game_chat.status_indicator, false),
     );
+    config.set("compatibility", "game_status_duration_ms", model.game_chat.status_duration_ms.clamp(500, 5000).to_string());
+    config.set("compatibility", "game_status_scale_percent", model.game_chat.status_scale_percent.clamp(70, 200).to_string());
     config.set(
         "compatibility",
         "game_input_mode",
@@ -2207,6 +2211,14 @@ fn game_chat_options_from_values(
     if let Some(v) = values.get("game_status_indicator") {
         result.status_indicator = normalize_game_option_bool(v, per_app);
     }
+    if !per_app {
+        if let Some(v) = values.get("game_status_duration_ms").and_then(|v| v.parse::<u32>().ok()) {
+            result.status_duration_ms = v.clamp(500, 5000);
+        }
+        if let Some(v) = values.get("game_status_scale_percent").and_then(|v| v.parse::<u32>().ok()) {
+            result.status_scale_percent = v.clamp(70, 200);
+        }
+    }
     if let Some(v) = values.get("game_chat_open_key") {
         result.open_key = v.trim().to_string();
     }
@@ -2734,6 +2746,8 @@ mod game_policy_tests {
         let model = model_from_config(&doc);
         assert_eq!(model.game_chat.enter_behavior, "close");
         assert_eq!(model.game_chat.auto_uia, "0");
+        assert_eq!(model.game_chat.status_duration_ms, 1600);
+        assert_eq!(model.game_chat.status_scale_percent, 100);
         let chat = &model.compat_rules[0].game_chat;
         assert_eq!(chat.enter_behavior, "stay");
         assert_eq!(chat.auto_uia, "inherit");
@@ -2762,6 +2776,20 @@ mod game_policy_tests {
                 && !changed.tested_commit
                 && !changed.tested_exit
         );
+    }
+
+    #[test]
+    fn game_status_options_are_bounded_and_round_trip() {
+        let doc = parse_ini("[compatibility]\ngame_status_duration_ms=2400\ngame_status_scale_percent=150\n");
+        let model = model_from_config(&doc);
+        assert_eq!(model.game_chat.status_duration_ms, 2400);
+        assert_eq!(model.game_chat.status_scale_percent, 150);
+        let saved = model_from_config(&parse_ini(&stabilized_rendered_config(&doc, &model)));
+        assert_eq!(saved.game_chat.status_duration_ms, 2400);
+        assert_eq!(saved.game_chat.status_scale_percent, 150);
+        let bounded = model_from_config(&parse_ini("[compatibility]\ngame_status_duration_ms=1\ngame_status_scale_percent=999\n"));
+        assert_eq!(bounded.game_chat.status_duration_ms, 500);
+        assert_eq!(bounded.game_chat.status_scale_percent, 200);
     }
 
     #[test]
@@ -2834,6 +2862,21 @@ mod game_policy_tests {
         assert_eq!(normalize_game_input_mode("invalid", false), "manual");
         let model = model_from_config(&parse_ini("[app:custom.exe]\ngame_profile=compact\n"));
         assert_eq!(model.compat_rules[0].game_input_mode, "inherit");
+    }
+}
+
+#[cfg(test)]
+mod screenshot_result_tests {
+    use super::*;
+
+    #[test]
+    fn result_window_preference_round_trips() {
+        let doc = parse_ini("[screenshot]\nshow_result_window=0\n");
+        let model = model_from_config(&doc);
+        assert!(!model.screenshot_show_result_window);
+        let saved = model_from_config(&parse_ini(&stabilized_rendered_config(&doc, &model)));
+        assert!(!saved.screenshot_show_result_window);
+        assert!(model_from_config(&parse_ini("")).screenshot_show_result_window);
     }
 }
 

@@ -121,6 +121,7 @@ ConfigEntry { section: "screenshot", key: "mode", default: "manual_region", kind
 ConfigEntry { section: "screenshot", key: "confirm_on_release", default: "0", kind: "bool", options: &[] },
 ConfigEntry { section: "screenshot", key: "show_instructions", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "screenshot", key: "show_quick_actions", default: "1", kind: "bool", options: &[] },
+ConfigEntry { section: "screenshot", key: "show_result_window", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "clipboard", key: "hotkey", default: "off", kind: "string", options: &[] },
 ConfigEntry { section: "tools", key: "settings_hotkey", default: "off", kind: "string", options: &[] },
 ConfigEntry { section: "tools", key: "handwrite_hotkey", default: "off", kind: "string", options: &[] },
@@ -231,4 +232,6 @@ ConfigEntry { section: "tools", key: "translate_target_language", default: "auto
 ConfigEntry { section: "compatibility", key: "game_enter_behavior", default: "auto", kind: "string", options: &["auto","close","stay"] },
 ConfigEntry { section: "compatibility", key: "game_auto_uia", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "compatibility", key: "game_status_indicator", default: "1", kind: "bool", options: &[] },
+ConfigEntry { section: "compatibility", key: "game_status_duration_ms", default: "1600", kind: "integer", options: &[] },
+ConfigEntry { section: "compatibility", key: "game_status_scale_percent", default: "100", kind: "integer", options: &[] },
 ];

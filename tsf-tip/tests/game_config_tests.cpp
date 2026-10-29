@@ -15,7 +15,7 @@ int main() {
                                       SrfGameInputMode::Chinese, SrfGameInputMode::AutoText};
   bool ok = true;
   for (int i = 0; i < 4; ++i) {
-    const std::string ini = std::string("[compatibility]\r\ngame_input_mode=") + modes[i] +
+    const std::string ini = std::string("[compatibility]\r\ngame_status_duration_ms=2400\r\ngame_status_scale_percent=150\r\ngame_input_mode=") + modes[i] +
         "\r\n[input]\r\nchinese_halfwidth=" + (i % 2 ? "1" : "0") + "\r\n[app:mygame.exe]\r\ngame_profile=compact\r\ngame_input_mode=" + modes[i] +
         "\r\ncommit_transport=clipboard_paste\r\noverlay_anchor=bottom_left\r\n"
         "game_enter_behavior=stay\r\ngame_auto_uia=0\r\ngame_status_indicator=0\r\n"
@@ -37,6 +37,7 @@ int main() {
         app->gameChatOpenKey.enabled && app->gameChatOpenKey.vk == VK_RETURN && app->gameChatOpenKey.modifiers == 0 &&
         app->gameChatCloseKey.enabled && app->gameChatCloseKey.vk == VK_ESCAPE && app->overlayForceUi &&
         config.compatibility.gameAutoUia && config.compatibility.gameStatusIndicator &&
+        config.compatibility.gameStatusDurationMs == 2400 && config.compatibility.gameStatusScalePercent == 150 &&
         config.compatibility.gameEnterBehavior == SrfGameEnterBehavior::Auto;
   }
   DeleteFileW(file);

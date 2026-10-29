@@ -744,6 +744,7 @@ fn reset_active_page_defaults(app: &mut SettingsApp) {
                 screenshot_confirm_on_release,
                 screenshot_show_instructions,
                 screenshot_show_quick_actions,
+                screenshot_show_result_window,
             ),
             ToolSettingsPage::Ocr => copy_fields!(
                 ocr_result_action,
@@ -1886,6 +1887,8 @@ fn setting_spec_row_enabled(
     spec: SettingSpec<'_>,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
+    // Reserve a paint slot before the row's controls so the highlight stays behind them.
+    let highlight = ui.painter().add(egui::Shape::Noop);
     let response = egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
         .show(ui, |ui| {
@@ -1903,6 +1906,17 @@ fn setting_spec_row_enabled(
             );
         })
         .response;
+    if ui.rect_contains_pointer(response.rect) {
+        let color = if ui.visuals().dark_mode {
+            Color32::from_rgb(92, 77, 35)
+        } else {
+            Color32::from_rgb(255, 242, 184)
+        };
+        ui.painter().set(
+            highlight,
+            egui::Shape::rect_filled(response.rect, 3.0, color),
+        );
+    }
     setting_row_help(
         response,
         &setting_help(spec.description, spec.restart_requirement),
@@ -2796,6 +2810,7 @@ enum GameTestWizardAction {
     CandidateVisible,
     CandidateMissing,
     PositionGood,
+    SavePosition,
     AdjustPosition,
     CommitGood,
     ExitGood,
@@ -2909,10 +2924,38 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                         .unwrap_or_else(|| "自动位置".to_string());
                     ui.label("第四步：确认候选栏的位置、大小和目标显示器是否合适；自动位置优先跟随可信输入位置。");
                     ui.label(RichText::new(summary).small().color(palette.muted));
+                    if let Some(rule) = app.model.compat_rules.iter_mut().find(|r| r.process.eq_ignore_ascii_case(&wizard.process)) {
+                        ui.label("拖动下方示意候选栏调整相对偏移；保存后请回游戏确认实际位置。");
+                        let (response, painter) = ui.allocate_painter(egui::vec2(ui.available_width().min(440.0), 120.0), egui::Sense::drag());
+                        let bounds = response.rect;
+                        let painter = painter.with_clip_rect(bounds);
+                        painter.rect_filled(bounds, 3.0, egui::Color32::from_rgb(35, 42, 53));
+                        let origin = egui::pos2(bounds.left() + 16.0, bounds.bottom() - 32.0);
+                        let offset = egui::vec2(rule.overlay_offset_x as f32 * 0.1, rule.overlay_offset_y as f32 * 0.1);
+                        let pos = origin + offset;
+                        let candidate = egui::Rect::from_min_size(pos, egui::vec2(140.0, 24.0));
+                        painter.rect_filled(candidate, 3.0, egui::Color32::from_rgb(45, 104, 190));
+                        painter.text(candidate.center(), egui::Align2::CENTER_CENTER, "1 你好   2 拟好", egui::FontId::proportional(13.0), egui::Color32::WHITE);
+                        if response.dragged() {
+                            let delta = response.drag_delta();
+                            rule.overlay_offset_x = (rule.overlay_offset_x + (delta.x * 10.0).round() as i32).clamp(-4000, 4000);
+                            rule.overlay_offset_y = (rule.overlay_offset_y + (delta.y * 10.0).round() as i32).clamp(-4000, 4000);
+                        }
+                        ui.horizontal(|ui| {
+                            ui.label("偏移 X / Y");
+                            ui.add(egui::DragValue::new(&mut rule.overlay_offset_x).clamp_range(-4000..=4000));
+                            ui.add(egui::DragValue::new(&mut rule.overlay_offset_y).clamp_range(-4000..=4000));
+                            ui.label("缩放");
+                            ui.add(egui::DragValue::new(&mut rule.overlay_scale_percent).clamp_range(50..=200).suffix("%"));
+                        });
+                    }
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
                         if ui.button("位置合适").clicked() {
                             action = Some(GameTestWizardAction::PositionGood);
+                        }
+                        if ui.button("保存位置并回游戏测试").clicked() {
+                            action = Some(GameTestWizardAction::SavePosition);
                         }
                         if ui.button("返回规则页调整位置").clicked() {
                             action = Some(GameTestWizardAction::AdjustPosition);
@@ -2921,6 +2964,7 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                 }
                 GameTestStep::Commit => {
                     ui.label("第五步：选择候选上屏，亲自确认输入栏出现中文且只出现一次。系统接受事件不代表游戏已经收到文字。");
+                    ui.label("请在游戏聊天框输入 nihao，选“你好”，确认没有重复；测试时不要发送聊天消息。");
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
                         if ui.button("中文上屏一次，继续").clicked() {
@@ -3036,6 +3080,14 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
         Some(GameTestWizardAction::PositionGood) => {
             if let Some(state) = app.game_test_wizard.as_mut() {
                 state.step = GameTestStep::Commit;
+            }
+        }
+        Some(GameTestWizardAction::SavePosition) => {
+            if app.save().is_ok() {
+                if let Some(state) = app.game_test_wizard.as_mut() {
+                    state.step = GameTestStep::CandidateVisibility;
+                }
+                app.status = format!("已保存 {} 的候选位置，请回游戏确认显示效果。", wizard.process);
             }
         }
         Some(GameTestWizardAction::AdjustPosition) => {
@@ -3169,6 +3221,14 @@ fn game_chat_options_ui(ui: &mut egui::Ui, chat: &mut GameChatOptions, per_app: 
                         ui.selectable_value(value, "1".to_string(), "开启");
                         ui.selectable_value(value, "0".to_string(), "关闭");
                     });
+            });
+        }
+        if !per_app {
+            setting_row(ui, "聊天提示时长", "控制游戏聊天状态提示的显示时间。", |ui| {
+                ui.add(egui::Slider::new(&mut chat.status_duration_ms, 500..=5000).suffix(" 毫秒"));
+            });
+            setting_row(ui, "聊天提示大小", "按比例调整游戏聊天状态提示，不改变候选栏大小。", |ui| {
+                ui.add(egui::Slider::new(&mut chat.status_scale_percent, 70..=200).suffix("%"));
             });
         }
         if per_app {

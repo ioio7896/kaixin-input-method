@@ -11,7 +11,6 @@
 耕作业	geng zuo ye	4737
 实德队	shi de dui	4733
 土台子	tu tai zi	4731
-夫人道	fu ren dao	4725
 羽毛扇	yu mao shan	4708
 刮水器	gua shui qi	4704
 开发型	kai fa xing	4702
@@ -56,7 +55,6 @@
 神祖主	shen zu zhu	4333
 花观景	hua guan jing	4333
 好好儿	hao hao er	4325
-口气道	kou qi dao	4282
 石帮主	shi bang zhu	4235
 爬坡度	pa po du	4230
 水烟袋	shui yan dai	4205
@@ -208,7 +206,6 @@
 简管家	jian guan jia	3606
 耳根子	er gen zi	3606
 刹时间	cha shi jian	3590
-喝声道	he sheng dao	3590
 大处方	da chu fang	3590
 盗版率	dao ban lv	3590
 磁力仪	ci li yi	3590
@@ -553,7 +550,6 @@
 围棋子	wei qi zi	3277
 固体潮	gu ti chao	3277
 官有权	guan you quan	3277
-实施变	shi shi bian	3277
 师技匠	shi ji jiang	3277
 平推式	ping tui shi	3277
 强雄弱	qiang xiong ruo	3277
@@ -819,7 +815,6 @@
 尿激酶	niao ji mei	3137
 带兵官	dai bing guan	3137
 带绦虫	dai tao chong	3137
-总的说	zong de shuo	3137
 折旧率	zhe jiu lv	3137
 摆摊子	bai tan zi	3137
 故纸堆	gu zhi dui	3137
@@ -1022,7 +1017,6 @@
 乐滋滋	le zi zi	3050
 交流式	jiao liu shi	3050
 仇得报	chou de bao	3050
-低不就	di bu jiu	3050
 供销员	gong xiao yuan	3050
 保平争	bao ping zheng	3050
 光棍汉	guang gun han	3050

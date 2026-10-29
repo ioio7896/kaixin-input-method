@@ -2969,6 +2969,7 @@ impl PinyinEngine {
                     &merged_candidate.meta,
                 )
                 + mixed_prefix_core_phrase_bonus(input_intent, &phrase, &merged_candidate.meta)
+                - self.short_combination_penalty(&phrase, &merged_candidate.meta)
                 - abbrev_length_penalty(short_ascii_input, input_chars, &phrase)
                 - short_ascii_multi_char_rerank_discount(short_ascii_input, input_chars, &phrase);
             ranked.push(RankedCandidate {

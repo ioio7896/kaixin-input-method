@@ -19,7 +19,7 @@ class CNotificationWindow {
   ~CNotificationWindow();
 
   void Show(const std::wstring& text, const RECT* anchorRect, UINT timeoutMs,
-            SrfNotificationTone tone = SrfNotificationTone::Default);
+            SrfNotificationTone tone = SrfNotificationTone::Default, UINT scalePercent = 100);
   void Hide();
   void Destroy();
 
@@ -28,6 +28,7 @@ class CNotificationWindow {
   std::wstring m_text;
   SrfNotificationTone m_tone = SrfNotificationTone::Default;
   UINT m_dpi = 96;
+  UINT m_scalePercent = 100;
   HFONT m_font = nullptr;
 
   bool EnsureWindow();

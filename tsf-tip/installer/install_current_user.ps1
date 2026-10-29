@@ -1467,20 +1467,20 @@ function Invoke-InstallHealthCheck {
     }
 }
 
-$InstallationRoot = [System.IO.Path]::GetFullPath($InstallationRoot)
 $script:InstallLogPath = Get-DefaultInstallLogPath
-$registrationScript = Join-Path $InstallationRoot 'invoke_registration.ps1'
-$runtimePayloadRoot = Resolve-RuntimePayloadRoot -Root $InstallationRoot
-$runtimePayloadX64 = Resolve-RuntimePayloadArchRoot -Root $InstallationRoot -Arch x64
-$runtimePayloadX86 = Resolve-RuntimePayloadArchRoot -Root $InstallationRoot -Arch x86
-$installedDll = Join-Path $runtimePayloadX64 'srf_tsf_tip.dll'
-$installedDllX86 = Join-Path $runtimePayloadX86 'srf_tsf_tip.dll'
-
+Write-InstallLog 'event=install_session_start'
 Write-InstallLog ("BEGIN: install_current_user.ps1 SkipRegistration={0} SkipLanguageList={1} SkipTextServiceRestart={2} SkipTraySetup={3} SkipStaleHostRestart={4} PromptStaleHostRestart={5}" -f
     $SkipRegistration.IsPresent, $SkipLanguageList.IsPresent, $SkipTextServiceRestart.IsPresent,
     $SkipTraySetup.IsPresent, $SkipStaleHostRestart.IsPresent, $PromptStaleHostRestart.IsPresent)
 
 try {
+    $InstallationRoot = [System.IO.Path]::GetFullPath($InstallationRoot)
+    $registrationScript = Join-Path $InstallationRoot 'invoke_registration.ps1'
+    $runtimePayloadRoot = Resolve-RuntimePayloadRoot -Root $InstallationRoot
+    $runtimePayloadX64 = Resolve-RuntimePayloadArchRoot -Root $InstallationRoot -Arch x64
+    $runtimePayloadX86 = Resolve-RuntimePayloadArchRoot -Root $InstallationRoot -Arch x86
+    $installedDll = Join-Path $runtimePayloadX64 'srf_tsf_tip.dll'
+    $installedDllX86 = Join-Path $runtimePayloadX86 'srf_tsf_tip.dll'
     if ($SkipPackageIntegrityCheck) {
         Write-InstallLog 'SKIP: package integrity verification already completed by the machine install step'
     } else {
@@ -1503,6 +1503,7 @@ try {
         Stop-RunningHelpers
     }
     Clear-TransientUserState
+    Write-InstallLog 'event=install_session_start'
     Invoke-ConfigMigration
 
     if (-not $SkipTraySetup) {
@@ -1525,16 +1526,18 @@ try {
         $registrationLogPath = Join-Path $InstallationRoot 'tip_registration_user.log'
         $previousRegLog = [Environment]::GetEnvironmentVariable('SRF_TSF_REG_LOG', 'Process')
         [Environment]::SetEnvironmentVariable('SRF_TSF_REG_LOG', $registrationLogPath, 'Process')
+        $registrationSucceeded = $false
         try {
             Invoke-TipRegistration -RegistrationScript $registrationScript -DllPath $installedDll -Arch x64
             Invoke-TipRegistration -RegistrationScript $registrationScript -DllPath $installedDllX86 -Arch x86
+            $registrationSucceeded = $true
         } catch {
             $message = ("Current-user TIP registration failed. Detail log: {0}. {1}" -f $registrationLogPath, $_.Exception.Message)
             Write-InstallLog ("WARN: {0}" -f $message)
         } finally {
             [Environment]::SetEnvironmentVariable('SRF_TSF_REG_LOG', $previousRegLog, 'Process')
         }
-        if (Test-Path -LiteralPath $registrationLogPath) {
+        if ($registrationSucceeded) {
             Write-InstallLog ("OK: completed current-user TIP registration step; detail log: {0}" -f $registrationLogPath)
         }
     }
