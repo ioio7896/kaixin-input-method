@@ -25,7 +25,7 @@ package=ROOT/'dist/kaixin-package-ocr'
 helper=package/'tools/kaixin_ocr_engine.py';python=package/'.python-runtime/python.exe'
 bootstrap="import sys,runpy;sys.path.insert(0,sys.argv.pop(1));runpy.run_path(sys.argv.pop(1),run_name='__main__')"
 for profile in ('fast','balanced','accurate'):
- raw=run([python,'-B','-c',bootstrap,package/'.python-packages',helper,ROOT/'RapidOCR-3.9.0/python/tests/test_files/ch_en_num.jpg','--rapidocr-root',package/'RapidOCR-3.9.0','--provider','cpu','--profile',profile,'--vis',OUT/f'ocr-{profile}.jpg'],env)
+ raw=run([python,'-B','-c',bootstrap,package/'.python-packages',helper,ROOT/'assets/kaixin-input-icon.png','--rapidocr-root',package/'RapidOCRLite','--provider','cpu','--profile',profile,'--vis',OUT/f'ocr-{profile}.jpg'],env)
  payload=json.loads(raw)
  if not payload.get('ok'): raise RuntimeError(raw)
  if not (OUT/f'ocr-{profile}.jpg').is_file(): raise RuntimeError('OCR visualization missing: '+raw)

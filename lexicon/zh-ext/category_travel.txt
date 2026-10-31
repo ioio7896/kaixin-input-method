@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：旅游订票
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 登机口	deng ji kou	6107
 中转航班	zhong zhuan hang ban	6100
@@ -53,5 +53,287 @@
 酒店预订	jiu dian yu ding	6100
 门票预订	men piao yu ding	6100
 随身行李	sui shen xing li	6100
+旅游城市	lv you cheng shi	5962
+中国旅游	zhong guo lv you	5924
+旅游学院	lv you xue yuan	5924
+旅游资源	lv you zi yuan	5924
+法国旅游	fa guo lv you	5924
+美国旅游	mei guo lv you	5924
+上海旅游	shang hai lv you	5693
+会议旅游	hui yi lv you	5693
+北京旅游	bei jing lv you	5693
+国际旅游	guo ji lv you	5693
+工业旅游	gong ye lv you	5693
+旅游信息	lv you xin xi	5693
+旅游公司	lv you gong si	5693
+旅游图片	lv you tu pian	5693
+旅游市场	lv you shi chang	5693
+旅游建筑	lv you jian zhu	5693
+旅游文化	lv you wen hua	5693
+旅游服务	lv you fu wu	5693
+旅游活动	lv you huo dong	5693
+旅游管理	lv you guan li	5693
+旅游经济	lv you jing ji	5693
+日本旅游	ri ben lv you	5693
+西安旅游	xi an lv you	5693
+香港旅游	xiang gang lv you	5693
+旅游商品	lv you shang pin	5577
+体育旅游	ti yu lv you	5539
+旅游广告	lv you guang gao	5500
+旅行过程	lv xing guo cheng	5500
+国外旅游	guo wai lv you	5462
+旅游事业	lv you shi ye	5462
+旅游英语	lv you ying yu	5462
+南京旅游	nan jing lv you	5385
+成都旅游	cheng du lv you	5385
+旅游邀请	lv you yao qing	5385
+特色旅游	te se lv you	5385
+出去旅游	chu qu lv you	5308
+森林旅游	sen lin lv you	5231
+西部旅游	xi bu lv you	5231
+红色旅游	hong se lv you	5193
+西藏旅游	xi zang lv you	5193
+乡村旅游	xiang cun lv you	5154
+云南旅游	yun nan lv you	5154
+旅游地理	lv you di li	5154
+空中旅行	kong zhong lv xing	5154
+一次旅行	yi ci lv xing	5116
+世界旅行	shi jie lv xing	5116
+交换旅行	jiao huan lv xing	5116
+家庭旅行	jia ting lv xing	5116
+快速旅行	kuai su lv xing	5116
+摄影旅游	she ying lv you	5116
+旅游摄影	lv you she ying	5116
+旅行拍摄	lv xing pai she	5116
+旅行摄影	lv xing she ying	5116
+时间旅行	shi jian lv xing	5116
+毕业旅行	bi ye lv xing	5116
+爱的旅行	ai de lv xing	5116
+记录旅行	ji lu lv xing	5116
+集体旅行	ji ti lv xing	5116
+音乐旅行	yin yue lv xing	5116
+旅行风景	lv xing feng jing	5077
+旅游通讯	lv you tong xun	5039
+神秘旅行	shen mi lv xing	5000
+航班时刻	hang ban shi ke	5000
+分开旅行	fen kai lv xing	4924
+旅游外汇	lv you wai hui	4924
+周边旅游	zhou bian lv you	4885
+山西旅游	shan xi lv you	4885
+大连旅游	da lian lv you	4847
+太空旅行	tai kong lv xing	4847
+旅游时报	lv you shi bao	4847
+旅行日记	lv xing ri ji	4847
+旅行笔记	lv xing bi ji	4847
+苏州旅游	su zhou lv you	4847
+西北旅游	xi bei lv you	4847
+北海景区	bei hai jing qu	4808
+旅行婚礼	lv xing hun li	4808
+旅行愉快	lv xing yu kuai	4808
+东山景区	dong shan jing qu	4770
+东湖景区	dong hu jing qu	4770
+南山景区	nan shan jing qu	4770
+南湖景区	nan hu jing qu	4770
+商务旅行	shang wu lv xing	4770
+崂山景区	lao shan jing qu	4770
+昆山景区	kun shan jing qu	4770
+浪漫旅行	lang man lv xing	4770
+灵山景区	ling shan jing qu	4770
+白云景区	bai yun jing qu	4770
+白山景区	bai shan jing qu	4770
+西山景区	xi shan jing qu	4770
+象山景区	xiang shan jing qu	4770
+金山景区	jin shan jing qu	4770
+门票价格	men piao jia ge	4770
+龙山景区	long shan jing qu	4770
+三亚旅游	san ya lv you	4731
+丽水旅游	li shui lv you	4731
+北海旅游	bei hai lv you	4731
+南山旅游	nan shan lv you	4731
+威海旅游	wei hai lv you	4731
+桂林旅游	gui lin lv you	4731
+毕节旅游	bi jie lv you	4731
+温泉旅游	wen quan lv you	4731
+独自旅行	du zi lv xing	4731
+腾冲旅游	teng chong lv you	4731
+西沙旅游	xi sha lv you	4731
+黄山旅游	huang shan lv you	4731
+国际航班	guo ji hang ban	4693
+拓展旅游	tuo zhan lv you	4693
+旅游大厦	lv you da sha	4693
+旅游指南	lv you zhi nan	4693
+死亡航班	si wang hang ban	4693
+航班信息	hang ban xin xi	4693
+旅游客车	lv you ke che	4654
+冬季旅行	dong ji lv xing	4616
+接待游客	jie dai you ke	4616
+旅游卡	lv you ka	4616
+旅游客	lv you ke	4616
+旅游的	lv you de	4616
+旅游观光	lv you guan guang	4616
+旅行拍照	lv xing pai zhao	4616
+旅行途中	lv xing tu zhong	4616
+致命旅行	zhi ming lv xing	4616
+观光旅游	guan guang lv you	4616
+观光旅行	guan guang lv xing	4616
+七星景区	qi xing jing qu	4577
+体验景区	ti yan jing qu	4577
+南岳景区	nan yue jing qu	4577
+南沙景区	nan sha jing qu	4577
+天台景区	tian tai jing qu	4577
+婺源景区	wu yuan jing qu	4577
+旅游景区	lv you jing qu	4577
+核心景区	he xin jing qu	4577
+沙湾景区	sha wan jing qu	4577
+温泉景区	wen quan jing qu	4577
+红色景区	hong se jing qu	4577
+黄龙景区	huang long jing qu	4577
+龙川景区	long chuan jing qu	4577
+龙潭景区	long tan jing qu	4577
+亲密旅行	qin mi lv xing	4539
+旅游地	lv you di	4539
+旅游总局	lv you zong ju	4539
+环球旅行	huan qiu lv xing	4539
+时空旅行	shi kong lv xing	4500
+外出旅游	wai chu lv you	4462
+廉价航班	lian jia hang ban	4462
+旅行青蛙	lv xing qing wa	4462
+不要门票	bu yao men piao	4424
+充电旅行	chong dian lv xing	4424
+旅行轿车	lv xing jiao che	4424
+门票免费	men piao mian fei	4424
+门票收入	men piao shou ru	4424
+旅游用地	lv you yong di	4385
+星际旅行	xing ji lv xing	4385
+春季旅行	chun ji lv xing	4385
+高原旅游	gao yuan lv you	4347
+户外旅行	hu wai lv xing	4308
+月球旅行	yue qiu lv xing	4308
+民俗旅游	min su lv you	4308
+华东旅游	hua dong lv you	4270
+航班管家	hang ban guan jia	4270
+你旅游	ni lv you	4231
+去旅游	qu lv you	4231
+探险旅行	tan xian lv xing	4231
+旅旅游	lv lv you	4231
+旅游了	lv you le	4231
+旅游包	lv you bao	4231
+旅游去	lv you qu	4231
+旅游史	lv you shi	4231
+旅游吗	lv you ma	4231
+旅游吧	lv you ba	4231
+旅游呢	lv you ne	4231
+旅游品	lv you pin	4231
+旅游岛	lv you dao	4231
+旅游年	lv you nian	4231
+旅游热线	lv you re xian	4231
+旅游片	lv you pian	4231
+旅游船	lv you chuan	4231
+旅游费	lv you fei	4231
+旅游路	lv you lu	4231
+旅游险	lv you xian	4231
+旅行商	lv xing shang	4231
+旅行装	lv xing zhuang	4231
+来旅游	lai lv you	4231
+真空旅行	zhen kong lv xing	4231
+花台景区	hua tai jing qu	4231
+西海景区	xi hai jing qu	4231
+夏日旅行	xia ri lv xing	4193
+秋季旅行	qiu ji lv xing	4193
+峡谷景区	xia gu jing qu	4154
+长途旅行	chang tu lv xing	4116
 登机牌	deng ji pai	4088
+华山景区	hua shan jing qu	4077
+太清景区	tai qing jing qu	4077
+旅游专线	lv you zhuan xian	4077
+登山旅游	deng shan lv you	4077
+旅行支票	lv xing zhi piao	4039
+连岛景区	lian dao jing qu	4000
+启航班	qi hang ban	3962
+新婚旅行	xin hun lv xing	3924
+直飞航班	zhi fei hang ban	3924
+天湖景区	tian hu jing qu	3885
+香山景区	xiang shan jing qu	3885
+修学旅行	xiu xue lv xing	3847
+去旅行	qu lv xing	3847
+旅行剑	lv xing jian	3847
+旅行图	lv xing tu	3847
+旅行杯	lv xing bei	3847
+旅行记	lv xing ji	3847
+爱旅行	ai lv xing	3847
+的旅行	de lv xing	3847
+国门景区	guo men jing qu	3808
+门票费	men piao fei	3808
+众信旅游	zhong xin lv you	3731
+盘门景区	pan men jing qu	3693
+九华旅游	jiu hua lv you	3654
+云谷景区	yun gu jing qu	3654
+蜜月旅行	mi yue lv xing	3654
+古镇景区	gu zhen jing qu	3616
+房车旅行	fang che lv xing	3616
+石湖景区	shi hu jing qu	3616
+赎罪旅行	shu zui lv xing	3616
+同程旅游	tong cheng lv you	3577
+地底旅行	di di lv xing	3577
+旅游专列	lv you zhuan lie	3577
+迫降航班	po jiang hang ban	3577
+公费旅游	gong fei lv you	3539
+唐城景区	tang cheng jing qu	3539
+石林景区	shi lin jing qu	3539
+妩媚航班	wu mei hang ban	3500
+山景区	shan jing qu	3500
+主峰景区	zhu feng jing qu	3462
+游客止步	you ke zhi bu	3462
+环岛旅行	huan dao lv xing	3462
+龟山景区	gui shan jing qu	3462
+买门票	mai men piao	3424
+免门票	mian men piao	3424
+搭车旅行	da che lv xing	3424
+要门票	yao men piao	3424
+门票钱	men piao qian	3424
+大佛景区	da fo jing qu	3385
+宋城景区	song cheng jing qu	3385
+江湾景区	jiang wan jing qu	3347
+红眼航班	hong yan hang ban	3347
+绝命航班	jue ming hang ban	3308
+全域旅游	quan yu lv you	3231
+华阳景区	hua yang jing qu	3193
+夺命旅行	duo ming lv xing	3193
+焦山景区	jiao shan jing qu	3154
+仙都景区	xian du jing qu	3116
+套娃景区	tao wa jing qu	3077
+巨峰景区	ju feng jing qu	3077
+灵峰景区	ling feng jing qu	3077
+研学旅行	yan xue lv xing	3077
+中岳景区	zhong yue jing qu	3039
+兰亭景区	lan ting jing qu	3000
+滨河景区	bin he jing qu	2962
+灵岩景区	ling yan jing qu	2962
+去旅游了	qu lv you le	2924
+旅游去了	lv you qu le	2924
+百泉景区	bai quan jing qu	2924
+跟团旅游	gen tuan lv you	2924
+玉屏景区	yu ping jing qu	2885
+茨坪景区	ci ping jing qu	2885
+宏村景区	hong cun jing qu	2808
+我的旅行	wo de lv xing	2693
+旅行者岩	lv xing zhe yan	2693
+旅行者空	lv xing zhe kong	2693
+旅行者荧	lv xing zhe ying	2693
+旅行者雷	lv xing zhe lei	2693
+旅行者风	lv xing zhe feng	2693
+蔚揽旅行	wei lan lv xing	2693
+枫桥景区	feng qiao jing qu	2539
+航班蛇患	hang ban she huan	2539
+千垛景区	qian duo jing qu	2500
+国清景区	guo qing jing qu	2500
+怪坡景区	guai po jing qu	2500
+旺山景区	wang shan jing qu	2500
+濯水景区	zhuo shui jing qu	2500
+灵隐景区	ling yin jing qu	2500
+篁岭景区	huang ling jing qu	2500
+绵山景区	mian shan jing qu	2500
+西栅景区	xi zha jing qu	2500
 自驾游	zi jia you	2262
+汾河景区	fen he jing qu	1808
+漓江景区	li jiang jing qu	1539

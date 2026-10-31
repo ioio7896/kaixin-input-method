@@ -68,8 +68,8 @@ new setting is added or a default changes.
 | `screenshot` | `show_instructions` | `1` | boolean; shows selector keyboard and interaction guidance; action buttons remain visible | settings, tray |
 | `ocr` | `profile` | `balanced` | `fast`, `balanced`, `accurate`; controls maximum OCR image edge | OCR window, prewarm |
 | `ocr` | `language` | `zh` | `zh`, `en`, `mixed`/`auto`; last OCR language, used for prewarm | OCR window, prewarm |
-| `ocr` | `provider` | `auto` | `auto`, `cpu`, `directml`, `cuda`; unavailable GPU providers fall back to CPU | OCR window, ONNX Runtime |
-| `ocr` | `keep_alive` | `1` | boolean; keep the Python/ONNX worker resident between requests | OCR |
+| `ocr` | `provider` | `auto` | CPU only; legacy provider settings are ignored | OCR window, RapidOCRLite |
+| `ocr` | `keep_alive` | `1` | boolean; keep the Python/RapidOCRLite worker resident while the OCR process runs | OCR |
 | `tools` | `settings_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `tools` | `handwrite_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `tools` | `ocr_hotkey` | `off` | Windows hotkey or `off` | settings, tray |

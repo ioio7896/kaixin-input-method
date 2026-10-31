@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：烹饪食材
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 橄榄油	gan lan you	8684
 番茄酱	fan qie jiang	7949
@@ -46,11 +46,50 @@
 量杯	liang bei	4603
 生抽	sheng chou	4583
 高压锅	gao ya guo	4583
+完美烹饪	wan mei peng ren	4308
+烹饪中心	peng ren zhong xin	4308
+烹饪技巧	peng ren ji qiao	4308
+烹饪方式	peng ren fang shi	4308
+烹饪时间	peng ren shi jian	4308
+烹饪步骤	peng ren bu zhou	4308
 料酒	liao jiu	4278
+减肥食谱	jian fei shi pu	3962
+秘密食谱	mi mi shi pu	3962
 小苏打	xiao su da	3958
+中式烹饪	zhong shi peng ren	3808
+炒菜锅	chao cai guo	3462
 芝麻油	zhi ma you	3439
+煮饭菜	zhu fan cai	3308
+美食菜谱	mei shi cai pu	3231
+炒菜花	chao cai hua	2962
+不煮饭	bu zhu fan	2924
+你煮饭	ni zhu fan	2924
+在煮饭	zai zhu fan	2924
+我煮饭	wo zhu fan	2924
+没煮饭	mei zhu fan	2924
+煮饭了	zhu fan le	2924
+煮饭吃	zhu fan chi	2924
+煮饭吗	zhu fan ma	2924
+煮饭机	zhu fan ji	2924
+煮饭的	zhu fan de	2924
+要煮饭	yao zhu fan	2924
 黑胡椒	hei hu jiao	2817
+不炒菜	bu chao cai	2654
+你炒菜	ni chao cai	2654
+吃炒菜	chi chao cai	2654
+在炒菜	zai chao cai	2654
+我炒菜	wo chao cai	2654
+没炒菜	mei chao cai	2654
+炒菜了	chao cai le	2654
+炒菜吧	chao cai ba	2654
+炒菜呢	chao cai ne	2654
+炒菜的	chao cai de	2654
 豆瓣酱	dou ban jiang	2305
+我在煮饭	wo zai zhu fan	2116
+我煮饭了	wo zhu fan le	2116
+煮饭了吗	zhu fan le ma	2116
+煮饭去了	zhu fan qu le	2116
+我在炒菜	wo zai chao cai	1962
 沙拉酱	sha la jiang	1651
 蚝油	hao you	1630
 不粘锅	bu nian guo	1133

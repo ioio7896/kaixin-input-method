@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：公共交通
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 出租车	chu zu che	9871
 网约车	wang yue che	8023
@@ -52,7 +52,254 @@
 顺风车	shun feng che	6100
 高铁车次	gao tie che ci	6100
 末班车	mo ban che	5790
+上海地铁	shang hai di tie	5424
+地铁等待	di tie deng dai	5385
+火车时刻	huo che shi ke	5385
+火车王国	huo che wang guo	5308
+台北车站	tai bei che zhan	5116
+火车快开	huo che kuai kai	5116
+南京地铁	nan jing di tie	5077
+地铁兄弟	di tie xiong di	5077
+地铁女孩	di tie nv hai	5077
+地铁故事	di tie gu shi	5077
+地铁明星	di tie ming xing	5077
+地铁游戏	di tie you xi	5077
+地铁设计	di tie she ji	5077
+天津地铁	tian jin di tie	5077
+广州地铁	guang zhou di tie	5077
+成都地铁	cheng du di tie	5077
+死亡地铁	si wang di tie	5077
+长沙地铁	chang sha di tie	5077
+动力火车	dong li huo che	5039
+火车事故	huo che shi gu	5039
+青岛地铁	qing dao di tie	4924
+公交车上	gong jiao che shang	4885
+公交大厦	gong jiao da sha	4847
+模拟火车	mo ni huo che	4847
+中央车站	zhong yang che zhan	4808
+南方车站	nan fang che zhan	4808
+地铁车站	di tie che zhan	4808
+联合车站	lian he che zhan	4808
+车站小学	che zhan xiao xue	4808
+车站社区	che zhan she qu	4808
+车站附近	che zhan fu jin	4808
+火车车厢	huo che che xiang	4770
+郑州地铁	zheng zhou di tie	4770
+光明车站	guang ming che zhan	4731
+徐州地铁	xu zhou di tie	4731
+济南地铁	ji nan di tie	4731
+福州地铁	fu zhou di tie	4731
+地铁大厦	di tie da sha	4693
+地铁站台	di tie zhan tai	4693
+星星火车	xing xing huo che	4693
+公交司机	gong jiao si ji	4577
+公交宿舍	gong jiao su she	4577
+公交查询	gong jiao cha xun	4577
+公交男女	gong jiao nan nv	4577
+公交路线	gong jiao lu xian	4577
+北京公交	bei jing gong jiao	4577
+城市公交	cheng shi gong jiao	4577
+实时公交	shi shi gong jiao	4577
+高铁管家	gao tie guan jia	4577
+中国高铁	zhong guo gao tie	4500
+午夜火车	wu ye huo che	4500
+高铁列车	gao tie lie che	4500
+高铁英雄	gao tie ying xiong	4500
+公交场站	gong jiao chang zhan	4385
+刚上地铁	gang shang di tie	4385
+刚下地铁	gang xia di tie	4385
+乘坐火车	cheng zuo huo che	4347
+简易车站	jian yi che zhan	4347
+西成高铁	xi cheng gao tie	4347
+没地铁	mei di tie	4270
+老火车站	lao huo che zhan	4270
+公交站点	gong jiao zhan dian	4231
+出地铁	chu di tie	4231
+地铁上	di tie shang	4231
+水上公交	shui shang gong jiao	4231
+离地铁	li di tie	4231
+开火车	kai huo che	4193
+火车上	huo che shang	4193
+火车桥	huo che qiao	4193
+火车皮	huo che pi	4193
+火车道	huo che dao	4193
+火车北站	huo che bei zhan	4154
+蒸汽火车	zheng qi huo che	4154
+平壤地铁	ping rang di tie	4077
+掌上高铁	zhang shang gao tie	4077
+动车站	dong che zhan	4039
+在车站	zai che zhan	4039
+天国车站	tian guo che zhan	4039
+客车站	ke che zhan	4039
+新车站	xin che zhan	4039
+火车总站	huo che zong zhan	4039
+老车站	lao che zhan	4039
+上高铁	shang gao tie	4000
+兰新高铁	lan xin gao tie	4000
+迪拜地铁	di bai di tie	3962
+火车进站	huo che jin zhan	3924
+公交上	gong jiao shang	3885
+公交了	gong jiao le	3885
+地铁逃生	di tie tao sheng	3885
+上地铁	shang di tie	3847
+下地铁	xia di tie	3847
+乘地铁	cheng di tie	3847
+修地铁	xiu di tie	3847
+做地铁	zuo di tie	3847
+到地铁	dao di tie	3847
+在地铁	zai di tie	3847
+地铁了	di tie le	3847
+地铁卡	di tie ka	3847
+地铁吗	di tie ma	3847
+地铁吧	di tie ba	3847
+地铁的	di tie de	3847
+地铁里	di tie li	3847
+成贵高铁	cheng gui gao tie	3847
+打地铁	da di tie	3847
+挤地铁	ji di tie	3847
+搭地铁	da di tie	3847
+有地铁	you di tie	3847
+等地铁	deng di tie	3847
+赶地铁	gan di tie	3847
+转地铁	zhuan di tie	3847
+进地铁	jin di tie	3847
+高铁上	gao tie shang	3847
+高铁票	gao tie piao	3847
+高铁线	gao tie xian	3847
+一火车	yi huo che	3808
+上火车	shang huo che	3808
+下火车	xia huo che	3808
+做火车	zuo huo che	3808
+在火车	zai huo che	3808
+小火车	xiao huo che	3808
+火车了	huo che le	3808
+火车吗	huo che ma	3808
+火车吧	huo che ba	3808
+火车摇	huo che yao	3808
+猜火车	cai huo che	3808
+的火车	de huo che	3808
+神州高铁	shen zhou gao tie	3808
+等火车	deng huo che	3808
+赶火车	gan huo che	3808
+跑火车	pao huo che	3808
+公交站牌	gong jiao zhan pai	3731
+北门车站	bei men che zhan	3731
+高铁动车	gao tie dong che	3731
+掌上公交	zhang shang gong jiao	3693
+鲁南高铁	lu nan gao tie	3693
+候车站	hou che zhan	3654
+到车站	dao che zhan	3654
+去车站	qu che zhan	3654
+后车站	hou che zhan	3654
+来车站	lai che zhan	3654
+车站了	che zhan le	3654
+车站的	che zhan de	3654
+车站路	che zhan lu	3654
+京张高铁	jing zhang gao tie	3616
+地铁惊魂	di tie jing hun	3616
+沿江高铁	yan jiang gao tie	3577
+火车怪客	huo che guai ke	3577
+京九高铁	jing jiu gao tie	3539
+京沪高铁	jing hu gao tie	3539
+上公交	shang gong jiao	3500
+下公交	xia gong jiao	3500
+乘公交	cheng gong jiao	3500
+京哈高铁	jing ha gao tie	3500
+公交卡	gong jiao ka	3500
+公交吗	gong jiao ma	3500
+公交吧	gong jiao ba	3500
+在公交	zai gong jiao	3500
+坐公交	zuo gong jiao	3500
+挤公交	ji gong jiao	3500
+搭公交	da gong jiao	3500
+有公交	you gong jiao	3500
+汉十高铁	han shi gao tie	3500
+没公交	mei gong jiao	3500
+等公交	deng gong jiao	3500
+赶公交	gan gong jiao	3500
+下高铁	xia gao tie	3462
+京广高铁	jing guang gao tie	3462
+在高铁	zai gao tie	3462
+坐高铁	zuo gao tie	3462
+有高铁	you gao tie	3462
+末班地铁	mo ban di tie	3462
+的高铁	de gao tie	3462
+绿皮火车	lv pi huo che	3462
+高铁了	gao tie le	3462
+高铁吗	gao tie ma	3462
+高铁吧	gao tie ba	3462
+郑万高铁	zheng wan gao tie	3385
+火车轮渡	huo che lun du	3347
+环岛高铁	huan dao gao tie	3347
+地铁跑酷	di tie pao ku	3308
+城际公交	cheng ji gong jiao	3308
+公交技校	gong jiao ji xiao	3231
+济青高铁	ji qing gao tie	3231
+夺命地铁	duo ming di tie	3193
+申通地铁	shen tong di tie	3039
+赣深高铁	gan shen gao tie	3000
+新汽车站	xin qi che zhan	2924
+老汽车站	lao qi che zhan	2924
+成渝高铁	cheng yu gao tie	2847
+上地铁了	shang di tie le	2693
+下地铁了	xia di tie le	2693
+你坐地铁	ni zuo di tie	2693
+出地铁了	chu di tie le	2693
+到地铁站	dao di tie zhan	2693
+在地铁上	zai di tie shang	2693
+在地铁站	zai di tie zhan	2693
+地铁上了	di tie shang le	2693
+地铁口了	di tie kou le	2693
+地铁站了	di tie zhan le	2693
+地铁酷跑	di tie ku pao	2693
+坐上地铁	zuo shang di tie	2693
+坐地铁了	zuo di tie le	2693
+我在地铁	wo zai di tie	2693
+我坐地铁	wo zuo di tie	2693
 交通卡	jiao tong ka	2667
+上火车了	shang huo che le	2654
+下火车了	xia huo che le	2654
+买火车票	mai huo che piao	2654
+到火车站	dao huo che zhan	2654
+去火车站	qu huo che zhan	2654
+在火车上	zai huo che shang	2654
+在火车站	zai huo che zhan	2654
+我坐火车	wo zuo huo che	2654
+旧火车站	jiu huo che zhan	2654
+火车到站	huo che dao zhan	2654
+火车站了	huo che zhan le	2654
+离火车站	li huo che zhan	2654
+到车站了	dao che zhan le	2577
+我到车站	wo dao che zhan	2577
+我在车站	wo zai che zhan	2577
+牛行车站	niu xing che zhan	2577
+上公交了	shang gong jiao le	2500
+上公交车	shang gong jiao che	2500
+你坐公交	ni zuo gong jiao	2500
+公交车了	gong jiao che le	2500
+在公交上	zai gong jiao shang	2500
+在公交车	zai gong jiao che	2500
+在等公交	zai deng gong jiao	2500
+坐上公交	zuo shang gong jiao	2500
+坐公交了	zuo gong jiao le	2500
+坐公交去	zuo gong jiao qu	2500
+坐公交吧	zuo gong jiao ba	2500
+坐公交车	zuo gong jiao che	2500
+我在公交	wo zai gong jiao	2500
+我坐公交	wo zuo gong jiao	2500
+搭公交车	da gong jiao che	2500
+有公交车	you gong jiao che	2500
+等公交车	deng gong jiao che	2500
+你坐高铁	ni zuo gao tie	2462
+到高铁站	dao gao tie zhan	2462
+去高铁站	qu gao tie zhan	2462
+在高铁上	zai gao tie shang	2462
+我坐高铁	wo zuo gao tie	2462
+杭黄高铁	hang huang gao tie	2462
+潍莱高铁	wei lai gao tie	2462
+郑济高铁	zheng ji gao tie	2462
+郑阜高铁	zheng fu gao tie	2462
+高铁站了	gao tie zhan le	2462
 出站口	chu zhan kou	2110
 公交线路	gong jiao xian lu	1917
 检票口	jian piao kou	1915

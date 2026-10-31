@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：政务办事
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 一网通办	yi wang tong ban	6100
 不动产登记	bu dong chan deng ji	6100
@@ -53,6 +53,20 @@
 身份证补办	shen fen zheng bu ban	6100
 预约办理	yu yue ban li	6100
 预约号	yu yue hao	6100
+政府单位	zheng fu dan wei	6000
+报告政府	bao gao zheng fu	5924
+政府机构	zheng fu ji gou	5924
+政府银行	zheng fu yin hang	5924
+政府投资	zheng fu tou zi	5847
+政府行政	zheng fu xing zheng	5770
+政府官员	zheng fu guan yuan	5616
+政府委员	zheng fu wei yuan	5500
+数字政府	shu zi zheng fu	5500
+政府收入	zheng fu shou ru	5424
+政府消费	zheng fu xiao fei	5347
+重庆政府	chong qing zheng fu	5347
+政府贷款	zheng fu dai kuan	5231
+政府预算	zheng fu yu suan	5231
 申请材料已经提交	shen qing cai liao yi jing ti jiao	5200
 申请材料已经补充	shen qing cai liao yi jing bu chong	5200
 申请材料正在审核	shen qing cai liao zheng zai shen he	5200
@@ -65,6 +79,14 @@
 证明材料已经补充	zheng ming cai liao yi jing bu chong	5200
 证明材料正在审核	zheng ming cai liao zheng zai shen he	5200
 证明材料需要重新提交	zheng ming cai liao xu yao chong xin ti jiao	5200
+政府收费	zheng fu shou fei	5154
+全国公安	quan guo gong an	5116
+公安部长	gong an bu zhang	5116
+富民政策	fu min zheng ce	5116
+政府总部	zheng fu zong bu	5116
+政府性	zheng fu xing	5039
+政府大楼	zheng fu da lou	5000
+政府公告	zheng fu gong gao	4924
 请准备办理资料	qing zhun bei ban li zi liao	4900
 请准备受理编号	qing zhun bei shou li bian hao	4900
 请准备授权委托书	qing zhun bei shou quan wei tuo shu	4900
@@ -225,3 +247,96 @@
 麻烦补充证件照片	ma fan bu chong zheng jian zhao pian	4900
 麻烦补充证明材料	ma fan bu chong zheng ming cai liao	4900
 麻烦补充身份信息	ma fan bu chong shen fen xin xi	4900
+政府采购	zheng fu cai gou	4885
+南非政府	nan fei zheng fu	4847
+政府管制	zheng fu guan zhi	4847
+政府花园	zheng fu hua yuan	4847
+公安交通	gong an jiao tong	4808
+公安大学	gong an da xue	4808
+公安大楼	gong an da lou	4808
+公安工作	gong an gong zuo	4808
+公安战士	gong an zhan shi	4808
+公安系统	gong an xi tong	4808
+公安队伍	gong an dui wu	4808
+山西公安	shan xi gong an	4808
+政府垄断	zheng fu long duan	4808
+新疆公安	xin jiang gong an	4808
+丹麦政府	dan mai zheng fu	4770
+政府信用	zheng fu xin yong	4770
+政府债务	zheng fu zhai wu	4770
+政府职能	zheng fu zhi neng	4770
+政府补助	zheng fu bu zhu	4770
+法治政府	fa zhi zheng fu	4770
+贵州公安	gui zhou gong an	4770
+过渡政府	guo du zheng fu	4770
+公安院校	gong an yuan xiao	4731
+反政府	fan zheng fu	4731
+在政府	zai zheng fu	4731
+巴政府	ba zheng fu	4731
+政府小区	zheng fu xiao qu	4731
+政府干预	zheng fu gan yu	4731
+政府的	zheng fu de	4731
+政府街	zheng fu jie	4731
+瑞士政府	rui shi zheng fu	4731
+老政府	lao zheng fu	4731
+党委政府	dang wei zheng fu	4693
+公安大厦	gong an da sha	4693
+市民政局	shi min zheng ju	4693
+政府补贴	zheng fu bu tie	4693
+民政工作	min zheng gong zuo	4693
+政府支出	zheng fu zhi chu	4654
+法制政府	fa zhi zheng fu	4654
+乡镇政府	xiang zhen zheng fu	4616
+公安消防	gong an xiao fang	4500
+政务中心	zheng wu zhong xin	4462
+政务信息	zheng wu xin xi	4462
+政务处分	zheng wu chu fen	4462
+政务大楼	zheng wu da lou	4462
+政府开支	zheng fu kai zhi	4462
+政府担保	zheng fu dan bao	4462
+政府调控	zheng fu tiao kong	4462
+政府首脑	zheng fu shou nao	4462
+民政大厦	min zheng da sha	4424
+民政学校	min zheng xue xiao	4424
+公安民警	gong an min jing	4385
+户籍人口	hu ji ren kou	4385
+户籍制度	hu ji zhi du	4385
+户籍地址	hu ji di zhi	4385
+户籍管理	hu ji guan li	4385
+政府借款	zheng fu jie kuan	4385
+政府产权	zheng fu chan quan	4347
+流亡政府	liu wang zheng fu	4308
+政府门户	zheng fu men hu	4193
+政府储蓄	zheng fu chu xu	4154
+傀儡政府	kui lei zheng fu	4116
+公安特警	gong an te jing	4116
+本市户籍	ben shi hu ji	4116
+政务新区	zheng wu xin qu	4077
+政府绩效	zheng fu ji xiao	4077
+公安交警	gong an jiao jing	4000
+公安交管	gong an jiao guan	3924
+公安厅长	gong an ting zhang	3924
+政府庄家	zheng fu zhuang jia	3924
+中非政府	zhong fei zheng fu	3847
+政府外债	zheng fu wai zhai	3847
+政府失灵	zheng fu shi ling	3847
+公安段	gong an duan	3654
+公安派	gong an pai	3654
+公安网	gong an wang	3654
+政府公债	zheng fu gong zhai	3654
+户籍警	hu ji jing	3616
+公安干警	gong an gan jing	3462
+县公安局	xian gong an ju	3462
+市政府办	shi zheng fu ban	3462
+省公安厅	sheng gong an ting	3462
+政务区	zheng wu qu	3424
+民政办	min zheng ban	3424
+原户籍	yuan hu ji	3385
+户籍室	hu ji shi	3385
+户籍科	hu ji ke	3385
+限户籍	xian hu ji	3385
+委市政府	wei shi zheng fu	3231
+政府救市	zheng fu jiu shi	3231
+汪伪政府	wang wei zheng fu	2808
+市公安局	shi gong an ju	2577
+省民政厅	sheng min zheng ting	2424

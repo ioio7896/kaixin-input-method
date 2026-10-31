@@ -1,10 +1,28 @@
 # 开心离线输入法分类补充：游戏电竞
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 实名认证	shi ming ren zheng	8800
+游戏时间	you xi shi jian	6424
+游戏中心	you xi zhong xin	6385
 排位赛	pai wei sai	6227
+一个游戏	yi ge you xi	6116
+下载游戏	xia zai you xi	6116
+不上游戏	bu shang you xi	6116
+不是游戏	bu shi you xi	6116
+其他游戏	qi ta you xi	6116
+开始游戏	kai shi you xi	6116
+游戏世界	you xi shi jie	6116
+游戏公司	you xi gong si	6116
+游戏开始	you xi kai shi	6116
+游戏游戏	you xi you xi	6116
+游戏系统	you xi xi tong	6116
+游戏重要	you xi zhong yao	6116
+这个游戏	zhe ge you xi	6116
+这个游戏	zhei ge you xi	6116
+这种游戏	zhe zhong you xi	6116
+这种游戏	zhei zhong you xi	6116
 主线任务	zhu xian ren wu	6100
 任务奖励	ren wu jiang li	6100
 充值记录	chong zhi ji lu	6100
@@ -54,3 +72,528 @@
 队伍频道	dui wu pin dao	6100
 队友配合	dui you pei he	6100
 防沉迷系统	fang chen mi xi tong	6100
+城市游戏	cheng shi you xi	6077
+朋友游戏	peng you you xi	6077
+选择游戏	xuan ze you xi	6000
+那个游戏	na ge you xi	6000
+游戏里面	you xi li mian	5962
+管理游戏	guan li you xi	5962
+网易游戏	wang yi you xi	5962
+腾讯游戏	teng xun you xi	5962
+战争游戏	zhan zheng you xi	5924
+游戏名字	you xi ming zi	5924
+游戏视频	you xi shi pin	5924
+游戏设计	you xi she ji	5924
+投资游戏	tou zi you xi	5847
+家庭游戏	jia ting you xi	5808
+控制游戏	kong zhi you xi	5808
+晚餐游戏	wan can you xi	5808
+游戏结束	you xi jie shu	5808
+游戏里的	you xi li de	5770
+警察游戏	jing cha you xi	5731
+没上游戏	mei shang you xi	5693
+游戏学院	you xi xue yuan	5693
+免费游戏	mian fei you xi	5654
+权力游戏	quan li you xi	5654
+游戏空间	you xi kong jian	5654
+游戏精神	you xi jing shen	5654
+生命游戏	sheng ming you xi	5654
+死亡游戏	si wang you xi	5616
+游戏交易	you xi jiao yi	5577
+真实游戏	zhen shi you xi	5577
+一场游戏	yi chang you xi	5539
+游戏制作	you xi zhi zuo	5539
+儿童游戏	er tong you xi	5500
+危险游戏	wei xian you xi	5500
+数字游戏	shu zi you xi	5500
+资本游戏	zi ben you xi	5500
+团队游戏	tuan dui you xi	5424
+退出游戏	tui chu you xi	5424
+两人游戏	liang ren you xi	5385
+复杂游戏	fu za you xi	5385
+大型游戏	da xing you xi	5385
+游戏特色	you xi te se	5385
+苹果游戏	ping guo you xi	5385
+人生游戏	ren sheng you xi	5347
+游戏人生	you xi ren sheng	5347
+完美游戏	wan mei you xi	5308
+杀人游戏	sha ren you xi	5308
+游戏而已	you xi er yi	5308
+公平游戏	gong ping you xi	5270
+国王游戏	guo wang you xi	5270
+少年游戏	shao nian you xi	5270
+心理游戏	xin li you xi	5270
+游戏爱情	you xi ai qing	5270
+游戏直播	you xi zhi bo	5270
+爱情游戏	ai qing you xi	5270
+直播游戏	zhi bo you xi	5270
+动作游戏	dong zuo you xi	5231
+命运游戏	ming yun you xi	5231
+家族游戏	jia zu you xi	5231
+爱的游戏	ai de you xi	5231
+疯狂游戏	feng kuang you xi	5231
+交换游戏	jiao huan you xi	5193
+别的游戏	bie de you xi	5193
+恐怖游戏	kong bu you xi	5193
+感情游戏	gan qing you xi	5193
+打会游戏	da hui you xi	5193
+游戏体验	you xi ti yan	5193
+大众游戏	da zhong you xi	5154
+女生游戏	nv sheng you xi	5154
+生存游戏	sheng cun you xi	5154
+游戏时光	you xi shi guang	5116
+游戏加速	you xi jia su	5077
+游戏房间	you xi fang jian	5077
+玩会游戏	wan hui you xi	5077
+思维游戏	si wei you xi	5039
+毫无游戏	hao wu you xi	5039
+超越游戏	chao yue you xi	5039
+多人游戏	duo ren you xi	5000
+游戏男孩	you xi nan hai	5000
+色彩游戏	se cai you xi	5000
+专业玩家	zhuan ye wan jia	4962
+全球玩家	quan qiu wan jia	4962
+国际玩家	guo ji wan jia	4962
+最佳玩家	zui jia wan jia	4962
+最终玩家	zui zhong wan jia	4962
+游戏玩家	you xi wan jia	4962
+玩家团队	wan jia tuan dui	4962
+街头游戏	jie tou you xi	4962
+超级玩家	chao ji wan jia	4962
+邪恶游戏	xie e you xi	4962
+一把游戏	yi ba you xi	4924
+平民玩家	ping min wan jia	4924
+幻想游戏	huan xiang you xi	4924
+开车游戏	kai che you xi	4924
+心灵游戏	xin ling you xi	4924
+情感游戏	qing gan you xi	4924
+杀手游戏	sha shou you xi	4924
+上游戏	shang you xi	4885
+下游戏	xia you xi	4885
+不游戏	bu you xi	4885
+云游戏	yun you xi	4885
+会游戏	hui you xi	4885
+女友游戏	nv you you xi	4885
+我游戏	wo you xi	4885
+来游戏	lai you xi	4885
+游戏中	you xi zhong	4885
+游戏名	you xi ming	4885
+游戏本	you xi ben	4885
+游戏的	you xi de	4885
+游戏里	you xi li	4885
+真人游戏	zhen ren you xi	4885
+严肃游戏	yan su you xi	4847
+夫妻游戏	fu qi you xi	4847
+暂停游戏	zan ting you xi	4847
+模拟游戏	mo ni you xi	4847
+沉默游戏	chen mo you xi	4847
+游戏场地	you xi chang di	4847
+游戏女王	you xi nv wang	4847
+游戏好友	you xi hao you	4847
+绑架游戏	bang jia you xi	4847
+遗产游戏	yi chan you xi	4847
+金钱游戏	jin qian you xi	4847
+打过游戏	da guo you xi	4808
+残酷游戏	can ku you xi	4808
+没打游戏	mei da you xi	4808
+游戏者	you xi zhe	4808
+男生游戏	nan sheng you xi	4808
+射击游戏	she ji you xi	4770
+巨人游戏	ju ren you xi	4770
+抓人游戏	zhua ren you xi	4770
+欲望游戏	yu wang you xi	4770
+玩个游戏	wan ge you xi	4770
+绝望游戏	jue wang you xi	4770
+虚拟游戏	xu ni you xi	4770
+视觉游戏	shi jue you xi	4770
+人间游戏	ren jian you xi	4731
+兔子游戏	tu zi you xi	4731
+天台游戏	tian tai you xi	4731
+手指游戏	shou zhi you xi	4731
+谎言游戏	huang yan you xi	4731
+鱿鱼游戏	you yu you xi	4731
+别玩游戏	bie wan you xi	4693
+影子游戏	ying zi you xi	4693
+恋爱游戏	lian ai you xi	4693
+慈善玩家	ci shan wan jia	4693
+间谍游戏	jian die you xi	4693
+三人游戏	san ren you xi	4654
+模仿游戏	mo fang you xi	4654
+游戏高手	you xi gao shou	4654
+诱惑游戏	you huo you xi	4654
+骚扰游戏	sao rao you xi	4654
+魔法游戏	mo fa you xi	4654
+单身游戏	dan shen you xi	4616
+天才游戏	tian cai you xi	4616
+幕后玩家	mu hou wan jia	4616
+游戏影音	you xi ying yin	4616
+猎人游戏	lie ren you xi	4616
+终结游戏	zhong jie you xi	4616
+致命游戏	zhi ming you xi	4616
+野蛮游戏	ye man you xi	4616
+一流玩家	yi liu wan jia	4577
+恶魔游戏	e mo you xi	4577
+情侣游戏	qing lv you xi	4577
+暗杀游戏	an sha you xi	4577
+游戏助手	you xi zhu shou	4577
+面子游戏	mian zi you xi	4577
+业余玩家	ye yu wan jia	4539
+失控玩家	shi kong wan jia	4539
+游戏主播	you xi zhu bo	4539
+游戏版号	you xi ban hao	4539
+罪恶游戏	zui e you xi	4539
+血腥游戏	xue xing you xi	4539
+迷你游戏	mi ni you xi	4539
+个游戏	ge you xi	4500
+买游戏	mai you xi	4500
+你游戏	ni you xi	4500
+做游戏	zuo you xi	4500
+充游戏	chong you xi	4500
+先打游戏	xian da you xi	4500
+删游戏	shan you xi	4500
+卸游戏	xie you xi	4500
+和游戏	he you xi	4500
+啥游戏	sha you xi	4500
+在游戏	zai you xi	4500
+大游戏	da you xi	4500
+好游戏	hao you xi	4500
+对游戏	dui you xi	4500
+干游戏	gan you xi	4500
+开游戏	kai you xi	4500
+性游戏	xing you xi	4500
+戒游戏	jie you xi	4500
+把游戏	ba you xi	4500
+换游戏	huan you xi	4500
+搞游戏	gao you xi	4500
+时空游戏	shi kong you xi	4500
+是游戏	shi you xi	4500
+有游戏	you you xi	4500
+没游戏	mei you xi	4500
+游戏上	you xi shang	4500
+游戏不	you xi bu	4500
+游戏么	you xi me	4500
+游戏了	you xi le	4500
+游戏去	you xi qu	4500
+游戏号	you xi hao	4500
+游戏吗	you xi ma	4500
+游戏呀	you xi ya	4500
+游戏呢	you xi ne	4500
+游戏啊	you xi a	4500
+游戏啦	you xi la	4500
+游戏嘛	you xi ma	4500
+游戏日	you xi ri	4500
+游戏池	you xi chi	4500
+游戏没	you xi mei	4500
+游戏玩	you xi wan	4500
+游戏盒	you xi he	4500
+游戏群	you xi qun	4500
+游戏部	you xi bu	4500
+登游戏	deng you xi	4500
+的游戏	de you xi	4500
+看游戏	kan you xi	4500
+破游戏	po you xi	4500
+童年游戏	tong nian you xi	4500
+终极游戏	zhong ji you xi	4500
+终极玩家	zhong ji wan jia	4500
+老游戏	lao you xi	4500
+耍游戏	shua you xi	4500
+聊游戏	liao you xi	4500
+这游戏	zhe you xi	4500
+进游戏	jin you xi	4500
+退游戏	tui you xi	4500
+那游戏	na you xi	4500
+非游戏	fei you xi	4500
+鬼游戏	gui you xi	4500
+魔鬼游戏	mo gui you xi	4500
+保密游戏	bao mi you xi	4462
+古筝游戏	gu zheng you xi	4462
+生死游戏	sheng si you xi	4462
+蓝鲸游戏	lan jing you xi	4462
+高端玩家	gao duan wan jia	4462
+副本图层	fu ben tu ceng	4424
+单人游戏	dan ren you xi	4424
+四人游戏	si ren you xi	4424
+智力游戏	zhi li you xi	4424
+游戏疗法	you xi liao fa	4424
+肮脏游戏	ang zang you xi	4424
+面具游戏	mian ju you xi	4424
+养成游戏	yang cheng you xi	4385
+棋牌游戏	qi pai you xi	4385
+赛车游戏	sai che you xi	4385
+逃脱游戏	tao tuo you xi	4385
+饥饿游戏	ji e you xi	4385
+做饭游戏	zuo fan you xi	4347
+双人游戏	shuang ren you xi	4347
+游戏解说	you xi jie shuo	4347
+游戏超人	you xi chao ren	4347
+玩玩游戏	wan wan you xi	4347
+红包游戏	hong bao you xi	4347
+化妆游戏	hua zhuang you xi	4308
+打仗游戏	da zhang you xi	4308
+游戏竞技	you xi jing ji	4308
+说谎游戏	shuo huang you xi	4308
+二号玩家	er hao wan jia	4270
+杀戮游戏	sha lu you xi	4270
+欺诈游戏	qi zha you xi	4270
+盗版游戏	dao ban you xi	4270
+禁忌游戏	jin ji you xi	4270
+魔女游戏	mo nv you xi	4270
+亲子游戏	qin zi you xi	4231
+刺杀游戏	ci sha you xi	4231
+复仇游戏	fu chou you xi	4231
+奇特游戏	qi te you xi	4231
+尽情游戏	jin qing you xi	4231
+末日玩家	mo ri wan jia	4231
+游戏之夜	you xi zhi ye	4193
+王牌游戏	wang pai you xi	4193
+联机游戏	lian ji you xi	4193
+名片游戏	ming pian you xi	4154
+大玩家	da wan jia	4154
+幸存游戏	xing cun you xi	4154
+开罗游戏	kai luo you xi	4154
+无尽游戏	wu jin you xi	4154
+游戏之王	you xi zhi wang	4154
+趣味游戏	qu wei you xi	4154
+十日游戏	shi ri you xi	4116
+头号玩家	tou hao wan jia	4116
+女仆游戏	nv pu you xi	4116
+巅峰玩家	dian feng wan jia	4116
+电竞赛	dian jing sai	4116
+打着游戏	da zhe you xi	4077
+深渊游戏	shen yuan you xi	4077
+玩游戏的	wan you xi de	4077
+不玩游戏	bu wan you xi	4039
+副本攻击	fu ben gong ji	4039
+合法副本	he fa fu ben	4039
+执照副本	zhi zhao fu ben	4039
+换个游戏	huan ge you xi	4039
+游戏光盘	you xi guang pan	4039
+火花游戏	huo hua you xi	4039
+经验副本	jing yan fu ben	4039
+装扮游戏	zhuang ban you xi	4039
+这破游戏	zhe po you xi	4039
+进入副本	jin ru fu ben	4039
+造梦游戏	zao meng you xi	4039
+告白游戏	gao bai you xi	4000
+抢钱游戏	qiang qian you xi	4000
+玩儿游戏	wan er you xi	4000
+窒息游戏	zhi xi you xi	4000
+打个游戏	da ge you xi	3962
+同桌游戏	tong zhuo you xi	3924
+奇幻游戏	qi huan you xi	3924
+感官游戏	gan guan you xi	3924
+成语游戏	cheng yu you xi	3924
+沉迷游戏	chen mi you xi	3924
+泡泡游戏	pao pao you xi	3924
+游戏大全	you xi da quan	3924
+游戏滴滴	you xi di di	3924
+大亨游戏	da heng you xi	3885
+爱火游戏	ai huo you xi	3885
+玩偶游戏	wan ou you xi	3885
+街机游戏	jie ji you xi	3885
+逃生游戏	tao sheng you xi	3885
+乐乐游戏	le le you xi	3847
+卸载游戏	xie zai you xi	3847
+外遇游戏	wai yu you xi	3847
+换装游戏	huan zhuang you xi	3847
+木偶游戏	mu ou you xi	3847
+解码游戏	jie ma you xi	3847
+配对游戏	pei dui you xi	3847
+枪战游戏	qiang zhan you xi	3808
+狼人游戏	lang ren you xi	3808
+隐秘游戏	yin mi you xi	3808
+云玩家	yun wan jia	3770
+人偶游戏	ren ou you xi	3770
+女玩家	nv wan jia	3770
+新玩家	xin wan jia	3770
+游戏幻影	you xi huan ying	3770
+游戏神通	you xi shen tong	3770
+纸牌游戏	zhi pai you xi	3770
+老玩家	lao wan jia	3770
+高能玩家	gao neng wan jia	3770
+一局游戏	yi ju you xi	3731
+吸血游戏	xi xie you xi	3731
+吸血游戏	xi xue you xi	3731
+密室游戏	mi shi you xi	3731
+拼图游戏	pin tu you xi	3731
+镜像游戏	jing xiang you xi	3731
+魔幻游戏	mo huan you xi	3731
+四叶游戏	si ye you xi	3693
+棋盘游戏	qi pan you xi	3693
+武侠游戏	wu xia you xi	3693
+惊魂游戏	jing hun you xi	3616
+灵异游戏	ling yi you xi	3616
+挨饿游戏	ai e you xi	3577
+爱玩游戏	ai wan you xi	3577
+鬼牌游戏	gui pai you xi	3577
+一打游戏	yi da you xi	3539
+企鹅电竞	qi e dian jing	3539
+全民电竞	quan min dian jing	3539
+欲念游戏	yu nian you xi	3539
+正副本	zheng fu ben	3539
+电竞主播	dian jing zhu bo	3539
+电竞之王	dian jing zhi wang	3539
+电竞少女	dian jing shao nv	3539
+电竞杀手	dian jing sha shou	3539
+电竞玩家	dian jing wan jia	3539
+电竞纪元	dian jing ji yuan	3539
+电竞英雄	dian jing ying xiong	3539
+益智游戏	yi zhi you xi	3539
+逆境游戏	ni jing you xi	3539
+塔防游戏	ta fang you xi	3500
+鬼屋游戏	gui wu you xi	3500
+填字游戏	tian zi you xi	3462
+宾果游戏	bin guo you xi	3462
+打打游戏	da da you xi	3462
+拼字游戏	pin zi you xi	3462
+掌中游戏	zhang zhong you xi	3462
+游戏笔墨	you xi bi mo	3462
+爆款游戏	bao kuan you xi	3462
+逢场游戏	feng chang you xi	3462
+修仙游戏	xiu xian you xi	3424
+玩命游戏	wan ming you xi	3424
+缠绵游戏	chan mian you xi	3424
+脑力游戏	nao li you xi	3424
+恶狼游戏	e lang you xi	3385
+沙鲁游戏	sha lu you xi	3385
+游戏停服	you xi ting fu	3385
+猎头游戏	lie tou you xi	3385
+电竞台球	dian jing tai qiu	3385
+解压游戏	jie ya you xi	3385
+惊悚游戏	jing song you xi	3308
+跑酷游戏	pao ku you xi	3308
+伴郎游戏	ban lang you xi	3270
+卡牌游戏	ka pai you xi	3270
+坑爹游戏	keng die you xi	3270
+寻宝游戏	xun bao you xi	3270
+破冰游戏	po bing you xi	3231
+乙女游戏	yi nv you xi	3193
+夺命游戏	duo ming you xi	3193
+刷副本	shua fu ben	3154
+副本了	fu ben le	3154
+副本吗	fu ben ma	3154
+副本吧	fu ben ba	3154
+副本的	fu ben de	3154
+打副本	da fu ben	3154
+新副本	xin fu ben	3154
+上游戏了	shang you xi le	3116
+不打游戏	bu da you xi	3116
+二琳游戏	er lin you xi	3116
+人狼游戏	ren lang you xi	3116
+他打游戏	ta da you xi	3116
+他玩游戏	ta wan you xi	3116
+会打游戏	hui da you xi	3116
+你上游戏	ni shang you xi	3116
+你在游戏	ni zai you xi	3116
+你打游戏	ni da you xi	3116
+你玩游戏	ni wan you xi	3116
+你的游戏	ni de you xi	3116
+傻逼游戏	sha bi you xi	3116
+冰峰游戏	bing feng you xi	3116
+刚打游戏	gang da you xi	3116
+别打游戏	bie da you xi	3116
+去打游戏	qu da you xi	3116
+去玩游戏	qu wan you xi	3116
+又打游戏	you da you xi	3116
+又玩游戏	you wan you xi	3116
+可打游戏	ke da you xi	3116
+吃鸡游戏	chi ji you xi	3116
+啥游戏啊	sha you xi a	3116
+在打游戏	zai da you xi	3116
+在游戏里	zai you xi li	3116
+在玩游戏	zai wan you xi	3116
+小游戏盒	xiao you xi he	3116
+少打游戏	shao da you xi	3116
+少玩游戏	shao wan you xi	3116
+就打游戏	jiu da you xi	3116
+就玩游戏	jiu wan you xi	3116
+惊爆游戏	jing bao you xi	3116
+想打游戏	xiang da you xi	3116
+想玩游戏	xiang wan you xi	3116
+我上游戏	wo shang you xi	3116
+我在游戏	wo zai you xi	3116
+我对游戏	wo dui you xi	3116
+我打游戏	wo da you xi	3116
+我玩游戏	wo wan you xi	3116
+打你游戏	da ni you xi	3116
+打啥游戏	da sha you xi	3116
+打完游戏	da wan you xi	3116
+打局游戏	da ju you xi	3116
+打把游戏	da ba you xi	3116
+打游戏不	da you xi bu	3116
+打游戏么	da you xi me	3116
+打游戏了	da you xi le	3116
+打游戏去	da you xi qu	3116
+打游戏吗	da you xi ma	3116
+打游戏吧	da you xi ba	3116
+打游戏呀	da you xi ya	3116
+打游戏呗	da you xi bei	3116
+打游戏呢	da you xi ne	3116
+打游戏啊	da you xi a	3116
+打游戏啦	da you xi la	3116
+打游戏嘛	da you xi ma	3116
+打游戏嘞	da you xi lei	3116
+打游戏来	da you xi lai	3116
+打游戏的	da you xi de	3116
+打游戏类	da you xi lei	3116
+推塔游戏	tui ta you xi	3116
+无网游戏	wu wang you xi	3116
+最囧游戏	zui jiong you xi	3116
+来打游戏	lai da you xi	3116
+来玩游戏	lai wan you xi	3116
+没玩游戏	mei wan you xi	3116
+游戏删了	you xi shan le	3116
+游戏去了	you xi qu le	3116
+游戏去吧	you xi qu ba	3116
+游戏开了	you xi kai le	3116
+游戏的人	you xi de ren	3116
+游戏输了	you xi shu le	3116
+游戏魔盒	you xi mo he	3116
+炽爱游戏	chi ai you xi	3116
+爱打游戏	ai da you xi	3116
+猜心游戏	cai xin you xi	3116
+王的游戏	wang de you xi	3116
+玩啥游戏	wan sha you xi	3116
+玩小游戏	wan xiao you xi	3116
+玩游戏不	wan you xi bu	3116
+玩游戏么	wan you xi me	3116
+玩游戏了	wan you xi le	3116
+玩游戏去	wan you xi qu	3116
+玩游戏吗	wan you xi ma	3116
+玩游戏吧	wan you xi ba	3116
+玩游戏呀	wan you xi ya	3116
+玩游戏呢	wan you xi ne	3116
+玩游戏啊	wan you xi a	3116
+玩游戏啦	wan you xi la	3116
+玩游戏嘛	wan you xi ma	3116
+玩的游戏	wan de you xi	3116
+玩这游戏	wan zhe you xi	3116
+盛趣游戏	sheng qu you xi	3116
+破梦游戏	po meng you xi	3116
+能打游戏	neng da you xi	3116
+能玩游戏	neng wan you xi	3116
+蓝一游戏	lan yi you xi	3116
+要打游戏	yao da you xi	3116
+要玩游戏	yao wan you xi	3116
+谁打游戏	shei da you xi	3116
+超智游戏	chao zhi you xi	3116
+边打游戏	bian da you xi	3116
+还打游戏	hai da you xi	3116
+还玩游戏	hai wan you xi	3116
+这啥游戏	zhe sha you xi	3116
+沙盒游戏	sha he you xi	3077
+扮装游戏	ban zhuang you xi	2924
+猫鼠游戏	mao shu you xi	2924
+仙侠游戏	xian xia you xi	2885
+副本来人	fu ben lai ren	2847
+电竞圈	dian jing quan	2847
+电竞房	dian jing fang	2847
+电竞椅	dian jing yi	2847
+电竞社	dian jing she	2847
+电竞馆	dian jing guan	2847
+橙光游戏	cheng guang you xi	2808
+学霸游戏	xue ba you xi	2693
+氪金玩家	ke jin wan jia	2654
+老玩家了	lao wan jia le	2654
+猎捕游戏	lie bu you xi	2616
+诈欺游戏	zha qi you xi	2347

@@ -12,4 +12,4 @@ if exist "%RUNTIME_PY%" (
 set "PYTHONUTF8=1"
 set "PYTHONIOENCODING=utf-8"
 set "PYTHONDONTWRITEBYTECODE=1"
-"%PYTHON_EXE%" "%~dp0kaixin_ocr_engine.py" %* --rapidocr-root "%ROOT%\RapidOCR-3.9.0"
+"%PYTHON_EXE%" "%~dp0kaixin_ocr_engine.py" %* --rapidocr-root "%ROOT%\RapidOCRLite"

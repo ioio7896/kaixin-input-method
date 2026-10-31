@@ -1008,6 +1008,16 @@ mod platform {
             };
         }
 
+        fn resize_selection(&mut self, dx: i32, dy: i32) {
+            let Some(mut selection) = self.selection else { return; };
+            selection.right = (selection.right + dx).clamp(selection.left + 1, self.image_width);
+            selection.bottom = (selection.bottom + dy).clamp(selection.top + 1, self.image_height);
+            self.selection = Some(selection);
+            self.fixed_size = None;
+            self.anchor = POINT { x: selection.left, y: selection.top };
+            self.current = POINT { x: selection.right, y: selection.bottom };
+        }
+
         fn confirm(&mut self) -> Result<bool, RegionSelectorError> {
             let Some(selection) = self.selection.filter(|value| value.is_valid()) else {
                 return Ok(false);
@@ -1362,7 +1372,7 @@ mod platform {
             }
             WM_KEYDOWN => {
                 if let Some(state) = state {
-                    if state.show_quick_actions && state.manual_selection_locked && ctrl_down() {
+                    if state.manual_selection_locked && ctrl_down() {
                         let action = super::quick_action_for_key(wparam as u32, state.ocr_available);
                         if let Some(action) = action {
                             state.action = action;
@@ -1410,7 +1420,11 @@ mod platform {
                                     value if value == u32::from(VK_UP) => (0, -step),
                                     _ => (0, step),
                                 };
-                                state.move_selection(dx, dy);
+                                if ctrl_down() {
+                                    state.resize_selection(dx, dy);
+                                } else {
+                                    state.move_selection(dx, dy);
+                                }
                                 let _ = InvalidateRect(hwnd, null(), 0);
                             }
                         }
@@ -2180,14 +2194,18 @@ mod platform {
             panel_left + panel_size,
             panel_top + panel_size,
         );
-        let center = panel_left + panel_size / 2;
-        let center_size = scale(4).max(2);
+        let cursor_x = state.cursor.x.clamp(0, state.image_width - 1);
+        let cursor_y = state.cursor.y.clamp(0, state.image_height - 1);
+        let pixel_left = panel_left + border + (cursor_x - source_left) * inner_size / sample;
+        let pixel_top = panel_top + border + (cursor_y - source_top) * inner_size / sample;
+        let pixel_right = panel_left + border + (cursor_x - source_left + 1) * inner_size / sample;
+        let pixel_bottom = panel_top + border + (cursor_y - source_top + 1) * inner_size / sample;
         let _ = Rectangle(
             hdc,
-            center - center_size,
-            panel_top + panel_size / 2 - center_size,
-            center + center_size,
-            panel_top + panel_size / 2 + center_size,
+            pixel_left,
+            pixel_top,
+            pixel_right.max(pixel_left + 1),
+            pixel_bottom.max(pixel_top + 1),
         );
         if old_brush != 0 {
             let _ = SelectObject(hdc, old_brush);
@@ -2471,7 +2489,7 @@ mod platform {
         let dpi = GetDpiForWindow(hwnd).max(96);
         let scale = |value: i32| ((i64::from(value) * i64::from(dpi) + 48) / 96) as i32;
         let text = wide(
-            "移动自动吸附 · 拖动框选 · Enter 完成 · Esc 取消 · Shift 固定比例 · Ctrl 禁用吸附 · Tab 切换层级 · Ctrl+C 复制 · Ctrl+S 另存 · Ctrl+O OCR · Ctrl+A 标注 · Ctrl+P 固定",
+            "拖动框选 · 方向键移动 · Ctrl+方向键调整大小 · Shift 加速 · Enter 完成 · Esc 取消 · Tab 切换层级 · Ctrl+C 复制 · Ctrl+S 另存 · Ctrl+O OCR · Ctrl+A 画图 · Ctrl+P 固定",
         );
         let width = scale(720)
             .min(client_width.saturating_sub(scale(16)))

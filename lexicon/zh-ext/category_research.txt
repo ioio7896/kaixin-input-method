@@ -1,10 +1,20 @@
 # 开心离线输入法分类补充：学术科研
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 数据处理	shu ju chu li	7021
 学术会议	xue shu hui yi	7014
+工作研究	gong zuo yan jiu	6154
+技术研究	ji shu yan jiu	6154
+文化研究	wen hua yan jiu	6154
+研究发展	yan jiu fa zhan	6154
+研究工作	yan jiu gong zuo	6154
+研究研究	yan jiu yan jiu	6154
+自己研究	zi ji yan jiu	6154
+研究中心	yan jiu zhong xin	6116
+研究出来	yan jiu chu lai	6116
+研究支持	yan jiu zhi chi	6116
 中期报告	zhong qi bao gao	6100
 参考文献	can kao wen xian	6100
 可重复性	ke chong fu xing	6100
@@ -47,7 +57,171 @@
 论文查重	lun wen cha zhong	6100
 论文选题	lun wen xuan ti	6100
 返修意见	fan xiu yi jian	6100
+作业研究	zuo ye yan jiu	6077
+市场研究	shi chang yan jiu	6077
+调查研究	diao cha yan jiu	6077
+研究报告	yan jiu bao gao	5924
+研究机构	yan jiu ji gou	5924
+方法研究	fang fa yan jiu	5885
+研究一下	yan jiu yi xia	5885
+研究能力	yan jiu neng li	5885
+艺术研究	yi shu yan jiu	5885
+投资研究	tou zi yan jiu	5847
+机会研究	ji hui yan jiu	5847
+媒体研究	mei ti yan jiu	5808
+研究开发	yan jiu kai fa	5770
+行业研究	hang ye yan jiu	5770
+理论研究	li lun yan jiu	5731
+研究部门	yan jiu bu men	5731
+研究功能	yan jiu gong neng	5693
+应用研究	ying yong yan jiu	5654
+研究重点	yan jiu zhong dian	5654
+现场研究	xian chang yan jiu	5616
+创新研究	chuang xin yan jiu	5539
+研究方向	yan jiu fang xiang	5539
+战略研究	zhan lue yan jiu	5500
+理论文献	li lun wen xian	5424
+中国学术	zhong guo xue shu	5385
+会议论文	hui yi lun wen	5308
+好好研究	hao hao yan jiu	5308
+研究实验	yan jiu shi yan	5308
+研究成本	yan jiu cheng ben	5308
+动作研究	dong zuo yan jiu	5231
+预测研究	yu ce yan jiu	5231
+学术价值	xue shu jia zhi	5116
+学术年会	xue shu nian hui	5116
+学术思想	xue shu si xiang	5116
+学术水平	xue shu shui ping	5116
+学术活动	xue shu huo dong	5116
+学术自由	xue shu zi you	5116
+学术观点	xue shu guan dian	5116
+学术讨论	xue shu tao lun	5116
+学术论坛	xue shu lun tan	5116
+学术贡献	xue shu gong xian	5116
+学术著作	xue shu zhu zuo	5077
+情报研究	qing bao yan jiu	5077
+慢慢研究	man man yan jiu	5077
+学术腐败	xue shu fu bai	5039
+研究模型	yan jiu mo xing	5039
+研究大楼	yan jiu da lou	5000
+研究部署	yan jiu bu shu	5000
+优秀论文	you xiu lun wen	4962
+免费论文	mian fei lun wen	4962
+医学论文	yi xue lun wen	4962
+发表论文	fa biao lun wen	4962
+政治论文	zheng zhi lun wen	4962
+死亡论文	si wang lun wen	4962
+科学论文	ke xue lun wen	4962
+艺术论文	yi shu lun wen	4962
+英语论文	ying yu lun wen	4962
+课程论文	ke cheng lun wen	4962
+不研究	bu yan jiu	4924
+专题研究	zhuan ti yan jiu	4924
+专题论文	zhuan ti lun wen	4924
+再研究	zai yan jiu	4924
+谋杀论文	mou sha lun wen	4924
+学术争论	xue shu zheng lun	4885
+一篇论文	yi pian lun wen	4847
+学术权威	xue shu quan wei	4847
+案例研究	an li yan jiu	4847
+论文题目	lun wen ti mu	4847
+神话研究	shen hua yan jiu	4808
+硕士论文	shuo shi lun wen	4731
+科研专家	ke yan zhuan jia	4731
+科研任务	ke yan ren wu	4731
+科研助理	ke yan zhu li	4731
+科研大楼	ke yan da lou	4731
+科研开发	ke yan kai fa	4731
+科研活动	ke yan huo dong	4731
+科研部门	ke yan bu men	4731
+论文格式	lun wen ge shi	4731
+评论文集	ping lun wen ji	4731
+反复研究	fan fu yan jiu	4693
+开会研究	kai hui yan jiu	4693
+科研课题	ke yan ke ti	4693
+财经研究	cai jing yan jiu	4693
+撰写论文	zhuan xie lun wen	4654
+你研究	ni yan jiu	4539
+先研究	xian yan jiu	4539
+在研究	zai yan jiu	4539
+学术期刊	xue shu qi kan	4539
+就研究	jiu yan jiu	4539
+我研究	wo yan jiu	4539
+所研究	suo yan jiu	4539
+有研究	you yan jiu	4539
+没研究	mei yan jiu	4539
+研究下	yan jiu xia	4539
+研究个	yan jiu ge	4539
+研究了	yan jiu le	4539
+研究出	yan jiu chu	4539
+研究吧	yan jiu ba	4539
+研究呢	yan jiu ne	4539
+研究啥	yan jiu sha	4539
+研究的	yan jiu de	4539
+研究费	yan jiu fei	4539
+研究过	yan jiu guo	4539
+鲁迅研究	lu xun yan jiu	4539
+学术刊物	xue shu kan wu	4500
+商量研究	shang liang yan jiu	4424
+学术前沿	xue shu qian yan	4385
+深有研究	shen you yan jiu	4347
+个案研究	ge an yan jiu	4193
+大论文	da lun wen	4154
+学术流派	xue shu liu pai	4154
+政论文	zheng lun wen	4154
+论文库	lun wen ku	4154
+论文选	lun wen xuan	4154
+这篇论文	zhe pian lun wen	4154
+这篇论文	zhei pian lun wen	4154
+职称论文	zhi cheng lun wen	4116
 科研成果	ke yan cheng guo	4105
+学术造假	xue shu zao jia	4039
+教科研	jiao ke yan	4000
+学年论文	xue nian lun wen	3924
+研究馆员	yan jiu guan yuan	3924
+学术不端	xue shu bu duan	3885
+学术型	xue shu xing	3847
+试题研究	shi ti yan jiu	3847
+交论文	jiao lun wen	3770
+你论文	ni lun wen	3770
+写论文	xie lun wen	3770
+发论文	fa lun wen	3770
+小论文	xiao lun wen	3770
+弄论文	nong lun wen	3770
+我论文	wo lun wen	3770
+搞论文	gao lun wen	3770
+改论文	gai lun wen	3770
+的论文	de lun wen	3770
+看论文	kan lun wen	3770
+论文了	lun wen le	3770
+论文吗	lun wen ma	3770
+论文吧	lun wen ba	3770
+论文呢	lun wen ne	3770
+论文的	lun wen de	3770
+赶论文	gan lun wen	3770
+德育论文	de yu lun wen	3693
+搞科研	gao ke yan	3616
+科研区	ke yan qu	3616
+科研室	ke yan shi	3616
+科研楼	ke yan lou	3616
+科研管	ke yan guan	3616
+副研究员	fu yan jiu yuan	3462
+潜心研究	qian xin yan jiu	3462
+论文范文	lun wen fan wen	3462
+准研究生	zhun yan jiu sheng	3116
+性的研究	xing de yan jiu	3116
+我在研究	wo zai yan jiu	3116
+我研究下	wo yan jiu xia	3116
+我研究了	wo yan jiu le	3116
+没研究过	mei yan jiu guo	3116
+研究好了	yan jiu hao le	3116
+研究生了	yan jiu sheng le	3116
+研究生楼	yan jiu sheng lou	3116
+读研究生	du yan jiu sheng	3116
+笔杆论文	bi gan lun wen	3039
 学术交流	xue shu jiao liu	2700
+你的论文	ni de lun wen	2654
+写论文了	xie lun wen le	2654
+我的论文	wo de lun wen	2654
 统计分析	tong ji fen xi	2460
 科研项目	ke yan xiang mu	742

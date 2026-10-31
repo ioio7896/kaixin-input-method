@@ -86,7 +86,7 @@ COMPONENT_PREFIXES = OrderedDict(
     (
         ("python_runtime", ".python-runtime/"),
         ("rapidocr_packages", ".python-packages/"),
-        ("rapidocr_payload", "RapidOCR-3.9.0/"),
+        ("rapidocr_payload", "RapidOCRLite/"),
     )
 )
 PREBAKED_LEXICON_MAGIC = b"SRFLX002"
@@ -105,7 +105,7 @@ REQUIRED_COMMON_ENGLISH_WORDS = frozenset(
 DEFAULT_PERF_MAX_P99_US = 2000
 DEFAULT_PERF_INCREMENTAL_MAX_P99_US = 40000
 PYTHON_RUNTIME = ".python-runtime"
-RAPIDOCR_DIR = "RapidOCR-3.9.0"
+RAPIDOCR_DIR = "RapidOCRLite"
 RAPIDOCR_VENV = ".venv-rapidocr"
 RAPIDOCR_PACKAGES = ".python-packages"
 RAPIDOCR_HELPER = "kaixin_ocr_engine.py"
@@ -115,6 +115,7 @@ RAPIDOCR_REQUIRED_MODELS = (
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
+    "ppocrv6_dict.txt",
 )
 PYTHON_PACKAGE_EXCLUDED_DIR_NAMES = frozenset(
     {
@@ -539,7 +540,7 @@ def resolve_package_variants(
                 f"refusing to silently downgrade the requested package set. "
                 f"Create it with `python -m venv {RAPIDOCR_VENV}` and "
                 f"`{RAPIDOCR_VENV}\\Scripts\\python.exe -m pip install "
-                f"-r {RAPIDOCR_DIR}\\python\\requirements.txt onnxruntime`, "
+                f"numpy Pillow PyYAML requests tqdm opencv-python-headless`, "
                 "then run `powershell -ExecutionPolicy Bypass -File "
                 "scripts/fetch_rapidocr_models.ps1`; "
                 f"or explicitly request `--package-variants ime`."
@@ -1499,6 +1500,8 @@ def rapidocr_runtime_status(repo: Path) -> tuple[bool, list[str]]:
     rapidocr_root = repo / RAPIDOCR_DIR / "python" / "rapidocr"
     if not (rapidocr_root / "__init__.py").is_file():
         problems.append(f"missing RapidOCR package: {rapidocr_root / '__init__.py'}")
+    if not (rapidocr_root / "rapidocrlite.dll").is_file():
+        problems.append(f"missing RapidOCRLite DLL: {rapidocr_root / 'rapidocrlite.dll'}")
     for model in RAPIDOCR_REQUIRED_MODELS:
         model_file = rapidocr_root / "models" / model
         if not model_file.is_file():

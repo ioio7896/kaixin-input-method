@@ -1,11 +1,21 @@
 # 开心离线输入法分类补充：历史考古
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 文化遗产	wen hua yi chan	9720
 文物保护	wen wu bao hu	7914
 地方志	di fang zhi	6885
+中国历史	zhong guo li shi	6616
+美国历史	mei guo li shi	6616
+历史文化	li shi wen hua	6500
+历史中心	li shi zhong xin	6462
+世界历史	shi jie li shi	6308
+历史政治	li shi zheng zhi	6308
+国家历史	guo jia li shi	6308
+政治历史	zheng zhi li shi	6308
+日本历史	ri ben li shi	6308
+还有历史	hai you li shi	6231
 世界文化遗产	shi jie wen hua yi chan	6100
 历史叙事	li shi xu shi	6100
 历史建筑	li shi jian zhu	6100
@@ -44,7 +54,119 @@
 陶瓷器物	tao ci qi wu	6100
 青铜器物	qing tong qi wu	6100
 非物质文化遗产	fei wu zhi wen hua yi chan	6100
+历史作业	li shi zuo ye	6077
 历史地理	li shi di li	6000
 历史文献	li shi wen xian	6000
 古代文明	gu dai wen ming	6000
 史料考证	shi liao kao zheng	6000
+历史事实	li shi shi shi	5924
+历史信息	li shi xin xi	5924
+历史照片	li shi zhao pian	5924
+历史故事	li shi gu shi	5885
+家庭历史	jia ting li shi	5808
+历史价值	li shi jia zhi	5770
+革命历史	ge ming li shi	5770
+历史人物	li shi ren wu	5731
+历史学者	li shi xue zhe	5731
+历史条件	li shi tiao jian	5731
+历史经验	li shi jing yan	5731
+历史解释	li shi jie shi	5731
+记录历史	ji lu li shi	5731
+历史学会	li shi xue hui	5693
+民族历史	min zu li shi	5693
+历史意义	li shi yi yi	5654
+军事历史	jun shi li shi	5577
+历史小说	li shi xiao shuo	5577
+历史状态	li shi zhuang tai	5577
+创造历史	chuang zao li shi	5539
+历史状况	li shi zhuang kuang	5500
+历史公园	li shi gong yuan	5385
+历史形象	li shi xing xiang	5308
+历史成本	li shi cheng ben	5308
+历史进程	li shi jin cheng	5308
+文物价值	wen wu jia zhi	5308
+历史书籍	li shi shu ji	5270
+历史成就	li shi cheng jiu	5231
+历史文物	li shi wen wu	5231
+历史频道	li shi pin dao	5231
+爱的历史	ai de li shi	5231
+历史答案	li shi da an	5193
+高中历史	gao zhong li shi	5193
+特定历史	te ding li shi	5154
+退出历史	tui chu li shi	5154
+历史舞台	li shi wu tai	5077
+观看历史	guan kan li shi	5077
+历史上	li shi shang	5039
+历史书	li shi shu	5039
+历史家	li shi jia	5039
+学历史	xue li shi	5039
+历史教训	li shi jiao xun	5000
+删除历史	shan chu li shi	4924
+历史画面	li shi hua mian	4924
+文物图片	wen wu tu pian	4924
+历史变革	li shi bian ge	4885
+初中历史	chu zhong li shi	4808
+糟糕历史	zao gao li shi	4808
+历史片段	li shi pian duan	4770
+历史使命	li shi shi ming	4693
+历史名人	li shi ming ren	4693
+历史瞬间	li shi shun jian	4693
+上历史	shang li shi	4654
+你历史	ni li shi	4654
+全历史	quan li shi	4654
+写历史	xie li shi	4654
+历史了	li shi le	4654
+历史内涵	li shi nei han	4654
+历史卷	li shi juan	4654
+历史呢	li shi ne	4654
+历史所	li shi suo	4654
+历史的	li shi de	4654
+历史类	li shi lei	4654
+历史题	li shi ti	4654
+我历史	wo li shi	4654
+有历史	you li shi	4654
+考历史	kao li shi	4654
+背历史	bei li shi	4654
+黑历史	hei li shi	4654
+历史见证	li shi jian zheng	4616
+文物考古	wen wu kao gu	4616
+珍贵历史	zhen gui li shi	4616
+考古专家	kao gu zhuan jia	4616
+考古公园	kao gu gong yuan	4616
+考古发现	kao gu fa xian	4616
+见证历史	jian zheng li shi	4616
+历史潮流	li shi chao liu	4577
+历史笔记	li shi bi ji	4577
+文物普查	wen wu pu cha	4577
+考古笔记	kao gu bi ji	4577
+中外历史	zhong wai li shi	4500
+历史方位	li shi fang wei	4500
+历史之旅	li shi zhi lv	4424
+悠久历史	you jiu li shi	4385
+历史地段	li shi di duan	4231
+历史新高	li shi xin gao	4231
+历史风云	li shi feng yun	4193
+文物古迹	wen wu gu ji	4193
+重现历史	chong xian li shi	4193
+历史沿革	li shi yan ge	4154
+历史战绩	li shi zhan ji	4039
+历史长河	li shi chang he	4039
+历史风貌	li shi feng mao	4039
+历史卷子	li shi juan zi	4000
+历史正文	li shi zheng wen	4000
+历史沉淀	li shi chen dian	4000
+历史渊源	li shi yuan yuan	4000
+馆藏文物	guan cang wen wu	4000
+牢记历史	lao ji li shi	3924
+历史试题	li shi shi ti	3847
+历史厚重	li shi hou zhong	3808
+大历史观	da li shi guan	3770
+铭记历史	ming ji li shi	3770
+感悟历史	gan wu li shi	3731
+历史久远	li shi jiu yuan	3693
+历史典故	li shi dian gu	3616
+典章文物	dian zhang wen wu	3462
+历史之眼	li shi zhi yan	3385
+历史长廊	li shi chang lang	3270
+不忘历史	bu wang li shi	3193
+四朝代	si chao dai	3077

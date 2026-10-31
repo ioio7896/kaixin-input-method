@@ -30,7 +30,9 @@ $PythonPackageExcludeNames = @(
     'example',
     'examples',
     'pip',
-    'setuptools'
+    'setuptools',
+    'onnxruntime',
+    'onnxruntime-1.23.2.dist-info'
 )
 $PythonPackageExcludePatterns = @(
     '*.pyc',
@@ -48,7 +50,8 @@ $PythonPackageExcludePatterns = @(
     # Screenshot OCR uses OpenCV image functions, not its optional FFmpeg video backend.
     'opencv_videoio_ffmpeg*.dll',
     'pip-*.dist-info',
-    'setuptools-*.dist-info'
+    'setuptools-*.dist-info',
+    'onnxruntime-*.dist-info'
 )
 
 function Get-LexiconDirectory {
@@ -411,7 +414,7 @@ function Write-ComponentManifestFromPackageManifest {
     $components = [ordered]@{
         python_runtime = '.python-runtime/'
         rapidocr_packages = '.python-packages/'
-        rapidocr_payload = 'RapidOCR-3.9.0/'
+        rapidocr_payload = 'RapidOCRLite/'
     }
     $output = New-Object 'System.Collections.Generic.List[string]'
     [void]$output.Add('[components]')
@@ -487,7 +490,7 @@ $fontDir = Join-Path $RepoRoot 'font1'
 $skinDir = Join-Path $RepoRoot 'skins'
 $assetsDir = Join-Path $RepoRoot 'assets'
 $toolsDir = Join-Path $RepoRoot 'tools'
-$rapidOcrDir = Join-Path $RepoRoot 'RapidOCR-3.9.0'
+$rapidOcrDir = Join-Path $RepoRoot 'RapidOCRLite'
 $rapidOcrVenvDir = Join-Path $RepoRoot '.venv-rapidocr'
 $pythonRuntimeDirName = '.python-runtime'
 $pythonPackagesDirName = '.python-packages'
@@ -611,7 +614,7 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $toolsDir)) {
     $managedRootEntries += 'tools'
 }
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
-    $managedRootEntries += 'RapidOCR-3.9.0'
+    $managedRootEntries += 'RapidOCRLite'
 }
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
     $managedRootEntries += $pythonPackagesDirName
@@ -797,7 +800,7 @@ if ($pythonRuntimeSourceVenv) {
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot '.venv-translate')
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'models\translate')
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
-    $rapidOcrTarget = Join-Path $OutputRoot 'RapidOCR-3.9.0'
+    $rapidOcrTarget = Join-Path $OutputRoot 'RapidOCRLite'
     $rapidOcrPythonTarget = Join-Path $rapidOcrTarget 'python'
     if (-not (Test-Path -LiteralPath $rapidOcrPythonTarget)) {
         New-Item -ItemType Directory -Path $rapidOcrPythonTarget -Force | Out-Null
@@ -807,14 +810,14 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
         -DestinationDir (Join-Path $rapidOcrPythonTarget 'rapidocr') `
         -ExcludeNames $PythonPackageExcludeNames `
         -ExcludePatterns $PythonPackageExcludePatterns
-    foreach ($rapidOcrRootFile in @('README.md', 'README-CN.md', 'LICENSE')) {
+    foreach ($rapidOcrRootFile in @('README.md', 'README-CN.md', 'LICENSE', 'windows-utf8.patch')) {
         $source = Join-Path $rapidOcrDir $rapidOcrRootFile
         if (Test-Path -LiteralPath $source) {
             Copy-FileIfChanged -SourcePath $source -DestinationPath (Join-Path $rapidOcrTarget $rapidOcrRootFile)
         }
     }
 } else {
-    Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'RapidOCR-3.9.0')
+    Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'RapidOCRLite')
 }
 & python (Join-Path $RepoRoot 'scripts\trim_package.py') $OutputRoot
 if ($LASTEXITCODE -ne 0) { throw 'Verified package trim failed' }

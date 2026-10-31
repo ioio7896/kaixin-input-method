@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：退换售后
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 售后服务	shou hou fu wu	8800
 退货退款	tui huo tui kuan	8800
@@ -177,3 +177,84 @@
 麻烦确认退款金额	ma fan que ren tui kuan jin e	4900
 麻烦确认退货单号	ma fan que ren tui huo dan hao	4900
 麻烦确认退货地址	ma fan que ren tui huo di zhi	4900
+一下退款	yi xia tui kuan	3616
+全额退款	quan e tui kuan	3616
+可以退款	ke yi tui kuan	3616
+售后回购	shou hou hui gou	3616
+怎么退款	zen me tui kuan	3616
+我要退款	wo yao tui kuan	3616
+无效退款	wu xiao tui kuan	3616
+极速退款	ji su tui kuan	3616
+给我退款	gei wo tui kuan	3616
+还不退款	hai bu tui kuan	3616
+还没退款	hai mei tui kuan	3616
+退款原因	tui kuan yuan yin	3616
+退款成功	tui kuan cheng gong	3616
+退款理由	tui kuan li you	3616
+可以退货	ke yi tui huo	3577
+商品退货	shang pin tui huo	3577
+怎么退货	zen me tui huo	3577
+我要退货	wo yao tui huo	3577
+拒绝退货	ju jue tui huo	3577
+退款退货	tui kuan tui huo	3577
+退货申请	tui huo shen qing	3577
+保修包换	bao xiu bao huan	3462
+保修时间	bao xiu shi jian	3385
+保修期限	bao xiu qi xian	3385
+终身保修	zhong shen bao xiu	3385
+先退款	xian tui kuan	3347
+已退款	yi tui kuan	3347
+已退货	yi tui huo	3347
+退货单	tui huo dan	3270
+退货款	tui huo kuan	3231
+换货的	huan huo de	2924
+不售后	bu shou hou	2885
+不退款	bu tui kuan	2885
+你退款	ni tui kuan	2885
+做售后	zuo shou hou	2885
+售后了	shou hou le	2885
+售后吗	shou hou ma	2885
+售后的	shou hou de	2885
+售后群	shou hou qun	2885
+售后部	shou hou bu	2885
+就退款	jiu tui kuan	2885
+想退款	xiang tui kuan	2885
+我退款	wo tui kuan	2885
+有售后	you shou hou	2885
+没退款	mei tui kuan	2885
+能退款	neng tui kuan	2885
+要退款	yao tui kuan	2885
+请退款	qing tui kuan	2885
+货退款	huo tui kuan	2885
+退款了	tui kuan le	2885
+退款后	tui kuan hou	2885
+退款吗	tui kuan ma	2885
+退款吧	tui kuan ba	2885
+退款呢	tui kuan ne	2885
+退款的	tui kuan de	2885
+不退货	bu tui huo	2847
+就退货	jiu tui huo	2847
+想退货	xiang tui huo	2847
+我退货	wo tui huo	2847
+有退货	you tui huo	2847
+能退货	neng tui huo	2847
+要退货	yao tui huo	2847
+请退货	qing tui huo	2847
+退货了	tui huo le	2847
+退货吗	tui huo ma	2847
+退货吧	tui huo ba	2847
+退货呢	tui huo ne	2847
+退货率	tui huo lv	2847
+退货的	tui huo de	2847
+退货组	tui huo zu	2847
+不保修	bu bao xiu	2731
+保修吗	bao xiu ma	2731
+有保修	you bao xiu	2731
+售后回租	shou hou hui zu	2116
+售后租回	shou hou zu hui	2116
+我想退款	wo xiang tui kuan	2116
+我退款了	wo tui kuan le	2116
+退款了吗	tui kuan le ma	2116
+我想退货	wo xiang tui huo	2077
+我退货了	wo tui huo le	2077
+能退货吗	neng tui huo ma	2077

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：餐饮外卖
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 不放香菜	bu fang xiang cai	6100
 不要葱花	bu yao cong hua	6100
@@ -51,7 +51,138 @@
 餐具费用	can ju fei yong	6100
 餐厅预订	can ting yu ding	6100
 麻烦快一点	ma fan kuai yi dian	6100
+我点外卖	wo dian wai mai	5424
+不点外卖	bu dian wai mai	5385
+你点外卖	ni dian wai mai	5385
+想点外卖	xiang dian wai mai	5270
+点的外卖	dian de wai mai	5077
+动物餐厅	dong wu can ting	5039
+点了外卖	dian le wai mai	5039
+问题餐厅	wen ti can ting	5039
+音乐餐厅	yin yue can ting	5039
+地下餐厅	di xia can ting	5000
+离婚餐厅	li hun can ting	5000
+天空餐厅	tian kong can ting	4962
+点个外卖	dian ge wai mai	4962
+交通饭店	jiao tong fan dian	4847
+叫个外卖	jiao ge wai mai	4847
+和平饭店	he ping fan dian	4847
+和谐饭店	he xie fan dian	4847
+哪个饭店	nei ge fan dian	4847
+山东饭店	shan dong fan dian	4847
+帝国饭店	di guo fan dian	4847
+幸福饭店	xing fu fan dian	4847
+民族饭店	min zu fan dian	4847
+美食外卖	mei shi wai mai	4847
+花园饭店	hua yuan fan dian	4847
+饭店吃饭	fan dian chi fan	4847
+残酷饭店	can ku fan dian	4808
+奇迹餐厅	qi ji can ting	4770
+江汉饭店	jiang han fan dian	4731
+浦江饭店	pu jiang fan dian	4731
+做外卖	zuo wai mai	4693
+外卖店	wai mai dian	4693
+有外卖	you wai mai	4693
+点外卖	dian wai mai	4693
+送外卖	song wai mai	4693
+外卖情人	wai mai qing ren	4654
+杀手餐厅	sha shou can ting	4616
+美味餐厅	mei wei can ting	4616
+旋转餐厅	xuan zhuan can ting	4539
+菜单设置	cai dan she zhi	4500
+菜单设计	cai dan she ji	4500
+菜单选项	cai dan xuan xiang	4500
+猫咪餐厅	mao mi can ting	4462
+蜗牛餐厅	wo niu can ting	4462
+餐厅家具	can ting jia ju	4385
+你外卖	ni wai mai	4308
+吃外卖	chi wai mai	4308
+外卖了	wai mai le	4308
+外卖仔	wai mai zai	4308
+外卖券	wai mai quan	4308
+外卖吃	wai mai chi	4308
+外卖吗	wai mai ma	4308
+外卖吧	wai mai ba	4308
+外卖员	wai mai yuan	4308
+外卖呢	wai mai ne	4308
+外卖柜	wai mai gui	4308
+外卖的	wai mai de	4308
+我外卖	wo wai mai	4308
+拿外卖	na wai mai	4308
+等外卖	deng wai mai	4308
+订外卖	ding wai mai	4308
+跑外卖	pao wai mai	4308
+一级菜单	yi ji cai dan	4193
+一餐厅	yi can ting	4193
+上级菜单	shang ji cai dan	4193
+关闭菜单	guan bi cai dan	4193
+屏幕菜单	ping mu cai dan	4193
+开始菜单	kai shi cai dan	4193
+激活菜单	ji huo cai dan	4193
+菜单命令	cai dan ming ling	4193
+菜单按钮	cai dan an niu	4193
+菜单界面	cai dan jie mian	4193
+下饭店	xia fan dian	4077
+小饭店	xiao fan dian	4077
+有饭店	you fan dian	4077
+火锅外卖	huo guo wai mai	4077
+风味餐厅	feng wei can ting	4077
+饭店里	fan dian li	4077
+自助餐厅	zi zhu can ting	4039
+五星饭店	wu xing fan dian	3924
+星级饭店	xing ji fan dian	3924
+去餐厅	qu can ting	3808
+在餐厅	zai can ting	3808
+客餐厅	ke can ting	3808
+小餐厅	xiao can ting	3808
+新餐厅	xin can ting	3808
+餐厅了	can ting le	3808
+餐厅灯	can ting deng	3808
+餐厅的	can ting de	3808
+金陵饭店	jin ling fan dian	3731
 冷饮	leng yin	3707
+上饭店	shang fan dian	3693
+到饭店	dao fan dian	3693
+去饭店	qu fan dian	3693
+在饭店	zai fan dian	3693
+开饭店	kai fan dian	3693
+订饭店	ding fan dian	3693
+饭店了	fan dian le	3693
+饭店吃	fan dian chi	3693
+饭店吗	fan dian ma	3693
+饭店吧	fan dian ba	3693
+饭店呢	fan dian ne	3693
+饭店的	fan dian de	3693
+迷糊餐厅	mi hu can ting	3616
 热饮	re yin	3606
 微辣	wei la	3544
+订个外卖	ding ge wai mai	3539
+下拉菜单	xia la cai dan	3462
+国宾饭店	guo bin fan dian	3462
+外卖小哥	wai mai xiao ge	3462
+糖糖餐厅	tang tang can ting	3385
+凯伦饭店	kai lun fan dian	3308
+假面饭店	jia mian fan dian	3270
+菜单键	cai dan jian	3270
+饭店迷情	fan dian mi qing	3270
 招牌菜	zhao pai cai	3120
+点餐助手	dian can zhu shou	3039
+你的外卖	ni de wai mai	3000
+外卖到了	wai mai dao le	3000
+我叫外卖	wo jiao wai mai	3000
+我的外卖	wo de wai mai	3000
+点外卖了	dian wai mai le	3000
+点外卖吧	dian wai mai ba	3000
+订外卖了	ding wai mai le	3000
+送外卖的	song wai mai de	3000
+浮华饭店	fu hua fan dian	2731
+为你点餐	wei ni dian can	2654
+我在餐厅	wo zai can ting	2654
+到饭店了	dao fan dian le	2616
+开饭店的	kai fan dian de	2616
+我在饭店	wo zai fan dian	2616
+我的饭店	wo de fan dian	2616
+柳京饭店	liu jing fan dian	2616
+礼查饭店	li cha fan dian	2616
+翠宫饭店	cui gong fan dian	2616
+为您点餐	wei nin dian can	1885

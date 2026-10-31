@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：体育赛事
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 半决赛	ban jue sai	9546
 小组赛	xiao zu sai	9063
@@ -49,5 +49,242 @@
 运动装备	yun dong zhuang bei	6100
 首发阵容	shou fa zhen rong	6100
 马拉松比赛	ma la song bi sai	6100
+足球道路	zu qiu dao lu	5770
+中国足球	zhong guo zu qiu	5654
+再见足球	zai jian zu qiu	5654
+大学足球	da xue zu qiu	5654
+德国足球	de guo zu qiu	5654
+快乐足球	kuai le zu qiu	5654
+美国足球	mei guo zu qiu	5654
+足球妈妈	zu qiu ma ma	5654
+足球故事	zu qiu gu shi	5654
+足球环境	zu qiu huan jing	5654
+足球运动	zu qiu yun dong	5654
+天下足球	tian xia zu qiu	5577
+现代足球	xian dai zu qiu	5577
+女子足球	nv zi zu qiu	5385
+足球公园	zu qiu gong yuan	5385
+美丽足球	mei li zu qiu	5347
+足球博士	zu qiu bo shi	5347
+足球队长	zu qiu dui zhang	5308
+少年足球	shao nian zu qiu	5270
+足球少年	zu qiu shao nian	5270
+足球直播	zu qiu zhi bo	5270
+篮球部落	lan qiu bu luo	5193
+荷兰足球	he lan zu qiu	5077
+足球大师	zu qiu da shi	5077
+一级联赛	yi ji lian sai	5039
+超级联赛	chao ji lian sai	5039
+足球王子	zu qiu wang zi	5039
+中国联赛	zhong guo lian sai	5000
+德国联赛	de guo lian sai	5000
+美国联赛	mei guo lian sai	5000
+韩国联赛	han guo lian sai	5000
+足球场地	zu qiu chang di	4924
+足球宝贝	zu qiu bao bei	4924
+女子篮球	nv zi lan qiu	4885
+快乐篮球	kuai le lan qiu	4885
+明星篮球	ming xing lan qiu	4885
+欧洲篮球	ou zhou lan qiu	4885
+男子篮球	nan zi lan qiu	4885
+篮球兄弟	lan qiu xiong di	4885
+篮球公园	lan qiu gong yuan	4885
+篮球冠军	lan qiu guan jun	4885
+篮球培训	lan qiu pei xun	4885
+篮球宝贝	lan qiu bao bei	4885
+篮球教练	lan qiu jiao lian	4885
+篮球游戏	lan qiu you xi	4885
+篮球直播	lan qiu zhi bo	4885
+篮球规则	lan qiu gui ze	4885
+篮球训练	lan qiu xun lian	4885
+篮球运动	lan qiu yun dong	4885
+街头篮球	jie tou lan qiu	4885
+足球大赛	zu qiu da sai	4847
+足球骑士	zu qiu qi shi	4847
+其他联赛	qi ta lian sai	4770
+冠军联赛	guan jun lian sai	4770
+南非联赛	nan fei lian sai	4770
+地区联赛	di qu lian sai	4770
+朝鲜联赛	chao xian lian sai	4770
+欧洲联赛	ou zhou lian sai	4770
+波兰联赛	bo lan lian sai	4770
+篮球联赛	lan qiu lian sai	4770
+职业联赛	zhi ye lian sai	4770
+足球联赛	zu qiu lian sai	4770
+黄金联赛	huang jin lian sai	4770
+功夫足球	gong fu zu qiu	4731
+瑞士联赛	rui shi lian sai	4731
+足球万岁	zu qiu wan sui	4731
+足球战术	zu qiu zhan shu	4693
+足球周刊	zu qiu zhou kan	4654
+魔法足球	mo fa zu qiu	4654
+足球员	zu qiu yuan	4616
+足球天才	zu qiu tian cai	4616
+足球小子	zu qiu xiao zi	4616
+足球服	zu qiu fu	4616
+足球门	zu qiu men	4616
+五大联赛	wu da lian sai	4577
+室内足球	shi nei zu qiu	4577
+柏林网球	bo lin wang qiu	4577
+网球王子	wang qiu wang zi	4577
+芬兰联赛	fen lan lian sai	4539
+足球王者	zu qiu wang zhe	4539
+钻石联赛	zuan shi lian sai	4539
+勇士足球	yong shi zu qiu	4500
+沙滩足球	sha tan zu qiu	4500
+篮球网球	lan qiu wang qiu	4500
+篮球风云	lan qiu feng yun	4500
+足球名词	zu qiu ming ci	4500
+足球风云	zu qiu feng yun	4500
+足球流氓	zu qiu liu mang	4462
+鸵鸟足球	tuo niao zu qiu	4462
+中原网球	zhong yuan wang qiu	4270
+好动网球	hao dong wang qiu	4270
+梦幻篮球	meng huan lan qiu	4270
+网球中心	wang qiu zhong xin	4270
+网球培训	wang qiu pei xun	4270
+网球少女	wang qiu shao nv	4270
+网球少年	wang qiu shao nian	4270
+网球规则	wang qiu gui ze	4270
+桌上足球	zhuo shang zu qiu	4231
+洛克篮球	luo ke lan qiu	4231
+热血篮球	re xie lan qiu	4231
+热血篮球	re xue lan qiu	4231
+看足球	kan zu qiu	4231
+英超联赛	ying chao lian sai	4231
+足球城	zu qiu cheng	4231
+足球梦	zu qiu meng	4231
+足球比分	zu qiu bi fen	4231
+足球袜	zu qiu wa	4231
+足球课	zu qiu ke	4231
+花样篮球	hua yang lan qiu	4193
+风云足球	feng yun zu qiu	4193
+篮球飞人	lan qiu fei ren	4154
+草地网球	cao di wang qiu	4154
+足球彩票	zu qiu cai piao	4154
+排球技术	pai qiu ji shu	4077
+篮球服	lan qiu fu	4077
+篮球衣	lan qiu yi	4077
+轮椅篮球	lun yi lan qiu	4077
+轮椅网球	lun yi wang qiu	4077
+次级联赛	ci ji lian sai	4039
+实况足球	shi kuang zu qiu	4000
+笑林足球	xiao lin zu qiu	3924
+篮球之星	lan qiu zhi xing	3924
+网球甜心	wang qiu tian xin	3924
+篮球之神	lan qiu zhi shen	3885
+中国排球	zhong guo pai qiu	3847
+力量排球	li liang pai qiu	3847
+坐式排球	zuo shi pai qiu	3847
+排球少女	pai qiu shao nv	3847
+排球少年	pai qiu shao nian	3847
+排球漫画	pai qiu man hua	3847
+沙滩排球	sha tan pai qiu	3847
+花样排球	hua yang pai qiu	3847
+配合排球	pei he pai qiu	3847
+高度排球	gao du pai qiu	3847
+学网球	xue wang qiu	3808
+少儿篮球	shao er lan qiu	3808
+少林足球	shao lin zu qiu	3808
+甲级联赛	jia ji lian sai	3808
+西甲联赛	xi jia lian sai	3808
+意甲联赛	yi jia lian sai	3770
+足球小将	zu qiu xiao jiang	3770
+学篮球	xue lan qiu	3693
+有篮球	you lan qiu	3693
+爱篮球	ai lan qiu	3693
+玩篮球	wan lan qiu	3693
+皓篮球	hao lan qiu	3693
+看篮球	kan lan qiu	3693
+篮球了	lan qiu le	3693
+篮球吗	lan qiu ma	3693
+篮球手环	lan qiu shou huan	3693
+篮球框	lan qiu kuang	3693
+篮球梦	lan qiu meng	3693
+篮球火	lan qiu huo	3693
+篮球班	lan qiu ban	3693
+篮球的	lan qiu de	3693
+篮球社	lan qiu she	3693
+篮球袜	lan qiu wa	3693
+篮球裤	lan qiu ku	3693
+篮球课	lan qiu ke	3693
+练篮球	lian lan qiu	3693
+中国乒乓	zhong guo ping pang	3654
+中甲联赛	zhong jia lian sai	3654
+世联赛	shi lian sai	3616
+乒乓双打	ping pang shuang da	3616
+乒乓外交	ping pang wai jiao	3616
+乒乓小子	ping pang xiao zi	3616
+乒乓小将	ping pang xiao jiang	3616
+乒乓球场	ping pang qiu chang	3616
+乒乓球馆	ping pang qiu guan	3616
+乒乓生活	ping pang sheng huo	3616
+全民乒乓	quan min ping pang	3616
+动感篮球	dong gan lan qiu	3616
+打联赛	da lian sai	3616
+百城联赛	bai cheng lian sai	3616
+联赛杯	lian sai bei	3616
+荣耀乒乓	rong yao ping pang	3616
+足球尤物	zu qiu you wu	3616
+雪地足球	xue di zu qiu	3616
+土超联赛	tu chao lian sai	3577
+延边足球	yan bian zu qiu	3539
+排球女将	pai qiu nv jiang	3539
+足球大侠	zu qiu da xia	3539
+乒乓球室	ping pang qiu shi	3462
+乒乓网	ping pang wang	3462
+乙级联赛	yi ji lian sai	3462
+巴甲联赛	ba jia lian sai	3462
+德甲联赛	de jia lian sai	3462
+打乒乓球	da ping pang qiu	3462
+打打篮球	da da lan qiu	3462
+排球网	pai qiu wang	3462
+潮人篮球	chao ren lan qiu	3462
+网球网	wang qiu wang	3462
+网球肘	wang qiu zhou	3462
+网球装	wang qiu zhuang	3462
+英式足球	ying shi zu qiu	3462
+亚冠联赛	ya guan lian sai	3424
+小排球	xiao pai qiu	3424
+耐克篮球	nai ke lan qiu	3385
+擦网球	ca wang qiu	3308
+李宁篮球	li ning lan qiu	3308
+爱玩篮球	ai wan lan qiu	3308
+穿网球	chuan wang qiu	3308
+中乙联赛	zhong yi lian sai	3193
+英冠联赛	ying guan lian sai	3154
+打排球	da pai qiu	3039
+排球柱	pai qiu zhu	3039
+排球纸	pai qiu zhi	3039
+气排球	qi pai qiu	3039
+肆客足球	si ke zu qiu	2924
+踢足球的	ti zu qiu de	2924
+乒乓王	ping pang wang	2847
+打乒乓	da ping pang	2847
+宏远篮球	hong yuan lan qiu	2808
+笼式足球	long shi zu qiu	2808
+不打篮球	bu da lan qiu	2616
+会打篮球	hui da lan qiu	2616
+你打篮球	ni da lan qiu	2616
+去打篮球	qu da lan qiu	2616
+在打篮球	zai da lan qiu	2616
+在篮球场	zai lan qiu chang	2616
+小篮球场	xiao lan qiu chang	2616
+我打篮球	wo da lan qiu	2616
+打完篮球	da wan lan qiu	2616
+打篮球不	da lan qiu bu	2616
+打篮球了	da lan qiu le	2616
+打篮球去	da lan qiu qu	2616
+打篮球吗	da lan qiu ma	2616
+打篮球的	da lan qiu de	2616
+新篮球场	xin lan qiu chang	2616
+爱打篮球	ai da lan qiu	2616
+葡超联赛	pu chao lian sai	2616
+上轮联赛	shang lun lian sai	2577
+中丙联赛	zhong bing lian sai	2577
+同城联赛	tong cheng lian sai	2577
+排超联赛	pai chao lian sai	2577
+快易网球	kuai yi wang qiu	2385
+救入网球	jiu ru wang qiu	2385
 网球拍	wang qiu pai	1905
 体育中心	ti yu zhong xin	658

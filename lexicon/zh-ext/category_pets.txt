@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：宠物养护
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 体内驱虫	ti nei qu chong	6100
 体外驱虫	ti wai qu chong	6100
@@ -53,4 +53,75 @@
 猫粮	mao liang	6100
 胸背带	xiong bei dai	6100
 领养协议	ling yang xie yi	6100
+宠物中心	chong wu zhong xin	4924
+宠物情人	chong wu qing ren	4885
+宠物联盟	chong wu lian meng	4885
+宠物交易	chong wu jiao yi	4616
+宠物升级	chong wu sheng ji	4616
+宠物商店	chong wu shang dian	4616
+宠物女友	chong wu nv you	4616
+宠物市场	chong wu shi chang	4616
+宠物玩具	chong wu wan ju	4616
+宠物男孩	chong wu nan hai	4616
+宠物英雄	chong wu ying xiong	4616
+宠物计划	chong wu ji hua	4616
+私人宠物	si ren chong wu	4616
+美国宠物	mei guo chong wu	4616
+超级宠物	chao ji chong wu	4616
+狗狗博客	gou gou bo ke	4462
+狗狗旅馆	gou gou lv guan	4462
+猫咪出租	mao mi chu zu	4462
+不吃狗粮	bu chi gou liang	4424
+宠物墓地	chong wu mu di	4385
+圣诞狗狗	sheng dan gou gou	4308
+宝石宠物	bao shi chong wu	4308
+宠物恋人	chong wu lian ren	4270
+宠物坟墓	chong wu fen mu	4193
+宠物当家	chong wu dang jia	4077
+桌面宠物	zhuo mian chong wu	4077
+猫咪后院	mao mi hou yuan	4000
+宠物会	chong wu hui	3924
+喂狗粮	wei gou liang	3847
+狗狗心事	gou gou xin shi	3847
+绝版宠物	jue ban chong wu	3847
+这狗粮	zhe gou liang	3847
+大狗狗	da gou gou	3808
+大猫咪	da mao mi	3808
+狗狗狗	gou gou gou	3808
+这狗狗	zhe gou gou	3808
+老友狗狗	lao you gou gou	3770
+宠物情缘	chong wu qing yuan	3616
+养宠物	yang chong wu	3539
+宠物了	chong wu le	3539
+宠物犬	chong wu quan	3539
+宠物窝	chong wu wo	3539
+宠物粮	chong wu liang	3539
+宠物网	chong wu wang	3539
+宠物蛋	chong wu dan	3539
+宠物鸟	chong wu niao	3539
+小宠物	xiao chong wu	3539
+猫猫狗狗	mao mao gou gou	3500
+吃狗粮	chi gou liang	3462
+宠物校花	chong wu xiao hua	3462
+撒狗粮	sa gou liang	3462
+有猫粮	you mao liang	3462
+狗粮了	gou liang le	3462
+猫粮吗	mao liang ma	3462
+领猫粮	ling mao liang	3462
+乖狗狗	guai gou gou	3424
+狗狗教	gou gou jiao	3424
+狗狗的	gou gou de	3424
+给狗狗	gei gou gou	3424
+遛狗狗	liu gou gou	3424
+放生宠物	fang sheng chong wu	3385
+宠物坟场	chong wu fen chang	3308
+猫咪小贝	mao mi xiao bei	3270
+我爱宠物	wo ai chong wu	2500
+我的宠物	wo de chong wu	2500
+别撒狗粮	bie sa gou liang	2462
+吃狗粮了	chi gou liang le	2462
+撒狗粮了	sa gou liang le	2462
+有猫粮呗	you mao liang bei	2462
+狗狗祟祟	gou gou sui sui	2462
+猫咪萌萌	mao mi meng meng	2424
 牵引绳	qian yin sheng	902

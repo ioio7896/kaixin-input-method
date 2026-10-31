@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：阅读写作
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 书单推荐	shu dan tui jian	6100
 书评文章	shu ping wen zhang	6100
@@ -45,12 +45,226 @@
 阅读理解	yue du li jie	6100
 阅读笔记	yue du bi ji	6100
 阅读计划	yue du ji hua	6100
+军事小说	jun shi xiao shuo	6000
+小说生活	xiao shuo sheng huo	5962
+小说里的	xiao shuo li de	5924
 读后感	du hou gan	5880
+文学人生	wen xue ren sheng	5770
+文学理论	wen xue li lun	5731
+文学运动	wen xue yun dong	5731
 比喻	bi yu	5723
+中国文学	zhong guo wen xue	5693
+外国文学	wai guo wen xue	5693
+文学艺术	wen xue yi shu	5693
+英国文学	ying guo wen xue	5693
+什么小说	shen me xiao shuo	5577
+免费小说	mian fei xiao shuo	5577
+关于小说	guan yu xiao shuo	5577
+发现小说	fa xian xiao shuo	5577
+图片小说	tu pian xiao shuo	5577
+小说人物	xiao shuo ren wu	5577
+小说作品	xiao shuo zuo pin	5577
+百度小说	bai du xiao shuo	5577
+看看小说	kan kan xiao shuo	5577
+知乎小说	zhi hu xiao shuo	5577
+系列小说	xi lie xiao shuo	5577
+网络小说	wang luo xiao shuo	5577
+这个小说	zhe ge xiao shuo	5577
+那个小说	na ge xiao shuo	5577
+俄国小说	e guo xiao shuo	5539
+不看小说	bu kan xiao shuo	5462
+杀人小说	sha ren xiao shuo	5462
+印度文学	yin du wen xue	5424
+小说推荐	xiao shuo tui jian	5424
+文学事业	wen xue shi ye	5424
+文学思想	wen xue si xiang	5424
+文学批评	wen xue pi ping	5424
+文学知识	wen xue zhi shi	5424
+文学评论	wen xue ping lun	5424
+文学青年	wen xue qing nian	5424
+现代文学	xian dai wen xue	5424
+网络文学	wang luo wen xue	5424
+语言文学	yu yan wen xue	5424
+革命文学	ge ming wen xue	5424
+犯罪小说	fan zui xiao shuo	5385
+看会小说	kan hui xiao shuo	5385
+成人文学	cheng ren wen xue	5347
+少年文学	shao nian wen xue	5270
+文学少女	wen xue shao nv	5270
+爱情小说	ai qing xiao shuo	5270
+一部小说	yi bu xiao shuo	5231
+古代文学	gu dai wen xue	5231
+恐怖小说	kong bu xiao shuo	5193
+经典小说	jing dian xiao shuo	5193
+大众文学	da zhong wen xue	5154
+人文学院	ren wen xue yuan	5077
+穿越小说	chuan yue xiao shuo	5077
+黑色小说	hei se xiao shuo	5077
+天空小说	tian kong xiao shuo	4962
+情感小说	qing gan xiao shuo	4924
+最小说	zui xiao shuo	4924
+爱好文学	ai hao wen xue	4924
+当代小说	dang dai xiao shuo	4885
+当代文学	dang dai wen xue	4885
+文学期刊	wen xue qi kan	4885
+一本小说	yi ben xiao shuo	4847
+中国诗歌	zhong guo shi ge	4847
+佛教文学	fo jiao wen xue	4847
+文学遗产	wen xue yi chan	4847
+现代诗歌	xian dai shi ge	4847
+青春小说	qing chun xiao shuo	4808
+青春文学	qing chun wen xue	4808
+图像小说	tu xiang xiao shuo	4770
+文学化	wen xue hua	4770
+起点小说	qi dian xiao shuo	4770
+剧本小说	ju ben xiao shuo	4731
+古典小说	gu dian xiao shuo	4731
+建安文学	jian an wen xue	4731
+恋爱小说	lian ai xiao shuo	4693
+文学刊物	wen xue kan wu	4693
+近代文学	jin dai wen xue	4693
+小说改编	xiao shuo gai bian	4654
+影视文学	ying shi wen xue	4654
+小说后续	xiao shuo hou xu	4616
+话本小说	hua ben xiao shuo	4616
+小说会	xiao shuo hui	4577
+笔记小说	bi ji xiao shuo	4577
+小说里	xiao shuo li	4539
+幽默小说	you mo xiao shuo	4539
+语文学家	yu wen xue jia	4539
+非小说	fei xiao shuo	4539
+鲁迅小说	lu xun xiao shuo	4539
 拟人	ni ren	4522
+刘文学	liu wen xue	4462
+古文学	gu wen xue	4462
+吴文学	wu wen xue	4462
+国文学	guo wen xue	4462
+孙文学	sun wen xue	4462
+张文学	zhang wen xue	4462
+文学区	wen xue qu	4462
+文学课	wen xue ke	4462
+李文学	li wen xue	4462
+杨文学	yang wen xue	4462
+论文学	lun wen xue	4462
+金文学	jin wen xue	4462
+精品小说	jing pin xiao shuo	4424
+九州小说	jiu zhou xiao shuo	4347
+推理小说	tui li xiao shuo	4347
+畅销小说	chang xiao xiao shuo	4347
+文学大纲	wen xue da gang	4308
+诗歌散文	shi ge san wen	4308
+鲁迅散文	lu xun san wen	4308
+完结小说	wan jie xiao shuo	4270
+这本小说	zhe ben xiao shuo	4270
+这本小说	zhei ben xiao shuo	4270
+文学不死	wen xue bu si	4231
+同名小说	tong ming xiao shuo	4193
+文学名言	wen xue ming yan	4193
 记叙文	ji xu wen	4181
+买小说	mai xiao shuo	4154
+传记文学	zhuan ji wen xue	4154
+写小说	xie xiao shuo	4154
+听小说	ting xiao shuo	4154
+啥小说	sha xiao shuo	4154
+小说中	xiao shuo zhong	4154
+小说书	xiao shuo shu	4154
+小说了	xiao shuo le	4154
+小说名	xiao shuo ming	4154
+小说吗	xiao shuo ma	4154
+小说呢	xiao shuo ne	4154
+小说啊	xiao shuo a	4154
+小说灯笼	xiao shuo deng long	4154
+小说的	xiao shuo de	4154
+小说网	xiao shuo wang	4154
+我小说	wo xiao shuo	4154
+有小说	you xiao shuo	4154
+梦小说	meng xiao shuo	4154
+淘小说	tao xiao shuo	4154
+的小说	de xiao shuo	4154
+看小说	kan xiao shuo	4154
+诗歌之王	shi ge zhi wang	4154
+追小说	zhui xiao shuo	4154
+文学思潮	wen xue si chao	4116
+连载小说	lian zai xiao shuo	4116
+任文学	ren wen xue	4077
+俗文学	su wen xue	4077
+文学梦	wen xue meng	4077
+明清小说	ming qing xiao shuo	4077
+胡文学	hu wen xue	4077
+通俗小说	tong su xiao shuo	4039
+通俗文学	tong su wen xue	4039
+古今小说	gu jin xiao shuo	4000
+黑幕小说	hei mu xiao shuo	3962
 应用文	ying yong wen	3956
+奇幻小说	qi huan xiao shuo	3924
+孙文学说	sun wen xue shuo	3924
+孙文学院	sun wen xue yuan	3924
+抒情散文	shu qing san wen	3924
+文学名著	wen xue ming zhu	3924
+纪实小说	ji shi xiao shuo	3924
+纪实文学	ji shi wen xue	3924
+原著小说	yuan zhu xiao shuo	3885
+布兰诗歌	bu lan shi ge	3885
+金庸小说	jin yong xiao shuo	3885
 议论文	yi lun wen	3828
+惊险小说	jing xian xiao shuo	3808
+有声小说	you sheng xiao shuo	3808
+乡土小说	xiang tu xiao shuo	3770
+诗歌朗诵	shi ge lang song	3770
+先秦散文	xian qin san wen	3731
+先秦文学	xian qin wen xue	3731
+低俗小说	di su xiao shuo	3693
+诗歌报	shi ge bao	3654
+诗歌本	shi ge ben	3654
+诗歌网	shi ge wang	3654
+诗歌节	shi ge jie	3654
+侦破小说	zhen po xiao shuo	3616
+小说男主	xiao shuo nan zhu	3616
+灵异小说	ling yi xiao shuo	3616
+莫言小说	mo yan xiao shuo	3616
+莫言散文	mo yan san wen	3616
+文学书库	wen xue shu ku	3577
+讲唱文学	jiang chang wen xue	3539
+奇缘小说	qi yuan xiao shuo	3500
+悬疑小说	xuan yi xiao shuo	3500
+同人小说	tong ren xiao shuo	3462
+小说月报	xiao shuo yue bao	3462
+散文式	san wen shi	3462
+花边文学	hua bian wen xue	3462
+小说录入	xiao shuo lu ru	3424
+散文热	san wen re	3347
+惊悚小说	jing song xiao shuo	3308
+老舍小说	lao she xiao shuo	3308
+老舍散文	lao she san wen	3308
+冰心小说	bing xin xiao shuo	3270
+冰心散文	bing xin san wen	3270
 说明文	shuo ming wen	3195
+秋雨散文	qiu yu san wen	3116
+萧红小说	xiao hong xiao shuo	3000
+书旗小说	shu qi xiao shuo	2885
+仙侠小说	xian xia xiao shuo	2885
+你看小说	ni kan xiao shuo	2885
+在看小说	zai kan xiao shuo	2885
+小说与我	xiao shuo yu wo	2885
+微耽小说	wei dan xiao shuo	2885
+怪笑小说	guai xiao xiao shuo	2885
+我看小说	wo kan xiao shuo	2885
+月月小说	yue yue xiao shuo	2885
+玄山小说	xuan shan xiao shuo	2885
+疯读小说	feng du xiao shuo	2885
+看小说了	kan xiao shuo le	2885
+看小说去	kan xiao shuo qu	2885
+看小说吧	kan xiao shuo ba	2885
+看小说呢	kan xiao shuo ne	2885
+看小说的	kan xiao shuo de	2885
+米读小说	mi du xiao shuo	2885
+飞卢小说	fei lu xiao shuo	2885
+文学的根	wen xue de gen	2847
+青之文学	qing zhi wen xue	2847
+平凹散文	ping ao san wen	2385
+琦君散文	qi jun san wen	2385
 标点符号	biao dian fu hao	2346
+玄幻小说	xuan huan xiao shuo	2270
+耽美小说	dan mei xiao shuo	2116
 文学创作	wen xue chuang zuo	1732
+蜗居小说	wo ju xiao shuo	1577

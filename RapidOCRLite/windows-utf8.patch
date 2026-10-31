@@ -1,0 +1,49 @@
+diff --git a/src/onnx_lite.cpp b/src/onnx_lite.cpp
+index 08d5c08..e76bd31 100644
+--- a/src/onnx_lite.cpp
++++ b/src/onnx_lite.cpp
+@@ -9,6 +9,7 @@
+ #include <cstdlib>
+ #include <cstring>
+ #include <fstream>
++#include <filesystem>
+ #include <functional>
+ #include <limits>
+ #include <mutex>
+@@ -2795,7 +2796,7 @@ void ParseGraph(const std::uint8_t* data, std::size_t size, GraphData& g) {
+ }
+ 
+ GraphData ParseModel(const std::string& file) {
+-  std::ifstream in(file, std::ios::binary); if (!in) Fail("cannot open " + file);
++  std::ifstream in(std::filesystem::u8path(file), std::ios::binary); if (!in) Fail("cannot open " + file);
+   std::vector<std::uint8_t> b((std::istreambuf_iterator<char>(in)), {}); Reader r{b}; GraphData g;
+   while (!r.eof()) { const auto [field, wire] = r.Tag(); if (field == 7) { const auto [data, size] = r.Span(); ParseGraph(data, size, g); } else if (field == 8) { auto x = r.Bytes(); Reader orr{x}; std::string domain; int version{}; while (!orr.eof()) { auto [f,w]=orr.Tag(); if(f==1){auto s=orr.Bytes();domain.assign(s.begin(),s.end());} else if(f==2)version=int(orr.Varint()); else orr.Skip(w); } if(domain.empty())g.opset=version; } else r.Skip(wire); }
+   if (g.nodes.empty() || g.outputs.empty()) Fail("model has no executable graph");
+diff --git a/src/ppocr.cpp b/src/ppocr.cpp
+index 17b94f6..6585090 100644
+--- a/src/ppocr.cpp
++++ b/src/ppocr.cpp
+@@ -19,6 +19,7 @@
+ #include <condition_variable>
+ #include <exception>
+ #include <fstream>
++#include <filesystem>
+ #include <functional>
+ #include <iostream>
+ #include <map>
+@@ -1038,7 +1039,7 @@ CropBounds CropBoundsFor(const Image& src, const Box& box) {
+ }
+ 
+ std::vector<std::string> ReadDict(const std::string& path) {
+-  std::ifstream f(path);if(!f)Fail("cannot open dictionary "+path);std::vector<std::string> out{""};std::string line;while(std::getline(f,line)){if(!line.empty()&&line.back()=='\r')line.pop_back();out.push_back(line);}out.push_back(" ");return out;
++  std::ifstream f(std::filesystem::u8path(path));if(!f)Fail("cannot open dictionary "+path);std::vector<std::string> out{""};std::string line;while(std::getline(f,line)){if(!line.empty()&&line.back()=='\r')line.pop_back();out.push_back(line);}out.push_back(" ");return out;
+ }
+ 
+ std::pair<std::string,float> DecodeCTC(const detail::OnnxLite::CtcTop1Output& t,
+@@ -2828,5 +2829,5 @@ std::vector<std::vector<Result>> OCR::RecognizeBatch(
+   return output;
+ }
+ 
+-Image LoadPPM(const std::string& path) { std::ifstream f(path,std::ios::binary);if(!f)Fail("cannot open image "+path);std::string magic;f>>magic;if(magic!="P6")Fail("only binary P6 PPM is supported");auto token=[&](){std::string s;while(f>>s&&s.starts_with('#'))std::getline(f,s);return s;};int w=std::stoi(token()),h=std::stoi(token()),max=std::stoi(token());if(w<=0||h<=0||max!=255)Fail("invalid PPM header");f.get();Image out{w,h,std::vector<std::uint8_t>(std::size_t(w)*h*3)};f.read(reinterpret_cast<char*>(out.rgb.data()),std::streamsize(out.rgb.size()));if(f.gcount()!=std::streamsize(out.rgb.size()))Fail("truncated PPM pixels");return out; }
++Image LoadPPM(const std::string& path) { std::ifstream f(std::filesystem::u8path(path),std::ios::binary);if(!f)Fail("cannot open image "+path);std::string magic;f>>magic;if(magic!="P6")Fail("only binary P6 PPM is supported");auto token=[&](){std::string s;while(f>>s&&s.starts_with('#'))std::getline(f,s);return s;};int w=std::stoi(token()),h=std::stoi(token()),max=std::stoi(token());if(w<=0||h<=0||max!=255)Fail("invalid PPM header");f.get();Image out{w,h,std::vector<std::uint8_t>(std::size_t(w)*h*3)};f.read(reinterpret_cast<char*>(out.rgb.data()),std::streamsize(out.rgb.size()));if(f.gcount()!=std::streamsize(out.rgb.size()))Fail("truncated PPM pixels");return out; }
+ }  // namespace rpocr

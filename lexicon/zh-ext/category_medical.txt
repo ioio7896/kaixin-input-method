@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：就医检查
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 核磁共振	he ci gong zhen	6726
 脂肪肝	zhi fang gan	6714
@@ -54,3 +54,598 @@
 骨密度检查	gu mi du jian cha	6100
 磁共振成像	ci gong zhen cheng xiang	6000
 超声检查	chao sheng jian cha	6000
+医院里面	yi yuan li mian	5924
+行为治疗	xing wei zhi liao	5808
+新中医院	xin zhong yi yuan	5770
+一个医院	yi ge yi yuan	5731
+人民医院	ren min yi yuan	5731
+什么医院	shen me yi yuan	5731
+你们医院	ni men yi yuan	5731
+医院上班	yi yuan shang ban	5731
+医院出来	yi yuan chu lai	5731
+医院地址	yi yuan di zhi	5731
+医院建筑	yi yuan jian zhu	5731
+地区医院	di qu yi yuan	5731
+我们医院	wo men yi yuan	5731
+我来医院	wo lai yi yuan	5731
+第一医院	di yi yi yuan	5731
+还在医院	hai zai yi yuan	5731
+这个医院	zhe ge yi yuan	5731
+这个医院	zhei ge yi yuan	5731
+那个医院	na ge yi yuan	5731
+中国医生	zhong guo yi sheng	5693
+社区医院	she qu yi yuan	5693
+综合医院	zong he yi yuan	5693
+英国医生	ying guo yi sheng	5693
+医院回来	yi yuan hui lai	5654
+医院看看	yi yuan kan kan	5654
+死亡医院	si wang yi yuan	5616
+结合医院	jie he yi yuan	5616
+动物医院	dong wu yi yuan	5577
+和平医院	he ping yi yuan	5539
+医院检查	yi yuan jian cha	5500
+医院附近	yi yuan fu jin	5500
+完全治疗	wan quan zhi liao	5500
+家庭治疗	jia ting zhi liao	5500
+怎么治疗	zen me zhi liao	5500
+怎么治疗	zen mo zhi liao	5500
+治疗方案	zhi liao fang an	5500
+治疗方法	zhi liao fang fa	5500
+游戏治疗	you xi zhi liao	5500
+特别治疗	te bie zhi liao	5500
+第二医院	di er yi yuan	5500
+精神治疗	jing shen zhi liao	5500
+网络治疗	wang luo zhi liao	5500
+音乐治疗	yin yue zhi liao	5500
+一个医生	yi ge yi sheng	5462
+主任医生	zhu ren yi sheng	5462
+医生建议	yi sheng jian yi	5462
+医生怎么	yi sheng zen me	5462
+医生故事	yi sheng gu shi	5462
+医生游戏	yi sheng you xi	5462
+家庭医生	jia ting yi sheng	5462
+放弃治疗	fang qi zhi liao	5462
+死亡医生	si wang yi sheng	5462
+看看医生	kan kan yi sheng	5462
+谢谢医生	xie xie yi sheng	5462
+这个医生	zhe ge yi sheng	5462
+这个医生	zhei ge yi sheng	5462
+那个医生	na ge yi sheng	5462
+铁路医院	tie lu yi yuan	5462
+青年医生	qing nian yi sheng	5462
+医院收入	yi yuan shou ru	5424
+工人医院	gong ren yi yuan	5424
+乡村医生	xiang cun yi sheng	5385
+海军医院	hai jun yi yuan	5385
+病人权利	bing ren quan li	5385
+医生没说	yi sheng mei shuo	5347
+哪个医院	na ge yi yuan	5347
+病人如何	bing ren ru he	5347
+超级医院	chao ji yi yuan	5347
+医院名称	yi yuan ming cheng	5308
+好好治疗	hao hao zhi liao	5308
+私人医院	si ren yi yuan	5308
+东方医院	dong fang yi yuan	5270
+监狱医生	jian yu yi sheng	5270
+空中医生	kong zhong yi sheng	5270
+自我治疗	zi wo zhi liao	5270
+酒店医生	jiu dian yi sheng	5270
+手法治疗	shou fa zhi liao	5231
+治疗之外	zhi liao zhi wai	5231
+爱的医院	ai de yi yuan	5231
+爱的治疗	ai de zhi liao	5231
+疯狂医生	feng kuang yi sheng	5231
+县中医院	xian zhong yi yuan	5193
+恐怖医院	kong bu yi yuan	5193
+没去医院	mei qu yi yuan	5193
+第三医院	di san yi yuan	5193
+人家医生	ren jia yi sheng	5154
+医院门口	yi yuan men kou	5154
+司机医生	si ji yi sheng	5154
+婚姻治疗	hun yin zhi liao	5154
+市中医院	shi zhong yi yuan	5154
+植物医生	zhi wu yi sheng	5154
+伊朗治疗	yi lang zhi liao	5116
+什么手术	shen me shou shu	5077
+患者生命	huan zhe sheng ming	5077
+手术过程	shou shu guo cheng	5077
+皮肤医生	pi fu yi sheng	5077
+空军医院	kong jun yi yuan	5039
+医院大楼	yi yuan da lou	5000
+南方医院	nan fang yi yuan	5000
+第四医院	di si yi yuan	5000
+职工医院	zhi gong yi yuan	5000
+医院会计	yi yuan kuai ji	4962
+陆军医院	lu jun yi yuan	4962
+一个病人	yi ge bing ren	4924
+国防医院	guo fang yi yuan	4924
+每个病人	mei ge bing ren	4924
+爱情病人	ai qing bing ren	4924
+特殊病人	te shu bing ren	4924
+病人角色	bing ren jue se	4924
+皇家医院	huang jia yi yuan	4924
+英国病人	ying guo bing ren	4924
+医生护士	yi sheng hu shi	4847
+地狱医院	di yu yi yuan	4847
+花园医院	hua yuan yi yuan	4847
+要动手术	yao dong shou shu	4847
+保守治疗	bao shou zhi liao	4808
+友好医院	you hao yi yuan	4808
+基因治疗	ji yin zhi liao	4808
+西南医院	xi nan yi yuan	4808
+医生们	yi sheng men	4770
+浪漫医生	lang man yi sheng	4770
+中山医院	zhong shan yi yuan	4731
+博爱医院	bo ai yi yuan	4731
+善良医生	shan liang yi sheng	4731
+城关医院	cheng guan yi yuan	4731
+安次医院	an ci yi yuan	4731
+张湾医院	zhang wan yi yuan	4731
+新华医院	xin hua yi yuan	4731
+癌症病人	ai zheng bing ren	4731
+红旗医院	hong qi yi yuan	4731
+长海医院	chang hai yi yuan	4731
+介入治疗	jie ru zhi liao	4693
+孤独患者	gu du huan zhe	4693
+慈善医院	ci shan yi yuan	4693
+清洁手术	qing jie shou shu	4693
+医院对面	yi yuan dui mian	4654
+半个医生	ban ge yi sheng	4654
+认知治疗	ren zhi zhi liao	4654
+送医院	song yi yuan	4654
+隔离医院	ge li yi yuan	4654
+不手术	bu shou shu	4616
+临床医生	lin chuang yi sheng	4616
+做过手术	zuo guo shou shu	4616
+刚从医院	gang cong yi yuan	4616
+天才医生	tian cai yi sheng	4616
+天才医院	tian cai yi yuan	4616
+实习医生	shi xi yi sheng	4616
+正规医院	zheng gui yi yuan	4616
+恶魔医生	e mo yi sheng	4577
+极限患者	ji xian huan zhe	4577
+深夜医院	shen ye yi yuan	4577
+亲密治疗	qin mi zhi liao	4539
+侦探医生	zhen tan yi sheng	4539
+帅哥医生	shuai ge yi sheng	4539
+言语治疗	yan yu zhi liao	4539
+问问医生	wen wen yi sheng	4539
+附属医院	fu shu yi yuan	4539
+不治疗	bu zhi liao	4500
+囚犯医生	qiu fan yi sheng	4500
+病人多	bing ren duo	4500
+病人数	bing ren shu	4500
+能治疗	neng zhi liao	4500
+中医肿瘤	zhong yi zhong liu	4462
+中小医院	zhong xiao yi yuan	4462
+医生说	yi sheng shuo	4462
+实体肿瘤	shi ti zhong liu	4462
+心脏肿瘤	xin zang zhong liu	4462
+手术台上	shou shu tai shang	4462
+流氓医生	liu mang yi sheng	4462
+测量血压	ce liang xue ya	4462
+癌症肿瘤	ai zheng zhong liu	4462
+肿瘤医院	zhong liu yi yuan	4462
+肿瘤发生	zhong liu fa sheng	4462
+肿瘤抗原	zhong liu kang yuan	4462
+肿瘤病毒	zhong liu bing du	4462
+肿瘤细胞	zhong liu xi bao	4462
+胸部手术	xiong bu shou shu	4462
+降低血压	jiang di xue ya	4462
+降低血脂	jiang di xie zhi	4462
+降低血脂	jiang di xue zhi	4462
+鲜花手术	xian hua shou shu	4462
+不去医院	bu qu yi yuan	4424
+僵尸医生	jiang shi yi sheng	4424
+康复医院	kang fu yi yuan	4424
+康复治疗	kang fu zhi liao	4424
+康复病人	kang fu bing ren	4424
+治疗性	zhi liao xing	4424
+治疗者	zhi liao zhe	4424
+移植手术	yi zhi shou shu	4424
+专科医生	zhuan ke yi sheng	4385
+专科医院	zhuan ke yi yuan	4385
+江湖医生	jiang hu yi sheng	4385
+激光手术	ji guang shou shu	4385
+激光治疗	ji guang zhi liao	4385
+瘫痪病人	tan huan bing ren	4385
+住院医生	zhu yuan yi sheng	4347
+住院病人	zhu yuan bing ren	4347
+做个手术	zuo ge shou shu	4308
+圣母医院	sheng mu yi yuan	4308
+血压升高	xue ya sheng gao	4308
+长征医院	chang zheng yi yuan	4308
+一医院	yi yi yuan	4270
+三医院	san yi yuan	4270
+上医院	shang yi yuan	4270
+专医院	zhuan yi yuan	4270
+二医院	er yi yuan	4270
+五医院	wu yi yuan	4270
+从医院	cong yi yuan	4270
+住医院	zhu yi yuan	4270
+你医院	ni yi yuan	4270
+俺医院	an yi yuan	4270
+六医院	liu yi yuan	4270
+出医院	chu yi yuan	4270
+创伤治疗	chuang shang zhi liao	4270
+到医院	dao yi yuan	4270
+区医院	qu yi yuan	4270
+医院了	yi yuan le	4270
+医院做	yi yuan zuo	4270
+医院去	yi yuan qu	4270
+医院吗	yi yuan ma	4270
+医院吧	yi yuan ba	4270
+医院呀	yi yuan ya	4270
+医院呢	yi yuan ne	4270
+医院啊	yi yuan a	4270
+医院啦	yi yuan la	4270
+医院好	yi yuan hao	4270
+医院有	yi yuan you	4270
+医院来	yi yuan lai	4270
+医院病房	yi yuan bing fang	4270
+医院的	yi yuan de	4270
+医院看	yi yuan kan	4270
+医院说	yi yuan shuo	4270
+去医院	qu yi yuan	4270
+县医院	xian yi yuan	4270
+咱医院	zan yi yuan	4270
+四医院	si yi yuan	4270
+回医院	hui yi yuan	4270
+在医院	zai yi yuan	4270
+大医院	da yi yuan	4270
+太医院	tai yi yuan	4270
+好医院	hao yi yuan	4270
+小医院	xiao yi yuan	4270
+州医院	zhou yi yuan	4270
+市医院	shi yi yuan	4270
+往医院	wang yi yuan	4270
+我医院	wo yi yuan	4270
+新医院	xin yi yuan	4270
+旗医院	qi yi yuan	4270
+来医院	lai yi yuan	4270
+杰克医生	jie ke yi sheng	4270
+的医院	de yi yuan	4270
+省医院	sheng yi yuan	4270
+矿医院	kuang yi yuan	4270
+破医院	po yi yuan	4270
+离医院	li yi yuan	4270
+立医院	li yi yuan	4270
+童医院	tong yi yuan	4270
+给医院	gei yi yuan	4270
+老医院	lao yi yuan	4270
+蒙医院	meng yi yuan	4270
+跑医院	pao yi yuan	4270
+这医院	zhe yi yuan	4270
+进医院	jin yi yuan	4270
+那医院	na yi yuan	4270
+镇医院	zhen yi yuan	4270
+小手术	xiao shou shu	4231
+幽灵医院	you ling yi yuan	4231
+我手术	wo shou shu	4231
+手术前	shou shu qian	4231
+手术后	shou shu hou	4231
+有手术	you shou shu	4231
+生殖医院	sheng zhi yi yuan	4231
+送往医院	song wang yi yuan	4231
+顶尖医生	ding jian yi sheng	4231
+医院风云	yi yuan feng yun	4193
+外科病人	wai ke bing ren	4154
+急救医院	ji jiu yi yuan	4154
+换心手术	huan xin shou shu	4154
+武警医院	wu jing yi yuan	4154
+肿瘤外科	zhong liu wai ke	4154
+阴茎肿瘤	yin jing zhong liu	4154
+做治疗	zuo zhi liao	4116
+大病人	da bing ren	4116
+带治疗	dai zhi liao	4116
+早治疗	zao zhi liao	4116
+有病人	you bing ren	4116
+治疗中	zhi liao zhong	4116
+治疗了	zhi liao le	4116
+治疗吗	zhi liao ma	4116
+治疗吧	zhi liao ba	4116
+治疗头	zhi liao tou	4116
+治疗术	zhi liao shu	4116
+治疗机	zhi liao ji	4116
+治疗率	zhi liao lv	4116
+治疗的	zhi liao de	4116
+治疗量	zhi liao liang	4116
+看病人	kan bing ren	4116
+丁医生	ding yi sheng	4077
+两医生	liang yi sheng	4077
+任医生	ren yi sheng	4077
+何医生	he yi sheng	4077
+做医生	zuo yi sheng	4077
+全科医生	quan ke yi sheng	4077
+刘医生	liu yi sheng	4077
+医生了	yi sheng le	4077
+医生吗	yi sheng ma	4077
+医生吧	yi sheng ba	4077
+医生的	yi sheng de	4077
+医生看	yi sheng kan	4077
+听医生	ting yi sheng	4077
+吴医生	wu yi sheng	4077
+周医生	zhou yi sheng	4077
+唐医生	tang yi sheng	4077
+好医生	hao yi sheng	4077
+孙医生	sun yi sheng	4077
+小医生	xiao yi sheng	4077
+张医生	zhang yi sheng	4077
+当医生	dang yi sheng	4077
+徐医生	xu yi sheng	4077
+怪医生	guai yi sheng	4077
+我医生	wo yi sheng	4077
+找医生	zhao yi sheng	4077
+探望病人	tan wang bing ren	4077
+是医生	shi yi sheng	4077
+曙光医院	shu guang yi yuan	4077
+有医生	you yi sheng	4077
+朱医生	zhu yi sheng	4077
+林医生	lin yi sheng	4077
+根管治疗	gen guan zhi liao	4077
+梁医生	liang yi sheng	4077
+没医生	mei yi sheng	4077
+流感患者	liu gan huan zhe	4077
+王医生	wang yi sheng	4077
+用药治疗	yong yao zhi liao	4077
+的医生	de yi sheng	4077
+看医生	kan yi sheng	4077
+私立医院	si li yi yuan	4077
+等医生	deng yi sheng	4077
+给医生	gei yi sheng	4077
+罗医生	luo yi sheng	4077
+老医生	lao yi sheng	4077
+肯医生	ken yi sheng	4077
+肿瘤学家	zhong liu xue jia	4077
+胡医生	hu yi sheng	4077
+艾医生	ai yi sheng	4077
+苗医生	miao yi sheng	4077
+让医生	rang yi sheng	4077
+请医生	qing yi sheng	4077
+谢医生	xie yi sheng	4077
+赵医生	zhao yi sheng	4077
+跟医生	gen yi sheng	4077
+这医生	zhe yi sheng	4077
+那医生	na yi sheng	4077
+郭医生	guo yi sheng	4077
+野战医院	ye zhan yi yuan	4077
+门诊病人	men zhen bing ren	4077
+问医生	wen yi sheng	4077
+雷医生	lei yi sheng	4077
+韩医生	han yi sheng	4077
+马医生	ma yi sheng	4077
+高医生	gao yi sheng	4077
+鬼医生	gui yi sheng	4077
+黄医生	huang yi sheng	4077
+催眠医生	cui mian yi sheng	4039
+催眠治疗	cui mian zhi liao	4039
+哪家医院	na jia yi yuan	4039
+开刀手术	kai dao shou shu	4039
+收治病人	shou zhi bing ren	4039
+病理学家	bing li xue jia	4039
+逍遥医生	xiao yao yi sheng	4039
+风流医生	feng liu yi sheng	4039
+手术切除	shou shu qie chu	4000
+手术器械	shou shu qi xie	4000
+免疫病理	mian yi bing li	3962
+口腔医院	kou qiang yi yuan	3962
+定点医院	ding dian yi yuan	3962
+门诊患者	men zhen huan zhe	3962
+产科医生	chan ke yi sheng	3924
+产科医院	chan ke yi yuan	3924
+产科病人	chan ke bing ren	3924
+变性手术	bian xing shou shu	3924
+睡梦医生	shui meng yi sheng	3924
+医院救治	yi yuan jiu zhi	3885
+省立医院	sheng li yi yuan	3885
+上手术	shang shou shu	3847
+你手术	ni shou shu	3847
+啥手术	sha shou shu	3847
+大手术	da shou shu	3847
+手术了	shou shu le	3847
+手术吗	shou shu ma	3847
+手术完	shou shu wan	3847
+手术灯	shou shu deng	3847
+手术的	shou shu de	3847
+手术衣	shou shu yi	3847
+手术部	shou shu bu	3847
+手术钳	shou shu qian	3847
+整容手术	zheng rong shou shu	3847
+有患者	you huan zhe	3847
+没手术	mei shou shu	3847
+特约医生	te yue yi sheng	3847
+要手术	yao shou shu	3847
+零号病人	ling hao bing ren	3847
+七号病人	qi hao bing ren	3770
+医院病床	yi yuan bing chuang	3770
+华西医院	hua xi yi yuan	3770
+妇科医院	fu ke yi yuan	3770
+妇科肿瘤	fu ke zhong liu	3770
+战地医生	zhan di yi sheng	3770
+战地医院	zhan di yi yuan	3770
+战地治疗	zhan di zhi liao	3770
+眼科医生	yan ke yi sheng	3770
+眼科医院	yan ke yi yuan	3770
+豪斯医生	hao si yi sheng	3770
+针灸治疗	zhen jiu zhi liao	3770
+主刀医生	zhu dao yi sheng	3731
+内科医生	nei ke yi sheng	3731
+内科手术	nei ke shou shu	3731
+内科病人	nei ke bing ren	3731
+急诊病人	ji zhen bing ren	3731
+探视病人	tan shi bing ren	3731
+收病人	shou bing ren	3731
+新病人	xin bing ren	3731
+植物病理	zhi wu bing li	3731
+没病人	mei bing ren	3731
+病人了	bing ren le	3731
+病人的	bing ren de	3731
+病理变化	bing li bian hua	3731
+病理诊断	bing li zhen duan	3731
+睾丸肿瘤	gao wan zhong liu	3731
+给病人	gei bing ren	3731
+肿瘤性	zhong liu xing	3731
+膀胱肿瘤	pang guang zhong liu	3731
+顽皮医生	wan pi yi sheng	3731
+整形医生	zheng xing yi sheng	3693
+整形医院	zheng xing yi yuan	3693
+整形手术	zheng xing shou shu	3693
+羔羊医生	gao yang yi sheng	3693
+血脂康	xue zhi kang	3693
+近视手术	jin shi shou shu	3693
+医院就诊	yi yuan jiu zhen	3654
+拉皮手术	la pi shou shu	3654
+结扎手术	jie za shou shu	3654
+见习医生	jian xi yi sheng	3654
+包皮手术	bao pi shou shu	3616
+市立医院	shi li yi yuan	3616
+戒毒治疗	jie du zhi liao	3616
+灵异医院	ling yi yi yuan	3616
+甲等医院	jia deng yi yuan	3616
+花果医院	hua guo yi yuan	3616
+儿科医生	er ke yi sheng	3577
+儿科医院	er ke yi yuan	3577
+卵巢肿瘤	luan chao zhong liu	3577
+病理切片	bing li qie pian	3577
+妇产医院	fu chan yi yuan	3539
+宣武医院	xuan wu yi yuan	3539
+微创手术	wei chuang shou shu	3539
+三甲医院	san jia yi yuan	3500
+同济医院	tong ji yi yuan	3500
+牙科医生	ya ke yi sheng	3500
+牙科医院	ya ke yi yuan	3500
+血压过低	xue ya guo di	3500
+乙肝患者	yi gan huan zhe	3462
+人名医院	ren ming yi yuan	3462
+仁爱医院	ren ai yi yuan	3462
+国泰医院	guo tai yi yuan	3462
+夜班医生	ye ban yi sheng	3462
+妇产医生	fu chan yi sheng	3462
+妇幼医院	fu you yi yuan	3462
+对症治疗	dui zheng zhi liao	3462
+换肾手术	huan shen shou shu	3462
+治肿瘤	zhi zhong liu	3462
+绝育手术	jue yu shou shu	3462
+胸科医院	xiong ke yi yuan	3462
+色盲患者	se mang huan zhe	3462
+节育手术	jie yu shou shu	3462
+血脂高	xie zhi gao	3462
+血脂高	xue zhi gao	3462
+长庚医院	chang geng yi yuan	3462
+阜外医院	fu wai yi yuan	3462
+骨科医生	gu ke yi sheng	3462
+高血压病	gao xie ya bing	3462
+高血压病	gao xue ya bing	3462
+高血脂症	gao xie zhi zheng	3462
+高血脂症	gao xue zhi zheng	3462
+麻风病人	ma feng bing ren	3462
+齐鲁医院	qi lu yi yuan	3462
+你血压	ni xue ya	3424
+冒牌医生	mao pai yi sheng	3424
+我血压	wo xue ya	3424
+肾肿瘤	shen zhong liu	3424
+血压仪	xue ya yi	3424
+血脂稠	xue zhi chou	3424
+量血压	liang xue ya	3424
+丁香医生	ding xiang yi sheng	3385
+刚到医院	gang dao yi yuan	3385
+尿道肿瘤	niao dao zhong liu	3385
+治疗加成	zhi liao jia cheng	3347
+冠心病人	guan xin bing ren	3308
+安贞医院	an zhen yi yuan	3308
+湘雅医院	xiang ya yi yuan	3308
+索道医生	suo dao yi sheng	3308
+骨科医院	gu ke yi yuan	3308
+城野医生	cheng ye yi sheng	3231
+猛鬼医院	meng gui yi yuan	3231
+耳鸣患者	er ming huan zhe	3231
+夺命手术	duo ming shou shu	3193
+胃病医院	wei bing yi yuan	3154
+方舱医院	fang cang yi yuan	3116
+精囊肿瘤	jing nang zhong liu	3000
+上医院了	shang yi yuan le	2962
+仁济医院	ren ji yi yuan	2962
+你到医院	ni dao yi yuan	2962
+你去医院	ni qu yi yuan	2962
+你在医院	ni zai yi yuan	2962
+再去医院	zai qu yi yuan	2962
+到医院了	dao yi yuan le	2962
+医院了吗	yi yuan le ma	2962
+医院去了	yi yuan qu le	2962
+医院开的	yi yuan kai de	2962
+去中医院	qu zhong yi yuan	2962
+去了医院	qu le yi yuan	2962
+去医院了	qu yi yuan le	2962
+去医院吗	qu yi yuan ma	2962
+去医院吧	qu yi yuan ba	2962
+去医院的	qu yi yuan de	2962
+去医院看	qu yi yuan kan	2962
+去县医院	qu xian yi yuan	2962
+去大医院	qu da yi yuan	2962
+去趟医院	qu tang yi yuan	2962
+县医院了	xian yi yuan le	2962
+唐都医院	tang dou yi yuan	2962
+唐都医院	tang du yi yuan	2962
+在中医院	zai zhong yi yuan	2962
+在医院了	zai yi yuan le	2962
+在医院吗	zai yi yuan ma	2962
+在医院呢	zai yi yuan ne	2962
+在医院里	zai yi yuan li	2962
+在县医院	zai xian yi yuan	2962
+就去医院	jiu qu yi yuan	2962
+就在医院	jiu zai yi yuan	2962
+我到医院	wo dao yi yuan	2962
+我去医院	wo qu yi yuan	2962
+我在医院	wo zai yi yuan	2962
+来医院了	lai yi yuan le	2962
+没在医院	mei zai yi yuan	2962
+猎隼医院	lie sun yi yuan	2962
+盛京医院	sheng jing yi yuan	2962
+老中医院	lao zhong yi yuan	2962
+要去医院	yao qu yi yuan	2962
+进医院了	jin yi yuan le	2962
+都在医院	dou zai yi yuan	2962
+长峰医院	zhang feng yi yuan	2962
+地坛医院	di tan yi yuan	2924
+肝病医生	gan bing yi sheng	2924
+瑞康医院	rui kang yi yuan	2885
+你是医生	ni shi yi sheng	2847
+医生咋说	yi sheng za shuo	2847
+医生在么	yi sheng zai me	2847
+医生让我	yi sheng rang wo	2847
+医生说了	yi sheng shuo le	2847
+医生说我	yi sheng shuo wo	2847
+医生说是	yi sheng shuo shi	2847
+医生说的	yi sheng shuo de	2847
+去看医生	qu kan yi sheng	2847
+听医生的	ting yi sheng de	2847
+小陈医生	xiao chen yi sheng	2847
+性治疗师	xing zhi liao shi	2847
+我是医生	wo shi yi sheng	2847
+看医生了	kan yi sheng le	2847
+夺魂医生	duo hun yi sheng	2770
+隆鼻手术	long bi shou shu	2770
+杏林医院	xing lin yi yuan	2731
+不做手术	bu zuo shou shu	2693
+你做手术	ni zuo shou shu	2693
+做了手术	zuo le shou shu	2693
+做完手术	zuo wan shou shu	2693
+做手术了	zuo shou shu le	2693
+做手术的	zuo shou shu de	2693
+做的手术	zuo de shou shu	2693
+动完手术	dong wan shou shu	2693
+动手术了	dong shou shu le	2693
+我做手术	wo zuo shou shu	2693
+手术了吗	shou shu le ma	2693
+手术入路	shou shu ru lu	2693
+植发手术	zhi fa shou shu	2693
+脱敏治疗	tuo min zhi liao	2693
+要做手术	yao zuo shou shu	2693
+妇婴医院	fu ying yi yuan	2462
+有高血压	you gao xue ya	2462
+高血压等	gao xue ya deng	2462
+肾盂肿瘤	shen yu zhong liu	2077
+附睾肿瘤	fu gao zhong liu	2077
+开颅手术	kai lu shou shu	1885
+颅脑手术	lu nao shou shu	1847
+剖腹手术	pou fu shou shu	1654

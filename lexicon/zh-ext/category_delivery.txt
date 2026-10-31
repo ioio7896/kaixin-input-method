@@ -1,9 +1,10 @@
 # 开心离线输入法分类补充：快递物流
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 物流信息	wu liu xin xi	8800
+可以快递	ke yi kuai di	6231
 上门取件	shang men qu jian	6100
 上门派送	shang men pai song	6100
 上门送件	shang men song jian	6100
@@ -67,7 +68,44 @@
 面单信息	mian dan xin xi	6100
 预约取件	yu yue qu jian	6100
 首重费用	shou zhong fei yong	6100
+快递信息	kuai di xin xi	6000
+快递过去	kuai di guo qu	6000
+一个快递	yi ge kuai di	5808
+两个快递	liang ge kuai di	5808
+京东快递	jing dong kuai di	5808
+什么快递	shen me kuai di	5808
+其他快递	qi ta kuai di	5808
+快递公司	kuai di gong si	5808
+快递地址	kuai di di zhi	5808
+快递服务	kuai di fu wu	5808
+快递谢谢	kuai di xie xie	5808
+快递超市	kuai di chao shi	5808
+收到快递	shou dao kuai di	5808
+没有快递	mei you kuai di	5808
+现在快递	xian zai kuai di	5808
+还有快递	hai you kuai di	5808
+这个快递	zhe ge kuai di	5808
+这个快递	zhei ge kuai di	5808
+那个快递	na ge kuai di	5808
+几个快递	ji ge kuai di	5770
+快递给你	kuai di gei ni	5770
+快递过来	kuai di guo lai	5654
+三个快递	san ge kuai di	5616
+死亡快递	si wang kuai di	5616
+天天快递	tian tian kuai di	5577
+给你快递	gei ni kuai di	5462
+普通快递	pu tong kuai di	5424
 收件人	shou jian ren	5414
+哪个快递	na ge kuai di	5347
+好多快递	hao duo kuai di	5347
+快递人生	kuai di ren sheng	5347
+超级快递	chao ji kuai di	5347
+东京快递	dong jing kuai di	5308
+快递放在	kuai di fang zai	5270
+爱情快递	ai qing kuai di	5270
+联邦快递	lian bang kuai di	5270
+幸福快递	xing fu kuai di	5231
+有个快递	you ge kuai di	5231
 包裹已经发出	bao guo yi jing fa chu	5200
 包裹已经签收	bao guo yi jing qian shou	5200
 包裹正在处理中	bao guo zheng zai chu li zhong	5200
@@ -83,6 +121,17 @@
 订单正在处理中	ding dan zheng zai chu li zhong	5200
 订单正在配送	ding dan zheng zai pei song	5200
 订单还没收到	ding dan hai mo shou dao	5200
+恐怖快递	kong bu kuai di	5193
+采购物流	cai gou wu liu	5154
+生产物流	sheng chan wu liu	5116
+没有物流	mei you wu liu	5039
+物流中心	wu liu zhong xin	5039
+物流管理	wu liu guan li	5000
+物流线路	wu liu xian lu	5000
+物流网络	wu liu wang luo	5000
+物流金融	wu liu jin rong	5000
+虚拟物流	xu ni wu liu	4962
+指定快递	zhi ding kuai di	4924
 请修改取件时间	qing xiu gai qu jian shi jian	4900
 请修改取件时间一下	qing xiu gai qu jian shi jian yi xia	4900
 请修改寄件地址	qing xiu gai ji jian di zhi	4900
@@ -243,4 +292,242 @@
 麻烦确认物流信息	ma fan que ren wu liu xin xi	4900
 麻烦确认送货地址	ma fan que ren song huo di zhi	4900
 麻烦确认配送时间	ma fan que ren pei song shi jian	4900
+发个快递	fa ge kuai di	4808
+终极快递	zhong ji kuai di	4808
+快递大哥	kuai di da ge	4770
+面包快递	mian bao kuai di	4731
+交通物流	jiao tong wu liu	4693
+什么物流	shen me wu liu	4693
+什么物流	shen mo wu liu	4693
+企业物流	qi ye wu liu	4693
+传统物流	chuan tong wu liu	4693
+供应物流	gong ying wu liu	4693
+区域物流	qu yu wu liu	4693
+合同物流	he tong wu liu	4693
+回收物流	hui shou wu liu	4693
+国际物流	guo ji wu liu	4693
+城市物流	cheng shi wu liu	4693
+天快递	tian kuai di	4693
+工业物流	gong ye wu liu	4693
+我快递	wo kuai di	4693
+拿个快递	na ge kuai di	4693
+新宁物流	xin ning wu liu	4693
+港口物流	gang kou wu liu	4693
+物流企业	wu liu qi ye	4693
+物流作业	wu liu zuo ye	4693
+物流公司	wu liu gong si	4693
+物流咨询	wu liu zi xun	4693
+物流基地	wu liu ji di	4693
+物流大厦	wu liu da sha	4693
+物流工程	wu liu gong cheng	4693
+物流很快	wu liu hen kuai	4693
+物流战略	wu liu zhan lue	4693
+物流政策	wu liu zheng ce	4693
+物流效率	wu liu xiao lv	4693
+物流时间	wu liu shi jian	4693
+物流显示	wu liu xian shi	4693
+物流服务	wu liu fu wu	4693
+物流活动	wu liu huo dong	4693
+物流组织	wu liu zu zhi	4693
+物流联盟	wu liu lian meng	4693
+物流英语	wu liu ying yu	4693
+物流营销	wu liu ying xiao	4693
+物流运输	wu liu yun shu	4693
+物流部门	wu liu bu men	4693
+物流销售	wu liu xiao shou	4693
+现代物流	xian dai wu liu	4693
+社会物流	she hui wu liu	4693
+绿色物流	lv se wu liu	4693
+能源物流	neng yuan wu liu	4693
+钢铁物流	gang tie wu liu	4693
+销售物流	xiao shou wu liu	4693
+快递高手	kuai di gao shou	4654
+物流单元	wu liu dan yuan	4616
+致命快递	zhi ming kuai di	4616
+物流总监	wu liu zong jian	4577
+宏观物流	hong guan wu liu	4539
+拿下快递	na xia kuai di	4539
+物流园区	wu liu yuan qu	4539
+一个包裹	yi ge bao guo	4500
+包裹男人	bao guo nan ren	4500
+快递包裹	kuai di bao guo	4500
+长久物流	chang jiu wu liu	4500
+塑料包裹	su liao bao guo	4462
+邮政快递	you zheng kuai di	4424
+恐吓包裹	kong he bao guo	4385
+极品快递	ji pin kuai di	4347
+物流枢纽	wu liu shu niu	4347
+个快递	ge kuai di	4308
+么快递	me kuai di	4308
+买快递	mai kuai di	4308
+你快递	ni kuai di	4308
+做快递	zuo kuai di	4308
+催快递	cui kuai di	4308
+发快递	fa kuai di	4308
+取快递	qu kuai di	4308
+叫快递	jiao kuai di	4308
+啥快递	sha kuai di	4308
+在快递	zai kuai di	4308
+寄快递	ji kuai di	4308
+小快递	xiao kuai di	4308
+干快递	gan kuai di	4308
+微快递	wei kuai di	4308
+快递不	kuai di bu	4308
+快递业	kuai di ye	4308
+快递了	kuai di le	4308
+快递侠	kuai di xia	4308
+快递到	kuai di dao	4308
+快递单	kuai di dan	4308
+快递去	kuai di qu	4308
+快递号	kuai di hao	4308
+快递吗	kuai di ma	4308
+快递吧	kuai di ba	4308
+快递呀	kuai di ya	4308
+快递呗	kuai di bei	4308
+快递员	kuai di yuan	4308
+快递呢	kuai di ne	4308
+快递哥	kuai di ge	4308
+快递哦	kuai di o	4308
+快递啊	kuai di a	4308
+快递店	kuai di dian	4308
+快递是	kuai di shi	4308
+快递来	kuai di lai	4308
+快递没	kuai di mei	4308
+快递点	kuai di dian	4308
+快递的	kuai di de	4308
+快递盒	kuai di he	4308
+快递站	kuai di zhan	4308
+快递箱	kuai di xiang	4308
+快递袋	kuai di dai	4308
+快递说	kuai di shuo	4308
+快递车	kuai di che	4308
+找快递	zhao kuai di	4308
+把快递	ba kuai di	4308
+拆快递	chai kuai di	4308
+拿快递	na kuai di	4308
+捡快递	jian kuai di	4308
+收快递	shou kuai di	4308
+放快递	fang kuai di	4308
+政快递	zheng kuai di	4308
+是快递	shi kuai di	4308
+有快递	you kuai di	4308
+查快递	cha kuai di	4308
+没快递	mei kuai di	4308
+的快递	de kuai di	4308
+等快递	deng kuai di	4308
+紧紧包裹	jin jin bao guo	4308
+给快递	gei kuai di	4308
+让快递	rang kuai di	4308
+这快递	zhe kuai di	4308
+退快递	tui kuai di	4308
+送快递	song kuai di	4308
+通快递	tong kuai di	4308
+邮快递	you kuai di	4308
+领快递	ling kuai di	4308
+口岸物流	kou an wu liu	4193
+商贸物流	shang mao wu liu	4193
+我取快递	wo qu kuai di	4193
+取个快递	qu ge kuai di	4154
+温馨快递	wen xin kuai di	4154
+仓储物流	cang chu wu liu	4116
+中通快递	zhong tong kuai di	4077
+哪家快递	na jia kuai di	4039
+海尔物流	hai er wu liu	4039
+发物流	fa wu liu	3962
+收件地址	shou jian di zhi	3962
+有物流	you wu liu	3962
+物流网	wu liu wang	3962
+物流仓储	wu liu cang chu	3924
+中创物流	zhong chuang wu liu	3847
+物流配送	wu liu pei song	3847
+空包裹	kong bao guo	3847
+会展物流	hui zhan wu liu	3770
+包裹性	bao guo xing	3770
+真皮包裹	zhen pi bao guo	3731
+铁龙物流	tie long wu liu	3693
+快递惊魂	kuai di jing hun	3616
+查物流	cha wu liu	3577
+没物流	mei wu liu	3577
+物流了	wu liu le	3577
+物流单	wu liu dan	3577
+物流吗	wu liu ma	3577
+物流吧	wu liu ba	3577
+物流城	wu liu cheng	3577
+物流学	wu liu xue	3577
+物流师	wu liu shi	3577
+物流快	wu liu kuai	3577
+物流港	wu liu gang	3577
+物流点	wu liu dian	3577
+物流的	wu liu de	3577
+物流说	wu liu shuo	3577
+物流费	wu liu fei	3577
+物流车	wu liu che	3577
+物流部	wu liu bu	3577
+看物流	kan wu liu	3577
+走物流	zou wu liu	3577
+这物流	zhe wu liu	3577
+德邦快递	de bang kuai di	3539
+德邦物流	de bang wu liu	3539
+去取快递	qu qu kuai di	3500
+冷链物流	leng lian wu liu	3462
+包裹住	bao guo zhu	3462
+包裹单	bao guo dan	3462
+包裹着	bao guo zhe	3462
+包裹里	bao guo li	3462
+取包裹	qu bao guo	3462
+快递小哥	kuai di xiao ge	3462
+拿包裹	na bao guo	3462
+百世快递	bai shi kuai di	3462
+顺丰快递	shun feng kuai di	3462
+圆通快递	yuan tong kuai di	3424
+玩命快递	wan ming kuai di	3424
+包裹严实	bao guo yan shi	3385
+广汇物流	guang hui wu liu	3347
+东航物流	dong hang wu liu	3308
+保税物流	bao shui wu liu	3308
+绝命快递	jue ming kuai di	3308
+夺命快递	duo ming kuai di	3193
+优速快递	you su kuai di	3154
+申通快递	shen tong kuai di	3039
+亡命快递	wang ming kuai di	3000
+你有快递	ni you kuai di	3000
+你的快递	ni de kuai di	3000
+全峰快递	quan feng kuai di	3000
+去拿快递	qu na kuai di	3000
+发啥快递	fa sha kuai di	3000
+取下快递	qu xia kuai di	3000
+取完快递	qu wan kuai di	3000
+取快递了	qu kuai di le	3000
+国通快递	guo tong kuai di	3000
+寄个快递	ji ge kuai di	3000
+寄快递了	ji kuai di le	3000
+快递了吗	kuai di le ma	3000
+快递到了	kuai di dao le	3000
+快递拿了	kuai di na le	3000
+快递来了	kuai di lai le	3000
+我拿快递	wo na kuai di	3000
+我有快递	wo you kuai di	3000
+我的快递	wo de kuai di	3000
+拿了快递	na le kuai di	3000
+拿完快递	na wan kuai di	3000
+拿快递了	na kuai di le	3000
+拿快递去	na kuai di qu	3000
+有你快递	you ni kuai di	3000
+有快递吗	you kuai di ma	3000
+极兔快递	ji tu kuai di	3000
+送快递的	song kuai di de	3000
+韵达快递	yun da kuai di	3000
+领个快递	ling ge kuai di	3000
 寄件人	ji jian ren	2895
+寄件码	ji jian ma	2847
+万林物流	wan lin wu liu	2539
+中谷物流	zhong gu wu liu	2539
+华贸物流	hua mao wu liu	2539
+宇鑫物流	yu xin wu liu	2539
+安能物流	an neng wu liu	2539
+物流也快	wu liu ye kuai	2539
+速运物流	su yun wu liu	2539
+在派件	zai pai jian	1308
+派件中	pai jian zhong	1308
+派件了	pai jian le	1308
+派件员	pai jian yuan	1308

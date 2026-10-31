@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：开发编程
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 代码仓库	dai ma cang ku	8800
 代码审查	dai ma shen cha	8800
@@ -57,3 +57,83 @@
 静态检查	jing tai jian cha	6100
 时间复杂度	shi jian fu za du	6000
 空间复杂度	kong jian fu za du	6000
+代码执行	dai ma zhi xing	5000
+代码运行	dai ma yun xing	5000
+商品代码	shang pin dai ma	5000
+控制代码	kong zhi dai ma	5000
+时间代码	shi jian dai ma	5000
+神秘代码	shen mi dai ma	5000
+红色代码	hong se dai ma	5000
+货币代码	huo bi dai ma	5000
+错误代码	cuo wu dai ma	5000
+颜色代码	yan se dai ma	5000
+黑色代码	hei se dai ma	5000
+蓝色代码	lan se dai ma	4885
+代码优化	dai ma you hua	4847
+智能算法	zhi neng suan fa	4847
+算法语言	suan fa yu yan	4847
+内生变量	nei sheng bian liang	4808
+反应变量	fan ying bian liang	4808
+信用代码	xin yong dai ma	4770
+运算法则	yun suan fa ze	4616
+替换算法	ti huan suan fa	4577
+恶意代码	e yi dai ma	4539
+启动脚本	qi dong jiao ben	4500
+终极代码	zhong ji dai ma	4500
+中介变量	zhong jie bian liang	4462
+关键变量	guan jian bian liang	4462
+图像算法	tu xiang suan fa	4462
+处理算法	chu li suan fa	4462
+控制变量	kong zhi bian liang	4462
+控制算法	kong zhi suan fa	4462
+状态变量	zhuang tai bian liang	4462
+环境变量	huan jing bian liang	4462
+算法交易	suan fa jiao yi	4462
+经济变量	jing ji bian liang	4462
+虚拟变量	xu ni bian liang	4462
+连续变量	lian xu bian liang	4462
+遗传算法	yi chuan suan fa	4462
+顺序变量	shun xu bian liang	4462
+加密算法	jia mi suan fa	4385
+接口参数	jie kou can shu	4347
+接口定义	jie kou ding yi	4347
+接口标准	jie kou biao zhun	4347
+接口类型	jie kou lei xing	4347
+数据接口	shu ju jie kou	4347
+标准接口	biao zhun jie kou	4347
+电源接口	dian yuan jie kou	4347
+程序接口	cheng xu jie kou	4347
+网络接口	wang luo jie kou	4347
+输出接口	shu chu jie kou	4347
+编程技术	bian cheng ji shu	4270
+编程设计	bian cheng she ji	4270
+代码大全	dai ma da quan	4231
+汇编程序	hui bian cheng xu	4231
+编译系统	bian yi xi tong	4231
+拍摄脚本	pai she jiao ben	4193
+脚本语言	jiao ben yu yan	4193
+全局变量	quan ju bian liang	4154
+耳机接口	er ji jie kou	4154
+近似算法	jin si suan fa	4077
+并行接口	bing xing jie kou	4000
+结算法	jie suan fa	3885
+少儿编程	shao er bian cheng	3808
+代码证	dai ma zheng	3770
+写代码	xie dai ma	3770
+宏代码	hong dai ma	3770
+敲代码	qiao dai ma	3770
+离散变量	li san bian liang	3770
+转接口	zhuan jie kou	3731
+接口卡	jie kou ka	3539
+参变量	can bian liang	3462
+接口类	jie kou lei	3462
+数控编程	shu kong bian cheng	3462
+脑机接口	nao ji jie kou	3462
+接口垫	jie kou dian	3347
+接口板	jie kou ban	3347
+编程猫	bian cheng mao	3308
+编程课	bian cheng ke	3308
+编程题	bian cheng ti	3308
+申购代码	shen gou dai ma	3270
+外生变量	wai sheng bian liang	2462
+降噪算法	jiang zao suan fa	2077

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：环境环保
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 大气污染	da qi wu ran	6284
 低碳生活	di tan sheng huo	6100
@@ -49,7 +49,251 @@
 雨污分流	yu wu fen liu	6100
 垃圾回收	la ji hui shou	6000
 生物多样性	sheng wu duo yang xing	6000
+人生态度	ren sheng tai du	5808
+保护生态	bao hu sheng tai	5539
+绿色环保	lv se huan bao	5385
+城市生态	cheng shi sheng tai	5308
+政治生态	zheng zhi sheng tai	5308
+环境生态	huan jing sheng tai	5308
+生态体系	sheng tai ti xi	5308
+生态公园	sheng tai gong yuan	5308
+生态农业	sheng tai nong ye	5308
+生态区域	sheng tai qu yu	5308
+生态危机	sheng tai wei ji	5308
+生态广场	sheng tai guang chang	5308
+生态建设	sheng tai jian she	5308
+生态文化	sheng tai wen hua	5308
+生态文明	sheng tai wen ming	5308
+生态条件	sheng tai tiao jian	5308
+生态艺术	sheng tai yi shu	5308
+美丽生态	mei li sheng tai	5308
+自然生态	zi ran sheng tai	5308
+金融生态	jin rong sheng tai	5308
+环保局长	huan bao ju zhang	5270
+城市污染	cheng shi wu ran	5193
+工业污染	gong ye wu ran	5193
+污染环境	wu ran huan jing	5193
+病毒污染	bing du wu ran	5193
+社会污染	she hui wu ran	5193
+绿色生态	lv se sheng tai	5193
 污水处理	wu shui chu li	5163
+一群垃圾	yi qun la ji	5116
+什么垃圾	shen me la ji	5116
+什么垃圾	shen mo la ji	5116
+医疗垃圾	yi liao la ji	5116
+垃圾一个	la ji yi ge	5116
+垃圾东西	la ji dong xi	5116
+垃圾垃圾	la ji la ji	5116
+垃圾文件	la ji wen jian	5116
+垃圾游戏	la ji you xi	5116
+垃圾视频	la ji shi pin	5116
+垃圾食品	la ji shi pin	5116
+就是垃圾	jiu shi la ji	5116
+污染空气	wu ran kong qi	5116
+环保中心	huan bao zhong xin	5116
+环保产业	huan bao chan ye	5116
+环保家庭	huan bao jia ting	5116
+环保少女	huan bao shao nv	5116
+环保标准	huan bao biao zhun	5116
+环保植物	huan bao zhi wu	5116
+环保设备	huan bao she bei	5116
+生态摄影	sheng tai she ying	5116
+生态环保	sheng tai huan bao	5116
+生活垃圾	sheng huo la ji	5116
+这么垃圾	zhe me la ji	5116
+海洋污染	hai yang wu ran	5077
+创业环保	chuang ye huan bao	5000
+垃圾男孩	la ji nan hai	5000
+生态福建	sheng tai fu jian	5000
+白色垃圾	bai se la ji	4962
+生态难民	sheng tai nan min	4924
+清理垃圾	qing li la ji	4885
+生态灾难	sheng tai zai nan	4847
+环保风暴	huan bao feng bao	4808
+产地生态	chan di sheng tai	4770
+暴露垃圾	bao lu la ji	4770
+视觉污染	shi jue wu ran	4770
+东湖生态	dong hu sheng tai	4731
+中原环保	zhong yuan huan bao	4731
+南湖生态	nan hu sheng tai	4731
+垃圾王子	la ji wang zi	4731
+惠城环保	hui cheng huan bao	4731
+永清环保	yong qing huan bao	4731
+垃圾处置	la ji chu zhi	4654
+海峡环保	hai xia huan bao	4654
+污染伤口	wu ran shang kou	4616
+生态效益	sheng tai xiao yi	4577
+有害垃圾	you hai la ji	4539
+环保总局	huan bao zong ju	4539
+生态乐园	sheng tai le yuan	4539
+细菌污染	xi jun wu ran	4539
+生态家园	sheng tai jia yuan	4500
+生态景观	sheng tai jing guan	4500
+垃圾队友	la ji dui you	4462
+未受污染	wei shou wu ran	4462
+农药污染	nong yao wu ran	4424
+二次污染	er ci wu ran	4385
+微生态	wei sheng tai	4385
+水生态	shui sheng tai	4385
+节能环保	jie neng huan bao	4385
+噪音污染	zao yin wu ran	4347
+垃圾大王	la ji da wang	4308
+垃圾玩意	la ji wan yi	4308
+远达环保	yuan da huan bao	4270
+不垃圾	bu la ji	4231
+很垃圾	hen la ji	4231
+最垃圾	zui la ji	4231
+环保卫士	huan bao wei shi	4231
+环保督察	huan bao du cha	4231
+连环保	lian huan bao	4231
+园林生态	yuan lin sheng tai	4193
+生态园林	sheng tai yuan lin	4193
+生态风光	sheng tai feng guang	4193
+中环环保	zhong huan huan bao	4000
+生态兴	sheng tai xing	4000
+生态城	sheng tai cheng	4000
+生态家	sheng tai jia	4000
+生态木	sheng tai mu	4000
+生态板	sheng tai ban	4000
+生态箱	sheng tai xiang	4000
+生态群	sheng tai qun	4000
+生态链	sheng tai lian	4000
+生态门	sheng tai men	4000
+圣元环保	sheng yuan huan bao	3924
+倾倒垃圾	qing dao la ji	3885
+垃圾围城	la ji wei cheng	3885
+抗污染	kang wu ran	3885
+放射污染	fang she wu ran	3885
+污染了	wu ran le	3885
+污染光	wu ran guang	3885
+污染带	wu ran dai	3885
+重污染	zhong wu ran	3885
+防污染	fang wu ran	3885
+丢垃圾	diu la ji	3847
+中创环保	zhong chuang huan bao	3847
+你垃圾	ni la ji	3847
+倒垃圾	dao la ji	3847
+到垃圾	dao la ji	3847
+可垃圾	ke la ji	3847
+垃圾了	la ji le	3847
+垃圾人	la ji ren	3847
+垃圾侠	la ji xia	3847
+垃圾号	la ji hao	3847
+垃圾吧	la ji ba	3847
+垃圾坑	la ji keng	3847
+垃圾房	la ji fang	3847
+垃圾斗	la ji dou	3847
+垃圾池	la ji chi	3847
+垃圾狗	la ji gou	3847
+垃圾的	la ji de	3847
+垃圾篓	la ji lou	3847
+垃圾群	la ji qun	3847
+垃圾虫	la ji chong	3847
+垃圾街	la ji jie	3847
+垃圾话	la ji hua	3847
+垃圾货	la ji huo	3847
+垃圾费	la ji fei	3847
+垃圾道	la ji dao	3847
+垃圾鱼	la ji yu	3847
+多垃圾	duo la ji	3847
+大垃圾	da la ji	3847
+太垃圾	tai la ji	3847
+好垃圾	hao la ji	3847
+小垃圾	xiao la ji	3847
+当垃圾	dang la ji	3847
+我垃圾	wo la ji	3847
+扔垃圾	reng la ji	3847
+扫垃圾	sao la ji	3847
+把垃圾	ba la ji	3847
+拉垃圾	la la ji	3847
+捡垃圾	jian la ji	3847
+收垃圾	shou la ji	3847
+是垃圾	shi la ji	3847
+更垃圾	geng la ji	3847
+有垃圾	you la ji	3847
+查环保	cha huan bao	3847
+清垃圾	qing la ji	3847
+湿垃圾	shi la ji	3847
+环保剑	huan bao jian	3847
+环保厅	huan bao ting	3847
+环保币	huan bao bi	3847
+环保漆	huan bao qi	3847
+环保网	huan bao wang	3847
+环保袋	huan bao dai	3847
+生产废水	sheng chan fei shui	3847
+生态家居	sheng tai jia ju	3847
+的垃圾	de la ji	3847
+真垃圾	zhen la ji	3847
+装垃圾	zhuang la ji	3847
+贼垃圾	zei la ji	3847
+还垃圾	hai la ji	3847
+这垃圾	zhe la ji	3847
+都垃圾	dou la ji	3847
+大千生态	da qian sheng tai	3770
+生态农庄	sheng tai nong zhuang	3770
+重度污染	zhong du wu ran	3731
+垃圾清运	la ji qing yun	3693
+东江环保	dong jiang huan bao	3654
+轻度污染	qing du wu ran	3654
+生态宜居	sheng tai yi ju	3616
+先河环保	xian he huan bao	3539
+废水管	fei shui guan	3500
+乱丢垃圾	luan diu la ji	3462
+乱倒垃圾	luan dao la ji	3462
+废水槽	fei shui cao	3462
+甲醛污染	jia quan wu ran	3462
+铁汉生态	tie han sheng tai	3462
+龙净环保	long jing huan bao	3462
+低碳环保	di tan huan bao	3385
+臭氧污染	chou yang wu ran	3385
+菲达环保	fei da huan bao	3385
+三聚环保	san ju huan bao	3308
+生态茶园	sheng tai cha yuan	3308
+生态补水	sheng tai bu shui	3308
+中度污染	zhong du wu ran	3270
+天域生态	tian yu sheng tai	3231
+富春环保	fu chun huan bao	3231
+生态茶楼	sheng tai cha lou	3193
+垃圾填埋	la ji tian mai	3077
+核废水	he fei shui	3039
+生态廊道	sheng tai lang dao	2924
+凯迪生态	kai di sheng tai	2885
 环境监测	huan jing jian ce	2799
+东珠生态	dong zhu sheng tai	2770
+古生态园	gu sheng tai yuan	2770
+美晨生态	mei chen sheng tai	2770
+蒙草生态	meng cao sheng tai	2770
+迪沟生态	di gou sheng tai	2770
+面源污染	mian yuan wu ran	2731
+中电环保	zhong dian huan bao	2693
+乱扔垃圾	luan reng la ji	2693
+伟明环保	wei ming huan bao	2693
+你个垃圾	ni ge la ji	2693
+倒个垃圾	dao ge la ji	2693
+傻不垃圾	sha bu la ji	2693
+同兴环保	tong xing huan bao	2693
+嘉澳环保	jia ao huan bao	2693
+垃圾桶了	la ji tong le	2693
+垃圾桶里	la ji tong li	2693
+大垃圾袋	da la ji dai	2693
+太垃圾了	tai la ji le	2693
+市环保局	shi huan bao ju	2693
+德创环保	de chuang huan bao	2693
+我是垃圾	wo shi la ji	2693
+扔个垃圾	reng ge la ji	2693
+扔垃圾桶	reng la ji tong	2693
+景津环保	jing jin huan bao	2693
+盛运环保	sheng yun huan bao	2693
+神雾环保	shen wu huan bao	2693
+联泰环保	lian tai huan bao	2693
+荣晟环保	rong cheng huan bao	2693
+都是垃圾	dou shi la ji	2693
+餐厨垃圾	can chu la ji	2693
+鹏鹞环保	peng yao huan bao	2693
+可燃垃圾	ke ran la ji	2616
+扬尘污染	yang chen wu ran	2616
+厨余垃圾	chu yu la ji	2577
+易腐垃圾	yi fu la ji	2577
+绿茵生态	lv yin sheng tai	2116
 土壤污染	tu rang wu ran	803
 排污口	pai wu kou	209

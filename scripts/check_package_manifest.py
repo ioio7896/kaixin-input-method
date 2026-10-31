@@ -59,7 +59,7 @@ REQUIRED_FILES = {
 COMPONENT_PREFIXES = {
     "python_runtime": ".python-runtime/",
     "rapidocr_packages": ".python-packages/",
-    "rapidocr_payload": "RapidOCR-3.9.0/",
+    "rapidocr_payload": "RapidOCRLite/",
 }
 
 
@@ -185,7 +185,7 @@ def validate_slim_package_layout(package: Path, errors: list[str]) -> None:
     python_roots = [
         package / ".python-runtime",
         package / ".python-packages",
-        package / "RapidOCR-3.9.0" / "python",
+        package / "RapidOCRLite" / "python",
     ]
     forbidden: list[str] = []
     for python_root in python_roots:

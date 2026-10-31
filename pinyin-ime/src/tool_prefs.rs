@@ -12,19 +12,6 @@ pub fn ocr_language() -> String {
     config_value("ocr", "language").unwrap_or_else(|| "zh".to_string())
 }
 
-pub fn ocr_execution_provider() -> String {
-    let value = std::env::var("KAIXIN_OCR_PROVIDER")
-        .ok()
-        .or_else(|| config_value("ocr", "provider"))
-        .unwrap_or_else(|| "auto".to_string())
-        .trim()
-        .to_ascii_lowercase();
-    match value.as_str() {
-        "cpu" | "directml" | "cuda" => value,
-        _ => "auto".to_string(),
-    }
-}
-
 /// Best-effort persistence for choices made in the standalone OCR window.
 /// A failed preference write must never prevent recognition.
 pub fn set_ocr_preference(key: &str, value: &str) -> Result<(), String> {

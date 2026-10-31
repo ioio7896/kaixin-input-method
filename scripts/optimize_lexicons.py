@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate reviewed categories and losslessly consolidate three-char sources."""
+"""Refresh source fragments and consolidate the base three-character lexicon."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -84,7 +84,6 @@ def main() -> None:
     argparse.ArgumentParser(description=__doc__).parse_args()
     from build_modern_it_lexicons import CATEGORIES, OUT, write
     from build_common_phrase_lexicons import build_communication_fragments
-    from merge_zh_ext_lexicons import merge_lexicons
     for tag, (seeds, keywords) in CATEGORIES.items():
         write(OUT / f"{tag}.txt", tag, seeds, keywords, [])
     build_communication_fragments()
@@ -93,8 +92,9 @@ def main() -> None:
     new_long = ZH / "life_common_phrases.txt"
     if old_long.exists() and not new_long.exists():
         new_long.write_text(old_long.read_text(encoding="utf-8-sig"), encoding="utf-8")
-    for name, count in merge_lexicons().items():
-        print(name, count)
+    # Published zh-ext dictionaries come from the imported catalog. The old
+    # fragment merger must not silently replace those independently maintained
+    # files during a base-lexicon refresh.
     retire_migrated_files()
     from lexicon_quality import apply_quality
     report = apply_quality()

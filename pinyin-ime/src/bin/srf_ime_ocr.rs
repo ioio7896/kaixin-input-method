@@ -113,45 +113,6 @@ enum OcrSpeedProfile {
     Accurate,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum OcrExecutionProvider {
-    Auto,
-    Cpu,
-    DirectMl,
-    Cuda,
-}
-
-impl OcrExecutionProvider {
-    const ALL: [Self; 4] = [Self::Auto, Self::Cpu, Self::DirectMl, Self::Cuda];
-
-    fn from_config(value: &str) -> Self {
-        match value.trim().to_ascii_lowercase().as_str() {
-            "cpu" => Self::Cpu,
-            "directml" | "dml" => Self::DirectMl,
-            "cuda" => Self::Cuda,
-            _ => Self::Auto,
-        }
-    }
-
-    fn as_config(self) -> &'static str {
-        match self {
-            Self::Auto => "auto",
-            Self::Cpu => "cpu",
-            Self::DirectMl => "directml",
-            Self::Cuda => "cuda",
-        }
-    }
-
-    fn label(self) -> &'static str {
-        match self {
-            Self::Auto => "自动",
-            Self::Cpu => "CPU",
-            Self::DirectMl => "DirectML",
-            Self::Cuda => "CUDA",
-        }
-    }
-}
-
 impl OcrSpeedProfile {
     fn from_config(value: &str) -> Self {
         match value.trim().to_ascii_lowercase().as_str() {
@@ -464,7 +425,6 @@ struct OcrApp {
     task_generation: u64,
     language: OcrLanguageMode,
     profile: OcrSpeedProfile,
-    provider: OcrExecutionProvider,
     crop: CropRect,
     auto_border_crop: bool,
     contrast: bool,
@@ -533,7 +493,6 @@ impl OcrApp {
             task_generation: 0,
             language: OcrLanguageMode::from_config(&tool_prefs::ocr_language()),
             profile: ocr_speed_profile(),
-            provider: OcrExecutionProvider::from_config(&tool_prefs::ocr_execution_provider()),
             crop: CropRect::default(),
             auto_border_crop: false,
             contrast: false,
@@ -1501,29 +1460,7 @@ impl OcrApp {
                     ui.add_enabled_ui(!self.busy, |ui| {
                         ui.label(RichText::new("图像处理").strong());
                         ui.add_space(8.0);
-                        ui.label(RichText::new("推理后端").strong());
-                        ui.horizontal_wrapped(|ui| {
-                            for provider in OcrExecutionProvider::ALL {
-                                if ui
-                                    .selectable_value(
-                                        &mut self.provider,
-                                        provider,
-                                        provider.label(),
-                                    )
-                                    .on_hover_text(
-                                        "自动优先使用已安装的 CUDA/DirectML，否则回退 CPU。",
-                                    )
-                                    .clicked()
-                                {
-                                    let _ = tool_prefs::set_ocr_preference(
-                                        "provider",
-                                        provider.as_config(),
-                                    );
-                                    // Provider selection is fixed when ORT sessions are built.
-                                    shutdown_rapidocr_process();
-                                }
-                            }
-                        });
+                        ui.label("推理后端：CPU");
                         ui.checkbox(&mut self.auto_border_crop, "自动按边框裁剪");
                         ui.checkbox(&mut self.contrast, "增强对比度");
                         ui.checkbox(&mut self.binarize, "黑白化");
@@ -2855,34 +2792,7 @@ struct RapidOcrProcess {
 
 fn rapidocr_process_slot() -> &'static Mutex<Option<RapidOcrProcess>> {
     static PROCESS: OnceLock<Mutex<Option<RapidOcrProcess>>> = OnceLock::new();
-    PROCESS.get_or_init(|| {
-        // The reaper never waits for a busy inference or runs on the UI thread.
-        let _ = std::thread::Builder::new()
-            .name("kaixin-ocr-idle".to_string())
-            .spawn(|| loop {
-                std::thread::sleep(Duration::from_secs(30));
-                let Some(slot) = PROCESS.get() else { continue };
-                let Ok(mut guard) = slot.try_lock() else {
-                    continue;
-                };
-                if guard
-                    .as_ref()
-                    .is_some_and(|process| process.last_used.elapsed() >= Duration::from_secs(180))
-                {
-                    let process = guard.take();
-                    drop(guard);
-                    if let Some(mut process) = process {
-                        process.terminate();
-                    }
-                    runtime_log::log_ocr(
-                        runtime_log::RuntimeLogLevel::Basic,
-                        "rapidocr_idle_release",
-                        "idle_secs=180",
-                    );
-                }
-            });
-        Mutex::new(None)
-    })
+    PROCESS.get_or_init(|| Mutex::new(None))
 }
 
 impl RapidOcrProcess {
@@ -3394,7 +3304,7 @@ fn spawn_rapidocr_process() -> Result<RapidOcrProcess, String> {
         .arg("--rapidocr-root")
         .arg(&rapidocr_root)
         .arg("--provider")
-        .arg(tool_prefs::ocr_execution_provider())
+        .arg("cpu")
         .env("PYTHONUTF8", "1")
         .env("PYTHONIOENCODING", "utf-8")
         .stdout(Stdio::piped())
@@ -3485,7 +3395,7 @@ fn run_rapidocr_oneshot_command_with_timeout(
         .arg("--max-side-len")
         .arg(profile.max_side_len().to_string())
         .arg("--provider")
-        .arg(tool_prefs::ocr_execution_provider())
+        .arg("cpu")
         .env("PYTHONUTF8", "1")
         .env("PYTHONIOENCODING", "utf-8")
         .stdout(Stdio::piped())

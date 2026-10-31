@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：软件系统
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 数据备份	shu ju bei fen	8800
 数据恢复	shu ju hui fu	8800
@@ -51,4 +51,170 @@
 软件设置	ruan jian she zhi	6100
 输入法设置	shu ru fa she zhi	6100
 隐私模式	yin si mo shi	6100
+一个软件	yi ge ruan jian	6077
+下载软件	xia zai ruan jian	6077
+中国软件	zhong guo ruan jian	6077
+什么软件	shen me ruan jian	6077
+其他软件	qi ta ruan jian	6077
+支持软件	zhi chi ruan jian	6077
+教育软件	jiao yu ruan jian	6077
+游戏软件	you xi ruan jian	6077
+系统软件	xi tong ruan jian	6077
+网络软件	wang luo ruan jian	6077
+资料软件	zi liao ruan jian	6077
+软件使用	ruan jian shi yong	6077
+软件技术	ruan jian ji shu	6077
+软件系统	ruan jian xi tong	6077
+这个软件	zhe ge ruan jian	6077
+这个软件	zhei ge ruan jian	6077
+骑行软件	qi xing ruan jian	6077
+关于软件	guan yu ruan jian	6039
+安全软件	an quan ruan jian	6039
+开发软件	kai fa ruan jian	6039
+产品软件	chan pin ruan jian	6000
+那个软件	na ge ruan jian	6000
+音乐软件	yin yue ruan jian	5962
+学习软件	xue xi ruan jian	5924
+视频软件	shi pin ruan jian	5924
+软件设计	ruan jian she ji	5924
+专业软件	zhuan ye ruan jian	5885
+处理软件	chu li ruan jian	5885
+软件处理	ruan jian chu li	5885
+利用软件	li yong ruan jian	5808
+购物软件	gou wu ruan jian	5808
+行业软件	hang ye ruan jian	5770
+专家软件	zhuan jia ruan jian	5731
+广东软件	guang dong ruan jian	5693
+综合软件	zong he ruan jian	5693
+软件结构	ruan jian jie gou	5693
+软件产业	ruan jian chan ye	5654
+软件应用	ruan jian ying yong	5654
+软件调整	ruan jian tiao zheng	5616
+交易软件	jiao yi ruan jian	5577
+小说软件	xiao shuo ruan jian	5577
+制作软件	zhi zuo ruan jian	5539
+工具软件	gong ju ruan jian	5539
+商业软件	shang ye ruan jian	5500
+软件协会	ruan jian xie hui	5500
 安装包	an zhuang bao	5479
+国外软件	guo wai ruan jian	5462
+恢复软件	hui fu ruan jian	5424
+软件程序	ruan jian cheng xu	5424
+大型软件	da xing ruan jian	5385
+哪个软件	nei ge ruan jian	5347
+翻译软件	fan yi ruan jian	5347
+注册软件	zhu ce ruan jian	5308
+测试软件	ce shi ruan jian	5308
+软件名称	ruan jian ming cheng	5308
+直播软件	zhi bo ruan jian	5270
+拍摄软件	pai she ruan jian	5231
+病毒软件	bing du ruan jian	5193
+绿色软件	lv se ruan jian	5193
+大众软件	da zhong ruan jian	5154
+上传软件	shang chuan ruan jian	5039
+赚钱软件	zhuan qian ruan jian	5039
+软件大道	ruan jian da dao	5000
+聊天软件	liao tian ruan jian	4962
+软件商店	ruan jian shang dian	4962
+转换软件	zhuan huan ruan jian	4924
+共享软件	gong xiang ruan jian	4885
+有软件	you ruan jian	4885
+社交软件	she jiao ruan jian	4885
+财务软件	cai wu ruan jian	4885
+隐藏软件	yin cang ruan jian	4847
+后期软件	hou qi ruan jian	4808
+辅助软件	fu zhu ruan jian	4808
+图像软件	tu xiang ruan jian	4770
+通用软件	tong yong ruan jian	4770
+格式软件	ge shi ruan jian	4731
+金山软件	jin shan ruan jian	4731
+办公软件	ban gong ruan jian	4693
+国产软件	guo chan ruan jian	4693
+实用软件	shi yong ruan jian	4693
+常用软件	chang yong ruan jian	4693
+绘画软件	hui hua ruan jian	4693
+软件厂商	ruan jian chang shang	4693
+软件大厦	ruan jian da sha	4693
+唱歌软件	chang ge ruan jian	4654
+随机软件	sui ji ruan jian	4654
+传输软件	chuan shu ruan jian	4616
+拍照软件	pai zhao ruan jian	4616
+软件缺陷	ruan jian que xian	4616
+交友软件	jiao you ruan jian	4577
+外贸软件	wai mao ruan jian	4577
+压缩软件	ya suo ruan jian	4539
+下软件	xia ruan jian	4500
+啥软件	sha ruan jian	4500
+小软件	xiao ruan jian	4500
+新软件	xin ruan jian	4500
+没软件	mei ruan jian	4500
+用软件	yong ruan jian	4500
+的软件	de ruan jian	4500
+破软件	po ruan jian	4500
+软件上	ruan jian shang	4500
+软件了	ruan jian le	4500
+软件吗	ruan jian ma	4500
+软件吧	ruan jian ba	4500
+软件呢	ruan jian ne	4500
+软件库	ruan jian ku	4500
+软件版	ruan jian ban	4500
+软件狗	ruan jian gou	4500
+软件的	ruan jian de	4500
+软件站	ruan jian zhan	4500
+软件网	ruan jian wang	4500
+软件部	ruan jian bu	4500
+软件里	ruan jian li	4500
+这软件	zhe ruan jian	4500
+那软件	na ruan jian	4500
+靠软件	kao ruan jian	4500
+扫描软件	sao miao ruan jian	4424
+精品软件	jing pin ruan jian	4424
+行情软件	hang qing ruan jian	4385
+软件加密	ruan jian jia mi	4385
+新版软件	xin ban ruan jian	4347
+抓图软件	zhua tu ruan jian	4308
+挣钱软件	zheng qian ruan jian	4308
+浪潮软件	lang chao ruan jian	4308
+软件界面	ruan jian jie mian	4308
+盗版软件	dao ban ruan jian	4270
+网管软件	wang guan ruan jian	4231
+黑客软件	hei ke ruan jian	4231
+必备软件	bi bei ruan jian	4193
+软件教程	ruan jian jiao cheng	4193
+剪辑软件	jian ji ruan jian	4154
+彩票软件	cai piao ruan jian	4154
+超图软件	chao tu ruan jian	4116
+跑步软件	pao bu ruan jian	4116
+遥控软件	yao kong ruan jian	4116
+傻瓜软件	sha gua ruan jian	4077
+画画软件	hua hua ruan jian	4039
+听歌软件	ting ge ruan jian	4000
+正版软件	zheng ban ruan jian	4000
+远光软件	yuan guang ruan jian	4000
+格尔软件	ge er ruan jian	3924
+选股软件	xuan gu ruan jian	3924
+仿真软件	fang zhen ruan jian	3847
+修图软件	xiu tu ruan jian	3847
+解码软件	jie ma ruan jian	3847
+顶点软件	ding dian ruan jian	3847
+打车软件	da che ruan jian	3731
+抢票软件	qiang piao ruan jian	3731
+调色软件	tiao se ruan jian	3731
+搜题软件	sou ti ruan jian	3500
+防毒软件	fang du ruan jian	3462
+东华软件	dong hua ruan jian	3347
+画图软件	hua tu ruan jian	3270
+博思软件	bo si ruan jian	3116
+久其软件	jiu qi ruan jian	3077
+做题软件	zuo ti ruan jian	3077
+南威软件	nan wei ruan jian	3077
+宝信软件	bao xin ruan jian	3077
+录屏软件	lu ping ruan jian	3077
+榕基软件	rong ji ruan jian	3077
+润和软件	run he ruan jian	3077
+科蓝软件	ke lan ruan jian	3077
+网达软件	wang da ruan jian	3077
+软件外包	ruan jian wai bao	3077
+陪玩软件	pei wan ruan jian	3077
+鼎捷软件	ding jie ruan jian	3077
+华宇软件	hua yu ruan jian	2731

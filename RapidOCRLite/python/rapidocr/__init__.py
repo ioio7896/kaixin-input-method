@@ -1,0 +1,35 @@
+"""RapidOCR 5 (``rapidocr`` 5.0.0a15).
+
+This is the next major version of the ``rapidocr`` package. The import name
+is still ``rapidocr``. The 3.x line lives on ``main``; see ``python/README.md``
+for what changed.
+"""
+
+__version__ = "5.0.0a15"
+
+from .download import download_models
+from .main import RapidOCR, RapidOCRError
+from .typings import EngineType, LangCls, LangDet, LangRec, ModelType, OCRVersion
+from .utils.load_image import LoadImageError, MemoryImage, RawMemoryImage
+from .utils.vis_res import VisRes
+from ._native import backend_info, cpu_info, request_vulkan_device
+
+__all__ = [
+    "__version__",
+    "RapidOCR",
+    "RapidOCRError",
+    "LoadImageError",
+    "MemoryImage",
+    "RawMemoryImage",
+    "VisRes",
+    "EngineType",
+    "LangCls",
+    "LangDet",
+    "LangRec",
+    "ModelType",
+    "OCRVersion",
+    "download_models",
+    "cpu_info",
+    "backend_info",
+    "request_vulkan_device",
+]

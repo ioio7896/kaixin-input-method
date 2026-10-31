@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：保险理赔
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 医疗保险	yi liao bao xian	9095
 受益人	shou yi ren	8384
@@ -50,5 +50,197 @@
 门诊费用	men zhen fei yong	6100
 雇主责任险	gu zhu ze ren xian	6100
 投保人	tou bao ren	5738
+健康保险	jian kang bao xian	5539
+个人保险	ge ren bao xian	5424
+合作保险	he zuo bao xian	5424
+保险关系	bao xian guan xi	5385
+军人保险	jun ren bao xian	5270
+事故保险	shi gu bao xian	5116
+人民保险	ren min bao xian	5116
+企业保险	qi ye bao xian	5116
+保证保险	bao zheng bao xian	5116
+保险一点	bao xian yi dian	5116
+保险事故	bao xian shi gu	5116
+保险产品	bao xian chan pin	5116
+保险代理	bao xian dai li	5116
+保险价值	bao xian jia zhi	5116
+保险制度	bao xian zhi du	5116
+保险原则	bao xian yuan ze	5116
+保险商品	bao xian shang pin	5116
+保险基金	bao xian ji jin	5116
+保险客户	bao xian ke hu	5116
+保险对象	bao xian dui xiang	5116
+保险市场	bao xian shi chang	5116
+保险成本	bao xian cheng ben	5116
+保险投资	bao xian tou zi	5116
+保险服务	bao xian fu wu	5116
+保险机构	bao xian ji gou	5116
+保险条例	bao xian tiao li	5116
+保险管理	bao xian guan li	5116
+保险经营	bao xian jing ying	5116
+保险行业	bao xian hang ye	5116
+保险资金	bao xian zi jin	5116
+保险销售	bao xian xiao shou	5116
+保险需求	bao xian xu qiu	5116
+保险风险	bao xian feng xian	5116
+共同保险	gong tong bao xian	5116
+农业保险	nong ye bao xian	5116
+大众保险	da zhong bao xian	5116
+投资保险	tou zi bao xian	5116
+旅行保险	lv xing bao xian	5116
+普通保险	pu tong bao xian	5116
+死亡保险	si wang bao xian	5116
+汽车保险	qi che bao xian	5116
+没有保险	mei you bao xian	5116
+爱情保险	ai qing bao xian	5116
+生命保险	sheng ming bao xian	5116
+生存保险	sheng cun bao xian	5116
+绝对保险	jue dui bao xian	5116
+综合保险	zong he bao xian	5116
+网上保险	wang shang bao xian	5116
+网络保险	wang luo bao xian	5116
+职业保险	zhi ye bao xian	5116
+联合保险	lian he bao xian	5116
+责任保险	ze ren bao xian	5116
+运输保险	yun shu bao xian	5116
+金融保险	jin rong bao xian	5116
+银行保险	yin hang bao xian	5116
+飞机保险	fei ji bao xian	5116
+保险装置	bao xian zhuang zhi	5077
+房屋保险	fang wu bao xian	5077
+华安保险	hua an bao xian	5039
+保险监管	bao xian jian guan	5000
+保险顾问	bao xian gu wen	5000
+强制保险	qiang zhi bao xian	5000
+重复保险	chong fu bao xian	5000
+阳光保险	yang guang bao xian	5000
+保险深度	bao xian shen du	4962
+大地保险	da di bao xian	4962
+保险总额	bao xian zong e	4847
+定期保险	ding qi bao xian	4847
+货物保险	huo wu bao xian	4847
+住房保险	zhu fang bao xian	4808
+海上保险	hai shang bao xian	4808
+附加保险	fu jia bao xian	4808
+信用保险	xin yong bao xian	4770
+自愿保险	zi yuan bao xian	4770
+新华保险	xin hua bao xian	4731
+签证保险	qian zheng bao xian	4731
+保险大厦	bao xian da sha	4693
+保险类别	bao xian lei bie	4693
+外资保险	wai zi bao xian	4693
+灾害保险	zai hai bao xian	4693
+不保险	bu bao xian	4654
+保险起见	bao xian qi jian	4654
+存款保险	cun kuan bao xian	4616
+火灾保险	huo zai bao xian	4616
+保险契约	bao xian qi yue	4577
+保险期限	bao xian qi xian	4577
+双重保险	shuang chong bao xian	4577
+法定保险	fa ding bao xian	4577
+保险中介	bao xian zhong jie	4539
+万能保险	wan neng bao xian	4500
+高压保险	gao ya bao xian	4500
+保险经纪	bao xian jing ji	4424
+华夏保险	hua xia bao xian	4385
+互助保险	hu zhu bao xian	4347
+保险术语	bao xian shu yu	4347
+人身保险	ren shen bao xian	4308
+保险理财	bao xian li cai	4308
+理财保险	li cai bao xian	4308
+赠送保险	zeng song bao xian	4308
+交保险	jiao bao xian	4270
+保险欺诈	bao xian qi zha	4270
+最保险	zui bao xian	4270
+货运保险	huo yun bao xian	4231
+保险标的	bao xian biao di	4154
+海运保险	hai yun bao xian	4154
+保险凭证	bao xian ping zheng	4077
+定值保险	ding zhi bao xian	4000
+小额保险	xiao e bao xian	4000
+扣除保险	kou chu bao xian	4000
+众安保险	zhong an bao xian	3962
+上保险	shang bao xian	3885
+买保险	mai bao xian	3885
+你保险	ni bao xian	3885
+保险了	bao xian le	3885
+保险公	bao xian gong	3885
+保险吗	bao xian ma	3885
+保险吧	bao xian ba	3885
+保险呢	bao xian ne	3885
+保险师	bao xian shi	3885
+保险期	bao xian qi	3885
+保险点	bao xian dian	3885
+保险的	bao xian de	3885
+保险盒	bao xian he	3885
+保险管	bao xian guan	3885
+保险粉	bao xian fen	3885
+保险网	bao xian wang	3885
+保险裤	bao xian ku	3885
+保险说	bao xian shuo	3885
+保险钱	bao xian qian	3885
+做保险	zuo bao xian	3885
+入保险	ru bao xian	3885
+办保险	ban bao xian	3885
+卖保险	mai bao xian	3885
+原保险	yuan bao xian	3885
+啥保险	sha bao xian	3885
+天安保险	tian an bao xian	3885
+干保险	gan bao xian	3885
+我保险	wo bao xian	3885
+报保险	bao bao xian	3885
+更保险	geng bao xian	3885
+有保险	you bao xian	3885
+没保险	mei bao xian	3885
+疗保险	liao bao xian	3885
+的保险	de bao xian	3885
+老保险	lao bao xian	3885
+被保险	bei bao xian	3885
+走保险	zou bao xian	3885
+跑保险	pao bao xian	3885
+车保险	che bao xian	3885
+保险索赔	bao xian suo pei	3847
+少儿保险	shao er bao xian	3808
+超额保险	chao e bao xian	3808
+失恋保险	shi lian bao xian	3693
+保险单证	bao xian dan zheng	3654
+大病保险	da bing bao xian	3654
+情爱保险	qing ai bao xian	3616
+水滴保险	shui di bao xian	3577
+保险理赔	bao xian li pei	3539
+人寿保单	ren shou bao dan	3462
+保单借款	bao dan jie kuan	3462
+保单失效	bao dan shi xiao	3462
+保单年度	bao dan nian du	3462
+保险展业	bao xian zhan ye	3462
+保险核保	bao xian he bao	3462
+友邦保险	you bang bao xian	3462
+待业保险	dai ye bao xian	3462
+投保单	tou bao dan	3462
+泰康保险	tai kang bao xian	3462
+电子保单	dian zi bao dan	3462
+足额保险	zu e bao xian	3462
+车险理赔	che xian li pei	3462
+大额保险	da e bao xian	3424
+保险承保	bao xian cheng bao	3308
+理赔款	li pei kuan	3308
+华泰保险	hua tai bao xian	3270
+安邦保险	an bang bao xian	3231
+质保单	zhi bao dan	3231
+永诚保险	yong cheng bao xian	3000
+保险内勤	bao xian nei qin	2885
+保险公估	bao xian gong gu	2847
+理赔了	li pei le	2808
+理赔员	li pei yuan	2808
+理赔的	li pei de	2808
+暂保单	zan bao dan	2770
+保险丝座	bao xian si zuo	2693
+保险电销	bao xian dian xiao	2693
+再保险人	zai bao xian ren	2693
+前保险杠	qian bao xian gang	2693
+后保险杠	hou bao xian gang	2693
+年金保险	nian jin bao xian	2693
+新保险法	xin bao xian fa	2693
+保单复效	bao dan fu xiao	2039
 交强险	jiao qiang xian	1090
 车损险	che sun xian	118

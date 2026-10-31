@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：药品护理
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 处方药	chu fang yao	7555
 冰敷热敷	bing fu re fu	6100
@@ -47,8 +47,103 @@
 不良反应	bu liang fan ying	6000
 禁忌证	jin ji zheng	6000
 适应证	shi ying zheng	6000
+精神药物	jing shen yao wu	5308
+药物化学	yao wu hua xue	5270
+精神药品	jing shen yao pin	5231
+相处方式	xiang chu fang shi	5000
+药物分析	yao wu fen xi	5000
+药物已经	yao wu yi jing	5000
+药物治疗	yao wu zhi liao	5000
+部分药物	bu fen yao wu	5000
+药品注册	yao pin zhu ce	4924
+药物依赖	yao wu yi lai	4924
+药物中毒	yao wu zhong du	4654
+应急药物	ying ji yao wu	4539
+药品招标	yao pin zhao biao	4462
+药物流产	yao wu liu chan	4462
+运动处方	yun dong chu fang	4462
+药物疗法	yao wu liao fa	4424
+定点药店	ding dian yao dian	4193
+网上药店	wang shang yao dian	4193
+隐藏药剂	yin zang yao ji	4116
+处方用药	chu fang yong yao	4077
+药物学家	yao wu xue jia	4077
+化疗药物	hua liao yao wu	4039
+过期药品	guo qi yao pin	4000
+麻醉药品	ma zui yao pin	4000
+一清胶囊	yi qing jiao nang	3924
+中药胶囊	zhong yao jiao nang	3924
+感冒胶囊	gan mao jiao nang	3924
+时光胶囊	shi guang jiao nang	3924
+时间胶囊	shi jian jiao nang	3924
+胶囊公寓	jiao nang gong yu	3924
+西林胶囊	xi lin jiao nang	3924
+避孕药物	bi yun yao wu	3924
+黄山胶囊	huang shan jiao nang	3924
+中标药品	zhong biao yao pin	3885
+开处方	kai chu fang	3885
+连锁药店	lian suo yao dian	3885
+零售药店	ling shou yao dian	3885
+化学药剂	hua xue yao ji	3847
+大力药剂	da li yao ji	3847
+药物成瘾	yao wu cheng yin	3770
+绝缘药剂	jue yuan yao ji	3731
+药品柜	yao pin gui	3731
+药品费	yao pin fei	3731
+药店里	yao dian li	3693
+药物制剂	yao wu zhi ji	3693
+药店飞龙	yao dian fei long	3577
+防风药剂	fang feng yao ji	3577
+滋补药品	zi bu yao pin	3539
+降压药物	jiang ya yao wu	3539
+违禁药物	wei jin yao wu	3500
+凭处方	ping chu fang	3462
+开药店	kai yao dian	3462
+微胶囊	wei jiao nang	3462
+硬皮药剂	ying pi yao ji	3462
+草药店	cao yao dian	3462
+药剂通识	yao ji tong shi	3462
+西药店	xi yao dian	3462
+软胶囊	ruan jiao nang	3462
+降糖药物	jiang tang yao wu	3462
+处方权	chu fang quan	3424
+处方签	chu fang qian	3424
+处方粮	chu fang liang	3424
+抗菌药物	kang jun yao wu	3424
+红处方	hong chu fang	3424
+甜梦胶囊	tian meng jiao nang	3385
+康达药店	kang da yao dian	3347
+灵芝胶囊	ling zhi jiao nang	3347
+胶囊内镜	jiao nang nei jing	3308
+药剂拌种	yao ji ban zhong	3308
+芦荟胶囊	lu hui jiao nang	3270
+防潮药剂	fang chao yao ji	3231
+到药店	dao yao dian	3077
+去药店	qu yao dian	3077
+在药店	zai yao dian	3077
+大药店	da yao dian	3077
+红胶囊	hong jiao nang	3077
+药店买	yao dian mai	3077
+药店的	yao dian de	3077
+耐热药剂	nai re yao ji	3039
+胶囊胃镜	jiao nang wei jing	2924
 血压计	xue ya ji	2873
+缓释胶囊	huan shi jiao nang	2770
+防尘药剂	fang chen yao ji	2693
+振源胶囊	zhen yuan jiao nang	2616
+靶向药物	ba xiang yao wu	2500
+耐寒药剂	nai han yao ji	2462
 体温计	ti wen ji	2434
+乌灵胶囊	wu ling jiao nang	2231
+参一胶囊	can yi jiao nang	2231
+平消胶囊	ping xiao jiao nang	2231
+百令胶囊	bai ling jiao nang	2231
+肠溶胶囊	chang rong jiao nang	2231
+胃康胶囊	wei kang jiao nang	2231
+胆舒胶囊	dan shu jiao nang	2231
+舒眠胶囊	shu mian jiao nang	2231
+黄葵胶囊	huang kui jiao nang	2231
+治草药剂	zhi cao yao ji	2193
 滴眼液	di yan ye	2136
 胶囊剂	jiao nang ji	1144
 颗粒剂	ke li ji	1014

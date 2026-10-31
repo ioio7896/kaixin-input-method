@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：美妆个护
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 防晒霜	fang shai shuang	7614
 洗发水	xi fa shui	7489
@@ -46,10 +46,140 @@
 睫毛膏	jie mao gao	5070
 沐浴露	mu yu lu	4910
 化妆水	hua zhuang shui	4772
+不会化妆	bu hui hua zhuang	4654
+人口红利	ren kou hong li	4500
+美容大王	mei rong da wang	4424
+不用化妆	bu yong hua zhuang	4308
+专业化妆	zhuan ye hua zhuang	4308
+化妆培训	hua zhuang pei xun	4308
+化妆技术	hua zhuang ji shu	4308
+化妆步骤	hua zhuang bu zhou	4308
+化妆造型	hua zhuang zao xing	4308
+新娘化妆	xin niang hua zhuang	4308
+演员化妆	yan yuan hua zhuang	4308
+人像美容	ren xiang mei rong	4154
+医学美容	yi xue mei rong	4154
+医疗美容	yi liao mei rong	4154
+美容中心	mei rong zhong xin	4154
+美容仪器	mei rong yi qi	4154
+美容保健	mei rong bao jian	4154
+美容养生	mei rong yang sheng	4154
+美容医学	mei rong yi xue	4154
+美容外科	mei rong wai ke	4154
+美容护理	mei rong hu li	4154
+美容按摩	mei rong an mo	4154
+美容美体	mei rong mei ti	4154
 牙线	ya xian	4135
+不化妆	bu hua zhuang	4077
+化妆舞会	hua zhuang wu hui	4039
+一口红	yi kou hong	3924
+一只口红	yi zhi kou hong	3847
+口红先生	kou hong xian sheng	3847
+口红效应	kou hong xiao ying	3847
+口红王子	kou hong wang zi	3847
+粉红口红	fen hong kou hong	3847
+迪奥口红	di ao kou hong	3808
+针灸美容	zhen jiu mei rong	3770
+会化妆	hui hua zhuang	3693
+别化妆	bie hua zhuang	3693
+学化妆	xue hua zhuang	3693
+整形美容	zheng xing mei rong	3693
+要化妆	yao hua zhuang	3693
+口红了	kou hong le	3654
+口红的	kou hong de	3654
+我口红	wo kou hong	3654
+有口红	you kou hong	3654
+这口红	zhe kou hong	3654
+美美容	mei mei rong	3616
+护肤品牌	hu fu pin pai	3539
+护肤用品	hu fu yong pin	3539
+按摩护肤	an mo hu fu	3539
+美容护肤	mei rong hu fu	3539
+化妆柜	hua zhuang gui	3462
+化妆袋	hua zhuang dai	3462
+影楼化妆	ying lou hua zhuang	3462
+美容厅	mei rong ting	3462
+美容品	mei rong pin	3462
+美容美发	mei rong mei fa	3462
+美甲机	mei jia ji	3462
+买化妆	mai hua zhuang	3308
+你化妆	ni hua zhuang	3308
+做个美甲	zuo ge mei jia	3308
+化化妆	hua hua zhuang	3308
+化妆了	hua zhuang le	3308
+化妆后	hua zhuang hou	3308
+化妆吗	hua zhuang ma	3308
+化妆吧	hua zhuang ba	3308
+化妆呢	hua zhuang ne	3308
+化妆店	hua zhuang dian	3308
+化妆桌	hua zhuang zhuo	3308
+化妆的	hua zhuang de	3308
+化妆费	hua zhuang fei	3308
+在化妆	zai hua zhuang	3308
+我化妆	wo hua zhuang	3308
+护肤乳液	hu fu ru ye	3308
+没化妆	mei hua zhuang	3308
+绳化妆	sheng hua zhuang	3308
+美容术	mei rong shu	3308
+美甲产品	mei jia chan pin	3308
+薄化妆	bo hua zhuang	3308
+还化妆	hai hua zhuang	3308
+都化妆	dou hua zhuang	3308
+护肤彩妆	hu fu cai zhuang	3270
 护发素	hu fa su	3262
+做美容	zuo mei rong	3231
+学美容	xue mei rong	3231
+美容仪	mei rong yi	3231
+美容学	mei rong xue	3231
+美容床	mei rong chuang	3231
+美容油	mei rong you	3231
+美容液	mei rong ye	3231
+美容的	mei rong de	3231
+美容线	mei rong xian	3231
+美容胶	mei rong jiao	3231
+美容觉	mei rong jiao	3231
+美容部	mei rong bu	3231
+美容针	mei rong zhen	3231
 漱口水	shu kou shui	3070
+买口红	mai kou hong	3039
+你口红	ni kou hong	3039
+口红吗	kou hong ma	3039
+口红吧	kou hong ba	3039
+抹口红	mo kou hong	3039
+涂口红	tu kou hong	3039
+的口红	de kou hong	3039
+送口红	song kou hong	3039
+养颜美容	yang yan mei rong	2962
+美容养颜	mei rong yang yan	2962
 防晒乳	fang shai ru	2867
+护肤乳	hu fu ru	2847
+护肤水	hu fu shui	2847
+护肤的	hu fu de	2847
+口红色号	kou hong se hao	2731
+做美甲	zuo mei jia	2654
+学美甲	xue mei jia	2654
+美甲师	mei jia shi	2654
+美甲灯	mei jia deng	2654
+美甲贴	mei jia tie	2654
+不化妆了	bu hua zhuang le	2385
+买化妆品	mai hua zhuang pin	2385
+你不化妆	ni bu hua zhuang	2385
+化不化妆	hua bu hua zhuang	2385
+化妆品了	hua zhuang pin le	2385
+我不化妆	wo bu hua zhuang	2385
+我化妆了	wo hua zhuang le	2385
+我在化妆	wo zai hua zhuang	2385
+我没化妆	wo mei hua zhuang	2385
+死化妆师	si hua zhuang shi	2385
+都不化妆	dou bu hua zhuang	2385
+汗蒸美容	han zheng mei rong	2308
+睡美容觉	shui mei rong jiao	2308
+睡美容觉	shui mei rong jue	2308
+美容汗蒸	mei rong han zheng	2308
+涂个口红	tu ge kou hong	2193
+买护肤品	mai hu fu pin	2077
+囤护肤品	dun hu fu pin	2077
+美甲美睫	mei jia mei jie	2000
 眼线笔	yan xian bi	464
 保湿霜	bao shi shuang	374
 卸妆油	xie zhuang you	72

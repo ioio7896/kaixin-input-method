@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：内容社媒
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 内容审核	nei rong shen he	8800
 点赞收藏	dian zan shou cang	8800
@@ -53,4 +53,175 @@
 账号绑定	zhang hao bang ding	6100
 账号认证	zhang hao ren zheng	6100
 转化数据	zhuan hua shu ju	6100
+什么直播	shen me zhi bo	5270
+体育直播	ti yu zhi bo	5270
+快手直播	kuai shou zhi bo	5270
+抖音直播	dou yin zhi bo	5270
+正在直播	zheng zai zhi bo	5270
+死亡直播	si wang zhi bo	5270
+直播平台	zhi bo ping tai	5270
+直播时代	zhi bo shi dai	5270
+还在直播	hai zai zhi bo	5270
+恐怖直播	kong bu zhi bo	5193
+绿色直播	lv se zhi bo	5193
+天堂直播	tian tang zhi bo	5000
+奥运直播	ao yun zhi bo	5000
+恐惧直播	kong ju zhi bo	5000
+我开直播	wo kai zhi bo	4962
+直播奖励	zhi bo jiang li	4924
+一直播	yi zhi bo	4885
+转发一下	zhuan fa yi xia	4885
+不能转发	bu neng zhuan fa	4847
+疯狂粉丝	feng kuang fen si	4847
+粉丝日记	fen si ri ji	4847
+转发给你	zhuan fa gei ni	4808
+转发给我	zhuan fa gei wo	4808
+青春直播	qing chun zhi bo	4808
+转发微博	zhuan fa wei bo	4770
+不直播	bu zhi bo	4731
+龙口粉丝	long kou fen si	4731
+直播助手	zhi bo zhu shou	4577
+几点直播	ji dian zhi bo	4462
+帮忙转发	bang mang zhuan fa	4462
+斗鱼直播	dou yu zhi bo	4462
+河豚直播	he tun zhi bo	4462
+熊猫直播	xiong mao zhi bo	4462
+转发不了	zhuan fa bu liao	4462
+转发转发	zhuan fa zhuan fa	4462
+直播伴侣	zhi bo ban lv	4424
+黑白直播	hei bai zhi bo	4424
+狂热粉丝	kuang re fen si	4385
+忠实粉丝	zhong shi fen si	4347
+两会直播	liang hui zhi bo	4270
+尖叫直播	jian jiao zhi bo	4231
+不转发	bu zhuan fa	4193
+直播加加	zhi bo jia jia	4193
+图文直播	tu wen zhi bo	4154
+直播攻略	zhi bo gong lue	4154
+头号粉丝	tou hao fen si	4116
+女粉丝	nv fen si	4077
+小粉丝	xiao fen si	4077
+有粉丝	you fen si	4077
+粉丝带	fen si dai	4077
+转发了	zhuan fa le	4077
+转发下	zhuan fa xia	4000
+上直播	shang zhi bo	3962
+下直播	xia zhi bo	3962
+他直播	ta zhi bo	3962
+你直播	ni zhi bo	3962
+做直播	zuo zhi bo	3962
+听直播	ting zhi bo	3962
+在直播	zai zhi bo	3962
+开直播	kai zhi bo	3962
+慢直播	man zhi bo	3962
+我直播	wo zhi bo	3962
+是直播	shi zhi bo	3962
+有直播	you zhi bo	3962
+没直播	mei zhi bo	3962
+的直播	de zhi bo	3962
+直播中	zhi bo zhong	3962
+直播了	zhi bo le	3962
+直播卡	zhi bo ka	3962
+直播去	zhi bo qu	3962
+直播号	zhi bo hao	3962
+直播吗	zhi bo ma	3962
+直播吧	zhi bo ba	3962
+直播呀	zhi bo ya	3962
+直播员	zhi bo yuan	3962
+直播呢	zhi bo ne	3962
+直播啊	zhi bo a	3962
+直播啦	zhi bo la	3962
+直播圈	zhi bo quan	3962
+直播家	zhi bo jia	3962
+直播的	zhi bo de	3962
+直播站	zhi bo zhan	3962
+直播粉	zhi bo fen	3962
+直播表	zhi bo biao	3962
+直播课	zhi bo ke	3962
+直播里	zhi bo li	3962
+看直播	kan zhi bo	3962
+要直播	yao zhi bo	3962
+还直播	hai zhi bo	3962
+进直播	jin zhi bo	3962
+伊人直播	yi ren zhi bo	3847
+已转发	yi zhuan fa	3808
+直播看客	zhi bo kan ke	3808
+转发到	zhuan fa dao	3808
+夜月直播	ye yue zhi bo	3770
+九球直播	jiu qiu zhi bo	3731
+他粉丝	ta fen si	3693
+你粉丝	ni fen si	3693
+假粉丝	jia fen si	3693
+加粉丝	jia fen si	3693
+我粉丝	wo fen si	3693
+新粉丝	xin fen si	3693
+没粉丝	mei fen si	3693
+涨粉丝	zhang fen si	3693
+炒粉丝	chao fen si	3693
+男粉丝	nan fen si	3693
+的粉丝	de fen si	3693
+粉丝了	fen si le	3693
+粉丝包	fen si bao	3693
+粉丝名	fen si ming	3693
+粉丝多	fen si duo	3693
+粉丝数	fen si shu	3693
+粉丝煲	fen si bao	3693
+粉丝牌	fen si pai	3693
+粉丝的	fen si de	3693
+粉丝群	fen si qun	3693
+粉丝量	fen si liang	3693
+老粉丝	lao fen si	3693
+触手直播	chu shou zhi bo	3654
+零七直播	ling qi zhi bo	3654
+一键转发	yi jian zhuan fa	3616
+灵异直播	ling yi zhi bo	3616
+脑残粉丝	nao can fen si	3616
+包转发	bao zhuan fa	3462
+你转发	ni zhuan fa	3424
+忙转发	mang zhuan fa	3424
+我转发	wo zhuan fa	3424
+求转发	qiu zhuan fa	3424
+玩命直播	wan ming zhi bo	3424
+禁入直播	jin ru zhi bo	3424
+请转发	qing zhuan fa	3424
+转发的	zhuan fa de	3424
+铁杆粉丝	tie gan fen si	3385
+酷狗直播	ku gou zhi bo	3308
+鸭血粉丝	ya xie fen si	3308
+鸭血粉丝	ya xue fen si	3308
+花椒直播	hua jiao zhi bo	3270
+虎牙直播	hu ya zhi bo	3231
 个人主页	ge ren zhu ye	3178
+直播魔盒	zhi bo mo he	3116
+公众号了	gong zhong hao le	2808
+公众号里	gong zhong hao li	2808
+在公众号	zai gong zhong hao	2808
+不直播了	bu zhi bo le	2770
+九秀直播	jiu xiu zhi bo	2770
+你开直播	ni kai zhi bo	2770
+你直播间	ni zhi bo jian	2770
+你看直播	ni kan zhi bo	2770
+在直播间	zai zhi bo jian	2770
+在看直播	zai kan zhi bo	2770
+大渔直播	da yu zhi bo	2770
+开直播了	kai zhi bo le	2770
+我在直播	wo zai zhi bo	2770
+我直播呢	wo zhi bo ne	2770
+我直播间	wo zhi bo jian	2770
+我看直播	wo kan zhi bo	2770
+映客直播	ying ke zhi bo	2770
+来直播间	lai zhi bo jian	2770
+直播了吗	zhi bo le ma	2770
+看你直播	kan ni zhi bo	2770
+看球直播	kan qiu zhi bo	2770
+看直播了	kan zhi bo le	2770
+看直播呢	kan zhi bo ne	2770
+进直播间	jin zhi bo jian	2770
+加粉丝团	jia fen si tuan	2616
+我是粉丝	wo shi fen si	2616
+我转发了	wo zhuan fa le	2616
+粉丝灯牌	fen si deng pai	2616
+帮我转发	bang wo zhuan fa	2462
+我转发的	wo zhuan fa de	2462
+转发唱吧	zhuan fa chang ba	2462
+辗转发侧	zhan zhuan fa ce	2462

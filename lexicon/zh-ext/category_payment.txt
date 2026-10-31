@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：支付票据
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 实名认证	shi ming ren zheng	8800
 验证码	yan zheng ma	8163
@@ -63,3 +63,268 @@
 银行卡解绑	yin hang ka jie bang	6100
 零钱提现	ling qian ti xian	6100
 零钱支付	ling qian zhi fu	6100
+支付费用	zhi fu fei yong	5616
+停止支付	ting zhi zhi fu	5308
+国际支付	guo ji zhi fu	5308
+怎么支付	zen me zhi fu	5308
+支付一下	zhi fu yi xia	5308
+支付不了	zhi fu bu liao	5308
+支付业务	zhi fu ye wu	5308
+支付中心	zhi fu zhong xin	5308
+支付全部	zhi fu quan bu	5308
+支付制度	zhi fu zhi du	5308
+支付工具	zhi fu gong ju	5308
+支付手段	zhi fu shou duan	5308
+支付系统	zhi fu xi tong	5308
+支付能力	zhi fu neng li	5308
+支付货币	zhi fu huo bi	5308
+支付过了	zhi fu guo le	5308
+支付风险	zhi fu feng xian	5308
+电子支付	dian zi zhi fu	5308
+网上支付	wang shang zhi fu	5308
+网易支付	wang yi zhi fu	5308
+支付现金	zhi fu xian jin	5270
+股份支付	gu fen zhi fu	5231
+转移支付	zhuan yi zhi fu	5231
+在线支付	zai xian zhi fu	5154
+工资支付	gong zi zhi fu	5154
+现金支付	xian jin zhi fu	5000
+不支付	bu zhi fu	4770
+可以付款	ke yi fu kuan	4654
+还没付款	hai mei fu kuan	4654
+不开发票	bu kai fa piao	4577
+应付款项	ying fu kuan xiang	4539
+支付中介	zhi fu zhong jie	4539
+支付结算	zhi fu jie suan	4539
+没有发票	mei you fa piao	4500
+打印发票	da yin fa piao	4424
+统一发票	tong yi fa piao	4424
+付款办法	fu kuan ban fa	4385
+付款周期	fu kuan zhou qi	4385
+付款成功	fu kuan cheng gong	4385
+付款截图	fu kuan jie tu	4385
+付款方式	fu kuan fang shi	4385
+付款期限	fu kuan qi xian	4385
+付款条件	fu kuan tiao jian	4385
+付款记录	fu kuan ji lu	4385
+即期付款	ji qi fu kuan	4385
+定期付款	ding qi fu kuan	4385
+已经付款	yi jing fu kuan	4385
+延迟付款	yan chi fu kuan	4385
+微信付款	wei xin fu kuan	4385
+怎么付款	zen me fu kuan	4385
+怎么付款	zen mo fu kuan	4385
+提示付款	ti shi fu kuan	4385
+现在付款	xian zai fu kuan	4385
+直接付款	zhi jie fu kuan	4385
+银行付款	yin hang fu kuan	4385
+延期付款	yan qi fu kuan	4308
+并购支付	bing gou zhi fu	4270
+直接转账	zhi jie zhuan zhang	4231
+支付不起	zhi fu bu qi	4193
+不付款	bu fu kuan	4154
+再付款	zai fu kuan	4154
+提现金	ti xian jin	4154
+预付款项	yu fu kuan xiang	4154
+专用发票	zhuan yong fa piao	4116
+两张发票	liang zhang fa piao	4116
+发票名称	fa piao ming cheng	4116
+发票记录	fa piao ji lu	4116
+商业发票	shang ye fa piao	4116
+形式发票	xing shi fa piao	4116
+收购发票	shou gou fa piao	4116
+普通发票	pu tong fa piao	4116
+海关发票	hai guan fa piao	4116
+网络发票	wang luo fa piao	4116
+销售发票	xiao shou fa piao	4116
+不能提现	bu neng ti xian	4077
+付款凭证	fu kuan ping zheng	4077
+可以提现	ke yi ti xian	4077
+怎么提现	zen me ti xian	4077
+才能提现	cai neng ti xian	4077
+提现不了	ti xian bu liao	4077
+有发票	you fa piao	4077
+要发票	yao fa piao	4039
+云支付	yun zhi fu	4000
+你支付	ni zhi fu	4000
+先支付	xian zhi fu	4000
+在支付	zai zhi fu	4000
+小额支付	xiao e zhi fu	4000
+已支付	yi zhi fu	4000
+惠支付	hui zhi fu	4000
+我支付	wo zhi fu	4000
+支付下	zhi fu xia	4000
+支付了	zhi fu le	4000
+支付令	zhi fu ling	4000
+支付分	zhi fu fen	4000
+支付后	zhi fu hou	4000
+支付吗	zhi fu ma	4000
+支付吧	zhi fu ba	4000
+支付呢	zhi fu ne	4000
+支付啊	zhi fu a	4000
+支付完	zhi fu wan	4000
+支付方	zhi fu fang	4000
+支付的	zhi fu de	4000
+支付码	zhi fu ma	4000
+支付通	zhi fu tong	4000
+无感支付	wu gan zhi fu	4000
+未支付	wei zhi fu	4000
+校支付	xiao zhi fu	4000
+没发票	mei fa piao	4000
+没支付	mei zhi fu	4000
+红字发票	hong zi fa piao	4000
+翼支付	yi zhi fu	4000
+龙支付	long zhi fu	4000
+跨境支付	kua jing zhi fu	3962
+定额发票	ding e fa piao	3924
+微信转账	wei xin zhuan zhang	3924
+支付宝上	zhi fu bao shang	3924
+支付宝的	zhi fu bao de	3924
+电话转账	dian hua zhuan zhang	3924
+给你转账	gei ni zhuan zhang	3924
+给我转账	gei wo zhuan zhang	3924
+自动转账	zi dong zhuan zhang	3924
+转账凭证	zhuan zhang ping zheng	3924
+转账成功	zhuan zhang cheng gong	3924
+转账支票	zhuan zhang zhi piao	3924
+转账结算	zhuan zhang jie suan	3924
+转账给你	zhuan zhang gei ni	3924
+转账给我	zhuan zhang gei wo	3924
+转账过程	zhuan zhang guo cheng	3924
+免税发票	mian shui fa piao	3885
+支付宝号	zhi fu bao hao	3885
+不转账	bu zhuan zhang	3808
+代付款	dai fu kuan	3770
+你付款	ni fu kuan	3770
+先付款	xian fu kuan	3770
+到付款	dao fu kuan	3770
+后付款	hou fu kuan	3770
+实付款	shi fu kuan	3770
+已付款	yi fu kuan	3770
+已转账	yi zhuan zhang	3770
+我付款	wo fu kuan	3770
+支付对价	zhi fu dui jia	3770
+收付款	shou fu kuan	3770
+未付款	wei fu kuan	3770
+没付款	mei fu kuan	3770
+没提现	mei ti xian	3770
+能付款	neng fu kuan	3770
+委托收款	wei tuo shou kuan	3731
+提现了	ti xian le	3731
+提现过	ti xian guo	3731
+先转账	xian zhuan zhang	3693
+受托支付	shou tuo zhi fu	3693
+打发票	da fa piao	3654
+发票领购	fa piao ling gou	3616
+不提现	bu ti xian	3577
+发票上	fa piao shang	3577
+已收款	yi shou kuan	3577
+应收款项	ying shou kuan xiang	3577
+未收款	wei shou kuan	3539
+有奖发票	you jiang fa piao	3500
+虚开发票	xu kai fa piao	3500
+上门收款	shang men shou kuan	3462
+付款单	fu kuan dan	3462
+付款日	fu kuan ri	3462
+代收款	dai shou kuan	3462
+微信收款	wei xin shou kuan	3462
+收款业务	shou kuan ye wu	3462
+收款凭证	shou kuan ping zheng	3462
+收款单	shou kuan dan	3462
+收款员	shou kuan yuan	3462
+收款方式	shou kuan fang shi	3462
+暂收款	zan shou kuan	3462
+大额转账	da e zhuan zhang	3424
+税控发票	shui kong fa piao	3424
+预收款项	yu shou kuan xiang	3424
+付款了	fu kuan le	3385
+付款前	fu kuan qian	3385
+付款后	fu kuan hou	3385
+付款吗	fu kuan ma	3385
+付款吧	fu kuan ba	3385
+付款呢	fu kuan ne	3385
+付款哈	fu kuan ha	3385
+付款啦	fu kuan la	3385
+付款图	fu kuan tu	3385
+付款时	fu kuan shi	3385
+付款的	fu kuan de	3385
+付款行	fu kuan xing	3385
+别付款	bie fu kuan	3385
+去付款	qu fu kuan	3385
+垫付款	dian fu kuan	3385
+就付款	jiu fu kuan	3385
+开具发票	kai ju fa piao	3385
+暂付款	zan fu kuan	3385
+要付款	yao fu kuan	3385
+请付款	qing fu kuan	3385
+首期付款	shou qi fu kuan	3347
+收款台	shou kuan tai	3308
+预收款	yu shou kuan	3308
+你提现	ni ti xian	3193
+发票了	fa piao le	3193
+发票吗	fa piao ma	3193
+发票吧	fa piao ba	3193
+发票的	fa piao de	3193
+发票章	fa piao zhang	3193
+就提现	jiu ti xian	3193
+我提现	wo ti xian	3193
+把发票	ba fa piao	3193
+拿发票	na fa piao	3193
+提现到	ti xian dao	3193
+提现吗	ti xian ma	3193
+提现吧	ti xian ba	3193
+提现的	ti xian de	3193
+提现费	ti xian fei	3193
+的发票	de fa piao	3193
+能提现	neng ti xian	3193
+送发票	song fa piao	3193
+都提现	dou ti xian	3193
+领发票	ling fa piao	3193
+你转账	ni zhuan zhang	3077
+我转账	wo zhuan zhang	3077
+转账了	zhuan zhang le	3077
+转账吗	zhuan zhang ma	3077
+转账吧	zhuan zhang ba	3077
+转账的	zhuan zhang de	3077
+销货发票	xiao huo fa piao	3000
+代开发票	dai kai fa piao	2962
+开发票吗	kai fa piao ma	2962
+能开发票	neng kai fa piao	2962
+不收款	bu shou kuan	2770
+你支付宝	ni zhi fu bao	2770
+刷脸支付	shua lian zhi fu	2770
+去支付宝	qu zhi fu bao	2770
+发支付宝	fa zhi fu bao	2770
+和包支付	he bao zhi fu	2770
+在支付宝	zai zhi fu bao	2770
+我支付宝	wo zhi fu bao	2770
+支付完了	zhi fu wan le	2770
+支付宝了	zhi fu bao le	2770
+支付宝吗	zhi fu bao ma	2770
+支付宝吧	zhi fu bao ba	2770
+支付宝码	zhi fu bao ma	2770
+支付宝里	zhi fu bao li	2770
+收款了	shou kuan le	2770
+收款吗	shou kuan ma	2770
+收款方	shou kuan fang	2770
+收款的	shou kuan de	2770
+有支付宝	you zhi fu bao	2770
+没支付宝	mei zhi fu bao	2770
+环迅支付	huan xun zhi fu	2770
+用支付宝	yong zhi fu bao	2770
+群收款	qun shou kuan	2770
+请收款	qing shou kuan	2770
+转支付宝	zhuan zhi fu bao	2770
+契税发票	qi shui fa piao	2731
+发票缴销	fa piao jiao xiao	2693
+有发票吗	you fa piao ma	2616
+付款了吗	fu kuan le ma	2424
+付款交单	fu kuan jiao dan	2424
+你提现了	ni ti xian le	2424
+我付款了	wo fu kuan le	2424
+我已付款	wo yi fu kuan	2424
+我提现了	wo ti xian le	2424
+提现了吗	ti xian le ma	2424
+都提现了	dou ti xian le	2424
+银期转账	yin qi zhuan zhang	2231
+银证转账	yin zheng zhuan zhang	2231

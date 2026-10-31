@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：网络安全
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 网络安全	wang luo an quan	9681
 信息安全	xin xi an quan	9097
@@ -53,4 +53,28 @@
 防火墙规则	fang huo qiang gui ze	6100
 隐私保护	yin si bao hu	6100
 风险登录	feng xian deng lu	6100
+加密传输	jia mi chuan shu	4654
+合同漏洞	he tong lou dong	4500
+税收漏洞	shui shou lou dong	4500
+系统漏洞	xi tong lou dong	4500
+黑客工具	hei ke gong ju	4500
+加密保护	jia mi bao hu	4385
+加密货币	jia mi huo bi	4385
+加密解密	jia mi jie mi	4270
+神秘黑客	shen mi hei ke	4231
+黑客入侵	hei ke ru qin	4231
+黑客军团	hei ke jun tuan	4231
+黑客基地	hei ke ji di	4231
+黑客大战	hei ke da zhan	4231
+黑客帝国	hei ke di guo	4231
+黑客技术	hei ke ji shu	4231
+黑客游戏	hei ke you xi	4231
+黑客程序	hei ke cheng xu	4231
+黑客风云	hei ke feng yun	4193
+加密器	jia mi qi	3693
+加密狗	jia mi gou	3462
+加密锁	jia mi suo	3462
+勾漏洞	gou lou dong	3462
+有漏洞	you lou dong	3462
+黑客悲情	hei ke bei qing	3308
 数据安全	shu ju an quan	2006

@@ -31,6 +31,7 @@ REQUIRED_MODEL_FILES = (
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
+    "ppocrv6_dict.txt",
 )
 FAST_DET_MODEL_NAMES = ("PP-OCRv6_det_small.onnx", "PP-OCRv6_det_int8.onnx")
 PROFILE_LIMITS = {
@@ -38,7 +39,7 @@ PROFILE_LIMITS = {
     "balanced": (1920, 1.5),
     "accurate": (2560, 2.0),
 }
-EXECUTION_PROVIDERS = ("auto", "cpu", "directml", "cuda")
+EXECUTION_PROVIDERS = ("auto", "cpu", "vulkan", "directml", "cuda")
 MAX_ENCODED_IMAGE_BYTES = 64 * 1024 * 1024
 MAX_DECODED_IMAGE_BYTES = 48 * 1024 * 1024
 MAX_IMAGE_PIXELS = 40_000_000
@@ -105,13 +106,13 @@ def parse_args() -> argparse.Namespace:
         "--intra-op-threads",
         type=int,
         default=env_int("KAIXIN_OCR_INTRA_OP_THREADS", default_intra_op_threads()),
-        help="ONNXRuntime intra-op worker threads.",
+        help="CPU inference worker threads.",
     )
     parser.add_argument(
         "--inter-op-threads",
         type=int,
         default=env_int("KAIXIN_OCR_INTER_OP_THREADS", 1),
-        help="ONNXRuntime inter-op worker threads.",
+        help="Legacy compatibility option.",
     )
     parser.add_argument(
         "--rec-batch-num",
@@ -123,13 +124,13 @@ def parse_args() -> argparse.Namespace:
         "--cpu-mem-arena",
         action=argparse.BooleanOptionalAction,
         default=env_bool("KAIXIN_OCR_CPU_MEM_ARENA", True),
-        help="Enable the ONNXRuntime CPU memory arena for persistent inference.",
+        help="Legacy compatibility option.",
     )
     parser.add_argument(
         "--provider",
         choices=EXECUTION_PROVIDERS,
-        default=env_choice("KAIXIN_OCR_PROVIDER", "auto", EXECUTION_PROVIDERS),
-        help="ONNX Runtime execution provider; auto selects an installed GPU provider or CPU.",
+        default=env_choice("KAIXIN_OCR_PROVIDER", "cpu", EXECUTION_PROVIDERS),
+        help="Compatibility option; OCR always runs on CPU.",
     )
     parser.add_argument("--min-score", type=float, default=0.5, help="Minimum line score.")
     parser.add_argument(
@@ -159,13 +160,13 @@ def enum_params(
     model_root: Path,
     args: argparse.Namespace,
     fast_det_model: Path | None = None,
+    profile: str = "balanced",
 ) -> dict[str, Any]:
     from rapidocr import EngineType, LangDet, LangRec, ModelType, OCRVersion
 
     rec_lang = (
         LangRec.CHINESE_CHT if lang == "zh_tw" else LangRec.EN if lang == "en" else LangRec.CH
     )
-    provider = selected_provider(args.provider)
     params = {
         "Global.model_root_dir": str(model_root),
         "Global.log_level": "warning",
@@ -173,12 +174,9 @@ def enum_params(
         "Global.use_cls": False,
         "Global.min_side_len": 0,
         "Global.max_side_len": PROFILE_LIMITS["balanced"][0],
-        "EngineConfig.onnxruntime.intra_op_num_threads": max(1, int(args.intra_op_threads)),
-        "EngineConfig.onnxruntime.inter_op_num_threads": max(1, int(args.inter_op_threads)),
-        "EngineConfig.onnxruntime.enable_cpu_mem_arena": bool(args.cpu_mem_arena),
-        "EngineConfig.onnxruntime.use_cuda": provider == "cuda",
-        "EngineConfig.onnxruntime.use_dml": provider == "directml",
-        "Det.engine_type": EngineType.ONNXRUNTIME,
+        "EngineConfig.ppocr_cpp.use_vulkan": False,
+        "EngineConfig.ppocr_cpp.backend": "cpu",
+        "Det.engine_type": EngineType.PPOCR_CPP,
         "Det.ocr_version": OCRVersion.PPOCRV6,
         "Det.lang_type": LangDet.CH,
         "Det.model_type": ModelType.MEDIUM,
@@ -186,39 +184,21 @@ def enum_params(
         # controls scaling through Global.{min,max}_side_len instead, while
         # detector `max` guarantees that a narrow crop is never exploded.
         "Det.limit_type": "max",
-        "Rec.engine_type": EngineType.ONNXRUNTIME,
+        "Det.limit_side_len": PROFILE_LIMITS[normalize_profile(profile)][0],
+        "Rec.engine_type": EngineType.PPOCR_CPP,
         "Rec.ocr_version": OCRVersion.PPOCRV6,
         "Rec.lang_type": rec_lang,
         "Rec.model_type": ModelType.MEDIUM,
         "Rec.rec_img_shape": [3, 48, 320],
         "Rec.rec_batch_num": max(1, int(args.rec_batch_num)),
+        "Det.model_path": str(model_root / "PP-OCRv6_det_medium.onnx"),
+        "Rec.model_path": str(model_root / "PP-OCRv6_rec_medium.onnx"),
+        "Rec.rec_keys_path": str(model_root / "ppocrv6_dict.txt"),
     }
     if fast_det_model is not None:
         params["Det.model_type"] = ModelType.SMALL
         params["Det.model_path"] = str(fast_det_model)
     return params
-
-
-def selected_provider(requested: str) -> str:
-    """Return a provider supported by this packaged ONNX Runtime build."""
-    try:
-        import onnxruntime as ort
-
-        available = set(ort.get_available_providers())
-    except Exception:
-        return "cpu"
-    aliases = {
-        "cuda": "CUDAExecutionProvider",
-        "directml": "DmlExecutionProvider",
-    }
-    if requested == "auto":
-        for candidate in ("cuda", "directml"):
-            if aliases[candidate] in available:
-                return candidate
-        return "cpu"
-    if requested in aliases and aliases[requested] in available:
-        return requested
-    return "cpu"
 
 
 def normalize_profile(value: Any) -> str:
@@ -440,6 +420,7 @@ def validate_image_shape(image_array: Any) -> None:
 class RapidOcrService:
     def __init__(self, args: argparse.Namespace) -> None:
         self.args = args
+        os.environ.setdefault("PPOCR_BENCH_THREADS", str(max(1, int(args.intra_op_threads))))
         self.rapidocr_root = args.rapidocr_root.expanduser().resolve()
         self.rapidocr_python = self.rapidocr_root / "python"
         if not (self.rapidocr_python / "rapidocr").is_dir():
@@ -459,7 +440,6 @@ class RapidOcrService:
             )
 
         self._rapidocr_cls = None
-        self.provider = selected_provider(args.provider)
         self.fast_det_model = next(
             (
                 self.model_root / name
@@ -468,10 +448,9 @@ class RapidOcrService:
             ),
             None,
         )
-        # mixed and zh use the same PP-OCRv6 multilingual recognizer. Cache by
-        # effective recognizer and detector model rather than UI profile/size.
+        # Native detector limits are set when the handle is created, so each
+        # profile retains its own engine and can be reused across requests.
         self._engines: dict[tuple[str, str], Any] = {}
-        self._detectors: dict[str, Any] = {}
 
     def _rapidocr_class(self) -> Any:
         if self._rapidocr_cls is None:
@@ -489,7 +468,7 @@ class RapidOcrService:
 
     def _load_engine(self, lang: str, profile: str) -> tuple[Any, float, bool, str]:
         variant = self._detector_variant(profile)
-        key = (self._effective_lang(lang), variant)
+        key = (self._effective_lang(lang), normalize_profile(profile))
         if key in self._engines:
             return self._engines[key], 0.0, True, variant
 
@@ -499,40 +478,19 @@ class RapidOcrService:
             self.model_root,
             self.args,
             self.fast_det_model if variant == "fast" else None,
+            profile,
         )
         with contextlib.redirect_stdout(sys.stderr):
             init_start = time.perf_counter()
             engine = rapidocr_cls(params=params)
             init_seconds = time.perf_counter() - init_start
-        # RapidOCR builds detection and recognition together. Replace a newly
-        # built duplicate detector when only the recognition language differs,
-        # so English/Chinese engines retain one detector session at runtime.
-        if variant in self._detectors:
-            engine.text_det = self._detectors[variant]
-        else:
-            from rapidocr.ch_ppocr_det.utils import DetPreProcess
-
-            # RapidOCR 3.9.2 initializes models lazily, so `text_det` is None
-            # until its internal loader runs. Materialize it here before
-            # applying the project-specific preprocessor and sharing it with
-            # the other recognition-language engine.
-            detector = engine._load_det_model()
-            # RapidOCR's built-in max mode silently replaces configured limits
-            # with 960/1500/2000. Keep its preprocessing implementation but
-            # make the three Kaixin profiles use their explicit long-edge cap.
-            detector.get_preprocess = lambda _max_wh, det=detector: DetPreProcess(
-                det.limit_side_len, "max", det.mean, det.std
-            )
-            self._detectors[variant] = engine.text_det
         with contextlib.redirect_stdout(sys.stderr):
-            engine._load_rec_model()
+            engine._ensure_engine()
         self._engines[key] = engine
         return engine, time.perf_counter() - init_start, False, variant
 
     def _clear_engine(self, lang: str, profile: str) -> None:
-        variant = self._detector_variant(profile)
-        self._engines.pop((self._effective_lang(lang), variant), None)
-        self._detectors.pop(variant, None)
+        self._engines.pop((self._effective_lang(lang), normalize_profile(profile)), None)
 
     def warmup(self, lang: str = "mixed", profile: str = "balanced") -> dict[str, Any]:
         import numpy as np
@@ -543,12 +501,9 @@ class RapidOcrService:
         # buffer keeps this cheap and removes first-inference latency later.
         engine.max_side_len = PROFILE_LIMITS[profile][0]
         engine.min_side_len = 0
-        engine.text_det.limit_side_len = PROFILE_LIMITS[profile][0]
         warm_start = time.perf_counter()
         with contextlib.redirect_stdout(sys.stderr):
             engine(np.full((48, 320, 3), 255, dtype=np.uint8))
-            # Blank detection has no text crops: explicitly exercise recognition.
-            engine.recognize_txt([np.full((48, 320, 3), 255, dtype=np.uint8)])
         return {
             "ok": True,
             "command": "warmup",
@@ -621,7 +576,7 @@ class RapidOcrService:
             raise FileNotFoundError(f"image not found: {image}")
 
         profile = normalize_profile(profile)
-        max_attempts = max(1, int(self.args.download_retries))
+        max_attempts = max(2, int(self.args.download_retries))
         load_start = time.perf_counter()
         print("KAIXIN_OCR_STAGE model-load", file=sys.stderr, flush=True)
         loader, loader_init, loader_cached, loader_variant = self._load_engine(
@@ -659,7 +614,6 @@ class RapidOcrService:
                     attempt_init = init_seconds
                     engine.max_side_len = applied_max_side
                     engine.min_side_len = applied_min_side
-                    engine.text_det.limit_side_len = applied_max_side
                     with contextlib.redirect_stdout(sys.stderr):
                         infer_start = time.perf_counter()
                         tile_lines: list[dict[str, Any]] = []
@@ -686,7 +640,7 @@ class RapidOcrService:
                         lines = merge_tile_lines(tile_lines) if len(tiles) > 1 else to_line_items(result, 0.0)
                         if len(tiles) > 1:
                             import numpy as np
-                            from rapidocr.utils.output import RapidOCROutput
+                            from rapidocr.output import RapidOCROutput
 
                             result = RapidOCROutput(
                                 img=source_image,
@@ -694,7 +648,6 @@ class RapidOcrService:
                                 txts=tuple(line["text"] for line in lines),
                                 scores=tuple(line["score"] for line in lines),
                                 elapse_list=step_seconds,
-                                viser=tile_result.viser,
                                 word_results=(None,),
                             )
                         infer_seconds = time.perf_counter() - infer_start
@@ -771,7 +724,7 @@ class RapidOcrService:
         return {
             "ok": True,
             "engine": "rapidocr",
-            "backend": f"onnxruntime/{self.provider}",
+            "backend": "rapidocrlite/cpu",
             "profile": profile,
             "ocr_version": "PP-OCRv6",
             "model_type": "small-det+medium-rec" if detector_variant == "fast" else "medium",

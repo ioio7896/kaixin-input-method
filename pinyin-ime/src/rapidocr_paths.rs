@@ -13,7 +13,7 @@ use std::os::windows::process::CommandExt;
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-const RAPIDOCR_DIR_NAME: &str = "RapidOCR-3.9.0";
+const RAPIDOCR_DIR_NAME: &str = "RapidOCRLite";
 pub(crate) const PYTHON_RUNTIME_DIR_NAME: &str = ".python-runtime";
 const RAPIDOCR_PACKAGES_DIR_NAME: &str = ".python-packages";
 pub(crate) const PACKAGE_MANIFEST_NAME: &str = "package_manifest.sha256";
@@ -21,6 +21,7 @@ const REQUIRED_ONNX_MODELS: &[&str] = &[
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
+    "ppocrv6_dict.txt",
 ];
 const OPTIONAL_ONNX_MODELS: &[&str] = &["PP-OCRv6_det_int8.onnx"];
 

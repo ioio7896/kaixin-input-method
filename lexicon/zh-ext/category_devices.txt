@@ -1,8 +1,19 @@
 # 开心离线输入法分类补充：数码连接
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+手机密码	shou ji mi ma	6462
+没有手机	mei you shou ji	6462
+还有手机	hai you shou ji	6462
+手机可以	shou ji ke yi	6424
+手机手机	shou ji shou ji	6424
+手机电影	shou ji dian ying	6424
+手机电脑	shou ji dian nao	6424
+手机电话	shou ji dian hua	6424
+现在手机	xian zai shou ji	6385
+看到手机	kan dao shou ji	6385
+音乐手机	yin yue shou ji	6231
 充电协议	chong dian xie yi	6100
 充电头	chong dian tou	6100
 充电线	chong dian xian	6100
@@ -49,7 +60,553 @@
 风扇转速	feng shan zhuan su	6100
 驱动安装	qu dong an zhuang	6100
 驱动更新	qu dong geng xin	6100
+一个手机	yi ge shou ji	6077
+不是手机	bu shi shou ji	6077
+两个手机	liang ge shou ji	6077
+什么手机	shen me shou ji	6077
+什么手机	shen mo shou ji	6077
+今天手机	jin tian shou ji	6077
+因为手机	yin wei shou ji	6077
+就是手机	jiu shi shou ji	6077
+工作手机	gong zuo shou ji	6077
+手机一直	shou ji yi zhi	6077
+手机不是	shou ji bu shi	6077
+手机不能	shou ji bu neng	6077
+手机不行	shou ji bu xing	6077
+手机微信	shou ji wei xin	6077
+手机没有	shou ji mei you	6077
+手机登录	shou ji deng lu	6077
+手机还有	shou ji hai you	6077
+手机问题	shou ji wen ti	6077
+手机马上	shou ji ma shang	6077
+游戏手机	you xi shou ji	6077
+自己手机	zi ji shou ji	6077
+还是手机	hai shi shou ji	6077
+这个手机	zhe ge shou ji	6077
+这个手机	zhei ge shou ji	6077
+别人手机	bie ren shou ji	6039
+看看手机	kan kan shou ji	6039
+手机电视	shou ji dian shi	6000
+手机里面	shou ji li mian	6000
+那个手机	na ge shou ji	6000
+手机淘宝	shou ji tao bao	5962
+手机百度	shou ji bai du	5962
+手机照片	shou ji zhao pian	5924
+手机银行	shou ji yin hang	5924
+给我手机	gei wo shou ji	5885
+不看手机	bu kan shou ji	5847
+手机给我	shou ji gei wo	5847
+手机给你	shou ji gei ni	5808
+手机里的	shou ji li de	5808
+不用手机	bu yong shou ji	5770
+几个手机	ji ge shou ji	5770
+打开手机	da kai shou ji	5770
+移动手机	yi dong shou ji	5770
 数据线	shu ju xian	5735
+看着手机	kan zhe shou ji	5731
+还看手机	hai kan shou ji	5731
+手机上面	shou ji shang mian	5654
+三个手机	san ge shou ji	5616
+手机拍摄	shou ji pai she	5577
+品牌手机	pin pai shou ji	5539
+手机号的	shou ji hao de	5539
+手机在线	shou ji zai xian	5500
+给你手机	gei ni shou ji	5462
+我要手机	wo yao shou ji	5424
+手机推荐	shou ji tui jian	5424
+没得手机	mei de shou ji	5385
+看会手机	kan hui shou ji	5385
+苹果手机	ping guo shou ji	5385
+刚刚手机	gang gang shou ji	5347
+手机不好	shou ji bu hao	5347
+手机在家	shou ji zai jia	5347
+手机漫画	shou ji man hua	5347
+手机支付	shou ji zhi fu	5308
+拿到手机	na dao shou ji	5308
+昨天手机	zuo tian shou ji	5308
+手机少女	shou ji shao nv	5270
+手机少年	shou ji shao nian	5270
+一部手机	yi bu shou ji	5231
+刚才手机	gang cai shou ji	5231
+手机信号	shou ji xin hao	5231
+拿出手机	na chu shou ji	5154
+垃圾手机	la ji shou ji	5116
+手机摄影	shou ji she ying	5116
+放下手机	fang xia shou ji	5116
+手机电池	shou ji dian chi	5077
+手机表面	shou ji biao mian	5077
+没收手机	mo shou shou ji	5039
+我带手机	wo dai shou ji	5000
+手机拍照	shou ji pai zhao	4962
 无线网络	wu xian wang luo	4939
+手机型号	shou ji xing hao	4924
+手机没钱	shou ji mei qian	4924
+还带手机	hai dai shou ji	4924
+一手机	yi shou ji	4885
+不买手机	bu mai shou ji	4885
+丢手机	diu shou ji	4885
+两手机	liang shou ji	4885
+中手机	zhong shou ji	4885
+二手机	er shou ji	4885
+交手机	jiao shou ji	4885
+从手机	cong shou ji	4885
+他手机	ta shou ji	4885
+到手机	dao shou ji	4885
+动手机	dong shou ji	4885
+在手机	zai shou ji	4885
+好手机	hao shou ji	4885
+对手机	dui shou ji	4885
+小手机	xiao shou ji	4885
+开手机	kai shou ji	4885
+我手机	wo shou ji	4885
+手机上	shou ji shang	4885
+手机了	shou ji le	4885
+手机去	shou ji qu	4885
+手机在	shou ji zai	4885
+手机好	shou ji hao	4885
+手机就	shou ji jiu	4885
+手机打	shou ji da	4885
+手机拍	shou ji pai	4885
+手机是	shou ji shi	4885
+手机有	shou ji you	4885
+手机来	shou ji lai	4885
+手机架	shou ji jia	4885
+手机清理	shou ji qing li	4885
+手机用	shou ji yong	4885
+手机电	shou ji dian	4885
+手机给	shou ji gei	4885
+手机网	shou ji wang	4885
+手机都	shou ji dou	4885
+手机里	shou ji li	4885
+手机镜头	shou ji jing tou	4885
+打手机	da shou ji	4885
+把手机	ba shou ji	4885
+拿手机	na shou ji	4885
+换手机	huan shou ji	4885
+摸手机	mo shou ji	4885
+收手机	shou shou ji	4885
+放手机	fang shou ji	4885
+昨晚手机	zuo wan shou ji	4885
+有手机	you shou ji	4885
+清理手机	qing li shou ji	4885
+玩手机	wan shou ji	4885
+用手机	yong shou ji	4885
+看手机	kan shou ji	4885
+还手机	huan shou ji	4885
+这手机	zhe shou ji	4885
+连手机	lian shou ji	4885
+那手机	na shou ji	4885
+少看手机	shao kan shou ji	4847
+手机定位	shou ji ding wei	4847
+时尚手机	shi shang shou ji	4847
+模拟手机	mo ni shou ji	4847
+别玩手机	bie wan shou ji	4808
+我手机了	wo shou ji le	4808
+手机维修	shou ji wei xiu	4808
+放手机了	fang shou ji le	4808
+有手机了	you shou ji le	4808
+玩会手机	wan hui shou ji	4808
+玩手机了	wan shou ji le	4808
+看手机了	kan shou ji le	4808
+芯片面积	xin pian mian ji	4808
+刚看手机	gang kan shou ji	4770
+我手机里	wo shou ji li	4770
+手机委托	shou ji wei tuo	4770
+手机放下	shou ji fang xia	4770
+玩个手机	wan ge shou ji	4770
+神奇手机	shen qi shou ji	4770
+他手机号	ta shou ji hao	4731
+我手机号	wo shou ji hao	4731
+有手机号	you shou ji hao	4731
+高清手机	gao qing shou ji	4731
+国产手机	guo chan shou ji	4693
+我手机上	wo shou ji shang	4693
+我用手机	wo yong shou ji	4693
+手机内存	shou ji nei cun	4693
+手机没收	shou ji mo shou	4693
+手机验证	shou ji yan zheng	4693
+拿个手机	na ge shou ji	4693
+我换手机	wo huan shou ji	4654
+手机兼职	shou ji jian zhi	4654
+手机情人	shou ji qing ren	4654
+手机数码	shou ji shu ma	4654
+手机芯片	shou ji xin pian	4654
+光看手机	guang kan shou ji	4616
+想换手机	xiang huan shou ji	4616
+拍照手机	pai zhao shou ji	4616
+换新手机	huan xin shou ji	4616
+二手手机	er shou shou ji	4577
+手机助手	shou ji zhu shou	4577
+手机屏幕	shou ji ping mu	4577
+手机自带	shou ji zi dai	4577
+换手机了	huan shou ji le	4577
+换手机号	huan shou ji hao	4577
+个手机	ge shou ji	4500
+云手机	yun shou ji	4500
+你手机	ni shou ji	4500
+使手机	shi shou ji	4500
+俩手机	lia shou ji	4500
+修手机	xiu shou ji	4500
+俺手机	an shou ji	4500
+借手机	jie shou ji	4500
+做手机	zuo shou ji	4500
+偷手机	tou shou ji	4500
+充手机	chong shou ji	4500
+关手机	guan shou ji	4500
+刚手机	gang shou ji	4500
+刷手机	shua shou ji	4500
+卖手机	mai shou ji	4500
+和手机	he shou ji	4500
+啥手机	sha shou ji	4500
+大手机	da shou ji	4500
+她手机	ta shou ji	4500
+带手机	dai shou ji	4500
+弄手机	nong shou ji	4500
+您手机	nin shou ji	4500
+手机不	shou ji bu	4500
+手机么	shou ji me	4500
+手机也	shou ji ye	4500
+手机包	shou ji bao	4500
+手机又	shou ji you	4500
+手机吗	shou ji ma	4500
+手机吧	shou ji ba	4500
+手机呀	shou ji ya	4500
+手机呗	shou ji bei	4500
+手机呢	shou ji ne	4500
+手机响	shou ji xiang	4500
+手机啊	shou ji a	4500
+手机啦	shou ji la	4500
+手机嘛	shou ji ma	4500
+手机坏	shou ji huai	4500
+手机城	shou ji cheng	4500
+手机壳	shou ji ke	4500
+手机屏	shou ji ping	4500
+手机快	shou ji kuai	4500
+手机报	shou ji bao	4500
+手机控	shou ji kong	4500
+手机族	shou ji zu	4500
+手机没	shou ji mei	4500
+手机玩	shou ji wan	4500
+手机登	shou ji deng	4500
+手机的	shou ji de	4500
+手机看	shou ji kan	4500
+手机端	shou ji duan	4500
+手机线	shou ji xian	4500
+手机膜	shou ji mo	4500
+手机袋	shou ji dai	4500
+手机被	shou ji bei	4500
+手机钱	shou ji qian	4500
+手机链	shou ji lian	4500
+扣手机	kou shou ji	4500
+找手机	zhao shou ji	4500
+抢手机	qiang shou ji	4500
+抱手机	bao shou ji	4500
+捡手机	jian shou ji	4500
+捣手机	dao shou ji	4500
+掏手机	tao shou ji	4500
+搞手机	gao shou ji	4500
+摔手机	shuai shou ji	4500
+新手机了	xin shou ji le	4500
+新手机号	xin shou ji hao	4500
+旧手机	jiu shou ji	4500
+是手机	shi shou ji	4500
+果手机	guo shou ji	4500
+查手机	cha shou ji	4500
+没手机	mei shou ji	4500
+烂手机	lan shou ji	4500
+的手机	de shou ji	4500
+破手机	po shou ji	4500
+砸手机	za shou ji	4500
+碰手机	peng shou ji	4500
+租手机	zu shou ji	4500
+给手机	gei shou ji	4500
+翻手机	fan shou ji	4500
+老手机	lao shou ji	4500
+耍手机	shua shou ji	4500
+藏手机	cang shou ji	4500
+装手机	zhuang shou ji	4500
+要手机	yao shou ji	4500
+让手机	rang shou ji	4500
+说手机	shuo shou ji	4500
+谁手机	shei shou ji	4500
+谁手机	shui shou ji	4500
+跟手机	gen shou ji	4500
+送手机	song shou ji	4500
+领手机	ling shou ji	4500
+二手机床	er shou ji chuang	4462
+基因芯片	ji yin xin pian	4462
+处理芯片	chu li xin pian	4462
+存储芯片	cun chu xin pian	4462
+收手机了	shou shou ji le	4462
+熊猫手机	xiong mao shou ji	4462
+生物芯片	sheng wu xin pian	4462
+电脑芯片	dian nao xin pian	4462
+芯片制造	xin pian zhi zao	4462
+芯片型号	xin pian xing hao	4462
+芯片尺寸	xin pian chi cun	4462
+芯片设计	xin pian she ji	4462
+芯片钥匙	xin pian yao shi	4462
+要收手机	yao shou shou ji	4462
+高端手机	gao duan shou ji	4462
+我交手机	wo jiao shou ji	4424
+手机充电	shou ji chong dian	4424
+玩玩手机	wan wan shou ji	4424
+一看手机	yi kan shou ji	4385
+把手机号	ba shou ji hao	4385
+芯片电路	xin pian dian lu	4385
+要交手机	yao jiao shou ji	4385
+在手机上	zai shou ji shang	4347
+在手机里	zai shou ji li	4347
+我妈手机	wo ma shou ji	4347
+手机配件	shou ji pei jian	4347
+老年手机	lao nian shou ji	4347
+手机搬家	shou ji ban jia	4308
+手机没电	shou ji mei dian	4308
+手机降温	shou ji jiang wen	4308
+换了手机	huan le shou ji	4308
+边玩手机	bian wan shou ji	4308
+刚发手机	gang fa shou ji	4270
+安卓手机	an zhuo shou ji	4270
+手机管家	shou ji guan jia	4270
+手机零件	shou ji ling jian	4270
+用手机了	yong shou ji le	4270
+用手机号	yong shou ji hao	4270
+蛋白芯片	dan bai xin pian	4270
+手机关机	shou ji guan ji	4231
+手机太卡	shou ji tai ka	4193
+两部手机	liang bu shou ji	4154
+交手机了	jiao shou ji le	4154
+硬盘分区	ying pan fen qu	4154
+硬盘数据	ying pan shu ju	4154
+硬盘空间	ying pan kong jian	4154
+移动硬盘	yi dong ying pan	4154
+网络硬盘	wang luo ying pan	4154
+音频芯片	yin pin xin pian	4154
+不玩手机	bu wan shou ji	4116
+手机有鬼	shou ji you gui	4116
+手机麻将	shou ji ma jiang	4116
+魔力手机	mo li shou ji	4116
+主板上市	zhu ban shang shi	4077
+手机电量	shou ji dian liang	4077
+手机丢了	shou ji diu le	4039
+手机充值	shou ji chong zhi	4039
+手机铃声	shou ji ling sheng	4039
+换个手机	huan ge shou ji	4039
+照相手机	zhao xiang shou ji	4039
+这破手机	zhe po shou ji	4039
+不带手机	bu dai shou ji	4000
+手机像素	shou ji xiang su	4000
+玩儿手机	wan er shou ji	4000
+这款手机	zhe kuan shou ji	4000
+这款手机	zhei kuan shou ji	4000
 网络连接	wang luo lian jie	3963
+手机知网	shou ji zhi wang	3962
+手机停机	shou ji ting ji	3924
+新款手机	xin kuan shou ji	3924
+上交手机	shang jiao shou ji	3885
+手机克隆	shou ji ke long	3885
+手机相册	shou ji xiang ce	3885
+绑定手机	bang ding shou ji	3885
+别看手机	bie kan shou ji	3847
+手机没带	shou ji mei dai	3847
+拿手机了	na shou ji le	3847
+没带手机	mei dai shou ji	3847
+外置硬盘	wai zhi ying pan	3808
+手机壁纸	shou ji bi zhi	3808
+主板市场	zhu ban shi chang	3770
+主板驱动	zhu ban qu dong	3770
+我手机壳	wo shou ji ke	3770
+手机天猫	shou ji tian mao	3770
+手机摄像	shou ji she xiang	3770
+无线蓝牙	wu xian lan ya	3770
+电脑主板	dian nao zhu ban	3770
+蓝牙技术	lan ya ji shu	3770
+车载蓝牙	che zai lan ya	3770
+买个手机	mai ge shou ji	3731
+手机刑警	shou ji xing jing	3731
+手机尾号	shou ji wei hao	3731
+魔幻手机	mo huan shou ji	3731
+北桥芯片	bei qiao xin pian	3693
+能带手机	neng dai shou ji	3616
+要换手机	yao huan shou ji	3616
+手机支架	shou ji zhi jia	3577
+独立显卡	du li xian ka	3500
+集成显卡	ji cheng xian ka	3500
+双硬盘	shuang ying pan	3462
+大硬盘	da ying pan	3462
+手机欠费	shou ji qian fei	3462
+水货手机	shui huo shou ji	3462
+硬盘坏道	ying pan huai dao	3462
+硬盘机	ying pan ji	3462
+硬盘版	ying pan ban	3462
+硬盘盒	ying pan he	3462
+芯片级	xin pian ji	3462
+手机静音	shou ji jing yin	3385
+手机互传	shou ji hu chuan	3347
+手机炒股	shou ji chao gu	3308
+海思芯片	hai si xin pian	3308
+感光芯片	gan guang xin pian	3270
+主控芯片	zhu kong xin pian	3193
+夺命手机	duo ming shou ji	3193
+手机贴膜	shou ji tie mo	3193
+不交手机	bu jiao shou ji	3077
+不拿手机	bu na shou ji	3077
+不收手机	bu shou shou ji	3077
+买了手机	mai le shou ji	3077
+买手机了	mai shou ji le	3077
+买手机去	mai shou ji qu	3077
+买手机壳	mai shou ji ke	3077
+买手机的	mai shou ji de	3077
+买新手机	mai xin shou ji	3077
+买的手机	mai de shou ji	3077
+交手机咯	jiao shou ji ge	3077
+交手机啦	jiao shou ji la	3077
+他没手机	ta mei shou ji	3077
+他的手机	ta de shou ji	3077
+你买手机	ni mai shou ji	3077
+你带手机	ni dai shou ji	3077
+你手机上	ni shou ji shang	3077
+你手机号	ni shou ji hao	3077
+你手机呢	ni shou ji ne	3077
+你手机里	ni shou ji li	3077
+你把手机	ni ba shou ji	3077
+你拿手机	ni na shou ji	3077
+你换手机	ni huan shou ji	3077
+你有手机	ni you shou ji	3077
+你没手机	ni mei shou ji	3077
+你玩手机	ni wan shou ji	3077
+你用手机	ni yong shou ji	3077
+你的手机	ni de shou ji	3077
+你看手机	ni kan shou ji	3077
+你这手机	ni zhe shou ji	3077
+你那手机	ni na shou ji	3077
+修手机的	xiu shou ji de	3077
+偷玩手机	tou wan shou ji	3077
+光玩手机	guang wan shou ji	3077
+刚拿手机	gang na shou ji	3077
+卖手机的	mai shou ji de	3077
+去买手机	qu mai shou ji	3077
+又玩手机	you wan shou ji	3077
+发手机了	fa shou ji le	3077
+在你手机	zai ni shou ji	3077
+在玩手机	zai wan shou ji	3077
+在看手机	zai kan shou ji	3077
+密保手机	mi bao shou ji	3077
+对着手机	dui zhuo shou ji	3077
+少玩手机	shao wan shou ji	3077
+就玩手机	jiu wan shou ji	3077
+就看手机	jiu kan shou ji	3077
+带手机不	dai shou ji bu	3077
+带手机了	dai shou ji le	3077
+带手机去	dai shou ji qu	3077
+带手机吗	dai shou ji ma	3077
+带手机的	dai shou ji de	3077
+带着手机	dai zhuo shou ji	3077
+想买手机	xiang mai shou ji	3077
+想玩手机	xiang wan shou ji	3077
+我买手机	wo mai shou ji	3077
+我在手机	wo zai shou ji	3077
+我手机卡	wo shou ji ka	3077
+我手机没	wo shou ji mei	3077
+我手机的	wo shou ji de	3077
+我把手机	wo ba shou ji	3077
+我拿手机	wo na shou ji	3077
+我有手机	wo you shou ji	3077
+我没手机	wo mei shou ji	3077
+我玩手机	wo wan shou ji	3077
+我的手机	wo de shou ji	3077
+我看手机	wo kan shou ji	3077
+我这手机	wo zhe shou ji	3077
+手机上了	shou ji shang le	3077
+手机上的	shou ji shang de	3077
+手机上看	shou ji shang kan	3077
+手机不在	shou ji bu zai	3077
+手机了吗	shou ji le ma	3077
+手机到了	shou ji dao le	3077
+手机卡了	shou ji ka le	3077
+手机卡的	shou ji ka de	3077
+手机号了	shou ji hao le	3077
+手机响了	shou ji xiang le	3077
+手机坏了	shou ji huai le	3077
+手机好了	shou ji hao le	3077
+手机好卡	shou ji hao ka	3077
+手机投屏	shou ji tou ping	3077
+手机拍的	shou ji pai de	3077
+手机掉了	shou ji diao le	3077
+手机摔了	shou ji shuai le	3077
+手机收了	shou ji shou le	3077
+手机没了	shou ji mei le	3077
+手机没拿	shou ji mei na	3077
+手机没网	shou ji mei wang	3077
+手机的事	shou ji de shi	3077
+手机被收	shou ji bei shou	3077
+才看手机	cai kan shou ji	3077
+把你手机	ba ni shou ji	3077
+把我手机	ba wo shou ji	3077
+抢我手机	qiang wo shou ji	3077
+报手机号	bao shou ji hao	3077
+抱着手机	bao zhe shou ji	3077
+拿上手机	na shang shou ji	3077
+拿你手机	na ni shou ji	3077
+拿我手机	na wo shou ji	3077
+拿手机不	na shou ji bu	3077
+拿手机吗	na shou ji ma	3077
+拿的手机	na de shou ji	3077
+拿着手机	na zhe shou ji	3077
+拿起手机	na qi shou ji	3077
+换手机吧	huan shou ji ba	3077
+收我手机	shou wo shou ji	3077
+是我手机	shi wo shou ji	3077
+有手机吗	you shou ji ma	3077
+查我手机	cha wo shou ji	3077
+没交手机	mei jiao shou ji	3077
+没手机了	mei shou ji le	3077
+没手机号	mei shou ji hao	3077
+没手机玩	mei shou ji wan	3077
+没拿手机	mei na shou ji	3077
+没玩手机	mei wan shou ji	3077
+没看手机	mei kan shou ji	3077
+没碰手机	mei peng shou ji	3077
+玩我手机	wan wo shou ji	3077
+玩手机吗	wan shou ji ma	3077
+玩手机吧	wan shou ji ba	3077
+玩手机呀	wan shou ji ya	3077
+玩手机呗	wan shou ji bei	3077
+玩手机呢	wan shou ji ne	3077
+玩手机啊	wan shou ji a	3077
+玩手机的	wan shou ji de	3077
+玩着手机	wan zhe shou ji	3077
+用你手机	yong ni shou ji	3077
+用我手机	yong wo shou ji	3077
+的手机号	de shou ji hao	3077
+盯着手机	ding zhuo shou ji	3077
+看下手机	kan xia shou ji	3077
+看你手机	kan ni shou ji	3077
+看我手机	kan wo shou ji	3077
+看手机吧	kan shou ji ba	3077
+看手机呢	kan shou ji ne	3077
+看手机啊	kan shou ji a	3077
+看手机的	kan shou ji de	3077
+等我手机	deng wo shou ji	3077
+翻我手机	fan wo shou ji	3077
+老玩手机	lao wan shou ji	3077
+老看手机	lao kan shou ji	3077
+耍手机了	shua shou ji le	3077
+能拿手机	neng na shou ji	3077
+能玩手机	neng wan shou ji	3077
+要买手机	yao mai shou ji	3077
+要手机了	yao shou ji le	3077
+要手机号	yao shou ji hao	3077
+要用手机	yao yong shou ji	3077
+让带手机	rang dai shou ji	3077
+谁的手机	shei de shou ji	3077
+还玩手机	hai wan shou ji	3077
+那你手机	na ni shou ji	3077
+都有手机	dou you shou ji	3077
+都没手机	dou mei shou ji	3077
+都玩手机	dou wan shou ji	3077
+蓝牙的	lan ya de	2962
+连蓝牙	lian lan ya	2962
+蓝晶芯片	lan jing xin pian	2462
+幽魂手机	you hun shou ji	2308
 转接头	zhuan jie tou	1018

@@ -1,8 +1,13 @@
 # 开心离线输入法分类补充：音乐乐理
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+电影音乐	dian ying yin yue	6347
+音乐中心	yin yue zhong xin	6308
+音乐网站	yin yue wang zhan	6270
+中国音乐	zhong guo yin yue	6231
+音乐游戏	yin yue you xi	6231
 乐器保养	yue qi bao yang	6100
 乐器演奏	yue qi yan zou	6100
 乐器练习	yue qi lian xi	6100
@@ -46,7 +51,225 @@
 音准节奏	yin zhun jie zou	6100
 音频剪辑	yin pin jian ji	6100
 音频接口	yin pin jie kou	6100
+游戏音乐	you xi yin yue	5962
+电脑音乐	dian nao yin yue	5962
+网易音乐	wang yi yin yue	5962
+腾讯音乐	teng xun yin yue	5962
+这个音乐	zhe ge yin yue	5962
+这个音乐	zhei ge yin yue	5962
+音乐世界	yin yue shi jie	5962
+音乐教育	yin yue jiao yu	5962
+音乐文件	yin yue wen jian	5962
+音乐文化	yin yue wen hua	5962
+音乐银行	yin yue yin hang	5924
+音乐不断	yin yue bu duan	5885
+音乐专业	yin yue zhuan ye	5885
+音乐故事	yin yue gu shi	5885
+音乐能力	yin yue neng li	5885
+相信音乐	xiang xin yin yue	5808
+音乐才能	yin yue cai neng	5808
 指法	zhi fa	5744
+儿童音乐	er tong yin yue	5731
+音乐先生	yin yue xian sheng	5731
+自然音乐	zi ran yin yue	5693
+音乐人生	yin yue ren sheng	5693
+免费音乐	mian fei yin yue	5654
+死亡音乐	si wang yin yue	5616
+音乐风格	yin yue feng ge	5577
+宗教音乐	zong jiao yin yue	5500
+音乐广场	yin yue guang chang	5500
+音乐公园	yin yue gong yuan	5385
+音乐表演	yin yue biao yan	5385
+播放歌曲	bo fang ge qu	5347
+英文音乐	ying wen yin yue	5347
+歌曲名称	ge qu ming cheng	5308
+音乐帝国	yin yue di guo	5308
+民间音乐	min jian yin yue	5270
+音乐天使	yin yue tian shi	5270
+音乐少女	yin yue shao nv	5270
+音乐舞蹈	yin yue wu dao	5231
+音乐频道	yin yue pin dao	5231
+恐怖音乐	kong bu yin yue	5193
+等待音乐	deng dai yin yue	5193
+经典音乐	jing dian yin yue	5193
+绿色音乐	lv se yin yue	5193
+乡村音乐	xiang cun yin yue	5154
+在线音乐	zai xian yin yue	5154
+空中音乐	kong zhong yin yue	5154
+热爱音乐	re ai yin yue	5077
+音乐大师	yin yue da shi	5077
+中文歌曲	zhong wen ge qu	5039
+什么歌曲	shen me ge qu	5039
+儿童歌曲	er tong ge qu	5039
+全部歌曲	quan bu ge qu	5039
+品质音乐	pin zhi yin yue	5039
+在线歌曲	zai xian ge qu	5039
+恐怖歌曲	kong bu ge qu	5039
+欧美音乐	ou mei yin yue	5039
+电影歌曲	dian ying ge qu	5039
+网络歌曲	wang luo ge qu	5039
+艺术歌曲	yi shu ge qu	5039
+英文歌曲	ying wen ge qu	5039
+一首歌曲	yi shou ge qu	5000
+地下音乐	di xia yin yue	5000
+音乐商店	yin yue shang dian	4962
+音乐无限	yin yue wu xian	4962
+音乐种类	yin yue zhong lei	4924
+佛教歌曲	fo jiao ge qu	4847
+佛教音乐	fo jiao yin yue	4847
+音乐花园	yin yue hua yuan	4847
+放音乐	fang yin yue	4808
+爱音乐	ai yin yue	4808
+音乐大厅	yin yue da ting	4808
+音乐班	yin yue ban	4808
+音乐生	yin yue sheng	4808
+音乐谷	yin yue gu	4808
+音乐部	yin yue bu	4808
+听听音乐	ting ting yin yue	4770
+欧美歌曲	ou mei ge qu	4770
+复调音乐	fu diao yin yue	4731
+热门音乐	re men yin yue	4731
+遇见音乐	yu jian yin yue	4731
+音乐格式	yin yue ge shi	4731
+华语音乐	hua yu yin yue	4693
+完美钢琴	wan mei gang qin	4693
+机械钢琴	ji xie gang qin	4693
+海伦钢琴	hai lun gang qin	4693
+自动钢琴	zi dong gang qin	4693
+讽刺歌曲	feng ci ge qu	4693
+钢琴大师	gang qin da shi	4693
+钢琴码头	gang qin ma tou	4693
+音乐之声	yin yue zhi sheng	4693
+影视歌曲	ying shi ge qu	4654
+影视音乐	ying shi yin yue	4654
+新年歌曲	xin nian ge qu	4616
+音乐教室	yin yue jiao shi	4616
+三角钢琴	san jiao gang qin	4577
+演唱开始	yan chang kai shi	4577
+演唱风格	yan chang feng ge	4577
+爱好音乐	ai hao yin yue	4577
+音乐演奏	yin yue yan zou	4577
+音乐笔记	yin yue bi ji	4577
+音乐喜剧	yin yue xi ju	4539
+民族乐器	min zu yue qi	4500
+电子乐器	dian zi yue qi	4500
+这首歌曲	zhe shou ge qu	4500
+音乐脚步	yin yue jiao bu	4500
+华为音乐	hua wei yin yue	4462
+虾米音乐	xia mi yin yue	4462
+蜂鸟音乐	feng niao yin yue	4462
 音高	yin gao	4440
+云音乐	yun yin yue	4424
+学音乐	xue yin yue	4424
+有音乐	you yin yue	4424
+某音乐	mou yin yue	4424
+没音乐	mei yin yue	4424
+的音乐	de yin yue	4424
+过年歌曲	guo nian ge qu	4424
+这音乐	zhe yin yue	4424
+这音乐	zhei yin yue	4424
+陈音乐	chen yin yue	4424
+音乐书	yin yue shu	4424
+音乐了	yin yue le	4424
+音乐僵尸	yin yue jiang shi	4424
+音乐包	yin yue bao	4424
+音乐吗	yin yue ma	4424
+音乐圈	yin yue quan	4424
+音乐屋	yin yue wu	4424
+音乐狂	yin yue kuang	4424
+音乐疗法	yin yue liao fa	4424
+音乐的	yin yue de	4424
+音乐社	yin yue she	4424
+太合音乐	tai he yin yue	4385
+爵士音乐	jue shi yin yue	4385
+摇滚歌曲	yao gun ge qu	4347
+数码钢琴	shu ma gang qin	4347
+极品钢琴	ji pin gang qin	4347
+粤语歌曲	yue yu ge qu	4347
+聆听音乐	ling ting yin yue	4347
 音色	yin se	4339
+吉他兄弟	ji ta xiong di	4308
+吉他英雄	ji ta ying xiong	4308
+空气吉他	kong qi ji ta	4308
+歌曲排行	ge qu pai hang	4270
+二手钢琴	er shou gang qin	4231
+抒情歌曲	shu qing ge qu	4231
+听歌曲	ting ge qu	4193
+好歌曲	hao ge qu	4193
+西洋乐器	xi yang yue qi	4193
+叙事歌曲	xu shi ge qu	4154
+音乐剪辑	yin yue jian ji	4154
+九天音乐	jiu tian yin yue	4116
+伤感歌曲	shang gan ge qu	4077
+伤感音乐	shang gan yin yue	4077
+通俗歌曲	tong su ge qu	4039
+日韩歌曲	ri han ge qu	4000
+港台歌曲	gang tai ge qu	4000
+珠江钢琴	zhu jiang gang qin	4000
+音乐世家	yin yue shi jia	4000
+弹奏乐器	tan zou yue qi	3962
+汽水音乐	qi shui yin yue	3962
+深情演唱	shen qing yan chang	3924
+音乐周报	yin yue zhou bao	3924
+音乐盛典	yin yue sheng dian	3924
+音乐喷泉	yin yue pen quan	3885
+音乐教父	yin yue jiao fu	3885
+波点音乐	bo dian yin yue	3847
+吉他调音	ji ta tiao yin	3808
+的歌曲	de ge qu	3808
+钢琴木马	gang qin mu ma	3731
+同台演唱	tong tai yan chang	3693
+钢琴方块	gang qin fang kuai	3654
+音乐学系	yin yue xue xi	3654
+音乐茶座	yin yue cha zuo	3654
+麦田音乐	mai tian yin yue	3654
+苦水音乐	ku shui yin yue	3616
+钢琴神童	gang qin shen tong	3616
+学钢琴	xue gang qin	3577
+练钢琴	lian gang qin	3577
+钢琴块	gang qin kuai	3577
+钢琴手	gang qin shou	3577
+钢琴曲谱	gang qin qu pu	3577
+钢琴梦	gang qin meng	3577
+钢琴漆	gang qin qi	3577
+钢琴版	gang qin ban	3577
+钢琴说	gang qin shuo	3577
+三弦乐器	san xian yue qi	3539
+钢琴独奏	gang qin du zou	3539
+扣扣音乐	kou kou yin yue	3500
+乐器厂	yue qi chang	3462
+吉他曲	ji ta qu	3462
+吉他社	ji ta she	3462
+吉他谱	ji ta pu	3462
+吹奏乐器	chui zou yue qi	3462
+弓弦乐器	gong xian yue qi	3462
+弦乐器组	xian yue qi zu	3462
+钢琴之森	gang qin zhi sen	3462
+钢琴协奏	gang qin xie zou	3462
+音乐才子	yin yue cai zi	3424
+吉他课	ji ta ke	3347
+学吉他	xue ji ta	3347
+弹吉他	tan ji ta	3347
+白吉他	bai ji ta	3347
+练吉他	lian ji ta	3347
+钢琴别恋	gang qin bie lian	3347
+古风歌曲	gu feng ge qu	3308
+闽南歌曲	min nan ge qu	3231
+夺命钢琴	duo ming gang qin	3193
+钢琴恋曲	gang qin lian qu	3154
+听着音乐	ting zhe yin yue	3039
+我的音乐	wo de yin yue	3039
+洛雪音乐	luo xue yin yue	3039
+酷我音乐	ku wo yin yue	3039
+音乐与我	yin yue yu wo	3039
+音乐之城	yin yue zhi cheng	3039
+音乐之家	yin yue zhi jia	3039
+音乐导聆	yin yue dao ling	3039
+音乐的心	yin yue de xin	3039
+胎教音乐	tai jiao yin yue	2770
+你的歌曲	ni de ge qu	2693
+开演唱会	kai yan chang hui	2500
+看演唱会	kan yan chang hui	2500
+音乐傲骨	yin yue ao gu	2308
+咪咕音乐	mi gu yin yue	2077
 配器法	pei qi fa	117

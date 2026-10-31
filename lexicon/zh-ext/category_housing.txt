@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：房产物业
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 不动产权证	bu dong chan quan zheng	6100
 二手房交易	er shou fang jiao yi	6100
@@ -52,5 +52,182 @@
 贷款审批	dai kuan shen pi	6100
 车位租赁	che wei zu lin	6100
 车位管理	che wei guan li	6100
+小区中心	xiao qu zhong xin	5154
+小区人家	xiao qu ren jia	5154
+小区里面	xiao qu li mian	4962
+我家小区	wo jia xiao qu	4962
+出租房屋	chu zu fang wu	4847
+一个小区	yi ge xiao qu	4731
+什么小区	shen me xiao qu	4731
+住宅小区	zhu zhai xiao qu	4731
+你们小区	ni men xiao qu	4731
+光明小区	guang ming xiao qu	4731
+共有房产	gong you fang chan	4731
+兴隆小区	xing long xiao qu	4731
+凤凰小区	feng huang xiao qu	4731
+周边小区	zhou bian xiao qu	4731
+咱们小区	zan men xiao qu	4731
+哪个小区	na ge xiao qu	4731
+国有房产	guo you fang chan	4731
+小区门口	xiao qu men kou	4731
+居住小区	ju zhu xiao qu	4731
+居民小区	ju min xiao qu	4731
+幸福小区	xing fu xiao qu	4731
+我们小区	wo men xiao qu	4731
+教育小区	jiao yu xiao qu	4731
+文明小区	wen ming xiao qu	4731
+深圳小区	shen zhen xiao qu	4731
+滨江小区	bin jiang xiao qu	4731
+爱情小区	ai qing xiao qu	4731
+物业经理	wu ye jing li	4731
+生态小区	sheng tai xiao qu	4731
+电力小区	dian li xiao qu	4731
+花园小区	hua yuan xiao qu	4731
+这个小区	zhe ge xiao qu	4731
+这个小区	zhei ge xiao qu	4731
+那个小区	na ge xiao qu	4731
+阳光小区	yang guang xiao qu	4731
+先锋小区	xian feng xiao qu	4693
+大厦小区	da sha xiao qu	4693
+你家小区	ni jia xiao qu	4654
+自有房产	zi you fang chan	4654
+安置小区	an zhi xiao qu	4616
+外贸小区	wai mao xiao qu	4577
+长城小区	chang cheng xiao qu	4539
+私有房产	si you fang chan	4462
+小区业主	xiao qu ye zhu	4424
+房产中介	fang chan zhong jie	4424
+房产交易	fang chan jiao yi	4424
+房产信息	fang chan xin xi	4424
+房产公司	fang chan gong si	4424
+房产大厦	fang chan da sha	4424
+房产市场	fang chan shi chang	4424
+房产纠纷	fang chan jiu fen	4424
+房产证明	fang chan zheng ming	4424
+房产资讯	fang chan zi xun	4424
+房产金融	fang chan jin rong	4424
+房产面积	fang chan mian ji	4424
+物业企业	wu ye qi ye	4424
+物业公司	wu ye gong si	4424
+物业板块	wu ye ban kuai	4424
+物业电话	wu ye dian hua	4424
+物业管理	wu ye guan li	4424
+小区绿化	xiao qu lv hua	4385
+彩虹小区	cai hong xiao qu	4385
+桃园小区	tao yuan xiao qu	4308
+这小区	zhe xiao qu	4308
+百合小区	bai he xiao qu	4270
+高档小区	gao dang xiao qu	4231
+园林小区	yuan lin xiao qu	4193
+三小区	san xiao qu	4154
+出小区	chu xiao qu	4154
+吉祥小区	ji xiang xiao qu	4154
+小区的	xiao qu de	4154
+无物业	wu wu ye	4154
+那小区	na xiao qu	4154
+不买房	bu mai fang	4116
+小区麻将	xiao qu ma jiang	4116
+建发房产	jian fa fang chan	4077
+曙光小区	shu guang xiao qu	4077
+新村小区	xin cun xiao qu	4039
+一小区	yi xiao qu	4000
+二小区	er xiao qu	4000
+小区内	xiao qu nei	4000
+小区防疫	xiao qu fang yi	4000
+恒大物业	heng da wu ye	4000
+物业用房	wu ye yong fang	4000
+老小区	lao xiao qu	4000
+进小区	jin xiao qu	4000
+租房需求	zu fang xu qiu	3924
+老旧小区	lao jiu xiao qu	3924
+贷款买房	dai kuan mai fang	3924
+全款买房	quan kuan mai fang	3885
+借名买房	jie ming mai fang	3847
+房产家居	fang chan jia ju	3847
+茶会小区	cha hui xiao qu	3847
+房产科	fang chan ke	3770
+物业的	wu ye de	3770
+城南小区	cheng nan xiao qu	3693
+五小区	wu xiao qu	3616
+你小区	ni xiao qu	3616
+俺小区	an xiao qu	3616
+全小区	quan xiao qu	3616
+到小区	dao xiao qu	3616
+北小区	bei xiao qu	3616
+南小区	nan xiao qu	3616
+去小区	qu xiao qu	3616
+同小区	tong xiao qu	3616
+咱小区	zan xiao qu	3616
+回小区	hui xiao qu	3616
+园小区	yuan xiao qu	3616
+在小区	zai xiao qu	3616
+城小区	cheng xiao qu	3616
+封小区	feng xiao qu	3616
+小区了	xiao qu le	3616
+小区吗	xiao qu ma	3616
+小区呢	xiao qu ne	3616
+小区里	xiao qu li	3616
+小区门	xiao qu men	3616
+我小区	wo xiao qu	3616
+新小区	xin xiao qu	3616
+本小区	ben xiao qu	3616
+来小区	lai xiao qu	3616
+的小区	de xiao qu	3616
+苑小区	yuan xiao qu	3616
+西小区	xi xiao qu	3616
+跑小区	pao xiao qu	3616
+乐居买房	le ju mai fang	3577
+买房买车	mai fang mai che	3539
+买车买房	mai che mai fang	3539
+华西小区	hua xi xiao qu	3500
+南岭小区	nan ling xiao qu	3500
+园丁小区	yuan ding xiao qu	3500
+合租房	he zu fang	3462
+房产网	fang chan wang	3462
+日租房	ri zu fang	3462
+求租房	qiu zu fang	3462
+建委小区	jian wei xiao qu	3424
+刚到小区	gang dao xiao qu	3385
+包物业	bao wu ye	3385
+去物业	qu wu ye	3385
+在物业	zai wu ye	3385
+房产处	fang chan chu	3385
+找物业	zhao wu ye	3385
+来物业	lai wu ye	3385
+物业了	wu ye le	3385
+物业楼	wu ye lou	3385
+物业滴	wu ye di	3385
+物业群	wu ye qun	3385
+物业说	wu ye shuo	3385
+物业部	wu ye bu	3385
+给物业	gei wu ye	3385
+让物业	rang wu ye	3385
+东升小区	dong sheng xiao qu	3308
+买房者	mai fang zhe	3308
+房产过户	fang chan guo hu	3308
+金盾小区	jin dun xiao qu	3270
+摇号买房	yao hao mai fang	3116
+公租房	gong zu fang	3077
+康宁小区	kang ning xiao qu	3077
+想买房	xiang mai fang	3077
+短租房	duan zu fang	3077
+租房人	zu fang ren	3077
+要买房	yao mai fang	3077
+长租房	chang zu fang	3077
+滨河小区	bin he xiao qu	2731
+东苑小区	dong yuan xiao qu	2654
+文苑小区	wen yuan xiao qu	2654
+新苑小区	xin yuan xiao qu	2654
+西苑小区	xi yuan xiao qu	2654
+你在小区	ni zai xiao qu	2577
+到小区了	dao xiao qu le	2577
+在小区里	zai xiao qu li	2577
+我到小区	wo dao xiao qu	2577
+我在小区	wo zai xiao qu	2577
+新发小区	xin fa xiao qu	2577
+进小区了	jin xiao qu le	2577
+翠园小区	cui yuan xiao qu	2462
+交物业费	jiao wu ye fei	2424
+南都物业	nan du wu ye	2424
 物业费	wu ye fei	2043
 首付款	shou fu kuan	1942

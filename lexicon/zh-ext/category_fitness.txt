@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：运动健身
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 体脂率	ti zhi lv	6100
 体重管理	ti zhong guan li	6100
@@ -53,3 +53,405 @@
 静态拉伸	jing tai la shen	6100
 饮食记录	yin shi ji lu	6100
 骑行训练	qi xing xun lian	6100
+瑜伽运动	yu jia yun dong	6039
+瑜伽学院	yu jia xue yuan	5693
+综合瑜伽	zong he yu jia	5693
+印度瑜伽	yin du yu jia	5654
+瑜伽训练	yu jia xun lian	5500
+瑜伽课程	yu jia ke cheng	5347
+每日瑜伽	mei ri yu jia	5077
+瑜伽师	yu jia shi	5000
+瑜伽舞蹈	yu jia wu dao	4962
+舞蹈瑜伽	wu dao yu jia	4962
+整合瑜伽	zheng he yu jia	4924
+空中瑜伽	kong zhong yu jia	4885
+健身中心	jian shen zhong xin	4808
+健身教练	jian shen jiao lian	4770
+功夫瑜伽	gong fu yu jia	4731
+古典瑜伽	gu dian yu jia	4731
+夏天健身	xia tian jian shen	4731
+天天健身	tian tian jian shen	4731
+每天健身	mei tian jian shen	4731
+体育锻炼	ti yu duan lian	4654
+加强锻炼	jia qiang duan lian	4654
+劳动锻炼	lao dong duan lian	4654
+参加锻炼	can jia duan lian	4654
+坚持锻炼	jian chi duan lian	4654
+天天锻炼	tian tian duan lian	4654
+好好锻炼	hao hao duan lian	4654
+活力瑜伽	huo li yu jia	4654
+缺乏锻炼	que fa duan lian	4654
+运动锻炼	yun dong duan lian	4654
+还能减肥	hai neng jian fei	4654
+锻炼一下	duan lian yi xia	4654
+锻炼方法	duan lian fang fa	4654
+锻炼肌肉	duan lian ji rou	4654
+锻炼自己	duan lian zi ji	4654
+锻炼锻炼	duan lian duan lian	4654
+业瑜伽	ye yu jia	4616
+做瑜伽	zuo yu jia	4616
+印瑜伽	yin yu jia	4616
+智瑜伽	zhi yu jia	4616
+梦瑜伽	meng yu jia	4616
+流瑜伽	liu yu jia	4616
+热瑜伽	re yu jia	4616
+王瑜伽	wang yu jia	4616
+瑜伽垫	yu jia dian	4616
+瑜伽带	yu jia dai	4616
+瑜伽教	yu jia jiao	4616
+瑜伽服	yu jia fu	4616
+瑜伽熊	yu jia xiong	4616
+瑜伽球	yu jia qiu	4616
+瑜伽砖	yu jia zhuan	4616
+瑜伽经	yu jia jing	4616
+瑜伽裤	yu jia ku	4616
+瑜伽论	yu jia lun	4616
+瑜伽课	yu jia ke	4616
+瑜伽馆	yu jia guan	4616
+练瑜伽	lian yu jia	4616
+阴瑜伽	yin yu jia	4616
+情侣瑜伽	qing lv yu jia	4577
+孕妇瑜伽	yun fu yu jia	4539
+高温瑜伽	gao wen yu jia	4539
+一家健身	yi jia jian shen	4500
+东方健身	dong fang jian shen	4500
+休闲健身	xiu xian jian shen	4500
+体育健身	ti yu jian shen	4500
+健身休闲	jian shen xiu xian	4500
+健身伙伴	jian shen huo ban	4500
+健身学院	jian shen xue yuan	4500
+健身小姐	jian shen xiao jie	4500
+健身广场	jian shen guang chang	4500
+健身活动	jian shen huo dong	4500
+健身游泳	jian shen you yong	4500
+健身瑜伽	jian shen yu jia	4500
+健身用品	jian shen yong pin	4500
+健身联盟	jian shen lian meng	4500
+健身舞蹈	jian shen wu dao	4500
+健身训练	jian shen xun lian	4500
+健身课程	jian shen ke cheng	4500
+健身路径	jian shen lu jing	4500
+健身达人	jian shen da ren	4500
+健身运动	jian shen yun dong	4500
+健身顾问	jian shen gu wen	4500
+先锋健身	xian feng jian shen	4500
+全时健身	quan shi jian shen	4500
+全民健身	quan min jian shen	4500
+加州健身	jia zhou jian shen	4500
+动力健身	dong li jian shen	4500
+品质健身	pin zhi jian shen	4500
+大众健身	da zhong jian shen	4500
+奇迹健身	qi ji jian shen	4500
+康乐健身	kang le jian shen	4500
+快乐健身	kuai le jian shen	4500
+时代健身	shi dai jian shen	4500
+时尚健身	shi shang jian shen	4500
+极限健身	ji xian jian shen	4500
+森林健身	sen lin jian shen	4500
+活力健身	huo li jian shen	4500
+温泉健身	wen quan jian shen	4500
+游戏健身	you xi jian shen	4500
+游泳健身	you yong jian shen	4500
+爱上健身	ai shang jian shen	4500
+环球健身	huan qiu jian shen	4500
+空中健身	kong zhong jian shen	4500
+精英健身	jing ying jian shen	4500
+美洲健身	mei zhou jian shen	4500
+能量健身	neng liang jian shen	4500
+自然健身	zi ran jian shen	4500
+舞蹈健身	wu dao jian shen	4500
+苹果健身	ping guo jian shen	4500
+超越健身	chao yue jian shen	4500
+运动健身	yun dong jian shen	4500
+金牌健身	jin pai jian shen	4500
+阳光健身	yang guang jian shen	4500
+领域健身	ling yu jian shen	4500
+魅力健身	mei li jian shen	4500
+魔鬼健身	mo gui jian shen	4500
+卓越健身	zhuo yue jian shen	4462
+跑步向前	pao bu xiang qian	4424
+一起减肥	yi qi jian fei	4385
+不用减肥	bu yong jian fei	4385
+不要减肥	bu yao jian fei	4385
+为了减肥	wei le jian fei	4385
+健身器材	jian shen qi cai	4385
+减肥产品	jian fei chan pin	4385
+减肥减肥	jian fei jian fei	4385
+减肥前后	jian fei qian hou	4385
+减肥反弹	jian fei fan tan	4385
+减肥咖啡	jian fei ka fei	4385
+减肥成功	jian fei cheng gong	4385
+减肥按摩	jian fei an mo	4385
+减肥方法	jian fei fang fa	4385
+减肥期间	jian fei qi jian	4385
+减肥计划	jian fei ji hua	4385
+减肥路上	jian fei lu shang	4385
+可以减肥	ke yi jian fei	4385
+好好减肥	hao hao jian fei	4385
+就当减肥	jiu dang jian fei	4385
+开始减肥	kai shi jian fei	4385
+怎么减肥	zen me jian fei	4385
+怎么减肥	zen mo jian fei	4385
+我要减肥	wo yao jian fei	4385
+按摩减肥	an mo jian fei	4385
+正好减肥	zheng hao jian fei	4385
+引领健身	yin ling jian shen	4347
+健身管家	jian shen guan jia	4270
+上师瑜伽	shang shi yu jia	4231
+王者健身	wang zhe jian shen	4231
+精准瑜伽	jing zhun yu jia	4231
+养生瑜伽	yang sheng yu jia	4193
+不减肥	bu jian fei	4154
+再减肥	zai jian fei	4154
+四季健身	si ji jian shen	4154
+美容健身	mei rong jian shen	4154
+出去跑步	chu qu pao bu	4116
+起来跑步	qi lai pao bu	4116
+跑步公园	pao bu gong yuan	4116
+千人健身	qian ren jian shen	4077
+天马健身	tian ma jian shen	4077
+柠檬健身	ning meng jian shen	4077
+瑜伽体式	yu jia ti shi	4077
+经受锻炼	jing shou duan lian	4039
+美力健身	mei li jian shen	4039
+健身器械	jian shen qi xie	4000
+居家健身	ju jia jian shen	4000
+海派健身	hai pai jian shen	4000
+金领健身	jin ling jian shen	4000
+亲子瑜伽	qin zi yu jia	3962
+轻重健身	qing zhong jian shen	3962
+不锻炼	bu duan lian	3924
+健身会馆	jian shen hui guan	3924
+全名健身	quan ming jian shen	3924
+韦德健身	wei de jian shen	3924
+乐动健身	le dong jian shen	3885
+不健身	bu jian shen	3847
+健身去	jian shen qu	3847
+健身法	jian shen fa	3847
+奥本健身	ao ben jian shen	3847
+莱斯健身	lai si jian shen	3847
+锻炼者	duan lian zhe	3847
+减肥瘦身	jian fei shou shen	3808
+没跑步	mei pao bu	3808
+健身操课	jian shen cao ke	3770
+凯旋健身	kai xuan jian shen	3770
+能减肥	neng jian fei	3770
+该减肥	gai jian fei	3770
+健身卡	jian shen ka	3693
+奥力健身	ao li jian shen	3693
+宝力健身	bao li jian shen	3693
+挂职锻炼	gua zhi duan lian	3693
+健身气功	jian shen qi gong	3616
+刚跑步	gang pao bu	3616
+动感健身	dong gan jian shen	3616
+巨石健身	ju shi jian shen	3616
+至善瑜伽	zhi shan yu jia	3616
+美日健身	mei ri jian shen	3577
+你锻炼	ni duan lian	3539
+刚锻炼	gang duan lian	3539
+去锻炼	qu duan lian	3539
+在锻炼	zai duan lian	3539
+多锻炼	duo duan lian	3539
+康体健身	kang ti jian shen	3539
+我锻炼	wo duan lian	3539
+来锻炼	lai duan lian	3539
+没锻炼	mei duan lian	3539
+要锻炼	yao duan lian	3539
+还锻炼	hai duan lian	3539
+锻炼下	duan lian xia	3539
+锻炼了	duan lian le	3539
+锻炼人	duan lian ren	3539
+锻炼你	duan lian ni	3539
+锻炼去	duan lian qu	3539
+锻炼吗	duan lian ma	3539
+锻炼吧	duan lian ba	3539
+锻炼呢	duan lian ne	3539
+锻炼好	duan lian hao	3539
+锻炼完	duan lian wan	3539
+锻炼的	duan lian de	3539
+乐健身	le jian shen	3462
+享健身	xiang jian shen	3462
+你健身	ni jian shen	3462
+健健身	jian jian shen	3462
+健身了	jian shen le	3462
+健身会	jian shen hui	3462
+健身吗	jian shen ma	3462
+健身吧	jian shen ba	3462
+健身室	jian shen shi	3462
+健身服	jian shen fu	3462
+健身架	jian shen jia	3462
+健身椅	jian shen yi	3462
+健身的	jian shen de	3462
+健身盘	jian shen pan	3462
+健身舞	jian shen wu	3462
+健身苑	jian shen yuan	3462
+健身裤	jian shen ku	3462
+健身跑	jian shen pao	3462
+健身车	jian shen che	3462
+健身餐	jian shen can	3462
+健身馆	jian shen guan	3462
+减肥操	jian fei cao	3462
+力健身	li jian shen	3462
+去健身	qu jian shen	3462
+在健身	zai jian shen	3462
+型健身	xing jian shen	3462
+壹健身	yi jian shen	3462
+家健身	jia jian shen	3462
+开健身	kai jian shen	3462
+悦健身	yue jian shen	3462
+我健身	wo jian shen	3462
+爱健身	ai jian shen	3462
+秀健身	xiu jian shen	3462
+纯健身	chun jian shen	3462
+自健身	zi jian shen	3462
+节食减肥	jie shi jian fei	3462
+越健身	yue jian shen	3462
+跑步走	pao bu zou	3462
+轻健身	qing jian shen	3462
+锻炼心肺	duan lian xin fei	3462
+囚徒健身	qiu tu jian shen	3424
+埋线减肥	mai xian jian fei	3424
+派森健身	pai sen jian shen	3424
+银座健身	yin zuo jian shen	3424
+也减肥	ye jian fei	3385
+你减肥	ni jian fei	3385
+做减肥	zuo jian fei	3385
+冥想瑜伽	ming xiang yu jia	3385
+减减肥	jian jian fei	3385
+减肥中	jian fei zhong	3385
+减肥了	jian fei le	3385
+减肥去	jian fei qu	3385
+减肥吗	jian fei ma	3385
+减肥吧	jian fei ba	3385
+减肥呀	jian fei ya	3385
+减肥呢	jian fei ne	3385
+减肥啊	jian fei a	3385
+减肥啦	jian fei la	3385
+减肥嘛	jian fei ma	3385
+减肥店	jian fei dian	3385
+减肥机	jian fei ji	3385
+减肥的	jian fei de	3385
+减肥贴	jian fei tie	3385
+别减肥	bie jian fei	3385
+去减肥	qu jian fei	3385
+又减肥	you jian fei	3385
+在减肥	zai jian fei	3385
+好减肥	hao jian fei	3385
+就减肥	jiu jian fei	3385
+当减肥	dang jian fei	3385
+想减肥	xiang jian fei	3385
+我减肥	wo jian fei	3385
+没减肥	mei jian fei	3385
+要减肥	yao jian fei	3385
+说减肥	shuo jian fei	3385
+还减肥	hai jian fei	3385
+青鸟健身	qing niao jian shen	3385
+领航健身	ling hang jian shen	3385
+哈达瑜伽	ha da yu jia	3347
+康美健身	kang mei jian shen	3347
+泰格健身	tai ge jian shen	3347
+健身铺子	jian shen pu zi	3308
+奥森健身	ao sen jian shen	3308
+菲力健身	fei li jian shen	3308
+星河健身	xing he jian shen	3270
+百顺健身	bai shun jian shen	3270
+锻炼腹肌	duan lian fu ji	3231
+不跑步	bu pao bu	3193
+你跑步	ni pao bu	3193
+去跑步	qu pao bu	3193
+在跑步	zai pao bu	3193
+我跑步	wo pao bu	3193
+要跑步	yao pao bu	3193
+跑步不	pao bu bu	3193
+跑步了	pao bu le	3193
+跑步去	pao bu qu	3193
+跑步吗	pao bu ma	3193
+跑步吧	pao bu ba	3193
+跑步呀	pao bu ya	3193
+跑步呢	pao bu ne	3193
+跑步啊	pao bu a	3193
+跑步啦	pao bu la	3193
+跑步时	pao bu shi	3193
+跑步的	pao bu de	3193
+跑步者	pao bu zhe	3193
+跑步鞋	pao bu xie	3193
+还跑步	hai pao bu	3193
+哈他瑜伽	ha ta yu jia	3154
+奉爱瑜伽	feng ai yu jia	3154
+庆华健身	qing hua jian shen	3154
+禅逸瑜伽	chan yi yu jia	3154
+舞韵瑜伽	wu yun yu jia	3154
+良子健身	liang zi jian shen	3154
+康博健身	kang bo jian shen	3077
+火罐减肥	huo guan jian fei	3000
+百盛健身	bai sheng jian shen	2962
+纯氧健身	chun yang jian shen	2962
+中航健身	zhong hang jian shen	2924
+云杉健身	yun shan jian shen	2885
+拔罐减肥	ba guan jian fei	2808
+理疗瑜伽	li liao yu jia	2616
+我在锻炼	wo zai duan lian	2539
+锻炼去了	duan lian qu le	2539
+锻炼完了	duan lian wan le	2539
+乐享健身	le xiang jian shen	2462
+乐体健身	le ti jian shen	2462
+乐刻健身	le ke jian shen	2462
+乐劲健身	le jin jian shen	2462
+五象健身	wu xiang jian shen	2462
+倍力健身	bei li jian shen	2462
+健身会所	jian shen hui suo	2462
+健身周卡	jian shen zhou ka	2462
+健身步道	jian shen bu dao	2462
+健身球操	jian shen qiu cao	2462
+健身肌地	jian shen ji di	2462
+力动健身	li dong jian shen	2462
+力康健身	li kang jian shen	2462
+力美健身	li mei jian shen	2462
+动岚健身	dong lan jian shen	2462
+博康健身	bo kang jian shen	2462
+去健身房	qu jian shen fang	2462
+塑形健身	su xing jian shen	2462
+奥世健身	ao shi jian shen	2462
+好恒健身	hao heng jian shen	2462
+康祺健身	kang qi jian shen	2462
+思迈健身	si mai jian shen	2462
+悦动健身	yue dong jian shen	2462
+星之健身	xing zhi jian shen	2462
+杰仕健身	jie shi jian shen	2462
+浩帆健身	hao fan jian shen	2462
+浩沙健身	hao sha jian shen	2462
+浩泰健身	hao tai jian shen	2462
+潮庭健身	chao ting jian shen	2462
+爱尚健身	ai shang jian shen	2462
+美天健身	mei tian jian shen	2462
+舒华健身	shu hua jian shen	2462
+英乔健身	ying qiao jian shen	2462
+莱美健身	lai mei jian shen	2462
+赛奥健身	sai ao jian shen	2462
+踏月健身	ta yue jian shen	2462
+迈欧健身	mai ou jian shen	2462
+酷动健身	ku dong jian shen	2462
+锐力健身	rui li jian shen	2462
+鼎龙健身	ding long jian shen	2462
+不减肥了	bu jian fei le	2424
+你不减肥	ni bu jian fei	2424
+你要减肥	ni yao jian fei	2424
+别减肥了	bie jian fei le	2424
+当减肥了	dang jian fei le	2424
+我不减肥	wo bu jian fei	2424
+我也减肥	wo ye jian fei	2424
+我减肥呢	wo jian fei ne	2424
+我在减肥	wo zai jian fei	2424
+我想减肥	wo xiang jian fei	2424
+杠铃健身	gang ling jian shen	2424
+要减肥了	yao jian fei le	2424
+该减肥了	gai jian fei le	2424
+轻加减肥	qing jia jian fei	2424
+不跑步了	bu pao bu le	2308
+去跑步了	qu pao bu le	2308
+我去跑步	wo qu pao bu	2308
+我在跑步	wo zai pao bu	2308
+跑步了吗	pao bu le ma	2308
+跑步去了	pao bu qu le	2308
+纤体瑜伽	xian ti yu jia	2000
+刮痧减肥	gua sha jian fei	1308

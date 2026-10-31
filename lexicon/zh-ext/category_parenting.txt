@@ -1,10 +1,11 @@
 # 开心离线输入法分类补充：家庭育儿
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 家庭教育	jia ting jiao yu	7250
 家长会	jia zhang hui	7204
+宝宝宝宝	bao bao bao bao	6270
 纸尿裤	zhi niao ku	6104
 亲子活动	qin zi huo dong	6100
 亲子阅读	qin zi yue du	6100
@@ -52,4 +53,236 @@
 辅食添加	fu shi tian jia	6100
 防走失绳	fang zou shi sheng	6100
 预防接种	yu fang jie zhong	6100
+宝宝妈妈	bao bao ma ma	5962
+好的宝宝	hao de bao bao	5808
+宝宝加油	bao bao jia you	5808
+宝宝故事	bao bao gu shi	5808
+宝宝早安	bao bao zao an	5808
+宝宝晚安	bao bao wan an	5808
+宝宝游泳	bao bao you yong	5808
+宝宝照片	bao bao zhao pian	5808
+宝宝睡觉	bao bao shui jiao	5808
+宝宝超市	bao bao chao shi	5808
+早安宝宝	zao an bao bao	5808
+晚安宝宝	wan an bao bao	5808
+没事宝宝	mei shi bao bao	5808
+蔬菜宝宝	shu cai bao bao	5808
+谢谢宝宝	xie xie bao bao	5808
+我给宝宝	wo gei bao bao	5500
+可爱宝宝	ke ai bao bao	5462
+宝宝老婆	bao bao lao po	5347
+老婆宝宝	lao po bao bao	5347
+宝宝衣服	bao bao yi fu	5270
+爱的宝宝	ai de bao bao	5231
+我家宝宝	wo jia bao bao	5154
+爱你宝宝	ai ni bao bao	5154
+美女宝宝	mei nv bao bao	5154
+好奇宝宝	hao qi bao bao	5039
+活跃宝宝	huo yue bao bao	4924
+婴儿日记	ying er ri ji	4847
+花园宝宝	hua yuan bao bao	4847
+宝宝巴士	bao bao ba shi	4808
+宝宝玩具	bao bao wan ju	4808
+你家宝宝	ni jia bao bao	4731
+宝宝万岁	bao bao wan sui	4731
+宝宝金水	bao bao jin shui	4731
+二宝宝	er bao bao	4693
+大宝宝	da bao bao	4693
+宝宝在	bao bao zai	4693
+宝宝宝	bao bao bao	4693
+宝宝贝	bao bao bei	4693
+家宝宝	jia bao bao	4693
+新生婴儿	xin sheng ying er	4693
+法宝宝	fa bao bao	4693
+爱宝宝	ai bao bao	4693
+王宝宝	wang bao bao	4693
+钱宝宝	qian bao bao	4693
+雪宝宝	xue bao bao	4693
+高宝宝	gao bao bao	4693
+龙宝宝	long bao bao	4693
+不吃奶粉	bu chi nai fen	4616
+宝宝们	bao bao men	4616
+婴儿用品	ying er yong pin	4500
+宝宝多大	bao bao duo da	4462
+熊猫宝宝	xiong mao bao bao	4462
+鳄鱼宝宝	e yu bao bao	4462
+僵尸婴儿	jiang shi ying er	4424
+孕妇奶粉	yun fu nai fen	4385
+宝宝奶粉	bao bao nai fen	4385
+有机奶粉	you ji nai fen	4385
+这个奶粉	zhe ge nai fen	4385
 尿不湿	niao bu shi	4361
+乔宝宝	qiao bao bao	4308
+了宝宝	le bao bao	4308
+亲宝宝	qin bao bao	4308
+你宝宝	ni bao bao	4308
+俺宝宝	an bao bao	4308
+傻宝宝	sha bao bao	4308
+兔宝宝	tu bao bao	4308
+凤宝宝	feng bao bao	4308
+叫宝宝	jiao bao bao	4308
+吴宝宝	wu bao bao	4308
+周宝宝	zhou bao bao	4308
+和宝宝	he bao bao	4308
+哄宝宝	hong bao bao	4308
+啊宝宝	a bao bao	4308
+坏宝宝	huai bao bao	4308
+女宝宝	nv bao bao	4308
+好宝宝	hao bao bao	4308
+妍宝宝	yan bao bao	4308
+婷宝宝	ting bao bao	4308
+字宝宝	zi bao bao	4308
+宝宝乖	bao bao guai	4308
+宝宝了	bao bao le	4308
+宝宝你	bao bao ni	4308
+宝宝卡	bao bao ka	4308
+宝宝吃	bao bao chi	4308
+宝宝吗	bao bao ma	4308
+宝宝呀	bao bao ya	4308
+宝宝呢	bao bao ne	4308
+宝宝啊	bao bao a	4308
+宝宝啦	bao bao la	4308
+宝宝好	bao bao hao	4308
+宝宝我	bao bao wo	4308
+宝宝早	bao bao zao	4308
+宝宝树	bao bao shu	4308
+宝宝椅	bao bao yi	4308
+宝宝照	bao bao zhao	4308
+宝宝猪	bao bao zhu	4308
+宝宝绒	bao bao rong	4308
+宝宝蛋	bao bao dan	4308
+宝宝要	bao bao yao	4308
+宝宝酱	bao bao jiang	4308
+宝宝霜	bao bao shuang	4308
+宝宝鞋	bao bao xie	4308
+宝宝鱼	bao bao yu	4308
+对宝宝	dui bao bao	4308
+岁宝宝	sui bao bao	4308
+带宝宝	dai bao bao	4308
+怀宝宝	huai bao bao	4308
+怡宝宝	yi bao bao	4308
+想宝宝	xiang bao bao	4308
+憨宝宝	han bao bao	4308
+我宝宝	wo bao bao	4308
+打宝宝	da bao bao	4308
+找宝宝	zhao bao bao	4308
+接宝宝	jie bao bao	4308
+早宝宝	zao bao bao	4308
+是宝宝	shi bao bao	4308
+暖宝宝	nuan bao bao	4308
+有宝宝	you bao bao	4308
+本宝宝	ben bao bao	4308
+水宝宝	shui bao bao	4308
+没宝宝	mei bao bao	4308
+牛宝宝	niu bao bao	4308
+猪宝宝	zhu bao bao	4308
+猴宝宝	hou bao bao	4308
+生宝宝	sheng bao bao	4308
+男宝宝	nan bao bao	4308
+的宝宝	de bao bao	4308
+看宝宝	kan bao bao	4308
+祝宝宝	zhu bao bao	4308
+笨宝宝	ben bao bao	4308
+等宝宝	deng bao bao	4308
+糖宝宝	tang bao bao	4308
+给宝宝	gei bao bao	4308
+老宝宝	lao bao bao	4308
+胎宝宝	tai bao bao	4308
+胖宝宝	pang bao bao	4308
+臭宝宝	chou bao bao	4308
+虎宝宝	hu bao bao	4308
+要宝宝	yao bao bao	4308
+让宝宝	rang bao bao	4308
+贤宝宝	xian bao bao	4308
+跟宝宝	gen bao bao	4308
+这宝宝	zhe bao bao	4308
+那宝宝	na bao bao	4308
+郭宝宝	guo bao bao	4308
+陪宝宝	pei bao bao	4308
+露宝宝	lu bao bao	4308
+鼠宝宝	shu bao bao	4308
+生完宝宝	sheng wan bao bao	4231
+宝宝发烧	bao bao fa shao	4193
+天线宝宝	tian xian bao bao	4154
+婴儿保姆	ying er bao mu	4154
+连体婴儿	lian ti ying er	4154
+婴儿配方	ying er pei fang	4116
+宝宝不哭	bao bao bu ku	4116
+宝宝进城	bao bao jin cheng	4116
+男婴儿	nan ying er	4116
+配方奶粉	pei fang nai fen	4116
+傻瓜宝宝	sha gua bao bao	4077
+金发婴儿	jin fa ying er	4077
+三岁宝宝	san sui bao bao	4000
+亲亲宝宝	qin qin bao bao	3924
+宝宝亲亲	bao bao qin qin	3924
+海绵宝宝	hai mian bao bao	3924
+牛奶粉	niu nai fen	3924
+两岁宝宝	liang sui bao bao	3885
+吓死宝宝	xia si bao bao	3808
+一岁宝宝	yi sui bao bao	3770
+喂奶粉	wei nai fen	3770
+奶粉店	nai fen dian	3770
+酸奶粉	suan nai fen	3770
+婴儿店	ying er dian	3731
+婴儿式	ying er shi	3731
+婴儿房	ying er fang	3731
+婴儿热	ying er re	3731
+婴儿肥	ying er fei	3731
+宝宝贝贝	bao bao bei bei	3731
+小婴儿	xiao ying er	3731
+劣质奶粉	lie zhi nai fen	3693
+宝宝抱抱	bao bao bao bao	3654
+宝宝拜拜	bao bao bai bai	3654
+抱抱宝宝	bao bao bao bao	3654
+拜拜宝宝	bai bai bao bao	3654
+北宫婴儿	bei gong ying er	3616
+妈妈育儿	ma ma yu er	3539
+育儿补贴	yu er bu tie	3539
+育儿达人	yu er da ren	3539
+全脂奶粉	quan zhi nai fen	3462
+奶粉罐	nai fen guan	3462
+羊奶粉	yang nai fen	3462
+育儿网	yu er wang	3462
+育儿观	yu er guan	3462
+脱脂奶粉	tuo zhi nai fen	3462
+豆奶粉	dou nai fen	3462
+隔代育儿	ge dai yu er	3424
+买奶粉	mai nai fen	3385
+冲奶粉	chong nai fen	3385
+卖奶粉	mai nai fen	3385
+吃奶粉	chi nai fen	3385
+喝奶粉	he nai fen	3385
+奶粉了	nai fen le	3385
+奶粉吗	nai fen ma	3385
+奶粉的	nai fen de	3385
+奶粉盒	nai fen he	3385
+奶粉钱	nai fen qian	3385
+换奶粉	huan nai fen	3385
+泡奶粉	pao nai fen	3385
+的奶粉	de nai fen	3385
+送奶粉	song nai fen	3385
+驼奶粉	tuo nai fen	3385
+三鹿奶粉	san lu nai fen	3270
+婴儿睡袋	ying er shui dai	3154
+你的宝宝	ni de bao bao	3000
+咋了宝宝	za le bao bao	3000
+在吗宝宝	zai ma bao bao	3000
+好呢宝宝	hao ne bao bao	3000
+好哒宝宝	hao da bao bao	3000
+好滴宝宝	hao di bao bao	3000
+宝宝巴土	bao bao ba tu	3000
+宝宝来了	bao bao lai le	3000
+宝宝睡了	bao bao shui le	3000
+宝宝辅食	bao bao fu shi	3000
+小宝宝乖	xiao bao bao guai	3000
+我的宝宝	wo de bao bao	3000
+旭旭宝宝	xu xu bao bao	3000
+暖宝宝贴	nuan bao bao tie	3000
+有宝宝了	you bao bao le	3000
+死宝宝了	si bao bao le	3000
+嘎巴宝宝	ga ba bao bao	2847
+育儿嫂	yu er sao	2847
+不喝奶粉	bu he nai fen	2424
+淳于婴儿	chun yu ying er	2231
+婴儿湿疹	ying er shi zhen	1693

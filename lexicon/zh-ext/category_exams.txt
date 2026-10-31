@@ -1,10 +1,12 @@
 # 开心离线输入法分类补充：考试升学
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 分数线	fen shu xian	8533
 准考证	zhun kao zheng	7562
+考试时候	kao shi shi hou	6385
+准备考试	zhun bei kao shi	6193
 保研资格	bao yan zi ge	6100
 准考证打印	zhun kao zheng da yin	6100
 合格分数	he ge fen shu	6100
@@ -51,5 +53,391 @@
 面试准备	mian shi zhun bei	6100
 面试技巧	mian shi ji qiao	6100
 题库练习	ti ku lian xi	6100
+一起考试	yi qi kao shi	6077
+什么考试	shen me kao shi	6077
+什么考试	shen mo kao shi	6077
+今天考试	jin tian kao shi	6077
+你们考试	ni men kao shi	6077
+学校考试	xue xiao kao shi	6077
+开始考试	kai shi kao shi	6077
+怎么考试	zen me kao shi	6077
+我们考试	wo men kao shi	6077
+没有考试	mei you kao shi	6077
+考试中心	kao shi zhong xin	6077
+考试内容	kao shi nei rong	6077
+考试制度	kao shi zhi du	6077
+考试加油	kao shi jia you	6077
+考试学校	kao shi xue xiao	6077
+考试系统	kao shi xi tong	6077
+还有考试	hai you kao shi	6077
+这个考试	zhe ge kao shi	6077
+马上考试	ma shang kao shi	6077
+孩子考试	hai zi kao shi	6039
+一次考试	yi ci kao shi	5962
+专业考试	zhuan ye kao shi	5885
+考试之前	kao shi zhi qian	5885
+不想考试	bu xiang kao shi	5847
+考试结束	kao shi jie shu	5808
+还要考试	hai yao kao shi	5808
+我要考试	wo yao kao shi	5731
+理论考试	li lun kao shi	5731
+这次考试	zhe ci kao shi	5731
+这次考试	zhei ci kao shi	5731
+普通考试	pu tong kao shi	5693
+考试范围	kao shi fan wei	5693
+死亡考试	si wang kao shi	5616
+还没考试	hai mei kao shi	5577
+体育考试	ti yu kao shi	5539
+就要考试	jiu yao kao shi	5539
+不用考试	bu yong kao shi	5462
+数学考试	shu xue kao shi	5462
+明天考试	ming tian kao shi	5462
+英语考试	ying yu kao shi	5462
 专升本	zhuan sheng ben	5436
+毕业考试	bi ye kao shi	5424
+考试安排	kao shi an pai	5424
+下午考试	xia wu kao shi	5385
+大型考试	da xing kao shi	5385
+考试通知	kao shi tong zhi	5385
+资格考试	zi ge kao shi	5347
+好好考试	hao hao kao shi	5308
+实验考试	shi yan kao shi	5308
+网上考试	wang shang kao shi	5308
+不考试	bu kao shi	5270
+学科考试	xue ke kao shi	5270
+还得考试	hai de kao shi	5270
+还得考试	hai dei kao shi	5270
+有个考试	you ge kao shi	5231
+天天考试	tian tian kao shi	5193
+考试者	kao shi zhe	5193
+每次考试	mei ci kao shi	5154
+考试在线	kao shi zai xian	5154
+考试顺利	kao shi shun li	5154
+等级考试	deng ji kao shi	5077
+考试考核	kao shi kao he	5077
+上午考试	shang wu kao shi	5039
+参加高考	can jia gao kao	5000
 考试成绩	kao shi cheng ji	4911
+一考试	yi kao shi	4885
+下次考试	xia ci kao shi	4885
+他考试	ta kao shi	4885
+先考试	xian kao shi	4885
+包考试	bao kao shi	4885
+小考试	xiao kao shi	4885
+我考试	wo kao shi	4885
+没考试	mei kao shi	4885
+线上考试	xian shang kao shi	4885
+考考试	kao kao shi	4885
+考试场	kao shi chang	4885
+考试时	kao shi shi	4885
+考试那天	kao shi na tian	4885
+要考试	yao kao shi	4885
+模拟考试	mo ni kao shi	4847
+高等考试	gao deng kao shi	4808
+高考语文	gao kao yu wen	4808
+招生考试	zhao sheng kao shi	4770
+上次考试	shang ci kao shi	4731
+考试合格	kao shi he ge	4731
+高考分数	gao kao fen shu	4731
+考试指南	kao shi zhi nan	4693
+三年高考	san nian gao kao	4654
+中国高考	zhong guo gao kao	4654
+今年高考	jin nian gao kao	4654
+全球高考	quan qiu gao kao	4654
+山东高考	shan dong gao kao	4654
+技能高考	ji neng gao kao	4654
+美术高考	mei shu gao kao	4654
+鉴定考试	jian ding kao shi	4654
+阳光高考	yang guang gao kao	4654
+高考之前	gao kao zhi qian	4654
+高考之后	gao kao zhi hou	4654
+高考制度	gao kao zhi du	4654
+高考加油	gao kao jia you	4654
+高考志愿	gao kao zhi yuan	4654
+高考成绩	gao kao cheng ji	4654
+高考报名	gao kao bao ming	4654
+高考改革	gao kao gai ge	4654
+高考数学	gao kao shu xue	4654
+高考日语	gao kao ri yu	4654
+高考时光	gao kao shi guang	4654
+高考答案	gao kao da an	4654
+高考结束	gao kao jie shu	4654
+高考英语	gao kao ying yu	4654
+高考顺利	gao kao shun li	4654
+人事考试	ren shi kao shi	4539
+考试作弊	kao shi zuo bi	4539
+也考试	ye kao shi	4500
+你考试	ni kao shi	4500
+到考试	dao kao shi	4500
+去考试	qu kao shi	4500
+又考试	you kao shi	4500
+咋考试	za kao shi	4500
+啥考试	sha kao shi	4500
+在考试	zai kao shi	4500
+就考试	jiu kao shi	4500
+快考试	kuai kao shi	4500
+才考试	cai kao shi	4500
+是考试	shi kao shi	4500
+有考试	you kao shi	4500
+来考试	lai kao shi	4500
+的考试	de kao shi	4500
+等考试	deng kao shi	4500
+约考试	yue kao shi	4500
+考试不	kao shi bu	4500
+考试中	kao shi zhong	4500
+考试么	kao shi me	4500
+考试了	kao shi le	4500
+考试前	kao shi qian	4500
+考试去	kao shi qu	4500
+考试后	kao shi hou	4500
+考试吗	kao shi ma	4500
+考试吧	kao shi ba	4500
+考试呀	kao shi ya	4500
+考试呢	kao shi ne	4500
+考试周	kao shi zhou	4500
+考试哦	kao shi o	4500
+考试啊	kao shi a	4500
+考试啦	kao shi la	4500
+考试嘛	kao shi ma	4500
+考试嘞	kao shi lei	4500
+考试学	kao shi xue	4500
+考试完	kao shi wan	4500
+考试宝	kao shi bao	4500
+考试月	kao shi yue	4500
+考试来	kao shi lai	4500
+考试没	kao shi mei	4500
+考试法	kao shi fa	4500
+考试的	kao shi de	4500
+考试网	kao shi wang	4500
+考试蚁	kao shi yi	4500
+考试课	kao shi ke	4500
+考试车	kao shi che	4500
+考试酷	kao shi ku	4500
+语文考试	yu wen kao shi	4500
+还考试	hai kao shi	4500
+那考试	na kao shi	4500
+都考试	dou kao shi	4500
+几点考试	ji dian kao shi	4462
+后天考试	hou tian kao shi	4462
+开学考试	kai xue kao shi	4424
+新中考	xin zhong kao	4424
+考试分数	kao shi fen shu	4424
+半期考试	ban qi kao shi	4385
+外语考试	wai yu kao shi	4385
+春季高考	chun ji gao kao	4385
+预约考试	yu yue kao shi	4385
+测试卷	ce shi juan	4347
+不高考	bu gao kao	4308
+复习考试	fu xi kao shi	4308
+考试卷子	kao shi juan zi	4308
+下周考试	xia zhou kao shi	4193
+准备考研	zhun bei kao yan	4193
+初中试卷	chu zhong shi juan	4193
+高考体检	gao kao ti jian	4193
+科举考试	ke ju kao shi	4154
+考研成绩	kao yan cheng ji	4154
+高考作文	gao kao zuo wen	4154
+口语考试	kou yu kao shi	4116
+四级考试	si ji kao shi	4116
+期中试卷	qi zhong shi juan	4116
+升学考试	sheng xue kao shi	4077
+小高考	xiao gao kao	4077
+掌上高考	zhang shang gao kao	4077
+期中考试	qi zhong kao shi	4039
+高考状元	gao kao zhuang yuan	4039
+刚中考完	gang zhong kao wan	4000
+高职高考	gao zhi gao kao	3962
+中考生	zhong kao sheng	3924
+学年考试	xue nian kao shi	3924
+新高考	xin gao kao	3924
+老高考	lao gao kao	3924
+考研大纲	kao yan da gang	3924
+考研政治	kao yan zheng zhi	3924
+考研数学	kao yan shu xue	3924
+考研真相	kao yan zhen xiang	3924
+考研英语	kao yan ying yu	3924
+考研调剂	kao yan tiao ji	3924
+考研资料	kao yan zi liao	3924
+高考了	gao kao le	3924
+高考分	gao kao fen	3924
+高考卷	gao kao juan	3924
+高考完	gao kao wan	3924
+高考必胜	gao kao bi sheng	3924
+高考生	gao kao sheng	3924
+高考真题	gao kao zhen ti	3924
+一张试卷	yi zhang shi juan	3885
+两张试卷	liang zhang shi juan	3885
+中招考试	zhong zhao kao shi	3885
+化学试卷	hua xue shi juan	3885
+历史试卷	li shi shi juan	3885
+地理试卷	di li shi juan	3885
+政治试卷	zheng zhi shi juan	3885
+数学试卷	shu xue shi juan	3885
+物理试卷	wu li shi juan	3885
+生物试卷	sheng wu shi juan	3885
+科学试卷	ke xue shi juan	3885
+考试之神	kao shi zhi shen	3885
+英语试卷	ying yu shi juan	3885
+蜜蜂试卷	mi feng shi juan	3885
+试卷分析	shi juan fen xi	3885
+试卷答案	shi juan da an	3885
+语文试卷	yu wen shi juan	3885
+这张试卷	zhe zhang shi juan	3885
+高考失利	gao kao shi li	3885
+三张试卷	san zhang shi juan	3847
+全城高考	quan cheng gao kao	3847
+对口高考	dui kou gao kao	3847
+职教高考	zhi jiao gao kao	3770
+考试及格	kao shi ji ge	3731
+高考及格	gao kao ji ge	3731
+中考分数	zhong kao fen shu	3693
+中考语文	zhong kao yu wen	3693
+复习备考	fu xi bei kao	3693
+好好备考	hao hao bei kao	3693
+升班考试	sheng ban kao shi	3654
+试卷上	shi juan shang	3654
+那张试卷	na zhang shi juan	3654
+答辩考试	da bian kao shi	3616
+中高考	zhong gao kao	3539
+从考研	cong kao yan	3539
+你高考	ni gao kao	3539
+在高考	zai gao kao	3539
+就高考	jiu gao kao	3539
+快高考	kuai gao kao	3539
+我高考	wo gao kao	3539
+等高考	deng gao kao	3539
+结业考试	jie ye kao shi	3539
+要高考	yao gao kao	3539
+高考假	gao kao jia	3539
+高考前	gao kao qian	3539
+高考后	gao kao hou	3539
+高考吗	gao kao ma	3539
+高考君	gao kao jun	3539
+高考吧	gao kao ba	3539
+高考呢	gao kao ne	3539
+高考班	gao kao ban	3539
+高考的	gao kao de	3539
+高考网	gao kao wang	3539
+高考题	gao kao ti	3539
+小试卷	xiao shi juan	3500
+我试卷	wo shi juan	3500
+有试卷	you shi juan	3500
+期末试卷	qi mo shi juan	3500
+不考研	bu kao yan	3462
+中考题	zhong kao ti	3462
+分班考试	fen ban kao shi	3462
+必考题	bi kao ti	3462
+想考研	xiang kao yan	3462
+我考研	wo kao yan	3462
+摸底考试	mo di kao shi	3462
+考研书	kao yan shu	3462
+考研复试	kao yan fu shi	3462
+考研班	kao yan ban	3462
+考研网	kao yan wang	3462
+考研题	kao yan ti	3462
+联考题	lian kao ti	3462
+要考研	yao kao yan	3462
+边考研	bian kao yan	3462
+高考落榜	gao kao luo bang	3462
+中考了	zhong kao le	3424
+备考了	bei kao le	3424
+中考之前	zhong kao zhi qian	3385
+中考之后	zhong kao zhi hou	3385
+中考体育	zhong kao ti yu	3385
+中考作文	zhong kao zuo wen	3385
+中考分	zhong kao fen	3385
+中考加油	zhong kao jia you	3385
+中考必胜	zhong kao bi sheng	3385
+中考成绩	zhong kao cheng ji	3385
+中考改革	zhong kao gai ge	3385
+中考第一	zhong kao di yi	3385
+中考结束	zhong kao jie shu	3385
+中考顺利	zhong kao shun li	3385
+今年中考	jin nian zhong kao	3385
+体育中考	ti yu zhong kao	3385
+几号考试	ji hao kao shi	3385
+河南中考	he nan zhong kao	3385
+考试宝典	kao shi bao dian	3385
+中考完	zhong kao wan	3347
+潇湘高考	xiao xiang gao kao	3231
+中考卷	zhong kao juan	3193
+考研究生	kao yan jiu sheng	3116
+不考试了	bu kao shi le	3077
+中忍考试	zhong ren kao shi	3077
+也要考试	ye yao kao shi	3077
+你不考试	ni bu kao shi	3077
+你考研	ni kao yan	3077
+去考试了	qu kao shi le	3077
+又要考试	you yao kao shi	3077
+就考试了	jiu kao shi le	3077
+快考试了	kuai kao shi le	3077
+我去考试	wo qu kao shi	3077
+我在考试	wo zai kao shi	3077
+我考试了	wo kao shi le	3077
+招警考试	zhao jing kao shi	3077
+考不考试	kao bu kao shi	3077
+考研了	kao yan le	3077
+考研人	kao yan ren	3077
+考研吗	kao yan ma	3077
+考研吧	kao yan ba	3077
+考研率	kao yan lv	3077
+考研的	kao yan de	3077
+考研群	kao yan qun	3077
+考试了吗	kao shi le ma	3077
+考试了吧	kao shi le ba	3077
+考试了没	kao shi le mei	3077
+考试去了	kao shi qu le	3077
+考试完了	kao shi wan le	3077
+要考试了	yao kao shi le	3077
+该考试了	gai kao shi le	3077
+都在考试	dou zai kao shi	3077
+都有考试	dou you kao shi	3077
+都要考试	dou yao kao shi	3077
+买试卷	mai shi juan	3039
+你试卷	ni shi juan	3039
+做试卷	zuo shi juan	3039
+写试卷	xie shi juan	3039
+出试卷	chu shi juan	3039
+发试卷	fa shi juan	3039
+大试卷	da shi juan	3039
+张试卷	zhang shi juan	3039
+批试卷	pi shi juan	3039
+抄试卷	chao shi juan	3039
+把试卷	ba shi juan	3039
+拿试卷	na shi juan	3039
+改试卷	gai shi juan	3039
+的试卷	de shi juan	3039
+看试卷	kan shi juan	3039
+讲试卷	jiang shi juan	3039
+试卷了	shi juan le	3039
+试卷吗	shi juan ma	3039
+试卷吧	shi juan ba	3039
+试卷呢	shi juan ne	3039
+试卷宝	shi juan bao	3039
+试卷的	shi juan de	3039
+试卷费	shi juan fei	3039
+备考的	bei kao de	2924
+中考前	zhong kao qian	2731
+中考后	zhong kao hou	2731
+中考吗	zhong kao ma	2731
+中考吧	zhong kao ba	2731
+中考呢	zhong kao ne	2731
+中考的	zhong kao de	2731
+中考网	zhong kao wang	2731
+你中考	ni zhong kao	2731
+小中考	xiao zhong kao	2731
+快中考	kuai zhong kao	2731
+我中考	wo zhong kao	2731
+要中考	yao zhong kao	2731
+中考大捷	zhong kao da jie	2654
+刚高考完	gang gao kao wan	2500
+就高考了	jiu gao kao le	2500
+快高考了	kuai gao kao le	2500
+我高考完	wo gao kao wan	2500
+等高考完	deng gao kao wan	2500
+要高考了	yao gao kao le	2500
+高考完了	gao kao wan le	2500
+就中考了	jiu zhong kao le	2193
+快中考了	kuai zhong kao le	2193
+要中考了	yao zhong kao le	2193
+中考完了	zhong kao wan le	2154

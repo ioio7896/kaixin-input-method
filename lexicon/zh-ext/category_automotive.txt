@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：汽车驾驶
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 智能驾驶	zhi neng jia shi	8800
 充电站	chong dian zhan	6746
@@ -54,7 +54,407 @@
 预约试驾	yu yue shi jia	6100
 驾驶证换证	jia shi zheng huan zheng	6100
 驾驶证补办	jia shi zheng bu ban	6100
+汽车运动	qi che yun dong	5962
+汽车价格	qi che jia ge	5924
+汽车工业	qi che gong ye	5924
+汽车行业	qi che hang ye	5924
+汽车出口	qi che chu kou	5731
+汽车工人	qi che gong ren	5731
+上海汽车	shang hai qi che	5654
+中国汽车	zhong guo qi che	5654
+北京汽车	bei jing qi che	5654
+国内汽车	guo nei qi che	5654
+成功汽车	cheng gong qi che	5654
+汽车产业	qi che chan ye	5654
+汽车图片	qi che tu pian	5654
+汽车学院	qi che xue yuan	5654
+汽车新闻	qi che xin wen	5654
+汽车服务	qi che fu wu	5654
+汽车游戏	qi che you xi	5654
+汽车设计	qi che she ji	5654
+汽车集团	qi che ji tuan	5654
+运动汽车	yun dong qi che	5654
+汽车评价	qi che ping jia	5616
+汽车交易	qi che jiao yi	5577
+汽车电子	qi che dian zi	5577
+汽车知识	qi che zhi shi	5577
+现代汽车	xian dai qi che	5577
+汽车交通	qi che jiao tong	5539
+汽车金融	qi che jin rong	5539
+青年汽车	qing nian qi che	5539
+汽车制造	qi che zhi zao	5500
+汽车广告	qi che guang gao	5500
+汽车销售	qi che xiao shou	5500
+汽车论坛	qi che lun tan	5462
+汽车贷款	qi che dai kuan	5462
+汽车司机	qi che si ji	5424
+汽车贸易	qi che mao yi	5424
+汽车公园	qi che gong yuan	5385
+中华汽车	zhong hua qi che	5347
+概念汽车	gai nian qi che	5347
+汽车人才	qi che ren cai	5347
+汽车资讯	qi che zi xun	5347
+天津汽车	tian jin qi che	5308
+汽车培训	qi che pei xun	5308
+汽车模型	qi che mo xing	5270
+品牌汽车	pin pai qi che	5231
+汽车品牌	qi che pin pai	5231
+大众汽车	da zhong qi che	5154
+汽车装饰	qi che zhuang shi	5154
+解放汽车	jie fang qi che	5154
+本地汽车	ben di qi che	5116
+空气汽车	kong qi qi che	5116
+汽车产量	qi che chan liang	5077
 充电桩	chong dian zhuang	5001
+危险驾驶	wei xian jia shi	5000
+学会驾驶	xue hui jia shi	5000
+安全驾驶	an quan jia shi	5000
+绿色驾驶	lv se jia shi	5000
+超级驾驶	chao ji jia shi	5000
+车辆驾驶	che liang jia shi	5000
+驾驶习惯	jia shi xi guan	5000
+驾驶模式	jia shi mo shi	5000
+驾驶经验	jia shi jing yan	5000
+奋斗汽车	fen dou qi che	4962
+无限汽车	wu xian qi che	4962
+理念汽车	li nian qi che	4962
+汽车公告	qi che gong gao	4924
+汽车宝贝	qi che bao bei	4924
+专用汽车	zhuan yong qi che	4885
+共享汽车	gong xiang qi che	4885
+小型汽车	xiao xing qi che	4885
+汽车用品	qi che yong pin	4885
+驾驶技巧	jia shi ji qiao	4885
+智能汽车	zhi neng qi che	4847
+模拟驾驶	mo ni jia shi	4847
+汽车买卖	qi che mai mai	4847
+汽车玻璃	qi che bo li	4847
+汽车维修	qi che wei xiu	4808
+汽车小镇	qi che xiao zhen	4770
+汽车旅馆	qi che lv guan	4770
+长江汽车	chang jiang qi che	4770
+东南汽车	dong nan qi che	4731
+东风汽车	dong feng qi che	4731
+九龙汽车	jiu long qi che	4731
+福田汽车	fu tian qi che	4731
+莲花汽车	lian hua qi che	4731
+长丰汽车	chang feng qi che	4731
+长安汽车	chang an qi che	4731
+发动机号	fa dong ji hao	4693
+国产汽车	guo chan qi che	4693
+汽车大厦	qi che da sha	4693
+汽车改装	qi che gai zhuang	4693
+华北汽车	hua bei qi che	4654
+大地汽车	da di qi che	4654
+汽车行情	qi che hang qing	4654
+汽车轮胎	qi che lun tai	4654
+汽车上	qi che shang	4616
+汽车库	qi che ku	4616
+汽车灯	qi che deng	4616
+汽车的	qi che de	4616
+汽车空调	qi che kong tiao	4616
+汽车系	qi che xi	4616
+汽车锁	qi che suo	4616
+汽车队	qi che dui	4616
+前途汽车	qian tu qi che	4577
+精灵汽车	jing ling qi che	4577
+夜间驾驶	ye jian jia shi	4539
+汽车厂家	qi che chang jia	4539
+汽车钥匙	qi che yao shi	4539
+汽车销量	qi che xiao liang	4539
+长城汽车	chang cheng qi che	4539
+天美汽车	tian mei qi che	4500
+橡胶轮胎	xiang jiao lun tai	4500
+汽车租赁	qi che zu lin	4500
+原子汽车	yuan zi qi che	4462
+汽车塑料	qi che su liao	4462
+海马汽车	hai ma qi che	4462
+猎豹汽车	lie bao qi che	4462
+羚羊汽车	ling yang qi che	4462
+走私汽车	zou si qi che	4462
+远程汽车	yuan cheng qi che	4462
+汽车修理	qi che xiu li	4424
+汽车前座	qi che qian zuo	4424
+汽车导航	qi che dao hang	4424
+汽车板块	qi che ban kuai	4424
+汽车电器	qi che dian qi	4424
+汽车精品	qi che jing pin	4424
+几何汽车	ji he qi che	4385
+国金汽车	guo jin qi che	4385
+改装汽车	gai zhuang qi che	4385
+汽车功率	qi che gong lv	4385
+汽车座椅	qi che zuo yi	4347
+汽车营地	qi che ying di	4347
+汽车配件	qi che pei jian	4347
+三角轮胎	san jiao lun tai	4308
+奔驰汽车	ben chi qi che	4308
+汽车电机	qi che dian ji	4308
+汽车部件	qi che bu jian	4308
+疲劳驾驶	pi lao jia shi	4308
+盛大汽车	sheng da qi che	4308
+空中轮胎	kong zhong lun tai	4308
+贵州轮胎	gui zhou lun tai	4308
+轮胎规格	lun tai gui ge	4308
+棺材汽车	guan cai qi che	4270
+汽车零件	qi che ling jian	4270
+福特汽车	fu te qi che	4270
+乘汽车	cheng qi che	4231
+二手汽车	er shou qi che	4231
+国机汽车	guo ji qi che	4231
+坐汽车	zuo qi che	4231
+大汽车	da qi che	4231
+开汽车	kai qi che	4231
+擦汽车	ca qi che	4231
+汽车人	qi che ren	4231
+汽车吊	qi che diao	4231
+汽车团	qi che tuan	4231
+汽车影院	qi che ying yuan	4231
+汽车漆	qi che qi	4231
+汽车蜡	qi che la	4231
+汽车衡	qi che heng	4231
+汽车连	qi che lian	4231
+源汽车	yuan qi che	4231
+货运汽车	huo yun qi che	4231
+起亚汽车	qi ya qi che	4231
+摩根汽车	mo gen qi che	4193
+汽车三包	qi che san bao	4193
+汽车报价	qi che bao jia	4193
+汽车窗帘	qi che chuang lian	4193
+汽车音响	qi che yin xiang	4193
+短发动机	duan fa dong ji	4193
+中兴汽车	zhong xing qi che	4154
+备用轮胎	bei yong lun tai	4154
+宝马汽车	bao ma qi che	4154
+汽车北站	qi che bei zhan	4154
+汽车召回	qi che zhao hui	4154
+汽车喇叭	qi che la ba	4154
+汽车美容	qi che mei rong	4154
+汽车评测	qi che ping ce	4154
+发动机盖	fa dong ji gai	4116
+水稻汽车	shui dao qi che	4116
+遥控汽车	yao kong qi che	4116
+长途驾驶	chang tu jia shi	4116
+丰田汽车	feng tian qi che	4077
+凯特汽车	kai te qi che	4077
+商用汽车	shang yong qi che	4077
+曙光汽车	shu guang qi che	4077
+汽车下乡	qi che xia xiang	4077
+汽车香水	qi che xiang shui	4077
+纳米汽车	na mi qi che	4077
+重型汽车	zhong xing qi che	4077
+回力轮胎	hui li lun tai	4039
+无照驾驶	wu zhao jia shi	4039
+汽车中控	qi che zhong kong	4039
+汽车底盘	qi che di pan	4039
+汽车总站	qi che zong zhan	4039
+轻型汽车	qing xing qi che	4039
+实心轮胎	shi xin lun tai	4000
+汽车模具	qi che mu ju	4000
+车轮轮胎	che lun lun tai	4000
+云度汽车	yun du qi che	3962
+发动机舱	fa dong ji cang	3962
+汽车涂料	qi che tu liao	3962
+汽车跑车	qi che pao che	3962
+跑车汽车	pao che qi che	3962
+停车牌	ting che pai	3924
+本田汽车	ben tian qi che	3924
+乙醇汽车	yi chun qi che	3885
+神龙汽车	shen long qi che	3885
+红星汽车	hong xing qi che	3885
+醉酒驾驶	zui jiu jia shi	3885
+铃木汽车	ling mu qi che	3885
+领克汽车	ling ke qi che	3885
+天马汽车	tian ma qi che	3847
+汽车越野	qi che yue ye	3847
+越野汽车	yue ye qi che	3847
+酒后驾驶	jiu hou jia shi	3847
+农用汽车	nong yong qi che	3808
+大白汽车	da bai qi che	3808
+奥迪汽车	ao di qi che	3808
+渤海汽车	bo hai qi che	3808
+一驾驶	yi jia shi	3770
+主驾驶	zhu jia shi	3770
+啥驾驶	sha jia shi	3770
+天际汽车	tian ji qi che	3770
+汽车养护	qi che yang hu	3770
+汽车饰品	qi che shi pin	3770
+深业汽车	shen ye qi che	3770
+雷诺汽车	lei nuo qi che	3770
+风行汽车	feng xing qi che	3770
+驾驶位	jia shi wei	3770
+驾驶感	jia shi gan	3770
+黄海汽车	huang hai qi che	3770
+哈飞汽车	ha fei qi che	3731
+车牌子	che pai zi	3731
+车轮胎	che lun tai	3731
+轮胎螺丝	lun tai luo si	3731
+宝龙汽车	bao long qi che	3693
+野马汽车	ye ma qi che	3693
+双环汽车	shuang huan qi che	3654
+欧拉汽车	ou la qi che	3654
+汽车内饰	qi che nei shi	3654
+防弹汽车	fang dan qi che	3654
+飞碟汽车	fei die qi che	3654
+塔塔汽车	ta ta qi che	3616
+欧宝汽车	ou bao qi che	3616
+江淮汽车	jiang huai qi che	3616
+汽车南站	qi che nan zhan	3616
+汽车尾气	qi che wei qi	3616
+超速驾驶	chao su jia shi	3616
+车牌照	che pai zhao	3616
+载客汽车	zai ke qi che	3616
+三菱汽车	san ling qi che	3577
+日产汽车	ri chan qi che	3577
+奔腾汽车	ben teng qi che	3539
+气动汽车	qi dong qi che	3539
+盖世汽车	gai shi qi che	3539
+载货汽车	zai huo qi che	3539
+双龙汽车	shuang long qi che	3500
+大乘汽车	da cheng qi che	3500
+跃进汽车	yue jin qi che	3500
+道奇汽车	dao qi qi che	3500
+全顺汽车	quan shun qi che	3462
+副驾驶员	fu jia shi yuan	3462
+吉奥汽车	ji ao qi che	3462
+废轮胎	fei lun tai	3462
+标致汽车	biao zhi qi che	3462
+汽车坐垫	qi che zuo dian	3462
+汽车尾灯	qi che wei deng	3462
+汽车尾翼	qi che wei yi	3462
+载重汽车	zai zhong qi che	3462
+金龙汽车	jin long qi che	3462
+陆风汽车	lu feng qi che	3462
+雷鸟汽车	lei niao qi che	3462
+明君汽车	ming jun qi che	3424
+汽车桑拿	qi che sang na	3424
+黑豹汽车	hei bao qi che	3424
+华普汽车	hua pu qi che	3385
+威马汽车	wei ma qi che	3385
+木炭汽车	mu tan qi che	3385
+汽车博览	qi che bo lan	3385
+玲珑轮胎	ling long lun tai	3385
+卡威汽车	ka wei qi che	3347
+广汇汽车	guang hui qi che	3347
+换轮胎	huan lun tai	3347
+斯威汽车	si wei qi che	3347
+汽车功放	qi che gong fang	3347
+破轮胎	po lun tai	3347
+纸板汽车	zhi ban qi che	3347
+补轮胎	bu lun tai	3347
+轮胎店	lun tai dian	3347
+轮胎油	lun tai you	3347
+轮胎蜡	lun tai la	3347
+防爆轮胎	fang bao lun tai	3347
+汽车年检	qi che nian jian	3308
+汽车抛锚	qi che pao mao	3308
+甲醇汽车	jia chun qi che	3308
+酷派汽车	ku pai qi che	3308
+华泰汽车	hua tai qi che	3270
+汽车尿素	qi che niao su	3270
+泛亚汽车	fan ya qi che	3270
+你车牌	ni che pai	3231
+大运汽车	da yun qi che	3231
+录车牌	lu che pai	3231
+无证驾驶	wu zheng jia shi	3231
+枫叶汽车	feng ye qi che	3231
+汽车坡道	qi che po dao	3231
+汽车西站	qi che xi zhan	3231
+车牌架	che pai jia	3231
+华晨汽车	hua chen qi che	3193
+华阳汽车	hua yang qi che	3193
+合众汽车	he zhong qi che	3193
+扬子汽车	yang zi qi che	3193
+汽车贴膜	qi che tie mo	3193
+福迪汽车	fu di qi che	3193
+金冠汽车	jin guan qi che	3193
+金杯汽车	jin bei qi che	3193
+尼桑汽车	ni sang qi che	3154
+永源汽车	yong yuan qi che	3154
+凯马汽车	kai ma qi che	3116
+宾利汽车	bin li qi che	3116
+新凯汽车	xin kai qi che	3116
+万丰汽车	wan feng qi che	3077
+安凯汽车	an kai qi che	3077
+开瑞汽车	kai rui qi che	3077
+亡命驾驶	wang ming jia shi	3000
+奇瑞汽车	qi rui qi che	3000
+帝豪汽车	di hao qi che	2962
+乐途汽车	le tu qi che	2924
+众泰汽车	zhong tai qi che	2924
+凌宝汽车	ling bao qi che	2924
+凯翼汽车	kai yi qi che	2924
+华域汽车	hua yu qi che	2924
+华颂汽车	hua song qi che	2924
+博郡汽车	bo jun qi che	2924
+哪吒汽车	ne zha qi che	2924
+大迪汽车	da di qi che	2924
+宝和汽车	bao he qi che	2924
+宝沃汽车	bao wo qi che	2924
+宝骏汽车	bao jun qi che	2924
+宝骐汽车	bao qi qi che	2924
+富迪汽车	fu di qi che	2924
+开沃汽车	kai wo qi che	2924
+微面汽车	wei mian qi che	2924
+恒天汽车	heng tian qi che	2924
+揽福汽车	lan fu qi che	2924
+新特汽车	xin te qi che	2924
+极越汽车	ji yue qi che	2924
+森雅汽车	sen ya qi che	2924
+比速汽车	bi su qi che	2924
+汉腾汽车	han teng qi che	2924
+汉龙汽车	han long qi che	2924
+汽车之家	qi che zhi jia	2924
+汽车前束	qi che qian shu	2924
+汽车延保	qi che yan bao	2924
+汽车球笼	qi che qiu long	2924
+汽车顶架	qi che ding jia	2924
+汽车顶箱	qi che ding xiang	2924
+泉峰汽车	quan feng qi che	2924
+爱卡汽车	ai ka qi che	2924
+爱驰汽车	ai chi qi che	2924
+电咖汽车	dian ka qi che	2924
+绿驰汽车	lv chi qi che	2924
+观致汽车	guan zhi qi che	2924
+赛麟汽车	sai lin qi che	2924
+车驰汽车	che chi qi che	2924
+铂锐汽车	bo rui qi che	2924
+领翔汽车	ling xiang qi che	2924
+领途汽车	ling tu qi che	2924
+驭胜汽车	yu sheng qi che	2924
+骐铃汽车	qi ling qi che	2924
+光冈汽车	guang gang qi che	2885
+凌志汽车	ling zhi qi che	2770
+缸发动机	gang fa dong ji	2770
+轮胎胎面	lun tai tai mian	2770
+江铃汽车	jiang ling qi che	2731
+云雀汽车	yun que qi che	2654
+你驾驶证	ni jia shi zheng	2654
+副驾驶座	fu jia shi zuo	2654
+坐副驾驶	zuo fu jia shi	2654
+庆铃汽车	qing ling qi che	2654
+我驾驶证	wo jia shi zheng	2654
+捷达汽车	jie da qi che	2654
+有驾驶证	you jia shi zheng	2654
+考驾驶证	kao jia shi zheng	2654
+轮胎螺母	lun tai luo mu	2654
+昌河汽车	chang he qi che	2616
+星驰汽车	xing chi qi che	2500
+枭龙汽车	xiao long qi che	2500
+自卸汽车	zi xie qi che	2424
+无气轮胎	wu qi lun tai	2385
+聚创轮胎	ju chuang lun tai	2385
+赛轮轮胎	sai lun lun tai	2385
+轮胎抱死	lun tai bao si	2385
+马牌轮胎	ma pai lun tai	2385
+你车牌号	ni che pai hao	2347
+轮胎扳手	lun tai ban shou	2347
+力帆汽车	li fan qi che	2308
 刹车片	sha che pian	2065
+五菱汽车	wu ling qi che	2039
+轮胎螺栓	lun tai luo shuan	2000
 行驶证	xing shi zheng	1858
+哪咤汽车	na zha qi che	1847
+汽车轮毂	qi che lun gu	1693
+汽车轮辋	qi che lun wang	1654
+潍柴汽车	wei chai qi che	1424
 雨刮器	yu gua qi	229

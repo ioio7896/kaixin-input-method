@@ -13,7 +13,6 @@ const BEIJING_UTC_OFFSET_SECS: i32 = 8 * 60 * 60;
 const DIRECT_SHORTCUT_TOP_SCORE: f64 = 10_000.0;
 const DIRECT_SHORTCUT_STEP: f64 = 50.0;
 const CLIPBOARD_QUICK_LIMIT: usize = 8;
-const CLIPBOARD_QUICK_PINNED_LIMIT: usize = 3;
 const CLIPBOARD_QUICK_PREVIEW_CHARS: usize = 40;
 const CLIPBOARD_QUICK_PREVIEW_LINES: usize = 3;
 const CLIPBOARD_QUICK_PREVIEW_LINE_CHARS: usize = 56;
@@ -1644,6 +1643,12 @@ fn clipboard_candidate_preview_text(text: &str) -> String {
         let mut line = String::new();
         let mut pending_space = false;
         for ch in raw_line.trim().chars() {
+            // Clipboard text may contain terminal/control formatting. Keep the
+            // original entry intact for paste, but never pass those controls
+            // to the candidate renderer as an empty or unreadable row.
+            if ch.is_control() && !ch.is_whitespace() {
+                continue;
+            }
             if ch.is_whitespace() {
                 if !line.is_empty() {
                     pending_space = true;
@@ -1679,7 +1684,7 @@ fn clipboard_candidate_preview_text(text: &str) -> String {
     }
 
     if lines.is_empty() {
-        return String::new();
+        return "（不可预览的文本）".to_string();
     }
 
     let mut preview = lines.join("\n");
@@ -1771,11 +1776,16 @@ mod clipboard_quick_tests {
     }
 
     #[test]
-    fn paging_visits_all_entries_once_with_pins_first() {
-        let snapshot = clipboard_store::ClipboardSnapshot {
+    fn paging_visits_all_entries_once_in_recent_copy_order() {
+        let mut snapshot = clipboard_store::ClipboardSnapshot {
             pinned: vec![entry(10), entry(11)],
             history: (0..17).map(entry).collect(),
         };
+        for (index, item) in snapshot.history.iter_mut().enumerate() {
+            item.captured_at = 100 - index as u64;
+        }
+        snapshot.pinned[0].captured_at = 90;
+        snapshot.pinned[1].captured_at = 80;
         let pages: Vec<_> = (0..3)
             .map(|page| quick_clipboard_candidates_from_snapshot(&snapshot, page, ""))
             .collect();
@@ -1783,8 +1793,9 @@ mod clipboard_quick_tests {
             pages.iter().map(Vec::len).collect::<Vec<_>>(),
             vec![8, 8, 1]
         );
-        assert_eq!(pages[0][0].phrase, "text 10");
-        assert_eq!(pages[0][1].phrase, "text 11");
+        assert_eq!(pages[0][0].phrase, "text 0");
+        assert_eq!(pages[0][1].phrase, "text 1");
+        assert_eq!(pages[1][2].phrase, "text 10");
         let texts: HashSet<_> = pages.iter().flatten().map(|item| &item.phrase).collect();
         assert_eq!(texts.len(), 17);
         for (page, items) in pages.iter().enumerate() {
@@ -1811,6 +1822,39 @@ mod clipboard_quick_tests {
             clipboard_store::resolve_entry_text(&snapshot, "audit-0").as_deref(),
             Some(snapshot.history[0].text.as_str())
         );
+    }
+
+    #[test]
+    fn copied_pinned_text_moves_to_front_without_duplicate_row() {
+        let mut pinned = entry(1);
+        pinned.captured_at = 10;
+        let mut copied = pinned.clone();
+        copied.id = "history-id".to_string();
+        copied.captured_at = 30;
+        let mut other = entry(2);
+        other.captured_at = 20;
+        let snapshot = clipboard_store::ClipboardSnapshot {
+            pinned: vec![pinned],
+            history: vec![copied, other],
+        };
+        let candidates = quick_clipboard_candidates_from_snapshot(&snapshot, 0, "");
+        assert_eq!(candidates.len(), 2);
+        assert_eq!(candidates[0].phrase, "text 1");
+        assert!(candidates[0]
+            .meta
+            .as_ref()
+            .unwrap()
+            .contains("clipboard_pinned=1"));
+        assert_eq!(candidates[1].phrase, "text 2");
+    }
+
+    #[test]
+    fn control_only_clipboard_text_has_visible_preview() {
+        assert_eq!(
+            clipboard_candidate_preview_text("\u{0001}\u{0002}"),
+            "（不可预览的文本）"
+        );
+        assert_eq!(clipboard_candidate_preview_text("a\u{001b}b"), "ab");
     }
 
     #[test]
@@ -2022,56 +2066,28 @@ fn quick_clipboard_candidates_from_snapshot(
     page: usize,
     filter: &str,
 ) -> Vec<DirectCandidate> {
-    let mut seen = HashSet::new();
-    let mut ordered = Vec::new();
-    for entry in snapshot.history.iter() {
-        let text = entry.text.as_str();
-        if text.trim().is_empty()
-            || !clipboard_entry_matches_filter(entry, filter)
-            || !seen.insert(text.to_string())
-        {
-            continue;
-        }
-        ordered.push(entry);
-    }
-
-    seen.clear();
-    let pinned_ids = snapshot
+    let pinned_texts = snapshot
         .pinned
         .iter()
-        .map(|entry| entry.id.as_str())
+        .map(|entry| entry.text.as_str())
         .collect::<HashSet<_>>();
-    let mut pinned_first = Vec::new();
-    for entry in snapshot.pinned.iter() {
-        let text = entry.text.as_str();
-        if text.trim().is_empty()
-            || !clipboard_entry_matches_filter(entry, filter)
-            || !seen.insert(text.to_string())
-        {
-            continue;
-        }
-        pinned_first.push(entry);
-        if pinned_first.len() >= CLIPBOARD_QUICK_PINNED_LIMIT {
-            break;
-        }
-    }
-    for entry in &pinned_first {
-        ordered.retain(|history| history.text != entry.text);
-    }
-    pinned_first.append(&mut ordered);
+    let mut ordered = snapshot
+        .history
+        .iter()
+        .chain(snapshot.pinned.iter())
+        .filter(|entry| {
+            !entry.text.trim().is_empty() && clipboard_entry_matches_filter(entry, filter)
+        })
+        .collect::<Vec<_>>();
+    ordered.sort_by(|a, b| b.captured_at.cmp(&a.captured_at));
+    let mut seen = HashSet::new();
+    ordered.retain(|entry| seen.insert(entry.text.as_str()));
 
-    let total_pages = ordered
-        .len()
-        .saturating_add(pinned_first.len())
-        .saturating_add(CLIPBOARD_QUICK_LIMIT - 1)
-        / CLIPBOARD_QUICK_LIMIT;
+    let total_pages =
+        ordered.len().saturating_add(CLIPBOARD_QUICK_LIMIT - 1) / CLIPBOARD_QUICK_LIMIT;
     let offset = page.saturating_mul(CLIPBOARD_QUICK_LIMIT);
     let mut out = Vec::new();
-    for entry in pinned_first
-        .into_iter()
-        .skip(offset)
-        .take(CLIPBOARD_QUICK_LIMIT)
-    {
+    for entry in ordered.into_iter().skip(offset).take(CLIPBOARD_QUICK_LIMIT) {
         if entry.text.trim().is_empty() {
             continue;
         }
@@ -2082,7 +2098,7 @@ fn quick_clipboard_candidates_from_snapshot(
             meta: Some(clipboard_display_meta(
                 entry,
                 &preview,
-                pinned_ids.contains(entry.id.as_str()),
+                pinned_texts.contains(entry.text.as_str()),
                 page,
                 total_pages,
             )),
@@ -2376,7 +2392,7 @@ pub fn lookup_detailed_with_options(
                     quick_rest,
                 )));
             }
-            let snapshot = clipboard_store::clipboard_candidate_snapshot();
+            let snapshot = clipboard_store::clipboard_quick_snapshot();
             return Some(quick_clipboard_candidates_or_help(&snapshot, page, filter));
         }
         let cmd_lower = cmd.to_ascii_lowercase();
@@ -2478,7 +2494,7 @@ pub fn lookup_with_options(rest: &str, options: LookupOptions) -> Option<Vec<(St
         if page == 0 && matches!(quick_cmd.as_str(), "open" | "manager" | "mgr" | "window") {
             return Some(open_clipboard_manager_candidates(quick_rest));
         }
-        let snapshot = clipboard_store::clipboard_candidate_snapshot();
+        let snapshot = clipboard_store::clipboard_quick_snapshot();
         return Some(
             quick_clipboard_candidates_or_help(&snapshot, page, filter)
                 .into_iter()

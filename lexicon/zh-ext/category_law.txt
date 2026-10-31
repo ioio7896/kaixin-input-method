@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：法律合同
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 违约金	wei yue jin	6760
 买卖合同	mai mai he tong	6100
@@ -55,7 +55,165 @@
 诉讼时效	su song shi xiao	6000
 财产保全	cai chan bao quan	6000
 违约责任	wei yue ze ren	6000
+法院系统	fa yuan xi tong	5693
+行政法院	xing zheng fa yuan	5693
+律师事务	lv shi shi wu	5654
+律师资格	lv shi zi ge	5654
+美国法院	mei guo fa yuan	5654
+司法人员	si fa ren yuan	5539
+司法行政	si fa xing zheng	5539
+公司律师	gong si lv shi	5462
+执行法官	zhi xing fa guan	5462
+正义律师	zheng yi lv shi	5462
+司法警察	si fa jing cha	5424
+国际法院	guo ji fa yuan	5385
+欧洲法院	ou zhou fa yuan	5385
+超级律师	chao ji lv shi	5347
+高级律师	gao ji lv shi	5347
+高级法院	gao ji fa yuan	5347
+指定律师	zhi ding lv shi	5308
+私人律师	si ren lv shi	5308
+法院院长	fa yuan yuan zhang	5270
+联邦法院	lian bang fa yuan	5270
+代理律师	dai li lv shi	5231
+法官大人	fa guan da ren	5231
+司法实践	si fa shi jian	5193
+司法独立	si fa du li	5193
+刑事处罚	xing shi chu fa	5154
+律师收费	lv shi shou fei	5154
+提起诉讼	ti qi su song	5154
+垃圾律师	la ji lv shi	5116
+一级律师	yi ji lv shi	5077
+法官妈妈	fa guan ma ma	5077
+司法腐败	si fa fu bai	5039
+法院起诉	fa yuan qi su	5039
+退休法官	tui xiu fa guan	5039
+司法大楼	si fa da lou	5000
+离婚律师	li hun lv shi	5000
+公正司法	gong zheng si fa	4962
+判决结果	pan jue jie guo	4962
+司法拍卖	si fa pai mai	4962
+律师大厦	lv shi da sha	4962
+最后判决	zui hou pan jue	4962
+最终判决	zui zhong pan jue	4962
+法院判决	fa yuan pan jue	4962
+公司法人	gong si fa ren	4924
+刑事处分	xing shi chu fen	4924
+平民律师	ping min lv shi	4924
+皇家律师	huang jia lv shi	4924
+诉讼风险	su song feng xian	4885
+上级法院	shang ji fa yuan	4847
+刑事判决	xing shi pan jue	4808
+刑事司法	xing shi si fa	4808
+刑事审判	xing shi shen pan	4808
+刑事档案	xing shi dang an	4808
+刑事法律	xing shi fa lv	4808
+刑事科学	xing shi ke xue	4808
+刑事调查	xing shi diao cha	4808
+律师助理	lv shi zhu li	4808
+诉讼风暴	su song feng bao	4808
+律师们	lv shi men	4770
+死刑判决	si xing pan jue	4770
+专利诉讼	zhuan li su song	4731
+刑事赔偿	xing shi pei chang	4731
+判决无罪	pan jue wu zui	4731
+判决生效	pan jue sheng xiao	4731
+有罪判决	you zui pan jue	4731
+江汉法院	jiang han fa yuan	4731
+生效判决	sheng xiao pan jue	4731
+番禺法院	pan yu fa yuan	4731
+破产法院	po chan fa yuan	4731
+公益诉讼	gong yi su song	4654
+司法鉴定	si fa jian ding	4654
+律师情人	lv shi qing ren	4654
+承办法官	cheng ban fa guan	4654
+无罪判决	wu zui pan jue	4654
+法院审理	fa yuan shen li	4616
+精英律师	jing ying lv shi	4616
+虚假诉讼	xu jia su song	4577
+司法拘留	si fa ju liu	4539
+司法救助	si fa jiu zhu	4539
+金牌律师	jin pai lv shi	4539
+司法冻结	si fa dong jie	4500
+诉讼法学	su song fa xue	4500
+司法为民	si fa wei min	4462
+律师楼	lv shi lou	4462
+律师证	lv shi zheng	4462
+法院调解	fa yuan tiao jie	4462
+流氓律师	liu mang lv shi	4462
+一审判决	yi shen pan jue	4424
+刑事追究	xing shi zhui jiu	4385
+司法所长	si fa suo zhang	4347
+民事判决	min shi pan jue	4347
+民事审判	min shi shen pan	4347
+民事法庭	min shi fa ting	4347
+民事法律	min shi fa lv	4347
+民事纠纷	min shi jiu fen	4347
+民事行为	min shi xing wei	4347
+民事行政	min shi xing zheng	4347
+民事裁定	min shi cai ding	4347
+民事责任	min shi ze ren	4347
+民事赔偿	min shi pei chang	4347
+缺席判决	que xi pan jue	4347
+黑话律师	hei hua lv shi	4347
+刑事侦查	xing shi zhen cha	4308
+知心法官	zhi xin fa guan	4308
+刑事立案	xing shi li an	4231
+富豪刑事	fu hao xing shi	4231
+律师本色	lv shi ben se	4231
+法官阁下	fa guan ge xia	4193
+王牌律师	wang pai lv shi	4193
+林肯律师	lin ken lv shi	4154
+二审判决	er shen pan jue	4077
+刘律师	liu lv shi	4077
+大律师	da lv shi	4077
+巡回法官	xun hui fa guan	4077
+廖律师	liao lv shi	4077
+当律师	dang lv shi	4077
+律师袍	lv shi pao	4077
+找律师	zhao lv shi	4077
+李律师	li lv shi	4077
+杨律师	yang lv shi	4077
+王律师	wang lv shi	4077
+终审判决	zhong shen pan jue	4077
+裴律师	pei lv shi	4077
+请律师	qing lv shi	4077
+陈律师	chen lv shi	4077
+上法院	shang fa yuan	4039
+去法院	qu fa yuan	4039
+在法院	zai fa yuan	4039
+微法院	wei fa yuan	4039
+法院了	fa yuan le	4039
+法院的	fa yuan de	4039
+法院见	fa yuan jian	4039
+金装律师	jin zhuang lv shi	4000
+一审法院	yi shen fa yuan	3962
+司法员	si fa yuan	3885
+司法所	si fa suo	3885
+法官老爹	fa guan lao die	3885
+刘法官	liu fa guan	3847
+坏法官	huai fa guan	3847
+法官法	fa guan fa	3847
+法官袍	fa guan pao	3847
+法院传票	fa yuan chuan piao	3770
+诉讼中	su song zhong	3731
+诉讼人	su song ren	3731
+诉讼权	su song quan	3731
+诉讼状	su song zhuang	3731
+刑事罪	xing shi zui	3654
+见习律师	jian xi lv shi	3654
+二审法院	er shen fa yuan	3616
+民事诉状	min shi su zhuang	3462
+邻家律师	lin jia lv shi	3424
+主审法官	zhu shen fa guan	3270
+辩方律师	bian fang lv shi	3154
 律师函	lv shi han	3123
+武法律师	wu fa lv shi	3039
+道宣律师	dao xuan lv shi	2847
+冤罪律师	yuan zui lv shi	2731
+市司法局	shi si fa ju	2731
+省司法厅	sheng si fa ting	2731
+黑袍律师	hei pao lv shi	2500
 起诉状	qi su zhuang	2445
 上诉状	shang su zhuang	970
 答辩状	da bian zhuang	313

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：摄影影像
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 产品摄影	chan pin she ying	6100
 人像摄影	ren xiang she ying	6100
@@ -50,5 +50,584 @@
 镜头防抖	jing tou fang dou	6100
 长焦镜头	zhang jiao jing tou	6100
 风景摄影	feng jing she ying	6100
+摄影本身	she ying ben shen	5385
+摄影机构	she ying ji gou	5385
+摄影相关	she ying xiang guan	5385
+摄影网站	she ying wang zhan	5385
+传统摄影	chuan tong she ying	5347
+摄影艺术	she ying yi shu	5347
+摄影协会	she ying xie hui	5308
+镜头里的	jing tou li de	5231
+摄影展览	she ying zhan lan	5193
+摄影画面	she ying hua mian	5193
+专业摄影	zhuan ye she ying	5116
+世界摄影	shi jie she ying	5116
+中国摄影	zhong guo she ying	5116
+主题摄影	zhu ti she ying	5116
+交流摄影	jiao liu she ying	5116
+人民摄影	ren min she ying	5116
+从事摄影	cong shi she ying	5116
+优秀摄影	you xiu she ying	5116
+体育摄影	ti yu she ying	5116
+儿童摄影	er tong she ying	5116
+全国摄影	quan guo she ying	5116
+全球摄影	quan qiu she ying	5116
+动物摄影	dong wu she ying	5116
+商业摄影	shang ye she ying	5116
+喜欢摄影	xi huan she ying	5116
+国内摄影	guo nei she ying	5116
+国家摄影	guo jia she ying	5116
+国际摄影	guo ji she ying	5116
+图片摄影	tu pian she ying	5116
+城市摄影	cheng shi she ying	5116
+大众摄影	da zhong she ying	5116
+好的摄影	hao de she ying	5116
+学习摄影	xue xi she ying	5116
+广告摄影	guang gao she ying	5116
+接触摄影	jie chu she ying	5116
+摄影专业	she ying zhuan ye	5116
+摄影主题	she ying zhu ti	5116
+摄影交流	she ying jiao liu	5116
+摄影人员	she ying ren yuan	5116
+摄影体验	she ying ti yan	5116
+摄影作品	she ying zuo pin	5116
+摄影公司	she ying gong si	5116
+摄影创作	she ying chuang zuo	5116
+摄影功能	she ying gong neng	5116
+摄影团队	she ying tuan dui	5116
+摄影图片	she ying tu pian	5116
+摄影培训	she ying pei xun	5116
+摄影基地	she ying ji di	5116
+摄影基础	she ying ji chu	5116
+摄影女孩	she ying nv hai	5116
+摄影学习	she ying xue xi	5116
+摄影学会	she ying xue hui	5116
+摄影学院	she ying xue yuan	5116
+摄影导演	she ying dao yan	5116
+摄影小组	she ying xiao zu	5116
+摄影就是	she ying jiu shi	5116
+摄影工作	she ying gong zuo	5116
+摄影技术	she ying ji shu	5116
+摄影报道	she ying bao dao	5116
+摄影效果	she ying xiao guo	5116
+摄影教育	she ying jiao yu	5116
+摄影文化	she ying wen hua	5116
+摄影方式	she ying fang shi	5116
+摄影方法	she ying fang fa	5116
+摄影方面	she ying fang mian	5116
+摄影服务	she ying fu wu	5116
+摄影杂志	she ying za zhi	5116
+摄影模式	she ying mo shi	5116
+摄影比赛	she ying bi sai	5116
+摄影水平	she ying shui ping	5116
+摄影活动	she ying huo dong	5116
+摄影照片	she ying zhao pian	5116
+摄影理论	she ying li lun	5116
+摄影社区	she ying she qu	5116
+摄影科技	she ying ke ji	5116
+摄影系列	she ying xi lie	5116
+摄影系统	she ying xi tong	5116
+摄影经验	she ying jing yan	5116
+摄影联盟	she ying lian meng	5116
+摄影能力	she ying neng li	5116
+摄影行业	she ying hang ye	5116
+摄影角度	she ying jiao du	5116
+摄影记录	she ying ji lu	5116
+摄影记者	she ying ji zhe	5116
+摄影论坛	she ying lun tan	5116
+摄影设备	she ying she bei	5116
+摄影课程	she ying ke cheng	5116
+摄影领域	she ying ling yu	5116
+摄影风格	she ying feng ge	5116
+数字摄影	shu zi she ying	5116
+新闻摄影	xin wen she ying	5116
+死亡摄影	si wang she ying	5116
+浙江摄影	zhe jiang she ying	5116
+淘宝摄影	tao bao she ying	5116
+特殊摄影	te shu she ying	5116
+独立摄影	du li she ying	5116
+现代摄影	xian dai she ying	5116
+现场摄影	xian chang she ying	5116
+电影摄影	dian ying she ying	5116
+电视摄影	dian shi she ying	5116
+移动摄影	yi dong she ying	5116
+纽约摄影	niu yue she ying	5116
+经典摄影	jing dian she ying	5116
+美国摄影	mei guo she ying	5116
+美女摄影	mei nv she ying	5116
+自由摄影	zi you she ying	5116
+航空摄影	hang kong she ying	5116
+艺术摄影	yi shu she ying	5116
+著名摄影	zhu ming she ying	5116
+运动摄影	yun dong she ying	5116
+进入镜头	jin ru jing tou	5116
+适合摄影	shi he she ying	5116
+选择摄影	xuan ze she ying	5116
+通过摄影	tong guo she ying	5116
+青年摄影	qing nian she ying	5116
+面对镜头	mian dui jing tou	5116
+高级摄影	gao ji she ying	5116
+摄影大师	she ying da shi	5077
+摄影装置	she ying zhuang zhi	5077
+摄影话题	she ying hua ti	5077
+正对镜头	zheng dui jing tou	5077
+相机内部	xiang ji nei bu	5077
+相机电池	xiang ji dian chi	5077
+相机高度	xiang ji gao du	5077
+观念摄影	guan nian she ying	5077
+摄影后期	she ying hou qi	5039
+相机位置	xiang ji wei zhi	5039
+相机拍摄	xiang ji pai she	5039
+相机数据	xiang ji shu ju	5039
+相机设置	xiang ji she zhi	5039
+人体摄影	ren ti she ying	5000
+摄影天堂	she ying tian tang	5000
+摄影技能	she ying ji neng	5000
+摄影部落	she ying bu luo	5000
+拍照给你	pai zhao gei ni	4962
+拍照给我	pai zhao gei wo	4962
+违法拍照	wei fa pai zhao	4962
+专题摄影	zhuan ti she ying	4924
+摄影测量	she ying ce liang	4924
+不看镜头	bu kan jing tou	4885
+专业镜头	zhuan ye jing tou	4885
+专用镜头	zhuan yong jing tou	4885
+人像镜头	ren xiang jing tou	4885
+任何镜头	ren he jing tou	4885
+保护镜头	bao hu jing tou	4885
+固定镜头	gu ding jing tou	4885
+当代摄影	dang dai she ying	4885
+所有镜头	suo you jing tou	4885
+拍照看看	pai zhao kan kan	4885
+摄影技巧	she ying ji qiao	4885
+摄影镜头	she ying jing tou	4885
+普通镜头	pu tong jing tou	4885
+杀人镜头	sha ren jing tou	4885
+标准镜头	biao zhun jing tou	4885
+每个镜头	mei ge jing tou	4885
+电影镜头	dian ying jing tou	4885
+监控镜头	jian kong jing tou	4885
+移动镜头	yi dong jing tou	4885
+空中摄影	kong zhong she ying	4885
+精彩镜头	jing cai jing tou	4885
+系列镜头	xi lie jing tou	4885
+经典镜头	jing dian jing tou	4885
+转换镜头	zhuan huan jing tou	4885
+这只镜头	zhe zhi jing tou	4885
+选择镜头	xuan ze jing tou	4885
+透过镜头	tou guo jing tou	4885
+通过镜头	tong guo jing tou	4885
+镜头之下	jing tou zhi xia	4885
+镜头之中	jing tou zhi zhong	4885
+镜头之外	jing tou zhi wai	4885
+镜头之间	jing tou zhi jian	4885
+镜头内部	jing tou nei bu	4885
+镜头处理	jing tou chu li	4885
+镜头安装	jing tou an zhuang	4885
+镜头技术	jing tou ji shu	4885
+镜头拍摄	jing tou pai she	4885
+镜头推荐	jing tou tui jian	4885
+镜头效果	jing tou xiao guo	4885
+镜头方向	jing tou fang xiang	4885
+镜头本身	jing tou ben shen	4885
+镜头特点	jing tou te dian	4885
+镜头类型	jing tou lei xing	4885
+镜头素质	jing tou su zhi	4885
+镜头结构	jing tou jie gou	4885
+镜头背后	jing tou bei hou	4885
+镜头表现	jing tou biao xian	4885
+镜头表达	jing tou biao da	4885
+镜头表面	jing tou biao mian	4885
+镜头记录	jing tou ji lu	4885
+镜头设计	jing tou she ji	4885
+镜头语言	jing tou yu yan	4885
+镜头质量	jing tou zhi liang	4885
+镜头距离	jing tou ju li	4885
+镜头选择	jing tou xuan ze	4885
+镜头配置	jing tou pei zhi	4885
+镜头长度	jing tou chang du	4885
+开启摄影	kai qi she ying	4847
+摄影大赛	she ying da sai	4847
+摄影模特	she ying mo te	4847
+摄影达人	she ying da ren	4847
+摄影题材	she ying ti cai	4847
+时尚摄影	shi shang she ying	4847
+毫米镜头	hao mi jing tou	4847
+没拍照片	mei pai zhao pian	4847
+玻璃镜头	bo li jing tou	4847
+相机电源	xiang ji dian yuan	4847
+相机自拍	xiang ji zi pai	4847
+镜头展现	jing tou zhan xian	4847
+靠近镜头	kao jin jing tou	4847
+创意摄影	chuang yi she ying	4808
+婚礼摄影	hun li she ying	4808
+摄影创意	she ying chuang yi	4808
+摄影助理	she ying zhu li	4808
+热爱摄影	re ai she ying	4808
+镜头参数	jing tou can shu	4808
+摄影图像	she ying tu xiang	4770
+摄影家们	she ying jia men	4770
+视觉摄影	shi jue she ying	4770
+高端相机	gao duan xiang ji	4770
+专业相机	zhuan ye xiang ji	4731
+今日相机	jin ri xiang ji	4731
+传统相机	chuan tong xiang ji	4731
+启动相机	qi dong xiang ji	4731
+固定相机	gu ding xiang ji	4731
+工程相机	gong cheng xiang ji	4731
+抖音相机	dou yin xiang ji	4731
+数字相机	shu zi xiang ji	4731
+时间相机	shi jian xiang ji	4731
+相机产品	xiang ji chan pin	4731
+相机功能	xiang ji gong neng	4731
+相机参数	xiang ji can shu	4731
+相机市场	xiang ji shi chang	4731
+相机性能	xiang ji xing neng	4731
+相机技术	xiang ji ji shu	4731
+相机操作	xiang ji cao zuo	4731
+相机效果	xiang ji xiao guo	4731
+相机本身	xiang ji ben shen	4731
+相机根据	xiang ji gen ju	4731
+相机维修	xiang ji wei xiu	4731
+相机记录	xiang ji ji lu	4731
+相机镜头	xiang ji jing tou	4731
+相机领域	xiang ji ling yu	4731
+移动相机	yi dong xiang ji	4731
+运动相机	yun dong xiang ji	4731
+进入相机	jin ru xiang ji	4731
+通过相机	tong guo xiang ji	4731
+镜头相机	jing tou xiang ji	4731
+马克相机	ma ke xiang ji	4731
+高级相机	gao ji xiang ji	4731
+图像素材	tu xiang su cai	4693
+摄影之旅	she ying zhi lv	4693
+摄影原创	she ying yuan chuang	4693
+更换镜头	geng huan jing tou	4693
+一组镜头	yi zu jing tou	4654
+影视摄影	ying shi she ying	4654
+摄影高手	she ying gao shou	4654
+镜头尺寸	jing tou chi cun	4654
+镜头模糊	jing tou mo hu	4654
+一起拍照	yi qi pai zhao	4616
+不会拍照	bu hui pai zhao	4616
+不能拍照	bu neng pai zhao	4616
+人文摄影	ren wen she ying	4616
+免费拍照	mian fei pai zhao	4616
+可以拍照	ke yi pai zhao	4616
+喜欢拍照	xi huan pai zhao	4616
+实际拍照	shi ji pai zhao	4616
+宠物摄影	chong wu she ying	4616
+怎么拍照	zen me pai zhao	4616
+拍照上传	pai zhao shang chuan	4616
+拍照之前	pai zhao zhi qian	4616
+拍照动作	pai zhao dong zuo	4616
+拍照好看	pai zhao hao kan	4616
+拍照姿势	pai zhao zi shi	4616
+拍照工具	pai zhao gong ju	4616
+拍照技术	pai zhao ji shu	4616
+拍照效果	pai zhao xiao guo	4616
+拍照方式	pai zhao fang shi	4616
+拍照模式	pai zhao mo shi	4616
+拍照翻译	pai zhao fan yi	4616
+拍照能力	pai zhao neng li	4616
+拍照角度	pai zhao jiao du	4616
+拍照设备	pai zhao she bei	4616
+拍照质量	pai zhao zhi liang	4616
+拍照过程	pai zhao guo cheng	4616
+摄影拍照	she ying pai zhao	4616
+摄影生涯	she ying sheng ya	4616
+相机故障	xiang ji gu zhang	4616
+给你拍照	gei ni pai zhao	4616
+给我拍照	gei wo pai zhao	4616
+记得拍照	ji de pai zhao	4616
+偷拍照片	tou pai zhao pian	4577
+夜晚拍照	ye wan pai zhao	4577
+摄影爱好	she ying ai hao	4577
+摄影笔记	she ying bi ji	4577
+爱好摄影	ai hao she ying	4577
+业余摄影	ye yu she ying	4539
+二手相机	er shou xiang ji	4539
+平面摄影	ping mian she ying	4539
+镜头聚焦	jing tou ju jiao	4539
+倾斜摄影	qing xie she ying	4500
+二手镜头	er shou jing tou	4462
+光学相机	guang xue xiang ji	4462
+光学镜头	guang xue jing tou	4462
+彩色摄影	cai se she ying	4462
+摄影师们	she ying shi men	4462
+无反相机	wu fan xiang ji	4462
+蜂鸟摄影	feng niao she ying	4462
+谷歌相机	gu ge xiang ji	4462
+镜头一转	jing tou yi zhuan	4462
+高端摄影	gao duan she ying	4462
+高端镜头	gao duan jing tou	4462
+鸟类摄影	niao lei she ying	4462
+亲吻镜头	qin wen jing tou	4424
+放大镜头	fang da jing tou	4424
+相机机身	xiang ji ji shen	4424
+镜头视角	jing tou shi jiao	4424
+黑白摄影	hei bai she ying	4424
+千万像素	qian wan xiang su	4385
+卡片相机	ka pian xiang ji	4385
+摄影器材	she ying qi cai	4385
+摄影素材	she ying su cai	4385
+百万像素	bai wan xiang su	4385
+像素数量	xiang su shu liang	4347
+数码摄影	shu ma she ying	4347
+相机配件	xiang ji pei jian	4347
+索尼镜头	suo ni jing tou	4347
+户外摄影	hu wai she ying	4308
+摄影化妆	she ying hua zhuang	4308
+相机模块	xiang ji mo kuai	4308
+镜头捕捉	jing tou bu zhuo	4308
+手持相机	shou chi xiang ji	4270
+拍拍照片	pai pai zhao pian	4270
+摄影中	she ying zhong	4270
+摄影圈	she ying quan	4270
+摄影网	she ying wang	4270
+摄影节	she ying jie	4270
+万能相机	wan neng xiang ji	4231
+全能相机	quan neng xiang ji	4231
+手动镜头	shou dong jing tou	4231
+摄影用光	she ying yong guang	4231
+时装摄影	shi zhuang she ying	4231
+相机抉择	xiang ji jue ze	4231
+天文摄影	tian wen she ying	4193
+摄影教程	she ying jiao cheng	4193
+摄影问答	she ying wen da	4193
+这像素	zhe xiang su	4193
+风光摄影	feng guang she ying	4193
+举起相机	ju qi xiang ji	4154
+家用相机	jia yong xiang ji	4154
+摄影攻略	she ying gong lue	4154
+星空摄影	xing kong she ying	4154
+穿帮镜头	chuan bang jing tou	4154
+红外相机	hong wai xiang ji	4154
+转动镜头	zhuan dong jing tou	4154
+挡住镜头	dang zhu jing tou	4116
+摄影入门	she ying ru men	4116
+傻瓜相机	sha gua xiang ji	4077
+镜头前	jing tou qian	4077
+镜头对准	jing tou dui zhun	4077
+镜头的	jing tou de	4077
+镜头盖	jing tou gai	4077
+镜头里	jing tou li	4077
+婚纱摄影	hun sha she ying	4039
+微单相机	wei dan xiang ji	4039
+摄影新手	she ying xin shou	4039
+像素不够	xiang su bu gou	4000
+像素不好	xiang su bu hao	4000
+像素不行	xiang su bu xing	4000
+像素多少	xiang su duo shao	4000
+像素大小	xiang su da xiao	4000
+像素大战	xiang su da zhan	4000
+像素密度	xiang su mi du	4000
+像素射击	xiang su she ji	4000
+像素尺寸	xiang su chi cun	4000
+像素照片	xiang su zhao pian	4000
+像素级别	xiang su ji bie	4000
+像素蛋糕	xiang su dan gao	4000
+图像像素	tu xiang xiang su	4000
+图片像素	tu pian xiang su	4000
+实际像素	shi ji xiang su	4000
+摄影沙龙	she ying sha long	4000
+有效像素	you xiao xiang su	4000
+相机店	xiang ji dian	4000
+相机里	xiang ji li	4000
+相邻像素	xiang lin xiang su	4000
+背着相机	bei zhe xiang ji	4000
+花卉摄影	hua hui she ying	4000
+这款镜头	zhe kuan jing tou	4000
+亲子摄影	qin zi she ying	3962
+写真摄影	xie zhen she ying	3962
+推拉镜头	tui la jing tou	3962
+摄入镜头	she ru jing tou	3962
+一拍照	yi pai zhao	3924
+不拍照	bu pai zhao	3924
+先拍照	xian pai zhao	3924
+实拍照片	shi pai zhao pian	3924
+拍拍照	pai pai zhao	3924
+拍照时	pai zhao shi	3924
+没拍照	mei pai zhao	3924
+特写镜头	te xie jing tou	3924
+特技摄影	te ji she ying	3924
+红外摄影	hong wai she ying	3924
+纪实摄影	ji shi she ying	3924
+超高像素	chao gao xiang su	3924
+镜头卡口	jing tou ka kou	3924
+鱼眼镜头	yu yan jing tou	3924
+为摄影	wei she ying	3885
+主打拍照	zhu da pai zhao	3885
+会摄影	hui she ying	3885
+在摄影	zai she ying	3885
+学摄影	xue she ying	3885
+搞摄影	gao she ying	3885
+摄影书	she ying shu	3885
+摄影人	she ying ren	3885
+摄影会	she ying hui	3885
+摄影包	she ying bao	3885
+摄影吧	she ying ba	3885
+摄影团	she ying tuan	3885
+摄影学	she ying xue	3885
+摄影店	she ying dian	3885
+摄影灯	she ying deng	3885
+摄影班	she ying ban	3885
+摄影系	she ying xi	3885
+摄影组	she ying zu	3885
+摄影课	she ying ke	3885
+摄影馆	she ying guan	3885
+望远镜头	wang yuan jing tou	3885
+玩摄影	wan she ying	3885
+用摄影	yong she ying	3885
+直面镜头	zhi mian jing tou	3885
+胶片摄影	jiao pian she ying	3885
+胶片相机	jiao pian xiang ji	3885
+让摄影	rang she ying	3885
+贴纸相机	tie zhi xiang ji	3885
+龙摄影	long she ying	3885
+试镜头	shi jing tou	3847
+像素数	xiang su shu	3808
+全景摄影	quan jing she ying	3808
+全景相机	quan jing xiang ji	3808
+复古相机	fu gu xiang ji	3808
+像素填充	xiang su tian chong	3770
+战地摄影	zhan di she ying	3770
+摄影之友	she ying zhi you	3770
+摄影摄像	she ying she xiang	3770
+摄影构图	she ying gou tu	3770
+红圈镜头	hong quan jing tou	3770
+这台相机	zhe tai xiang ji	3770
+富士相机	fu shi xiang ji	3731
+摄影画册	she ying hua ce	3731
+相机选购	xiang ji xuan gou	3731
+单镜头	dan jing tou	3693
+后镜头	hou jing tou	3693
+好镜头	hao jing tou	3693
+快镜头	kuai jing tou	3693
+摇镜头	yao jing tou	3693
+用镜头	yong jing tou	3693
+看镜头	kan jing tou	3693
+短镜头	duan jing tou	3693
+空镜头	kong jing tou	3693
+老镜头	lao jing tou	3693
+该镜头	gai jing tou	3693
+配镜头	pei jing tou	3693
+镜头中	jing tou zhong	3693
+镜头内	jing tou nei	3693
+镜头感	jing tou gan	3693
+镜头群	jing tou qun	3693
+黑镜头	hei jing tou	3693
+哈苏相机	ha su xiang ji	3654
+买相机	mai xiang ji	3616
+前置相机	qian zhi xiang ji	3616
+原相机	yuan xiang ji	3616
+好相机	hao xiang ji	3616
+小相机	xiao xiang ji	3616
+我相机	wo xiang ji	3616
+拿相机	na xiang ji	3616
+有相机	you xiang ji	3616
+用相机	yong xiang ji	3616
+相机卡	xiang ji ka	3616
+相机的	xiang ji de	3616
+相机而行	xiang ji er xing	3616
+袁相机	yuan xiang ji	3616
+镜头惊魂	jing tou jing hun	3616
+唯美相机	wei mei xiang ji	3577
+水印相机	shui yin xiang ji	3577
+会拍照	hui pai zhao	3539
+你拍照	ni pai zhao	3539
+像素间距	xiang su jian ju	3539
+去拍照	qu pai zhao	3539
+可拍照	ke pai zhao	3539
+在拍照	zai pai zhao	3539
+就拍照	jiu pai zhao	3539
+想拍照	xiang pai zhao	3539
+我拍照	wo pai zhao	3539
+拍照了	pai zhao le	3539
+拍照去	pai zhao qu	3539
+拍照吗	pai zhao ma	3539
+拍照吧	pai zhao ba	3539
+拍照呢	pai zhao ne	3539
+拍照啊	pai zhao a	3539
+拍照没	pai zhao mei	3539
+拍照的	pai zhao de	3539
+有拍照	you pai zhao	3539
+来拍照	lai pai zhao	3539
+能拍照	neng pai zhao	3539
+要拍照	yao pai zhao	3539
+还拍照	hai pai zhao	3539
+这拍照	zhe pai zhao	3539
+都拍照	dou pai zhao	3539
+黄油相机	huang you xiang ji	3539
+佳能相机	jia neng xiang ji	3500
+单反相机	dan fan xiang ji	3500
+单反镜头	dan fan jing tou	3500
+拍照搜题	pai zhao sou ti	3500
+举着相机	ju zhe xiang ji	3462
+拍照留念	pai zhao liu nian	3462
+相机快门	xiang ji kuai men	3462
+广角相机	guang jiao xiang ji	3424
+七彩相机	qi cai xiang ji	3385
+全息摄影	quan xi she ying	3385
+便携相机	bian xie xiang ji	3347
+初学摄影	chu xue she ying	3308
+日杂相机	ri za xiang ji	3308
+相机对焦	xiang ji dui jiao	3308
+经纬相机	jing wei xiang ji	3308
+航拍照片	hang pai zhao pian	3308
+镜头光晕	jing tou guang yun	3308
+反光相机	fan guang xiang ji	3270
+像素火影	xiang su huo ying	3231
+相机贴膜	xiang ji tie mo	3193
+低像素	di xiang su	3116
+像素好	xiang su hao	3116
+像素车	xiang su che	3116
+全像素	quan xiang su	3116
+我像素	wo xiang su	3116
+不拍照片	bu pai zhao pian	3039
+你拍照片	ni pai zhao pian	3039
+我拍照片	wo pai zhao pian	3039
+所拍照片	suo pai zhao pian	3039
+拍照片了	pai zhao pian le	3039
+拍照片的	pai zhao pian de	3039
+美颜相机	mei yan xiang ji	3039
+长焦相机	chang jiao xiang ji	2962
+婚庆摄影	hun qing she ying	2924
 感光度	gan guang du	2891
+防抖镜头	fang dou jing tou	2847
+街拍摄影	jie pai she ying	2770
+你的摄影	ni de she ying	2693
+女摄影家	nv she ying jia	2693
+女摄影师	nv she ying shi	2693
+摄影中的	she ying zhong de	2693
+摄影的人	she ying de ren	2693
+湿版摄影	shi ban she ying	2693
+男摄影师	nan she ying shi	2693
+老摄影家	lao she ying jia	2693
+你的镜头	ni de jing tou	2616
+副厂镜头	fu chang jing tou	2616
+套机镜头	tao ji jing tou	2616
+慢放镜头	man fang jing tou	2616
+我的镜头	wo de jing tou	2616
+镜头中的	jing tou zhong de	2616
+镜头对着	jing tou dui zhe	2616
+腾龙镜头	teng long jing tou	2577
+一甜相机	yi tian xiang ji	2539
+我的相机	wo de xiang ji	2539
+拿着相机	na zhe xiang ji	2539
+拿起相机	na qi xiang ji	2539
+旁轴相机	pang zhou xiang ji	2539
+无他相机	wu ta xiang ji	2539
+照相机的	zhao xiang ji de	2539
+甜盐相机	tian yan xiang ji	2539
+蜜芽相机	mi ya xiang ji	2539
+趣变相机	qu bian xiang ji	2539
+轻颜相机	qing yan xiang ji	2539
+魔乐相机	mo le xiang ji	2539
+我不拍照	wo bu pai zhao	2500
+我在拍照	wo zai pai zhao	2500
+我没拍照	wo mei pai zhao	2500
+拍照了吗	pai zhao le ma	2500
+拍照去了	pai zhao qu le	2500
+镜头镀膜	jing tou du mo	2154
 白平衡	bai ping heng	1268

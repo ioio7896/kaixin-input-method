@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：地理地质
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 城市规划	cheng shi gui hua	7582
 经纬度	jing wei du	7187
@@ -45,6 +45,94 @@
 地图投影	di tu tou ying	6000
 地理信息系统	di li xin xi xi tong	6000
 水土流失	shui tu liu shi	6000
+土地质量	tu di zhi liang	5924
+地理学会	di li xue hui	5462
+地理科学	di li ke xue	5462
+地理综合	di li zong he	5347
+中国地理	zhong guo di li	5154
+人口地理	ren kou di li	5154
+军事地理	jun shi di li	5154
+国家地理	guo jia di li	5154
+地理作业	di li zuo ye	5154
+地理信息	di li xin xi	5154
+地理分布	di li fen bu	5154
+地理分析	di li fen xi	5154
+地理杂志	di li za zhi	5154
+地理标志	di li biao zhi	5154
+地理生物	di li sheng wu	5154
+地理知识	di li zhi shi	5154
+地理答案	di li da an	5154
+宗教地理	zong jiao di li	5154
+生物地理	sheng wu di li	5154
+西部地理	xi bu di li	5154
+还有地理	hai you di li	5154
+高中地理	gao zhong di li	5154
+场地地形	chang di di xing	4924
+太白山脉	tai bai shan mai	4924
+中国地质	zhong guo di zhi	4808
+初中地理	chu zhong di li	4808
+地理考察	di li kao cha	4808
+地质中学	di zhi zhong xue	4808
+地质公园	di zhi gong yuan	4808
+地质大学	di zhi da xue	4808
+地质工程	di zhi gong cheng	4808
+地质年代	di zhi nian dai	4808
+地质测量	di zhi ce liang	4808
+地质灾难	di zhi zai nan	4808
+河流之下	he liu zhi xia	4808
+两条河流	liang tiao he liu	4731
+中小河流	zhong xiao he liu	4731
+地理笔记	di li bi ji	4577
+中央山脉	zhong yang shan mai	4539
+疯狂山脉	feng kuang shan mai	4539
 水土保持	shui tu bao chi	4517
+地理景观	di li jing guan	4500
+地形地貌	di xing di mao	4462
+地形模型	di xing mo xing	4462
+地形气候	di xing qi hou	4462
+地形测量	di xing ce liang	4462
+地形障碍	di xing zhang ai	4462
+有利地形	you li di xing	4462
+华夏地理	hua xia di li	4385
+地质矿产	di zhi kuang chan	4347
+地形匹配	di xing pi pei	4308
+地质力学	di zhi li xue	4308
+河流补给	he liu bu ji	4231
+冰川河流	bing chuan he liu	4154
+地理界线	di li jie xian	4154
+下知地理	xia zhi di li	4039
+丘陵地形	qiu ling di xing	4000
+地理卷子	di li juan zi	4000
+河流如血	he liu ru xue	4000
+地质储量	di zhi chu liang	3924
+上地理	shang di li	3885
+你地理	ni di li	3885
+写地理	xie di li	3885
+地理也	di li ye	3885
+地理书	di li shu	3885
+地理了	di li le	3885
+地理卷	di li juan	3885
+地理图	di li tu	3885
+地理志	di li zhi	3885
+地理的	di li de	3885
+地理盲	di li mang	3885
+我地理	wo di li	3885
+考地理	kao di li	3885
+地理试题	di li shi ti	3847
+地质所	di zhi suo	3847
+两河流域	liang he liu yu	3731
+太行山脉	tai hang shan mai	3731
+地理纬度	di li wei du	3654
+地质勘查	di zhi kan cha	3654
+河流镇	he liu zhen	3654
+山川河流	shan chuan he liu	3577
+地理制图	di li zhi tu	3539
+林山脉	lin shan mai	3539
+落基山脉	luo ji shan mai	3539
+地理区位	di li qu wei	3462
+地质剖面	di zhi pou mian	3462
+地质录井	di zhi lu jing	3462
+河流阶地	he liu jie di	3462
+渭河流域	wei he liu yu	3462
 地质灾害	di zhi zai hai	2984
 矿产资源	kuang chan zi yuan	2935

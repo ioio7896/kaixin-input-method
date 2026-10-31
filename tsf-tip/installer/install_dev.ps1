@@ -1877,7 +1877,7 @@ $fontDir = Join-Path $PackageRoot 'font1'
 $skinDir = Join-Path $PackageRoot 'skins'
 $assetsDir = Join-Path $PackageRoot 'assets'
 $toolsDir = Join-Path $PackageRoot 'tools'
-$rapidOcrDir = Join-Path $PackageRoot 'RapidOCR-3.9.0'
+$rapidOcrDir = Join-Path $PackageRoot 'RapidOCRLite'
 $rapidOcrPackagesDir = Join-Path $PackageRoot '.python-packages'
 $pythonRuntimeDir = Join-Path $PackageRoot '.python-runtime'
 
@@ -1935,7 +1935,7 @@ if (-not $SkipFileCopy) {
             @{ Source = $toolsDir; Name = 'tools' },
             @{ Source = $pythonRuntimeDir; Name = '.python-runtime' },
             @{ Source = $rapidOcrPackagesDir; Name = '.python-packages' },
-            @{ Source = $rapidOcrDir; Name = 'RapidOCR-3.9.0' }
+            @{ Source = $rapidOcrDir; Name = 'RapidOCRLite' }
         )) {
             if (Test-Path -LiteralPath $optionalDir.Source) {
                 $target = Join-Path $InstallationRoot $optionalDir.Name

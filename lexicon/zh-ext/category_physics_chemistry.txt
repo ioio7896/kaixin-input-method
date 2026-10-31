@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：物理化学
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 化学反应	hua xue fan ying	8843
 电磁场	dian ci chang	7951
@@ -42,12 +42,331 @@
 活化能	huo hua neng	6000
 电磁感应	dian ci gan ying	6000
 量子态	liang zi tai	6000
+中学化学	zhong xue hua xue	5462
+大学化学	da xue hua xue	5462
+还有化学	hai you hua xue	5462
+高中化学	gao zhong hua xue	5462
+化学分子	hua xue fen zi	5424
+化学工厂	hua xue gong chang	5424
+化学工程	hua xue gong cheng	5424
+物理性能	wu li xing neng	5347
+海洋化学	hai yang hua xue	5308
+物理学院	wu li xue yuan	5270
+还有物理	hai you wu li	5270
+中国元素	zhong guo yuan su	5231
+化学工艺	hua xue gong yi	5193
+增加元素	zeng jia yuan su	5193
+怀化学院	huai hua xue yuan	5193
+绥化学院	sui hua xue yuan	5193
 热传导	re chuan dao	5186
 热辐射	re fu she	5186
+优秀分子	you xiu fen zi	5154
+先进分子	xian jin fen zi	5154
+分子生物	fen zi sheng wu	5154
+分子运动	fen zi yun dong	5154
+初中化学	chu zhong hua xue	5154
+武装分子	wu zhuang fen zi	5154
+知道分子	zhi dao fen zi	5154
+破坏分子	po huai fen zi	5154
+进步分子	jin bu fen zi	5154
+中国化学	zhong guo hua xue	5116
+化学专业	hua xue zhuan ye	5116
+化学作业	hua xue zuo ye	5116
+化学作用	hua xue zuo yong	5116
+化学处理	hua xue chu li	5116
+化学实验	hua xue shi yan	5116
+化学感觉	hua xue gan jue	5116
+化学材料	hua xue cai liao	5116
+化学答案	hua xue da an	5116
+工业化学	gong ye hua xue	5116
+应用化学	ying yong hua xue	5116
+材料化学	cai liao hua xue	5116
+疯狂化学	feng kuang hua xue	5116
+石油化学	shi you hua xue	5116
+组织化学	zu zhi hua xue	5116
+计算化学	ji suan hua xue	5116
+场景元素	chang jing yuan su	5039
+腐败分子	fu bai fen zi	5039
+第五元素	di wu yuan su	5000
+中学物理	zhong xue wu li	4962
+化学物理	hua xue wu li	4962
+大学物理	da xue wu li	4962
+应用物理	ying yong wu li	4962
+数学物理	shu xue wu li	4962
+文化学	wen hua xue	4962
+材料物理	cai liao wu li	4962
+物理伤害	wu li shang hai	4962
+物理作业	wu li zuo ye	4962
+物理医学	wu li yi xue	4962
+物理实验	wu li shi yan	4962
+物理数学	wu li shu xue	4962
+物理检查	wu li jian cha	4962
+物理环境	wu li huan jing	4962
+物理现象	wu li xian xiang	4962
+物理研究	wu li yan jiu	4962
+物理答案	wu li da an	4962
+物理预防	wu li yu fang	4962
+落后分子	luo hou fen zi	4962
+高中物理	gao zhong wu li	4962
+活跃分子	huo yue fen zi	4924
+首要分子	shou yao fen zi	4924
+主要元素	zhu yao yuan su	4847
+主题元素	zhu ti yuan su	4847
+元素之一	yuan su zhi yi	4847
+元素之间	yuan su zhi jian	4847
+元素反应	yuan su fan ying	4847
+元素周期	yuan su zhou qi	4847
+元素攻击	yuan su gong ji	4847
+元素构成	yuan su gou cheng	4847
+元素核心	yuan su he xin	4847
+元素爆发	yuan su bao fa	4847
+元素生命	yuan su sheng ming	4847
+元素能量	yuan su neng liang	4847
+元素转化	yuan su zhuan hua	4847
+全部元素	quan bu yuan su	4847
+创作元素	chuang zuo yuan su	4847
+动态元素	dong tai yuan su	4847
+基本元素	ji ben yuan su	4847
+必要元素	bi yao yuan su	4847
+文化元素	wen hua yuan su	4847
+时尚元素	shi shang yuan su	4847
+构成元素	gou cheng yuan su	4847
+核心元素	he xin yuan su	4847
+流行元素	liu xing yuan su	4847
+物质元素	wu zhi yuan su	4847
+犯罪元素	fan zui yuan su	4847
+生活元素	sheng huo yuan su	4847
+画面元素	hua mian yuan su	4847
+空间元素	kong jian yuan su	4847
+绿色元素	lv se yuan su	4847
+色彩元素	se cai yuan su	4847
+艺术元素	yi shu yuan su	4847
+表现元素	biao xian yuan su	4847
+设计元素	she ji yuan su	4847
+重要元素	zhong yao yuan su	4847
+黑色元素	hei se yuan su	4847
+万物理论	wan wu li lun	4808
+创意元素	chuang yi yuan su	4808
+初中物理	chu zhong wu li	4808
+化学制品	hua xue zhi pin	4808
+辅助元素	fu zhu yuan su	4808
+不良分子	bu liang fen zi	4770
+化学原料	hua xue yuan liao	4770
+化学合成	hua xue he cheng	4770
+有用元素	you yong yuan su	4770
+视觉元素	shi jue yuan su	4770
+物理光学	wu li guang xue	4731
+立体化学	li ti hua xue	4731
+造型元素	zao xing yuan su	4731
+分子识别	fen zi shi bie	4693
+化学农药	hua xue nong yao	4693
+投机分子	tou ji fen zi	4693
+敌对分子	di dui fen zi	4693
+物理诊断	wu li zhen duan	4693
 电阻率	dian zu lv	4693
+反动分子	fan dong fen zi	4616
+精英分子	jing ying fen zi	4616
+化学化	hua xue hua	4577
+化学笔记	hua xue bi ji	4577
+化学防治	hua xue fang zhi	4577
+物理疗法	wu li liao fa	4577
+物理笔记	wu li bi ji	4577
+化学渗透	hua xue shen tou	4539
+地主分子	di zhu fen zi	4539
+幽默元素	you mo yuan su	4539
+诈骗分子	zha pian fen zi	4539
+生化学家	sheng hua xue jia	4500
+免疫化学	mian yi hua xue	4462
+分子光谱	fen zi guang pu	4462
+分子电流	fen zi dian liu	4462
+原子物理	yuan zi wu li	4462
+右派分子	you pai fen zi	4462
+物理好难	wu li hao nan	4462
+叛乱分子	pan luan fen zi	4424
+化学发光	hua xue fa guang	4385
+狂热分子	kuang re fen zi	4385
+天体物理	tian ti wu li	4347
+无相元素	wu xiang yuan su	4347
+晶体化学	jing ti hua xue	4347
+骨干分子	gu gan fen zi	4347
+分子离子	fen zi li zi	4308
+化学建材	hua xue jian cai	4308
+物理定律	wu li ding lv	4308
+离子交换	li zi jiao huan	4308
+离子反应	li zi fan ying	4308
+离子注入	li zi zhu ru	4308
+离子通道	li zi tong dao	4308
+金属离子	jin shu li zi	4308
+一分子	yi fen zi	4270
+上化学	shang hua xue	4270
+低分子	di fen zi	4270
+分子力	fen zi li	4270
+化学书	hua xue shu	4270
+化学了	hua xue le	4270
+化学史	hua xue shi	4270
+化学部	hua xue bu	4270
+可疑分子	ke yi fen zi	4270
+学化学	xue hua xue	4270
+有化学	you hua xue	4270
+化学切割	hua xue qie ge	4231
+日科化学	ri ke hua xue	4231
+化学修饰	hua xue xiu shi	4193
+固体物理	gu ti wu li	4193
+高一化学	gao yi hua xue	4193
+化学方程	hua xue fang cheng	4154
+有物理	you wu li	4154
+顽固分子	wan gu fen zi	4154
+人情物理	ren qing wu li	4116
+分子杂交	fen zi za jiao	4116
+吃掉物理	chi diao wu li	4116
+离子半径	li zi ban jing	4116
+元素共鸣	yuan su gong ming	4077
+元素增幅	yuan su zeng fu	4077
+元素精通	yuan su jing tong	4077
+多元素	duo yuan su	4077
+物理化	wu li hua	4077
+两性离子	liang xing li zi	4039
+中泰化学	zhong tai hua xue	4039
+分子晶体	fen zi jing ti	4039
+初三化学	chu san hua xue	4039
+台独分子	tai du fen zi	4039
+张元素	zhang yuan su	4039
+水元素	shui yuan su	4039
+贩毒分子	fan du fen zi	4039
+化学制剂	hua xue zhi ji	4000
+化学卷子	hua xue juan zi	4000
+物理卷子	wu li juan zi	4000
+物理降温	wu li jiang wen	4000
+反叛分子	fan pan fen zi	3962
+万华化学	wan hua hua xue	3924
+物理按键	wu li an jian	3924
+物理穿透	wu li chuan tou	3924
+你化学	ni hua xue	3885
+写化学	xie hua xue	3885
+分子灯	fen zi deng	3885
+分子热	fen zi re	3885
+分子病	fen zi bing	3885
+分子论	fen zi lun	3885
+化学卷	hua xue juan	3885
+化学吧	hua xue ba	3885
+化学呢	hua xue ne	3885
+化学楼	hua xue lou	3885
+化学物	hua xue wu	3885
+化学的	hua xue de	3885
+化学纯	hua xue chun	3885
+化学镀	hua xue du	3885
+化学题	hua xue ti	3885
+和化学	he hua xue	3885
+小分子	xiao fen zi	3885
+我化学	wo hua xue	3885
+捣乱分子	dao luan fen zi	3885
+活分子	huo fen zi	3885
+考化学	kao hua xue	3885
+补化学	bu hua xue	3885
+化学灭火	hua xue mie huo	3847
+化学烧伤	hua xue shao shang	3847
+化学试题	hua xue shi ti	3847
+物理试题	wu li shi ti	3847
+高一物理	gao yi wu li	3847
 热膨胀	re peng zhang	3792
+上物理	shang wu li	3770
+作案分子	zuo an fen zi	3770
+你物理	ni wu li	3770
+做物理	zuo wu li	3770
+光物理	guang wu li	3770
+写物理	xie wu li	3770
+和物理	he wu li	3770
+学物理	xue wu li	3770
+我物理	wo wu li	3770
+把物理	ba wu li	3770
+新物理	xin wu li	3770
+是物理	shi wu li	3770
+物理书	wu li shu	3770
+物理了	wu li le	3770
+物理卷	wu li juan	3770
+物理吗	wu li ma	3770
+物理吧	wu li ba	3770
+物理家	wu li jia	3770
+物理班	wu li ban	3770
+物理的	wu li de	3770
+物理类	wu li lei	3770
+物理组	wu li zu	3770
+物理题	wu li ti	3770
+考物理	kao wu li	3770
+补物理	bu wu li	3770
+选物理	xuan wu li	3770
+元素低潮	yuan su di chao	3731
+化学试剂	hua xue shi ji	3731
+初三物理	chu san wu li	3693
+元素多	yuan su duo	3654
+冰元素	bing yuan su	3654
+岩元素	yan yuan su	3654
+氮元素	dan yuan su	3654
+火元素	huo yuan su	3654
+点元素	dian yuan su	3654
+硒元素	xi yuan su	3654
+草元素	cao yuan su	3654
+钾元素	jia yuan su	3654
+镁元素	mei yuan su	3654
+雷元素	lei yuan su	3654
+风元素	feng yuan su	3654
+江天化学	jiang tian hua xue	3616
+离子水	li zi shui	3616
+三菱化学	san ling hua xue	3577
+元素微粒	yuan su wei li	3577
+元素抗性	yuan su kang xing	3539
+化学当量	hua xue dang liang	3539
+物理天平	wu li tian ping	3539
+物理弹球	wu li tan qiu	3539
+物理抗性	wu li kang xing	3539
+元素附着	yuan su fu zhuo	3500
+化学阉割	hua xue yan ge	3500
+化学抛光	hua xue pao guang	3462
+化学溶蚀	hua xue rong shi	3462
+去离子水	qu li zi shui	3462
+离子棒	li zi bang	3462
+离子流	li zi liu	3462
+离子烫	li zi tang	3462
+离子镀	li zi du	3462
+粘附分子	nian fu fen zi	3462
+络离子	luo li zi	3462
+聚阴离子	ju yin li zi	3462
+胶体化学	jiao ti hua xue	3462
+顽劣分子	wan lie fen zi	3462
+元素试炼	yuan su shi lian	3424
+化学防晒	hua xue fang shai	3424
+物理防晒	wu li fang shai	3424
+七彩化学	qi cai hua xue	3385
+元素满潮	yuan su man chao	3347
+利尔化学	li er hua xue	3347
+物理加成	wu li jia cheng	3347
+郁离子	yu li zi	3347
+钙离子	gai li zi	3347
+钾离子	jia li zi	3347
+铁离子	tie li zi	3347
+铜离子	tong li zi	3347
+镁离子	mei li zi	3347
+等离子态	deng li zi tai	3308
+华峰化学	hua feng hua xue	3270
+元素战技	yuan su zhan ji	3193
+元素护盾	yuan su hu dun	3077
+生物理疗	sheng wu li liao	3039
+元素护罩	yuan su hu zhao	2962
+小分子肽	xiao fen zi tai	2731
+陶氏化学	tao shi hua xue	2731
+百傲化学	bai ao hua xue	2693
+雅本化学	ya ben hua xue	2693
+上物理课	shang wu li ke	2654
+我的物理	wo de wu li	2654
+暴恐分子	bao kong fen zi	2616
+元素之印	yuan su zhi yin	2577
+元素方碑	yuan su fang bei	2577
+元素晶球	yuan su jing qiu	2424
 热平衡	re ping heng	2409
+等离子场	deng li zi chang	2385
 分子结构	fen zi jie gou	2264
+元素藤蔓	yuan su teng wan	2193
+化学螺栓	hua xue luo shuan	2000
 电感器	dian gan qi	1395
 热对流	re dui liu	1269
 电势差	dian shi cha	1066

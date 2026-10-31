@@ -117,19 +117,15 @@ def update_category_catalog() -> None:
         data = path.read_bytes()
         item["rows"] = sum(bool(l.strip()) and not l.startswith("#") for l in data.decode("utf-8-sig").splitlines())
         item["sha256"] = hashlib.sha256(data).hexdigest()
-        if item["tag"] == "category_idioms":
-            item["group"] = "成语与固定表达"
-        elif item["tag"] in {"category_common_three", "category_common_four", "category_common_long"}:
-            item["group"] = "通用词语补充"
-        elif item["tag"] in {"category_office", "category_project", "category_human_resources", "category_government"}:
-            item["group"] = "办公与办事"
-        elif item["tag"] == "category_pets":
-            item["group"] = "日常表达"
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     generated = ["// Generated from shared/category_lexicons.json; maintained by scripts/lexicon_quality.py.",
                  "pub fn category_lexicon_info(tag: &str) -> Option<(&'static str, &'static str)> {",
                  "    match tag {"]
     generated.extend(f'        "{c["tag"]}" => Some(("{c["title"]}", "{c["group"]}")),' for c in manifest["categories"])
+    generated.extend(['        _ => None,', '    }', '}', '',
+                      'pub fn category_lexicon_default_enabled(tag: &str) -> Option<bool> {',
+                      '    match tag {'])
+    generated.extend(f'        "{c["tag"]}" => Some({str(c.get("default_enabled", True)).lower()}),' for c in manifest["categories"])
     generated.extend(['        _ => None,', '    }', '}'])
     (ROOT / "pinyin-ime/src/category_lexicons.generated.rs").write_text("\n".join(generated) + "\n", encoding="utf-8", newline="\n")
 

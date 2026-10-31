@@ -1,12 +1,13 @@
 # 开心离线输入法分类补充：天气季节
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 天气预报	tian qi yu bao	8998
 降水量	jiang shui liang	8904
 降雨量	jiang yu liang	8675
 空气质量	kong qi zhi liang	8116
+天气中心	tian qi zhong xin	6385
 体感温度	ti gan wen du	6100
 入梅出梅	ru mei chu mei	6100
 冰雹天气	bing bao tian qi	6100
@@ -51,4 +52,143 @@
 风力等级	feng li deng ji	6100
 风向变化	feng xiang bian hua	6100
 高温预警	gao wen yu jing	6100
+什么天气	shen me tian qi	6077
+北京天气	bei jing tian qi	6077
+天气情况	tian qi qing kuang	6077
+现在天气	xian zai tian qi	6077
+看看天气	kan kan tian qi	6077
+这个天气	zhe ge tian qi	6077
+这个天气	zhei ge tian qi	6077
+这种天气	zhe zhong tian qi	6077
+这种天气	zhei zhong tian qi	6077
+天气报告	tian qi bao gao	5924
+天气原因	tian qi yuan yin	5885
+未来天气	wei lai tian qi	5770
+天气条件	tian qi tiao jian	5731
+最近天气	zui jin tian qi	5693
+天气现象	tian qi xian xiang	5616
+天气不错	tian qi bu cuo	5500
+天气状况	tian qi zhuang kuang	5500
+特殊天气	te shu tian qi	5385
+天气不好	tian qi bu hao	5347
+天气特点	tian qi te dian	5347
+空气温度	kong qi wen du	5347
+天气好好	tian qi hao hao	5308
+天气姐姐	tian qi jie jie	5231
+天气下降	tian qi xia jiang	5154
+极端天气	ji duan tian qi	4962
+台风季节	tai feng ji jie	4924
+冷天气	leng tian qi	4885
+天气冷	tian qi leng	4885
+天气的	tian qi de	4885
+好天气	hao tian qi	4885
+看天气	kan tian qi	4885
+破天气	po tian qi	4885
+这天气	zhe tian qi	4885
+郑州天气	zheng zhou tian qi	4770
+气象专业	qi xiang zhuan ye	4731
+气象专家	qi xiang zhuan jia	4731
+气象变化	qi xiang bian hua	4731
+气象报告	qi xiang bao gao	4731
+气象条件	qi xiang tiao jian	4731
+气象火箭	qi xiang huo jian	4731
+气象部门	qi xiang bu men	4731
+电台风波	dian tai feng bo	4731
+气象灾害	qi xiang zai hai	4693
+台风少年	tai feng shao nian	4654
+恶劣天气	e lie tian qi	4654
+气象要素	qi xiang yao su	4654
+多云天气	duo yun tian qi	4577
+气温升高	qi wen sheng gao	4539
+高温天气	gao wen tian qi	4539
+啥天气	sha tian qi	4500
+天气下	tian qi xia	4500
+天气丹	tian qi dan	4500
+天气凉	tian qi liang	4500
+天气好	tian qi hao	4500
+天气晴	tian qi qing	4500
+天气正	tian qi zheng	4500
+天气热	tian qi re	4500
+天气通	tian qi tong	4500
+的天气	de tian qi	4500
+等天气	deng tian qi	4500
+天气干燥	tian qi gan zao	4462
+顺从天气	shun cong tian qi	4385
+下大暴雨	xia da bao yu	4347
+大到暴雨	da dao bao yu	4347
+局部暴雨	ju bu bao yu	4347
+暴雨将至	bao yu jiang zhi	4347
+暴雨强度	bao yu qiang du	4347
+暴雨救援	bao yu jiu yuan	4347
+有大暴雨	you da bao yu	4347
+河南暴雨	he nan bao yu	4347
+气象干旱	qi xiang gan han	4270
+气象预报	qi xiang yu bao	4270
+准时天气	zhun shi tian qi	4231
+天气之子	tian qi zhi zi	4231
+超强台风	chao qiang tai feng	4193
+气温回升	qi wen hui sheng	4077
+台风稳健	tai feng wen jian	4039
+特大暴雨	te da bao yu	4039
+大台风	da tai feng	3962
+有台风	you tai feng	3962
+台风天	tai feng tian	3924
+台风季	tai feng ji	3924
+台风眼	tai feng yan	3924
+台风雨	tai feng yu	3924
+这台风	zhe tai feng	3924
+准点天气	zhun dian tian qi	3885
+水文气象	shui wen qi xiang	3847
+天气暖和	tian qi nuan huo	3731
+降雪天气	jiang xue tian qi	3731
+天气晴朗	tian qi qing lang	3693
+晴朗天气	qing lang tian qi	3693
+万千气象	wan qian qi xiang	3654
+天气咋样	tian qi za yang	3654
+大雾天气	da wu tian qi	3616
+彩云天气	cai yun tian qi	3616
+气象仪	qi xiang yi	3616
+气象法	qi xiang fa	3616
+气象网	qi xiang wang	3616
+黄历天气	huang li tian qi	3616
+刮台风	gua tai feng	3539
+台风了	tai feng le	3539
+台风前	tai feng qian	3539
+打台风	da tai feng	3539
+阴雨天气	yin yu tian qi	3539
 最低气温	zui di qi wen	3534
+气温低	qi wen di	3500
+气温计	qi wen ji	3500
+气温高	qi wen gao	3500
+降雨带	jiang yu dai	3500
+天气晴好	tian qi qing hao	3462
+天气转暖	tian qi zhuan nuan	3424
+天气太热	tian qi tai re	3385
+暴雨山洪	bao yu shan hong	3385
+阴霾天气	yin mai tian qi	3385
+下暴雨	xia bao yu	3347
+暴雨了	bao yu le	3347
+暴雨梨花	bao yu li hua	3347
+有暴雨	you bao yu	3347
+气温偏高	qi wen pian gao	3308
+天气转凉	tian qi zhuan liang	3193
+天天气我	tian tian qi wo	3077
+天气冷了	tian qi leng le	3077
+天气凉了	tian qi liang le	3077
+天气初肃	tian qi chu su	3077
+天气好了	tian qi hao le	3077
+天气好热	tian qi hao re	3077
+天气很好	tian qi hen hao	3077
+天气热了	tian qi re le	3077
+天气真好	tian qi zhen hao	3077
+我看天气	wo kan tian qi	3077
+这鬼天气	zhe gui tian qi	3077
+融和天气	rong he tian qi	2770
+墨迹天气	mo ji tian qi	2693
+逛风暴雨	guang feng bao yu	2577
+台风来了	tai feng lai le	2539
+省气象局	sheng qi xiang ju	2539
+下暴雨了	xia bao yu le	2385
+大暴雨了	da bao yu le	2385
+气温骤降	qi wen zhou jiang	2347
+暴雨骄阳	bao yu jiao yang	2193

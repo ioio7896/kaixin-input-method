@@ -1,9 +1,44 @@
 # 开心离线输入法分类补充：学校教育
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 知识点	zhi shi dian	8230
+一个学生	yi ge xue sheng	6577
+这个学生	zhe ge xue sheng	6577
+大学生活	da xue sheng huo	6539
+学生中心	xue sheng zhong xin	6500
+一个学校	yi ge xue xiao	6462
+两个学校	liang ge xue xiao	6462
+两个学生	liang ge xue sheng	6462
+中国学生	zhong guo xue sheng	6462
+其他学校	qi ta xue xiao	6462
+所有学校	suo you xue xiao	6462
+这个学校	zhe ge xue xiao	6462
+这个学校	zhei ge xue xiao	6462
+很多学校	hen duo xue xiao	6424
+很多学生	hen duo xue sheng	6424
+老师要求	lao shi yao qiu	6424
+那个学校	na ge xue xiao	6385
+那个学生	na ge xue sheng	6385
+学校地址	xue xiao di zhi	6347
+学校服务	xue xiao fu wu	6347
+学校生活	xue xiao sheng huo	6308
+学生时代	xue sheng shi dai	6270
+不是学生	bu shi xue sheng	6193
+几个学校	ji ge xue xiao	6193
+几个学生	ji ge xue sheng	6193
+学生生活	xue sheng sheng huo	6193
+报告老师	bao gao lao shi	6193
+整个学校	zheng ge xue xiao	6193
+每个学校	mei ge xue xiao	6193
+每个学生	mei ge xue sheng	6193
+还是学生	hai shi xue sheng	6193
+我来学校	wo lai xue xiao	6154
+不来学校	bu lai xue xiao	6116
+学校规定	xue xiao gui ding	6116
+离开学校	li kai xue xiao	6116
+老师的话	lao shi de hua	6116
 作业反馈	zuo ye fan kui	6100
 作业布置	zuo ye bu zhi	6100
 作业批改	zuo ye pi gai	6100
@@ -52,7 +87,372 @@
 错题整理	cuo ti zheng li	6100
 错题本	cuo ti ben	6100
 集体备课	ji ti bei ke	6100
+一个老师	yi ge lao shi	6077
+不是学校	bu shi xue xiao	6077
+不是老师	bu shi lao shi	6077
+两个老师	liang ge lao shi	6077
+中心学校	zhong xin xue xiao	6077
+什么学校	shen me xue xiao	6077
+什么老师	shen me lao shi	6077
+他们学校	ta men xue xiao	6077
+他们老师	ta men lao shi	6077
+你们学校	ni men xue xiao	6077
+你们老师	ni men lao shi	6077
+你好老师	ni hao lao shi	6077
+其他老师	qi ta lao shi	6077
+历史老师	li shi lao shi	6077
+国际学校	guo ji xue xiao	6077
+大学老师	da xue lao shi	6077
+学校作业	xue xiao zuo ye	6077
+学校吃饭	xue xiao chi fan	6077
+学校同学	xue xiao tong xue	6077
+学校没有	xue xiao mei you	6077
+学校组织	xue xiao zu zhi	6077
+学校老师	xue xiao lao shi	6077
+学校要求	xue xiao yao qiu	6077
+希望学校	xi wang xue xiao	6077
+希望老师	xi wang lao shi	6077
+我们学校	wo men xue xiao	6077
+我们老师	wo men lao shi	6077
+所有老师	suo you lao shi	6077
+技术老师	ji shu lao shi	6077
+收到老师	shou dao lao shi	6077
+政治老师	zheng zhi lao shi	6077
+没有老师	mei you lao shi	6077
+生活老师	sheng huo lao shi	6077
+电脑老师	dian nao lao shi	6077
+经济学校	jing ji xue xiao	6077
+老师不是	lao shi bu shi	6077
+老师今天	lao shi jin tian	6077
+老师你好	lao shi ni hao	6077
+老师应该	lao shi ying gai	6077
+老师微信	lao shi wei xin	6077
+老师晚安	lao shi wan an	6077
+老师知道	lao shi zhi dao	6077
+老师老师	lao shi lao shi	6077
+自己学校	zi ji xue xiao	6077
+谢谢老师	xie xie lao shi	6077
+还是学校	hai shi xue xiao	6077
+还有老师	hai you lao shi	6077
+这个老师	zhe ge lao shi	6077
+这个老师	zhei ge lao shi	6077
+这些学校	zhe xie xue xiao	6077
+这些老师	zhe xie lao shi	6077
+这是老师	zhe shi lao shi	6077
+建设学校	jian she xue xiao	6039
+很多老师	hen duo lao shi	6039
+自由学校	zi you xue xiao	6039
+非常老师	fei chang lao shi	6039
+三个学校	san ge xue xiao	6000
+学校那个	xue xiao na ge	6000
+那个老师	na ge lao shi	6000
+那些学校	na xie xue xiao	6000
+那些学校	nei xie xue xiao	6000
+那些老师	na xie lao shi	6000
+学校领导	xue xiao ling dao	5962
+环境学校	huan jing xue xiao	5962
+音乐老师	yin yue lao shi	5962
+创新学校	chuang xin xue xiao	5924
+学校里面	xue xiao li mian	5924
+成功学校	cheng gong xue xiao	5924
+旅游学校	lv you xue xiao	5924
+银行学校	yin hang xue xiao	5924
+专业老师	zhuan ye lao shi	5885
+回到学校	hui dao xue xiao	5885
+教师职业	jiao shi zhi ye	5885
+科学老师	ke xue lao shi	5885
+科技学校	ke ji xue xiao	5885
+艺术学校	yi shu xue xiao	5885
+世纪学校	shi ji xue xiao	5847
+交通学校	jiao tong xue xiao	5847
+告诉老师	gao su lao shi	5847
+中学生物	zhong xue sheng wu	5808
+中文学校	zhong wen xue xiao	5808
+人民教师	ren min jiao shi	5808
+外国学生	wai guo xue sheng	5808
+好的学校	hao de xue xiao	5808
+好的老师	hao de lao shi	5808
+学校教师	xue xiao jiao shi	5808
+学生作品	xue sheng zuo pin	5808
+工业学校	gong ye xue xiao	5808
+每个老师	mei ge lao shi	5808
+老师再见	lao shi zai jian	5808
+音乐教师	yin yue jiao shi	5808
+几个老师	ji ge lao shi	5770
+未来老师	wei lai lao shi	5770
+行政学校	xing zheng xue xiao	5770
+西安学校	xi an xue xiao	5770
+哪个学校	na ge xue xiao	5731
+学校里的	xue xiao li de	5731
+工程学校	gong cheng xue xiao	5731
+普通学生	pu tong xue sheng	5731
+联系老师	lian xi lao shi	5731
+警察学校	jing cha xue xiao	5731
+贸易学校	mao yi xue xiao	5731
+还去学校	hai qu xue xiao	5731
+还在学校	hai zai xue xiao	5731
+农业学校	nong ye xue xiao	5693
+各个学校	ge ge xue xiao	5693
+学院学生	xue yuan xue sheng	5693
+教学中心	jiao xue zhong xin	5693
+教学要求	jiao xue yao qiu	5693
+民族学校	min zu xue xiao	5693
+没来学校	mei lai xue xiao	5693
+老师说过	lao shi shuo guo	5693
+老师那里	lao shi na li	5693
+教师资格	jiao shi zi ge	5654
+有个学生	you ge xue sheng	5654
+生命教师	sheng ming jiao shi	5654
+看看学校	kan kan xue xiao	5654
+私人教师	si ren jiao shi	5654
+足球学校	zu qiu xue xiao	5654
+这所学校	zhe suo xue xiao	5654
+这所学校	zhei suo xue xiao	5654
+高中学生	gao zhong xue sheng	5654
+三个老师	san ge lao shi	5616
+学校统一	xue xiao tong yi	5616
+教学理论	jiao xue li lun	5616
+死亡学校	si wang xue xiao	5616
+职业学校	zhi ye xue xiao	5616
+联合学校	lian he xue xiao	5616
+语言教学	yu yan jiao xue	5616
+中学校长	zhong xue xiao zhang	5577
+化学生物	hua xue sheng wu	5577
+学校名称	xue xiao ming cheng	5577
+小学校长	xiao xue xiao zhang	5577
+教学风格	jiao xue feng ge	5577
+没去学校	mei qu xue xiao	5577
+秘密教学	mi mi jiao xue	5577
+高中老师	gao zhong lao shi	5577
+体育学校	ti yu xue xiao	5539
+体育教师	ti yu jiao shi	5539
+农村教师	nong cun jiao shi	5539
+她们学校	ta men xue xiao	5539
+学生家长	xue sheng jia zhang	5539
+教学研究	jiao xue yan jiu	5539
+森林学校	sen lin xue xiao	5539
+商业学校	shang ye xue xiao	5500
+学校附近	xue xiao fu jin	5500
+我给老师	wo gei lao shi	5500
+你给老师	ni gei lao shi	5462
+年轻老师	nian qing lao shi	5462
+感谢老师	gan xie lao shi	5462
+明天学校	ming tian xue xiao	5462
+老师不管	lao shi bu guan	5462
+老师明天	lao shi ming tian	5462
+英语学校	ying yu xue xiao	5462
+英语老师	ying yu lao shi	5462
+铁路学校	tie lu xue xiao	5462
+三好学生	san hao xue sheng	5424
+学校安排	xue xiao an pai	5424
+学校成绩	xue xiao cheng ji	5424
+拿到学校	na dao xue xiao	5424
+毕业学校	bi ye xue xiao	5424
+漂亮老师	piao liang lao shi	5424
+爱在校园	ai zai xiao yuan	5424
+这位老师	zhe wei lao shi	5424
+中学教师	zhong xue jiao shi	5385
+中学老师	zhong xue lao shi	5385
+女子学校	nv zi xue xiao	5385
+女子学生	nv zi xue sheng	5385
+学校通知	xue xiao tong zhi	5385
+学生干部	xue sheng gan bu	5385
+干部学校	gan bu xue xiao	5385
+指导教师	zhi dao jiao shi	5385
+指导老师	zhi dao lao shi	5385
+教会学校	jiao hui xue xiao	5385
+校园中心	xiao yuan zhong xin	5385
+校园时代	xiao yuan shi dai	5385
+特色学校	te se xue xiao	5385
+人生学校	ren sheng xue xiao	5347
+优秀教师	you xiu jiao shi	5347
+哪个老师	na ge lao shi	5347
+当当老师	dang dang lao shi	5347
+教师队伍	jiao shi dui wu	5347
+生物教师	sheng wu jiao shi	5347
+生物老师	sheng wu lao shi	5347
+美丽教师	mei li jiao shi	5347
+老师没说	lao shi mei shuo	5347
+超级教师	chao ji jiao shi	5347
+超级老师	chao ji lao shi	5347
+阳光学校	yang guang xue xiao	5347
+高级教师	gao ji jiao shi	5347
+各位老师	ge wei lao shi	5308
+培养学生	pei yang xue sheng	5308
+培训学校	pei xun xue xiao	5308
+培训老师	pei xun lao shi	5308
+好多学校	hao duo xue xiao	5308
+好多学生	hao duo xue sheng	5308
+完美教学	wan mei jiao xue	5308
+完美老师	wan mei lao shi	5308
+实验教学	shi yan jiao xue	5308
+小学教师	xiao xue jiao shi	5308
+教学信息	jiao xue xin xi	5308
+教学媒体	jiao xue mei ti	5308
+教学情况	jiao xue qing kuang	5308
+教学改革	jiao xue gai ge	5308
+教学服务	jiao xue fu wu	5308
+教学材料	jiao xue cai liao	5308
+教学检查	jiao xue jian cha	5308
+教学特点	jiao xue te dian	5308
+教学管理	jiao xue guan li	5308
+教学经验	jiao xue jing yan	5308
+教学视频	jiao xue shi pin	5308
+教学设施	jiao xue she shi	5308
+教学资料	jiao xue zi liao	5308
+教育教学	jiao yu jiao xue	5308
+有效教学	you xiao jiao xue	5308
+电视教学	dian shi jiao xue	5308
+程序教学	cheng xu jiao xue	5308
+老师没来	lao shi mei lai	5308
+英语教学	ying yu jiao xue	5308
+视频教学	shi pin jiao xue	5308
+阅读教学	yue du jiao xue	5308
+东方学校	dong fang xue xiao	5270
+卫生学校	wei sheng xue xiao	5270
+国王学校	guo wang xue xiao	5270
+学生监狱	xue sheng jian yu	5270
+带去学校	dai qu xue xiao	5270
+心理老师	xin li lao shi	5270
+个别教学	ge bie jiao xue	5231
+女中学生	nv zhong xue sheng	5231
+学校外面	xue xiao wai mian	5231
+学生名单	xue sheng ming dan	5231
+年度教师	nian du jiao shi	5231
+教学时长	jiao xue shi chang	5231
+教师公寓	jiao shi gong yu	5231
+有个老师	you ge lao shi	5231
+演员学校	yan yuan xue xiao	5231
+留学生活	liu xue sheng huo	5231
+线上教学	xian shang jiao xue	5231
+职工学校	zhi gong xue xiao	5231
+西部学校	xi bu xue xiao	5231
+初中老师	chu zhong lao shi	5193
+别的学校	bie de xue xiao	5193
+别的老师	bie de lao shi	5193
+咱们学校	zan men xue xiao	5193
+咱们老师	zan men lao shi	5193
+女大学生	nv da xue sheng	5193
+家长学校	jia zhang xue xiao	5193
+恐怖学校	kong bu xue xiao	5193
+乡村教师	xiang cun jiao shi	5154
+人家老师	ren jia lao shi	5154
+全体学生	quan ti xue sheng	5154
+地理老师	di li lao shi	5154
+太太学校	tai tai xue xiao	5154
+学生党员	xue sheng dang yuan	5154
+教学策略	jiao xue ce lue	5154
+教师工资	jiao shi gong zi	5154
+数学教师	shu xue jiao shi	5154
+美女老师	mei nv lao shi	5154
+财政学校	cai zheng xue xiao	5154
+送到学校	song dao xue xiao	5154
+麻烦老师	ma fan lao shi	5154
+两位老师	liang wei lao shi	5116
+化学老师	hua xue lao shi	5116
+垃圾学校	la ji xue xiao	5116
+学校旅行	xue xiao lv xing	5116
+学校门口	xue xiao men kou	5116
+学生心中	xue sheng xin zhong	5116
+摄影学校	she ying xue xiao	5116
+摄影教学	she ying jiao xue	5116
+摄影老师	she ying lao shi	5116
+明星学校	ming xing xue xiao	5116
+明星老师	ming xing lao shi	5116
+返回校园	fan hui xiao yuan	5116
+集美学校	ji mei xue xiao	5116
+一级教师	yi ji jiao shi	5077
+交给老师	jiao gei lao shi	5077
+今日校园	jin ri xiao yuan	5077
+医药学校	yi yao xue xiao	5077
+学生会长	xue sheng hui zhang	5077
+完美校园	wan mei xiao yuan	5077
+恐怖校园	kong bu xiao yuan	5077
+教学评估	jiao xue ping gu	5077
+智慧校园	zhi hui xiao yuan	5077
+本科学校	ben ke xue xiao	5077
+校园传说	xiao yuan chuan shuo	5077
+校园广告	xiao yuan guang gao	5077
+校园文化	xiao yuan wen hua	5077
+校园文学	xiao yuan wen xue	5077
+校园时光	xiao yuan shi guang	5077
+校园暴力	xiao yuan bao li	5077
+校园爱情	xiao yuan ai qing	5077
+校园环境	xiao yuan huan jing	5077
+校园生活	xiao yuan sheng huo	5077
+校园社区	xiao yuan she qu	5077
+校园规则	xiao yuan gui ze	5077
+校园论坛	xiao yuan lun tan	5077
+贴吧校园	tie ba xiao yuan	5077
+军官学校	jun guan xue xiao	5039
+学校旁边	xue xiao pang bian	5039
+教学模型	jiao xue mo xing	5039
+老师奶奶	lao shi nai nai	5039
+财经学校	cai jing xue xiao	5039
+贫困学生	pin kun xue sheng	5039
+魔法学校	mo fa xue xiao	5039
+北大学生	bei da xue sheng	5000
+和谐学校	he xie xue xiao	5000
+和谐校园	he xie xiao yuan	5000
+大兴学校	da xing xue xiao	5000
+学校代码	xue xiao dai ma	5000
+学校对面	xue xiao dui mian	5000
+学生上课	xue sheng shang ke	5000
+学生创业	xue sheng chuang ye	5000
+振兴学校	zhen xing xue xiao	5000
+教学大楼	jiao xue da lou	5000
+校园歌手	xiao yuan ge shou	5000
+永兴学校	yong xing xue xiao	5000
+神秘校园	shen mi xiao yuan	5000
+高校教师	gao xiao jiao shi	5000
+一学生	yi xue sheng	4962
+不当老师	bu dang lao shi	4962
+个学生	ge xue sheng	4962
+你学生	ni xue sheng	4962
+化工学校	hua gong xue xiao	4962
+哪所学校	na suo xue xiao	4962
+城西学校	cheng xi xue xiao	4962
+好学生	hao xue sheng	4962
+学校不让	xue xiao bu rang	4962
+学生物	xue sheng wu	4962
+学生用	xue sheng yong	4962
+学生科	xue sheng ke	4962
+学生说	xue sheng shuo	4962
+工农学校	gong nong xue xiao	4962
+带到学校	dai dao xue xiao	4962
+引导学生	yin dao xue sheng	4962
+恋爱校园	lian ai xiao yuan	4962
+戏剧学校	xi ju xue xiao	4962
+我学生	wo xue sheng	4962
+我问老师	wo wen lao shi	4962
+教学生	jiao xue sheng	4962
+新学生	xin xue sheng	4962
+有学生	you xue sheng	4962
+校园天使	xiao yuan tian shi	4962
+校园舞蹈	xiao yuan wu dao	4962
+河西学校	he xi xue xiao	4962
+物理老师	wu li lao shi	4962
+男大学生	nan da xue sheng	4962
+老师不让	lao shi bu rang	4962
+舞蹈学校	wu dao xue xiao	4962
+舞蹈教师	wu dao jiao shi	4962
+舞蹈老师	wu dao lao shi	4962
+苦学生	ku xue sheng	4962
+荣誉学生	rong yu xue sheng	4962
+转学生	zhuan xue sheng	4962
+这学生	zhe xue sheng	4962
+通学生	tong xue sheng	4962
+邪恶校园	xie e xiao yuan	4962
 课程表	ke cheng biao	4953
+你问老师	ni wen lao shi	4924
+兼职教师	jian zhi jiao shi	4924
+农场学校	nong chang xue xiao	4924
+好多老师	hao duo lao shi	4924
+学校公寓	xue xiao gong yu	4924
+学生公寓	xue sheng gong yu	4924
+工艺学校	gong yi xue xiao	4924
+物资学校	wu zi xue xiao	4924
+魔法老师	mo fa lao shi	4924
 请完成学习任务	qing wan cheng xue xi ren wu	4900
 请完成学习笔记	qing wan cheng xue xi bi ji	4900
 请完成课后作业	qing wan cheng ke hou zuo ye	4900
@@ -145,3 +545,1152 @@
 麻烦订正练习题	ma fan ding zheng lian xi ti	4900
 麻烦订正课后作业	ma fan ding zheng ke hou zuo ye	4900
 麻烦订正课堂作业	ma fan ding zheng ke tang zuo ye	4900
+一学校	yi xue xiao	4885
+上学校	shang xue xiao	4885
+个学校	ge xue xiao	4885
+中学校	zhong xue xiao	4885
+二老师	er lao shi	4885
+从学校	cong xue xiao	4885
+他学校	ta xue xiao	4885
+你学校	ni xue xiao	4885
+你老师	ni lao shi	4885
+到学校	dao xue xiao	4885
+十一学校	shi yi xue xiao	4885
+去学校	qu xue xiao	4885
+古老师	gu lao shi	4885
+叶老师	ye lao shi	4885
+吴老师	wu lao shi	4885
+告老师	gao lao shi	4885
+周老师	zhou lao shi	4885
+唐老师	tang lao shi	4885
+大老师	da lao shi	4885
+好学校	hao xue xiao	4885
+学校那边	xue xiao na bian	4885
+学校门	xue xiao men	4885
+学生用品	xue sheng yong pin	4885
+安老师	an lao shi	4885
+对学校	dui xue xiao	4885
+我学校	wo xue xiao	4885
+放学校	fang xue xiao	4885
+教学秩序	jiao xue zhi xu	4885
+新学校	xin xue xiao	4885
+新老师	xin lao shi	4885
+有学校	you xue xiao	4885
+来学校	lai xue xiao	4885
+校园篮球	xiao yuan lan qiu	4885
+海老师	hai lao shi	4885
+篮球教学	lan qiu jiao xue	4885
+网上课堂	wang shang ke tang	4885
+老师去	lao shi qu	4885
+老师在	lao shi zai	4885
+老师来	lao shi lai	4885
+老师的	lao shi de	4885
+老师给	lao shi gei	4885
+老师要	lao shi yao	4885
+老师说	lao shi shuo	4885
+苍老师	cang lao shi	4885
+贵族学校	gui zu xue xiao	4885
+这学校	zhe xue xiao	4885
+这老师	zhe lao shi	4885
+选学校	xuan xue xiao	4885
+郭老师	guo lao shi	4885
+金老师	jin lao shi	4885
+黄老师	huang lao shi	4885
+一所学校	yi suo xue xiao	4847
+地狱学校	di yu xue xiao	4847
+地狱老师	di yu lao shi	4847
+太空学校	tai kong xue xiao	4847
+学校这边	xue xiao zhe bian	4847
+学生机密	xue sheng ji mi	4847
+工商学校	gong shang xue xiao	4847
+护士学校	hu shi xue xiao	4847
+教师日记	jiao shi ri ji	4847
+教师编制	jiao shi bian zhi	4847
+校园题材	xiao yuan ti cai	4847
+模拟教学	mo ni jiao xue	4847
+模特学校	mo te xue xiao	4847
+爷爷老师	ye ye lao shi	4847
+美术学校	mei shu xue xiao	4847
+美术老师	mei shu lao shi	4847
+老师发了	lao shi fa le	4847
+老师日记	lao shi ri ji	4847
+花园学校	hua yuan xue xiao	4847
+请问老师	qing wen lao shi	4847
+跟着老师	gen zhe lao shi	4847
+不去学校	bu qu xue xiao	4808
+友谊学校	you yi xue xiao	4808
+告别校园	gao bie xiao yuan	4808
+学生姓名	xue sheng xing ming	4808
+学生手册	xue sheng shou ce	4808
+校园风暴	xiao yuan feng bao	4808
+第二课堂	di er ke tang	4808
+青春校园	qing chun xiao yuan	4808
+不良老师	bu liang lao shi	4770
+封闭学校	feng bi xue xiao	4770
+平安校园	ping an xiao yuan	4770
+护理学校	hu li xue xiao	4770
+招生老师	zhao sheng lao shi	4770
+校园笑话	xiao yuan xiao hua	4770
+狮子老师	shi zi lao shi	4770
+神奇学校	shen qi xue xiao	4770
+空军学校	kong jun xue xiao	4770
+课堂内外	ke tang nei wai	4770
+东山学校	dong shan xue xiao	4731
+东明学校	dong ming xue xiao	4731
+东湖学校	dong hu xue xiao	4731
+中山学校	zhong shan xue xiao	4731
+信都学校	xin dou xue xiao	4731
+光明学校	guang ming xue xiao	4731
+凤凰学校	feng huang xue xiao	4731
+前锋学校	qian feng xue xiao	4731
+南山学校	nan shan xue xiao	4731
+南湖学校	nan hu xue xiao	4731
+博爱学校	bo ai xue xiao	4731
+卧龙学校	wo long xue xiao	4731
+向阳学校	xiang yang xue xiao	4731
+回民学校	hui min xue xiao	4731
+城东学校	cheng dong xue xiao	4731
+城北学校	cheng bei xue xiao	4731
+培训教材	pei xun jiao cai	4731
+太平学校	tai ping xue xiao	4731
+学生王子	xue sheng wang zi	4731
+富源学校	fu yuan xue xiao	4731
+当老师的	dang lao shi de	4731
+摄影教材	she ying jiao cai	4731
+教师团	jiao shi tuan	4731
+教师楼	jiao shi lou	4731
+教师爷	jiao shi ye	4731
+教师的	jiao shi de	4731
+教材内容	jiao cai nei rong	4731
+新华学校	xin hua xue xiao	4731
+新城学校	xin cheng xue xiao	4731
+新教师	xin jiao shi	4731
+新星学校	xin xing xue xiao	4731
+新民学校	xin min xue xiao	4731
+昆明学校	kun ming xue xiao	4731
+朝阳学校	zhao yang xue xiao	4731
+气象学校	qi xiang xue xiao	4731
+江宁学校	jiang ning xue xiao	4731
+滨江学校	bin jiang xue xiao	4731
+滨海学校	bin hai xue xiao	4731
+滨湖学校	bin hu xue xiao	4731
+猎人学校	lie ren xue xiao	4731
+玉泉学校	yu quan xue xiao	4731
+福安学校	fu an xue xiao	4731
+老师没发	lao shi mei fa	4731
+老师辛苦	lao shi xin ku	4731
+英语教材	ying yu jiao cai	4731
+莲花学校	lian hua xue xiao	4731
+补充教材	bu chong jiao cai	4731
+西山学校	xi shan xue xiao	4731
+西湖学校	xi hu xue xiao	4731
+辛苦老师	xin ku lao shi	4731
+金山学校	jin shan xue xiao	4731
+银海学校	yin hai xue xiao	4731
+黄冈学校	huang gang xue xiao	4731
+黄埔学校	huang pu xue xiao	4731
+龙华学校	long hua xue xiao	4731
+龙山学校	long shan xue xiao	4731
+龙岗学校	long gang xue xiao	4731
+龙泉学校	long quan xue xiao	4731
+龙门学校	long men xue xiao	4731
+一线教师	yi xian jiao shi	4693
+不回学校	bu hui xue xiao	4693
+教师招聘	jiao shi zhao pin	4693
+新任教师	xin ren jiao shi	4693
+日语学校	ri yu xue xiao	4693
+日语老师	ri yu lao shi	4693
+校园先锋	xiao yuan xian feng	4693
+校园恋爱	xiao yuan lian ai	4693
+校园招聘	xiao yuan zhao pin	4693
+老师讲的	lao shi jiang de	4693
+警官学校	jing guan xue xiao	4693
+钢琴教师	gang qin jiao shi	4693
+钢琴老师	gang qin lao shi	4693
+学生兼职	xue sheng jian zhi	4654
+抱歉老师	bao qian lao shi	4654
+教材解读	jiao cai jie du	4654
+老师情人	lao shi qing ren	4654
+老师有事	lao shi you shi	4654
+临床教学	lin chuang jiao xue	4616
+书法老师	shu fa lao shi	4616
+学校上课	xue xiao shang ke	4616
+学校风波	xue xiao feng bo	4616
+学生宿舍	xue sheng su she	4616
+实习老师	shi xi lao shi	4616
+想回学校	xiang hui xue xiao	4616
+教学反思	jiao xue fan si	4616
+教师用书	jiao shi yong shu	4616
+校园杀手	xiao yuan sha shou	4616
+精英学校	jing ying xue xiao	4616
+老师上课	lao shi shang ke	4616
+一流学校	yi liu xue xiao	4577
+列宁学校	lie ning xue xiao	4577
+和学生	he xue sheng	4577
+坏学生	huai xue sheng	4577
+外贸学校	wai mao xue xiao	4577
+学生了	xue sheng le	4577
+学生价	xue sheng jia	4577
+学生党	xue sheng dang	4577
+学生兵	xue sheng bing	4577
+学生包	xue sheng bao	4577
+学生卡	xue sheng ka	4577
+学生吗	xue sheng ma	4577
+学生吧	xue sheng ba	4577
+学生呢	xue sheng ne	4577
+学生多	xue sheng duo	4577
+学生头	xue sheng tou	4577
+学生奶	xue sheng nai	4577
+学生工	xue sheng gong	4577
+学生床	xue sheng chuang	4577
+学生族	xue sheng zu	4577
+学生流	xue sheng liu	4577
+学生版	xue sheng ban	4577
+学生的	xue sheng de	4577
+学生端	xue sheng duan	4577
+学生群	xue sheng qun	4577
+学生街	xue sheng jie	4577
+学生观	xue sheng guan	4577
+学生险	xue sheng xian	4577
+带学生	dai xue sheng	4577
+当学生	dang xue sheng	4577
+找学生	zhao xue sheng	4577
+接学生	jie xue sheng	4577
+文科学生	wen ke xue sheng	4577
+是学生	shi xue sheng	4577
+机电学校	ji dian xue xiao	4577
+李学生	li xue sheng	4577
+校园丑闻	xiao yuan chou wen	4577
+校园情侣	xiao yuan qing lv	4577
+水电学校	shui dian xue xiao	4577
+没学生	mei xue sheng	4577
+爱心学校	ai xin xue xiao	4577
+的学生	de xue sheng	4577
+看学生	kan xue sheng	4577
+等学生	deng xue sheng	4577
+编写教材	bian xie jiao cai	4577
+让学生	rang xue sheng	4577
+跟学生	gen xue sheng	4577
+送学生	song xue sheng	4577
+那学生	na xue sheng	4577
+三位老师	san wei lao shi	4539
+主播老师	zhu bo lao shi	4539
+保健老师	bao jian lao shi	4539
+华中学校	hua zhong xue xiao	4539
+孔子学校	kong zi xue xiao	4539
+校园动漫	xiao yuan dong man	4539
+资深教师	zi shen jiao shi	4539
+问问老师	wen wen lao shi	4539
+丁老师	ding lao shi	4500
+万老师	wan lao shi	4500
+丛老师	cong lao shi	4500
+严老师	yan lao shi	4500
+乐老师	le lao shi	4500
+乔老师	qiao lao shi	4500
+于老师	yu lao shi	4500
+云老师	yun lao shi	4500
+仇老师	chou lao shi	4500
+他老师	ta lao shi	4500
+付老师	fu lao shi	4500
+代老师	dai lao shi	4500
+们学校	men xue xiao	4500
+任老师	ren lao shi	4500
+伊老师	yi lao shi	4500
+伍老师	wu lao shi	4500
+住学校	zhu xue xiao	4500
+何老师	he lao shi	4500
+余老师	yu lao shi	4500
+佟老师	tong lao shi	4500
+侯老师	hou lao shi	4500
+俞老师	yu lao shi	4500
+俺学校	an xue xiao	4500
+俺老师	an lao shi	4500
+倪老师	ni lao shi	4500
+做老师	zuo lao shi	4500
+傅老师	fu lao shi	4500
+党老师	dang lao shi	4500
+全学校	quan xue xiao	4500
+全老师	quan lao shi	4500
+兰老师	lan lao shi	4500
+关老师	guan lao shi	4500
+冀老师	ji lao shi	4500
+冉老师	ran lao shi	4500
+冯老师	feng lao shi	4500
+冷老师	leng lao shi	4500
+凌老师	ling lao shi	4500
+出学校	chu xue xiao	4500
+刁老师	diao lao shi	4500
+初老师	chu lao shi	4500
+加老师	jia lao shi	4500
+包老师	bao lao shi	4500
+华老师	hua lao shi	4500
+卓老师	zhuo lao shi	4500
+单老师	shan lao shi	4500
+南老师	nan lao shi	4500
+卜老师	bo lao shi	4500
+卞老师	bian lao shi	4500
+卢老师	lu lao shi	4500
+卫老师	wei lao shi	4500
+原学校	yuan xue xiao	4500
+原老师	yuan lao shi	4500
+叫老师	jiao lao shi	4500
+史老师	shi lao shi	4500
+司老师	si lao shi	4500
+各学校	ge xue xiao	4500
+吉老师	ji lao shi	4500
+向老师	xiang lao shi	4500
+吕老师	lv lao shi	4500
+听老师	ting lao shi	4500
+和学校	he xue xiao	4500
+和老师	he lao shi	4500
+咱学校	zan xue xiao	4500
+咱老师	zan lao shi	4500
+商老师	shang lao shi	4500
+啥学校	sha xue xiao	4500
+啥老师	sha lao shi	4500
+喻老师	yu lao shi	4500
+回学校	hui xue xiao	4500
+在学校	zai xue xiao	4500
+在线课堂	zai xian ke tang	4500
+在老师	zai lao shi	4500
+坏老师	huai lao shi	4500
+夏老师	xia lao shi	4500
+奚老师	xi lao shi	4500
+她老师	ta lao shi	4500
+好老师	hao lao shi	4500
+姚老师	yao lao shi	4500
+姜老师	jiang lao shi	4500
+姬老师	ji lao shi	4500
+娄老师	lou lao shi	4500
+嫖老师	piao lao shi	4500
+嫩学校	nen xue xiao	4500
+嫩老师	nen lao shi	4500
+孔老师	kong lao shi	4500
+孙老师	sun lao shi	4500
+孟老师	meng lao shi	4500
+季老师	ji lao shi	4500
+学校上	xue xiao shang	4500
+学校不	xue xiao bu	4500
+学校么	xue xiao me	4500
+学校了	xue xiao le	4500
+学校住	xue xiao zhu	4500
+学校去	xue xiao qu	4500
+学校发	xue xiao fa	4500
+学校吃	xue xiao chi	4500
+学校吗	xue xiao ma	4500
+学校吧	xue xiao ba	4500
+学校呀	xue xiao ya	4500
+学校呗	xue xiao bei	4500
+学校呢	xue xiao ne	4500
+学校啊	xue xiao a	4500
+学校啦	xue xiao la	4500
+学校好	xue xiao hao	4500
+学校是	xue xiao shi	4500
+学校有	xue xiao you	4500
+学校来	xue xiao lai	4500
+学校没	xue xiao mei	4500
+学校的	xue xiao de	4500
+学校群	xue xiao qun	4500
+学校考	xue xiao kao	4500
+学校要	xue xiao yao	4500
+学校见	xue xiao jian	4500
+学校说	xue xiao shuo	4500
+学校这	xue xiao zhe	4500
+学生食堂	xue sheng shi tang	4500
+学老师	xue lao shi	4500
+宁老师	ning lao shi	4500
+宋老师	song lao shi	4500
+宗老师	zong lao shi	4500
+宫老师	gong lao shi	4500
+寄学校	ji xue xiao	4500
+寇老师	kou lao shi	4500
+对老师	dui lao shi	4500
+封老师	feng lao shi	4500
+小老师	xiao lao shi	4500
+尚老师	shang lao shi	4500
+尤老师	you lao shi	4500
+尹老师	yin lao shi	4500
+屈老师	qu lao shi	4500
+岳老师	yue lao shi	4500
+崔老师	cui lao shi	4500
+左老师	zuo lao shi	4500
+巩老师	gong lao shi	4500
+带学校	dai xue xiao	4500
+席老师	xi lao shi	4500
+帮老师	bang lao shi	4500
+常老师	chang lao shi	4500
+庄老师	zhuang lao shi	4500
+应老师	ying lao shi	4500
+庞老师	pang lao shi	4500
+康老师	kang lao shi	4500
+廖老师	liao lao shi	4500
+彭老师	peng lao shi	4500
+往学校	wang xue xiao	4500
+徐老师	xu lao shi	4500
+怕老师	pa lao shi	4500
+慕老师	mu lao shi	4500
+成老师	cheng lao shi	4500
+我老师	wo lao shi	4500
+戚老师	qi lao shi	4500
+戴老师	dai lao shi	4500
+房老师	fang lao shi	4500
+找学校	zhao xue xiao	4500
+找老师	zhao lao shi	4500
+把老师	ba lao shi	4500
+报学校	bao xue xiao	4500
+招老师	zhao lao shi	4500
+拜老师	bai lao shi	4500
+换学校	huan xue xiao	4500
+换老师	huan lao shi	4500
+搁学校	ge xue xiao	4500
+撒老师	sa lao shi	4500
+文老师	wen lao shi	4500
+方老师	fang lao shi	4500
+施老师	shi lao shi	4500
+时老师	shi lao shi	4500
+明老师	ming lao shi	4500
+易老师	yi lao shi	4500
+是学校	shi xue xiao	4500
+是老师	shi lao shi	4500
+景老师	jing lao shi	4500
+曲老师	qu lao shi	4500
+曹老师	cao lao shi	4500
+曾老师	zeng lao shi	4500
+有老师	you lao shi	4500
+朱老师	zhu lao shi	4500
+杜老师	du lao shi	4500
+来老师	lai lao shi	4500
+杨老师	yang lao shi	4500
+林老师	lin lao shi	4500
+柏老师	bai lao shi	4500
+查老师	cha lao shi	4500
+柯老师	ke lao shi	4500
+柳老师	liu lao shi	4500
+柴老师	chai lao shi	4500
+栾老师	luan lao shi	4500
+桂老师	gui lao shi	4500
+桑老师	sang lao shi	4500
+梁老师	liang lao shi	4500
+梅老师	mei lao shi	4500
+梦老师	meng lao shi	4500
+楚老师	chu lao shi	4500
+樊老师	fan lao shi	4500
+欧老师	ou lao shi	4500
+武老师	wu lao shi	4500
+死学校	si xue xiao	4500
+段老师	duan lao shi	4500
+殷老师	yin lao shi	4500
+比学校	bi xue xiao	4500
+毕老师	bi lao shi	4500
+毛老师	mao lao shi	4500
+江老师	jiang lao shi	4500
+池老师	chi lao shi	4500
+汤老师	tang lao shi	4500
+汪老师	wang lao shi	4500
+沈老师	shen lao shi	4500
+沙老师	sha lao shi	4500
+没学校	mei xue xiao	4500
+没老师	mei lao shi	4500
+洪老师	hong lao shi	4500
+浪老师	lang lao shi	4500
+涂老师	tu lao shi	4500
+消防学校	xiao fang xue xiao	4500
+温老师	wen lao shi	4500
+游老师	you lao shi	4500
+滕老师	teng lao shi	4500
+满老师	man lao shi	4500
+潘老师	pan lao shi	4500
+炸学校	zha xue xiao	4500
+烂学校	lan xue xiao	4500
+烦老师	fan lao shi	4500
+焦老师	jiao lao shi	4500
+熊老师	xiong lao shi	4500
+燕老师	yan lao shi	4500
+牛老师	niu lao shi	4500
+牟老师	mou lao shi	4500
+牟老师	mu lao shi	4500
+猫老师	mao lao shi	4500
+班老师	ban lao shi	4500
+甄老师	zhen lao shi	4500
+甘老师	gan lao shi	4500
+田老师	tian lao shi	4500
+申老师	shen lao shi	4500
+男老师	nan lao shi	4500
+白老师	bai lao shi	4500
+的学校	de xue xiao	4500
+的老师	de lao shi	4500
+皮老师	pi lao shi	4500
+盖老师	gai lao shi	4500
+盛老师	sheng lao shi	4500
+看学校	kan xue xiao	4500
+看老师	kan lao shi	4500
+石老师	shi lao shi	4500
+破学校	po xue xiao	4500
+祁老师	qi lao shi	4500
+祝老师	zhu lao shi	4500
+离学校	li xue xiao	4500
+秋老师	qiu lao shi	4500
+秦老师	qin lao shi	4500
+程老师	cheng lao shi	4500
+穆老师	mu lao shi	4500
+空中课堂	kong zhong ke tang	4500
+窦老师	dou lao shi	4500
+章老师	zhang lao shi	4500
+童老师	tong lao shi	4500
+符老师	fu lao shi	4500
+等学校	deng xue xiao	4500
+等老师	deng lao shi	4500
+简老师	jian lao shi	4500
+管老师	guan lao shi	4500
+米老师	mi lao shi	4500
+纪老师	ji lao shi	4500
+终极教师	zhong ji jiao shi	4500
+给学校	gei xue xiao	4500
+给老师	gei lao shi	4500
+缪老师	mou lao shi	4500
+缺老师	que lao shi	4500
+网络课堂	wang luo ke tang	4500
+罗老师	luo lao shi	4500
+翁老师	weng lao shi	4500
+翟老师	zhai lao shi	4500
+老学校	lao xue xiao	4500
+老师不	lao shi bu	4500
+老师也	lao shi ye	4500
+老师了	lao shi le	4500
+老师你	lao shi ni	4500
+老师发	lao shi fa	4500
+老师吗	lao shi ma	4500
+老师吧	lao shi ba	4500
+老师呀	lao shi ya	4500
+老师呢	lao shi ne	4500
+老师啊	lao shi a	4500
+老师啦	lao shi la	4500
+老师头	lao shi tou	4500
+老师好	lao shi hao	4500
+老师家	lao shi jia	4500
+老师您	lao shi nin	4500
+老师我	lao shi wo	4500
+老师早	lao shi zao	4500
+老师没	lao shi mei	4500
+老师看	lao shi kan	4500
+老师让	lao shi rang	4500
+老师讲	lao shi jiang	4500
+老师那	lao shi na	4500
+老师都	lao shi dou	4500
+老师问	lao shi wen	4500
+老老师	lao lao shi	4500
+考老师	kao lao shi	4500
+耿老师	geng lao shi	4500
+聂老师	nie lao shi	4500
+肖老师	xiao lao shi	4500
+胖子老师	pang zi lao shi	4500
+胡老师	hu lao shi	4500
+胥老师	xu lao shi	4500
+腾讯课堂	teng xun ke tang	4500
+臧老师	zang lao shi	4500
+舒老师	shu lao shi	4500
+艾老师	ai lao shi	4500
+花老师	hua lao shi	4500
+苏老师	su lao shi	4500
+苑老师	yuan lao shi	4500
+苗老师	miao lao shi	4500
+苟老师	gou lao shi	4500
+英语课堂	ying yu ke tang	4500
+范老师	fan lao shi	4500
+荣老师	rong lao shi	4500
+莫老师	mo lao shi	4500
+葛老师	ge lao shi	4500
+董老师	dong lao shi	4500
+蒋老师	jiang lao shi	4500
+蒙老师	meng lao shi	4500
+蒲老师	pu lao shi	4500
+蓝老师	lan lao shi	4500
+蔡老师	cai lao shi	4500
+薛老师	xue lao shi	4500
+虞老师	yu lao shi	4500
+袁老师	yuan lao shi	4500
+被学校	bei xue xiao	4500
+被老师	bei lao shi	4500
+裴老师	pei lao shi	4500
+褚老师	chu lao shi	4500
+覃老师	qin lao shi	4500
+见老师	jian lao shi	4500
+解老师	jie lao shi	4500
+詹老师	zhan lao shi	4500
+让学校	rang xue xiao	4500
+让老师	rang lao shi	4500
+许老师	xu lao shi	4500
+语文老师	yu wen lao shi	4500
+语文课堂	yu wen ke tang	4500
+说老师	shuo lao shi	4500
+请老师	qing lao shi	4500
+课堂作业	ke tang zuo ye	4500
+课堂反馈	ke tang fan kui	4500
+课堂小学	ke tang xiao xue	4500
+课堂气氛	ke tang qi fen	4500
+课堂秩序	ke tang zhi xu	4500
+课堂纪律	ke tang ji lv	4500
+课堂表现	ke tang biao xian	4500
+谈老师	tan lao shi	4500
+谢老师	xie lao shi	4500
+谭老师	tan lao shi	4500
+谷老师	gu lao shi	4500
+费老师	fei lao shi	4500
+贺老师	he lao shi	4500
+赖老师	lai lao shi	4500
+走学校	zou xue xiao	4500
+跟学校	gen xue xiao	4500
+跟老师	gen lao shi	4500
+路老师	lu lao shi	4500
+车老师	che lao shi	4500
+辛老师	xin lao shi	4500
+边老师	bian lao shi	4500
+进修学校	jin xiu xue xiao	4500
+进学校	jin xue xiao	4500
+连老师	lian lao shi	4500
+迟老师	chi lao shi	4500
+送学校	song xue xiao	4500
+送老师	song lao shi	4500
+邓老师	deng lao shi	4500
+邢老师	xing lao shi	4500
+那学校	na xue xiao	4500
+那老师	na lao shi	4500
+邬老师	wu lao shi	4500
+邱老师	qiu lao shi	4500
+邵老师	shao lao shi	4500
+邹老师	zou lao shi	4500
+郎老师	lang lao shi	4500
+郑老师	zheng lao shi	4500
+郝老师	hao lao shi	4500
+钟老师	zhong lao shi	4500
+钱老师	qian lao shi	4500
+闫老师	yan lao shi	4500
+问学校	wen xue xiao	4500
+问老师	wen lao shi	4500
+闵老师	min lao shi	4500
+阮老师	ruan lao shi	4500
+阳老师	yang lao shi	4500
+阿老师	a lao shi	4500
+陆老师	lu lao shi	4500
+陶老师	tao lao shi	4500
+隋老师	sui lao shi	4500
+雷老师	lei lao shi	4500
+霍老师	huo lao shi	4500
+靳老师	jin lao shi	4500
+鞠老师	ju lao shi	4500
+韦老师	wei lao shi	4500
+项老师	xiang lao shi	4500
+顾老师	gu lao shi	4500
+颜老师	yan lao shi	4500
+饶老师	rao lao shi	4500
+马老师	ma lao shi	4500
+骆老师	luo lao shi	4500
+高老师	gao lao shi	4500
+鬼学校	gui xue xiao	4500
+魏老师	wei lao shi	4500
+魔鬼教师	mo gui jiao shi	4500
+鲁老师	lu lao shi	4500
+鲍老师	bao lao shi	4500
+麦老师	mai lao shi	4500
+麻老师	ma lao shi	4500
+黎老师	li lao shi	4500
+齐老师	qi lao shi	4500
+龙老师	long lao shi	4500
+龚老师	gong lao shi	4500
+二本学校	er ben xue xiao	4462
+二胡教学	er hu jiao xue	4462
+卓越老师	zhuo yue lao shi	4462
+学校风云	xue xiao feng yun	4462
+废物老师	fei wu lao shi	4462
+水产学校	shui chan xue xiao	4462
+流氓学生	liu mang xue sheng	4462
+流氓教师	liu mang jiao shi	4462
+特教学校	te jiao xue xiao	4462
+远程教学	yuan cheng jiao xue	4462
+青蛙老师	qing wa lao shi	4462
+僵尸校园	jiang shi xiao yuan	4424
+教学进度	jiao xue jin du	4424
+曙光学校	shu guang xue xiao	4424
+林业学校	lin ye xue xiao	4424
+民办学校	min ban xue xiao	4424
+重返学校	chong fan xue xiao	4424
+佛教学	fo jiao xue	4385
+外语学校	wai yu xue xiao	4385
+外语教学	wai yu jiao xue	4385
+学校家具	xue xiao jia ju	4385
+彩虹学校	cai hong xue xiao	4385
+教学中	jiao xue zhong	4385
+教学辅导	jiao xue fu dao	4385
+星光学校	xing guang xue xiao	4385
+最美教师	zui mei jiao shi	4385
+求是学校	qiu shi xue xiao	4385
+理工学校	li gong xue xiao	4385
+辅导教师	fu dao jiao shi	4385
+辅导老师	fu dao lao shi	4385
+键盘老师	jian pan lao shi	4385
+学校后勤	xue xiao hou qin	4347
+幼儿学校	you er xue xiao	4347
+幼儿教师	you er jiao shi	4347
+摇滚学校	yao gun xue xiao	4347
+摇滚校园	yao gun xiao yuan	4347
+教师报	jiao shi bao	4347
+教师村	jiao shi cun	4347
+教师版	jiao shi ban	4347
+教师编	jiao shi bian	4347
+教师网	jiao shi wang	4347
+教师群	jiao shi qun	4347
+教师观	jiao shi guan	4347
+校园风波	xiao yuan feng bo	4347
+老教师	lao jiao shi	4347
+考教师	kao jiao shi	4347
+自学教材	zi xue jiao cai	4347
+骨干教师	gu gan jiao shi	4347
+发给老师	fa gei lao shi	4308
+启蒙老师	qi meng lao shi	4308
+孤儿学校	gu er xue xiao	4308
+学校有事	xue xiao you shi	4308
+武术学校	wu shu xue xiao	4308
+武林学校	wu lin xue xiao	4308
+烹饪学校	peng ren xue xiao	4308
+甜蜜老师	tian mi lao shi	4308
+礼仪学校	li yi xue xiao	4308
+礼仪老师	li yi lao shi	4308
+经贸学校	jing mao xue xiao	4308
+老师别跑	lao shi bie pao	4308
+七天课堂	qi tian ke tang	4270
+八一学校	ba yi xue xiao	4270
+博文学校	bo wen xue xiao	4270
+校园的猫	xiao yuan de mao	4270
+线下教学	xian xia jiao xue	4270
+在校园	zai xiao yuan	4231
+多谢老师	duo xie lao shi	4231
+学校放假	xue xiao fang jia	4231
+学校食堂	xue xiao shi tang	4231
+学生放假	xue sheng fang jia	4231
+您好老师	nin hao lao shi	4231
+校园的	xiao yuan de	4231
+校园里	xiao yuan li	4231
+樱花学校	ying hua xue xiao	4231
+樱花校园	ying hua xiao yuan	4231
+滑雪学校	hua xue xue xiao	4231
+热血教师	re xue jiao shi	4231
+热血老师	re xue lao shi	4231
+老师您好	lao shi nin hao	4231
+课堂实录	ke tang shi lu	4231
+走读学校	zou du xue xiao	4231
+身法教学	shen fa jiao xue	4231
+魔术学校	mo shu xue xiao	4231
+初一学生	chu yi xue sheng	4193
+商贸学校	shang mao xue xiao	4193
+感恩老师	gan en lao shi	4193
+校园往事	xiao yuan wang shi	4193
+校园风云	xiao yuan feng yun	4193
+校园风光	xiao yuan feng guang	4193
+保育老师	bao yu lao shi	4154
+大专学生	da zhuan xue sheng	4154
+我班老师	wo ban lao shi	4154
+美容学校	mei rong xue xiao	4154
+蓝天学校	lan tian xue xiao	4154
+课堂作文	ke tang zuo wen	4154
+飞翔学校	fei xiang xue xiao	4154
+噩梦老师	e meng lao shi	4116
+报考老师	bao kao lao shi	4116
+极道校园	ji dao xiao yuan	4116
+航运学校	hang yun xue xiao	4116
+遥控老师	yao kong lao shi	4116
+为民学校	wei min xue xiao	4077
+二中校园	er zhong xiao yuan	4077
+双语学校	shuang yu xue xiao	4077
+双语教学	shuang yu jiao xue	4077
+哪位老师	na wei lao shi	4077
+在校园里	zai xiao yuan li	4077
+小班教学	xiao ban jiao xue	4077
+技师学校	ji shi xue xiao	4077
+值班老师	zhi ban lao shi	4039
+工科学生	gong ke xue sheng	4039
+技工学校	ji gong xue xiao	4039
+教学光盘	jiao xue guang pan	4039
+明珠学校	ming zhu xue xiao	4039
+火炬学校	huo ju xue xiao	4039
+直观教学	zhi guan jiao xue	4039
+科任老师	ke ren lao shi	4039
+这破学校	zhe po xue xiao	4039
+附小学校	fu xiao xue xiao	4039
+万达学校	wan da xue xiao	4000
+全套教材	quan tao jiao cai	4000
+前台老师	qian tai lao shi	4000
+南洋学校	nan yang xue xiao	4000
+在编教师	zai bian jiao shi	4000
+娜娜老师	na na lao shi	4000
+子弟学校	zi di xue xiao	4000
+教学的	jiao xue de	4000
+教学论	jiao xue lun	4000
+智教学	zhi jiao xue	4000
+有教材	you jiao cai	4000
+校园卧底	xiao yuan wo di	4000
+蛋蛋老师	dan dan lao shi	4000
+雷锋学校	lei feng xue xiao	4000
+韩语教学	han yu jiao xue	4000
+医科学校	yi ke xue xiao	3962
+托管老师	tuo guan lao shi	3962
+改卷老师	gai juan lao shi	3962
+补习学校	bu xi xue xiao	3962
+补习老师	bu xi lao shi	3962
+金海学校	jin hai xue xiao	3962
+鬼马校园	gui ma xiao yuan	3962
+五星学校	wu xing xue xiao	3924
+公办学校	gong ban xue xiao	3924
+寄宿学校	ji su xue xiao	3924
+教学名师	jiao xue ming shi	3924
+汇文学校	hui wen xue xiao	3924
+爱华学校	ai hua xue xiao	3924
+英才学校	ying cai xue xiao	3924
+专任教师	zhuan ren jiao shi	3885
+冲出校园	chong chu xiao yuan	3885
+名校课堂	ming xiao ke tang	3885
+学生之爱	xue sheng zhi ai	3885
+敬业学校	jing ye xue xiao	3885
+留美学生	liu mei xue sheng	3885
+红星学校	hong xing xue xiao	3885
+铃木老师	ling mu lao shi	3885
+任课教师	ren ke jiao shi	3847
+任课老师	ren ke lao shi	3847
+外事学校	wai shi xue xiao	3847
+学校怪谈	xue xiao guai tan	3847
+学校霸王	xue xiao ba wang	3847
+学生守则	xue sheng shou ze	3847
+文武学校	wen wu xue xiao	3847
+新课堂	xin ke tang	3847
+易校园	yi xiao yuan	3847
+校园墙	xiao yuan qiang	3847
+校园怪谈	xiao yuan guai tan	3847
+校园文	xiao yuan wen	3847
+校园贷	xiao yuan dai	3847
+校园跑	xiao yuan pao	3847
+校园通	xiao yuan tong	3847
+校园风	xiao yuan feng	3847
+校园鬼	xiao yuan gui	3847
+绝美校园	jue mei xiao yuan	3847
+老师讲课	lao shi jiang ke	3847
+课堂上	ke tang shang	3847
+全校学生	quan xiao xue sheng	3808
+带队老师	dai dui lao shi	3808
+农机学校	nong ji xue xiao	3770
+刚到学校	gang dao xue xiao	3770
+博大学校	bo da xue xiao	3770
+树德学校	shu de xue xiao	3770
+校园有鬼	xiao yuan you gui	3770
+校园欺凌	xiao yuan qi ling	3770
+电波教师	dian bo jiao shi	3770
+立新学校	li xin xue xiao	3770
+全班学生	quan ban xue sheng	3731
+家教老师	jia jiao lao shi	3731
+支教老师	zhi jiao lao shi	3731
+校园之恋	xiao yuan zhi lian	3731
+观摩教学	guan mo jiao xue	3731
+冲浪学校	chong lang xue xiao	3693
+华英学校	hua ying xue xiao	3693
+城南学校	cheng nan xue xiao	3693
+学校德育	xue xiao de yu	3693
+志成学校	zhi cheng xue xiao	3693
+晨光学校	chen guang xue xiao	3693
+英华学校	ying hua xue xiao	3693
+郑开学校	zheng kai xue xiao	3693
+代课教师	dai ke jiao shi	3654
+代课老师	dai ke lao shi	3654
+助教老师	zhu jiao lao shi	3654
+名师课堂	ming shi ke tang	3654
+学校补课	xue xiao bu ke	3654
+工读学校	gong du xue xiao	3654
+托尼老师	tuo ni lao shi	3654
+翰林学校	han lin xue xiao	3654
+老师拜拜	lao shi bai bai	3654
+补课老师	bu ke lao shi	3654
+高升学校	gao sheng xue xiao	3654
+东升学校	dong sheng xue xiao	3616
+中专学校	zhong zhuan xue xiao	3616
+主讲老师	zhu jiang lao shi	3616
+教务老师	jiao wu lao shi	3616
+教材书	jiao cai shu	3616
+教材吗	jiao cai ma	3616
+教材帮	jiao cai bang	3616
+教材费	jiao cai fei	3616
+杂技学校	za ji xue xiao	3616
+校园惊魂	xiao yuan jing hun	3616
+毒教材	du jiao cai	3616
+求实学校	qiu shi xue xiao	3616
+爆笑校园	bao xiao xiao yuan	3616
+育才学校	yu cai xue xiao	3616
+轻工学校	qing gong xue xiao	3616
+麻辣教师	ma la jiao shi	3616
+麻辣老师	ma la lao shi	3616
+乐乐课堂	le le ke tang	3577
+文华学校	wen hua xue xiao	3577
+鲜肉老师	xian rou lao shi	3577
+嘻哈老师	xi ha lao shi	3539
+校园霸凌	xiao yuan ba ling	3539
+外校学生	wai xiao xue sheng	3500
+学生文具	xue sheng wen ju	3500
+小黑课堂	xiao hei ke tang	3500
+教学能手	jiao xue neng shou	3500
+星火学校	xing huo xue xiao	3500
+云课堂	yun ke tang	3462
+函授学校	han shou xue xiao	3462
+博达学校	bo da xue xiao	3462
+启明学校	qi ming xue xiao	3462
+在课堂	zai ke tang	3462
+外宿学生	wai su xue sheng	3462
+大课堂	da ke tang	3462
+小课堂	xiao ke tang	3462
+尼采老师	ni cai lao shi	3462
+微课堂	wei ke tang	3462
+教学提纲	jiao xue ti gang	3462
+教案设计	jiao an she ji	3462
+教案集	jiao an ji	3462
+数学教案	shu xue jiao an	3462
+文汇学校	wen hui xue xiao	3462
+盐课堂	yan ke tang	3462
+监考老师	jian kao lao shi	3462
+科学教案	ke xue jiao an	3462
+统编教材	tong bian jiao cai	3462
+美发学校	mei fa xue xiao	3462
+群课堂	qun ke tang	3462
+老师宿儒	lao shi su ru	3462
+英语教案	ying yu jiao an	3462
+课堂派	ke tang pai	3462
+进课堂	jin ke tang	3462
+逃课学生	tao ke xue sheng	3462
+雨课堂	yu ke tang	3462
+龙岭学校	long ling xue xiao	3462
+小宋老师	xiao song lao shi	3424
+七彩课堂	qi cai ke tang	3385
+丽丽老师	li li lao shi	3385
+兴华学校	xing hua xue xiao	3385
+春华学校	chun hua xue xiao	3385
+粉笔教师	fen bi jiao shi	3385
+育人学校	yu ren xue xiao	3385
+育新学校	yu xin xue xiao	3385
+课堂精练	ke tang jing lian	3385
+闪动校园	shan dong xiao yuan	3385
+东华学校	dong hua xue xiao	3347
+博雅学校	bo ya xue xiao	3347
+天津教案	tian jin jiao an	3347
+中加学校	zhong jia xue xiao	3308
+云顶学校	yun ding xue xiao	3308
+明德学校	ming de xue xiao	3308
+灵猫课堂	ling mao ke tang	3308
+经纬学校	jing wei xue xiao	3308
+至诚学校	zhi cheng xue xiao	3308
+倍速课堂	bei su ke tang	3270
+宏文学校	hong wen xue xiao	3270
+星河学校	xing he xue xiao	3270
+春雷学校	chun lei xue xiao	3270
+盐业学校	yan ye xue xiao	3270
+利民学校	li min xue xiao	3231
+小盒学生	xiao he xue sheng	3231
+小盒课堂	xiao he ke tang	3231
+康桥学校	kang qiao xue xiao	3231
+新元学校	xin yuan xue xiao	3231
+猛鬼校园	meng gui xiao yuan	3231
+中职学校	zhong zhi xue xiao	3193
+卫校学生	wei xiao xue sheng	3193
+各科老师	ge ke lao shi	3193
+思源学校	si yuan xue xiao	3193
+校园童声	xiao yuan tong sheng	3193
+丹丹老师	dan dan lao shi	3154
+景山学校	jing shan xue xiao	3154
+仁德学校	ren de xue xiao	3116
+你是学生	ni shi xue sheng	3116
+你的学生	ni de xue sheng	3116
+准大学生	zhun da xue sheng	3116
+大学生了	da xue sheng le	3116
+学生会的	xue sheng hui de	3116
+小学生了	xiao xue sheng le	3116
+小学生吗	xiao xue sheng ma	3116
+小学生吧	xiao xue sheng ba	3116
+小学生的	xiao xue sheng de	3116
+小留学生	xiao liu xue sheng	3116
+我好学生	wo hao xue sheng	3116
+我小学生	wo xiao xue sheng	3116
+我是学生	wo shi xue sheng	3116
+我的学生	wo de xue sheng	3116
+我让学生	wo rang xue sheng	3116
+是小学生	shi xiao xue sheng	3116
+校学生会	xiao xue sheng hui	3116
+都是学生	dou shi xue sheng	3116
+三美学校	san mei xue xiao	3077
+不在学校	bu zai xue xiao	3077
+主班老师	zhu ban lao shi	3077
+也在学校	ye zai xue xiao	3077
+京源学校	jing yuan xue xiao	3077
+他在学校	ta zai xue xiao	3077
+你到学校	ni dao xue xiao	3077
+你去学校	ni qu xue xiao	3077
+你和老师	ni he lao shi	3077
+你回学校	ni hui xue xiao	3077
+你在学校	ni zai xue xiao	3077
+你学校的	ni xue xiao de	3077
+你是老师	ni shi lao shi	3077
+你来学校	ni lai xue xiao	3077
+你的学校	ni de xue xiao	3077
+你的老师	ni de lao shi	3077
+你跟老师	ni gen lao shi	3077
+便便老师	bian bian lao shi	3077
+俺学校的	an xue xiao de	3077
+俺老师说	an lao shi shuo	3077
+傻逼学校	sha bi xue xiao	3077
+光亚学校	guang ya xue xiao	3077
+再去学校	zai qu xue xiao	3077
+到了学校	dao le xue xiao	3077
+到学校了	dao xue xiao le	3077
+到学校啦	dao xue xiao la	3077
+到学校没	dao xue xiao mei	3077
+去了学校	qu le xue xiao	3077
+去你学校	qu ni xue xiao	3077
+去学校不	qu xue xiao bu	3077
+去学校了	qu xue xiao le	3077
+去学校吗	qu xue xiao ma	3077
+去学校吧	qu xue xiao ba	3077
+去学校呢	qu xue xiao ne	3077
+去学校啊	qu xue xiao a	3077
+去学校啦	qu xue xiao la	3077
+去学校没	qu xue xiao mei	3077
+去学校的	qu xue xiao de	3077
+去找老师	qu zhao lao shi	3077
+去看学校	qu kan xue xiao	3077
+呆在学校	dai zai xue xiao	3077
+和老师说	he lao shi shuo	3077
+咱学校的	zan xue xiao de	3077
+咱班老师	zan ban lao shi	3077
+唯亭学校	wei ting xue xiao	3077
+嗝嗝老师	ge ge lao shi	3077
+回学校了	hui xue xiao le	3077
+回学校吗	hui xue xiao ma	3077
+回学校吧	hui xue xiao ba	3077
+回学校的	hui xue xiao de	3077
+在吗老师	zai ma lao shi	3077
+在学校了	zai xue xiao le	3077
+在学校吃	zai xue xiao chi	3077
+在学校吗	zai xue xiao ma	3077
+在学校呢	zai xue xiao ne	3077
+在学校的	zai xue xiao de	3077
+在学校里	zai xue xiao li	3077
+在老师家	zai lao shi jia	3077
+培智学校	pei zhi xue xiao	3077
+她在学校	ta zai xue xiao	3077
+学校了吗	xue xiao le ma	3077
+学校了吧	xue xiao le ba	3077
+学校去了	xue xiao qu le	3077
+学校发的	xue xiao fa de	3077
+学校的事	xue xiao de shi	3077
+学校的吗	xue xiao de ma	3077
+学校的饭	xue xiao de fan	3077
+寄到学校	ji dao xue xiao	3077
+就去学校	jiu qu xue xiao	3077
+就回学校	jiu hui xue xiao	3077
+就在学校	jiu zai xue xiao	3077
+带学校去	dai xue xiao qu	3077
+带教老师	dai jiao lao shi	3077
+当老师了	dang lao shi le	3077
+我从学校	wo cong xue xiao	3077
+我到学校	wo dao xue xiao	3077
+我去学校	wo qu xue xiao	3077
+我和老师	wo he lao shi	3077
+我回学校	wo hui xue xiao	3077
+我在学校	wo zai xue xiao	3077
+我学校的	wo xue xiao de	3077
+我是老师	wo shi lao shi	3077
+我的学校	wo de xue xiao	3077
+我的老师	wo de lao shi	3077
+我跟老师	wo gen lao shi	3077
+振宁学校	zhen ning xue xiao	3077
+换老师了	huan lao shi le	3077
+放学校了	fang xue xiao le	3077
+是在学校	shi zai xue xiao	3077
+有的学校	you de xue xiao	3077
+有的老师	you de lao shi	3077
+来学校了	lai xue xiao le	3077
+来学校吗	lai xue xiao ma	3077
+来我学校	lai wo xue xiao	3077
+松坪学校	song ping xue xiao	3077
+枕玉老师	zhen yu lao shi	3077
+森淼学校	sen miao xue xiao	3077
+水霖学校	shui lin xue xiao	3077
+没回学校	mei hui xue xiao	3077
+没在学校	mei zai xue xiao	3077
+泰河学校	tai he xue xiao	3077
+海泉学校	hai quan xue xiao	3077
+润丰学校	run feng xue xiao	3077
+石厦学校	shi xia xue xiao	3077
+石齐学校	shi qi xue xiao	3077
+立人学校	li ren xue xiao	3077
+给老师说	gei lao shi shuo	3077
+老师不在	lao shi bu zai	3077
+老师与我	lao shi yu wo	3077
+老师了吗	lao shi le ma	3077
+老师发的	lao shi fa de	3077
+老师在不	lao shi zai bu	3077
+老师在吗	lao shi zai ma	3077
+老师就说	lao shi jiu shuo	3077
+老师教的	lao shi jiao de	3077
+老师来了	lao shi lai le	3077
+老师的爱	lao shi de ai	3077
+老师让我	lao shi rang wo	3077
+老师说了	lao shi shuo le	3077
+老师说的	lao shi shuo de	3077
+老师走了	lao shi zou le	3077
+老师错了	lao shi cuo le	3077
+育华学校	yu hua xue xiao	3077
+育智学校	yu zhi xue xiao	3077
+育红学校	yu hong xue xiao	3077
+花臂老师	hua bi lao shi	3077
+苏群老师	su qun lao shi	3077
+荣怀学校	rong huai xue xiao	3077
+落学校了	luo xue xiao le	3077
+蔡塘学校	cai tang xue xiao	3077
+要去学校	yao qu xue xiao	3077
+要回学校	yao hui xue xiao	3077
+请老师们	qing lao shi men	3077
+谢老师了	xie lao shi le	3077
+超能老师	chao neng lao shi	3077
+跟老师说	gen lao shi shuo	3077
+进学校了	jin xue xiao le	3077
+都在学校	dou zai xue xiao	3077
+都是老师	dou shi lao shi	3077
+酷虫学校	ku chong xue xiao	3077
+问老师了	wen lao shi le	3077
+仙班校园	xian ban xiao yuan	3039
+崇文学校	chong wen xue xiao	3039
+血染校园	xue ran xiao yuan	3039
+教师之家	jiao shi zhi jia	3000
+特岗教师	te gang jiao shi	3000
+春蕾学校	chun lei xue xiao	2962
+育英学校	yu ying xue xiao	2962
+辅仁学校	fu ren xue xiao	2962
+中芯学校	zhong xin xue xiao	2847
+宏达学校	hong da xue xiao	2847
+阅卷老师	yue juan lao shi	2847
+元歌教学	yuan ge jiao xue	2770
+新教学楼	xin jiao xue lou	2770
+腹语教学	fu yu jiao xue	2770
+培英学校	pei ying xue xiao	2731
+滨河学校	bin he xue xiao	2731
+写教案	xie jiao an	2693
+日穿校园	ri chuan xiao yuan	2693
+趣智校园	qu zhi xiao yuan	2693
+逸夫学校	yi fu xue xiao	2693
+文苑学校	wen yuan xue xiao	2654
+西苑学校	xi yuan xue xiao	2654
+教材全解	jiao cai quan jie	2539
+盲童学校	mang tong xue xiao	2539
+之了课堂	zhi le ke tang	2462
+在课堂上	zai ke tang shang	2462
+我的课堂	wo de ke tang	2462
+易知课堂	yi zhi ke tang	2462
+途途课堂	tu tu ke tang	2462
+青骄课堂	qing jiao ke tang	2462
+高途课堂	gao tu ke tang	2462
+财贸学校	cai mao xue xiao	2347
+课堂点睛	ke tang dian jing	2039
+鲲鹏学校	kun peng xue xiao	1500
+白垩老师	bai e lao shi	1424

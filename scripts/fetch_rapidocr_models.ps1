@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$modelDir = Join-Path $repoRoot 'RapidOCR-3.9.0\python\rapidocr\models'
+$modelDir = Join-Path $repoRoot 'RapidOCRLite\python\rapidocr\models'
 $models = @(
     @{
         Name = 'PP-OCRv6_det_medium.onnx'
@@ -22,6 +22,11 @@ $models = @(
         Name = 'PP-OCRv6_rec_medium.onnx'
         Url = 'https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.9.2/onnx/PP-OCRv6/rec/PP-OCRv6_rec_medium.onnx'
         Sha256 = 'eef444829dbbe18d7fea59a3f6eb75647518d2b3a9568d27c92e42940204894b'
+    },
+    @{
+        Name = 'ppocrv6_dict.txt'
+        Url = 'https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.10.0/paddle/PP-OCRv6/rec/PP-OCRv6_rec_medium/ppocrv6_dict.txt'
+        Sha256 = 'b5f2bfe2bdd9448429e3e82b51c789775d9b42f2403d082b00662eb77e401c5d'
     }
 )
 

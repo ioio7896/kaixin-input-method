@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：财务会计
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 交通报销	jiao tong bao xiao	6100
 会计凭证	kuai ji ping zheng	6100
@@ -57,4 +57,300 @@
 预算执行	yu suan zhi xing	6100
 预算编制	yu suan bian zhi	6100
 预算调整	yu suan tiao zheng	6100
+全国会计	quan guo kuai ji	5116
+社会会计	she hui kuai ji	5116
+成本会计	cheng ben kuai ji	5077
+主办会计	zhu ban kuai ji	5039
+主管会计	zhu guan kuai ji	5039
+内部会计	nei bu kuai ji	5039
+外部会计	wai bu kuai ji	5039
+现金会计	xian jin kuai ji	5039
+代理会计	dai li kuai ji	5000
+普通会计	pu tong kuai ji	5000
+管理会计	guan li kuai ji	5000
+会计分析	kuai ji fen xi	4962
+会计学校	kuai ji xue xiao	4962
+会计学院	kuai ji xue yuan	4962
+会计成本	kuai ji cheng ben	4962
+会计收益	kuai ji shou yi	4962
+会计数据	kuai ji shu ju	4962
+会计法规	kuai ji fa gui	4962
+会计程序	kuai ji cheng xu	4924
+司法会计	si fa kuai ji	4924
+金融会计	jin rong kuai ji	4847
+审计程序	shen ji cheng xu	4770
+未经审计	wei jing shen ji	4770
+社会审计	she hui shen ji	4770
+财政审计	cai zheng shen ji	4731
+企业会计	qi ye kuai ji	4654
+会计专业	kuai ji zhuan ye	4654
+会计业务	kuai ji ye wu	4654
+会计主体	kuai ji zhu ti	4654
+会计主管	kuai ji zhu guan	4654
+会计事项	kuai ji shi xiang	4654
+会计人员	kuai ji ren yuan	4654
+会计代理	kuai ji dai li	4654
+会计任务	kuai ji ren wu	4654
+会计估计	kuai ji gu ji	4654
+会计信息	kuai ji xin xi	4654
+会计假设	kuai ji jia she	4654
+会计公司	kuai ji gong si	4654
+会计决策	kuai ji jue ce	4654
+会计利润	kuai ji li run	4654
+会计制度	kuai ji zhi du	4654
+会计助理	kuai ji zhu li	4654
+会计单位	kuai ji dan wei	4654
+会计原则	kuai ji yuan ze	4654
+会计基础	kuai ji ji chu	4654
+会计对象	kuai ji dui xiang	4654
+会计年度	kuai ji nian du	4654
+会计循环	kuai ji xun huan	4654
+会计技术	kuai ji ji shu	4654
+会计报告	kuai ji bao gao	4654
+会计指标	kuai ji zhi biao	4654
+会计控制	kuai ji kong zhi	4654
+会计政策	kuai ji zheng ce	4654
+会计方法	kuai ji fang fa	4654
+会计服务	kuai ji fu wu	4654
+会计期间	kuai ji qi jian	4654
+会计本质	kuai ji ben zhi	4654
+会计机构	kuai ji ji gou	4654
+会计标准	kuai ji biao zhun	4654
+会计档案	kuai ji dang an	4654
+会计检查	kuai ji jian cha	4654
+会计概念	kuai ji gai nian	4654
+会计模式	kuai ji mo shi	4654
+会计环境	kuai ji huan jing	4654
+会计理论	kuai ji li lun	4654
+会计监督	kuai ji jian du	4654
+会计目标	kuai ji mu biao	4654
+会计研究	kuai ji yan jiu	4654
+会计确认	kuai ji que ren	4654
+会计系统	kuai ji xi tong	4654
+会计经理	kuai ji jing li	4654
+会计统计	kuai ji tong ji	4654
+会计职业	kuai ji zhi ye	4654
+会计职能	kuai ji zhi neng	4654
+会计行为	kuai ji xing wei	4654
+会计要素	kuai ji yao su	4654
+会计规则	kuai ji gui ze	4654
+会计规范	kuai ji gui fan	4654
+会计记录	kuai ji ji lu	4654
+会计论坛	kuai ji lun tan	4654
+会计论文	kuai ji lun wen	4654
+会计责任	kuai ji ze ren	4654
+会计账户	kuai ji zhang hu	4654
+会计资料	kuai ji zi liao	4654
+会计软件	kuai ji ruan jian	4654
+会计道德	kuai ji dao de	4654
+会计预测	kuai ji yu ce	4654
+会计风险	kuai ji feng xian	4654
+兼职会计	jian zhi kuai ji	4654
+农业会计	nong ye kuai ji	4654
+决策会计	jue ce kuai ji	4654
+古代会计	gu dai kuai ji	4654
+商业会计	shang ye kuai ji	4654
+国际会计	guo ji kuai ji	4654
+基础会计	ji chu kuai ji	4654
+政府会计	zheng fu kuai ji	4654
+环境会计	huan jing kuai ji	4654
+现代会计	xian dai kuai ji	4654
+电子会计	dian zi kuai ji	4654
+税收会计	shui shou kuai ji	4654
+绿色会计	lv se kuai ji	4654
+网络会计	wang luo kuai ji	4654
+财务会计	cai wu kuai ji	4654
+责任会计	ze ren kuai ji	4654
+预算会计	yu suan kuai ji	4654
+中国税务	zhong guo shui wu	4577
+会计词汇	kuai ji ci hui	4577
+初级会计	chu ji kuai ji	4577
+税务局长	shui wu ju zhang	4577
+会计诚信	kuai ji cheng xin	4539
+专项审计	zhuan xiang shen ji	4500
+中级会计	zhong ji kuai ji	4500
+事后审计	shi hou shen ji	4500
+会计准则	kuai ji zhun ze	4500
+会计审计	kuai ji shen ji	4500
+会计用品	kuai ji yong pin	4500
+会计科目	kuai ji ke mu	4500
+传统审计	chuan tong shen ji	4500
+内部审计	nei bu shen ji	4500
+国家审计	guo jia shen ji	4500
+外部审计	wai bu shen ji	4500
+大会计	da kuai ji	4500
+定期审计	ding qi shen ji	4500
+审计主管	shen ji zhu guan	4500
+审计人员	shen ji ren yuan	4500
+审计信息	shen ji xin xi	4500
+审计准则	shen ji zhun ze	4500
+审计准备	shen ji zhun bei	4500
+审计制度	shen ji zhi du	4500
+审计失败	shen ji shi bai	4500
+审计对象	shen ji dui xiang	4500
+审计工作	shen ji gong zuo	4500
+审计市场	shen ji shi chang	4500
+审计意见	shen ji yi jian	4500
+审计报告	shen ji bao gao	4500
+审计文化	shen ji wen hua	4500
+审计方案	shen ji fang an	4500
+审计方法	shen ji fang fa	4500
+审计服务	shen ji fu wu	4500
+审计机构	shen ji ji gou	4500
+审计档案	shen ji dang an	4500
+审计流程	shen ji liu cheng	4500
+审计环境	shen ji huan jing	4500
+审计监督	shen ji jian du	4500
+审计目标	shen ji mu biao	4500
+审计目的	shen ji mu di	4500
+审计管辖	shen ji guan xia	4500
+审计经理	shen ji jing li	4500
+审计结果	shen ji jie guo	4500
+审计结论	shen ji jie lun	4500
+审计职责	shen ji zhi ze	4500
+审计范围	shen ji fan wei	4500
+审计计划	shen ji ji hua	4500
+审计记录	shen ji ji lu	4500
+审计证据	shen ji zheng ju	4500
+审计评价	shen ji ping jia	4500
+审计调整	shen ji tiao zheng	4500
+审计责任	shen ji ze ren	4500
+审计质量	shen ji zhi liang	4500
+审计资源	shen ji zi yuan	4500
+审计跟踪	shen ji gen zong	4500
+审计软件	shen ji ruan jian	4500
+审计阶段	shen ji jie duan	4500
+审计项目	shen ji xiang mu	4500
+审计风暴	shen ji feng bao	4500
+审计风险	shen ji feng xian	4500
+工程审计	gong cheng shen ji	4500
+年度审计	nian du shen ji	4500
+政府审计	zheng fu shen ji	4500
+效益审计	xiao yi shen ji	4500
+民间审计	min jian shen ji	4500
+法定审计	fa ding shen ji	4500
+独立审计	du li shen ji	4500
+环境审计	huan jing shen ji	4500
+现场审计	xian chang shen ji	4500
+租赁会计	zu lin kuai ji	4500
+管理审计	guan li shen ji	4500
+经营审计	jing ying shen ji	4500
+联合审计	lian he shen ji	4500
+能源审计	neng yuan shen ji	4500
+详细审计	xiang xi shen ji	4500
+资产审计	zi chan shen ji	4500
+金融审计	jin rong shen ji	4500
+会计等式	kuai ji deng shi	4462
+会计学堂	kuai ji xue tang	4424
+会计惯例	kuai ji guan li	4385
+做会计	zuo kuai ji	4385
+学会计	xue kuai ji	4385
+云南税务	yun nan shui wu	4347
+厦门税务	xia men shui wu	4347
+吉林税务	ji lin shui wu	4347
+四川税务	si chuan shui wu	4347
+国家税务	guo jia shui wu	4347
+国际税务	guo ji shui wu	4347
+大连税务	da lian shui wu	4347
+山东税务	shan dong shui wu	4347
+山西税务	shan xi shui wu	4347
+广东税务	guang dong shui wu	4347
+广西税务	guang xi shui wu	4347
+新疆税务	xin jiang shui wu	4347
+江苏税务	jiang su shui wu	4347
+江西税务	jiang xi shui wu	4347
+河北税务	he bei shui wu	4347
+河南税务	he nan shui wu	4347
+浙江税务	zhe jiang shui wu	4347
+海南税务	hai nan shui wu	4347
+深圳税务	shen zhen shui wu	4347
+电子税务	dian zi shui wu	4347
+福建税务	fu jian shui wu	4347
+税务代理	shui wu dai li	4347
+税务会计	shui wu kuai ji	4347
+税务信息	shui wu xin xi	4347
+税务处理	shui wu chu li	4347
+税务大楼	shui wu da lou	4347
+税务审计	shui wu shen ji	4347
+税务律师	shui wu lv shi	4347
+税务机关	shui wu ji guan	4347
+税务检查	shui wu jian cha	4347
+税务登记	shui wu deng ji	4347
+税务监督	shui wu jian du	4347
+税务策划	shui wu ce hua	4347
+税务管理	shui wu guan li	4347
+税务系统	shui wu xi tong	4347
+税务经理	shui wu jing li	4347
+税务罚款	shui wu fa kuan	4347
+税务负担	shui wu fu dan	4347
+税务部门	shui wu bu men	4347
+税务顾问	shui wu gu wen	4347
+税务风险	shui wu feng xian	4347
+辽宁税务	liao ning shui wu	4347
+重庆税务	chong qing shui wu	4347
+陕西税务	shan xi shui wu	4347
+青海税务	qing hai shui wu	4347
+当会计	dang kuai ji	4270
+会计计量	kuai ji ji liang	4231
+基建会计	ji jian kuai ji	4231
+清算审计	qing suan shen ji	4231
+审计专员	shen ji zhuan yuan	4193
+审计风云	shen ji feng yun	4193
+税务专员	shui wu zhuan yuan	4193
+会计规章	kuai ji gui zhang	4154
+会计委派	kuai ji wei pai	4116
+会计职称	kuai ji zhi cheng	4116
+总会计	zong kuai ji	4116
+总会计师	zong kuai ji shi	4116
+税务筹划	shui wu chou hua	4116
+电算会计	dian suan kuai ji	4077
+绩效审计	ji xiao shen ji	4077
+会计分录	kuai ji fen lu	4039
+山村会计	shan cun kuai ji	4000
+老会计	lao kuai ji	4000
+会计刺客	kuai ji ci ke	3962
+周会计	zhou hui ji	3962
+张会计	zhang kuai ji	3962
+王会计	wang kuai ji	3962
+会计实务	kuai ji shi wu	3924
+舞弊审计	wu bi shen ji	3924
+会计差错	kuai ji cha cuo	3885
+会计报表	kuai ji bao biao	3885
+审计费	shen ji fei	3847
+会计核算	kuai ji he suan	3808
+税务稽查	shui wu ji cha	3731
+离任审计	li ren shen ji	3693
+外币会计	wai bi kuai ji	3654
+审计抽样	shen ji chou yang	3616
+会计了	kuai ji le	3577
+会计期	kuai ji qi	3577
+会计的	kuai ji de	3577
+会计网	kuai ji wang	3577
+会计账	kuai ji zhang	3577
+刘会计	liu kuai ji	3577
+吴会计	wu kuai ji	3577
+孙会计	sun kuai ji	3577
+小会计	xiao kuai ji	3577
+徐会计	xu kuai ji	3577
+李会计	li kuai ji	3577
+杨会计	yang kuai ji	3577
+赵会计	zhao kuai ji	3577
+陈会计	chen kuai ji	3577
+黄会计	huang kuai ji	3577
+会计期末	kuai ji qi mo	3500
+会计网校	kuai ji wang xiao	3500
+涉外会计	she wai kuai ji	3500
+审计厅	shen ji ting	3462
+审计官	shen ji guan	3462
+总账会计	zong zhang kuai ji	3462
+税务报	shui wu bao	3462
+税务网	shui wu wang	3462
+法务会计	fa wu kuai ji	3308
+自考会计	zi kao kuai ji	3231
+会计帐务	kuai ji zhang wu	3154
+报税表	bao shui biao	2962
+会计账簿	kuai ji zhang bu	2693
+会计专硕	kuai ji zhuan shuo	2539
+会计做账	kuai ji zuo zhang	2539
+内账会计	nei zhang kuai ji	2539
 明细账	ming xi zhang	1613

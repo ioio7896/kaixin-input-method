@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：安全应急
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 食品安全	shi pin an quan	9358
 人身安全	ren shen an quan	9034
@@ -49,6 +49,100 @@
 风险预警	feng xian yu jing	6100
 心肺复苏	xin fei fu su	6000
 紧急避险	jin ji bi xian	6000
+紧急救援	jin ji jiu yuan	5039
+发生火灾	fa sheng huo zai	4885
+应急救援	ying ji jiu yuan	4885
+森林火灾	sen lin huo zai	4885
+紧急救助	jin ji jiu zhu	4885
+消防控制	xiao fang kong zhi	4808
+消防水带	xiao fang shui dai	4808
+消防救援	xiao fang jiu yuan	4770
 交通安全	jiao tong an quan	4739
+太空救援	tai kong jiu yuan	4693
+救援失败	jiu yuan shi bai	4693
+救援工作	jiu yuan gong zuo	4693
+救援成功	jiu yuan cheng gong	4693
+救援现场	jiu yuan xian chang	4693
+救援计划	jiu yuan ji hua	4693
+救援车辆	jiu yuan che liang	4693
+救援部队	jiu yuan bu dui	4693
+救援飞机	jiu yuan fei ji	4693
+最后救援	zui hou jiu yuan	4693
+灾害救援	zai hai jiu yuan	4693
+救援大队	jiu yuan da dui	4616
+火灾事故	huo zai shi gu	4616
+火灾分类	huo zai fen lei	4616
+火灾现场	huo zai xian chang	4616
+极限救援	ji xian jiu yuan	4577
+中国消防	zhong guo xiao fang	4500
+消防中队	xiao fang zhong dui	4500
+消防人员	xiao fang ren yuan	4500
+消防大队	xiao fang da dui	4500
+消防安全	xiao fang an quan	4500
+消防工作	xiao fang gong zuo	4500
+消防指挥	xiao fang zhi hui	4500
+消防电梯	xiao fang dian ti	4500
+消防系统	xiao fang xi tong	4500
+消防设备	xiao fang she bei	4500
+消防通道	xiao fang tong dao	4500
+火星救援	huo xing jiu yuan	4500
+终极救援	zhong ji jiu yuan	4500
+消防楼梯	xiao fang lou ti	4462
+消防龙头	xiao fang long tou	4424
+急救生活	ji jiu sheng huo	4385
+消防官兵	xiao fang guan bing	4385
+消防总队	xiao fang zong dui	4385
+消防演习	xiao fang yan xi	4385
+消防用水	xiao fang yong shui	4308
+紧急救命	jin ji jiu ming	4270
+应急救护	ying ji jiu hu	4231
+紧急救护	jin ji jiu hu	4231
+紧急救治	jin ji jiu zhi	4231
+消防供水	xiao fang gong shui	4193
+消防支队	xiao fang zhi dui	4193
+火灾隐患	huo zai yin huan	4193
+急救中心	ji jiu zhong xin	4154
+急救小组	ji jiu xiao zu	4154
+急救病房	ji jiu bing fang	4154
+急救网络	ji jiu wang luo	4154
+情绪急救	qing xu ji jiu	4154
+巅峰救援	dian feng jiu yuan	4116
+救援总队	jiu yuan zong dui	4116
+消防水池	xiao fang shui chi	4077
+怒火救援	nu huo jiu yuan	4039
+消防演练	xiao fang yan lian	4000
+消防联动	xiao fang lian dong	3962
+大火灾	da huo zai	3924
+消防水泵	xiao fang shui beng	3924
+救援者	jiu yuan zhe	3885
+消防车库	xiao fang che ku	3885
+院前急救	yuan qian ji jiu	3885
+极速救援	ji su jiu yuan	3847
+消防水	xiao fang shui	3847
+灭火救援	mie huo jiu yuan	3847
+火线救援	huo xian jiu yuan	3693
+雪地救援	xue di jiu yuan	3616
+救援狗	jiu yuan gou	3577
+救援金	jiu yuan jin	3577
+火灾险	huo zai xian	3539
+抢险救援	qiang xian jiu yuan	3500
+救援投手	jiu yuan tou shou	3462
+消防梯	xiao fang ti	3462
+消防池	xiao fang chi	3462
+消防炮	xiao fang pao	3462
+消防犬	xiao fang quan	3462
+消防的	xiao fang de	3462
+消防立管	xiao fang li guan	3462
+消防管	xiao fang guan	3462
+消防箱	xiao fang xiang	3462
+消防船	xiao fang chuan	3462
+消防证	xiao fang zheng	3462
+消防门	xiao fang men	3462
+火速救援	huo su jiu yuan	3462
 安全隐患	an quan yin huan	3419
 消防栓	xiao fang shuan	3399
+青鸟消防	qing niao xiao fang	3385
+急救部	ji jiu bu	3308
+怒海救援	nu hai jiu yuan	3231
+惊天救援	jing tian jiu yuan	3231
+依爱消防	yi ai xiao fang	2462

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：哲学心理
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 人际关系	ren ji guan xi	9166
 心理健康	xin li jian kang	8140
@@ -46,5 +46,46 @@
 归纳推理	gui na tui li	6000
 演绎推理	yan yi tui li	6000
 道德责任	dao de ze ren	6000
+哲学问题	zhe xue wen ti	5500
+哲学理论	zhe xue li lun	5424
+哲学社会	zhe xue she hui	5424
+哲学博士	zhe xue bo shi	5385
+哲学著作	zhe xue zhu zuo	5385
+哲学研究	zhe xue yan jiu	5347
+哲学通信	zhe xue tong xin	5270
+主义哲学	zhu yi zhe xue	5154
+人生哲学	ren sheng zhe xue	5154
+古代哲学	gu dai zhe xue	5154
+哲学体系	zhe xue ti xi	5154
+哲学思想	zhe xue si xiang	5154
+哲学现场	zhe xue xian chang	5154
+哲学领域	zhe xue ling yu	5154
+政治哲学	zheng zhi zhe xue	5154
+爱的哲学	ai de zhe xue	5154
+精神哲学	jing shen zhe xue	5154
+经济哲学	jing ji zhe xue	5154
+自然哲学	zi ran zhe xue	5154
+艺术哲学	yi shu zhe xue	5154
+西方哲学	xi fang zhe xue	5154
+道德哲学	dao de zhe xue	5154
+道德伦理	dao de lun li	5077
+医学哲学	yi xue zhe xue	5039
+哲学原理	zhe xue yuan li	4885
+伦理管理	lun li guan li	4847
+家庭伦理	jia ting lun li	4847
+哲学学派	zhe xue xue pai	4731
+恋爱哲学	lian ai zhe xue	4693
+哲学笔记	zhe xue bi ji	4577
+哲学范畴	zhe xue fan chou	4577
+心理学史	xin li xue shi	4424
+哲学之道	zhe xue zhi dao	4154
+哲学流派	zhe xue liu pai	4154
+哲学思潮	zhe xue si chao	4116
+哲学王	zhe xue wang	3885
+经院哲学	jing yuan zhe xue	3847
+伦理剧	lun li ju	3693
+心理学系	xin li xue xi	3693
+洋奴哲学	yang nu zhe xue	3462
 心理咨询	xin li zi xun	3407
+刀的哲学	dao de zhe xue	2731
 价值观念	jia zhi guan nian	1777

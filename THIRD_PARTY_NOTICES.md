@@ -33,9 +33,9 @@ OCR 功能集成第三方开源项目 RapidOCR 及相关本地 OCR 模型。开�
 
 | 组件 | 用途 | 许可/来源说明 |
 | --- | --- | --- |
-| RapidOCR (`RapidOCR-3.9.0/`) | 本地 OCR 引擎 | Apache License 2.0；随包保留 `RapidOCR-3.9.0/LICENSE`、README 和相关说明 |
+| RapidOCRLite 5.0.0a15 (`RapidOCRLite/`) | 本地 PP-OCRv6 引擎 | Apache License 2.0；保留许可证；针对 Windows UTF-8 路径修改，补丁见 `scripts/rapidocrlite-windows-utf8.patch` |
 | PP-OCRv6 ONNX 模型 | 屏幕文字识别 | RapidAI/RapidOCR v3.9.0 模型仓库声明 Apache-2.0；固定 URL、模型卡和哈希见 `docs/licenses/OCR_MODELS.md`；不作为开心输入法自研成果主张 |
-| onnxruntime 1.27.0 | ONNX 模型推理 | MIT License |
+
 | opencv-python 4.13.0.92 | 图像处理 | Apache License 2.0 |
 | numpy 2.5.0 | 数值计算 | 第三方 Python 依赖，发布前保留对应许可证记录 |
 | Pillow 12.2.0 | 图像读写 | 第三方 Python 依赖，发布前保留对应许可证记录 |

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：农业园艺
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 作物轮作	zuo wu lun zuo	6100
 光照条件	guang zhao tiao jian	6100
@@ -50,7 +50,70 @@
 设施农业	she shi nong ye	6100
 追肥施肥	zhui fei shi fei	6100
 阳台种菜	yang tai zhong cai	6100
+中国农业	zhong guo nong ye	5693
+农业中学	nong ye zhong xue	5693
+农业企业	nong ye qi ye	5693
+农业发展	nong ye fa zhan	5693
+农业工程	nong ye gong cheng	5693
+农业技术	nong ye ji shu	5693
+农业投资	nong ye tou zi	5693
+农业新闻	nong ye xin wen	5693
+农业革命	nong ye ge ming	5693
+农业产业	nong ye chan ye	5654
+一种植物	yi zhong zhi wu	5577
+农业知识	nong ye zhi shi	5577
+现代农业	xian dai nong ye	5577
+农业劳动	nong ye lao dong	5424
+农业工人	nong ye gong ren	5424
+农业公园	nong ye gong yuan	5385
+南京农业	nan jing nong ye	5385
+农业投入	nong ye tou ru	5347
+农业实验	nong ye shi yan	5308
+农业机器	nong ye ji qi	5308
+农业机械	nong ye ji xie	5308
+农业贷款	nong ye dai kuan	5231
+农业高中	nong ye gao zhong	5193
+农业地理	nong ye di li	5154
+农业装备	nong ye zhuang bei	5154
+农业化学	nong ye hua xue	5116
+农业大厦	nong ye da sha	5039
+农业气候	nong ye qi hou	5039
+原始农业	yuan shi nong ye	5039
+种植制度	zhong zhi zhi du	4962
+种植设计	zhong zhi she ji	4962
+农业布局	nong ye bu ju	4924
+混合农业	hun he nong ye	4885
+农业科研	nong ye ke yan	4731
+农业院校	nong ye yuan xiao	4731
+郊区农业	jiao qu nong ye	4731
+农业户口	nong ye hu kou	4693
+农业户	nong ye hu	4616
+观光农业	guan guang nong ye	4616
+农业化	nong ye hua	4539
+农业专科	nong ye zhuan ke	4385
+农业用地	nong ye yong di	4385
+基本农田	ji ben nong tian	4347
+农田灌溉	nong tian guan gai	4270
+农业品	nong ye pin	4231
+农业路	nong ye lu	4231
+集约农业	ji yue nong ye	4231
+农业丰收	nong ye feng shou	4000
+种植大户	zhong zhi da hu	4000
+黑暗收割	hei an shou ge	3847
+种植体	zhong zhi ti	3770
+种植户	zhong zhi hu	3770
+种植牙	zhong zhi ya	3770
 有机肥	you ji fei	3698
+华英农业	hua ying nong ye	3693
+秦丰农业	qin feng nong ye	3539
+农业学大	nong ye xue da	3462
+收割期	shou ge qi	3462
+旱地农业	han di nong ye	3462
+省农业厅	sheng nong ye ting	3462
+种植义齿	zhong zhi yi chi	3462
+胶原种植	jiao yuan zhong zhi	3270
+收割者	shou ge zhe	3000
 复合肥	fu he fei	2944
 喷灌	pen guan	2893
 滴灌	di guan	2771
+顺鑫农业	shun xin nong ye	2347

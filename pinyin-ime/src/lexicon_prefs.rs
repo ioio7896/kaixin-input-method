@@ -268,8 +268,13 @@ fn lexicon_toggle_map() -> Option<HashMap<String, bool>> {
 }
 
 pub fn default_optional_lexicon_tag_enabled(tag: &str) -> bool {
-    !is_retired_optional_lexicon_tag(tag)
-        && !tag.to_ascii_lowercase().starts_with("hangzhou_")
+    if is_retired_optional_lexicon_tag(tag) {
+        return false;
+    }
+    if let Some(enabled) = category_lexicon_default_enabled(tag) {
+        return enabled;
+    }
+    !tag.to_ascii_lowercase().starts_with("hangzhou_")
         && !tag.to_ascii_lowercase().starts_with("professional_")
 }
 
@@ -378,7 +383,11 @@ pub fn optional_lexicon_group(tag: &str) -> &'static str {
 
 pub fn optional_lexicon_description(tag: &str) -> &'static str {
     if category_lexicon_info(tag).is_some() {
-        return "分类补充词库；保留基础词频与实际读音，默认开启，可独立关闭。";
+        return if default_optional_lexicon_tag_enabled(tag) {
+            "分类补充词库；保留排序分数与实际读音，默认开启，可独立关闭。"
+        } else {
+            "分类补充词库；保留排序分数与实际读音，默认关闭，可按需开启。"
+        };
     }
     if tag.starts_with("professional_") {
         return "精选专业基础术语小词库；默认关闭，按需勾选后保存生效。";
@@ -556,5 +565,17 @@ mod retirement_tests {
             "[lexicon]\nlexicon_animal_common_5000=0\nlexicon_animals=1\n",
         );
         assert!(optional_lexicon_tag_enabled_from_map("animals", &map));
+    }
+
+    #[test]
+    fn imported_category_defaults_are_applied() {
+        assert!(default_optional_lexicon_tag_enabled("category_chat_daily"));
+        assert!(!default_optional_lexicon_tag_enabled(
+            "category_common_three"
+        ));
+        assert!(!default_optional_lexicon_tag_enabled("category_ai"));
+        assert!(!default_optional_lexicon_tag_enabled(
+            "professional_architecture"
+        ));
     }
 }

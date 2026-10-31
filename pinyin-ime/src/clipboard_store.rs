@@ -2490,6 +2490,14 @@ pub fn clipboard_candidate_snapshot() -> Arc<ClipboardSnapshot> {
     Arc::new(snapshot().unwrap_or_default())
 }
 
+/// Quick paste needs the latest committed history from other processes on its
+/// first render. The general candidate path refreshes that history in the
+/// background, which can leave vvu showing an older order until another key.
+pub fn clipboard_quick_snapshot() -> Arc<ClipboardSnapshot> {
+    let captured = clipboard_candidate_snapshot();
+    snapshot().map(Arc::new).unwrap_or(captured)
+}
+
 fn snapshot_after_capture(
     capture: impl FnOnce() -> Result<(), String>,
 ) -> Result<Arc<ClipboardSnapshot>, String> {

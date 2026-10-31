@@ -21,11 +21,11 @@ def repo_root() -> Path:
 
 
 def default_rapidocr_root() -> Path:
-    return repo_root() / "RapidOCR-3.9.0"
+    return repo_root() / "RapidOCRLite"
 
 
 def default_image() -> Path:
-    return default_rapidocr_root() / "python" / "tests" / "test_files" / "ch_en_num.jpg"
+    return repo_root() / "assets" / "kaixin-input-icon.png"
 
 
 def parse_args() -> argparse.Namespace:

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：电商购物
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 优惠券	you hui quan	9160
 商品详情	shang pin xiang qing	8800
@@ -70,4 +70,119 @@
 预售商品	yu shou shang pin	6100
 预售定金	yu shou ding jin	6100
 领券中心	ling quan zhong xin	6100
+一次购物	yi ci gou wu	5808
+京东购物	jing dong gou wu	5808
+电话购物	dian hua gou wu	5808
+电视购物	dian shi gou wu	5654
+网上购物	wang shang gou wu	5577
+购物体验	gou wu ti yan	5577
+购物广场	gou wu guang chang	5500
+购物公园	gou wu gong yuan	5385
+线上购物	xian shang gou wu	5154
+购物女王	gou wu nv wang	4847
+购物愉快	gou wu yu kuai	4808
+商家庭	shang jia ting	4731
+今天下单	jin tian xia dan	4539
+可以下单	ke yi xia dan	4539
+重新下单	chong xin xia dan	4539
+商家服务	shang jia fu wu	4500
+已经下单	yi jing xia dan	4500
+美团商家	mei tuan shang jia	4500
+马上下单	ma shang xia dan	4500
+我下单	wo xia dan	4462
+直接下单	zhi jie xia dan	4424
+良心商家	liang xin shang jia	4385
+购物津贴	gou wu jin tie	4385
+能下单	neng xia dan	4347
+不法商家	bu fa shang jia	4308
+的购物	de gou wu	4308
+购物了	gou wu le	4308
+购物单	gou wu dan	4308
+购物卡	gou wu ka	4308
+购物季	gou wu ji	4308
+购物店	gou wu dian	4308
+购物款	gou wu kuan	4308
+购物满	gou wu man	4308
+购物的	gou wu de	4308
+购物群	gou wu qun	4308
+购物金	gou wu jin	4308
+你们店铺	ni men dian pu	4270
+关注店铺	guan zhu dian pu	4270
+分享店铺	fen xiang dian pu	4270
+淘宝店铺	tao bao dian pu	4270
+特色店铺	te se dian pu	4270
+网上店铺	wang shang dian pu	4270
+这个店铺	zhe ge dian pu	4270
+再下单	zai xia dan	4193
+已下单	yi xia dan	4193
+请下单	qing xia dan	4154
+淘宝网购	tao bao wang gou	4116
+购物车里	gou wu che li	4116
+怎么下单	zen me xia dan	4077
+怎么下单	zen mo xia dan	4077
+现在下单	xian zai xia dan	4077
+电话下单	dian hua xia dan	4077
+网络下单	wang luo xia dan	4077
+购物小票	gou wu xiao piao	4000
+免税购物	mian shui gou wu	3885
+批量下单	pi liang xia dan	3885
+网购中心	wang gou zhong xin	3808
+刚下单	gang xia dan	3770
+店铺里	dian pu li	3693
+开店铺	kai dian pu	3693
+新店铺	xin dian pu	3693
+看店铺	kan dian pu	3693
+进店铺	jin dian pu	3693
+不下单	bu xia dan	3654
 收藏夹	shou cang jia	3652
+下单人	xia dan ren	3577
+三江购物	san jiang gou wu	3462
+和商家	he shang jia	3462
+商家了	shang jia le	3462
+商家版	shang jia ban	3462
+商家的	shang jia de	3462
+商家码	shang jia ma	3462
+商家说	shang jia shuo	3462
+找商家	zhao shang jia	3462
+给商家	gei shang jia	3462
+跟商家	gen shang jia	3462
+蓝莓购物	lan mei gou wu	3424
+黑心商家	hei xin shang jia	3424
+你店铺	ni dian pu	3308
+在店铺	zai dian pu	3308
+店铺了	dian pu le	3308
+店铺名	dian pu ming	3308
+店铺吗	dian pu ma	3308
+店铺的	dian pu de	3308
+我店铺	wo dian pu	3308
+有店铺	you dian pu	3308
+下单了	xia dan le	3193
+下单后	xia dan hou	3193
+下单吗	xia dan ma	3193
+下单吧	xia dan ba	3193
+下单的	xia dan de	3193
+你下单	ni xia dan	3193
+先下单	xian xia dan	3193
+去下单	qu xia dan	3193
+就下单	jiu xia dan	3193
+您下单	nin xia dan	3193
+无良商家	wu liang shang jia	3193
+未下单	wei xia dan	3193
+没下单	mei xia dan	3193
+要下单	yao xia dan	3193
+不网购	bu wang gou	3000
+加购物车	jia gou wu che	3000
+我购物车	wo gou wu che	3000
+易网购	yi wang gou	3000
+网购了	wang gou le	3000
+网购的	wang gou de	3000
+购物车了	gou wu che le	3000
+我下单了	wo xia dan le	2847
+那我下单	na wo xia dan	2847
+优惠券了	you hui quan le	2693
+优惠券吗	you hui quan ma	2693
+我已下单	wo yi xia dan	2693
+有优惠券	you you hui quan	2693
+领优惠券	ling you hui quan	2693
+我去下单	wo qu xia dan	2308
+我就下单	wo jiu xia dan	2308

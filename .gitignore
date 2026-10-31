@@ -84,6 +84,8 @@ docs/licenses/generated/
 # Redistributable rights must be verified before these large data files are tracked.
 # See docs/licenses/ for provenance, hashes, and release-blocking status.
 RapidOCR-3.9.0/python/rapidocr/models/*.onnx
+RapidOCRLite/python/rapidocr/models/*.onnx
+RapidOCRLite/python/rapidocr/rapidocrlite.dll
 pinyin-ime/data/corpus.txt
 
 # Accidental command-output scratch file

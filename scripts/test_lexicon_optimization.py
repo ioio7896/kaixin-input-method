@@ -8,7 +8,6 @@ from unittest.mock import patch
 
 import optimize_lexicons as optimize
 from build_modern_it_lexicons import write as write_technology
-from merge_zh_ext_lexicons import CATEGORIES, merge_category
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -62,7 +61,7 @@ class LexiconOptimizationTests(unittest.TestCase):
             self.assertTrue(required <= words)
             self.assertTrue(all(0 < weight <= 10000 for _, _, weight in rows))
 
-    def test_all_three_char_and_drug_readings_survive_consolidation(self):
+    def test_all_three_char_readings_survive_consolidation(self):
         def keys(path):
             from lexicon_quality import clean_rows
             return {(word, code) for word, code, _ in clean_rows(optimize.read_rows(path))}
@@ -70,13 +69,6 @@ class LexiconOptimizationTests(unittest.TestCase):
         expected = keys(source / "zh/life_common_3char_full.txt") | keys(source / "zh/life_common_3char_hot.txt")
         actual = keys(ROOT / "lexicon/zh/life_common_3char.txt")
         self.assertEqual(actual, expected)
-        expected = keys(source / "zh-ext/yaowu.txt") | keys(source / "zh-ext/medicine_supplement.txt")
-        self.assertEqual(keys(ROOT / "lexicon/zh-ext/medicine.txt"), expected)
-        self.assertEqual(len(expected), 400)
-
-    def test_category_regeneration_matches_published_contents(self):
-        for name in ("technology.txt", "daily_communication.txt", "medicine.txt"):
-            self.assertEqual(optimize.read_rows(ROOT / "lexicon/zh-ext" / name), merge_category(CATEGORIES[name]))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：项目产品
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 方案需要调整	fang an xu yao tiao zheng	9300
 项目需要跟进	xiang mu xu yao gen jin	9300
@@ -9,6 +9,8 @@
 灰度发布	hui du fa bu	8800
 用户体验	yong hu ti yan	8800
 需求分析	xu qiu fen xi	8800
+社会产品	she hui chan pin	6347
+投资产品	tou zi chan pin	6308
 上线计划	shang xian ji hua	6100
 业务流程	ye wu liu cheng	6100
 业务需求	ye wu xu qiu	6100
@@ -61,6 +63,124 @@
 项目验收	xiang mu yan shou	6100
 风险评估	feng xian ping gu	6100
 验收标准	yan shou biao zhun	6100
+一个项目	yi ge xiang mu	6077
+什么项目	shen me xiang mu	6077
+什么项目	shen mo xiang mu	6077
+其他项目	qi ta xiang mu	6077
+国家项目	guo jia xiang mu	6077
+服务项目	fu wu xiang mu	6077
+比赛项目	bi sai xiang mu	6077
+调查项目	diao cha xiang mu	6077
+这个项目	zhe ge xiang mu	6077
+这个项目	zhei ge xiang mu	6077
+项目中心	xiang mu zhong xin	6077
+项目组织	xiang mu zu zhi	6077
+运动项目	yun dong xiang mu	6039
+项目建设	xiang mu jian she	6039
+主要产品	zhu yao chan pin	6000
+产品服务	chan pin fu wu	6000
+什么产品	shen me chan pin	6000
+什么产品	shen mo chan pin	6000
+文化产品	wen hua chan pin	6000
+电脑产品	dian nao chan pin	6000
+网络产品	wang luo chan pin	6000
+这个产品	zhe ge chan pin	6000
+这个产品	zhei ge chan pin	6000
+部分产品	bu fen chan pin	6000
+项目选择	xiang mu xuan ze	6000
+视频产品	shi pin chan pin	5924
+设计产品	she ji chan pin	5924
+项目信息	xiang mu xin xi	5924
+合作项目	he zuo xiang mu	5885
+传统项目	chuan tong xiang mu	5847
+投资项目	tou zi xiang mu	5847
+资本项目	zi ben xiang mu	5847
+项目投资	xiang mu tou zi	5847
+公共产品	gong gong chan pin	5808
+动物产品	dong wu chan pin	5808
+重大项目	zhong da xiang mu	5808
+产品价值	chan pin jia zhi	5770
+产品图片	chan pin tu pian	5770
+图片产品	tu pian chan pin	5770
+基本产品	ji ben chan pin	5770
+开发产品	kai fa chan pin	5770
+开发项目	kai fa xiang mu	5770
+行业产品	hang ye chan pin	5770
+系列产品	xi lie chan pin	5731
+产品介绍	chan pin jie shao	5693
+劳动产品	lao dong chan pin	5654
+最终产品	zui zhong chan pin	5654
+最终项目	zui zhong xiang mu	5654
+重点项目	zhong dian xiang mu	5654
+成本项目	cheng ben xiang mu	5616
+产品名称	chan pin ming cheng	5577
+产品责任	chan pin ze ren	5577
+经常项目	jing chang xiang mu	5577
+经营项目	jing ying xiang mu	5577
+项目交易	xiang mu jiao yi	5577
+金融产品	jin rong chan pin	5539
+项目资金	xiang mu zi jin	5539
+交流项目	jiao liu xiang mu	5500
+产品业务	chan pin ye wu	5500
+产品广告	chan pin guang gao	5500
+安全需求	an quan xu qiu	5500
+投资需求	tou zi xu qiu	5500
+数字产品	shu zi chan pin	5500
+文化需求	wen hua xu qiu	5500
+有效需求	you xiao xu qiu	5500
+检查项目	jian cha xiang mu	5500
+独立需求	du li xu qiu	5500
+空间需求	kong jian xu qiu	5500
+职业需求	zhi ye xu qiu	5500
+训练项目	xun lian xiang mu	5500
+资本需求	zi ben xu qiu	5500
+资金需求	zi jin xu qiu	5500
+金融需求	jin rong xu qiu	5500
+需求价格	xu qiu jia ge	5500
+需求信息	xu qiu xin xi	5500
+需求理论	xu qiu li lun	5500
+产品数量	chan pin shu liang	5462
+风险项目	feng xian xiang mu	5424
+专门项目	zhuan men xiang mu	5385
+大型项目	da xing xiang mu	5385
+核心产品	he xin chan pin	5385
+特殊需求	te shu xu qiu	5385
+特殊项目	te shu xiang mu	5385
+货币需求	huo bi xu qiu	5385
+产品出口	chan pin chu kou	5347
+产品种类	chan pin zhong lei	5347
+人才需求	ren cai xu qiu	5347
+出口产品	chu kou chan pin	5347
+哪个项目	nei ge xiang mu	5347
+概念产品	gai nian chan pin	5347
+消费需求	xiao fei xu qiu	5347
+物质产品	wu zhi chan pin	5347
+项目评价	xiang mu ping jia	5347
+高级项目	gao ji xiang mu	5347
+产品成本	chan pin cheng ben	5308
+产品描述	chan pin miao shu	5308
+娱乐项目	yu le xiang mu	5308
+测试项目	ce shi xiang mu	5308
+私人产品	si ren chan pin	5308
+运输需求	yun shu xu qiu	5308
+需求不足	xu qiu bu zu	5308
+项目名称	xiang mu ming cheng	5308
+项目成本	xiang mu cheng ben	5308
+产品升级	chan pin sheng ji	5270
+费用项目	fei yong xiang mu	5270
+主流产品	zhu liu chan pin	5231
+产品代理	chan pin dai li	5231
+产品品牌	chan pin pin pai	5231
+产品展示	chan pin zhan shi	5231
+产品拍摄	chan pin pai she	5231
+拍摄需求	pai she xu qiu	5231
+拍摄项目	pai she xiang mu	5231
+贷款产品	dai kuan chan pin	5231
+贷款需求	dai kuan xu qiu	5231
+进口产品	jin kou chan pin	5231
+需求预测	xu qiu yu ce	5231
+项目贷款	xiang mu dai kuan	5231
+预算项目	yu suan xiang mu	5231
 任务已经确认	ren wu yi jing que ren	5200
 任务正在推进	ren wu zheng zai tui jin	5200
 任务正在评审	ren wu zheng zai ping shen	5200
@@ -89,6 +209,44 @@
 项目正在评审	xiang mu zheng zai ping shen	5200
 项目需要调整	xiang mu xu yao tiao zheng	5200
 项目需要进一步确认	xiang mu xu yao jin yi bu que ren	5200
+中间产品	zhong jian chan pin	5193
+产品组合	chan pin zu he	5193
+居住需求	ju zhu xu qiu	5193
+组合产品	zu he chan pin	5193
+能源需求	neng yuan xu qiu	5193
+三无产品	san wu chan pin	5154
+哪些项目	na xie xiang mu	5154
+国产品牌	guo chan pin pai	5154
+差异产品	cha yi chan pin	5154
+项目咨询	xiang mu zi xun	5154
+产品检验	chan pin jian yan	5116
+产品产量	chan pin chan liang	5077
+产品目录	chan pin mu lu	5077
+保留项目	bao liu xiang mu	5077
+还不上线	hai bu shang xian	5077
+还没上线	hai mei shang xian	5077
+项目评估	xiang mu ping gu	5077
+不上线	bu shang xian	5039
+产品品质	chan pin pin zhi	5039
+产品简介	chan pin jian jie	5039
+产品经理	chan pin jing li	5039
+产品认证	chan pin ren zheng	5039
+强化产品	qiang hua chan pin	5039
+快点上线	kuai dian shang xian	5039
+项目前期	xiang mu qian qi	5039
+项目经理	xiang mu jing li	5039
+项目经费	xiang mu jing fei	5039
+上线上线	shang xian shang xian	5000
+创业项目	chuang ye xiang mu	5000
+合同项目	he tong xiang mu	5000
+金属产品	jin shu chan pin	5000
+产品类别	chan pin lei bie	4962
+产品品种	chan pin pin zhong	4924
+住宅项目	zhu zhai xiang mu	4924
+地球上线	di qiu shang xian	4924
+场景需求	chang jing xu qiu	4924
+性能需求	xing neng xu qiu	4924
+我刚上线	wo gang shang xian	4924
 请同步上线时间	qing tong bu shang xian shi jian	4900
 请同步交付时间	qing tong bu jiao fu shi jian	4900
 请同步任务清单	qing tong bu ren wu qing dan	4900
@@ -329,3 +487,211 @@
 麻烦调整项目进度	ma fan tiao zheng xiang mu jin du	4900
 麻烦调整预算金额	ma fan tiao zheng yu suan jin e	4900
 麻烦调整验收标准	ma fan tiao zheng yan shou biao zhun	4900
+产品差别	chan pin cha bie	4885
+优质产品	you zhi chan pin	4885
+各项目	ge xiang mu	4885
+周边产品	zhou bian chan pin	4885
+大项目	da xiang mu	4885
+小项目	xiao xiang mu	4885
+有项目	you xiang mu	4885
+本项目	ben xiang mu	4885
+线上项目	xian shang xiang mu	4885
+营业项目	ying ye xiang mu	4885
+该项目	gai xiang mu	4885
+这项目	zhe xiang mu	4885
+项目上	xiang mu shang	4885
+项目的	xiang mu de	4885
+项目表	xiang mu biao	4885
+主产品	zhu chan pin	4847
+主导产品	zhu dao chan pin	4847
+国产品	guo chan pin	4847
+土产品	tu chan pin	4847
+旗下产品	qi xia chan pin	4847
+玻璃产品	bo li chan pin	4847
+遗产项目	yi chan xiang mu	4847
+产品包装	chan pin bao zhuang	4808
+产品策划	chan pin ce hua	4808
+住房需求	zhu fang xu qiu	4808
+住房项目	zhu fang xiang mu	4808
+地产项目	di chan xiang mu	4808
+衍生产品	yan sheng chan pin	4808
+需求函数	xu qiu han shu	4808
+需求导向	xu qiu dao xiang	4808
+项目化	xiang mu hua	4808
+一款产品	yi kuan chan pin	4770
+产品渠道	chan pin qu dao	4770
+化工产品	hua gong chan pin	4770
+射击项目	she ji xiang mu	4770
+视觉产品	shi jue chan pin	4770
+视觉需求	shi jue xu qiu	4770
+专利产品	zhuan li chan pin	4731
+产品编号	chan pin bian hao	4731
+节能产品	jie neng chan pin	4731
+项目编号	xiang mu bian hao	4731
+产品属性	chan pin shu xing	4693
+外资项目	wai zi xiang mu	4693
+慈善项目	ci shan xiang mu	4693
+配套项目	pei tao xiang mu	4693
+需求跟踪	xu qiu gen zong	4693
+项目难度	xiang mu nan du	4693
+产品规格	chan pin gui ge	4654
+线上线下	xian shang xian xia	4654
+产品缺陷	chan pin que xian	4616
+原有产品	yuan you chan pin	4616
+后续产品	hou xu chan pin	4616
+生理需求	sheng li xu qiu	4616
+需求弹性	xu qiu tan xing	4616
+顶级产品	ding ji chan pin	4616
+产品型号	chan pin xing hao	4577
+储备项目	chu bei xiang mu	4577
+初级产品	chu ji chan pin	4577
+需求曲线	xu qiu qu xian	4577
+保健产品	bao jian chan pin	4539
+动漫产品	dong man chan pin	4539
+产品寿命	chan pin shou ming	4500
+做项目	zuo xiang mu	4500
+别墅产品	bie shu chan pin	4500
+啥项目	sha xiang mu	4500
+好项目	hao xiang mu	4500
+新项目	xin xiang mu	4500
+没项目	mei xiang mu	4500
+消防产品	xiao fang chan pin	4500
+的项目	de xiang mu	4500
+项目书	xiang mu shu	4500
+项目了	xiang mu le	4500
+项目办	xiang mu ban	4500
+项目吗	xiang mu ma	4500
+项目呢	xiang mu ne	4500
+项目多	xiang mu duo	4500
+项目奖	xiang mu jiang	4500
+项目库	xiang mu ku	4500
+项目总	xiang mu zong	4500
+项目方	xiang mu fang	4500
+项目点	xiang mu dian	4500
+买产品	mai chan pin	4462
+产品个	chan pin ge	4462
+产品了	chan pin le	4462
+产品吗	chan pin ma	4462
+产品呢	chan pin ne	4462
+产品图	chan pin tu	4462
+产品好	chan pin hao	4462
+产品库	chan pin ku	4462
+产品的	chan pin de	4462
+产品矩阵	chan pin ju zhen	4462
+产品税	chan pin shui	4462
+产品组	chan pin zu	4462
+信托产品	xin tuo chan pin	4462
+做产品	zuo chan pin	4462
+卖产品	mai chan pin	4462
+啥产品	sha chan pin	4462
+塑料产品	su liao chan pin	4462
+好产品	hao chan pin	4462
+护理产品	hu li chan pin	4462
+有产品	you chan pin	4462
+用产品	yong chan pin	4462
+的产品	de chan pin	4462
+讲产品	jiang chan pin	4462
+这产品	zhe chan pin	4462
+项目法人	xiang mu fa ren	4462
+审美需求	shen mei xu qiu	4424
+电器产品	dian qi chan pin	4424
+下游需求	xia you xu qiu	4385
+同类产品	tong lei chan pin	4385
+批发产品	pi fa chan pin	4385
+推销产品	tui xiao chan pin	4385
+没上线	mei shang xian	4385
+终端产品	zhong duan chan pin	4385
+投机需求	tou ji xu qiu	4347
+数码产品	shu ma chan pin	4347
+测验项目	ce yan xiang mu	4347
+名牌产品	ming pai chan pin	4308
+已上线	yi shang xian	4308
+机电产品	ji dian chan pin	4270
+二手产品	er shou chan pin	4231
+山寨产品	shan zhai chan pin	4231
+核准项目	he zhun xiang mu	4231
+竣工项目	jun gong xiang mu	4231
+陶瓷产品	tao ci chan pin	4231
+产品报价	chan pin bao jia	4193
+上线下线	shang xian xia xian	4154
+有需求	you xu qiu	4116
+没需求	mei xu qiu	4116
+田径项目	tian jing xiang mu	4116
+的需求	de xu qiu	4116
+需求侧	xu qiu ce	4116
+需求吗	xu qiu ma	4116
+需求的	xu qiu de	4116
+需求表	xu qiu biao	4116
+表外项目	biao wai xiang mu	4077
+塑胶产品	su jiao chan pin	4000
+这款产品	zhe kuan chan pin	4000
+这款产品	zhei kuan chan pin	4000
+全线产品	quan xian chan pin	3962
+刚上线	gang shang xian	3924
+攻关项目	gong guan xiang mu	3924
+高新产品	gao xin chan pin	3924
+主打产品	zhu da chan pin	3885
+定型产品	ding xing chan pin	3885
+定增产品	ding zeng chan pin	3847
+刚性需求	gang xing xu qiu	3808
+园艺产品	yuan yi chan pin	3808
+短线产品	duan xian chan pin	3770
+购房需求	gou fang xu qiu	3770
+项目开盘	xiang mu kai pan	3770
+五金产品	wu jin chan pin	3731
+产品推介	chan pin tui jie	3731
+劣质产品	lie zhi chan pin	3693
+项目筹资	xiang mu chou zi	3693
+资管产品	zi guan chan pin	3654
+名优产品	ming you chan pin	3616
+获批项目	huo pi xiang mu	3577
+跨界产品	kua jie chan pin	3577
+一上线	yi shang xian	3539
+上线不	shang xian bu	3539
+上线了	shang xian le	3539
+上线吗	shang xian ma	3539
+上线吧	shang xian ba	3539
+上线啊	shang xian a	3539
+上线啦	shang xian la	3539
+上线没	shang xian mei	3539
+上线率	shang xian lv	3539
+上线的	shang xian de	3539
+他上线	ta shang xian	3539
+你上线	ni shang xian	3539
+先上线	xian shang xian	3539
+在上线	zai shang xian	3539
+就上线	jiu shang xian	3539
+快上线	kuai shang xian	3539
+我上线	wo shang xian	3539
+才上线	cai shang xian	3539
+积压产品	ji ya chan pin	3539
+能上线	neng shang xian	3539
+都上线	dou shang xian	3539
+创客项目	chuang ke xiang mu	3500
+伪劣产品	wei lie chan pin	3462
+农畜产品	nong chu chan pin	3462
+日需求量	ri xu qiu liang	3462
+滞销产品	zhi xiao chan pin	3462
+轻工产品	qing gong chan pin	3462
+轻纺产品	qing fang chan pin	3462
+长线产品	chang xian chan pin	3462
+派生需求	pai sheng xu qiu	3385
+农特产品	nong te chan pin	3077
+旧改项目	jiu gai xiang mu	3077
+项目外包	xiang mu wai bao	3077
+不上线了	bu shang xian le	2962
+你不上线	ni bu shang xian	2962
+都不上线	dou bu shang xian	2962
+自住需求	zi zhu xu qiu	2847
+你没上线	ni mei shang xian	2808
+没上线了	mei shang xian le	2808
+都没上线	dou mei shang xian	2808
+上线了吗	shang xian le ma	2500
+他上线了	ta shang xian le	2500
+你上线了	ni shang xian le	2500
+你先上线	ni xian shang xian	2500
+又上线了	you shang xian le	2500
+我一上线	wo yi shang xian	2500
+我上线了	wo shang xian le	2500
+等我上线	deng wo shang xian	2500
+那我上线	na wo shang xian	2500

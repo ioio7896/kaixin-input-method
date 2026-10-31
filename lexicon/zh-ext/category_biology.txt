@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：生物实验
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 培养基	pei yang ji	6486
 代谢组学	dai xie zu xue	6100
@@ -52,3 +52,179 @@
 细胞凋亡	xi bao diao wang	6000
 细胞分化	xi bao fen hua	6000
 聚合酶链式反应	ju he mei lian shi fan ying	6000
+基因强大	ji yin qiang da	5154
+透明细胞	tou ming xi bao	5077
+动物细胞	dong wu xi bao	5000
+工作细胞	gong zuo xi bao	5000
+工程细胞	gong cheng xi bao	5000
+死亡细胞	si wang xi bao	5000
+组织细胞	zu zhi xi bao	5000
+细胞决定	xi bao jue ding	5000
+细胞化学	xi bao hua xue	5000
+细胞博士	xi bao bo shi	5000
+细胞工程	xi bao gong cheng	5000
+细胞水平	xi bao shui ping	5000
+细胞组织	xi bao zu zhi	5000
+细胞结合	xi bao jie he	5000
+细胞运动	xi bao yun dong	5000
+艺术细胞	yi shu xi bao	5000
+记忆细胞	ji yi xi bao	5000
+传递细胞	chuan di xi bao	4924
+分裂细胞	fen lie xi bao	4924
+神经细胞	shen jing xi bao	4924
+细胞分裂	xi bao fen lie	4924
+细胞混合	xi bao hun he	4885
+细胞融合	xi bao rong he	4847
+人类基因	ren lei ji yin	4808
+基因产业	ji yin chan ye	4808
+基因功能	ji yin gong neng	4808
+基因定位	ji yin ding wei	4808
+基因家族	ji yin jia zu	4808
+基因战士	ji yin zhan shi	4808
+基因技术	ji yin ji shu	4808
+基因检测	ji yin jian ce	4808
+基因流动	ji yin liu dong	4808
+基因结合	ji yin jie he	4808
+基因转移	ji yin zhuan yi	4808
+完美基因	wan mei ji yin	4808
+家族基因	jia zu ji yin	4808
+差异基因	cha yi ji yin	4808
+战士基因	zhan shi ji yin	4808
+报告基因	bao gao ji yin	4808
+文化基因	wen hua ji yin	4808
+沉默基因	chen mo ji yin	4808
+疾病基因	ji bing ji yin	4808
+病毒基因	bing du ji yin	4808
+红色基因	hong se ji yin	4808
+融合基因	rong he ji yin	4808
+辅助细胞	fu zhu xi bao	4808
+基因频率	ji yin pin lv	4770
+细胞聚集	xi bao ju ji	4770
+基因诊断	ji yin zhen duan	4693
+恋爱细胞	lian ai xi bao	4693
+细胞识别	xi bao shi bie	4693
+复制基因	fu zhi ji yin	4654
+优良基因	you liang ji yin	4616
+抑制基因	yi zhi ji yin	4616
+操纵基因	cao zong ji yin	4616
+细胞学说	xi bao xue shuo	4539
+遗传基因	yi chuan ji yin	4539
+免疫细胞	mian yi xi bao	4462
+基因连锁	ji yin lian suo	4462
+细胞免疫	xi bao mian yi	4462
+细胞损伤	xi bao sun shang	4462
+细胞样本	xi bao yang ben	4462
+纤维细胞	xian wei xi bao	4424
+细胞移植	xi bao yi zhi	4424
+细胞分选	xi bao fen xuan	4347
+脂肪细胞	zhi fang xi bao	4347
+致死基因	zhi si ji yin	4347
+基因之战	ji yin zhi zhan	4308
+基因文库	ji yin wen ku	4308
+华大基因	hua da ji yin	4270
+管家基因	guan jia ji yin	4270
+基因变异	ji yin bian yi	4231
+重生细胞	zhong sheng xi bao	4193
+基因指纹	ji yin zhi wen	4154
+细胞毒性	xi bao du xing	4154
+细胞毒素	xi bao du su	4154
+颗粒细胞	ke li xi bao	4154
+杂交细胞	za jiao xi bao	4116
+精子细胞	jing zi xi bao	4116
+细胞杂交	xi bao za jiao	4116
+阳性细胞	yang xing xi bao	4116
+断裂基因	duan lie ji yin	4077
+细胞因子	xi bao yin zi	4077
+自律细胞	zi lv xi bao	4077
+达安基因	da an ji yin	4077
+重叠基因	chong die ji yin	4077
+突变基因	tu bian ji yin	4039
+修饰基因	xiu shi ji yin	3924
+基因修饰	ji yin xiu shi	3924
+细胞溶解	xi bao rong jie	3885
+基因拷贝	ji yin kao bei	3847
+流式细胞	liu shi xi bao	3847
+细胞衰老	xi bao shuai lao	3808
+助细胞	zhu xi bao	3770
+嗅细胞	xiu xi bao	3770
+小细胞	xiao xi bao	3770
+微细胞	wei xi bao	3770
+持家基因	chi jia ji yin	3770
+石细胞	shi xi bao	3770
+细胞内	xi bao nei	3770
+细胞库	xi bao ku	3770
+细胞液	xi bao ye	3770
+细胞病	xi bao bing	3770
+细胞瘤	xi bao liu	3770
+细胞癌	xi bao ai	3770
+细胞肉	xi bao rou	3770
+脓细胞	nong xi bao	3770
+多核细胞	duo he xi bao	3731
+显性基因	xian xing ji yin	3731
+细胞受体	xi bao shou ti	3731
+细胞骨架	xi bao gu jia	3731
+内皮细胞	nei pi xi bao	3693
+外源基因	wai yuan ji yin	3693
+杀伤细胞	sha shang xi bao	3693
+真核细胞	zhen he xi bao	3693
+骨髓细胞	gu sui xi bao	3693
+假基因	jia ji yin	3654
+原核细胞	yuan he xi bao	3654
+基因图	ji yin tu	3654
+基因好	ji yin hao	3654
+基因带	ji yin dai	3654
+基因座	ji yin zuo	3654
+基因枪	ji yin qiang	3654
+基因簇	ji yin cu	3654
+蓝基因	lan ji yin	3654
+单核细胞	dan he xi bao	3616
+抗癌基因	kang ai ji yin	3616
+表皮细胞	biao pi xi bao	3539
+黑素细胞	hei su xi bao	3539
+细胞肿胀	xi bao zhong zhang	3500
+上皮细胞	shang pi xi bao	3462
+卵原细胞	luan yuan xi bao	3462
+卵母细胞	luan mu xi bao	3462
+原癌基因	yuan ai ji yin	3462
+后基因组	hou ji yin zu	3462
+嗜铬细胞	shi ge xi bao	3462
+基因图谱	ji yin tu pu	3462
+巨噬细胞	ju shi xi bao	3462
+巨核细胞	ju he xi bao	3462
+心肌细胞	xin ji xi bao	3462
+成红细胞	cheng hong xi bao	3462
+成釉细胞	cheng you xi bao	3462
+成骨细胞	cheng gu xi bao	3462
+粗蛋白质	cu dan bai zhi	3462
+精原细胞	jing yuan xi bao	3462
+精母细胞	jing mu xi bao	3462
+肥大细胞	fei da xi bao	3462
+视杆细胞	shi gan xi bao	3462
+贴壁细胞	tie bi xi bao	3462
+锥体细胞	zhui ti xi bao	3462
+间皮细胞	jian pi xi bao	3462
+致病基因	zhi bing ji yin	3424
+羊水细胞	yang shui xi bao	3385
+细胞基质	xi bao ji zhi	3347
+基因探针	ji yin tan zhen	3270
+贝瑞基因	bei rui ji yin	3116
+基因扩增	ji yin kuo zeng	3000
+心衰细胞	xin shuai xi bao	2885
+细胞癌变	xi bao ai bian	2885
+胶质细胞	jiao zhi xi bao	2847
+薄壁细胞	bao bi xi bao	2808
+小细胞癌	xiao xi bao ai	2654
+有核细胞	you he xi bao	2654
+枯否细胞	ku fou xi bao	2654
+母细胞瘤	mu xi bao liu	2654
+细胞外被	xi bao wai bei	2654
+肝细胞癌	gan xi bao ai	2654
+肾细胞癌	shen xi bao ai	2654
+角朊细胞	jiao ruan xi bao	2654
+多基因病	duo ji yin bing	2577
+抑癌基因	yi ai ji yin	2577
+非转基因	fei zhuan ji yin	2577
+视锥细胞	shi zhui xi bao	2462
+鳞状细胞	lin zhuang xi bao	2462
+蛋白质粉	dan bai zhi fen	2385
+胰岛细胞	yi dao xi bao	1770

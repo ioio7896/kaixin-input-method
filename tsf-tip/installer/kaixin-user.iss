@@ -59,11 +59,11 @@ RestartIfNeededByRun=no
 Name: "chinesesimp"; MessagesFile: "ChineseSimplified.isl"
 
 [Files]
-Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "runtime\*,.python-runtime\*,.python-packages\*,.venv-rapidocr\*,.venv-translate\*,RapidOCR-3.9.0\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete
+Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "runtime\*,.python-runtime\*,.python-packages\*,.venv-rapidocr\*,.venv-translate\*,RapidOCRLite\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete
 Source: "{#KXPackageDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs uninsrestartdelete solidbreak
 Source: "{#KXPackageDir}\.python-runtime\*"; DestDir: "{app}\.python-runtime"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallPythonRuntime
 Source: "{#KXPackageDir}\.python-packages\*"; DestDir: "{app}\.python-packages"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPackages
-Source: "{#KXPackageDir}\RapidOCR-3.9.0\*"; DestDir: "{app}\RapidOCR-3.9.0"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPayload
+Source: "{#KXPackageDir}\RapidOCRLite\*"; DestDir: "{app}\RapidOCRLite"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPayload
 Source: "{#KXPackageDir}\component_manifest.ini"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete solidbreak
 
 [InstallDelete]
@@ -72,7 +72,7 @@ Type: filesandordirs; Name: "{app}\ShareX"
 Type: filesandordirs; Name: "{app}\.python-runtime"; Check: ShouldInstallPythonRuntime
 Type: filesandordirs; Name: "{app}\.python-packages"; Check: ShouldInstallRapidOcrPackages
 Type: filesandordirs; Name: "{app}\.venv-rapidocr"
-Type: filesandordirs; Name: "{app}\RapidOCR-3.9.0"; Check: ShouldInstallRapidOcrPayload
+Type: filesandordirs; Name: "{app}\RapidOCRLite"; Check: ShouldInstallRapidOcrPayload
 Type: filesandordirs; Name: "{app}\.venv-translate"
 Type: filesandordirs; Name: "{app}\models\translate"
 Type: filesandordirs; Name: "{app}\ShareX-Source"
@@ -83,7 +83,7 @@ Type: files; Name: "{app}\tools\kaixin_ocr_engine.cmd"; Check: not OcrIncluded
 Type: files; Name: "{app}\tools\kaixin_cv_crop.py"; Check: not OcrIncluded
 Type: filesandordirs; Name: "{app}\.python-runtime"; Check: not OcrIncluded
 Type: filesandordirs; Name: "{app}\.python-packages"; Check: not OcrIncluded
-Type: filesandordirs; Name: "{app}\RapidOCR-3.9.0"; Check: not OcrIncluded
+Type: filesandordirs; Name: "{app}\RapidOCRLite"; Check: not OcrIncluded
 Type: files; Name: "{group}\开心输入法中英翻译.lnk"
 Type: files; Name: "{app}\srf_ime_translate.exe"
 Type: files; Name: "{app}\tools\kaixin_translate_engine.py"

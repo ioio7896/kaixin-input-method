@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：能源电气
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 新能源	xin neng yuan	8628
 变电站	bian dian zhan	7931
@@ -49,7 +49,81 @@
 配电线路	pei dian xian lu	6100
 风力发电	feng li fa dian	6100
 风电机组	feng dian ji zu	6100
+中国电力	zhong guo dian li	5500
+山东电力	shan dong dian li	5500
+电力大学	dian li da xue	5500
+电力学院	dian li xue yuan	5500
+电力行业	dian li hang ye	5462
+电力大楼	dian li da lou	5308
+上海电力	shang hai dian li	5154
+电力企业	dian li qi ye	5154
+电力工业	dian li gong ye	5154
+电力工程	dian li gong cheng	5154
+电力改革	dian li gai ge	5154
+电力机械	dian li ji xie	5154
+电力电子	dian li dian zi	5154
+电力设备	dian li she bei	5154
+电力设施	dian li she shi	5154
+明星电力	ming xing dian li	5116
+桂东电力	gui dong dian li	5039
+电力大厦	dian li da sha	5039
+电力通信	dian li tong xin	4962
+发电话	fa dian hua	4885
+华北电力	hua bei dian li	4808
+发电设备	fa dian she bei	4770
+长江电力	chang jiang dian li	4770
+乐山电力	le shan dian li	4731
+文山电力	wen shan dian li	4731
+海兴电力	hai xing dian li	4731
+涪陵电力	fu ling dian li	4731
+西昌电力	xi chang dian li	4731
 水力发电	shui li fa dian	4661
+潮汐发电	chao xi fa dian	4462
+国家电网	guo jia dian wang	4385
+水利电力	shui li dian li	4385
+电力机车	dian li ji che	4385
+电力之战	dian li zhi zhan	4308
+电力十足	dian li shi zu	4308
+电力学	dian li xue	4270
+海上风电	hai shang feng dian	4231
+电力电缆	dian li dian lan	4193
+广电网络	guang dian wang luo	4154
+国投电力	guo tou dian li	4116
+南方电网	nan fang dian wang	4077
+智能电网	zhi neng dian wang	4077
+掌上电力	zhang shang dian li	4039
+大唐发电	da tang fa dian	4000
+核发电	he fa dian	4000
+神马电力	shen ma dian li	4000
+节能风电	jie neng feng dian	3962
+电力厂	dian li chang	3885
+电力室	dian li shi	3885
+电力法	dian li fa	3885
+电力站	dian li zhan	3885
+电力间	dian li jian	3885
+京能电力	jing neng dian li	3693
+诱发电位	you fa dian wei	3693
+家电网	jia dian wang	3616
+爱发电	ai fa dian	3616
+华银电力	hua yin dian li	3539
+广电网	guang dian wang	3539
+汽轮发电	qi lun fa dian	3462
+闽东电力	min dong dian li	3462
+华润电力	hua run dian li	3347
+桂冠电力	gui guan dian li	3308
+配电网	pei dian wang	3308
+电力技校	dian li ji xiao	3231
+光伏产业	guang fu chan ye	3039
+光伏扶贫	guang fu fu pin	3039
+海润光伏	hai run guang fu	3039
+发电子版	fa dian zi ban	2885
+晋控电力	jin kong dian li	2731
+浙能电力	zhe neng dian li	2731
+皖能电力	wan neng dian li	2731
+长源电力	chang yuan dian li	2731
+黔源电力	qian yuan dian li	2731
 风电场	feng dian chang	2722
+凯发电气	kai fa dian qi	2577
+光伏板	guang fu ban	2500
 自动控制	zi dong kong zhi	1210
 配电箱	pei dian xiang	533

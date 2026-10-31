@@ -55,7 +55,7 @@ TSF/辅助组件，以适配不同位数的宿主程序。
 - **手写查字**：独立画布、候选复制和直接粘贴。
 - **符号大全**：托盘菜单打开置顶的 10×10 符号软键盘，支持分类、全局搜索、最近使用、直接输入和仅复制。
 - **截图**：原生 Windows Graphics Capture，支持智能框选、自由区域和当前窗口截图。
-- **OCR**：本地 RapidOCR/ONNXRuntime，支持预处理、二次框选、历史和结果整理。
+- **OCR**：本地 RapidOCRLite（PP-OCRv6），支持预处理、二次框选、历史和结果整理。
 - **翻译联动**：输入法只采集文本并通过当前用户命名管道发起请求；翻译、展示和结果操作由外部 HY-MT2 翻译机或 WinTranslator 完成，复制和粘贴通过结果回调由输入法执行。
 - **托盘与设置**：统一管理输入、外观、工具、应用兼容和隐私选项。
 
@@ -203,13 +203,14 @@ kaixin-setup-ocr-<version>-<timestamp>.exe   输入法 + 本地 OCR
 OCR 安装包要求以下内容完整存在于安装目录：
 
 ```text
-RapidOCR-3.9.0/
+RapidOCRLite/
 .python-runtime/
 .python-packages/
 tools/kaixin_ocr_engine.py
-RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_det_medium.onnx
-RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_det_small.onnx
-RapidOCR-3.9.0/python/rapidocr/models/PP-OCRv6_rec_medium.onnx
+RapidOCRLite/python/rapidocr/models/PP-OCRv6_det_medium.onnx
+RapidOCRLite/python/rapidocr/models/PP-OCRv6_det_small.onnx
+RapidOCRLite/python/rapidocr/models/PP-OCRv6_rec_medium.onnx
+RapidOCRLite/python/rapidocr/models/ppocrv6_dict.txt
 ```
 
 程序会根据 `package_manifest.sha256` 校验模型哈希。快速档使用 `det_small`，均衡和
@@ -290,8 +291,9 @@ log_level=error
 
 ## 从源码构建
 
-词库分类与合并使用 `python scripts/optimize_lexicons.py` 更新。科技、聊天办公扩展只收录维护清单中的词条，
-不再以通用词填满固定数量；两份三字基础来源合并为 `lexicon/zh/life_common_3char.txt`，来源保存在
+基础词库合并使用 `python scripts/optimize_lexicons.py` 更新。`lexicon/zh-ext` 的 99 个独立扩展词表来自维护的分类清单；
+分类名称、默认开关、条数和哈希见 `shared/category_lexicons.json`。跨分类重合词保留，以维持各分类的独立开关。
+两份三字基础来源合并为 `lexicon/zh/life_common_3char.txt`，来源保存在
 `data_sources/lexicon_fragments/zh/`，重合项沿用完整来源权重，多音读法保留。药物名称统一为
 `lexicon/zh-ext/medicine.txt`。迁移旧文件的清理清单为 `shared/retired_lexicon_files.json`，
 覆盖安装时自动清理旧文件，避免重复加载。精选热词加权库继续独立保留。
@@ -418,9 +420,9 @@ python build.py --perf-smoke
 最多 26 项，每项最多 128 KiB。查询超时触发的引擎自动重启每 5 分钟最多 3 次，
 已有的超时阈值和重启冷却仍生效。
 
+OCR 仅使用 CPU。模型在 OCR 进程存续期间保留。
 OCR 默认最多使用 4 个推理线程；仍可通过 `KAIXIN_OCR_INTRA_OP_THREADS` 或
-辅助脚本的 `--intra-op-threads` 参数覆盖。常驻 OCR 子进程连续空闲 3 分钟后
-释放，最长约 30 秒检查间隔，下次使用时自动重新启动；正在识别时不会释放。
+辅助脚本的 `--intra-op-threads` 参数覆盖。常驻 OCR 子进程在 OCR 进程存续期间保留，不因空闲超时释放。
 
 ## 词库
 

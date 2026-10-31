@@ -1,920 +1,1453 @@
 # 开心离线输入法分类补充：语料地名补充
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
-南京长江大桥	nan jing chang jiang da qiao	5500
-江汉平原	jiang han ping yuan	5500
-焦山河	jiao shan he	5263
-神农架林区	shen nong jia lin qu	5075
-故宫博物院	gu gong bo wu yuan	5060
-武当山风景区	wu dang shan feng jing qu	5055
-大湾特	da wan te	5052
-调关镇	diao guan zhen	5052
-车城西	che cheng xi	5052
-马克思列宁主义	ma ke si lie ning zhu yi	4998
-商洛山	shang luo shan	4913
-澳门特别行政区	ao men te bie xing zheng qu	4833
-丹江口市	dan jiang kou shi	4723
-华中地区	hua zhong di qu	4721
-长阳土家族自治县	zhang yang tu jia zu zi zhi xian	4720
-古琴台	gu qin tai	4718
-老河口市	lao he kou shi	4712
-丹江口水库	dan jiang kou shui ku	4710
-五峰土家族自治县	wu feng tu jia zu zi zhi xian	4704
-北河口	bei he kou	4700
-夫人城	fu ren cheng	4700
-三自爱国	san zi ai guo	4698
-东西湖区	dong xi hu qu	4698
-腾龙洞	teng long dong	4698
-东连吴	dong lian wu	4696
-南岳山	nan yue shan	4694
-周坤仁	zhou kun ren	4694
-天心洲	tian xin zhou	4694
-安邦治国	an bang zhi guo	4694
-山自西	shan zi xi	4694
-石牌岭	shi pai ling	4694
-科教兴市	ke jiao xing shi	4694
-铁山区	tie shan qu	4694
-黄石港区	huang shi gang qu	4694
-上官洲	shang guan zhou	4692
-乌云其木格	wu yun qi mu ge	4692
-南河头	nan he tou	4692
-南河洲	nan he zhou	4692
-南洲子	nan zhou zi	4692
-古三国	gu san guo	4692
-图道多吉	tu dao duo ji	4692
-安七州	an qi zhou	4692
-小河口镇	xiao he kou zhen	4692
-杨苗洲	yang miao zhou	4692
-松林山	song lin shan	4692
-梁子湖区	liang zi hu qu	4692
-江家岔	jiang jia cha	4692
-石华堰	shi hua yan	4692
-神皇洲	shen huang zhou	4692
-秦家洲	qin jia zhou	4692
-秦属南	qin shu nan	4692
-老洲岭	lao zhou ling	4692
-荆南府	jing nan fu	4692
-西塞山区	xi sai shan qu	4692
-鄂三州	e san zhou	4692
-长岭岗	zhang ling gang	4692
-陈家铺	chen jia pu	4692
-青木河	qing mu he	4692
-黄河流域	huang he liu yu	4675
-陕甘宁边区	shan gan ning bian qu	4671
-河西走廊	he xi zou lang	4658
-七里沟	qi li gou	4654
-特鲁西埃	te lu xi ai	4572
-喜马拉雅山	xi ma la ya shan	4556
-阿拉伯半岛	a la bo ban dao	4551
-阿尔泰山	a er tai shan	4545
-珠穆朗玛峰	zhu mu lang ma feng	4506
-华北平原	hua bei ping yuan	4489
-雅鲁藏布江	ya lu zang bu jiang	4467
-伯罗奔尼撒	bo luo ben ni sa	4455
-满头大汗	man tou da han	4438
-美索不达米亚	mei suo bu da mi ya	4432
-珠江三角洲	zhu jiang san jiao zhou	4428
-福拉多	fu la duo	4422
-辽东半岛	liao dong ban dao	4404
-撒哈拉沙漠	sa ha la sha mo	4401
-西直门外	xi zhi men wai	4401
-大江南北	da jiang nan bei	4394
-苏星河	su xing he	4390
-塔里木盆地	ta li mu pen di	4379
-山东半岛	shan dong ban dao	4372
-前门大街	qian men da jie	4345
-北京中山公园	bei jing zhong shan gong yuan	4345
-马六甲海峡	ma liu jia hai xia	4345
-亚马孙河	ya ma sun he	4333
-寿兴国	shou xing guo	4333
-清律典	qing lv dian	4333
-唐古拉山	tang gu la shan	4316
-塔里木河	ta li mu he	4312
-万里长城	wan li chang cheng	4304
-中华苏维埃共和国	zhong hua su wei ai gong he guo	4304
-上山下乡	shang shan xia xiang	4295
-中央革命根据地	zhong yang ge ming gen ju di	4282
-东拉河	dong la he	4273
-喜马拉雅山脉	xi ma la ya shan mai	4268
-太平洋地区	tai ping yang di qu	4268
-马萨诸塞州	ma sa zhu sai zhou	4268
-斯堪的纳维亚	si kan de na wei ya	4264
-长江三角洲	chang jiang san jiao zhou	4250
-密西西比河	mi xi xi bi he	4235
-尼日尔河	ni ri er he	4230
-密克罗尼西亚	mi ke luo ni xi ya	4225
-乌苏里江	wu su li jiang	4220
-安第斯山脉	an di si shan mai	4215
-关中平原	guan zhong ping yuan	4210
-得克萨斯州	de ke sa si zhou	4210
-安第斯山	an di si shan	4205
-欧阳天	ou yang tian	4205
-马关条约	ma guan tiao yue	4195
-柴达木盆地	chai da mu pen di	4189
-波利尼西亚	bo li ni xi ya	4189
-桑给巴尔	sang gei ba er	4173
-武汉长江大桥	wu han chang jiang da qiao	4173
-阿尔卑斯山脉	a er bei si shan mai	4157
-额尔古纳河	e er gu na he	4157
-准噶尔盆地	zhun ga er pen di	4145
-额尔齐斯河	e er qi si he	4139
-民主德国	min zhu de guo	4133
-天山南北	tian shan nan bei	4127
-巴拿马运河	ba na ma yun he	4127
-旁门左道	pang men zuo dao	4127
-横断山脉	heng duan shan mai	4127
-崇山峻岭	chong shan jun ling	4121
-几内亚湾	ji nei ya wan	4115
-乌拉尔山脉	wu la er shan mai	4109
-迪斯尼乐园	di si ni le yuan	4109
-科教兴国	ke jiao xing guo	4103
-阿拉伯海	a la bo hai	4103
-美塞尼亚	mei sai ni ya	4097
-苏门答腊岛	su men da la dao	4097
-印度半岛	yin du ban dao	4090
-云贵高原	yun gui gao yuan	4084
-平西伯	ping xi bo	4084
-幼发拉底河	you fa la di he	4077
-内蒙古高原	nei meng gu gao yuan	4071
-帕米尔高原	pa mi er gao yuan	4057
-河北平原	he bei ping yuan	4057
-红瓦店	hong wa dian	4057
-昆仑山脉	kun lun shan mai	4050
-江南地区	jiang nan di qu	4043
-霍尔木兹海峡	huo er mu zi hai xia	4036
-上海地区	shang hai di qu	4022
-兴旺发达	xing wang fa da	4022
-小兴安岭	xiao xing an ling	4022
-西藏地区	xi zang di qu	4022
-赞比西河	zan bi xi he	4014
-成都平原	cheng du ping yuan	4007
-叶尼塞河	ye ni sai he	3999
-呼和浩特市	hu he hao te shi	3991
-比利牛斯	bi li niu si	3991
-伊克昭盟	yi ke zhao meng	3983
-松嫩平原	song nen ping yuan	3983
-深山老林	shen shan lao lin	3983
-三江平原	san jiang ping yuan	3975
-法勒亚	fa lei ya	3975
-珠江流域	zhu jiang liu yu	3975
-澎湖列岛	peng hu lie dao	3967
-甘拜下风	gan bai xia feng	3959
-阿拉伯联合酋长国	a la bo lian he qiu zhang guo	3951
-塔克拉玛干沙漠	ta ke la ma gan sha mo	3942
-福尔马林	fu er ma lin	3942
-第聂伯河	di nie bo he	3942
-西南联大	xi nan lian da	3934
-新喀里多尼亚	xin ka li duo ni ya	3925
-大别山区	da bie shan qu	3916
-太平盛世	tai ping sheng shi	3907
-东南亚地区	dong nan ya di qu	3898
-喀喇昆仑山	ka la kun lun shan	3898
-直布罗陀海峡	zhi bu luo tuo hai xia	3898
-凡尔赛宫	fan er sai gong	3888
-奥其尔巴特	ao qi er ba te	3888
-巴拉那河	ba la na he	3888
-伪满洲国	wei man zhou guo	3879
-山海城	shan hai cheng	3879
-淮河流域	huai he liu yu	3879
-地中海地区	di zhong hai di qu	3869
-乌鲁木齐市	wu lu mu qi shi	3859
-巴伦支海	ba lun zhi hai	3859
-中国内蒙古自治区	zhong guo nei meng gu zi zhi qu	3849
-亚得里亚海	ya de li ya hai	3849
-八达岭长城	ba da ling chang cheng	3839
-喝西北风	he xi bei feng	3839
-外高加索	wai gao jia suo	3839
-武夷山脉	wu yi shan mai	3839
-呼伦贝尔盟	hu lun bei er meng	3828
-安大略省	an da lve sheng	3828
-齐齐哈尔市	qi qi ha er shi	3828
-伊洛瓦底江	yi luo wa di jiang	3817
-印度斯坦	yin du si tan	3817
-喜孜孜	xi zi zi	3817
-天山山脉	tian shan shan mai	3817
-琉球群岛	liu qiu qun dao	3817
-罗安江	luo an jiang	3817
-亚利桑那州	ya li sang na zhou	3807
-名山大川	ming shan da chuan	3807
-底格里斯河	di ge li si he	3807
-康涅狄格州	kang nie di ge zhou	3807
-昆士兰州	kun shi lan zhou	3807
-荒山野岭	huang shan ye ling	3807
-阿尔金山	a er jin shan	3807
-伦加德	lun jia de	3795
-保家卫国	bao jia wei guo	3795
-加勒比地区	jia lei bi di qu	3795
-博斯普鲁斯海峡	bo si pu lu si hai xia	3795
-天南地北	tian nan di bei	3795
-西西伯利亚	xi xi bo li ya	3795
-高头大马	gao tou da ma	3795
-乌龙岭	wu long ling	3784
-太阳黑子	tai yang hei zi	3784
-巴尔喀什湖	ba er ka shi hu	3784
-新墨西哥州	xin mo xi ge zhou	3784
-维多利亚湖	wei duo li ya hu	3784
-茅塞顿开	mao se dun kai	3784
-黑塞哥维那	hei sai ge wei na	3784
-加里曼丹岛	jia li man dan dao	3772
-大呼拉尔	da hu la er	3772
-太湖流域	tai hu liu yu	3772
-威斯敏斯特	wei si min si te	3772
-格陵兰岛	ge ling lan dao	3772
-钓鱼台国宾馆	diao yu tai guo bin guan	3772
-魁北克省	kui bei ke sheng	3772
-上海贝尔	shang hai bei er	3760
-夕阳西下	xi yang xi xia	3760
-安大略湖	an da lve hu	3760
-宾夕法尼亚州	bin xi fa ni ya zhou	3760
-新疆地区	xin jiang di qu	3760
-贵州高原	gui zhou gao yuan	3760
-阿穆尔河	a mu er he	3760
-龙潭虎穴	long tan hu xue	3760
-乌孜别克	wu zi bie ke	3748
-勃兰登堡	bo lan deng bao	3748
-燕山山脉	yan shan shan mai	3748
-稀树草原	xi shu cao yuan	3748
-罗得西亚	luo de xi ya	3748
-苏必利尔湖	su bi li er hu	3748
-鄂尔多斯高原	e er duo si gao yuan	3748
-香港地区	xiang gang di qu	3748
-中国西藏自治区	zhong guo xi zang zi zhi qu	3735
-川藏公路	chuan cang gong lu	3735
-库克群岛	ku ke qun dao	3735
-敦煌石窟	dun huang shi ku	3735
-木牛流马	mu niu liu ma	3735
-江南运河	jiang nan yun he	3735
-直角三角形	zhi jiao san jiao xing	3735
-西萨摩亚	xi sa mo ya	3735
-银川平原	yin chuan ping yuan	3735
-青藏公路	qing cang gong lu	3735
-高山流水	gao shan liu shui	3735
-中直机关	zhong zhi ji guan	3722
-北京故宫	bei jing gu gong	3722
-巴塔哥尼亚	ba ta ge ni ya	3722
-科罗拉多河	ke luo la duo he	3722
-上海东方	shang hai dong fang	3709
-安的列斯群岛	an de lie si qun dao	3709
-晋察冀边区	jin cha ji bian qu	3709
-法属圭亚那	fa shu gui ya na	3709
-西溪南	xi xi nan	3709
-高黎贡山	gao li gong shan	3709
-黄淮海平原	huang huai hai ping yuan	3709
-俄亥俄河	e hai e he	3696
-叶尔羌河	ye er qiang he	3696
-坦噶尼喀湖	tan ga ni ka hu	3696
-塞浦路斯共和国	sai pu lu si gong he guo	3696
-宾夕法尼亚	bin xi fa ni ya	3696
-格但斯克	ge dan si ke	3696
-南南合作	nan nan he zuo	3682
-天南海北	tian nan hai bei	3682
-巴比伦王国	ba bi lun wang guo	3682
-西藏高原	xi zang gao yuan	3682
-勃兰登堡门	bo lan deng bao men	3668
-南澳大利亚	nan ao da li ya	3668
-巴黎圣母院	ba li sheng mu yuan	3668
-格兰德河	ge lan de he	3668
-江阴长江大桥	jiang yin chang jiang da qiao	3668
-琼州海峡	qiong zhou hai xia	3668
-西藏天路	xi zang tian lu	3668
-都江堰市	du jiang yan shi	3668
-龙京沙	long jing sha	3668
-亚历山大城	ya li shan da cheng	3653
-北京西站	bei jing xi zhan	3653
-南斯拉夫联盟	nan si la fu lian meng	3653
-南斯拉夫联盟共和国	nan si la fu lian meng gong he guo	3653
-哥伦比亚共和国	ge lun bi ya gong he guo	3653
-巫山长江大桥	wu shan chang jiang da qiao	3653
-椰林湾	ye lin wan	3653
-欢喜岭	huan xi ling	3653
-武汉白沙洲长江大桥	wu han bai sha zhou chang jiang da qiao	3653
-法尔萨	fa er sa	3653
-港人治港	gang ren zhi gang	3653
-芜湖长江大桥	wu hu chang jiang da qiao	3653
-西陵长江大桥	xi ling chang jiang da qiao	3653
-阿拉斯加州	a la si jia zhou	3653
-麦西尼亚	mai xi ni ya	3653
-东亚地区	dong ya di qu	3638
-乌拉尔河	wu la er he	3638
-克鲁伦河	ke lu lun he	3638
-冈底斯山脉	gang di si shan mai	3638
-塔克拉玛干	ta ke la ma gan	3638
-塞内加尔河	sai nei jia er he	3638
-布莱克本	bu lai ke ben	3638
-新南威尔士州	xin nan wei er shi zhou	3638
-沧海桑田	cang hai sang tian	3638
-海布利	hai bu li	3638
-白山黑水	bai shan hei shui	3638
-祁连山脉	qi lian shan mai	3638
-虹桥机场	hong qiao ji chang	3638
-喀尔巴阡山脉	ka er ba qian shan mai	3622
-欧几里德	ou ji li de	3622
-燕下都	yan xia dou	3622
-特立尼达岛	te li ni da dao	3622
-米第亚	mi di ya	3622
-维尔京群岛	wei er jing qun dao	3622
-黄淮平原	huang huai ping yuan	3622
-一路平安	yi lu ping an	3606
-云南高原	yun nan gao yuan	3606
-京津地区	jing jin di qu	3606
-以色列国	yi se lie guo	3606
-北京饭店	bei jing fan dian	3606
-北卡罗来纳州	bei ka luo lai na zhou	3606
-玉龙雪山	yu long xue shan	3606
-西太平洋地区	xi tai ping yang di qu	3606
-马里亚纳群岛	ma li ya na qun dao	3606
-南极半岛	nan ji ban dao	3590
-博洛尼亚	bo luo ni ya	3590
-奉辛比克党	feng xin bi ke dang	3590
-奥木列	ao mu lie	3590
-尤卡坦半岛	you ka tan ban dao	3590
-库仑定律	ku lun ding lv	3590
-德谟克利特	de mo ke li te	3590
-维斯瓦河	wei si wa he	3590
-菲律宾共和国	fei lv bin gong he guo	3590
-辽河流域	liao he liu yu	3590
-马拉维湖	ma la wei hu	3590
-黄原城	huang yuan cheng	3590
-军民共建	jun min gong jian	3573
-南阳盆地	nan yang pen di	3573
-卡累利阿	ka lei li a	3573
-塔斯马尼亚	ta si ma ni ya	3573
-忠君爱国	zhong jun ai guo	3573
-松山堡	song shan bao	3573
-温都尔汗	wen dou er han	3573
-路易斯安那州	lu yi si an na zhou	3573
-避暑山庄	bi shu shan zhuang	3573
-阿尔卑斯山区	a er bei si shan qu	3573
-青山绿水	qing shan lv shui	3573
-马尔维纳斯群岛	ma er wei na si qun dao	3573
-小桥流水	xiao qiao liu shui	3555
-巴士海峡	ba shi hai xia	3555
-巴颜喀拉山	ba yan ka la shan	3555
-德意志联邦共和国	de yi zhi lian bang gong he guo	3555
-拉贾斯坦	la jia si tan	3555
-摩托罗拉公司	mo tuo luo la gong si	3555
-新加坡海峡	xin jia po hai xia	3555
-海拉尔河	hai la er he	3555
-爱屋及乌	ai wu ji wu	3555
-福克兰群岛	fu ke lan qun dao	3555
-符拉迪沃斯托克	fu la di wo si tuo ke	3555
-苏维埃共和国	su wei ai gong he guo	3555
-西澳大利亚	xi ao da li ya	3555
-阴山山脉	yin shan shan mai	3555
-阿克苏河	a ke su he	3555
-三宫六院	san gong liu yuan	3537
-乞力马扎罗山	qi li ma zha luo shan	3537
-南安普顿	nan an pu dun	3537
-太行山区	tai hang shan qu	3537
-密歇根湖	mi xie gen hu	3537
-山山水水	shan shan shui shui	3537
-明尼苏达州	ming ni su da zhou	3537
-枫丹白露	feng dan bai lu	3537
-闽东南	min dong nan	3537
-非洲法郎	fei zhou fa lang	3537
-上海博物馆	shang hai bo wu guan	3518
-哈得孙湾	ha de sun wan	3518
-太太平平	tai tai ping ping	3518
-安的列斯	an de lie si	3518
-密苏里河	mi su li he	3518
-嵩山少林寺	song shan shao lin si	3518
-巴伐利亚州	ba fa li ya zhou	3518
-汉中盆地	han zhong pen di	3518
-西长安街	xi chang an jie	3518
-通扬运河	tong yang yun he	3518
-阿维尼翁	a wei ni weng	3518
-马拉开波湖	ma la kai bo hu	3518
-黄原河	huang yuan he	3518
-乌拉尔山	wu la er shan	3498
-亚速尔群岛	ya su er qun dao	3498
-内蒙古草原	nei meng gu cao yuan	3498
-北海公园	bei hai gong yuan	3498
-南非共和国	nan fei gong he guo	3498
-太平洋卡	tai ping yang ka	3498
-德意志民主共和国	de yi zhi min zhu gong he guo	3498
-河北地区	he bei di qu	3498
-法兰西共和国	fa lan xi gong he guo	3498
-渭河平原	wei he ping yuan	3498
-白尼罗河	bai ni luo he	3498
-百慕大群岛	bai mu da qun dao	3498
-维多利亚州	wei duo li ya zhou	3498
-胶东半岛	jiao dong ban dao	3498
-郑卫国	zheng wei guo	3498
-阿尔泰山脉	a er tai shan mai	3498
-青尼罗河	qing ni luo he	3498
-亚喀巴湾	ya ka ba wan	3478
-亚得里亚	ya de li ya	3478
-亚欧大陆桥	ya ou da lu qiao	3478
-伊犁地区	yi li di qu	3478
-内蒙古地区	nei meng gu di qu	3478
-广济河	guang ji he	3478
-旁遮普省	pang zhe pu sheng	3478
-昌都地区	chang dou di qu	3478
-棉兰老岛	mian lan lao dao	3478
-武夷山市	wu yi shan shi	3478
-毛庆国	mao qing guo	3478
-江河湖海	jiang he hu hai	3478
-法国梧桐	fa guo wu tong	3478
-波斯湾地区	bo si wan di qu	3478
-罗海城	luo hai cheng	3478
-长江中下游地区	chang jiang zhong xia you di qu	3478
-非洲地区	fei zhou di qu	3478
-龙门石窟	long men shi ku	3478
-克什米尔地区	ke shi mi er di qu	3456
-匈牙利共和国	xiong ya li gong he guo	3456
-博斯腾湖	bo si teng hu	3456
-呼伦贝尔草原	hu lun bei er cao yuan	3456
-安达卢西亚	an da lu xi ya	3456
-巴彦淖尔盟	ba yan nao er meng	3456
-张家港市	zhang jia gang shi	3456
-日落西山	ri luo xi shan	3456
-格尔木市	ge er mu shi	3456
-波茨坦广场	bo ci tan guang chang	3456
-渤海海峡	bo hai hai xia	3456
-濑户内海	lai hu nei hai	3456
-白头山天池	bai tou shan tian chi	3456
-的里雅斯特	de li ya si te	3456
-维多利亚港	wei duo li ya gang	3456
-英伦三岛	ying lun san dao	3456
-长白山脉	chang bai shan mai	3456
-青溪镇	qing xi zhen	3456
-额尔齐斯	e er qi si	3456
-马鞍山市	ma an shan shi	3456
-三岔路口	san cha lu kou	3434
-中国台北	zhong guo tai bei	3434
-伊利诺伊州	yi li nuo yi zhou	3434
-伊塞克湖	yi sai ke hu	3434
-伊犁河谷	yi li he gu	3434
-佐治亚州	zuo zhi ya zhou	3434
-克什克腾旗	ke shen ke teng qi	3434
-兰州军区	lan zhou jun qu	3434
-南亚地区	nan ya di qu	3434
-南安普敦	nan an pu dun	3434
-塞尔维亚共和国	sai er wei ya gong he guo	3434
-天文地理	tian wen di li	3434
-察哈尔省	cha ha er sheng	3434
-巴丹吉林沙漠	ba dan ji lin sha mo	3434
-意大利王国	yi da li wang guo	3434
-拉美地区	la mei di qu	3434
-斯摩棱斯克	si mo leng si ke	3434
-格林纳丁斯	ge lin na ding si	3434
-江淮地区	jiang huai di qu	3434
-爱尔兰岛	ai er lan dao	3434
-科尔沁草原	ke er qin cao yuan	3434
-腾格里沙漠	teng ge li sha mo	3434
-越南民主共和国	yue nan min zhu gong he guo	3434
-阴盛阳	yin sheng yang	3434
-一马平川	yi ma ping chuan	3411
-东北亚地区	dong bei ya di qu	3411
-中南美洲	zhong nan mei zhou	3411
-中田英寿	zhong tian ying shou	3411
-亚利桑那	ya li sang na	3411
-印度共和国	yin du gong he guo	3411
-唐古拉山脉	tang gu la shan mai	3411
-圣彼得大教堂	sheng bi de da jiao tang	3411
-圣赫勒拿岛	sheng he lei na dao	3411
-巴尔干地区	ba er gan di qu	3411
-巴西木	ba xi mu	3411
-巽他群岛	xun ta qun dao	3411
-德克萨斯州	de ke sa si zhou	3411
-扎什伦布寺	zha shen lun bu si	3411
-桃花铺	tao hua pu	3411
-江河日下	jiang he ri xia	3411
-洞庭湖区	dong ting hu qu	3411
-珠联璧合	zhu lian bi he	3411
-盘尼西林	pan ni xi lin	3411
-苏伊士湾	su yi shi wan	3411
-那曲地区	na qu di qu	3411
-阿尼玛卿山	a ni ma qing shan	3411
-阿比西尼亚	a bi xi ni ya	3411
-东奔西跑	dong ben xi pao	3387
-乌兰察布盟	wu lan cha bu meng	3387
-五洲四海	wu zhou si hai	3387
-伏尔加格勒	fu er jia ge lei	3387
-北卡罗来纳	bei ka luo lai na	3387
-堪察加半岛	kan cha jia ban dao	3387
-太平洋区	tai ping yang qu	3387
-念青唐古拉山脉	nian qing tang gu la shan mai	3387
-慕田峪长城	mu tian yu chang cheng	3387
-成都五牛	cheng du wu niu	3387
-比斯开湾	bi si kai wan	3387
-水泊梁山	shui po liang shan	3387
-江湖术士	jiang hu shu shi	3387
-法罗群岛	fa luo qun dao	3387
-洞里萨湖	dong li sa hu	3387
-海得拉巴	hai de la ba	3387
-潮汕地区	chao shan di qu	3387
-火奴鲁鲁	huo nu lu lu	3387
-炮台镇	pao tai zhen	3387
-玛旁雍错	ma pang yong cuo	3387
-环渤海地区	huan bo hai di qu	3387
-鞍马劳顿	an ma lao dun	3387
-高山峻岭	gao shan jun ling	3387
-鸭绿江口	ya lu jiang kou	3387
-黄河三角洲	huang he san jiao zhou	3387
-龙泉驿区	long quan yi qu	3387
-不伦瑞克	bu lun rui ke	3361
-丹尼尔斯	dan ni er si	3361
-乌伦古湖	wu lun gu hu	3361
-云冈石窟	yun gang shi ku	3361
-佛罗里达海峡	fu luo li da hai xia	3361
-克拉玛依市	ke la ma yi shi	3361
-克里米亚半岛	ke li mi ya ban dao	3361
-厦门路	xia men lu	3361
-可可西里山	ke ke xi li shan	3361
-哲里木盟	zhe li mu meng	3361
-嘉峪关市	jia yu guan shi	3361
-威斯康星州	wei si kang xing zhou	3361
-尼泊尔王国	ni po er wang guo	3361
-巴勒斯坦国	ba le si tan guo	3361
-承德避暑山庄	cheng de bi shu shan zhuang	3361
-欧罗巴洲	ou luo ba zhou	3361
-法兰克福机场	fa lan ke fu ji chang	3361
-猫耳洞	mao er dong	3361
-秦岭山脉	qin ling shan mai	3361
-约旦河西岸	yue dan he xi an	3361
-虎头崖	hu tou ya	3361
-锦绣江山	jin xiu jiang shan	3361
-马提尼克岛	ma ti ni ke dao	3361
-高加索地区	gao jia suo di qu	3361
-与那国岛	yu na guo dao	3335
-东加勒比元	dong jia lei bi yuan	3335
-中国台湾地区	zhong guo tai wan di qu	3335
-云山屯	yun shan tun	3335
-亚历山大港	ya li shan da gang	3335
-亚平宁半岛	ya ping ning ban dao	3335
-佳木斯市	jia mu si shi	3335
-南津关	nan jin guan	3335
-各奔东西	ge ben dong xi	3335
-吐鲁番市	tu lu fan shi	3335
-哥伦比亚河	ge lun bi ya he	3335
-喀斯喀特	ka si ka te	3335
-土耳其共和国	tu er qi gong he guo	3335
-大峪谷	da yu gu	3335
-大英博物馆	da ying bo wu guan	3335
-天津地区	tian jin di qu	3335
-安尼亚	an ni ya	3335
-宜林地	yi lin di	3335
-尼亚城	ni ya cheng	3335
-山南地区	shan nan di qu	3335
-岭北行省	ling bei xing sheng	3335
-扎陵湖	zha ling hu	3335
-拉多加湖	la duo jia hu	3335
-日内瓦湖	ri nei wa hu	3335
-松花江流域	song hua jiang liu yu	3335
-河口湾	he kou wan	3335
-深山密林	shen shan mi lin	3335
-登山节	deng shan jie	3335
-离群索居	li qun suo ju	3335
-萨摩亚群岛	sa mo ya qun dao	3335
-西子湖畔	xi zi hu pan	3335
-跑江湖	pao jiang hu	3335
-长白山区	chang bai shan qu	3335
-阿拉伯河	a la bo he	3335
-黑山共和国	hei shan gong he guo	3335
-三座大山	san zuo da shan	3306
-中国北方地区	zhong guo bei fang di qu	3306
-乌拉特前旗	wu la te qian qi	3306
-乌里亚	wu li ya	3306
-人丁兴旺	ren ding xing wang	3306
-兰西瓦	lan xi wa	3306
-冈仁波齐峰	gang ren bo qi feng	3306
-冈比亚河	gang bi ya he	3306
-吐故纳新	tu gu na xin	3306
-安邦定国	an bang ding guo	3306
-巴丹吉林	ba dan ji lin	3306
-巴士底狱	ba shi di yu	3306
-广州地区	guang zhou di qu	3306
-张家界市	zhang jia jie shi	3306
-德国马克	de guo ma ke	3306
-德涅斯特河	de nie si te he	3306
-恰帕斯州	qia pa si zhou	3306
-意大利共和国	yi da li gong he guo	3306
-澳门半岛	ao men ban dao	3306
-鄂陵湖	e ling hu	3306
-锡矿山	xi kuang shan	3306
-陕北黄土高原	shan bei huang tu gao yuan	3306
-中国华北地区	zhong guo hua bei di qu	3277
-二连浩特市	er lian hao te shi	3277
-仁人义士	ren ren yi shi	3277
-六街三市	liu jie san shi	3277
-内布拉斯加州	nei bu la si jia zhou	3277
-北京故宫博物院	bei jing gu gong bo wu yuan	3277
-南京东路	nan jing dong lu	3277
-印第安纳州	yin di an na zhou	3277
-原班人马	yuan ban ren ma	3277
-哥伦比亚省	ge lun bi ya sheng	3277
-喀尔巴阡山	ka er ba qian shan	3277
-塞纳河畔	sai na he pan	3277
-寿比南山	shou bi nan shan	3277
-库尔勒市	ku er lei shi	3277
-延安地区	yan an di qu	3277
-德达善	de da shan	3277
-拉彼鲁兹	la bi lu zi	3277
-拉西浦	la xi pu	3277
-捷克共和国	jie ke gong he guo	3277
-朝阳门外	chao yang men wai	3277
-波利克拉	bo li ke la	3277
-深圳华侨城	shen zhen hua qiao cheng	3277
-特拉华州	te la hua zhou	3277
-玛纳斯湖	ma na si hu	3277
-秦皇岛港	qin huang dao gang	3277
-美容美发店	mei rong mei fa dian	3277
-苏里兰	su li lan	3277
-英属维尔京群岛	ying shu wei er jing qun dao	3277
-莫斯科市	mo si ke shi	3277
-蒙彼利埃	meng bi li ai	3277
-达基亚	da ji ya	3277
-那西亚斯	na xi ya si	3277
-里亚原	li ya yuan	3277
-里德亚	li de ya	3277
-阿拉伯地区	a la bo di qu	3277
-阿曼苏丹国	a man su dan guo	3277
-马拉海	ma la hai	3277
-乌兰布和沙漠	wu lan bu he sha mo	3245
-乌拉尔军区	wu la er jun qu	3245
-北京首都机场	bei jing shou du ji chang	3245
-南乔治亚岛	nan qiao zhi ya dao	3245
-古尔班通古特沙漠	gu er ban tong gu te sha mo	3245
-夏威夷州	xia wei yi zhou	3245
-大小兴安岭	da xiao xing an ling	3245
-奥萨苏	ao sa su	3245
-安加拉河	an jia la he	3245
-密云水库	mi yun shui ku	3245
-山巫陵	shan wu ling	3245
-布尔加宁	bu er jia ning	3245
-布干维尔	bu gan wei er	3245
-希夏邦马峰	xi xia bang ma feng	3245
-帕隆藏布	pa long cang bu	3245
-惠民河	hui min he	3245
-慕士塔格山	mu shi ta ge shan	3245
-日德兰半岛	ri de lan ban dao	3245
-松井石根	song jing shi gen	3245
-河东君	he dong jun	3245
-满洲里市	man zhou li shi	3245
-瓦房店市	wa fang dian shi	3245
-祁山寨	qi shan zhai	3245
-神奈川县	shen nai chuan xian	3245
-罗亚尔港	luo ya er gang	3245
-路府州	lu fu zhou	3245
-鄂木斯克	e mu si ke	3245
-长江三角洲地区	chang jiang san jiao zhou di qu	3245
-闸口镇	zha kou zhen	3245
-阿斯利康	a si li kang	3245
-丽江纳西族自治县	li jiang na xi zu zi zhi xian	3211
-乌第河	wu di he	3211
-也门共和国	ye men gong he guo	3211
-亚拉巴马州	ya la ba ma zhou	3211
-冀中平原	ji zhong ping yuan	3211
-内格罗河	nei ge luo he	3211
-加利福尼亚湾	jia li fu ni ya wan	3211
-北洛河	bei luo he	3211
-北非地区	bei fei di qu	3211
-南达科他州	nan da ke ta zhou	3211
-土窑洞	tu yao dong	3211
-大顺国	da shun guo	3211
-奥兰吉那	ao lan ji na	3211
-奥里萨邦	ao li sa bang	3211
-安得拉邦	an de la bang	3211
-察尔汗盐湖	cha er han yan hu	3211
-小五台山	xiao wu tai shan	3211
-山丘区	shan qiu qu	3211
-广东地区	guang dong di qu	3211
-当惹雍错	dang re yong cuo	3211
-日喀则地区	ri ka ze di qu	3211
-日喀则市	ri ka ze shi	3211
-景德镇市	jing de zhen shi	3211
-曾经沧海	ceng jing cang hai	3211
-棋盘坨	qi pan tuo	3211
-沂蒙山区	yi meng shan qu	3211
-泰米尔纳德邦	tai mi er na de bang	3211
-淠史杭	pi shi hang	3211
-深圳特区	shen zhen te qu	3211
-滇东南	dian dong nan	3211
-直罗镇	zhi luo zhen	3211
-艾伯塔省	ai bo ta sheng	3211
-西亚地区	xi ya di qu	3211
-西孟加拉邦	xi meng jia la bang	3211
-锡林郭勒	xi lin guo lei	3211
-青石桥	qing shi qiao	3211
-马丘比丘	ma qiu bi qiu	3211
-骑田岭	qi tian ling	3211
-万洋山	wan yang shan	3175
-三峡库区	san xia ku qu	3175
-上海虹桥机场	shang hai hong qiao ji chang	3175
-下萨克森州	xia sa ke sen zhou	3175
-九岭山	jiu ling shan	3175
-亚历山大广场	ya li shan da guang chang	3175
-冬麦区	dong mai qu	3175
-南卡罗来纳	nan ka luo lai na	3175
-南浦大桥	nan pu da qiao	3175
-叙家常	xu jia chang	3175
-哈萨克斯坦共和国	ha sa ke si tan gong he guo	3175
-商洛地区	shang luo di qu	3175
-喀布尔河	ka bu er he	3175
-四姑娘山	si gu niang shan	3175
-壶口瀑布	hu kou pu bu	3175
-外流河	wai liu he	3175
-安提瓜岛	an ti gua dao	3175
-川西平原	chuan xi ping yuan	3175
-巴勒斯坦地区	ba le si tan di qu	3175
-巴里坤湖	ba li kun hu	3175
-巴颜喀拉	ba yan ka la	3175
-斗牛宫	dou niu gong	3175
-新南威尔士	xin nan wei er shi	3175
-格罗宁根	ge luo ning gen	3175
-桑兰西党	sang lan xi dang	3175
-武川西	wu chuan xi	3175
-沙鲁里山	sha lu li shan	3175
-泰坦尼克	tai tan ni ke	3175
-浙东运河	zhe dong yun he	3175
-海拉尔市	hai la er shi	3175
-涅曼河	nie man he	3175
-淡泊名利	dan bo ming li	3175
-满园春色	man yuan chun se	3175
-爱尔兰共和国	ai er lan gong he guo	3175
-留尼汪岛	liu ni wang dao	3175
-石河子市	shi he zi shi	3175
-石花街	shi hua jie	3175
-神户港	shen hu gang	3175
-竹林镇	zhu lin zhen	3175
-苏丹共和国	su dan gong he guo	3175
-车里雅宾斯克	che li ya bin si ke	3175
-郭家店	guo jia dian	3175
-三十年河东	san shi nian he dong	3137
-东安市场	dong an shi chang	3137
-东萨摩亚	dong sa mo ya	3137
-中南海西花厅	zhong nan hai xi hua ting	3137
-中美洲地区	zhong mei zhou di qu	3137
-乌斯怀亚	wu si huai ya	3137
-伦左旗	lun zuo qi	3137
-俄克拉何马	e ke la he ma	3137
-俄罗斯远东地区	e luo si yuan dong di qu	3137
-冈比西斯	gang bi xi si	3137
-北京天安门广场	bei jing tian an men guang chang	3137
-古吉拉特邦	gu ji la te bang	3137
-哥伦比亚特区	ge lun bi ya te qu	3137
-哥达德	ge da de	3137
-喀纳斯湖	ka na si hu	3137
-埃布罗河	ai bu luo he	3137
-塔吉克斯坦共和国	ta ji ke si tan gong he guo	3137
-塞浦路斯岛	sai pu lu si dao	3137
-大湖地区	da hu di qu	3137
-宁海城	ning hai cheng	3137
-寿南山	shou nan shan	3137
-巴利阿里	ba li a li	3137
-德国西门子	de guo xi men zi	3137
-怀俄明州	huai e ming zhou	3137
-旁遮普邦	pang zhe pu bang	3137
-未名湖畔	wei ming hu pan	3137
-林芝地区	lin zhi di qu	3137
-沙特阿拉伯王国	sha te a la bo wang guo	3137
-波尔多市	bo er duo shi	3137
-泸天化	lu tian hua	3137
-洞庭湖畔	dong ting hu pan	3137
-津轻海峡	jin qing hai xia	3137
-海河平原	hai he ping yuan	3137
-滇西南	dian xi nan	3137
-焉耆回族自治县	yan qi hui zu zi zhi xian	3137
-爱利亚	ai li ya	3137
-船旗国	chuan qi guo	3137
-英格索兰	ying ge suo lan	3137
-荷兰王国	he lan wang guo	3137
-荷尔德林	he er de lin	3137
-贝拿勒斯	bei na lei si	3137
-鄂伦春自治旗	e lun chun zi zhi qi	3137
-长三甲	zhang san jia	3137
-阿拉伯联盟	a la bo lian meng	3137
-阿拉善左旗	a la shan zuo qi	3137
-阿特巴拉河	a te ba la he	3137
-魁北克城	kui bei ke cheng	3137
-中国新疆地区	zhong guo xin jiang di qu	3095
-临川市	lin chuan shi	3095
-丹麦王国	dan mai wang guo	3095
-乌梁素海	wu liang su hai	3095
-乌珠穆沁	wu zhu mu qin	3095
-乌里雅苏台	wu li ya su tai	3095
-俾斯麦群岛	bi si mai qun dao	3095
-俾路支省	bi lu zhi sheng	3095
-冷水江市	leng shui jiang shi	3095
-准格尔旗	zhun ge er qi	3095
-千里冰封	qian li bing feng	3095
-南湖大山	nan hu da shan	3095
-南迦巴瓦峰	nan jia ba wa feng	3095
-卢瓦尔河	lu wa er he	3095
-厄加勒斯角	e jia lei si jiao	3095
-埃及西奈半岛	ai ji xi nai ban dao	3095
-大山顶	da shan ding	3095
-太基城	tai ji cheng	3095
-威宁彝族回族苗族自治县	wei ning yi zu hui zu miao zu zi zhi xian	3095
-尤利西斯	you li xi si	3095
-山顶洞	shan ding dong	3095
-山高皇帝远	shan gao huang di yuan	3095
-峨眉山市	e mei shan shi	3095
-巴塞罗那奥运会	ba sai luo na ao yun hui	3095
-巴林左旗	ba lin zuo qi	3095
-广州白云机场	guang zhou bai yun ji chang	3095
-底格里斯	di ge li si	3095
-拉卜楞寺	la bo leng si	3095
-斯海尔德河	si hai er de he	3095
-曼哈顿区	man ha dun qu	3095
-松迪亚	song di ya	3095
-沙里河	sha li he	3095
-法属波利尼西亚	fa shu bo li ni xi ya	3095
-波兰共和国	bo lan gong he guo	3095
-洛杉矶市	luo shan ji shi	3095
-深山区	shen shan qu	3095
-爱达荷州	ai da he zhou	3095
-琼山市	qiong shan shi	3095
-百里洲	bai li zhou	3095
-石嘴山市	shi zui shan shi	3095
-突尼斯共和国	tu ni si gong he guo	3095
-簰洲镇	pai zhou zhen	3095
-纳塔尔省	na ta er sheng	3095
-英雄汉	ying xiong han	3095
-葫芦岛市	hu lu dao shi	3095
-蒲圻市	pu qi shi	3095
-西柏坡村	xi bai po cun	3095
-辛亥首	xin hai shou	3095
-阿森松岛	a sen song dao	3095
-香港海关	xiang gang hai guan	3095
-三山五岳	san shan wu yue	3050
-上海南京路	shang hai nan jing lu	3050
-东宫门	dong gong men	3050
-东游西荡	dong you xi dang	3050
-东耶路撒冷	dong ye lu sa leng	3050
-两城镇	liang cheng zhen	3050
-中山纪念堂	zhong shan ji nian tang	3050
-乌叶海亚	wu ye hai ya	3050
-九万大山	jiu wan da shan	3050
-九渡河镇	jiu du he zhen	3050
-井冈山市	jing gang shan shi	3050
-伊塞顿	yi sai dun	3050
-伏尔塔瓦河	fu er ta wa he	3050
-六盘水市	liu pan shui shi	3050
-内布拉斯加	nei bu la si jia	3050
-凤凰树	feng huang shu	3050
-利利索索	li li suo suo	3050
-加里宁格勒州	jia li ning ge lei zhou	3050
-北京海关	bei jing hai guan	3050
-北海港	bei hai gang	3050
-北西西	bei xi xi	3050
-卧龙自然保护区	wo long zi ran bao hu qu	3050
-古巴共和国	gu ba gong he guo	3050
-喜玛拉雅	xi ma la ya	3050
-多瑙河畔	duo nao he pan	3050
-大西洲	da xi zhou	3050
-奥连特省	ao lian te sheng	3050
-委内瑞拉共和国	wei nei rui la gong he guo	3050
-安营下寨	an ying xia zhai	3050
-巴吞鲁日	ba tun lu ri	3050
-德梅齐埃	de mei qi ai	3050
-捷克斯洛伐克共和国	jie ke si luo fa ke gong he guo	3050
-新加坡元	xin jia po yuan	3050
-新斯科舍省	xin si ke she sheng	3050
-昆仑饭店	kun lun fan dian	3050
-晋侯墓	jin hou mu	3050
-普鲁特河	pu lu te he	3050
-曲麻莱县	qu ma lai xian	3050
-条条大路通罗马	tiao tiao da lu tong luo ma	3050
-桑普多利亚	sang pu duo li ya	3050
-欧阳洛	ou yang luo	3050
-武都县	wu dou xian	3050
-比利时王国	bi li shi wang guo	3050
-波拉尔	bo la er	3050
-波罗的海地区	bo luo di hai di qu	3050
-洛阳龙门石窟	luo yang long men shi ku	3050
-淮沭河	huai shu he	3050
-满蒙汉	man meng han	3050
-澳门地区	ao men di qu	3050
-班达拉奈克	ban da la nai ke	3050
-石湖里	shi hu li	3050
-绰尔河	chuo er he	3050
-罗布林卡	luo bu lin ka	3050
-肯尼亚山	ken ni ya shan	3050
-花都市	hua du shi	3050
-苏必利尔	su bi li er	3050
-英国牛津	ying guo niu jin	3050
-蒙古营	meng gu ying	3050
-西伯利亚地区	xi bo li ya di qu	3050
-西洱河	xi er he	3050
-贝宁共和国	bei ning gong he guo	3050
-贡山独龙族怒族自治县	gong shan du long zu nu zu zi zhi xian	3050
-赛里木湖	sai li mu hu	3050
-辽宁抚顺	liao ning fu shun	3050
-通什市	tong shen shi	3050
-通都大邑	tong du da yi	3050
-金张掖	jin zhang ye	3050
-镇宁布依族苗族自治县	zhen ning bu yi zu miao zu zi zhi xian	3050
-长白山天池	chang bai shan tian chi	3050
-防城港市	fang cheng gang shi	3050
-阳维脉	yang wei mai	3050
-阿非利加	a fei li jia	3050
-雷根斯堡	lei gen si bao	3050
-青海地区	qing hai di qu	3050
-青铜峡市	qing tong xia shi	3050
-鹿儿岛县	lu er dao xian	3050
-麻栗坡县	ma li po xian	3050
-黑海地区	hei hai di qu	3050
+# 排序分层：entity-v1；专名作为低优先级召回，保留原有相对顺序。
+南京长江大桥	nan jing chang jiang da qiao	3850
+江汉平原	jiang han ping yuan	3850
+北京机场	bei jing ji chang	3770
+广东音乐	guang dong yin yue	3689
+焦山河	jiao shan he	3684
+成都地区	cheng du di qu	3662
+重庆地区	chong qing di qu	3635
+山东地区	shan dong di qu	3608
+东方广场	dong fang guang chang	3581
+神农架林区	shen nong jia lin qu	3553
+故宫博物院	gu gong bo wu yuan	3542
+武当山风景区	wu dang shan feng jing qu	3539
+大湾特	da wan te	3536
+调关镇	diao guan zhen	3536
+车城西	che cheng xi	3536
+马克思列宁主义	ma ke si lie ning zhu yi	3499
+丽水地区	li shui di qu	3473
+河东平阳	he dong ping yang	3473
+吉安地区	ji an di qu	3447
+固原地区	gu yuan di qu	3447
+长沙地区	chang sha di qu	3447
+商洛山	shang luo shan	3439
+桂林地区	gui lin di qu	3420
+澳门特区	ao men te qu	3393
+澳门特别行政区	ao men te bie xing zheng qu	3383
+埃及王国	ai ji wang guo	3366
+山东泰山	shan dong tai shan	3366
+独立王国	du li wang guo	3366
+菏泽地区	he ze di qu	3366
+上海海关	shang hai hai guan	3312
+东西欧	dong xi ou	3312
+丹江口市	dan jiang kou shi	3306
+华中地区	hua zhong di qu	3305
+长阳土家族自治县	zhang yang tu jia zu zi zhi xian	3304
+古琴台	gu qin tai	3303
+老河口市	lao he kou shi	3298
+丹江口水库	dan jiang kou shui ku	3297
+五峰土家族自治县	wu feng tu jia zu zi zhi xian	3293
+北河口	bei he kou	3290
+夫人城	fu ren cheng	3290
+三自爱国	san zi ai guo	3289
+东西湖区	dong xi hu qu	3289
+腾龙洞	teng long dong	3289
+东连吴	dong lian wu	3287
+南岳山	nan yue shan	3286
+周坤仁	zhou kun ren	3286
+天心洲	tian xin zhou	3286
+安邦治国	an bang zhi guo	3286
+山自西	shan zi xi	3286
+石牌岭	shi pai ling	3286
+科教兴市	ke jiao xing shi	3286
+铁山区	tie shan qu	3286
+黄石港区	huang shi gang qu	3286
+苏州地区	su zhou di qu	3285
+上官洲	shang guan zhou	3284
+乌云其木格	wu yun qi mu ge	3284
+南河头	nan he tou	3284
+南河洲	nan he zhou	3284
+南洲子	nan zhou zi	3284
+古三国	gu san guo	3284
+图道多吉	tu dao duo ji	3284
+安七州	an qi zhou	3284
+小河口镇	xiao he kou zhen	3284
+杨苗洲	yang miao zhou	3284
+松林山	song lin shan	3284
+梁子湖区	liang zi hu qu	3284
+江家岔	jiang jia cha	3284
+石华堰	shi hua yan	3284
+神皇洲	shen huang zhou	3284
+秦家洲	qin jia zhou	3284
+秦属南	qin shu nan	3284
+老洲岭	lao zhou ling	3284
+荆南府	jing nan fu	3284
+西塞山区	xi sai shan qu	3284
+鄂三州	e san zhou	3284
+长岭岗	zhang ling gang	3284
+陈家铺	chen jia pu	3284
+青木河	qing mu he	3284
+黄河流域	huang he liu yu	3273
+陕甘宁边区	shan gan ning bian qu	3270
+河西走廊	he xi zou lang	3261
+七里沟	qi li gou	3258
+中国嘉陵	zhong guo jia ling	3204
+临沧地区	lin cang di qu	3204
+丽江地区	li jiang di qu	3204
+北仑河口	bei lun he kou	3204
+南宁地区	nan ning di qu	3204
+哈密地区	ha mi di qu	3204
+徽州地区	hui zhou di qu	3204
+思茅地区	si mao di qu	3204
+毕节地区	bi jie di qu	3204
+河池地区	he chi di qu	3204
+淮北地区	huai bei di qu	3204
+白城地区	bai cheng di qu	3204
+铜仁地区	tong ren di qu	3204
+特鲁西埃	te lu xi ai	3200
+喜马拉雅山	xi ma la ya shan	3189
+阿拉伯半岛	a la bo ban dao	3186
+阿尔泰山	a er tai shan	3182
+珠穆朗玛峰	zhu mu lang ma feng	3154
+华北平原	hua bei ping yuan	3142
+雅鲁藏布江	ya lu zang bu jiang	3127
+香港游	xiang gang you	3123
+伯罗奔尼撒	bo luo ben ni sa	3119
+满头大汗	man tou da han	3107
+美索不达米亚	mei suo bu da mi ya	3102
+珠江三角洲	zhu jiang san jiao zhou	3100
+黄埔海关	huang pu hai guan	3097
+福拉多	fu la duo	3095
+辽东半岛	liao dong ban dao	3083
+撒哈拉沙漠	sa ha la sha mo	3081
+西直门外	xi zhi men wai	3081
+大江南北	da jiang nan bei	3076
+苏星河	su xing he	3073
+广西军区	guang xi jun qu	3070
+塔里木盆地	ta li mu pen di	3065
+山东半岛	shan dong ban dao	3060
+一班人马	yi ban ren ma	3043
+枝城市	zhi cheng shi	3043
+前门大街	qian men da jie	3042
+北京中山公园	bei jing zhong shan gong yuan	3042
+马六甲海峡	ma liu jia hai xia	3042
+亚马孙河	ya ma sun he	3033
+寿兴国	shou xing guo	3033
+清律典	qing lv dian	3033
+唐古拉山	tang gu la shan	3021
+塔里木河	ta li mu he	3018
+山水相连	shan shui xiang lian	3016
+平安北道	ping an bei dao	3016
+万里长城	wan li chang cheng	3013
+中华苏维埃共和国	zhong hua su wei ai gong he guo	3013
+上山下乡	shang shan xia xiang	3007
+中央革命根据地	zhong yang ge ming gen ju di	2997
+东拉河	dong la he	2991
+喜马拉雅山脉	xi ma la ya shan mai	2988
+太平洋地区	tai ping yang di qu	2988
+马萨诸塞州	ma sa zhu sai zhou	2988
+斯堪的纳维亚	si kan de na wei ya	2985
+长江三角洲	chang jiang san jiao zhou	2975
+密西西比河	mi xi xi bi he	2965
+东欧地区	dong ou di qu	2962
+尼日尔河	ni ri er he	2961
+密克罗尼西亚	mi ke luo ni xi ya	2958
+乌苏里江	wu su li jiang	2954
+安第斯山脉	an di si shan mai	2951
+关中平原	guan zhong ping yuan	2947
+得克萨斯州	de ke sa si zhou	2947
+安第斯山	an di si shan	2944
+欧阳天	ou yang tian	2944
+马关条约	ma guan tiao yue	2937
+亚德里亚	ya de li ya	2935
+青海高原	qing hai gao yuan	2935
+柴达木盆地	chai da mu pen di	2932
+波利尼西亚	bo li ni xi ya	2932
+桑给巴尔	sang gei ba er	2921
+武汉长江大桥	wu han chang jiang da qiao	2921
+阿尔卑斯山脉	a er bei si shan mai	2910
+额尔古纳河	e er gu na he	2910
+巴士拉省	ba shi la sheng	2908
+阿加尼亚	a jia ni ya	2908
+准噶尔盆地	zhun ga er pen di	2902
+额尔齐斯河	e er qi si he	2897
+民主德国	min zhu de guo	2893
+天山南北	tian shan nan bei	2889
+巴拿马运河	ba na ma yun he	2889
+旁门左道	pang men zuo dao	2889
+横断山脉	heng duan shan mai	2889
+崇山峻岭	chong shan jun ling	2885
+山南海北	shan nan hai bei	2881
+几内亚湾	ji nei ya wan	2881
+乌拉尔山脉	wu la er shan mai	2876
+迪斯尼乐园	di si ni le yuan	2876
+科教兴国	ke jiao xing guo	2872
+阿拉伯海	a la bo hai	2872
+美塞尼亚	mei sai ni ya	2868
+苏门答腊岛	su men da la dao	2868
+印度半岛	yin du ban dao	2863
+云贵高原	yun gui gao yuan	2859
+平西伯	ping xi bo	2859
+幼发拉底河	you fa la di he	2854
+汤加王国	tang jia wang guo	2854
+沙土地	sha tu di	2854
+红海洋	hong hai yang	2854
+内蒙古高原	nei meng gu gao yuan	2850
+帕米尔高原	pa mi er gao yuan	2840
+河北平原	he bei ping yuan	2840
+红瓦店	hong wa dian	2840
+昆仑山脉	kun lun shan mai	2835
+江南地区	jiang nan di qu	2830
+中山西路	zhong shan xi lu	2827
+五指山区	wu zhi shan qu	2827
+卡塔尼亚	ka ta ni ya	2827
+延安东路	yan an dong lu	2827
+悉尼机场	xi ni ji chang	2827
+金鱼胡同	jin yu hu tong	2827
+霍尔木兹海峡	huo er mu zi hai xia	2825
+上海地区	shang hai di qu	2815
+兴旺发达	xing wang fa da	2815
+小兴安岭	xiao xing an ling	2815
+西藏地区	xi zang di qu	2815
+赞比西河	zan bi xi he	2810
+成都平原	cheng du ping yuan	2805
+三峡地区	san xia di qu	2800
+亚美利加	ya mei li jia	2800
+金台西路	jin tai xi lu	2800
+叶尼塞河	ye ni sai he	2799
+呼和浩特市	hu he hao te shi	2794
+比利牛斯	bi li niu si	2794
+伊克昭盟	yi ke zhao meng	2788
+松嫩平原	song nen ping yuan	2788
+深山老林	shen shan lao lin	2788
+三江平原	san jiang ping yuan	2783
+法勒亚	fa lei ya	2783
+珠江流域	zhu jiang liu yu	2783
+澎湖列岛	peng hu lie dao	2777
+萨摩斯岛	sa mo si dao	2773
+甘拜下风	gan bai xia feng	2771
+阿拉伯联合酋长国	a la bo lian he qiu zhang guo	2766
+塔克拉玛干沙漠	ta ke la ma gan sha mo	2759
+福尔马林	fu er ma lin	2759
+第聂伯河	di nie bo he	2759
+西南联大	xi nan lian da	2754
+新喀里多尼亚	xin ka li duo ni ya	2748
+东南非	dong nan fei	2747
+马尔康县	ma er kang xian	2747
+大别山区	da bie shan qu	2741
+太平盛世	tai ping sheng shi	2735
+东南亚地区	dong nan ya di qu	2729
+喀喇昆仑山	ka la kun lun shan	2729
+直布罗陀海峡	zhi bu luo tuo hai xia	2729
+凡尔赛宫	fan er sai gong	2722
+奥其尔巴特	ao qi er ba te	2722
+巴拉那河	ba la na he	2722
+青岛海尔	qing dao hai er	2720
+伪满洲国	wei man zhou guo	2715
+山海城	shan hai cheng	2715
+淮河流域	huai he liu yu	2715
+地中海地区	di zhong hai di qu	2708
+乌鲁木齐市	wu lu mu qi shi	2701
+巴伦支海	ba lun zhi hai	2701
+中国内蒙古自治区	zhong guo nei meng gu zi zhi qu	2694
+亚得里亚海	ya de li ya hai	2694
+东荆河	dong jing he	2693
+中尼公路	zhong ni gong lu	2693
+中西合璧	zhong xi he bi	2693
+丰州滩	feng zhou tan	2693
+临江楼	lin jiang lou	2693
+乌加河	wu jia he	2693
+乔治王岛	qiao zhi wang dao	2693
+乱石山村	luan shi shan cun	2693
+五华里	wu hua li	2693
+亚拉巴马	ya la ba ma	2693
+仙人渡	xian ren du	2693
+伊犁马	yi li ma	2693
+凼仔岛	dang zai dao	2693
+加美兰	jia mei lan	2693
+医巫闾山	yi wu lv shan	2693
+十里洋场	shi li yang chang	2693
+南丹州	nan dan zhou	2693
+南喀尔	nan ka er	2693
+博平岭	bo ping ling	2693
+古格王国	gu ge wang guo	2693
+吉田松阴	ji tian song yin	2693
+圣雄甘地	sheng xiong gan di	2693
+坝王岭	ba wang ling	2693
+埃德蒙顿	ai de meng dun	2693
+埃罗斯	ai luo si	2693
+堪萨斯城	kan sa si cheng	2693
+塞上江南	sai shang jiang nan	2693
+大丰县	da feng xian	2693
+大城山	da cheng shan	2693
+大市镇	da shi zhen	2693
+天坛公园	tian tan gong yuan	2693
+太和城	tai he cheng	2693
+子牙新河	zi ya xin he	2693
+宁江州	ning jiang zhou	2693
+富池口	fu chi kou	2693
+尼洋曲	ni yang qu	2693
+山城堡	shan cheng bao	2693
+川东南	chuan dong nan	2693
+川西高原	chuan xi gao yuan	2693
+庆阳县	qing yang xian	2693
+新东安	xin dong an	2693
+普斯海洋	pu si hai yang	2693
+曼陀罗花	man tuo luo hua	2693
+村山富市	cun shan fu shi	2693
+杭埠河	hang bu he	2693
+榆树林子	yu shu lin zi	2693
+欧阳锋冷	ou yang feng leng	2693
+洛桑达瓦	luo sang da wa	2693
+玉华州	yu hua zhou	2693
+田纳西河	tian na xi he	2693
+畹町桥	wan ding qiao	2693
+皋兰山	gao lan shan	2693
+石岭关	shi ling guan	2693
+秦安北	qin an bei	2693
+米内利	mi nei li	2693
+米罗西	mi luo xi	2693
+绍兴城	shao xing cheng	2693
+芮城西	rui cheng xi	2693
+英纳格	ying na ge	2693
+萌渚岭	meng zhu ling	2693
+萧山市	xiao shan shi	2693
+虎林县	hu lin xian	2693
+西河口	xi he kou	2693
+调和阴阳	tiao he yin yang	2693
+路环岛	lu huan dao	2693
+运河镇	yun he zhen	2693
+那头陀	na tou tuo	2693
+邱娥国	qiu e guo	2693
+金山口	jin shan kou	2693
+门头沟区	men tou gou qu	2693
+阳关大道	yang guan da dao	2693
+阿利纳斯	a li na si	2693
+阿根廷港	a gen ting gang	2693
+陕北高原	shan bei gao yuan	2693
+高里津	gao li jin	2693
+黎巴嫩山	li ba nen shan	2693
+黔东南州	qian dong nan zhou	2693
+八达岭长城	ba da ling chang cheng	2687
+喝西北风	he xi bei feng	2687
+外高加索	wai gao jia suo	2687
+武夷山脉	wu yi shan mai	2687
+呼伦贝尔盟	hu lun bei er meng	2680
+安大略省	an da lve sheng	2680
+齐齐哈尔市	qi qi ha er shi	2680
+伊洛瓦底江	yi luo wa di jiang	2672
+印度斯坦	yin du si tan	2672
+喜孜孜	xi zi zi	2672
+天山山脉	tian shan shan mai	2672
+琉球群岛	liu qiu qun dao	2672
+罗安江	luo an jiang	2672
+东跑西颠	dong pao xi dian	2666
+中山北路	zhong shan bei lu	2666
+中山太郎	zhong shan tai lang	2666
+中岛宏	zhong dao hong	2666
+中西亚	zhong xi ya	2666
+云岗石窟	yun gang shi ku	2666
+交河城	jiao he cheng	2666
+伊图里河	yi tu li he	2666
+伊奥尼亚	yi ao ni ya	2666
+克里雅河	ke li ya he	2666
+关门大吉	guan men da ji	2666
+冲沙闸	chong sha zha	2666
+华尼拉	hua ni la	2666
+华阴东	hua yin dong	2666
+南川河	nan chuan he	2666
+南马河	nan ma he	2666
+印第安那	yin di an na	2666
+合黎山	he li shan	2666
+大奴湖	da nu hu	2666
+大苗山	da miao shan	2666
+太行山麓	tai hang shan lu	2666
+尼亚萨兰	ni ya sa lan	2666
+尼斯河	ni si he	2666
+巴尔博亚	ba er bo ya	2666
+巴拉望岛	ba la wang dao	2666
+布哈河	bu ha he	2666
+希门尼斯	xi men ni si	2666
+开黑店	kai hei dian	2666
+德拉克马	de la ke ma	2666
+德拉瓦河	de la wa he	2666
+德桑蒂斯	de sang di si	2666
+故步自封	gu bu zi feng	2666
+新兵连	xin bing lian	2666
+晋绥边区	jin sui bian qu	2666
+松辽盆地	song liao pen di	2666
+林海雪原	lin hai xue yuan	2666
+民都洛	min dou luo	2666
+汉水流域	han shui liu yu	2666
+洛拉尔	luo la er	2666
+浙江广厦	zhe jiang guang sha	2666
+海流图乡	hai liu tu xiang	2666
+涑水河	su shui he	2666
+深赤湾	shen chi wan	2666
+爱德华多	ai de hua duo	2666
+王江泾	wang jiang jing	2666
+福尔摩沙	fu er mo sha	2666
+红口白牙	hong kou bai ya	2666
+罗布泊湖	luo bu po hu	2666
+舟山渔场	zhou shan yu chang	2666
+色楞格河	se leng ge he	2666
+苏果超市	su guo chao shi	2666
+苏萨宁	su sa ning	2666
+菊花岛	ju hua dao	2666
+蒙大拿州	meng da na zhou	2666
+西五路	xi wu lu	2666
+西苏丹	xi su dan	2666
+西蒙诺夫	xi meng nuo fu	2666
+鄂西地区	e xi di qu	2666
+里富兰	li fu lan	2666
+金鸡纳树	jin ji na shu	2666
+铁干里克	tie gan li ke	2666
+阿克苏市	a ke su shi	2666
+阿扎尼亚	a zha ni ya	2666
+青龙滩	qing long tan	2666
+马尼拉湾	ma ni la wan	2666
+黄蓉站	huang rong zhan	2666
+黄黎洲	huang li zhou	2666
+亚利桑那州	ya li sang na zhou	2665
+名山大川	ming shan da chuan	2665
+底格里斯河	di ge li si he	2665
+康涅狄格州	kang nie di ge zhou	2665
+昆士兰州	kun shi lan zhou	2665
+荒山野岭	huang shan ye ling	2665
+阿尔金山	a er jin shan	2665
+伦加德	lun jia de	2657
+保家卫国	bao jia wei guo	2657
+加勒比地区	jia lei bi di qu	2657
+博斯普鲁斯海峡	bo si pu lu si hai xia	2657
+天南地北	tian nan di bei	2657
+西西伯利亚	xi xi bo li ya	2657
+高头大马	gao tou da ma	2657
+乌龙岭	wu long ling	2649
+太阳黑子	tai yang hei zi	2649
+巴尔喀什湖	ba er ka shi hu	2649
+新墨西哥州	xin mo xi ge zhou	2649
+维多利亚湖	wei duo li ya hu	2649
+茅塞顿开	mao se dun kai	2649
+黑塞哥维那	hei sai ge wei na	2649
+加里曼丹岛	jia li man dan dao	2640
+大呼拉尔	da hu la er	2640
+太湖流域	tai hu liu yu	2640
+威斯敏斯特	wei si min si te	2640
+格陵兰岛	ge ling lan dao	2640
+钓鱼台国宾馆	diao yu tai guo bin guan	2640
+魁北克省	kui bei ke sheng	2640
+东非地区	dong fei di qu	2639
+巴尔喀什	ba er ka shi	2639
+鄱阳湖区	po yang hu qu	2639
+锦城镇	jin cheng zhen	2639
+上海贝尔	shang hai bei er	2632
+夕阳西下	xi yang xi xia	2632
+安大略湖	an da lve hu	2632
+宾夕法尼亚州	bin xi fa ni ya zhou	2632
+新疆地区	xin jiang di qu	2632
+贵州高原	gui zhou gao yuan	2632
+阿穆尔河	a mu er he	2632
+龙潭虎穴	long tan hu xue	2632
+乌孜别克	wu zi bie ke	2624
+勃兰登堡	bo lan deng bao	2624
+燕山山脉	yan shan shan mai	2624
+稀树草原	xi shu cao yuan	2624
+罗得西亚	luo de xi ya	2624
+苏必利尔湖	su bi li er hu	2624
+鄂尔多斯高原	e er duo si gao yuan	2624
+香港地区	xiang gang di qu	2624
+中国西藏自治区	zhong guo xi zang zi zhi qu	2615
+川藏公路	chuan cang gong lu	2615
+库克群岛	ku ke qun dao	2615
+敦煌石窟	dun huang shi ku	2615
+木牛流马	mu niu liu ma	2615
+江南运河	jiang nan yun he	2615
+直角三角形	zhi jiao san jiao xing	2615
+西萨摩亚	xi sa mo ya	2615
+银川平原	yin chuan ping yuan	2615
+青藏公路	qing cang gong lu	2615
+高山流水	gao shan liu shui	2615
+上下半场	shang xia ban chang	2612
+东川市	dong chuan shi	2612
+东胜市	dong sheng shi	2612
+乌卡亚利	wu ka ya li	2612
+乌尔城	wu er cheng	2612
+五灵脂	wu ling zhi	2612
+克利马	ke li ma	2612
+八道江区	ba dao jiang qu	2612
+兰治河	lan zhi he	2612
+勒勒车	le le che	2612
+北东东	bei dong dong	2612
+北凉南	bei liang nan	2612
+北大港	bei da gang	2612
+北大附中	bei da fu zhong	2612
+卡罗尼河	ka luo ni he	2612
+双鸭山市	shuang ya shan shi	2612
+古根海姆	gu gen hai mu	2612
+台希德	tai xi de	2612
+吉达港	ji da gang	2612
+吐气扬眉	tu qi yang mei	2612
+咸镜南道	xian jing nan dao	2612
+哀牢夷	ai lao yi	2612
+圣安德烈	sheng an de lie	2612
+埃尔湖	ai er hu	2612
+大地回春	da di hui chun	2612
+天府广场	tian fu guang chang	2612
+太平店	tai ping dian	2612
+奥加湖	ao jia hu	2612
+宁武关	ning wu guan	2612
+安丰塘	an feng tang	2612
+安西东	an xi dong	2612
+宣州市	xuan zhou shi	2612
+宽宏大度	kuan hong da du	2612
+察隅河	cha yu he	2612
+小河沟	xiao he gou	2612
+巴拉顿湖	ba la dun hu	2612
+平顶海	ping ding hai	2612
+底特律河	di te lv he	2612
+德令哈市	de ling ha shi	2612
+拉斯河	la si he	2612
+拱石桥	gong shi qiao	2612
+敕勒川	chi le chuan	2612
+斯坦利港	si tan li gang	2612
+新汴河	xin bian he	2612
+昌迪加尔	chang di jia er	2612
+曼哈顿岛	man ha dun dao	2612
+榆林港	yu lin gang	2612
+樱内义雄	ying nei yi xiong	2612
+欧大哥	ou da ge	2612
+武都东	wu du dong	2612
+池田大作	chi tian da zuo	2612
+洛贡河	luo gong he	2612
+浏河镇	liu he zhen	2612
+深水港区	shen shui gang qu	2612
+渭干河	wei gan he	2612
+湖南师大	hu nan shi da	2612
+独流镇	du liu zhen	2612
+琉球王国	liu qiu wang guo	2612
+米尔本	mi er ben	2612
+绍罗什	shao luo shen	2612
+罗布淖尔	luo bu nao er	2612
+舟津圭	zhou jin gui	2612
+芝加哥市	zhi jia ge shi	2612
+蒙特港	meng te gang	2612
+西法兰	xi fa lan	2612
+西瓦利	xi wa li	2612
+豫东平原	yu dong ping yuan	2612
+达拉特旗	da la te qi	2612
+达江乡	da jiang xiang	2612
+鄱阳湖畔	po yang hu pan	2612
+里斯丹	li si dan	2612
+金盆坡	jin pen po	2612
+锦州湾	jin zhou wan	2612
+镇海寺	zhen hai si	2612
+长流水	chang liu shui	2612
+阿勒泰市	a le tai shi	2612
+阿拉伯国	a la bo guo	2612
+阿里河	a li he	2612
+阿鲁巴岛	a lu ba dao	2612
+集宁市	ji ning shi	2612
+马约特岛	ma yue te dao	2612
+麦克尼利	mai ke ni li	2612
+黄蓉本	huang rong ben	2612
+黑龙河	hei long he	2612
+中直机关	zhong zhi ji guan	2605
+北京故宫	bei jing gu gong	2605
+巴塔哥尼亚	ba ta ge ni ya	2605
+科罗拉多河	ke luo la duo he	2605
+上海东方	shang hai dong fang	2596
+安的列斯群岛	an de lie si qun dao	2596
+晋察冀边区	jin cha ji bian qu	2596
+法属圭亚那	fa shu gui ya na	2596
+西溪南	xi xi nan	2596
+高黎贡山	gao li gong shan	2596
+黄淮海平原	huang huai hai ping yuan	2596
+俄亥俄河	e hai e he	2587
+叶尔羌河	ye er qiang he	2587
+坦噶尼喀湖	tan ga ni ka hu	2587
+塞浦路斯共和国	sai pu lu si gong he guo	2587
+宾夕法尼亚	bin xi fa ni ya	2587
+格但斯克	ge dan si ke	2587
+上台子	shang tai zi	2585
+东法兰	dong fa lan	2585
+东莱街	dong lai jie	2585
+东阳镇	dong yang zhen	2585
+中美史克	zhong mei shi ke	2585
+中非地区	zhong fei di qu	2585
+乌戈国	wu ge guo	2585
+乌裕尔河	wu yu er he	2585
+九日山	jiu ri shan	2585
+九龙坡区	jiu long po qu	2585
+伊吾屯	yi wu tun	2585
+伦蒂岛	lun di dao	2585
+伯南布哥	bo nan bu ge	2585
+利加洲	li jia zhou	2585
+北帝庙	bei di miao	2585
+十里坪	shi li ping	2585
+华伦海	hua lun hai	2585
+南坪县	nan ping xian	2585
+南威尔士	nan wei er shi	2585
+南屏山	nan ping shan	2585
+南河村	nan he cun	2585
+右边前卫	you bian qian wei	2585
+吉萨省	ji sa sheng	2585
+周沧海	zhou cang hai	2585
+唐西州	tang xi zhou	2585
+商州市	shang zhou shi	2585
+喀喇沁旗	ka la qin qi	2585
+埃格蒙特	ai ge meng te	2585
+塔尔湖	ta er hu	2585
+塘沽港	tang gu gang	2585
+墨西卡利	mo xi ka li	2585
+墨西哥州	mo xi ge zhou	2585
+多云间阴	duo yun jian yin	2585
+大佛湾	da fo wan	2585
+大佛湾	da fu wan	2585
+奥罗亚	ao luo ya	2585
+宁宫西	ning gong xi	2585
+宁平城	ning ping cheng	2585
+定林寺	ding lin si	2585
+巴伊亚州	ba yi ya zhou	2585
+巴尔加斯	ba er jia si	2585
+巴尔萨斯	ba er sa si	2585
+巴林右旗	ba lin you qi	2585
+布尔津县	bu er jin xian	2585
+常流河	chang liu he	2585
+幕阜山脉	mu fu shan mai	2585
+平川市	ping chuan shi	2585
+广运潭	guang yun tan	2585
+扎兰屯市	zha lan tun shi	2585
+拉合尔市	la he er shi	2585
+拉尼西亚	la ni xi ya	2585
+新土尔	xin tu er	2585
+普兰店市	pu lan dian shi	2585
+桑加河	sang jia he	2585
+梁建国	liang jian guo	2585
+梅拉腊	mei la la	2585
+欧阳克心	ou yang ke xin	2585
+汝宁州	ru ning zhou	2585
+沙坪坝区	sha ping ba qu	2585
+波塞东	bo sai dong	2585
+波尔约	bo er yue	2585
+波洛奈兹	bo luo nai zi	2585
+洋浦港	yang pu gang	2585
+洛加尼斯	luo jia ni si	2585
+涪陵市	fu ling shi	2585
+淮海公园	huai hai gong yuan	2585
+温泉市	wen quan shi	2585
+湖南镇	hu nan zhen	2585
+潴龙河	zhu long he	2585
+燕塞湖	yan sai hu	2585
+燕头镇	yan tou zhen	2585
+牌坊店村	pai fang dian cun	2585
+牙克石市	ya ke shi shi	2585
+特拉华河	te la hua he	2585
+狼山鸡	lang shan ji	2585
+猫跳河	mao tiao he	2585
+畹町市	wan ting shi	2585
+白马非马	bai ma fei ma	2585
+益兰州	yi lan zhou	2585
+石寨山	shi zhai shan	2585
+石湖县	shi hu xian	2585
+索伦斯坦	suo lun si tan	2585
+绥芬河市	sui fen he shi	2585
+耶利内克	ye li nei ke	2585
+聚福隆	ju fu long	2585
+胶柱鼓瑟	jiao zhu gu se	2585
+苏南地区	su nan di qu	2585
+苏普大	su pu da	2585
+苏比克	su bi ke	2585
+茂林修竹	mao lin xiu zhu	2585
+茨淮新河	ci huai xin he	2585
+菲利浦斯	fei li pu si	2585
+蒙巴萨港	meng ba sa gang	2585
+蒙德里安	meng de li an	2585
+蓟州城	ji zhou cheng	2585
+西凉州	xi liang zhou	2585
+西利斯	xi li si	2585
+西非地区	xi fei di qu	2585
+许定国	xu ding guo	2585
+诸汗国	zhu han guo	2585
+象泉河	xiang quan he	2585
+赤县神州	chi xian shen zhou	2585
+辽河油田	liao he you tian	2585
+鄂尔多	e er duo	2585
+里亚海	li ya hai	2585
+里亚湾	li ya wan	2585
+阿不来提	a bu lai ti	2585
+阿瓦提县	a wa ti xian	2585
+阿肯色河	a ken se he	2585
+青木堂中	qing mu tang zhong	2585
+青木堂韦	qing mu tang wei	2585
+额尔古	e er gu	2585
+马利列	ma li lie	2585
+驻马店市	zhu ma dian shi	2585
+高山湖	gao shan hu	2585
+麦克戴斯	mai ke dai si	2585
+黄浦江畔	huang pu jiang pan	2585
+龙比亚	long bi ya	2585
+南南合作	nan nan he zuo	2577
+天南海北	tian nan hai bei	2577
+巴比伦王国	ba bi lun wang guo	2577
+西藏高原	xi zang gao yuan	2577
+勃兰登堡门	bo lan deng bao men	2568
+南澳大利亚	nan ao da li ya	2568
+巴黎圣母院	ba li sheng mu yuan	2568
+格兰德河	ge lan de he	2568
+江阴长江大桥	jiang yin chang jiang da qiao	2568
+琼州海峡	qiong zhou hai xia	2568
+西藏天路	xi zang tian lu	2568
+都江堰市	du jiang yan shi	2568
+龙京沙	long jing sha	2568
+亚历山大城	ya li shan da cheng	2557
+北京西站	bei jing xi zhan	2557
+南斯拉夫联盟	nan si la fu lian meng	2557
+南斯拉夫联盟共和国	nan si la fu lian meng gong he guo	2557
+哥伦比亚共和国	ge lun bi ya gong he guo	2557
+巫山长江大桥	wu shan chang jiang da qiao	2557
+椰林湾	ye lin wan	2557
+欢喜岭	huan xi ling	2557
+武汉白沙洲长江大桥	wu han bai sha zhou chang jiang da qiao	2557
+法尔萨	fa er sa	2557
+港人治港	gang ren zhi gang	2557
+芜湖长江大桥	wu hu chang jiang da qiao	2557
+西陵长江大桥	xi ling chang jiang da qiao	2557
+阿拉斯加州	a la si jia zhou	2557
+麦西尼亚	mai xi ni ya	2557
+东亚地区	dong ya di qu	2547
+乌拉尔河	wu la er he	2547
+克鲁伦河	ke lu lun he	2547
+冈底斯山脉	gang di si shan mai	2547
+塔克拉玛干	ta ke la ma gan	2547
+塞内加尔河	sai nei jia er he	2547
+布莱克本	bu lai ke ben	2547
+新南威尔士州	xin nan wei er shi zhou	2547
+沧海桑田	cang hai sang tian	2547
+海布利	hai bu li	2547
+白山黑水	bai shan hei shui	2547
+祁连山脉	qi lian shan mai	2547
+虹桥机场	hong qiao ji chang	2547
+喀尔巴阡山脉	ka er ba qian shan mai	2535
+欧几里德	ou ji li de	2535
+燕下都	yan xia dou	2535
+特立尼达岛	te li ni da dao	2535
+米第亚	mi di ya	2535
+维尔京群岛	wei er jing qun dao	2535
+黄淮平原	huang huai ping yuan	2535
+三汊河	san cha he	2531
+上官大夫	shang guan dai fu	2531
+临河市	lin he shi	2531
+乌尔基萨	wu er ji sa	2531
+二道河	er dao he	2531
+五峰县	wu feng xian	2531
+五里桥乡	wu li qiao xiang	2531
+亚尔古	ya er gu	2531
+亚穆纳河	ya mu na he	2531
+伊洛河	yi luo he	2531
+余杭市	yu hang shi	2531
+依阿华州	yi a hua zhou	2531
+克尔曼沙	ke er man sha	2531
+六万大山	liu wan da shan	2531
+冀六州	ji liu zhou	2531
+冀北山	ji bei shan	2531
+内塞斯	nei sai si	2531
+加拿大元	jia na da yuan	2531
+北卫滩	bei wei tan	2531
+南子北	nan zi bei	2531
+南河沿	nan he yan	2531
+南流江	nan liu jiang	2531
+印加国	yin jia guo	2531
+哈拉哈河	ha la ha he	2531
+喀喇昆仑	ka la kun lun	2531
+四子王旗	si zi wang qi	2531
+圣玛利亚	sheng ma li ya	2531
+塔纳河	ta na he	2531
+塔院寺	ta yuan si	2531
+大孤山	da gu shan	2531
+大屋里	da wu li	2531
+大洋河	da yang he	2531
+大田庄乡	da tian zhuang xiang	2531
+大苦湖	da ku hu	2531
+大黑汀	da hei ting	2531
+天云山	tian yun shan	2531
+天大地大	tian da di da	2531
+天风城	tian feng cheng	2531
+太仓县	tai cang xian	2531
+奥布宁斯	ao bu ning si	2531
+宁南伯	ning nan bo	2531
+安诺本	an nuo ben	2531
+宜清利	yi qing li	2531
+察右前旗	cha you qian qi	2531
+川沙镇	chuan sha zhen	2531
+巴伦坦	ba lun tan	2531
+巴塞林	ba sai lin	2531
+巴尔本	ba er ben	2531
+巴音郭楞	ba yin guo leng	2531
+布律内尔	bu lv nei er	2531
+布莱尔港	bu lai er gang	2531
+延河水	yan he shui	2531
+张坤海	zhang kun hai	2531
+息斯敏	xi si min	2531
+惠新东街	hui xin dong jie	2531
+惠特尼山	hui te ni shan	2531
+成帝河	cheng di he	2531
+成平陆	cheng ping lu	2531
+扎鲁特旗	zha lu te qi	2531
+斯培西亚	si pei xi ya	2531
+新界埠乡	xin jie bu xiang	2531
+旅顺口区	lv shun kou qu	2531
+杭甬运河	hang yong yun he	2531
+松花江畔	song hua jiang pan	2531
+枝江县	zhi jiang xian	2531
+柳比西	liu bi xi	2531
+梅克伦堡	mei ke lun bao	2531
+梅河口市	mei he kou shi	2531
+椒江市	jiao jiang shi	2531
+楚州南	chu zhou nan	2531
+汉阳陵	han yang ling	2531
+江建国	jiang jian guo	2531
+河图洛	he tu luo	2531
+河田鸡	he tian ji	2531
+法拉本多	fa la ben duo	2531
+法西斯化	fa xi si hua	2531
+泗州城	si zhou cheng	2531
+波拉斯	bo la si	2531
+波阳县	bo yang xian	2531
+海晏河清	hai yan he qing	2531
+温塘峡	wen tang xia	2531
+滏阳新河	fu yang xin he	2531
+玛拉沁夫	ma la qin fu	2531
+甘井子区	gan jing zi qu	2531
+甘油三脂	gan you san zhi	2531
+白土关	bai tu guan	2531
+白湖乡	bai hu xiang	2531
+白鹿联	bai lu lian	2531
+米建国	mi jian guo	2531
+绕指柔	rao zhi rou	2531
+绥靖主义	sui jing zhu yi	2531
+考比伦杯	kao bi lun bei	2531
+芝罘岛	zhi fu dao	2531
+茅盾故居	mao dun gu ju	2531
+萨尔区	sa er qu	2531
+西侯度	xi hou du	2531
+西喀尔巴	xi ka er ba	2531
+西地那非	xi di na fei	2531
+西峰市	xi feng shi	2531
+西梁国	xi liang guo	2531
+西海镇	xi hai zhen	2531
+西约克郡	xi yue ke jun	2531
+西里村	xi li cun	2531
+象角村	xiang jiao cun	2531
+达尔富尔	da er fu er	2531
+达尔文港	da er wen gang	2531
+迪伦马特	di lun ma te	2531
+都镇湾镇	du zhen wan zhen	2531
+阿尔诺河	a er nuo he	2531
+阿拉伯湾	a la bo wan	2531
+阿普利亚	a pu li ya	2531
+非加太	fei jia tai	2531
+马德望省	ma de wang sheng	2531
+马洛湾	ma luo wan	2531
+麦斯欧	mai si ou	2531
+黄坛口	huang tan kou	2531
+黄岩市	huang yan shi	2531
+黄淮地区	huang huai di qu	2531
+龙海县	long hai xian	2531
+龙源口	long yuan kou	2531
+一路平安	yi lu ping an	2524
+云南高原	yun nan gao yuan	2524
+京津地区	jing jin di qu	2524
+以色列国	yi se lie guo	2524
+北京饭店	bei jing fan dian	2524
+北卡罗来纳州	bei ka luo lai na zhou	2524
+玉龙雪山	yu long xue shan	2524
+西太平洋地区	xi tai ping yang di qu	2524
+马里亚纳群岛	ma li ya na qun dao	2524
+南极半岛	nan ji ban dao	2513
+博洛尼亚	bo luo ni ya	2513
+奉辛比克党	feng xin bi ke dang	2513
+奥木列	ao mu lie	2513
+尤卡坦半岛	you ka tan ban dao	2513
+库仑定律	ku lun ding lv	2513
+德谟克利特	de mo ke li te	2513
+维斯瓦河	wei si wa he	2513
+菲律宾共和国	fei lv bin gong he guo	2513
+辽河流域	liao he liu yu	2513
+马拉维湖	ma la wei hu	2513
+黄原城	huang yuan cheng	2513
+军民共建	jun min gong jian	2501
+南阳盆地	nan yang pen di	2501
+卡累利阿	ka lei li a	2501
+塔斯马尼亚	ta si ma ni ya	2501
+忠君爱国	zhong jun ai guo	2501
+松山堡	song shan bao	2501
+温都尔汗	wen dou er han	2501
+路易斯安那州	lu yi si an na zhou	2501
+避暑山庄	bi shu shan zhuang	2501
+阿尔卑斯山区	a er bei si shan qu	2501
+青山绿水	qing shan lv shui	2501
+马尔维纳斯群岛	ma er wei na si qun dao	2501
+小桥流水	xiao qiao liu shui	2489
+巴士海峡	ba shi hai xia	2489
+巴颜喀拉山	ba yan ka la shan	2489
+德意志联邦共和国	de yi zhi lian bang gong he guo	2489
+拉贾斯坦	la jia si tan	2489
+摩托罗拉公司	mo tuo luo la gong si	2489
+新加坡海峡	xin jia po hai xia	2489
+海拉尔河	hai la er he	2489
+爱屋及乌	ai wu ji wu	2489
+福克兰群岛	fu ke lan qun dao	2489
+符拉迪沃斯托克	fu la di wo si tuo ke	2489
+苏维埃共和国	su wei ai gong he guo	2489
+西澳大利亚	xi ao da li ya	2489
+阴山山脉	yin shan shan mai	2489
+阿克苏河	a ke su he	2489
+三宫六院	san gong liu yuan	2476
+乞力马扎罗山	qi li ma zha luo shan	2476
+南安普顿	nan an pu dun	2476
+太行山区	tai hang shan qu	2476
+密歇根湖	mi xie gen hu	2476
+山山水水	shan shan shui shui	2476
+明尼苏达州	ming ni su da zhou	2476
+枫丹白露	feng dan bai lu	2476
+闽东南	min dong nan	2476
+非洲法郎	fei zhou fa lang	2476
+上海博物馆	shang hai bo wu guan	2463
+哈得孙湾	ha de sun wan	2463
+太太平平	tai tai ping ping	2463
+安的列斯	an de lie si	2463
+密苏里河	mi su li he	2463
+嵩山少林寺	song shan shao lin si	2463
+巴伐利亚州	ba fa li ya zhou	2463
+汉中盆地	han zhong pen di	2463
+西长安街	xi chang an jie	2463
+通扬运河	tong yang yun he	2463
+阿维尼翁	a wei ni weng	2463
+马拉开波湖	ma la kai bo hu	2463
+黄原河	huang yuan he	2463
+乌拉尔山	wu la er shan	2449
+亚速尔群岛	ya su er qun dao	2449
+内蒙古草原	nei meng gu cao yuan	2449
+北海公园	bei hai gong yuan	2449
+南非共和国	nan fei gong he guo	2449
+太平洋卡	tai ping yang ka	2449
+德意志民主共和国	de yi zhi min zhu gong he guo	2449
+河北地区	he bei di qu	2449
+法兰西共和国	fa lan xi gong he guo	2449
+渭河平原	wei he ping yuan	2449
+白尼罗河	bai ni luo he	2449
+百慕大群岛	bai mu da qun dao	2449
+维多利亚州	wei duo li ya zhou	2449
+胶东半岛	jiao dong ban dao	2449
+郑卫国	zheng wei guo	2449
+阿尔泰山脉	a er tai shan mai	2449
+青尼罗河	qing ni luo he	2449
+亚喀巴湾	ya ka ba wan	2435
+亚得里亚	ya de li ya	2435
+亚欧大陆桥	ya ou da lu qiao	2435
+伊犁地区	yi li di qu	2435
+内蒙古地区	nei meng gu di qu	2435
+广济河	guang ji he	2435
+旁遮普省	pang zhe pu sheng	2435
+昌都地区	chang dou di qu	2435
+棉兰老岛	mian lan lao dao	2435
+武夷山市	wu yi shan shi	2435
+毛庆国	mao qing guo	2435
+江河湖海	jiang he hu hai	2435
+法国梧桐	fa guo wu tong	2435
+波斯湾地区	bo si wan di qu	2435
+罗海城	luo hai cheng	2435
+长江中下游地区	chang jiang zhong xia you di qu	2435
+非洲地区	fei zhou di qu	2435
+龙门石窟	long men shi ku	2435
+克什米尔地区	ke shi mi er di qu	2419
+匈牙利共和国	xiong ya li gong he guo	2419
+博斯腾湖	bo si teng hu	2419
+呼伦贝尔草原	hu lun bei er cao yuan	2419
+安达卢西亚	an da lu xi ya	2419
+巴彦淖尔盟	ba yan nao er meng	2419
+张家港市	zhang jia gang shi	2419
+日落西山	ri luo xi shan	2419
+格尔木市	ge er mu shi	2419
+波茨坦广场	bo ci tan guang chang	2419
+渤海海峡	bo hai hai xia	2419
+濑户内海	lai hu nei hai	2419
+白头山天池	bai tou shan tian chi	2419
+的里雅斯特	de li ya si te	2419
+维多利亚港	wei duo li ya gang	2419
+英伦三岛	ying lun san dao	2419
+长白山脉	chang bai shan mai	2419
+青溪镇	qing xi zhen	2419
+额尔齐斯	e er qi si	2419
+马鞍山市	ma an shan shi	2419
+三岔路口	san cha lu kou	2404
+中国台北	zhong guo tai bei	2404
+伊利诺伊州	yi li nuo yi zhou	2404
+伊塞克湖	yi sai ke hu	2404
+伊犁河谷	yi li he gu	2404
+佐治亚州	zuo zhi ya zhou	2404
+克什克腾旗	ke shen ke teng qi	2404
+兰州军区	lan zhou jun qu	2404
+南亚地区	nan ya di qu	2404
+南安普敦	nan an pu dun	2404
+塞尔维亚共和国	sai er wei ya gong he guo	2404
+天文地理	tian wen di li	2404
+察哈尔省	cha ha er sheng	2404
+巴丹吉林沙漠	ba dan ji lin sha mo	2404
+意大利王国	yi da li wang guo	2404
+拉美地区	la mei di qu	2404
+斯摩棱斯克	si mo leng si ke	2404
+格林纳丁斯	ge lin na ding si	2404
+江淮地区	jiang huai di qu	2404
+爱尔兰岛	ai er lan dao	2404
+科尔沁草原	ke er qin cao yuan	2404
+腾格里沙漠	teng ge li sha mo	2404
+越南民主共和国	yue nan min zhu gong he guo	2404
+阴盛阳	yin sheng yang	2404
+一马平川	yi ma ping chuan	2388
+东北亚地区	dong bei ya di qu	2388
+中南美洲	zhong nan mei zhou	2388
+中田英寿	zhong tian ying shou	2388
+亚利桑那	ya li sang na	2388
+印度共和国	yin du gong he guo	2388
+唐古拉山脉	tang gu la shan mai	2388
+圣彼得大教堂	sheng bi de da jiao tang	2388
+圣赫勒拿岛	sheng he lei na dao	2388
+巴尔干地区	ba er gan di qu	2388
+巴西木	ba xi mu	2388
+巽他群岛	xun ta qun dao	2388
+德克萨斯州	de ke sa si zhou	2388
+扎什伦布寺	zha shen lun bu si	2388
+桃花铺	tao hua pu	2388
+江河日下	jiang he ri xia	2388
+洞庭湖区	dong ting hu qu	2388
+珠联璧合	zhu lian bi he	2388
+盘尼西林	pan ni xi lin	2388
+苏伊士湾	su yi shi wan	2388
+那曲地区	na qu di qu	2388
+阿尼玛卿山	a ni ma qing shan	2388
+阿比西尼亚	a bi xi ni ya	2388
+东奔西跑	dong ben xi pao	2371
+乌兰察布盟	wu lan cha bu meng	2371
+五洲四海	wu zhou si hai	2371
+伏尔加格勒	fu er jia ge lei	2371
+北卡罗来纳	bei ka luo lai na	2371
+堪察加半岛	kan cha jia ban dao	2371
+太平洋区	tai ping yang qu	2371
+念青唐古拉山脉	nian qing tang gu la shan mai	2371
+慕田峪长城	mu tian yu chang cheng	2371
+成都五牛	cheng du wu niu	2371
+比斯开湾	bi si kai wan	2371
+水泊梁山	shui po liang shan	2371
+江湖术士	jiang hu shu shi	2371
+法罗群岛	fa luo qun dao	2371
+洞里萨湖	dong li sa hu	2371
+海得拉巴	hai de la ba	2371
+潮汕地区	chao shan di qu	2371
+火奴鲁鲁	huo nu lu lu	2371
+炮台镇	pao tai zhen	2371
+玛旁雍错	ma pang yong cuo	2371
+环渤海地区	huan bo hai di qu	2371
+鞍马劳顿	an ma lao dun	2371
+高山峻岭	gao shan jun ling	2371
+鸭绿江口	ya lu jiang kou	2371
+黄河三角洲	huang he san jiao zhou	2371
+龙泉驿区	long quan yi qu	2371
+不伦瑞克	bu lun rui ke	2353
+丹尼尔斯	dan ni er si	2353
+乌伦古湖	wu lun gu hu	2353
+云冈石窟	yun gang shi ku	2353
+佛罗里达海峡	fu luo li da hai xia	2353
+克拉玛依市	ke la ma yi shi	2353
+克里米亚半岛	ke li mi ya ban dao	2353
+厦门路	xia men lu	2353
+可可西里山	ke ke xi li shan	2353
+哲里木盟	zhe li mu meng	2353
+嘉峪关市	jia yu guan shi	2353
+威斯康星州	wei si kang xing zhou	2353
+尼泊尔王国	ni po er wang guo	2353
+巴勒斯坦国	ba le si tan guo	2353
+承德避暑山庄	cheng de bi shu shan zhuang	2353
+欧罗巴洲	ou luo ba zhou	2353
+法兰克福机场	fa lan ke fu ji chang	2353
+猫耳洞	mao er dong	2353
+秦岭山脉	qin ling shan mai	2353
+约旦河西岸	yue dan he xi an	2353
+虎头崖	hu tou ya	2353
+锦绣江山	jin xiu jiang shan	2353
+马提尼克岛	ma ti ni ke dao	2353
+高加索地区	gao jia suo di qu	2353
+与那国岛	yu na guo dao	2335
+东加勒比元	dong jia lei bi yuan	2335
+中国台湾地区	zhong guo tai wan di qu	2335
+云山屯	yun shan tun	2335
+亚历山大港	ya li shan da gang	2335
+亚平宁半岛	ya ping ning ban dao	2335
+佳木斯市	jia mu si shi	2335
+南津关	nan jin guan	2335
+各奔东西	ge ben dong xi	2335
+吐鲁番市	tu lu fan shi	2335
+哥伦比亚河	ge lun bi ya he	2335
+喀斯喀特	ka si ka te	2335
+土耳其共和国	tu er qi gong he guo	2335
+大峪谷	da yu gu	2335
+大英博物馆	da ying bo wu guan	2335
+天津地区	tian jin di qu	2335
+安尼亚	an ni ya	2335
+宜林地	yi lin di	2335
+尼亚城	ni ya cheng	2335
+山南地区	shan nan di qu	2335
+岭北行省	ling bei xing sheng	2335
+扎陵湖	zha ling hu	2335
+拉多加湖	la duo jia hu	2335
+日内瓦湖	ri nei wa hu	2335
+松花江流域	song hua jiang liu yu	2335
+河口湾	he kou wan	2335
+深山密林	shen shan mi lin	2335
+登山节	deng shan jie	2335
+离群索居	li qun suo ju	2335
+萨摩亚群岛	sa mo ya qun dao	2335
+西子湖畔	xi zi hu pan	2335
+跑江湖	pao jiang hu	2335
+长白山区	chang bai shan qu	2335
+阿拉伯河	a la bo he	2335
+黑山共和国	hei shan gong he guo	2335
+三座大山	san zuo da shan	2314
+中国北方地区	zhong guo bei fang di qu	2314
+乌拉特前旗	wu la te qian qi	2314
+乌里亚	wu li ya	2314
+人丁兴旺	ren ding xing wang	2314
+兰西瓦	lan xi wa	2314
+冈仁波齐峰	gang ren bo qi feng	2314
+冈比亚河	gang bi ya he	2314
+吐故纳新	tu gu na xin	2314
+安邦定国	an bang ding guo	2314
+巴丹吉林	ba dan ji lin	2314
+巴士底狱	ba shi di yu	2314
+广州地区	guang zhou di qu	2314
+张家界市	zhang jia jie shi	2314
+德国马克	de guo ma ke	2314
+德涅斯特河	de nie si te he	2314
+恰帕斯州	qia pa si zhou	2314
+意大利共和国	yi da li gong he guo	2314
+澳门半岛	ao men ban dao	2314
+鄂陵湖	e ling hu	2314
+锡矿山	xi kuang shan	2314
+陕北黄土高原	shan bei huang tu gao yuan	2314
+中国华北地区	zhong guo hua bei di qu	2294
+二连浩特市	er lian hao te shi	2294
+仁人义士	ren ren yi shi	2294
+六街三市	liu jie san shi	2294
+内布拉斯加州	nei bu la si jia zhou	2294
+北京故宫博物院	bei jing gu gong bo wu yuan	2294
+南京东路	nan jing dong lu	2294
+印第安纳州	yin di an na zhou	2294
+原班人马	yuan ban ren ma	2294
+哥伦比亚省	ge lun bi ya sheng	2294
+喀尔巴阡山	ka er ba qian shan	2294
+塞纳河畔	sai na he pan	2294
+寿比南山	shou bi nan shan	2294
+库尔勒市	ku er lei shi	2294
+延安地区	yan an di qu	2294
+德达善	de da shan	2294
+拉彼鲁兹	la bi lu zi	2294
+拉西浦	la xi pu	2294
+捷克共和国	jie ke gong he guo	2294
+朝阳门外	chao yang men wai	2294
+波利克拉	bo li ke la	2294
+深圳华侨城	shen zhen hua qiao cheng	2294
+特拉华州	te la hua zhou	2294
+玛纳斯湖	ma na si hu	2294
+秦皇岛港	qin huang dao gang	2294
+美容美发店	mei rong mei fa dian	2294
+苏里兰	su li lan	2294
+英属维尔京群岛	ying shu wei er jing qun dao	2294
+莫斯科市	mo si ke shi	2294
+蒙彼利埃	meng bi li ai	2294
+达基亚	da ji ya	2294
+那西亚斯	na xi ya si	2294
+里亚原	li ya yuan	2294
+里德亚	li de ya	2294
+阿拉伯地区	a la bo di qu	2294
+阿曼苏丹国	a man su dan guo	2294
+马拉海	ma la hai	2294
+乌兰布和沙漠	wu lan bu he sha mo	2272
+乌拉尔军区	wu la er jun qu	2272
+北京首都机场	bei jing shou du ji chang	2272
+南乔治亚岛	nan qiao zhi ya dao	2272
+古尔班通古特沙漠	gu er ban tong gu te sha mo	2272
+夏威夷州	xia wei yi zhou	2272
+大小兴安岭	da xiao xing an ling	2272
+奥萨苏	ao sa su	2272
+安加拉河	an jia la he	2272
+密云水库	mi yun shui ku	2272
+山巫陵	shan wu ling	2272
+布尔加宁	bu er jia ning	2272
+布干维尔	bu gan wei er	2272
+希夏邦马峰	xi xia bang ma feng	2272
+帕隆藏布	pa long cang bu	2272
+惠民河	hui min he	2272
+慕士塔格山	mu shi ta ge shan	2272
+日德兰半岛	ri de lan ban dao	2272
+松井石根	song jing shi gen	2272
+河东君	he dong jun	2272
+满洲里市	man zhou li shi	2272
+瓦房店市	wa fang dian shi	2272
+祁山寨	qi shan zhai	2272
+神奈川县	shen nai chuan xian	2272
+罗亚尔港	luo ya er gang	2272
+路府州	lu fu zhou	2272
+鄂木斯克	e mu si ke	2272
+长江三角洲地区	chang jiang san jiao zhou di qu	2272
+闸口镇	zha kou zhen	2272
+阿斯利康	a si li kang	2272
+丽江纳西族自治县	li jiang na xi zu zi zhi xian	2248
+乌第河	wu di he	2248
+也门共和国	ye men gong he guo	2248
+亚拉巴马州	ya la ba ma zhou	2248
+冀中平原	ji zhong ping yuan	2248
+内格罗河	nei ge luo he	2248
+加利福尼亚湾	jia li fu ni ya wan	2248
+北洛河	bei luo he	2248
+北非地区	bei fei di qu	2248
+南达科他州	nan da ke ta zhou	2248
+土窑洞	tu yao dong	2248
+大顺国	da shun guo	2248
+奥兰吉那	ao lan ji na	2248
+奥里萨邦	ao li sa bang	2248
+安得拉邦	an de la bang	2248
+察尔汗盐湖	cha er han yan hu	2248
+小五台山	xiao wu tai shan	2248
+山丘区	shan qiu qu	2248
+广东地区	guang dong di qu	2248
+当惹雍错	dang re yong cuo	2248
+日喀则地区	ri ka ze di qu	2248
+日喀则市	ri ka ze shi	2248
+景德镇市	jing de zhen shi	2248
+曾经沧海	ceng jing cang hai	2248
+棋盘坨	qi pan tuo	2248
+沂蒙山区	yi meng shan qu	2248
+泰米尔纳德邦	tai mi er na de bang	2248
+淠史杭	pi shi hang	2248
+深圳特区	shen zhen te qu	2248
+滇东南	dian dong nan	2248
+直罗镇	zhi luo zhen	2248
+艾伯塔省	ai bo ta sheng	2248
+西亚地区	xi ya di qu	2248
+西孟加拉邦	xi meng jia la bang	2248
+锡林郭勒	xi lin guo lei	2248
+青石桥	qing shi qiao	2248
+马丘比丘	ma qiu bi qiu	2248
+骑田岭	qi tian ling	2248
+万洋山	wan yang shan	2223
+三峡库区	san xia ku qu	2223
+上海虹桥机场	shang hai hong qiao ji chang	2223
+下萨克森州	xia sa ke sen zhou	2223
+九岭山	jiu ling shan	2223
+亚历山大广场	ya li shan da guang chang	2223
+冬麦区	dong mai qu	2223
+南卡罗来纳	nan ka luo lai na	2223
+南浦大桥	nan pu da qiao	2223
+叙家常	xu jia chang	2223
+哈萨克斯坦共和国	ha sa ke si tan gong he guo	2223
+商洛地区	shang luo di qu	2223
+喀布尔河	ka bu er he	2223
+四姑娘山	si gu niang shan	2223
+壶口瀑布	hu kou pu bu	2223
+外流河	wai liu he	2223
+安提瓜岛	an ti gua dao	2223
+川西平原	chuan xi ping yuan	2223
+巴勒斯坦地区	ba le si tan di qu	2223
+巴里坤湖	ba li kun hu	2223
+巴颜喀拉	ba yan ka la	2223
+斗牛宫	dou niu gong	2223
+新南威尔士	xin nan wei er shi	2223
+格罗宁根	ge luo ning gen	2223
+桑兰西党	sang lan xi dang	2223
+武川西	wu chuan xi	2223
+沙鲁里山	sha lu li shan	2223
+泰坦尼克	tai tan ni ke	2223
+浙东运河	zhe dong yun he	2223
+海拉尔市	hai la er shi	2223
+涅曼河	nie man he	2223
+淡泊名利	dan bo ming li	2223
+满园春色	man yuan chun se	2223
+爱尔兰共和国	ai er lan gong he guo	2223
+留尼汪岛	liu ni wang dao	2223
+石河子市	shi he zi shi	2223
+石花街	shi hua jie	2223
+神户港	shen hu gang	2223
+竹林镇	zhu lin zhen	2223
+苏丹共和国	su dan gong he guo	2223
+车里雅宾斯克	che li ya bin si ke	2223
+郭家店	guo jia dian	2223
+三十年河东	san shi nian he dong	2196
+东安市场	dong an shi chang	2196
+东萨摩亚	dong sa mo ya	2196
+中南海西花厅	zhong nan hai xi hua ting	2196
+中美洲地区	zhong mei zhou di qu	2196
+乌斯怀亚	wu si huai ya	2196
+伦左旗	lun zuo qi	2196
+俄克拉何马	e ke la he ma	2196
+俄罗斯远东地区	e luo si yuan dong di qu	2196
+冈比西斯	gang bi xi si	2196
+北京天安门广场	bei jing tian an men guang chang	2196
+古吉拉特邦	gu ji la te bang	2196
+哥伦比亚特区	ge lun bi ya te qu	2196
+哥达德	ge da de	2196
+喀纳斯湖	ka na si hu	2196
+埃布罗河	ai bu luo he	2196
+塔吉克斯坦共和国	ta ji ke si tan gong he guo	2196
+塞浦路斯岛	sai pu lu si dao	2196
+大湖地区	da hu di qu	2196
+宁海城	ning hai cheng	2196
+寿南山	shou nan shan	2196
+巴利阿里	ba li a li	2196
+德国西门子	de guo xi men zi	2196
+怀俄明州	huai e ming zhou	2196
+旁遮普邦	pang zhe pu bang	2196
+未名湖畔	wei ming hu pan	2196
+林芝地区	lin zhi di qu	2196
+沙特阿拉伯王国	sha te a la bo wang guo	2196
+波尔多市	bo er duo shi	2196
+泸天化	lu tian hua	2196
+洞庭湖畔	dong ting hu pan	2196
+津轻海峡	jin qing hai xia	2196
+海河平原	hai he ping yuan	2196
+滇西南	dian xi nan	2196
+焉耆回族自治县	yan qi hui zu zi zhi xian	2196
+爱利亚	ai li ya	2196
+船旗国	chuan qi guo	2196
+英格索兰	ying ge suo lan	2196
+荷兰王国	he lan wang guo	2196
+荷尔德林	he er de lin	2196
+贝拿勒斯	bei na lei si	2196
+鄂伦春自治旗	e lun chun zi zhi qi	2196
+长三甲	zhang san jia	2196
+阿拉伯联盟	a la bo lian meng	2196
+阿拉善左旗	a la shan zuo qi	2196
+阿特巴拉河	a te ba la he	2196
+魁北克城	kui bei ke cheng	2196
+中国新疆地区	zhong guo xin jiang di qu	2167
+临川市	lin chuan shi	2167
+丹麦王国	dan mai wang guo	2167
+乌梁素海	wu liang su hai	2167
+乌珠穆沁	wu zhu mu qin	2167
+乌里雅苏台	wu li ya su tai	2167
+俾斯麦群岛	bi si mai qun dao	2167
+俾路支省	bi lu zhi sheng	2167
+冷水江市	leng shui jiang shi	2167
+准格尔旗	zhun ge er qi	2167
+千里冰封	qian li bing feng	2167
+南湖大山	nan hu da shan	2167
+南迦巴瓦峰	nan jia ba wa feng	2167
+卢瓦尔河	lu wa er he	2167
+厄加勒斯角	e jia lei si jiao	2167
+埃及西奈半岛	ai ji xi nai ban dao	2167
+大山顶	da shan ding	2167
+太基城	tai ji cheng	2167
+威宁彝族回族苗族自治县	wei ning yi zu hui zu miao zu zi zhi xian	2167
+尤利西斯	you li xi si	2167
+山顶洞	shan ding dong	2167
+山高皇帝远	shan gao huang di yuan	2167
+峨眉山市	e mei shan shi	2167
+巴塞罗那奥运会	ba sai luo na ao yun hui	2167
+巴林左旗	ba lin zuo qi	2167
+广州白云机场	guang zhou bai yun ji chang	2167
+底格里斯	di ge li si	2167
+拉卜楞寺	la bo leng si	2167
+斯海尔德河	si hai er de he	2167
+曼哈顿区	man ha dun qu	2167
+松迪亚	song di ya	2167
+沙里河	sha li he	2167
+法属波利尼西亚	fa shu bo li ni xi ya	2167
+波兰共和国	bo lan gong he guo	2167
+洛杉矶市	luo shan ji shi	2167
+深山区	shen shan qu	2167
+爱达荷州	ai da he zhou	2167
+琼山市	qiong shan shi	2167
+百里洲	bai li zhou	2167
+石嘴山市	shi zui shan shi	2167
+突尼斯共和国	tu ni si gong he guo	2167
+簰洲镇	pai zhou zhen	2167
+纳塔尔省	na ta er sheng	2167
+英雄汉	ying xiong han	2167
+葫芦岛市	hu lu dao shi	2167
+蒲圻市	pu qi shi	2167
+西柏坡村	xi bai po cun	2167
+辛亥首	xin hai shou	2167
+阿森松岛	a sen song dao	2167
+香港海关	xiang gang hai guan	2167
+三山五岳	san shan wu yue	2135
+上海南京路	shang hai nan jing lu	2135
+东宫门	dong gong men	2135
+东游西荡	dong you xi dang	2135
+东耶路撒冷	dong ye lu sa leng	2135
+两城镇	liang cheng zhen	2135
+中山纪念堂	zhong shan ji nian tang	2135
+乌叶海亚	wu ye hai ya	2135
+九万大山	jiu wan da shan	2135
+九渡河镇	jiu du he zhen	2135
+井冈山市	jing gang shan shi	2135
+伊塞顿	yi sai dun	2135
+伏尔塔瓦河	fu er ta wa he	2135
+六盘水市	liu pan shui shi	2135
+内布拉斯加	nei bu la si jia	2135
+凤凰树	feng huang shu	2135
+利利索索	li li suo suo	2135
+加里宁格勒州	jia li ning ge lei zhou	2135
+北京海关	bei jing hai guan	2135
+北海港	bei hai gang	2135
+北西西	bei xi xi	2135
+卧龙自然保护区	wo long zi ran bao hu qu	2135
+古巴共和国	gu ba gong he guo	2135
+喜玛拉雅	xi ma la ya	2135
+多瑙河畔	duo nao he pan	2135
+大西洲	da xi zhou	2135
+奥连特省	ao lian te sheng	2135
+委内瑞拉共和国	wei nei rui la gong he guo	2135
+安营下寨	an ying xia zhai	2135
+巴吞鲁日	ba tun lu ri	2135
+德梅齐埃	de mei qi ai	2135
+捷克斯洛伐克共和国	jie ke si luo fa ke gong he guo	2135
+新加坡元	xin jia po yuan	2135
+新斯科舍省	xin si ke she sheng	2135
+昆仑饭店	kun lun fan dian	2135
+晋侯墓	jin hou mu	2135
+普鲁特河	pu lu te he	2135
+曲麻莱县	qu ma lai xian	2135
+条条大路通罗马	tiao tiao da lu tong luo ma	2135
+桑普多利亚	sang pu duo li ya	2135
+欧阳洛	ou yang luo	2135
+武都县	wu dou xian	2135
+比利时王国	bi li shi wang guo	2135
+波拉尔	bo la er	2135
+波罗的海地区	bo luo di hai di qu	2135
+洛阳龙门石窟	luo yang long men shi ku	2135
+淮沭河	huai shu he	2135
+满蒙汉	man meng han	2135
+澳门地区	ao men di qu	2135
+班达拉奈克	ban da la nai ke	2135
+石湖里	shi hu li	2135
+绰尔河	chuo er he	2135
+罗布林卡	luo bu lin ka	2135
+肯尼亚山	ken ni ya shan	2135
+花都市	hua du shi	2135
+苏必利尔	su bi li er	2135
+英国牛津	ying guo niu jin	2135
+蒙古营	meng gu ying	2135
+西伯利亚地区	xi bo li ya di qu	2135
+西洱河	xi er he	2135
+贝宁共和国	bei ning gong he guo	2135
+贡山独龙族怒族自治县	gong shan du long zu nu zu zi zhi xian	2135
+赛里木湖	sai li mu hu	2135
+辽宁抚顺	liao ning fu shun	2135
+通什市	tong shen shi	2135
+通都大邑	tong du da yi	2135
+金张掖	jin zhang ye	2135
+镇宁布依族苗族自治县	zhen ning bu yi zu miao zu zi zhi xian	2135
+长白山天池	chang bai shan tian chi	2135
+防城港市	fang cheng gang shi	2135
+阳维脉	yang wei mai	2135
+阿非利加	a fei li jia	2135
+雷根斯堡	lei gen si bao	2135
+青海地区	qing hai di qu	2135
+青铜峡市	qing tong xia shi	2135
+鹿儿岛县	lu er dao xian	2135
+麻栗坡县	ma li po xian	2135
+黑海地区	hei hai di qu	2135

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：服饰穿搭
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 运动鞋	yun dong xie	8729
 连衣裙	lian yi qun	8546
@@ -48,11 +48,449 @@
 颜色搭配	yan se da pei	6100
 内衣	nei yi	5683
 袜子	wa zi	5499
+服装出口	fu zhuang chu kou	5308
+一件衣服	yi jian yi fu	5270
+什么衣服	shen me yi fu	5270
+多少衣服	duo shao yi fu	5270
+很多衣服	hen duo yi fu	5270
+没有衣服	mei you yi fu	5270
+看看衣服	kan kan yi fu	5270
+自己衣服	zi ji yi fu	5270
+衣服不错	yi fu bu cuo	5270
+衣服收到	yi fu shou dao	5270
+衣服质量	yi fu zhi liang	5270
+衣服里面	yi fu li mian	5270
+还有衣服	hai you yi fu	5270
+这个衣服	zhe ge yi fu	5270
+这个衣服	zhei ge yi fu	5270
+这件衣服	zhe jian yi fu	5270
+这件衣服	zhei jian yi fu	5270
+这种衣服	zhe zhong yi fu	5270
+这种衣服	zhei zhong yi fu	5270
+那个衣服	na ge yi fu	5270
+那些衣服	na xie yi fu	5270
+那些衣服	nei xie yi fu	5270
+夏天衣服	xia tian yi fu	5231
+小孩衣服	xiao hai yi fu	5231
+统一服装	tong yi fu zhuang	5231
+衣服颜色	yi fu yan se	5231
+红色衣服	hong se yi fu	5193
+衣服好看	yi fu hao kan	5116
+服装模特	fu zhuang mo te	5077
+黑色衣服	hei se yi fu	5077
+一套衣服	yi tao yi fu	5000
+整理衣服	zheng li yi fu	5000
+传统服装	chuan tong fu zhuang	4962
+儿童服装	er tong fu zhuang	4962
+北京服装	bei jing fu zhuang	4962
+品牌服装	pin pai fu zhuang	4962
+国际服装	guo ji fu zhuang	4962
+服装协会	fu zhuang xie hui	4962
+服装品牌	fu zhuang pin pai	4962
+服装商店	fu zhuang shang dian	4962
+服装学院	fu zhuang xue yuan	4962
+服装市场	fu zhuang shi chang	4962
+服装特点	fu zhuang te dian	4962
+服装色彩	fu zhuang se cai	4962
+服装行业	fu zhuang hang ye	4962
+服装贸易	fu zhuang mao yi	4962
+服装集团	fu zhuang ji tuan	4962
+服装颜色	fu zhuang yan se	4962
+民族服装	min zu fu zhuang	4962
+白色衣服	bai se yi fu	4962
+职业服装	zhi ye fu zhuang	4962
+舞蹈服装	wu dao fu zhuang	4962
+运动服装	yun dong fu zhuang	4962
+好多衣服	hao duo yi fu	4924
+不买衣服	bu mai yi fu	4885
+冬天衣服	dong tian yi fu	4885
+蓝色衣服	lan se yi fu	4885
+穿着衣服	chuan zhe yi fu	4847
+买过衣服	mai guo yi fu	4808
+没买衣服	mei mai yi fu	4808
 皮鞋	pi xie	4787
+服装造型	fu zhuang zao xing	4731
+没穿衣服	mei chuan yi fu	4731
+服装大厦	fu zhuang da sha	4693
+纺织服装	fang zhi fu zhuang	4693
+一身衣服	yi shen yi fu	4654
+棒球服装	bang qiu fu zhuang	4654
+买买衣服	mai mai yi fu	4616
+搭配衣服	da pei yi fu	4616
+衣服裤子	yi fu ku zi	4616
+军团服装	jun tuan fu zhuang	4577
+外贸服装	wai mao fu zhuang	4577
+我换衣服	wo huan yi fu	4577
+收拾衣服	shou shi yi fu	4577
+服装服饰	fu zhuang fu shi	4539
+一堆衣服	yi dui yi fu	4500
+没换衣服	mei huan yi fu	4500
+库存服装	ku cun fu zhuang	4462
+穿个衣服	chuan ge yi fu	4462
+你家衣服	ni jia yi fu	4424
+精品服装	jing pin fu zhuang	4424
+过年衣服	guo nian yi fu	4424
 胸围	xiong wei	4420
+服装道具	fu zhuang dao ju	4385
+衣服鞋子	yi fu xie zi	4385
+一个裙子	yi ge qun zi	4347
+一条裙子	yi tiao qun zi	4347
+上衣服	shang yi fu	4347
+两条裙子	liang tiao qun zi	4347
+幼儿服装	you er fu zhuang	4347
+新衣服	xin yi fu	4347
+白色裙子	bai se qun zi	4347
+白衣服	bai yi fu	4347
+穿个裙子	chuan ge qun zi	4347
+衣服上	yi fu shang	4347
+衣服是	yi fu shi	4347
+裙子好看	qun zi hao kan	4347
+裙子裤子	qun zi ku zi	4347
+这个裙子	zhe ge qun zi	4347
+这个裙子	zhei ge qun zi	4347
+这套衣服	zhe tao yi fu	4347
+这套衣服	zhei tao yi fu	4347
+这条裙子	zhe tiao qun zi	4347
+这条裙子	zhei tiao qun zi	4347
+那个裙子	na ge qun zi	4347
+黑色裙子	hei se qun zi	4347
+买件衣服	mai jian yi fu	4308
+名牌服装	ming pai fu zhuang	4308
+换了衣服	huan le yi fu	4308
+换好衣服	huan hao yi fu	4308
+穿白衣服	chuan bai yi fu	4308
+穿红衣服	chuan hong yi fu	4308
+男士服装	nan shi fu zhuang	4231
+那条裙子	na tiao qun zi	4231
+不洗衣服	bu xi yi fu	4193
 凉鞋	liang xie	4155
+服装的	fu zhuang de	4154
+没洗衣服	mei xi yi fu	4154
+穿件衣服	chuan jian yi fu	4154
+先洗衣服	xian xi yi fu	4116
+贴身衣服	tie shen yi fu	4116
+牛仔服装	niu zai fu zhuang	4077
+不脱衣服	bu tuo yi fu	4039
+两件衣服	liang jian yi fu	4039
+我脱衣服	wo tuo yi fu	4039
+换个衣服	huan ge yi fu	4039
+换件衣服	huan jian yi fu	4039
+换洗衣服	huan xi yi fu	4039
+换身衣服	huan shen yi fu	4039
+服装款式	fu zhuang kuan shi	4039
+没脱衣服	mei tuo yi fu	4039
+丝绸服装	si chou fu zhuang	4000
+条纹衬衫	tiao wen chen shan	4000
+这款衣服	zhe kuan yi fu	4000
+这款裙子	zhe kuan qun zi	4000
+个衣服	ge yi fu	3962
+买衣服	mai yi fu	3962
+了衣服	le yi fu	3962
+他衣服	ta yi fu	3962
+件衣服	jian yi fu	3962
+你衣服	ni yi fu	3962
+修衣服	xiu yi fu	3962
+做衣服	zuo yi fu	3962
+加衣服	jia yi fu	3962
+卖衣服	mai yi fu	3962
+厚衣服	hou yi fu	3962
+发衣服	fa yi fu	3962
+取衣服	qu yi fu	3962
+叠衣服	die yi fu	3962
+和衣服	he yi fu	3962
+啥衣服	sha yi fu	3962
+在衣服	zai yi fu	3962
+套衣服	tao yi fu	3962
+女衣服	nv yi fu	3962
+好衣服	hao yi fu	3962
+完衣服	wan yi fu	3962
+寄衣服	ji yi fu	3962
+小衣服	xiao yi fu	3962
+带衣服	dai yi fu	3962
+床衣服	chuang yi fu	3962
+弄衣服	nong yi fu	3962
+我衣服	wo yi fu	3962
+找衣服	zhao yi fu	3962
+把衣服	ba yi fu	3962
+折衣服	zhe yi fu	3962
+拿衣服	na yi fu	3962
+挂衣服	gua yi fu	3962
+挑衣服	tiao yi fu	3962
+搭衣服	da yi fu	3962
+撕衣服	si yi fu	3962
+收衣服	shou yi fu	3962
+改衣服	gai yi fu	3962
+放衣服	fang yi fu	3962
+有衣服	you yi fu	3962
+棉衣服	mian yi fu	3962
+款衣服	kuan yi fu	3962
+没衣服	mei yi fu	3962
+添衣服	tian yi fu	3962
+湿衣服	shi yi fu	3962
+灰衣服	hui yi fu	3962
+点衣服	dian yi fu	3962
+烫衣服	tang yi fu	3962
+熨衣服	yun yi fu	3962
+爱衣服	ai yi fu	3962
+的衣服	de yi fu	3962
+看衣服	kan yi fu	3962
+破衣服	po yi fu	3962
+租衣服	zu yi fu	3962
+粉色衣服	fen se yi fu	3962
+粉衣服	fen yi fu	3962
+绿衣服	lv yi fu	3962
+脏衣服	zang yi fu	3962
+花衣服	hua yi fu	3962
+蓝衣服	lan yi fu	3962
+薄衣服	bao yi fu	3962
+衣服不	yi fu bu	3962
+衣服也	yi fu ye	3962
+衣服了	yi fu le	3962
+衣服去	yi fu qu	3962
+衣服吗	yi fu ma	3962
+衣服吧	yi fu ba	3962
+衣服呀	yi fu ya	3962
+衣服呗	yi fu bei	3962
+衣服呢	yi fu ne	3962
+衣服和	yi fu he	3962
+衣服啊	yi fu a	3962
+衣服啦	yi fu la	3962
+衣服多	yi fu duo	3962
+衣服店	yi fu dian	3962
+衣服挂	yi fu gua	3962
+衣服来	yi fu lai	3962
+衣服架	yi fu jia	3962
+衣服没	yi fu mei	3962
+衣服洗	yi fu xi	3962
+衣服的	yi fu de	3962
+衣服穿	yi fu chuan	3962
+衣服都	yi fu dou	3962
+衣服里	yi fu li	3962
+衣服钱	yi fu qian	3962
+衣服鞋	yi fu xie	3962
+补衣服	bu yi fu	3962
+裁衣服	cai yi fu	3962
+装衣服	zhuang yi fu	3962
+要衣服	yao yi fu	3962
+试衣服	shi yi fu	3962
+身衣服	shen yi fu	3962
+这衣服	zhe yi fu	3962
+连衣服	lian yi fu	3962
+退衣服	tui yi fu	3962
+送衣服	song yi fu	3962
+选衣服	xuan yi fu	3962
+逛衣服	guang yi fu	3962
+那衣服	na yi fu	3962
+配衣服	pei yi fu	3962
+长衣服	chang yi fu	3962
+领衣服	ling yi fu	3962
+三套衣服	san tao yi fu	3885
+买套衣服	mai tao yi fu	3847
+没带衣服	mei dai yi fu	3847
+波点衬衫	bo dian chen shan	3847
+洗洗衣服	xi xi yi fu	3847
+衣服架子	yi fu jia zi	3847
+衣服没洗	yi fu mei xi	3847
+三件衣服	san jian yi fu	3808
+中式服装	zhong shi fu zhuang	3808
+做服装	zuo fu zhuang	3770
+几套衣服	ji tao yi fu	3770
+卖服装	mai fu zhuang	3770
+服装商	fu zhuang shang	3770
+服装界	fu zhuang jie	3770
+服装类	fu zhuang lei	3770
+服装网	fu zhuang wang	3770
+服装袋	fu zhuang dai	3770
+服装面料	fu zhuang mian liao	3770
+服装革	fu zhuang ge	3770
+衬衫面料	chen shan mian liao	3770
+两套衣服	liang tao yi fu	3731
+买个衣服	mai ge yi fu	3731
+买点衣服	mai dian yi fu	3731
+几件衣服	ji jian yi fu	3731
+短裙子	duan qun zi	3731
+格子衬衫	ge zi chen shan	3693
+印花衬衫	yin hua chen shan	3616
+多加衣服	duo jia yi fu	3616
+整件衣服	zheng jian yi fu	3577
+深色衣服	shen se yi fu	3577
+换换衣服	huan huan yi fu	3539
+衬衫厂	chen shan chang	3539
+要换衣服	yao huan yi fu	3539
+那套衣服	na tao yi fu	3539
+服装辅料	fu zhuang fu liao	3462
+服装鞋帽	fu zhuang xie mao	3462
+羽绒服装	yu rong fu zhuang	3462
+裘皮服装	qiu pi fu zhuang	3462
 腰围	yao wei	3443
+什么尺码	shen me chi ma	3424
+多大尺码	duo da chi ma	3424
+尺码合适	chi ma he shi	3424
+尺码标准	chi ma biao zhun	3424
+尺码问题	chi ma wen ti	3424
+击剑服装	ji jian fu zhuang	3385
+同款衣服	tong kuan yi fu	3385
+浅色衣服	qian se yi fu	3385
+买裙子	mai qun zi	3347
+啥裙子	sha qun zi	3347
+大裙子	da qun zi	3347
+女裙子	nv qun zi	3347
+小裙子	xiao qun zi	3347
+我裙子	wo qun zi	3347
+新裙子	xin qun zi	3347
+是裙子	shi qun zi	3347
+白裙子	bai qun zi	3347
+的裙子	de qun zi	3347
+看裙子	kan qun zi	3347
+穿裙子	chuan qun zi	3347
+红裙子	hong qun zi	3347
+绿裙子	lv qun zi	3347
+花裙子	hua qun zi	3347
+蓝裙子	lan qun zi	3347
+裙子了	qun zi le	3347
+裙子吗	qun zi ma	3347
+裙子吧	qun zi ba	3347
+裙子呢	qun zi ne	3347
+裙子的	qun zi de	3347
+要裙子	yao qun zi	3347
+这裙子	zhe qun zi	3347
+那裙子	na qun zi	3347
+配裙子	pei qun zi	3347
+长裙子	chang qun zi	3347
+黄裙子	huang qun zi	3347
+黑裙子	hei qun zi	3347
 臀围	tun wei	3320
+格纹衬衫	ge wen chen shan	3308
+花衬衫	hua chen shan	3308
+衬衫女	chen shan nv	3308
+衬衫裙	chen shan qun	3308
+采采衣服	cai cai yi fu	3308
+黑衬衫	hei chen shan	3308
+洗个衣服	xi ge yi fu	3231
+洗完衣服	xi wan yi fu	3231
 肩宽	jian kuan	2954
+不换衣服	bu huan yi fu	2770
+不穿衣服	bu chuan yi fu	2770
+买了衣服	mai le yi fu	2770
+买啥衣服	mai sha yi fu	2770
+买完衣服	mai wan yi fu	2770
+买新衣服	mai xin yi fu	2770
+买的衣服	mai de yi fu	2770
+买衣服了	mai yi fu le	2770
+买衣服去	mai yi fu qu	2770
+买衣服吗	mai yi fu ma	2770
+买衣服吧	mai yi fu ba	2770
+买衣服呢	mai yi fu ne	2770
+买衣服的	mai yi fu de	2770
+买身衣服	mai shen yi fu	2770
+他的衣服	ta de yi fu	2770
+你买衣服	ni mai yi fu	2770
+你把衣服	ni ba yi fu	2770
+你换衣服	ni huan yi fu	2770
+你洗衣服	ni xi yi fu	2770
+你的衣服	ni de yi fu	2770
+你穿衣服	ni chuan yi fu	2770
+你脱衣服	ni tuo yi fu	2770
+你这衣服	ni zhe yi fu	2770
+你那衣服	ni na yi fu	2770
+刚洗衣服	gang xi yi fu	2770
+卖衣服的	mai yi fu de	2770
+厚衣服了	hou yi fu le	2770
+去买衣服	qu mai yi fu	2770
+去洗衣服	qu xi yi fu	2770
+又洗衣服	you xi yi fu	2770
+在买衣服	zai mai yi fu	2770
+在换衣服	zai huan yi fu	2770
+在洗衣服	zai xi yi fu	2770
+在穿衣服	zai chuan yi fu	2770
+多穿衣服	duo chuan yi fu	2770
+好搭衣服	hao da yi fu	2770
+就洗衣服	jiu xi yi fu	2770
+尺码亲	chi ma qin	2770
+尺码的	chi ma de	2770
+想买衣服	xiang mai yi fu	2770
+我买衣服	wo mai yi fu	2770
+我把衣服	wo ba yi fu	2770
+我晾衣服	wo liang yi fu	2770
+我有衣服	wo you yi fu	2770
+我没衣服	wo mei yi fu	2770
+我洗衣服	wo xi yi fu	2770
+我的衣服	wo de yi fu	2770
+我穿衣服	wo chuan yi fu	2770
+把你衣服	ba ni yi fu	2770
+把我衣服	ba wo yi fu	2770
+换完衣服	huan wan yi fu	2770
+换衣服了	huan yi fu le	2770
+换衣服吧	huan yi fu ba	2770
+换衣服呢	huan yi fu ne	2770
+收衣服了	shou yi fu le	2770
+新衣服了	xin yi fu le	2770
+晾个衣服	liang ge yi fu	2770
+晾完衣服	liang wan yi fu	2770
+晾衣服了	liang yi fu le	2770
+有尺码	you chi ma	2770
+没衣服了	mei yi fu le	2770
+没衣服穿	mei yi fu chuan	2770
+洗了衣服	xi le yi fu	2770
+洗好衣服	xi hao yi fu	2770
+洗的衣服	xi de yi fu	2770
+洗衣服了	xi yi fu le	2770
+洗衣服去	xi yi fu qu	2770
+洗衣服吗	xi yi fu ma	2770
+洗衣服吧	xi yi fu ba	2770
+洗衣服呀	xi yi fu ya	2770
+洗衣服呢	xi yi fu ne	2770
+洗衣服啦	xi yi fu la	2770
+洗衣服来	xi yi fu lai	2770
+洗衣服的	xi yi fu de	2770
+洗过衣服	xi guo yi fu	2770
+白衣服的	bai yi fu de	2770
+的尺码	de chi ma	2770
+穿上衣服	chuan shang yi fu	2770
+穿啥衣服	chuan sha yi fu	2770
+穿好衣服	chuan hao yi fu	2770
+穿新衣服	chuan xin yi fu	2770
+穿点衣服	chuan dian yi fu	2770
+穿的衣服	chuan de yi fu	2770
+穿衣服了	chuan yi fu le	2770
+穿衣服呢	chuan yi fu ne	2770
+穿衣服的	chuan yi fu de	2770
+穿黑衣服	chuan hei yi fu	2770
+粲粲衣服	can can yi fu	2770
+脱了衣服	tuo le yi fu	2770
+脱衣服了	tuo yi fu le	2770
+衣服上了	yi fu shang le	2770
+衣服上的	yi fu shang de	2770
+衣服了吗	yi fu le ma	2770
+衣服到了	yi fu dao le	2770
+衣服去了	yi fu qu le	2770
+衣服啥的	yi fu sha de	2770
+衣服小了	yi fu xiao le	2770
+衣服很好	yi fu hen hao	2770
+衣服洗了	yi fu xi le	2770
+衣服湿了	yi fu shi le	2770
+衣服穿了	yi fu chuan le	2770
+衣服穿好	yi fu chuan hao	2770
+衣服脱了	yi fu tuo le	2770
+要买衣服	yao mai yi fu	2770
+要洗衣服	yao xi yi fu	2770
+还洗衣服	hai xi yi fu	2770
+这身衣服	zhe shen yi fu	2770
+这身衣服	zhei shen yi fu	2770
+那件衣服	na jian yi fu	2770
+隔着衣服	ge zhe yi fu	2770
+黑衣服的	hei yi fu de	2770
+这身服装	zhe shen fu zhuang	2654
+雪纺衬衫	xue fang chen shan	2616
+不穿裙子	bu chuan qun zi	2385
+你的裙子	ni de qun zi	2385
+你穿裙子	ni chuan qun zi	2385
+我的裙子	wo de qun zi	2385
+我穿裙子	wo chuan qun zi	2385
+穿小裙子	chuan xiao qun zi	2385
+穿的裙子	chuan de qun zi	2385
+穿裙子了	chuan qun zi le	2385
+穿裙子的	chuan qun zi de	2385
+有尺码表	you chi ma biao	2116
 帆布鞋	fan bu xie	2056
 休闲鞋	xiu xian xie	1758

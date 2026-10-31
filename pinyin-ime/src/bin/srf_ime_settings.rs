@@ -1167,7 +1167,7 @@ fn check_rapidocr_environment() -> Result<String, String> {
     }
 
     let script = format!(
-        "import sys; sys.path.insert(0, r'{python_dir}'); import rapidocr; import cv2; import numpy; import onnxruntime; print('RapidOCR 可用：{root}')",
+        "import sys; sys.path.insert(0, r'{python_dir}'); import rapidocr; import cv2; import numpy; import rapidocr._native; print('RapidOCR 可用：{root}')",
         python_dir = rapidocr_python.display(),
         root = rapidocr_root.display(),
     );

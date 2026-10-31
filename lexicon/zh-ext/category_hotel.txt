@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：住宿酒店
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 亲子房	qin zi fang	6100
 住宿发票	zhu su fa piao	6100
@@ -50,7 +50,180 @@
 预订号码	yu ding hao ma	6100
 预订确认	yu ding que ren	6100
 麻烦换个房间	ma fan huan ge fang jian	6100
+帝国酒店	di guo jiu dian	5577
+主题酒店	zhu ti jiu dian	5270
+什么酒店	shen me jiu dian	5270
+哪个酒店	na ge jiu dian	5270
+国际酒店	guo ji jiu dian	5270
+成都酒店	cheng du jiu dian	5270
+爱情酒店	ai qing jiu dian	5270
+这个酒店	zhe ge jiu dian	5270
+这个酒店	zhei ge jiu dian	5270
+那个酒店	na ge jiu dian	5270
+酒店管理	jiu dian guan li	5270
+酒店设备	jiu dian she bei	5270
+酒店设施	jiu dian she shi	5270
+酒店设计	jiu dian she ji	5270
 套房	tao fang	5255
+酒店门口	jiu dian men kou	5193
+乡村酒店	xiang cun jiu dian	5154
+印象酒店	yin xiang jiu dian	5077
+酒店房间	jiu dian fang jian	5077
+天堂酒店	tian tang jiu dian	5000
+阳光酒店	yang guang jiu dian	5000
+酒店公寓	jiu dian gong yu	4924
+花园酒店	hua yuan jiu dian	4847
+骑士酒店	qi shi jiu dian	4847
+度假酒店	du jia jiu dian	4808
+商务酒店	shang wu jiu dian	4770
+江西宾馆	jiang xi bin guan	4731
+温泉酒店	wen quan jiu dian	4731
+酒店温泉	jiu dian wen quan	4731
+锦江酒店	jin jiang jiu dian	4731
+酒店家具	jiu dian jia ju	4693
+隔离酒店	ge li jiu dian	4654
+情侣酒店	qing lv jiu dian	4577
+精灵酒店	jing ling jiu dian	4577
 民宿	min su	4522
+上海宾馆	shang hai bin guan	4500
+东山宾馆	dong shan bin guan	4500
+东方宾馆	dong fang bin guan	4500
+东湖宾馆	dong hu bin guan	4500
+体育宾馆	ti yu bin guan	4500
+华侨宾馆	hua qiao bin guan	4500
+南湖宾馆	nan hu bin guan	4500
+友谊宾馆	you yi bin guan	4500
+和平宾馆	he ping bin guan	4500
+商务宾馆	shang wu bin guan	4500
+宾馆酒店	bin guan jiu dian	4500
+宾馆饭店	bin guan fan dian	4500
+广州宾馆	guang zhou bin guan	4500
+开心宾馆	kai xin bin guan	4500
+温泉宾馆	wen quan bin guan	4500
+瑞金宾馆	rui jin bin guan	4500
+站前宾馆	zhan qian bin guan	4500
+胜利宾馆	sheng li bin guan	4500
+豪华酒店	hao hua jiu dian	4500
+酒店宾馆	jiu dian bin guan	4500
+酒店用品	jiu dian yong pin	4500
+重庆宾馆	chong qing bin guan	4500
+金牛宾馆	jin niu bin guan	4500
+铁路宾馆	tie lu bin guan	4500
+锦江宾馆	jin jiang bin guan	4500
+长城宾馆	chang cheng bin guan	4500
+连锁酒店	lian suo jiu dian	4462
+银河宾馆	yin he bin guan	4462
+麻雀酒店	ma que jiu dian	4462
+产权酒店	chan quan jiu dian	4347
+烟酒店	yan jiu dian	4347
+这酒店	zhe jiu dian	4347
+远东酒店	yuan dong jiu dian	4347
+酒店里	jiu dian li	4347
+酒店客房	jiu dian ke fang	4308
+梦幻酒店	meng huan jiu dian	4270
+假日酒店	jia ri jiu dian	4231
+孟买酒店	meng mai jiu dian	4231
+酒店风云	jiu dian feng yun	4193
+吉祥酒店	ji xiang jiu dian	4154
+酒店之王	jiu dian zhi wang	4154
+便捷酒店	bian jie jiu dian	4039
+宾馆客房	bin guan ke fang	4039
+酒店自助	jiu dian zi zhu	4039
+万国酒店	wan guo jiu dian	4000
+快捷酒店	kuai jie jiu dian	4000
+珠江宾馆	zhu jiang bin guan	4000
+住酒店	zhu jiu dian	3962
+到酒店	dao jiu dian	3962
+去酒店	qu jiu dian	3962
+回酒店	hui jiu dian	3962
+在酒店	zai jiu dian	3962
+小酒店	xiao jiu dian	3962
+开酒店	kai jiu dian	3962
+找酒店	zhao jiu dian	3962
+来酒店	lai jiu dian	3962
+的酒店	de jiu dian	3962
+订酒店	ding jiu dian	3962
+酒店了	jiu dian le	3962
+酒店住	jiu dian zhu	3962
+酒店吗	jiu dian ma	3962
+酒店吧	jiu dian ba	3962
+酒店呢	jiu dian ne	3962
+酒店啊	jiu dian a	3962
+酒店的	jiu dian de	3962
+酒店系	jiu dian xi	3962
+星级宾馆	xing ji bin guan	3924
+星级酒店	xing ji jiu dian	3924
+繁华酒店	fan hua jiu dian	3924
+华天酒店	hua tian jiu dian	3885
+京西宾馆	jing xi bin guan	3847
+八一宾馆	ba yi bin guan	3847
+宾馆里	bin guan li	3847
+天龙酒店	tian long jiu dian	3770
+戴斯酒店	dai si jiu dian	3770
+已入住	yi ru zhu	3731
+帆船酒店	fan chuan jiu dian	3731
+白马酒店	bai ma jiu dian	3731
+洲际酒店	zhou ji jiu dian	3693
+酒店大堂	jiu dian da tang	3693
+交换民宿	jiao huan min su	3654
+全季酒店	quan ji jiu dian	3654
+单体酒店	dan ti jiu dian	3654
+夜色酒店	ye se jiu dian	3654
+湖畔酒店	hu pan jiu dian	3654
+美团民宿	mei tuan min su	3654
+虹桥宾馆	hong qiao bin guan	3654
+蜜月酒店	mi yue jiu dian	3654
+包入住	bao ru zhu	3616
+酒店惊魂	jiu dian jing hun	3616
+住客房	zhu ke fang	3539
+唐城宾馆	tang cheng bin guan	3539
+电竞酒店	dian jing jiu dian	3539
+万豪酒店	wan hao jiu dian	3462
+住宾馆	zhu bin guan	3462
+到宾馆	dao bin guan	3462
+去宾馆	qu bin guan	3462
+回宾馆	hui bin guan	3462
+国宾酒店	guo bin jiu dian	3462
+在宾馆	zai bin guan	3462
+宾馆业	bin guan ye	3462
+宾馆了	bin guan le	3462
+宾馆吗	bin guan ma	3462
+宾馆吧	bin guan ba	3462
+宾馆呢	bin guan ne	3462
+宾馆的	bin guan de	3462
+小宾馆	xiao bin guan	3462
+开宾馆	kai bin guan	3462
+下榻酒店	xia ta jiu dian	3424
+刚到酒店	gang dao jiu dian	3385
+四星酒店	si xing jiu dian	3347
+首旅酒店	shou lv jiu dian	3347
+华泰宾馆	hua tai bin guan	3270
+入住了	ru zhu le	3231
+入住人	ru zhu ren	3231
+入住的	ru zhu de	3231
+办入住	ban ru zhu	3231
+南郊宾馆	nan jiao bin guan	3231
+宾馆洗浴	bin guan xi yu	3231
+洗浴宾馆	xi yu bin guan	3231
+帝皇酒店	di huang jiu dian	2962
+拎包入住	lin bao ru zhu	2924
+豪泰酒店	hao tai jiu dian	2924
+汉庭酒店	han ting jiu dian	2885
+你在酒店	ni zai jiu dian	2770
+到酒店了	dao jiu dian le	2770
+咸亨酒店	xian heng jiu dian	2770
+回酒店了	hui jiu dian le	2770
+如家酒店	ru jia jiu dian	2770
+我在酒店	wo zai jiu dian	2770
+月之酒店	yue zhi jiu dian	2770
+灰马酒店	hui ma jiu dian	2770
+百星酒店	bai xing jiu dian	2770
+北苑宾馆	bei yuan bin guan	2654
+凯悦酒店	kai yue jiu dian	2500
+东泉宾馆	dong quan bin guan	2462
+到宾馆了	dao bin guan le	2462
+我在宾馆	wo zai bin guan	2462
+领包入住	ling bao ru zhu	2347
 标准间	biao zhun jian	2318
+木鸟民宿	mu niao min su	2116
 门禁卡	men jin ka	1510

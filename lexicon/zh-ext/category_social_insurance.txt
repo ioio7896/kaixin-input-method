@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：社保公积金
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 个人账户	ge ren zhang hu	6100
 住院报销	zhu yuan bao xiao	6100
@@ -53,4 +53,53 @@
 门诊报销	men zhen bao xiao	6100
 门诊统筹	men zhen tong chou	6100
 养老保险	yang lao bao xian	5816
+中医保健	zhong yi bao jian	4847
+河南社保	he nan she bao	4270
+医保中心	yi bao zhong xin	4000
+医保基金	yi bao ji jin	4000
+医保支付	yi bao zhi fu	4000
+国家医保	guo jia yi bao	4000
+基本医保	ji ben yi bao	4000
+居民医保	ju min yi bao	4000
+常州医保	chang zhou yi bao	4000
+电子医保	dian zi yi bao	4000
+社保中心	she bao zhong xin	4000
+社保基金	she bao ji jin	4000
+社保大厦	she bao da sha	4000
+社保大楼	she bao da lou	4000
+社保认证	she bao ren zheng	4000
+社保资金	she bao zi jin	4000
+缴纳社保	jiao na she bao	4000
+职工医保	zhi gong yi bao	4000
+重庆医保	chong qing yi bao	4000
+社保费率	she bao fei lv	3693
+划转社保	hua zhuan she bao	3616
+医保外	yi bao wai	3500
+医保局	yi bao ju	3500
+医保科	yi bao ke	3500
+医保费	yi bao fei	3500
+社保了	she bao le	3500
+社保费	she bao fei	3500
+社保重仓	she bao zhong cang	3500
+买社保	mai she bao	3116
+交医保	jiao yi bao	3116
+交社保	jiao she bao	3116
+你社保	ni she bao	3116
+医保办	yi bao ban	3116
+医保城	yi bao cheng	3116
+医保码	yi bao ma	3116
+医保通	yi bao tong	3116
+医社保	yi she bao	3116
+好医保	hao yi bao	3116
+无社保	wu she bao	3116
+有医保	you yi bao	3116
+有社保	you she bao	3116
+没社保	mei she bao	3116
+津医保	jin yi bao	3116
+湘医保	xiang yi bao	3116
+社保吗	she bao ma	3116
+社保所	she bao suo	3116
+社保的	she bao de	3116
+补缴社保	bu jiao she bao	2847
 社保卡	she bao ka	2358
+有公积金	you gong ji jin	2000

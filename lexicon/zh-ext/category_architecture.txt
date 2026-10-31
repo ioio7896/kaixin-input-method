@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：建筑施工
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 临边防护	lin bian fang hu	6100
 保温工程	bao wen gong cheng	6100
@@ -50,6 +50,240 @@
 隐蔽验收	yin bi yan shou	6100
 验收资料	yan shou zi liao	6100
 高处作业	gao chu zuo ye	6100
+传统建筑	chuan tong jian zhu	6039
 建筑节能	jian zhu jie neng	6000
 竣工验收	jun gong yan shou	6000
 装配式建筑	zhuang pei shi jian zhu	6000
+现代建筑	xian dai jian zhu	5885
+中国建筑	zhong guo jian zhu	5770
+城市建筑	cheng shi jian zhu	5770
+大学建筑	da xue jian zhu	5770
+工业建筑	gong ye jian zhu	5770
+建筑专业	jian zhu zhuan ye	5770
+建筑公司	jian zhu gong si	5770
+建筑大学	jian zhu da xue	5770
+建筑安全	jian zhu an quan	5770
+建筑市场	jian zhu shi chang	5770
+建筑年代	jian zhu nian dai	5770
+建筑文化	jian zhu wen hua	5770
+建筑环境	jian zhu huan jing	5770
+建筑科学	jian zhu ke xue	5770
+建筑管理	jian zhu guan li	5770
+建筑艺术	jian zhu yi shu	5770
+建筑行业	jian zhu hang ye	5770
+教育建筑	jiao yu jian zhu	5770
+文化建筑	wen hua jian zhu	5770
+表现建筑	biao xian jian zhu	5770
+公共建筑	gong gong jian zhu	5731
+建筑条件	jian zhu tiao jian	5731
+建筑标准	jian zhu biao zhun	5731
+建筑语言	jian zhu yu yan	5731
+健康建筑	jian kang jian zhu	5693
+学院建筑	xue yuan jian zhu	5693
+建筑功能	jian zhu gong neng	5693
+建筑学院	jian zhu xue yuan	5693
+建筑设备	jian zhu she bei	5654
+建筑职业	jian zhu zhi ye	5616
+建筑形式	jian zhu xing shi	5577
+交通建筑	jiao tong jian zhu	5539
+体育建筑	ti yu jian zhu	5539
+今日建筑	jin ri jian zhu	5500
+医疗建筑	yi liao jian zhu	5500
+古代建筑	gu dai jian zhu	5500
+商业建筑	shang ye jian zhu	5500
+建筑创作	jian zhu chuang zuo	5462
+建筑维护	jian zhu wei hu	5462
+铁路建筑	tie lu jian zhu	5462
+普通建筑	pu tong jian zhu	5424
+建筑类型	jian zhu lei xing	5385
+特色建筑	te se jian zhu	5385
+建筑设施	jian zhu she shi	5347
+建筑评价	jian zhu ping jia	5347
+建筑机械	jian zhu ji xie	5308
+建筑规范	jian zhu gui fan	5308
+施工人员	shi gong ren yuan	5308
+施工程序	shi gong cheng xu	5308
+工厂建筑	gong chang jian zhu	5270
+建筑费用	jian zhu fei yong	5270
+建筑高度	jian zhu gao du	5270
+建筑预算	jian zhu yu suan	5231
+居住建筑	ju zhu jian zhu	5193
+施工要求	shi gong yao qiu	5154
+智能建筑	zhi neng jian zhu	5154
+建筑垃圾	jian zhu la ji	5116
+建筑安装	jian zhu an zhuang	5116
+建筑摄影	jian zhu she ying	5116
+施工安全	shi gong an quan	5116
+无人施工	wu ren shi gong	5116
+街道建筑	jie dao jian zhu	5116
+建筑大师	jian zhu da shi	5077
+建筑群体	jian zhu qun ti	5077
+房屋建筑	fang wu jian zhu	5077
+施工技术	shi gong ji shu	5077
+建筑模型	jian zhu mo xing	5039
+建筑细节	jian zhu xi jie	5039
+典型建筑	dian xing jian zhu	5000
+地下建筑	di xia jian zhu	5000
+建筑主体	jian zhu zhu ti	5000
+建筑大楼	jian zhu da lou	5000
+住宅建筑	zhu zhai jian zhu	4924
+建筑性能	jian zhu xing neng	4924
+建筑测量	jian zhu ce liang	4924
+建筑造型	jian zhu zao xing	4924
+高层建筑	gao ceng jian zhu	4885
+工程施工	gong cheng shi gong	4847
+建筑时报	jian zhu shi bao	4847
+建筑玻璃	jian zhu bo li	4847
+建筑装饰	jian zhu zhuang shi	4847
+施工中心	shi gong zhong xin	4847
+施工公司	shi gong gong si	4847
+施工单位	shi gong dan wei	4847
+施工工艺	shi gong gong yi	4847
+施工建设	shi gong jian she	4847
+施工文件	shi gong wen jian	4847
+施工方式	shi gong fang shi	4847
+施工方法	shi gong fang fa	4847
+施工机械	shi gong ji xie	4847
+施工检查	shi gong jian cha	4847
+施工测量	shi gong ce liang	4847
+施工监控	shi gong jian kong	4847
+施工监督	shi gong jian du	4847
+施工阶段	shi gong jie duan	4847
+施工面积	shi gong mian ji	4847
+施工项目	shi gong xiang mu	4847
+施工预算	shi gong yu suan	4847
+正在施工	zheng zai shi gong	4847
+人工地貌	ren gong di mao	4808
+建筑策划	jian zhu ce hua	4808
+封闭施工	feng bi shi gong	4770
+建筑构造	jian zhu gou zao	4770
+建筑风景	jian zhu feng jing	4770
+旅馆建筑	lv guan jian zhu	4770
+古典建筑	gu dian jian zhu	4731
+徽州建筑	hui zhou jian zhu	4731
+办公建筑	ban gong jian zhu	4693
+建筑大厦	jian zhu da sha	4693
+建筑用途	jian zhu yong tu	4654
+施工用地	shi gong yong di	4654
+冬季施工	dong ji shi gong	4616
+建筑缺陷	jian zhu que xian	4616
+建筑制品	jian zhu zhi pin	4539
+建筑平面	jian zhu ping mian	4539
+附属建筑	fu shu jian zhu	4539
+建筑光学	jian zhu guang xue	4462
+建筑声学	jian zhu sheng xue	4462
+建筑隔热	jian zhu ge re	4462
+建筑概况	jian zhu gai kuang	4424
+建筑装修	jian zhu zhuang xiu	4424
+市政建筑	shi zheng jian zhu	4347
+建筑电气	jian zhu dian qi	4347
+建筑体积	jian zhu ti ji	4308
+建筑分	jian zhu fen	4270
+建筑楼	jian zhu lou	4270
+建筑法	jian zhu fa	4270
+建筑的	jian zhu de	4270
+建筑税	jian zhu shui	4270
+建筑类	jian zhu lei	4270
+建筑线	jian zhu xian	4270
+搞建筑	gao jian zhu	4270
+民用建筑	min yong jian zhu	4270
+老建筑	lao jian zhu	4270
+建筑照明	jian zhu zhao ming	4231
+还在工地	hai zai gong di	4231
+这个工地	zhe ge gong di	4231
+道教建筑	dao jiao jian zhu	4231
+园林建筑	yuan lin jian zhu	4193
+园林施工	yuan lin shi gong	4193
+工地上	gong di shang	4154
+建筑线条	jian zhu xian tiao	4116
+建筑防火	jian zhu fang huo	4116
+所有楼盘	suo you lou pan	4116
+在建楼盘	zai jian lou pan	4077
+施工的	shi gong de	4077
+明清建筑	ming qing jian zhu	4077
+乡土建筑	xiang tu jian zhu	4039
+光面钢筋	guang mian gang jin	4000
+分布钢筋	fen bu gang jin	4000
+受力钢筋	shou li gang jin	4000
+施工者	shi gong zhe	4000
+钢筋水泥	gang jin shui ni	4000
+钢筋网片	gang jin wang pian	4000
+室外建筑	shi wai jian zhu	3924
+建筑小品	jian zhu xiao pin	3924
+建筑红线	jian zhu hong xian	3924
+施工定额	shi gong ding e	3924
+藏式建筑	zang shi jian zhu	3885
+违章建筑	wei zhang jian zhu	3847
+地标建筑	di biao jian zhu	3808
+建筑奇观	jian zhu qi guan	3770
+楼盘销售	lou pan xiao shou	3770
+热点楼盘	re dian lou pan	3770
+高端楼盘	gao duan lou pan	3770
+建筑之美	jian zhu zhi mei	3731
+回音建筑	hui yin jian zhu	3693
+在施工	zai shi gong	3693
+施工中	shi gong zhong	3693
+施工了	shi gong le	3693
+施工员	shi gong yuan	3693
+施工架	shi gong jia	3693
+施工缝	shi gong feng	3693
+施工证	shi gong zheng	3693
+施工费	shi gong fei	3693
+未施工	wei shi gong	3693
+上工地	shang gong di	3654
+下工地	xia gong di	3654
+做工地	zuo gong di	3654
+务工地	wu gong di	3654
+包工地	bao gong di	3654
+多层建筑	duo ceng jian zhu	3654
+大工地	da gong di	3654
+新工地	xin gong di	3654
+新楼盘	xin lou pan	3577
+民居建筑	min ju jian zhu	3577
+土建施工	tu jian shi gong	3539
+土木建筑	tu mu jian zhu	3539
+建筑制图	jian zhu zhi tu	3539
+建筑间距	jian zhu jian ju	3539
+古建筑群	gu jian zhu qun	3462
+建筑模数	jian zhu mo shu	3462
+建筑细部	jian zhu xi bu	3462
+欧式建筑	ou shi jian zhu	3462
+螺纹钢筋	luo wen gang jin	3462
+覆土建筑	fu tu jian zhu	3462
+单层建筑	dan ceng jian zhu	3385
+建筑抗震	jian zhu kang zhen	3385
+住工地	zhu gong di	3270
+你工地	ni gong di	3270
+到工地	dao gong di	3270
+去工地	qu gong di	3270
+回工地	hui gong di	3270
+在工地	zai gong di	3270
+工地了	gong di le	3270
+工地吗	gong di ma	3270
+工地呢	gong di ne	3270
+工地的	gong di de	3270
+干工地	gan gong di	3270
+我工地	wo gong di	3270
+有工地	you gong di	3270
+来工地	lai gong di	3270
+看工地	kan gong di	3270
+跑工地	pao gong di	3270
+这工地	zhe gong di	3270
+仿古建筑	fang gu jian zhu	3154
+扎钢筋	zha gang jin	3116
+绑钢筋	bang gang jin	3116
+钢筋头	gang jin tou	3116
+钢筋工	gang jin gong	3116
+钢筋砼	gang jin tong	3116
+钢筋笼	gang jin long	3116
+钢筋网	gang jin wang	3116
+拍古建筑	pai gu jian zhu	2962
+在工地上	zai gong di shang	2654
+你在工地	ni zai gong di	2347
+到工地了	dao gong di le	2347
+去工地了	qu gong di le	2347
+工地搬砖	gong di ban zhuan	2347
+工地记工	gong di ji gong	2347
+徽派建筑	hui pai jian zhu	2347
+我在工地	wo zai gong di	2347
+板底钢筋	ban di gang jin	2270

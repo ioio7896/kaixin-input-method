@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：办公协作
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 会议时间调整	hui yi shi jian tiao zheng	9300
 会议纪要整理	hui yi ji yao zheng li	9300
@@ -60,6 +60,32 @@
 邮件撤回	you jian che hui	6100
 邮件附件	you jian fu jian	6100
 项目周报	xiang mu zhou bao	6100
+代表会议	dai biao hui yi	6077
+会议中心	hui yi zhong xin	6077
+会议内容	hui yi nei rong	6077
+国际会议	guo ji hui yi	6077
+网络会议	wang luo hui yi	6077
+参加会议	can jia hui yi	6000
+现场会议	xian chang hui yi	6000
+网易会议	wang yi hui yi	5962
+腾讯会议	teng xun hui yi	5962
+扩大会议	kuo da hui yi	5885
+会议结束	hui yi jie shu	5808
+家庭会议	jia ting hui yi	5808
+会议精神	hui yi jing shen	5654
+电视会议	dian shi hui yi	5654
+东方会议	dong fang hui yi	5616
+大陆会议	da lu hui yi	5616
+小组会议	xiao zu hui yi	5616
+会议方案	hui yi fang an	5539
+会议主题	hui yi zhu ti	5462
+团队会议	tuan dui hui yi	5424
+秘密会议	mi mi hui yi	5424
+会议决议	hui yi jue yi	5385
+国民会议	guo min hui yi	5347
+高级会议	gao ji hui yi	5347
+家族会议	jia zu hui yi	5231
+政协会议	zheng xie hui yi	5231
 会议纪要已经发送	hui yi ji yao yi jing fa song	5200
 会议纪要已经收到	hui yi ji yao yi jing shou dao	5200
 会议纪要已经整理好	hui yi ji yao yi jing zheng li hao	5200
@@ -114,6 +140,20 @@
 附件需要核对	fu jian xu yao he dui	5200
 附件需要确认	fu jian xu yao que ren	5200
 附件需要补充	fu jian xu yao bu chong	5200
+协商会议	xie shang hui yi	5193
+会议落实	hui yi luo shi	5154
+协调会议	xie tiao hui yi	5154
+主持会议	zhu chi hui yi	5116
+办公司	ban gong si	5116
+莱西会议	lai xi hui yi	5116
+会理会议	hui li hui yi	5077
+西山会议	xi shan hui yi	5077
+高峰会议	gao feng hui yi	5039
+会议文献	hui yi wen xian	5000
+办公设备	ban gong she bei	4962
+专题会议	zhuan ti hui yi	4924
+综合办公	zong he ban gong	4924
+联合办公	lian he ban gong	4924
 请发来付款凭证	qing fa lai fu kuan ping zheng	4900
 请发来会议纪要	qing fa lai hui yi ji yao	4900
 请发来会议链接	qing fa lai hui yi lian jie	4900
@@ -626,4 +666,128 @@
 麻烦转发订单截图	ma fan zhuan fa ding dan jie tu	4900
 麻烦转发项目资料	ma fan zhuan fa xiang mu zi liao	4900
 麻烦转发验收资料	ma fan zhuan fa yan shou zi liao	4900
+云会议	yun hui yi	4885
+会议营销	hui yi ying xiao	4885
+公会议	gong hui yi	4885
+大会议	da hui yi	4885
+开会议	kai hui yi	4885
+有会议	you hui yi	4885
+航空邮件	hang kong you jian	4885
+进会议	jin hui yi	4885
+会议展览	hui yi zhan lan	4847
+二次会议	er ci hui yi	4808
+办公用品	ban gong yong pin	4808
+商务会议	shang wu hui yi	4770
+通道会议	tong dao hui yi	4770
+两会议程	liang hui yi cheng	4731
+洛川会议	luo chuan hui yi	4731
+黎平会议	li ping hui yi	4731
+免费邮件	mian fei you jian	4693
+创意办公	chuang yi ban gong	4693
+办公中心	ban gong zhong xin	4693
+办公地点	ban gong di dian	4693
+办公场所	ban gong chang suo	4693
+办公大厦	ban gong da sha	4693
+办公家具	ban gong jia ju	4693
+办公时间	ban gong shi jian	4693
+办公空间	ban gong kong jian	4693
+商务办公	shang wu ban gong	4693
+在家办公	zai jia ban gong	4693
+文化办公	wen hua ban gong	4693
+文本文档	wen ben wen dang	4693
+死亡邮件	si wang you jian	4693
+现场办公	xian chang ban gong	4693
+病毒邮件	bing du you jian	4693
+神秘邮件	shen mi you jian	4693
+移动办公	yi dong ban gong	4693
+邮件中心	you jian zhong xin	4693
+邮件地址	you jian di zhi	4693
+邮件系统	you jian xi tong	4693
+三级会议	san ji hui yi	4654
+办公流程	ban gong liu cheng	4654
+协同办公	xie tong ban gong	4616
+柏林会议	bo lin hui yi	4616
+筹备会议	chou bei hui yi	4616
+例行会议	li xing hui yi	4577
+电子文档	dian zi wen dang	4577
+预备会议	yu bei hui yi	4577
+办公沙发	ban gong sha fa	4539
+会议上	hui yi shang	4500
+会议中	hui yi zhong	4500
+会议了	hui yi le	4500
+会议号	hui yi hao	4500
+会议录	hui yi lu	4500
+会议所	hui yi suo	4500
+会议楼	hui yi lou	4500
+会议码	hui yi ma	4500
+长老会议	zhang lao hui yi	4500
+谷歌邮件	gu ge you jian	4462
+坐办公室	zuo ban gong shi	4424
+大办公室	da ban gong shi	4424
+我办公室	wo ban gong shi	4424
+来办公室	lai ban gong shi	4424
+四次会议	si ci hui yi	4385
+不办公	bu ban gong	4347
+会议礼仪	hui yi li yi	4308
+办公用房	ban gong yong fang	4308
+互助文档	hu zhu wen dang	4270
+保存文档	bao cun wen dang	4270
+文档文件	wen dang wen jian	4270
+文档资料	wen dang zi liao	4270
+用户文档	yong hu wen dang	4270
+编辑文档	bian ji wen dang	4270
+腾讯文档	teng xun wen dang	4270
+金山文档	jin shan wen dang	4270
+办公桌上	ban gong zhuo shang	4231
+开罗会议	kai luo hui yi	4154
+大公会议	da gong hui yi	4039
+闭门会议	bi men hui yi	4039
+居家办公	ju jia ban gong	4000
+办公房	ban gong fang	3962
+办公用	ban gong yong	3962
+办公的	ban gong de	3962
+办公网	ban gong wang	3962
+扎西会议	zha xi hui yi	3962
+大会议室	da hui yi shi	3847
+进会议室	jin hui yi shi	3847
+立宪会议	li xian hui yi	3808
+列席会议	lie xi hui yi	3770
+办公用纸	ban gong yong zhi	3770
+石墨文档	shi mo wen dang	3731
+八七会议	ba qi hui yi	3693
+小河会议	xiao he hui yi	3616
+教务会议	jiao wu hui yi	3616
+金砖会议	jin zhuan hui yi	3616
+云办公	yun ban gong	3577
+办公了	ban gong le	3577
+办公台	ban gong tai	3577
+办公点	ban gong dian	3577
+办公群	ban gong qun	3577
+在办公	zai ban gong	3577
+此邮件	ci you jian	3577
+看邮件	kan you jian	3577
+该邮件	gai you jian	3577
+邮件了	you jian le	3577
+邮件里	you jian li	3577
+民办公助	min ban gong zhu	3462
+庭前会议	ting qian hui yi	3424
+合署办公	he shu ban gong	3347
+文档里	wen dang li	3308
+俄界会议	e jie hui yi	3077
+在会议室	zai hui yi shi	3077
+小会议室	xiao hui yi shi	3077
+猴场会议	hou chang hui yi	3077
+苟坝会议	gou ba hui yi	3077
+贸发会议	mao fa hui yi	2808
+办公耗材	ban gong hao cai	2616
+你办公室	ni ban gong shi	2539
+到办公室	dao ban gong shi	2539
+去办公室	qu ban gong shi	2539
+发邮件了	fa you jian le	2539
+回办公室	hui ban gong shi	2539
+在办公室	zai ban gong shi	2539
+新办公楼	xin ban gong lou	2539
+村办公楼	cun ban gong lou	2539
+老办公楼	lao ban gong lou	2539
+我的文档	wo de wen dang	2385
 视频会议	shi pin hui yi	2010

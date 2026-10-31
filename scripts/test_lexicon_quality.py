@@ -114,17 +114,21 @@ class LexiconQualityTests(unittest.TestCase):
         self.assertIn("我刚看到消息\t", life)
         self.assertIn("我去门口拿个包裹\t", life)
 
-    def test_regenerated_categories_match_published_rows_and_manifest(self):
+    def test_imported_categories_match_published_manifest_and_have_no_duplicate_readings(self):
         import hashlib
-        from merge_zh_ext_lexicons import CATEGORIES, merge_category
         manifest = json.loads((quality.ROOT / "shared/category_lexicons.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(manifest["categories"]), 99)
         for item in manifest["categories"]:
             path = quality.ROOT / "lexicon/zh-ext" / item["file"]
             data = path.read_bytes()
             rows = [tuple(line.split("\t")) for line in data.decode("utf-8").splitlines() if line and not line.startswith("#")]
-            self.assertEqual([(p, r, int(s)) for p, r, s in rows], merge_category(CATEGORIES[item["file"]]), item["file"])
+            self.assertEqual(len({(p, r) for p, r, _ in rows}), len(rows), item["file"])
             self.assertEqual(len(rows), item["rows"])
             self.assertEqual(hashlib.sha256(data).hexdigest(), item["sha256"])
+            scores = [int(score) for _, _, score in rows]
+            self.assertEqual(min(scores), item["score_min"])
+            self.assertEqual(max(scores), item["score_max"])
+            self.assertEqual(sum(item["score_tiers"].values()), len(rows))
 
     def test_short_hot_lists_respect_their_length_contract(self):
         for name, length in (("life_short_hot_2char.txt", 2), ("life_hot_3char_curated.txt", 3), ("life_hot_4char_curated.txt", 4)):

@@ -1,7 +1,7 @@
 # 开心离线输入法分类补充：数学统计
 # 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料补充：jieba 0.42.1 本地 dict.txt；MIT 许可全文见 category-LICENSE.jieba.md。
-# 拼音：pypinyin 0.55.0，优先沿用已有词语读音及项目多音词校正。
+# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
+# 拼音：实际无声调拼音，保留项目校正读音。
 # 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
 主成分分析	zhu cheng fen fen xi	6100
 偏自相关	pian zi xiang guan	6100
@@ -52,4 +52,198 @@
 标准差	biao zhun cha	6000
 概率分布	gai lv fen bu	6000
 置信区间	zhi xin qu jian	6000
+统计出来	tong ji chu lai	5731
+数学不好	shu xue bu hao	5539
+数学成绩	shu xue cheng ji	5539
+除了数学	chu le shu xue	5539
+应用数学	ying yong shu xue	5500
+数学问题	shu xue wen ti	5500
+高中数学	gao zhong shu xue	5500
+只有数学	zhi you shu xue	5462
+数学课程	shu xue ke cheng	5462
+组合数学	zu he shu xue	5462
+还有数学	hai you shu xue	5462
+那个数学	na ge shu xue	5462
+价格统计	jia ge tong ji	5424
+工业统计	gong ye tong ji	5424
+应用统计	ying yong tong ji	5424
+数学分析	shu xue fen xi	5424
+数学报纸	shu xue bao zhi	5424
+经济统计	jing ji tong ji	5424
+统计一下	tong ji yi xia	5424
+统计人员	tong ji ren yuan	5424
+统计人数	tong ji ren shu	5424
+统计信息	tong ji xin xi	5424
+统计制度	tong ji zhi du	5424
+统计工作	tong ji gong zuo	5424
+统计情况	tong ji qing kuang	5424
+统计报告	tong ji bao gao	5424
+统计模式	tong ji mo shi	5424
+统计调查	tong ji diao cha	5424
+统计资料	tong ji zi liao	5424
+计算数学	ji suan shu xue	5424
+金融统计	jin rong tong ji	5424
+消费统计	xiao fei tong ji	5347
+生物统计	sheng wu tong ji	5347
+统计描述	tong ji miao shu	5308
+卫生统计	wei sheng tong ji	5270
+中学数学	zhong xue shu xue	5154
+初中数学	chu zhong shu xue	5154
+基础数学	ji chu shu xue	5154
+大学数学	da xue shu xue	5154
+小学数学	xiao xue shu xue	5154
+我们数学	wo men shu xue	5154
+数学作业	shu xue zuo ye	5154
+数学冠军	shu xue guan jun	5154
+数学基础	shu xue ji chu	5154
+数学多少	shu xue duo shao	5154
+数学少女	shu xue shao nv	5154
+数学应用	shu xue ying yong	5154
+数学数学	shu xue shu xue	5154
+数学方法	shu xue fang fa	5154
+数学知识	shu xue zhi shi	5154
+数学答案	shu xue da an	5154
+数学英语	shu xue ying yu	5154
+经济数学	jing ji shu xue	5154
+英语数学	ying yu shu xue	5154
+财政统计	cai zheng tong ji	5154
+金融数学	jin rong shu xue	5154
+统计指数	tong ji zhi shu	5077
+数学思维	shu xue si wei	5039
+数学模型	shu xue mo xing	5039
+统计决策	tong ji jue ce	5039
+微软数学	wei ruan shu xue	5000
+统计指标	tong ji zhi biao	5000
+统计整理	tong ji zheng li	5000
+我大概率	wo da gai lv	4962
+数学论文	shu xue lun wen	4962
+数学竞赛	shu xue jing sai	4924
+统计总体	tong ji zong ti	4924
+数学原理	shu xue yuan li	4885
+统计假设	tong ji jia she	4885
+不统计	bu tong ji	4847
+数学语文	shu xue yu wen	4847
+初步统计	chu bu tong ji	4808
+高等数学	gao deng shu xue	4808
+数学好难	shu xue hao nan	4731
+黄冈数学	huang gang shu xue	4731
+税收统计	shui shou tong ji	4693
+模糊数学	mo hu shu xue	4654
+数学笔记	shu xue bi ji	4577
+主观概率	zhu guan gai lv	4500
+数学课本	shu xue ke ben	4500
+概率函数	gai lv han shu	4500
+概率分析	gai lv fen xi	4500
+概率统计	gai lv tong ji	4500
+统计概率	tong ji gai lv	4500
+语文数学	yu wen shu xue	4500
+累积概率	lei ji gai lv	4462
+统计上	tong ji shang	4462
+统计出	tong ji chu	4462
+统计分组	tong ji fen zu	4462
+统计口径	tong ji kou jing	4462
+统计数	tong ji shu	4462
+统计过	tong ji guo	4462
+统计量	tong ji liang	4462
+统计公报	tong ji gong bao	4385
+大概率	da gai lv	4347
+夺冠概率	duo guan gai lv	4347
+我数学课	wo shu xue ke	4347
+统计力学	tong ji li xue	4308
+统计图表	tong ji tu biao	4308
+他数学	ta shu xue	4270
+就数学	jiu shu xue	4270
+我数学	wo shu xue	4270
+数学书	shu xue shu	4270
+数学了	shu xue le	4270
+数学好	shu xue hao	4270
+数学网	shu xue wang	4270
+有数学	you shu xue	4270
+的数学	de shu xue	4270
+补数学	bu shu xue	4270
+要数学	yao shu xue	4270
+这数学	zhe shu xue	4270
+高一数学	gao yi shu xue	4193
+初一数学	chu yi shu xue	4154
+解码数学	jie ma shu xue	4154
+趣味数学	qu wei shu xue	4154
+违约概率	wei yue gai lv	4154
+你统计	ni tong ji	4077
+先统计	xian tong ji	4077
+在统计	zai tong ji	4077
+我统计	wo tong ji	4077
+推论统计	tui lun tong ji	4077
+没统计	mei tong ji	4077
+统计下	tong ji xia	4077
+统计了	tong ji le	4077
+统计处	tong ji chu	4077
+统计好	tong ji hao	4077
+统计完	tong ji wan	4077
+统计室	tong ji shi	4077
+统计推断	tong ji tui duan	4077
+统计的	tong ji de	4077
+要统计	yao tong ji	4077
+让统计	rang tong ji	4077
+数学卷子	shu xue juan zi	4000
+高三数学	gao san shu xue	3962
+初二数学	chu er shu xue	3924
+洋葱数学	yang cong shu xue	3924
+上数学	shang shu xue	3885
+你数学	ni shu xue	3885
+做数学	zuo shu xue	3885
+写数学	xie shu xue	3885
+发数学	fa shu xue	3885
+和数学	he shu xue	3885
+咱数学	zan shu xue	3885
+学数学	xue shu xue	3885
+对数学	dui shu xue	3885
+把数学	ba shu xue	3885
+教数学	jiao shu xue	3885
+数学二	shu xue er	3885
+数学卷	shu xue juan	3885
+数学吗	shu xue ma	3885
+数学吧	shu xue ba	3885
+数学呢	shu xue ne	3885
+数学和	shu xue he	3885
+数学啊	shu xue a	3885
+数学四	shu xue si	3885
+数学本	shu xue ben	3885
+数学桥	shu xue qiao	3885
+数学楼	shu xue lou	3885
+数学班	shu xue ban	3885
+数学的	shu xue de	3885
+数学群	shu xue qun	3885
+数学难	shu xue nan	3885
+是数学	shi shu xue	3885
+看数学	kan shu xue	3885
+统计报表	tong ji bao biao	3885
+考数学	kao shu xue	3885
+跟数学	gen shu xue	3885
+不考数学	bu kao shu xue	3847
+数学试题	shu xue shi ti	3847
+统计核算	tong ji he suan	3808
+字数统计	zi shu tong ji	3770
+离散数学	li san shu xue	3770
+考完数学	kao wan shu xue	3770
+初三数学	chu san shu xue	3693
+欧拉数学	ou la shu xue	3654
+统计年鉴	tong ji nian jian	3654
+数学建模	shu xue jian mo	3616
+概率抽样	gai lv chou yang	3616
+后概率	hou gai lv	3462
+小概率	xiao gai lv	3462
+有概率	you gai lv	3462
+概率法	gai lv fa	3462
+的概率	de gai lv	3462
+统计套利	tong ji tao li	3308
+统计台帐	tong ji tai zhang	2847
+统计好了	tong ji hao le	2847
+上数学课	shang shu xue ke	2731
+你的数学	ni de shu xue	2731
+做数学题	zuo shu xue ti	2731
+写完数学	xie wan shu xue	2731
+我写数学	wo xie shu xue	2731
+我的数学	wo de shu xue	2731
+数学写了	shu xue xie le	2731
+数学没写	shu xue mei xie	2731
 协方差	xie fang cha	640
