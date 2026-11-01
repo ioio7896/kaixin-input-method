@@ -47,11 +47,11 @@ constexpr UINT kCandidateEnvironmentPollMs = 500;
 constexpr ULONGLONG kCandidateStyleDeferMs = 30;
 constexpr UINT kCandidateAnimationFrameMs = 15;
 constexpr UINT kCandidatePendingIndicatorDelayMs = 80;
-constexpr int kCandidateShowAnimationMs = 90;
-constexpr int kCandidateSelectionAnimationMs = 80;
-constexpr int kCandidateHoverAnimationMs = 70;
-constexpr int kCandidatePressAnimationMs = 36;
-constexpr int kCandidatePageAnimationMs = 110;
+constexpr int kCandidateShowAnimationMs = 0;
+constexpr int kCandidateSelectionAnimationMs = 50;
+constexpr int kCandidateHoverAnimationMs = 45;
+constexpr int kCandidatePressAnimationMs = 24;
+constexpr int kCandidatePageAnimationMs = 0;
 constexpr int kHorizontalPageBadgeMinWidth = 44;
 constexpr int kHorizontalPageBadgeGap = 6;
 constexpr int kHorizontalPageBadgePaddingY = 4;
@@ -2067,9 +2067,9 @@ void CCandidateWindow::RefreshFonts() {
   if (m_dpi == 0) m_dpi = CurrentDpi(m_hwnd);
 
   const UINT bodyPt = std::clamp(m_style.candidateFontSize, 10u, 28u);
-  const UINT titlePt = std::min(bodyPt + 1, 30u);
-  const UINT metaPt = bodyPt > 11 ? bodyPt - 2 : 9u;
-  const UINT labelPt = bodyPt > 10 ? bodyPt - 1 : bodyPt;
+  const UINT titlePt = bodyPt > 11 ? bodyPt - 2 : bodyPt;
+  const UINT metaPt = bodyPt > 12 ? bodyPt - 3 : 9u;
+  const UINT labelPt = bodyPt > 11 ? bodyPt - 2 : bodyPt;
   const UINT chipPt = bodyPt > 11 ? bodyPt - 3 : 8u;
   const int bodyWeight = ResolveFontWeight(m_style.candidateFontWeight, 500, 300, 700);
   const int strongWeight =
@@ -2110,7 +2110,7 @@ void CCandidateWindow::RefreshFonts() {
                        m_customFontFace.c_str());
   };
 
-  m_titleFont = makeFont(titlePt, FW_SEMIBOLD);
+  m_titleFont = makeFont(titlePt, FW_NORMAL);
   m_bodyFont = makeFont(bodyPt, bodyWeight);
   // 选中项保留“略强调”，避免过粗导致笔画糊成一团。
   m_bodyStrongFont = makeFont(bodyPt, strongWeight);
@@ -2127,7 +2127,7 @@ void CCandidateWindow::RefreshFonts() {
     if (!ok) {
       DestroyFonts();
       m_customFontFace = kDefaultCandidateFontFace;
-      m_titleFont = makeFont(titlePt, FW_SEMIBOLD);
+      m_titleFont = makeFont(titlePt, FW_NORMAL);
       m_bodyFont = makeFont(bodyPt, bodyWeight);
       m_bodyStrongFont = makeFont(bodyPt, strongWeight);
       m_metaFont = makeFont(metaPt, FW_NORMAL);
@@ -2388,9 +2388,14 @@ SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRec
         y += Scale(14);
       }
       const int textWidth = std::max(Scale(72), areaWidth - itemPadX * 2 - labelWidth - labelGap);
-      const int mainHeight = std::max(Scale(18), MeasureWrappedHeight(screenDc, m_bodyFont,
+      int mainHeight = std::max(Scale(18), MeasureWrappedHeight(screenDc, m_bodyFont,
                                                                        displayItems[i], textWidth,
                                                                        m_dpi));
+      if (clipboardMode) {
+        const int lineHeight = MeasureWrappedHeight(screenDc, m_bodyFont, L"\u793a\u4f8b", textWidth, m_dpi);
+        const int maxLines = i == static_cast<size_t>(m_selectedInPage) ? 3 : 2;
+        mainHeight = std::min(mainHeight, std::max(Scale(18), lineHeight) * maxLines);
+      }
       int commentHeight = 0;
       if (!m_comments[i].empty() &&
           (clipboardMode || i == static_cast<size_t>(m_selectedInPage))) {
@@ -2615,11 +2620,8 @@ void CCandidateWindow::ApplyWindowRect(const RECT& rect) {
 void CCandidateWindow::ApplyAnimatedWindowRect(float showProgress) {
   if (!m_hwnd || !m_hasTargetWindowRect) return;
   RECT rect = m_targetWindowRect;
-  if (m_showAnimationActive) {
-    const int offsetY =
-        static_cast<int>(std::lround(static_cast<float>(Scale(2)) * (1.0f - showProgress)));
-    OffsetRect(&rect, 0, offsetY);
-  }
+  // Appearance may fade, but must not move the candidate targets under the pointer.
+  (void)showProgress;
   const int w = std::max<int>(1, rect.right - rect.left);
   const int h = std::max<int>(1, rect.bottom - rect.top);
   RECT current = {};
@@ -2736,6 +2738,8 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     m_lastLayoutVariant = m_style.candidateLayoutVariant;
   }
 
+  const bool isHorizontal = m_style.candidateHorizontal;
+  const bool clipboardMode = !isHorizontal && HasClipboardCandidateItems(m_clipboardItems);
   CandidateColors colors = ResolveColors(m_style);
   // Keep retained candidates visually stable while an asynchronous lookup is
   // pending. Their interaction state is still synchronized through
@@ -2776,8 +2780,6 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
   const int labelGap = Scale(spec.labelGap);
   const int commentGap = Scale(spec.commentGap);
 
-  const bool isHorizontal = m_style.candidateHorizontal;
-  const bool clipboardMode = !isHorizontal && HasClipboardCandidateItems(m_clipboardItems);
   if (clipboardMode) labelWidth = Scale(22);
   int compact1 = 0;
   if (isHorizontal) {
@@ -2814,7 +2816,8 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
 
       RECT headerRect = {outerPadX, outerPadY, client.right - outerPadX, outerPadY + headerHeight};
       FillHeaderBackgroundClippedToRoundRect(targetDc, headerRect, colors, headerRadius);
-      DrawRoundRectBorderCached(targetDc, headerRect, borderColor, headerRadius, strokeWidth);
+      if (m_style.themeMode == SrfThemeMode::HighContrast)
+        DrawRoundRectBorderCached(targetDc, headerRect, borderColor, headerRadius, strokeWidth);
 
       RECT pageRect = {};
       if (showPageBadge) {
@@ -2860,7 +2863,10 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
           headerRect.top + headerPadY,
           std::max<int>(static_cast<int>(headerRect.left + headerPadX), modeChipX - Scale(6)),
           headerRect.bottom - headerPadY};
-      DrawTextBlock(targetDc, m_titleFont, colors.text, m_title, titleRect,
+      const COLORREF headerBackgrounds[] = {colors.headerBg,
+          colors.headerBgTo == CLR_INVALID ? colors.headerBg : colors.headerBgTo};
+      const COLORREF headerText = EnsureReadableTextColor(colors.text, headerBackgrounds, 2, 4.5);
+      DrawTextBlock(targetDc, m_titleFont, headerText, m_title, titleRect,
                     DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
 
       if (m_style.candidateLayoutVariant != SrfCandidateLayoutVariant::Card) {
@@ -2979,10 +2985,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       m_pageAnimationActive ? EaseOutCubic(LinearAnimationProgress(
                                   animationNow, m_pageAnimationStart, m_pageAnimationDurationMs))
                             : 1.0f;
-  const int pageOffsetX = m_pageAnimationActive
-                              ? static_cast<int>(std::lround(m_pageAnimationDirection * Scale(6) *
-                                                             (1.0f - pageProgress)))
-                              : 0;
+  const int pageOffsetX = 0;  // Fade only; never slide candidate targets.
   const bool anyItemAnimation = m_selectionAnimationActive || m_hoverAnimationActive ||
                                 m_pressAnimationActive || m_pageAnimationActive;
   const COLORREF accentColor =
@@ -3019,7 +3022,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
         m_pressAnimationActive
             ? IndexTransitionWeight(i, m_pressAnimationFrom, m_pressAnimationTo, pressProgress)
             : (isPressed ? 1.0f : 0.0f);
-    COLORREF itemFill = AlphaBlendColor(colors.hoverBg, colors.itemBg, hoverWeight);
+    COLORREF itemFill = AlphaBlendColor(colors.hoverBg, colors.windowBg, hoverWeight);
     itemFill = AlphaBlendColor(colors.selectedBg, itemFill, selectionWeight);
     itemFill = AlphaBlendColor(colors.pressedBg, itemFill, pressWeight);
     COLORREF normalBorder = isHorizontal ? colors.itemBg : colors.itemBorder;
@@ -3029,24 +3032,17 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     COLORREF textColor = AlphaBlendColor(colors.selectedText, colors.text, selectionWeight);
     COLORREF mutedColor =
         AlphaBlendColor(colors.selectedMutedText, colors.mutedText, selectionWeight);
-    const COLORREF neutralBadgeFill = AlphaBlendColor(colors.badgeBg, colors.itemBg, 0.72f);
-    const COLORREF neutralBadgeBorder = AlphaBlendColor(colors.badgeBorder, colors.itemBg, 0.55f);
-    const COLORREF selectedBadgeFill =
-        m_style.skinLoaded ? accentColor : AlphaBlendColor(accentColor, colors.selectedBg, 0.14f);
-    const COLORREF selectedBadgeBorder =
-        m_style.skinLoaded ? accentColor : AlphaBlendColor(accentColor, colors.selectedBg, 0.36f);
-    COLORREF badgeFill = AlphaBlendColor(selectedBadgeFill, neutralBadgeFill, selectionWeight);
-    COLORREF badgeBorder =
-        AlphaBlendColor(selectedBadgeBorder, neutralBadgeBorder, selectionWeight);
-    COLORREF badgeText = AlphaBlendColor(colors.selectedText, colors.badgeText, selectionWeight);
+    {
+      const bool filledRow = selectionWeight > 0.001f || pressWeight > 0.001f ||
+                             hoverWeight > 0.001f;
+      textColor = CandidateRowTextColor(textColor, colors, filledRow, itemFill, 4.5);
+      mutedColor = CandidateRowTextColor(mutedColor, colors, filledRow, itemFill, 4.5);
+    }
     if (m_pageAnimationActive) {
       itemFill = AlphaBlendColor(itemFill, colors.windowBg, pageProgress);
       itemBorder = AlphaBlendColor(itemBorder, colors.windowBg, pageProgress);
       textColor = AlphaBlendColor(textColor, colors.windowBg, pageProgress);
       mutedColor = AlphaBlendColor(mutedColor, colors.windowBg, pageProgress);
-      badgeFill = AlphaBlendColor(badgeFill, colors.windowBg, pageProgress);
-      badgeBorder = AlphaBlendColor(badgeBorder, colors.windowBg, pageProgress);
-      badgeText = AlphaBlendColor(badgeText, colors.windowBg, pageProgress);
     }
     const COLORREF visualAccentColor =
         m_pageAnimationActive ? AlphaBlendColor(accentColor, colors.windowBg, pageProgress)
@@ -3090,25 +3086,25 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
 
     if (m_style.candidateHorizontal) {
       const bool drawHorizontalCard =
-          m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card ||
           selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
       if (drawHorizontalCard) {
-        FillBorderedRoundRectCached(targetDc, rect, itemFill, itemBorder,
+        FillBorderedRoundRectCached(targetDc, rect, itemFill,
+                                    m_style.themeMode == SrfThemeMode::HighContrast ? itemBorder : itemFill,
                                     std::max(Scale(4), itemRadius / 2), strokeWidth);
       }
-      if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+      if (selectionWeight > 0.001f &&
           selectedIndicator == L"bottom_bar" && selectedAccentWidth > 0) {
         const int accentH = std::min(selectedAccentWidth, std::max(1, itemH / 3));
         RECT accentRect = {rect.left + Scale(6), rect.bottom - accentH - Scale(1),
                            rect.right - Scale(6), rect.bottom - Scale(1)};
         FillSolidRect(targetDc, accentRect, visualAccentColor);
-      } else if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+      } else if (selectionWeight > 0.001f &&
                  selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
         const int accentW = std::min(selectedAccentWidth, std::max(1, itemW / 3));
         RECT accentRect = {rect.left + Scale(2), rect.top + Scale(4),
                            rect.left + Scale(2) + accentW, rect.bottom - Scale(4)};
         FillSolidRect(targetDc, accentRect, visualAccentColor);
-      } else if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+      } else if (selectionWeight > 0.001f &&
                  selectedIndicator == L"outline") {
         DrawRoundRectBorderCached(targetDc, rect, visualAccentColor,
                                   std::max(Scale(4), itemRadius / 2), strokeWidth);
@@ -3125,7 +3121,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       const std::wstring labelText = i < m_labels.size() ? m_labels[i] : std::wstring();
       const SIZE labelSize = MeasureLabelCached(targetDc, labelText, i);
       const int labelW = std::max(Scale(10), static_cast<int>(labelSize.cx));
-      COLORREF inlineLabelColor = AlphaBlendColor(accentColor, colors.mutedText, selectionWeight);
+      COLORREF inlineLabelColor = mutedColor;
       if (m_pageAnimationActive) {
         inlineLabelColor = AlphaBlendColor(inlineLabelColor, colors.windowBg, pageProgress);
       }
@@ -3167,20 +3163,21 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       }
     } else {
       const bool drawVerticalCard =
-          (!clipboardMode && m_style.candidateLayoutVariant == SrfCandidateLayoutVariant::Card) ||
           selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
       if (drawVerticalCard) {
-        FillBorderedRoundRectCached(targetDc, rect, itemFill, itemBorder, itemRadius, strokeWidth);
+        FillBorderedRoundRectCached(targetDc, rect, itemFill,
+            m_style.themeMode == SrfThemeMode::HighContrast ? itemBorder : itemFill, itemRadius, strokeWidth);
       }
 
-      if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+      if (selectionWeight > 0.001f &&
           selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
         const int accentW = selectedAccentWidth;
-        const int marginY = Scale(4);
-        RECT accentRect = {rect.left + Scale(3), rect.top + marginY,
-                           rect.left + Scale(3) + accentW, rect.bottom - marginY};
+        const int indicatorTop = rect.top + itemPadY;
+        RECT accentRect = {rect.left + Scale(3), indicatorTop,
+                           rect.left + Scale(3) + accentW,
+                           std::min<LONG>(rect.bottom - Scale(4), indicatorTop + Scale(20))};
         FillSolidRect(targetDc, accentRect, visualAccentColor);
-      } else if (!m_selectionAnimationActive && selectionWeight > 0.001f &&
+      } else if (selectionWeight > 0.001f &&
                  selectedIndicator == L"outline") {
         DrawRoundRectBorderCached(targetDc, rect, visualAccentColor, itemRadius, strokeWidth);
       }
@@ -3197,9 +3194,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       RECT badgeRect = {rect.left + itemPadX, rect.top + itemPadY,
                         rect.left + itemPadX + badgeW, rect.top + itemPadY + badgeH};
       badgeRect.bottom = std::min(badgeRect.bottom, rect.bottom - itemPadY);
-      FillBorderedRoundRectCached(targetDc, badgeRect, badgeFill, badgeBorder, badgeRadius,
-                                  strokeWidth);
-      DrawTextBlock(targetDc, m_labelFont, badgeText,
+      DrawTextBlock(targetDc, m_labelFont, mutedColor,
                     i < m_labels.size() ? m_labels[i] : std::wstring(), badgeRect,
                     DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
 
@@ -3227,7 +3222,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
         mainRect.bottom = std::max(mainRect.top, textRect.bottom - commentHeight - commentGap);
       }
       DrawTextBlock(targetDc, bodyFontForState, textColor, displayItems[i], mainRect,
-                    DT_LEFT | DT_TOP | DT_WORDBREAK, m_dpi);
+                    DT_LEFT | DT_TOP | DT_WORDBREAK | DT_END_ELLIPSIS, m_dpi);
 
       if (commentHeight > 0) {
         RECT commentRect = {textRect.left, mainRect.bottom + commentGap, textRect.right,
@@ -3240,12 +3235,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
             const int chipWidth = std::max(Scale(34), static_cast<int>(typeSize.cx) + Scale(12));
             RECT typeRect = {std::max(commentRect.left, commentRect.right - chipWidth),
                              commentRect.top, commentRect.right, commentRect.bottom};
-            FillBorderedRoundRectCached(targetDc, typeRect,
-                                        isSelected ? colors.chipActiveBg : colors.chipBg,
-                                        isSelected ? colors.chipActiveBorder : colors.chipBorder,
-                                        badgeRadius, strokeWidth);
-            DrawTextBlock(targetDc, m_chipFont,
-                          isSelected ? colors.chipActiveText : colors.chipText,
+            DrawTextBlock(targetDc, m_chipFont, mutedColor,
                           clipboardComment.type, typeRect,
                           DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
             detailRight = typeRect.left - Scale(8);
@@ -3253,6 +3243,22 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
           RECT detailRect = {commentRect.left, commentRect.top,
                              std::max<int>(static_cast<int>(commentRect.left), detailRight),
                              commentRect.bottom};
+          if (i < m_pinnedItems.size() && m_pinnedItems[i]) {
+            // Draw a pin with GDI so it remains legible with any user font.
+            const int x = detailRect.left + Scale(5);
+            const int y = (detailRect.top + detailRect.bottom) / 2;
+            HPEN pen = CreatePen(PS_SOLID, strokeWidth, mutedColor);
+            HGDIOBJ oldPen = SelectObject(targetDc, pen);
+            MoveToEx(targetDc, x - Scale(3), y - Scale(4), nullptr);
+            LineTo(targetDc, x + Scale(3), y - Scale(4));
+            MoveToEx(targetDc, x, y - Scale(4), nullptr);
+            LineTo(targetDc, x, y + Scale(5));
+            MoveToEx(targetDc, x - Scale(4), y, nullptr);
+            LineTo(targetDc, x + Scale(4), y);
+            SelectObject(targetDc, oldPen);
+            DeleteObject(pen);
+            detailRect.left = std::min(detailRect.right, detailRect.left + Scale(15));
+          }
           DrawTextBlock(targetDc, m_metaFont, mutedColor, clipboardComment.detail, detailRect,
                         DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
         } else {
@@ -3269,35 +3275,6 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
       cache.pressed = isPressed;
       cache.valid = true;
       BitBlt(memDc, srcRect.left, srcRect.top, itemW, itemH, cache.memDc, 0, 0, SRCCOPY);
-    }
-  }
-
-  if (m_selectionAnimationActive && m_selectionAnimationFrom >= 0 && m_selectionAnimationTo >= 0 &&
-      static_cast<size_t>(m_selectionAnimationFrom) < m_itemRects.size() &&
-      static_cast<size_t>(m_selectionAnimationTo) < m_itemRects.size() && selectedAccentWidth > 0 &&
-      selectedIndicator != L"none") {
-    const RECT indicatorRect = InterpolateRect(
-        m_itemRects[static_cast<size_t>(m_selectionAnimationFrom)],
-        m_itemRects[static_cast<size_t>(m_selectionAnimationTo)], selectionProgress);
-    if (selectedIndicator == L"bottom_bar") {
-      const int accentH =
-          std::min(selectedAccentWidth,
-                   std::max(1, static_cast<int>(indicatorRect.bottom - indicatorRect.top) / 3));
-      RECT accentRect = {indicatorRect.left + Scale(6), indicatorRect.bottom - accentH - Scale(1),
-                         indicatorRect.right - Scale(6), indicatorRect.bottom - Scale(1)};
-      FillSolidRect(memDc, accentRect, accentColor);
-    } else if (selectedIndicator == L"left_bar") {
-      const int accentW =
-          std::min(selectedAccentWidth,
-                   std::max(1, static_cast<int>(indicatorRect.right - indicatorRect.left) / 3));
-      const int insetX = isHorizontal ? Scale(2) : Scale(3);
-      RECT accentRect = {indicatorRect.left + insetX, indicatorRect.top + Scale(4),
-                         indicatorRect.left + insetX + accentW, indicatorRect.bottom - Scale(4)};
-      FillSolidRect(memDc, accentRect, accentColor);
-    } else if (selectedIndicator == L"outline") {
-      DrawRoundRectBorderCached(memDc, indicatorRect, accentColor,
-                                isHorizontal ? std::max(Scale(4), itemRadius / 2) : itemRadius,
-                                strokeWidth);
     }
   }
 
@@ -4279,6 +4256,12 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
         self->Paint(hdc, ps.rcPaint);
         EndPaint(hwnd, &ps);
       }
+      return 0;
+    }
+    case WM_PRINTCLIENT: {
+      RECT client = {};
+      GetClientRect(hwnd, &client);
+      if (wParam) self->Paint(reinterpret_cast<HDC>(wParam), client);
       return 0;
     }
     default:

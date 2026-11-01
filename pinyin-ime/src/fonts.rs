@@ -53,7 +53,7 @@ pub fn candidate_preview_font_family(
     ))
 }
 
-fn install_cjk_fonts_with_candidate_preview(
+pub fn install_cjk_fonts_with_candidate_preview(
     ctx: &egui::Context,
     preview_family: Option<&str>,
 ) -> Option<InstalledCjkFonts> {
@@ -99,6 +99,36 @@ fn install_cjk_fonts_with_candidate_preview(
             true
         })
         .unwrap_or(false);
+
+    let preview_loaded = if !preview_loaded {
+        preview_family.and_then(|requested| {
+            let mut db = Database::new();
+            db.load_system_fonts();
+            let path = Path::new(requested);
+            let (bytes, index) = if path.is_file() {
+                (std::fs::read(path).ok()?, 0)
+            } else {
+                let id = db.query(&Query {
+                    families: &[Family::Name(requested)],
+                    weight: Weight::NORMAL,
+                    style: Style::Normal,
+                    ..Default::default()
+                })?;
+                db.with_face_data(id, |data, index| (data.to_vec(), index))?
+            };
+            let key = "candidate_selected_font".to_owned();
+            let mut data = FontData::from_owned(bytes);
+            data.index = index;
+            fonts.font_data.insert(key.clone(), data);
+            registered_keys.push(key.clone());
+            register_font_family(&mut fonts, CANDIDATE_PREVIEW_FONT_FAMILY.to_owned(), &key, &registered_keys);
+            Some(true)
+        }).unwrap_or(false)
+    } else { true };
+
+    if !preview_loaded {
+        register_font_family(&mut fonts, CANDIDATE_PREVIEW_FONT_FAMILY.to_owned(), primary.key, &registered_keys);
+    }
 
     for family in [FontFamily::Proportional, FontFamily::Monospace] {
         let family_fonts = fonts.families.entry(family).or_default();
@@ -210,6 +240,23 @@ pub fn installed_chinese_font_families() -> Vec<String> {
         }
     }
 
+    names.into_iter().collect()
+}
+
+/// Include every installed family: a name heuristic excludes many custom CJK fonts.
+#[allow(dead_code)]
+pub fn installed_font_families() -> Vec<String> {
+    let mut db = Database::new();
+    db.load_system_fonts();
+    let mut names = BTreeSet::new();
+    for face in db.faces() {
+        for (family, _) in &face.families {
+            let family = family.trim();
+            if !family.is_empty() && !family.starts_with('@') {
+                names.insert(family.to_owned());
+            }
+        }
+    }
     names.into_iter().collect()
 }
 

@@ -84,8 +84,8 @@ milliseconds and are clamped to `0..240`; `0` disables that transition.
 | Key | Type | Default | Purpose |
 | --- | --- | --- | --- |
 | `animations_enabled` | boolean | `true` | Disable all motion for this skin. |
-| `show_animation_ms` | integer | `90` | Initial fade and 2px settle. |
-| `selection_animation_ms` | integer | `80` | Selection color and indicator movement. |
-| `hover_animation_ms` | integer | `70` | Mouse hover color transition. |
-| `press_animation_ms` | integer | `36` | Mouse press/release transition. |
-| `page_animation_ms` | integer | `110` | Directional 6px page-entry transition. |
+| `show_animation_ms` | integer | `60` | Initial fade and 2px settle. |
+| `selection_animation_ms` | integer | `50` | Selection color and indicator movement. |
+| `hover_animation_ms` | integer | `45` | Mouse hover color transition. |
+| `press_animation_ms` | integer | `24` | Mouse press/release transition. |
+| `page_animation_ms` | integer | `70` | Directional 6px page-entry transition. |

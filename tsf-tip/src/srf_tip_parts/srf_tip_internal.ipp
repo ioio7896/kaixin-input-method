@@ -942,11 +942,11 @@ std::wstring LowerAscii(std::wstring text) {
 bool TryParseNamedFunctionKeyToken(const std::wstring& text, UINT* outVk) {
   if (!outVk) return false;
   const std::wstring key = LowerAscii(text);
-  if (key == L"enter" || key == L"return" || key == L"huiche") {
+  if (key == L"enter" || key == L"return") {
     *outVk = VK_RETURN;
     return true;
   }
-  if (key == L"backspace" || key == L"bksp" || key == L"tuige") {
+  if (key == L"backspace" || key == L"bksp") {
     *outVk = VK_BACK;
     return true;
   }

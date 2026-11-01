@@ -43,6 +43,10 @@ fn screenshot_capture_scheme_label(mode: &str) -> &'static str {
 
 impl eframe::App for SettingsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if self.preview_font_choice != self.model.candidate_font_file {
+            self.preview_font_choice = self.model.candidate_font_file.clone();
+            let _ = fonts::install_cjk_fonts_with_candidate_preview(ctx, Some(&self.preview_font_choice));
+        }
         if let Some(rx) = &self.translation_check_rx {
             match rx.try_recv() {
                 Ok(status) => {
@@ -2360,8 +2364,6 @@ struct CandidatePreviewColors {
     header: Color32,
     border: Color32,
     divider: Color32,
-    item: Color32,
-    item_border: Color32,
     selected: Color32,
     selected_border: Color32,
     text: Color32,
@@ -2443,8 +2445,6 @@ fn preview_colors_for_skin(
             header: parse_skin_color(&skin.header_bg, window),
             border: parse_skin_color(&skin.border, palette.border),
             divider: parse_skin_color(&skin.divider, palette.border),
-            item: parse_skin_color(&skin.item_bg, window),
-            item_border: parse_skin_color(&skin.item_border, palette.border),
             selected: parse_skin_color(&skin.selected_bg, palette.nav_selected),
             selected_border: parse_skin_color(&skin.selected_border, palette.accent),
             text: parse_skin_color(&skin.text, palette.text),
@@ -2461,8 +2461,6 @@ fn preview_colors_for_skin(
         header: palette.surface_alt,
         border: palette.border,
         divider: palette.border_subtle,
-        item: palette.surface,
-        item_border: palette.border,
         selected: palette.nav_selected,
         selected_border: palette.accent,
         text: palette.text,

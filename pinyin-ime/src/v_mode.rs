@@ -950,8 +950,8 @@ fn function_key_candidates(key: &str) -> Option<Vec<DirectCandidate>> {
 
 fn named_function_key_label(key: &str) -> Option<&'static str> {
     match key {
-        "enter" | "return" | "huiche" => Some("Enter"),
-        "backspace" | "bksp" | "tuige" => Some("Backspace"),
+        "enter" | "return" => Some("Enter"),
+        "backspace" | "bksp" => Some("Backspace"),
         "delete" | "del" => Some("Delete"),
         "escape" | "esc" => Some("Esc"),
         "tab" => Some("Tab"),

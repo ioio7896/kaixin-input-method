@@ -99,6 +99,7 @@ struct SettingsApp {
     user_dict_task_rx: Option<mpsc::Receiver<UserDictTaskResult>>,
     available_skins: Vec<SkinPreview>,
     available_chinese_fonts: Vec<String>,
+    preview_font_choice: String,
     recent_processes: Vec<ProcessSuggestion>,
     foreground_process: Option<ProcessSuggestion>,
     game_test_wizard: Option<GameTestWizard>,
@@ -140,7 +141,7 @@ impl SettingsApp {
             .unwrap_or_else(|| PathBuf::from(app_paths::CONFIG_FILE_NAME));
 
         let available_skins = discover_skin_previews();
-        let available_chinese_fonts = fonts::installed_chinese_font_families();
+        let available_chinese_fonts = fonts::installed_font_families();
         let recent_processes = recent_process_suggestions(32);
         let foreground_process = current_foreground_process();
         let (config, mut model, status) = match load_config(&config_path) {
@@ -153,6 +154,8 @@ impl SettingsApp {
         };
         merge_discovered_lexicon_tags_compat(&mut model);
         let last_saved_model = model.clone();
+        let preview_font_choice = model.candidate_font_file.clone();
+        let _ = fonts::install_cjk_fonts_with_candidate_preview(&cc.egui_ctx, Some(&preview_font_choice));
 
         Self {
             model,
@@ -170,6 +173,7 @@ impl SettingsApp {
             user_dict_task_rx: None,
             available_skins,
             available_chinese_fonts,
+            preview_font_choice,
             recent_processes,
             foreground_process,
             game_test_wizard: None,

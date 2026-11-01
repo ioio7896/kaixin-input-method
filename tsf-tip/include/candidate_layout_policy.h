@@ -17,8 +17,8 @@ inline bool ShouldShowCandidateComment(bool horizontal, bool clipboardItem,
   return !horizontal && (clipboardItem || selectedItem);
 }
 
-inline std::wstring_view DefaultCandidateSelectedIndicator(bool horizontal) {
-  return horizontal ? L"bottom_bar" : L"left_bar";
+inline std::wstring_view DefaultCandidateSelectedIndicator(bool /*horizontal*/) {
+  return L"left_bar";
 }
 
 inline bool ShouldAnimateCandidateWindow(bool reduceMotion, bool systemAnimationsEnabled,

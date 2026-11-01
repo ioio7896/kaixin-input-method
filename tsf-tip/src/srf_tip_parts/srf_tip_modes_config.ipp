@@ -1753,7 +1753,6 @@ void CSrfTip::RebuildContextModel() {
           if (!cmt.empty()) cmt += L" \u00b7 ";
           cmt += detail;
         };
-        if (meta.clipboardPinned) appendClipboardDetail(L"\u7f6e\u9876");
         appendClipboardDetail(meta.clipboardSource);
         appendClipboardDetail(meta.clipboardTime);
         if (!meta.clipboardType.empty()) {

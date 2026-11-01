@@ -1,5 +1,34 @@
 use super::*;
 
+fn candidate_text_contrast(a: Color32, b: Color32) -> f32 {
+    let luminance = |color: Color32| {
+        let linear = |v: u8| {
+            let s = v as f32 / 255.0;
+            if s <= 0.04045 { s / 12.92 } else { ((s + 0.055) / 1.055).powf(2.4) }
+        };
+        0.2126 * linear(color.r()) + 0.7152 * linear(color.g()) + 0.0722 * linear(color.b())
+    };
+    let x = luminance(a);
+    let y = luminance(b);
+    (x.max(y) + 0.05) / (x.min(y) + 0.05)
+}
+
+fn readable_candidate_text(preferred: Color32, background: Color32) -> Color32 {
+    if candidate_text_contrast(preferred, background) >= 4.5 { return preferred; }
+    if candidate_text_contrast(Color32::WHITE, background) >= candidate_text_contrast(Color32::BLACK, background) {
+        Color32::WHITE
+    } else { Color32::BLACK }
+}
+
+fn readable_preview(mut colors: CandidatePreviewColors) -> CandidatePreviewColors {
+    colors.text = readable_candidate_text(colors.text, colors.window);
+    colors.muted = readable_candidate_text(colors.muted, colors.window);
+    colors.selected_text = readable_candidate_text(colors.selected_text, colors.selected);
+    colors.selected_muted = readable_candidate_text(colors.selected_muted, colors.selected);
+    colors.chip_text = readable_candidate_text(colors.chip_text, colors.chip);
+    colors
+}
+
 fn candidate_preview_colors(
     ui: &egui::Ui,
     model: &SettingsModel,
@@ -16,8 +45,6 @@ fn candidate_preview_colors(
             header: Color32::BLACK,
             border: Color32::WHITE,
             divider: Color32::WHITE,
-            item: Color32::BLACK,
-            item_border: Color32::WHITE,
             selected: Color32::from_rgb(255, 242, 0),
             selected_border: Color32::WHITE,
             text: Color32::WHITE,
@@ -35,8 +62,6 @@ fn candidate_preview_colors(
             header: Color32::from_rgb(48, 55, 66),
             border: Color32::from_rgb(72, 78, 90),
             divider: Color32::from_rgb(72, 78, 90),
-            item: Color32::from_rgb(38, 43, 52),
-            item_border: Color32::from_rgb(72, 78, 90),
             selected: Color32::from_rgb(39, 73, 68),
             selected_border: Color32::from_rgb(76, 209, 151),
             text: Color32::from_rgb(244, 247, 250),
@@ -54,8 +79,6 @@ fn candidate_preview_colors(
             header: Color32::from_rgb(241, 245, 249),
             border: Color32::from_rgb(203, 213, 225),
             divider: Color32::from_rgb(226, 232, 240),
-            item: Color32::WHITE,
-            item_border: Color32::from_rgb(226, 232, 240),
             selected: Color32::from_rgb(226, 246, 240),
             selected_border: Color32::from_rgb(0, 137, 110),
             text: Color32::from_rgb(15, 23, 42),
@@ -345,6 +368,28 @@ mod preview_layout_tests {
     use super::*;
 
     #[test]
+    fn preview_text_handles_opposite_selected_backgrounds() {
+        for background in [Color32::from_rgb(24, 30, 35), Color32::from_rgb(245, 248, 250)] {
+            for preferred in [Color32::BLACK, Color32::WHITE, Color32::GRAY] {
+                assert!(candidate_text_contrast(readable_candidate_text(preferred, background), background) >= 4.5);
+            }
+        }
+    }
+
+    #[test]
+    fn font_selection_survives_save_and_skin_change() {
+        for font in ["思源黑体 CN", r"C:\我的字体\手写 字体.ttf", r"C:\Fonts\custom.otf", r"C:\Fonts\family.ttc"] {
+            let doc = parse_ini("[style]\n");
+            let mut model = model_from_config(&doc);
+            model.candidate_font_file = font.into();
+            model.candidate_skin_file = "midnight-tide".into();
+            let saved = model_from_config(&parse_ini(&stabilized_rendered_config(&doc, &model)));
+            assert_eq!(saved.candidate_font_file, font);
+            assert_eq!(saved.candidate_skin_file, "midnight-tide");
+        }
+    }
+
+    #[test]
     fn density_changes_candidate_window_dimensions() {
         let mut model = SettingsModel::default();
         model.candidate_horizontal = false;
@@ -363,6 +408,15 @@ mod preview_layout_tests {
 }
 
 fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
+    let scale_id = ui.make_persistent_id("candidate_preview_display_scale");
+    let mut display_scale = ui.data_mut(|data| data.get_temp::<u32>(scale_id)).unwrap_or(100);
+    ui.horizontal_wrapped(|ui| {
+        ui.label("模拟显示缩放");
+        for percent in [100, 125, 150, 200] {
+            ui.selectable_value(&mut display_scale, percent, format!("{percent}%"));
+        }
+    });
+    ui.data_mut(|data| data.insert_temp(scale_id, display_scale));
     let palette = fluent_palette(ui);
     egui::Frame::none()
         .fill(palette.surface_alt)
@@ -409,7 +463,7 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
                     320.0
                 })
                 .auto_shrink([false, true])
-                .show(ui, |ui| candidate_live_preview_contents(ui, model, skins));
+                .show(ui, |ui| candidate_live_preview_contents(ui, model, skins, display_scale as f32 / 100.0));
             ui.add_space(6.0);
             ui.label(
                 RichText::new(if model.candidate_horizontal {
@@ -427,11 +481,27 @@ fn candidate_live_preview_contents(
     ui: &mut egui::Ui,
     model: &SettingsModel,
     skins: &[SkinPreview],
+    display_scale: f32,
 ) {
-    let colors = candidate_preview_colors(ui, model, skins);
+    let colors = readable_preview(candidate_preview_colors(ui, model, skins));
     let horizontal = model.candidate_horizontal;
-    let metrics = candidate_preview_metrics(model, skins);
-    let spec = candidate_preview_layout_spec(model, skins);
+    let mut metrics = candidate_preview_metrics(model, skins);
+    let mut spec = candidate_preview_layout_spec(model, skins);
+    let body_size = model.candidate_font_size as f32;
+    let extra_text_height = body_size * display_scale / 3.0 * 1.25;
+    metrics.height = metrics.height * display_scale + extra_text_height * metrics.count as f32;
+    metrics.item_height = metrics.item_height * display_scale + extra_text_height;
+    metrics.outer_pad_y *= display_scale;
+    metrics.header_height *= display_scale;
+    metrics.header_gap *= display_scale;
+    metrics.item_gap *= display_scale;
+    for value in [&mut spec.outer_pad_x, &mut spec.outer_pad_y, &mut spec.header_pad_y,
+        &mut spec.header_gap, &mut spec.item_gap, &mut spec.item_pad_x, &mut spec.item_pad_y,
+        &mut spec.label_width, &mut spec.label_gap, &mut spec.comment_gap,
+        &mut spec.min_width, &mut spec.preferred_width, &mut spec.max_width,
+        &mut spec.min_horizontal_card_width] {
+        *value *= display_scale;
+    }
     let candidates = [
         ("你好", "常用"),
         ("拟好", "候选词"),
@@ -444,8 +514,9 @@ fn candidate_live_preview_contents(
         ("倪浩", "姓名"),
         ("妮好", "候选词"),
     ];
-    let font_size = (model.candidate_font_size as f32).clamp(12.0, 28.0);
-    let meta_font_size = (font_size * 0.75).clamp(9.0, 13.0);
+    let font_size = (body_size * 4.0 / 3.0 * display_scale).clamp(12.0, 76.0);
+    let meta_font_size = ((body_size - 3.0).max(9.0) * 4.0 / 3.0 * display_scale).clamp(9.0, 72.0);
+    let preview_font = |size| FontId::new(size, egui::FontFamily::Name(fonts::CANDIDATE_PREVIEW_FONT_FAMILY.into()));
     let count = metrics.count.min(candidates.len());
     let compact_delta = if horizontal {
         (if model.candidate_horizontal_compact {
@@ -479,7 +550,7 @@ fn candidate_live_preview_contents(
                     .painter()
                     .layout_no_wrap(
                         (*candidate).to_string(),
-                        FontId::proportional(font_size),
+                        preview_font(font_size),
                         colors.text,
                     )
                     .size()
@@ -488,7 +559,7 @@ fn candidate_live_preview_contents(
                     ui.painter()
                         .layout_no_wrap(
                             (*meta).to_string(),
-                            FontId::proportional(meta_font_size),
+                            preview_font(meta_font_size),
                             colors.muted,
                         )
                         .size()
@@ -517,7 +588,7 @@ fn candidate_live_preview_contents(
                     .painter()
                     .layout_no_wrap(
                         (*candidate).to_string(),
-                        FontId::proportional(font_size),
+                        preview_font(font_size),
                         colors.text,
                     )
                     .size()
@@ -526,7 +597,7 @@ fn candidate_live_preview_contents(
                     ui.painter()
                         .layout_no_wrap(
                             (*meta).to_string(),
-                            FontId::proportional(meta_font_size),
+                            preview_font(meta_font_size),
                             colors.muted,
                         )
                         .size()
@@ -634,15 +705,9 @@ fn candidate_live_preview_contents(
         let fill = if selected {
             apply_opacity(colors.selected)
         } else {
-            apply_opacity(colors.item)
+            apply_opacity(colors.window)
         };
-        let stroke = if selected {
-            Stroke::new(1.0, apply_opacity(colors.selected_border))
-        } else if !horizontal || model.candidate_horizontal_layout_variant == "card" {
-            Stroke::new(1.0, apply_opacity(colors.item_border))
-        } else {
-            Stroke::new(0.0, Color32::TRANSPARENT)
-        };
+        let stroke = Stroke::NONE;
         painter.rect(
             row,
             if model.candidate_horizontal_layout_variant == "card" {
@@ -653,6 +718,11 @@ fn candidate_live_preview_contents(
             fill,
             stroke,
         );
+        if selected {
+            painter.rect_filled(egui::Rect::from_min_size(
+                egui::pos2(row.left() + 2.0, row.center().y - 8.0), egui::vec2(2.0, 16.0)),
+                1.0, apply_opacity(colors.selected_border));
+        }
         painter.text(
             egui::pos2(
                 row.left() + (spec.item_pad_x - compact_delta).max(2.0) + 2.0,
@@ -660,7 +730,7 @@ fn candidate_live_preview_contents(
             ),
             egui::Align2::LEFT_CENTER,
             format!("{}", idx + 1),
-            FontId::proportional(meta_font_size),
+            preview_font(meta_font_size),
             apply_opacity(if selected {
                 colors.selected_muted
             } else {
@@ -683,7 +753,7 @@ fn candidate_live_preview_contents(
                 egui::Align2::LEFT_CENTER
             },
             candidate,
-            FontId::proportional(font_size),
+            preview_font(font_size),
             if selected {
                 apply_opacity(colors.selected_text)
             } else {
@@ -695,7 +765,7 @@ fn candidate_live_preview_contents(
                 egui::pos2(row.left() + label_leading, row.bottom() - 6.0),
                 egui::Align2::LEFT_BOTTOM,
                 meta,
-                FontId::proportional(meta_font_size),
+                preview_font(meta_font_size),
                 if selected {
                     apply_opacity(colors.selected_muted)
                 } else {
@@ -739,6 +809,7 @@ fn skin_preview_card(
     width: f32,
     selected: bool,
 ) -> egui::Response {
+    let colors = readable_preview(colors);
     let palette = fluent_palette(ui);
     let (rect, response) = ui.allocate_exact_size(egui::vec2(width, 104.0), egui::Sense::click());
     let outer_stroke = if selected || response.hovered() {
@@ -770,9 +841,9 @@ fn skin_preview_card(
             if selected {
                 colors.selected
             } else {
-                colors.item
+                colors.window
             },
-            Stroke::new(if selected { 1.0 } else { 0.0 }, colors.selected_border),
+            Stroke::NONE,
         );
         let text_color = if selected {
             colors.selected_text
@@ -1256,11 +1327,16 @@ fn candidate_theme_controls(
                     };
                     setting_combo_row(
                         ui,
-                        "中文字体",
-                        "候选窗口使用的字体族。",
+                        "系统字体",
+                        "选择已安装字体；缺少中文字形时自动回退。",
                         selected_font,
                         "candidate_font_family",
                         |ui| {
+                            let search_id = ui.make_persistent_id("candidate_font_search");
+                            let mut search = ui.data_mut(|data| data.get_temp::<String>(search_id)).unwrap_or_default();
+                            ui.add(egui::TextEdit::singleline(&mut search).hint_text("搜索字体名称"));
+                            ui.data_mut(|data| data.insert_temp(search_id, search.clone()));
+                            let search = search.trim().to_lowercase();
                             selectable_string(
                                 ui,
                                 &mut model.candidate_font_file,
@@ -1278,10 +1354,32 @@ fn candidate_theme_controls(
                                 );
                             }
                             for font in chinese_fonts {
-                                selectable_string(ui, &mut model.candidate_font_file, font, font);
+                                if search.is_empty() || font.to_lowercase().contains(&search) {
+                                    selectable_string(ui, &mut model.candidate_font_file, font, font);
+                                }
                             }
                         },
                     );
+                    ui.label("字体名称或字体文件路径");
+                    ui.add(egui::TextEdit::singleline(&mut model.candidate_font_file)
+                        .desired_width(f32::INFINITY)
+                        .hint_text("例如：Microsoft YaHei、思源黑体，或字体文件路径"));
+                    ui.horizontal_wrapped(|ui| {
+                        if ui.button("选择字体文件…").clicked() {
+                            if let Some(path) = rfd::FileDialog::new()
+                                .set_title("选择候选栏字体")
+                                .add_filter("字体文件", &["ttf", "otf", "ttc"])
+                                .pick_file()
+                            {
+                                model.candidate_font_file = path.to_string_lossy().into_owned();
+                            }
+                        }
+                        if ui.button("恢复默认字体").clicked() {
+                            model.candidate_font_file = DEFAULT_CANDIDATE_FONT_FAMILY.to_owned();
+                        }
+                    });
+                    ui.label(RichText::new("支持 TTF、OTF、TTC。请保留字体文件；切换皮肤不会覆盖字体选择。点击“保存并用真实候选窗试用”查看字体效果。")
+                        .small().color(fluent_palette(ui).muted));
                 });
             });
         },

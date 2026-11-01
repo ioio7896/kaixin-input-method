@@ -92,6 +92,17 @@ COLORREF EnsureReadableTextColor(COLORREF preferred, const COLORREF* backgrounds
   return whiteMin >= blackMin ? white : black;
 }
 
+// Unselected rows have no card fill. Check the actual window/gradient or the
+// current interaction fill, never unrelated backgrounds or border colors.
+COLORREF CandidateRowTextColor(COLORREF preferred, const CandidateColors& colors,
+                               bool filledRow, COLORREF rowFill, double minContrast) {
+  const COLORREF backgrounds[] = {
+      filledRow ? rowFill : colors.windowBg,
+      filledRow ? rowFill : (colors.windowBgTo == CLR_INVALID ? colors.windowBg
+                                                            : colors.windowBgTo)};
+  return EnsureReadableTextColor(preferred, backgrounds, _countof(backgrounds), minContrast);
+}
+
 CandidateColors ResolveColors(const SrfUIStyle& style) {
   CandidateColors colors = {};
   // Set divider defaults based on theme
@@ -228,22 +239,22 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
   }
 
   // 皮肤可能配置出低对比配色。这里仅在可读性不足时自动矫正文本颜色。
-  const COLORREF normalBackgrounds[] = {colors.windowBg, colors.itemBg, colors.hoverBg, colors.pressedBg};
-  colors.text = EnsureReadableTextColor(colors.text, normalBackgrounds, _countof(normalBackgrounds), 4.2);
-  colors.mutedText =
-      EnsureReadableTextColor(colors.mutedText, normalBackgrounds, _countof(normalBackgrounds), 3.2);
-  colors.badgeText =
-      EnsureReadableTextColor(colors.badgeText, normalBackgrounds, _countof(normalBackgrounds), 3.6);
+  // Keep unrelated interaction surfaces out of each color's contrast check.
+  // Per-row painting checks the current fill again, including animation frames.
+  const COLORREF normalBackgrounds[] = {colors.windowBg,
+      colors.windowBgTo == CLR_INVALID ? colors.windowBg : colors.windowBgTo};
+  colors.text = EnsureReadableTextColor(colors.text, normalBackgrounds, _countof(normalBackgrounds), 4.5);
+  colors.mutedText = EnsureReadableTextColor(colors.mutedText, normalBackgrounds, _countof(normalBackgrounds), 4.5);
+  colors.badgeText = EnsureReadableTextColor(colors.badgeText, &colors.badgeBg, 1, 4.5);
 
-  const COLORREF selectedBackgrounds[] = {colors.selectedBg, colors.selectedBorder};
+  const COLORREF selectedBackgrounds[] = {colors.selectedBg};
   colors.selectedText = EnsureReadableTextColor(colors.selectedText, selectedBackgrounds,
-                                                _countof(selectedBackgrounds), 4.2);
+                                                _countof(selectedBackgrounds), 4.5);
   colors.selectedMutedText = EnsureReadableTextColor(colors.selectedMutedText, selectedBackgrounds,
-                                                     _countof(selectedBackgrounds), 3.2);
-  const COLORREF chipBackgrounds[] = {colors.chipBg, colors.chipActiveBg};
-  colors.chipText = EnsureReadableTextColor(colors.chipText, chipBackgrounds, _countof(chipBackgrounds), 3.6);
+                                                     _countof(selectedBackgrounds), 4.5);
+  colors.chipText = EnsureReadableTextColor(colors.chipText, &colors.chipBg, 1, 4.5);
   colors.chipActiveText =
-      EnsureReadableTextColor(colors.chipActiveText, chipBackgrounds, _countof(chipBackgrounds), 4.2);
+      EnsureReadableTextColor(colors.chipActiveText, &colors.chipActiveBg, 1, 4.5);
 
   return colors;
 }

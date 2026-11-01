@@ -550,6 +550,7 @@ pub(super) fn footer_test_app() -> SettingsApp {
         user_dict_task_rx: None,
         available_skins: Vec::new(),
         available_chinese_fonts: Vec::new(),
+        preview_font_choice: String::new(),
         recent_processes: Vec::new(),
         foreground_process: None,
         game_test_wizard: None,
