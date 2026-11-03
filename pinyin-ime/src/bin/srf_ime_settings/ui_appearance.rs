@@ -4,7 +4,11 @@ fn candidate_text_contrast(a: Color32, b: Color32) -> f32 {
     let luminance = |color: Color32| {
         let linear = |v: u8| {
             let s = v as f32 / 255.0;
-            if s <= 0.04045 { s / 12.92 } else { ((s + 0.055) / 1.055).powf(2.4) }
+            if s <= 0.04045 {
+                s / 12.92
+            } else {
+                ((s + 0.055) / 1.055).powf(2.4)
+            }
         };
         0.2126 * linear(color.r()) + 0.7152 * linear(color.g()) + 0.0722 * linear(color.b())
     };
@@ -14,10 +18,16 @@ fn candidate_text_contrast(a: Color32, b: Color32) -> f32 {
 }
 
 fn readable_candidate_text(preferred: Color32, background: Color32) -> Color32 {
-    if candidate_text_contrast(preferred, background) >= 4.5 { return preferred; }
-    if candidate_text_contrast(Color32::WHITE, background) >= candidate_text_contrast(Color32::BLACK, background) {
+    if candidate_text_contrast(preferred, background) >= 4.5 {
+        return preferred;
+    }
+    if candidate_text_contrast(Color32::WHITE, background)
+        >= candidate_text_contrast(Color32::BLACK, background)
+    {
         Color32::WHITE
-    } else { Color32::BLACK }
+    } else {
+        Color32::BLACK
+    }
 }
 
 fn readable_preview(mut colors: CandidatePreviewColors) -> CandidatePreviewColors {
@@ -369,16 +379,29 @@ mod preview_layout_tests {
 
     #[test]
     fn preview_text_handles_opposite_selected_backgrounds() {
-        for background in [Color32::from_rgb(24, 30, 35), Color32::from_rgb(245, 248, 250)] {
+        for background in [
+            Color32::from_rgb(24, 30, 35),
+            Color32::from_rgb(245, 248, 250),
+        ] {
             for preferred in [Color32::BLACK, Color32::WHITE, Color32::GRAY] {
-                assert!(candidate_text_contrast(readable_candidate_text(preferred, background), background) >= 4.5);
+                assert!(
+                    candidate_text_contrast(
+                        readable_candidate_text(preferred, background),
+                        background
+                    ) >= 4.5
+                );
             }
         }
     }
 
     #[test]
     fn font_selection_survives_save_and_skin_change() {
-        for font in ["思源黑体 CN", r"C:\我的字体\手写 字体.ttf", r"C:\Fonts\custom.otf", r"C:\Fonts\family.ttc"] {
+        for font in [
+            "思源黑体 CN",
+            r"C:\我的字体\手写 字体.ttf",
+            r"C:\Fonts\custom.otf",
+            r"C:\Fonts\family.ttc",
+        ] {
             let doc = parse_ini("[style]\n");
             let mut model = model_from_config(&doc);
             model.candidate_font_file = font.into();
@@ -409,7 +432,9 @@ mod preview_layout_tests {
 
 fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
     let scale_id = ui.make_persistent_id("candidate_preview_display_scale");
-    let mut display_scale = ui.data_mut(|data| data.get_temp::<u32>(scale_id)).unwrap_or(100);
+    let mut display_scale = ui
+        .data_mut(|data| data.get_temp::<u32>(scale_id))
+        .unwrap_or(100);
     ui.horizontal_wrapped(|ui| {
         ui.label("模拟显示缩放");
         for percent in [100, 125, 150, 200] {
@@ -463,7 +488,9 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
                     320.0
                 })
                 .auto_shrink([false, true])
-                .show(ui, |ui| candidate_live_preview_contents(ui, model, skins, display_scale as f32 / 100.0));
+                .show(ui, |ui| {
+                    candidate_live_preview_contents(ui, model, skins, display_scale as f32 / 100.0)
+                });
             ui.add_space(6.0);
             ui.label(
                 RichText::new(if model.candidate_horizontal {
@@ -495,11 +522,22 @@ fn candidate_live_preview_contents(
     metrics.header_height *= display_scale;
     metrics.header_gap *= display_scale;
     metrics.item_gap *= display_scale;
-    for value in [&mut spec.outer_pad_x, &mut spec.outer_pad_y, &mut spec.header_pad_y,
-        &mut spec.header_gap, &mut spec.item_gap, &mut spec.item_pad_x, &mut spec.item_pad_y,
-        &mut spec.label_width, &mut spec.label_gap, &mut spec.comment_gap,
-        &mut spec.min_width, &mut spec.preferred_width, &mut spec.max_width,
-        &mut spec.min_horizontal_card_width] {
+    for value in [
+        &mut spec.outer_pad_x,
+        &mut spec.outer_pad_y,
+        &mut spec.header_pad_y,
+        &mut spec.header_gap,
+        &mut spec.item_gap,
+        &mut spec.item_pad_x,
+        &mut spec.item_pad_y,
+        &mut spec.label_width,
+        &mut spec.label_gap,
+        &mut spec.comment_gap,
+        &mut spec.min_width,
+        &mut spec.preferred_width,
+        &mut spec.max_width,
+        &mut spec.min_horizontal_card_width,
+    ] {
         *value *= display_scale;
     }
     let candidates = [
@@ -516,7 +554,12 @@ fn candidate_live_preview_contents(
     ];
     let font_size = (body_size * 4.0 / 3.0 * display_scale).clamp(12.0, 76.0);
     let meta_font_size = ((body_size - 3.0).max(9.0) * 4.0 / 3.0 * display_scale).clamp(9.0, 72.0);
-    let preview_font = |size| FontId::new(size, egui::FontFamily::Name(fonts::CANDIDATE_PREVIEW_FONT_FAMILY.into()));
+    let preview_font = |size| {
+        FontId::new(
+            size,
+            egui::FontFamily::Name(fonts::CANDIDATE_PREVIEW_FONT_FAMILY.into()),
+        )
+    };
     let count = metrics.count.min(candidates.len());
     let compact_delta = if horizontal {
         (if model.candidate_horizontal_compact {
@@ -719,9 +762,14 @@ fn candidate_live_preview_contents(
             stroke,
         );
         if selected {
-            painter.rect_filled(egui::Rect::from_min_size(
-                egui::pos2(row.left() + 2.0, row.center().y - 8.0), egui::vec2(2.0, 16.0)),
-                1.0, apply_opacity(colors.selected_border));
+            painter.rect_filled(
+                egui::Rect::from_min_size(
+                    egui::pos2(row.left() + 2.0, row.center().y - 8.0),
+                    egui::vec2(2.0, 16.0),
+                ),
+                1.0,
+                apply_opacity(colors.selected_border),
+            );
         }
         painter.text(
             egui::pos2(

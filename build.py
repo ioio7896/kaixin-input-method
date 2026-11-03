@@ -989,7 +989,6 @@ def write_build_manifest(
             "python": sys.version.split()[0],
             "platform": sys.platform,
             "machine": os.environ.get("PROCESSOR_ARCHITECTURE", "unknown"),
-            "hostname": os.environ.get("COMPUTERNAME", "unknown"),
         },
         "runtime_payload": runtime_rel,
         "stage_roots": [

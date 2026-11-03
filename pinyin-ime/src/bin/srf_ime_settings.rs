@@ -155,7 +155,10 @@ impl SettingsApp {
         merge_discovered_lexicon_tags_compat(&mut model);
         let last_saved_model = model.clone();
         let preview_font_choice = model.candidate_font_file.clone();
-        let _ = fonts::install_cjk_fonts_with_candidate_preview(&cc.egui_ctx, Some(&preview_font_choice));
+        let _ = fonts::install_cjk_fonts_with_candidate_preview(
+            &cc.egui_ctx,
+            Some(&preview_font_choice),
+        );
 
         Self {
             model,

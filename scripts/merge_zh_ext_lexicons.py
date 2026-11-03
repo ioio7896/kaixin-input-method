@@ -84,7 +84,8 @@ for tag, (title, _) in PROFESSIONAL_CATEGORIES.items():
 _category_catalog = ROOT / "shared/category_lexicons.json"
 if _category_catalog.is_file():
     for item in json.loads(_category_catalog.read_text(encoding="utf-8"))["categories"]:
-        CATEGORIES[item["file"]] = Category(item["title"], (item["file"],))
+        if item["file"] not in CATEGORIES:
+            CATEGORIES[item["file"]] = Category(item["title"], (item["file"],))
 
 
 def parse_row(path: Path, line_number: int, line: str) -> tuple[str, str, int]:

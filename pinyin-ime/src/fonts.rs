@@ -101,33 +101,47 @@ pub fn install_cjk_fonts_with_candidate_preview(
         .unwrap_or(false);
 
     let preview_loaded = if !preview_loaded {
-        preview_family.and_then(|requested| {
-            let mut db = Database::new();
-            db.load_system_fonts();
-            let path = Path::new(requested);
-            let (bytes, index) = if path.is_file() {
-                (std::fs::read(path).ok()?, 0)
-            } else {
-                let id = db.query(&Query {
-                    families: &[Family::Name(requested)],
-                    weight: Weight::NORMAL,
-                    style: Style::Normal,
-                    ..Default::default()
-                })?;
-                db.with_face_data(id, |data, index| (data.to_vec(), index))?
-            };
-            let key = "candidate_selected_font".to_owned();
-            let mut data = FontData::from_owned(bytes);
-            data.index = index;
-            fonts.font_data.insert(key.clone(), data);
-            registered_keys.push(key.clone());
-            register_font_family(&mut fonts, CANDIDATE_PREVIEW_FONT_FAMILY.to_owned(), &key, &registered_keys);
-            Some(true)
-        }).unwrap_or(false)
-    } else { true };
+        preview_family
+            .and_then(|requested| {
+                let mut db = Database::new();
+                db.load_system_fonts();
+                let path = Path::new(requested);
+                let (bytes, index) = if path.is_file() {
+                    (std::fs::read(path).ok()?, 0)
+                } else {
+                    let id = db.query(&Query {
+                        families: &[Family::Name(requested)],
+                        weight: Weight::NORMAL,
+                        style: Style::Normal,
+                        ..Default::default()
+                    })?;
+                    db.with_face_data(id, |data, index| (data.to_vec(), index))?
+                };
+                let key = "candidate_selected_font".to_owned();
+                let mut data = FontData::from_owned(bytes);
+                data.index = index;
+                fonts.font_data.insert(key.clone(), data);
+                registered_keys.push(key.clone());
+                register_font_family(
+                    &mut fonts,
+                    CANDIDATE_PREVIEW_FONT_FAMILY.to_owned(),
+                    &key,
+                    &registered_keys,
+                );
+                Some(true)
+            })
+            .unwrap_or(false)
+    } else {
+        true
+    };
 
     if !preview_loaded {
-        register_font_family(&mut fonts, CANDIDATE_PREVIEW_FONT_FAMILY.to_owned(), primary.key, &registered_keys);
+        register_font_family(
+            &mut fonts,
+            CANDIDATE_PREVIEW_FONT_FAMILY.to_owned(),
+            primary.key,
+            &registered_keys,
+        );
     }
 
     for family in [FontFamily::Proportional, FontFamily::Monospace] {

@@ -1024,3 +1024,23 @@ fn compact_lexicon_and_advanced_pages_preserve_controls_and_fit() {
         }
     }
 }
+
+#[test]
+fn all_manifest_categories_have_a_visible_display_group() {
+    let path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../shared/category_lexicons.json");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    for category in manifest["categories"].as_array().unwrap() {
+        let tag = category["tag"].as_str().unwrap();
+        assert_ne!(lexicon_display_group(tag), "其他扩展", "{tag}");
+    }
+    assert_eq!(
+        lexicon_display_group("category_law"),
+        lexicon_display_group("professional_law")
+    );
+    assert_eq!(
+        lexicon_sort_key("category_law").0,
+        lexicon_sort_key("professional_law").0
+    );
+}

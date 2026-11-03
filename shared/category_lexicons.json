@@ -1568,15 +1568,15 @@
       "group": "地区词库 · 杭州",
       "default_enabled": false,
       "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 1374,
-      "sha256": "f8c99c460033613047568f636b8f502c749e8c492a4e06cbec1305bf5ec5ea82",
+      "rows": 1674,
+      "sha256": "20c5e2fde3b22c5de635bcc78e9898a4efde663ee278c3b61837ff8115d1cccb",
       "score_min": 175,
       "score_max": 6500,
       "score_tiers": {
         "7500-10000": 0,
         "5000-7499": 96,
         "2500-4999": 1089,
-        "100-2499": 189,
+        "100-2499": 489,
         "1-99": 0
       }
     },

@@ -12,18 +12,49 @@ pub(super) fn set_lexicon_group_enabled(
     }
 }
 
+pub(super) fn lexicon_display_group(tag: &str) -> &'static str {
+    match pinyin_ime::lexicon_prefs::optional_lexicon_group(tag) {
+        "日常表达" | "成语与固定表达" => "日常生活",
+        "办公与办事" => "办公沟通",
+        "科技与开发" => "科技开发",
+        "专业领域" | "药物名称" => "专业领域",
+        "名称与实体"
+        | "名称与实体 · 按需启用"
+        | "名称与实体 · 低优先级"
+        | "地区词库 · 全国与世界"
+        | "地区词库 · 杭州" => "名称与地区",
+        "通用词语补充" | "通用补充 · 待筛" => "通用补充",
+        _ => "其他扩展",
+    }
+}
+
+pub(super) fn lexicon_sort_key(tag: &str) -> (&str, &str) {
+    (
+        tag.strip_prefix("category_")
+            .or_else(|| tag.strip_prefix("professional_"))
+            .unwrap_or(tag),
+        tag,
+    )
+}
+
+pub(super) fn lexicon_coverage(tag: &str) -> &'static str {
+    if tag.starts_with("professional_") {
+        "精选学科基础术语，与同领域分类补充词库独立开关，可能有重合；默认按需启用。"
+    } else if tag.starts_with("category_") {
+        "按具体场景或领域整理的补充词库；可能与同领域专业基础术语重合，可独立启用。"
+    } else {
+        pinyin_ime::lexicon_prefs::optional_lexicon_description(tag)
+    }
+}
+
 pub(super) fn lexicon_group_hint(group: &str) -> &'static str {
     match group {
-        "日常表达" => "生活、购物、出行与聊天表达，按使用习惯选择。",
-        "办公与办事" => "办公协作、项目、人事与政务办事表达。",
-        "成语与固定表达" => "成语、惯用语与固定搭配。",
-        "通用词语补充" => "三字、四字及较长词语的通用补充。",
-        "科技与开发" => "软件、设备、编程与技术交流用语。",
-        "专业领域" => "各行业与学科术语，按专业需要选择。",
-        "名称与实体" => "人物、机构、品牌等名称。",
-        "药物名称" => "药品名称与相关词条。",
-        "地区词库 · 全国与世界" => "行政区划、城市与世界地名。",
-        "地区词库 · 杭州" => "杭州本地地名与生活用语。",
+        "日常生活" => "生活、购物、出行、聊天和固定表达。",
+        "办公沟通" => "办公协作、项目、人事与政务办事。",
+        "科技开发" => "软件、设备、编程与技术交流。",
+        "专业领域" => "行业、学科及药物词库，按需要选择。",
+        "名称与地区" => "人物、机构、品牌与国内外和本地地名。",
+        "通用补充" => "待筛选的通用词语补充，按需启用。",
         _ => "其他补充词库；可在详情中查看用途与来源。",
     }
 }

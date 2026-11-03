@@ -484,7 +484,12 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             "show_quick_actions",
             defaults.screenshot_show_quick_actions,
         ),
-        screenshot_show_result_window: read_bool(config, "screenshot", "show_result_window", defaults.screenshot_show_result_window),
+        screenshot_show_result_window: read_bool(
+            config,
+            "screenshot",
+            "show_result_window",
+            defaults.screenshot_show_result_window,
+        ),
         clipboard_hotkey: read_string(config, "clipboard", "hotkey", &defaults.clipboard_hotkey),
         settings_hotkey: read_string(
             config,
@@ -1162,7 +1167,11 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         "show_quick_actions",
         bool_text(model.screenshot_show_quick_actions),
     );
-    config.set("screenshot", "show_result_window", bool_text(model.screenshot_show_result_window));
+    config.set(
+        "screenshot",
+        "show_result_window",
+        bool_text(model.screenshot_show_result_window),
+    );
     config.set(
         "clipboard",
         "hotkey",
@@ -1288,8 +1297,24 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
         "game_status_indicator",
         normalize_game_option_bool(&model.game_chat.status_indicator, false),
     );
-    config.set("compatibility", "game_status_duration_ms", model.game_chat.status_duration_ms.clamp(500, 5000).to_string());
-    config.set("compatibility", "game_status_scale_percent", model.game_chat.status_scale_percent.clamp(70, 200).to_string());
+    config.set(
+        "compatibility",
+        "game_status_duration_ms",
+        model
+            .game_chat
+            .status_duration_ms
+            .clamp(500, 5000)
+            .to_string(),
+    );
+    config.set(
+        "compatibility",
+        "game_status_scale_percent",
+        model
+            .game_chat
+            .status_scale_percent
+            .clamp(70, 200)
+            .to_string(),
+    );
     config.set(
         "compatibility",
         "game_input_mode",
@@ -1954,13 +1979,29 @@ pub(crate) fn merge_discovered_lexicon_tags(model: &mut SettingsModel) {
         .iter()
         .map(|(tag, _)| tag.clone())
         .collect::<BTreeSet<_>>();
-    model
-        .lexicon_tags
-        .retain(|tag, _| discovered_tags.contains(tag));
-    for (tag, _) in discovered {
-        let enabled = pinyin_ime::lexicon_prefs::default_optional_lexicon_tag_enabled(&tag);
-        model.lexicon_tags.entry(tag).or_insert(enabled);
+    reconcile_discovered_lexicon_tags(&mut model.lexicon_tags, &discovered_tags);
+}
+
+fn reconcile_discovered_lexicon_tags(
+    states: &mut BTreeMap<String, bool>,
+    discovered: &BTreeSet<String>,
+) {
+    for tag in discovered {
+        if states.contains_key(tag) {
+            continue;
+        }
+        let legacy: Vec<bool> = pinyin_ime::lexicon_prefs::legacy_optional_lexicon_tags(tag)
+            .iter()
+            .filter_map(|old| states.get(*old).copied())
+            .collect();
+        let enabled = if legacy.is_empty() {
+            pinyin_ime::lexicon_prefs::default_optional_lexicon_tag_enabled(tag)
+        } else {
+            legacy.into_iter().all(|value| value)
+        };
+        states.insert(tag.clone(), enabled);
     }
+    states.retain(|tag, _| discovered.contains(tag));
 }
 
 pub(crate) fn discover_skin_previews() -> Vec<SkinPreview> {
@@ -2212,10 +2253,16 @@ fn game_chat_options_from_values(
         result.status_indicator = normalize_game_option_bool(v, per_app);
     }
     if !per_app {
-        if let Some(v) = values.get("game_status_duration_ms").and_then(|v| v.parse::<u32>().ok()) {
+        if let Some(v) = values
+            .get("game_status_duration_ms")
+            .and_then(|v| v.parse::<u32>().ok())
+        {
             result.status_duration_ms = v.clamp(500, 5000);
         }
-        if let Some(v) = values.get("game_status_scale_percent").and_then(|v| v.parse::<u32>().ok()) {
+        if let Some(v) = values
+            .get("game_status_scale_percent")
+            .and_then(|v| v.parse::<u32>().ok())
+        {
             result.status_scale_percent = v.clamp(70, 200);
         }
     }
@@ -2780,14 +2827,18 @@ mod game_policy_tests {
 
     #[test]
     fn game_status_options_are_bounded_and_round_trip() {
-        let doc = parse_ini("[compatibility]\ngame_status_duration_ms=2400\ngame_status_scale_percent=150\n");
+        let doc = parse_ini(
+            "[compatibility]\ngame_status_duration_ms=2400\ngame_status_scale_percent=150\n",
+        );
         let model = model_from_config(&doc);
         assert_eq!(model.game_chat.status_duration_ms, 2400);
         assert_eq!(model.game_chat.status_scale_percent, 150);
         let saved = model_from_config(&parse_ini(&stabilized_rendered_config(&doc, &model)));
         assert_eq!(saved.game_chat.status_duration_ms, 2400);
         assert_eq!(saved.game_chat.status_scale_percent, 150);
-        let bounded = model_from_config(&parse_ini("[compatibility]\ngame_status_duration_ms=1\ngame_status_scale_percent=999\n"));
+        let bounded = model_from_config(&parse_ini(
+            "[compatibility]\ngame_status_duration_ms=1\ngame_status_scale_percent=999\n",
+        ));
         assert_eq!(bounded.game_chat.status_duration_ms, 500);
         assert_eq!(bounded.game_chat.status_scale_percent, 200);
     }
@@ -2931,5 +2982,28 @@ mod halfwidth_tests {
                     && reloaded.number_fullwidth
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod lexicon_migration_tests {
+    use super::*;
+
+    #[test]
+    fn discovery_preserves_explicit_and_legacy_choices() {
+        let mut states = BTreeMap::from([
+            ("animal_common_5000".to_string(), false),
+            ("category_ai".to_string(), true),
+        ]);
+        let tags = BTreeSet::from([
+            "animals".to_string(),
+            "category_ai".to_string(),
+            "category_chat_daily".to_string(),
+        ]);
+        reconcile_discovered_lexicon_tags(&mut states, &tags);
+        assert_eq!(states.get("animals"), Some(&false));
+        assert_eq!(states.get("category_ai"), Some(&true));
+        assert_eq!(states.get("category_chat_daily"), Some(&true));
+        assert!(!states.contains_key("animal_common_5000"));
     }
 }

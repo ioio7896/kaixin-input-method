@@ -3,7 +3,14 @@ use super::*;
 pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     section_panel(ui, "截图设置", |ui| {
         let palette = fluent_palette(ui);
-        ui.label(format!("当前截图快捷键：{}", if app.model.screenshot_hotkey == "off" { "未启用" } else { &app.model.screenshot_hotkey }));
+        ui.label(format!(
+            "当前截图快捷键：{}",
+            if app.model.screenshot_hotkey == "off" {
+                "未启用"
+            } else {
+                &app.model.screenshot_hotkey
+            }
+        ));
         tool_hotkey_link(ui, app);
         setting_combo_row(
             ui,
@@ -83,7 +90,11 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             app.model.screenshot_ocr_after_capture = true;
         }
         if app.model.screenshot_ocr_after_capture && resolve_runtime_exe_path(OCR_EXE).is_none() {
-            ui.label(RichText::new("未找到 OCR 程序；自动识别需要安装输入法 + OCR 版。").small().color(palette.danger));
+            ui.label(
+                RichText::new("未找到 OCR 程序；自动识别需要安装输入法 + OCR 版。")
+                    .small()
+                    .color(palette.danger),
+            );
         }
         if !app.model.screenshot_auto_save
             && !app.model.screenshot_copy_after_capture
@@ -91,9 +102,13 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             && !app.model.screenshot_translate_after_capture
         {
             ui.label(
-                RichText::new(if app.model.screenshot_show_result_window { "未启用自动动作；截图会保留在结果窗口，关闭窗口后不再保留。" } else { "请至少开启保存、复制、OCR 或翻译中的一项，否则截图完成后不会保留。" })
-                    .small()
-                    .color(palette.danger),
+                RichText::new(if app.model.screenshot_show_result_window {
+                    "未启用自动动作；截图会保留在结果窗口，关闭窗口后不再保留。"
+                } else {
+                    "请至少开启保存、复制、OCR 或翻译中的一项，否则截图完成后不会保留。"
+                })
+                .small()
+                .color(palette.danger),
             );
         }
         folder_path_row(
@@ -110,7 +125,11 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             &mut app.model.screenshot_silent_copy_enabled,
         );
         if app.model.screenshot_silent_copy_enabled && !app.model.screenshot_auto_save {
-            ui.label(RichText::new("副本仅在自动保存原图成功后创建；请同时开启“保存图片”。").small().color(palette.danger));
+            ui.label(
+                RichText::new("副本仅在自动保存原图成功后创建；请同时开启“保存图片”。")
+                    .small()
+                    .color(palette.danger),
+            );
         }
         folder_path_row(
             ui,

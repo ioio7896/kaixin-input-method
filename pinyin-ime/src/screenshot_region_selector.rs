@@ -19,8 +19,16 @@ pub unsafe fn create_screenshot_ui_font(dpi: u32, logical_pixels: i32) -> isize 
     let mut metrics: NONCLIENTMETRICSW = std::mem::zeroed();
     metrics.cbSize = std::mem::size_of::<NONCLIENTMETRICSW>() as u32;
     let mut font: LOGFONTW = if SystemParametersInfoW(
-        SPI_GETNONCLIENTMETRICS, metrics.cbSize, (&mut metrics as *mut NONCLIENTMETRICSW).cast(), 0,
-    ) != 0 { metrics.lfMessageFont } else { std::mem::zeroed() };
+        SPI_GETNONCLIENTMETRICS,
+        metrics.cbSize,
+        (&mut metrics as *mut NONCLIENTMETRICSW).cast(),
+        0,
+    ) != 0
+    {
+        metrics.lfMessageFont
+    } else {
+        std::mem::zeroed()
+    };
     font.lfHeight = -((i64::from(logical_pixels) * i64::from(dpi.max(96)) + 48) / 96) as i32;
     font.lfWeight = 400;
     CreateFontIndirectW(&font)
@@ -116,10 +124,16 @@ mod quick_action_tests {
     #[test]
     fn shortcut_actions_respect_ocr_availability() {
         assert_eq!(quick_action_for_key(0x43, false), Some(RegionAction::Copy));
-        assert_eq!(quick_action_for_key(0x53, false), Some(RegionAction::SaveAs));
+        assert_eq!(
+            quick_action_for_key(0x53, false),
+            Some(RegionAction::SaveAs)
+        );
         assert_eq!(quick_action_for_key(0x4F, false), None);
         assert_eq!(quick_action_for_key(0x4F, true), Some(RegionAction::Ocr));
-        assert_eq!(quick_action_for_key(0x41, true), Some(RegionAction::Annotate));
+        assert_eq!(
+            quick_action_for_key(0x41, true),
+            Some(RegionAction::Annotate)
+        );
         assert_eq!(quick_action_for_key(0x50, true), Some(RegionAction::Pin));
         assert_eq!(quick_action_for_key(0x58, true), None);
     }
@@ -186,14 +200,13 @@ mod platform {
     };
     use windows_sys::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_EXTENDED_FRAME_BOUNDS};
     use windows_sys::Win32::Graphics::Gdi::{
-        AlphaBlend, BeginPaint, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC,
-        CreatePen, CreateSolidBrush, DeleteDC, DeleteObject, DrawTextW, EndPaint, FillRect,
-        GetStockObject, IntersectClipRect, InvalidateRect, Rectangle, RestoreDC, SaveDC,
-        ScreenToClient, SelectObject, SetBkMode, SetTextColor, StretchDIBits, UpdateWindow,
-        AC_SRC_OVER, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, BLENDFUNCTION,
-        DIB_RGB_COLORS, DT_CALCRECT, DT_CENTER, DT_NOPREFIX,
-        DT_SINGLELINE, DT_VCENTER, DT_WORDBREAK, NULL_BRUSH,
-        PAINTSTRUCT, PS_SOLID, SRCCOPY, TRANSPARENT,
+        AlphaBlend, BeginPaint, BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, CreatePen,
+        CreateSolidBrush, DeleteDC, DeleteObject, DrawTextW, EndPaint, FillRect, GetStockObject,
+        IntersectClipRect, InvalidateRect, Rectangle, RestoreDC, SaveDC, ScreenToClient,
+        SelectObject, SetBkMode, SetTextColor, StretchDIBits, UpdateWindow, AC_SRC_OVER,
+        BITMAPINFO, BITMAPINFOHEADER, BI_RGB, BLENDFUNCTION, DIB_RGB_COLORS, DT_CALCRECT,
+        DT_CENTER, DT_NOPREFIX, DT_SINGLELINE, DT_VCENTER, DT_WORDBREAK, NULL_BRUSH, PAINTSTRUCT,
+        PS_SOLID, SRCCOPY, TRANSPARENT,
     };
     use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
     use windows_sys::Win32::UI::HiDpi::{
@@ -1009,13 +1022,21 @@ mod platform {
         }
 
         fn resize_selection(&mut self, dx: i32, dy: i32) {
-            let Some(mut selection) = self.selection else { return; };
+            let Some(mut selection) = self.selection else {
+                return;
+            };
             selection.right = (selection.right + dx).clamp(selection.left + 1, self.image_width);
             selection.bottom = (selection.bottom + dy).clamp(selection.top + 1, self.image_height);
             self.selection = Some(selection);
             self.fixed_size = None;
-            self.anchor = POINT { x: selection.left, y: selection.top };
-            self.current = POINT { x: selection.right, y: selection.bottom };
+            self.anchor = POINT {
+                x: selection.left,
+                y: selection.top,
+            };
+            self.current = POINT {
+                x: selection.right,
+                y: selection.bottom,
+            };
         }
 
         fn confirm(&mut self) -> Result<bool, RegionSelectorError> {
@@ -1205,13 +1226,16 @@ mod platform {
                 if let Some(state) = state {
                     if let Some(points) = cursor_points(hwnd, state) {
                         if state.manual_selection_locked {
-                            if selector_action_at(hwnd, state, points.client) == Some(SelectorAction::Ocr)
+                            if selector_action_at(hwnd, state, points.client)
+                                == Some(SelectorAction::Ocr)
                                 && !state.ocr_available
                             {
                                 let title = wide("OCR 未安装");
                                 let message = wide("此安装包未包含 OCR，请安装输入法 + OCR 版后使用。当前截图仍可复制或另存。");
                                 windows_sys::Win32::UI::WindowsAndMessaging::MessageBoxW(
-                                    hwnd, message.as_ptr(), title.as_ptr(),
+                                    hwnd,
+                                    message.as_ptr(),
+                                    title.as_ptr(),
                                     windows_sys::Win32::UI::WindowsAndMessaging::MB_OK,
                                 );
                                 return 0;
@@ -1373,7 +1397,8 @@ mod platform {
             WM_KEYDOWN => {
                 if let Some(state) = state {
                     if state.manual_selection_locked && ctrl_down() {
-                        let action = super::quick_action_for_key(wparam as u32, state.ocr_available);
+                        let action =
+                            super::quick_action_for_key(wparam as u32, state.ocr_available);
                         if let Some(action) = action {
                             state.action = action;
                             if state.confirm().unwrap_or(false) {
@@ -1617,13 +1642,27 @@ mod platform {
             let rect = |column: i32, row: i32| RECT {
                 left: left + column * cell,
                 top: top + row * row_height,
-                right: if column == 3 { left + width } else { left + (column + 1) * cell },
+                right: if column == 3 {
+                    left + width
+                } else {
+                    left + (column + 1) * cell
+                },
                 bottom: (top + (row + 1) * row_height).min(client_height),
             };
             return ActionToolbarLayout {
-                info: RECT { left, top, right: left, bottom: top },
-                pin: rect(0, 0), annotate: rect(1, 0), copy: rect(2, 0), save_as: rect(3, 0),
-                ocr: rect(0, 1), confirm: rect(1, 1), cancel: rect(2, 1),
+                info: RECT {
+                    left,
+                    top,
+                    right: left,
+                    bottom: top,
+                },
+                pin: rect(0, 0),
+                annotate: rect(1, 0),
+                copy: rect(2, 0),
+                save_as: rect(3, 0),
+                ocr: rect(0, 1),
+                confirm: rect(1, 1),
+                cancel: rect(2, 1),
             };
         }
         let cancel = RECT {
@@ -1698,8 +1737,27 @@ mod platform {
             for dpi in [96, 120, 144, 192] {
                 let width = 350 * dpi / 96;
                 let height = 500 * dpi / 96;
-                let layout = action_toolbar_layout(LocalRect { left: 0, top: 30, right: 100, bottom: 100 }, width, height, dpi as u32, true);
-                for rect in [layout.pin, layout.annotate, layout.copy, layout.save_as, layout.ocr, layout.confirm, layout.cancel] {
+                let layout = action_toolbar_layout(
+                    LocalRect {
+                        left: 0,
+                        top: 30,
+                        right: 100,
+                        bottom: 100,
+                    },
+                    width,
+                    height,
+                    dpi as u32,
+                    true,
+                );
+                for rect in [
+                    layout.pin,
+                    layout.annotate,
+                    layout.copy,
+                    layout.save_as,
+                    layout.ocr,
+                    layout.confirm,
+                    layout.cancel,
+                ] {
                     assert!(rect.left >= 0 && rect.right <= width);
                     assert!(rect.bottom <= height && rect.bottom > rect.top);
                     assert!(rect.right - rect.left >= 70 * dpi / 96);

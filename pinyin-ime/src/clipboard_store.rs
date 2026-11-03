@@ -1163,13 +1163,16 @@ fn set_capture_notice(message: String) {
 
 fn sensitive_clipboard_patterns() -> &'static RegexSet {
     static PATTERNS: OnceLock<RegexSet> = OnceLock::new();
-    PATTERNS.get_or_init(|| RegexSet::new([
-        r"(?i)\b(api[_ -]?key|access[_ -]?token|secret|password|passwd)\s*[:=]",
-        r"\bAKIA[0-9A-Z]{16}\b",
-        r"\bgh[pousr]_[A-Za-z0-9_]{20,}\b",
-        r"\bsk-[A-Za-z0-9]{20,}\b",
-        r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
-    ]).expect("valid clipboard privacy patterns"))
+    PATTERNS.get_or_init(|| {
+        RegexSet::new([
+            r"(?i)\b(api[_ -]?key|access[_ -]?token|secret|password|passwd)\s*[:=]",
+            r"\bAKIA[0-9A-Z]{16}\b",
+            r"\bgh[pousr]_[A-Za-z0-9_]{20,}\b",
+            r"\bsk-[A-Za-z0-9]{20,}\b",
+            r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----",
+        ])
+        .expect("valid clipboard privacy patterns")
+    })
 }
 
 fn looks_like_sensitive_clipboard(text: &str) -> bool {

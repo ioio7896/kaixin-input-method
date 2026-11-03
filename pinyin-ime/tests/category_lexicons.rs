@@ -16,7 +16,10 @@ fn imported_categories_have_discoverable_chinese_names_and_default_switches() {
     )
     .unwrap();
     let categories = manifest["categories"].as_array().unwrap();
-    assert_eq!(categories.len(), 79);
+    assert_eq!(
+        categories.len(),
+        manifest["category_count"].as_u64().unwrap() as usize
+    );
     let discovered = discover_optional_lexicon_tags_in_lexicon_dir(&root.join("lexicon"));
     for category in categories {
         let tag = category["tag"].as_str().unwrap();
@@ -24,7 +27,11 @@ fn imported_categories_have_discoverable_chinese_names_and_default_switches() {
         let group = category["group"].as_str().unwrap();
         assert_eq!(category_lexicon_info(tag), Some((title, group)));
         assert_eq!(optional_lexicon_group(tag), group);
-        assert!(default_optional_lexicon_tag_enabled(tag));
+        assert_eq!(
+            default_optional_lexicon_tag_enabled(tag),
+            category["default_enabled"].as_bool().unwrap(),
+            "{tag}"
+        );
         assert!(discovered.iter().any(|(found, _)| found == tag));
     }
     // Existing discipline preferences retain their old opt-in policy.

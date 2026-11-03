@@ -6,7 +6,10 @@ use layout::{bounded_control_width, responsive_settings_columns, responsive_sett
 
 #[path = "ui_lexicon_list.rs"]
 mod lexicon_list;
-use lexicon_list::{lexicon_group_hint, lexicon_list_row, set_lexicon_group_enabled};
+use lexicon_list::{
+    lexicon_coverage, lexicon_display_group, lexicon_group_hint, lexicon_list_row,
+    lexicon_sort_key, set_lexicon_group_enabled,
+};
 
 #[cfg(test)]
 #[path = "ui_layout_tests.rs"]
@@ -45,7 +48,10 @@ impl eframe::App for SettingsApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if self.preview_font_choice != self.model.candidate_font_file {
             self.preview_font_choice = self.model.candidate_font_file.clone();
-            let _ = fonts::install_cjk_fonts_with_candidate_preview(ctx, Some(&self.preview_font_choice));
+            let _ = fonts::install_cjk_fonts_with_candidate_preview(
+                ctx,
+                Some(&self.preview_font_choice),
+            );
         }
         if let Some(rx) = &self.translation_check_rx {
             match rx.try_recv() {
@@ -2673,22 +2679,22 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
         let filter = app.lexicon_filter.trim().to_lowercase();
         let mut visible = 0;
         for group in [
-            "日常表达",
-            "科技与开发",
+            "日常生活",
+            "办公沟通",
+            "科技开发",
             "专业领域",
-            "名称与实体",
-            "药物名称",
-            "地区词库 · 全国与世界",
-            "地区词库 · 杭州",
+            "名称与地区",
+            "通用补充",
             "其他扩展",
         ] {
-            let all_tags: Vec<_> = app
+            let mut all_tags: Vec<_> = app
                 .model
                 .lexicon_tags
                 .keys()
-                .filter(|tag| pinyin_ime::lexicon_prefs::optional_lexicon_group(tag) == group)
+                .filter(|tag| lexicon_display_group(tag) == group)
                 .cloned()
                 .collect();
+            all_tags.sort_by(|a, b| lexicon_sort_key(a).cmp(&lexicon_sort_key(b)));
             let tags: Vec<_> = all_tags
                 .iter()
                 .filter(|tag| {
@@ -2697,7 +2703,7 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
                         lexicon_tag_label(tag),
                         tag,
                         group,
-                        pinyin_ime::lexicon_prefs::optional_lexicon_description(tag)
+                        lexicon_coverage(tag)
                     )
                     .to_lowercase()
                     .contains(&filter)
@@ -2718,7 +2724,7 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 all_tags.len()
             ))
             .id_salt(("lexicon_group", group))
-            .default_open(group != "地区词库 · 杭州")
+            .default_open(false)
             .open(if filter.is_empty() { None } else { Some(true) })
             .show(ui, |ui| {
                 ui.horizontal_wrapped(|ui| {
@@ -2766,7 +2772,7 @@ fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
                             lexicon_tag_label(&tag),
                             &count,
                             enabled,
-                            pinyin_ime::lexicon_prefs::optional_lexicon_description(&tag),
+                            lexicon_coverage(&tag),
                             &source,
                         );
                     }
@@ -3085,7 +3091,10 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                 if let Some(state) = app.game_test_wizard.as_mut() {
                     state.step = GameTestStep::CandidateVisibility;
                 }
-                app.status = format!("已保存 {} 的候选位置，请回游戏确认显示效果。", wizard.process);
+                app.status = format!(
+                    "已保存 {} 的候选位置，请回游戏确认显示效果。",
+                    wizard.process
+                );
             }
         }
         Some(GameTestWizardAction::AdjustPosition) => {
