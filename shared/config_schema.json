@@ -443,7 +443,7 @@
     {
       "section": "compatibility",
       "key": "game_input_mode",
-      "default": "manual",
+      "default": "auto_text",
       "type": "string",
       "aliases": [],
       "options": [

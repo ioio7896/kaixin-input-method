@@ -171,6 +171,21 @@ impl PinyinEngine {
                     && variant.syllables.len() >= 2
             })
         });
+        // These higher-priority intents do not depend on mixed expansion.
+        // Avoid building a potentially large mixed beam merely to discard it.
+        let early_intent = classify_input_intent(
+            raw,
+            &compact_key,
+            direct_input_shortcut,
+            self.english_word_input_enabled(),
+            exact_single_syllable_input,
+            exact_complete_multi_input,
+            None,
+            false,
+        );
+        if early_intent != InputIntent::Unknown {
+            return early_intent;
+        }
         let mixed_limit = self.mixed_pinyin_key_limit(&compact_key);
         let mixed_keys = if mixed_limit == 0 {
             Vec::new()

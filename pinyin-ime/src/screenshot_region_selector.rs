@@ -222,10 +222,11 @@ mod platform {
         IsIconic, IsWindow, IsWindowVisible, LoadCursorW, RegisterClassW, SetCursor,
         SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow, TranslateMessage,
         CREATESTRUCTW, CS_DBLCLKS, CS_HREDRAW, CS_VREDRAW, GWLP_USERDATA, HWND_TOPMOST, IDC_CROSS,
-        MSG, SWP_NOOWNERZORDER, SWP_SHOWWINDOW, SW_SHOW, WM_CLOSE, WM_DISPLAYCHANGE, WM_DPICHANGED,
-        WM_ERASEBKGND, WM_KEYDOWN, WM_KILLFOCUS, WM_LBUTTONDBLCLK, WM_LBUTTONDOWN, WM_LBUTTONUP,
-        WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCCREATE, WM_NCDESTROY, WM_PAINT, WM_RBUTTONDOWN,
-        WM_SETCURSOR, WNDCLASSW, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP,
+        IDC_SIZEALL, IDC_SIZENESW, IDC_SIZENS, IDC_SIZENWSE, IDC_SIZEWE, MSG, SWP_NOOWNERZORDER,
+        SWP_SHOWWINDOW, SW_SHOW, WM_CHAR, WM_CLOSE, WM_DISPLAYCHANGE, WM_DPICHANGED, WM_ERASEBKGND,
+        WM_KEYDOWN, WM_KILLFOCUS, WM_LBUTTONDBLCLK, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MOUSEMOVE,
+        WM_MOUSEWHEEL, WM_NCCREATE, WM_NCDESTROY, WM_PAINT, WM_RBUTTONDOWN, WM_SETCURSOR,
+        WNDCLASSW, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP,
     };
 
     const CLASS_NAME: &str = "KaixinScreenshotRegionSelector_v1";
@@ -515,6 +516,45 @@ mod platform {
         clipped.is_valid().then_some(clipped)
     }
 
+    fn selection_hit_test(selection: LocalRect, point: POINT) -> Option<DragKind> {
+        let tolerance = 7;
+        let near_left = (point.x - selection.left).abs() <= tolerance;
+        let near_right = (point.x - selection.right).abs() <= tolerance;
+        let near_top = (point.y - selection.top).abs() <= tolerance;
+        let near_bottom = (point.y - selection.bottom).abs() <= tolerance;
+        let inside_x =
+            point.x >= selection.left - tolerance && point.x <= selection.right + tolerance;
+        let inside_y =
+            point.y >= selection.top - tolerance && point.y <= selection.bottom + tolerance;
+        let horizontal = if near_left && inside_y {
+            -1
+        } else if near_right && inside_y {
+            1
+        } else {
+            0
+        };
+        let vertical = if near_top && inside_x {
+            -1
+        } else if near_bottom && inside_x {
+            1
+        } else {
+            0
+        };
+        Some(if horizontal != 0 || vertical != 0 {
+            DragKind::Resize {
+                horizontal,
+                vertical,
+            }
+        } else if point_in_rect(point, selection) {
+            DragKind::Move {
+                offset_x: point.x - selection.left,
+                offset_y: point.y - selection.top,
+            }
+        } else {
+            return None;
+        })
+    }
+
     struct SelectorState {
         origin_x: i32,
         origin_y: i32,
@@ -530,11 +570,16 @@ mod platform {
         uia_candidates: Option<Receiver<Vec<SnapCandidate>>>,
         snap_matches: Vec<usize>,
         snap_match_index: usize,
+        stable_snap: Option<LocalRect>,
         pressed_snap: Option<LocalRect>,
         drag_kind: DragKind,
         drag_start_selection: Option<LocalRect>,
         dragging: bool,
         manual_selection_locked: bool,
+        size_input: Option<String>,
+        invalid_size: bool,
+        interrupted: Option<&'static str>,
+        suppress_focus_cancel: bool,
         confirm_on_release: bool,
         show_instructions: bool,
         show_quick_actions: bool,
@@ -643,11 +688,16 @@ mod platform {
                 uia_candidates: Some(uia_candidates),
                 snap_matches: Vec::new(),
                 snap_match_index: 0,
+                stable_snap: None,
                 pressed_snap: None,
                 drag_kind: DragKind::Create,
                 drag_start_selection: None,
                 dragging: false,
                 manual_selection_locked: false,
+                size_input: None,
+                invalid_size: false,
+                interrupted: None,
+                suppress_focus_cancel: false,
                 confirm_on_release: options.confirm_on_release,
                 show_instructions: options.show_instructions,
                 show_quick_actions: options.show_quick_actions,
@@ -706,47 +756,16 @@ mod platform {
                 .then_some(self.snap_rect_to_desktop(selection));
         }
 
+        fn selection_hit_test(&self, point: POINT) -> Option<DragKind> {
+            selection_hit_test(self.selection?, point)
+        }
+
         fn begin_existing_selection_drag(&mut self, point: POINT) -> bool {
-            let Some(selection) = self.selection else {
+            let Some(kind) = self.selection_hit_test(point) else {
                 return false;
             };
-            let tolerance = 7;
-            let near_left = (point.x - selection.left).abs() <= tolerance;
-            let near_right = (point.x - selection.right).abs() <= tolerance;
-            let near_top = (point.y - selection.top).abs() <= tolerance;
-            let near_bottom = (point.y - selection.bottom).abs() <= tolerance;
-            let inside_x =
-                point.x >= selection.left - tolerance && point.x <= selection.right + tolerance;
-            let inside_y =
-                point.y >= selection.top - tolerance && point.y <= selection.bottom + tolerance;
-            let horizontal = if near_left && inside_y {
-                -1
-            } else if near_right && inside_y {
-                1
-            } else {
-                0
-            };
-            let vertical = if near_top && inside_x {
-                -1
-            } else if near_bottom && inside_x {
-                1
-            } else {
-                0
-            };
-            self.drag_kind = if horizontal != 0 || vertical != 0 {
-                DragKind::Resize {
-                    horizontal,
-                    vertical,
-                }
-            } else if point_in_rect(point, selection) {
-                DragKind::Move {
-                    offset_x: point.x - selection.left,
-                    offset_y: point.y - selection.top,
-                }
-            } else {
-                return false;
-            };
-            self.drag_start_selection = Some(selection);
+            self.drag_kind = kind;
+            self.drag_start_selection = self.selection;
             true
         }
 
@@ -851,7 +870,8 @@ mod platform {
         }
 
         fn update_snap_selection(&mut self, point: POINT, reset_cycle: bool) {
-            let _ = self.merge_ready_uia_candidates();
+            let old_selection = self.selection;
+            let merged = self.merge_ready_uia_candidates();
             self.cursor = self.clamp_point(point);
             self.snap_matches.clear();
             for (index, candidate) in self.snap_candidates.iter().enumerate() {
@@ -859,7 +879,22 @@ mod platform {
                     self.snap_matches.push(index);
                 }
             }
-            if reset_cycle || self.snap_match_index >= self.snap_matches.len() {
+            if merged {
+                self.stable_snap = old_selection.filter(|rect| point_in_rect(self.cursor, *rect));
+            }
+            if self
+                .stable_snap
+                .is_some_and(|rect| !point_in_rect(self.cursor, rect))
+            {
+                self.stable_snap = None;
+            }
+            if let Some(index) = self
+                .snap_matches
+                .iter()
+                .position(|&index| Some(self.snap_candidates[index].rect) == self.stable_snap)
+            {
+                self.snap_match_index = index;
+            } else if reset_cycle || self.snap_match_index >= self.snap_matches.len() {
                 self.snap_match_index = 0;
             }
             self.selection = self
@@ -869,8 +904,17 @@ mod platform {
         }
 
         fn cycle_snap_selection(&mut self, delta: isize) {
+            let previous = self.selection;
+            self.stable_snap = None;
             if self.merge_ready_uia_candidates() {
-                self.update_snap_selection(self.cursor, false);
+                self.update_snap_selection(self.cursor, true);
+                if let Some(index) = self
+                    .snap_matches
+                    .iter()
+                    .position(|&index| Some(self.snap_candidates[index].rect) == previous)
+                {
+                    self.snap_match_index = index;
+                }
             }
             if self.snap_matches.is_empty() {
                 return;
@@ -1205,6 +1249,9 @@ mod platform {
                 let _ = DestroyWindow(hwnd);
             }
         }
+        if let Some(reason) = state.interrupted {
+            return Err(RegionSelectorError::new(reason));
+        }
         Ok(state.result.map(|rect| (rect, state.action)))
     }
 
@@ -1224,6 +1271,9 @@ mod platform {
         match message {
             WM_LBUTTONDOWN => {
                 if let Some(state) = state {
+                    if state.size_input.is_some() {
+                        return 0;
+                    }
                     if let Some(points) = cursor_points(hwnd, state) {
                         if state.manual_selection_locked {
                             if selector_action_at(hwnd, state, points.client)
@@ -1232,12 +1282,14 @@ mod platform {
                             {
                                 let title = wide("OCR 未安装");
                                 let message = wide("此安装包未包含 OCR，请安装输入法 + OCR 版后使用。当前截图仍可复制或另存。");
+                                state.suppress_focus_cancel = true;
                                 windows_sys::Win32::UI::WindowsAndMessaging::MessageBoxW(
                                     hwnd,
                                     message.as_ptr(),
                                     title.as_ptr(),
                                     windows_sys::Win32::UI::WindowsAndMessaging::MB_OK,
                                 );
+                                state.suppress_focus_cancel = false;
                                 return 0;
                             }
                             match selector_action_at(hwnd, state, points.client) {
@@ -1386,7 +1438,9 @@ mod platform {
                 0
             }
             WM_MOUSEWHEEL => {
-                if let Some(state) = state.filter(|state| !state.dragging) {
+                if let Some(state) = state.filter(|state| {
+                    !state.dragging && !state.manual_selection_locked && state.size_input.is_none()
+                }) {
                     let delta = ((wparam >> 16) & 0xffff) as u16 as i16;
                     state.cycle_snap_selection(if delta > 0 { -1 } else { 1 });
                     state.manual_selection_locked = false;
@@ -1396,6 +1450,33 @@ mod platform {
             }
             WM_KEYDOWN => {
                 if let Some(state) = state {
+                    if state.size_input.is_some() {
+                        if wparam as u32 == u32::from(VK_ESCAPE) {
+                            state.size_input = None;
+                        } else if wparam as u32 == u32::from(VK_RETURN) {
+                            let parsed = state.size_input.as_deref().and_then(parse_size_input);
+                            if let Some((width, height)) = parsed
+                                .filter(|&(w, h)| w <= state.image_width && h <= state.image_height)
+                            {
+                                if let Some(rect) = state.selection {
+                                    let left = rect.left.min(state.image_width - width);
+                                    let top = rect.top.min(state.image_height - height);
+                                    state.selection = Some(LocalRect {
+                                        left,
+                                        top,
+                                        right: left + width,
+                                        bottom: top + height,
+                                    });
+                                    state.manual_selection_locked = true;
+                                }
+                                state.size_input = None;
+                            } else {
+                                state.invalid_size = true;
+                            }
+                        }
+                        let _ = InvalidateRect(hwnd, null(), 0);
+                        return 0;
+                    }
                     if state.manual_selection_locked && ctrl_down() {
                         let action =
                             super::quick_action_for_key(wparam as u32, state.ocr_available);
@@ -1426,7 +1507,28 @@ mod platform {
                         value if value == u32::from(VK_ESCAPE) => {
                             cancel_and_destroy(hwnd, Some(state));
                         }
-                        value if value == u32::from(VK_TAB) => {
+                        0x44 if state.manual_selection_locked => {
+                            state.size_input = Some(String::new());
+                            state.invalid_size = false;
+                            let _ = InvalidateRect(hwnd, null(), 0);
+                        }
+                        0x52 if state.manual_selection_locked => {
+                            state.selection = None;
+                            state.manual_selection_locked = false;
+                            state.snap_matches.clear();
+                            let _ = InvalidateRect(hwnd, null(), 0);
+                        }
+                        value
+                            if value == u32::from(VK_TAB)
+                                && state.manual_selection_locked
+                                && ctrl_down() =>
+                        {
+                            state.manual_selection_locked = false;
+                            state.stable_snap = None;
+                            state.update_snap_selection(state.cursor, true);
+                            let _ = InvalidateRect(hwnd, null(), 0);
+                        }
+                        value if value == u32::from(VK_TAB) && !state.manual_selection_locked => {
                             state.cycle_snap_selection(if shift_down() { -1 } else { 1 });
                             state.manual_selection_locked = false;
                             let _ = InvalidateRect(hwnd, null(), 0);
@@ -1478,12 +1580,58 @@ mod platform {
                 }
                 0
             }
-            WM_RBUTTONDOWN | WM_CLOSE | WM_KILLFOCUS | WM_DISPLAYCHANGE => {
+            WM_CHAR => {
+                if let Some(state) = state {
+                    if let Some(input) = state.size_input.as_mut() {
+                        state.invalid_size = false;
+                        let ch = char::from_u32(wparam as u32).unwrap_or('\0');
+                        if ch == '\u{8}' {
+                            input.pop();
+                        } else if (ch.is_ascii_digit() || ch == 'x' || ch == 'X')
+                            && input.len() < 15
+                        {
+                            input.push(ch.to_ascii_lowercase());
+                        }
+                        let _ = InvalidateRect(hwnd, null(), 0);
+                    }
+                }
+                0
+            }
+            WM_KILLFOCUS | WM_DISPLAYCHANGE => {
+                if let Some(state) = state.filter(|state| {
+                    !state.completed && (message != WM_KILLFOCUS || !state.suppress_focus_cancel)
+                }) {
+                    state.interrupted = Some(if message == WM_KILLFOCUS {
+                        "截图框选已中断：焦点发生切换，请重新截图。"
+                    } else {
+                        "截图框选已中断：显示器配置已改变，请重新截图。"
+                    });
+                    cancel_and_destroy(hwnd, Some(state));
+                }
+                0
+            }
+            WM_RBUTTONDOWN | WM_CLOSE => {
                 cancel_and_destroy(hwnd, state);
                 0
             }
             WM_SETCURSOR => {
-                let cursor = LoadCursorW(0, IDC_CROSS);
+                let kind = state
+                    .filter(|s| s.manual_selection_locked && s.size_input.is_none())
+                    .and_then(|s| {
+                        cursor_points(hwnd, s).and_then(|p| s.selection_hit_test(p.image))
+                    });
+                let icon = match kind {
+                    Some(DragKind::Move { .. }) => IDC_SIZEALL,
+                    Some(DragKind::Resize { horizontal: 0, .. }) => IDC_SIZENS,
+                    Some(DragKind::Resize { vertical: 0, .. }) => IDC_SIZEWE,
+                    Some(DragKind::Resize {
+                        horizontal,
+                        vertical,
+                    }) if horizontal == vertical => IDC_SIZENWSE,
+                    Some(DragKind::Resize { .. }) => IDC_SIZENESW,
+                    _ => IDC_CROSS,
+                };
+                let cursor = LoadCursorW(0, icon);
                 if cursor != 0 {
                     let _ = SetCursor(cursor);
                 }
@@ -2041,8 +2189,8 @@ mod platform {
             );
         }
         draw_magnifier(hwnd, hdc, state, client_width, client_height);
-        if state.show_instructions {
-            draw_instruction(hwnd, hdc, client_width);
+        if state.show_instructions || state.size_input.is_some() {
+            draw_instruction(hwnd, hdc, client_width, state);
         }
     }
 
@@ -2288,7 +2436,11 @@ mod platform {
         let dpi = GetDpiForWindow(hwnd).max(96);
         let scale = |value: i32| ((i64::from(value) * i64::from(dpi) + 48) / 96) as i32;
         let blue = rgb(37, 99, 235);
-        let border_width = scale(2).max(2);
+        let border_width = if !state.manual_selection_locked && !state.dragging {
+            scale(3).max(3)
+        } else {
+            scale(2).max(2)
+        };
         let pen = CreatePen(PS_SOLID, border_width, blue);
         let hollow = GetStockObject(NULL_BRUSH);
         let old_pen = if pen != 0 { SelectObject(hdc, pen) } else { 0 };
@@ -2543,12 +2695,25 @@ mod platform {
         }
     }
 
-    unsafe fn draw_instruction(hwnd: HWND, hdc: isize, client_width: i32) {
+    unsafe fn draw_instruction(hwnd: HWND, hdc: isize, client_width: i32, state: &SelectorState) {
         let dpi = GetDpiForWindow(hwnd).max(96);
         let scale = |value: i32| ((i64::from(value) * i64::from(dpi) + 48) / 96) as i32;
-        let text = wide(
-            "拖动框选 · 方向键移动 · Ctrl+方向键调整大小 · Shift 加速 · Enter 完成 · Esc 取消 · Tab 切换层级 · Ctrl+C 复制 · Ctrl+S 另存 · Ctrl+O OCR · Ctrl+A 画图 · Ctrl+P 固定",
-        );
+        let instruction = if let Some(input) = &state.size_input {
+            format!(
+                "{}尺寸（宽x高，像素）：{}  ·  Enter 确认  ·  Esc 返回；尺寸须在截图范围内",
+                if state.invalid_size {
+                    "格式错误，请重新输入。"
+                } else {
+                    "输入"
+                },
+                input
+            )
+        } else if state.manual_selection_locked {
+            "方向键移动 · Ctrl+方向键调整大小 · Shift 加速 · D 输入尺寸 · R 重新框选 · Ctrl+Tab 吸附 · Enter 完成 · Esc 取消".to_string()
+        } else {
+            format!("拖动框选 · 窗口/控件吸附 {} · Tab 或滚轮切换层级 · Ctrl 拖动自由框选 · Enter 完成 · Esc 取消", if state.snap_matches.len() > 1 { "（多个目标）" } else { "" })
+        };
+        let text = wide(&instruction);
         let width = scale(720)
             .min(client_width.saturating_sub(scale(16)))
             .max(scale(220));
@@ -2591,6 +2756,53 @@ mod platform {
 
     unsafe fn create_overlay_font(dpi: u32, points: i32) -> isize {
         super::create_screenshot_ui_font(dpi, if points >= 13 { 15 } else { 14 })
+    }
+
+    fn parse_size_input(input: &str) -> Option<(i32, i32)> {
+        let (width, height) = input.split_once('x')?;
+        let width = width.parse::<i32>().ok()?;
+        let height = height.parse::<i32>().ok()?;
+        (width > 0 && height > 0).then_some((width, height))
+    }
+
+    #[cfg(test)]
+    mod size_input_tests {
+        use super::{parse_size_input, selection_hit_test, DragKind, LocalRect, POINT};
+        #[test]
+        fn handles_distinguish_move_edges_and_corners() {
+            let rect = LocalRect {
+                left: 20,
+                top: 30,
+                right: 120,
+                bottom: 130,
+            };
+            assert!(matches!(
+                selection_hit_test(rect, POINT { x: 70, y: 80 }),
+                Some(DragKind::Move { .. })
+            ));
+            assert!(matches!(
+                selection_hit_test(rect, POINT { x: 20, y: 80 }),
+                Some(DragKind::Resize {
+                    horizontal: -1,
+                    vertical: 0
+                })
+            ));
+            assert!(matches!(
+                selection_hit_test(rect, POINT { x: 120, y: 30 }),
+                Some(DragKind::Resize {
+                    horizontal: 1,
+                    vertical: -1
+                })
+            ));
+            assert!(selection_hit_test(rect, POINT { x: 0, y: 0 }).is_none());
+        }
+        #[test]
+        fn dimensions_require_two_positive_integers() {
+            assert_eq!(parse_size_input("640x480"), Some((640, 480)));
+            for input in ["", "0x5", "2x0", "3", "1x2x3", "-1x2", "999999999999x1"] {
+                assert_eq!(parse_size_input(input), None, "{input}");
+            }
+        }
     }
 
     fn shift_down() -> bool {

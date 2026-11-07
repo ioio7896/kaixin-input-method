@@ -8,6 +8,10 @@ fn main() {}
 mod tray_menu_style;
 
 #[cfg(windows)]
+#[path = "srf_ime_tray/translation_preview.rs"]
+mod translation_preview;
+
+#[cfg(windows)]
 mod win {
     use crate::tray_menu_style::{
         self, Icon as TrayMenuIcon, Item as TrayMenuItem, Kind as TrayMenuKind,
@@ -1626,10 +1630,11 @@ mod win {
 
     fn open_translate(target_hwnd: HWND) {
         thread::spawn(move || {
-            let text = capture_selected_text(target_hwnd)
-                .or_else(|_| {
+            let selection = capture_selected_text(target_hwnd).ok().filter(|s| !s.trim().is_empty());
+            let replace_selection = selection.is_some();
+            let text = selection.or_else(|| {
                     clipboard_win::get_clipboard::<String, _>(clipboard_win::formats::Unicode)
-                        .map_err(|error| error.to_string())
+                        .ok()
                 })
                 .unwrap_or_default();
             let mut request =
@@ -1640,7 +1645,7 @@ mod win {
             request.presentation = "full".to_string();
             request.interactive = true;
             request.delivery = request.result_action.clone();
-            request.replace_selection = true;
+            request.replace_selection = replace_selection;
             if let Err(error) = external_translation::launch_full_request(&request) {
                 show_error_message(&error);
             }
@@ -2260,6 +2265,9 @@ mod win {
         match capture_with_wgc(target_hwnd, effective_mode, selector_options) {
             Ok(result) => return Ok(result),
             Err(wgc_err) => {
+                if wgc_err.starts_with("截图框选已中断：") {
+                    return Err(wgc_err);
+                }
                 runtime_log::log_tray(
                     RuntimeLogLevel::Error,
                     "screenshot_capture_fallback",
@@ -2268,6 +2276,9 @@ mod win {
                 match capture_with_dxgi(target_hwnd, effective_mode, selector_options) {
                     Ok(result) => return Ok(result),
                     Err(dxgi_err) => {
+                        if dxgi_err.starts_with("截图框选已中断：") {
+                            return Err(dxgi_err);
+                        }
                         runtime_log::log_tray(
                             RuntimeLogLevel::Error,
                             "screenshot_capture_fallback",
@@ -2377,7 +2388,13 @@ mod win {
 
         let selected =
             screenshot_region_selector::select_region_action_with_options(&frame, selector_options)
-                .map_err(|err| format!("自定义框选界面失败：{err}"))?;
+                .map_err(|err| {
+                    if err.message().starts_with("截图框选已中断：") {
+                        err.to_string()
+                    } else {
+                        format!("自定义框选界面失败：{err}")
+                    }
+                })?;
         let Some((selected, action)) = selected else {
             return Ok(ScreenshotCaptureResult::Cancelled);
         };
@@ -4528,5 +4545,13 @@ mod win {
 #[cfg(windows)]
 fn main() {
     pinyin_ime::windows_security::apply_process_hardening();
+    if std::env::args().any(|arg| arg == "--translation-preview") {
+        if let Err(error) = translation_preview::run() {
+            let message: Vec<u16> = error.encode_utf16().chain(Some(0)).collect();
+            let title: Vec<u16> = "翻译预览".encode_utf16().chain(Some(0)).collect();
+            unsafe { windows_sys::Win32::UI::WindowsAndMessaging::MessageBoxW(0, message.as_ptr(), title.as_ptr(), 0x10); }
+        }
+        return;
+    }
     win::run();
 }

@@ -758,14 +758,14 @@ fn rename_replace(src: &Path, dst: &Path) -> io::Result<()> {
 #[cfg(windows)]
 fn rename_replace(src: &Path, dst: &Path) -> io::Result<()> {
     use std::os::windows::ffi::OsStrExt;
-    use windows_sys::Win32::Storage::FileSystem::{MoveFileExW, MOVEFILE_REPLACE_EXISTING};
+    use windows_sys::Win32::Storage::FileSystem::{MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH};
 
     let mut src_w: Vec<u16> = src.as_os_str().encode_wide().collect();
     src_w.push(0);
     let mut dst_w: Vec<u16> = dst.as_os_str().encode_wide().collect();
     dst_w.push(0);
 
-    let ok = unsafe { MoveFileExW(src_w.as_ptr(), dst_w.as_ptr(), MOVEFILE_REPLACE_EXISTING) != 0 };
+    let ok = unsafe { MoveFileExW(src_w.as_ptr(), dst_w.as_ptr(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0 };
     if ok {
         Ok(())
     } else {

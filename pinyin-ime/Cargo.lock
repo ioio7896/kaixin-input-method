@@ -2076,7 +2076,7 @@ version = "2.0.0"
 
 [[package]]
 name = "kaixin-core"
-version = "2.0.0"
+version = "2026.1105.924"
 dependencies = [
  "base64",
  "bincode",
@@ -3067,7 +3067,7 @@ checksum = "16f2611cd06a1ac239a0cea4521de9eb068a6ca110324ee00631aa68daa74fc0"
 
 [[package]]
 name = "pinyin-ime"
-version = "2.0.0"
+version = "2026.1105.924"
 dependencies = [
  "base64",
  "bincode",

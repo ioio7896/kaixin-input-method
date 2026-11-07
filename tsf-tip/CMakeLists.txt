@@ -19,6 +19,14 @@ if(MSVC)
 endif()
 
 if(BUILD_TESTING)
+  add_library(srf_background_worker_test_dll SHARED tests/background_worker_dll.cpp)
+  target_include_directories(srf_background_worker_test_dll PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+  add_executable(srf_background_worker_tests tests/background_worker_tests.cpp)
+  target_link_libraries(srf_background_worker_tests PRIVATE ole32)
+  if(MSVC)
+    target_compile_options(srf_background_worker_test_dll PRIVATE /EHsc /utf-8)
+  endif()
+  add_test(NAME srf_background_worker_tests COMMAND srf_background_worker_tests $<TARGET_FILE:srf_background_worker_test_dll>)
   add_executable(srf_policy_tests
     tests/policy_tests.cpp
   )

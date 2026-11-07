@@ -57,6 +57,7 @@ pub const PROTOCOL_VERSION: u32 = 2;
 static REQUEST_COUNTER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ExternalTranslationRequest {
     pub protocol_version: u32,
     pub request_id: String,
@@ -86,7 +87,6 @@ pub struct ExternalTranslationRequest {
     pub query_request_id: Option<String>,
     #[serde(default)]
     pub chunk_index: usize,
-    #[serde(default)]
     pub callback_ack: bool,
     #[serde(default)]
     pub session: String,
@@ -94,6 +94,10 @@ pub struct ExternalTranslationRequest {
     pub generation: u64,
     #[serde(skip)]
     safety: InputSafety,
+}
+
+impl Default for ExternalTranslationRequest {
+    fn default() -> Self { Self::new("", "kaixin-ime") }
 }
 
 #[derive(Debug, Deserialize)]
@@ -134,16 +138,16 @@ struct WinTranslatorCapabilities {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-struct TranslationCallbackEvent {
+pub struct TranslationCallbackEvent {
     #[serde(rename = "event")]
-    event_name: String,
+    pub event_name: String,
     request_id: String,
     #[serde(default)]
-    text: Option<String>,
+    pub text: Option<String>,
     #[serde(default)]
     error_code: Option<String>,
     #[serde(default)]
-    message: Option<String>,
+    pub message: Option<String>,
     #[serde(default)]
     target_hwnd: Option<isize>,
     #[serde(default)]
@@ -644,6 +648,22 @@ pub fn launch_full_request(request: &ExternalTranslationRequest) -> Result<(), S
     if !is_available() {
         return Err(availability_message());
     }
+    #[cfg(windows)]
+    if !request.text.trim().is_empty() {
+        use std::io::Write;
+        use std::process::Stdio;
+        let bytes = serde_json::to_vec(request).map_err(|e| e.to_string())?;
+        if bytes.len() > 1024 * 1024 { return Err("翻译请求超过 1 MiB，请拆分文本。".into()); }
+        let executable = std::env::current_exe().map_err(|e| e.to_string())?
+            .with_file_name("srf_ime_tray.exe");
+        let mut child = Command::new(executable).arg("--translation-preview")
+            .stdin(Stdio::piped()).creation_flags(CREATE_NO_WINDOW)
+            .spawn().map_err(|e| format!("无法打开翻译预览：{e}"))?;
+        child.stdin.take().ok_or("翻译预览输入通道不可用")?
+            .write_all(&bytes).map_err(|e| e.to_string())?;
+        thread::spawn(move || { let _ = child.wait(); });
+        return Ok(());
+    }
     let mut request = request.clone();
     request.safety = input_safety();
     request.session = format!(
@@ -744,6 +764,50 @@ fn launch_callback_request(request: ExternalTranslationRequest) -> Result<(), St
 #[cfg(not(windows))]
 fn launch_callback_request(_request: ExternalTranslationRequest) -> Result<(), String> {
     Err("当前平台不支持 WinTranslator 回调管道".to_string())
+}
+
+/// Preview owns user interaction; transport still performs chunk reassembly and ACK.
+#[cfg(windows)]
+pub fn preview_stream(mut request: ExternalTranslationRequest) -> (
+    mpsc::Receiver<TranslationCallbackEvent>, Arc<AtomicBool>,
+) {
+    let (tx, rx) = mpsc::channel();
+    let stop = Arc::new(AtomicBool::new(false));
+    let listener_stop = stop.clone();
+    let sender_stop = stop.clone();
+    request.result_action = "show".into();
+    request.delivery = "return".into();
+    request.presentation = "background".into();
+    request.reply_pipe = Some(format!("Kaixin.Translate.Result.{}", request.request_id));
+    thread::spawn(move || {
+        let (ready_tx, ready_rx) = mpsc::sync_channel(1);
+        let listener_request = request.clone();
+        let events = tx.clone();
+        thread::spawn(move || {
+            listen_for_translation_callbacks_with_stop(
+                listener_request.reply_pipe.as_ref().unwrap(), listener_request.clone(), ready_tx,
+                |event| { let _ = events.send(event.clone()); }, listener_stop,
+            );
+        });
+        let result = ready_rx.recv_timeout(Duration::from_secs(3))
+            .map_err(|_| "创建翻译结果通道超时".to_string())
+            .and_then(|ready| ready).and_then(|_| {
+                if sender_stop.load(SessionOrdering::Acquire) { return Err("翻译已取消".into()); }
+                let result = send_request(&request);
+                if sender_stop.load(SessionOrdering::Acquire) {
+                    let _ = send_request_once(&ExternalTranslationRequest::cancellation(&request.request_id));
+                }
+                result
+            });
+        if let Err(error) = result {
+            sender_stop.store(true, SessionOrdering::Release);
+            let event: TranslationCallbackEvent = serde_json::from_value(serde_json::json!({
+                "event": "failed", "request_id": request.request_id, "message": error,
+            })).unwrap();
+            let _ = tx.send(event);
+        }
+    });
+    (rx, stop)
 }
 
 #[cfg(all(windows, test))]
@@ -891,7 +955,7 @@ fn listen_for_translation_callbacks_with_stop(
                 apply_returned_translation(&request, &event, text);
             }
         } else if event.event_name == "failed" {
-            present_result(&request.request_id);
+            if request.result_action != "show" { present_result(&request.request_id); }
             runtime_log::log_tray(
                 runtime_log::RuntimeLogLevel::Error,
                 "external_translate_callback_failed",

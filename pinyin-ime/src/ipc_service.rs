@@ -33,7 +33,6 @@ use windows_sys::Win32::System::Pipes::{
     PIPE_TYPE_MESSAGE, PIPE_WAIT,
 };
 
-const PIPE_NAME: &str = r"\\.\pipe\KaixinInput_Engine_V5";
 const PIPE_NAME_ENV: &str = "SRF_ENGINE_PIPE_NAME";
 const MUTEX_NAME_ENV: &str = "SRF_ENGINE_MUTEX_NAME";
 const CAPABILITY_FILE_NAME: &str = "engine_capability.dat";
@@ -680,7 +679,7 @@ fn recover_shared_engine_poison(
     context: &'static str,
 ) -> MutexGuard<'static, SharedEngine> {
     let mut guard = poison.into_inner();
-    *guard = SharedEngine::default();
+    let old_engine = std::mem::take(&mut *guard);
     shared_engine().clear_poison();
     DEFAULT_ENGINE_READY.store(false, Ordering::Release);
     runtime_log::log_engine(
@@ -688,7 +687,9 @@ fn recover_shared_engine_poison(
         "srf_shared_engine_lock_recovered",
         format!("context={context} state=reset"),
     );
-    guard
+    drop(guard);
+    drop(old_engine);
+    lock_shared_engine_recover()
 }
 
 fn lock_shared_engine_recover() -> MutexGuard<'static, SharedEngine> {
@@ -1425,11 +1426,12 @@ fn warmup_installed_full_engine() {
 
 pub fn engine_mutex_name_from_env() -> String {
     std::env::var(MUTEX_NAME_ENV)
-        .unwrap_or_else(|_| "Local\\KaixinInput_Engine_Mutex_V5".to_string())
+        .unwrap_or_else(|_| crate::shared_rules::engine_mutex_name_for_suffix(""))
 }
 
 fn engine_pipe_name_from_env() -> String {
-    std::env::var(PIPE_NAME_ENV).unwrap_or_else(|_| PIPE_NAME.to_string())
+    std::env::var(PIPE_NAME_ENV)
+        .unwrap_or_else(|_| crate::shared_rules::engine_pipe_name_for_suffix(""))
 }
 
 pub fn start_engine_service() {
@@ -1800,6 +1802,7 @@ fn listen_loop_inner() {
                         pipe_name_text, consecutive_create_failures, last_error
                     ),
                 );
+                crate::engine_health::publish_listener_failure(last_error);
                 std::process::exit(1);
             }
             std::thread::sleep(Duration::from_millis(500));
@@ -2068,6 +2071,15 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
             // been accepted by the queue while the shutdown command was in
             // flight from another pipe client.
             wait_for_async_learning_drain();
+            {
+                let mut state = lock_shared_engine_recover();
+                if let Some(engine) = state.engine.as_mut() {
+                    if let Err(err) = engine.flush_pending_learning() {
+                        runtime_log::log_engine(RuntimeLogLevel::Error,
+                            "srf_shutdown_user_dict_flush_failed", err.to_string());
+                    }
+                }
+            }
             unsafe {
                 let _ = FlushFileBuffers(pipe);
                 let _ = DisconnectNamedPipe(pipe);

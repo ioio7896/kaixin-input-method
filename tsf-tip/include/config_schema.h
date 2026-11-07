@@ -54,7 +54,7 @@ inline constexpr Entry entries[] = {
 {L"style",L"candidate_horizontal_layout_variant",L"classic"},
 {L"compatibility",L"fullscreen_detection",L"1"},
 {L"compatibility",L"fullscreen_policy",L"show_ui"},
-{L"compatibility",L"game_input_mode",L"manual"},
+{L"compatibility",L"game_input_mode",L"auto_text"},
 {L"compatibility",L"commit_transport",L"tsf"},
 {L"compatibility",L"builtin_game_list",L"1"},
 {L"compatibility",L"auto_suggest_app_options",L"1"},

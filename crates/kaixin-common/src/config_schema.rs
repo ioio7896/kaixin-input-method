@@ -60,7 +60,7 @@ pub mod default {
     pub const SHORT_LOOKUP_CACHE_CAPACITY: usize = 192;
     pub const LONG_LOOKUP_SOFT_BUDGET_MS: usize = 4;
     pub const LONG_LOOKUP_MIN_FIRST_BATCH_CANDIDATES: usize = 6;
-    pub const GAME_INPUT_MODE: &str = "manual";
+    pub const GAME_INPUT_MODE: &str = "auto_text";
     pub const GAME_MODE_HOTKEY: &str = "Ctrl+Shift+Alt+G";
 }
 pub mod options {
@@ -95,7 +95,7 @@ ConfigEntry { section: "style", key: "candidate_vertical_layout_variant", defaul
 ConfigEntry { section: "style", key: "candidate_horizontal_layout_variant", default: "classic", kind: "string", options: &[] },
 ConfigEntry { section: "compatibility", key: "fullscreen_detection", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "compatibility", key: "fullscreen_policy", default: "show_ui", kind: "string", options: &["show_ui","ascii","hide_ui","off"] },
-ConfigEntry { section: "compatibility", key: "game_input_mode", default: "manual", kind: "string", options: &["manual","passthrough","chinese","auto_text"] },
+ConfigEntry { section: "compatibility", key: "game_input_mode", default: "auto_text", kind: "string", options: &["manual","passthrough","chinese","auto_text"] },
 ConfigEntry { section: "compatibility", key: "commit_transport", default: "tsf", kind: "string", options: &["auto","tsf","clipboard_paste","unicode_sendinput"] },
 ConfigEntry { section: "compatibility", key: "builtin_game_list", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "compatibility", key: "auto_suggest_app_options", default: "1", kind: "bool", options: &[] },

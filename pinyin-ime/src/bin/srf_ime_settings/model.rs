@@ -699,7 +699,7 @@ impl Default for SettingsModel {
             clipboard_candidate_preview_enabled: false,
             clipboard_record_source_app: false,
             clipboard_pinned_respects_max_age: true,
-            game_input_mode: "manual".to_string(),
+            game_input_mode: schema_default::GAME_INPUT_MODE.to_string(),
             game_chat: GameChatOptions::default(),
             fullscreen_detection: true,
             fullscreen_policy: schema_default::FULLSCREEN_POLICY.to_string(),

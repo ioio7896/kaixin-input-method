@@ -82,7 +82,7 @@ new setting is added or a default changes.
 | `input` | `traditional_output` | `0` | boolean | settings, TSF, engine ranking |
 | `input` | `traditional_hotkey` | `off` | Ctrl/Shift/Alt + key or `off` | settings, TSF |
 | `input` | `game_mode_hotkey` | `Ctrl+Shift+Alt+G` | Configurable explicit game chat switch; disabled in `passthrough` and `chinese` game modes; an existing explicit `off` is preserved | settings, TSF |
-| `compatibility` | `game_input_mode` | `manual` | `manual` starts games in keyboard pass-through; `passthrough` never enables IME; `chinese` always enables Chinese; `auto_text` recognizes writable native Edit/RichEdit, explicit TSF text scopes with valid layout, and UI Automation editable controls; unknown fields remain passive | settings, TSF |
+| `compatibility` | `game_input_mode` | `auto_text` | `auto_text` recognizes writable native Edit/RichEdit, explicit TSF text scopes with valid layout, and UI Automation editable controls; unknown fields remain passive. `manual` starts games in keyboard pass-through; `passthrough` never enables IME; `chinese` always enables Chinese. Existing explicit choices remain unchanged. | settings, TSF |
 | `app:<process>` | `game_input_mode` | inherited | Same modes, or `inherit`; saved independently per game along with tested commit transport and candidate placement | settings, TSF |
 | `input` | `temporary_ascii_hotkey` | `off` | Ctrl/Shift/Alt + key or `off`; in automatic ASCII compatibility, pressing it restores Chinese for the current window | settings, TSF |
 | `input` | `hotkey_scope` | `disabled_in_game` | `global`, `text_only`, `disabled_in_game`, or `per_app`; controls ordinary TSF IME hotkeys; games always suppress these and retain only the explicitly configured game chat switch | TSF |

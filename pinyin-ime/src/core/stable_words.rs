@@ -360,6 +360,7 @@ impl PinyinEngine {
         raw: &str,
         key: &str,
         ranked: &mut Vec<RankedCandidate>,
+        frequency_context: Option<(InputIntent, usize)>,
     ) {
         let words = self.direct_words(raw, key, true);
         // The direct route already establishes intent. Avoid running mixed
@@ -378,7 +379,7 @@ impl PinyinEngine {
                     (InputIntent::MixedPrefix, 0)
                 }
             })
-            .or_else(|| self.strict_lexicon_frequency_order_context(raw, key));
+            .or(frequency_context);
         let now = self.user_lexicon.current_clock();
         let traditional = self.mode_flags & MODE_TRADITIONAL_OUTPUT != 0;
         let display = |phrase: &str| {

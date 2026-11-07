@@ -11,7 +11,7 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | style | candidate_horizontal_layout_variant | classic | string |  |
 | compatibility | fullscreen_detection | 1 | bool |  |
 | compatibility | fullscreen_policy | show_ui | string | show_ui, ascii, hide_ui, off |
-| compatibility | game_input_mode | manual | string | manual, passthrough, chinese, auto_text |
+| compatibility | game_input_mode | auto_text | string | manual, passthrough, chinese, auto_text |
 | compatibility | commit_transport | tsf | string | auto, tsf, clipboard_paste, unicode_sendinput |
 | compatibility | builtin_game_list | 1 | bool |  |
 | compatibility | auto_suggest_app_options | 1 | bool |  |

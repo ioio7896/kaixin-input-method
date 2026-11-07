@@ -4112,6 +4112,25 @@ mod persistence_tests {
     }
 
     #[test]
+    fn explicit_flush_persists_before_drop_and_retries_failed_batch() {
+        let path = unique_test_path();
+        let mut lexicon = UserLexicon::load_from_path(path.clone()).expect("open test dict");
+        // A directory at the file path makes the first disk write fail.
+        if path.exists() { fs::remove_file(&path).unwrap(); }
+        fs::create_dir(&path).unwrap();
+        lexicon.learn_with_delta("ceshi", "测试", 3).unwrap();
+        assert!(lexicon.flush_pending().is_err());
+        fs::remove_dir(&path).unwrap();
+        // An explicit flush must retry despite the worker backoff.
+        lexicon.flush_pending().expect("force retry");
+        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
+        assert!(reloaded.lookup_input("ceshi").unwrap().iter().any(|e| e.phrase == "测试"));
+        drop(reloaded);
+        drop(lexicon);
+        cleanup_test_files(&path);
+    }
+
+    #[test]
     fn learned_pinyin_path_survives_flush_drop_and_reload() {
         let path = unique_test_path();
         {

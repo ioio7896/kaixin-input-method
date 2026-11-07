@@ -1,3 +1,4 @@
+#include "background_worker.h"
 #include "ime_config.h"
 #include "overlapped_io.h"
 
@@ -1046,7 +1047,7 @@ void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
   if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_scale_percent", L"100"), &statusSetting))
     config.compatibility.gameStatusScalePercent = static_cast<UINT>(std::clamp(statusSetting, 70, 200));
   config.compatibility.gameInputMode = ParseGameInputMode(
-      ReadIniString(path, L"compatibility", L"game_input_mode", L"manual"));
+      ReadIniString(path, L"compatibility", L"game_input_mode", L"auto_text"));
   config.compatibility.fullscreenDetection =
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kCompatibility,
                               SrfConfigSchema::key::kFullscreenDetection, L"1"),
@@ -1391,12 +1392,7 @@ void EnsureConfigWatcherStarted() {
   static std::once_flag once;
   std::call_once(once, []() {
     RefreshConfigCache();
-    SrfTip_BackgroundWorkerAddRef();
-    try {
-      std::thread(ConfigWatcherLoop).detach();
-    } catch (...) {
-      SrfTip_BackgroundWorkerRelease();
-    }
+    StartDetachedBackgroundWorker(ConfigWatcherLoop);
   });
 }
 

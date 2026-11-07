@@ -628,7 +628,12 @@ fn model_from_canonical_config(config: &IniDoc) -> SettingsModel {
             defaults.clipboard_pinned_respects_max_age,
         ),
         game_input_mode: normalize_game_input_mode(
-            &read_string(config, "compatibility", "game_input_mode", "manual"),
+            &read_string(
+                config,
+                "compatibility",
+                "game_input_mode",
+                schema_default::GAME_INPUT_MODE,
+            ),
             false,
         ),
         game_chat: game_chat_options_from_values(config.sections.get("compatibility"), false),
@@ -2353,7 +2358,7 @@ pub(crate) fn normalize_game_input_mode(value: &str, per_app: bool) -> String {
         "chinese" => "chinese",
         "auto_text" => "auto_text",
         _ if per_app => "inherit",
-        _ => "manual",
+        _ => schema_default::GAME_INPUT_MODE,
     }
     .to_string()
 }
@@ -2869,7 +2874,7 @@ mod game_policy_tests {
         assert!(confirmed.compat_rules[0].game_chat.tested_input);
         assert!(!confirmed.compat_rules[0].game_chat.tested_candidate);
         let mut changed_global = saved.clone();
-        changed_global.game_input_mode = "auto_text".into();
+        changed_global.game_input_mode = "manual".into();
         invalidate_changed_game_test_results(&saved, &mut changed_global);
         assert!(!changed_global.compat_rules[0].game_chat.tested_input);
         assert_eq!(
@@ -2908,9 +2913,12 @@ mod game_policy_tests {
     }
     #[test]
     fn defaults_and_inherited_games_remain_distinct() {
-        assert_eq!(model_from_config(&parse_ini("")).game_input_mode, "manual");
+        assert_eq!(
+            model_from_config(&parse_ini("")).game_input_mode,
+            "auto_text"
+        );
         assert_eq!(normalize_game_input_mode("invalid", true), "inherit");
-        assert_eq!(normalize_game_input_mode("invalid", false), "manual");
+        assert_eq!(normalize_game_input_mode("invalid", false), "auto_text");
         let model = model_from_config(&parse_ini("[app:custom.exe]\ngame_profile=compact\n"));
         assert_eq!(model.compat_rules[0].game_input_mode, "inherit");
     }
@@ -2951,7 +2959,10 @@ mod shared_config_tests {
         );
         assert_eq!(read_config_version(&doc), 0);
         assert_eq!(doc.get("style", "candidate_density"), Some("compact"));
-        assert_eq!(doc.get("compatibility", "game_input_mode"), Some("manual"));
+        assert_eq!(
+            doc.get("compatibility", "game_input_mode"),
+            Some("auto_text")
+        );
         let text = doc.render();
         assert!(text.contains("; personal comment"));
         assert!(text.contains("future=keep"));

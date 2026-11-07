@@ -149,6 +149,10 @@ fn log_learning_aux_error(event: &str, err: &std::io::Error) {
 }
 
 impl PinyinEngine {
+    pub(crate) fn flush_pending_learning(&mut self) -> std::io::Result<()> {
+        self.user_lexicon.flush_pending()
+    }
+
     pub fn learn_commit(&mut self, reading: &str, phrase: &str) -> Result<(), String> {
         self.learn_commit_with_flags(reading, phrase, 0)
     }

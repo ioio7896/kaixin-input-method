@@ -1,3 +1,4 @@
+#include "background_worker.h"
 #include "game_focus_probe.h"
 #include "game_input_policy.h"
 #include <UIAutomation.h>
@@ -92,8 +93,7 @@ SrfGameFocusEvidence Probe(IUIAutomation* automation, const SrfGameFocusEvidence
   result.checked = started;
   return result;
 }
-DWORD WINAPI Worker(void* parameter) {
-  HMODULE module = static_cast<HMODULE>(parameter);
+void Worker() {
   const HRESULT initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   {
     ComPtr<IUIAutomation> automation;
@@ -129,8 +129,7 @@ DWORD WINAPI Worker(void* parameter) {
     }
   }
   if (SUCCEEDED(initialized)) CoUninitialize();
-  SrfTip_BackgroundWorkerRelease();
-  FreeLibraryAndExitThread(module, 0);
+
 }
 }
 
@@ -144,15 +143,8 @@ bool SrfPollGameFocusEvidence(const SrfGameFocusEvidence& request, SrfGameFocusE
     state.requested = now;
   }
   if (!state.running) {
-    HMODULE module = nullptr;
-    if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                           reinterpret_cast<LPCWSTR>(&Worker), &module)) {
-      SrfTip_BackgroundWorkerAddRef();
-      state.running = true;
-      HANDLE worker = CreateThread(nullptr, 0, Worker, module, 0, nullptr);
-      if (worker) CloseHandle(worker);
-      else { state.running = false; SrfTip_BackgroundWorkerRelease(); FreeLibrary(module); }
-    }
+    state.running = true;
+    if (!StartDetachedBackgroundWorker(Worker)) state.running = false;
   }
   if (!result || !SameRequest(state.result, request) ||
       !SrfGameFocusEvidenceFresh(state.result.checked, now)) return false;

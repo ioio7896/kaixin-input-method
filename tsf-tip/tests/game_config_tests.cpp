@@ -40,6 +40,12 @@ int main() {
         config.compatibility.gameStatusDurationMs == 2400 && config.compatibility.gameStatusScalePercent == 150 &&
         config.compatibility.gameEnterBehavior == SrfGameEnterBehavior::Auto;
   }
+  HANDLE empty = CreateFileW(file, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (empty == INVALID_HANDLE_VALUE) ok = false;
+  else {
+    CloseHandle(empty);
+    ok = ok && LoadSrfConfigFromPath(file).compatibility.gameInputMode == SrfGameInputMode::AutoText;
+  }
   DeleteFileW(file);
   if (!ok) { std::cerr << "Game configuration test failed\n"; return 1; }
   std::cout << "Game configuration tests passed\n";

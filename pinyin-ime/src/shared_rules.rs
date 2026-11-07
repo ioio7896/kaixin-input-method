@@ -3,8 +3,8 @@ use std::path::{Path, PathBuf};
 pub const APP_PATH_NAME: &str = "kaixin";
 pub const CONFIG_FILE_NAME: &str = "kaixin.ini";
 pub const LOG_DIR_NAME: &str = "logs";
-pub const ENGINE_PIPE_BASE: &str = r"\\.\pipe\KaixinInput_Engine_V5";
-pub const ENGINE_MUTEX_BASE: &str = r"Local\KaixinInput_Engine_Mutex_V5";
+pub const ENGINE_PIPE_BASE: &str = r"\\.\pipe\KaixinInput_Engine_V6";
+pub const ENGINE_MUTEX_BASE: &str = r"Local\KaixinInput_Engine_Mutex_V6";
 
 pub fn strip_windows_verbatim_prefix(path: PathBuf) -> PathBuf {
     let text = path.to_string_lossy();
@@ -36,19 +36,49 @@ pub fn engine_instance_suffix_for_install_root(path: &Path) -> String {
     format!("{:016x}", stable_path_hash(path))
 }
 
-pub fn engine_pipe_name_for_suffix(suffix: &str) -> String {
+fn engine_scoped_name(base: &str, version: &str, suffix: &str) -> String {
     if suffix.is_empty() {
-        ENGINE_PIPE_BASE.to_string()
+        format!("{base}_{version}")
     } else {
-        format!("{ENGINE_PIPE_BASE}_{suffix}")
+        format!("{base}_{version}_{suffix}")
     }
 }
 
+pub fn engine_pipe_name_for_suffix(suffix: &str) -> String {
+    engine_scoped_name(
+        ENGINE_PIPE_BASE,
+        include_str!("../../VERSION").trim(),
+        suffix,
+    )
+}
+
 pub fn engine_mutex_name_for_suffix(suffix: &str) -> String {
-    if suffix.is_empty() {
-        ENGINE_MUTEX_BASE.to_string()
-    } else {
-        format!("{ENGINE_MUTEX_BASE}_{suffix}")
+    engine_scoped_name(
+        ENGINE_MUTEX_BASE,
+        include_str!("../../VERSION").trim(),
+        suffix,
+    )
+}
+
+pub fn engine_health_value_name() -> String {
+    format!("EngineHealthV2_{}", include_str!("../../VERSION").trim())
+}
+
+#[cfg(test)]
+mod engine_namespace_tests {
+    use super::*;
+
+    #[test]
+    fn distinct_versions_and_installations_have_distinct_engine_names() {
+        let base = ENGINE_PIPE_BASE;
+        let old = engine_scoped_name(base, "2.0.0", "1234");
+        let current = engine_scoped_name(base, "2026.1105.1", "1234");
+        assert_ne!(old, current);
+        assert_ne!(current, engine_scoped_name(base, "2026.1105.1", "5678"));
+        assert_eq!(
+            engine_scoped_name(base, "2026.1105.1", ""),
+            format!("{base}_2026.1105.1")
+        );
     }
 }
 

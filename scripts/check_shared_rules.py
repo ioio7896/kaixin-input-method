@@ -14,11 +14,12 @@ from pathlib import Path
 APP_PATH_NAME = "kaixin"
 CONFIG_FILE_NAME = "kaixin.ini"
 LOG_DIR_NAME = "logs"
-ENGINE_PIPE_BASE = r"\\.\pipe\KaixinInput_Engine_V5"
-ENGINE_MUTEX_BASE = r"Local\KaixinInput_Engine_Mutex_V5"
+ENGINE_PIPE_BASE = r"\\.\pipe\KaixinInput_Engine_V6"
+ENGINE_MUTEX_BASE = r"Local\KaixinInput_Engine_Mutex_V6"
 FNV64_OFFSET = 1469598103934665603
 FNV64_PRIME = 1099511628211
 MASK64 = (1 << 64) - 1
+APP_VERSION = (Path(__file__).resolve().parent.parent / "VERSION").read_text(encoding="utf-8").strip()
 
 
 def strip_windows_verbatim_prefix(text: str) -> str:
@@ -56,11 +57,11 @@ def suffix_for_install_root(path: str) -> str:
 
 
 def pipe_name_for_suffix(suffix: str) -> str:
-    return f"{ENGINE_PIPE_BASE}_{suffix}" if suffix else ENGINE_PIPE_BASE
+    return f"{ENGINE_PIPE_BASE}_{APP_VERSION}_{suffix}" if suffix else f"{ENGINE_PIPE_BASE}_{APP_VERSION}"
 
 
 def mutex_name_for_suffix(suffix: str) -> str:
-    return f"{ENGINE_MUTEX_BASE}_{suffix}" if suffix else ENGINE_MUTEX_BASE
+    return f"{ENGINE_MUTEX_BASE}_{APP_VERSION}_{suffix}" if suffix else f"{ENGINE_MUTEX_BASE}_{APP_VERSION}"
 
 
 def check_spec_samples() -> list[str]:
@@ -74,9 +75,9 @@ def check_spec_samples() -> list[str]:
         actual = suffix_for_install_root(sample)
         if actual != expected:
             errors.append(f"suffix mismatch for {sample}: got {actual}, expected {expected}")
-    if pipe_name_for_suffix(expected) != rf"{ENGINE_PIPE_BASE}_{expected}":
+    if pipe_name_for_suffix(expected) != rf"{ENGINE_PIPE_BASE}_{APP_VERSION}_{expected}":
         errors.append("pipe name derivation mismatch")
-    if mutex_name_for_suffix(expected) != rf"{ENGINE_MUTEX_BASE}_{expected}":
+    if mutex_name_for_suffix(expected) != rf"{ENGINE_MUTEX_BASE}_{APP_VERSION}_{expected}":
         errors.append("mutex name derivation mismatch")
     if APP_PATH_NAME != "kaixin" or CONFIG_FILE_NAME != "kaixin.ini" or LOG_DIR_NAME != "logs":
         errors.append("shared app path constants changed unexpectedly")
@@ -131,14 +132,21 @@ def check_runtime(install_root: str | None) -> list[str]:
     if not pipes:
         print("shared-rules runtime: no running srf_ime_engine.exe found; skipped")
         return errors
-    mismatches = [pipe for pipe in pipes if pipe != expected_pipe]
+    # Older app versions may still have hosts loaded during an upgrade. Their
+    # isolated namespaces are not evidence that the current engine is wrong.
+    current_prefix = f"{ENGINE_PIPE_BASE}_{APP_VERSION}_"
+    current_pipes = [pipe for pipe in pipes if pipe.startswith(current_prefix)]
+    if not current_pipes:
+        print("shared-rules runtime: no current-version engine pipe found; skipped")
+        return errors
+    mismatches = [pipe for pipe in current_pipes if pipe != expected_pipe]
     if mismatches:
         errors.append(
             "running engine pipe mismatch: expected "
             f"{expected_pipe}, found {', '.join(mismatches)}"
         )
     else:
-        print(f"shared-rules runtime: {len(pipes)} engine process(es), pipe={expected_pipe}")
+        print(f"shared-rules runtime: {len(current_pipes)} current-version engine process(es), pipe={expected_pipe}")
     return errors
 
 

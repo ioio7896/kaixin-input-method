@@ -2813,6 +2813,7 @@ enum GameTestWizardAction {
     InputMissing,
     CandidateVisible,
     CandidateMissing,
+    CandidatePosition,
     PositionGood,
     SavePosition,
     AdjustPosition,
@@ -2854,7 +2855,7 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
 
             match wizard.step {
                 GameTestStep::Prepare => {
-                    ui.label("第一步：应用游戏推荐配置并保存。该配置会显示候选栏、启用紧凑游戏档，默认键盘直通，手动开启中文聊天；新游戏先测试标准 TSF 上屏，已保存的方式保持；自动选择 Overlay 后端。");
+                    ui.label("第一步：应用游戏推荐配置并保存。游戏按键默认直通；检测到可编辑聊天框后自动启用中文，无法确认时可用中文聊天热键。新游戏先测试标准 TSF 上屏，已保存的方式保持；自动选择 Overlay 后端。");
                     if let Some(rule) = app.model.compat_rules.iter_mut().find(|r| r.process.eq_ignore_ascii_case(&wizard.process)) {
                         game_test_metadata_ui(ui, &mut rule.game_chat);
                     }
@@ -2872,7 +2873,7 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     if let Some(rule) = app.model.compat_rules.iter_mut().find(|r| r.process.eq_ignore_ascii_case(&wizard.process)) {
                         game_test_metadata_ui(ui, &mut rule.game_chat);
                     }
-                    ui.label("第二步：切回游戏，打开输入栏，再按设置的中文聊天热键。确认可以输入拼音、游戏移动键不会误触发。自动识别需要输入栏提供编辑状态；无法识别时可手动开启中文。");
+                    ui.label("第二步：切回游戏并打开聊天输入栏。确认自动进入中文、可以输入拼音，关闭输入栏后移动键恢复直通；无法识别的自绘输入栏可用中文聊天热键。");
                     ui.label("本向导只记录您确认的结果，不会自动输入文字或发送聊天消息。");
                     if let Some((line, hint)) = recent_game_input_event(&wizard.process) {
                         ui.label(format!("该进程最近的诊断：{hint}"));
@@ -2905,6 +2906,9 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                         }
                         if ui.button("看不到候选，尝试独立 Overlay").clicked() {
                             action = Some(GameTestWizardAction::CandidateMissing);
+                        }
+                        if ui.button("候选位置不合适，立即调整").clicked() {
+                            action = Some(GameTestWizardAction::CandidatePosition);
                         }
                     });
                     ui.label(
@@ -3019,9 +3023,9 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
             match activate_process_window(&wizard.process) {
                 Ok(()) => {
                     app.status = format!(
-                        "已切换到 {}，请打开聊天框并用游戏聊天快捷键开启中文，再键入 nihao。",
+                        "已切换到 {}，请打开聊天框并键入 nihao；若未自动启用中文，可用游戏聊天快捷键。",
                         wizard.process
-                    )
+                    );
                 }
                 Err(err) => app.status = err,
             }
@@ -3079,6 +3083,11 @@ fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     "已为 {} 改用独立 Overlay；切回游戏后再键入 nihao 测试。",
                     wizard.process
                 );
+            }
+        }
+        Some(GameTestWizardAction::CandidatePosition) => {
+            if let Some(state) = app.game_test_wizard.as_mut() {
+                state.step = GameTestStep::Position;
             }
         }
         Some(GameTestWizardAction::PositionGood) => {
@@ -3318,7 +3327,7 @@ fn compatibility_game_controls_ui(ui: &mut egui::Ui, model: &mut SettingsModel) 
     setting_row(
         ui,
         "游戏输入策略",
-        "默认直通：使用中文聊天热键开启中文；有拼音时 Enter 选词、Esc 取消；无拼音时 Enter 按配置处理，Esc 返回直通。切窗口后恢复原输入状态。完全直通关闭所有输入法与工具快捷键。自动识别支持原生编辑框、有明确文本输入范围的 TSF 编辑区，以及提供可编辑接口的输入栏；无法确认的自绘输入栏使用手动热键。",
+        "新配置默认自动识别可编辑聊天框：输入栏可写时启用中文，关闭后恢复游戏按键直通。有拼音时 Enter 选词、Esc 取消；无拼音时按设置处理。完全直通关闭所有输入法与工具快捷键。无法确认的自绘输入栏可用手动热键；已有明确设置保持原样。",
         |ui| {
             game_input_mode_combo(
                 ui,
@@ -3582,7 +3591,7 @@ fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 process: String::new(),
                 policy: CompatRulePolicy::ShowUi,
                 commit_transport: "auto".to_string(),
-                game_input_mode: "manual".to_string(),
+                game_input_mode: "auto_text".to_string(),
                 game_chat: GameChatOptions::inherited(),
                 game_profile: true,
                 overlay_anchor: "bottom_left".to_string(),

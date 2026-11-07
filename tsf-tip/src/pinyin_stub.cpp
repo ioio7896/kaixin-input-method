@@ -1,3 +1,4 @@
+#include "background_worker.h"
 #include "pinyin_stub.h"
 
 #include <windows.h>
@@ -72,10 +73,10 @@ constexpr DWORD kEnginePipeSyllableTimeoutMs = 50;
 constexpr DWORD kEnginePipeShutdownTimeoutMs = 250;
 constexpr DWORD kEnginePipeCancelTimeoutMs = 35;
 constexpr DWORD kEnginePipeStartupReadyTimeoutMs = 1200;
-constexpr wchar_t kDefaultEnginePipeName[] = LR"(\\.\pipe\KaixinInput_Engine_V5)";
-constexpr wchar_t kDefaultEngineMutexName[] = L"Local\\KaixinInput_Engine_Mutex_V5";
-constexpr wchar_t kEnginePipePrefix[] = LR"(\\.\pipe\KaixinInput_Engine_V5_)";
-constexpr wchar_t kEngineMutexPrefix[] = L"Local\\KaixinInput_Engine_Mutex_V5_";
+constexpr wchar_t kDefaultEnginePipeName[] = LR"(\\.\pipe\KaixinInput_Engine_V6)";
+constexpr wchar_t kDefaultEngineMutexName[] = L"Local\\KaixinInput_Engine_Mutex_V6";
+constexpr wchar_t kEnginePipePrefix[] = LR"(\\.\pipe\KaixinInput_Engine_V6_)";
+constexpr wchar_t kEngineMutexPrefix[] = L"Local\\KaixinInput_Engine_Mutex_V6_";
 constexpr auto kRetryBackoffMs = kSrfRecoveryBackoffMs;
 constexpr DWORD kIdleKeepaliveTimeoutMs = 5 * 60 * 1000;
 constexpr DWORD kIdleCheckIntervalMs = 60 * 1000;
@@ -105,7 +106,7 @@ constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
 constexpr wchar_t kStateInstallMaintenanceValue[] = L"InstallMaintenance";
 constexpr wchar_t kStateInstallMaintenanceTickValue[] = L"InstallMaintenanceTick";
 constexpr wchar_t kStateEngineStateValue[] = L"EngineState";
-constexpr wchar_t kStateEngineHealthV1Value[] = L"EngineHealthV1";
+
 constexpr wchar_t kStateLastEngineRecoveryReasonValue[] = L"LastEngineRecoveryReason";
 constexpr wchar_t kStateLastEngineRecoveryTimeValue[] = L"LastEngineRecoveryTime";
 constexpr wchar_t kEngineCapabilityFileName[] = L"engine_capability.dat";
@@ -296,24 +297,6 @@ std::atomic<bool> g_learnWorkerRunning{false};
 std::atomic<unsigned long long> g_nextLearnCompletionId{1};
 constexpr size_t kLearnQueueCapacity = 128;
 constexpr unsigned int kLearnQueueMaxRepeatCount = 16;
-
-template <typename Fn>
-bool StartDetachedBackgroundWorker(Fn&& fn) {
-  SrfTip_BackgroundWorkerAddRef();
-  try {
-    std::thread([func = std::forward<Fn>(fn)]() mutable {
-      try {
-        func();
-      } catch (...) {
-      }
-      SrfTip_BackgroundWorkerRelease();
-    }).detach();
-    return true;
-  } catch (...) {
-    SrfTip_BackgroundWorkerRelease();
-    return false;
-  }
-}
 
 std::vector<BYTE>& RemoteLookupPayloadScratch() {
   thread_local std::vector<BYTE> scratch;
@@ -663,14 +646,16 @@ std::wstring EngineInstanceSuffixForModuleDir(const std::filesystem::path& modul
 
 std::wstring EnginePipeNameForModuleDir(const std::filesystem::path& moduleDir) {
   const std::wstring suffix = EngineInstanceSuffixForModuleDir(moduleDir);
-  if (suffix.empty()) return kDefaultEnginePipeName;
-  return std::wstring(kEnginePipePrefix) + suffix;
+  const std::wstring version = WideFromUtf8(SRF_APP_VERSION);
+  if (suffix.empty()) return std::wstring(kDefaultEnginePipeName) + L"_" + version;
+  return std::wstring(kEnginePipePrefix) + version + L"_" + suffix;
 }
 
 std::wstring EngineMutexNameForModuleDir(const std::filesystem::path& moduleDir) {
   const std::wstring suffix = EngineInstanceSuffixForModuleDir(moduleDir);
-  if (suffix.empty()) return kDefaultEngineMutexName;
-  return std::wstring(kEngineMutexPrefix) + suffix;
+  const std::wstring version = WideFromUtf8(SRF_APP_VERSION);
+  if (suffix.empty()) return std::wstring(kDefaultEngineMutexName) + L"_" + version;
+  return std::wstring(kEngineMutexPrefix) + version + L"_" + suffix;
 }
 
 bool AssignEngineHelperJob(HANDLE process) {
@@ -1294,8 +1279,8 @@ void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS,
                                     GetCurrentProcessId(),
                                     GetTickCount64(),
                                     g_engineHealthErrorCode.load(std::memory_order_acquire)};
-  WriteStateBinaryValue(kStateEngineHealthV1Value,
-                        reinterpret_cast<const BYTE*>(&record), sizeof(record));
+  const std::wstring healthValue = L"EngineHealthV2_" + WideFromUtf8(SRF_APP_VERSION);
+  WriteStateBinaryValue(healthValue.c_str(), reinterpret_cast<const BYTE*>(&record), sizeof(record));
   if (previous != state) {
     AppendEngineLogDeduped(
         state == SrfEngineState::Failed ? L"error" : L"basic", L"tsf_bridge_transition",
@@ -2450,11 +2435,8 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
     mismatch += buildId.empty() ? L"(empty)" : buildId;
     mismatch += L", expected=";
     mismatch += expectedBuildId;
-    std::wstring shutdownError;
-    if (!RequestRemoteHelperShutdownLocked(&shutdownError) && !shutdownError.empty()) {
-      mismatch += L"; shutdown=";
-      mismatch += shutdownError;
-    }
+    // A foreign version may be serving another still-running host. Never
+    // stop it from a failed handshake; version-scoped IPC isolates upgrades.
     if (error) *error = mismatch;
     InvalidateRemoteBackendLocked();
     return false;
@@ -3789,8 +3771,11 @@ void SrfTip_RecordClipboardText(const std::wstring& text) {
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex);
-  if (!EnsureLoadedLocked()) return;
+  std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
+  const ULONGLONG deadline = GetTickCount64() + kLookupBusyWaitMs;
+  while (!guard.try_lock() && GetTickCount64() < deadline) Sleep(0);
+  if (!guard.owns_lock()) return;
+  if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return;
   if (g_bridge.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteRecordClipboardLocked(text, &error)) return;
@@ -3815,8 +3800,11 @@ bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text) {
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex);
-  if (!EnsureLoadedLocked()) return false;
+  std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
+  const ULONGLONG deadline = GetTickCount64() + kLookupBusyWaitMs;
+  while (!guard.try_lock() && GetTickCount64() < deadline) Sleep(0);
+  if (!guard.owns_lock()) return false;
+  if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return false;
   if (g_bridge.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteResolveClipboardLocked(id, text, &error)) return true;

@@ -117,13 +117,13 @@ bool CSrfTip::EnsureCandidateLookupWorker() {
     m_candidateWorkerRequestFocus = {};
     m_candidateLookupBackpressureUntilTick.store(0, std::memory_order_release);
   }
+  SrfTip_BackgroundWorkerAddRef();
   try {
     m_candidateWorkerThread = std::thread([this]() {
-      SrfTip_BackgroundWorkerAddRef();
       CandidateLookupWorkerMain();
-      SrfTip_BackgroundWorkerRelease();
     });
   } catch (...) {
+    SrfTip_BackgroundWorkerRelease();
     SrfTsfDiagnosticLog(L"candidate-worker.start-failed", L"thread create failed");
     return false;
   }
@@ -150,6 +150,7 @@ void CSrfTip::StopCandidateLookupWorker() {
   m_candidateWorkerCv.notify_all();
   if (m_candidateWorkerThread.get_id() != std::this_thread::get_id()) {
     m_candidateWorkerThread.join();
+    SrfTip_BackgroundWorkerRelease();
     SrfTsfDiagnosticLog(L"candidate-worker.stop", L"stopped");
   }
 }

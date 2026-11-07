@@ -34,7 +34,9 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 }
 
 STDAPI DllCanUnloadNow(void) {
-  if (g_cSrfTipObjects > 0 || g_cServerLocks > 0 || g_cBackgroundWorkers > 0) return S_FALSE;
+  if (InterlockedCompareExchange(&g_cSrfTipObjects, 0, 0) > 0 ||
+      InterlockedCompareExchange(&g_cServerLocks, 0, 0) > 0 ||
+      InterlockedCompareExchange(&g_cBackgroundWorkers, 0, 0) > 0) return S_FALSE;
   return S_OK;
 }
 

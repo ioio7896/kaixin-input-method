@@ -308,7 +308,7 @@ impl SettingsApp {
             .find(|rule| rule.process.eq_ignore_ascii_case(normalized))
         {
             if rule.game_input_mode == "inherit" {
-                rule.game_input_mode = "manual".to_string();
+                rule.game_input_mode = "auto_text".to_string();
             }
             if existing.is_none() {
                 rule.overlay_backend = schema_default::OVERLAY_BACKEND.to_string();

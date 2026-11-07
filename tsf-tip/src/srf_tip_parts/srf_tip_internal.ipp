@@ -322,19 +322,12 @@ void TsfAsyncLogWorkerMain() {
     std::lock_guard<std::mutex> lock(g_tsfAsyncLogMutex);
     g_tsfAsyncLogWorkerRunning = false;
   }
-  SrfTip_BackgroundWorkerRelease();
 }
 
 void StartTsfAsyncLogWorker() {
-  SrfTip_BackgroundWorkerAddRef();
-  try {
-    std::thread([] { TsfAsyncLogWorkerMain(); }).detach();
-  } catch (...) {
-    {
-      std::lock_guard<std::mutex> lock(g_tsfAsyncLogMutex);
-      g_tsfAsyncLogWorkerRunning = false;
-    }
-    SrfTip_BackgroundWorkerRelease();
+  if (!StartDetachedBackgroundWorker([] { TsfAsyncLogWorkerMain(); })) {
+    std::lock_guard<std::mutex> lock(g_tsfAsyncLogMutex);
+    g_tsfAsyncLogWorkerRunning = false;
   }
 }
 

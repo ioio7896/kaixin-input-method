@@ -55,7 +55,7 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable, TextIO
 
-VERSION = "2.0.0"
+VERSION = "2026.1106.1914"
 RETIRED_OPTIONAL_LEXICON_TAGS = frozenset(json.loads(
     (Path(__file__).resolve().parent / "shared" / "retired_optional_lexicons.json")
     .read_text(encoding="utf-8")

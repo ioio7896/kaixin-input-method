@@ -9,7 +9,7 @@ function Get-KaixinConfigDefaults {
     @{ Section = 'style'; Key = 'candidate_horizontal_layout_variant'; Value = 'classic' },
     @{ Section = 'compatibility'; Key = 'fullscreen_detection'; Value = '1' },
     @{ Section = 'compatibility'; Key = 'fullscreen_policy'; Value = 'show_ui' },
-    @{ Section = 'compatibility'; Key = 'game_input_mode'; Value = 'manual' },
+    @{ Section = 'compatibility'; Key = 'game_input_mode'; Value = 'auto_text' },
     @{ Section = 'compatibility'; Key = 'commit_transport'; Value = 'tsf' },
     @{ Section = 'compatibility'; Key = 'builtin_game_list'; Value = '1' },
     @{ Section = 'compatibility'; Key = 'auto_suggest_app_options'; Value = '1' },

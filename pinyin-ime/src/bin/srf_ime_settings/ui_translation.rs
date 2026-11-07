@@ -7,7 +7,7 @@ pub(super) fn translation_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_row(
             ui,
             "HY-MT2 / WinTranslator",
-            "候选、选区和 OCR 文本交给独立 HY-MT2 翻译机或 WinTranslator，在本机翻译。",
+            "候选、选区和 OCR 共用翻译预览，可确认输入、复制或取消；翻译由独立软件在本机完成。",
             |ui| {
                 if outline_button(ui, "打开").clicked() {
                     open_translate = true;
@@ -63,7 +63,7 @@ pub(super) fn translation_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_combo_row(
             ui,
             "翻译完成后",
-            "用翻译热键或剪贴板启动后，译文的默认处理方式。",
+            "候选、选区和 OCR 的默认操作；可在预览中临时切换，或为当前应用保存偏好。",
             translate_result_action_label(&app.model.translate_result_action),
             "translate_result_action",
             |ui| {
@@ -71,7 +71,7 @@ pub(super) fn translation_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     ui,
                     &mut app.model.translate_result_action,
                     "show",
-                    "仅显示结果",
+                    "预览后确认输入",
                 );
                 selectable_string(
                     ui,

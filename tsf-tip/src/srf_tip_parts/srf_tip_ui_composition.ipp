@@ -1,19 +1,14 @@
 void CSrfTip::EnsureTrayHelperRunningAsync() {
   static std::atomic<bool> inFlight{false};
   if (inFlight.exchange(true, std::memory_order_acq_rel)) return;
-  SrfTip_BackgroundWorkerAddRef();
-  try {
-    std::thread([] {
+  if (!StartDetachedBackgroundWorker([] {
       try {
         EnsureTrayHelperRunning();
       } catch (...) {
       }
       inFlight.store(false, std::memory_order_release);
-      SrfTip_BackgroundWorkerRelease();
-    }).detach();
-  } catch (...) {
+    })) {
     inFlight.store(false, std::memory_order_release);
-    SrfTip_BackgroundWorkerRelease();
   }
 }
 

@@ -51,6 +51,58 @@ fn decode_record(bytes: &[u8]) -> Option<(u32, u32, u64, u32)> {
     ))
 }
 
+/// Publish a terminal listener error before exit. Failed records remain readable
+/// for the normal freshness window even after their owner has exited.
+#[cfg(windows)]
+pub(crate) fn publish_listener_failure(error: u32) {
+    use windows_sys::Win32::System::Registry::{
+        RegCloseKey, RegCreateKeyExW, RegSetValueExW, HKEY_CURRENT_USER, KEY_SET_VALUE, REG_BINARY,
+        REG_OPTION_NON_VOLATILE,
+    };
+    let subkey: Vec<u16> = r"Software\kaixin\State"
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    let name: Vec<u16> = crate::shared_rules::engine_health_value_name()
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    let mut bytes = [0u8; RECORD_BYTES];
+    bytes[0..4].copy_from_slice(&RECORD_MAGIC.to_le_bytes());
+    bytes[4..6].copy_from_slice(&RECORD_VERSION.to_le_bytes());
+    bytes[6] = 3;
+    bytes[8..12].copy_from_slice(&std::process::id().to_le_bytes());
+    bytes[12..20].copy_from_slice(
+        &unsafe { windows_sys::Win32::System::SystemInformation::GetTickCount64() }.to_le_bytes(),
+    );
+    bytes[20..24].copy_from_slice(&error.to_le_bytes());
+    unsafe {
+        let mut key = 0;
+        if RegCreateKeyExW(
+            HKEY_CURRENT_USER,
+            subkey.as_ptr(),
+            0,
+            std::ptr::null_mut(),
+            REG_OPTION_NON_VOLATILE,
+            KEY_SET_VALUE,
+            std::ptr::null(),
+            &mut key,
+            std::ptr::null_mut(),
+        ) == 0
+        {
+            RegSetValueExW(
+                key,
+                name.as_ptr(),
+                0,
+                REG_BINARY,
+                bytes.as_ptr(),
+                bytes.len() as u32,
+            );
+            RegCloseKey(key);
+        }
+    }
+}
+
 #[cfg(windows)]
 pub fn current() -> EngineHealthSnapshot {
     use std::mem::size_of;
@@ -67,7 +119,7 @@ pub fn current() -> EngineHealthSnapshot {
         .encode_utf16()
         .chain(std::iter::once(0))
         .collect();
-    let value_name: Vec<u16> = "EngineHealthV1"
+    let value_name: Vec<u16> = crate::shared_rules::engine_health_value_name()
         .encode_utf16()
         .chain(std::iter::once(0))
         .collect();
@@ -95,11 +147,19 @@ pub fn current() -> EngineHealthSnapshot {
         return EngineHealthSnapshot::UNKNOWN;
     }
 
+    if state == 3 {
+        return EngineHealthSnapshot {
+            state,
+            owner_pid: Some(owner_pid),
+            error_code: (error_code != 0).then_some(error_code),
+        };
+    }
+
     let process = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, owner_pid) };
     if process == 0 {
         return EngineHealthSnapshot::UNKNOWN;
     }
-    let mut image = [0u16; 2];
+    let mut image = [0u16; 32768];
     let mut image_len = image.len() as u32;
     let owner_alive = unsafe {
         QueryFullProcessImageNameW(process, 0, image.as_mut_ptr(), &mut image_len) != 0
