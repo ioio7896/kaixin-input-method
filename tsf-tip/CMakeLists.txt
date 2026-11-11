@@ -22,6 +22,7 @@ if(BUILD_TESTING)
   add_library(srf_background_worker_test_dll SHARED tests/background_worker_dll.cpp)
   target_include_directories(srf_background_worker_test_dll PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
   add_executable(srf_background_worker_tests tests/background_worker_tests.cpp)
+  add_dependencies(srf_background_worker_tests srf_background_worker_test_dll)
   target_link_libraries(srf_background_worker_tests PRIVATE ole32)
   if(MSVC)
     target_compile_options(srf_background_worker_test_dll PRIVATE /EHsc /utf-8)
@@ -58,6 +59,21 @@ if(BUILD_TESTING)
 endif()
 
 set(SRF_APP_VERSION "dev")
+set(SRF_PROTOCOL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../shared/engine_protocol_version.txt")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${SRF_PROTOCOL_FILE}")
+file(READ "${SRF_PROTOCOL_FILE}" SRF_ENGINE_PROTOCOL_VERSION)
+string(STRIP "${SRF_ENGINE_PROTOCOL_VERSION}" SRF_ENGINE_PROTOCOL_VERSION)
+if(NOT SRF_ENGINE_PROTOCOL_VERSION MATCHES "^[1-9][0-9]*$")
+  message(FATAL_ERROR "Invalid engine protocol version")
+endif()
+
+add_executable(srf_release_probe tests/release_probe.cpp)
+target_compile_definitions(srf_release_probe PRIVATE UNICODE _UNICODE)
+if(MSVC)
+  set_property(TARGET srf_release_probe PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  target_compile_options(srf_release_probe PRIVATE /W4 /EHsc /utf-8)
+endif()
+
 set(SRF_VERSION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../VERSION")
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${SRF_VERSION_FILE}")
 if(EXISTS "${SRF_VERSION_FILE}")
@@ -134,6 +150,7 @@ target_compile_definitions(srf_tsf_tip PRIVATE
   SRF_APP_VERSION="${SRF_APP_VERSION}"
   SRF_GIT_COMMIT="${SRF_GIT_COMMIT}"
   SRF_GIT_DIRTY=${SRF_GIT_DIRTY}
+  SRF_ENGINE_PROTOCOL_VERSION=${SRF_ENGINE_PROTOCOL_VERSION}
 )
 
 if(MSVC)

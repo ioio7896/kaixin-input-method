@@ -2,7 +2,7 @@
 
 status: verified
 
-核验日期：2026-10-18
+核验日期：2026-10-18；最近文件身份与结构复核：2026-11-11
 核验负责人：项目作者  
 核验脚本：`python scripts/verify_ai_generated_data.py`
 
@@ -68,7 +68,7 @@ status: verified
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_local_culture.txt` | 65 | `9244048090e2759942537d9c99fd46cb3fece27d33db709f3deaa60a9ae574f4` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_new_places.txt` | 131 | `c47fc6428fdc481d8389e5c0ce0657fb46fb782aad19c08fd22e07f8ad2b7e62` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_public_services.txt` | 165 | `e25892eb12a1e83bc26e0e4e888e74258db28263a68a156edfc63df67a1b5dae` |
-| `data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt` | 145 | `5a6032ad99f69af1ebab90e075b5eac1bdf7c44b9a3a3031528ed0226ca8952a` |
+| `data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt` | 445 | `cec8680c6d790c5845559745b6e74ae7eeac99e653188ab20a16cc4e94066f85` |
 | `data_sources/kaixin/common_phrases.tsv` | 41 | `76ebea960afc6618592b9082a80ec96dc929db1897481b0246f6d0254aab2cb5` |
 | `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `dbf0cb652d83005ea997ba298301cfeb906695105104c06048f718f053e11f2a` |
 | `data_sources/kaixin/pronunciation_aliases.tsv` | 124 | `c8eddab0e56f4b730f8651f7fe51453c1cd3ecdf56045429fbb3fe19c0d50e06` |
@@ -85,3 +85,9 @@ status: verified
 2026-10-05 更新旧读排除表：新增“不→fu、事→zi、她→chi、最→cuo、月→ru”五条单字排除项；先前新增的“大→tai、能→tai”两条一并纳入此冻结记录。已重新计算哈希并运行核验脚本。常用多音词的完整词条不受单字排除表影响。
 
 2026-10-18 更新基础候选“校史”的拼音为 `xiao shi`，并在读音别名表新增“嗯→en”口语读音。两份数据重新计算哈希，别名表数据行数更新为 124；结构、去重及固定哈希由核验脚本检查。
+
+2026-11-11 修正杭州交通词库的过期冻结记录：当前本地文件与公开仓库提交
+`2f21f15fe5840351a24214f50cbd407bd2bad9aa` 中的文件逐字节一致，均为 445 行，
+包含此前已发布的本地生活用语及完整地铁出行表达。本次仅同步行数和 SHA-256，
+重新检查列数、空字段、重复组合和正整数权重；未改动词库内容，未重新核验现实名称
+或运营状态，也不补充推测历史生成过程。

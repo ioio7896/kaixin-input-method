@@ -34,6 +34,8 @@ struct PerfArgs {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum BenchMode {
+    /// One fresh process: service initialization and first candidate response.
+    ColdStart,
     /// 现有行为：单线程反复 lookup。
     Plain,
     /// 选词反馈后的冷键：反馈后立刻再查同一输入与相邻输入。
@@ -145,6 +147,7 @@ fn parse_args() -> PerfArgs {
             "--incremental" => incremental = true,
             "--mode" => {
                 mode = match args.next().as_deref() {
+                    Some("cold-start") => BenchMode::ColdStart,
                     Some("plain") => BenchMode::Plain,
                     Some("post-feedback") => BenchMode::PostFeedback,
                     Some("post-commit") => BenchMode::PostCommit,
@@ -169,7 +172,7 @@ fn parse_args() -> PerfArgs {
                 eprintln!(
                     "usage: input_perf [--cases cases.sqlite] [--input PINYIN]\n\
                      options: --workload-size N --warmup N --iterations N --incremental\n\
-                     modes: --mode plain|post-feedback|post-commit|concurrent|e2e-pipe|e2e-direct\n\
+                     modes: --mode cold-start|plain|post-feedback|post-commit|concurrent|e2e-pipe|e2e-direct\n\
                      concurrent: --threads N\n\
                      diagnostics: --slow N --startup-warmup\n\
                      engine: --engine-profile runtime-hot-cold|full --lexicon DIR\n\
@@ -587,19 +590,21 @@ fn run_e2e_pipe(args: &PerfArgs, workload: &[String]) {
                     // 的交互优先级路径一致。
                     let mut client = pinyin_ime::ipc_service::EnginePipeClient::connect()
                         .unwrap_or_else(|err| panic!("e2e pipe connect failed: {err}"));
-                    let mut samples = Vec::with_capacity(args.iterations);
+                    let mut samples = Vec::with_capacity(args.iterations * workload.len());
                     let mut total_bytes = 0u64;
                     let mut request_id = 1u64;
-                    for round in 0..args.iterations {
-                        let input = &workload[(thread_idx + round) % workload.len()];
-                        let started = Instant::now();
-                        let (count, response_bytes) = client
-                            .lookup(input, request_id)
-                            .unwrap_or_else(|err| panic!("e2e roundtrip failed: {err}"));
-                        request_id = request_id.saturating_add(1);
-                        debug_assert!(count > 0);
-                        total_bytes += response_bytes as u64;
-                        samples.push(started.elapsed());
+                    for _ in 0..args.iterations {
+                        for offset in 0..workload.len() {
+                            let input = &workload[(thread_idx + offset) % workload.len()];
+                            let started = Instant::now();
+                            let (count, response_bytes) = client
+                                .lookup(input, request_id)
+                                .unwrap_or_else(|err| panic!("e2e roundtrip failed: {err}"));
+                            request_id = request_id.saturating_add(1);
+                            debug_assert!(count > 0);
+                            total_bytes += response_bytes as u64;
+                            samples.push(started.elapsed());
+                        }
                     }
                     (samples, total_bytes)
                 })
@@ -710,6 +715,47 @@ fn run_e2e_direct(args: &PerfArgs, workload: &[String]) {
     gate_p95_p99(args, p95, p99);
 }
 
+#[cfg(windows)]
+fn run_cold_start(args: &PerfArgs) {
+    use pinyin_ime::ipc_service;
+    let suffix = std::process::id();
+    env::set_var(
+        "SRF_ENGINE_PIPE_NAME",
+        format!(r"\\.\pipe\KaixinInput_ColdBench_{suffix}"),
+    );
+    env::set_var(
+        "SRF_ENGINE_MUTEX_NAME",
+        format!(r"Local\KaixinInput_ColdBench_{suffix}"),
+    );
+    let started = Instant::now();
+    ipc_service::start_engine_service();
+    ipc_service::warmup_shared_engine_sync();
+    print_stats(
+        args.json_path.as_deref(),
+        "cold_engine_ready",
+        &[started.elapsed()],
+    );
+    let first = Instant::now();
+    let mut client = ipc_service::EnginePipeClient::connect().expect("cold pipe connect");
+    let (count, _) = client.lookup("nihao", 1).expect("cold first batch");
+    assert!(count > 0, "cold first batch returned no candidates");
+    print_stats(
+        args.json_path.as_deref(),
+        "first_candidates_roundtrip",
+        &[first.elapsed()],
+    );
+    print_stats(
+        args.json_path.as_deref(),
+        "cold_start_to_candidates",
+        &[started.elapsed()],
+    );
+}
+
+#[cfg(not(windows))]
+fn run_cold_start(_args: &PerfArgs) {
+    panic!("cold-start requires Windows IPC");
+}
+
 fn main() {
     let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -749,7 +795,10 @@ fn main() {
         .clone()
         .unwrap_or_else(|| repo.join("lexicon"));
     args.engine_profile.report(&lexicon_dir);
-    if matches!(args.mode, BenchMode::E2EPipe | BenchMode::E2EDirect) {
+    if matches!(
+        args.mode,
+        BenchMode::ColdStart | BenchMode::E2EPipe | BenchMode::E2EDirect
+    ) {
         if args.engine_profile != EvaluationProfile::RuntimeHotCold {
             eprintln!("E2E service benchmarks require --engine-profile runtime-hot-cold");
             std::process::exit(2);
@@ -761,6 +810,7 @@ fn main() {
         env::set_var("SRF_LEXICON_DIR", trusted);
     }
     match args.mode {
+        BenchMode::ColdStart => run_cold_start(&args),
         BenchMode::Plain => {
             let mut engine = build_engine(&lexicon_dir, args.engine_profile);
             if args.startup_warmup {
@@ -783,4 +833,5 @@ fn main() {
         BenchMode::E2EPipe => run_e2e_pipe(&args, &workload),
         BenchMode::E2EDirect => run_e2e_direct(&args, &workload),
     }
+    metrics::record_memory(args.json_path.as_deref());
 }

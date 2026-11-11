@@ -24,6 +24,10 @@ jobs:
           python scripts/generate_shared_contracts.py --check
       - name: Check Python syntax
         run: python -m py_compile scripts/check_open_source_readiness.py scripts/check_public_privacy.py scripts/generate_shared_contracts.py scripts/lexicon_pack.py scripts/trim_package.py
+      - name: Test OCR image planning, budgets, and model cache
+        run: |
+          python -m pip install numpy pillow opencv-python-headless
+          python -m unittest discover -s scripts -p test_ocr_pipeline.py
 
   rust-licenses:
     runs-on: ubuntu-latest
@@ -40,13 +44,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@1.88.0
+      - uses: dtolnay/rust-toolchain@1.99.0
+      - name: Verify pinned release toolchain and versions
+        run: |
+          python scripts/check_release_toolchain.py
+          python scripts/release_version.py --check
+          python -m unittest discover -s scripts -p test_release_validation.py
+          python -m unittest discover -s scripts -p test_input_benchmark_report.py
       - name: Check the source-only Rust build
         run: cargo check --workspace --all-targets --all-features --locked
       - name: Test shared contracts and the input core
         run: cargo test -p kaixin-common -p kaixin-core --lib --no-default-features --locked
       - name: Test application library and engine health protocol
         run: cargo test -p pinyin-ime --lib --no-default-features --locked
+      - name: Test screenshot recovery without capturing the runner desktop
+        run: cargo test -p kaixin-core --lib --features desktop screenshot_capture::tests --locked
 
   native-tsf:
     runs-on: windows-latest
@@ -59,6 +71,6 @@ jobs:
       - name: Configure TSF and native policy tests
         run: cmake -S tsf-tip -B dist/ci-tsf-${{ matrix.architecture }} -A ${{ matrix.architecture }}
       - name: Build TSF, overlay, and native tests
-        run: cmake --build dist/ci-tsf-${{ matrix.architecture }} --config Release --parallel 1 --target srf_tsf_tip srf_ime_overlay srf_policy_tests srf_game_config_tests srf_security_io_tests srf_candidate_window_tests -- /nodeReuse:false
+        run: cmake --build dist/ci-tsf-${{ matrix.architecture }} --config Release --parallel 1 --target srf_tsf_tip srf_ime_overlay srf_background_worker_tests srf_policy_tests srf_game_config_tests srf_security_io_tests srf_candidate_window_tests srf_release_probe -- /nodeReuse:false
       - name: Run native regression tests
         run: ctest --test-dir dist/ci-tsf-${{ matrix.architecture }} -C Release --output-on-failure

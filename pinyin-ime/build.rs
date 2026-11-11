@@ -458,6 +458,19 @@ fn main() {
     println!("cargo:rustc-env=KAIXIN_SOURCE_DIR={}", manifest.display());
     let out_dir = Path::new(&out_dir);
     let repo = manifest.parent().unwrap_or(manifest);
+    let protocol_path = repo.join("shared/engine_protocol_version.txt");
+    println!("cargo:rerun-if-changed={}", protocol_path.display());
+    let protocol: u16 = fs::read_to_string(&protocol_path)
+        .expect("read engine protocol version")
+        .trim()
+        .parse()
+        .expect("engine protocol must be a u16");
+    assert!(protocol > 0, "engine protocol must be positive");
+    fs::write(
+        out_dir.join("engine_protocol.rs"),
+        format!("pub const PROTOCOL_VERSION: u16 = {protocol};\n"),
+    )
+    .expect("write engine protocol constant");
 
     let supported_chars = manifest.join("data/pinyin_supported_chars.txt");
     let corpus = manifest.join("data/corpus.txt");

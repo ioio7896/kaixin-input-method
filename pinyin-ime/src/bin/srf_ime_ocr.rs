@@ -10,9 +10,9 @@ use eframe::egui::{
 };
 use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use pinyin_ime::{
-    app_paths, clipboard_store, dxgi_capture, external_translation, rapidocr_paths, runtime_log,
-    screenshot_region_selector, screenshot_store, tool_prefs, win_paste, win_single_instance,
-    windows_graphics_capture, windows_security,
+    app_paths, clipboard_store, external_translation, rapidocr_paths, runtime_log,
+    screenshot_capture, screenshot_region_selector, screenshot_store, tool_prefs, win_paste,
+    win_single_instance, windows_graphics_capture, windows_security,
 };
 use rusqlite::{params, Connection, DatabaseName};
 use serde::{Deserialize, Serialize};
@@ -1436,10 +1436,12 @@ impl OcrApp {
                             egui::SelectableLabel::new(self.profile == profile, profile.label()),
                         )
                         .on_hover_text(match profile {
-                            OcrSpeedProfile::Fast => "最长边 1280；优先使用可选轻量检测模型。",
-                            OcrSpeedProfile::Balanced => "最长边 1920；适合多数屏幕文字。",
+                            OcrSpeedProfile::Fast => "适合清晰截图和短文本；大图自动分块。",
+                            OcrSpeedProfile::Balanced => {
+                                "适合日常中英文截图；自动补识别疑似小字和漏字。"
+                            }
                             OcrSpeedProfile::Accurate => {
-                                "最长边 2560；可在高级设置启用自动边框裁剪。"
+                                "适合密集小字和复杂背景；可在高级设置启用自动边框裁剪。"
                             }
                         })
                         .clicked()
@@ -1986,67 +1988,26 @@ fn capture_screenshot_image(
     let output_path = temp_ocr_image_path("capture");
     let _ = fs::remove_file(&output_path);
 
-    let (frame, fallback_reason) = match mode {
-        CaptureMode::AutoWindow => match windows_graphics_capture::capture_window(target_hwnd) {
-            Ok(frame) => (frame, None),
-            Err(wgc_error) => match dxgi_capture::capture_window(target_hwnd) {
-                Ok(frame) => (
-                    frame,
-                    Some(format!("WGC 窗口截图失败，已改用 DXGI：{wgc_error}")),
-                ),
-                Err(dxgi_error) => {
-                    return Err(format!(
-                        "窗口截图失败。WGC：{wgc_error}；DXGI：{dxgi_error}"
-                    ));
-                }
-            },
-        },
-        CaptureMode::ManualRegion => {
-            let (desktop, fallback_reason) =
-                match windows_graphics_capture::capture_virtual_desktop() {
-                    Ok(frame) => (frame, None),
-                    Err(wgc_error) => match dxgi_capture::capture_virtual_desktop() {
-                        Ok(frame) => (
-                            frame,
-                            Some(format!("WGC 桌面截图失败，已改用 DXGI：{wgc_error}")),
-                        ),
-                        Err(dxgi_error) => {
-                            return Err(format!(
-                                "桌面截图失败。WGC：{wgc_error}；DXGI：{dxgi_error}"
-                            ));
-                        }
-                    },
-                };
-            let selected = screenshot_region_selector::select_region(&desktop)
-                .map_err(|err| format!("打开框选界面失败：{err}"))?
-                .ok_or_else(|| "已取消截图。".to_string())?;
-            let local_x = i64::from(selected.x) - i64::from(desktop.origin_x);
-            let local_y = i64::from(selected.y) - i64::from(desktop.origin_y);
-            if local_x < 0
-                || local_y < 0
-                || local_x + i64::from(selected.width) > i64::from(desktop.width())
-                || local_y + i64::from(selected.height) > i64::from(desktop.height())
-            {
-                return Err("框选区域超出已捕获的虚拟桌面范围。".to_string());
-            }
-            let cropped = image::imageops::crop_imm(
-                &desktop.image,
-                local_x as u32,
-                local_y as u32,
-                selected.width,
-                selected.height,
-            )
-            .to_image();
-            let frame = windows_graphics_capture::CapturedFrame {
-                image: cropped,
-                origin_x: selected.x,
-                origin_y: selected.y,
-                source: windows_graphics_capture::CapturedSource::DesktopRegion,
-                elapsed: desktop.elapsed,
-            };
-            (frame, fallback_reason)
-        }
-    };
+    let outcome = screenshot_capture::capture(
+        (mode == CaptureMode::AutoWindow).then_some(target_hwnd),
+        false,
+        || false,
+    )?;
+    let fallback_reason = outcome.recovery_note;
+    let mut frame = outcome.frame;
+    if mode == CaptureMode::ManualRegion {
+        let selected = screenshot_region_selector::select_region(&frame)
+            .map_err(|err| format!("打开框选界面失败：{err}"))?
+            .ok_or_else(|| "已取消截图。".to_string())?;
+        let image = screenshot_capture::crop(&frame, selected)?;
+        frame = windows_graphics_capture::CapturedFrame {
+            image,
+            origin_x: selected.x,
+            origin_y: selected.y,
+            source: windows_graphics_capture::CapturedSource::DesktopRegion,
+            elapsed: frame.elapsed,
+        };
+    }
 
     windows_graphics_capture::save_png(&frame.image, &output_path)
         .map_err(|err| format!("保存 OCR 截图失败：{err}"))?;
@@ -3084,22 +3045,16 @@ fn log_error_detail(value: &str) -> String {
 }
 
 fn ocr_request_timeout(path: &Path, profile: OcrSpeedProfile, cold_start: bool) -> Duration {
-    let mut seconds = RAPIDOCR_HOT_TIMEOUT.as_secs();
-    if matches!(profile, OcrSpeedProfile::Accurate) {
-        seconds += 15;
-    }
+    // Worker budgets are 30/60/90 seconds, checked between native calls.
+    // Allow decode/transport and one in-flight call, then kill a stuck worker.
+    let mut seconds = match profile {
+        OcrSpeedProfile::Fast => RAPIDOCR_HOT_TIMEOUT.as_secs() + 15,
+        OcrSpeedProfile::Balanced => 75,
+        OcrSpeedProfile::Accurate => 105,
+    };
     if let Ok((width, height)) = image::image_dimensions(path) {
         let megapixels = u64::from(width) * u64::from(height) / 1_000_000;
-        seconds += megapixels.min(20);
-        let limit = profile.max_side_len();
-        if width.max(height) > limit
-            && u64::from(width.max(height)) >= u64::from(width.min(height)) * 2
-        {
-            let stride = limit - 192.min(limit / 4);
-            let columns = 1 + width.saturating_sub(limit).div_ceil(stride);
-            let rows = 1 + height.saturating_sub(limit).div_ceil(stride);
-            seconds += (u64::from(columns) * u64::from(rows)).saturating_sub(1) * 8;
-        }
+        seconds += megapixels.min(15);
     }
     if cold_start {
         seconds = seconds.max(RAPIDOCR_COLD_TIMEOUT.as_secs());
@@ -3114,6 +3069,8 @@ fn run_rapidocr_command_with_timeout(
     profile: OcrSpeedProfile,
     timeout: Duration,
 ) -> Result<RapidOcrCommandOutput, String> {
+    let started = Instant::now();
+    let timeout = timeout.max(ocr_request_timeout(image_path, profile, true));
     if rapidocr_persistent_disabled() {
         shutdown_rapidocr_process();
         return run_rapidocr_oneshot_command_with_timeout(image_path, language, profile, timeout)
@@ -3140,10 +3097,22 @@ fn run_rapidocr_command_with_timeout(
                     log_error_detail(&err)
                 ),
             );
-            run_rapidocr_oneshot_command_with_timeout(image_path, language, profile, timeout)
-                .map(RapidOcrCommandOutput::from_output)
+            run_rapidocr_oneshot_command_with_timeout(
+                image_path,
+                language,
+                profile,
+                remaining_ocr_timeout(started, timeout)?,
+            )
+            .map(RapidOcrCommandOutput::from_output)
         }
     }
+}
+
+fn remaining_ocr_timeout(started: Instant, timeout: Duration) -> Result<Duration, String> {
+    timeout
+        .checked_sub(started.elapsed())
+        .filter(|remaining| !remaining.is_zero())
+        .ok_or_else(|| "OCR 总处理时间超时，请缩小选区后重试。".to_string())
 }
 
 fn shutdown_rapidocr_process() {
@@ -3235,6 +3204,7 @@ fn run_rapidocr_persistent_command_with_timeout(
     profile: OcrSpeedProfile,
     timeout: Duration,
 ) -> Result<RapidOcrCommandOutput, String> {
+    let started = Instant::now();
     let image = image_path.to_string_lossy().to_string();
     let request = RapidOcrStdioRequest {
         image: &image,
@@ -3259,7 +3229,7 @@ fn run_rapidocr_persistent_command_with_timeout(
     let first = guard
         .as_mut()
         .expect("rapidocr process initialized")
-        .request(&request, timeout);
+        .request(&request, remaining_ocr_timeout(started, timeout)?);
     match first {
         Ok(output) => Ok(output),
         Err(first_err) => {
@@ -3277,7 +3247,7 @@ fn run_rapidocr_persistent_command_with_timeout(
             guard
                 .as_mut()
                 .expect("rapidocr process restarted")
-                .request(&request, timeout)
+                .request(&request, remaining_ocr_timeout(started, timeout)?)
                 .map_err(|second_err| {
                     format!("RapidOCR 常驻进程失败：{first_err}；重启后仍失败：{second_err}")
                 })

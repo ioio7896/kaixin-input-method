@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$OutputRoot,
     [string]$TipDllPath,
     [string]$OverlayExePath,
@@ -769,7 +769,7 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $toolsDir)) {
     }
     $toolNames = @()
     if ($IncludeOcr) {
-        $toolNames += @('kaixin_ocr_engine.py', 'kaixin_ocr_engine.cmd', 'kaixin_cv_crop.py')
+        $toolNames += @('kaixin_ocr_engine.py', 'kaixin_ocr_policy.py', 'kaixin_ocr_engine.cmd', 'kaixin_cv_crop.py')
     }
     foreach ($toolName in ($toolNames | Select-Object -Unique)) {
         $sourceTool = Join-Path $toolsDir $toolName

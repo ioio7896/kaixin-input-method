@@ -49,7 +49,7 @@ constexpr size_t kRustRowTextUnits = 512;
 constexpr size_t kRustRowMetaUnits = 512;
 constexpr size_t kRustRowWidth = kRustRowTextUnits + kRustRowMetaUnits;
 constexpr uint32_t kEnginePipeMagic = 0x31504653;  // "SFP1"
-constexpr uint16_t kEnginePipeVersion = 5;
+constexpr uint16_t kEnginePipeVersion = SRF_ENGINE_PROTOCOL_VERSION;
 constexpr DWORD kEnginePipeRetrySleepMs = 60;
 // Init runs from warmup/retry workers, but the code still lives inside host
 // processes. Keep it short so a broken helper or stale registration cannot
@@ -127,6 +127,15 @@ static_assert(sizeof(EngineHealthRecordV1) == 24);
 constexpr DWORD kEngineHealthRecordMagic = 0x4845584B;  // "KXEH" on disk.
 constexpr DWORD kEngineHealthFailureUnspecified = 0xE0010001;
 std::atomic<DWORD> g_engineHealthErrorCode{ERROR_SUCCESS};
+constexpr DWORD kEngineHealthVersionMismatch = 0xE0010002;
+constexpr DWORD kEngineHealthStartupFailed = 0xE0010003;
+
+// Preserve the originating launch/access error if a subsequent connection
+// attempt merely times out. Success clears it before the next failure cycle.
+void RememberEngineFailure(DWORD code) {
+  DWORD expected = ERROR_SUCCESS;
+  g_engineHealthErrorCode.compare_exchange_strong(expected, code, std::memory_order_acq_rel);
+}
 std::atomic<DWORD> g_engineHelperPid{0};
 
 enum class EnginePipeCommand : uint16_t {
@@ -710,7 +719,10 @@ bool EnsureEngineHelperRunning(const std::filesystem::path& moduleDir) {
   }
 
   auto helperExe = FindHelper(moduleDir, L"srf_ime_engine.exe");
-  if (helperExe.empty()) return false;
+  if (helperExe.empty()) {
+    RememberEngineFailure(ERROR_FILE_NOT_FOUND);
+    return false;
+  }
 
   const std::wstring pipeName = EnginePipeNameForModuleDir(moduleDir);
   std::wstring commandLine = L"\"" + helperExe.wstring() + L"\" --pipe-name \"" + pipeName +
@@ -729,12 +741,16 @@ bool EnsureEngineHelperRunning(const std::filesystem::path& moduleDir) {
     // must not make the entire input method unavailable.
     (void)AssignEngineHelperJob(processInfo.hProcess);
     if (ResumeThread(processInfo.hThread) == static_cast<DWORD>(-1)) {
+      RememberEngineFailure(GetLastError());
       TerminateProcess(processInfo.hProcess, 1);
     } else {
       started = true;
     }
     CloseHandle(processInfo.hThread);
     CloseHandle(processInfo.hProcess);
+  } else {
+    const DWORD code = GetLastError();
+    RememberEngineFailure(code == ERROR_SUCCESS ? kEngineHealthStartupFailed : code);
   }
   return started;
 }
@@ -1141,7 +1157,10 @@ std::wstring FormatSystemError(DWORD error) {
 
 void SetFailureDetailLocked(const std::wstring& detail) { g_lastEngineFailure = detail; }
 
-void ClearFailureDetailLocked() { g_lastEngineFailure.clear(); }
+void ClearFailureDetailLocked() {
+  g_lastEngineFailure.clear();
+  g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
+}
 
 std::string Utf8FromWide(const std::wstring& w) {
   if (w.empty()) return {};
@@ -1952,6 +1971,7 @@ bool AwaitPipeIo(SrfOverlappedIo& operation, DWORD timeoutMs, DWORD* transferred
                  EnginePipeCommand command, const wchar_t* stage, std::wstring* error) {
   if (operation.Await(timeoutMs, transferred)) return true;
   const DWORD lastError = GetLastError();
+  RememberEngineFailure(lastError);
   if (error) {
     *error = L"shared engine pipe ";
     *error += RemoteCommandLabel(command);
@@ -2097,11 +2117,13 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
 
     const DWORD lastError = GetLastError();
     if (lastError != ERROR_FILE_NOT_FOUND && lastError != ERROR_PIPE_BUSY) {
+      RememberEngineFailure(lastError);
       if (error) *error = L"CreateFileW(pipe) failed: " + FormatSystemError(lastError);
       return false;
     }
 
     if (GetTickCount64() >= deadline) {
+      RememberEngineFailure(ERROR_TIMEOUT);
       if (error) {
         *error = L"shared engine pipe ";
         *error += RemoteCommandLabel(command);
@@ -2208,6 +2230,9 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
 
   if (magic != kEnginePipeMagic || version != kEnginePipeVersion ||
       echoedCommand != static_cast<uint16_t>(command)) {
+    if (version != kEnginePipeVersion) {
+      g_engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
+    }
     logFailure(L"response_header", responseStatus);
     if (error) *error = L"shared engine pipe returned an invalid response header";
     InvalidateRemoteBackendLocked();
@@ -2409,6 +2434,9 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
                       ReadPayloadString(response, &offset, &mutexName) &&
                       ReadPayloadU32(response, &offset, &loaded);
   if (!parsed || version != kEnginePipeVersion) {
+    if (parsed && version != kEnginePipeVersion) {
+      g_engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
+    }
     if (error) *error = L"shared engine health response was invalid";
     InvalidateRemoteBackendLocked();
     return false;
@@ -2431,6 +2459,7 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
   // Git revision differences should invalidate caches and leave a log trail, but
   // protocol/app-version compatibility is enough for the shared helper handshake.
   if (!EngineBuildIdHasExpectedVersion(buildId)) {
+    g_engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
     std::wstring mismatch = L"shared engine helper build id version mismatch: helper=";
     mismatch += buildId.empty() ? L"(empty)" : buildId;
     mismatch += L", expected=";
@@ -2884,8 +2913,10 @@ bool EnsureLoadedLocked() {
     if (g_bridge.backend == EngineBackend::Remote) return true;
   }
 
+  g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
   const auto moduleDir = ModuleDir();
   if (moduleDir.empty()) {
+    RememberEngineFailure(kEngineHealthStartupFailed);
     SetFailureDetailLocked(L"engine init: ModuleDir() returned empty path");
     return false;
   }
@@ -2896,6 +2927,7 @@ bool EnsureLoadedLocked() {
   std::wstring lexiconError;
   const auto lexiconDir = ResolveTrustedLexiconDir(moduleDir, &lexiconError);
   if (lexiconDir.empty()) {
+    RememberEngineFailure(ERROR_PATH_NOT_FOUND);
     ResetBridgeLocked();
     const std::wstring detail = lexiconError.empty() ? L"trusted lexicon directory not found" : lexiconError;
     SetFailureDetailLocked(detail);
@@ -3211,6 +3243,42 @@ bool EnsureReadyNow() {
 }
 
 }  // namespace
+
+extern "C" const char* __cdecl KxGetBuildInfo() {
+  static const std::string info = std::string("{\"schema\":1,\"component\":\"tsf\",\"version\":\"") +
+      SRF_APP_VERSION + "\",\"git\":\"" + SRF_GIT_COMMIT + "\",\"protocol\":" +
+      std::to_string(kEnginePipeVersion) + ",\"bits\":" + std::to_string(sizeof(void*) * 8) + "}";
+  return info.c_str();
+}
+
+// Exercise the production handshake, capability token and first-batch decoder.
+// The build owns the isolated helper; this probe never registers COM, launches
+// a watchdog or publishes health into the user's TSF state.
+extern "C" int __cdecl KxReleaseProbe(wchar_t* detail, unsigned capacity) {
+  std::lock_guard<std::mutex> guard(g_mutex);
+  const auto moduleDir = ModuleDir();
+  std::wstring error;
+  std::vector<std::wstring> candidates;
+  int count = 0;
+  int result = 0;
+  if (!WaitForEnginePipeReady(moduleDir, 10000)) {
+    error = L"staged engine listener timed out";
+    result = 10;
+  } else if (!VerifyRemoteInstanceLocked(moduleDir, &error)) {
+    result = 11;
+  } else {
+    const auto lexicon = ResolveTrustedLexiconDir(moduleDir, &error);
+    if (lexicon.empty() || !EnsureRemoteLoadedLocked(lexicon, &error)) result = 12;
+    else if (!RemoteLookupLocked(L"nihao", 1, &candidates, nullptr, &count, &error)) result = 13;
+    else if (std::find(candidates.begin(), candidates.end(), L"你好") == candidates.end()) {
+      error = L"nihao did not return 你好 in the first candidate batch";
+      result = 14;
+    }
+  }
+  ResetBridgeLocked();
+  if (detail && capacity) wcsncpy_s(detail, capacity, error.c_str(), _TRUNCATE);
+  return result;
+}
 
 unsigned long long SrfTip_NextLookupRequestId() {
   LARGE_INTEGER counter = {};

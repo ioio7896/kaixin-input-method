@@ -28,6 +28,38 @@ pub(super) fn duration_us(value: Duration) -> u128 {
     value.as_micros()
 }
 
+pub(super) fn record_memory(json_path: Option<&Path>) {
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::System::ProcessStatus::{
+            GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS,
+        };
+        use windows_sys::Win32::System::Threading::GetCurrentProcess;
+        let mut counters: PROCESS_MEMORY_COUNTERS = unsafe { std::mem::zeroed() };
+        let size = std::mem::size_of_val(&counters) as u32;
+        counters.cb = size;
+        if unsafe { GetProcessMemoryInfo(GetCurrentProcess(), &mut counters, size) } == 0 {
+            panic!(
+                "GetProcessMemoryInfo failed: {}",
+                std::io::Error::last_os_error()
+            );
+        }
+        let metric = serde_json::json!({ "schema_version": 1, "metric": "memory",
+            "working_set_bytes": counters.WorkingSetSize,
+            "peak_working_set_bytes": counters.PeakWorkingSetSize });
+        println!("{metric}");
+        if let Some(path) = json_path {
+            let mut output = OpenOptions::new()
+                .append(true)
+                .open(path)
+                .expect("open memory metrics");
+            writeln!(output, "{metric}").expect("write memory metrics");
+        }
+    }
+    #[cfg(not(windows))]
+    let _ = json_path;
+}
+
 pub(super) fn check_latency_gate(
     label: &str,
     samples: usize,

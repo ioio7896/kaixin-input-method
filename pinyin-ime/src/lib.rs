@@ -37,6 +37,8 @@ pub mod rerank_prefs;
 pub mod runtime_config;
 pub mod runtime_log;
 #[cfg(feature = "desktop")]
+pub mod screenshot_capture;
+#[cfg(feature = "desktop")]
 pub mod screenshot_region_selector;
 pub mod screenshot_store;
 pub mod segment;

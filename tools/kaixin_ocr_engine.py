@@ -18,8 +18,15 @@ import os
 import sys
 import time
 import traceback
+from collections import OrderedDict
 from pathlib import Path
 from typing import Any
+
+from kaixin_ocr_policy import (
+    PROFILE_LIMITS, PROFILE_MODELS, PROFILE_SECONDS, WorkBudget, analyze_image,
+    image_tiles, intersection, line_bounds, lines_in_region, needs_detector_retry,
+    normalize_profile, rect_area, refinement_regions, should_retry_preprocess,
+)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -31,14 +38,9 @@ REQUIRED_MODEL_FILES = (
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
+    "PP-OCRv6_rec_small.onnx",
     "ppocrv6_dict.txt",
 )
-FAST_DET_MODEL_NAMES = ("PP-OCRv6_det_small.onnx", "PP-OCRv6_det_int8.onnx")
-PROFILE_LIMITS = {
-    "fast": (1280, 1.0),
-    "balanced": (1920, 1.5),
-    "accurate": (2560, 2.0),
-}
 EXECUTION_PROVIDERS = ("auto", "cpu", "vulkan", "directml", "cuda")
 MAX_ENCODED_IMAGE_BYTES = 64 * 1024 * 1024
 MAX_DECODED_IMAGE_BYTES = 48 * 1024 * 1024
@@ -86,7 +88,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--lang",
-        choices=("mixed", "zh", "zh_tw", "en"),
+        choices=("auto", "mixed", "zh", "zh_tw", "en"),
         default="mixed",
         help="Recognition language. zh_tw uses the bundled PP-OCRv6 multilingual model.",
     )
@@ -133,6 +135,11 @@ def parse_args() -> argparse.Namespace:
         help="Compatibility option; OCR always runs on CPU.",
     )
     parser.add_argument("--min-score", type=float, default=0.5, help="Minimum line score.")
+    parser.add_argument("--cache-engines", type=int, choices=(1, 2), default=2,
+                        help="Maximum resident model configurations (LRU).")
+    parser.add_argument("--fast-mode", action=argparse.BooleanOptionalAction,
+                        default=env_bool("KAIXIN_OCR_FAST_MODE", False),
+                        help="Opt-in recognition width optimization, fast profile only.")
     parser.add_argument(
         "--download-retries",
         type=int,
@@ -156,54 +163,52 @@ def decode_input_text(value: Any) -> str:
 
 
 def enum_params(
-    lang: str,
     model_root: Path,
     args: argparse.Namespace,
-    fast_det_model: Path | None = None,
     profile: str = "balanced",
+    detector: str | None = None,
+    limit: int | None = None,
 ) -> dict[str, Any]:
     from rapidocr import EngineType, LangDet, LangRec, ModelType, OCRVersion
 
-    rec_lang = (
-        LangRec.CHINESE_CHT if lang == "zh_tw" else LangRec.EN if lang == "en" else LangRec.CH
-    )
+    profile = normalize_profile(profile)
+    det, rec = PROFILE_MODELS[profile]
+    det = detector or det
+    limit = limit or PROFILE_LIMITS[profile][0]
     params = {
         "Global.model_root_dir": str(model_root),
         "Global.log_level": "warning",
         "Global.text_score": 0.0,
         "Global.use_cls": False,
         "Global.min_side_len": 0,
-        "Global.max_side_len": PROFILE_LIMITS["balanced"][0],
+        "Global.max_side_len": limit,
         "EngineConfig.ppocr_cpp.use_vulkan": False,
         "EngineConfig.ppocr_cpp.backend": "cpu",
         "Det.engine_type": EngineType.PPOCR_CPP,
         "Det.ocr_version": OCRVersion.PPOCRV6,
         "Det.lang_type": LangDet.CH,
-        "Det.model_type": ModelType.MEDIUM,
+        "Det.model_type": ModelType.SMALL if det == "small" else ModelType.MEDIUM,
         # `min` enlarges a 360x48 line image to roughly 4800x640. The helper
         # controls scaling through Global.{min,max}_side_len instead, while
         # detector `max` guarantees that a narrow crop is never exploded.
         "Det.limit_type": "max",
-        "Det.limit_side_len": PROFILE_LIMITS[normalize_profile(profile)][0],
+        "Det.limit_side_len": limit,
+        "Det.thresh": 0.3,
+        "Det.box_thresh": 0.5,
+        "Det.unclip_ratio": 1.6,
         "Rec.engine_type": EngineType.PPOCR_CPP,
         "Rec.ocr_version": OCRVersion.PPOCRV6,
-        "Rec.lang_type": rec_lang,
-        "Rec.model_type": ModelType.MEDIUM,
+        # All language choices share these multilingual weights and dictionary.
+        "Rec.lang_type": LangRec.CH,
+        "Rec.model_type": ModelType.SMALL if rec == "small" else ModelType.MEDIUM,
         "Rec.rec_img_shape": [3, 48, 320],
         "Rec.rec_batch_num": max(1, int(args.rec_batch_num)),
-        "Det.model_path": str(model_root / "PP-OCRv6_det_medium.onnx"),
-        "Rec.model_path": str(model_root / "PP-OCRv6_rec_medium.onnx"),
+        "Rec.fast_mode": bool(getattr(args, "fast_mode", False) and profile == "fast"),
+        "Det.model_path": str(model_root / f"PP-OCRv6_det_{det}.onnx"),
+        "Rec.model_path": str(model_root / f"PP-OCRv6_rec_{rec}.onnx"),
         "Rec.rec_keys_path": str(model_root / "ppocrv6_dict.txt"),
     }
-    if fast_det_model is not None:
-        params["Det.model_type"] = ModelType.SMALL
-        params["Det.model_path"] = str(fast_det_model)
     return params
-
-
-def normalize_profile(value: Any) -> str:
-    profile = str(value or "balanced").strip().lower()
-    return profile if profile in PROFILE_LIMITS else "balanced"
 
 
 def adaptive_limits(
@@ -307,39 +312,6 @@ def recognition_quality(lines: list[dict[str, Any]]) -> tuple[float, float]:
     return average ** 2 * math.log1p(evidence) * (1.0 + 0.03 * math.log1p(coverage)), average
 
 
-def should_retry_preprocess(lines: list[dict[str, Any]]) -> bool:
-    chars, average, _ = recognition_stats(lines)
-    return chars <= 1 or average < 0.62
-
-
-def should_retry_english(lines: list[dict[str, Any]]) -> bool:
-    text = "".join(str(line.get("text", "")) for line in lines)
-    if not text:
-        return True
-    cjk = sum("\u4e00" <= char <= "\u9fff" for char in text)
-    latin = sum(char.isascii() and char.isalpha() for char in text)
-    _, average, _ = recognition_stats(lines)
-    uncertain = any(float(line.get("score", 0.0)) < 0.65 for line in lines)
-    return average < 0.62 or (
-        latin > cjk * 2 and latin >= 3 and (average < 0.88 or uncertain)
-    )
-
-
-def image_tiles(shape: Any, limit: int) -> list[tuple[int, int, int, int]]:
-    """Tile long captures with overlap, keeping normal screenshots on one pass."""
-    height, width = map(int, shape[:2])
-    if max(width, height) <= limit or max(width, height) < min(width, height) * 2:
-        return [(0, 0, width, height)]
-    overlap = min(192, limit // 4)
-
-    def starts(length: int) -> list[int]:
-        last = max(0, length - limit)
-        return sorted(set([*range(0, last, limit - overlap), last]))
-
-    return [(x, y, min(width, x + limit), min(height, y + limit))
-            for y in starts(height) for x in starts(width)]
-
-
 def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Suppress overlapping detections, never equal text at unrelated locations."""
     def bounds(line: dict[str, Any]) -> tuple[float, float, float, float]:
@@ -350,14 +322,25 @@ def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for line in sorted(lines, key=lambda item: (not item.get("tile_edge", False), item["score"]), reverse=True):
         x0, y0, x1, y1 = bounds(line)
         duplicate = False
+        replace = []
         for previous in kept:
             a0, b0, a1, b1 = bounds(previous)
             intersection = max(0, min(x1, a1) - max(x0, a0)) * max(0, min(y1, b1) - max(y0, b0))
             smaller = min((x1 - x0) * (y1 - y0), (a1 - a0) * (b1 - b0))
             if smaller > 0 and intersection / smaller > 0.65:
+                text = "".join(str(line["text"]).split())
+                previous_text = "".join(str(previous["text"]).split())
+                # A clipped prefix often has an even higher confidence than
+                # the complete line from its neighbour. Preserve completeness.
+                if (previous_text and previous_text != text and previous_text in text
+                        and line["score"] >= 0.8 and (x1-x0)*(y1-y0) >= (a1-a0)*(b1-b0)):
+                    replace.append(previous)
+                    continue
                 duplicate = True
                 break
         if not duplicate:
+            replaced = {id(item) for item in replace}
+            kept = [item for item in kept if id(item) not in replaced]
             kept.append(line)
     kept.sort(key=lambda item: (bounds(item)[1], bounds(item)[0]))
     rows: list[list[dict[str, Any]]] = []
@@ -372,7 +355,28 @@ def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
             rows[-1].append(line)
         else:
             rows.append([line])
-    kept = [line for row in rows for line in sorted(row, key=lambda item: bounds(item)[0])]
+    kept = []
+    for row in rows:
+        joined = []
+        for line in sorted(row, key=lambda item: bounds(item)[0]):
+            if joined and joined[-1].get("clip_right") and line.get("clip_left"):
+                previous = joined[-1]
+                a0, b0, a1, b1 = bounds(previous)
+                x0, y0, x1, y1 = bounds(line)
+                overlap = max(0, min(a1, x1) - max(a0, x0))
+                left, right = str(previous["text"]).rstrip(), str(line["text"]).lstrip()
+                common = next((n for n in range(min(len(left), len(right)), 1, -1)
+                               if left[-n:] == right[:n]), 0)
+                if overlap and common:
+                    previous = dict(previous, text=left + right[common:],
+                                    score=min(previous["score"], line["score"]),
+                                    box=[[a0, min(b0, y0)], [max(a1, x1), min(b0, y0)],
+                                         [max(a1, x1), max(b1, y1)], [a0, max(b1, y1)]],
+                                    clip_right=line.get("clip_right", False))
+                    joined[-1] = previous
+                    continue
+            joined.append(line)
+        kept.extend(joined)
     for index, line in enumerate(kept):
         line["index"] = index
         line.pop("tile_edge", None)
@@ -440,17 +444,11 @@ class RapidOcrService:
             )
 
         self._rapidocr_cls = None
-        self.fast_det_model = next(
-            (
-                self.model_root / name
-                for name in FAST_DET_MODEL_NAMES
-                if (self.model_root / name).is_file()
-            ),
-            None,
-        )
-        # Native detector limits are set when the handle is created, so each
-        # profile retains its own engine and can be reused across requests.
-        self._engines: dict[tuple[str, str], Any] = {}
+        # Keys describe actual models and native creation parameters, not UI
+        # language labels. Explicitly close evicted native handles before load.
+        self._engines: OrderedDict[tuple[Any, ...], Any] = OrderedDict()
+        self._warmed: set[tuple[Any, ...]] = set()
+        self.cache_limit = max(1, min(2, int(getattr(args, "cache_engines", 2))))
 
     def _rapidocr_class(self) -> Any:
         if self._rapidocr_cls is None:
@@ -460,56 +458,74 @@ class RapidOcrService:
             self._rapidocr_cls = RapidOCR
         return self._rapidocr_cls
 
-    def _effective_lang(self, lang: str) -> str:
-        return lang if lang in {"en", "zh_tw"} else "zh"
+    def _engine_params(self, profile: str, detector: str | None = None,
+                       limit: int | None = None) -> tuple[dict[str, Any], tuple[Any, ...]]:
+        params = enum_params(self.model_root, self.args, profile, detector, limit)
+        return params, tuple(sorted((key, str(value)) for key, value in params.items()))
 
-    def _detector_variant(self, profile: str) -> str:
-        return "fast" if normalize_profile(profile) == "fast" and self.fast_det_model else "medium"
-
-    def _load_engine(self, lang: str, profile: str) -> tuple[Any, float, bool, str]:
-        variant = self._detector_variant(profile)
-        key = (self._effective_lang(lang), normalize_profile(profile))
+    def _load_engine(self, profile: str, detector: str | None = None,
+                     limit: int | None = None) -> tuple[Any, float, bool, tuple[Any, ...]]:
+        params, key = self._engine_params(profile, detector, limit)
         if key in self._engines:
-            return self._engines[key], 0.0, True, variant
-
+            self._engines.move_to_end(key)
+            return self._engines[key], 0.0, True, key
+        while len(self._engines) >= self.cache_limit:
+            self._clear_engine(next(iter(self._engines)))
         rapidocr_cls = self._rapidocr_class()
-        params = enum_params(
-            self._effective_lang(lang),
-            self.model_root,
-            self.args,
-            self.fast_det_model if variant == "fast" else None,
-            profile,
-        )
         with contextlib.redirect_stdout(sys.stderr):
             init_start = time.perf_counter()
             engine = rapidocr_cls(params=params)
-            init_seconds = time.perf_counter() - init_start
-        with contextlib.redirect_stdout(sys.stderr):
             engine._ensure_engine()
         self._engines[key] = engine
-        return engine, time.perf_counter() - init_start, False, variant
+        return engine, time.perf_counter() - init_start, False, key
 
-    def _clear_engine(self, lang: str, profile: str) -> None:
-        self._engines.pop((self._effective_lang(lang), normalize_profile(profile)), None)
+    def _clear_engine(self, key: tuple[Any, ...]) -> None:
+        engine = self._engines.pop(key, None)
+        self._warmed.discard(key)
+        native = getattr(engine, "_engine", None)
+        if native is not None:
+            native.close()
+            engine._engine = None
+
+    def close(self) -> None:
+        for key in list(self._engines):
+            self._clear_engine(key)
 
     def warmup(self, lang: str = "mixed", profile: str = "balanced") -> dict[str, Any]:
+        import cv2
         import numpy as np
 
         profile = normalize_profile(profile)
-        engine, init_seconds, cached, variant = self._load_engine(lang, profile)
-        # Exercise the first graph execution too. A blank, screen-line-shaped
-        # buffer keeps this cheap and removes first-inference latency later.
+        engine, init_seconds, cached, key = self._load_engine(profile)
         engine.max_side_len = PROFILE_LIMITS[profile][0]
         engine.min_side_len = 0
         warm_start = time.perf_counter()
-        with contextlib.redirect_stdout(sys.stderr):
-            engine(np.full((48, 320, 3), 255, dtype=np.uint8))
+        already_warm = key in self._warmed
+        if not already_warm:
+            sample = np.full((48, 320, 3), 255, dtype=np.uint8)
+            cv2.putText(sample, "Kaixin OCR 2026", (8, 33), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8, (0, 0, 0), 2, cv2.LINE_AA)
+            try:
+                with contextlib.redirect_stdout(sys.stderr):
+                    engine(sample, use_det=True, use_cls=False, use_rec=True)
+                    # Explicit rec-only execution also works if detection found
+                    # no box, and warms the recognizer's first graph execution.
+                    engine(sample, use_det=False, use_cls=False, use_rec=True)
+                self._warmed.add(key)
+            except Exception:
+                self._clear_engine(key)
+                raise
         return {
             "ok": True,
             "command": "warmup",
             "cached": cached,
             "profile": profile,
-            "detector_variant": variant,
+            "detector_variant": PROFILE_MODELS[profile][0],
+            "recognizer_variant": PROFILE_MODELS[profile][1],
+            "already_warm": already_warm,
+            "warmed_detection": True,
+            "warmed_recognition": True,
+            "cached_engines": len(self._engines),
             "init_ms": round(init_seconds * 1000, 2),
             "warmup_ms": round((time.perf_counter() - warm_start) * 1000, 2),
         }
@@ -576,88 +592,103 @@ class RapidOcrService:
             raise FileNotFoundError(f"image not found: {image}")
 
         profile = normalize_profile(profile)
-        max_attempts = max(2, int(self.args.download_retries))
+        max_attempts = max(1, min(2, int(self.args.download_retries) + 1))
         load_start = time.perf_counter()
-        print("KAIXIN_OCR_STAGE model-load", file=sys.stderr, flush=True)
-        loader, loader_init, loader_cached, loader_variant = self._load_engine(
-            self._effective_lang(lang), profile
-        )
+        from rapidocr.utils.load_image import LoadImage
         with contextlib.redirect_stdout(sys.stderr):
-            image_array = loader.load_img(image_bytes if image_bytes is not None else image)
+            image_array = LoadImage()(image_bytes if image_bytes is not None else image)
         validate_image_shape(image_array)
         print("KAIXIN_OCR_STAGE image-loaded", file=sys.stderr, flush=True)
         load_seconds = time.perf_counter() - load_start
         applied_max_side, applied_min_side = adaptive_limits(profile, image_array.shape, max_side_len)
         tiles = image_tiles(image_array.shape, applied_max_side)
+        budget = WorkBudget(PROFILE_SECONDS[profile])
+        analysis_start = time.perf_counter()
+        analysis = analyze_image(image_array)
+        preprocess_seconds = time.perf_counter() - analysis_start
         attempts: list[dict[str, Any]] = []
-        total_init = loader_init
+        total_init = 0.0
         total_infer = 0.0
-        preprocess_seconds = 0.0
+        all_cached = True
+        primary_det, primary_rec = PROFILE_MODELS[profile]
+        step_seconds: list[float] = []
 
-        def run_attempt(effective_lang: str, source_image: Any, kind: str = "primary") -> tuple[Any, list[dict[str, Any]], float, float, bool, str]:
-            nonlocal total_init, total_infer
+        def run_region(region: tuple[int, int, int, int], kind: str = "primary",
+                       scale: float = 1.0, detector: str | None = None,
+                       enhance: bool = False) -> list[dict[str, Any]] | None:
+            nonlocal total_init, total_infer, preprocess_seconds, all_cached
+            import cv2
+
+            optional = kind != "primary"
+            x0, y0, x1, y1 = region
+            scale = min(scale, applied_max_side / max(x1 - x0, y1 - y0))
+            target_width = max(1, round((x1 - x0) * scale))
+            target_height = max(1, round((y1 - y0) * scale))
+            pixels = target_width * target_height
             last_error: Exception | None = None
             for attempt in range(1, max_attempts + 1):
+                if not budget.reserve(pixels, kind, optional):
+                    return None
                 attempt_start = time.perf_counter()
                 infer_start = None
                 attempt_infer = 0.0
                 succeeded = False
                 attempt_init = 0.0
+                key = None
                 try:
                     print(
-                        f"KAIXIN_OCR_STAGE inference lang={effective_lang} attempt={attempt}",
+                        f"KAIXIN_OCR_STAGE inference kind={kind} attempt={attempt}",
                         file=sys.stderr,
                         flush=True,
                     )
-                    engine, init_seconds, cached, detector_variant = self._load_engine(effective_lang, profile)
+                    engine, init_seconds, cached, key = self._load_engine(profile, detector, applied_max_side)
                     total_init += init_seconds
+                    all_cached = all_cached and cached
                     attempt_init = init_seconds
                     engine.max_side_len = applied_max_side
-                    engine.min_side_len = applied_min_side
+                    # Explicit scaling below also keeps tiny crops within the
+                    # same pixel budget as ordinary images.
+                    engine.min_side_len = 0
+                    prepare_start = time.perf_counter()
+                    source = image_array[y0:y1, x0:x1]
+                    if source.shape[:2] != (target_height, target_width):
+                        source = cv2.resize(source, (target_width, target_height), interpolation=cv2.INTER_CUBIC)
+                    if enhance:
+                        lab = cv2.cvtColor(source, cv2.COLOR_BGR2LAB)
+                        lab[:, :, 0] = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(lab[:, :, 0])
+                        source = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+                    preprocess_seconds += time.perf_counter() - prepare_start
                     with contextlib.redirect_stdout(sys.stderr):
                         infer_start = time.perf_counter()
-                        tile_lines: list[dict[str, Any]] = []
-                        step_seconds: list[float] = []
-                        for x0, y0, x1, y1 in tiles:
-                            tile_result = engine(source_image[y0:y1, x0:x1])
-                            for index, value in enumerate(tile_result.elapse_list):
-                                while len(step_seconds) <= index:
-                                    step_seconds.append(0.0)
-                                step_seconds[index] += float(value or 0.0)
-                            for line in to_line_items(tile_result, 0.0):
-                                if line["box"] is None:
-                                    continue
-                                box = line["box"]
-                                line["tile_edge"] = (
-                                    (x0 > 0 and min(p[0] for p in box) < 8)
-                                    or (y0 > 0 and min(p[1] for p in box) < 8)
-                                    or (x1 < source_image.shape[1] and max(p[0] for p in box) > x1 - x0 - 8)
-                                    or (y1 < source_image.shape[0] and max(p[1] for p in box) > y1 - y0 - 8)
-                                )
-                                line["box"] = [[p[0] + x0, p[1] + y0] for p in box]
-                                tile_lines.append(line)
-                        result = tile_result
-                        lines = merge_tile_lines(tile_lines) if len(tiles) > 1 else to_line_items(result, 0.0)
-                        if len(tiles) > 1:
-                            import numpy as np
-                            from rapidocr.output import RapidOCROutput
-
-                            result = RapidOCROutput(
-                                img=source_image,
-                                boxes=np.asarray([line["box"] for line in lines], dtype=np.float32).reshape(-1, 4, 2),
-                                txts=tuple(line["text"] for line in lines),
-                                scores=tuple(line["score"] for line in lines),
-                                elapse_list=step_seconds,
-                                word_results=(None,),
-                            )
-                        infer_seconds = time.perf_counter() - infer_start
-                        attempt_infer = infer_seconds
+                        result = engine(source, use_det=True, use_cls=False, use_rec=True)
+                        attempt_infer = time.perf_counter() - infer_start
                         succeeded = True
-                    print("KAIXIN_OCR_STAGE inference-complete", file=sys.stderr, flush=True)
-                    return result, lines, init_seconds, infer_seconds, cached, detector_variant
+                    for index, value in enumerate(result.elapse_list or []):
+                        while len(step_seconds) <= index:
+                            step_seconds.append(0.0)
+                        step_seconds[index] += float(value or 0.0)
+                    lines = to_line_items(result, 0.0)
+                    mapped = []
+                    sx, sy = target_width / (x1 - x0), target_height / (y1 - y0)
+                    for line in lines:
+                        if line["box"] is None:
+                            continue
+                        box = line["box"]
+                        line["clip_left"] = x0 > 0 and min(p[0] for p in box) < 4 * sx
+                        line["clip_right"] = x1 < image_array.shape[1] and max(p[0] for p in box) > target_width - 4 * sx
+                        line["tile_edge"] = (
+                            (x0 > 0 and min(p[0] for p in box) < 4 * sx)
+                            or (y0 > 0 and min(p[1] for p in box) < 4 * sy)
+                            or (x1 < image_array.shape[1] and max(p[0] for p in box) > target_width - 4 * sx)
+                            or (y1 < image_array.shape[0] and max(p[1] for p in box) > target_height - 4 * sy))
+                        line["box"] = [[min(x1, max(x0, p[0] / sx + x0)),
+                                        min(y1, max(y0, p[1] / sy + y0))] for p in box]
+                        mapped.append(line)
+                    return mapped
                 except Exception as exc:
                     last_error = exc
-                    self._clear_engine(effective_lang, profile)
+                    if key is not None:
+                        self._clear_engine(key)
                     if attempt < max_attempts:
                         print(f"RapidOCR init/inference failed, retrying ({attempt}/{max_attempts})...", file=sys.stderr)
                 finally:
@@ -665,53 +696,71 @@ class RapidOcrService:
                         attempt_infer = time.perf_counter() - infer_start
                     total_infer += attempt_infer
                     attempts.append({
-                        "kind": kind, "language": effective_lang, "retry": attempt, "ok": succeeded,
-                        "tiles": len(tiles),
+                        "kind": kind, "language": "multilingual", "retry": attempt, "ok": succeeded,
+                        "detector": detector or primary_det, "recognizer": primary_rec,
+                        "rect": list(region), "scale": round(scale, 3), "pixels": pixels,
                         "init_ms": round(attempt_init * 1000, 2),
                         "infer_ms": round(attempt_infer * 1000, 2),
                         "total_ms": round((time.perf_counter() - attempt_start) * 1000, 2),
                     })
-                if attempt < max_attempts:
-                    time.sleep(1.0)
+            if optional:
+                budget.skipped.append(f"{kind}:inference-error")
+                print(f"Optional OCR pass failed: {last_error}", file=sys.stderr, flush=True)
+                return None
             raise last_error or RuntimeError("RapidOCR inference failed")
 
-        effective_lang = self._effective_lang(lang)
-        result, lines, init_seconds, infer_seconds, cached, detector_variant = run_attempt(effective_lang, image_array)
-        if init_seconds == 0.0:
-            init_seconds, cached, detector_variant = loader_init, loader_cached, loader_variant
-        language_retry = False
-        if lang == "auto" and should_retry_english(lines):
-            english_result, english_lines, english_init, english_infer, english_cached, english_variant = run_attempt("en", image_array, "english")
-            if recognition_quality(english_lines) > recognition_quality(lines):
-                result, lines = english_result, english_lines
-                effective_lang, init_seconds, infer_seconds = "en", english_init, english_infer
-                cached, detector_variant = english_cached, english_variant
-            language_retry = True
+        tile_lines = []
+        tiny_scale = max(1.0, applied_min_side / max(1, min(image_array.shape[:2])))
+        for tile in tiles:
+            tile_lines.extend(run_region(tile, scale=tiny_scale) or [])
+        lines = merge_tile_lines(tile_lines)
 
-        preprocess_retry = False
-        if should_retry_preprocess(lines):
-            preprocess_start = time.perf_counter()
-            import cv2
+        def accept_region(region: tuple[int, int, int, int], candidate: list[dict[str, Any]] | None) -> None:
+            nonlocal lines
+            if not candidate:
+                return
+            previous = lines_in_region(lines, region)
+            if recognition_quality(candidate) <= recognition_quality(previous):
+                return
+            # Do not remove a full line when an optional crop covers only part
+            # of it. Seam deduplication prefers interior, confident results.
+            remove = {id(line) for line in previous if (bounds := line_bounds(line)) is not None
+                      and intersection(bounds, region) >= rect_area(bounds) * 0.95}
+            lines = merge_tile_lines([line for line in lines if id(line) not in remove] + candidate)
 
-            gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY)
-            enhanced = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(gray)
-            if min(enhanced.shape[:2]) >= 31:
-                prepared = cv2.adaptiveThreshold(
-                    enhanced, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 9
-                )
-            else:
-                _, prepared = cv2.threshold(enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            prepared = cv2.cvtColor(prepared, cv2.COLOR_GRAY2BGR)
-            preprocess_seconds += time.perf_counter() - preprocess_start
-            retry_result, retry_lines, retry_init, retry_infer, retry_cached, retry_variant = run_attempt(effective_lang, prepared, "preprocess")
-            preprocess_retry = True
-            if recognition_quality(retry_lines) > recognition_quality(lines):
-                result, lines = retry_result, retry_lines
-                init_seconds, infer_seconds = retry_init, retry_infer
-                cached, detector_variant = retry_cached, retry_variant
+        upscale = PROFILE_LIMITS[profile][1]
+        if upscale > 1:
+            for region in refinement_regions(lines, analysis):
+                if max(region[2] - region[0], region[3] - region[1]) * upscale > applied_max_side:
+                    # Retain the primary result rather than shrinking a long
+                    # line immediately after upscaling it.
+                    continue
+                accept_region(region, run_region(region, "small-text", scale=upscale))
+
+        if should_retry_preprocess(lines, analysis):
+            for region in analysis.regions[:8]:
+                previous = lines_in_region(lines, region)
+                if previous and recognition_stats(previous)[1] >= 0.82:
+                    continue
+                accept_region(region, run_region(region, "contrast", enhance=True))
+
+        if profile == "balanced" and needs_detector_retry(lines, analysis):
+            for region in analysis.regions:
+                if not lines_in_region(lines, region):
+                    accept_region(region, run_region(region, "detector-fallback", detector="medium"))
+                if budget.extra_calls >= 8:
+                    break
 
         vis_status = None
         if vis_value:
+            import numpy as np
+            from rapidocr.output import RapidOCROutput
+
+            result = RapidOCROutput(
+                img=image_array,
+                boxes=np.asarray([line["box"] for line in lines], dtype=np.float32).reshape(-1, 4, 2),
+                txts=tuple(line["text"] for line in lines),
+                scores=tuple(line["score"] for line in lines), elapse_list=step_seconds, word_results=(None,))
             vis_path = Path(str(vis_value)).expanduser().resolve()
             vis_path.parent.mkdir(parents=True, exist_ok=True)
             with contextlib.redirect_stdout(sys.stderr):
@@ -719,6 +768,9 @@ class RapidOcrService:
             vis_status = str(vis_path)
 
         low_confidence_lines = [line for line in lines if line["score"] < float(min_score)]
+        for line in lines:
+            line.pop("clip_left", None)
+            line.pop("clip_right", None)
         lines = [line for line in lines if line["score"] >= float(min_score)]
         text = "\n".join(line["text"] for line in lines)
         return {
@@ -727,26 +779,35 @@ class RapidOcrService:
             "backend": "rapidocrlite/cpu",
             "profile": profile,
             "ocr_version": "PP-OCRv6",
-            "model_type": "small-det+medium-rec" if detector_variant == "fast" else "medium",
-            "detector_variant": detector_variant,
+            "model_type": f"{primary_det}-det+{primary_rec}-rec",
+            "detector_variant": primary_det,
+            "recognizer_variant": primary_rec,
+            "fast_mode": bool(getattr(self.args, "fast_mode", False) and profile == "fast"),
             "max_side_len": applied_max_side,
             "min_side_len": applied_min_side,
-            "language": effective_lang if lang == "auto" else lang,
-            "auto_language_retry": language_retry,
-            "auto_preprocess_retry": preprocess_retry,
+            "language": "mixed" if lang == "auto" else lang,
+            "model_language": "multilingual",
+            "auto_language_retry": False,
+            "auto_preprocess_retry": any(item["kind"] == "contrast" for item in attempts),
+            "detector_fallback": any(item["kind"] == "detector-fallback" for item in attempts),
             "image": str(image),
             "rapidocr_root": str(self.rapidocr_root),
             "model_root": str(self.model_root),
             "models": model_files(self.model_root),
-            "cached": cached,
+            "cached": all_cached,
+            "cached_engines": len(self._engines),
             "init_ms": round(total_init * 1000, 2),
-            "load_ms": round(max(0.0, load_seconds - loader_init) * 1000, 2),
+            "load_ms": round(load_seconds * 1000, 2),
             "infer_ms": round(total_infer * 1000, 2),
             "preprocess_ms": round(preprocess_seconds * 1000, 2),
             "total_ms": round((time.perf_counter() - request_start) * 1000, 2),
             "attempts": attempts,
             "tile_count": len(tiles),
-            "step_ms": elapsed_ms(result.elapse_list),
+            "analysis": analysis.summary(),
+            "work_pixels": budget.pixels,
+            "optional_calls": budget.extra_calls,
+            "skipped_passes": budget.skipped,
+            "step_ms": elapsed_ms(step_seconds),
             "text": text,
             "lines": lines,
             "low_confidence_lines": low_confidence_lines,
@@ -782,6 +843,7 @@ def run_stdio(args: argparse.Namespace) -> int:
         try:
             request = json.loads(line)
             if request.get("command") == "quit":
+                service.close()
                 return 0
             if request.get("command") == "warmup":
                 response = service.warmup(
@@ -795,6 +857,7 @@ def run_stdio(args: argparse.Namespace) -> int:
         except Exception as exc:
             response = error_payload(exc)
         print(json.dumps(response, ensure_ascii=False), flush=True)
+    service.close()
     return 0
 
 

@@ -870,12 +870,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     });
     let latest_candidate_refresh = snapshot.latest_candidate_refresh.as_ref();
     let palette = fluent_palette(ui);
-    let engine_value = match snapshot.engine_health.error_code {
-        Some(code) if snapshot.engine_health.state == 3 => {
-            format!("{}（故障码 {code}）", snapshot.engine_health.label())
-        }
-        _ => snapshot.engine_health.label().to_string(),
-    };
+    let engine_value = snapshot.engine_health.diagnostic_text();
     let recovery_value = recovery
         .map(|value| compact_diagnostic_line(value, 52))
         .unwrap_or_else(|| "暂无恢复记录".to_string());

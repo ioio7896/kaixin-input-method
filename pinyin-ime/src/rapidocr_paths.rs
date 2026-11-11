@@ -21,6 +21,7 @@ const REQUIRED_ONNX_MODELS: &[&str] = &[
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
+    "PP-OCRv6_rec_small.onnx",
     "ppocrv6_dict.txt",
 ];
 const OPTIONAL_ONNX_MODELS: &[&str] = &["PP-OCRv6_det_int8.onnx"];

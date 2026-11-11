@@ -38,7 +38,7 @@ const MUTEX_NAME_ENV: &str = "SRF_ENGINE_MUTEX_NAME";
 const CAPABILITY_FILE_NAME: &str = "engine_capability.dat";
 const CAPABILITY_MAGIC: &[u8] = b"KXIPC-DPAPI-1\n";
 const PROTOCOL_MAGIC: u32 = 0x31504653; // "SFP1"
-const PROTOCOL_VERSION: u16 = 5;
+include!(concat!(env!("OUT_DIR"), "/engine_protocol.rs"));
 const ENGINE_APP_VERSION: &str = env!("SRF_APP_VERSION");
 const ENGINE_GIT_COMMIT: &str = env!("SRF_ENGINE_GIT_COMMIT");
 const ENGINE_GIT_DIRTY: &str = env!("SRF_ENGINE_GIT_DIRTY");
@@ -117,6 +117,14 @@ fn engine_build_id() -> String {
             ""
         }
     )
+}
+
+pub fn build_info() -> serde_json::Value {
+    serde_json::json!({
+        "schema": 1, "component": "engine", "version": ENGINE_APP_VERSION,
+        "git": ENGINE_GIT_COMMIT, "protocol": PROTOCOL_VERSION,
+        "bits": usize::BITS,
+    })
 }
 
 fn zeroize_bytes(bytes: &mut [u8]) {
@@ -2075,8 +2083,11 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
                 let mut state = lock_shared_engine_recover();
                 if let Some(engine) = state.engine.as_mut() {
                     if let Err(err) = engine.flush_pending_learning() {
-                        runtime_log::log_engine(RuntimeLogLevel::Error,
-                            "srf_shutdown_user_dict_flush_failed", err.to_string());
+                        runtime_log::log_engine(
+                            RuntimeLogLevel::Error,
+                            "srf_shutdown_user_dict_flush_failed",
+                            err.to_string(),
+                        );
                     }
                 }
             }

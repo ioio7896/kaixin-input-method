@@ -5,3 +5,5 @@ EXPORTS
   DllRegisterServer       PRIVATE
   DllUnregisterServer     PRIVATE
   DllInstall              PRIVATE
+  KxGetBuildInfo
+  KxReleaseProbe

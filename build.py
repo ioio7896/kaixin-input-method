@@ -4,7 +4,7 @@
 开心输入法 - one-command packaging build script.
 
 Usage:
-    python build.py              # Full build; tests/smoke checks are opt-in
+    python build.py              # Full build; staged release interoperability gate is mandatory
     python build.py --no-inno    # Build but skip installer generation
     python build.py --quick      # Skip cargo/cmake; restage and package
     python build.py --clean      # Remove build caches before a fresh build
@@ -55,7 +55,7 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable, TextIO
 
-VERSION = "2026.1106.1914"
+VERSION = (Path(__file__).resolve().parent / "VERSION").read_text(encoding="utf-8").strip()
 RETIRED_OPTIONAL_LEXICON_TAGS = frozenset(json.loads(
     (Path(__file__).resolve().parent / "shared" / "retired_optional_lexicons.json")
     .read_text(encoding="utf-8")
@@ -109,12 +109,13 @@ RAPIDOCR_DIR = "RapidOCRLite"
 RAPIDOCR_VENV = ".venv-rapidocr"
 RAPIDOCR_PACKAGES = ".python-packages"
 RAPIDOCR_HELPER = "kaixin_ocr_engine.py"
-RAPIDOCR_HELPERS = ("kaixin_ocr_engine.py", "kaixin_ocr_engine.cmd", "kaixin_cv_crop.py")
+RAPIDOCR_HELPERS = ("kaixin_ocr_engine.py", "kaixin_ocr_policy.py", "kaixin_ocr_engine.cmd", "kaixin_cv_crop.py")
 OPENCV_CROP_HELPER = "kaixin_cv_crop.py"
 RAPIDOCR_REQUIRED_MODELS = (
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
+    "PP-OCRv6_rec_small.onnx",
     "ppocrv6_dict.txt",
 )
 PYTHON_PACKAGE_EXCLUDED_DIR_NAMES = frozenset(
@@ -191,7 +192,7 @@ PACKAGE_VARIANT_ALIASES: dict[str, str] = {
     "full": "ocr",
 }
 
-PACKAGE_BUILD_TOOL_RUST_ARTIFACTS = ("bake_lexicon.exe",)
+PACKAGE_BUILD_TOOL_RUST_ARTIFACTS = ("bake_lexicon.exe", "input_perf.exe", "input_eval.exe")
 BASE_STAGED_RUST_ARTIFACTS = (
     "srf_ime_settings.exe",
     "srf_ime_tray.exe",
@@ -225,7 +226,7 @@ def rust_artifact_names_for_variants(
         names.extend(OPTIONAL_OCR_RUST_ARTIFACTS)
     if include_smoke_tools:
         names.extend(SMOKE_RUST_ARTIFACTS)
-    return names
+    return list(dict.fromkeys(names))
 
 
 def staged_rust_exe_names(
@@ -1891,7 +1892,7 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
     if not src_dir.is_dir() or not cargo_toml.is_file():
         return None
     max_rs, fp_rs = _tree_source_stats(src_dir, {".rs"})
-    max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "build.py", repo / "Cargo.toml", repo / ".cargo/config.toml", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
+    max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "build.py", repo / "Cargo.toml", repo / ".cargo/config.toml", repo / "VERSION", repo / "shared/engine_protocol_version.txt", repo / "release-toolchain.json", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
     max_data, fp_data = _tree_source_stats(data_dir, {".txt", ".tsv", ".bin", ".yaml", ".yml", ".json"})
     max_lex, fp_lex = _lexicon_sources_fingerprint(repo)
     max_readings, fp_readings = _source_files_fingerprint(
@@ -2000,10 +2001,11 @@ def _cmake_inputs_fingerprint(tsf_tip: Path, repo: Path | None = None) -> tuple[
         st = cm.stat()
         max_def, fp_def = _source_file_stats(module_def, repo or tsf_tip)
         max_version, fp_version = _source_file_stats(version_file, repo or tsf_tip.parent)
+        max_protocol, fp_protocol = _source_file_stats((repo or tsf_tip.parent) / "shared/engine_protocol_version.txt", repo or tsf_tip.parent)
     except OSError:
         return None
     _, fp_git = _git_state_fingerprint(repo or tsf_tip.parent)
-    max_src = max(max_cpp, max_h, max_tests, st.st_mtime, max_def, max_version)
+    max_src = max(max_cpp, max_h, max_tests, st.st_mtime, max_def, max_version, max_protocol)
     comb = hashlib.sha256()
     comb.update(fp_cpp.encode("ascii"))
     comb.update(b"\0")
@@ -2018,6 +2020,7 @@ def _cmake_inputs_fingerprint(tsf_tip: Path, repo: Path | None = None) -> tuple[
     comb.update(fp_version.encode("ascii"))
     comb.update(b"\0")
     comb.update(fp_git.encode("ascii"))
+    comb.update(fp_protocol.encode("ascii"))
     return max_src, comb.hexdigest()
 
 
@@ -2044,6 +2047,8 @@ def is_cmake_up_to_date(repo: Path, tsf_tip: Path, profile: str, arch: str = ARC
     try:
         dll, overlay = find_tsf_runtime_pair(tsf_tip, build_dir, profile_cap)
     except FileNotFoundError:
+        return False
+    if not (dll.parent / "srf_release_probe.exe").is_file():
         return False
     fp = _cmake_inputs_fingerprint(tsf_tip, repo)
     if fp is None:
@@ -3441,75 +3446,12 @@ def post_stage_smoke_verify(repo: Path, output_root: Path, profile: str) -> list
     return warnings
 
 
-def _stamped_git_commit_in(data: bytes, commit_short: str) -> bool:
-    """True when a staged binary embeds the expected 12-hex commit, in ASCII
-    (narrow C++/Rust string literals) or UTF-16LE (defensive)."""
-    needle = commit_short.encode("ascii")
-    return needle in data or needle.decode("ascii").encode("utf-16-le") in data
-
-
-def _best_effort_git_commit(data: bytes) -> str | None:
-    """Best-effort extraction of an exactly-12-hex run for error messages only.
-    Never used for the pass/fail decision: the real DLL contains 12-hex runs
-    that are not the commit, while membership of the expected commit is
-    unambiguous."""
-    m = re.search(rb"(?<![0-9a-f])[0-9a-f]{12}(?![0-9a-f])", data)
-    return m.group().decode("ascii") if m else None
-
-
-def verify_staged_git_commits(runtime_dir: Path, engine_exe: Path, repo: Path) -> None:
-    """Build helper: verify_staged_git_commits.
-
-    Hard packaging gate: staged x64/x86 TIP DLLs and srf_ime_engine.exe must
-    all embed the git commit HEAD has at staging time.  Mixed or stale stamps
-    fail the package.  Degrades to binary-vs-binary consistency when git is
-    unavailable.  The dirty flag is not part of the decision (DLLs embed it
-    only as an integer constant, not a string)."""
-    info = git_release_info(repo)
-    expected = info.get("commit_short")
-    targets = [
-        ("x64 srf_tsf_tip.dll", runtime_dir / "x64" / "srf_tsf_tip.dll"),
-        ("x86 srf_tsf_tip.dll", runtime_dir / "x86" / "srf_tsf_tip.dll"),
-        ("srf_ime_engine.exe", engine_exe),
-    ]
-    found: dict[str, str | None] = {}
-    for name, path in targets:
-        data = path.read_bytes()
-        if expected and _stamped_git_commit_in(data, expected):
-            found[name] = expected
-        else:
-            # Display-only: prefer the real stamped hex over the "unknown"
-            # fallback word, which also appears in binaries for unrelated
-            # reasons (error strings).  The decision stays membership-based.
-            found[name] = _best_effort_git_commit(data) or (
-                "unknown" if b"unknown" in data else None
-            )
-    stamps = list(found.values())
-    if expected:
-        ok = all(s == expected for s in stamps)
-    else:
-        ok = all(s is not None and s == stamps[0] for s in stamps)
-    if ok:
-        print_msg(
-            f"  {green('OK')} git stamps match HEAD ({expected or 'unknown'}) "
-            "in all staged binaries"
-        )
-        return
-    detail = ", ".join(f"{name}={stamp or '?'}" for name, stamp in found.items())
-    head_note = f"当前 HEAD={expected}" if expected else "git 不可用，仅校验二进制间一致性"
-    raise RuntimeError(
-        f"staged binaries carry stale or mismatched git stamps: {detail}; "
-        f"{head_note}. 各产物必须在同一份新代码上重新打包：请重新运行完整构建，"
-        "不要使用 --quick / --skip-cargo / --skip-cmake，"
-        "确保 DLL 与引擎使用同一 git 提交（只用新代码）。"
-    )
-
-
 def verify_staged_package(
     output_root: Path,
     include_ocr: bool = True,
     include_translation: bool = False,
     repo: Path | None = None,
+    profile: str = "release",
 ) -> None:
     """Build helper: verify_staged_package."""
     if not output_root.is_dir():
@@ -3555,7 +3497,7 @@ def verify_staged_package(
         raise RuntimeError(f"staged package must not contain legacy OCR venv: {legacy_venv}")
     if include_ocr:
         rapidocr_required = [
-            output_root / "tools" / RAPIDOCR_HELPER,
+            *(output_root / "tools" / helper for helper in RAPIDOCR_HELPERS),
             output_root / "tools" / OPENCV_CROP_HELPER,
             rapidocr_python_package / "__init__.py",
             rapidocr_packages_path(output_root),
@@ -3720,7 +3662,14 @@ def verify_staged_package(
         raise RuntimeError("staged srf_ime_ocr.exe is missing OCR window title")
 
     if repo is not None:
-        verify_staged_git_commits(runtime_dir, output_root / "srf_ime_engine.exe", repo)
+        from scripts.release_validation import verify_staged_release
+        verify_staged_release(repo, output_root, runtime_dir, profile,
+                              git_release_info(repo).get("commit_short"))
+        print_msg(f"  {green('OK')} staged Rust/x64/x86 versions, protocol and nihao handshake")
+        if include_ocr:
+            from scripts.validate_ocr_package import verify_ocr_package
+            ocr_report = verify_ocr_package(repo, output_root)
+            print_msg(f"  {green('OK')} staged OCR profiles, warmup and model cache: {ocr_report.name}")
 
     install_dev = output_root / "install_dev.ps1"
     install_current_user = output_root / "install_current_user.ps1"
@@ -4037,6 +3986,11 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
     if not VERSION_RE.match(ctx.version):
         errors.append(f"invalid VERSION format: {ctx.version!r} (expected like 1.2.3)")
     errors.extend(validate_version_sources(repo))
+    from scripts.release_version import validate_sources
+    errors.extend(validate_sources(repo))
+    if not ctx.dry_run:
+        from scripts.check_release_toolchain import check
+        check(repo)
     if args.no_version and not (args.debug or args.no_inno):
         errors.append("--no-version can only be used with --debug or --no-inno; installer builds must inject VERSION into Inno")
 
@@ -4679,11 +4633,17 @@ def main() -> int:
                         include_ocr=variant.include_ocr,
                         include_translation=variant.include_translation,
                         repo=repo,
+                        profile=profile,
                     )
                     total = sum(f.stat().st_size for f in stage_root.rglob("*") if f.is_file())
                     print_msg(f"  {green('OK')} stage directory: {stage_root}")
                     print_msg(f"  {green('OK')} total size: {fmt_size(total)}")
                     print_msg(f"  {green('OK')} staged package verification passed")
+                    if profile == "release" and variant.id == primary_variant.id:
+                        from scripts.input_benchmark_report import generate_report
+                        benchmark_dir = repo / "dist" / f"input-benchmark-{ctx.version}-{ctx.build_timestamp}"
+                        generate_report(repo, rust_target_dir(repo, profile), stage_root / "lexicon", benchmark_dir)
+                        print_msg(f"  {green('OK')} speed/quality/memory report: {benchmark_dir / 'report.md'}")
 
                     if not args.no_smoke and variant.id == primary_variant.id:
                         warnings = post_stage_smoke_verify(repo, stage_root, profile)

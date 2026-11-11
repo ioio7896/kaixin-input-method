@@ -475,17 +475,36 @@ fn capture_dxgi_output(output: &DxgiOutput) -> Result<RgbaImage, CaptureError> {
 
     let mut frame_info = DXGI_OUTDUPL_FRAME_INFO::default();
     let mut resource: Option<IDXGIResource> = None;
-    unsafe { duplication.AcquireNextFrame(CAPTURE_TIMEOUT_MS, &mut frame_info, &mut resource) }
-        .map_err(|err| {
-            map_windows_dxgi_error(
-                format!(
-                    "等待 DXGI 输出 {} 的桌面帧失败",
-                    output.identity.device_name
-                ),
-                err,
-            )
-        })?;
-    let mut acquired_frame = AcquiredFrameGuard::new(&duplication);
+    let started = Instant::now();
+    let mut acquired_frame = loop {
+        let remaining = CAPTURE_TIMEOUT_MS.saturating_sub(started.elapsed().as_millis() as u32);
+        if remaining == 0 {
+            return Err(error(
+                CaptureErrorKind::Timeout,
+                "DXGI 未在时限内返回有效桌面更新。",
+            ));
+        }
+        unsafe { duplication.AcquireNextFrame(remaining, &mut frame_info, &mut resource) }
+            .map_err(|err| {
+                map_windows_dxgi_error(
+                    format!(
+                        "等待 DXGI 输出 {} 的桌面帧失败",
+                        output.identity.device_name
+                    ),
+                    err,
+                )
+            })?;
+        let mut guard = AcquiredFrameGuard::new(&duplication);
+        // A pointer-only update has no new desktop image. In a one-shot
+        // duplication session there is no previous desktop texture to reuse.
+        if frame_info.LastPresentTime != 0 || frame_info.ProtectedContentMaskedOut.as_bool() {
+            break guard;
+        }
+        guard
+            .release()
+            .map_err(|err| map_windows_dxgi_error("释放 DXGI 指针更新失败", err))?;
+        resource = None;
+    };
 
     if frame_info.ProtectedContentMaskedOut.as_bool() {
         return Err(error(
@@ -535,15 +554,6 @@ fn capture_dxgi_output(output: &DxgiOutput) -> Result<RgbaImage, CaptureError> {
         )
     })?;
     unsafe { context.CopyResource(&staging, &texture) };
-    acquired_frame.release().map_err(|err| {
-        map_windows_dxgi_error(
-            format!(
-                "释放 DXGI 输出 {} 的桌面帧失败",
-                output.identity.device_name
-            ),
-            err,
-        )
-    })?;
 
     let surface = staging
         .cast::<IDXGISurface1>()
@@ -575,6 +585,12 @@ fn capture_dxgi_output(output: &DxgiOutput) -> Result<RgbaImage, CaptureError> {
             err,
         )
     })?;
+    // CopyResource is asynchronous. Keep ownership until Map/copy completes;
+    // ReleaseFrame invalidates the desktop surface for graphics operations.
+    // https://learn.microsoft.com/windows/win32/api/dxgi1_2/nf-dxgi1_2-idxgioutputduplication-releaseframe
+    acquired_frame
+        .release()
+        .map_err(|err| map_windows_dxgi_error("释放 DXGI 桌面帧失败", err))?;
     Ok(image)
 }
 

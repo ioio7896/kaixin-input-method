@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2.0.0**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1111.2039**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -538,3 +538,11 @@ build.py         一键构建、验证、stage、签名和打包
 HY-MT2 使用独立的 `\\.\pipe\HyMT2.IME.Request`，不会占用旧 `WinTranslator.Request`。请求采用协议 v2、换行分隔 UTF-8 JSON，后台结果通过当前用户的 `Kaixin.Translate.Result.*` 命名管道返回。支持分块回传、结果查询补取和终态确认，同一会话的新请求取消旧请求；候选译文经用户确认后插入原窗口，不自动替换 TSF composition。
 
 翻译设置支持目标语言、异步连接检测和取消后台任务。HY2 安装器注册 App Paths，输入法优先读取配置路径并支持注册路径和默认安装位置。后端保存模型运行配置并独立于 WebView 执行；输入法、桌面及浏览器共用有优先级的推理队列，长文本分块让出资源，短文本结果仅使用有容量限制的内存缓存。进度预览不会自动提交，模型必须完整结束且占位符校验通过才交付。
+
+## 发布版本与验证
+
+发布前运行 `python scripts/release_version.py`，按上海时间生成 `年.月日.时分` 时间戳，数字段自动去除前导零，同步应用 Cargo 清单、锁文件和本文版本。C++ 和安装器直接读取 `VERSION`。`python scripts/release_version.py --check` 检查同步状态。
+
+发布 Rust/Cargo 固定为 `release-toolchain.json` 中的 1.99.0，CI 使用同一版本；本地工具链不一致时构建立即报错。运行 `python build.py` 完整编译并生成输入法、输入法 + OCR 两个安装器。
+
+正式打包必须通过暂存引擎和 x64/x86 TSF 的结构化版本、协议校验及真实 `nihao` 握手。缺少校验探针、旧 DLL 或任一候选查询失败都会阻止生成安装器，`--quick` 等选项也不能跳过该门槛。每次 Release 构建同时输出速度、内存和候选质量报告，详见 [分类评测说明](docs/category-ranking-evaluation.md)。

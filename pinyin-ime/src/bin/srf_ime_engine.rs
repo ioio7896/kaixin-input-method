@@ -22,6 +22,10 @@ mod win {
     const EXPORT_RUNTIME_EVENTS_ARG: &str = "--export-runtime-events";
 
     pub fn run() {
+        if std::env::args().any(|arg| arg == "--build-info") {
+            println!("{}", pinyin_ime::ipc_service::build_info());
+            return;
+        }
         unsafe {
             let mut args = std::env::args().skip(1);
             if args.next().as_deref() == Some(EXPORT_RUNTIME_EVENTS_ARG) {

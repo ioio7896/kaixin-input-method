@@ -67,8 +67,8 @@ TEXT_FILES = {
         3,
     ),
     "data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt": (
-        "5a6032ad99f69af1ebab90e075b5eac1bdf7c44b9a3a3031528ed0226ca8952a",
-        145,
+        "cec8680c6d790c5845559745b6e74ae7eeac99e653188ab20a16cc4e94066f85",
+        445,
         3,
     ),
     "data_sources/kaixin/common_phrases.tsv": (

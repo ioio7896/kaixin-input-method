@@ -560,6 +560,43 @@ fn normalize_opaque_capture(image: &mut RgbaImage) {
     }
 }
 
+/// Detects a capture surface that has not been repainted yet, as can happen
+/// when a cached Windows Graphics Capture device survives system sleep. The
+/// sample is deliberately strict so ordinary dark content remains valid.
+/// Protected content stays governed by Windows; this only lets callers retry
+/// with their existing capture fallback when a whole frame is effectively
+/// black.
+pub(crate) fn is_probably_blank_capture(image: &RgbaImage) -> bool {
+    if image.width() == 0 || image.height() == 0 {
+        return false;
+    }
+
+    const GRID: u32 = 32;
+    const BLACK_CHANNEL_MAX: u8 = 3;
+    const MIN_BLACK_SAMPLES_PER_MILLE: usize = 995;
+
+    let mut samples = 0usize;
+    let mut black_samples = 0usize;
+    for grid_y in 0..GRID {
+        let y = (u64::from(grid_y) * u64::from(image.height() - 1)
+            / u64::from(GRID - 1)) as u32;
+        for grid_x in 0..GRID {
+            let x = (u64::from(grid_x) * u64::from(image.width() - 1)
+                / u64::from(GRID - 1)) as u32;
+            let pixel = image.get_pixel(x, y);
+            samples += 1;
+            if pixel[0] <= BLACK_CHANNEL_MAX
+                && pixel[1] <= BLACK_CHANNEL_MAX
+                && pixel[2] <= BLACK_CHANNEL_MAX
+            {
+                black_samples += 1;
+            }
+        }
+    }
+
+    black_samples * 1000 >= samples * MIN_BLACK_SAMPLES_PER_MILLE
+}
+
 #[cfg(windows)]
 fn map_xcap_error(error: xcap::XCapError) -> CaptureError {
     use xcap::XCapError;

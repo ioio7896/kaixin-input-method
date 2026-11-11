@@ -108,7 +108,8 @@ fn tray_tooltip_text(state: &TrayVisualState) -> String {
     let source = mode_source_label(state.mode_source.as_deref());
     let engine = match state.engine_error_code {
         Some(code) if state.engine_state == TrayEngineState::Failed => {
-            format!("{}（故障码 {code}）", state.engine_state.label())
+            let reason = pinyin_ime::engine_health::EngineFailureReason::from_code(Some(code));
+            format!("{}（0x{code:08X}）\n{}", reason.label(), reason.recovery())
         }
         _ => state.engine_state.label().to_string(),
     };

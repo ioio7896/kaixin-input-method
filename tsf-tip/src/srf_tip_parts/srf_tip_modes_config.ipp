@@ -698,6 +698,17 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
   // 抓到过期窗口而被下一次对账误清。
   RefreshCompatibilityState();
   if (ShouldHandleGameChatHotkey()) {
+    // In a game chat field this hotkey is an explicit recovery action: users
+    // invoke it when the IME did not open with the chat box. Keep it
+    // idempotent so pressing it again can never send the user back to ASCII.
+    if (m_gameChatActive) {
+      m_imeOpen = true;
+      ApplyDefaultPunctuationForImeMode();
+      SyncCompartmentState();
+      SyncStatusModel();
+      ShowGameInputStatus(L"中文聊天");
+      return;
+    }
     m_autoGameChatDismissedFocus = m_autoGameChatFocus;
     m_autoGameChatFocus = nullptr;
     m_gameChatSource = SrfGameTextSource::Manual;

@@ -1,6 +1,47 @@
 //! Versioned, freshness-checked engine health published by the TSF bridge.
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EngineFailureReason {
+    VersionMismatch,
+    StartupFailed,
+    ConnectionTimeout,
+    PermissionDenied,
+    Other,
+}
+
+impl EngineFailureReason {
+    pub fn from_code(code: Option<u32>) -> Self {
+        match code {
+            Some(0xE001_0002) => Self::VersionMismatch,
+            Some(2 | 3 | 126 | 127 | 193 | 216 | 0xE001_0003) => Self::StartupFailed,
+            Some(121 | 258 | 1460 | 0xE001_0004) => Self::ConnectionTimeout,
+            Some(5 | 1314 | 0x8007_0005 | 0xE001_0005) => Self::PermissionDenied,
+            _ => Self::Other,
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::VersionMismatch => "组件版本不一致",
+            Self::StartupFailed => "引擎启动失败",
+            Self::ConnectionTimeout => "引擎连接超时",
+            Self::PermissionDenied => "引擎访问权限不足",
+            Self::Other => "引擎异常",
+        }
+    }
+
+    pub fn recovery(self) -> &'static str {
+        match self {
+            Self::VersionMismatch => "请用同一版本完整安装包修复安装，然后重启正在输入的应用。",
+            Self::StartupFailed => "请先重启输入引擎；若仍失败，用完整安装包修复缺失的组件。",
+            Self::ConnectionTimeout => "请重试或从托盘重启输入引擎；若反复超时，导出诊断日志。",
+            Self::PermissionDenied => "请检查安全软件拦截记录和安装目录权限，再重试或修复安装。",
+            Self::Other => "请先重启输入引擎；若仍异常，导出诊断日志。",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct EngineHealthSnapshot {
     /// 0=idle, 1=loading, 2=ready, 3=failed, 4=unknown.
     pub state: u32,
@@ -20,9 +61,28 @@ impl EngineHealthSnapshot {
             0 => "未启动",
             1 => "恢复中",
             2 => "正常",
-            3 => "异常",
+            3 => self.failure_reason().label(),
             _ => "未知",
         }
+    }
+
+    pub fn failure_reason(self) -> EngineFailureReason {
+        EngineFailureReason::from_code(self.error_code)
+    }
+
+    pub fn diagnostic_text(self) -> String {
+        if self.state != 3 {
+            return self.label().to_string();
+        }
+        let code = self
+            .error_code
+            .map(|code| format!("（故障码 0x{code:08X}）"))
+            .unwrap_or_default();
+        format!(
+            "{}{code}；{}",
+            self.label(),
+            self.failure_reason().recovery()
+        )
     }
 }
 
@@ -212,7 +272,30 @@ mod tests {
                 error_code: Some(2)
             }
             .label(),
-            "异常"
+            "引擎启动失败"
+        );
+    }
+
+    #[test]
+    fn actionable_failure_reason_preserves_win32_and_protocol_causes() {
+        for (code, reason) in [
+            (0xE001_0002, EngineFailureReason::VersionMismatch),
+            (2, EngineFailureReason::StartupFailed),
+            (193, EngineFailureReason::StartupFailed),
+            (1460, EngineFailureReason::ConnectionTimeout),
+            (5, EngineFailureReason::PermissionDenied),
+        ] {
+            let health = EngineHealthSnapshot {
+                state: 3,
+                owner_pid: None,
+                error_code: Some(code),
+            };
+            assert_eq!(health.failure_reason(), reason);
+            assert!(health.diagnostic_text().contains(reason.recovery()));
+        }
+        assert_eq!(
+            EngineFailureReason::from_code(Some(9999)),
+            EngineFailureReason::Other
         );
     }
 }

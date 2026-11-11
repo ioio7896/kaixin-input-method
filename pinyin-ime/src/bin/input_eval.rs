@@ -26,6 +26,7 @@ struct EvalArgs {
     min_top1: Option<f64>,
     min_top3: Option<f64>,
     min_top9: Option<f64>,
+    json_path: Option<PathBuf>,
 }
 
 fn parse_cases(path: &Path) -> Vec<Case> {
@@ -82,10 +83,12 @@ fn parse_args(repo: &Path) -> EvalArgs {
     let mut min_top1 = None;
     let mut min_top3 = None;
     let mut min_top9 = None;
+    let mut json_path = None;
     let mut engine_profile = EvaluationProfile::default();
     let mut lexicon_dir = repo.join("lexicon");
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--json" => json_path = args.next().map(PathBuf::from),
             "--engine-profile" => {
                 engine_profile =
                     EvaluationProfile::parse(&args.next().expect("--engine-profile value"))
@@ -127,6 +130,7 @@ fn parse_args(repo: &Path) -> EvalArgs {
             "--help" | "-h" => {
                 eprintln!(
                     "usage: input_eval [cases.sqlite] [--cases cases.sqlite] [--mixed] [--quality] [--explain case_id] [--explain-limit N] [--explain-all]\n\
+                     output: --json PATH\n\
                      optional gates: --min-top1 PCT --min-top3 PCT --min-top9 PCT\n\
                      engine: --engine-profile runtime-hot-cold|full --lexicon DIR\n\
                      case table: cases(case_id, category, input, expected, sort_order)\n\
@@ -149,6 +153,7 @@ fn parse_args(repo: &Path) -> EvalArgs {
         min_top1,
         min_top3,
         min_top9,
+        json_path,
     }
 }
 
@@ -187,7 +192,7 @@ fn candidate_source_tags(meta: &pinyin_ime::core::CandidateMeta) -> String {
     tags.join("")
 }
 
-#[derive(Default)]
+#[derive(Default, serde::Serialize)]
 struct CategoryStats {
     total: usize,
     top1_hits: usize,
@@ -334,6 +339,7 @@ fn main() {
     let mut top3_hits = 0usize;
     let mut top9_hits = 0usize;
     let mut category_stats = std::collections::BTreeMap::<String, CategoryStats>::new();
+    let mut case_results = Vec::new();
     println!("case_id\tcategory\tinput\texpected\ttop1\ttop3_hit\ttop9_hit\tpreview");
     for case in &cases {
         let (candidates, _err) = engine.lookup_full(&case.input);
@@ -347,6 +353,12 @@ fn main() {
             .iter()
             .take(9)
             .any(|candidate| expected_matches(&case.expected, &candidate.0));
+        case_results.push(
+            serde_json::json!({ "id": case.id, "category": case.category,
+            "input": case.input, "expected": case.expected, "top1": top1,
+            "top1_hit": top1_hit, "top3_hit": top3_hit, "top9_hit": top9_hit,
+            "error": _err }),
+        );
         if top1_hit {
             top1_hits += 1;
         }
@@ -387,7 +399,7 @@ fn main() {
         top9_hits
     );
     println!("CATEGORY\tcases\ttop1\ttop3\ttop9");
-    for (category, stats) in category_stats {
+    for (category, stats) in &category_stats {
         println!(
             "{}\t{}\t{:.1}% ({})\t{:.1}% ({})\t{:.1}% ({})",
             category,
@@ -399,6 +411,17 @@ fn main() {
             stats.pct(stats.top9_hits),
             stats.top9_hits
         );
+    }
+
+    if let Some(path) = &args.json_path {
+        let report = serde_json::json!({ "schema_version": 1, "cases": cases.len(),
+            "top1_pct": top1_pct, "top3_pct": top3_pct, "top9_pct": top9_pct,
+            "categories": category_stats, "results": case_results });
+        std::fs::write(
+            path,
+            serde_json::to_vec_pretty(&report).expect("serialize eval report"),
+        )
+        .unwrap_or_else(|error| panic!("write {}: {error}", path.display()));
     }
 
     let gates_ok = check_gate("top1", top1_pct, args.min_top1)
