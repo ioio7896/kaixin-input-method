@@ -678,9 +678,9 @@ impl ImeApp {
         let accent = egui::Color32::from_rgb(30, 115, 210);
         let active_fill = egui::Color32::from_rgb(225, 239, 255);
         let stroke = if active {
-            egui::Stroke::new(1.2, accent)
+            egui::Stroke::new(1.2_f32, accent)
         } else {
-            egui::Stroke::new(1.0, egui::Color32::from_gray(190))
+            egui::Stroke::new(1.0_f32, egui::Color32::from_gray(190))
         };
         let fill = if active {
             active_fill
@@ -782,11 +782,9 @@ impl ImeApp {
                             cell_width,
                             font_size,
                         );
-                        if response.hovered() {
-                            if self.highlight_in_page != local {
-                                self.highlight_in_page = local;
-                                ui.ctx().request_repaint();
-                            }
+                        if response.hovered() && self.highlight_in_page != local {
+                            self.highlight_in_page = local;
+                            ui.ctx().request_repaint();
                         }
                         let candidate = &self.candidates[global];
                         let menu_data = CandidateMenuData {
@@ -966,7 +964,7 @@ impl ImeApp {
             .fixed_pos(pos)
             .show(ctx, |ui| {
                 egui::Frame::popup(ui.style())
-                    .stroke(egui::Stroke::new(1.0, egui::Color32::from_gray(150)))
+                    .stroke(egui::Stroke::new(1.0_f32, egui::Color32::from_gray(150)))
                     .show(ui, |ui| {
                         ui.set_min_width(420.0);
                         ui.horizontal(|ui| {

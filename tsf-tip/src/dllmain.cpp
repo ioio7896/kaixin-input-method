@@ -10,7 +10,9 @@ static LONG g_cBackgroundWorkers = 0;
 static HMODULE g_hModule = nullptr;
 
 /// 供窗口类注册等场景使用，避免 GetModuleHandleW(nullptr) 返回宿主 EXE 句柄。
-HMODULE SrfTip_GetDllModule() { return g_hModule; }
+HMODULE SrfTip_GetDllModule() {
+  return g_hModule;
+}
 
 HRESULT SrfTip_DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv);
 
@@ -36,7 +38,8 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 STDAPI DllCanUnloadNow(void) {
   if (InterlockedCompareExchange(&g_cSrfTipObjects, 0, 0) > 0 ||
       InterlockedCompareExchange(&g_cServerLocks, 0, 0) > 0 ||
-      InterlockedCompareExchange(&g_cBackgroundWorkers, 0, 0) > 0) return S_FALSE;
+      InterlockedCompareExchange(&g_cBackgroundWorkers, 0, 0) > 0)
+    return S_FALSE;
   return S_OK;
 }
 
@@ -49,7 +52,9 @@ STDAPI DllRegisterServer(void) {
   return SrfTip_RegisterServer(mod);
 }
 
-STDAPI DllUnregisterServer(void) { return SrfTip_UnregisterServer(); }
+STDAPI DllUnregisterServer(void) {
+  return SrfTip_UnregisterServer();
+}
 
 STDAPI DllInstall(BOOL bInstall, LPCWSTR pszCmdLine) {
   HMODULE mod = g_hModule;

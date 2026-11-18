@@ -50,8 +50,7 @@ def main() -> int:
         rendered.append(f"{phrase}\t{code}\t{weight}")
     args.input.write_text("\n".join(rendered) + "\n", encoding="utf-8", newline="\n")
     print(
-        f"rewrote {args.input}: {changed} reading(s) updated, "
-        f"{duplicates} duplicate row(s) removed"
+        f"rewrote {args.input}: {changed} reading(s) updated, {duplicates} duplicate row(s) removed"
     )
     from merge_zh_ext_lexicons import merge_lexicons
 

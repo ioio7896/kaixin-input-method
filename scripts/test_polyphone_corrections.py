@@ -21,8 +21,10 @@ class PolyphoneCorrectionsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "corrections.tsv"
             path.write_text("重庆\tchong qing\n重庆市\tchong qing shi\n", encoding="utf-8")
-            self.assertEqual(corrected_reading("重庆市区", load_corrections(path)),
-                             ("chong", "qing", "shi", "qu"))
+            self.assertEqual(
+                corrected_reading("重庆市区", load_corrections(path)),
+                ("chong", "qing", "shi", "qu"),
+            )
             path.write_text("朝阳\tchao yang\tglobal\n", encoding="utf-8")
             with self.assertRaises(ValueError):
                 load_corrections(path)
@@ -33,9 +35,11 @@ class PolyphoneCorrectionsTest(unittest.TestCase):
         for phrase in ("朝阳", "流血", "穿着"):
             self.assertEqual(next(rule.scope for rule in rules if rule.phrase == phrase), "exact")
         three_chars = (root / "lexicon/zh/life_common_3char.txt").read_text(encoding="utf-8")
-        for phrase, reading in (("朝阳市", "chao yang shi"),
-                                ("朝阳县", "chao yang xian"),
-                                ("朝阳门", "chao yang men")):
+        for phrase, reading in (
+            ("朝阳市", "chao yang shi"),
+            ("朝阳县", "chao yang xian"),
+            ("朝阳门", "chao yang men"),
+        ):
             self.assertIn(f"{phrase}\t{reading}\t", three_chars)
 
 

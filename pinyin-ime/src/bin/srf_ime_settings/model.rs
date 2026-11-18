@@ -170,8 +170,6 @@ pub(crate) struct SkinPreview {
     pub(crate) header_bg: String,
     pub(crate) border: String,
     pub(crate) divider: String,
-    pub(crate) item_bg: String,
-    pub(crate) item_border: String,
     pub(crate) selected_bg: String,
     pub(crate) selected_border: String,
     pub(crate) text: String,

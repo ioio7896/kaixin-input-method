@@ -401,7 +401,7 @@ fn format_latency_ms(value: f64) -> String {
 }
 
 fn diagnostic_sqlite_io_error(err: rusqlite::Error) -> std::io::Error {
-    std::io::Error::new(std::io::ErrorKind::Other, err)
+    std::io::Error::other(err)
 }
 
 fn write_typing_latency_summary_sqlite(
@@ -485,7 +485,7 @@ fn diagnostic_redaction_values() -> Vec<(String, &'static str)> {
             push_value(value, token);
         }
     }
-    values.sort_by(|left, right| right.0.len().cmp(&left.0.len()));
+    values.sort_by_key(|left| std::cmp::Reverse(left.0.len()));
     values
 }
 
@@ -533,7 +533,7 @@ fn process_running_summary(name: &str) -> String {
             .arg(&filter)
             .arg("/NH")
             .output();
-        return match output {
+        match output {
             Ok(output) => {
                 let text = String::from_utf8_lossy(&output.stdout).to_ascii_lowercase();
                 if text.contains(&name.to_ascii_lowercase()) {
@@ -543,7 +543,7 @@ fn process_running_summary(name: &str) -> String {
                 }
             }
             Err(err) => format!("unknown:{err}"),
-        };
+        }
     }
 
     #[cfg(not(windows))]
@@ -1098,13 +1098,13 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     .show(ui, |ui| {
                         ui.set_width(ui.available_width());
                         if !cold_lines.is_empty() {
-                            diagnostic_log_group(ui, "冷启动摘要", &cold_lines);
+                            diagnostic_log_group(ui, "冷启动摘要", cold_lines);
                         }
                         if !compat_lines.is_empty() {
-                            diagnostic_log_group(ui, "兼容 / 降级", &compat_lines);
+                            diagnostic_log_group(ui, "兼容 / 降级", compat_lines);
                         }
                         if !recent_lines.is_empty() {
-                            diagnostic_log_group(ui, "性能事件", &recent_lines);
+                            diagnostic_log_group(ui, "性能事件", recent_lines);
                         }
                         if recent_lines.is_empty()
                             && compat_lines.is_empty()

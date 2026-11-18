@@ -1,3 +1,4 @@
+use super::compatibility::compatibility_game_controls_ui;
 use super::*;
 
 const LONG_DESCRIPTION: &str = "配置、词库、剪贴板和日志所在目录。路径与说明较长时应自动换行，操作按钮应保留足够空间，下一项设置不能覆盖当前内容。";
@@ -706,7 +707,7 @@ fn export_hotkeys_layout_preview() {
                     .frame(
                         egui::Frame::none()
                             .fill(palette.command_bar)
-                            .stroke(Stroke::new(1.0, palette.border_subtle))
+                            .stroke(Stroke::new(1.0_f32, palette.border_subtle))
                             .inner_margin(egui::Margin::symmetric(16.0, 7.0)),
                     )
                     .show(ctx, |ui| {
@@ -717,7 +718,7 @@ fn export_hotkeys_layout_preview() {
                     .frame(
                         egui::Frame::none()
                             .fill(palette.nav_bg)
-                            .stroke(Stroke::new(1.0, palette.border_subtle))
+                            .stroke(Stroke::new(1.0_f32, palette.border_subtle))
                             .inner_margin(egui::Margin::same(10.0)),
                     )
                     .show(ctx, |ui| {

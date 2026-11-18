@@ -83,7 +83,10 @@ def is_three_cjk(text: str) -> bool:
 
 def is_blocked_phrase(phrase: str) -> bool:
     from lexicon_quality import phrase_rejection_reason
-    return bool(phrase_rejection_reason(phrase)) or any(fragment in phrase for fragment in BLOCKED_SUBSTRINGS)
+
+    return bool(phrase_rejection_reason(phrase)) or any(
+        fragment in phrase for fragment in BLOCKED_SUBSTRINGS
+    )
 
 
 def is_hot_head_fragment(phrase: str) -> bool:
@@ -151,9 +154,7 @@ def partition_candidates(
     if len(hot) != hot_size:
         raise RuntimeError(f"only found {len(hot)} hot-head eligible phrases")
     hot_phrases = {candidate.phrase for candidate in hot}
-    tail = [
-        candidate for candidate in candidates if candidate.phrase not in hot_phrases
-    ]
+    tail = [candidate for candidate in candidates if candidate.phrase not in hot_phrases]
     return hot, tail
 
 
@@ -168,8 +169,7 @@ def validate_partition(
 
     if len(hot) != hot_size or len(tail) != len(candidates) - hot_size:
         raise RuntimeError(
-            "invalid hot/tail sizes: "
-            f"hot={len(hot)}, tail={len(tail)}, total={len(candidates)}"
+            f"invalid hot/tail sizes: hot={len(hot)}, tail={len(tail)}, total={len(candidates)}"
         )
     candidate_phrases = [item.phrase for item in candidates]
     hot_phrases = {item.phrase for item in hot}
@@ -186,9 +186,7 @@ def validate_partition(
         raise RuntimeError("sentence fragment reached hot output")
 
     source_ranks = [item.source_rank for item in candidates]
-    if source_ranks != sorted(source_ranks) or len(source_ranks) != len(
-        set(source_ranks)
-    ):
+    if source_ranks != sorted(source_ranks) or len(source_ranks) != len(set(source_ranks)):
         raise RuntimeError("candidate source ranks must be unique and increasing")
     weights = [rank_weight(rank) for rank in source_ranks]
     if weights != sorted(weights, reverse=True):
@@ -196,9 +194,7 @@ def validate_partition(
 
 
 def render_reading(phrase: str) -> str:
-    return EXACT_READING_OVERRIDES.get(phrase) or " ".join(
-        lazy_pinyin(phrase, style=Style.NORMAL)
-    )
+    return EXACT_READING_OVERRIDES.get(phrase) or " ".join(lazy_pinyin(phrase, style=Style.NORMAL))
 
 
 def write_lexicon(
@@ -212,9 +208,7 @@ def write_lexicon(
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8", newline="\n") as stream:
         stream.write(f"# 开心输入法原生词库：{len(rows)} 个热门三字词（{label}）\n")
-        stream.write(
-            f"# Source: wordfreq 中文原始全局排名；完整集合共 {total_size} 条。\n"
-        )
+        stream.write(f"# Source: wordfreq 中文原始全局排名；完整集合共 {total_size} 条。\n")
         stream.write(
             "# 格式：词语<TAB>全拼<TAB>词频；"
             "词频 = round(6000000 / sqrt(wordfreq_rank))，按原始排名单调递减。\n"
@@ -291,7 +285,11 @@ def main() -> int:
     parser.add_argument(
         "--tail-output",
         type=Path,
-        default=repo / "data_sources" / "lexicon_fragments" / "zh" / "life_common_3char_tail_15000.txt",
+        default=repo
+        / "data_sources"
+        / "lexicon_fragments"
+        / "zh"
+        / "life_common_3char_tail_15000.txt",
     )
     parser.add_argument("--size", type=int, default=DEFAULT_SIZE)
     parser.add_argument("--hot-size", type=int, default=DEFAULT_HOT_SIZE)
@@ -309,13 +307,14 @@ def main() -> int:
         tail_output=args.tail_output,
         pool_size=args.pool_size,
     )
-    if args.hot_output.resolve() == (repo / "data_sources/lexicon_fragments/zh/life_common_3char_hot.txt").resolve():
+    if (
+        args.hot_output.resolve()
+        == (repo / "data_sources/lexicon_fragments/zh/life_common_3char_hot.txt").resolve()
+    ):
         from optimize_lexicons import consolidate_three_char
+
         consolidate_three_char()
-    print(
-        f"wrote hot={hot_count} to {args.hot_output}; "
-        f"tail={tail_count} to {args.tail_output}"
-    )
+    print(f"wrote hot={hot_count} to {args.hot_output}; tail={tail_count} to {args.tail_output}")
     return 0
 
 

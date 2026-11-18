@@ -1,0 +1,42 @@
+# 常开日常与办公完整词语；保留精确混拼索引
+# Source: data_sources/kaixin/reviewed_common_phrases.tsv; scripts/lexicon_quality.py --apply
+# 词语<TAB>全拼<TAB>人工排序分数（1—10000）；不代表实测用户词频。
+中国人民	zhong guo ren min	8600
+工作计划	gong zuo ji hua	8800
+工作总结	gong zuo zong jie	8400
+项目计划	xiang mu ji hua	8000
+会议安排	hui yi an pai	8000
+会议时间	hui yi shi jian	8000
+会议通知	hui yi tong zhi	8000
+会议材料	hui yi cai liao	7600
+客户需求	ke hu xu qiu	8000
+客户反馈	ke hu fan kui	8000
+产品经理	chan pin jing li	7800
+用户需求	yong hu xu qiu	7800
+需求确认	xu qiu que ren	8000
+项目进度	xiang mu jin du	8000
+数据备份	shu ju bei fen	8000
+数据恢复	shu ju hui fu	7800
+数据安全	shu ju an quan	7800
+文件管理	wen jian guan li	8000
+文件共享	wen jian gong xiang	7800
+文件上传	wen jian shang chuan	8000
+文件下载	wen jian xia zai	8200
+网络设置	wang luo she zhi	8000
+系统更新	xi tong geng xin	8000
+软件更新	ruan jian geng xin	8000
+安装程序	an zhuang cheng xu	8000
+卸载程序	xie zai cheng xu	7800
+账号登录	zhang hao deng lu	8200
+账号注册	zhang hao zhu ce	8200
+密码重置	mi ma chong zhi	8000
+快递查询	kuai di cha xun	8200
+订单查询	ding dan cha xun	8200
+申请退款	shen qing tui kuan	8000
+支付成功	zhi fu cheng gong	8200
+付款成功	fu kuan cheng gong	8200
+到货通知	dao huo tong zhi	7800
+感谢支持	gan xie zhi chi	8200
+感谢配合	gan xie pei he	8200
+工作安排	gong zuo an pai	8400
+学习资料	xue xi zi liao	8000

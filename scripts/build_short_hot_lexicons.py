@@ -70,9 +70,13 @@ def build_one(
     title: str,
 ) -> None:
     from lexicon_quality import phrase_rejection_reason
+
     # A filename's length is a real membership contract, including hand edits.
-    curated = [row for row in rows(output)[:curated_count]
-               if len(row[0]) == fill_length and not phrase_rejection_reason(row[0])]
+    curated = [
+        row
+        for row in rows(output)[:curated_count]
+        if len(row[0]) == fill_length and not phrase_rejection_reason(row[0])
+    ]
     selected: list[tuple[str, str, int, bool]] = []
     seen: set[str] = set()
     for phrase, reading, score in curated:
@@ -86,7 +90,8 @@ def build_one(
     candidates.sort(key=lambda row: (-row[2], row[0], row[1]))
     needed = target - len(selected)
     additions = [
-        (p, r, s) for p, r, s in candidates
+        (p, r, s)
+        for p, r, s in candidates
         if p not in seen and len(p) == fill_length and not phrase_rejection_reason(p)
     ][:needed]
     if len(additions) != needed:
@@ -113,8 +118,12 @@ def build_four_char_hot() -> None:
     source = ZH / "life_common_4char.txt"
     output = ZH / "life_hot_4char_curated.txt"
     from lexicon_quality import phrase_rejection_reason
-    selected = [row for row in rows(source) if len(row[0]) == 4 and row[2] >= 9_500
-                and not phrase_rejection_reason(row[0])]
+
+    selected = [
+        row
+        for row in rows(source)
+        if len(row[0]) == 4 and row[2] >= 9_500 and not phrase_rejection_reason(row[0])
+    ]
     selected.sort(key=lambda row: (-row[2], row[0], row[1]))
     body = "\n".join(f"{phrase}\t{reading}\t{score}" for phrase, reading, score in selected)
     output.write_text(

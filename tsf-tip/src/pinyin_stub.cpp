@@ -78,8 +78,6 @@ constexpr wchar_t kDefaultEngineMutexName[] = L"Local\\KaixinInput_Engine_Mutex_
 constexpr wchar_t kEnginePipePrefix[] = LR"(\\.\pipe\KaixinInput_Engine_V6_)";
 constexpr wchar_t kEngineMutexPrefix[] = L"Local\\KaixinInput_Engine_Mutex_V6_";
 constexpr auto kRetryBackoffMs = kSrfRecoveryBackoffMs;
-constexpr DWORD kIdleKeepaliveTimeoutMs = 5 * 60 * 1000;
-constexpr DWORD kIdleCheckIntervalMs = 60 * 1000;
 constexpr DWORD kEngineWatchdogIntervalMs = 2 * 1000;
 constexpr DWORD kEngineRecoveryCooldownMs = 60 * 1000;
 constexpr DWORD kInstallMaintenanceMaxAgeMs = 30 * 60 * 1000;
@@ -94,7 +92,7 @@ constexpr size_t kMaxLearnPhraseUnits = 512;
 constexpr size_t kMaxSelectionFeedbackSkipped = 64;
 constexpr size_t kMaxClipboardTextUnits = 20000;
 constexpr size_t kMaxLexiconPathUnits = 4096;
-constexpr uint32_t kRustModeTraditionalOutput = 0x0200;
+constexpr uint32_t kRustModeTraditionalOutput = srf_engine_contract::MODE_TRADITIONAL_OUTPUT;
 constexpr size_t kEnginePipeResponseHeaderBytes = 16;
 constexpr size_t kEnginePipeMaxResponseBytes =
     kEnginePipeResponseHeaderBytes + 4 +
@@ -181,7 +179,6 @@ SrfEngineRecoveryBudget g_recoveryBudget;
 std::atomic<bool> g_retryLoopInFlight = false;
 std::atomic<unsigned long long> g_retryLoopGeneration = 0;
 std::atomic<unsigned long long> g_recoveryTriggerRequestId{0};
-std::atomic<ULONGLONG> g_lastEngineUseTime{0};
 std::atomic<ULONGLONG> g_lastInteractiveLookupTick{0};
 std::atomic<ULONGLONG> g_lastUserTriggeredWarmupTick{0};
 std::atomic<unsigned> g_consecutiveLookupTimeouts{0};
@@ -189,7 +186,6 @@ std::atomic<ULONGLONG> g_lastLookupTimeoutRestartTick{0};
 std::atomic<unsigned long long> g_latestLookupRequestId{0};
 std::atomic<unsigned long long> g_latestLookupCancelRequestId{0};
 std::atomic<bool> g_lookupCancelWorkerRunning{false};
-std::atomic<bool> g_idleWatcherRunning{false};
 std::atomic<bool> g_trayWatchdogRunning{false};
 std::wstring g_lastEngineFailure;
 
@@ -208,12 +204,12 @@ struct LocalLookupCacheKey {
 struct LocalLookupCacheKeyHash {
   size_t operator()(const LocalLookupCacheKey& key) const noexcept {
     size_t hash = std::hash<std::wstring>{}(key.reading);
-    hash ^= std::hash<uint32_t>{}(key.modeFlags) + static_cast<size_t>(0x9e3779b9) +
-            (hash << 6) + (hash >> 2);
+    hash ^= std::hash<uint32_t>{}(key.modeFlags) + static_cast<size_t>(0x9e3779b9) + (hash << 6) +
+            (hash >> 2);
     hash ^= std::hash<std::wstring>{}(key.cacheSignature) + static_cast<size_t>(0x9e3779b9) +
             (hash << 6) + (hash >> 2);
-    hash ^= std::hash<bool>{}(key.fullResult) + static_cast<size_t>(0x9e3779b9) +
-            (hash << 6) + (hash >> 2);
+    hash ^= std::hash<bool>{}(key.fullResult) + static_cast<size_t>(0x9e3779b9) + (hash << 6) +
+            (hash >> 2);
     return hash;
   }
 };
@@ -246,10 +242,9 @@ constexpr DWORD kLookupBusyWaitMs = 16;
 constexpr ULONGLONG kPrewarmQuietAfterInteractiveLookupMs = 1500;
 std::atomic<bool> g_singleLetterPrewarmInFlight{false};
 constexpr const wchar_t* kHotLookupPrewarmReadings[] = {
-    L"ni",   L"wo",   L"shi",  L"de",   L"le",   L"bu",   L"zai",  L"you",
-    L"hao",  L"ma",   L"yao",  L"dao",  L"shuo", L"kan",  L"lai",  L"qu",
-    L"hui",  L"neng", L"mei",  L"yi",   L"ge",   L"he",   L"ta",   L"men",
-    L"zhong", L"guo", L"ren",  L"shang", L"xia", L"jin",  L"tian", L"ming"};
+    L"ni",  L"wo",   L"shi",   L"de",  L"le",  L"bu",    L"zai",  L"you", L"hao",  L"ma",  L"yao",
+    L"dao", L"shuo", L"kan",   L"lai", L"qu",  L"hui",   L"neng", L"mei", L"yi",   L"ge",  L"he",
+    L"ta",  L"men",  L"zhong", L"guo", L"ren", L"shang", L"xia",  L"jin", L"tian", L"ming"};
 
 // Prewarm every key-path prefix through the fourth letter, not just the final
 // common reading.  For example, "zhong" contributes zh/zho/zhon/zhong.  This
@@ -259,8 +254,7 @@ const std::vector<std::wstring>& HotLookupPrewarmReadings() {
   static const std::vector<std::wstring> readings = [] {
     std::vector<std::wstring> result;
     auto appendUnique = [&](std::wstring reading) {
-      if (reading.size() < 2 ||
-          std::find(result.begin(), result.end(), reading) != result.end()) {
+      if (reading.size() < 2 || std::find(result.begin(), result.end(), reading) != result.end()) {
         return;
       }
       result.push_back(std::move(reading));
@@ -468,9 +462,8 @@ bool LocalLookupCacheSignatureMatchesCurrentTip(const std::wstring& signature) {
 
 bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFlags,
                                     std::vector<std::wstring>& candidates,
-                                    std::vector<std::wstring>* metaScores,
-                                    bool allowExpired, bool fullResult,
-                                    bool* hasMore) {
+                                    std::vector<std::wstring>* metaScores, bool allowExpired,
+                                    bool fullResult, bool* hasMore) {
   if (!IsLocalLookupCacheableReading(reading)) return false;
   if (IsLoadedRuntimePayloadStaleForCache()) return false;
   std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
@@ -487,9 +480,9 @@ bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFl
     LocalLookupCacheEntry& entry = g_singleLetterLookupCache[static_cast<size_t>(singleIndex)];
     const ULONGLONG age = now >= entry.tick ? now - entry.tick : 0;
     const bool expired = age > kSingleLetterLookupCacheTtlMs;
-    const bool staleAllowed =
-        expired && allowExpired && IsExpiredLocalLookupCacheAllowed(key.reading) &&
-        age <= kSingleLetterLookupCacheStaleTtlMs;
+    const bool staleAllowed = expired && allowExpired &&
+                              IsExpiredLocalLookupCacheAllowed(key.reading) &&
+                              age <= kSingleLetterLookupCacheStaleTtlMs;
     if ((!expired || staleAllowed) && LocalLookupCacheKeyEquals(entry.key, key) &&
         !entry.candidates.empty()) {
       if (!expired) entry.tick = now;
@@ -506,10 +499,10 @@ bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFl
   if (cached == g_localLookupCache.end()) return false;
   LocalLookupCacheEntry& entry = cached->second;
   const ULONGLONG age = now >= entry.tick ? now - entry.tick : 0;
-    const bool expired = age > kLocalLookupCacheTtlMs;
-    const bool staleAllowed =
-        expired && allowExpired && IsExpiredLocalLookupCacheAllowed(key.reading) &&
-        age <= kLocalLookupCacheStaleTtlMs;
+  const bool expired = age > kLocalLookupCacheTtlMs;
+  const bool staleAllowed = expired && allowExpired &&
+                            IsExpiredLocalLookupCacheAllowed(key.reading) &&
+                            age <= kLocalLookupCacheStaleTtlMs;
   if (expired && !staleAllowed) {
     g_localLookupCache.erase(cached);
     return false;
@@ -540,9 +533,9 @@ bool TryGetStaleLocalLookupCache(const std::wstring& reading, uint32_t modeFlags
 }
 
 void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
-                          const std::vector<std::wstring>& candidates,
-                          const std::vector<std::wstring>* metaScores, bool fullResult = false,
-                          bool hasMore = false) {
+                         const std::vector<std::wstring>& candidates,
+                         const std::vector<std::wstring>* metaScores, bool fullResult = false,
+                         bool hasMore = false) {
   if (candidates.empty() || !IsLocalLookupCacheableReading(reading)) return;
   if (IsLoadedRuntimePayloadStaleForCache()) return;
   if (LookupResultHasPartialMeta(metaScores)) return;
@@ -562,11 +555,14 @@ void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
   if (metaScores) entry.meta = *metaScores;
   entry.tick = GetTickCount64();
   entry.hasMore = hasMore;
-  entry.bytes = sizeof(LocalLookupCacheEntry) +
+  entry.bytes =
+      sizeof(LocalLookupCacheEntry) +
       (entry.key.reading.capacity() + entry.key.cacheSignature.capacity()) * sizeof(wchar_t) +
       (entry.candidates.capacity() + entry.meta.capacity()) * sizeof(std::wstring);
-  for (const auto& text : entry.candidates) entry.bytes += text.capacity() * sizeof(wchar_t);
-  for (const auto& text : entry.meta) entry.bytes += text.capacity() * sizeof(wchar_t);
+  for (const auto& text : entry.candidates)
+    entry.bytes += text.capacity() * sizeof(wchar_t);
+  for (const auto& text : entry.meta)
+    entry.bytes += text.capacity() * sizeof(wchar_t);
   if (entry.bytes > kLocalLookupCacheMaxBytes / 4) return;
   const int singleIndex = SingleLetterIndex(entry.key.reading);
   if (singleIndex >= 0 && entry.bytes <= 128 * 1024) {
@@ -575,7 +571,8 @@ void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
   }
   g_localLookupCache.insert_or_assign(entry.key, entry);
   size_t cacheBytes = 0;
-  for (const auto& item : g_localLookupCache) cacheBytes += item.second.bytes;
+  for (const auto& item : g_localLookupCache)
+    cacheBytes += item.second.bytes;
   while (g_localLookupCache.size() > kLocalLookupCacheCapacity ||
          cacheBytes > kLocalLookupCacheMaxBytes) {
     auto oldest = g_localLookupCache.begin();
@@ -595,9 +592,9 @@ std::wstring ToLower(std::wstring value) {
 
 std::filesystem::path ModuleDir() {
   HMODULE module = nullptr;
-  if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                              GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                          reinterpret_cast<LPCWSTR>(&SrfTip_InitializeEngine), &module) ||
+  if (!GetModuleHandleExW(
+          GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+          reinterpret_cast<LPCWSTR>(&SrfTip_InitializeEngine), &module) ||
       !module) {
     return {};
   }
@@ -677,8 +674,7 @@ bool AssignEngineHelperJob(HANDLE process) {
     JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits = {};
     limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_PROCESS_MEMORY;
     limits.ProcessMemoryLimit = kEngineHelperMemoryLimitBytes;
-    if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &limits,
-                                 sizeof(limits))) {
+    if (!SetInformationJobObject(job, JobObjectExtendedLimitInformation, &limits, sizeof(limits))) {
       CloseHandle(job);
       job = nullptr;
       return false;
@@ -691,7 +687,8 @@ bool InstallMaintenanceActive() {
   DWORD value = 0;
   DWORD cb = sizeof(value);
   if (RegGetValueW(HKEY_CURRENT_USER, kStateRegPath, kStateInstallMaintenanceValue,
-                   RRF_RT_REG_DWORD, nullptr, &value, &cb) != ERROR_SUCCESS || value == 0) {
+                   RRF_RT_REG_DWORD, nullptr, &value, &cb) != ERROR_SUCCESS ||
+      value == 0) {
     return false;
   }
 
@@ -807,8 +804,7 @@ std::filesystem::path GetEnvPath(const wchar_t* name) {
 
 std::filesystem::path UserInstallRoot(const wchar_t* appName) {
   const auto localAppData = GetEnvPath(L"LOCALAPPDATA");
-  return localAppData.empty() ? std::filesystem::path()
-                              : localAppData / L"Programs" / appName;
+  return localAppData.empty() ? std::filesystem::path() : localAppData / L"Programs" / appName;
 }
 
 std::vector<std::filesystem::path> MachineInstallRoots(const wchar_t* appName) {
@@ -864,8 +860,8 @@ bool TryResolveTrustedInstallLayoutForRoot(const std::filesystem::path& moduleDi
   }
 
   const std::wstring archDirName = moduleDir.filename().wstring();
-  const bool isArchRuntimeDir = _wcsicmp(archDirName.c_str(), L"x64") == 0 ||
-                                _wcsicmp(archDirName.c_str(), L"x86") == 0;
+  const bool isArchRuntimeDir =
+      _wcsicmp(archDirName.c_str(), L"x64") == 0 || _wcsicmp(archDirName.c_str(), L"x86") == 0;
   if (!isArchRuntimeDir) return false;
   const auto payloadDir = moduleDir.parent_path();
   if (!PathEquals(payloadDir.parent_path(), runtimeParent)) return false;
@@ -876,8 +872,8 @@ bool TryResolveTrustedInstallLayoutForRoot(const std::filesystem::path& moduleDi
 }
 
 bool ResolveTrustedInstallLayout(const std::filesystem::path& moduleDir,
-                                  std::filesystem::path* installRoot,
-                                  std::filesystem::path* runtimeRoot) {
+                                 std::filesystem::path* installRoot,
+                                 std::filesystem::path* runtimeRoot) {
   if (TryResolveTrustedInstallLayoutForRoot(moduleDir, UserInstallRoot(kAppPathName), installRoot,
                                             runtimeRoot)) {
     return true;
@@ -934,7 +930,8 @@ std::filesystem::path RuntimePayloadRootForModule(const std::filesystem::path& i
   if (PathEquals(runtimeRoot.parent_path(), runtimeParent)) {
     return NormalizePath(runtimeRoot);
   }
-  if (IsArchRuntimeDirName(runtimeRoot) && PathEquals(runtimeRoot.parent_path().parent_path(), runtimeParent)) {
+  if (IsArchRuntimeDirName(runtimeRoot) &&
+      PathEquals(runtimeRoot.parent_path().parent_path(), runtimeParent)) {
     return NormalizePath(runtimeRoot.parent_path());
   }
   return {};
@@ -1010,8 +1007,7 @@ std::wstring BytesToHex(const BYTE* data, size_t len) {
   return out;
 }
 
-bool ReadExpectedSha256(const std::filesystem::path& path, std::wstring* out,
-                        std::wstring* error) {
+bool ReadExpectedSha256(const std::filesystem::path& path, std::wstring* out, std::wstring* error) {
   std::ifstream file(path, std::ios::binary);
   if (!file) {
     if (error) *error = L"missing hash manifest: " + path.wstring();
@@ -1019,9 +1015,11 @@ bool ReadExpectedSha256(const std::filesystem::path& path, std::wstring* out,
   }
 
   std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-  while (!text.empty() && isspace(static_cast<unsigned char>(text.back()))) text.pop_back();
+  while (!text.empty() && isspace(static_cast<unsigned char>(text.back())))
+    text.pop_back();
   size_t start = 0;
-  while (start < text.size() && isspace(static_cast<unsigned char>(text[start]))) ++start;
+  while (start < text.size() && isspace(static_cast<unsigned char>(text[start])))
+    ++start;
   text = text.substr(start);
   std::transform(text.begin(), text.end(), text.begin(),
                  [](unsigned char ch) { return static_cast<char>(tolower(ch)); });
@@ -1058,9 +1056,8 @@ bool ComputeSha256(const std::filesystem::path& path, std::wstring* out, std::ws
   while (file) {
     file.read(buffer.data(), static_cast<std::streamsize>(buffer.size()));
     const std::streamsize read = file.gcount();
-    if (read > 0 &&
-        !CryptHashData(hash, reinterpret_cast<const BYTE*>(buffer.data()), static_cast<DWORD>(read),
-                       0)) {
+    if (read > 0 && !CryptHashData(hash, reinterpret_cast<const BYTE*>(buffer.data()),
+                                   static_cast<DWORD>(read), 0)) {
       if (error) *error = L"CryptHashData failed";
       CryptDestroyHash(hash);
       CryptReleaseContext(provider, 0);
@@ -1142,8 +1139,8 @@ std::wstring FormatSystemError(DWORD error) {
   if (error == 0) return L"unknown error";
 
   LPWSTR buffer = nullptr;
-  const DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                      FORMAT_MESSAGE_IGNORE_INSERTS;
+  const DWORD flags =
+      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
   const DWORD length =
       FormatMessageW(flags, nullptr, error, 0, reinterpret_cast<LPWSTR>(&buffer), 0, nullptr);
   if (length == 0 || !buffer) {
@@ -1155,7 +1152,9 @@ std::wstring FormatSystemError(DWORD error) {
   return TrimRight(message);
 }
 
-void SetFailureDetailLocked(const std::wstring& detail) { g_lastEngineFailure = detail; }
+void SetFailureDetailLocked(const std::wstring& detail) {
+  g_lastEngineFailure = detail;
+}
 
 void ClearFailureDetailLocked() {
   g_lastEngineFailure.clear();
@@ -1175,8 +1174,8 @@ std::string Utf8FromWide(const std::wstring& w) {
 
 std::wstring LogValue(std::wstring value, size_t maxUnits = 240) {
   for (wchar_t& ch : value) {
-    if (ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n' || ch == L',' ||
-        ch == L';' || ch == L'=') {
+    if (ch == L' ' || ch == L'\t' || ch == L'\r' || ch == L'\n' || ch == L',' || ch == L';' ||
+        ch == L'=') {
       ch = L'_';
     }
   }
@@ -1204,7 +1203,7 @@ void AppendEngineLogDeduped(const std::wstring& level, const std::wstring& event
   if (ec) return;
   const auto logPath = dir / L"engine.log";
 
-  SYSTEMTIME st {};
+  SYSTEMTIME st{};
   GetLocalTime(&st);
   char timestamp[48];
   sprintf_s(timestamp, "%04u-%02u-%02u %02u:%02u:%02u ", static_cast<unsigned>(st.wYear),
@@ -1233,7 +1232,7 @@ void AppendEngineStateLogDeduped(const std::wstring& detail) {
 }
 
 std::wstring CurrentLocalTimestampText() {
-  SYSTEMTIME st {};
+  SYSTEMTIME st{};
   GetLocalTime(&st);
   wchar_t buffer[32] = {};
   swprintf_s(buffer, L"%04u-%02u-%02u %02u:%02u:%02u", static_cast<unsigned>(st.wYear),
@@ -1244,9 +1243,14 @@ std::wstring CurrentLocalTimestampText() {
 }
 
 void WriteStateStringValue(const wchar_t* name, const std::wstring& value) {
+#ifdef SRF_IDLE_RECOVERY_TEST
+  (void)name;
+  (void)value;
+  return;
+#endif
   HKEY key = nullptr;
-  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
-                      &key, nullptr) != ERROR_SUCCESS) {
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
+                      nullptr) != ERROR_SUCCESS) {
     return;
   }
   const DWORD bytes = static_cast<DWORD>((value.size() + 1) * sizeof(wchar_t));
@@ -1255,9 +1259,14 @@ void WriteStateStringValue(const wchar_t* name, const std::wstring& value) {
 }
 
 void WriteStateDwordValue(const wchar_t* name, DWORD value) {
+#ifdef SRF_IDLE_RECOVERY_TEST
+  (void)name;
+  (void)value;
+  return;
+#endif
   HKEY key = nullptr;
-  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
-                      &key, nullptr) != ERROR_SUCCESS) {
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
+                      nullptr) != ERROR_SUCCESS) {
     return;
   }
   RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value));
@@ -1265,9 +1274,15 @@ void WriteStateDwordValue(const wchar_t* name, DWORD value) {
 }
 
 void WriteStateBinaryValue(const wchar_t* name, const BYTE* value, DWORD bytes) {
+#ifdef SRF_IDLE_RECOVERY_TEST
+  (void)name;
+  (void)value;
+  (void)bytes;
+  return;
+#endif
   HKEY key = nullptr;
-  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
-                      &key, nullptr) != ERROR_SUCCESS) {
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
+                      nullptr) != ERROR_SUCCESS) {
     return;
   }
   RegSetValueExW(key, name, 0, REG_BINARY, value, bytes);
@@ -1285,8 +1300,8 @@ void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS,
       g_engineHealthErrorCode.store(errorCode, std::memory_order_release);
     } else {
       DWORD expected = ERROR_SUCCESS;
-      g_engineHealthErrorCode.compare_exchange_strong(
-          expected, kEngineHealthFailureUnspecified, std::memory_order_acq_rel);
+      g_engineHealthErrorCode.compare_exchange_strong(expected, kEngineHealthFailureUnspecified,
+                                                      std::memory_order_acq_rel);
     }
   } else {
     g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
@@ -1299,15 +1314,15 @@ void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS,
                                     GetTickCount64(),
                                     g_engineHealthErrorCode.load(std::memory_order_acquire)};
   const std::wstring healthValue = L"EngineHealthV2_" + WideFromUtf8(SRF_APP_VERSION);
-  WriteStateBinaryValue(healthValue.c_str(), reinterpret_cast<const BYTE*>(&record), sizeof(record));
+  WriteStateBinaryValue(healthValue.c_str(), reinterpret_cast<const BYTE*>(&record),
+                        sizeof(record));
   if (previous != state) {
     AppendEngineLogDeduped(
         state == SrfEngineState::Failed ? L"error" : L"basic", L"tsf_bridge_transition",
-        L"from=" + std::to_wstring(static_cast<unsigned>(previous)) +
-            L" to=" + std::to_wstring(static_cast<unsigned>(state)) +
-            L" helper_pid=" + std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) +
-            L" error_code=" + std::to_wstring(record.errorCode) +
-            L" reason_code=" + reasonCode);
+        L"from=" + std::to_wstring(static_cast<unsigned>(previous)) + L" to=" +
+            std::to_wstring(static_cast<unsigned>(state)) + L" helper_pid=" +
+            std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) + L" error_code=" +
+            std::to_wstring(record.errorCode) + L" reason_code=" + reasonCode);
   }
 }
 
@@ -1345,7 +1360,8 @@ void AppendWideString(std::vector<BYTE>& out, const std::wstring& value) {
 std::wstring WideFromAscii(const std::string& value) {
   std::wstring out;
   out.reserve(value.size());
-  for (unsigned char ch : value) out.push_back(static_cast<wchar_t>(ch));
+  for (unsigned char ch : value)
+    out.push_back(static_cast<wchar_t>(ch));
   return out;
 }
 
@@ -1430,8 +1446,7 @@ bool RestrictFileToCurrentUser(const std::filesystem::path& path) {
       !descriptor) {
     return false;
   }
-  const BOOL ok =
-      SetFileSecurityW(path.c_str(), DACL_SECURITY_INFORMATION, descriptor) != FALSE;
+  const BOOL ok = SetFileSecurityW(path.c_str(), DACL_SECURITY_INFORMATION, descriptor) != FALSE;
   LocalFree(descriptor);
   return ok == TRUE;
 }
@@ -1526,8 +1541,8 @@ std::wstring DecodeCapabilityTokenBytes(const std::vector<BYTE>& bytes) {
 bool LooksLikeCapabilityToken(const std::wstring& token) {
   if (token.size() < 32 || token.size() > 128) return false;
   for (wchar_t ch : token) {
-    const bool hex = (ch >= L'0' && ch <= L'9') || (ch >= L'a' && ch <= L'f') ||
-                     (ch >= L'A' && ch <= L'F');
+    const bool hex =
+        (ch >= L'0' && ch <= L'9') || (ch >= L'a' && ch <= L'f') || (ch >= L'A' && ch <= L'F');
     if (!hex) return false;
   }
   return true;
@@ -1539,7 +1554,8 @@ std::wstring GenerateCapabilityToken() {
   if (!CryptAcquireContextW(&provider, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
     return {};
   }
-  const BOOL ok = CryptGenRandom(provider, static_cast<DWORD>(randomBytes.size()), randomBytes.data());
+  const BOOL ok =
+      CryptGenRandom(provider, static_cast<DWORD>(randomBytes.size()), randomBytes.data());
   CryptReleaseContext(provider, 0);
   if (!ok) return {};
   return WideFromAscii(HexEncode(randomBytes));
@@ -1657,8 +1673,8 @@ std::wstring DecodeRemoteErrorPayload(const std::vector<BYTE>* payload) {
   text.reserve(units);
   const BYTE* data = payload->data() + 4;
   for (uint32_t i = 0; i < units; ++i) {
-    const uint16_t unit = static_cast<uint16_t>(data[i * 2]) |
-                          (static_cast<uint16_t>(data[i * 2 + 1]) << 8);
+    const uint16_t unit =
+        static_cast<uint16_t>(data[i * 2]) | (static_cast<uint16_t>(data[i * 2 + 1]) << 8);
     if (unit == 0) break;
     text.push_back(static_cast<wchar_t>(unit));
   }
@@ -1687,8 +1703,8 @@ bool ReadPayloadU64(const std::vector<BYTE>& payload, size_t* offset, uint64_t* 
 
 bool ReadPayloadU16(const std::vector<BYTE>& payload, size_t* offset, uint16_t* value) {
   if (!offset || !value || *offset + 2 > payload.size()) return false;
-  *value = static_cast<uint16_t>(payload[*offset]) |
-           (static_cast<uint16_t>(payload[*offset + 1]) << 8);
+  *value =
+      static_cast<uint16_t>(payload[*offset]) | (static_cast<uint16_t>(payload[*offset + 1]) << 8);
   *offset += 2;
   return true;
 }
@@ -1720,8 +1736,8 @@ bool ReadPayloadString(const std::vector<BYTE>& payload, size_t* offset, std::ws
   value->reserve(units);
   for (uint32_t i = 0; i < units; ++i) {
     const size_t pos = *offset + static_cast<size_t>(i) * 2;
-    const uint16_t unit = static_cast<uint16_t>(payload[pos]) |
-                          (static_cast<uint16_t>(payload[pos + 1]) << 8);
+    const uint16_t unit =
+        static_cast<uint16_t>(payload[pos]) | (static_cast<uint16_t>(payload[pos + 1]) << 8);
     if (unit == 0) break;
     value->push_back(static_cast<wchar_t>(unit));
   }
@@ -1801,7 +1817,8 @@ std::wstring RemoteStatusError(EnginePipeCommand command, int status,
   message += RemoteCommandLabel(command);
   if (status == kRustFfiPanicRc) {
     message +=
-        L" failed because the helper process panicked; details may be in %LOCALAPPDATA%\\kaixin\\logs\\engine.log";
+        L" failed because the helper process panicked; details may be in "
+        L"%LOCALAPPDATA%\\kaixin\\logs\\engine.log";
     return message;
   }
   const std::wstring detail = DecodeRemoteErrorPayload(payload);
@@ -1819,13 +1836,17 @@ std::wstring RemoteStatusError(EnginePipeCommand command, int status,
 }
 
 bool IsPipeDisconnectSystemError(DWORD error) {
-  return error == ERROR_NO_DATA || error == ERROR_BROKEN_PIPE;
+  return error == ERROR_NO_DATA || error == ERROR_BROKEN_PIPE || error == ERROR_PIPE_NOT_CONNECTED;
+}
+
+bool IsPipeDisconnectError(const std::wstring& error) {
+  return error.find(L" [pipe-disconnect]") != std::wstring::npos;
 }
 
 bool IsTransientRemoteLookupError(const std::wstring& error) {
   return error.find(L" timed out after ") != std::wstring::npos ||
          error.find(L" ERROR_OPERATION_ABORTED") != std::wstring::npos ||
-         error.find(L" [pipe-disconnect]") != std::wstring::npos;
+         IsPipeDisconnectError(error);
 }
 
 bool IsLookupTimeoutError(const std::wstring& error) {
@@ -1840,19 +1861,16 @@ bool IsRemoteEngineBusyError(const std::wstring& error) {
 void PublishLatestLookupRequestId(unsigned long long requestId) {
   if (requestId == 0) return;
   const ULONGLONG now = GetTickCount64();
-  g_lastEngineUseTime.store(now, std::memory_order_release);
   g_lastInteractiveLookupTick.store(now, std::memory_order_release);
   unsigned long long current = g_latestLookupRequestId.load(std::memory_order_acquire);
   while (requestId > current &&
-         !g_latestLookupRequestId.compare_exchange_weak(current, requestId,
-                                                        std::memory_order_acq_rel,
-                                                        std::memory_order_acquire)) {
+         !g_latestLookupRequestId.compare_exchange_weak(
+             current, requestId, std::memory_order_acq_rel, std::memory_order_acquire)) {
   }
 }
 
 bool IsLookupRequestSuperseded(unsigned long long requestId) {
-  return requestId != 0 &&
-         g_latestLookupRequestId.load(std::memory_order_acquire) > requestId;
+  return requestId != 0 && g_latestLookupRequestId.load(std::memory_order_acquire) > requestId;
 }
 
 bool IsLookupSupersededError(const std::wstring& error) {
@@ -1864,8 +1882,7 @@ void ResetLookupTimeoutStreak() {
 }
 
 bool ShouldRestartHelperAfterLookupTimeout() {
-  const unsigned streak =
-      g_consecutiveLookupTimeouts.fetch_add(1, std::memory_order_acq_rel) + 1;
+  const unsigned streak = g_consecutiveLookupTimeouts.fetch_add(1, std::memory_order_acq_rel) + 1;
   if (streak < kLookupTimeoutRestartThreshold) return false;
 
   const ULONGLONG now = GetTickCount64();
@@ -1984,6 +2001,7 @@ bool AwaitPipeIo(SrfOverlappedIo& operation, DWORD timeoutMs, DWORD* transferred
     } else {
       *error += L" failed: ";
       *error += FormatSystemError(lastError);
+      if (IsPipeDisconnectSystemError(lastError)) *error += L" [pipe-disconnect]";
     }
   }
   return false;
@@ -2043,7 +2061,8 @@ bool WritePipeMessageWithTimeout(HANDLE handle, const void* buffer, size_t bytes
 }
 
 bool ReadPipeMessageWithTimeout(HANDLE handle, void* buffer, size_t bytes, DWORD timeoutMs,
-                                EnginePipeCommand command, const wchar_t* stage, std::wstring* error) {
+                                EnginePipeCommand command, const wchar_t* stage,
+                                std::wstring* error) {
   if (!buffer || bytes == 0) return true;
 
   auto operation = SrfOverlappedIo::Create(handle, bytes);
@@ -2099,8 +2118,9 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
   const std::wstring pipeName = EnginePipeNameForModuleDir(ModuleDir());
   const ULONGLONG deadline = GetTickCount64() + timeoutMs;
   while (true) {
-    HANDLE pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
-                              FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION, nullptr);
+    HANDLE pipe = CreateFileW(
+        pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
+        FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION, nullptr);
     if (pipe != INVALID_HANDLE_VALUE) {
       DWORD mode = PIPE_READMODE_MESSAGE;
       if (!SetNamedPipeHandleState(pipe, &mode, nullptr, nullptr)) {
@@ -2154,16 +2174,15 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
   }
 }
 
-bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>& payload, int* status,
-                             std::vector<BYTE>* responsePayload, std::wstring* error,
+bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>& payload,
+                             int* status, std::vector<BYTE>* responsePayload, std::wstring* error,
                              unsigned long long requestId = 0) {
   const auto logFailure = [&](const wchar_t* stage, int result) {
-    AppendEngineLogDeduped(
-        L"error", L"tsf_bridge_request_failed",
-        L"command=" + std::to_wstring(static_cast<unsigned>(command)) +
-            L" request_id=" + std::to_wstring(requestId) +
-            L" helper_pid=" + std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) +
-            L" stage=" + stage + L" status=" + std::to_wstring(result));
+    AppendEngineLogDeduped(L"error", L"tsf_bridge_request_failed",
+                           L"command=" + std::to_wstring(static_cast<unsigned>(command)) +
+                               L" request_id=" + std::to_wstring(requestId) + L" helper_pid=" +
+                               std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) +
+                               L" stage=" + stage + L" status=" + std::to_wstring(result));
   };
   if (status) *status = -1;
   if (responsePayload) responsePayload->clear();
@@ -2181,8 +2200,9 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
   AppendU32(header, static_cast<uint32_t>(payload.size()));
   if (!WritePipeMessageWithTimeout(g_bridge.pipe, header.data(), header.size(), timeoutMs, command,
                                    L"request-header", error) ||
-      (!payload.empty() && !WritePipeMessageWithTimeout(g_bridge.pipe, payload.data(), payload.size(),
-                                                        timeoutMs, command, L"request-payload", error))) {
+      (!payload.empty() &&
+       !WritePipeMessageWithTimeout(g_bridge.pipe, payload.data(), payload.size(), timeoutMs,
+                                    command, L"request-payload", error))) {
     logFailure(L"write", -1);
     InvalidateRemoteBackendLocked();
     return false;
@@ -2191,7 +2211,8 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
   BYTE responseHeader[kEnginePipeResponseHeaderBytes] = {};
   bool readOk = ReadPipeMessageWithTimeout(g_bridge.pipe, responseHeader, sizeof(responseHeader),
                                            timeoutMs, command, L"response-header", error);
-  if (!readOk && (command == EnginePipeCommand::Lookup || command == EnginePipeCommand::Init)) {
+  if (!readOk && error && error->find(L" timed out after ") != std::wstring::npos &&
+      (command == EnginePipeCommand::Lookup || command == EnginePipeCommand::Init)) {
     // Retry once with a wider timeout budget. Lookup can be busy in the
     // engine; Init can contend with lexicon loading or warmup.
     if (error) error->clear();
@@ -2205,21 +2226,22 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
     return false;
   }
 
-  const uint32_t magic =
-      static_cast<uint32_t>(responseHeader[0]) | (static_cast<uint32_t>(responseHeader[1]) << 8) |
-      (static_cast<uint32_t>(responseHeader[2]) << 16) | (static_cast<uint32_t>(responseHeader[3]) << 24);
-  const uint16_t version = static_cast<uint16_t>(responseHeader[4]) |
-                           (static_cast<uint16_t>(responseHeader[5]) << 8);
-  const uint16_t echoedCommand = static_cast<uint16_t>(responseHeader[6]) |
-                                 (static_cast<uint16_t>(responseHeader[7]) << 8);
-  const int32_t responseStatus =
-      static_cast<int32_t>(static_cast<uint32_t>(responseHeader[8]) |
-                           (static_cast<uint32_t>(responseHeader[9]) << 8) |
-                           (static_cast<uint32_t>(responseHeader[10]) << 16) |
-                           (static_cast<uint32_t>(responseHeader[11]) << 24));
-  const uint32_t responseSize =
-      static_cast<uint32_t>(responseHeader[12]) | (static_cast<uint32_t>(responseHeader[13]) << 8) |
-      (static_cast<uint32_t>(responseHeader[14]) << 16) | (static_cast<uint32_t>(responseHeader[15]) << 24);
+  const uint32_t magic = static_cast<uint32_t>(responseHeader[0]) |
+                         (static_cast<uint32_t>(responseHeader[1]) << 8) |
+                         (static_cast<uint32_t>(responseHeader[2]) << 16) |
+                         (static_cast<uint32_t>(responseHeader[3]) << 24);
+  const uint16_t version =
+      static_cast<uint16_t>(responseHeader[4]) | (static_cast<uint16_t>(responseHeader[5]) << 8);
+  const uint16_t echoedCommand =
+      static_cast<uint16_t>(responseHeader[6]) | (static_cast<uint16_t>(responseHeader[7]) << 8);
+  const int32_t responseStatus = static_cast<int32_t>(
+      static_cast<uint32_t>(responseHeader[8]) | (static_cast<uint32_t>(responseHeader[9]) << 8) |
+      (static_cast<uint32_t>(responseHeader[10]) << 16) |
+      (static_cast<uint32_t>(responseHeader[11]) << 24));
+  const uint32_t responseSize = static_cast<uint32_t>(responseHeader[12]) |
+                                (static_cast<uint32_t>(responseHeader[13]) << 8) |
+                                (static_cast<uint32_t>(responseHeader[14]) << 16) |
+                                (static_cast<uint32_t>(responseHeader[15]) << 24);
 
   if (responseSize > kEnginePipeMaxResponseBytes) {
     logFailure(L"response_size", responseStatus);
@@ -2315,24 +2337,22 @@ bool SendLookupCancelRequest(unsigned long long supersedingRequestId) {
     return false;
   }
   closePipe();
-  const uint32_t magic =
-      static_cast<uint32_t>(responseHeader[0]) | (static_cast<uint32_t>(responseHeader[1]) << 8) |
-      (static_cast<uint32_t>(responseHeader[2]) << 16) |
-      (static_cast<uint32_t>(responseHeader[3]) << 24);
-  const uint16_t version = static_cast<uint16_t>(responseHeader[4]) |
-                           (static_cast<uint16_t>(responseHeader[5]) << 8);
-  const uint16_t command = static_cast<uint16_t>(responseHeader[6]) |
-                           (static_cast<uint16_t>(responseHeader[7]) << 8);
-  const int32_t status =
-      static_cast<int32_t>(static_cast<uint32_t>(responseHeader[8]) |
-                           (static_cast<uint32_t>(responseHeader[9]) << 8) |
-                           (static_cast<uint32_t>(responseHeader[10]) << 16) |
-                           (static_cast<uint32_t>(responseHeader[11]) << 24));
-  const uint32_t responseSize =
-      static_cast<uint32_t>(responseHeader[12]) |
-      (static_cast<uint32_t>(responseHeader[13]) << 8) |
-      (static_cast<uint32_t>(responseHeader[14]) << 16) |
-      (static_cast<uint32_t>(responseHeader[15]) << 24);
+  const uint32_t magic = static_cast<uint32_t>(responseHeader[0]) |
+                         (static_cast<uint32_t>(responseHeader[1]) << 8) |
+                         (static_cast<uint32_t>(responseHeader[2]) << 16) |
+                         (static_cast<uint32_t>(responseHeader[3]) << 24);
+  const uint16_t version =
+      static_cast<uint16_t>(responseHeader[4]) | (static_cast<uint16_t>(responseHeader[5]) << 8);
+  const uint16_t command =
+      static_cast<uint16_t>(responseHeader[6]) | (static_cast<uint16_t>(responseHeader[7]) << 8);
+  const int32_t status = static_cast<int32_t>(static_cast<uint32_t>(responseHeader[8]) |
+                                              (static_cast<uint32_t>(responseHeader[9]) << 8) |
+                                              (static_cast<uint32_t>(responseHeader[10]) << 16) |
+                                              (static_cast<uint32_t>(responseHeader[11]) << 24));
+  const uint32_t responseSize = static_cast<uint32_t>(responseHeader[12]) |
+                                (static_cast<uint32_t>(responseHeader[13]) << 8) |
+                                (static_cast<uint32_t>(responseHeader[14]) << 16) |
+                                (static_cast<uint32_t>(responseHeader[15]) << 24);
   return magic == kEnginePipeMagic && version == kEnginePipeVersion &&
          command == static_cast<uint16_t>(EnginePipeCommand::CancelLookup) && status == 0 &&
          responseSize == 0;
@@ -2340,8 +2360,7 @@ bool SendLookupCancelRequest(unsigned long long supersedingRequestId) {
 
 void LookupCancelWorkerMain() {
   for (;;) {
-    const unsigned long long target =
-        g_latestLookupCancelRequestId.load(std::memory_order_acquire);
+    const unsigned long long target = g_latestLookupCancelRequestId.load(std::memory_order_acquire);
     (void)SendLookupCancelRequest(target);
     if (g_latestLookupCancelRequestId.load(std::memory_order_acquire) != target) continue;
 
@@ -2471,7 +2490,8 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
     return false;
   }
   if (_wcsicmp(buildId.c_str(), expectedBuildId.c_str()) != 0) {
-    std::wstring mismatch = L"shared engine helper build id differs; accepting compatible helper: helper=";
+    std::wstring mismatch =
+        L"shared engine helper build id differs; accepting compatible helper: helper=";
     mismatch += buildId;
     mismatch += L", expected=";
     mismatch += expectedBuildId;
@@ -2521,17 +2541,15 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
   g_bridge.buildId = buildId;
   g_bridge.cacheSignature = cacheSignature;
   SetLocalLookupCacheSignature(cacheSignature);
-  AppendEngineStateLogDeduped(L"shared helper health ok: build=" + buildId +
-                              L"; lexicon_state=" + lexiconState +
-                              L"; full_in_flight=" + std::to_wstring(fullInFlight));
+  AppendEngineStateLogDeduped(L"shared helper health ok: build=" + buildId + L"; lexicon_state=" +
+                              lexiconState + L"; full_in_flight=" + std::to_wstring(fullInFlight));
   return true;
 }
 
 bool RemoteLookupLocked(const std::wstring& reading, unsigned long long requestId,
                         std::vector<std::wstring>* candidates,
-                        std::vector<std::wstring>* metaScores, int* count,
-                        std::wstring* error, bool fullResult = false,
-                        bool* hasMore = nullptr) {
+                        std::vector<std::wstring>* metaScores, int* count, std::wstring* error,
+                        bool fullResult = false, bool* hasMore = nullptr) {
   if (!candidates || !count) return false;
   candidates->clear();
   if (metaScores) metaScores->clear();
@@ -2647,8 +2665,10 @@ bool RemoteLearnLocked(const std::wstring& reading, const std::wstring& committe
   if (!AppendCapabilityToken(payload, error)) return false;
   AppendU32(payload, static_cast<uint32_t>(reading.size()));
   AppendU32(payload, static_cast<uint32_t>(committedText.size()));
-  for (wchar_t ch : reading) AppendU16(payload, static_cast<uint16_t>(ch));
-  for (wchar_t ch : committedText) AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : reading)
+    AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : committedText)
+    AppendU16(payload, static_cast<uint16_t>(ch));
   if (flags != kSrfLearnCommitDefault) AppendU32(payload, static_cast<uint32_t>(flags));
 
   int status = -1;
@@ -2667,15 +2687,19 @@ bool RemoteLearnCorrectionLocked(const std::wstring& rawReading,
                                  const std::wstring& correctedReading,
                                  const std::wstring& committedText, std::wstring* error) {
   std::vector<BYTE> payload;
-  payload.reserve(80 + 16 + (rawReading.size() + correctedReading.size() + committedText.size()) *
-                           sizeof(uint16_t));
+  payload.reserve(80 + 16 +
+                  (rawReading.size() + correctedReading.size() + committedText.size()) *
+                      sizeof(uint16_t));
   if (!AppendCapabilityToken(payload, error)) return false;
   AppendU32(payload, static_cast<uint32_t>(rawReading.size()));
   AppendU32(payload, static_cast<uint32_t>(correctedReading.size()));
   AppendU32(payload, static_cast<uint32_t>(committedText.size()));
-  for (wchar_t ch : rawReading) AppendU16(payload, static_cast<uint16_t>(ch));
-  for (wchar_t ch : correctedReading) AppendU16(payload, static_cast<uint16_t>(ch));
-  for (wchar_t ch : committedText) AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : rawReading)
+    AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : correctedReading)
+    AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : committedText)
+    AppendU16(payload, static_cast<uint16_t>(ch));
 
   int status = -1;
   std::vector<BYTE> response;
@@ -2703,7 +2727,8 @@ bool RemoteLearnSelectionFeedbackLocked(const std::wstring& reading,
                       : kMaxSelectionFeedbackSkipped);
   size_t skippedUnits = 0;
   for (const auto& candidate : skippedCandidates) {
-    if (candidate.empty() || candidate == committedText || candidate.size() > kMaxLearnPhraseUnits) {
+    if (candidate.empty() || candidate == committedText ||
+        candidate.size() > kMaxLearnPhraseUnits) {
       continue;
     }
     skipped.push_back(&candidate);
@@ -2712,20 +2737,23 @@ bool RemoteLearnSelectionFeedbackLocked(const std::wstring& reading,
   }
 
   std::vector<BYTE> payload;
-  payload.reserve(80 + 20 + (reading.size() + committedText.size() + skippedUnits) *
-                           sizeof(uint16_t) +
+  payload.reserve(80 + 20 +
+                  (reading.size() + committedText.size() + skippedUnits) * sizeof(uint16_t) +
                   skipped.size() * 4);
   if (!AppendCapabilityToken(payload, error)) return false;
   AppendU32(payload, static_cast<uint32_t>(reading.size()));
   AppendU32(payload, static_cast<uint32_t>(committedText.size()));
   AppendU32(payload, static_cast<uint32_t>(selectedIndex));
   AppendU32(payload, static_cast<uint32_t>(page));
-  for (wchar_t ch : reading) AppendU16(payload, static_cast<uint16_t>(ch));
-  for (wchar_t ch : committedText) AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : reading)
+    AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : committedText)
+    AppendU16(payload, static_cast<uint16_t>(ch));
   AppendU32(payload, static_cast<uint32_t>(skipped.size()));
   for (const std::wstring* candidate : skipped) {
     AppendU32(payload, static_cast<uint32_t>(candidate->size()));
-    for (wchar_t ch : *candidate) AppendU16(payload, static_cast<uint16_t>(ch));
+    for (wchar_t ch : *candidate)
+      AppendU16(payload, static_cast<uint16_t>(ch));
   }
 
   int status = -1;
@@ -2751,8 +2779,10 @@ bool RemoteSetCandidatePinLocked(const std::wstring& reading, const std::wstring
   AppendU32(payload, pinned ? 1u : 0u);
   AppendU32(payload, static_cast<uint32_t>(reading.size()));
   AppendU32(payload, static_cast<uint32_t>(committedText.size()));
-  for (wchar_t ch : reading) AppendU16(payload, static_cast<uint16_t>(ch));
-  for (wchar_t ch : committedText) AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : reading)
+    AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : committedText)
+    AppendU16(payload, static_cast<uint16_t>(ch));
 
   int status = -1;
   if (!SendRemoteRequestLocked(EnginePipeCommand::SetCandidatePin, payload, &status, nullptr,
@@ -2774,8 +2804,10 @@ bool RemoteCandidateActionLocked(const std::wstring& reading, const std::wstring
   AppendU32(payload, static_cast<uint32_t>(action));
   AppendU32(payload, static_cast<uint32_t>(reading.size()));
   AppendU32(payload, static_cast<uint32_t>(committedText.size()));
-  for (wchar_t ch : reading) AppendU16(payload, static_cast<uint16_t>(ch));
-  for (wchar_t ch : committedText) AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : reading)
+    AppendU16(payload, static_cast<uint16_t>(ch));
+  for (wchar_t ch : committedText)
+    AppendU16(payload, static_cast<uint16_t>(ch));
 
   int status = -1;
   if (!SendRemoteRequestLocked(EnginePipeCommand::CandidateAction, payload, &status, nullptr,
@@ -2813,7 +2845,8 @@ bool RemoteRecordClipboardLocked(const std::wstring& text, std::wstring* error) 
   AppendWideString(payload, text);
 
   int status = -1;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::RecordClipboard, payload, &status, nullptr, error)) {
+  if (!SendRemoteRequestLocked(EnginePipeCommand::RecordClipboard, payload, &status, nullptr,
+                               error)) {
     return false;
   }
   if (status != 0) {
@@ -2851,8 +2884,8 @@ bool RemoteResolveClipboardLocked(const std::wstring& id, std::wstring* text, st
   return true;
 }
 
-bool RemoteSyllableBoundsLocked(const wchar_t* text, size_t unitCount, uint32_t* out, size_t cap, size_t* written,
-                                std::wstring* error) {
+bool RemoteSyllableBoundsLocked(const wchar_t* text, size_t unitCount, uint32_t* out, size_t cap,
+                                size_t* written, std::wstring* error) {
   if (written) *written = 0;
   if (!text || !out || cap == 0) return false;
 
@@ -2865,7 +2898,8 @@ bool RemoteSyllableBoundsLocked(const wchar_t* text, size_t unitCount, uint32_t*
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::SyllableBounds, payload, &status, &response, error)) {
+  if (!SendRemoteRequestLocked(EnginePipeCommand::SyllableBounds, payload, &status, &response,
+                               error)) {
     return false;
   }
   if (status != 0) {
@@ -2887,7 +2921,8 @@ bool RemoteSyllableBoundsLocked(const wchar_t* text, size_t unitCount, uint32_t*
   const size_t copyCount = (std::min)(cap, static_cast<size_t>(count));
   for (size_t i = 0; i < copyCount; ++i) {
     const size_t offset = 4 + i * sizeof(uint32_t);
-    out[i] = static_cast<uint32_t>(response[offset]) | (static_cast<uint32_t>(response[offset + 1]) << 8) |
+    out[i] = static_cast<uint32_t>(response[offset]) |
+             (static_cast<uint32_t>(response[offset + 1]) << 8) |
              (static_cast<uint32_t>(response[offset + 2]) << 16) |
              (static_cast<uint32_t>(response[offset + 3]) << 24);
   }
@@ -2929,7 +2964,8 @@ bool EnsureLoadedLocked() {
   if (lexiconDir.empty()) {
     RememberEngineFailure(ERROR_PATH_NOT_FOUND);
     ResetBridgeLocked();
-    const std::wstring detail = lexiconError.empty() ? L"trusted lexicon directory not found" : lexiconError;
+    const std::wstring detail =
+        lexiconError.empty() ? L"trusted lexicon directory not found" : lexiconError;
     SetFailureDetailLocked(detail);
     AppendEngineFailureLogDeduped(L"engine init: lexicon resolution failed: " + detail +
                                   L" (moduleDir=" + moduleDir.wstring() + L")");
@@ -2941,9 +2977,8 @@ bool EnsureLoadedLocked() {
   // created the first named-pipe instance. Warmup runs off the keystroke path,
   // so absorb that short launch race here instead of failing a 500 ms health
   // handshake and making the first composition wait for the retry loop.
-  if (!WaitForEnginePipeReady(moduleDir,
-                              helperStarted ? kEnginePipeStartupReadyTimeoutMs
-                                            : kEnginePipeHealthTimeoutMs)) {
+  if (!WaitForEnginePipeReady(moduleDir, helperStarted ? kEnginePipeStartupReadyTimeoutMs
+                                                       : kEnginePipeHealthTimeoutMs)) {
     AppendEngineStateLogDeduped(L"engine prestart: pipe not ready before health handshake");
   }
 
@@ -2976,39 +3011,37 @@ bool EnsureLoadedLocked() {
   return false;
 }
 
-void TouchEngineUseTime() {
-  g_lastEngineUseTime.store(GetTickCount64(), std::memory_order_release);
-}
-
-void IdleKeepaliveCheckWorker() {
-  while (g_idleWatcherRunning.load(std::memory_order_acquire)) {
-    Sleep(kIdleCheckIntervalMs);
-    if (!g_idleWatcherRunning.load(std::memory_order_acquire)) break;
-    const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
-    if (state != SrfEngineState::Ready) continue;
-    const ULONGLONG lastUse = g_lastEngineUseTime.load(std::memory_order_acquire);
-    if (lastUse == 0) continue;
-    if (GetTickCount64() - lastUse < kIdleKeepaliveTimeoutMs) continue;
-    std::lock_guard<std::mutex> guard(g_mutex);
-    const ULONGLONG lastUseCheck = g_lastEngineUseTime.load(std::memory_order_acquire);
-    if (GetTickCount64() - lastUseCheck < kIdleKeepaliveTimeoutMs) continue;
-    if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) continue;
-    if (EnsureLoadedLocked()) {
-      TouchEngineUseTime();
-      continue;
-    }
-    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"idle_keepalive_failed");
-    EnsureRetryLoopScheduled();
+// A dormant pipe can be closed by the service even though the engine remains
+// healthy. Re-establish its identity and initialization, then repeat only the
+// read-only lookup. Other commands may have side effects and must not be replayed.
+bool RemoteLookupWithReconnectLocked(const std::wstring& reading, unsigned long long requestId,
+                                     std::vector<std::wstring>* candidates,
+                                     std::vector<std::wstring>* metaScores, int* count,
+                                     std::wstring* error, bool fullResult, bool* hasMore) {
+  const auto lexiconDir = g_bridge.loadedLexiconDir;
+  if (RemoteLookupLocked(reading, requestId, candidates, metaScores, count, error, fullResult,
+                         hasMore)) {
+    return true;
   }
-}
-
-void EnsureIdleWatcherStarted() {
-  bool expected = false;
-  if (g_idleWatcherRunning.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
-    if (!StartDetachedBackgroundWorker([] { IdleKeepaliveCheckWorker(); })) {
-      g_idleWatcherRunning.store(false, std::memory_order_release);
-    }
+  if (!error || !IsPipeDisconnectError(*error) || lexiconDir.empty()) return false;
+  if (IsLookupRequestSuperseded(requestId)) {
+    *error = L"lookup superseded during pipe reconnect";
+    return false;
   }
+
+  std::wstring retryError;
+  if (!VerifyRemoteInstanceLocked(ModuleDir(), &retryError) ||
+      !EnsureRemoteLoadedLocked(lexiconDir, &retryError)) {
+    if (!retryError.empty()) *error = retryError;
+    return false;
+  }
+  if (IsLookupRequestSuperseded(requestId)) {
+    *error = L"lookup superseded during pipe reconnect";
+    return false;
+  }
+  error->clear();
+  return RemoteLookupLocked(reading, requestId, candidates, metaScores, count, error, fullResult,
+                            hasMore);
 }
 
 void EngineWatchdogWorker(std::filesystem::path moduleDir) {
@@ -3027,8 +3060,8 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
     const DWORD error = GetLastError();
     if (error == ERROR_FILE_NOT_FOUND || error == ERROR_INVALID_NAME) {
       AppendEngineStateLogDeduped(L"reason=watchdog_mutex_missing status=failed pid=" +
-                                  std::to_wstring(GetCurrentProcessId()) +
-                                  L" error=" + std::to_wstring(error));
+                                  std::to_wstring(GetCurrentProcessId()) + L" error=" +
+                                  std::to_wstring(error));
       // All restart attempts go through the bounded recovery scheduler.
       PublishEngineState(SrfEngineState::Failed, error, L"watchdog_mutex_missing");
       EnsureRetryLoopScheduled();
@@ -3039,8 +3072,8 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
     // dead. Let the current record age out to Unknown and retain the error
     // code for diagnosis instead of triggering a potentially harmful restart.
     AppendEngineStateLogDeduped(L"reason=watchdog_probe_unconfirmed status=unknown pid=" +
-                                std::to_wstring(GetCurrentProcessId()) +
-                                L" error=" + std::to_wstring(error));
+                                std::to_wstring(GetCurrentProcessId()) + L" error=" +
+                                std::to_wstring(error));
   }
 }
 
@@ -3078,10 +3111,10 @@ void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRe
 
     const DWORD delayMs = RetryBackoffMsForAttempt(attempt);
     AppendEngineLogDeduped(L"basic", L"tsf_bridge_recovery",
-                           L"generation=" + std::to_wstring(generation) +
-                               L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
-                               L" attempt=" + std::to_wstring(attempt + 1) +
-                               L" phase=wait delay_ms=" + std::to_wstring(delayMs));
+                           L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
+                               std::to_wstring(triggerRequestId) + L" attempt=" +
+                               std::to_wstring(attempt + 1) + L" phase=wait delay_ms=" +
+                               std::to_wstring(delayMs));
     Sleep(delayMs);
 
     if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) break;
@@ -3100,13 +3133,14 @@ void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRe
     PublishEngineState(SrfEngineState::Loading, ERROR_SUCCESS, L"recovery_attempt");
     WarmupEngineWorker();
     AppendEngineLogDeduped(
-        g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"basic" : L"error",
+        g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"basic"
+                                                                               : L"error",
         L"tsf_bridge_recovery",
-        L"generation=" + std::to_wstring(generation) +
-            L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
-            L" attempt=" + std::to_wstring(attempt + 1) +
+        L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
+            std::to_wstring(triggerRequestId) + L" attempt=" + std::to_wstring(attempt + 1) +
             L" phase=result status=" +
-            (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"ready" : L"failed") +
+            (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"ready"
+                                                                                    : L"failed") +
             L" elapsed_ms=" + std::to_wstring(GetTickCount64() - startedTick));
     if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
     ++attempt;
@@ -3117,9 +3151,8 @@ void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRe
       g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready &&
       g_recoveryBudget.Exhausted()) {
     AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
-                           L"generation=" + std::to_wstring(generation) +
-                               L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
-                               L" phase=cooldown delay_ms=" +
+                           L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
+                               std::to_wstring(triggerRequestId) + L" phase=cooldown delay_ms=" +
                                std::to_wstring(kEngineRecoveryCooldownMs));
     // Keep a slow health probe after the short recovery budget is consumed.
     // A transient outage can then recover without an infinite rapid restart
@@ -3159,14 +3192,13 @@ void EnsureRetryLoopScheduled() {
   const unsigned long long triggerRequestId =
       g_recoveryTriggerRequestId.load(std::memory_order_acquire);
   AppendEngineLogDeduped(L"basic", L"tsf_bridge_recovery",
-                         L"generation=" + std::to_wstring(generation) +
-                             L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
-                             L" phase=scheduled");
+                         L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
+                             std::to_wstring(triggerRequestId) + L" phase=scheduled");
   if (!StartDetachedBackgroundWorker(
           [generation, triggerRequestId] { RetryLoopWorker(generation, triggerRequestId); })) {
-    AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
-                           L"generation=" + std::to_wstring(generation) +
-                               L" phase=worker_start_failed");
+    AppendEngineLogDeduped(
+        L"error", L"tsf_bridge_recovery",
+        L"generation=" + std::to_wstring(generation) + L" phase=worker_start_failed");
     g_retryLoopInFlight.store(false, std::memory_order_release);
   }
 }
@@ -3208,8 +3240,6 @@ void WarmupEngineWorker() {
                      initialized ? L"warmup_succeeded" : L"warmup_failed");
   g_warmupInFlight.store(false, std::memory_order_release);
   if (initialized) {
-    TouchEngineUseTime();
-    EnsureIdleWatcherStarted();
     g_lastUserTriggeredWarmupTick.store(0, std::memory_order_release);
     ResetRetryLoopState();
     SrfTip_PrewarmSingleLetterLookupCacheAsync();
@@ -3232,8 +3262,6 @@ bool EnsureReadyNow() {
                      initialized ? L"load_succeeded" : L"load_failed");
   g_warmupInFlight.store(false, std::memory_order_release);
   if (initialized) {
-    TouchEngineUseTime();
-    EnsureIdleWatcherStarted();
     ResetRetryLoopState();
   } else {
     EnsureRetryLoopScheduled();
@@ -3245,9 +3273,10 @@ bool EnsureReadyNow() {
 }  // namespace
 
 extern "C" const char* __cdecl KxGetBuildInfo() {
-  static const std::string info = std::string("{\"schema\":1,\"component\":\"tsf\",\"version\":\"") +
-      SRF_APP_VERSION + "\",\"git\":\"" + SRF_GIT_COMMIT + "\",\"protocol\":" +
-      std::to_string(kEnginePipeVersion) + ",\"bits\":" + std::to_string(sizeof(void*) * 8) + "}";
+  static const std::string info =
+      std::string("{\"schema\":1,\"component\":\"tsf\",\"version\":\"") + SRF_APP_VERSION +
+      "\",\"git\":\"" + SRF_GIT_COMMIT + "\",\"protocol\":" + std::to_string(kEnginePipeVersion) +
+      ",\"bits\":" + std::to_string(sizeof(void*) * 8) + "}";
   return info.c_str();
 }
 
@@ -3268,8 +3297,10 @@ extern "C" int __cdecl KxReleaseProbe(wchar_t* detail, unsigned capacity) {
     result = 11;
   } else {
     const auto lexicon = ResolveTrustedLexiconDir(moduleDir, &error);
-    if (lexicon.empty() || !EnsureRemoteLoadedLocked(lexicon, &error)) result = 12;
-    else if (!RemoteLookupLocked(L"nihao", 1, &candidates, nullptr, &count, &error)) result = 13;
+    if (lexicon.empty() || !EnsureRemoteLoadedLocked(lexicon, &error))
+      result = 12;
+    else if (!RemoteLookupLocked(L"nihao", 1, &candidates, nullptr, &count, &error))
+      result = 13;
     else if (std::find(candidates.begin(), candidates.end(), L"你好") == candidates.end()) {
       error = L"nihao did not return 你好 in the first candidate batch";
       result = 14;
@@ -3279,6 +3310,54 @@ extern "C" int __cdecl KxReleaseProbe(wchar_t* detail, unsigned capacity) {
   if (detail && capacity) wcsncpy_s(detail, capacity, error.c_str(), _TRUNCATE);
   return result;
 }
+
+#ifdef SRF_IDLE_RECOVERY_TEST
+// Compiled only into the standalone test executable, never the TSF DLL.
+int SrfTip_TestIdleRecovery(DWORD idleMs, std::wstring* detail) {
+  std::unique_lock<std::mutex> guard(g_mutex);
+  const auto moduleDir = ModuleDir();
+  std::wstring error;
+  if (!WaitForEnginePipeReady(moduleDir, 10000) || !VerifyRemoteInstanceLocked(moduleDir, &error)) {
+    if (detail) *detail = L"initial handshake: " + error;
+    return 10;
+  }
+  const auto lexicon = ResolveTrustedLexiconDir(moduleDir, &error);
+  if (lexicon.empty() || !EnsureRemoteLoadedLocked(lexicon, &error)) {
+    if (detail) *detail = L"initialization: " + error;
+    return 11;
+  }
+  std::vector<std::wstring> candidates;
+  int count = 0;
+  if (!RemoteLookupLocked(L"nihao", 0, &candidates, nullptr, &count, &error) ||
+      std::find(candidates.begin(), candidates.end(), L"你好") == candidates.end()) {
+    if (detail) *detail = L"initial lookup: " + error;
+    return 12;
+  }
+  const DWORD originalPid = g_engineHelperPid.load(std::memory_order_acquire);
+  Sleep(idleMs);
+  if (PeekNamedPipe(g_bridge.pipe, nullptr, 0, nullptr, nullptr, nullptr) ||
+      !IsPipeDisconnectSystemError(GetLastError())) {
+    if (detail) *detail = L"server did not close the idle connection";
+    return 13;
+  }
+  // Leave automatic retries disabled to prove a stale pipe is recovered by the
+  // first lookup itself, without waiting for a background recovery cycle.
+  g_engineState.store(SrfEngineState::Ready, std::memory_order_release);
+  guard.unlock();
+  candidates.clear();
+  const auto status = SrfTip_LookupCandidates(L"nihao", candidates);
+  if (status != SrfLookupCandidatesStatus::Ok ||
+      std::find(candidates.begin(), candidates.end(), L"你好") == candidates.end() ||
+      SrfTip_GetEngineState() != SrfEngineState::Ready ||
+      g_engineHelperPid.load(std::memory_order_acquire) != originalPid) {
+    if (detail) {
+      *detail = L"lookup after idle failed: status=" + std::to_wstring(static_cast<int>(status));
+    }
+    return 14;
+  }
+  return 0;
+}
+#endif
 
 unsigned long long SrfTip_NextLookupRequestId() {
   LARGE_INTEGER counter = {};
@@ -3293,7 +3372,7 @@ unsigned long long SrfTip_NextLookupRequestId() {
   for (;;) {
     const unsigned long long next = (std::max)(candidate, current + 1);
     if (g_latestLookupRequestId.compare_exchange_weak(current, next, std::memory_order_acq_rel,
-                                                       std::memory_order_acquire)) {
+                                                      std::memory_order_acquire)) {
       return next;
     }
   }
@@ -3301,8 +3380,7 @@ unsigned long long SrfTip_NextLookupRequestId() {
 
 void SrfTip_CancelPendingLookupBefore(unsigned long long requestId) {
   if (requestId == 0) return;
-  unsigned long long current =
-      g_latestLookupCancelRequestId.load(std::memory_order_acquire);
+  unsigned long long current = g_latestLookupCancelRequestId.load(std::memory_order_acquire);
   while (requestId > current &&
          !g_latestLookupCancelRequestId.compare_exchange_weak(
              current, requestId, std::memory_order_acq_rel, std::memory_order_acquire)) {
@@ -3326,8 +3404,7 @@ bool SrfTip_InitializeEngine() {
 }
 
 void SrfTip_SetRetryOnFailureEnabled(bool enabled) {
-  const bool previous =
-      g_retryOnFailureEnabled.exchange(enabled, std::memory_order_acq_rel);
+  const bool previous = g_retryOnFailureEnabled.exchange(enabled, std::memory_order_acq_rel);
   if (previous != enabled) {
     ResetRetryLoopState();
   }
@@ -3358,7 +3435,6 @@ std::wstring SrfTip_GetEngineFailureDetail() {
 size_t SrfTip_SyllableBoundaryOffsetsUtf16(const wchar_t* text, size_t unitCount, uint32_t* out,
                                            size_t cap) {
   if (!text || !out || cap == 0 || unitCount > kMaxBridgeInputUnits) return 0;
-  TouchEngineUseTime();
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
@@ -3384,8 +3460,7 @@ size_t SrfTip_SyllableBoundaryOffsetsUtf16(const wchar_t* text, size_t unitCount
 
 bool SrfTip_TryGetCachedLookupCandidates(const std::wstring& reading,
                                          std::vector<std::wstring>& candidates,
-                                         std::vector<std::wstring>* metaScores,
-                                         bool* hasMore) {
+                                         std::vector<std::wstring>* metaScores, bool* hasMore) {
   candidates.clear();
   if (metaScores) metaScores->clear();
   if (hasMore) *hasMore = false;
@@ -3406,7 +3481,6 @@ void SrfTip_SetEngineModeFlags(unsigned long flags) {
 }
 
 bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
-  TouchEngineUseTime();
   unsigned int busyAttempt = 0;
   for (;;) {
     const ULONGLONG deadline = GetTickCount64() + kAsyncLearnReadyWaitMs;
@@ -3445,12 +3519,12 @@ bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
             break;
           case PendingLearnKind::Correction:
             completed = RemoteLearnCorrectionLocked(request.reading, request.correctedReading,
-                                                     request.committedText, &error);
+                                                    request.committedText, &error);
             break;
           case PendingLearnKind::SelectionFeedback:
-            completed = RemoteLearnSelectionFeedbackLocked(
-                request.reading, request.committedText, request.selectedIndex, request.page,
-                request.skippedCandidates, &error);
+            completed = RemoteLearnSelectionFeedbackLocked(request.reading, request.committedText,
+                                                           request.selectedIndex, request.page,
+                                                           request.skippedCandidates, &error);
             break;
         }
 
@@ -3521,8 +3595,7 @@ void LearnCommitWorkerMain() {
 
 void EnsureLearnCommitWorkerRunning() {
   bool expected = false;
-  if (!g_learnWorkerRunning.compare_exchange_strong(expected, true,
-                                                    std::memory_order_acq_rel)) {
+  if (!g_learnWorkerRunning.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
     return;
   }
   if (!StartDetachedBackgroundWorker([] { LearnCommitWorkerMain(); })) {
@@ -3555,8 +3628,8 @@ void DropLowestPriorityLearnRequestLocked() {
 }
 
 unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
-                                         const std::wstring& committedText,
-                                         unsigned long flags, HWND completionWindow = nullptr,
+                                         const std::wstring& committedText, unsigned long flags,
+                                         HWND completionWindow = nullptr,
                                          UINT completionMessage = 0) {
   const unsigned long long completionId =
       completionWindow && completionMessage != 0
@@ -3565,9 +3638,8 @@ unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
   {
     std::lock_guard<std::mutex> guard(g_learnQueueMutex);
     for (auto it = g_learnQueue.begin(); it != g_learnQueue.end(); ++it) {
-      if (completionId == 0 && it->completionId == 0 &&
-          it->kind == PendingLearnKind::Commit && it->flags == flags &&
-          it->reading == reading && it->committedText == committedText) {
+      if (completionId == 0 && it->completionId == 0 && it->kind == PendingLearnKind::Commit &&
+          it->flags == flags && it->reading == reading && it->committedText == committedText) {
         it->repeatCount = (std::min)(it->repeatCount + 1, kLearnQueueMaxRepeatCount);
         PendingLearnRequest merged = std::move(*it);
         g_learnQueue.erase(it);
@@ -3598,8 +3670,7 @@ unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
   return completionId;
 }
 
-void QueueLearnCorrectionAsync(const std::wstring& rawReading,
-                               const std::wstring& correctedReading,
+void QueueLearnCorrectionAsync(const std::wstring& rawReading, const std::wstring& correctedReading,
                                const std::wstring& committedText) {
   {
     std::lock_guard<std::mutex> guard(g_learnQueueMutex);
@@ -3618,8 +3689,7 @@ void QueueLearnCorrectionAsync(const std::wstring& rawReading,
 
 void QueueLearnSelectionFeedbackAsync(const std::wstring& reading,
                                       const std::wstring& committedText,
-                                      unsigned long selectedIndex,
-                                      unsigned long page,
+                                      unsigned long selectedIndex, unsigned long page,
                                       std::vector<std::wstring> skippedCandidates) {
   {
     std::lock_guard<std::mutex> guard(g_learnQueueMutex);
@@ -3646,76 +3716,75 @@ void SrfTip_LearnCommitEx(const std::wstring& reading, const std::wstring& commi
                           unsigned long flags) {
   if (reading.empty() || committedText.empty()) return;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return;
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
-  TouchEngineUseTime();
   QueueLearnCommitAsync(reading, committedText, flags);
   // 引擎学习在后台完成；学习完成时才会再次失效。这里先失效一次，避免
   // 学习处理期间用户重打同一 reading 时本地缓存仍返回旧候选列表。
   InvalidateLocalLookupCacheReading(reading);
 }
 
-unsigned long long SrfTip_LearnCommitExWithCompletion(
-    const std::wstring& reading, const std::wstring& committedText, unsigned long flags,
-    HWND completionWindow, UINT completionMessage) {
+unsigned long long SrfTip_LearnCommitExWithCompletion(const std::wstring& reading,
+                                                      const std::wstring& committedText,
+                                                      unsigned long flags, HWND completionWindow,
+                                                      UINT completionMessage) {
   if (reading.empty() || committedText.empty() || !completionWindow || completionMessage == 0) {
     return 0;
   }
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) {
     return 0;
   }
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return 0;
   }
   PruneLocalLookupCachePreservingHot();
-  TouchEngineUseTime();
   unsigned long long requestId =
       QueueLearnCommitAsync(reading, committedText, flags, completionWindow, completionMessage);
   InvalidateLocalLookupCacheReading(reading);
   return requestId;
 }
 
-void SrfTip_LearnCorrection(const std::wstring& rawReading,
-                            const std::wstring& correctedReading,
+void SrfTip_LearnCorrection(const std::wstring& rawReading, const std::wstring& correctedReading,
                             const std::wstring& committedText) {
   if (rawReading.empty() || correctedReading.empty() || committedText.empty()) return;
   if (rawReading.size() > kMaxBridgeInputUnits || correctedReading.size() > kMaxBridgeInputUnits ||
       committedText.size() > kMaxLearnPhraseUnits) {
     return;
   }
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
-  TouchEngineUseTime();
   QueueLearnCorrectionAsync(rawReading, correctedReading, committedText);
   // 纠错学习会改写 rawReading 与 correctedReading 两组的候选顺序。
   InvalidateLocalLookupCacheReading(rawReading);
   InvalidateLocalLookupCacheReading(correctedReading);
 }
 
-void SrfTip_LearnSelectionFeedback(const std::wstring& reading,
-                                   const std::wstring& committedText,
-                                   unsigned long selectedIndex,
-                                   unsigned long page,
+void SrfTip_LearnSelectionFeedback(const std::wstring& reading, const std::wstring& committedText,
+                                   unsigned long selectedIndex, unsigned long page,
                                    const std::vector<std::wstring>& skippedCandidates) {
   if (reading.empty() || committedText.empty()) return;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) {
     return;
   }
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
-  TouchEngineUseTime();
   std::vector<std::wstring> queuedSkipped;
   queuedSkipped.reserve(skippedCandidates.size() < kMaxSelectionFeedbackSkipped
                             ? skippedCandidates.size()
                             : kMaxSelectionFeedbackSkipped);
   for (const auto& candidate : skippedCandidates) {
-    if (candidate.empty() || candidate == committedText || candidate.size() > kMaxLearnPhraseUnits) {
+    if (candidate.empty() || candidate == committedText ||
+        candidate.size() > kMaxLearnPhraseUnits) {
       continue;
     }
     queuedSkipped.push_back(candidate);
@@ -3728,7 +3797,8 @@ void SrfTip_LearnSelectionFeedback(const std::wstring& reading,
 }
 
 void SrfTip_ResetLearningContext() {
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
@@ -3759,14 +3829,15 @@ void SrfTip_ResetLearningContext() {
 }
 
 bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
-                          bool pinned) {
+                            bool pinned) {
   if (reading.empty() || committedText.empty()) return false;
-  if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return false;
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits)
+    return false;
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return false;
   }
   InvalidateLocalLookupCacheReading(reading);
-  TouchEngineUseTime();
 
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
@@ -3791,16 +3862,15 @@ bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& com
   return false;
 }
 
-void SrfTip_ApplyCandidateAction(const std::wstring& reading,
-                                 const std::wstring& committedText,
+void SrfTip_ApplyCandidateAction(const std::wstring& reading, const std::wstring& committedText,
                                  SrfCandidateAction action) {
   if (reading.empty() || committedText.empty()) return;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return;
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) != 0) {
+  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
+      0) {
     return;
   }
   InvalidateLocalLookupCacheReading(reading);
-  TouchEngineUseTime();
 
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
@@ -3830,7 +3900,6 @@ void SrfTip_ApplyCandidateAction(const std::wstring& reading,
 
 void SrfTip_RecordClipboardText(const std::wstring& text) {
   if (text.empty() || text.size() > kMaxClipboardTextUnits) return;
-  TouchEngineUseTime();
 
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
@@ -3841,7 +3910,8 @@ void SrfTip_RecordClipboardText(const std::wstring& text) {
   std::wstring failureSnap;
   std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
   const ULONGLONG deadline = GetTickCount64() + kLookupBusyWaitMs;
-  while (!guard.try_lock() && GetTickCount64() < deadline) Sleep(0);
+  while (!guard.try_lock() && GetTickCount64() < deadline)
+    Sleep(0);
   if (!guard.owns_lock()) return;
   if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return;
   if (g_bridge.backend == EngineBackend::Remote) {
@@ -3859,7 +3929,6 @@ void SrfTip_RecordClipboardText(const std::wstring& text) {
 bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text) {
   if (text) text->clear();
   if (id.empty() || !text) return false;
-  TouchEngineUseTime();
 
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
@@ -3870,7 +3939,8 @@ bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text) {
   std::wstring failureSnap;
   std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
   const ULONGLONG deadline = GetTickCount64() + kLookupBusyWaitMs;
-  while (!guard.try_lock() && GetTickCount64() < deadline) Sleep(0);
+  while (!guard.try_lock() && GetTickCount64() < deadline)
+    Sleep(0);
   if (!guard.owns_lock()) return false;
   if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return false;
   if (g_bridge.backend == EngineBackend::Remote) {
@@ -3950,9 +4020,8 @@ void SrfTip_PrefetchClipboardTexts(const std::vector<std::wstring>& ids) {
 bool TryServeLookupFromStaleCache(const std::wstring& reading, uint32_t modeFlags,
                                   std::vector<std::wstring>& candidates,
                                   std::vector<std::wstring>* metaScores,
-                                  unsigned long long requestId,
-                                  const wchar_t* reason, bool fullResult = false,
-                                  bool* hasMore = nullptr) {
+                                  unsigned long long requestId, const wchar_t* reason,
+                                  bool fullResult = false, bool* hasMore = nullptr) {
   if (!TryGetStaleLocalLookupCache(reading, modeFlags, candidates, metaScores, fullResult,
                                    hasMore)) {
     return false;
@@ -3981,7 +4050,6 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
     return SrfLookupCandidatesStatus::Empty;
   }
   if (requestId == 0) requestId = SrfTip_NextLookupRequestId();
-  TouchEngineUseTime();
   PublishLatestLookupRequestId(requestId);
   const uint32_t modeFlags = g_pendingModeFlagsMirror.load(std::memory_order_acquire);
   auto tryStale = [&](const wchar_t* reason) {
@@ -4028,6 +4096,12 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
     return SrfLookupCandidatesStatus::BridgeBusy;
   }
   if (!EnsureLoadedLocked()) {
+    failureSnap = g_lastEngineFailure;
+    g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+    PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_ensure_failed");
+    guard.unlock();
+    EnsureRetryLoopScheduled();
+    if (!failureSnap.empty()) AppendEngineFailureLogDeduped(failureSnap);
     if (tryStale(L"ensure_loaded_failed")) {
       return SrfLookupCandidatesStatus::EnsureFailed;
     }
@@ -4038,8 +4112,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
   int count = 0;
   if (g_bridge.backend == EngineBackend::Remote) {
     std::wstring error;
-    if (!RemoteLookupLocked(reading, requestId, &candidates, metaScores, &count, &error,
-                            fullResult, hasMore)) {
+    if (!RemoteLookupWithReconnectLocked(reading, requestId, &candidates, metaScores, &count,
+                                         &error, fullResult, hasMore)) {
       failureSnap = error.empty() ? L"shared engine lookup failed" : error;
       if (requestId != 0) {
         failureSnap = L"request_id=" + std::to_wstring(requestId) + L" " + failureSnap;
@@ -4156,8 +4230,7 @@ void SrfTip_PrewarmSingleLetterLookupCacheAsync() {
 
         const uint32_t modeFlags = g_pendingModeFlagsMirror.load(std::memory_order_acquire);
         auto interactiveLookupQuiet = []() {
-          const ULONGLONG last =
-              g_lastInteractiveLookupTick.load(std::memory_order_acquire);
+          const ULONGLONG last = g_lastInteractiveLookupTick.load(std::memory_order_acquire);
           if (last == 0) return true;
           const ULONGLONG now = GetTickCount64();
           return now < last || now - last >= kPrewarmQuietAfterInteractiveLookupMs;
@@ -4180,9 +4253,19 @@ void SrfTip_PrewarmSingleLetterLookupCacheAsync() {
           int count = 0;
           bool hasMore = false;
           std::wstring error;
-          if (!RemoteLookupLocked(reading, 0, &candidates, &meta, &count, &error, false,
-                                  &hasMore) ||
-              count <= 0 || candidates.empty()) {
+          if (!RemoteLookupWithReconnectLocked(reading, 0, &candidates, &meta, &count, &error,
+                                               false, &hasMore)) {
+            if (!g_bridge.initialized) {
+              SetFailureDetailLocked(error.empty() ? L"shared engine prewarm failed" : error);
+              const std::wstring failure = g_lastEngineFailure;
+              PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"prewarm_lookup_failed");
+              bridgeGuard.unlock();
+              EnsureRetryLoopScheduled();
+              AppendEngineFailureLogDeduped(failure);
+            }
+            return false;
+          }
+          if (count <= 0 || candidates.empty()) {
             return false;
           }
           PutLocalLookupCache(reading, modeFlags, candidates, &meta, false, hasMore);

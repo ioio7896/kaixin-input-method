@@ -230,6 +230,10 @@ impl Item {
 /// background brush outlive TrackPopupMenu and are released together on all exits.
 pub(super) struct Menu {
     pub handle: isize,
+    #[allow(
+        clippy::vec_box,
+        reason = "Win32 itemData stores stable pointers while the vector grows."
+    )]
     items: Vec<Box<Item>>,
     brush: HBRUSH,
     dpi: i32,
@@ -1121,7 +1125,9 @@ pub(super) unsafe fn preview(
     let buffer =
         std::slice::from_raw_parts(bits.cast::<u8>(), width as usize * height as usize * 4);
     let pixels: Vec<u8> = buffer
-        .chunks_exact(4)
+        .as_chunks::<4>()
+        .0
+        .iter()
         .flat_map(|p| [p[2], p[1], p[0], 255])
         .collect();
     SelectObject(dc, old);

@@ -18,18 +18,16 @@ inline bool CompletedBatchKeepsTop(const std::wstring& currentTop,
 }
 
 inline bool ShouldRetainEmptyCandidateResult(bool hasReading, bool nextCandidatesEmpty,
-                                             bool currentCandidatesEmpty,
-                                             bool transientLookup) {
+                                             bool currentCandidatesEmpty, bool transientLookup) {
   return hasReading && nextCandidatesEmpty && !currentCandidatesEmpty && transientLookup;
 }
 
 inline bool ShouldKeepCandidateUiAliveDuringTransient(bool composing, bool hasReading,
-                                                       bool hasCandidates) {
+                                                      bool hasCandidates) {
   return composing && hasReading && hasCandidates;
 }
 
-inline bool CanRefreshCompletedPartialSnapshot(bool currentIsPartial,
-                                               bool snapshotReadingMatches,
+inline bool CanRefreshCompletedPartialSnapshot(bool currentIsPartial, bool snapshotReadingMatches,
                                                unsigned long long interactionVersion,
                                                unsigned long long snapshotInteractionVersion) {
   return currentIsPartial && snapshotReadingMatches &&
@@ -45,9 +43,11 @@ inline std::wstring RemovePartialMetaFlag(const std::wstring& raw) {
     const std::wstring token = raw.substr(start, length);
 
     size_t trimmedStart = 0;
-    while (trimmedStart < token.size() && iswspace(token[trimmedStart])) ++trimmedStart;
+    while (trimmedStart < token.size() && iswspace(token[trimmedStart]))
+      ++trimmedStart;
     size_t trimmedEnd = token.size();
-    while (trimmedEnd > trimmedStart && iswspace(token[trimmedEnd - 1])) --trimmedEnd;
+    while (trimmedEnd > trimmedStart && iswspace(token[trimmedEnd - 1]))
+      --trimmedEnd;
     const std::wstring trimmed = token.substr(trimmedStart, trimmedEnd - trimmedStart);
     if (trimmed != L"partial" && trimmed != L"partial=1") {
       if (!out.empty()) out.push_back(L'\t');
@@ -81,8 +81,8 @@ inline bool StabilizeCompletedBatch(const std::vector<std::wstring>& currentCand
 
   std::vector<std::wstring> stableCandidates;
   std::vector<std::wstring> stableMeta;
-  stableCandidates.reserve(std::min(candidateLimit,
-                                    currentCandidates.size() + incomingCandidates.size()));
+  stableCandidates.reserve(
+      std::min(candidateLimit, currentCandidates.size() + incomingCandidates.size()));
   stableMeta.reserve(stableCandidates.capacity());
 
   auto alreadyAdded = [&](const std::wstring& phrase) {
@@ -148,8 +148,8 @@ inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandi
   const size_t frozenCount = std::min(candidateLimit, currentCandidates.size());
   std::vector<std::wstring> frozenCandidates;
   std::vector<std::wstring> frozenMeta;
-  frozenCandidates.reserve(std::min(candidateLimit,
-                                    currentCandidates.size() + incomingCandidates.size()));
+  frozenCandidates.reserve(
+      std::min(candidateLimit, currentCandidates.size() + incomingCandidates.size()));
   frozenMeta.reserve(frozenCandidates.capacity());
   std::unordered_map<std::wstring, size_t> incomingIndex;
   incomingIndex.reserve(incomingCandidates.size());
@@ -157,8 +157,7 @@ inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandi
     incomingIndex.emplace(incomingCandidates[i], i);
   }
   std::unordered_set<std::wstring> frozenSet;
-  frozenSet.reserve(std::min(candidateLimit,
-                             currentCandidates.size() + incomingCandidates.size()));
+  frozenSet.reserve(std::min(candidateLimit, currentCandidates.size() + incomingCandidates.size()));
   for (size_t i = 0; i < frozenCount; ++i) {
     if (!frozenSet.insert(currentCandidates[i]).second) continue;
     frozenCandidates.push_back(currentCandidates[i]);
@@ -167,8 +166,8 @@ inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandi
       const size_t index = match->second;
       frozenMeta.push_back(RemovePartialMetaFlag(incomingMeta[index]));
     } else {
-      frozenMeta.push_back(RemovePartialMetaFlag(i < currentMeta.size() ? currentMeta[i]
-                                                                          : std::wstring()));
+      frozenMeta.push_back(
+          RemovePartialMetaFlag(i < currentMeta.size() ? currentMeta[i] : std::wstring()));
     }
   }
 

@@ -42,15 +42,55 @@ def main():
     free = api(kernel, "LocalFree", C.c_void_p, C.c_void_p)
     current = api(kernel, "GetCurrentProcess", W.HANDLE)
     open_token = api(security, "OpenProcessToken", W.BOOL, W.HANDLE, W.DWORD, C.POINTER(W.HANDLE))
-    duplicate = api(security, "DuplicateTokenEx", W.BOOL, W.HANDLE, W.DWORD, C.c_void_p, C.c_int, C.c_int, C.POINTER(W.HANDLE))
-    sid_from_string = api(security, "ConvertStringSidToSidW", W.BOOL, W.LPCWSTR, C.POINTER(C.c_void_p))
-    set_information = api(security, "SetTokenInformation", W.BOOL, W.HANDLE, C.c_int, C.c_void_p, W.DWORD)
+    duplicate = api(
+        security,
+        "DuplicateTokenEx",
+        W.BOOL,
+        W.HANDLE,
+        W.DWORD,
+        C.c_void_p,
+        C.c_int,
+        C.c_int,
+        C.POINTER(W.HANDLE),
+    )
+    sid_from_string = api(
+        security, "ConvertStringSidToSidW", W.BOOL, W.LPCWSTR, C.POINTER(C.c_void_p)
+    )
+    set_information = api(
+        security, "SetTokenInformation", W.BOOL, W.HANDLE, C.c_int, C.c_void_p, W.DWORD
+    )
     set_thread = api(security, "SetThreadToken", W.BOOL, C.c_void_p, W.HANDLE)
     revert = api(security, "RevertToSelf", W.BOOL)
-    create_file = api(kernel, "CreateFileW", W.HANDLE, W.LPCWSTR, W.DWORD, W.DWORD, C.c_void_p, W.DWORD, W.DWORD, W.HANDLE)
-    read = api(kernel, "ReadFile", W.BOOL, W.HANDLE, C.c_void_p, W.DWORD, C.POINTER(W.DWORD), C.c_void_p)
-    write = api(kernel, "WriteFile", W.BOOL, W.HANDLE, C.c_void_p, W.DWORD, C.POINTER(W.DWORD), C.c_void_p)
-    protect = api(crypt, "CryptProtectData", W.BOOL, C.POINTER(Blob), C.c_void_p, C.c_void_p, C.c_void_p, C.c_void_p, W.DWORD, C.POINTER(Blob))
+    create_file = api(
+        kernel,
+        "CreateFileW",
+        W.HANDLE,
+        W.LPCWSTR,
+        W.DWORD,
+        W.DWORD,
+        C.c_void_p,
+        W.DWORD,
+        W.DWORD,
+        W.HANDLE,
+    )
+    read = api(
+        kernel, "ReadFile", W.BOOL, W.HANDLE, C.c_void_p, W.DWORD, C.POINTER(W.DWORD), C.c_void_p
+    )
+    write = api(
+        kernel, "WriteFile", W.BOOL, W.HANDLE, C.c_void_p, W.DWORD, C.POINTER(W.DWORD), C.c_void_p
+    )
+    protect = api(
+        crypt,
+        "CryptProtectData",
+        W.BOOL,
+        C.POINTER(Blob),
+        C.c_void_p,
+        C.c_void_p,
+        C.c_void_p,
+        C.c_void_p,
+        W.DWORD,
+        C.POINTER(Blob),
+    )
 
     def require(result):
         if not result:
@@ -76,7 +116,9 @@ def main():
     blob, encrypted = Blob(len(token), C.cast(plain, C.c_void_p)), Blob()
     require(protect(C.byref(blob), None, None, None, None, 1, C.byref(encrypted)))
     try:
-        (data / "engine_capability.dat").write_bytes(b"KXIPC-DPAPI-1\n" + C.string_at(encrypted.data, encrypted.size))
+        (data / "engine_capability.dat").write_bytes(
+            b"KXIPC-DPAPI-1\n" + C.string_at(encrypted.data, encrypted.size)
+        )
     finally:
         free(encrypted.data)
 
@@ -95,10 +137,15 @@ def main():
             free(sid)
 
         pipe_name = rf"\\.\pipe\KaixinWin11Live-{run_id}"
-        env = dict(os.environ, LOCALAPPDATA=str(root), SRF_ENGINE_PIPE_NAME=pipe_name,
-                   SRF_ENGINE_MUTEX_NAME=rf"Local\KaixinWin11Live-{run_id}")
-        process = subprocess.Popen([str(engine), "--no-warmup"], env=env,
-                                   creationflags=subprocess.CREATE_NO_WINDOW)
+        env = dict(
+            os.environ,
+            LOCALAPPDATA=str(root),
+            SRF_ENGINE_PIPE_NAME=pipe_name,
+            SRF_ENGINE_MUTEX_NAME=rf"Local\KaixinWin11Live-{run_id}",
+        )
+        process = subprocess.Popen(
+            [str(engine), "--no-warmup"], env=env, creationflags=subprocess.CREATE_NO_WINDOW
+        )
         try:
             deadline = time.monotonic() + 15
             while True:
@@ -132,11 +179,13 @@ def main():
                         require(read(handle, buffer, len(buffer), C.byref(count), None))
                         if count.value == 0:
                             raise RuntimeError("engine disconnected before response")
-                        output.extend(buffer.raw[:count.value])
+                        output.extend(buffer.raw[: count.value])
                     return bytes(output)
 
                 try:
-                    magic, version, returned_command, status, size = struct.unpack("<IHH i I", receive(16))
+                    magic, version, returned_command, status, size = struct.unpack(
+                        "<IHH i I", receive(16)
+                    )
                     assert (magic, version, returned_command) == (0x31504653, 5, command)
                     assert size < 4 * 1024 * 1024
                     return status, receive(size)
@@ -148,18 +197,35 @@ def main():
                 return struct.pack("<I", len(encoded) // 2) + encoded
 
             for low_integrity in (False, True):
-                assert request(7, b"", low_integrity)[0] == 0, "identity check accepts same-session desktop host"
-                status, _ = request(2, field("0" * 64) + struct.pack("<I", 0) + field("nihao"), low_integrity)
-                assert status == -6, "wrong capability must remain denied after lowering pipe integrity"
+                assert request(7, b"", low_integrity)[0] == 0, (
+                    "identity check accepts same-session desktop host"
+                )
+                status, _ = request(
+                    2, field("0" * 64) + struct.pack("<I", 0) + field("nihao"), low_integrity
+                )
+                assert status == -6, (
+                    "wrong capability must remain denied after lowering pipe integrity"
+                )
                 deadline = time.monotonic() + 30
                 while True:
-                    payload = field(token) + struct.pack("<I", 0) + field("nihao") + struct.pack("<Q", 2 if low_integrity else 1)
+                    payload = (
+                        field(token)
+                        + struct.pack("<I", 0)
+                        + field("nihao")
+                        + struct.pack("<Q", 2 if low_integrity else 1)
+                    )
                     status, response = request(2, payload, low_integrity)
                     if status != -5 or time.monotonic() >= deadline:
                         break
                     time.sleep(0.05)  # Retry a bounded busy response during warmup.
-                assert status == 0 and len(response) >= 4 and struct.unpack_from("<I", response)[0] > 0, f"authenticated desktop host receives candidates: status={status} bytes={len(response)}"
-                print(f"PASS: {'low' if low_integrity else 'normal'} integrity: health, wrong-token denial, authenticated lookup")
+                assert (
+                    status == 0 and len(response) >= 4 and struct.unpack_from("<I", response)[0] > 0
+                ), (
+                    f"authenticated desktop host receives candidates: status={status} bytes={len(response)}"
+                )
+                print(
+                    f"PASS: {'low' if low_integrity else 'normal'} integrity: health, wrong-token denial, authenticated lookup"
+                )
             assert request(9, field(token), False)[0] == 0
             process.wait(timeout=10)
             print("PASS: isolated engine shutdown")

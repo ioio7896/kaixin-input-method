@@ -8,7 +8,8 @@ int wmain(int argc, wchar_t** argv) {
     HANDLE destroyed = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     HMODULE module = LoadLibraryW(argv[1]);
     if (!module || !proceed || !destroyed) return 2;
-    auto start = reinterpret_cast<BOOL (*)(HANDLE, HANDLE, BOOL)>(GetProcAddress(module, "StartWorker"));
+    auto start =
+        reinterpret_cast<BOOL (*)(HANDLE, HANDLE, BOOL)>(GetProcAddress(module, "StartWorker"));
     if (!start || !start(proceed, destroyed, i % 2)) return 3;
     // Drop the host reference while the worker is still blocked in DLL code.
     FreeLibrary(module);

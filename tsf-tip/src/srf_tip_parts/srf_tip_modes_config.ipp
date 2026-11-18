@@ -11,8 +11,8 @@ void CSrfTip::EnsureDisplayAttributeAtom() {
 }
 
 void CSrfTip::LoadCompartmentState() {
-  const SrfInitialInputModeState initial = ResolveInitialInputModeState(
-      m_config.input.defaultAscii, m_config.input.defaultFullShape);
+  const SrfInitialInputModeState initial =
+      ResolveInitialInputModeState(m_config.input.defaultAscii, m_config.input.defaultFullShape);
   m_imeOpen = initial.imeOpen;
   m_fullShape = initial.fullShape;
   m_cnPunct = GetCompartmentDWORD(GUID_COMPARTMENT_SRF_PUNCT,
@@ -32,9 +32,9 @@ void CSrfTip::SyncCompartmentState() {
   SetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_OPENCLOSE, m_imeOpen ? 1 : 0);
 
   DWORD conversion = GetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, 0);
-  conversion = static_cast<DWORD>(ClearSystemFullShapeConversion(
-      static_cast<std::uint32_t>(conversion),
-      static_cast<std::uint32_t>(TF_CONVERSIONMODE_FULLSHAPE)));
+  conversion = static_cast<DWORD>(
+      ClearSystemFullShapeConversion(static_cast<std::uint32_t>(conversion),
+                                     static_cast<std::uint32_t>(TF_CONVERSIONMODE_FULLSHAPE)));
   SetCompartmentDWORD(GUID_COMPARTMENT_KEYBOARD_INPUTMODE_CONVERSION, conversion);
 
   SetCompartmentDWORD(GUID_COMPARTMENT_SRF_PUNCT, m_cnPunct ? 1 : 0);
@@ -43,7 +43,9 @@ void CSrfTip::SyncCompartmentState() {
   ApplyRustModeFlags();
 }
 
-void CSrfTip::ApplyRustModeFlags() { SrfTip_SetEngineModeFlags(RustModeFlags()); }
+void CSrfTip::ApplyRustModeFlags() {
+  SrfTip_SetEngineModeFlags(RustModeFlags());
+}
 
 void CSrfTip::ApplyDefaultPunctuationForImeMode() {
   m_cnPunct = m_imeOpen && m_config.input.defaultChinesePunct;
@@ -144,7 +146,8 @@ bool CSrfTip::IsGameHotkeyPassthroughActive() const {
   if (m_pureGameMode) return true;
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
+    appGameProfile =
+        (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
   }
   return appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
          m_builtinGameCompatActive || m_manualGameCompatActive;
@@ -168,30 +171,36 @@ bool CSrfTip::ShouldHandleGameChatHotkey() const {
 
 SrfGameEnterBehavior CSrfTip::EffectiveGameEnterBehavior() const {
   const auto* options = FindAppOptions(m_config, CompatibilityAppName());
-  return options && options->hasGameEnterBehavior ? options->gameEnterBehavior : m_config.compatibility.gameEnterBehavior;
+  return options && options->hasGameEnterBehavior ? options->gameEnterBehavior
+                                                  : m_config.compatibility.gameEnterBehavior;
 }
 
 bool CSrfTip::EffectiveGameAutoUia() const {
   const auto* options = FindAppOptions(m_config, CompatibilityAppName());
-  return options && options->hasGameAutoUia ? options->gameAutoUia : m_config.compatibility.gameAutoUia;
+  return options && options->hasGameAutoUia ? options->gameAutoUia
+                                            : m_config.compatibility.gameAutoUia;
 }
 
 bool CSrfTip::EffectiveGameStatusIndicator() const {
   const auto* options = FindAppOptions(m_config, CompatibilityAppName());
-  return options && options->hasGameStatusIndicator ? options->gameStatusIndicator : m_config.compatibility.gameStatusIndicator;
+  return options && options->hasGameStatusIndicator ? options->gameStatusIndicator
+                                                    : m_config.compatibility.gameStatusIndicator;
 }
 
 void CSrfTip::ShowGameInputStatus(const wchar_t* text) {
   if (!EffectiveGameStatusIndicator() || m_uiLessMode ||
       GetAncestor(GetForegroundWindow(), GA_ROOT) != m_compatibilityHwnd ||
-      m_sensitiveInputActive || m_config.privacy.enabled) return;
+      m_sensitiveInputActive || m_config.privacy.enabled)
+    return;
   // A small non-activating transient uses the existing notification renderer.
   // Candidate UI supersedes it as soon as typing starts.
   RECT anchor = {};
   if (ResolveCandidateGameOverlayAnchor(m_compatibilityHwnd, m_fullscreenCompatActive,
-                                        FindAppOptions(m_config, CompatibilityAppName()), &anchor)) {
+                                        FindAppOptions(m_config, CompatibilityAppName()),
+                                        &anchor)) {
     m_notificationWindow.Show(text, &anchor, m_config.compatibility.gameStatusDurationMs,
-                              SrfNotificationTone::Chinese, m_config.compatibility.gameStatusScalePercent);
+                              SrfNotificationTone::Chinese,
+                              m_config.compatibility.gameStatusScalePercent);
   }
 }
 
@@ -208,7 +217,10 @@ void CSrfTip::SetGameChatActive(bool active) {
   }
   const SrfGameTextSource previousSource = m_gameChatSource;
   if (active) {
-    if (m_pComposition) { RequestCancelCompositionOnFocusLoss(); return; }
+    if (m_pComposition) {
+      RequestCancelCompositionOnFocusLoss();
+      return;
+    }
     m_gameChatSavedImeOpen = m_imeOpen;
     m_gameChatOwner = m_compatibilityHwnd;
     m_gameChatOwnerProcessId = m_compatibilityProcessId;
@@ -240,10 +252,11 @@ void CSrfTip::SetGameChatActive(bool active) {
   SyncCompartmentState();
   SyncStatusModel();
   const SrfGameTextSource loggedSource = active ? m_gameChatSource : previousSource;
-  const wchar_t* source = loggedSource == SrfGameTextSource::Native ? L"native" :
-      loggedSource == SrfGameTextSource::Tsf ? L"tsf_scope" :
-      loggedSource == SrfGameTextSource::Automation ? L"uia" :
-      loggedSource == SrfGameTextSource::AlwaysChinese ? L"always_chinese" : L"manual";
+  const wchar_t* source = loggedSource == SrfGameTextSource::Native          ? L"native"
+                          : loggedSource == SrfGameTextSource::Tsf           ? L"tsf_scope"
+                          : loggedSource == SrfGameTextSource::Automation    ? L"uia"
+                          : loggedSource == SrfGameTextSource::AlwaysChinese ? L"always_chinese"
+                                                                             : L"manual";
   std::wstring line = active ? L"phase=editing source=" : L"phase=passthrough source=";
   line += source;
   line += L" verified=";
@@ -260,30 +273,40 @@ class CEditSessionGameTextProbe final : public ITfEditSession {
   SrfFocusSnapshot focus_;
   SrfGameFocusEvidence request_;
   std::uint64_t serial_;
+
  public:
   CEditSessionGameTextProbe(CSrfTip* tip, ITfContext* context, std::uint64_t serial)
       : tip_(tip), context_(context), focus_(tip->CaptureFocusSnapshot(context)), serial_(serial) {
-    tip_->AddRef(); context_->AddRef();
+    tip_->AddRef();
+    context_->AddRef();
     request_.target = tip_->m_compatibilityHwnd;
     request_.processId = tip_->m_compatibilityProcessId;
     request_.nativeFocus = tip_->m_gameLastNativeFocus;
     request_.context = reinterpret_cast<std::uintptr_t>(context);
     request_.generation = tip_->m_focusGeneration;
   }
-  ~CEditSessionGameTextProbe() { context_->Release(); tip_->Release(); }
+  ~CEditSessionGameTextProbe() {
+    context_->Release();
+    tip_->Release();
+  }
   STDMETHODIMP QueryInterface(REFIID id, void** out) override {
     if (!out) return E_POINTER;
     *out = nullptr;
     if (id != IID_IUnknown && id != IID_ITfEditSession) return E_NOINTERFACE;
-    *out = static_cast<ITfEditSession*>(this); AddRef(); return S_OK;
+    *out = static_cast<ITfEditSession*>(this);
+    AddRef();
+    return S_OK;
   }
   STDMETHODIMP_(ULONG) AddRef() override { return InterlockedIncrement(&refs_); }
   STDMETHODIMP_(ULONG) Release() override {
-    const ULONG refs = InterlockedDecrement(&refs_); if (!refs) delete this; return refs;
+    const ULONG refs = InterlockedDecrement(&refs_);
+    if (!refs) delete this;
+    return refs;
   }
   STDMETHODIMP DoEditSession(TfEditCookie cookie) override {
     if (serial_ != tip_->m_gameTsfProbeSerial || !tip_->FocusSnapshotMatches(focus_) ||
-        GetAncestor(GetForegroundWindow(), GA_ROOT) != request_.target) return S_OK;
+        GetAncestor(GetForegroundWindow(), GA_ROOT) != request_.target)
+      return S_OK;
     tip_->m_gameTsfProbePending = false;
     auto evidence = request_;
     const ULONGLONG started = GetTickCount64();
@@ -294,11 +317,15 @@ class CEditSessionGameTextProbe final : public ITfEditSession {
         SUCCEEDED(context_->GetSelection(cookie, TF_DEFAULT_SELECTION, 1, &selection, &count)) &&
         count && selection.range) {
       ITfProperty* property = nullptr;
-      VARIANT value; VariantInit(&value);
+      VARIANT value;
+      VariantInit(&value);
       if (SUCCEEDED(context_->GetProperty(GUID_PROP_INPUTSCOPE, &property)) && property &&
-          SUCCEEDED(property->GetValue(cookie, selection.range, &value)) && value.vt == VT_UNKNOWN && value.punkVal) {
+          SUCCEEDED(property->GetValue(cookie, selection.range, &value)) &&
+          value.vt == VT_UNKNOWN && value.punkVal) {
         ITfInputScope* scope = nullptr;
-        if (SUCCEEDED(value.punkVal->QueryInterface(IID_ITfInputScope, reinterpret_cast<void**>(&scope))) && scope) {
+        if (SUCCEEDED(value.punkVal->QueryInterface(IID_ITfInputScope,
+                                                    reinterpret_cast<void**>(&scope))) &&
+            scope) {
           InputScope* scopes = nullptr;
           UINT length = 0;
           bool text = false, sensitive = false;
@@ -311,7 +338,8 @@ class CEditSessionGameTextProbe final : public ITfEditSession {
             }
             CoTaskMemFree(scopes);
           }
-          if (text && !sensitive && TryGetTextExtRect(cookie, context_, selection.range, &evidence.bounds)) {
+          if (text && !sensitive &&
+              TryGetTextExtRect(cookie, context_, selection.range, &evidence.bounds)) {
             evidence.editable = true;
             evidence.element = evidence.context ? evidence.context : 1;
           }
@@ -325,7 +353,8 @@ class CEditSessionGameTextProbe final : public ITfEditSession {
     evidence.checked = started;
     if (serial_ == tip_->m_gameTsfProbeSerial && tip_->FocusSnapshotMatches(focus_) &&
         GetAncestor(GetForegroundWindow(), GA_ROOT) == request_.target &&
-        tip_->m_gameLastNativeFocus == request_.nativeFocus) tip_->m_gameTsfEvidence = evidence;
+        tip_->m_gameLastNativeFocus == request_.nativeFocus)
+      tip_->m_gameTsfEvidence = evidence;
     return S_OK;
   }
 };
@@ -335,11 +364,13 @@ void CSrfTip::ScheduleGameTextProbe() {
   if (!m_pFocusContext || !m_tid || now - m_gameTsfProbeTick < 150) return;
   if (m_gameTsfProbePending && now - m_gameTsfProbeTick < 500) return;
   m_gameTsfProbeTick = now;
-  auto* probe = new (std::nothrow) CEditSessionGameTextProbe(this, m_pFocusContext, ++m_gameTsfProbeSerial);
+  auto* probe =
+      new (std::nothrow) CEditSessionGameTextProbe(this, m_pFocusContext, ++m_gameTsfProbeSerial);
   if (!probe) return;
   m_gameTsfProbePending = true;
   HRESULT session = E_FAIL;
-  const HRESULT hr = m_pFocusContext->RequestEditSession(m_tid, probe, TF_ES_ASYNC | TF_ES_READ, &session);
+  const HRESULT hr =
+      m_pFocusContext->RequestEditSession(m_tid, probe, TF_ES_ASYNC | TF_ES_READ, &session);
   probe->Release();
   if (FAILED(hr) || FAILED(session)) m_gameTsfProbePending = false;
 }
@@ -347,17 +378,24 @@ void CSrfTip::ScheduleGameTextProbe() {
 void CSrfTip::RefreshGameChatFocus() {
   const bool game = IsGameHotkeyPassthroughActive();
   const bool allowed = game && EffectiveGameInputMode() != SrfGameInputMode::Passthrough &&
-      !m_config.privacy.enabled && !m_sensitiveInputActive;
-  if ((m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting) && (m_gameChatOwner != m_compatibilityHwnd ||
-      m_gameChatOwnerProcessId != m_compatibilityProcessId || !allowed)) SetGameChatActive(false);
+                       !m_config.privacy.enabled && !m_sensitiveInputActive;
+  if ((m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting) &&
+      (m_gameChatOwner != m_compatibilityHwnd ||
+       m_gameChatOwnerProcessId != m_compatibilityProcessId || !allowed))
+    SetGameChatActive(false);
   m_gameEditableVerified = false;
   m_gameEditableIdentity = 0;
   m_gameEditableBounds = {};
-  if (!allowed) { m_gameDismissedIdentity = 0; m_gameAwaitingUntil = 0; return; }
+  if (!allowed) {
+    m_gameDismissedIdentity = 0;
+    m_gameAwaitingUntil = 0;
+    return;
+  }
   GUITHREADINFO info = {sizeof(info)};
-  const DWORD threadId = m_compatibilityHwnd ? GetWindowThreadProcessId(m_compatibilityHwnd, nullptr) : 0;
+  const DWORD threadId =
+      m_compatibilityHwnd ? GetWindowThreadProcessId(m_compatibilityHwnd, nullptr) : 0;
   const bool nativeFocusValid = threadId && GetGUIThreadInfo(threadId, &info) && info.hwndFocus &&
-      GetAncestor(info.hwndFocus, GA_ROOT) == m_compatibilityHwnd;
+                                GetAncestor(info.hwndFocus, GA_ROOT) == m_compatibilityHwnd;
   if (info.hwndFocus != m_gameLastNativeFocus) {
     m_gameLastNativeFocus = info.hwndFocus;
     m_gameTsfEvidence = {};
@@ -377,13 +415,15 @@ void CSrfTip::RefreshGameChatFocus() {
     document->Release();
   }
   HWND contextWindow = m_pFocusContext ? ResolveContextWindow(m_pFocusContext) : nullptr;
-  const bool contextOwner = contextWindow ? GetAncestor(contextWindow, GA_ROOT) == m_compatibilityHwnd :
-      m_compatibilityProcessId == GetCurrentProcessId();
-  const bool writable = contextFocused && contextOwner && m_pFocusContext && SUCCEEDED(m_pFocusContext->GetStatus(&status)) &&
-      !(status.dwDynamicFlags & TF_SD_READONLY);
+  const bool contextOwner = contextWindow
+                                ? GetAncestor(contextWindow, GA_ROOT) == m_compatibilityHwnd
+                                : m_compatibilityProcessId == GetCurrentProcessId();
+  const bool writable = contextFocused && contextOwner && m_pFocusContext &&
+                        SUCCEEDED(m_pFocusContext->GetStatus(&status)) &&
+                        !(status.dwDynamicFlags & TF_SD_READONLY);
   SrfGameTextSource source = SrfGameTextSource::None;
-  const bool detecting = EffectiveGameInputMode() == SrfGameInputMode::AutoText || m_gameChatActive ||
-      m_gameChatPhase == SrfGameChatPhase::Awaiting;
+  const bool detecting = EffectiveGameInputMode() == SrfGameInputMode::AutoText ||
+                         m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting;
   if (detecting && nativeFocusValid && writable) {
     const auto cls = LowerAscii(WindowClassName(info.hwndFocus));
     const LONG_PTR style = GetWindowLongPtrW(info.hwndFocus, GWL_STYLE);
@@ -397,9 +437,11 @@ void CSrfTip::RefreshGameChatFocus() {
       ScheduleGameTextProbe();
       const ULONGLONG now = GetTickCount64();
       if (m_gameTsfEvidence.context == reinterpret_cast<std::uintptr_t>(m_pFocusContext) &&
-          m_gameTsfEvidence.generation == m_focusGeneration && m_gameTsfEvidence.nativeFocus == info.hwndFocus &&
-          m_gameTsfEvidence.target == m_compatibilityHwnd && m_gameTsfEvidence.processId == m_compatibilityProcessId &&
-          m_gameTsfEvidence.editable && SrfGameFocusEvidenceFresh(m_gameTsfEvidence.checked, now) &&
+          m_gameTsfEvidence.generation == m_focusGeneration &&
+          m_gameTsfEvidence.nativeFocus == info.hwndFocus &&
+          m_gameTsfEvidence.target == m_compatibilityHwnd &&
+          m_gameTsfEvidence.processId == m_compatibilityProcessId && m_gameTsfEvidence.editable &&
+          SrfGameFocusEvidenceFresh(m_gameTsfEvidence.checked, now) &&
           (!m_gameChatActive || m_gameChatSource != SrfGameTextSource::Automation)) {
         m_gameEditableVerified = true;
         m_gameEditableIdentity = m_gameTsfEvidence.element;
@@ -408,7 +450,8 @@ void CSrfTip::RefreshGameChatFocus() {
       }
       if (!m_gameEditableVerified && EffectiveGameAutoUia()) {
         SrfGameFocusEvidence request = {}, evidence = {};
-        request.target = m_compatibilityHwnd; request.processId = m_compatibilityProcessId;
+        request.target = m_compatibilityHwnd;
+        request.processId = m_compatibilityProcessId;
         request.nativeFocus = info.hwndFocus;
         request.context = reinterpret_cast<std::uintptr_t>(m_pFocusContext);
         request.generation = m_focusGeneration;
@@ -421,28 +464,33 @@ void CSrfTip::RefreshGameChatFocus() {
           if (PhysicalToLogicalPointForPerMonitorDPI(m_compatibilityHwnd, &points[0]) &&
               PhysicalToLogicalPointForPerMonitorDPI(m_compatibilityHwnd, &points[1])) {
             m_gameEditableBounds = {points[0].x, points[0].y, points[1].x, points[1].y};
-          } else m_gameEditableBounds = {};
+          } else
+            m_gameEditableBounds = {};
           source = SrfGameTextSource::Automation;
-        } else if (evidence.checked && !evidence.editable &&
-                   m_gameTsfEvidence.checked && !m_gameTsfEvidence.editable) {
+        } else if (evidence.checked && !evidence.editable && m_gameTsfEvidence.checked &&
+                   !m_gameTsfEvidence.editable) {
           m_gameDismissedIdentity = 0;
         }
       }
     }
   }
-  if (!nativeFocusValid || (nativeFocusValid &&
-      (!IsWindowVisible(info.hwndFocus) || !IsWindowEnabled(info.hwndFocus)))) m_gameDismissedIdentity = 0;
+  if (!nativeFocusValid ||
+      (nativeFocusValid && (!IsWindowVisible(info.hwndFocus) || !IsWindowEnabled(info.hwndFocus))))
+    m_gameDismissedIdentity = 0;
   if (m_gameChatActive && m_gameChatEditableIdentity &&
       (!m_gameEditableVerified || m_gameEditableIdentity != m_gameChatEditableIdentity)) {
     SetGameChatActive(false);
   }
-  if (m_gameEditableIdentity && m_gameEditableIdentity != m_gameDismissedIdentity) m_gameDismissedIdentity = 0;
+  if (m_gameEditableIdentity && m_gameEditableIdentity != m_gameDismissedIdentity)
+    m_gameDismissedIdentity = 0;
   if (m_gameChatPhase == SrfGameChatPhase::Awaiting && GetTickCount64() > m_gameAwaitingUntil) {
     m_gameChatPhase = SrfGameChatPhase::Passive;
     ShowGameInputStatus(L"未确认输入栏，请用中文聊天热键");
-    const wchar_t* reason = !nativeFocusValid ? L"no_native_focus" :
-        (!m_pFocusContext || !contextFocused || !contextOwner) ? L"no_tsf_context" :
-        !writable ? L"readonly_tsf_context" : L"editable_not_verified";
+    const wchar_t* reason = !nativeFocusValid ? L"no_native_focus"
+                            : (!m_pFocusContext || !contextFocused || !contextOwner)
+                                ? L"no_tsf_context"
+                            : !writable ? L"readonly_tsf_context"
+                                        : L"editable_not_verified";
     std::wstring detail = L"phase=passthrough reason=";
     detail += reason;
     detail += L" app=";
@@ -451,8 +499,10 @@ void CSrfTip::RefreshGameChatFocus() {
   }
   const bool autoMode = EffectiveGameInputMode() == SrfGameInputMode::AutoText;
   const bool verifiedOpen = (autoMode || m_gameChatPhase == SrfGameChatPhase::Awaiting) &&
-      m_gameEditableVerified && m_gameEditableIdentity != m_gameDismissedIdentity;
-  if (!m_gameChatActive && (verifiedOpen || EffectiveGameInputMode() == SrfGameInputMode::Chinese)) {
+                            m_gameEditableVerified &&
+                            m_gameEditableIdentity != m_gameDismissedIdentity;
+  if (!m_gameChatActive &&
+      (verifiedOpen || EffectiveGameInputMode() == SrfGameInputMode::Chinese)) {
     m_gameChatSource = verifiedOpen ? source : SrfGameTextSource::AlwaysChinese;
     SetGameChatActive(true);
   }
@@ -478,21 +528,26 @@ bool CSrfTip::ObserveGameChatExit(UINT vk, LPARAM lParam) {
   RefreshKeyHotPathState();
   if (EffectiveGameInputMode() == SrfGameInputMode::Chinese) return false;
   const auto* options = FindAppOptions(m_config, CompatibilityAppName());
-  const bool close = options ? IsConfiguredHotkey(vk, options->gameChatCloseKey) :
-      (vk == VK_ESCAPE && !HasCtrlOrAltDown() && !(GetKeyState(VK_SHIFT) & 0x8000));
-  const bool enter = vk == VK_RETURN && SrfGameExitOnEnter(EffectiveGameEnterBehavior(), m_gameEditableVerified);
+  const bool close =
+      options ? IsConfiguredHotkey(vk, options->gameChatCloseKey)
+              : (vk == VK_ESCAPE && !HasCtrlOrAltDown() && !(GetKeyState(VK_SHIFT) & 0x8000));
+  const bool enter =
+      vk == VK_RETURN && SrfGameExitOnEnter(EffectiveGameEnterBehavior(), m_gameEditableVerified);
   const bool modified = HasCtrlOrAltDown() || (GetKeyState(VK_SHIFT) & 0x8000);
   if (!SrfGameShouldExitChat(IsGameHotkeyPassthroughActive(), m_gameChatActive,
-      !m_reading.empty() || m_gameChatPhase == SrfGameChatPhase::Committing ||
-      (m_pKeySink && m_pKeySink->m_pendingKeyEdits.Pending()), close || enter,
-      close ? false : modified, (lParam & 0x40000000) != 0)) return false;
+                             !m_reading.empty() ||
+                                 m_gameChatPhase == SrfGameChatPhase::Committing ||
+                                 (m_pKeySink && m_pKeySink->m_pendingKeyEdits.Pending()),
+                             close || enter, close ? false : modified, (lParam & 0x40000000) != 0))
+    return false;
   SetGameChatActive(false);
   return true;
 }
 
 void CSrfTip::RefreshGameInputHealth() {
   if (RefreshPureGameModeFromRegistry()) return;
-  if (!GetForegroundWindow() && (m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting)) {
+  if (!GetForegroundWindow() &&
+      (m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting)) {
     SetGameChatActive(false);
   }
   if (m_gameChatActive && m_pKeySink && m_pKeySink->m_pendingKeyEdits.TimedOut(GetTickCount64())) {
@@ -503,7 +558,8 @@ void CSrfTip::RefreshGameInputHealth() {
   // closes without delivering any TSF key/focus notification.
   if (m_pThreadMgr && GetForegroundWindow() &&
       (m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting ||
-       EffectiveGameInputMode() == SrfGameInputMode::AutoText)) RefreshCompatibilityStateThrottled(true);
+       EffectiveGameInputMode() == SrfGameInputMode::AutoText))
+    RefreshCompatibilityStateThrottled(true);
 }
 
 bool CSrfTip::ShouldHandleImeHotkeys() const {
@@ -527,14 +583,15 @@ void CSrfTip::UpdatePreservedKeysForHotkeyScope() {
   const SrfHotkeyScope scope = EffectiveHotkeyScope();
   // Text-only keys remain registered so they can become available while a
   // composition is active; OnPreservedKey lets the idle keystroke pass on.
-  const bool suppress = IsGameHotkeyPassthroughActive() || ShouldForceAsciiForCompatibility() ||
-                        scope == SrfHotkeyScope::PerApp ||
-                        (scope == SrfHotkeyScope::DisabledInGame &&
-                         IsGameHotkeyPassthroughActive());
+  const bool suppress =
+      IsGameHotkeyPassthroughActive() || ShouldForceAsciiForCompatibility() ||
+      scope == SrfHotkeyScope::PerApp ||
+      (scope == SrfHotkeyScope::DisabledInGame && IsGameHotkeyPassthroughActive());
   if (!m_preservedKeysRegistered && !m_preservedKeysSuppressedForHotkeyScope) return;
   const bool wantsGameKey = ShouldHandleGameChatHotkey();
   if (suppress == m_preservedKeysSuppressedForHotkeyScope &&
-      wantsGameKey == m_registeredGameChatPolicy) return;
+      wantsGameKey == m_registeredGameChatPolicy)
+    return;
   if (suppress) {
     UnregisterPreservedKeys();
     (void)RegisterPreservedKeys();
@@ -565,8 +622,8 @@ void CSrfTip::ToggleFullShape() {
   SyncCompartmentState();
   SyncStatusModel();
   if (m_config.ShouldShowNotification(SrfNotificationKind::FullShape)) {
-    ShowNotification(SrfNotificationKind::FullShape, m_fullShape ? L"Full shape on"
-                                                                 : L"Full shape off");
+    ShowNotification(SrfNotificationKind::FullShape,
+                     m_fullShape ? L"Full shape on" : L"Full shape off");
   }
 }
 
@@ -617,9 +674,8 @@ void CSrfTip::ToggleTraditionalOutput() {
     RedrawCandidateUi();
   }
   if (m_config.ShouldShowNotification(SrfNotificationKind::Ime)) {
-    ShowNotification(SrfNotificationKind::Ime,
-                     m_traditionalOutput ? L"\u7e41\u9ad4\u8f38\u51fa"
-                                         : L"\u7b80\u4f53\u8f93\u51fa");
+    ShowNotification(SrfNotificationKind::Ime, m_traditionalOutput ? L"\u7e41\u9ad4\u8f38\u51fa"
+                                                                   : L"\u7b80\u4f53\u8f93\u51fa");
   }
 }
 
@@ -662,8 +718,8 @@ void CSrfTip::RestoreImeModeFromCurrentAppOptions() {
 }
 
 bool CSrfTip::ReconcileManualModeOwner() {
-  const bool manualModeActive = m_manualGameCompatActive || m_manualAsciiModeActive ||
-                                m_manualCompatibilityBypass;
+  const bool manualModeActive =
+      m_manualGameCompatActive || m_manualAsciiModeActive || m_manualCompatibilityBypass;
   if (!manualModeActive) {
     ClearManualModeOwner();
     return false;
@@ -674,8 +730,8 @@ bool CSrfTip::ReconcileManualModeOwner() {
   }
 
   const bool sameWindow = m_manualModeHwnd == m_compatibilityHwnd;
-  const bool sameProcess = m_manualModeProcessId == 0 ||
-                           m_manualModeProcessId == m_compatibilityProcessId;
+  const bool sameProcess =
+      m_manualModeProcessId == 0 || m_manualModeProcessId == m_compatibilityProcessId;
   const bool sameApp = m_manualModeAppName.empty() || m_compatibilityAppName.empty() ||
                        WildcardMatchNoCase(m_manualModeAppName, m_compatibilityAppName) ||
                        WildcardMatchNoCase(m_compatibilityAppName, m_manualModeAppName);
@@ -722,9 +778,8 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
     return;
   }
   ReconcileManualModeOwner();
-  const bool forcedByAutomaticPolicy = ShouldForceAsciiForCompatibility() &&
-                                        !m_config.privacy.enabled &&
-                                        !m_sensitiveInputActive;
+  const bool forcedByAutomaticPolicy =
+      ShouldForceAsciiForCompatibility() && !m_config.privacy.enabled && !m_sensitiveInputActive;
   const wchar_t* notificationText = nullptr;
   if (m_manualAsciiModeActive) {
     m_manualAsciiModeActive = false;
@@ -750,8 +805,7 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
     notificationText = L"已恢复中文（仅当前窗口）";
   } else {
     m_manualGameCompatActive = !m_manualGameCompatActive;
-    notificationText = m_manualGameCompatActive ? L"游戏兼容开"
-                                                 : L"游戏兼容关";
+    notificationText = m_manualGameCompatActive ? L"游戏兼容开" : L"游戏兼容关";
   }
   if (m_manualGameCompatActive || m_manualCompatibilityBypass) {
     CaptureManualModeOwner();
@@ -841,8 +895,7 @@ HRESULT CSrfTip::RequestCommitCandidate(size_t idx) {
     const UINT pageStart = CandidatePageStart(m_candPage);
     const UINT pageEndExclusive = CandidatePageEndExclusive(m_candPage);
     const size_t weakStart = std::max(static_cast<size_t>(pageStart), idx + 1);
-    const size_t weakEnd =
-        std::min(static_cast<size_t>(pageEndExclusive), m_candidates.size());
+    const size_t weakEnd = std::min(static_cast<size_t>(pageEndExclusive), m_candidates.size());
     snapshotSkippedCandidates.reserve(idx + (weakEnd > weakStart ? weakEnd - weakStart : 0));
     for (size_t i = 0; i < idx; ++i) {
       snapshotSkippedCandidates.push_back(m_candidates[i]);
@@ -859,16 +912,14 @@ HRESULT CSrfTip::RequestCommitCandidate(size_t idx) {
     return S_OK;
   }
 
-  CEditSessionCommitCandidate* edit =
-      new (std::nothrow) CEditSessionCommitCandidate(this, context, idx, snapshotReading,
-                                                     snapshotCommitted, snapshotMeta,
-                                                     std::move(snapshotSkippedCandidates), true);
+  CEditSessionCommitCandidate* edit = new (std::nothrow)
+      CEditSessionCommitCandidate(this, context, idx, snapshotReading, snapshotCommitted,
+                                  snapshotMeta, std::move(snapshotSkippedCandidates), true);
   if (!edit) return E_OUTOFMEMORY;
 
   HRESULT hrSession = E_FAIL;
   const ULONGLONG requestStart = GetTickCount64();
-  HRESULT hr =
-      context->RequestEditSession(m_tid, edit, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
+  HRESULT hr = context->RequestEditSession(m_tid, edit, TF_ES_SYNC | TF_ES_READWRITE, &hrSession);
   if (FAILED(hr) || hrSession == TS_E_SYNCHRONOUS) {
     hrSession = E_FAIL;
     hr = context->RequestEditSession(m_tid, edit, TF_ES_ASYNC | TF_ES_READWRITE, &hrSession);
@@ -916,8 +967,8 @@ std::wstring CSrfTip::TranslateDirectKey(UINT vk, LPARAM lParam, bool shiftDown)
   (void)GetKeyboardState(keyboardState.data());
   auto syncToggleOrModifier = [&](int key) {
     const SHORT state = GetKeyState(key);
-    keyboardState[key] =
-        static_cast<BYTE>(((state & 0x8000) != 0 ? 0x80 : 0x00) | ((state & 0x0001) != 0 ? 0x01 : 0x00));
+    keyboardState[key] = static_cast<BYTE>(((state & 0x8000) != 0 ? 0x80 : 0x00) |
+                                           ((state & 0x0001) != 0 ? 0x01 : 0x00));
   };
   syncToggleOrModifier(VK_CONTROL);
   syncToggleOrModifier(VK_MENU);
@@ -931,9 +982,9 @@ std::wstring CSrfTip::TranslateDirectKey(UINT vk, LPARAM lParam, bool shiftDown)
       static_cast<BYTE>((keyboardState[VK_RSHIFT] & 0x01) | (shiftDown ? 0x80 : 0x00));
   const bool capsLockOn = (keyboardState[VK_CAPITAL] & 0x01) != 0;
 
-  const UINT scanCode =
-      HIWORD(static_cast<DWORD>(lParam)) & 0xff ? (HIWORD(static_cast<DWORD>(lParam)) & 0xff)
-                                                : MapVirtualKeyW(vk, MAPVK_VK_TO_VSC);
+  const UINT scanCode = HIWORD(static_cast<DWORD>(lParam)) & 0xff
+                            ? (HIWORD(static_cast<DWORD>(lParam)) & 0xff)
+                            : MapVirtualKeyW(vk, MAPVK_VK_TO_VSC);
   std::array<wchar_t, 8> buffer = {};
   const int rc = ToUnicodeEx(vk, scanCode, keyboardState.data(), buffer.data(),
                              static_cast<int>(buffer.size()), 0, GetKeyboardLayout(0));
@@ -1024,8 +1075,8 @@ bool SrfBuildCompletedPunctuationPair(wchar_t ch, std::wstring* pair) {
 }  // namespace
 
 std::wstring CSrfTip::ConvertDirectText(std::wstring text) {
-  return SrfConvertDirectText(text, m_config.input, m_cnPunct, m_fullShape,
-                              m_nextDoubleQuoteOpen, m_nextSingleQuoteOpen);
+  return SrfConvertDirectText(text, m_config.input, m_cnPunct, m_fullShape, m_nextDoubleQuoteOpen,
+                              m_nextSingleQuoteOpen);
 }
 
 std::wstring CSrfTip::ConvertDirectTextWithCompletion(std::wstring text, LONG* cursorOffset) {
@@ -1089,7 +1140,9 @@ bool CSrfTip::ShouldUseTemporaryEnglish(UINT vk, bool shiftDown) const {
          (temporaryLetter || temporarySymbol);
 }
 
-std::wstring CSrfTip::BuildCompositionDisplay() const { return m_reading; }
+std::wstring CSrfTip::BuildCompositionDisplay() const {
+  return m_reading;
+}
 
 void CSrfTip::LoadConfiguration() {
   m_config = LoadSrfConfig();
@@ -1219,8 +1272,9 @@ void CSrfTip::RefreshRuntimeConfig() {
 bool CSrfTip::RefreshPureGameModeFromRegistry() {
   DWORD value = 0;
   DWORD bytes = sizeof(value);
-  const bool enabled = RegGetValueW(HKEY_CURRENT_USER, kStateRegPath,
-      kStatePureGameModeValue, RRF_RT_REG_DWORD, nullptr, &value, &bytes) == ERROR_SUCCESS && value != 0;
+  const bool enabled = RegGetValueW(HKEY_CURRENT_USER, kStateRegPath, kStatePureGameModeValue,
+                                    RRF_RT_REG_DWORD, nullptr, &value, &bytes) == ERROR_SUCCESS &&
+                       value != 0;
   if (enabled == m_pureGameMode) return enabled;
   m_pureGameMode = enabled;
   m_lastKeyHotPathRefreshTick = 0;
@@ -1307,7 +1361,8 @@ void CSrfTip::RefreshCompatibilityState() {
   const bool rawConfiguredGameCompat = IsConfiguredGameProcessName(m_config, compatibilityAppName);
   const bool rawBuiltinGameCompat =
       m_config.compatibility.builtinGameList &&
-      SrfClassifyGame(false, IsBuiltinGameProcessName(compatibilityAppName), IsBuiltinGameWindowClass(className));
+      SrfClassifyGame(false, IsBuiltinGameProcessName(compatibilityAppName),
+                      IsBuiltinGameWindowClass(className));
   const bool rawGameCompat = rawConfiguredGameCompat || rawBuiltinGameCompat;
 
   const ULONGLONG now = GetTickCount64();
@@ -1328,10 +1383,9 @@ void CSrfTip::RefreshCompatibilityState() {
     m_fullscreenCompatCandidateSince = now;
   }
   const bool stableFullscreen =
-      rawFullscreen &&
-      (immediateFullscreenCompat || m_fullscreenCompatActive ||
-       (m_fullscreenCompatCandidateSince != 0 &&
-        now - m_fullscreenCompatCandidateSince >= kFullscreenCompatStableMs));
+      rawFullscreen && (immediateFullscreenCompat || m_fullscreenCompatActive ||
+                        (m_fullscreenCompatCandidateSince != 0 &&
+                         now - m_fullscreenCompatCandidateSince >= kFullscreenCompatStableMs));
 
   const bool rawCompat = rawGameCompat || stableFullscreen;
   if (rawCompat) {
@@ -1466,8 +1520,7 @@ SrfFullscreenPolicy CSrfTip::EffectiveCompatibilityPolicy() const {
     const SrfAppOptions& options = *matchedOptions;
     if (options.hasHideUi && options.hideUi) return SrfFullscreenPolicy::HideUi;
     if (options.hasAsciiMode && options.asciiMode) return SrfFullscreenPolicy::Ascii;
-    if ((options.hasAsciiMode && !options.asciiMode) ||
-        (options.hasHideUi && !options.hideUi)) {
+    if ((options.hasAsciiMode && !options.asciiMode) || (options.hasHideUi && !options.hideUi)) {
       return SrfFullscreenPolicy::ShowUi;
     }
   }
@@ -1511,9 +1564,9 @@ bool CSrfTip::ShouldOverrideHostCandidateVisibility() const {
 }
 
 bool CSrfTip::ShouldUseExternalCandidateOverlay() const {
-  return ShouldUseExternalCandidateOverlayBackend(
-      EffectiveCandidateOverlayBackend(), CandidateGameOverlayActive(),
-      m_uiLessMode, ShouldHideUiForCompatibility());
+  return ShouldUseExternalCandidateOverlayBackend(EffectiveCandidateOverlayBackend(),
+                                                  CandidateGameOverlayActive(), m_uiLessMode,
+                                                  ShouldHideUiForCompatibility());
 }
 
 SrfCommitTransport CSrfTip::EffectiveCommitTransport() const {
@@ -1614,8 +1667,7 @@ void CSrfTip::RecordCompatibilityUiFallback(const wchar_t* reason, HRESULT hr) {
 
   wchar_t hrText[32] = {};
   swprintf_s(hrText, L"0x%08lX", static_cast<unsigned long>(hr));
-  const std::wstring key =
-      appName + L"|ui|" + (reason ? reason : L"CandidateUI") + L"|" + hrText;
+  const std::wstring key = appName + L"|ui|" + (reason ? reason : L"CandidateUI") + L"|" + hrText;
   if (key == m_lastCompatibilityLogKey) return;
   m_lastCompatibilityLogKey = key;
 
@@ -1717,8 +1769,7 @@ void CSrfTip::RebuildContextModel() {
     SrfTextAttribute attr = {};
     attr.range.start = 0;
     attr.range.end = m_context.preedit.str.size();
-    attr.range.cursor =
-        static_cast<int>(std::min(m_readingCursor, m_context.preedit.str.size()));
+    attr.range.cursor = static_cast<int>(std::min(m_readingCursor, m_context.preedit.str.size()));
     attr.type = SrfTextAttributeType::Highlighted;
     m_context.preedit.attributes.push_back(attr);
   }
@@ -1820,8 +1871,8 @@ std::wstring CSrfTip::FocusedProcessName() {
 }
 
 SrfFocusSnapshot CSrfTip::CaptureFocusSnapshot(ITfContext* context) const {
-  ITfContext* resolvedContext = context ? context : (m_pCompositionContext ? m_pCompositionContext
-                                                                           : m_pFocusContext);
+  ITfContext* resolvedContext =
+      context ? context : (m_pCompositionContext ? m_pCompositionContext : m_pFocusContext);
   SrfFocusSnapshot snapshot = {};
   snapshot.contextCookie = reinterpret_cast<uintptr_t>(resolvedContext);
   snapshot.hwnd = resolvedContext ? ResolveContextWindow(resolvedContext) : GetForegroundWindow();
@@ -1837,7 +1888,8 @@ SrfFocusSnapshot CSrfTip::CaptureFocusSnapshot(ITfContext* context) const {
 }
 
 bool CSrfTip::FocusSnapshotMatches(const SrfFocusSnapshot& snapshot) const {
-  if (snapshot.generation != m_focusGeneration || !m_inputSession.Matches(snapshot.inputSession)) return false;
+  if (snapshot.generation != m_focusGeneration || !m_inputSession.Matches(snapshot.inputSession))
+    return false;
 
   const SrfFocusSnapshot current =
       CaptureFocusSnapshot(m_pCompositionContext ? m_pCompositionContext : m_pFocusContext);
@@ -1878,9 +1930,9 @@ void CSrfTip::ShowNotification(SrfNotificationKind kind, const std::wstring& tex
   if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
     appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
   }
-  const bool gameCompatibilityActive =
-      appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
-      m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
+  const bool gameCompatibilityActive = appGameProfile || m_gameCompatActive ||
+                                       m_configuredGameCompatActive || m_builtinGameCompatActive ||
+                                       m_fullscreenCompatActive || m_manualGameCompatActive;
   if (gameCompatibilityActive) {
     SrfTsfDiagnosticLog(L"notification.skip", L"game-compatibility-active");
     return;
@@ -1931,8 +1983,8 @@ void CSrfTip::MaybeNotifyEngineHealth() {
 
 void CSrfTip::MoveReadingCaretBySyllable(bool forward) {
   std::array<uint32_t, 48> bounds{};
-  const size_t n = SrfTip_SyllableBoundaryOffsetsUtf16(m_reading.c_str(), m_reading.size(), bounds.data(),
-                                                       bounds.size());
+  const size_t n = SrfTip_SyllableBoundaryOffsetsUtf16(m_reading.c_str(), m_reading.size(),
+                                                       bounds.data(), bounds.size());
   const uint32_t cur = static_cast<uint32_t>(m_readingCursor);
   if (n < 2) {
     if (forward) {
@@ -1970,9 +2022,8 @@ bool CSrfTip::TryLoadGlobalAsciiState(bool* asciiMode) const {
   if (!asciiMode) return false;
   DWORD value = 0;
   DWORD cb = sizeof(value);
-  const LONG status =
-      RegGetValueW(HKEY_CURRENT_USER, kStateRegPath, kStateAsciiValue, RRF_RT_REG_DWORD, nullptr,
-                   &value, &cb);
+  const LONG status = RegGetValueW(HKEY_CURRENT_USER, kStateRegPath, kStateAsciiValue,
+                                   RRF_RT_REG_DWORD, nullptr, &value, &cb);
   if (status != ERROR_SUCCESS) return false;
   *asciiMode = value != 0;
   return true;
@@ -1987,8 +2038,8 @@ void CSrfTip::SaveGlobalAsciiState(bool asciiMode) const {
 
   const DWORD value = asciiMode ? 1u : 0u;
   const bool wrote =
-      RegSetValueExW(key, kStateAsciiValue, 0, REG_DWORD,
-                     reinterpret_cast<const BYTE*>(&value), sizeof(value)) == ERROR_SUCCESS;
+      RegSetValueExW(key, kStateAsciiValue, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value),
+                     sizeof(value)) == ERROR_SUCCESS;
   RegCloseKey(key);
   if (wrote) NotifyTrayAsciiStateChanged(asciiMode);
 }

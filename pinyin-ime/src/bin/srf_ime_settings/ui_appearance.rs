@@ -373,63 +373,6 @@ fn candidate_preview_metrics(
     }
 }
 
-#[cfg(test)]
-mod preview_layout_tests {
-    use super::*;
-
-    #[test]
-    fn preview_text_handles_opposite_selected_backgrounds() {
-        for background in [
-            Color32::from_rgb(24, 30, 35),
-            Color32::from_rgb(245, 248, 250),
-        ] {
-            for preferred in [Color32::BLACK, Color32::WHITE, Color32::GRAY] {
-                assert!(
-                    candidate_text_contrast(
-                        readable_candidate_text(preferred, background),
-                        background
-                    ) >= 4.5
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn font_selection_survives_save_and_skin_change() {
-        for font in [
-            "思源黑体 CN",
-            r"C:\我的字体\手写 字体.ttf",
-            r"C:\Fonts\custom.otf",
-            r"C:\Fonts\family.ttc",
-        ] {
-            let doc = parse_ini("[style]\n");
-            let mut model = model_from_config(&doc);
-            model.candidate_font_file = font.into();
-            model.candidate_skin_file = "midnight-tide".into();
-            let saved = model_from_config(&parse_ini(&stabilized_rendered_config(&doc, &model)));
-            assert_eq!(saved.candidate_font_file, font);
-            assert_eq!(saved.candidate_skin_file, "midnight-tide");
-        }
-    }
-
-    #[test]
-    fn density_changes_candidate_window_dimensions() {
-        let mut model = SettingsModel::default();
-        model.candidate_horizontal = false;
-        model.candidate_density = "standard".into();
-        let standard = candidate_preview_metrics(&model, &[]).height;
-        model.candidate_density = "compact".into();
-        let compact = candidate_preview_metrics(&model, &[]).height;
-        model.candidate_density = "comfortable".into();
-        let comfortable = candidate_preview_metrics(&model, &[]).height;
-        assert!(compact < standard, "compact={compact}, standard={standard}");
-        assert!(
-            standard < comfortable,
-            "standard={standard}, comfortable={comfortable}"
-        );
-    }
-}
-
 fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[SkinPreview]) {
     let scale_id = ui.make_persistent_id("candidate_preview_display_scale");
     let mut display_scale = ui
@@ -445,7 +388,7 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
     let palette = fluent_palette(ui);
     egui::Frame::none()
         .fill(palette.surface_alt)
-        .stroke(Stroke::new(1.0, palette.border))
+        .stroke(Stroke::new(1.0_f32, palette.border))
         .rounding(SETTINGS_RADIUS_CARD)
         .inner_margin(egui::Margin::same(8.0))
         .show(ui, |ui| {
@@ -686,7 +629,7 @@ fn candidate_live_preview_contents(
         rect,
         9.0,
         window,
-        Stroke::new(1.0, apply_opacity(colors.border)),
+        Stroke::new(1.0_f32, apply_opacity(colors.border)),
     );
 
     let content = rect.shrink2(egui::vec2(
@@ -704,7 +647,7 @@ fn candidate_live_preview_contents(
             header,
             6.0,
             apply_opacity(colors.header),
-            Stroke::new(1.0, apply_opacity(colors.divider)),
+            Stroke::new(1.0_f32, apply_opacity(colors.divider)),
         );
         painter.text(
             egui::pos2(header.left() + 4.0, header.center().y),
@@ -722,7 +665,7 @@ fn candidate_live_preview_contents(
                 chip,
                 6.0,
                 apply_opacity(colors.chip),
-                Stroke::new(1.0, apply_opacity(colors.chip_border)),
+                Stroke::new(1.0_f32, apply_opacity(colors.chip_border)),
             );
             painter.text(
                 chip.center(),
@@ -861,9 +804,9 @@ fn skin_preview_card(
     let palette = fluent_palette(ui);
     let (rect, response) = ui.allocate_exact_size(egui::vec2(width, 104.0), egui::Sense::click());
     let outer_stroke = if selected || response.hovered() {
-        Stroke::new(1.5, palette.accent)
+        Stroke::new(1.5_f32, palette.accent)
     } else {
-        Stroke::new(1.0, palette.border_subtle)
+        Stroke::new(1.0_f32, palette.border_subtle)
     };
     ui.painter()
         .rect(rect, 10.0, palette.surface_alt, outer_stroke);
@@ -871,8 +814,12 @@ fn skin_preview_card(
         rect.min + egui::vec2(5.0, 5.0),
         egui::pos2(rect.right() - 5.0, rect.bottom() - 35.0),
     );
-    ui.painter()
-        .rect(preview, 5.0, colors.window, Stroke::new(1.0, colors.border));
+    ui.painter().rect(
+        preview,
+        5.0,
+        colors.window,
+        Stroke::new(1.0_f32, colors.border),
+    );
     let preview_items = [("输入法", "常用"), ("输入", "全拼"), ("输入方式", "词库")];
     let gap = 3.0;
     let row_height = (preview.height() - 10.0 - gap * 2.0) / 3.0;
@@ -1045,7 +992,7 @@ fn skin_card_grid_rows(
                     model.candidate_skin_file.clear();
                 }
                 index += 1;
-                if index % columns == 0 {
+                if index.is_multiple_of(columns) {
                     ui.end_row();
                 }
             }
@@ -1065,11 +1012,11 @@ fn skin_card_grid_rows(
                     model.candidate_skin_file.clone_from(&skin.key);
                 }
                 index += 1;
-                if index % columns == 0 {
+                if index.is_multiple_of(columns) {
                     ui.end_row();
                 }
             }
-            if index % columns != 0 {
+            if !index.is_multiple_of(columns) {
                 ui.end_row();
             }
         });
@@ -1641,4 +1588,63 @@ fn apply_candidate_low_latency_compact(model: &mut SettingsModel) {
     model.candidate_font_weight = 500;
     model.candidate_selected_font_weight = 600;
     model.candidate_abbreviate_length = 48;
+}
+
+#[cfg(test)]
+mod preview_layout_tests {
+    use super::*;
+
+    #[test]
+    fn preview_text_handles_opposite_selected_backgrounds() {
+        for background in [
+            Color32::from_rgb(24, 30, 35),
+            Color32::from_rgb(245, 248, 250),
+        ] {
+            for preferred in [Color32::BLACK, Color32::WHITE, Color32::GRAY] {
+                assert!(
+                    candidate_text_contrast(
+                        readable_candidate_text(preferred, background),
+                        background
+                    ) >= 4.5
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn font_selection_survives_save_and_skin_change() {
+        for font in [
+            "思源黑体 CN",
+            r"C:\我的字体\手写 字体.ttf",
+            r"C:\Fonts\custom.otf",
+            r"C:\Fonts\family.ttc",
+        ] {
+            let doc = parse_ini("[style]\n");
+            let mut model = model_from_config(&doc);
+            model.candidate_font_file = font.into();
+            model.candidate_skin_file = "midnight-tide".into();
+            let saved = model_from_config(&parse_ini(&stabilized_rendered_config(&doc, &model)));
+            assert_eq!(saved.candidate_font_file, font);
+            assert_eq!(saved.candidate_skin_file, "midnight-tide");
+        }
+    }
+
+    #[test]
+    fn density_changes_candidate_window_dimensions() {
+        let mut model = SettingsModel {
+            candidate_horizontal: false,
+            candidate_density: "standard".into(),
+            ..Default::default()
+        };
+        let standard = candidate_preview_metrics(&model, &[]).height;
+        model.candidate_density = "compact".into();
+        let compact = candidate_preview_metrics(&model, &[]).height;
+        model.candidate_density = "comfortable".into();
+        let comfortable = candidate_preview_metrics(&model, &[]).height;
+        assert!(compact < standard, "compact={compact}, standard={standard}");
+        assert!(
+            standard < comfortable,
+            "standard={standard}, comfortable={comfortable}"
+        );
+    }
 }

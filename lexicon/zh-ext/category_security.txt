@@ -29,7 +29,7 @@
 密码强度	mi ma qiang du	6100
 密码泄露	mi ma xie lou	6100
 密码管理	mi ma guan li	6100
-密码重置	mi ma zhong zhi	6100
+密码重置	mi ma chong zhi	6100
 异地登录	yi di deng lu	6100
 数字证书	shu zi zheng shu	6100
 数据脱敏	shu ju tuo min	6100

@@ -1,4 +1,5 @@
 # category	phrase	pinyin	rank_weight
+# 2026-11-11：7 个拒收片段替换为 reviewed_complete_expression；其 rank_weight=1 为占位，不是语料频次。
 # membership/frequency: wordfreq global rank; pinyin: pypinyin plus project polyphone corrections
 # heldout: filtered three-character ranks 20001..30000, deterministically spaced; all rows are outside the generated 20,000-entry lexicon
 wordfreq_rank_heldout	家具店	jia ju dian	18217
@@ -67,7 +68,7 @@ wordfreq_rank_heldout	冕宁县	mian ning xian	17590
 wordfreq_rank_heldout	周延儒	zhou yan ru	17583
 wordfreq_rank_heldout	宁波人	ning bo ren	17576
 wordfreq_rank_heldout	律师界	lv shi jie	17569
-wordfreq_rank_heldout	服务及	fu wu ji	17559
+reviewed_complete_expression	服务业	fu wu ye	1
 wordfreq_rank_heldout	特罗夫	te luo fu	17550
 wordfreq_rank_heldout	老师们	lao shi men	17541
 wordfreq_rank_heldout	超玩会	chao wan hui	17532
@@ -75,7 +76,7 @@ wordfreq_rank_heldout	锡克人	xi ke ren	17527
 wordfreq_rank_heldout	丹泽尔	dan ze er	17506
 wordfreq_rank_heldout	农业厅	nong ye ting	17499
 wordfreq_rank_heldout	器乐曲	qi yue qu	17492
-wordfreq_rank_heldout	家过夜	jia guo ye	17484
+reviewed_complete_expression	过夜费	guo ye fei	1
 wordfreq_rank_heldout	执政府	zhi zheng fu	17475
 wordfreq_rank_heldout	杨一清	yang yi qing	17467
 wordfreq_rank_heldout	洗洁精	xi jie jing	17461
@@ -168,7 +169,7 @@ wordfreq_rank_heldout	当当网	dang dang wang	16681
 wordfreq_rank_heldout	昌吉市	chang ji shi	16674
 wordfreq_rank_heldout	永寿县	yong shou xian	16668
 wordfreq_rank_heldout	电气石	dian qi shi	16662
-wordfreq_rank_heldout	自台湾	zi tai wan	16654
+reviewed_complete_expression	台湾省	tai wan sheng	1
 wordfreq_rank_heldout	踏板车	ta ban che	16647
 wordfreq_rank_heldout	首饰盒	shou shi he	16640
 wordfreq_rank_heldout	临淄区	lin zi qu	16623
@@ -234,8 +235,8 @@ wordfreq_rank_heldout	曼光谱	man guang pu	16166
 wordfreq_rank_heldout	油橄榄	you gan lan	16160
 wordfreq_rank_heldout	疑心病	yi xin bing	16154
 wordfreq_rank_heldout	经纬线	jing wei xian	16149
-wordfreq_rank_heldout	资讯及	zi xun ji	16141
-wordfreq_rank_heldout	韩国电	han guo dian	16135
+reviewed_complete_expression	资讯网	zi xun wang	1
+reviewed_complete_expression	韩国人	han guo ren	1
 wordfreq_rank_heldout	义乌人	yi wu ren	16119
 wordfreq_rank_heldout	保管费	bao guan fei	16113
 wordfreq_rank_heldout	十余位	shi yu wei	16108
@@ -269,7 +270,7 @@ wordfreq_rank_heldout	斯坦恩	si tan en	15921
 wordfreq_rank_heldout	橡胶垫	xiang jiao dian	15916
 wordfreq_rank_heldout	电脑城	dian nao cheng	15909
 wordfreq_rank_heldout	羽绒被	yu rong bei	15902
-wordfreq_rank_heldout	费下载	fei xia zai	15895
+reviewed_complete_expression	下载页	xia zai ye	1
 wordfreq_rank_heldout	陈明仁	chen ming ren	15889
 wordfreq_rank_heldout	中子源	zhong zi yuan	15872
 wordfreq_rank_heldout	共出动	gong chu dong	15865
@@ -295,7 +296,7 @@ wordfreq_rank_heldout	肥乡县	fei xiang xian	15736
 wordfreq_rank_heldout	贝林格	bei lin ge	15730
 wordfreq_rank_heldout	销售税	xiao shou shui	15724
 wordfreq_rank_heldout	魁星阁	kui xing ge	15719
-wordfreq_rank_heldout	以满足	yi man zu	15704
+reviewed_complete_expression	满足感	man zu gan	1
 wordfreq_rank_heldout	刘晓明	liu xiao ming	15698
 wordfreq_rank_heldout	呼拉尔	hu la er	15692
 wordfreq_rank_heldout	宝塔山	bao ta shan	15686

@@ -112,8 +112,7 @@ class CCandidateWindow {
   void PrepareResources();
   void Show(const std::wstring& title, const std::vector<std::wstring>& pageItems,
             const std::vector<std::wstring>& pageComments,
-            const std::vector<std::wstring>& pageLabels,
-            const std::vector<bool>& pagePinnedItems,
+            const std::vector<std::wstring>& pageLabels, const std::vector<bool>& pagePinnedItems,
             const std::vector<bool>& pageClipboardItems, UINT pageIndex, UINT totalPages,
             UINT selectedInPage, const RECT& anchorRect,
             const std::vector<std::wstring>& modeTags = {}, bool interactive = true,

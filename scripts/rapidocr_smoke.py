@@ -29,7 +29,9 @@ def default_image() -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the production Kaixin PP-OCRv6 helper smoke test.")
+    parser = argparse.ArgumentParser(
+        description="Run the production Kaixin PP-OCRv6 helper smoke test."
+    )
     parser.add_argument("--rapidocr-root", type=Path, default=default_rapidocr_root())
     parser.add_argument("--image", type=Path, default=default_image())
     parser.add_argument("--model-root", type=Path, default=None)
@@ -49,9 +51,21 @@ def main() -> int:
     if not args.image.is_file():
         raise SystemExit(f"Smoke image not found: {args.image}")
 
-    command = [sys.executable, str(helper), str(args.image), "--rapidocr-root",
-               str(args.rapidocr_root), "--profile", args.profile, "--lang", args.lang,
-               "--provider", args.provider, "--vis", str(args.vis)]
+    command = [
+        sys.executable,
+        str(helper),
+        str(args.image),
+        "--rapidocr-root",
+        str(args.rapidocr_root),
+        "--profile",
+        args.profile,
+        "--lang",
+        args.lang,
+        "--provider",
+        args.provider,
+        "--vis",
+        str(args.vis),
+    ]
     if args.model_root is not None:
         command.extend(("--model-root", str(args.model_root)))
 
@@ -61,7 +75,9 @@ def main() -> int:
     try:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        raise SystemExit(f"OCR helper returned invalid JSON ({exc}); stderr: {completed.stderr.strip()}") from exc
+        raise SystemExit(
+            f"OCR helper returned invalid JSON ({exc}); stderr: {completed.stderr.strip()}"
+        ) from exc
 
     report = {
         "ok": completed.returncode == 0 and payload.get("ok") is True,

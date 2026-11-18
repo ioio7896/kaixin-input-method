@@ -40,11 +40,8 @@ void CSrfTip::RefreshCandidates() {
     return;
   }
   const SrfEngineState stateBefore = SrfTip_GetEngineState();
-  const unsigned long long requestId = !m_reading.empty()
-                                           ? m_candidateLookupSerial.fetch_add(
-                                                 1, std::memory_order_acq_rel) +
-                                                 1
-                                           : 0;
+  const unsigned long long requestId =
+      !m_reading.empty() ? m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel) + 1 : 0;
   if (!m_reading.empty()) {
     std::wstring beginLine = L"request_id=" + std::to_wstring(requestId);
     beginLine += L", reading=";
@@ -56,9 +53,8 @@ void CSrfTip::RefreshCandidates() {
   std::vector<std::wstring> nextCandidates;
   std::vector<std::wstring> nextMeta;
   bool hasMore = false;
-  const SrfLookupCandidatesStatus lookupStatus =
-      SrfTip_LookupCandidates(m_reading, nextCandidates, &nextMeta, engineRequestId, false,
-                              &hasMore);
+  const SrfLookupCandidatesStatus lookupStatus = SrfTip_LookupCandidates(
+      m_reading, nextCandidates, &nextMeta, engineRequestId, false, &hasMore);
   MaybeInsertPredictedPhraseCandidates(m_reading, &nextCandidates, &nextMeta);
   const SrfEngineState stateAfterLookup = SrfTip_GetEngineState();
   ApplyCandidateRefreshResult(m_reading, std::move(nextCandidates), std::move(nextMeta),
@@ -119,9 +115,7 @@ bool CSrfTip::EnsureCandidateLookupWorker() {
   }
   SrfTip_BackgroundWorkerAddRef();
   try {
-    m_candidateWorkerThread = std::thread([this]() {
-      CandidateLookupWorkerMain();
-    });
+    m_candidateWorkerThread = std::thread([this]() { CandidateLookupWorkerMain(); });
   } catch (...) {
     SrfTip_BackgroundWorkerRelease();
     SrfTsfDiagnosticLog(L"candidate-worker.start-failed", L"thread create failed");
@@ -192,9 +186,8 @@ void CSrfTip::CandidateLookupWorkerMain() {
     bool fullResult = false;
     {
       std::unique_lock<std::mutex> lock(m_candidateWorkerMutex);
-      m_candidateWorkerCv.wait(lock, [&]() {
-        return m_candidateWorkerStop || m_candidateWorkerHasRequest;
-      });
+      m_candidateWorkerCv.wait(
+          lock, [&]() { return m_candidateWorkerStop || m_candidateWorkerHasRequest; });
       if (m_candidateWorkerStop) break;
 
       auto coalesceMs = [&]() -> DWORD {
@@ -258,9 +251,8 @@ void CSrfTip::CandidateLookupWorkerMain() {
     const ULONGLONG lookupStart = GetTickCount64();
     if (requestTick != 0) DebugLogPerfMs(L"CandidateWorker/queue-wait", requestTick);
     try {
-      lookupStatus =
-          SrfTip_LookupCandidates(reading, candidates, &meta, engineRequestId, fullResult,
-                                  &hasMore);
+      lookupStatus = SrfTip_LookupCandidates(reading, candidates, &meta, engineRequestId,
+                                             fullResult, &hasMore);
       MaybeInsertPredictedPhraseCandidates(reading, &candidates, &meta);
       stateAfterLookup = SrfTip_GetEngineState();
     } catch (...) {
@@ -270,8 +262,8 @@ void CSrfTip::CandidateLookupWorkerMain() {
       lookupStatus = SrfLookupCandidatesStatus::Failed;
     }
     if (LookupStatusNeedsCandidateBackpressure(lookupStatus)) {
-      m_candidateLookupBackpressureUntilTick.store(GetTickCount64() + kCandidateLookupBackpressureMs,
-                                                   std::memory_order_release);
+      m_candidateLookupBackpressureUntilTick.store(
+          GetTickCount64() + kCandidateLookupBackpressureMs, std::memory_order_release);
     } else {
       m_candidateLookupBackpressureUntilTick.store(0, std::memory_order_release);
     }
@@ -294,8 +286,8 @@ void CSrfTip::CandidateLookupWorkerMain() {
       }
       PostMessageW(hwnd, kAsyncCandidateResultMessage, 0, 0);
     } else {
-      m_candidateLookupBackpressureUntilTick.store(GetTickCount64() + kCandidateLookupBackpressureMs,
-                                                   std::memory_order_release);
+      m_candidateLookupBackpressureUntilTick.store(
+          GetTickCount64() + kCandidateLookupBackpressureMs, std::memory_order_release);
       std::wstring line = L"reading_units=" + std::to_wstring(reading.size());
       line += L", request_id=";
       line += std::to_wstring(serial);
@@ -307,8 +299,8 @@ void CSrfTip::CandidateLookupWorkerMain() {
 }
 
 bool CSrfTip::TryApplyPrefixCandidatePlaceholder(const std::wstring& reading,
-                                                SrfEngineState stateBefore,
-                                                unsigned long long requestId) {
+                                                 SrfEngineState stateBefore,
+                                                 unsigned long long requestId) {
   if (reading.size() < 3 || m_prefixCandidateCache.empty()) return false;
   const ULONGLONG now = GetTickCount64();
   size_t bestIndex = static_cast<size_t>(-1);
@@ -468,8 +460,7 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
   if (!appliedCachedCandidates) {
     const bool canRetainExistingCandidates = !m_candidates.empty();
     if (!canRetainExistingCandidates && stateBefore != SrfEngineState::Ready) {
-      appliedCachedCandidates =
-          TryApplyPrefixCandidatePlaceholder(reading, stateBefore, serial);
+      appliedCachedCandidates = TryApplyPrefixCandidatePlaceholder(reading, stateBefore, serial);
     } else {
       std::wstring line = L"request_id=" + std::to_wstring(serial);
       line += L", reading=";
@@ -576,15 +567,13 @@ const wchar_t* CSrfTip::CandidateViewStateName() const {
 bool CSrfTip::CandidateViewInteractive() const {
   const bool currentInteractive = m_candidateViewState == SrfCandidateViewState::Stable ||
                                   m_candidateViewState == SrfCandidateViewState::PartialCurrent;
-  return currentInteractive && !m_candidates.empty() &&
-         !m_reading.empty() && m_candidatesReading == m_reading &&
-         !ShouldSuppressCandidatesForPrivacy();
+  return currentInteractive && !m_candidates.empty() && !m_reading.empty() &&
+         m_candidatesReading == m_reading && !ShouldSuppressCandidatesForPrivacy();
 }
 
 bool CSrfTip::CandidateViewPendingVisual() const {
-  return !m_candidates.empty() &&
-         (m_candidateViewState == SrfCandidateViewState::Pending ||
-          m_candidateViewState == SrfCandidateViewState::Stale);
+  return !m_candidates.empty() && (m_candidateViewState == SrfCandidateViewState::Pending ||
+                                   m_candidateViewState == SrfCandidateViewState::Stale);
 }
 
 void CSrfTip::SetCandidateViewState(SrfCandidateViewState state, const wchar_t* reason) {
@@ -606,10 +595,9 @@ void CSrfTip::SetCandidateViewState(SrfCandidateViewState state, const wchar_t* 
   };
 
   const ULONGLONG now = GetTickCount64();
-  const ULONGLONG ageMs =
-      m_candidateViewStateSinceTick == 0 || now < m_candidateViewStateSinceTick
-          ? 0
-          : now - m_candidateViewStateSinceTick;
+  const ULONGLONG ageMs = m_candidateViewStateSinceTick == 0 || now < m_candidateViewStateSinceTick
+                              ? 0
+                              : now - m_candidateViewStateSinceTick;
   const SrfCandidateViewState oldState = m_candidateViewState;
   m_candidateViewState = state;
   m_candidateViewStateSinceTick = now;
@@ -690,8 +678,7 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
                                           std::vector<std::wstring> nextCandidates,
                                           std::vector<std::wstring> nextMeta,
                                           SrfEngineState stateAfterLookup,
-                                          SrfLookupCandidatesStatus lookupStatus,
-                                          bool asyncResult,
+                                          SrfLookupCandidatesStatus lookupStatus, bool asyncResult,
                                           unsigned long long requestId, bool hasMore,
                                           bool fullResult) {
   if (reading != m_reading) {
@@ -707,8 +694,7 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     line += std::to_wstring(requestId);
     line += L", current_reading_units=";
     line += std::to_wstring(m_reading.size());
-    SrfTsfPerfLog(asyncResult ? L"candidate-refresh.async-stale"
-                              : L"candidate-refresh.stale",
+    SrfTsfPerfLog(asyncResult ? L"candidate-refresh.async-stale" : L"candidate-refresh.stale",
                   line.c_str());
     return false;
   }
@@ -726,7 +712,8 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
       if (parts.prefixPlaceholder) prefixPlaceholder = true;
     }
   }
-  const bool hasCurrentCandidatesForReading = !m_candidates.empty() && m_candidatesReading == reading;
+  const bool hasCurrentCandidatesForReading =
+      !m_candidates.empty() && m_candidatesReading == reading;
   bool currentPartialResult = false;
   bool currentPrefixPlaceholder = false;
   if (hasCurrentCandidatesForReading) {
@@ -760,21 +747,19 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
   const bool interimCandidateResult =
       !nextCandidates.empty() && (partialResult || prefixPlaceholder);
   const bool interimHasNewTop =
-      !nextCandidates.empty() &&
-      (!hasCurrentCandidatesForReading || m_candidates.empty() ||
-       nextCandidates.front() != m_candidates.front());
-  const bool holdAsyncReadyPartial =
-      interimCandidateResult && asyncResult && partialResult && !prefixPlaceholder &&
-      stateAfterLookup == SrfEngineState::Ready && !m_candidates.empty() &&
-      !currentPrefixPlaceholder;
+      !nextCandidates.empty() && (!hasCurrentCandidatesForReading || m_candidates.empty() ||
+                                  nextCandidates.front() != m_candidates.front());
+  const bool holdAsyncReadyPartial = interimCandidateResult && asyncResult && partialResult &&
+                                     !prefixPlaceholder &&
+                                     stateAfterLookup == SrfEngineState::Ready &&
+                                     !m_candidates.empty() && !currentPrefixPlaceholder;
   const bool applyInterimCandidateResult =
       interimCandidateResult && !holdAsyncReadyPartial &&
       (!hasCurrentCandidatesForReading || currentPrefixPlaceholder ||
        (partialResult && !prefixPlaceholder && (currentPartialResult || interimHasNewTop)));
   const bool holdInterimCandidateResult =
       interimCandidateResult &&
-      (holdAsyncReadyPartial ||
-       (hasCurrentCandidatesForReading && !applyInterimCandidateResult));
+      (holdAsyncReadyPartial || (hasCurrentCandidatesForReading && !applyInterimCandidateResult));
   if (holdInterimCandidateResult) {
     SetCandidateViewState(resolvedViewState(), L"retain-interim");
     ClampCandidateState();
@@ -832,9 +817,8 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
           m_partialCandidateInteractionVersion);
   bool frozeInteractiveSnapshot = false;
   if (completingInteractiveSnapshot && canRefreshCompletedPartialSnapshot) {
-    srf_candidate_stability::StabilizeCompletedBatch(
-        m_candidates, m_candidateMeta, &nextCandidates, &nextMeta,
-        srf_candidate_limits::kFullResult);
+    srf_candidate_stability::StabilizeCompletedBatch(m_candidates, m_candidateMeta, &nextCandidates,
+                                                     &nextMeta, srf_candidate_limits::kFullResult);
   }
   if (completingInteractiveSnapshot && !canRefreshCompletedPartialSnapshot) {
     // Preserve exact indexes after interaction. Untouched partial batches use
@@ -843,14 +827,12 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
         m_candidates, m_candidateMeta, &nextCandidates, &nextMeta,
         srf_candidate_limits::kFullResult);
   }
-  const bool retainEmptyTransientResult =
-      srf_candidate_stability::ShouldRetainEmptyCandidateResult(
-          !m_reading.empty(), nextCandidates.empty(), m_candidates.empty(), transientLookup);
+  const bool retainEmptyTransientResult = srf_candidate_stability::ShouldRetainEmptyCandidateResult(
+      !m_reading.empty(), nextCandidates.empty(), m_candidates.empty(), transientLookup);
   const bool retainedPrevious = retainEmptyTransientResult;
   const bool retainedStaleCandidates = retainedPrevious && !hasCurrentCandidatesForReading;
   const bool unchangedCandidates = !retainedPrevious && m_candidatesReading == m_reading &&
-                                   nextCandidates == m_candidates &&
-                                   nextMeta == m_candidateMeta;
+                                   nextCandidates == m_candidates && nextMeta == m_candidateMeta;
   if (!retainedPrevious && !unchangedCandidates) {
     m_candidates = std::move(nextCandidates);
     m_candidateMeta = std::move(nextMeta);
@@ -873,8 +855,8 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
       SrfTip_PrefetchClipboardTexts(prefetchIds);
     }
   }
-  if (!retainedPrevious && (lookupStatus == SrfLookupCandidatesStatus::Ok ||
-                            !m_candidates.empty())) {
+  if (!retainedPrevious &&
+      (lookupStatus == SrfLookupCandidatesStatus::Ok || !m_candidates.empty())) {
     m_candidateHasMore = hasMore;
   }
   if (fullResult) {
@@ -885,10 +867,9 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     }
     m_candidatePageAfterLoad = 0;
   }
-  SetCandidateViewState(resolvedViewState(), retainedPrevious
-                                                 ? L"retain-transient"
-                                                 : (unchangedCandidates ? L"unchanged"
-                                                                        : L"apply-result"));
+  SetCandidateViewState(resolvedViewState(),
+                        retainedPrevious ? L"retain-transient"
+                                         : (unchangedCandidates ? L"unchanged" : L"apply-result"));
   if (!retainedPrevious && !unchangedCandidates && lookupStatus == SrfLookupCandidatesStatus::Ok &&
       !usedFallbackCandidate && !prefixPlaceholder && !m_candidates.empty()) {
     RememberPrefixCandidateCache(m_reading);
@@ -994,25 +975,25 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
         m_uiStyle.candidateHorizontal
             ? static_cast<size_t>(std::clamp(m_uiStyle.candidateHorizontalCount, 3u, 9u))
             : static_cast<size_t>(CandidatePageSize());
-    const bool hasCurrentUsableCandidates =
-        !m_candidates.empty() && m_candidatesReading == m_reading &&
-        !usedFallbackCandidate && !prefixPlaceholder;
+    const bool hasCurrentUsableCandidates = !m_candidates.empty() &&
+                                            m_candidatesReading == m_reading &&
+                                            !usedFallbackCandidate && !prefixPlaceholder;
     // A non-full lookup may return a short first chunk and advertise that more
     // candidates are available. Request the complete result now, rather than
     // making the user press PageDown to trigger the same lookup path.
-    const bool incompleteFirstPage =
-        lookupStatus == SrfLookupCandidatesStatus::Ok && !fullResult && hasMore &&
-        !m_candidateFullLookupPending && hasCurrentUsableCandidates &&
-        m_candidates.size() < visibleCandidateTarget;
+    const bool incompleteFirstPage = lookupStatus == SrfLookupCandidatesStatus::Ok && !fullResult &&
+                                     hasMore && !m_candidateFullLookupPending &&
+                                     hasCurrentUsableCandidates &&
+                                     m_candidates.size() < visibleCandidateTarget;
     const bool hasFirstPaintCandidates =
         hasCurrentUsableCandidates &&
         (!partialResult || m_candidates.size() >= visibleCandidateTarget);
-    const bool retryIdle =
-        hasCurrentUsableCandidates && (transientLookup || (partialResult && hasFirstPaintCandidates));
-    const bool retryNow =
-        (transientLookup && !hasCurrentUsableCandidates) ||
-        (partialResult && !hasFirstPaintCandidates) || state == SrfEngineState::Loading ||
-        (state == SrfEngineState::Failed && m_config.engine.retryOnFailure);
+    const bool retryIdle = hasCurrentUsableCandidates &&
+                           (transientLookup || (partialResult && hasFirstPaintCandidates));
+    const bool retryNow = (transientLookup && !hasCurrentUsableCandidates) ||
+                          (partialResult && !hasFirstPaintCandidates) ||
+                          state == SrfEngineState::Loading ||
+                          (state == SrfEngineState::Failed && m_config.engine.retryOnFailure);
     const bool awaitingQueuedAsyncLookup = prefixPlaceholder && !asyncResult;
     if (awaitingQueuedAsyncLookup) {
       detail += L", retry=await_async";
@@ -1083,8 +1064,7 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
     return;
   }
 
-  const unsigned long long currentSerial =
-      m_candidateLookupSerial.load(std::memory_order_acquire);
+  const unsigned long long currentSerial = m_candidateLookupSerial.load(std::memory_order_acquire);
   if (serial != currentSerial || reading != m_reading || m_reading.empty()) {
     if (!m_reading.empty()) {
       if (!m_candidates.empty() && m_candidatesReading != m_reading) {
@@ -1132,9 +1112,9 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
   if (requestTick != 0) {
     DebugLogPerfMs(L"CandidateWorker/request-to-apply", requestTick);
   }
-  const bool changed = ApplyCandidateRefreshResult(reading, std::move(candidates), std::move(meta),
-                                                   stateAfterLookup, lookupStatus, true, serial,
-                                                   hasMore, fullResult);
+  const bool changed =
+      ApplyCandidateRefreshResult(reading, std::move(candidates), std::move(meta), stateAfterLookup,
+                                  lookupStatus, true, serial, hasMore, fullResult);
   // A result that is byte-for-byte identical to the current stable snapshot does not
   // need to walk the TSF UI-element/update/measure path again.  The synchronous
   // callers still explicitly update the window when they need to show it for the
@@ -1143,7 +1123,8 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
     UpdateCandidateWindow(ec);
     if (requestTick != 0) {
       DebugLogPerfMs(fullResult ? L"CandidateWorker/full-request-to-window"
-                                : L"CandidateWorker/first-request-to-window", requestTick);
+                                : L"CandidateWorker/first-request-to-window",
+                     requestTick);
     }
   }
 }
@@ -1303,10 +1284,10 @@ SrfUIStyle CSrfTip::EffectiveCandidateUiStyle() const {
     const UINT dpi = DpiForScreenRect(m_hasLastCandidateRect ? &m_lastCandidateRect : nullptr);
     const int logicalHeight = MulDiv(std::max<LONG>(1, work.bottom - work.top), 96,
                                      static_cast<int>(dpi == 0 ? 96 : dpi));
-    style.candidatePageSize = logicalHeight >= 1000 ? 8u
-                                  : logicalHeight >= 850 ? 7u
-                                  : logicalHeight >= 720 ? 6u
-                                                         : 5u;
+    style.candidatePageSize = logicalHeight >= 1000  ? 8u
+                              : logicalHeight >= 850 ? 7u
+                              : logicalHeight >= 720 ? 6u
+                                                     : 5u;
   }
   return style;
 }

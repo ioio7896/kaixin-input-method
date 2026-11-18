@@ -47,8 +47,7 @@ int RunCandidatePreview() {
   POINT cursor = {};
   GetCursorPos(&cursor);
   RECT anchor = {cursor.x, cursor.y, cursor.x + 1, cursor.y + 24};
-  const std::vector<std::wstring> items = {
-      L"你好", L"拟好", L"你号", L"霓虹", L"你好呀"};
+  const std::vector<std::wstring> items = {L"你好", L"拟好", L"你号", L"霓虹", L"你好呀"};
   std::wstring selectedComment;
   auto appendSelectedDetail = [&](const wchar_t* detail) {
     if (!detail || !*detail) return;
@@ -60,19 +59,18 @@ int RunCandidatePreview() {
   if (style.showCandidateScore) appendSelectedDetail(L"0.982");
   const std::vector<std::wstring> comments = {selectedComment, L"", L"", L"", L""};
   const std::vector<std::wstring> labels = {L"1", L"2", L"3", L"4", L"5"};
-  const std::vector<std::wstring> modeTags =
-      style.showModeInCandidateHeader ? std::vector<std::wstring>{L"中", L"中标"}
-                                      : std::vector<std::wstring>{};
+  const std::vector<std::wstring> modeTags = style.showModeInCandidateHeader
+                                                 ? std::vector<std::wstring>{L"中", L"中标"}
+                                                 : std::vector<std::wstring>{};
 
   CCandidateWindow window;
   window.SetGameOverlay(false, false, nullptr);
   window.SetStyle(style);
   window.PrepareResources();
-  window.Show(L"ni hao", items, comments, labels, {}, {}, 0, 2, 0, anchor,
-              modeTags, false, false);
+  window.Show(L"ni hao", items, comments, labels, {}, {}, 0, 2, 0, anchor, modeTags, false, false);
 
-  const UINT_PTR timer = SetTimer(nullptr, kCandidatePreviewTimerId,
-                                  kCandidatePreviewDurationMs, nullptr);
+  const UINT_PTR timer =
+      SetTimer(nullptr, kCandidatePreviewTimerId, kCandidatePreviewDurationMs, nullptr);
   if (!timer) {
     window.Destroy();
     return 2;
@@ -149,8 +147,7 @@ SrfUIStyle ResolveOverlayStyle(const SrfConfig& config,
     if (options->hasEnhancedPosition) style.enhancedPosition = options->enhancedPosition;
     if (options->hasCandidateTopmost) style.candidateTopmost = options->candidateTopmost;
     if (options->hasOverlayScale) {
-      style.candidateScalePercent =
-          std::clamp(options->overlayScalePercent, 50u, 200u);
+      style.candidateScalePercent = std::clamp(options->overlayScalePercent, 50u, 200u);
     }
     if (options->hasOverlayAnchor) {
       style.candidateOverlayAnchor = options->overlayAnchor;
@@ -162,8 +159,7 @@ SrfUIStyle ResolveOverlayStyle(const SrfConfig& config,
   if (snapshot.gameCompact) ApplyCompactGameStyle(&style);
   if (snapshot.layoutResolved) {
     style.candidateHorizontal = snapshot.horizontalLayout;
-    style.candidateHorizontalCompact =
-        snapshot.horizontalLayout && snapshot.horizontalCompact;
+    style.candidateHorizontalCompact = snapshot.horizontalLayout && snapshot.horizontalCompact;
   }
   style.candidateFullscreenPlacement = snapshot.fullscreenPlacement;
   // The external game overlay is intentionally read-only. It must never steal
@@ -180,8 +176,7 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     if (clientProcess_) CloseHandle(clientProcess_);
   }
 
-  bool Initialize(HINSTANCE instance, DWORD clientProcessId,
-                  const std::wstring& controlToken,
+  bool Initialize(HINSTANCE instance, DWORD clientProcessId, const std::wstring& controlToken,
                   const SrfCandidateOverlayAuthSecret& authSecret) {
     if (clientProcessId == 0 || controlToken.empty() || !authSecret.Valid()) {
       return false;
@@ -193,15 +188,15 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
         clientSessionId != currentSessionId) {
       return false;
     }
-    clientProcess_ = OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION,
-                                 FALSE, clientProcessId);
+    clientProcess_ =
+        OpenProcess(SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, clientProcessId);
     if (!clientProcess_) return false;
     clientProcessId_ = clientProcessId;
     authSecret_ = authSecret;
     std::wstring imagePath(32768, L'\0');
     DWORD imageLength = static_cast<DWORD>(imagePath.size());
-    if (QueryFullProcessImageNameW(clientProcess_, 0, imagePath.data(),
-                                   &imageLength) && imageLength != 0) {
+    if (QueryFullProcessImageNameW(clientProcess_, 0, imagePath.data(), &imageLength) &&
+        imageLength != 0) {
       imagePath.resize(imageLength);
       clientImagePath_ = std::move(imagePath);
     }
@@ -220,9 +215,9 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     if (!RegisterClassExW(&windowClass) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
       return false;
     }
-    controlWindow_ = CreateWindowExW(
-        0, SrfCandidateOverlayControlWindowClass(), controlToken.c_str(), 0, 0,
-        0, 0, 0, HWND_MESSAGE, nullptr, instance_, this);
+    controlWindow_ =
+        CreateWindowExW(0, SrfCandidateOverlayControlWindowClass(), controlToken.c_str(), 0, 0, 0,
+                        0, 0, HWND_MESSAGE, nullptr, instance_, this);
     if (!controlWindow_) return false;
     lastMessageTick_ = GetTickCount64();
     SetTimer(controlWindow_, kOverlayWatchTimerId, kOverlayWatchIntervalMs, nullptr);
@@ -263,13 +258,11 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
       return;
     }
     RefreshConfiguration();
-    activeSnapshot_.fullscreenPlacement =
-        IsCandidateOverlayTargetFullscreen(activeTargetHwnd_);
+    activeSnapshot_.fullscreenPlacement = IsCandidateOverlayTargetFullscreen(activeTargetHwnd_);
     const SrfAppOptions* options = FindAppOptions(config_, activeSnapshot_.appPath);
     RECT refreshedAnchor = {};
-    if (ResolveCandidateGameOverlayAnchor(
-            activeTargetHwnd_, activeSnapshot_.fullscreenPlacement, options,
-            &refreshedAnchor)) {
+    if (ResolveCandidateGameOverlayAnchor(activeTargetHwnd_, activeSnapshot_.fullscreenPlacement,
+                                          options, &refreshedAnchor)) {
       activeSnapshot_.anchor = refreshedAnchor;
     }
     ShowSnapshot(activeSnapshot_);
@@ -293,12 +286,10 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     DWORD senderProcessId = 0;
     GetWindowThreadProcessId(sender, &senderProcessId);
     if (senderProcessId != clientProcessId_) return false;
-    if (snapshot.targetHwnd &&
-        !TargetWindowMatches(snapshot.targetHwnd, clientProcessId_)) {
+    if (snapshot.targetHwnd && !TargetWindowMatches(snapshot.targetHwnd, clientProcessId_)) {
       return false;
     }
-    if (snapshot.visible &&
-        (!snapshot.layoutResolved || !snapshot.anchorPhysical)) {
+    if (snapshot.visible && (!snapshot.layoutResolved || !snapshot.anchorPhysical)) {
       return false;
     }
     return true;
@@ -319,8 +310,7 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
         return false;
       }
       if (snapshot.targetHwnd && acceptedTargetHwnd_ &&
-          RootOverlayWindow(snapshot.targetHwnd) !=
-              RootOverlayWindow(acceptedTargetHwnd_)) {
+          RootOverlayWindow(snapshot.targetHwnd) != RootOverlayWindow(acceptedTargetHwnd_)) {
         return false;
       }
     }
@@ -350,9 +340,8 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
         !ValidateSender(sender, snapshot)) {
       return false;
     }
-    if (snapshot.visible &&
-        (!TargetWindowMatches(snapshot.targetHwnd, snapshot.targetProcessId) ||
-         !TargetIsForeground(snapshot.targetHwnd, snapshot.targetProcessId))) {
+    if (snapshot.visible && (!TargetWindowMatches(snapshot.targetHwnd, snapshot.targetProcessId) ||
+                             !TargetIsForeground(snapshot.targetHwnd, snapshot.targetProcessId))) {
       return false;
     }
     if (!CanAcceptSequence(snapshot)) return false;
@@ -365,8 +354,7 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
       applySnapshotPosted_ = true;
     }
     HWND supersededSender = nullptr;
-    if (snapshot.visible && activeOwnerId_ != 0 &&
-        activeOwnerId_ != snapshot.ownerId) {
+    if (snapshot.visible && activeOwnerId_ != 0 && activeOwnerId_ != snapshot.ownerId) {
       supersededSender = activeSenderHwnd_;
       Hide();
     }
@@ -380,21 +368,18 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     return true;
   }
 
-  SrfCandidateOverlayStatus HandleStatusQuery(
-      HWND sender, const COPYDATASTRUCT* copy) const {
-    if (!copy || copy->dwData != kSrfCandidateOverlayStatusCopyDataId ||
-        !copy->lpData || copy->cbData != sizeof(SrfCandidateOverlayStatusQuery)) {
+  SrfCandidateOverlayStatus HandleStatusQuery(HWND sender, const COPYDATASTRUCT* copy) const {
+    if (!copy || copy->dwData != kSrfCandidateOverlayStatusCopyDataId || !copy->lpData ||
+        copy->cbData != sizeof(SrfCandidateOverlayStatusQuery)) {
       return SrfCandidateOverlayStatus::Unavailable;
     }
     SrfCandidateOverlayStatusQuery query = {};
     std::memcpy(&query, copy->lpData, sizeof(query));
     if (query.magic != kSrfCandidateOverlayStatusMagic ||
-        query.version != kSrfCandidateOverlayVersion ||
-        query.bytes != sizeof(query) ||
-        query.sourceProcessId != clientProcessId_ || query.ownerId == 0 ||
-        query.sequence == 0 ||
-        query.authSecretHigh != authSecret_.high ||
-        query.authSecretLow != authSecret_.low || !sender || !IsWindow(sender) ||
+        query.version != kSrfCandidateOverlayVersion || query.bytes != sizeof(query) ||
+        query.sourceProcessId != clientProcessId_ || query.ownerId == 0 || query.sequence == 0 ||
+        query.authSecretHigh != authSecret_.high || query.authSecretLow != authSecret_.low ||
+        !sender || !IsWindow(sender) ||
         !WindowHasClass(sender, SrfCandidateOverlayClientWindowClass())) {
       return SrfCandidateOverlayStatus::Unavailable;
     }
@@ -414,8 +399,7 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     }
     state.activeOwnerId = activeOwnerId_;
     state.lastAppliedSequence = lastAppliedSequence_;
-    state.activeWindowVisible =
-        visible_ && candidateWindow_.IsVisible();
+    state.activeWindowVisible = visible_ && candidateWindow_.IsVisible();
     return ResolveCandidateOverlayStatus(state);
   }
 
@@ -463,15 +447,13 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     }
 
     if (!clientImagePath_.empty()) snapshot.appPath = clientImagePath_;
-    snapshot.fullscreenPlacement =
-        IsCandidateOverlayTargetFullscreen(snapshot.targetHwnd);
+    snapshot.fullscreenPlacement = IsCandidateOverlayTargetFullscreen(snapshot.targetHwnd);
     RefreshConfiguration();
     const SrfAppOptions* options = FindAppOptions(config_, snapshot.appPath);
     RECT refreshedAnchor = {};
     if (!snapshot.caretAnchor &&
-        ResolveCandidateGameOverlayAnchor(snapshot.targetHwnd,
-                                          snapshot.fullscreenPlacement, options,
-                                          &refreshedAnchor)) {
+        ResolveCandidateGameOverlayAnchor(snapshot.targetHwnd, snapshot.fullscreenPlacement,
+                                          options, &refreshedAnchor)) {
       snapshot.anchor = refreshedAnchor;
     }
 
@@ -523,15 +505,13 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
   void ShowSnapshot(const SrfCandidateOverlaySnapshot& snapshot) {
     RefreshConfiguration();
     const SrfUIStyle style = ResolveOverlayStyle(config_, snapshot);
-    candidateWindow_.SetGameOverlay(true, snapshot.fullscreenPlacement,
-                                    snapshot.targetHwnd);
+    candidateWindow_.SetGameOverlay(true, snapshot.fullscreenPlacement, snapshot.targetHwnd);
     candidateWindow_.SetOwnerWindow(snapshot.targetHwnd);
     candidateWindow_.SetStyle(style);
-    candidateWindow_.Show(
-        snapshot.title, snapshot.items, snapshot.comments, snapshot.labels,
-        snapshot.pinnedItems, snapshot.clipboardItems, snapshot.pageIndex,
-        snapshot.totalPages, snapshot.selectedInPage, snapshot.anchor,
-        snapshot.modeTags, false, snapshot.pendingVisual);
+    candidateWindow_.Show(snapshot.title, snapshot.items, snapshot.comments, snapshot.labels,
+                          snapshot.pinnedItems, snapshot.clipboardItems, snapshot.pageIndex,
+                          snapshot.totalPages, snapshot.selectedInPage, snapshot.anchor,
+                          snapshot.modeTags, false, snapshot.pendingVisual);
   }
 
   void Hide() {
@@ -568,10 +548,9 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     }
   }
 
-  static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam,
-                                  LPARAM lParam) {
-    CandidateOverlayHost* self = reinterpret_cast<CandidateOverlayHost*>(
-        GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+  static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    CandidateOverlayHost* self =
+        reinterpret_cast<CandidateOverlayHost*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
     if (message == WM_NCCREATE) {
       const auto* create = reinterpret_cast<const CREATESTRUCTW*>(lParam);
       self = static_cast<CandidateOverlayHost*>(create->lpCreateParams);
@@ -581,9 +560,8 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
 
     switch (message) {
       case WM_COPYDATA:
-        return self->HandleCopyData(
-            reinterpret_cast<HWND>(wParam),
-            reinterpret_cast<const COPYDATASTRUCT*>(lParam));
+        return self->HandleCopyData(reinterpret_cast<HWND>(wParam),
+                                    reinterpret_cast<const COPYDATASTRUCT*>(lParam));
       case kOverlayApplySnapshotMessage:
         self->ApplyPendingSnapshot();
         return 0;
@@ -668,8 +646,7 @@ bool ParseUnsignedValue(const wchar_t* text, unsigned long long* value) {
 bool ValidControlToken(const std::wstring& token) {
   if (token.size() < 8 || token.size() > 96) return false;
   return std::all_of(token.begin(), token.end(), [](wchar_t ch) {
-    return std::iswalnum(ch) || ch == L'{' || ch == L'}' || ch == L'-' ||
-           ch == L'_';
+    return std::iswalnum(ch) || ch == L'{' || ch == L'}' || ch == L'-' || ch == L'_';
   });
 }
 
@@ -686,8 +663,7 @@ bool ParseLaunchOptions(OverlayLaunchOptions* options) {
       modeSeen = true;
     } else if (arg == L"--client-pid" && index + 1 < count) {
       unsigned long long parsed = 0;
-      valid = ParseUnsignedValue(args[++index], &parsed) && parsed != 0 &&
-              parsed <= MAXDWORD;
+      valid = ParseUnsignedValue(args[++index], &parsed) && parsed != 0 && parsed <= MAXDWORD;
       if (valid) options->clientProcessId = static_cast<DWORD>(parsed);
     } else if (arg == L"--control-token" && index + 1 < count) {
       options->controlToken = args[++index];
@@ -697,8 +673,7 @@ bool ParseLaunchOptions(OverlayLaunchOptions* options) {
       valid = ParseUnsignedValue(args[++index], &parsed) && parsed != 0 &&
               parsed <= (std::numeric_limits<std::uintptr_t>::max)();
       if (valid) {
-        options->authHandle = reinterpret_cast<HANDLE>(
-            static_cast<std::uintptr_t>(parsed));
+        options->authHandle = reinterpret_cast<HANDLE>(static_cast<std::uintptr_t>(parsed));
       }
     } else {
       valid = false;
@@ -720,7 +695,9 @@ bool ReadAuthSecret(HANDLE handle, SrfCandidateOverlayAuthSecret* secret) {
 
 }  // namespace
 
-HMODULE SrfTip_GetDllModule() { return GetModuleHandleW(nullptr); }
+HMODULE SrfTip_GetDllModule() {
+  return GetModuleHandleW(nullptr);
+}
 
 void SrfTsfDiagnosticLog(const wchar_t* tag, const wchar_t* message) {
   std::wstring line = L"[kaixin-overlay] ";
@@ -735,8 +712,10 @@ void SrfTsfPerfLog(const wchar_t* tag, const wchar_t* message) {
   SrfTsfDiagnosticLog(tag, message);
 }
 
-extern "C" void SrfTip_BackgroundWorkerAddRef() {}
-extern "C" void SrfTip_BackgroundWorkerRelease() {}
+extern "C" void SrfTip_BackgroundWorkerAddRef() {
+}
+extern "C" void SrfTip_BackgroundWorkerRelease() {
+}
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   if (CandidatePreviewRequested()) {
@@ -757,8 +736,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int) {
   int result = 2;
   {
     CandidateOverlayHost host;
-    const bool initialized = host.Initialize(instance, options.clientProcessId,
-                                             options.controlToken, authSecret);
+    const bool initialized =
+        host.Initialize(instance, options.clientProcessId, options.controlToken, authSecret);
     if (initialized) result = host.Run();
   }
   ShutdownCandidateWindowRendering();

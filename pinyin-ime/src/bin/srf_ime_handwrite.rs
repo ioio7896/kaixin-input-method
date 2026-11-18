@@ -189,17 +189,17 @@ impl HandwriteApp {
         painter.rect_stroke(
             rect,
             Rounding::same(8.0),
-            EguiStroke::new(1.0, Color32::from_rgb(203, 213, 225)),
+            EguiStroke::new(1.0_f32, Color32::from_rgb(203, 213, 225)),
         );
 
         let grid = Color32::from_rgb(226, 232, 240);
         painter.line_segment(
             [rect.left_center(), rect.right_center()],
-            EguiStroke::new(1.0, grid),
+            EguiStroke::new(1.0_f32, grid),
         );
         painter.line_segment(
             [rect.center_top(), rect.center_bottom()],
-            EguiStroke::new(1.0, grid),
+            EguiStroke::new(1.0_f32, grid),
         );
 
         if response.drag_started_by(egui::PointerButton::Primary) {
@@ -228,7 +228,7 @@ impl HandwriteApp {
             for pair in points.windows(2) {
                 painter.line_segment(
                     [pair[0], pair[1]],
-                    EguiStroke::new(5.0, Color32::from_rgb(15, 23, 42)),
+                    EguiStroke::new(5.0_f32, Color32::from_rgb(15, 23, 42)),
                 );
             }
             for point in points {
@@ -368,7 +368,7 @@ fn candidate_row(
     };
     let response = Frame::none()
         .fill(fill)
-        .stroke(EguiStroke::new(1.0, stroke))
+        .stroke(EguiStroke::new(1.0_f32, stroke))
         .rounding(Rounding::same(8.0))
         .inner_margin(Margin::symmetric(10.0, 8.0))
         .show(ui, |ui| {

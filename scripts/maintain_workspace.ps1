@@ -1,5 +1,5 @@
 ﻿[CmdletBinding()]
-param([switch]$Apply, [switch]$HistoryOnly, [switch]$CleanRustDebug, [ValidateRange(1,20)][int]$KeepBatches = 3)
+param([switch]$Apply, [switch]$HistoryOnly, [switch]$CleanRustDebug, [ValidateRange(1, 20)][int]$KeepBatches = 3)
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..')).TrimEnd('\')
 $targets = [Collections.Generic.List[string]]::new()
@@ -8,7 +8,7 @@ if (Test-Path -LiteralPath $history) {
     Get-ChildItem -LiteralPath $history -Directory | Sort-Object Name -Descending | Select-Object -Skip $KeepBatches | ForEach-Object { $targets.Add($_.FullName) }
 }
 if (-not $HistoryOnly) {
-    foreach ($name in @('build','tsf-tip\build-codex-current-x64','tsf-tip\build-codex-current-x86','tsf-tip\build-codex-fix-x64','tsf-tip\build-policy-tests')) {
+    foreach ($name in @('build', 'tsf-tip\build-codex-current-x64', 'tsf-tip\build-codex-current-x86', 'tsf-tip\build-codex-fix-x64', 'tsf-tip\build-policy-tests')) {
         $target = Join-Path $root $name
         if (Test-Path -LiteralPath $target) { $targets.Add($target) }
     }

@@ -55,6 +55,108 @@
       "phrase": "还款期",
       "rejected": "hai kuan qi",
       "reading": "huan kuan qi"
+    },
+    {
+      "phrase": "咱们这边",
+      "rejected": "zan me zhe bian",
+      "reading": "zan men zhe bian",
+      "reason": "们应对应 men"
+    },
+    {
+      "phrase": "还我山河",
+      "rejected": "huan wo he shan",
+      "reading": "huan wo shan he",
+      "reason": "山、河的拼音次序写反"
+    },
+    {
+      "phrase": "镂心鉥肝",
+      "rejected": "lou xin feng gan",
+      "reading": "lou xin shu gan",
+      "reason": "鉥的字典读音为 shu/xu；此处“刺”的义项对应 shu，不是 feng"
+    },
+    {
+      "phrase": "元气囝仔",
+      "rejected": "yue qi jian zai",
+      "reading": "yuan qi jian zai",
+      "reason": "元应对应 yuan；本项仅校正第一个音节"
+    },
+    {
+      "phrase": "栎阳公主",
+      "rejected": "yue fang gong zhu",
+      "reading": "yue yang gong zhu",
+      "reason": "阳应对应 yang，不是 fang；保留栎的原有词级读音"
+    },
+    {
+      "phrase": "鞙鞙佩璲",
+      "rejected": "xuan xuan juan pei",
+      "reading": "xuan xuan pei sui",
+      "reason": "后两字佩璲应对应 pei sui；前两字维持原记录"
+    },
+    {
+      "phrase": "两重心",
+      "rejected": "lia zhong xin",
+      "reading": "liang zhong xin",
+      "reason": "两应对应 liang，不是 lia"
+    },
+    {
+      "phrase": "白干活",
+      "rejected": "bai qian huo",
+      "reading": "bai gan huo",
+      "reason": "干活的干应对应 gan，不是 qian"
+    },
+    {
+      "phrase": "透明了",
+      "rejected": "tong ming le",
+      "reading": "tou ming le",
+      "reason": "透应对应 tou，不是 tong"
+    },
+    {
+      "phrase": "任长风",
+      "rejected": "reng chang feng",
+      "reading": "ren chang feng",
+      "reason": "任应对应 ren，不是 reng"
+    },
+    {
+      "phrase": "长治了",
+      "rejected": "chang zhi shi",
+      "reading": "chang zhi le",
+      "reason": "了不能对应 shi；是否保留该短语还需结合语义审核"
+    },
+    {
+      "phrase": "珀莱雅",
+      "rejected": "bo lai ya",
+      "reading": "po lai ya",
+      "reason": "珀应对应 po，不是 bo"
+    },
+    {
+      "phrase": "间羟胺",
+      "rejected": "jian qian an",
+      "reading": "jian qiang an",
+      "reason": "羟应对应 qiang，不是 qian"
+    },
+    {
+      "phrase": "沿山港桥",
+      "rejected": "yan shang ang qiao",
+      "reading": "yan shan gang qiao",
+      "reason": "山港切为 shang ang，应为 shan gang；连续全拼不变，简拼字母会改变。"
+    },
+    {
+      "phrase": "横山港桥",
+      "rejected": "heng shang ang qiao",
+      "reading": "heng shan gang qiao",
+      "reason": "山港切为 shang ang，应为 shan gang；连续全拼不变，简拼字母会改变。"
+    },
+    {
+      "phrase": "杭州奥体中心体育馆",
+      "rejected": "hang zhou ao ti zhong xin ti yu chang",
+      "reading": "hang zhou ao ti zhong xin ti yu guan",
+      "reason": "馆应对应 guan，不是 chang"
+    },
+    {
+      "phrase": "密码重置",
+      "rejected": "mi ma zhong zhi",
+      "reading": "mi ma chong zhi",
+      "reason": "重新设置的重读 chong；词级校正，不修改其他含重词语"
     }
   ],
   "reviewed_long_phrases": "data_sources/kaixin/reviewed_long_phrases.tsv",
@@ -285,6 +387,128 @@
       "replacement": "两眼一抹黑",
       "reading": "liang yan yi mo hei",
       "reason": "规范惯用语的写法"
+    }
+  ],
+  "retained_phrase_readings": [
+    {
+      "phrase": "乐亭",
+      "reading": "lao ting",
+      "review_status": "retain_special_reading",
+      "reason": "乐亭的 lao 是地名专读；不得按单字表机械改成 le/yue。从乐亭是否作为词条保留属于另一个语义问题。"
+    },
+    {
+      "phrase": "乐亭县",
+      "reading": "lao ting xian",
+      "review_status": "retain_special_reading",
+      "reason": "乐亭的 lao 是地名专读；不得按单字表机械改成 le/yue。从乐亭是否作为词条保留属于另一个语义问题。"
+    },
+    {
+      "phrase": "乐陵一中",
+      "reading": "lao ling yi zhong",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "乐山乐水",
+      "reading": "yao shan yao shui",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "大璞不完",
+      "reading": "tai pu bu wan",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "日升月恒",
+      "reading": "ri sheng yue geng",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "智者乐水",
+      "reading": "zhi zhe yao shui",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "阏与之战",
+      "reading": "yu yu zhi zhan",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "献可替不",
+      "reading": "xian ke ti fou",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "山川相缪",
+      "reading": "shan chuan xiang liao",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "松溉古镇",
+      "reading": "song ji gu zhen",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "以我齐明",
+      "reading": "yi wo zi ming",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "惄如调饥",
+      "reading": "ni ru zhou ji",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "朝食于株",
+      "reading": "zhao shi yi zhu",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "百骑截营",
+      "reading": "bai ji jie ying",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "乐陵县",
+      "reading": "lao ling xian",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "从乐亭",
+      "reading": "cong lao ting",
+      "review_status": "retain_special_reading",
+      "reason": "乐亭的 lao 是地名专读；不得按单字表机械改成 le/yue。从乐亭是否作为词条保留属于另一个语义问题。"
+    },
+    {
+      "phrase": "马日磾",
+      "reading": "ma mi di",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "它山堰",
+      "reading": "tuo shan yan",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
+    },
+    {
+      "phrase": "谌",
+      "reading": "shen",
+      "review_status": "needs_word_specific_source",
+      "reason": "涉及地名、人名、古语或古音；当前单字表不含此音不能证明词级读音错误。本次不建议自动替换。"
     }
   ]
 }

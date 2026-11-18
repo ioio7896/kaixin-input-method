@@ -9653,7 +9653,6 @@
 用数据	yong shu ju	3079
 用语言	yong yu yan	3079
 的关注	de guan zhu	3079
-的应该	de ying gai	3079
 的情况	de qing kuang	3079
 的数据	de shu ju	3079
 的活动	de huo dong	3079
@@ -26906,7 +26905,6 @@
 这都没	zhe dou mei	2816
 这都算	zhe dou suan	2816
 这都能	zhe dou neng	2816
-这都被	zhe dou bei	2816
 这都要	zhe dou yao	2816
 这都谁	zhe dou shei	2816
 进去过	jin qu guo	2816
@@ -37450,7 +37448,6 @@
 还能考	hai neng kao	2685
 还能聊	hai neng liao	2685
 还能行	hai neng xing	2685
-还能被	hai neng bei	2685
 还能说	hai neng shuo	2685
 还能谁	hai neng shei	2685
 还能赢	hai neng ying	2685
@@ -50264,7 +50261,6 @@
 我年底	wo nian di	2553
 我快了	wo kuai le	2553
 我快死	wo kuai si	2553
-我快被	wo kuai bei	2553
 我总结	wo zong jie	2553
 我想下	wo xiang xia	2553
 我想给	wo xiang gei	2553
@@ -63089,7 +63085,7 @@
 两用型	liang yong xing	2422
 两重山	liang chong shan	2422
 两重山	liang zhong shan	2422
-两重心	lia zhong xin	2422
+两重心	liang zhong xin	2422
 严千帆	yan qian fan	2422
 严培中	yan pei zhong	2422
 严嵩横	yan song heng	2422
@@ -68969,9 +68965,7 @@
 起没起	qi mei qi	2422
 超好笑	chao hao xiao	2422
 超强版	chao qiang ban	2422
-越梳越	yue shu yue	2422
 越棉寮	yue mian liao	2422
-越笑越	yue xiao yue	2422
 越葱岭	yue cong ling	2422
 趴一会	pa yi hui	2422
 跑一会	pao yi hui	2422
@@ -71974,7 +71968,6 @@
 登不进	deng bu jin	2395
 白不老	bai bu lao	2395
 白干活	bai gan huo	2395
-白干活	bai qian huo	2395
 白手套	bai shou tao	2395
 白草莓	bai cao mei	2395
 白骑士	bai qi shi	2395
@@ -72487,7 +72480,7 @@
 逆转胜	ni zhuan sheng	2395
 逆青春	ni qing chun	2395
 选出的	xuan chu de	2395
-透明了	tong ming le	2395
+透明了	tou ming le	2395
 透明了	tou ming liao	2395
 透明壳	tou ming ke	2395
 透明层	tou ming ceng	2395
@@ -73971,7 +73964,7 @@
 任泽区	ren ze qu	2369
 任海霞	ren hai xia	2369
 任皇后	ren huang hou	2369
-任长风	reng chang feng	2369
+任长风	ren chang feng	2369
 份儿饭	fen er fan	2369
 仿古砖	fang gu zhuan	2369
 仿真度	fang zhen du	2369
@@ -89829,7 +89822,7 @@
 长春路	chang chun lu	2369
 长春道	chang chun dao	2369
 长板凳	chang ban deng	2369
-长治了	chang zhi shi	2369
+长治了	chang zhi le	2369
 长治了	zhang zhi le	2369
 长治的	chang zhi de	2369
 长治的	zhang zhi de	2369
@@ -122013,7 +122006,6 @@
 赵一龙	zhao yi long	2079
 赵美人	zhao mei ren	2079
 起火了	qi huo le	2079
-越活越	yue huo yue	2079
 越王楼	yue wang lou	2079
 越远了	yue yuan le	2079
 足迹图	zu ji tu	2079
@@ -199958,7 +199950,6 @@
 现拍的	xian pai de	790
 现视研	xian shi yan	790
 玺子哥	xi zi ge	790
-珀莱雅	bo lai ya	790
 珀莱雅	po lai ya	790
 珂卡芙	ke ka fu	790
 珂拉琪	ke la qi	790
@@ -205466,7 +205457,6 @@
 让我想	rang wo xiang	790
 让我打	rang wo da	790
 让我找	rang wo zhao	790
-让我把	rang wo ba	790
 让我抱	rang wo bao	790
 让我拍	rang wo pai	790
 让我摸	rang wo mo	790
@@ -207075,7 +207065,6 @@
 越看你	yue kan ni	790
 越看越	yue kan yue	790
 越美了	yue mei le	790
-越说越	yue shuo yue	790
 越鞠丸	yue ju wan	790
 趣书网	qu shu wang	790
 趣闲赚	qu xian zhuan	790
@@ -210558,7 +210547,6 @@
 闲院宇	xian yuan yu	790
 间之楔	jian zhi xie	790
 间使穴	jian shi xue	790
-间羟胺	jian qian an	790
 间羟胺	jian qiang an	790
 闵先艺	min xian yi	790
 闵子骞	min zi qian	790

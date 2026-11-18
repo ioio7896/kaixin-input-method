@@ -21,8 +21,7 @@ std::filesystem::path OverlayHelperPath() {
   HMODULE module = SrfTip_GetDllModule();
   if (!module) return {};
   std::wstring path(32768, L'\0');
-  const DWORD length =
-      GetModuleFileNameW(module, path.data(), static_cast<DWORD>(path.size()));
+  const DWORD length = GetModuleFileNameW(module, path.data(), static_cast<DWORD>(path.size()));
   if (length == 0 || length >= path.size()) return {};
   path.resize(length);
   return std::filesystem::path(path).parent_path() / L"srf_ime_overlay.exe";
@@ -59,8 +58,7 @@ std::wstring CreateControlWindowToken() {
   }
   LARGE_INTEGER counter = {};
   QueryPerformanceCounter(&counter);
-  swprintf_s(text, L"fallback-%lu-%lu-%llu", GetCurrentProcessId(),
-             GetCurrentThreadId(),
+  swprintf_s(text, L"fallback-%lu-%lu-%llu", GetCurrentProcessId(), GetCurrentThreadId(),
              static_cast<unsigned long long>(counter.QuadPart));
   return text;
 }
@@ -95,7 +93,9 @@ CExternalCandidateOverlayClient& GetExternalCandidateOverlayClient() {
   return client;
 }
 
-CExternalCandidateOverlayClient::~CExternalCandidateOverlayClient() { Shutdown(); }
+CExternalCandidateOverlayClient::~CExternalCandidateOverlayClient() {
+  Shutdown();
+}
 
 bool CExternalCandidateOverlayClient::IsHelperProcessAliveLocked() const {
   return helperProcess_ && helperProcessId_ != 0 &&
@@ -103,8 +103,7 @@ bool CExternalCandidateOverlayClient::IsHelperProcessAliveLocked() const {
 }
 
 bool CExternalCandidateOverlayClient::IsExpectedHelperWindowLocked(HWND hwnd) const {
-  return IsHelperProcessAliveLocked() &&
-         WindowBelongsToProcess(hwnd, helperProcessId_) &&
+  return IsHelperProcessAliveLocked() && WindowBelongsToProcess(hwnd, helperProcessId_) &&
          WindowHasClass(hwnd, SrfCandidateOverlayControlWindowClass());
 }
 
@@ -137,8 +136,7 @@ HWND CExternalCandidateOverlayClient::FindHelperWindowLocked() {
   if (!IsHelperProcessAliveLocked() || controlWindowToken_.empty()) return nullptr;
 
   HWND after = nullptr;
-  while ((after = FindWindowExW(HWND_MESSAGE, after,
-                                SrfCandidateOverlayControlWindowClass(),
+  while ((after = FindWindowExW(HWND_MESSAGE, after, SrfCandidateOverlayControlWindowClass(),
                                 controlWindowToken_.c_str())) != nullptr) {
     if (IsExpectedHelperWindowLocked(after)) {
       helperWindow_ = after;
@@ -212,14 +210,13 @@ bool CExternalCandidateOverlayClient::StartHelperIfNeededLocked() {
   commandLine += L" --control-token ";
   commandLine += QuoteCommandLineArgument(token);
   commandLine += L" --auth-handle ";
-  commandLine += std::to_wstring(
-      static_cast<unsigned long long>(reinterpret_cast<std::uintptr_t>(authRead)));
+  commandLine +=
+      std::to_wstring(static_cast<unsigned long long>(reinterpret_cast<std::uintptr_t>(authRead)));
 
   SIZE_T attributeBytes = 0;
   (void)InitializeProcThreadAttributeList(nullptr, 1, 0, &attributeBytes);
   std::vector<std::uint8_t> attributeStorage(attributeBytes);
-  auto* attributeList = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(
-      attributeStorage.data());
+  auto* attributeList = reinterpret_cast<PPROC_THREAD_ATTRIBUTE_LIST>(attributeStorage.data());
   STARTUPINFOEXW startup = {};
   startup.StartupInfo.cb = sizeof(startup);
   startup.lpAttributeList = attributeList;
@@ -231,13 +228,12 @@ bool CExternalCandidateOverlayClient::StartHelperIfNeededLocked() {
       InitializeProcThreadAttributeList(attributeList, 1, 0, &attributeBytes) != FALSE;
   if (attributeInitialized &&
       UpdateProcThreadAttribute(attributeList, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
-                                inheritedHandles, sizeof(inheritedHandles), nullptr,
-                                nullptr)) {
-    created = CreateProcessW(
-        helperPath.c_str(), commandLine.data(), nullptr, nullptr, TRUE,
-        CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW |
-            EXTENDED_STARTUPINFO_PRESENT,
-        nullptr, helperPath.parent_path().c_str(), &startup.StartupInfo, &process);
+                                inheritedHandles, sizeof(inheritedHandles), nullptr, nullptr)) {
+    created =
+        CreateProcessW(helperPath.c_str(), commandLine.data(), nullptr, nullptr, TRUE,
+                       CREATE_UNICODE_ENVIRONMENT | CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW |
+                           EXTENDED_STARTUPINFO_PRESENT,
+                       nullptr, helperPath.parent_path().c_str(), &startup.StartupInfo, &process);
   }
   const DWORD createError = created ? ERROR_SUCCESS : GetLastError();
   if (attributeInitialized) {
@@ -284,15 +280,14 @@ void CExternalCandidateOverlayClient::Prewarm() {
   (void)StartHelperIfNeededLocked();
 }
 
-bool CExternalCandidateOverlayClient::SendLocked(
-    HWND senderHwnd, SrfCandidateOverlaySnapshot snapshot,
-    std::uint64_t* acceptedSequence) {
+bool CExternalCandidateOverlayClient::SendLocked(HWND senderHwnd,
+                                                 SrfCandidateOverlaySnapshot snapshot,
+                                                 std::uint64_t* acceptedSequence) {
   const DWORD currentProcessId = GetCurrentProcessId();
   if (!WindowBelongsToProcess(senderHwnd, currentProcessId) ||
       !WindowHasClass(senderHwnd, SrfCandidateOverlayClientWindowClass()) ||
       snapshot.ownerId == 0 || snapshot.targetProcessId != currentProcessId ||
-      (snapshot.targetHwnd &&
-       !WindowBelongsToProcess(snapshot.targetHwnd, currentProcessId))) {
+      (snapshot.targetHwnd && !WindowBelongsToProcess(snapshot.targetHwnd, currentProcessId))) {
     SrfTsfDiagnosticLog(L"candidate-overlay.send", L"snapshot process binding rejected");
     return false;
   }
@@ -323,10 +318,8 @@ bool CExternalCandidateOverlayClient::SendLocked(
   DWORD_PTR accepted = 0;
   SetLastError(ERROR_SUCCESS);
   const LRESULT sent = SendMessageTimeoutW(
-      helper, WM_COPYDATA, reinterpret_cast<WPARAM>(senderHwnd),
-      reinterpret_cast<LPARAM>(&copy),
-      SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT,
-      kOverlaySendTimeoutMs, &accepted);
+      helper, WM_COPYDATA, reinterpret_cast<WPARAM>(senderHwnd), reinterpret_cast<LPARAM>(&copy),
+      SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, kOverlaySendTimeoutMs, &accepted);
   if (sent == 0) {
     const DWORD error = GetLastError();
     // A timed-out synchronous message is not guaranteed to be cancelled.
@@ -354,29 +347,27 @@ bool CExternalCandidateOverlayClient::SendLocked(
   return true;
 }
 
-bool CExternalCandidateOverlayClient::Show(
-    HWND senderHwnd, std::uint64_t ownerId,
-    const SrfCandidateOverlaySnapshot& snapshot,
-    std::uint64_t* acceptedSequence) {
+bool CExternalCandidateOverlayClient::Show(HWND senderHwnd, std::uint64_t ownerId,
+                                           const SrfCandidateOverlaySnapshot& snapshot,
+                                           std::uint64_t* acceptedSequence) {
   std::lock_guard<std::mutex> guard(mutex_);
   if (ownerId == 0) return false;
   SrfCandidateOverlaySnapshot visible = snapshot;
   visible.visible = true;
   visible.ownerId = ownerId;
-  const bool shown =
-      SendLocked(senderHwnd, std::move(visible), acceptedSequence);
+  const bool shown = SendLocked(senderHwnd, std::move(visible), acceptedSequence);
   if (shown) {
     activeOwnerId_ = ownerId;
   }
   return shown;
 }
 
-SrfCandidateOverlayStatus CExternalCandidateOverlayClient::QueryStatus(
-    HWND senderHwnd, std::uint64_t ownerId, std::uint64_t sequence) {
+SrfCandidateOverlayStatus CExternalCandidateOverlayClient::QueryStatus(HWND senderHwnd,
+                                                                       std::uint64_t ownerId,
+                                                                       std::uint64_t sequence) {
   std::lock_guard<std::mutex> guard(mutex_);
   const DWORD currentProcessId = GetCurrentProcessId();
-  if (ownerId == 0 || sequence == 0 ||
-      !WindowBelongsToProcess(senderHwnd, currentProcessId) ||
+  if (ownerId == 0 || sequence == 0 || !WindowBelongsToProcess(senderHwnd, currentProcessId) ||
       !WindowHasClass(senderHwnd, SrfCandidateOverlayClientWindowClass())) {
     return SrfCandidateOverlayStatus::Unavailable;
   }
@@ -403,10 +394,8 @@ SrfCandidateOverlayStatus CExternalCandidateOverlayClient::QueryStatus(
   DWORD_PTR result = 0;
   SetLastError(ERROR_SUCCESS);
   const LRESULT sent = SendMessageTimeoutW(
-      helper, WM_COPYDATA, reinterpret_cast<WPARAM>(senderHwnd),
-      reinterpret_cast<LPARAM>(&copy),
-      SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT,
-      kOverlaySendTimeoutMs, &result);
+      helper, WM_COPYDATA, reinterpret_cast<WPARAM>(senderHwnd), reinterpret_cast<LPARAM>(&copy),
+      SMTO_ABORTIFHUNG | SMTO_BLOCK | SMTO_ERRORONEXIT, kOverlaySendTimeoutMs, &result);
   if (sent == 0) {
     const DWORD error = GetLastError();
     TerminateHelperLocked();
@@ -415,20 +404,16 @@ SrfCandidateOverlayStatus CExternalCandidateOverlayClient::QueryStatus(
     SrfTsfDiagnosticLog(L"candidate-overlay.status", line.c_str());
     return SrfCandidateOverlayStatus::Unavailable;
   }
-  if (result >
-      static_cast<DWORD_PTR>(SrfCandidateOverlayStatus::Superseded)) {
+  if (result > static_cast<DWORD_PTR>(SrfCandidateOverlayStatus::Superseded)) {
     TerminateHelperLocked();
-    SrfTsfDiagnosticLog(L"candidate-overlay.status",
-                        L"helper returned an invalid status");
+    SrfTsfDiagnosticLog(L"candidate-overlay.status", L"helper returned an invalid status");
     return SrfCandidateOverlayStatus::Unavailable;
   }
   return static_cast<SrfCandidateOverlayStatus>(result);
 }
 
-void CExternalCandidateOverlayClient::Hide(HWND senderHwnd,
-                                           std::uint64_t ownerId,
-                                           HWND targetHwnd, DWORD targetProcessId,
-                                           std::uint64_t focusGeneration) {
+void CExternalCandidateOverlayClient::Hide(HWND senderHwnd, std::uint64_t ownerId, HWND targetHwnd,
+                                           DWORD targetProcessId, std::uint64_t focusGeneration) {
   std::lock_guard<std::mutex> guard(mutex_);
   if (ownerId == 0 || ownerId != activeOwnerId_) return;
   if (!FindHelperWindowLocked()) {

@@ -25,10 +25,18 @@ class InstallerDiagnosticsTests(unittest.TestCase):
             env = os.environ.copy()
             env["LOCALAPPDATA"] = str(root)
             result = subprocess.run(
-                ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File",
-                 str(ROOT / "tsf-tip/installer/install_current_user.ps1"),
-                 "-InstallationRoot", str(root / "missing")],
-                env=env, capture_output=True,
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str(ROOT / "tsf-tip/installer/install_current_user.ps1"),
+                    "-InstallationRoot",
+                    str(root / "missing"),
+                ],
+                env=env,
+                capture_output=True,
             )
             self.assertNotEqual(result.returncode, 0)
             content = log.read_text(encoding="utf-8-sig")

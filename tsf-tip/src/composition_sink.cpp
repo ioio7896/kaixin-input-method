@@ -1,7 +1,8 @@
 #include "composition_sink.h"
 #include "srf_tip.h"
 
-CCompositionSink::CCompositionSink(CSrfTip* tip) : m_pTip(tip) {}
+CCompositionSink::CCompositionSink(CSrfTip* tip) : m_pTip(tip) {
+}
 
 STDMETHODIMP CCompositionSink::QueryInterface(REFIID riid, void** ppv) {
   if (!ppv) return E_POINTER;
@@ -14,7 +15,9 @@ STDMETHODIMP CCompositionSink::QueryInterface(REFIID riid, void** ppv) {
   return E_NOINTERFACE;
 }
 
-STDMETHODIMP_(ULONG) CCompositionSink::AddRef() { return InterlockedIncrement(&m_cRef); }
+STDMETHODIMP_(ULONG) CCompositionSink::AddRef() {
+  return InterlockedIncrement(&m_cRef);
+}
 
 STDMETHODIMP_(ULONG) CCompositionSink::Release() {
   ULONG c = InterlockedDecrement(&m_cRef);

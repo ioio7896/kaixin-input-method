@@ -21,12 +21,13 @@ std::wstring ClsidToString(REFGUID guid) {
 
 HRESULT RegSetSz(HKEY hKey, const WCHAR* valueName, const WCHAR* data) {
   const SIZE_T cb = (wcslen(data) + 1) * sizeof(WCHAR);
-  return HRESULT_FROM_WIN32(RegSetValueExW(hKey, valueName, 0, REG_SZ,
-                                           reinterpret_cast<const BYTE*>(data),
-                                           static_cast<DWORD>(cb)));
+  return HRESULT_FROM_WIN32(RegSetValueExW(
+      hKey, valueName, 0, REG_SZ, reinterpret_cast<const BYTE*>(data), static_cast<DWORD>(cb)));
 }
 
-HKEY ClassesRootKey(BOOL machineScope) { return machineScope ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER; }
+HKEY ClassesRootKey(BOOL machineScope) {
+  return machineScope ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+}
 
 void AppendRegisterLog(const wchar_t* message) {
   DWORD len = GetEnvironmentVariableW(L"SRF_TSF_REG_LOG", nullptr, 0);
@@ -44,9 +45,9 @@ void AppendRegisterLog(const wchar_t* message) {
   SYSTEMTIME st = {};
   GetLocalTime(&st);
   wchar_t line[1024];
-  const int written = _snwprintf_s(line, _countof(line), _TRUNCATE, L"[%04u-%02u-%02u %02u:%02u:%02u] %s\r\n",
-                                   st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond,
-                                   message ? message : L"");
+  const int written = _snwprintf_s(
+      line, _countof(line), _TRUNCATE, L"[%04u-%02u-%02u %02u:%02u:%02u] %s\r\n", st.wYear,
+      st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, message ? message : L"");
   if (written > 0) {
     DWORD bytes = 0;
     WriteFile(file, line, static_cast<DWORD>(written * sizeof(wchar_t)), &bytes, nullptr);
@@ -144,15 +145,14 @@ HRESULT EnableProfileForCurrentUser(LANGID lang) {
   }
 
   ITfInputProcessorProfileMgr* profileMgr = nullptr;
-  HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
-                                IID_ITfInputProcessorProfileMgr,
-                                reinterpret_cast<void**>(&profileMgr));
+  HRESULT hr =
+      CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+                       IID_ITfInputProcessorProfileMgr, reinterpret_cast<void**>(&profileMgr));
   AppendRegisterLogHr(L"CoCreateInstance(IID_ITfInputProcessorProfileMgr)", hr);
   if (SUCCEEDED(hr) && profileMgr != nullptr) {
-    hr = profileMgr->ActivateProfile(TF_PROFILETYPE_INPUTPROCESSOR, lang, CLSID_SrfTsfTip,
-                                     GUID_PROFILE_SRF, nullptr,
-                                     TF_IPPMF_ENABLEPROFILE | TF_IPPMF_FORSESSION |
-                                         TF_IPPMF_DONTCARECURRENTINPUTLANGUAGE);
+    hr = profileMgr->ActivateProfile(
+        TF_PROFILETYPE_INPUTPROCESSOR, lang, CLSID_SrfTsfTip, GUID_PROFILE_SRF, nullptr,
+        TF_IPPMF_ENABLEPROFILE | TF_IPPMF_FORSESSION | TF_IPPMF_DONTCARECURRENTINPUTLANGUAGE);
     AppendRegisterLogHr(L"ITfInputProcessorProfileMgr::ActivateProfile", hr);
     profileMgr->Release();
     if (SUCCEEDED(hr) || hr == TF_E_ALREADY_EXISTS) return S_OK;
@@ -173,7 +173,8 @@ HRESULT RegisterCategories() {
   // 某些系统环境下（尤其是仅用户范围注册、或系统策略限制写入 TSF 类别存储）RegisterCategory
   // 可能返回 E_FAIL，但 TIP 的注册与启用仍可通过 ProfileMgr/Profiles 完成。
   // 因此这里对 RegisterCategory 采取“尽力而为”策略：记录日志但不阻断安装。
-  HRESULT hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIP_KEYBOARD, CLSID_SrfTsfTip);
+  HRESULT hrCat =
+      categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIP_KEYBOARD, CLSID_SrfTsfTip);
   AppendRegisterLogHr(L"RegisterCategories/RegisterCategory TIP_KEYBOARD", hrCat);
 
   hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIPCAP_SYSTRAYSUPPORT,
@@ -188,17 +189,21 @@ HRESULT RegisterCategories() {
                                         CLSID_SrfTsfTip);
   AppendRegisterLogHr(L"RegisterCategories/RegisterCategory TIPCAP_UIELEMENTENABLED", hrCat);
 
-  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIPCAP_SECUREMODE,
-                                        CLSID_SrfTsfTip);
+  hrCat =
+      categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIPCAP_SECUREMODE, CLSID_SrfTsfTip);
   AppendRegisterLogHr(L"RegisterCategories/RegisterCategory TIPCAP_SECUREMODE", hrCat);
 
-  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER, CLSID_SrfTsfTip);
+  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER,
+                                        CLSID_SrfTsfTip);
   AppendRegisterLogHr(L"RegisterCategories/RegisterCategory DISPLAYATTRIBUTEPROVIDER(0)", hrCat);
 
-  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER, GUID_DISPLAY_ATTRIBUTE_SRF_INPUT);
-  AppendRegisterLogHr(L"RegisterCategories/RegisterCategory DISPLAYATTRIBUTEPROVIDER(SRF_INPUT)", hrCat);
+  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_DISPLAYATTRIBUTEPROVIDER,
+                                        GUID_DISPLAY_ATTRIBUTE_SRF_INPUT);
+  AppendRegisterLogHr(L"RegisterCategories/RegisterCategory DISPLAYATTRIBUTEPROVIDER(SRF_INPUT)",
+                      hrCat);
 
-  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIPCAP_INPUTMODECOMPARTMENT, CLSID_SrfTsfTip);
+  hrCat = categoryMgr->RegisterCategory(CLSID_SrfTsfTip, GUID_TFCAT_TIPCAP_INPUTMODECOMPARTMENT,
+                                        CLSID_SrfTsfTip);
   AppendRegisterLogHr(L"RegisterCategories/RegisterCategory TIPCAP_INPUTMODECOMPARTMENT", hrCat);
   categoryMgr->Release();
   return S_OK;
@@ -287,9 +292,8 @@ HRESULT RegisterProfiles(const WCHAR* dllPath, BOOL machineScope) {
   AppendRegisterLogHr(L"CoCreateInstance(IID_ITfInputProcessorProfileMgr)", hr);
   if (SUCCEEDED(hr) && profileMgr) {
     hr = profileMgr->RegisterProfile(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, name,
-                                     static_cast<ULONG>(wcslen(name)),
-                                     iconFilePath.c_str(), iconFileLen, 0, hklSubstitute, 0, TRUE,
-                                     registerFlags);
+                                     static_cast<ULONG>(wcslen(name)), iconFilePath.c_str(),
+                                     iconFileLen, 0, hklSubstitute, 0, TRUE, registerFlags);
     AppendRegisterLogHr(L"ITfInputProcessorProfileMgr::RegisterProfile", hr);
     profileMgr->Release();
     if (SUCCEEDED(hr) || hr == TF_E_ALREADY_EXISTS) registered = true;
@@ -316,8 +320,8 @@ HRESULT RegisterProfiles(const WCHAR* dllPath, BOOL machineScope) {
       }
     } else {
       hr = profiles->AddLanguageProfile(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, name,
-                                        static_cast<ULONG>(wcslen(name)),
-                                        iconFilePath.c_str(), iconFileLen, 0);
+                                        static_cast<ULONG>(wcslen(name)), iconFilePath.c_str(),
+                                        iconFileLen, 0);
       AppendRegisterLogHr(L"ITfInputProcessorProfiles::AddLanguageProfile", hr);
       if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) {
         if (!machineScope && hr == E_FAIL) {
@@ -381,9 +385,9 @@ void UnregisterProfiles(BOOL machineScope) {
   const DWORD profileFlags = 0;
 
   ITfInputProcessorProfileMgr* profileMgr = nullptr;
-  HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
-                                IID_ITfInputProcessorProfileMgr,
-                                reinterpret_cast<void**>(&profileMgr));
+  HRESULT hr =
+      CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+                       IID_ITfInputProcessorProfileMgr, reinterpret_cast<void**>(&profileMgr));
   AppendRegisterLogHr(L"CoCreateInstance(IID_ITfInputProcessorProfileMgr)", hr);
   if (SUCCEEDED(hr) && profileMgr) {
     hr = profileMgr->UnregisterProfile(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, profileFlags);
@@ -432,7 +436,8 @@ void UnregisterCategories() {
 
 HRESULT SrfTip_RegisterServerEx(HMODULE hModule, BOOL machineScope) {
   WCHAR szPath[MAX_PATH];
-  AppendRegisterLog(machineScope ? L"SrfTip_RegisterServerEx begin machine" : L"SrfTip_RegisterServerEx begin user");
+  AppendRegisterLog(machineScope ? L"SrfTip_RegisterServerEx begin machine"
+                                 : L"SrfTip_RegisterServerEx begin user");
   if (!GetModuleFileNameW(hModule, szPath, MAX_PATH)) return HRESULT_FROM_WIN32(GetLastError());
   AppendRegisterLog(szPath);
 
@@ -443,11 +448,13 @@ HRESULT SrfTip_RegisterServerEx(HMODULE hModule, BOOL machineScope) {
   HKEY hRoot = ClassesRootKey(machineScope);
 
   HKEY hKey = nullptr;
-  LONG lr = RegCreateKeyExW(hRoot, keyPath.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
+  LONG lr =
+      RegCreateKeyExW(hRoot, keyPath.c_str(), 0, nullptr, 0, KEY_WRITE, nullptr, &hKey, nullptr);
   AppendRegisterLogHr(L"RegCreateKeyExW(CLSID)", HRESULT_FROM_WIN32(lr));
   if (lr != ERROR_SUCCESS) return HRESULT_FROM_WIN32(lr);
 
-  HRESULT hr = RegSetSz(hKey, nullptr, L"\u5f00\u5fc3\u8f93\u5165\u6cd5\u6587\u672c\u8f93\u5165\u5904\u7406\u5668");
+  HRESULT hr = RegSetSz(
+      hKey, nullptr, L"\u5f00\u5fc3\u8f93\u5165\u6cd5\u6587\u672c\u8f93\u5165\u5904\u7406\u5668");
   AppendRegisterLogHr(L"RegSetSz(CLSID default)", hr);
   RegCloseKey(hKey);
   if (FAILED(hr)) return hr;
@@ -486,7 +493,8 @@ HRESULT SrfTip_RegisterServerEx(HMODULE hModule, BOOL machineScope) {
 
 HRESULT SrfTip_UnregisterServerEx(BOOL machineScope) {
   HRESULT hrCom = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-  AppendRegisterLog(machineScope ? L"SrfTip_UnregisterServerEx begin machine" : L"SrfTip_UnregisterServerEx begin user");
+  AppendRegisterLog(machineScope ? L"SrfTip_UnregisterServerEx begin machine"
+                                 : L"SrfTip_UnregisterServerEx begin user");
   AppendRegisterLogHr(L"CoInitializeEx", hrCom);
   if (FAILED(hrCom) && hrCom != RPC_E_CHANGED_MODE) return hrCom;
   const bool shouldUninit = SUCCEEDED(hrCom);
@@ -505,6 +513,10 @@ HRESULT SrfTip_UnregisterServerEx(BOOL machineScope) {
   return S_OK;
 }
 
-HRESULT SrfTip_RegisterServer(HMODULE hModule) { return SrfTip_RegisterServerEx(hModule, FALSE); }
+HRESULT SrfTip_RegisterServer(HMODULE hModule) {
+  return SrfTip_RegisterServerEx(hModule, FALSE);
+}
 
-HRESULT SrfTip_UnregisterServer() { return SrfTip_UnregisterServerEx(FALSE); }
+HRESULT SrfTip_UnregisterServer() {
+  return SrfTip_UnregisterServerEx(FALSE);
+}

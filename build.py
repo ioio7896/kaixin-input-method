@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 开心输入法 - one-command packaging build script.
 
@@ -27,14 +25,48 @@ If shared-engine Init timeouts occur at runtime, check:
 %LOCALAPPDATA%\\kaixin\\logs\\engine.log
 %LOCALAPPDATA%\\kaixin\\logs\\tsf.log
 """
+
 from __future__ import annotations
 
+from scripts.build_support import signing
+from scripts.build_support.signing import signing_requested, find_signtool
+from scripts.build_support.resources import (
+    find_lexicon_dir,
+    _has_cjk,
+    _weight_repeats,
+    _adjust_weight_for_source,
+    _parse_lexicon_weight,
+    _build_frequency_calibrators,
+    _calibrated_source_weight,
+    _lexicon_source_files,
+    _corpus_lexicon_source_files,
+    _source_files_fingerprint,
+    _lexicon_sources_fingerprint,
+    _corpus_sources_fingerprint,
+    _corpus_fingerprint_path,
+    model_source_fingerprints,
+    _iter_lexicon_lines,
+    validate_single_char_common_lexicon,
+    validate_common_english_lexicon,
+    _validate_theme_json,
+)
+from scripts.build_support.manifests import (
+    sha256_prefix,
+    sha256_file,
+    read_pe_machine,
+    assert_pe_arch,
+    _rel_path,
+    _manifest_file_entry,
+    write_package_hash_manifest,
+    write_component_manifest_from_package_manifest,
+    verify_package_hash_manifest,
+)
+
+
 import argparse
-import bisect
 import codecs
 import configparser
 import hashlib
-import io
 import json
 import locale
 import os
@@ -46,214 +78,48 @@ import sys
 import tempfile
 import threading
 import time
-import zipfile
 from collections import OrderedDict, deque
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from contextlib import closing, contextmanager, nullcontext
-from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path, PurePosixPath
-from typing import Callable, TextIO
+from pathlib import Path
+from typing import Callable
 
-VERSION = (Path(__file__).resolve().parent / "VERSION").read_text(encoding="utf-8").strip()
-RETIRED_OPTIONAL_LEXICON_TAGS = frozenset(json.loads(
-    (Path(__file__).resolve().parent / "shared" / "retired_optional_lexicons.json")
-    .read_text(encoding="utf-8")
-))
-RETIRED_LEXICON_FILES = tuple(json.loads(
-    (Path(__file__).resolve().parent / "shared" / "retired_lexicon_files.json")
-    .read_text(encoding="utf-8")
-))
-VERSION_RE = re.compile(r"^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
-
-# ---------------------------------------------------------------------------
-
-def _read_version() -> str:
-    """Build helper: _read_version."""
-    version_file = Path(__file__).resolve().parent / "VERSION"
-    if version_file.is_file():
-        try:
-            return version_file.read_text(encoding="utf-8").strip()
-        except Exception:
-            pass
-    return VERSION
-ARCH_X64 = "x64"
-ARCH_X86 = "x86"
-BUILD_ARCHES = (ARCH_X64, ARCH_X86)
-PACKAGE_HASH_MANIFEST = "package_manifest.sha256"
-COMPONENT_MANIFEST = "component_manifest.ini"
-COMPONENT_PREFIXES = OrderedDict(
-    (
-        ("python_runtime", ".python-runtime/"),
-        ("rapidocr_packages", ".python-packages/"),
-        ("rapidocr_payload", "RapidOCRLite/"),
-    )
+from scripts.build_support.config import (
+    VERSION,
+    VERSION_RE,
+    _read_version,
+    ARCH_X64,
+    ARCH_X86,
+    BUILD_ARCHES,
+    PREBAKED_LEXICON_MAGIC,
+    PREBAKED_LEXICON_SCHEMA_VERSION,
+    PREBAKED_LEXICON_HEADER_SIZE,
+    PREBAKED_LEXICON_MIN_BYTES,
+    DEFAULT_PERF_MAX_P99_US,
+    DEFAULT_PERF_INCREMENTAL_MAX_P99_US,
+    PYTHON_RUNTIME,
+    RAPIDOCR_DIR,
+    RAPIDOCR_VENV,
+    RAPIDOCR_PACKAGES,
+    RAPIDOCR_HELPER,
+    RAPIDOCR_HELPERS,
+    OPENCV_CROP_HELPER,
+    RAPIDOCR_REQUIRED_MODELS,
+    PYTHON_PACKAGE_EXCLUDED_DIR_NAMES,
+    PYTHON_PACKAGE_EXCLUDED_FILE_SUFFIXES,
+    RUST_TARGET_BY_ARCH,
+    PE_MACHINE_BY_ARCH,
+    PackageVariant,
+    PACKAGE_VARIANTS,
+    PACKAGE_VARIANT_ALIASES,
+    BASE_STAGED_RUST_ARTIFACTS,
+    PERF_RUST_ARTIFACT,
+    DEV_TOOL_RUST_BINS,
+    rust_artifact_names_for_variants,
+    staged_rust_exe_names,
+    rust_bin_names_for_artifacts,
 )
-PREBAKED_LEXICON_MAGIC = b"SRFLX002"
-# Schema 13 preserves each indexed reading's weight and pronunciation class.
-PREBAKED_LEXICON_SCHEMA_VERSION = 13
-PREBAKED_LEXICON_HEADER_SIZE = len(PREBAKED_LEXICON_MAGIC) + 4
-PREBAKED_LEXICON_MIN_BYTES = 1000
-COMMON_ENGLISH_LEXICON_RELATIVE_PATH = Path("en") / "kaixin_common_english.txt"
-COMMON_ENGLISH_LICENSE_RELATIVE_PATH = Path("en") / "LICENSE.wordfreq.md"
-EXPECTED_COMMON_ENGLISH_WORDS = 20_000
-SINGLE_CHAR_COMMON_RELATIVE_PATH = Path("zh") / "single_char_common_8105.txt"
-EXPECTED_SINGLE_CHAR_COMMON_ROWS = 8_105
-REQUIRED_COMMON_ENGLISH_WORDS = frozenset(
-    {"the", "this", "you", "computer", "internet", "email", "github", "python", "rust", "windows"}
-)
-DEFAULT_PERF_MAX_P99_US = 2000
-DEFAULT_PERF_INCREMENTAL_MAX_P99_US = 40000
-PYTHON_RUNTIME = ".python-runtime"
-RAPIDOCR_DIR = "RapidOCRLite"
-RAPIDOCR_VENV = ".venv-rapidocr"
-RAPIDOCR_PACKAGES = ".python-packages"
-RAPIDOCR_HELPER = "kaixin_ocr_engine.py"
-RAPIDOCR_HELPERS = ("kaixin_ocr_engine.py", "kaixin_ocr_policy.py", "kaixin_ocr_engine.cmd", "kaixin_cv_crop.py")
-OPENCV_CROP_HELPER = "kaixin_cv_crop.py"
-RAPIDOCR_REQUIRED_MODELS = (
-    "PP-OCRv6_det_medium.onnx",
-    "PP-OCRv6_det_small.onnx",
-    "PP-OCRv6_rec_medium.onnx",
-    "PP-OCRv6_rec_small.onnx",
-    "ppocrv6_dict.txt",
-)
-PYTHON_PACKAGE_EXCLUDED_DIR_NAMES = frozenset(
-    {
-        "__pycache__",
-        ".pytest_cache",
-        ".mypy_cache",
-        ".ruff_cache",
-        "test",
-        "tests",
-        "testing",
-        "benchmark",
-        "benchmarks",
-        "example",
-        "examples",
-        "pip",
-        "setuptools",
-    }
-)
-PYTHON_PACKAGE_EXCLUDED_FILE_SUFFIXES = frozenset(
-    {".pyc", ".pyo", ".pdb", ".lib", ".exp", ".h", ".hpp", ".c", ".cpp", ".cxx", ".pxd", ".pyi"}
-)
-RUST_TARGET_BY_ARCH = {
-    ARCH_X64: None,
-    ARCH_X86: "i686-pc-windows-msvc",
-}
-PE_MACHINE_BY_ARCH = {
-    ARCH_X64: 0x8664,  # IMAGE_FILE_MACHINE_AMD64
-    ARCH_X86: 0x014C,  # IMAGE_FILE_MACHINE_I386
-}
-
-
-@dataclass(frozen=True)
-class PackageVariant:
-    id: str
-    label: str
-    stage_dir_name: str
-    installer_suffix: str
-    include_ocr: bool
-    include_translation: bool
-
-
-PACKAGE_VARIANTS: "OrderedDict[str, PackageVariant]" = OrderedDict(
-    (
-        (
-            "ime",
-            PackageVariant(
-                id="ime",
-                label="纯输入法",
-                stage_dir_name="kaixin-package-ime",
-                installer_suffix="ime",
-                include_ocr=False,
-                include_translation=True,
-            ),
-        ),
-        (
-            "ocr",
-            PackageVariant(
-                id="ocr",
-                label="输入法+OCR 集合",
-                stage_dir_name="kaixin-package-ocr",
-                installer_suffix="ocr",
-                include_ocr=True,
-                include_translation=True,
-            ),
-        ),
-    )
-)
-
-# User-facing aliases are normalized before package selection.  Keep the
-# canonical ``ocr`` id and artifact names for compatibility with existing
-# release automation while accepting the clearer ``full`` spelling.
-PACKAGE_VARIANT_ALIASES: dict[str, str] = {
-    "full": "ocr",
-}
-
-PACKAGE_BUILD_TOOL_RUST_ARTIFACTS = ("bake_lexicon.exe", "input_perf.exe", "input_eval.exe")
-BASE_STAGED_RUST_ARTIFACTS = (
-    "srf_ime_settings.exe",
-    "srf_ime_tray.exe",
-    "srf_ime_engine.exe",
-    "srf_ime_clipboard.exe",
-    "srf_ime_clipboard_svc.exe",
-    "srf_ime_handwrite.exe",
-    "srf_ime_symbols.exe",
-)
-BASE_PACKAGE_RUST_ARTIFACTS = PACKAGE_BUILD_TOOL_RUST_ARTIFACTS + BASE_STAGED_RUST_ARTIFACTS
-OPTIONAL_OCR_RUST_ARTIFACTS = ("srf_ime_ocr.exe",)
-SMOKE_RUST_ARTIFACTS = ("input_smoke.exe", "input_eval.exe")
-PERF_RUST_ARTIFACT = "input_perf.exe"
-DEV_TOOL_RUST_BINS = {
-    "lexicon_tool", "bake_lexicon", "build_ai_lexicons", "input_smoke",
-    "input_eval", "input_perf", "phrase_len_eval", "learning_replay_eval",
-    "build_blind_corpus",
-}
-
-
-def rust_artifact_names_for_variants(
-    package_variants: list[PackageVariant] | None = None,
-    include_smoke_tools: bool = True,
-) -> list[str]:
-    names = list(BASE_PACKAGE_RUST_ARTIFACTS)
-    include_ocr = (
-        package_variants is None
-        or any(variant.include_ocr for variant in package_variants)
-    )
-    if include_ocr:
-        names.extend(OPTIONAL_OCR_RUST_ARTIFACTS)
-    if include_smoke_tools:
-        names.extend(SMOKE_RUST_ARTIFACTS)
-    return list(dict.fromkeys(names))
-
-
-def staged_rust_exe_names(
-    include_ocr: bool = True,
-    include_translation: bool = True,
-) -> list[str]:
-    names = list(BASE_STAGED_RUST_ARTIFACTS)
-    if include_ocr:
-        names.extend(OPTIONAL_OCR_RUST_ARTIFACTS)
-    return names
-
-
-def rust_bin_names_for_artifacts(
-    artifact_names: list[str] | tuple[str, ...],
-) -> list[str]:
-    """Convert packaged Rust exe artifact names to Cargo bin target names."""
-    names: list[str] = []
-    for artifact_name in artifact_names:
-        path = Path(artifact_name)
-        if path.suffix.lower() != ".exe":
-            continue
-        bin_name = path.stem
-        if bin_name not in names:
-            names.append(bin_name)
-    return names
-
-# Version
 
 _COLOR_ENABLED = sys.platform == "win32" and os.environ.get("NO_COLOR") is None
 
@@ -262,6 +128,7 @@ def _init_color():
     """Build helper: _init_color."""
     try:
         import ctypes
+
         kernel32 = ctypes.windll.kernel32
         kernel32.SetConsoleCP(65001)
         kernel32.SetConsoleOutputCP(65001)
@@ -284,18 +151,36 @@ def _c(code: str, text: str) -> str:
     return f"\033[{code}m{text}\033[0m"
 
 
-def green(t: str) -> str:  return _c("32", t)
-def yellow(t: str) -> str: return _c("33", t)
-def red(t: str) -> str:    return _c("31", t)
-def cyan(t: str) -> str:   return _c("36", t)
-def bold(t: str) -> str:   return _c("1", t)
-def dim(t: str) -> str:    return _c("2", t)
+def green(t: str) -> str:
+    return _c("32", t)
+
+
+def yellow(t: str) -> str:
+    return _c("33", t)
+
+
+def red(t: str) -> str:
+    return _c("31", t)
+
+
+def cyan(t: str) -> str:
+    return _c("36", t)
+
+
+def bold(t: str) -> str:
+    return _c("1", t)
+
+
+def dim(t: str) -> str:
+    return _c("2", t)
 
 
 # ---------------------------------------------------------------------------
 
+
 class BuildContext:
     """Build helper: BuildContext."""
+
     def __init__(self):
         self.version: str = _read_version()
         self._log_lock = threading.Lock()
@@ -342,6 +227,7 @@ ctx = BuildContext()
 
 
 # Color output
+
 
 def fmt_size(n: int) -> str:
     if n < 1024:
@@ -416,33 +302,6 @@ def purge_lexicon_caches(repo: Path, output_root: Path | None = None) -> list[Pa
     return deleted
 
 
-def sha256_prefix(path: Path, prefix_len: int = 8) -> str:
-    """Build helper: sha256_prefix."""
-    h = hashlib.sha256()
-    try:
-        with open(path, "rb") as f:
-            while True:
-                chunk = f.read(65536)
-                if not chunk:
-                    break
-                h.update(chunk)
-        return h.hexdigest()[:prefix_len]
-    except Exception:
-        return "?"
-
-
-def sha256_file(path: Path) -> str:
-    """Build helper: sha256_file."""
-    h = hashlib.sha256()
-    with open(path, "rb") as f:
-        while True:
-            chunk = f.read(65536)
-            if not chunk:
-                break
-            h.update(chunk)
-    return h.hexdigest()
-
-
 def read_prebaked_lexicon_schema(path: Path) -> int:
     """Read and validate the fixed SRFLX002 header from a prebaked lexicon."""
     try:
@@ -454,7 +313,7 @@ def read_prebaked_lexicon_schema(path: Path) -> int:
         raise RuntimeError(f"prebaked lexicon header is truncated: {path}")
     if header[: len(PREBAKED_LEXICON_MAGIC)] != PREBAKED_LEXICON_MAGIC:
         raise RuntimeError(f"invalid prebaked lexicon magic (expected SRFLX002): {path}")
-    return int.from_bytes(header[len(PREBAKED_LEXICON_MAGIC):], "little")
+    return int.from_bytes(header[len(PREBAKED_LEXICON_MAGIC) :], "little")
 
 
 def verify_prebaked_lexicon(
@@ -507,9 +366,7 @@ def parse_package_variant_ids(raw: str) -> list[str]:
         raise ValueError("no package variants selected")
     if "all" in requested:
         if len(requested) != 1:
-            raise ValueError(
-                "package variant 'all' cannot be combined with individual variants"
-            )
+            raise ValueError("package variant 'all' cannot be combined with individual variants")
         return list(PACKAGE_VARIANTS.keys())
 
     valid_ids = {*PACKAGE_VARIANTS.keys(), *PACKAGE_VARIANT_ALIASES.keys()}
@@ -595,7 +452,9 @@ def publish_installers(dist_dir: Path, installers: list[Path], patterns: list[st
                     retained.append(old)
                 except OSError as archive_error:
                     retained.append(old)
-                    print_msg(f"  {yellow('!')} unable to archive legacy installer {old}: {archive_error}")
+                    print_msg(
+                        f"  {yellow('!')} unable to archive legacy installer {old}: {archive_error}"
+                    )
         for source in installers:
             destination = dist_dir / source.name
             source.rename(destination)
@@ -615,7 +474,19 @@ def publish_installers(dist_dir: Path, installers: list[Path], patterns: list[st
         raise
     if archive is not None:
         print_msg(f"  Previous installers retained: {archive}")
-    subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(dist_dir.parent / "scripts/maintain_workspace.ps1"), "-Apply", "-HistoryOnly"], check=True)
+    subprocess.run(
+        [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(dist_dir.parent / "scripts/maintain_workspace.ps1"),
+            "-Apply",
+            "-HistoryOnly",
+        ],
+        check=True,
+    )
     if retained:
         print_msg(
             f"  {yellow('!')} {len(retained)} legacy installer(s) could not be removed; "
@@ -661,6 +532,7 @@ def _git_state_fingerprint(repo: Path) -> tuple[float, str]:
     products to rebuild and re-stamp.  Degrades to the stamping fallback
     "unknown" when git is unavailable.
     """
+
     def _git(args: list[str]) -> str | None:
         try:
             return subprocess.check_output(
@@ -692,9 +564,13 @@ def validate_version_sources(repo: Path) -> list[str]:
 
     version_text = version_file.read_text(encoding="utf-8", errors="replace").strip()
     if version_text != ctx.version:
-        errors.append(f"VERSION mismatch: BuildContext={ctx.version!r}, VERSION file={version_text!r}")
+        errors.append(
+            f"VERSION mismatch: BuildContext={ctx.version!r}, VERSION file={version_text!r}"
+        )
     if VERSION != version_text:
-        errors.append(f"build.py fallback VERSION={VERSION!r} does not match VERSION file={version_text!r}")
+        errors.append(
+            f"build.py fallback VERSION={VERSION!r} does not match VERSION file={version_text!r}"
+        )
 
     for iss_name in ("kaixin.iss", "kaixin-user.iss"):
         iss = repo / "tsf-tip" / "installer" / iss_name
@@ -703,7 +579,9 @@ def validate_version_sources(repo: Path) -> list[str]:
             continue
         text = iss.read_text(encoding="utf-8", errors="replace")
         if re.search(r'^\s*#define\s+KXAppVersion\s+"[^"]+"', text, flags=re.MULTILINE):
-            errors.append(f"{iss_name} must not define a fallback KXAppVersion; pass /DKXAppVersion from build.py")
+            errors.append(
+                f"{iss_name} must not define a fallback KXAppVersion; pass /DKXAppVersion from build.py"
+            )
         if "KXAppVersion must be passed" not in text:
             errors.append(f"{iss_name} must fail fast when KXAppVersion is not supplied")
     return errors
@@ -717,166 +595,6 @@ def rust_target_dir(repo: Path, profile: str, arch: str = ARCH_X64) -> Path:
 
 def cmake_build_dir_for(tsf_tip: Path, arch: str = ARCH_X64) -> Path:
     return tsf_tip / ("build-package" if arch == ARCH_X64 else f"build-package-{arch}")
-
-
-def read_pe_machine(path: Path) -> int:
-    """Read the PE machine field and reject truncated/non-PE inputs clearly."""
-    try:
-        with path.open("rb") as f:
-            dos_header = f.read(64)
-            if len(dos_header) < 64 or dos_header[:2] != b"MZ":
-                raise RuntimeError(f"not a PE image (missing MZ header): {path}")
-            pe_offset = int.from_bytes(dos_header[0x3C:0x40], "little")
-            if pe_offset < 64:
-                raise RuntimeError(f"invalid PE header offset: {path}")
-            f.seek(pe_offset)
-            signature = f.read(4)
-            machine_bytes = f.read(2)
-    except OSError as exc:
-        raise FileNotFoundError(f"cannot read PE image: {path}: {exc}") from exc
-    if signature != b"PE\0\0" or len(machine_bytes) != 2:
-        raise RuntimeError(f"not a valid PE image: {path}")
-    return int.from_bytes(machine_bytes, "little")
-
-
-def assert_pe_arch(path: Path, arch: str, label: str) -> None:
-    expected = PE_MACHINE_BY_ARCH[arch]
-    machine = read_pe_machine(path)
-    if machine != expected:
-        raise RuntimeError(
-            f"{label} is not {arch} (Machine=0x{machine:04X}, expected 0x{expected:04X}): {path}"
-        )
-
-
-def _rel_path(path: Path, root: Path) -> str:
-    """Return a stable slash-separated path relative to root when possible."""
-    try:
-        return path.resolve().relative_to(root.resolve()).as_posix()
-    except ValueError:
-        return path.resolve().as_posix()
-
-
-def _manifest_file_entry(path: Path, root: Path) -> dict:
-    st = path.stat()
-    return {
-        "path": _rel_path(path, root),
-        "size": st.st_size,
-        "sha256": sha256_file(path),
-        "mtime_utc": datetime.fromtimestamp(st.st_mtime, timezone.utc)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z"),
-    }
-
-
-def _manifest_relative_path(root: Path, rel: str) -> Path:
-    if "\\" in rel:
-        raise ValueError(f"unsafe package manifest path: {rel}")
-    rel_path = PurePosixPath(rel)
-    if rel_path.is_absolute() or any(part in ("", "..") or ":" in part for part in rel_path.parts):
-        raise ValueError(f"unsafe package manifest path: {rel}")
-    target = (root / Path(*rel_path.parts)).resolve()
-    try:
-        target.relative_to(root.resolve())
-    except ValueError as exc:
-        raise ValueError(f"package manifest path escapes package root: {rel}") from exc
-    return target
-
-
-def write_package_hash_manifest(
-    root: Path,
-    manifest_name: str = PACKAGE_HASH_MANIFEST,
-) -> Path:
-    """Write SHA-256 hashes for every staged package file except the manifest."""
-    root = root.resolve()
-    manifest_path = root / manifest_name
-    lines: list[str] = []
-    for path in sorted(root.rglob("*"), key=lambda p: p.as_posix().lower()):
-        if not path.is_file():
-            continue
-        resolved = path.resolve()
-        if resolved == manifest_path.resolve():
-            continue
-        rel = resolved.relative_to(root).as_posix()
-        lines.append(f"{sha256_file(resolved)} *{rel}")
-    manifest_path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
-    return manifest_path
-
-
-def write_component_manifest_from_package_manifest(
-    root: Path,
-    package_manifest: Path,
-) -> Path:
-    """Refresh component IDs from the final package hashes without rehashing payloads."""
-    root = root.resolve()
-    component_path = root / COMPONENT_MANIFEST
-    package_lines = [
-        line.strip()
-        for line in package_manifest.read_text(encoding="utf-8-sig").splitlines()
-        if line.strip() and not line.lstrip().startswith("#")
-    ]
-    parser = configparser.ConfigParser(interpolation=None)
-    parser["components"] = {}
-    for name, prefix in COMPONENT_PREFIXES.items():
-        matching = [
-            line
-            for line in package_lines
-            if " *" in line
-            and line.split(" *", 1)[1].casefold().startswith(prefix.casefold())
-        ]
-        parser["components"][name] = (
-            hashlib.sha256((("\n".join(matching)) + "\n").encode("utf-8")).hexdigest()
-            if matching
-            else "absent"
-        )
-    with component_path.open("w", encoding="utf-8", newline="\n") as handle:
-        parser.write(handle, space_around_delimiters=False)
-
-    component_rel = component_path.relative_to(root).as_posix()
-    replacement = f"{sha256_file(component_path)} *{component_rel}"
-    found = False
-    for index, line in enumerate(package_lines):
-        if " *" in line and line.split(" *", 1)[1].casefold() == component_rel.casefold():
-            package_lines[index] = replacement
-            found = True
-            break
-    if not found:
-        package_lines.append(replacement)
-    package_manifest.write_text("\n".join(package_lines) + "\n", encoding="utf-8")
-    return component_path
-
-
-def verify_package_hash_manifest(
-    root: Path,
-    manifest_name: str = PACKAGE_HASH_MANIFEST,
-) -> int:
-    """Validate a staged package SHA-256 manifest and return verified file count."""
-    root = root.resolve()
-    manifest_path = root / manifest_name
-    if not manifest_path.is_file():
-        raise FileNotFoundError(f"missing package integrity manifest: {manifest_path}")
-
-    verified = 0
-    for line_no, line in enumerate(manifest_path.read_text(encoding="utf-8-sig").splitlines(), 1):
-        trimmed = line.strip()
-        if not trimmed or trimmed.startswith("#"):
-            continue
-        match = re.fullmatch(r"([0-9a-fA-F]{64}) \*(.+)", trimmed)
-        if not match:
-            raise RuntimeError(f"invalid package manifest line {line_no}: {trimmed}")
-        expected = match.group(1).lower()
-        rel = match.group(2)
-        path = _manifest_relative_path(root, rel)
-        if not path.is_file():
-            raise FileNotFoundError(f"package manifest entry missing file: {rel}")
-        actual = sha256_file(path)
-        if actual.lower() != expected:
-            raise RuntimeError(f"package integrity check failed: {rel}")
-        verified += 1
-
-    if verified <= 0:
-        raise RuntimeError(f"package integrity manifest is empty: {manifest_path}")
-    return verified
 
 
 def write_build_manifest(
@@ -895,29 +613,31 @@ def write_build_manifest(
     stage_roots = [output_root] + list(extra_output_roots or [])
     candidate_paths: list[Path] = []
     for stage_root in stage_roots:
-        candidate_paths.extend([
-            stage_root / "VERSION",
-            stage_root / "LICENSE",
-            stage_root / "LICENSE_SCOPE.md",
-            stage_root / "NOTICE",
-            stage_root / "THIRD_PARTY_NOTICES.md",
-            stage_root / "current_runtime_payload.txt",
-            *[stage_root / name for name in staged_rust_exe_names()],
-            stage_root / "tools" / RAPIDOCR_HELPER,
-            stage_root / "tools" / OPENCV_CROP_HELPER,
-            packaged_python_runtime_path(stage_root),
-            packaged_python_stdlib_marker(stage_root),
-            rapidocr_packages_path(stage_root),
-            stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "__init__.py",
-            *[
-                stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "models" / model
-                for model in RAPIDOCR_REQUIRED_MODELS
-            ],
-            stage_root / "assets" / "kaixin-input.ico",
-            stage_root / "lexicon" / "lexicon.pack",
-            stage_root / "lexicon" / "hot_lexicon.bin",
-            stage_root / "lexicon" / "cold_lexicon.sqlite",
-        ])
+        candidate_paths.extend(
+            [
+                stage_root / "VERSION",
+                stage_root / "LICENSE",
+                stage_root / "LICENSE_SCOPE.md",
+                stage_root / "NOTICE",
+                stage_root / "THIRD_PARTY_NOTICES.md",
+                stage_root / "current_runtime_payload.txt",
+                *[stage_root / name for name in staged_rust_exe_names()],
+                stage_root / "tools" / RAPIDOCR_HELPER,
+                stage_root / "tools" / OPENCV_CROP_HELPER,
+                packaged_python_runtime_path(stage_root),
+                packaged_python_stdlib_marker(stage_root),
+                rapidocr_packages_path(stage_root),
+                stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "__init__.py",
+                *[
+                    stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "models" / model
+                    for model in RAPIDOCR_REQUIRED_MODELS
+                ],
+                stage_root / "assets" / "kaixin-input.ico",
+                stage_root / "lexicon" / "lexicon.pack",
+                stage_root / "lexicon" / "hot_lexicon.bin",
+                stage_root / "lexicon" / "cold_lexicon.sqlite",
+            ]
+        )
     if args.portable_zip:
         candidate_paths.extend(stage_root.with_suffix(".zip") for stage_root in stage_roots)
     if include_installer_files and not args.no_inno and not args.debug:
@@ -960,7 +680,8 @@ def write_build_manifest(
             if arch in BUILD_ARCHES:
                 try:
                     return find_tsf_dll(
-                        repo / "tsf-tip", cmake_build_dir_for(repo / "tsf-tip", arch),
+                        repo / "tsf-tip",
+                        cmake_build_dir_for(repo / "tsf-tip", arch),
                         profile.capitalize(),
                     )
                 except FileNotFoundError:
@@ -970,7 +691,8 @@ def write_build_manifest(
             if arch in BUILD_ARCHES:
                 try:
                     return find_overlay_exe(
-                        repo / "tsf-tip", cmake_build_dir_for(repo / "tsf-tip", arch),
+                        repo / "tsf-tip",
+                        cmake_build_dir_for(repo / "tsf-tip", arch),
                         profile.capitalize(),
                     )
                 except FileNotFoundError:
@@ -993,9 +715,7 @@ def write_build_manifest(
         },
         "runtime_payload": runtime_rel,
         "stage_roots": [
-            _rel_path(stage_root, repo)
-            for stage_root in stage_roots
-            if stage_root.exists()
+            _rel_path(stage_root, repo) for stage_root in stage_roots if stage_root.exists()
         ],
         "options": {
             "debug": bool(args.debug),
@@ -1005,8 +725,12 @@ def write_build_manifest(
             "portable_zip": bool(args.portable_zip),
             "package_variant": package_variant.id if package_variant else None,
             "package_variants": list(getattr(args, "package_variant_ids", [])),
-            "include_ocr": bool(package_variant.include_ocr) if package_variant else bool(getattr(args, "include_ocr_resolved", False)),
-            "include_translation": bool(package_variant.include_translation) if package_variant else bool(getattr(args, "include_translation_resolved", False)),
+            "include_ocr": bool(package_variant.include_ocr)
+            if package_variant
+            else bool(getattr(args, "include_ocr_resolved", False)),
+            "include_translation": bool(package_variant.include_translation)
+            if package_variant
+            else bool(getattr(args, "include_translation_resolved", False)),
             "skip_cargo": bool(args.skip_cargo),
             "skip_cmake": bool(args.skip_cmake),
             "verify": bool(args.verify),
@@ -1026,17 +750,17 @@ def write_build_manifest(
         "model_sources": model_source_fingerprints(repo),
         "lexicon_sources": {
             "sha256": _lexicon_sources_fingerprint(repo)[1],
-            "schema": read_prebaked_lexicon_schema(
-                output_root / "lexicon" / "lexicon.bin"
-            )
+            "schema": read_prebaked_lexicon_schema(output_root / "lexicon" / "lexicon.bin")
             if (output_root / "lexicon" / "lexicon.bin").is_file()
             else None,
-            "hot_schema": read_prebaked_lexicon_schema(
-                output_root / "lexicon" / "hot_lexicon.bin"
-            )
+            "hot_schema": read_prebaked_lexicon_schema(output_root / "lexicon" / "hot_lexicon.bin")
             if (output_root / "lexicon" / "hot_lexicon.bin").is_file()
             else None,
-            "staged_lexicon_pack": _manifest_file_entry(output_root / "lexicon" / "lexicon.pack", repo) if (output_root / "lexicon" / "lexicon.pack").is_file() else None,
+            "staged_lexicon_pack": _manifest_file_entry(
+                output_root / "lexicon" / "lexicon.pack", repo
+            )
+            if (output_root / "lexicon" / "lexicon.pack").is_file()
+            else None,
             "staged_lexicon_bin": _manifest_file_entry(
                 output_root / "lexicon" / "lexicon.bin",
                 repo,
@@ -1053,15 +777,22 @@ def write_build_manifest(
         "files": files,
     }
     suspicious = [
-        item["path"] for item in files
-        if any(part in item["path"].lower().split("/")
-               for part in (".git", "__pycache__", ".pytest_cache"))
-        or any(token in item["path"].lower()
-               for token in (".pem", ".pfx", ".key", "secret", "password"))
+        item["path"]
+        for item in files
+        if any(
+            part in item["path"].lower().split("/")
+            for part in (".git", "__pycache__", ".pytest_cache")
+        )
+        or any(
+            token in item["path"].lower()
+            for token in (".pem", ".pfx", ".key", "secret", "password")
+        )
     ]
     manifest["audit"] = {"suspicious_files": suspicious, "passed": not suspicious}
     if suspicious:
-        raise RuntimeError("release artifact audit found suspicious files: " + ", ".join(suspicious))
+        raise RuntimeError(
+            "release artifact audit found suspicious files: " + ", ".join(suspicious)
+        )
 
     manifest_path = repo / "dist" / "build-manifest.json"
     manifest_path.write_text(
@@ -1085,6 +816,7 @@ def print_msg(msg: str = "") -> None:
 
 class StepTimer:
     """Build helper: StepTimer."""
+
     def __init__(self, title: str):
         self.title = title
         self._start = 0.0
@@ -1103,6 +835,7 @@ class StepTimer:
 
 
 # ---------------------------------------------------------------------------
+
 
 def _ensure_stdout_utf8() -> None:
     """Build helper: _ensure_stdout_utf8."""
@@ -1180,7 +913,9 @@ def _stop_build_process(proc: subprocess.Popen) -> None:
         try:
             subprocess.run(
                 ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=10,
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )
         except (OSError, subprocess.TimeoutExpired):
@@ -1200,9 +935,14 @@ def _cancel_build_processes() -> None:
         _stop_build_process(proc)
 
 
-def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
-        capture_on_fail: int = 30,
-        sensitive_values: tuple[str, ...] = ()) -> None:
+def run(
+    cmd: list[str],
+    cwd: Path,
+    *,
+    env: dict | None = None,
+    capture_on_fail: int = 30,
+    sensitive_values: tuple[str, ...] = (),
+) -> None:
     """Build helper: run."""
     # Match Windows command-line quoting so logged commands can be copied and
     # executed even when an executable or argument contains spaces.
@@ -1227,7 +967,9 @@ def run(cmd: list[str], cwd: Path, *, env: dict | None = None,
         if _build_cancelled.is_set():
             raise KeyboardInterrupt
         proc = subprocess.Popen(
-            cmd, cwd=str(cwd), env=merged_env,
+            cmd,
+            cwd=str(cwd),
+            env=merged_env,
             stdout=None if passthrough else subprocess.PIPE,
             stderr=None if passthrough else subprocess.STDOUT,
         )
@@ -1282,7 +1024,9 @@ class BuildCommandError(Exception):
         self.tail_lines = tail_lines
         self.display_cmd = display_cmd or cmd
         cmd_str = subprocess.list2cmdline(self.display_cmd)
-        tail_str = "\n".join(f"    {l}" for l in tail_lines) if tail_lines else "    (no output)"
+        tail_str = (
+            "\n".join(f"    {line}" for line in tail_lines) if tail_lines else "    (no output)"
+        )
         super().__init__(f"command failed (exit {returncode}): {cmd_str}\n{tail_str}")
 
 
@@ -1363,6 +1107,7 @@ def which_or_die(name: str, hint: str = "") -> str:
 
 # Global state
 
+
 def resolve_repo_root() -> Path:
     return Path(__file__).resolve().parent
 
@@ -1372,10 +1117,12 @@ def runtime_log_roots() -> list[Path]:
     local_app_data = os.environ.get("LOCALAPPDATA")
     if local_app_data:
         base = Path(local_app_data)
-        roots.extend([
-            base / "kaixin" / "logs",
-            base / "kaixin",
-        ])
+        roots.extend(
+            [
+                base / "kaixin" / "logs",
+                base / "kaixin",
+            ]
+        )
     program_data = os.environ.get("PROGRAMDATA")
     if program_data:
         roots.append(Path(program_data) / "kaixin")
@@ -1446,13 +1193,6 @@ def collect_runtime_logs(repo: Path) -> list[Path]:
             shutil.copy2(src, dest)
             copied.append(dest)
     return copied
-
-
-def find_lexicon_dir(repo: Path) -> Path:
-    fixed = repo / "lexicon"
-    if fixed.is_dir():
-        return fixed.resolve()
-    raise FileNotFoundError("lexicon directory not found: lexicon/")
 
 
 def packaged_python_runtime_path(root: Path) -> Path:
@@ -1542,9 +1282,11 @@ def find_cmake() -> Path | None:
     program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
     for path in [
         program_files / "CMake" / "bin" / "cmake.exe",
-        *sorted((program_files / "Microsoft Visual Studio").glob(
-            "*/*/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
-        )),
+        *sorted(
+            (program_files / "Microsoft Visual Studio").glob(
+                "*/*/Common7/IDE/CommonExtensions/Microsoft/CMake/CMake/bin/cmake.exe"
+            )
+        ),
     ]:
         if path.is_file():
             return path
@@ -1564,86 +1306,16 @@ def find_iscc() -> Path | None:
     return Path(w).resolve() if w else None
 
 
-def signing_requested(args: argparse.Namespace) -> bool:
-    return bool(
-        args.sign
-        or args.sign_required
-        or os.environ.get("KX_SIGN_CERT_SHA1")
-        or os.environ.get("KX_SIGN_PFX")
-    )
-
-
-def find_signtool() -> Path | None:
-    configured = os.environ.get("KX_SIGNTOOL")
-    if configured:
-        p = Path(configured)
-        if p.is_file():
-            return p.resolve()
-    w = shutil.which("signtool.exe") or shutil.which("signtool")
-    if w:
-        return Path(w).resolve()
-    roots = [
-        Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")) / "Windows Kits" / "10" / "bin",
-        Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Windows Kits" / "10" / "bin",
-    ]
-    for root in roots:
-        if not root.is_dir():
-            continue
-        for candidate in sorted(root.glob(r"*\x64\signtool.exe"), reverse=True):
-            if candidate.is_file():
-                return candidate.resolve()
-    return None
-
-
 def sign_file(path: Path, args: argparse.Namespace) -> bool:
-    if not signing_requested(args):
-        return False
-    if ctx.dry_run:
-        print_msg(f"  [dry-run] sign: {path}")
-        return True
-    if not path.is_file():
-        raise FileNotFoundError(f"cannot sign missing file: {path}")
-
-    signtool = find_signtool()
-    thumbprint = os.environ.get("KX_SIGN_CERT_SHA1", "").strip()
-    pfx = os.environ.get("KX_SIGN_PFX", "").strip()
-    pfx_password = os.environ.get("KX_SIGN_PFX_PASSWORD", "")
-    timestamp = os.environ.get("KX_SIGN_TIMESTAMP_URL", "http://timestamp.digicert.com").strip()
-
-    missing_reason = None
-    if not signtool:
-        missing_reason = "signtool.exe not found"
-    elif not thumbprint and not pfx:
-        missing_reason = "set KX_SIGN_CERT_SHA1 or KX_SIGN_PFX"
-    if missing_reason:
-        if args.sign_required:
-            raise RuntimeError(f"code signing requested but unavailable: {missing_reason}")
-        if not ctx.sign_warning_emitted:
-            print_msg(f"  {yellow('!')} code signing skipped: {missing_reason}")
-            ctx.sign_warning_emitted = True
-        return False
-
-    cmd = [str(signtool), "sign", "/fd", "SHA256"]
-    if timestamp:
-        cmd += ["/tr", timestamp, "/td", "SHA256"]
-    if thumbprint:
-        cmd += ["/sha1", thumbprint]
-    else:
-        cmd += ["/f", pfx]
-        if pfx_password:
-            cmd += ["/p", pfx_password]
-    cmd.append(str(path))
-    # Never print the PFX password in the command transcript or failure text.
-    # The raw command is still passed to signtool, while ``run`` uses the
-    # redacted representation for stdout, build logs, and BuildCommandError.
-    run(cmd, cwd=path.parent, sensitive_values=(pfx_password,))
-    return True
+    return signing.sign_file(path, args, context=ctx, run=run, log=print_msg)
 
 
 def sign_staged_binaries(output_root: Path, args: argparse.Namespace) -> list[Path]:
     signed: list[Path] = []
     marker = output_root / "current_runtime_payload.txt"
-    runtime_rel = marker.read_text(encoding="utf-8", errors="replace").strip() if marker.is_file() else ""
+    runtime_rel = (
+        marker.read_text(encoding="utf-8", errors="replace").strip() if marker.is_file() else ""
+    )
     candidates = [output_root / name for name in staged_rust_exe_names()]
     if runtime_rel:
         runtime_dir = output_root / runtime_rel
@@ -1668,8 +1340,11 @@ def detect_vs_generators(cmake: str, arch: str = ARCH_X64) -> list[tuple[str, li
     platform = "Win32" if arch == ARCH_X86 else "x64"
     try:
         text = subprocess.check_output(
-            [cmake, "--help"], stderr=subprocess.STDOUT,
-            text=True, encoding="utf-8", errors="ignore",
+            [cmake, "--help"],
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="ignore",
         )
         found: list[tuple[int, str]] = []
         for line in text.splitlines():
@@ -1688,9 +1363,7 @@ def detect_vs_generators(cmake: str, arch: str = ARCH_X64) -> list[tuple[str, li
     ]
 
 
-def find_tsf_runtime_pair(
-    tsf_tip: Path, build_dir: Path, profile: str
-) -> tuple[Path, Path]:
+def find_tsf_runtime_pair(tsf_tip: Path, build_dir: Path, profile: str) -> tuple[Path, Path]:
     """Find a TIP DLL and overlay executable produced by the same build directory."""
     candidates: list[tuple[Path, Path]] = []
     dirs = [build_dir]
@@ -1731,7 +1404,10 @@ def find_overlay_exe(tsf_tip: Path, build_dir: Path, profile: str) -> Path:
 
 # Utilities
 
-def load_cached_generator(cache_file: Path, default_arch: str = ARCH_X64) -> tuple[str, list[str]] | None:
+
+def load_cached_generator(
+    cache_file: Path, default_arch: str = ARCH_X64
+) -> tuple[str, list[str]] | None:
     """Build helper: load_cached_generator."""
     if not cache_file.is_file():
         return None
@@ -1799,9 +1475,7 @@ def _tree_source_stats_filtered(
     paths: list[Path] = []
     try:
         for current_root, dir_names, file_names in os.walk(root):
-            dir_names[:] = [
-                name for name in dir_names if name.casefold() not in excluded
-            ]
+            dir_names[:] = [name for name in dir_names if name.casefold() not in excluded]
             current = Path(current_root)
             paths.extend(current / name for name in file_names)
     except OSError:
@@ -1865,7 +1539,9 @@ def cargo_build_environment(repo: Path, profile: str) -> dict[str, str]:
     # Cargo's encoded form keeps paths containing spaces as one rustc argument.
     # Preserve caller flags and remove local paths from dependency panic sites too.
     encoded = os.environ.get("CARGO_ENCODED_RUSTFLAGS")
-    flags = encoded.split("\x1f") if encoded is not None else os.environ.get("RUSTFLAGS", "").split()
+    flags = (
+        encoded.split("\x1f") if encoded is not None else os.environ.get("RUSTFLAGS", "").split()
+    )
     mappings = (
         (Path.home(), "/build/user"),
         (repo, "/build/kaixin"),
@@ -1880,7 +1556,9 @@ def cargo_build_environment(repo: Path, profile: str) -> dict[str, str]:
     return env
 
 
-def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) -> tuple[float, str, Path] | None:
+def _cargo_inputs_fingerprint(
+    repo: Path, profile: str, arch: str = ARCH_X64
+) -> tuple[float, str, Path] | None:
     """Build helper: _cargo_inputs_fingerprint."""
     target_dir = rust_target_dir(repo, profile, arch)
     src_dir = repo / "pinyin-ime" / "src"
@@ -1892,13 +1570,31 @@ def _cargo_inputs_fingerprint(repo: Path, profile: str, arch: str = ARCH_X64) ->
     if not src_dir.is_dir() or not cargo_toml.is_file():
         return None
     max_rs, fp_rs = _tree_source_stats(src_dir, {".rs"})
-    max_workspace, fp_workspace = _source_files_fingerprint(repo, [repo / "build.py", repo / "Cargo.toml", repo / ".cargo/config.toml", repo / "VERSION", repo / "shared/engine_protocol_version.txt", repo / "release-toolchain.json", *sorted((repo / "crates").rglob("*.rs")), *sorted((repo / "crates").rglob("Cargo.toml")), *sorted((repo / "shared").glob("*.json"))])
-    max_data, fp_data = _tree_source_stats(data_dir, {".txt", ".tsv", ".bin", ".yaml", ".yml", ".json"})
+    max_workspace, fp_workspace = _source_files_fingerprint(
+        repo,
+        [
+            repo / "build.py",
+            repo / "Cargo.toml",
+            repo / ".cargo/config.toml",
+            repo / "VERSION",
+            repo / "shared/engine_protocol_version.txt",
+            repo / "release-toolchain.json",
+            *sorted((repo / "scripts/build_support").glob("*.py")),
+            *sorted((repo / "crates").rglob("*.rs")),
+            *sorted((repo / "crates").rglob("Cargo.toml")),
+            *sorted((repo / "shared").glob("*.json")),
+        ],
+    )
+    max_data, fp_data = _tree_source_stats(
+        data_dir, {".txt", ".tsv", ".bin", ".yaml", ".yml", ".json"}
+    )
     max_lex, fp_lex = _lexicon_sources_fingerprint(repo)
     max_readings, fp_readings = _source_files_fingerprint(
-        repo, [repo / "data_sources" / "kaixin" / name for name in (
-            "pronunciation_aliases.tsv", "pronunciation_exclusions.tsv"
-        )]
+        repo,
+        [
+            repo / "data_sources" / "kaixin" / name
+            for name in ("pronunciation_aliases.tsv", "pronunciation_exclusions.tsv")
+        ],
     )
     try:
         st = cargo_toml.stat()
@@ -1963,9 +1659,7 @@ def is_cargo_up_to_date(
     """Build helper: is_cargo_up_to_date."""
     target_dir = rust_target_dir(repo, profile, arch)
     artifact_names = (
-        required_artifacts
-        if required_artifacts is not None
-        else rust_artifact_names_for_variants()
+        required_artifacts if required_artifacts is not None else rust_artifact_names_for_variants()
     )
     required = [target_dir / name for name in artifact_names]
     if not all(p.is_file() for p in required):
@@ -1992,16 +1686,16 @@ def _cmake_inputs_fingerprint(tsf_tip: Path, repo: Path | None = None) -> tuple[
     version_file = (repo or tsf_tip.parent) / "VERSION"
     if not src_dir.is_dir() or not inc_dir.is_dir() or not cm.is_file():
         return None
-    max_cpp, fp_cpp = _tree_source_stats(
-        src_dir, {".cpp", ".c", ".ipp", ".rc", ".manifest"}
-    )
+    max_cpp, fp_cpp = _tree_source_stats(src_dir, {".cpp", ".c", ".ipp", ".rc", ".manifest"})
     max_h, fp_h = _tree_source_stats(inc_dir, {".h"})
     max_tests, fp_tests = _tree_source_stats(tests_dir, {".cpp", ".c", ".h"})
     try:
         st = cm.stat()
         max_def, fp_def = _source_file_stats(module_def, repo or tsf_tip)
         max_version, fp_version = _source_file_stats(version_file, repo or tsf_tip.parent)
-        max_protocol, fp_protocol = _source_file_stats((repo or tsf_tip.parent) / "shared/engine_protocol_version.txt", repo or tsf_tip.parent)
+        max_protocol, fp_protocol = _source_file_stats(
+            (repo or tsf_tip.parent) / "shared/engine_protocol_version.txt", repo or tsf_tip.parent
+        )
     except OSError:
         return None
     _, fp_git = _git_state_fingerprint(repo or tsf_tip.parent)
@@ -2070,290 +1764,6 @@ def is_cmake_up_to_date(repo: Path, tsf_tip: Path, profile: str, arch: str = ARC
 
 # Subprocess runner
 
-def _looks_utf16(data: bytes, le: bool) -> bool:
-    if len(data) < 4 or len(data) % 2:
-        return False
-    nul_idx = 1 if le else 0
-    nul = sum(1 for i in range(0, len(data), 2) if data[i + nul_idx] == 0)
-    return nul > 0 and nul * 3 >= len(data) // 2
-
-
-def _has_cjk(s: str) -> bool:
-    return any(
-        0x3400 <= ord(c) <= 0x4DBF or 0x4E00 <= ord(c) <= 0x9FFF
-        or 0xF900 <= ord(c) <= 0xFAFF or 0x20000 <= ord(c) <= 0x2EBEF
-        for c in s
-    )
-
-
-def _weight_repeats(w: int) -> int:
-    # Lexicon frequencies are normalized to the 1..10000 score space.
-    # Keep five coarse corpus-repeat buckets without relying on the old
-    # million-scale source weights.
-    if w >= 7_500: return 5
-    if w >= 5_000: return 4
-    if w >= 2_500: return 3
-    if w >= 100:   return 2
-    return 1
-
-
-def _adjust_weight_for_source(term: str, raw_weight: int, source_file_name: str) -> int:
-    """Sanitize source weights before frequency calibration."""
-    _ = (term, source_file_name)
-    return max(1, raw_weight)
-
-
-def _parse_lexicon_weight(parts: list[str]) -> int:
-    for field in reversed(parts[1:]):
-        try:
-            return int(field.strip())
-        except ValueError:
-            continue
-    return 1
-
-
-def _is_native_lexicon_text(path: Path) -> bool:
-    return path.suffix.lower() == ".txt" and not path.name.lower().startswith("readme")
-
-
-LEXICON_LAYER_ORDER = {"core": 0, "base": 1, "ext": 2, "large": 3, "en": 4}
-
-
-def _lexicon_layer(path: Path) -> str | None:
-    parts = {part.casefold() for part in path.parts}
-    if "zh-ext" in parts:
-        return "ext"
-    for legacy_layer in ("core", "base", "ext", "large", "en"):
-        if legacy_layer in parts:
-            return legacy_layer
-    if "zh" not in parts:
-        return None
-    name = path.name.casefold()
-    if name in {
-        "kaixin_explicit.txt",
-        "kaixin_polyphone.txt",
-        "kaixin_pronunciation_aliases.txt",
-        "life_hot_3char_curated.txt",
-        "life_hot_4char_curated.txt",
-    }:
-        return "core"
-    if "_tail_" in name or name.startswith("large_"):
-        return "large"
-    return "base"
-
-
-def _lexicon_sort_key(path: Path, _root: Path) -> tuple[int, str]:
-    layer = LEXICON_LAYER_ORDER.get(_lexicon_layer(path), 99)
-    return layer, path.as_posix().lower()
-
-
-def _is_default_enabled_lexicon_source(path: Path) -> bool:
-    """Keep build-time LM inputs aligned with the runtime default lexicon set."""
-    name = path.name.lower()
-    if any(path.as_posix().lower().endswith('/' + relative.lower()) for relative in RETIRED_LEXICON_FILES):
-        return False
-    if _lexicon_layer(path) == "ext":
-        tag = path.stem.lower()
-        if tag.startswith("thuocl_"):
-            tag = tag[len("thuocl_"):]
-        elif "__thuocl_" in tag:
-            tag = tag.split("__thuocl_", 1)[1]
-        if tag in RETIRED_OPTIONAL_LEXICON_TAGS:
-            return False
-    return not name.endswith("_纯名单.txt") and not name.startswith(("professional_", "hangzhou_"))
-
-
-def _lexicon_term_char_count(term: str) -> int:
-    return sum(not ch.isspace() for ch in term)
-
-
-def _is_frequency_reference_lexicon_source(path: Path) -> bool:
-    return _lexicon_layer(path) == "base"
-
-
-def _is_absolute_priority_lexicon_source(path: Path) -> bool:
-    return _lexicon_layer(path) == "core" and path.name.lower() in {
-        "kaixin_polyphone.txt",
-        "kaixin_pronunciation_aliases.txt",
-    }
-
-
-def _is_unscaled_lexicon_source(path: Path) -> bool:
-    """Keep intentionally low-priority sources on their authored scale.
-
-    Names and local places contain flat low-priority weights. Percentile
-    calibration would turn those values into an arbitrary point in the base
-    corpus distribution, making recall-only entries look common.
-    """
-    return _is_absolute_priority_lexicon_source(path) or path.name.lower() in {
-        "people_names.txt",
-        "hangzhou_local.txt",
-        "daily_communication.txt",
-    }
-
-
-def _source_frequency_values(path: Path) -> dict[int, list[int]]:
-    """Read usable CJK entry weights grouped by phrase length from one source."""
-    values: dict[int, list[int]] = {}
-    for line in _iter_lexicon_lines(path):
-        line = line.strip().lstrip("\ufeff")
-        if not line or line.startswith("#"):
-            continue
-        parts = line.split("\t")
-        term = parts[0].strip()
-        if not term or not _has_cjk(term):
-            continue
-        values.setdefault(_lexicon_term_char_count(term), []).append(
-            _adjust_weight_for_source(term, _parse_lexicon_weight(parts), path.name)
-        )
-    return values
-
-
-def _build_frequency_calibrators(
-    source_files: list[Path],
-) -> dict[Path, tuple[dict[int, list[int]], dict[int, list[int]]]]:
-    """Map auxiliary source percentiles onto the base lexicon's frequency scale."""
-    reference: dict[int, list[int]] = {}
-    source_values: dict[Path, dict[int, list[int]]] = {}
-    for path in source_files:
-        values = _source_frequency_values(path)
-        if _is_frequency_reference_lexicon_source(path):
-            for length, weights in values.items():
-                reference.setdefault(length, []).extend(weights)
-        elif not _is_unscaled_lexicon_source(path):
-            source_values[path] = values
-    if any(path.name.lower() == "life_common_3char.txt" for path in source_files):
-        fixed_reference = json.loads(
-            (Path(__file__).resolve().parent / "shared/lexicon_frequency_reference.json")
-            .read_text(encoding="utf-8")
-        )
-        reference.update({int(length): weights for length, weights in fixed_reference.items()})
-    for weights in reference.values():
-        weights.sort()
-    for values in source_values.values():
-        for weights in values.values():
-            weights.sort()
-    return {path: (values, reference) for path, values in source_values.items() if values}
-
-
-def _calibrated_source_weight(
-    term: str,
-    raw_weight: int,
-    calibrator: tuple[dict[int, list[int]], dict[int, list[int]]] | None,
-) -> int:
-    """Map auxiliary source percentiles onto the base lexicon's frequency scale.
-
-    This is the Python mirror of ``SourceFrequencyCalibrator::normalize`` in
-    ``pinyin-ime/src/thuocl.rs``.  The two implementations MUST stay in sync:
-    any change to the percentile-mapping logic here must be reflected in the
-    Rust side, and vice versa.  See the Rust doc comment for rationale.
-    """
-    if calibrator is None:
-        return max(1, raw_weight)
-    source, reference = calibrator
-    length = _lexicon_term_char_count(term)
-    source_weights = source.get(length)
-    reference_weights = reference.get(length)
-    if not source_weights or not reference_weights:
-        return max(1, raw_weight)
-    lower = bisect.bisect_left(source_weights, raw_weight)
-    upper = bisect.bisect_right(source_weights, raw_weight)
-    rank = lower + max(0, upper - lower - 1) // 2
-    rank = min(rank, len(source_weights) - 1)
-    if len(source_weights) <= 1 or len(reference_weights) <= 1:
-        return max(1, reference_weights[0])
-    index = rank * (len(reference_weights) - 1) // (len(source_weights) - 1)
-    index = min(index, len(reference_weights) - 1)
-    return max(1, reference_weights[index])
-
-
-def _lexicon_source_files(repo: Path) -> list[Path]:
-    lex_dir = find_lexicon_dir(repo)
-    return sorted(
-        [
-            f
-            for f in lex_dir.rglob("*")
-            if f.is_file()
-            and _is_default_enabled_lexicon_source(f)
-            and _is_native_lexicon_text(f)
-        ],
-        key=lambda p: _lexicon_sort_key(p, lex_dir),
-    )
-
-
-def _corpus_lexicon_source_files(repo: Path) -> list[Path]:
-    """Return only sources that can contribute CJK terms to corpus.txt."""
-    lex_dir = find_lexicon_dir(repo)
-    return [
-        path
-        for path in _lexicon_source_files(repo)
-        if "en" not in {part.casefold() for part in path.relative_to(lex_dir).parts}
-    ]
-
-
-def _source_files_fingerprint(lex_dir: Path, source_files: list[Path]) -> tuple[float, str]:
-    h = hashlib.sha256()
-    max_m = 0.0
-    for path in source_files:
-        try:
-            st = path.stat()
-            max_m = max(max_m, st.st_mtime)
-            rel = path.resolve().relative_to(lex_dir.resolve()).as_posix()
-            h.update(rel.encode("utf-8", errors="surrogateescape"))
-            h.update(b"\0")
-            h.update(sha256_file(path).encode("ascii"))
-            h.update(b"\n")
-        except (OSError, ValueError):
-            continue
-    return max_m, h.hexdigest()
-
-
-def _lexicon_sources_fingerprint(repo: Path) -> tuple[float, str]:
-    try:
-        lex_dir = find_lexicon_dir(repo)
-        return _source_files_fingerprint(lex_dir, _lexicon_source_files(repo))
-    except FileNotFoundError:
-        return 0.0, hashlib.sha256().hexdigest()
-
-
-def _corpus_sources_fingerprint(repo: Path) -> tuple[float, str]:
-    try:
-        lex_dir = find_lexicon_dir(repo)
-        return _source_files_fingerprint(lex_dir, _corpus_lexicon_source_files(repo))
-    except FileNotFoundError:
-        return 0.0, hashlib.sha256().hexdigest()
-
-
-def _corpus_fingerprint_path(corpus: Path) -> Path:
-    return corpus.with_name(corpus.name + ".source.sha256")
-
-
-def model_source_fingerprints(repo: Path) -> dict:
-    """Return source hashes that determine the embedded Rust input model."""
-    data_dir = repo / "pinyin-ime" / "data"
-    inputs = [
-        data_dir / "pinyin_supported_chars.txt",
-        data_dir / "syllables.txt",
-        data_dir / "corpus.txt",
-        _corpus_fingerprint_path(data_dir / "corpus.txt"),
-        repo / "pinyin-ime" / "build.rs",
-        repo / "pinyin-ime" / "src" / "dict.rs",
-        repo / "data_sources" / "kaixin" / "pronunciation_aliases.tsv",
-        repo / "data_sources" / "kaixin" / "pronunciation_exclusions.tsv",
-    ]
-    files = []
-    h = hashlib.sha256()
-    for path in inputs:
-        if not path.is_file():
-            continue
-        entry = _manifest_file_entry(path, repo)
-        files.append(entry)
-        h.update(entry["path"].encode("utf-8"))
-        h.update(b"\0")
-        h.update(entry["sha256"].encode("ascii"))
-        h.update(b"\n")
-    return {"sha256": h.hexdigest(), "files": files}
-
 
 def require_fresh_rust_artifacts(
     repo: Path,
@@ -2384,164 +1794,16 @@ def print_skip_cargo_packaging_warning() -> None:
     )
 
 
-def _iter_lexicon_lines(path: Path):
-    """Build helper: _iter_lexicon_lines."""
-    with path.open("rb") as raw:
-        head = raw.read(262144)
-        raw.seek(0)
-        if head.startswith(codecs.BOM_UTF8):
-            raw.seek(len(codecs.BOM_UTF8))
-            text = io.TextIOWrapper(raw, encoding="utf-8", errors="replace", newline=None)
-        elif head.startswith(codecs.BOM_UTF16_LE):
-            raw.seek(len(codecs.BOM_UTF16_LE))
-            text = io.TextIOWrapper(raw, encoding="utf-16-le", errors="replace", newline=None)
-        elif head.startswith(codecs.BOM_UTF16_BE):
-            raw.seek(len(codecs.BOM_UTF16_BE))
-            text = io.TextIOWrapper(raw, encoding="utf-16-be", errors="replace", newline=None)
-        else:
-            if _looks_utf16(head, le=True):
-                text = io.TextIOWrapper(raw, encoding="utf-16-le", errors="replace", newline=None)
-            else:
-                chosen = "utf-8"
-                for enc in ("utf-8", "gb18030"):
-                    try:
-                        head.decode(enc)
-                        chosen = enc
-                        break
-                    except UnicodeDecodeError:
-                        continue
-                raw.seek(0)
-                text = io.TextIOWrapper(raw, encoding=chosen, errors="replace", newline=None)
-        yield from text
-
-
 def validate_candidate_limit_contract(repo: Path) -> int:
     """Keep Rust lookup capacity and the TSF transport/UI capacity identical."""
-    rust_path = repo / "pinyin-ime" / "src" / "core.rs"
-    cpp_path = repo / "tsf-tip" / "include" / "candidate_limits.h"
-    rust_text = rust_path.read_text(encoding="utf-8")
-    cpp_text = cpp_path.read_text(encoding="utf-8")
-    rust_match = re.search(
-        r"pub\s+const\s+LOOKUP_FULL_MAX_CANDIDATES\s*:\s*usize\s*=\s*(\d+)\s*;",
-        rust_text,
-    )
-    cpp_match = re.search(r"kFullResult\s*=\s*(\d+)\s*;", cpp_text)
-    if not rust_match or not cpp_match:
-        raise RuntimeError(
-            "cannot read full candidate limits from Rust and TSF protocol sources"
-        )
-    rust_limit = int(rust_match.group(1))
-    cpp_limit = int(cpp_match.group(1))
-    if rust_limit != cpp_limit:
-        raise RuntimeError(
-            f"full candidate limit mismatch: Rust={rust_limit}, TSF={cpp_limit}"
-        )
-    if rust_limit < 1024:
-        raise RuntimeError(
-            f"full candidate limit {rust_limit} cannot cover the supported single-character pool"
-        )
-    return rust_limit
+    from scripts.generate_engine_contract import render_engine_contract
 
-
-def validate_single_char_common_lexicon(lexicon_dir: Path) -> int:
-    """Validate the curated common-character head shipped with every package."""
-    path = lexicon_dir / SINGLE_CHAR_COMMON_RELATIVE_PATH
-    if not path.is_file() or path.stat().st_size <= 0:
-        raise FileNotFoundError(f"missing common single-character lexicon: {path}")
-
-    seen: set[str] = set()
-    previous_weight: int | None = None
-    for line_no, raw in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        fields = [field.strip() for field in line.split("\t")]
-        if len(fields) != 2 or len(fields[0]) != 1:
-            raise RuntimeError(f"invalid common single-character row {path}:{line_no}")
-        char, weight_text = fields
-        try:
-            weight = int(weight_text)
-        except ValueError as exc:
-            raise RuntimeError(
-                f"invalid common single-character weight {path}:{line_no}: {weight_text!r}"
-            ) from exc
-        if char in seen:
-            raise RuntimeError(f"duplicate common character {path}:{line_no}: {char}")
-        if previous_weight is not None and weight >= previous_weight:
-            raise RuntimeError(
-                f"common single-character weights must be strictly decreasing {path}:{line_no}"
-            )
-        seen.add(char)
-        previous_weight = weight
-
-    if len(seen) != EXPECTED_SINGLE_CHAR_COMMON_ROWS:
-        raise RuntimeError(
-            f"common single-character lexicon must contain exactly "
-            f"{EXPECTED_SINGLE_CHAR_COMMON_ROWS} rows, found {len(seen)}: {path}"
-        )
-    return len(seen)
-
-
-def validate_common_english_lexicon(lexicon_dir: Path) -> int:
-    """Validate the checked-in 20,000-word native English lexicon."""
-    path = lexicon_dir / COMMON_ENGLISH_LEXICON_RELATIVE_PATH
-    license_path = lexicon_dir / COMMON_ENGLISH_LICENSE_RELATIVE_PATH
-    readme_path = lexicon_dir / "en" / "README.md"
-    for required_path in (path, license_path, readme_path):
-        if not required_path.is_file() or required_path.stat().st_size <= 0:
-            raise FileNotFoundError(f"missing English lexicon file: {required_path}")
-
-    try:
-        text = path.read_text(encoding="utf-8-sig")
-    except UnicodeDecodeError as exc:
-        raise RuntimeError(f"English lexicon must be UTF-8: {path}") from exc
-
-    words: set[str] = set()
-    previous_weight: int | None = None
-    for line_no, raw in enumerate(text.splitlines(), 1):
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        fields = [field.strip() for field in line.split("\t")]
-        if len(fields) != 3:
-            raise RuntimeError(
-                f"invalid English lexicon row {path}:{line_no}: expected exactly 3 tab-separated fields"
-            )
-        word, code, weight_text = fields
-        if not (2 <= len(word) <= 24 and word.isascii() and word.isalpha() and word.islower()):
-            raise RuntimeError(
-                f"invalid English lexicon word {path}:{line_no}: {word!r}"
-            )
-        if code != word:
-            raise RuntimeError(
-                f"English input code must equal the word {path}:{line_no}: {code!r}"
-            )
-        try:
-            weight = int(weight_text)
-        except ValueError as exc:
-            raise RuntimeError(
-                f"invalid English lexicon weight {path}:{line_no}: {weight_text!r}"
-            ) from exc
-        if weight <= 0:
-            raise RuntimeError(f"English lexicon weight must be positive {path}:{line_no}")
-        if previous_weight is not None and weight > previous_weight:
-            raise RuntimeError(
-                f"English lexicon weights must be non-increasing {path}:{line_no}"
-            )
-        if word in words:
-            raise RuntimeError(f"duplicate English lexicon word {path}:{line_no}: {word}")
-        words.add(word)
-        previous_weight = weight
-
-    if len(words) != EXPECTED_COMMON_ENGLISH_WORDS:
-        raise RuntimeError(
-            f"English lexicon must contain exactly {EXPECTED_COMMON_ENGLISH_WORDS} words, "
-            f"found {len(words)}: {path}"
-        )
-    missing = sorted(REQUIRED_COMMON_ENGLISH_WORDS - words)
-    if missing:
-        raise RuntimeError(f"English lexicon is missing required coverage words: {', '.join(missing)}")
-    return len(words)
+    for name, expected in render_engine_contract(repo).items():
+        if (repo / name).read_text(encoding="utf-8") != expected:
+            raise RuntimeError(f"Generated engine contract drift: {name}")
+    return json.loads((repo / "shared/engine_contract.json").read_text(encoding="utf-8"))["limits"][
+        "full_candidates"
+    ]
 
 
 def ensure_corpus(repo: Path, force: bool = False) -> Path:
@@ -2552,7 +1814,9 @@ def ensure_corpus(repo: Path, force: bool = False) -> Path:
     if corpus.is_file() and not force:
         cached_fp = _read_sig(fp_path)
         if cached_fp == source_fp:
-            print_msg(f"  {green('OK')} corpus exists: {corpus.name} ({fmt_size(corpus.stat().st_size)})")
+            print_msg(
+                f"  {green('OK')} corpus exists: {corpus.name} ({fmt_size(corpus.stat().st_size)})"
+            )
             return corpus
         reason = "missing source fingerprint" if not cached_fp else "lexicon sources changed"
         print_msg(f"  {yellow('!')} corpus stale ({reason}); rebuilding")
@@ -2626,16 +1890,16 @@ def ensure_corpus(repo: Path, force: bool = False) -> Path:
 
     _validate_corpus_from_stats(len(terms), count, total_line_chars)
 
-    print_msg(f"  {green('OK')} generated corpus: {len(terms)} terms, {count} lines, {fmt_size(corpus.stat().st_size)}")
+    print_msg(
+        f"  {green('OK')} generated corpus: {len(terms)} terms, {count} lines, {fmt_size(corpus.stat().st_size)}"
+    )
     if zero_freq_lines > 0:
         print_msg(
             f"  {yellow('!')} found and corrected freq<=0 rows: {zero_freq_lines} "
             f"(remapped to >=1 by source policy)"
         )
     if reweighted_from_flat > 0:
-        print_msg(
-            f"  {green('OK')} reweighted low-frequency source rows: {reweighted_from_flat}"
-        )
+        print_msg(f"  {green('OK')} reweighted low-frequency source rows: {reweighted_from_flat}")
     # Print only sources whose flat rows were reweighted to keep logs concise.
     for src, st in source_stats.items():
         if st["zero_freq"] == 0 and st["flat_reweighted"] == 0:
@@ -2657,139 +1921,19 @@ def _validate_corpus_from_stats(term_count: int, line_count: int, total_line_cha
 
     avg_len = total_line_chars / max(line_count, 1)
     if avg_len > 50:
-        warnings.append(f"average line length is too long ({avg_len:.1f}); input format may be invalid")
+        warnings.append(
+            f"average line length is too long ({avg_len:.1f}); input format may be invalid"
+        )
     if avg_len < 1.5:
-        warnings.append(f"average line length is too short ({avg_len:.1f}); lexicon parsing may have failed")
+        warnings.append(
+            f"average line length is too short ({avg_len:.1f}); lexicon parsing may have failed"
+        )
 
     for w in warnings:
         print_msg(f"  {yellow('!')} corpus quality: {w}")
 
 
 # Path resolution
-
-_HEX_COLOR_RE = re.compile(r"^#?[0-9a-fA-F]{6}$")
-
-
-def _is_color_like(value: object) -> bool:
-    return isinstance(value, str) and _HEX_COLOR_RE.match(value.strip()) is not None
-
-
-def _parse_theme_color(value: object) -> tuple[int, int, int] | None:
-    if not _is_color_like(value):
-        return None
-    text = str(value).strip().lstrip("#")
-    return (int(text[0:2], 16), int(text[2:4], 16), int(text[4:6], 16))
-
-
-def _relative_luminance(rgb: tuple[int, int, int]) -> float:
-    def channel(v: int) -> float:
-        s = v / 255.0
-        return s / 12.92 if s <= 0.04045 else ((s + 0.055) / 1.055) ** 2.4
-
-    r, g, b = rgb
-    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
-
-
-def _contrast_ratio(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
-    la = _relative_luminance(a)
-    lb = _relative_luminance(b)
-    hi, lo = (la, lb) if la >= lb else (lb, la)
-    return (hi + 0.05) / (lo + 0.05)
-
-
-def _validate_theme_json(path: Path) -> list[str]:
-    """Build helper: _validate_theme_json."""
-    theme_name = f"{path.parent.name}/{path.name}"
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Could not read theme file: {path} ({e})") from e
-    except OSError as e:
-        raise RuntimeError(f"Could not read theme file: {path} ({e})") from e
-
-    if not isinstance(data, dict):
-        raise RuntimeError(f"Theme root must be a JSON object: {path}")
-
-    warnings: list[str] = []
-    required = ("name", "window_bg", "header_bg", "text", "selected_bg", "selected_text")
-    missing = [k for k in required if k not in data]
-    if missing:
-        warnings.append(f"{theme_name}: missing required keys: {', '.join(missing)}")
-
-    color_keys = [
-        "window_bg", "window_bg_to", "header_bg", "header_bg_to",
-        "border", "divider", "item_bg", "item_border", "hover_bg", "hover_border",
-        "selected_bg", "selected_border", "pressed_bg", "pressed_border",
-        "text", "muted_text", "selected_text", "selected_muted_text",
-        "badge_bg", "badge_border", "badge_text",
-        "chip_bg", "chip_border", "chip_text",
-        "chip_active_bg", "chip_active_border", "chip_active_text",
-        "selected_outline",
-    ]
-    for key in color_keys:
-        if key in data and data[key] is not None and not _is_color_like(data[key]):
-            warnings.append(f"{theme_name}: field {key} is not a valid color (#RRGGBB expected)")
-
-    def color_for(key: str, fallback: str | None = None) -> tuple[int, int, int] | None:
-        return _parse_theme_color(data.get(key)) or (
-            _parse_theme_color(data.get(fallback)) if fallback else None
-        )
-
-    contrast_checks = [
-        ("text", "item_bg", "window_bg", 4.2),
-        ("muted_text", "item_bg", "window_bg", 3.2),
-        ("selected_text", "selected_bg", None, 4.2),
-        ("selected_muted_text", "selected_bg", None, 3.2),
-        ("badge_text", "badge_bg", None, 3.6),
-        ("chip_text", "chip_bg", None, 3.6),
-        ("chip_active_text", "chip_active_bg", None, 4.2),
-    ]
-    for fg_key, bg_key, bg_fallback, min_ratio in contrast_checks:
-        fg = color_for(fg_key)
-        bg = color_for(bg_key, bg_fallback)
-        if not fg or not bg:
-            continue
-        ratio = _contrast_ratio(fg, bg)
-        if ratio < min_ratio:
-            warnings.append(
-                f"{theme_name}: {fg_key} on {bg_key} contrast is {ratio:.2f}:1 "
-                f"(recommended >= {min_ratio:.1f}:1)"
-            )
-
-    for key in ("shadow_enabled", "animations_enabled"):
-        if key in data and not isinstance(data[key], bool):
-            warnings.append(f"{theme_name}: {key} should be boolean")
-    numeric_ranges = {
-        "selected_accent_width": (0, 8),
-        "selected_ring_opacity": (0.0, 1.0),
-        "border_opacity": (0.0, 1.0),
-        "divider_opacity": (0.0, 1.0),
-        "shadow_opacity": (0.0, 1.0),
-        "shadow_size": (0, 24),
-        "font_weight": (300, 700),
-        "selected_font_weight": (400, 800),
-        "label_font_weight": (400, 800),
-        "chip_font_weight": (350, 700),
-        "show_animation_ms": (0, 240),
-        "selection_animation_ms": (0, 240),
-        "hover_animation_ms": (0, 240),
-        "press_animation_ms": (0, 240),
-        "page_animation_ms": (0, 240),
-    }
-    for key, (lo, hi) in numeric_ranges.items():
-        if key not in data:
-            continue
-        value = data[key]
-        if not isinstance(value, (int, float)) or isinstance(value, bool) or value < lo or value > hi:
-            warnings.append(f"{theme_name}: {key} should be numeric in range {lo}..{hi}")
-    if "selected_indicator" in data and data["selected_indicator"] not in (
-        "left_bar", "bottom_bar", "outline", "none"
-    ):
-        warnings.append(
-            f"{theme_name}: selected_indicator should be left_bar, bottom_bar, outline, or none"
-        )
-
-    return warnings
 
 
 def step_validate_skins(repo: Path) -> list[str]:
@@ -2810,13 +1954,14 @@ def step_validate_skins(repo: Path) -> list[str]:
 
 # UTF-8 source check
 
+
 def step_check_utf8_sources(repo: Path) -> None:
     """Build helper: step_check_utf8_sources."""
     script = repo / "scripts" / "check_utf8_sources.py"
     if not script.is_file():
         raise FileNotFoundError(f"UTF-8 check script not found: {script}")
     if ctx.dry_run:
-        print_msg(f"  [dry-run] python \"{script}\" --root \"{repo}\"")
+        print_msg(f'  [dry-run] python "{script}" --root "{repo}"')
         return
     run([sys.executable, str(script), "--root", str(repo)], cwd=repo)
 
@@ -2844,57 +1989,10 @@ def step_check_lexicon_syllables(repo: Path) -> None:
 
 def step_verify_rust(repo: Path) -> None:
     """Run the correctness gates that a successful packaging build must satisfy."""
-    cargo = "cargo" if ctx.dry_run else which_or_die(
-        "cargo", "Install Rust from https://rustup.rs"
-    )
-    cargo_dir = repo / "pinyin-ime"
-    cargo_env = {"CARGO_REGISTRIES_CRATES_IO_PROTOCOL": "sparse"}
-    run([cargo, "fmt", "--check"], cwd=cargo_dir, env=cargo_env)
-    run(
-        [cargo, "check", "--locked", "--all-targets"],
-        cwd=cargo_dir,
-        env=cargo_env,
-    )
-    run([cargo, "test", "--workspace", "--lib", "--locked"], cwd=cargo_dir, env=cargo_env)
-    run(
-        [
-            cargo,
-            "test",
-            "--locked",
-            "--no-default-features",
-            "--features",
-            "dev-tools",
-            "--bin",
-            "learning_replay_eval",
-            "--bin",
-            "input_perf",
-        ],
-        cwd=cargo_dir,
-        env=cargo_env,
-    )
-    run(
-        [
-            cargo,
-            "clippy",
-            "--locked",
-            "--lib",
-            "--",
-            "-D",
-            "warnings",
-            "-A",
-            "clippy::too-many-arguments",
-            "-A",
-            "clippy::manual-is-multiple-of",
-            "-A",
-            "clippy::incompatible-msrv",
-        ],
-        cwd=cargo_dir,
-        env=cargo_env,
-    )
+    run([sys.executable, str(repo / "scripts/verify.py"), "source"], cwd=repo)
+    run([sys.executable, str(repo / "scripts/verify.py"), "rust"], cwd=repo)
     step_check_lexicon_syllables(repo)
 
-
-# CMake generator cache
 
 def step_regenerate_lexicons(repo: Path) -> None:
     """Regenerate native lexicons and the supported-character table."""
@@ -2903,7 +2001,7 @@ def step_regenerate_lexicons(repo: Path) -> None:
         raise FileNotFoundError(f"Missing lexicon regeneration script: {script}")
     chars = repo / "pinyin-ime" / "data" / "pinyin_supported_chars.txt"
     if ctx.dry_run:
-        print_msg(f"  [dry-run] powershell -File \"{script}\"")
+        print_msg(f'  [dry-run] powershell -File "{script}"')
         return
     powershell = which_or_die("powershell", "PowerShell is required to regenerate lexicons")
     run(
@@ -2912,12 +2010,15 @@ def step_regenerate_lexicons(repo: Path) -> None:
     )
     try:
         st = chars.stat()
-        print_msg(f"  {green('OK')} lexicons and character table updated: {chars.name} ({fmt_size(st.st_size)})")
+        print_msg(
+            f"  {green('OK')} lexicons and character table updated: {chars.name} ({fmt_size(st.st_size)})"
+        )
     except OSError:
         pass
 
 
 # Incremental build checks
+
 
 def stop_workspace_rust_artifact_processes(
     repo: Path,
@@ -2929,9 +2030,7 @@ def stop_workspace_rust_artifact_processes(
     stopped. Installed copies elsewhere on the machine are deliberately left
     alone.
     """
-    _stop_processes_under_root(
-        repo, artifact_names, (repo / "pinyin-ime" / "target").resolve()
-    )
+    _stop_processes_under_root(repo, artifact_names, (repo / "pinyin-ime" / "target").resolve())
 
 
 def _stop_processes_under_root(
@@ -3007,6 +2106,7 @@ $processes | Where-Object {
         elif line.startswith("WARNING "):
             print_msg(f"  {yellow('!')} {line}")
 
+
 def step_cargo(
     repo: Path,
     profile: str,
@@ -3040,18 +2140,27 @@ def step_cargo(
         print_msg(
             f"  {dim('>> first build downloads locked dependencies into %USERPROFILE%\\.cargo\\registry')}"
         )
-    lean_bins = [name for name in bin_names if name in {"srf_ime_engine", "srf_ime_clipboard_svc", "bake_lexicon"}]
+    lean_bins = [
+        name
+        for name in bin_names
+        if name in {"srf_ime_engine", "srf_ime_clipboard_svc", "bake_lexicon"}
+    ]
     if lean_bins:
         lean_cmd = [cargo, "build", "--locked", "--no-default-features"]
-        if profile == "release": lean_cmd.append("--release")
-        if target: lean_cmd += ["--target", target]
-        if "bake_lexicon" in lean_bins: lean_cmd += ["--features", "dev-tools"]
-        for name in lean_bins: lean_cmd += ["--bin", name]
+        if profile == "release":
+            lean_cmd.append("--release")
+        if target:
+            lean_cmd += ["--target", target]
+        if "bake_lexicon" in lean_bins:
+            lean_cmd += ["--features", "dev-tools"]
+        for name in lean_bins:
+            lean_cmd += ["--bin", name]
         run(lean_cmd, cwd=cargo_dir, env=cargo_env)
     gui_bins = [name for name in bin_names if name not in lean_bins]
     if gui_bins:
-        gui_cmd = cmd[:cmd.index("--bin")] if "--bin" in cmd else cmd[:]
-        for name in gui_bins: gui_cmd += ["--bin", name]
+        gui_cmd = cmd[: cmd.index("--bin")] if "--bin" in cmd else cmd[:]
+        for name in gui_bins:
+            gui_cmd += ["--bin", name]
         run(gui_cmd, cwd=cargo_dir, env=cargo_env)
     _refresh_cargo_build_sig(repo, profile, arch)
 
@@ -3114,8 +2223,9 @@ def step_input_perf_smoke(
             run(command, cwd=repo / "pinyin-ime", env=smoke_env)
 
 
-def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: bool,
-               arch: str = ARCH_X64) -> None:
+def step_cmake(
+    repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: bool, arch: str = ARCH_X64
+) -> None:
     """Build helper: step_cmake."""
     if ctx.dry_run:
         print_msg(f"  [dry-run] cmake configure/build ({profile}, {arch}) at {build_dir}")
@@ -3139,8 +2249,12 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
             for line in text.splitlines():
                 if line.startswith("CMAKE_HOME_DIRECTORY:"):
                     cached = line.partition("=")[2].strip()
-                    if os.path.normcase(os.path.normpath(cached)) != os.path.normcase(os.path.normpath(str(tsf_tip))):
-                        print_msg(f"  {yellow('!')} CMake cache source directory mismatch; cleaning")
+                    if os.path.normcase(os.path.normpath(cached)) != os.path.normcase(
+                        os.path.normpath(str(tsf_tip))
+                    ):
+                        print_msg(
+                            f"  {yellow('!')} CMake cache source directory mismatch; cleaning"
+                        )
                         shutil.rmtree(build_dir, ignore_errors=True)
                         build_dir.mkdir(parents=True, exist_ok=True)
                     break
@@ -3166,7 +2280,10 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
     last_err = None
     for gen_name, gen_args in generators:
         try:
-            run([cmake, "-S", str(tsf_tip), "-B", str(build_dir), "-G", gen_name, *gen_args], cwd=repo)
+            run(
+                [cmake, "-S", str(tsf_tip), "-B", str(build_dir), "-G", gen_name, *gen_args],
+                cwd=repo,
+            )
         except BuildCommandError as e:
             last_err = e
             shutil.rmtree(build_dir, ignore_errors=True)
@@ -3235,8 +2352,19 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
     if ninja:
         try:
             cmake_type = "Release" if profile == "release" else "Debug"
-            run([cmake, "-S", str(tsf_tip), "-B", str(build_dir), "-G", "Ninja",
-                 f"-DCMAKE_BUILD_TYPE={cmake_type}"], cwd=repo)
+            run(
+                [
+                    cmake,
+                    "-S",
+                    str(tsf_tip),
+                    "-B",
+                    str(build_dir),
+                    "-G",
+                    "Ninja",
+                    f"-DCMAKE_BUILD_TYPE={cmake_type}",
+                ],
+                cwd=repo,
+            )
             run([cmake, "--build", str(build_dir), "--parallel"], cwd=repo)
             if gen_cache:
                 save_cached_generator(gen_cache, "Ninja", [])
@@ -3245,39 +2373,66 @@ def step_cmake(repo: Path, tsf_tip: Path, build_dir: Path, profile: str, clean: 
         except BuildCommandError as e:
             last_err = e
 
-    raise RuntimeError(f"CMake build failed. Last exit code: {last_err.returncode if last_err else '?'}")
+    raise RuntimeError(
+        f"CMake build failed. Last exit code: {last_err.returncode if last_err else '?'}"
+    )
 
 
-def step_stage(repo: Path, tsf_tip: Path, tip_dll: Path, overlay_exe: Path,
-               x86_tip_dll: Path, x86_overlay_exe: Path,
-               output_root: Path, powershell: Path,
-               make_zip: bool, profile_cap: str,
-               include_ocr: bool = True,
-               include_translation: bool = False) -> None:
+def step_stage(
+    repo: Path,
+    tsf_tip: Path,
+    tip_dll: Path,
+    overlay_exe: Path,
+    x86_tip_dll: Path,
+    x86_overlay_exe: Path,
+    output_root: Path,
+    powershell: Path,
+    make_zip: bool,
+    profile_cap: str,
+    include_ocr: bool = True,
+    include_translation: bool = False,
+) -> None:
     """Build helper: step_stage."""
     script = tsf_tip / "installer" / "stage_package.ps1"
     if not script.is_file():
         raise FileNotFoundError(f"Missing character table expansion script: {script}")
 
     cmd = [
-        str(powershell), "-NoProfile", "-ExecutionPolicy", "Bypass",
-        "-File", str(script),
-        "-OutputRoot", str(output_root),
-        "-TipDllPath", str(tip_dll),
-        "-OverlayExePath", str(overlay_exe),
-        "-X86TipDllPath", str(x86_tip_dll),
-        "-X86OverlayExePath", str(x86_overlay_exe),
-        "-Profile", profile_cap,
-        "-IncludeOcr", "1" if include_ocr else "0",
+        str(powershell),
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(script),
+        "-OutputRoot",
+        str(output_root),
+        "-TipDllPath",
+        str(tip_dll),
+        "-OverlayExePath",
+        str(overlay_exe),
+        "-X86TipDllPath",
+        str(x86_tip_dll),
+        "-X86OverlayExePath",
+        str(x86_overlay_exe),
+        "-Profile",
+        profile_cap,
+        "-IncludeOcr",
+        "1" if include_ocr else "0",
     ]
     if make_zip:
         cmd.append("-Zip")
     run(cmd, cwd=repo)
 
 
-def step_inno(repo: Path, script_name: str = "kaixin.iss", output_name: str = "kaixin-setup.exe",
-              package_dir: Path | None = None, include_ocr: bool = True,
-              include_translation: bool = False, output_dir: Path | None = None) -> Path:
+def step_inno(
+    repo: Path,
+    script_name: str = "kaixin.iss",
+    output_name: str = "kaixin-setup.exe",
+    package_dir: Path | None = None,
+    include_ocr: bool = True,
+    include_translation: bool = False,
+    output_dir: Path | None = None,
+) -> Path:
     """Run Inno Setup and return the generated installer path."""
     iss = repo / "tsf-tip" / "installer" / script_name
     define_args: list[str] = []
@@ -3364,6 +2519,7 @@ def installer_pending_directory(dist_dir: Path):
 
 # Corpus generation
 
+
 def step_cargo_and_cmake_parallel(
     repo: Path,
     tsf_tip: Path,
@@ -3430,6 +2586,7 @@ def post_stage_smoke_verify(repo: Path, output_root: Path, profile: str) -> list
     packed = output_root / "lexicon" / "lexicon.pack"
     if packed.is_file():
         from scripts.lexicon_pack import read_pack
+
         read_pack(packed)
         return warnings
     for name in ("lexicon.bin", "hot_lexicon.bin"):
@@ -3452,6 +2609,7 @@ def verify_staged_package(
     include_translation: bool = False,
     repo: Path | None = None,
     profile: str = "release",
+    runtime_checks: bool = True,
 ) -> None:
     """Build helper: verify_staged_package."""
     if not output_root.is_dir():
@@ -3569,9 +2727,7 @@ def verify_staged_package(
 
     icon_file = output_root / "assets" / "kaixin-input.ico"
     if not icon_file.is_file():
-        raise FileNotFoundError(
-            f"missing staged Win+Space/profile icon file: {icon_file}"
-        )
+        raise FileNotFoundError(f"missing staged Win+Space/profile icon file: {icon_file}")
 
     staged_lexicon_dir = output_root / "lexicon"
     english_count = validate_common_english_lexicon(staged_lexicon_dir)
@@ -3592,18 +2748,17 @@ def verify_staged_package(
             + ", ".join(path.name for path in legacy_english_files)
         )
     print_msg(f"  {green('OK')} staged English lexicon: {english_count} words")
-    print_msg(
-        f"  {green('OK')} staged common single-character lexicon: "
-        f"{single_char_count} chars"
-    )
+    print_msg(f"  {green('OK')} staged common single-character lexicon: {single_char_count} chars")
 
     packed_lexicon = staged_lexicon_dir / "lexicon.pack"
     if packed_lexicon.is_file():
         from scripts.lexicon_pack import read_pack
+
         profiles = read_pack(packed_lexicon)
         for profile_bytes in profiles:
             schema = int.from_bytes(profile_bytes[8:12], "little")
-            if schema != 13: raise RuntimeError("unsupported packed lexicon schema")
+            if schema != 13:
+                raise RuntimeError("unsupported packed lexicon schema")
         print_msg(f"  {green('OK')} verified lossless standard/hot lexicon pack")
     else:
         for name in ("lexicon.bin", "hot_lexicon.bin"):
@@ -3614,6 +2769,7 @@ def verify_staged_package(
     if not cold_index.is_file():
         raise RuntimeError("missing cold_lexicon.sqlite; rebuild bake_lexicon and restage")
     import sqlite3
+
     with closing(sqlite3.connect(cold_index.resolve().as_uri() + "?mode=ro", uri=True)) as cold_db:
         if cold_db.execute("PRAGMA user_version").fetchone()[0] != 2:
             raise RuntimeError("unsupported cold lexicon schema")
@@ -3661,15 +2817,20 @@ def verify_staged_package(
     if include_ocr and "开心输入法 OCR".encode("utf-8") not in ocr_bytes:
         raise RuntimeError("staged srf_ime_ocr.exe is missing OCR window title")
 
-    if repo is not None:
+    if repo is not None and runtime_checks:
         from scripts.release_validation import verify_staged_release
-        verify_staged_release(repo, output_root, runtime_dir, profile,
-                              git_release_info(repo).get("commit_short"))
+
+        verify_staged_release(
+            repo, output_root, runtime_dir, profile, git_release_info(repo).get("commit_short")
+        )
         print_msg(f"  {green('OK')} staged Rust/x64/x86 versions, protocol and nihao handshake")
         if include_ocr:
             from scripts.validate_ocr_package import verify_ocr_package
+
             ocr_report = verify_ocr_package(repo, output_root)
-            print_msg(f"  {green('OK')} staged OCR profiles, warmup and model cache: {ocr_report.name}")
+            print_msg(
+                f"  {green('OK')} staged OCR profiles, warmup and model cache: {ocr_report.name}"
+            )
 
     install_dev = output_root / "install_dev.ps1"
     install_current_user = output_root / "install_current_user.ps1"
@@ -3714,7 +2875,9 @@ def verify_staged_package(
         raise FileNotFoundError(f"missing staged user data manifest: {user_data_manifest}")
     try:
         manifest_data = json.loads(user_data_manifest.read_text(encoding="utf-8"))
-        if not isinstance(manifest_data.get("files"), list) or not isinstance(manifest_data.get("directories"), list):
+        if not isinstance(manifest_data.get("files"), list) or not isinstance(
+            manifest_data.get("directories"), list
+        ):
             raise ValueError("files/directories must be arrays")
     except (OSError, ValueError, json.JSONDecodeError) as e:
         raise RuntimeError(f"invalid staged user data manifest: {user_data_manifest} ({e})") from e
@@ -3722,7 +2885,9 @@ def verify_staged_package(
     install_dev_text = install_dev.read_text(encoding="utf-8", errors="replace")
     install_current_user_text = install_current_user.read_text(encoding="utf-8", errors="replace")
     uninstall_dev_text = uninstall_dev.read_text(encoding="utf-8", errors="replace")
-    uninstall_current_user_text = uninstall_current_user.read_text(encoding="utf-8", errors="replace")
+    uninstall_current_user_text = uninstall_current_user.read_text(
+        encoding="utf-8", errors="replace"
+    )
     if "& $RegistrationScript @scriptArgs" in install_dev_text:
         raise RuntimeError(
             "staged install_dev.ps1 directly invokes invoke_registration.ps1; "
@@ -3768,11 +2933,17 @@ def verify_staged_package(
     if "uninstall_machine.log" not in uninstall_dev_text:
         raise RuntimeError("staged uninstall_dev.ps1 does not persist a machine uninstall log")
     if "uninstall_user.log" not in uninstall_current_user_text:
-        raise RuntimeError("staged uninstall_current_user.ps1 does not persist a user uninstall log")
+        raise RuntimeError(
+            "staged uninstall_current_user.ps1 does not persist a user uninstall log"
+        )
     if "RunOnce" not in uninstall_current_user_text:
-        raise RuntimeError("staged uninstall_current_user.ps1 does not include current-user cleanup fallback")
+        raise RuntimeError(
+            "staged uninstall_current_user.ps1 does not include current-user cleanup fallback"
+        )
     if "Remove-TipFromLoadedUserRegistry" not in uninstall_dev_text:
-        raise RuntimeError("staged uninstall_dev.ps1 does not include loaded-user language-list cleanup")
+        raise RuntimeError(
+            "staged uninstall_dev.ps1 does not include loaded-user language-list cleanup"
+        )
     for script_name, script_text in (
         ("install_dev.ps1", install_dev_text),
         ("install_current_user.ps1", install_current_user_text),
@@ -3781,7 +2952,9 @@ def verify_staged_package(
             "-ExecutionPolicy', 'Bypass', '-File'" not in script_text
             and "-ExecutionPolicy Bypass -File" not in script_text
         ):
-            raise RuntimeError(f"staged {script_name} does not force PowerShell bypass for TIP registration")
+            raise RuntimeError(
+                f"staged {script_name} does not force PowerShell bypass for TIP registration"
+            )
 
     # ---------------------------------------------------------------------------
     skins_dir = output_root / "skins"
@@ -3791,7 +2964,9 @@ def verify_staged_package(
     if theme_count <= 0:
         raise FileNotFoundError(f"no theme.json under staged skins: {skins_dir}")
 
+
 # Character table expansion
+
 
 def collect_artifacts(
     repo: Path,
@@ -3821,13 +2996,13 @@ def collect_artifacts(
     for arch in BUILD_ARCHES:
         try:
             tsf_dll = find_tsf_dll(tsf_tip, cmake_build_dir_for(tsf_tip, arch), profile_cap)
-            artifacts.append((f"srf_tsf_tip-{arch}.dll", tsf_dll.stat().st_size, sha256_prefix(tsf_dll)))
+            artifacts.append(
+                (f"srf_tsf_tip-{arch}.dll", tsf_dll.stat().st_size, sha256_prefix(tsf_dll))
+            )
         except FileNotFoundError:
             pass
         try:
-            overlay_exe = find_overlay_exe(
-                tsf_tip, cmake_build_dir_for(tsf_tip, arch), profile_cap
-            )
+            overlay_exe = find_overlay_exe(tsf_tip, cmake_build_dir_for(tsf_tip, arch), profile_cap)
             artifacts.append(
                 (
                     f"srf_ime_overlay-{arch}.exe",
@@ -3837,7 +3012,6 @@ def collect_artifacts(
             )
         except FileNotFoundError:
             pass
-
 
     # Installer
     for installer_name in installer_names or []:
@@ -3903,7 +3077,7 @@ def _print_failure_diagnostics(repo: Path, tsf_tip: Path, profile: str) -> None:
     # ---------------------------------------------------------------------------
     try:
         usage = shutil.disk_usage(repo)
-        free_gb = usage.free / (1024 ** 3)
+        free_gb = usage.free / (1024**3)
         if free_gb < 2:
             print_msg(f"  Disk free  : {red(f'{free_gb:.1f} GB')} (may be insufficient)")
         else:
@@ -3917,6 +3091,7 @@ def _print_failure_diagnostics(repo: Path, tsf_tip: Path, profile: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+
 
 def rebuild_stage_zip(output_root: Path) -> Path:
     """Build helper: rebuild_stage_zip."""
@@ -3960,6 +3135,7 @@ def cleanup_tar_artifacts(dist_dir: Path) -> list[Path]:
 
 # ---------------------------------------------------------------------------
 
+
 def _run_check_for_preflight(fn: Callable[[], None]) -> Exception | None:
     try:
         fn()
@@ -3987,12 +3163,16 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
         errors.append(f"invalid VERSION format: {ctx.version!r} (expected like 1.2.3)")
     errors.extend(validate_version_sources(repo))
     from scripts.release_version import validate_sources
+
     errors.extend(validate_sources(repo))
     if not ctx.dry_run:
         from scripts.check_release_toolchain import check
+
         check(repo)
     if args.no_version and not (args.debug or args.no_inno):
-        errors.append("--no-version can only be used with --debug or --no-inno; installer builds must inject VERSION into Inno")
+        errors.append(
+            "--no-version can only be used with --debug or --no-inno; installer builds must inject VERSION into Inno"
+        )
 
     # UTF-8 and lexicon checks are independent, so run them together.
     check_tasks = [
@@ -4014,10 +3194,16 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
             errors.append(str(exc))
         elif isinstance(exc, BuildCommandError):
             if name == "utf8":
-                detail = "; ".join(exc.tail_lines[-3:]) if exc.tail_lines else "see UTF-8 check output"
+                detail = (
+                    "; ".join(exc.tail_lines[-3:]) if exc.tail_lines else "see UTF-8 check output"
+                )
                 errors.append(f"UTF-8 source encoding check failed: {detail}")
             else:
-                detail = "; ".join(exc.tail_lines[-5:]) if exc.tail_lines else "see lexicon syllable check output"
+                detail = (
+                    "; ".join(exc.tail_lines[-5:])
+                    if exc.tail_lines
+                    else "see lexicon syllable check output"
+                )
                 errors.append(f"lexicon syllable consistency check failed: {detail}")
         else:
             errors.append(f"{name} preflight check failed: {exc}")
@@ -4052,7 +3238,9 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
         cmake = str(cmake_path) if cmake_path else None
         if cmake:
             try:
-                ver = subprocess.check_output([cmake, "--version"], text=True).splitlines()[0].strip()
+                ver = (
+                    subprocess.check_output([cmake, "--version"], text=True).splitlines()[0].strip()
+                )
                 print_msg(f"  CMake      : {green(ver)}")
             except Exception:
                 print_msg(f"  CMake      : {green(cmake)}")
@@ -4089,7 +3277,9 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
         if signtool and has_cert:
             print_msg(f"  SignTool   : {green(str(signtool))}")
         elif args.sign_required:
-            errors.append("code signing is required but signtool or KX_SIGN_CERT_SHA1/KX_SIGN_PFX is missing")
+            errors.append(
+                "code signing is required but signtool or KX_SIGN_CERT_SHA1/KX_SIGN_PFX is missing"
+            )
         else:
             print_msg(f"  SignTool   : {yellow('skipped')} (set KX_SIGN_CERT_SHA1 or KX_SIGN_PFX)")
 
@@ -4118,77 +3308,124 @@ def preflight_check(args: argparse.Namespace, repo: Path) -> dict:
 
 # ---------------------------------------------------------------------------
 
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="开心输入法 build script",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Examples:\n"
-               "  python build.py              full Release build\n"
-               "  python build.py --package-variants full\n"
-               "                               complete installer (IME + OCR)\n"
-               "  python build.py --debug      Debug build\n"
-               "  python build.py --quick      stage only\n"
-               "  python build.py --clean      clean rebuild\n"
-               "  python build.py --no-verify  skip Rust/C++ correctness gates\n"
-               "  python build.py --perf-smoke build and enforce input P99 gate\n"
-               "  python build.py --quiet      quiet mode\n"
-               "  python build.py --dry-run    print commands only\n",
+        "  python build.py              full Release build\n"
+        "  python build.py --package-variants full\n"
+        "                               complete installer (IME + OCR)\n"
+        "  python build.py --debug      Debug build\n"
+        "  python build.py --quick      stage only\n"
+        "  python build.py --clean      clean rebuild\n"
+        "  python build.py --no-verify  skip Rust/C++ correctness gates\n"
+        "  python build.py --perf-smoke build and enforce input P99 gate\n"
+        "  python build.py --quiet      quiet mode\n"
+        "  python build.py --dry-run    print commands only\n",
     )
-    p.add_argument("--debug", action="store_true",
-                   help="use Debug configuration (default: Release)")
-    p.add_argument("--clean", action="store_true",
-                   help="clean build caches before building")
-    p.add_argument("--quick", action="store_true",
-                   help="skip cargo and cmake; only stage/package")
-    p.add_argument("--skip-cargo", action="store_true",
-                   help="skip Rust cargo build; for staging/dev only, never for official packaging")
-    p.add_argument("--skip-cmake", action="store_true",
-                   help="skip C++ cmake build")
-    p.add_argument("--no-inno", action="store_true",
-                   help="skip Inno Setup installer generation")
-    p.add_argument("--user-installer", action="store_true",
-                   help="generate per-user installers instead of machine-wide installers")
-    p.add_argument("--rebuild-corpus", action="store_true",
-                   help="force rebuild corpus.txt")
-    p.add_argument("--regenerate-lexicons", action="store_true",
-                   help="regenerate native lexicons and pinyin_supported_chars.txt before building")
-    p.add_argument("--portable-zip", "--zip", dest="portable_zip", action="store_true",
-                   help="also generate portable ZIP artifacts")
+    p.add_argument(
+        "--debug", action="store_true", help="use Debug configuration (default: Release)"
+    )
+    p.add_argument("--clean", action="store_true", help="clean build caches before building")
+    p.add_argument("--quick", action="store_true", help="skip cargo and cmake; only stage/package")
+    p.add_argument(
+        "--skip-cargo",
+        action="store_true",
+        help="skip Rust cargo build; for staging/dev only, never for official packaging",
+    )
+    p.add_argument("--skip-cmake", action="store_true", help="skip C++ cmake build")
+    p.add_argument("--no-inno", action="store_true", help="skip Inno Setup installer generation")
+    p.add_argument(
+        "--user-installer",
+        action="store_true",
+        help="generate per-user installers instead of machine-wide installers",
+    )
+    p.add_argument("--rebuild-corpus", action="store_true", help="force rebuild corpus.txt")
+    p.add_argument(
+        "--regenerate-lexicons",
+        action="store_true",
+        help="regenerate native lexicons and pinyin_supported_chars.txt before building",
+    )
+    p.add_argument(
+        "--portable-zip",
+        "--zip",
+        dest="portable_zip",
+        action="store_true",
+        help="also generate portable ZIP artifacts",
+    )
     p.set_defaults(portable_zip=False)
-    p.add_argument("--package-variants", default="all",
-                   help=(
-                       "comma-separated variants to package: all, ime, ocr, "
-                       "full (full is an alias for ocr; default: all)"
-                   ))
-    p.add_argument("--include-translation", dest="include_translation", action="store_true",
-                   help="deprecated compatibility option; external WinTranslator linkage is always retained")
-    p.add_argument("--no-translation", dest="include_translation", action="store_false",
-                   help="deprecated compatibility option; no translation runtime or model is packaged")
+    p.add_argument(
+        "--package-variants",
+        default="all",
+        help=(
+            "comma-separated variants to package: all, ime, ocr, "
+            "full (full is an alias for ocr; default: all)"
+        ),
+    )
+    p.add_argument(
+        "--include-translation",
+        dest="include_translation",
+        action="store_true",
+        help="deprecated compatibility option; external WinTranslator linkage is always retained",
+    )
+    p.add_argument(
+        "--no-translation",
+        dest="include_translation",
+        action="store_false",
+        help="deprecated compatibility option; no translation runtime or model is packaged",
+    )
     p.set_defaults(include_translation=None)
-    p.add_argument("--quiet", "-q", action="store_true",
-                   help="quiet mode")
-    p.add_argument("--verbose", "-v", action="store_true",
-                   help="verbose mode")
-    p.add_argument("--dry-run", action="store_true",
-                   help="print commands without running them")
-    p.add_argument("--force", action="store_true",
-                   help="force rebuild, ignoring incremental checks")
-    p.add_argument("--no-parallel", action="store_true",
-                   help="disable parallel Rust/C++ build")
-    p.add_argument("--no-smoke", dest="no_smoke", action="store_true",
-                   help="skip post-build smoke checks (default)")
-    p.add_argument("--smoke", dest="no_smoke", action="store_false",
-                   help="run post-build smoke checks explicitly")
+    p.add_argument("--quiet", "-q", action="store_true", help="quiet mode")
+    p.add_argument("--verbose", "-v", action="store_true", help="verbose mode")
+    p.add_argument("--dry-run", action="store_true", help="print commands without running them")
+    p.add_argument(
+        "--force", action="store_true", help="force rebuild, ignoring incremental checks"
+    )
+    p.add_argument("--no-parallel", action="store_true", help="disable parallel Rust/C++ build")
+    p.add_argument(
+        "--no-smoke",
+        dest="no_smoke",
+        action="store_true",
+        help="skip post-build smoke checks (default)",
+    )
+    p.add_argument(
+        "--smoke",
+        dest="no_smoke",
+        action="store_false",
+        help="run post-build smoke checks explicitly",
+    )
     p.set_defaults(no_smoke=True)
-    p.add_argument("--verify", dest="verify", action="store_true",
-                   help="run Rust and C++ correctness checks explicitly")
-    p.add_argument("--no-verify", dest="verify", action="store_false",
-                   help="skip Rust and C++ correctness gates (default)")
+    p.add_argument(
+        "--skip-runtime-checks",
+        action="store_true",
+        help="explicitly skip staged runtime/OCR/benchmark execution; keep package integrity checks",
+    )
+    p.add_argument(
+        "--verify",
+        dest="verify",
+        action="store_true",
+        help="run Rust and C++ correctness checks explicitly",
+    )
+    p.add_argument(
+        "--no-verify",
+        dest="verify",
+        action="store_false",
+        help="skip correctness gates for an explicit development build",
+    )
     p.set_defaults(verify=None)
-    p.add_argument("--perf-smoke", action="store_true",
-                   help="run release input_perf after compilation and enforce a P99 gate")
-    p.add_argument("--perf-max-p99-us", type=int, default=DEFAULT_PERF_MAX_P99_US,
-                   help=f"maximum input_perf P99 in microseconds (default: {DEFAULT_PERF_MAX_P99_US})")
+    p.add_argument(
+        "--perf-smoke",
+        action="store_true",
+        help="run release input_perf after compilation and enforce a P99 gate",
+    )
+    p.add_argument(
+        "--perf-max-p99-us",
+        type=int,
+        default=DEFAULT_PERF_MAX_P99_US,
+        help=f"maximum input_perf P99 in microseconds (default: {DEFAULT_PERF_MAX_P99_US})",
+    )
     p.add_argument(
         "--perf-max-incremental-p99-us",
         type=int,
@@ -4198,21 +3435,41 @@ def parse_args() -> argparse.Namespace:
             f"(default: {DEFAULT_PERF_INCREMENTAL_MAX_P99_US})"
         ),
     )
-    p.add_argument("--no-skin-check", action="store_true",
-                   help="skip skins/*/theme.json validation")
-    p.add_argument("--collect-runtime-logs", action="store_true",
-                   help="copy runtime logs from %%LOCALAPPDATA%%\\kaixin into dist/runtime-logs")
-    p.add_argument("--no-version", action="store_true",
-                   help="do not pass /DKXAppVersion to ISCC; only useful with --debug or --no-inno")
-    p.add_argument("--sign", action="store_true",
-                   help="sign staged binaries and installers when signtool and KX_SIGN_* environment variables are available")
-    p.add_argument("--sign-required", action="store_true",
-                   help="fail the build if code signing is unavailable or fails")
+    p.add_argument(
+        "--no-skin-check", action="store_true", help="skip skins/*/theme.json validation"
+    )
+    p.add_argument(
+        "--collect-runtime-logs",
+        action="store_true",
+        help="copy runtime logs from %%LOCALAPPDATA%%\\kaixin into dist/runtime-logs",
+    )
+    p.add_argument(
+        "--no-version",
+        action="store_true",
+        help="do not pass /DKXAppVersion to ISCC; only useful with --debug or --no-inno",
+    )
+    p.add_argument(
+        "--sign",
+        action="store_true",
+        help="sign staged binaries and installers when signtool and KX_SIGN_* environment variables are available",
+    )
+    p.add_argument(
+        "--sign-required",
+        action="store_true",
+        help="fail the build if code signing is unavailable or fails",
+    )
     return p.parse_args()
 
 
 def main() -> int:
-    subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "scripts/generate_shared_contracts.py"), "--check"], check=True)
+    subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).resolve().parent / "scripts/generate_shared_contracts.py"),
+            "--check",
+        ],
+        check=True,
+    )
     _ensure_stdout_utf8()
 
     if sys.platform != "win32":
@@ -4227,7 +3484,7 @@ def main() -> int:
         args.skip_cargo = True
         args.skip_cmake = True
     if args.verify is None:
-        args.verify = False
+        args.verify = not (args.debug or args.no_inno or args.quick)
     if args.verify and (args.skip_cargo or args.skip_cmake):
         print(red("error: --verify cannot be combined with --quick/--skip-cargo/--skip-cmake"))
         return 2
@@ -4259,9 +3516,7 @@ def main() -> int:
     # Both packages retain the lightweight WinTranslator linkage. Translation
     # models and runtimes belong to the separately installed app and are never staged here.
     try:
-        package_variants, skipped_package_variants = resolve_package_variants(
-            args, ocr_ready
-        )
+        package_variants, skipped_package_variants = resolve_package_variants(args, ocr_ready)
     except (ValueError, RuntimeError) as e:
         print(red(f"error: {e}"))
         for problem in ocr_problems:
@@ -4272,7 +3527,9 @@ def main() -> int:
     output_root = stage_root_for_variant(repo, primary_variant)
     args.package_variant_ids = [variant.id for variant in package_variants]
     args.include_ocr_resolved = any(variant.include_ocr for variant in package_variants)
-    args.include_translation_resolved = any(variant.include_translation for variant in package_variants)
+    args.include_translation_resolved = any(
+        variant.include_translation for variant in package_variants
+    )
     required_rust_artifacts = rust_artifact_names_for_variants(
         package_variants,
         include_smoke_tools=not args.no_smoke,
@@ -4309,15 +3566,21 @@ def main() -> int:
     # Build steps
     print_msg()
     print_msg(bold(cyan("  开心输入法 Build")))
-    print_msg(f"  Version: {bold(ctx.version)}  |  Profile: {bold(profile_cap)}  |  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print_msg("  Package variants: " + ", ".join(bold(variant.label) for variant in package_variants))
+    print_msg(
+        f"  Version: {bold(ctx.version)}  |  Profile: {bold(profile_cap)}  |  Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+    print_msg(
+        "  Package variants: " + ", ".join(bold(variant.label) for variant in package_variants)
+    )
     if skipped_package_variants:
         print_msg(
             f"  {yellow('!')} skipped package variants: "
             + ", ".join(variant.label for variant in skipped_package_variants)
         )
     if not ocr_ready and any(variant.include_ocr for variant in skipped_package_variants):
-        print_msg(f"  {yellow('!')} local RapidOCR runtime is invalid; OCR variants will be skipped")
+        print_msg(
+            f"  {yellow('!')} local RapidOCR runtime is invalid; OCR variants will be skipped"
+        )
         for problem in ocr_problems:
             print_msg(f"    {yellow('!')} {problem}")
     #
@@ -4356,9 +3619,7 @@ def main() -> int:
                 _ = find_tsf_runtime_pair(tsf_tip, cmake_build_dir_x86, profile_cap)
             except FileNotFoundError:
                 missing.append(f"tsf-tip/build-package-x86/{profile_cap}/srf_tsf_tip.dll")
-                missing.append(
-                    f"tsf-tip/build-package-x86/{profile_cap}/srf_ime_overlay.exe"
-                )
+                missing.append(f"tsf-tip/build-package-x86/{profile_cap}/srf_ime_overlay.exe")
 
             if missing:
                 print_msg(f"\n  {red('FAIL')} --quick requires existing build artifacts; missing:")
@@ -4378,7 +3639,10 @@ def main() -> int:
                     cmake_build_dir,
                     cmake_build_dir_x86,
                     repo / "dist" / "kaixin-package",
-                    *[stage_root_for_variant(repo, variant) for variant in PACKAGE_VARIANTS.values()],
+                    *[
+                        stage_root_for_variant(repo, variant)
+                        for variant in PACKAGE_VARIANTS.values()
+                    ],
                     repo / "pinyin-ime" / "data" / "corpus.txt",
                 ]
                 for t in targets:
@@ -4387,7 +3651,9 @@ def main() -> int:
                             print_msg(f"  [dry-run] delete: {t}")
                         else:
                             print_msg(f"  delete: {t}")
-                            shutil.rmtree(t, ignore_errors=True) if t.is_dir() else t.unlink(missing_ok=True)
+                            shutil.rmtree(t, ignore_errors=True) if t.is_dir() else t.unlink(
+                                missing_ok=True
+                            )
 
                 # ---------------------------------------------------------------------------
                 purged = purge_lexicon_caches(repo, output_root=None)
@@ -4440,13 +3706,19 @@ def main() -> int:
                 ARCH_X64,
                 required_artifacts=required_rust_artifacts,
             ):
-                print_msg(f"  {dim('>> Rust artifacts are up to date; skipping build (--force to rebuild)')}")
+                print_msg(
+                    f"  {dim('>> Rust artifacts are up to date; skipping build (--force to rebuild)')}"
+                )
                 skip_cargo_inc = True
             if not args.skip_cmake and is_cmake_up_to_date(repo, tsf_tip, profile, ARCH_X64):
-                print_msg(f"  {dim('>> C++ artifacts are up to date; skipping build (--force to rebuild)')}")
+                print_msg(
+                    f"  {dim('>> C++ artifacts are up to date; skipping build (--force to rebuild)')}"
+                )
                 skip_cmake_inc = True
             if not args.skip_cmake and is_cmake_up_to_date(repo, tsf_tip, profile, ARCH_X86):
-                print_msg(f"  {dim('>> C++ x86 TIP is up to date; skipping build (--force to rebuild)')}")
+                print_msg(
+                    f"  {dim('>> C++ x86 TIP is up to date; skipping build (--force to rebuild)')}"
+                )
                 skip_cmake_x86_inc = True
 
         do_cargo = not args.skip_cargo and not skip_cargo_inc
@@ -4485,7 +3757,9 @@ def main() -> int:
                     if build_x86_in_parallel:
                         x86_dll = find_tsf_dll(tsf_tip, cmake_build_dir_x86, profile_cap)
                         assert_pe_arch(x86_dll, ARCH_X86, "x86 srf_tsf_tip.dll")
-                        print_msg(f"  {green('OK')} srf_tsf_tip.dll x86 ({fmt_size(x86_dll.stat().st_size)})")
+                        print_msg(
+                            f"  {green('OK')} srf_tsf_tip.dll x86 ({fmt_size(x86_dll.stat().st_size)})"
+                        )
                 if build_x86_in_parallel:
                     cmake_x86_built_in_parallel = True
                     do_cmake_x86 = False
@@ -4509,7 +3783,9 @@ def main() -> int:
                     step_cmake(repo, tsf_tip, cmake_build_dir, profile, clean=args.clean)
                     if not ctx.dry_run:
                         dll = find_tsf_dll(tsf_tip, cmake_build_dir, profile_cap)
-                        print_msg(f"  {green('OK')} srf_tsf_tip.dll ({fmt_size(dll.stat().st_size)})")
+                        print_msg(
+                            f"  {green('OK')} srf_tsf_tip.dll ({fmt_size(dll.stat().st_size)})"
+                        )
             elif skip_cmake_inc:
                 print_msg(f"\n{dim('  [skip] Step 3/5  CMake build (up to date)')}")
             else:
@@ -4519,11 +3795,15 @@ def main() -> int:
             pass
         elif do_cmake_x86:
             with StepTimer(f"Step 3a/5  Build C++ TSF module x86 ({profile_cap})"):
-                step_cmake(repo, tsf_tip, cmake_build_dir_x86, profile, clean=args.clean, arch=ARCH_X86)
+                step_cmake(
+                    repo, tsf_tip, cmake_build_dir_x86, profile, clean=args.clean, arch=ARCH_X86
+                )
                 if not ctx.dry_run:
                     dll = find_tsf_dll(tsf_tip, cmake_build_dir_x86, profile_cap)
                     assert_pe_arch(dll, ARCH_X86, "x86 srf_tsf_tip.dll")
-                    print_msg(f"  {green('OK')} srf_tsf_tip.dll x86 ({fmt_size(dll.stat().st_size)})")
+                    print_msg(
+                        f"  {green('OK')} srf_tsf_tip.dll x86 ({fmt_size(dll.stat().st_size)})"
+                    )
         elif skip_cmake_x86_inc:
             print_msg(f"\n{dim('  [skip] Step 3a/5  CMake x86 build (up to date)')}")
         else:
@@ -4537,12 +3817,13 @@ def main() -> int:
                 with StepTimer(f"Verify native regression tests ({arch})"):
                     run(
                         [
-                            "ctest",
-                            "--test-dir",
+                            sys.executable,
+                            str(repo / "scripts/verify.py"),
+                            "native",
+                            "--build-dir",
                             str(build_dir),
-                            "-C",
-                            profile_cap,
-                            "--output-on-failure",
+                            "--architecture",
+                            "x64" if arch == ARCH_X64 else "Win32",
                         ],
                         cwd=repo,
                     )
@@ -4597,22 +3878,16 @@ def main() -> int:
                     )
                 except FileNotFoundError:
                     x86_tip_dll = cmake_build_dir_x86 / profile_cap / "srf_tsf_tip.dll"
-                    x86_overlay_exe = (
-                        cmake_build_dir_x86 / profile_cap / "srf_ime_overlay.exe"
-                    )
+                    x86_overlay_exe = cmake_build_dir_x86 / profile_cap / "srf_ime_overlay.exe"
             else:
-                tip_dll, overlay_exe = find_tsf_runtime_pair(
-                    tsf_tip, cmake_build_dir, profile_cap
-                )
+                tip_dll, overlay_exe = find_tsf_runtime_pair(tsf_tip, cmake_build_dir, profile_cap)
                 x86_tip_dll, x86_overlay_exe = find_tsf_runtime_pair(
                     tsf_tip, cmake_build_dir_x86, profile_cap
                 )
                 assert_pe_arch(tip_dll, ARCH_X64, "x64 srf_tsf_tip.dll")
                 assert_pe_arch(overlay_exe, ARCH_X64, "x64 srf_ime_overlay.exe")
                 assert_pe_arch(x86_tip_dll, ARCH_X86, "x86 srf_tsf_tip.dll")
-                assert_pe_arch(
-                    x86_overlay_exe, ARCH_X86, "x86 srf_ime_overlay.exe"
-                )
+                assert_pe_arch(x86_overlay_exe, ARCH_X86, "x86 srf_ime_overlay.exe")
             make_zip = bool(args.portable_zip)
             for variant in package_variants:
                 stage_root = stage_root_for_variant(repo, variant)
@@ -4622,11 +3897,20 @@ def main() -> int:
                         tag = "[dry-run] delete" if ctx.dry_run else "delete"
                         print_msg(f"  {tag}: {p}")
                 print_msg(f"  Stage variant: {variant.label} -> {stage_root}")
-                step_stage(repo, tsf_tip, tip_dll, overlay_exe, x86_tip_dll,
-                           x86_overlay_exe, stage_root,
-                           powershell, make_zip=make_zip, profile_cap=profile_cap,
-                           include_ocr=variant.include_ocr,
-                           include_translation=variant.include_translation)
+                step_stage(
+                    repo,
+                    tsf_tip,
+                    tip_dll,
+                    overlay_exe,
+                    x86_tip_dll,
+                    x86_overlay_exe,
+                    stage_root,
+                    powershell,
+                    make_zip=make_zip,
+                    profile_cap=profile_cap,
+                    include_ocr=variant.include_ocr,
+                    include_translation=variant.include_translation,
+                )
                 if not ctx.dry_run and stage_root.is_dir():
                     verify_staged_package(
                         stage_root,
@@ -4634,16 +3918,31 @@ def main() -> int:
                         include_translation=variant.include_translation,
                         repo=repo,
                         profile=profile,
+                        runtime_checks=not args.skip_runtime_checks,
                     )
                     total = sum(f.stat().st_size for f in stage_root.rglob("*") if f.is_file())
                     print_msg(f"  {green('OK')} stage directory: {stage_root}")
                     print_msg(f"  {green('OK')} total size: {fmt_size(total)}")
                     print_msg(f"  {green('OK')} staged package verification passed")
-                    if profile == "release" and variant.id == primary_variant.id:
+                    if (
+                        profile == "release"
+                        and variant.id == primary_variant.id
+                        and not args.skip_runtime_checks
+                    ):
                         from scripts.input_benchmark_report import generate_report
-                        benchmark_dir = repo / "dist" / f"input-benchmark-{ctx.version}-{ctx.build_timestamp}"
-                        generate_report(repo, rust_target_dir(repo, profile), stage_root / "lexicon", benchmark_dir)
-                        print_msg(f"  {green('OK')} speed/quality/memory report: {benchmark_dir / 'report.md'}")
+
+                        benchmark_dir = (
+                            repo / "dist" / f"input-benchmark-{ctx.version}-{ctx.build_timestamp}"
+                        )
+                        generate_report(
+                            repo,
+                            rust_target_dir(repo, profile),
+                            stage_root / "lexicon",
+                            benchmark_dir,
+                        )
+                        print_msg(
+                            f"  {green('OK')} speed/quality/memory report: {benchmark_dir / 'report.md'}"
+                        )
 
                     if not args.no_smoke and variant.id == primary_variant.id:
                         warnings = post_stage_smoke_verify(repo, stage_root, profile)
@@ -4696,15 +3995,20 @@ def main() -> int:
                         stable_portable_zip = zip_path.parent / f"kaixin-portable{suffix}.zip"
                         shutil.copy2(zip_path, portable_zip)
                         shutil.copy2(zip_path, stable_portable_zip)
-                        print_msg(f"  {green('OK')} portable ZIP: {portable_zip} ({fmt_size(portable_zip.stat().st_size)})")
-                        print_msg(f"  {green('OK')} stable portable ZIP: {stable_portable_zip} ({fmt_size(stable_portable_zip.stat().st_size)})")
+                        print_msg(
+                            f"  {green('OK')} portable ZIP: {portable_zip} ({fmt_size(portable_zip.stat().st_size)})"
+                        )
+                        print_msg(
+                            f"  {green('OK')} stable portable ZIP: {stable_portable_zip} ({fmt_size(stable_portable_zip.stat().st_size)})"
+                        )
 
         if not args.no_inno and not args.debug:
             with StepTimer("Step 5/5  Generate installer (Inno Setup)"):
                 installer_script = "kaixin-user.iss" if args.user_installer else "kaixin.iss"
                 pending_context = (
-                    nullcontext(str(dist_dir / ".installer-pending")) if ctx.dry_run else
-                    installer_pending_directory(dist_dir)
+                    nullcontext(str(dist_dir / ".installer-pending"))
+                    if ctx.dry_run
+                    else installer_pending_directory(dist_dir)
                 )
                 with pending_context as pending_dir:
                     installers: list[Path] = []
@@ -4725,9 +4029,14 @@ def main() -> int:
                             print_msg(f"  {green('OK')} size: {fmt_size(exe.stat().st_size)}")
                     if not ctx.dry_run:
                         prefix = "kaixin-user-setup" if args.user_installer else "kaixin-setup"
-                        publish_installers(dist_dir, installers, [
-                            f"{prefix}-{variant.installer_suffix}-*.exe" for variant in package_variants
-                        ])
+                        publish_installers(
+                            dist_dir,
+                            installers,
+                            [
+                                f"{prefix}-{variant.installer_suffix}-*.exe"
+                                for variant in package_variants
+                            ],
+                        )
         else:
             reason = "Debug" if args.debug else "--no-inno"
             print_msg(f"\n{dim(f'  [skip] Step 5/5  Inno Setup ({reason})')}")
@@ -4775,7 +4084,9 @@ def main() -> int:
         print_msg(f"\n{'=' * 60}")
         print_msg(bold(yellow("  DRY RUN COMPLETE (no commands were executed)")))
         print_msg(f"{'=' * 60}")
-        print_msg(f"  Version: {ctx.version}  |  Profile: {profile_cap}  |  Dry-run elapsed: {fmt_elapsed(total_elapsed)}")
+        print_msg(
+            f"  Version: {ctx.version}  |  Profile: {profile_cap}  |  Dry-run elapsed: {fmt_elapsed(total_elapsed)}"
+        )
         print_msg()
         return 0
 
@@ -4804,33 +4115,33 @@ def main() -> int:
     # verified during Step 4 (write + verify per variant); nothing modifies the
     # stage directories afterwards, so re-verifying here would only run a third
     # full SHA-256 pass over the same bytes (most costly on the OCR payload).
-    artifacts.append((manifest_path.name, manifest_path.stat().st_size, sha256_prefix(manifest_path)))
+    artifacts.append(
+        (manifest_path.name, manifest_path.stat().st_size, sha256_prefix(manifest_path))
+    )
     ctx.artifacts = artifacts
 
     print_msg(f"\n{'=' * 60}")
     print_msg(bold(green("  BUILD SUCCESS")))
     print_msg(f"{'=' * 60}")
-    print_msg(f"  Version: {ctx.version}  |  Profile: {profile_cap}  |  Elapsed: {fmt_elapsed(total_elapsed)}")
+    print_msg(
+        f"  Version: {ctx.version}  |  Profile: {profile_cap}  |  Elapsed: {fmt_elapsed(total_elapsed)}"
+    )
 
     # Step timing summary
     if ctx.step_results:
-        print_msg(f"\n  Step timings:")
+        print_msg("\n  Step timings:")
         for title, elapsed in ctx.step_results.items():
             label = re.sub(r"^\s*Step \d+[a-z]?(?:\+\d+)?/\d+\s*", "", title, flags=re.IGNORECASE)
             print_msg(f"    {label:<40} {fmt_elapsed(elapsed):>8}")
 
     print_artifact_table(artifacts)
 
-    installer_paths = [
-        repo / "dist" / name
-        for name in getattr(args, "installer_output_names", [])
-    ]
+    installer_paths = [repo / "dist" / name for name in getattr(args, "installer_output_names", [])]
     existing_installers = [path for path in installer_paths if path.is_file()]
     if installer_expected and existing_installers:
-        print_msg(f"\n  Installers:")
+        print_msg("\n  Installers:")
         label_by_installer = {
-            installer_output_by_variant[variant.id]: variant.label
-            for variant in package_variants
+            installer_output_by_variant[variant.id]: variant.label for variant in package_variants
         }
         for exe_path in existing_installers:
             st = exe_path.stat()
@@ -4838,13 +4149,13 @@ def main() -> int:
             label = label_by_installer.get(exe_path.name, "installer")
             print_msg(f"    - {label}: {bold(str(exe_path))} ({fmt_size(st.st_size)}, {mtime})")
     else:
-        print_msg(f"\n  Stage directories:")
+        print_msg("\n  Stage directories:")
         for variant, stage_root in zip(package_variants, stage_roots):
             print_msg(f"    - {variant.label}: {stage_root}")
         if args.debug:
-            print_msg(f"  (Debug mode does not generate an installer)")
+            print_msg("  (Debug mode does not generate an installer)")
         elif args.no_inno:
-            print_msg(f"  (Installer generation was skipped; run ISCC manually if needed)")
+            print_msg("  (Installer generation was skipped; run ISCC manually if needed)")
 
     if args.portable_zip:
         for zip_path in (stage_root.with_suffix(".zip") for stage_root in stage_roots):

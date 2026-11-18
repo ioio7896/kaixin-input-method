@@ -75,10 +75,10 @@ struct CandidateRow {
 };
 
 class CSrfTip : public ITfTextInputProcessorEx,
-                 public ITfDisplayAttributeProvider,
-                 public ITfFunctionProvider,
-                 public ITfFnConfigure,
-                 public ITfFnGetPreferredTouchKeyboardLayout {
+                public ITfDisplayAttributeProvider,
+                public ITfFunctionProvider,
+                public ITfFnConfigure,
+                public ITfFnGetPreferredTouchKeyboardLayout {
   LONG m_cRef = 1;
 
   ITfThreadMgr* m_pThreadMgr = nullptr;
@@ -283,16 +283,15 @@ class CSrfTip : public ITfTextInputProcessorEx,
   STDMETHODIMP GetDisplayName(BSTR* pbstrName) override;
   STDMETHODIMP Show(HWND hwndParent, LANGID langid, REFGUID rguidProfile) override;
 
-  HRESULT ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lParam,
-                     bool shiftDown, bool* pHandled);
+  HRESULT ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lParam, bool shiftDown,
+                     bool* pHandled);
   bool WouldEatKey(UINT vk);
   HRESULT CommitCandidate(TfEditCookie ec, size_t idx, bool explicitSelection = false);
   HRESULT CommitCandidateSnapshot(TfEditCookie ec, ITfContext* requestContext, size_t idx,
-                                   const std::wstring& reading,
-                                   const std::wstring& committedText,
-                                   const std::wstring& metaText,
-                                   const std::vector<std::wstring>& skippedCandidates,
-                                   bool explicitSelection);
+                                  const std::wstring& reading, const std::wstring& committedText,
+                                  const std::wstring& metaText,
+                                  const std::vector<std::wstring>& skippedCandidates,
+                                  bool explicitSelection);
   HRESULT CommitReadingText(TfEditCookie ec, ITfContext* pic);
   UINT CandidatePageSize() const;
   std::wstring CandidateBarMainTitle() const;
@@ -301,7 +300,8 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void SetFocusContext(ITfContext* pic);
   void ApplyAppOptionsForFocusedContext(bool showNotification);
   void RequestCancelCompositionOnFocusLoss();
-  void HandleFocusLossCancelEditSession(TfEditCookie ec, uint64_t generation, uint64_t cancelSequence);
+  void HandleFocusLossCancelEditSession(TfEditCookie ec, uint64_t generation,
+                                        uint64_t cancelSequence);
   void RequestCompatibilityAsciiCleanup();
   void HandleCompatibilityAsciiCleanupEditSession(TfEditCookie ec);
   void CancelCompositionEdit(TfEditCookie ec);
@@ -338,7 +338,8 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void UnregisterPreservedKeys();
   void ClearCompositionBufferState();
   void ClearFocusBoundCandidateState(const wchar_t* reason);
-  void EndInputSession(const wchar_t* reason, TfEditCookie ec = TF_INVALID_COOKIE, bool cancelComposition = true);
+  void EndInputSession(const wchar_t* reason, TfEditCookie ec = TF_INVALID_COOKIE,
+                       bool cancelComposition = true);
   SrfInputSession m_inputSession;
   bool m_endingInputSession = false;
   bool m_engineInputSuspended = false;
@@ -350,13 +351,10 @@ class CSrfTip : public ITfTextInputProcessorEx,
                                    std::vector<std::wstring> nextCandidates,
                                    std::vector<std::wstring> nextMeta,
                                    SrfEngineState stateAfterLookup,
-                                   SrfLookupCandidatesStatus lookupStatus,
-                                   bool asyncResult,
-                                   unsigned long long requestId,
-                                   bool hasMore = false,
+                                   SrfLookupCandidatesStatus lookupStatus, bool asyncResult,
+                                   unsigned long long requestId, bool hasMore = false,
                                    bool fullResult = false);
-  bool TryApplyPrefixCandidatePlaceholder(const std::wstring& reading,
-                                          SrfEngineState stateBefore,
+  bool TryApplyPrefixCandidatePlaceholder(const std::wstring& reading, SrfEngineState stateBefore,
                                           unsigned long long requestId);
   void RememberPrefixCandidateCache(const std::wstring& reading);
   void RebuildCandidateRows();
@@ -430,11 +428,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void UpdatePreservedKeysForHotkeyScope();
   void LearnCommittedText(const std::wstring& committedText);
   HRESULT CommitCandidateResolved(TfEditCookie ec, ITfContext* requestContext, size_t idx,
-                                   const std::wstring* snapshotReading,
-                                   const std::wstring* snapshotCommitted,
-                                   const std::wstring* snapshotMeta,
-                                   const std::vector<std::wstring>* snapshotSkippedCandidates,
-                                   bool explicitSelection);
+                                  const std::wstring* snapshotReading,
+                                  const std::wstring* snapshotCommitted,
+                                  const std::wstring* snapshotMeta,
+                                  const std::vector<std::wstring>* snapshotSkippedCandidates,
+                                  bool explicitSelection);
   HRESULT RequestCommitCandidate(size_t idx);
   HRESULT RequestCommitReadingText();
   std::wstring TranslateDirectKey(UINT vk, LPARAM lParam, bool shiftDown) const;
@@ -495,6 +493,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   void SyncCandidateContextState(const CandidatePageLayoutMetrics* layout = nullptr);
   void RebuildContextModel();
   std::wstring FocusedProcessName();
+
  public:
   bool EnsureEngineInputReady();
   SrfFocusSnapshot CaptureFocusSnapshot(ITfContext* context) const;
@@ -566,8 +565,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_asyncCandidatePendingHasMore = false;
   bool m_asyncCandidatePendingFullResult = false;
   SrfEngineState m_asyncCandidatePendingEngineState = SrfEngineState::Idle;
-  SrfLookupCandidatesStatus m_asyncCandidatePendingLookupStatus =
-      SrfLookupCandidatesStatus::Ok;
+  SrfLookupCandidatesStatus m_asyncCandidatePendingLookupStatus = SrfLookupCandidatesStatus::Ok;
   ULONGLONG m_asyncCandidatePendingRequestTick = 0;
   SrfFocusSnapshot m_asyncCandidatePendingFocus = {};
   std::mutex m_candidateWorkerMutex;

@@ -18,7 +18,7 @@ SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    "pinyin-ime/src/handwrite_lookup/*.rs",
+    "crates/kaixin-core/src/handwrite_lookup/*.rs",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "hanzi_lookup contributors"
@@ -26,7 +26,7 @@ SPDX-License-Identifier = "LGPL-3.0-only"
 
 [[annotations]]
 path = [
-    "pinyin-ime/src/handwrite_lookup/data/mmah.bin",
+    "crates/kaixin-core/src/handwrite_lookup/data/mmah.bin",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "Make Me a Hanzi data authors"

@@ -35,7 +35,7 @@ pub(super) fn translation_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             ui,
             "目标语言",
             "自动模式以中英互译为主；日文和混合文本可指定目标语言。",
-            &app.model.translate_target_language.clone(),
+            app.model.translate_target_language.clone(),
             "translate_target_language",
             |ui| {
                 for (code, label) in [

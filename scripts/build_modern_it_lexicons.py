@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import math
 from pathlib import Path
 
 from opencc import OpenCC
@@ -18,28 +17,96 @@ T2S = OpenCC("t2s")
 POOL_SIZE = 500_000
 
 MIXED_CODES = {
-    "AIGC": "aigc", "ChatGPT": "chat gpt", "DeepSeek": "deep seek", "GPU": "gpu",
-    "Wi-Fi": "wi fi", "C++": "c", "B站": "b zhan", "UP主": "up zhu",
-    "GitHub": "git hub", "Windows 11": "windows", "Linux": "linux",
-    "Docker": "docker", "Kubernetes": "kubernetes", "API": "api", "SDK": "sdk",
-    "Python": "python", "Java": "java", "JavaScript": "java script",
-    "TypeScript": "type script", "Rust": "rust", "Go": "go", "React": "react",
-    "Vue": "vue", "Angular": "angular", "Spring": "spring", "Django": "django",
-    "Flask": "flask", "TensorFlow": "tensor flow", "PyTorch": "py torch",
-    "NumPy": "num py", "OpenAI": "open ai", "Claude": "claude", "Gemini": "gemini",
-    "Kotlin": "kotlin", "Swift": "swift", "Dart": "dart", "PHP": "php", "Ruby": "ruby",
-    "C#": "c", "SQL": "sql", "HTML": "html", "CSS": "css", "Shell": "shell",
-    "ReactNative": "react native", "Svelte": "svelte", "Next.js": "next js", "Nuxt": "nuxt",
-    "Node.js": "node js", "Express": "express", "FastAPI": "fast api", "Laravel": "laravel",
-    ".NET": "net", "Unity": "unity", "Unreal": "unreal", "Pandas": "pandas",
-    "ScikitLearn": "scikit learn", "Jupyter": "jupyter", "CUDA": "cuda", "OpenGL": "open gl",
-    "Qt": "qt", "Electron": "electron", "Webpack": "webpack", "Vite": "vite", "Babel": "babel",
-    "ESLint": "eslint", "Prettier": "prettier", "Git": "git", "GitLab": "git lab", "Gitee": "gitee",
-    "Jenkins": "jenkins", "Maven": "maven", "Gradle": "gradle", "npm": "npm", "Yarn": "yarn",
-    "Cargo": "cargo", "CMake": "cmake", "Redis": "redis", "MySQL": "my sql", "PostgreSQL": "postgre sql",
-    "SQLite": "sql lite", "MongoDB": "mongo db", "Elasticsearch": "elastic search", "Kafka": "kafka", "Nginx": "nginx",
-    "TikTok": "tik tok", "YouTube": "you tube", "Instagram": "instagram",
-    "Facebook": "facebook", "X平台": "x ping tai", "AppStore": "app store",
+    "AIGC": "aigc",
+    "ChatGPT": "chat gpt",
+    "DeepSeek": "deep seek",
+    "GPU": "gpu",
+    "Wi-Fi": "wi fi",
+    "C++": "c",
+    "B站": "b zhan",
+    "UP主": "up zhu",
+    "GitHub": "git hub",
+    "Windows 11": "windows",
+    "Linux": "linux",
+    "Docker": "docker",
+    "Kubernetes": "kubernetes",
+    "API": "api",
+    "SDK": "sdk",
+    "Python": "python",
+    "Java": "java",
+    "JavaScript": "java script",
+    "TypeScript": "type script",
+    "Rust": "rust",
+    "Go": "go",
+    "React": "react",
+    "Vue": "vue",
+    "Angular": "angular",
+    "Spring": "spring",
+    "Django": "django",
+    "Flask": "flask",
+    "TensorFlow": "tensor flow",
+    "PyTorch": "py torch",
+    "NumPy": "num py",
+    "OpenAI": "open ai",
+    "Claude": "claude",
+    "Gemini": "gemini",
+    "Kotlin": "kotlin",
+    "Swift": "swift",
+    "Dart": "dart",
+    "PHP": "php",
+    "Ruby": "ruby",
+    "C#": "c",
+    "SQL": "sql",
+    "HTML": "html",
+    "CSS": "css",
+    "Shell": "shell",
+    "ReactNative": "react native",
+    "Svelte": "svelte",
+    "Next.js": "next js",
+    "Nuxt": "nuxt",
+    "Node.js": "node js",
+    "Express": "express",
+    "FastAPI": "fast api",
+    "Laravel": "laravel",
+    ".NET": "net",
+    "Unity": "unity",
+    "Unreal": "unreal",
+    "Pandas": "pandas",
+    "ScikitLearn": "scikit learn",
+    "Jupyter": "jupyter",
+    "CUDA": "cuda",
+    "OpenGL": "open gl",
+    "Qt": "qt",
+    "Electron": "electron",
+    "Webpack": "webpack",
+    "Vite": "vite",
+    "Babel": "babel",
+    "ESLint": "eslint",
+    "Prettier": "prettier",
+    "Git": "git",
+    "GitLab": "git lab",
+    "Gitee": "gitee",
+    "Jenkins": "jenkins",
+    "Maven": "maven",
+    "Gradle": "gradle",
+    "npm": "npm",
+    "Yarn": "yarn",
+    "Cargo": "cargo",
+    "CMake": "cmake",
+    "Redis": "redis",
+    "MySQL": "my sql",
+    "PostgreSQL": "postgre sql",
+    "SQLite": "sql lite",
+    "MongoDB": "mongo db",
+    "Elasticsearch": "elastic search",
+    "Kafka": "kafka",
+    "Nginx": "nginx",
+    "TikTok": "tik tok",
+    "YouTube": "you tube",
+    "Instagram": "instagram",
+    "Facebook": "facebook",
+    "X平台": "x ping tai",
+    "AppStore": "app store",
 }
 
 AI_SEEDS = """
@@ -59,22 +126,119 @@ Python|Java|JavaScript|TypeScript|Rust|Go|C++|Kotlin|Swift|Dart|PHP|Ruby|C#|SQL|
 """.split("|")
 
 CATEGORIES = {
-    "ai_and_machine_learning": (AI_SEEDS, ("人工智能", "机器学习", "深度学习", "模型", "训练", "推理", "生成", "智能", "神经", "语言", "视觉", "语音", "提示词", "向量", "数据标注", "多模态")),
-    "software_and_cloud": (SOFTWARE_SEEDS, ("软件", "云", "容器", "系统", "数据库", "网络", "服务", "开发", "部署", "安全", "代码", "数据", "架构", "接口", "版本", "编译", "运行")),
-    "internet_products": (INTERNET_SEEDS, ("小红书", "哔哩", "拼多多", "飞书", "钉钉", "微信", "微博", "抖音", "淘宝", "京东", "支付", "直播", "视频", "平台", "电商", "社交", "用户", "内容", "账号", "评论", "订单")),
-    "programming_frameworks": (FRAMEWORK_SEEDS, ("Python", "Java", "JavaScript", "TypeScript", "Rust", "Go", "编程", "开发", "框架", "代码", "算法", "数据库", "测试", "部署", "接口", "组件", "语言", "前端", "后端", "微服务", "容器")),
+    "ai_and_machine_learning": (
+        AI_SEEDS,
+        (
+            "人工智能",
+            "机器学习",
+            "深度学习",
+            "模型",
+            "训练",
+            "推理",
+            "生成",
+            "智能",
+            "神经",
+            "语言",
+            "视觉",
+            "语音",
+            "提示词",
+            "向量",
+            "数据标注",
+            "多模态",
+        ),
+    ),
+    "software_and_cloud": (
+        SOFTWARE_SEEDS,
+        (
+            "软件",
+            "云",
+            "容器",
+            "系统",
+            "数据库",
+            "网络",
+            "服务",
+            "开发",
+            "部署",
+            "安全",
+            "代码",
+            "数据",
+            "架构",
+            "接口",
+            "版本",
+            "编译",
+            "运行",
+        ),
+    ),
+    "internet_products": (
+        INTERNET_SEEDS,
+        (
+            "小红书",
+            "哔哩",
+            "拼多多",
+            "飞书",
+            "钉钉",
+            "微信",
+            "微博",
+            "抖音",
+            "淘宝",
+            "京东",
+            "支付",
+            "直播",
+            "视频",
+            "平台",
+            "电商",
+            "社交",
+            "用户",
+            "内容",
+            "账号",
+            "评论",
+            "订单",
+        ),
+    ),
+    "programming_frameworks": (
+        FRAMEWORK_SEEDS,
+        (
+            "Python",
+            "Java",
+            "JavaScript",
+            "TypeScript",
+            "Rust",
+            "Go",
+            "编程",
+            "开发",
+            "框架",
+            "代码",
+            "算法",
+            "数据库",
+            "测试",
+            "部署",
+            "接口",
+            "组件",
+            "语言",
+            "前端",
+            "后端",
+            "微服务",
+            "容器",
+        ),
+    ),
 }
 
 
 def is_cjk_phrase(phrase: str) -> bool:
-    return 2 <= len(phrase) <= 12 and all("\u4e00" <= char <= "\u9fff" for char in phrase) and T2S.convert(phrase) == phrase
+    return (
+        2 <= len(phrase) <= 12
+        and all("\u4e00" <= char <= "\u9fff" for char in phrase)
+        and T2S.convert(phrase) == phrase
+    )
 
 
 def code_for(phrase: str) -> str:
     if phrase in MIXED_CODES:
         return MIXED_CODES[phrase]
     values = lazy_pinyin(phrase, style=Style.NORMAL, errors="default")
-    if len(values) != len(phrase) or any(not value.isascii() or not value.isalpha() for value in values):
+    if len(values) != len(phrase) or any(
+        not value.isascii() or not value.isalpha() for value in values
+    ):
         raise ValueError(f"invalid pinyin for {phrase!r}: {values!r}")
     return " ".join(values)
 
@@ -93,16 +257,26 @@ def score(phrase: str, rank: int, keywords: tuple[str, ...]) -> int:
     return rank - 60_000 * sum(phrase.count(keyword) for keyword in keywords)
 
 
-def write(path: Path, title: str, seeds: list[str], keywords: tuple[str, ...], pool: list[tuple[str, int]]) -> None:
+def write(
+    path: Path, title: str, seeds: list[str], keywords: tuple[str, ...], pool: list[tuple[str, int]]
+) -> None:
     # Domain membership is the maintained seed list. Frequency may order a
     # category, but must never pull unrelated common words in to fill a quota.
     from optimize_lexicons import read_rows
-    published = {phrase: (code, weight) for phrase, code, weight in read_rows(ROOT / "lexicon/zh-ext/technology.txt")}
+
+    published = {
+        phrase: (code, weight)
+        for phrase, code, weight in read_rows(ROOT / "lexicon/zh-ext/technology.txt")
+    }
     selected: list[tuple[str, int]] = []
     seen: set[str] = set()
     for phrase in seeds:
         phrase = phrase.strip()
-        if not phrase or phrase in seen or (phrase not in MIXED_CODES and not is_cjk_phrase(phrase)):
+        if (
+            not phrase
+            or phrase in seen
+            or (phrase not in MIXED_CODES and not is_cjk_phrase(phrase))
+        ):
             continue
         selected.append((phrase, 1))
         seen.add(phrase)
@@ -114,7 +288,8 @@ def write(path: Path, title: str, seeds: list[str], keywords: tuple[str, ...], p
         f"# 开心输入法扩展词库：{title}\n"
         "# 格式：词语<TAB>全拼或混合输入码<TAB>权重；混合实体保留 ASCII 大小写和符号。\n"
         "# Source: 项目维护的技术术语与产品名称清单；不以通用词补足条数。\n"
-        + "\n".join(rows) + "\n",
+        + "\n".join(rows)
+        + "\n",
         encoding="utf-8",
         newline="\n",
     )

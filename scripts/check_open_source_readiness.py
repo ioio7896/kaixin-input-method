@@ -55,6 +55,8 @@ def contains_forbidden_directory(relative: Path) -> bool:
             continue
         return True
     return False
+
+
 HIGH_CONFIDENCE_SECRETS = (
     re.compile(rb"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     re.compile(rb"AKIA[0-9A-Z]{16}"),

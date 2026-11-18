@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: Apache-2.0
+﻿# SPDX-License-Identifier: Apache-2.0
 
 param(
     [string]$PythonExecutable = ".venv-rapidocr\Scripts\python.exe"
@@ -23,7 +23,7 @@ try {
         throw "Python runtime not found: $PythonExecutable"
     }
     & $PythonExecutable scripts\generate_python_license_report.py `
-        (Join-Path $outputDir "python-dependencies.md")
+    (Join-Path $outputDir "python-dependencies.md")
     if ($LASTEXITCODE -ne 0) { throw "Python dependency report generation failed" }
 
     Write-Host "License reports generated in $outputDir"

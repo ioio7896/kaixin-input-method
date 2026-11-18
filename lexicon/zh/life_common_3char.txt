@@ -3374,7 +3374,7 @@
 第二款	di er kuan	8025
 第十四	di shi si	8024
 第四节	di si jie	8023
-网约车	wang yue che	8023
+网约车	wang yue che	8200
 罗密欧	luo mi ou	8022
 老同志	lao tong zhi	8022
 能动性	neng dong xing	8021
@@ -5232,7 +5232,7 @@
 了不得	liao bu de	7081
 二人转	er ren zhuan	7081
 亚太区	ya tai qu	7080
-优先级	you xian ji	7080
+优先级	you xian ji	8300
 传播者	chuan bo zhe	7079
 保释金	bao shi jin	7078
 做广告	zuo guang gao	7078
@@ -7139,7 +7139,7 @@
 拉赫曼	la he man	6228
 指挥棒	zhi hui bang	6228
 按摩院	an mo yuan	6228
-排位赛	pai wei sai	6227
+排位赛	pai wei sai	7600
 教研组	jiao yan zu	6227
 新动力	xin dong li	6227
 新手机	xin shou ji	6227
@@ -10880,7 +10880,7 @@
 无止尽	wu zhi jin	4860
 无畏地	wu wei di	4860
 星条旗	xing tiao qi	4860
-普拉提	pu la ti	4860
+普拉提	pu la ti	8000
 普洛斯	pu luo si	4860
 曲靖市	qu jing shi	4860
 替补席	ti bu xi	4859
@@ -41955,7 +41955,7 @@
 真彩色	zhen cai se	427
 睡莲科	shui lian ke	427
 知春路	zhi chun lu	427
-短视频	duan shi pin	427
+短视频	duan shi pin	7600
 石桥铺	shi qiao pu	427
 石正丽	shi zheng li	427
 砂拉越	sha la yue	427

@@ -32,35 +32,45 @@ void TestTsfHostFailureSequences() {
   std::wstring document;
   unsigned endingDepth = 0;
   int writes = 0, finishes = 0, fallbackWrites = 0;
-  const auto result = SrfWriteAndFinishComposition([&]() {
-    ++writes;
+  const auto result = SrfWriteAndFinishComposition(
+      [&]() {
+        ++writes;
+        document += L"你好";
+        return S_OK;
+      },
+      [&]() {
+        ++finishes;
+        const SrfScopedCompositionEnd ending(endingDepth);
+        Check(endingDepth == 1, "synchronous termination callback recognizes our own end");
+        {
+          const SrfScopedCompositionEnd nested(endingDepth);
+          Check(endingDepth == 2, "nested host callback keeps termination guard active");
+        }
+        Check(endingDepth == 1, "inner cleanup cannot clear outer termination guard");
+        return E_FAIL;
+      });
+  if (result.MayRetryText()) {
+    ++fallbackWrites;
     document += L"你好";
-    return S_OK;
-  }, [&]() {
-    ++finishes;
-    const SrfScopedCompositionEnd ending(endingDepth);
-    Check(endingDepth == 1, "synchronous termination callback recognizes our own end");
-    {
-      const SrfScopedCompositionEnd nested(endingDepth);
-      Check(endingDepth == 2, "nested host callback keeps termination guard active");
-    }
-    Check(endingDepth == 1, "inner cleanup cannot clear outer termination guard");
-    return E_FAIL;
-  });
-  if (result.MayRetryText()) { ++fallbackWrites; document += L"你好"; }
+  }
   Check(document == L"你好" && writes == 1 && finishes == 1 && fallbackWrites == 0,
         "end failure never resends an already written candidate");
   Check(result.TextWritten() && FAILED(result.finish) && endingDepth == 0,
         "write success and cleanup failure remain separate");
 
-  const auto denied = SrfWriteAndFinishComposition([]() { return E_ACCESSDENIED; }, [&]() {
-    ++finishes;
-    return S_OK;
-  });
-  Check(denied.MayRetryText() && finishes == 1, "denied write permits fallback without ending preedit");
-  const auto partial = SrfWriteAndFinishComposition([]() {
-    return HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY);
-  }, [&]() { ++finishes; return S_OK; });
+  const auto denied = SrfWriteAndFinishComposition([]() { return E_ACCESSDENIED; },
+                                                   [&]() {
+                                                     ++finishes;
+                                                     return S_OK;
+                                                   });
+  Check(denied.MayRetryText() && finishes == 1,
+        "denied write permits fallback without ending preedit");
+  const auto partial =
+      SrfWriteAndFinishComposition([]() { return HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY); },
+                                   [&]() {
+                                     ++finishes;
+                                     return S_OK;
+                                   });
   Check(!partial.MayRetryText() && finishes == 1, "partially delivered input is never replayed");
 
   SrfEditSessionOnce callback;
@@ -75,32 +85,39 @@ void TestTsfHostFailureSequences() {
         "host failure after execution cannot queue another delivery");
   Check(!callback.Begin() && executions == 1, "duplicate async delivery runs at most once");
   SrfEditSessionOnce queued;
-  Check(SrfShouldRetryKeyEditSession(queued.Executed()), "denied sync lock can fall back asynchronously");
+  Check(SrfShouldRetryKeyEditSession(queued.Executed()),
+        "denied sync lock can fall back asynchronously");
   input.End();
   if (queued.Begin() && input.Matches(epoch)) ++executions;
   Check(executions == 1, "queued old-field key cannot run after session end");
 
-  Check(!SrfSelectionOutsideComposition(S_OK, 0, S_OK, 0), "caret on composition boundary stays active");
-  Check(!SrfSelectionOutsideComposition(S_OK, 1, S_OK, -1), "selection inside preedit stays active");
+  Check(!SrfSelectionOutsideComposition(S_OK, 0, S_OK, 0),
+        "caret on composition boundary stays active");
+  Check(!SrfSelectionOutsideComposition(S_OK, 1, S_OK, -1),
+        "selection inside preedit stays active");
   Check(SrfSelectionOutsideComposition(S_OK, -1, S_OK, -1), "caret before preedit ends input");
   Check(SrfSelectionOutsideComposition(S_OK, 1, S_OK, 1), "caret after preedit ends input");
   Check(SrfSelectionOutsideComposition(S_OK, -1, S_OK, 1), "selection covering preedit ends input");
-  Check(!SrfSelectionOutsideComposition(E_FAIL, -1, S_OK, 1), "unknown range never falsely ends input");
+  Check(!SrfSelectionOutsideComposition(E_FAIL, -1, S_OK, 1),
+        "unknown range never falsely ends input");
 }
 
 void TestChineseHalfwidth() {
   SrfInputOptions input;
   bool doubleOpen = true, singleOpen = true;
   input.symbolFullwidth = input.numberFullwidth = true;
-  Check(SrfConvertDirectText(L"-1A", input, true, true, doubleOpen, singleOpen) == L"\uff0d\uff11\uff21",
+  Check(SrfConvertDirectText(L"-1A", input, true, true, doubleOpen, singleOpen) ==
+            L"\uff0d\uff11\uff21",
         "disabled option preserves fullwidth conversion");
   input.chineseHalfwidth = true;
   std::wstring ascii;
-  for (wchar_t ch = 0x20; ch <= 0x7e; ++ch) ascii.push_back(ch);
+  for (wchar_t ch = 0x20; ch <= 0x7e; ++ch)
+    ascii.push_back(ch);
   Check(SrfConvertDirectText(ascii, input, true, true, doubleOpen, singleOpen) == ascii,
         "halfwidth overrides Chinese punctuation and all fullwidth options");
   Check(doubleOpen && singleOpen, "halfwidth quotes do not alter Chinese quote state");
-  Check(SrfConvertDirectText(L"\u4e2d\u6587-", input, true, true, doubleOpen, singleOpen) == L"\u4e2d\u6587-",
+  Check(SrfConvertDirectText(L"\u4e2d\u6587-", input, true, true, doubleOpen, singleOpen) ==
+            L"\u4e2d\u6587-",
         "Chinese text remains intact beside halfwidth hyphen");
   input.chineseHalfwidth = false;
   Check(SrfConvertDirectText(L",", input, true, false, doubleOpen, singleOpen) == L"\uff0c",
@@ -114,13 +131,15 @@ void TestGameInputPolicy() {
           "disabling pure game override restores the configured policy unchanged");
     for (const bool chat : {false, true}) {
       for (const bool editable : {false, true}) {
-        Check(SrfGameShouldPassThrough(true, SrfEffectiveGameInputMode(true, configured), chat, editable),
+        Check(SrfGameShouldPassThrough(true, SrfEffectiveGameInputMode(true, configured), chat,
+                                       editable),
               "pure game override cannot be escaped by chat, editable fields, or app Chinese mode");
       }
     }
   }
   SrfGameKeyOwnership pureOwnership;
-  for (const unsigned key : {unsigned('W'), unsigned(VK_SHIFT), unsigned(VK_RETURN), unsigned(VK_SPACE)}) {
+  for (const unsigned key :
+       {unsigned('W'), unsigned(VK_SHIFT), unsigned(VK_RETURN), unsigned(VK_SPACE)}) {
     pureOwnership.ObserveDown(key, false, true);
     Check(pureOwnership.PassDown(key, true, false),
           "game retains a key held while pure mode is turned off");
@@ -135,15 +154,18 @@ void TestGameInputPolicy() {
   pending.Cancel();
   const auto newEdit = pending.Begin(1200);
   pending.Complete(secondEdit);
-  Check(pending.Pending() && !pending.TimedOut(1300), "late cancelled callback cannot consume a new chat edit");
+  Check(pending.Pending() && !pending.TimedOut(1300),
+        "late cancelled callback cannot consume a new chat edit");
   pending.Complete(newEdit);
-  Check(!pending.Pending() && !pending.TimedOut(9999), "new chat completes independently after timeout cancellation");
+  Check(!pending.Pending() && !pending.TimedOut(9999),
+        "new chat completes independently after timeout cancellation");
   SrfGameKeyOwnership ownership;
   // A speculative test is a read: repeated tests cannot change ownership.
   Check(!ownership.KeepDown('W', false, true), "fresh W can be handled after chat confirmation");
   Check(!ownership.PassRelease('W'), "abandoned tests never acquire physical ownership");
   ownership.ObserveDown('W', false, true);
-  Check(ownership.PassDown('W', false, true), "opening event stays with game even if chat activates before testing");
+  Check(ownership.PassDown('W', false, true),
+        "opening event stays with game even if chat activates before testing");
   Check(ownership.KeepDown('W', true, true), "W held before chat remains game-owned");
   ownership.ObserveDown('W', true, false);
   Check(ownership.KeepDown('W', true, true), "state changes cannot steal an existing repeat");
@@ -153,7 +175,8 @@ void TestGameInputPolicy() {
   ownership.ObserveDown('W', false, false);
   Check(ownership.ConsumeRepeat('W', true, true), "IME ownership lasts until physical release");
   ownership.ObserveDown(VK_RETURN, false, false);
-  Check(ownership.ConsumeRepeat(VK_RETURN, true, true), "held selection Enter cannot become game-send Enter");
+  Check(ownership.ConsumeRepeat(VK_RETURN, true, true),
+        "held selection Enter cannot become game-send Enter");
   ownership.ObserveUp(VK_RETURN);
   ownership.ObserveDown(VK_RETURN, false, true);
   Check(!ownership.ConsumeRepeat(VK_RETURN, true, true), "fresh empty Enter belongs to game");
@@ -163,12 +186,15 @@ void TestGameInputPolicy() {
   Check(!ownership.KeepDown(256, true, true), "out-of-range events cannot access key arrays");
   using E = SrfGameEnterBehavior;
   Check(!SrfGameExitOnEnter(E::Auto, true), "persistent verified field keeps chat after sending");
-  Check(SrfGameExitOnEnter(E::Auto, false), "unverified manual field returns to game on empty Enter");
+  Check(SrfGameExitOnEnter(E::Auto, false),
+        "unverified manual field returns to game on empty Enter");
   Check(SrfGameExitOnEnter(E::Close, true), "explicit close overrides persistent field");
   Check(!SrfGameExitOnEnter(E::Stay, false), "explicit stay supports self-drawn chat");
   Check(!SrfCandidateHostMayShow(false, false), "UI-less host may take over candidate rendering");
-  Check(SrfCandidateHostMayShow(false, true), "explicit per-game override permits troubleshooting overlay");
-  Check(!SrfClassifyGame(false, false, true), "shared Unity/SDL class does not classify a tool as a game");
+  Check(SrfCandidateHostMayShow(false, true),
+        "explicit per-game override permits troubleshooting overlay");
+  Check(!SrfClassifyGame(false, false, true),
+        "shared Unity/SDL class does not classify a tool as a game");
   Check(SrfClassifyGame(true, false, false), "explicit game profile remains authoritative");
   Check(!SrfGameFocusEvidenceFresh(100, 451), "stale provider response cannot enable chat");
   Check(!SrfGameFocusEvidenceFresh(0, 10), "missing provider evidence remains passive");
@@ -177,18 +203,21 @@ void TestGameInputPolicy() {
   Check(SrfTouchKeyboardPageKey(0xf003, 0) == VK_NEXT, "touch keyboard next page");
   Check(SrfTouchKeyboardPageKey(0xf004, 0) == VK_PRIOR, "touch keyboard previous page");
   Check(SrfTouchKeyboardPageKey(L'你', 0) == 0, "ordinary Unicode text still bypasses pinyin");
-  Check(SrfTouchKeyboardPageKey(0xf003, kSrfInjectedInputMarker) == 0, "own injected packets cannot trigger paging");
+  Check(SrfTouchKeyboardPageKey(0xf003, kSrfInjectedInputMarker) == 0,
+        "own injected packets cannot trigger paging");
   Check(SrfIsInjectedTextEvent('V', kSrfInjectedInputMarker), "tagged paste events bypass the IME");
   bool active = true;
   SrfGameChatPhase phase = SrfGameChatPhase::Editing;
-  { SrfGameCommitScope scope(phase, active);
+  {
+    SrfGameCommitScope scope(phase, active);
     Check(phase == SrfGameChatPhase::Committing, "in-flight write is a distinct chat phase");
     active = false;
   }
   Check(phase == SrfGameChatPhase::Passive, "commit cleanup cannot resurrect a lost chat session");
   Check(!SrfTsfCommitResult{HRESULT_FROM_WIN32(ERROR_CANCELLED)}.MayRetryText(),
         "focus cancellation never retries into another window");
-  Check(!SrfShouldRetryKeyEditSession(true), "failed or partially committed callback is never replayed");
+  Check(!SrfShouldRetryKeyEditSession(true),
+        "failed or partially committed callback is never replayed");
   Check(SrfShouldRetryKeyEditSession(false), "denied sync lock may queue one async callback");
   Check(SrfGameKeepHeldKey(true, true), "held movement repeats stay with game after opening chat");
   Check(!SrfGameKeepHeldKey(true, false), "new down edge can start pinyin");
@@ -196,14 +225,19 @@ void TestGameInputPolicy() {
   Check(!SrfGameShouldPassThrough(false, M::Manual, false, false), "desktop retains IME");
   Check(SrfGameShouldPassThrough(true, M::Manual, false, false), "game starts in pass-through");
   Check(!SrfGameShouldPassThrough(true, M::Manual, true, false), "explicit chat accepts pinyin");
-  Check(SrfGameShouldPassThrough(true, M::Passthrough, true, true), "English game never captures keys");
+  Check(SrfGameShouldPassThrough(true, M::Passthrough, true, true),
+        "English game never captures keys");
   Check(!SrfGameShouldPassThrough(true, M::Chinese, false, false), "Chinese game profile");
-  Check(SrfGameShouldPassThrough(true, M::AutoText, false, false), "unknown chat surface stays passive");
+  Check(SrfGameShouldPassThrough(true, M::AutoText, false, false),
+        "unknown chat surface stays passive");
   Check(!SrfGameShouldPassThrough(true, M::AutoText, false, true), "verified editable surface");
   Check(SrfGameShouldExitChat(true, true, false, true, false, false), "empty Enter/Escape exits");
-  Check(!SrfGameShouldExitChat(true, true, true, true, false, false), "Enter selects reading first");
-  Check(!SrfGameShouldExitChat(true, true, false, true, true, false), "modified keys retain session");
-  Check(!SrfGameShouldExitChat(true, true, false, true, false, true), "held Enter cannot close chat");
+  Check(!SrfGameShouldExitChat(true, true, true, true, false, false),
+        "Enter selects reading first");
+  Check(!SrfGameShouldExitChat(true, true, false, true, true, false),
+        "modified keys retain session");
+  Check(!SrfGameShouldExitChat(true, true, false, true, false, true),
+        "held Enter cannot close chat");
 }
 
 void TestClipboardQuickPolicy() {
@@ -212,7 +246,8 @@ void TestClipboardQuickPolicy() {
   Check(!ParseClipboardQuickPageToken(L"0", &page), "zero clipboard page rejected");
   Check(!ParseClipboardQuickPageToken(L"4294967297", &page), "overflow cannot wrap to first page");
   Check(!ParseClipboardQuickPageToken(L"p-1", &page), "negative clipboard page rejected");
-  Check(!ShouldChangeClipboardQuickBatch(true, 0, 1), "small screen visits remaining three rows first");
+  Check(!ShouldChangeClipboardQuickBatch(true, 0, 1),
+        "small screen visits remaining three rows first");
   Check(ShouldChangeClipboardQuickBatch(true, 1, 1), "next batch after all eight rows");
   Check(!ShouldChangeClipboardQuickBatch(false, 1, 1), "previous key visits first five rows first");
   Check(ShouldChangeClipboardQuickBatch(false, 0, 1), "previous batch at first visible page");
@@ -251,8 +286,7 @@ void TestCandidateResultStability() {
   using namespace srf_candidate_stability;
   Check(ShouldRetainEmptyCandidateResult(true, true, false, true),
         "transient empty result retains visible candidates");
-  Check(RemovePartialMetaFlag(L"source=core\tpartial=1\tselected") ==
-            L"source=core\tselected",
+  Check(RemovePartialMetaFlag(L"source=core\tpartial=1\tselected") == L"source=core\tselected",
         "partial metadata is removed without damaging neighbors");
 
   const std::vector<std::wstring> current{L"甲", L"乙"};
@@ -283,8 +317,7 @@ void TestCandidateResultStability() {
     fullCandidates.push_back(L"候选" + std::to_wstring(i));
     fullMeta.push_back(L"meta" + std::to_wstring(i));
   }
-  std::vector<std::wstring> interactive(fullCandidates.rbegin() + 282,
-                                        fullCandidates.rend());
+  std::vector<std::wstring> interactive(fullCandidates.rbegin() + 282, fullCandidates.rend());
   std::vector<std::wstring> interactiveMeta(interactive.size(), L"partial=1");
   Check(srf_candidate_limits::kFullResult >= fullCandidates.size(),
         "full-result contract covers deep pages");
@@ -312,16 +345,21 @@ int main() {
   SrfEngineRecoveryBudget recovery;
   std::atomic<int> accepted{0};
   std::vector<std::thread> recoveryCallers;
-  for (int i = 0; i < 16; ++i) recoveryCallers.emplace_back([&] {
-    if (recovery.TryAcquire()) ++accepted;
-  });
-  for (auto& worker : recoveryCallers) worker.join();
+  for (int i = 0; i < 16; ++i)
+    recoveryCallers.emplace_back([&] {
+      if (recovery.TryAcquire()) ++accepted;
+    });
+  for (auto& worker : recoveryCallers)
+    worker.join();
   Check(accepted == 3 && recovery.Exhausted(), "concurrent recovery cannot exceed three attempts");
-  for (int i = 0; i < 100; ++i) Check(!recovery.TryAcquire(), "polling cannot reset exhausted recovery");
+  for (int i = 0; i < 100; ++i)
+    Check(!recovery.TryAcquire(), "polling cannot reset exhausted recovery");
   recovery.Reset();
-  Check(!recovery.Exhausted() && recovery.TryAcquire(), "successful readiness permits a new recovery episode");
+  Check(!recovery.Exhausted() && recovery.TryAcquire(),
+        "successful readiness permits a new recovery episode");
   Check(kSrfRecoveryBackoffMs[0] < kSrfRecoveryBackoffMs[1] &&
-        kSrfRecoveryBackoffMs[1] < kSrfRecoveryBackoffMs[2], "recovery delays increase");
+            kSrfRecoveryBackoffMs[1] < kSrfRecoveryBackoffMs[2],
+        "recovery delays increase");
   TestChineseHalfwidth();
   TestGameInputPolicy();
   TestClipboardQuickPolicy();

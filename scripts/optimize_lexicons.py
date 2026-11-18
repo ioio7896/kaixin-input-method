@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Refresh source fragments and consolidate the base three-character lexicon."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,6 +29,7 @@ def read_rows(path: Path) -> list[tuple[str, str, int]]:
 
 def consolidate_three_char() -> int:
     from lexicon_quality import clean_rows
+
     SOURCE.mkdir(parents=True, exist_ok=True)
     inputs = (
         (ZH / "lfie-common-3char.txt", SOURCE / "life_common_3char_full.txt"),
@@ -45,15 +47,25 @@ def consolidate_three_char() -> int:
     if not reference_path.exists():
         values = [score for _, _, score in read_rows(inputs[1][1])]
         for path in ZH.glob("*.txt"):
-            if path.name in {"life_common_3char.txt", "lfie-common-3char.txt", "life_common_3char_20000.txt", "life_hot_3char_curated.txt", "life_hot_4char_curated.txt", "single_char_common_8105.txt"}:
+            if path.name in {
+                "life_common_3char.txt",
+                "lfie-common-3char.txt",
+                "life_common_3char_20000.txt",
+                "life_hot_3char_curated.txt",
+                "life_hot_4char_curated.txt",
+                "single_char_common_8105.txt",
+            }:
                 continue
             values.extend(score for phrase, _, score in read_rows(path) if len(phrase) == 3)
-        reference_path.write_text(json.dumps({"3": sorted(values)}, ensure_ascii=False) + "\n", encoding="utf-8")
+        reference_path.write_text(
+            json.dumps({"3": sorted(values)}, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
     merged = {}
     for _, archive in inputs:
         rows = read_rows(archive)
         if any(weight > 10_000 for _, _, weight in rows):
             from normalize_lexicon_freq10k import score_by_rank
+
             weights = score_by_rank([weight for _, _, weight in rows], 1, 10_000)
             rows = [(phrase, code, weight) for (phrase, code, _), weight in zip(rows, weights)]
         for phrase, code, weight in clean_rows(rows):
@@ -73,7 +85,9 @@ def consolidate_three_char() -> int:
 
 
 def retire_migrated_files() -> None:
-    for relative in json.loads((ROOT / "shared/retired_lexicon_files.json").read_text(encoding="utf-8")):
+    for relative in json.loads(
+        (ROOT / "shared/retired_lexicon_files.json").read_text(encoding="utf-8")
+    ):
         path = (ROOT / "lexicon" / relative).resolve()
         path.relative_to((ROOT / "lexicon").resolve())
         if path.is_file():
@@ -84,6 +98,7 @@ def main() -> None:
     argparse.ArgumentParser(description=__doc__).parse_args()
     from build_modern_it_lexicons import CATEGORIES, OUT, write
     from build_common_phrase_lexicons import build_communication_fragments
+
     for tag, (seeds, keywords) in CATEGORIES.items():
         write(OUT / f"{tag}.txt", tag, seeds, keywords, [])
     build_communication_fragments()
@@ -97,6 +112,7 @@ def main() -> None:
     # files during a base-lexicon refresh.
     retire_migrated_files()
     from lexicon_quality import apply_quality
+
     report = apply_quality()
     print("reviewed long expressions:", report["reviewed_long_count"])
 

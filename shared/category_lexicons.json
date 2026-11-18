@@ -333,15 +333,15 @@
       "group": "通用补充 · 待筛",
       "default_enabled": false,
       "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 192071,
-      "sha256": "5bafd3ff5d4fbd481e3d4497597bac851aa237efbbf9f20461e6d9dc497bef2e",
+      "rows": 192067,
+      "sha256": "56e45dcefe6ac91a0aa021a110c898a27ccb639eda4e701227e15cf15746b0fe",
       "score_min": 685,
       "score_max": 5836,
       "score_tiers": {
         "7500-10000": 0,
         "5000-7499": 28,
-        "2500-4999": 74812,
-        "100-2499": 117231,
+        "2500-4999": 74810,
+        "100-2499": 117229,
         "1-99": 0
       }
     },
@@ -371,15 +371,15 @@
       "group": "通用补充 · 待筛",
       "default_enabled": false,
       "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 213055,
-      "sha256": "60f2a04d5683c693b7f2c139efabed04a3e17ec98b44e44702f6f65647a84a86",
+      "rows": 213043,
+      "sha256": "8934045aed2cef2a25e1685093e602a7e3310b3b2aa8127cda8847f91fe99f61",
       "score_min": 790,
       "score_max": 5263,
       "score_tiers": {
         "7500-10000": 0,
         "5000-7499": 3,
-        "2500-4999": 57177,
-        "100-2499": 155875,
+        "2500-4999": 57173,
+        "100-2499": 155867,
         "1-99": 0
       }
     },
@@ -1322,7 +1322,7 @@
       "default_enabled": false,
       "frequency_basis": "项目原有排序分数；非实测用户词频",
       "rows": 75,
-      "sha256": "db67c11bf7a4065a75ad11356bee72c82793453d20042bbfab3226cb2f30db3c",
+      "sha256": "93f31553670740ff310a933d6c4496d63d44fe2d064eda7875530d76b0c3ce8e",
       "score_min": 2006,
       "score_max": 9681,
       "score_tiers": {
@@ -1569,7 +1569,7 @@
       "default_enabled": false,
       "frequency_basis": "项目原有排序分数；非实测用户词频",
       "rows": 1674,
-      "sha256": "20c5e2fde3b22c5de635bcc78e9898a4efde663ee278c3b61837ff8115d1cccb",
+      "sha256": "d13cbcc1843d731fd904eb9c6cb30391f1423c315430f027efb8179819bed85c",
       "score_min": 175,
       "score_max": 6500,
       "score_tiers": {

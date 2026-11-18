@@ -33,9 +33,13 @@ def load_corrections(path: Path) -> tuple[Correction, ...]:
         phrase, code = fields[:2]
         reading = tuple(code.lower().replace("ü", "v").split())
         scope = fields[2] if len(fields) == 3 else "substring"
-        if (not phrase or len(reading) != len(phrase)
-                or any(not PINYIN_SYLLABLE.fullmatch(item) for item in reading)
-                or scope not in ("exact", "substring") or phrase in seen):
+        if (
+            not phrase
+            or len(reading) != len(phrase)
+            or any(not PINYIN_SYLLABLE.fullmatch(item) for item in reading)
+            or scope not in ("exact", "substring")
+            or phrase in seen
+        ):
             raise ValueError(f"{path}:{line_no}: invalid or duplicate correction")
         seen.add(phrase)
         corrections.append(Correction(phrase, reading, scope))
@@ -43,17 +47,26 @@ def load_corrections(path: Path) -> tuple[Correction, ...]:
 
 
 def corrected_reading(phrase: str, corrections: Sequence[Correction]) -> tuple[str, ...]:
-    base = tuple(item.lower().replace("ü", "v") for item in
-                 lazy_pinyin(phrase, style=Style.NORMAL, errors="default"))
-    exact = next((item for item in corrections
-                  if item.scope == "exact" and item.phrase == phrase), None)
+    base = tuple(
+        item.lower().replace("ü", "v")
+        for item in lazy_pinyin(phrase, style=Style.NORMAL, errors="default")
+    )
+    exact = next(
+        (item for item in corrections if item.scope == "exact" and item.phrase == phrase), None
+    )
     if exact is not None:
         return exact.reading
     reading = []
     offset = 0
     while offset < len(phrase):
-        match = next((item for item in corrections
-                      if item.scope == "substring" and phrase.startswith(item.phrase, offset)), None)
+        match = next(
+            (
+                item
+                for item in corrections
+                if item.scope == "substring" and phrase.startswith(item.phrase, offset)
+            ),
+            None,
+        )
         if match is None:
             reading.append(base[offset])
             offset += 1

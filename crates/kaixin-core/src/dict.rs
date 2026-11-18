@@ -1,0 +1,252 @@
+use pinyin::ToPinyinMulti;
+use std::collections::HashMap;
+use std::sync::OnceLock;
+
+const PRONUNCIATION_ALIASES: &str =
+    include_str!("../../../data_sources/kaixin/pronunciation_aliases.tsv");
+const PRONUNCIATION_EXCLUSIONS: &str =
+    include_str!("../../../data_sources/kaixin/pronunciation_exclusions.tsv");
+
+fn normalize_pinyin_key(key: &str) -> String {
+    key.replace('ü', "v")
+        .replace("nue", "nve")
+        .replace("lue", "lve")
+}
+
+#[derive(Default)]
+struct PronunciationOverrides {
+    accepted: HashMap<char, Vec<String>>,
+    primary: HashMap<char, Vec<String>>,
+    excluded: HashMap<char, Vec<String>>,
+}
+
+fn pronunciation_aliases() -> &'static PronunciationOverrides {
+    static ALIASES: OnceLock<PronunciationOverrides> = OnceLock::new();
+    ALIASES.get_or_init(|| {
+        let mut aliases = PronunciationOverrides::default();
+        for line in PRONUNCIATION_ALIASES
+            .lines()
+            .chain(PRONUNCIATION_EXCLUSIONS.lines())
+        {
+            let line = line.trim();
+            if line.is_empty() || line.starts_with('#') {
+                continue;
+            }
+            let mut fields = line.split('\t');
+            let Some(phrase) = fields.next() else {
+                continue;
+            };
+            let mut chars = phrase.chars();
+            let Some(ch) = chars.next() else {
+                continue;
+            };
+            if chars.next().is_some() {
+                continue;
+            }
+            let Some(reading) = fields.next() else {
+                continue;
+            };
+            let _weight = fields.next();
+            let category = fields.next().unwrap_or("alternate");
+            let reading = normalize_pinyin_key(&reading.to_ascii_lowercase());
+            if reading.is_empty() {
+                continue;
+            }
+            let target = if category.eq_ignore_ascii_case("historical") {
+                &mut aliases.excluded
+            } else {
+                &mut aliases.accepted
+            };
+            let values = target.entry(ch).or_default();
+            if !values.iter().any(|value| value == &reading) {
+                values.push(reading.clone());
+            }
+            if category.eq_ignore_ascii_case("primary") {
+                let primary = aliases.primary.entry(ch).or_default();
+                if !primary.contains(&reading) {
+                    primary.push(reading);
+                }
+            }
+        }
+        aliases
+    })
+}
+
+/// Return all available readings, with project additions and exclusions.
+///
+/// `pinyin` is generated from a merged historical/etymological table, so its
+/// multi-reading iterator also contains obsolete readings such as `xiong` for
+/// 能 and `neng` for 而. Explicit historical rows exclude those readings;
+/// unlisted characters no longer lose every non-primary pronunciation.
+// These predicates are consumed by runtime UI modules, while the build script
+// compiles this source module only to generate the character corpus.
+#[allow(dead_code)]
+pub(crate) fn is_project_primary_reading(c: char, reading: &str) -> bool {
+    // The common spoken standalone form of 嗯 is absent from rust-pinyin's
+    // primary reading. Keep this one interjection ahead of 恩 under `en`.
+    if c == '嗯' && reading == "en" {
+        return true;
+    }
+    pronunciation_aliases()
+        .primary
+        .get(&c)
+        .is_some_and(|readings| readings.iter().any(|primary| primary == reading))
+}
+
+#[allow(dead_code)]
+pub(crate) fn is_excluded_reading(c: char, reading: &str) -> bool {
+    pronunciation_aliases()
+        .excluded
+        .get(&c)
+        .is_some_and(|readings| readings.iter().any(|excluded| excluded == reading))
+}
+
+pub(crate) fn pinyin_plain_options(c: char) -> Vec<String> {
+    let mut out = Vec::new();
+    let overrides = pronunciation_aliases();
+    if let Some(readings) = c.to_pinyin_multi() {
+        for py in readings {
+            let plain = normalize_pinyin_key(&py.plain().to_ascii_lowercase());
+            if !plain.is_empty() && !out.contains(&plain) {
+                out.push(plain);
+            }
+        }
+    }
+    if let Some(aliases) = overrides.accepted.get(&c) {
+        for alias in aliases {
+            if !out.iter().any(|seen| seen == alias) {
+                out.push(alias.clone());
+            }
+        }
+    }
+    if let Some(excluded) = overrides.excluded.get(&c) {
+        out.retain(|reading| !excluded.contains(reading));
+    }
+    out
+}
+
+pub fn build_dict(chars: &str) -> HashMap<String, Vec<char>> {
+    let mut m: HashMap<String, Vec<char>> = HashMap::new();
+    for c in chars
+        .chars()
+        .filter(|ch| !ch.is_whitespace() && *ch != '\r' && *ch != '\n')
+    {
+        for s in pinyin_plain_options(c) {
+            m.entry(s).or_default().push(c);
+        }
+    }
+    for v in m.values_mut() {
+        v.sort_unstable();
+        v.dedup();
+    }
+    m
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{build_dict, pinyin_plain_options};
+
+    #[test]
+    fn build_dict_indexes_heteronym_readings() {
+        let dict = build_dict("重");
+        assert!(dict.get("zhong").is_some_and(|chars| chars.contains(&'重')));
+        assert!(dict.get("chong").is_some_and(|chars| chars.contains(&'重')));
+    }
+
+    #[test]
+    fn build_dict_uses_v_form_for_umlaut_syllables() {
+        let dict = build_dict("\u{8650}\u{7565}");
+        assert!(dict
+            .get("nve")
+            .is_some_and(|chars| chars.contains(&'\u{8650}')));
+        assert!(dict
+            .get("lve")
+            .is_some_and(|chars| chars.contains(&'\u{7565}')));
+        assert!(!dict.contains_key("nue"));
+        assert!(!dict.contains_key("lue"));
+    }
+
+    #[test]
+    fn build_dict_excludes_historical_neng_xiong_reading() {
+        let dict = build_dict("能熊");
+        assert!(dict.get("neng").is_some_and(|chars| chars.contains(&'能')));
+        assert!(dict.get("xiong").is_some_and(|chars| chars.contains(&'熊')));
+        assert!(!dict.get("xiong").is_some_and(|chars| chars.contains(&'能')));
+    }
+
+    #[test]
+    fn excludes_historical_single_character_readings_from_common_collisions() {
+        let historical = [
+            ('而', "neng"),
+            ('是', "ti"),
+            ('不', "fou"),
+            ('也', "yi"),
+            ('他', "tuo"),
+            ('年', "ning"),
+            ('个', "gan"),
+            ('前', "jian"),
+            ('听', "yin"),
+            ('她', "jie"),
+            ('它', "tuo"),
+            ('能', "xiong"),
+            ('大', "tai"),
+            ('能', "tai"),
+            ('不', "fu"),
+            ('事', "zi"),
+            ('她', "chi"),
+            ('最', "cuo"),
+            ('月', "ru"),
+        ];
+        for (ch, reading) in historical {
+            assert!(
+                !pinyin_plain_options(ch)
+                    .iter()
+                    .any(|value| value == reading),
+                "unexpected historical reading {ch} -> {reading}"
+            );
+        }
+    }
+
+    #[test]
+    fn keeps_project_approved_modern_single_character_aliases() {
+        assert!(pinyin_plain_options('重').contains(&"chong".to_string()));
+        assert!(pinyin_plain_options('行').contains(&"hang".to_string()));
+        assert!(pinyin_plain_options('着').contains(&"zhao".to_string()));
+        assert!(pinyin_plain_options('大').contains(&"da".to_string()));
+        assert!(pinyin_plain_options('大').contains(&"dai".to_string()));
+    }
+
+    #[test]
+    fn keeps_high_frequency_modern_single_character_aliases() {
+        for (ch, reading) in [
+            ('嗯', "en"),
+            ('了', "liao"),
+            ('和', "huo"),
+            ('和', "hu"),
+            ('会', "kuai"),
+            ('弹', "tan"),
+            ('强', "jiang"),
+            ('省', "xing"),
+            ('觉', "jiao"),
+            ('率', "shuai"),
+            ('藏', "zang"),
+            ('圈', "juan"),
+            ('系', "ji"),
+            ('单', "shan"),
+            ('调', "diao"),
+            ('降', "xiang"),
+            ('角', "jue"),
+            ('解', "xie"),
+            ('仇', "qiu"),
+            ('查', "zha"),
+            ('盛', "cheng"),
+        ] {
+            assert!(
+                pinyin_plain_options(ch)
+                    .iter()
+                    .any(|value| value == reading),
+                "missing modern alias {ch} -> {reading}"
+            );
+        }
+    }
+}

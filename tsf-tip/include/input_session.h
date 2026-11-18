@@ -7,6 +7,7 @@ class SrfInputSession {
   std::uint64_t Capture() const { return m_epoch; }
   bool Matches(std::uint64_t epoch) const { return epoch == m_epoch; }
   void End() { ++m_epoch; }
+
  private:
   std::uint64_t m_epoch = 1;
 };

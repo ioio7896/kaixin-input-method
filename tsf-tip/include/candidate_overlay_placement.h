@@ -7,13 +7,10 @@
 
 #include "ime_model.h"
 
-inline bool CandidateOverlayRectCoversMonitor(const RECT& windowRect,
-                                              const RECT& monitorRect,
+inline bool CandidateOverlayRectCoversMonitor(const RECT& windowRect, const RECT& monitorRect,
                                               LONG tolerance = 2) {
-  if (tolerance < 0 || windowRect.right <= windowRect.left ||
-      windowRect.bottom <= windowRect.top ||
-      monitorRect.right <= monitorRect.left ||
-      monitorRect.bottom <= monitorRect.top) {
+  if (tolerance < 0 || windowRect.right <= windowRect.left || windowRect.bottom <= windowRect.top ||
+      monitorRect.right <= monitorRect.left || monitorRect.bottom <= monitorRect.top) {
     return false;
   }
   return windowRect.left <= monitorRect.left + tolerance &&
@@ -34,8 +31,7 @@ void ApplyCandidateGameOverlayOffset(const SrfAppOptions* options, RECT* rect);
 
 // Converts a source-process logical/virtualized screen rectangle into physical
 // screen pixels before it crosses into the PMv2 overlay process.
-bool ConvertCandidateOverlayAnchorToPhysical(HWND targetHwnd, const RECT& input,
-                                             RECT* output);
+bool ConvertCandidateOverlayAnchorToPhysical(HWND targetHwnd, const RECT& input, RECT* output);
 
 // Re-evaluates the target window after Alt+Enter instead of trusting the
 // fullscreen bit captured by an older TIP snapshot.

@@ -361,7 +361,7 @@ fn refresh_data(force: bool, last_modified: Option<&str>) -> Result<serde_json::
         clipboard_store::capture_status();
     let snapshot = snapshot_dto(&load_snapshot_with_log("refresh")?);
     let modified = snapshot_revision(&snapshot);
-    let changed = last_modified.map_or(true, |previous| previous != modified);
+    let changed = last_modified.is_none_or(|previous| previous != modified);
     Ok(json!({
         "changed": changed,
         "modified": modified,

@@ -4,6 +4,7 @@ No statistical score is treated as evidence that a generated sentence is natural
 The archived import snapshots remain provenance; maintained runtime output is
 filtered by this policy even when an older snapshot is imported again.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -25,6 +26,9 @@ if any(not 3 <= len(phrase) <= 5 for phrase in SHORT_REJECTIONS):
     raise ValueError("Short-phrase review contains an entry outside three to five characters")
 REJECTED_PHRASES = {**POLICY.get("rejected_phrases", {}), **SHORT_REJECTIONS}
 SPELLING_CORRECTIONS = {rule["phrase"]: rule for rule in POLICY.get("spelling_corrections", [])}
+RETAINED_READINGS = {
+    (rule["phrase"], rule["reading"]) for rule in POLICY.get("retained_phrase_readings", [])
+}
 if set(SHORT_POLICY["preserved_phrases"]) & REJECTED_PHRASES.keys():
     raise ValueError("Short-phrase rejection conflicts with a preserved expression")
 # In these old templates 一下 was appended after the object. Keep explicitly
@@ -62,6 +66,52 @@ def canonical_entry(phrase: str, reading: str) -> tuple[str, str]:
     return phrase, corrected_reading(phrase, reading)
 
 
+def character_readings(root: Path) -> dict[str, set[str]]:
+    """Pinned rust-pinyin snapshot plus the same single-character overrides as runtime."""
+
+    def normalize(value: str) -> str:
+        return value.lower().replace("ü", "v").replace("nue", "nve").replace("lue", "lve")
+
+    result = {}
+    path = root / "pinyin-ime/data/pinyin_character_readings.txt"
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        if line.strip() and not line.startswith("#"):
+            ch, codes = line.split("\t")
+            result[ch] = {normalize(code) for code in codes.split()}
+    for name in ("pronunciation_aliases.tsv", "pronunciation_exclusions.tsv"):
+        path = root / "data_sources/kaixin" / name
+        for line in path.read_text(encoding="utf-8-sig").splitlines():
+            if not line.strip() or line.startswith("#"):
+                continue
+            fields = line.split("\t")
+            if len(fields[0]) != 1:
+                continue
+            readings = result.setdefault(fields[0], set())
+            if len(fields) > 3 and fields[3] == "historical":
+                readings.discard(normalize(fields[1]))
+            else:
+                readings.add(normalize(fields[1]))
+    return result
+
+
+def reading_matches_characters(phrase: str, reading: str, reference: dict[str, set[str]]) -> bool:
+    # Mixed entities have authored input codes. Classical/place-name readings
+    # are exact-word exceptions, never aliases spread to every use of a character.
+    if (phrase, reading) in RETAINED_READINGS:
+        return True
+    if not all(
+        0x3400 <= ord(ch) <= 0x9FFF or 0xF900 <= ord(ch) <= 0xFAFF or 0x20000 <= ord(ch) <= 0x323AF
+        for ch in phrase
+    ):
+        return True
+    syllables = (
+        reading.lower().replace("ü", "v").replace("nue", "nve").replace("lue", "lve").split()
+    )
+    return len(syllables) == len(phrase) and all(
+        syllable in reference.get(ch, set()) for ch, syllable in zip(phrase, syllables)
+    )
+
+
 def reviewed_long_rows() -> list[tuple[str, str, int]]:
     path = ROOT / POLICY["reviewed_long_phrases"]
     result = []
@@ -72,9 +122,13 @@ def reviewed_long_rows() -> list[tuple[str, str, int]]:
         phrase, reading, score = line.split("\t")
         phrase, reading = canonical_entry(phrase, reading)
         key = (phrase, reading)
-        if (not 5 <= len(phrase) <= 8 or len(reading.split()) != len(phrase)
-                or not 1 <= int(score) <= 10_000 or key in seen
-                or phrase_rejection_reason(phrase)):
+        if (
+            not 5 <= len(phrase) <= 8
+            or len(reading.split()) != len(phrase)
+            or not 1 <= int(score) <= 10_000
+            or key in seen
+            or phrase_rejection_reason(phrase)
+        ):
             raise ValueError(f"Invalid reviewed expression: {path}:{number}")
         seen.add(key)
         result.append((phrase, corrected_reading(phrase, reading), int(score)))
@@ -103,7 +157,8 @@ def write_reviewed_long_lexicon() -> int:
         "# Source: data_sources/kaixin/reviewed_long_phrases.tsv\n"
         "# 逐条维护完整表达；不按数量补齐，不组合主语、动作、宾语。\n"
         + "".join(f"{p}\t{r}\t{s}\n" for p, r, s in rows),
-        encoding="utf-8", newline="\n",
+        encoding="utf-8",
+        newline="\n",
     )
     return len(rows)
 
@@ -115,23 +170,61 @@ def update_category_catalog() -> None:
     for item in manifest["categories"]:
         path = ROOT / "lexicon/zh-ext" / item["file"]
         data = path.read_bytes()
-        item["rows"] = sum(bool(l.strip()) and not l.startswith("#") for l in data.decode("utf-8-sig").splitlines())
+        item["rows"] = sum(
+            bool(line.strip()) and not line.startswith("#")
+            for line in data.decode("utf-8-sig").splitlines()
+        )
         item["sha256"] = hashlib.sha256(data).hexdigest()
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
-    generated = ["// Generated from shared/category_lexicons.json; maintained by scripts/lexicon_quality.py.",
-                 "pub fn category_lexicon_info(tag: &str) -> Option<(&'static str, &'static str)> {",
-                 "    match tag {"]
-    generated.extend(f'        "{c["tag"]}" => Some(("{c["title"]}", "{c["group"]}")),' for c in manifest["categories"])
-    generated.extend(['        _ => None,', '    }', '}', '',
-                      'pub fn category_lexicon_default_enabled(tag: &str) -> Option<bool> {',
-                      '    match tag {'])
-    generated.extend(f'        "{c["tag"]}" => Some({str(c.get("default_enabled", True)).lower()}),' for c in manifest["categories"])
-    generated.extend(['        _ => None,', '    }', '}'])
-    (ROOT / "pinyin-ime/src/category_lexicons.generated.rs").write_text("\n".join(generated) + "\n", encoding="utf-8", newline="\n")
+        scores = [
+            int(line.split("\t")[2])
+            for line in data.decode("utf-8-sig").splitlines()
+            if line.strip() and not line.startswith("#")
+        ]
+        item["score_min"] = min(scores, default=0)
+        item["score_max"] = max(scores, default=0)
+        item["score_tiers"] = {
+            f"{low}-{high}": sum(low <= score <= high for score in scores)
+            for low, high in ((7500, 10000), (5000, 7499), (2500, 4999), (100, 2499), (1, 99))
+        }
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
+    generated = [
+        "// Generated from shared/category_lexicons.json; maintained by scripts/lexicon_quality.py.",
+        "pub fn category_lexicon_info(tag: &str) -> Option<(&'static str, &'static str)> {",
+        "    match tag {",
+    ]
+    generated.extend(
+        f'        "{c["tag"]}" => Some(("{c["title"]}", "{c["group"]}")),'
+        for c in manifest["categories"]
+    )
+    generated.extend(
+        [
+            "        _ => None,",
+            "    }",
+            "}",
+            "",
+            "pub fn category_lexicon_default_enabled(tag: &str) -> Option<bool> {",
+            "    match tag {",
+        ]
+    )
+    generated.extend(
+        f'        "{c["tag"]}" => Some({str(c.get("default_enabled", True)).lower()}),'
+        for c in manifest["categories"]
+    )
+    generated.extend(["        _ => None,", "    }", "}"])
+    (ROOT / "crates/kaixin-core/src/category_lexicons.generated.rs").write_text(
+        "\n".join(generated) + "\n", encoding="utf-8", newline="\n"
+    )
+    from lexicon_maintenance import write_inventory
+
+    write_inventory(ROOT, manifest["categories"])
 
 
 def check_quality(root: Path) -> list[str]:
     errors = []
+    reference = character_readings(root)
+    found_readings = set()
     for path in sorted((root / "lexicon").rglob("*.txt")):
         if "en" in path.relative_to(root / "lexicon").parts:
             continue
@@ -140,8 +233,16 @@ def check_quality(root: Path) -> list[str]:
                 continue
             fields = line.split("\t")
             phrase = fields[0]
+            if len(fields) >= 3:
+                found_readings.add((phrase, fields[1]))
+                if not reading_matches_characters(phrase, fields[1], reference):
+                    errors.append(
+                        f"{path.relative_to(root)}:{number}: word/character reading mismatch: {phrase} {fields[1]}"
+                    )
             if phrase in SPELLING_CORRECTIONS:
-                errors.append(f"{path.relative_to(root)}:{number}: noncanonical spelling: {phrase} -> {SPELLING_CORRECTIONS[phrase]['replacement']}")
+                errors.append(
+                    f"{path.relative_to(root)}:{number}: noncanonical spelling: {phrase} -> {SPELLING_CORRECTIONS[phrase]['replacement']}"
+                )
             try:
                 score = int(fields[1] if len(fields) == 2 else fields[2])
                 if not 1 <= score <= 10_000:
@@ -152,33 +253,69 @@ def check_quality(root: Path) -> list[str]:
             if reason:
                 errors.append(f"{path.relative_to(root)}:{number}: {reason}: {phrase}")
             if len(fields) >= 3 and corrected_reading(phrase, fields[1]) != fields[1]:
-                errors.append(f"{path.relative_to(root)}:{number}: rejected reading: {phrase} {fields[1]}")
+                errors.append(
+                    f"{path.relative_to(root)}:{number}: rejected reading: {phrase} {fields[1]}"
+                )
     # Compare membership, readings and weights: accidentally running the legacy
     # quota generator must fail packaging, even if its rows look grammatical.
     path = root / "lexicon/zh/life_common_phrases.txt"
-    actual = [line for line in path.read_text(encoding="utf-8-sig").splitlines()
-              if line.strip() and not line.startswith("#")]
+    actual = [
+        line
+        for line in path.read_text(encoding="utf-8-sig").splitlines()
+        if line.strip() and not line.startswith("#")
+    ]
     expected = [f"{p}\t{r}\t{s}" for p, r, s in reviewed_long_rows()]
     if actual != expected:
-        errors.append("life_common_phrases.txt differs from reviewed source; regenerate with lexicon_quality.py --apply")
+        errors.append(
+            "life_common_phrases.txt differs from reviewed source; regenerate with lexicon_quality.py --apply"
+        )
     manifest = json.loads((root / "shared/category_lexicons.json").read_text(encoding="utf-8"))
     for item in manifest["categories"]:
         path = root / "lexicon/zh-ext" / item["file"]
         data = path.read_bytes()
-        count = sum(bool(line.strip()) and not line.startswith("#") for line in data.decode("utf-8-sig").splitlines())
+        count = sum(
+            bool(line.strip()) and not line.startswith("#")
+            for line in data.decode("utf-8-sig").splitlines()
+        )
         if count != item["rows"] or hashlib.sha256(data).hexdigest() != item["sha256"]:
             errors.append(f"{item['file']}: maintained category manifest has stale count/hash")
+    for phrase, reading in sorted(RETAINED_READINGS - found_readings):
+        errors.append(f"Protected word-specific reading was lost: {phrase} {reading}")
+    from lexicon_maintenance import check_maintained_sources
+
+    errors.extend(check_maintained_sources(root))
+    # Fixture membership is a source invariant, not an engine evaluation.
+    path = root / "tests/popular_three_char_cases.tsv"
+    for number, line in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
+        if line.strip() and not line.startswith("#"):
+            fields = line.split("\t")
+            if len(fields) > 1 and phrase_rejection_reason(fields[1]):
+                errors.append(
+                    f"{path.relative_to(root)}:{number}: rejected phrase remains a positive case: {fields[1]}"
+                )
     return errors
 
 
 def apply_quality() -> dict:
-    report = {"removed": [], "corrected": [], "spelling_corrected": [], "files": {}}
+    from lexicon_maintenance import apply_maintained_sources
+
+    report = {
+        "removed": [],
+        "corrected": [],
+        "spelling_corrected": [],
+        "files": {},
+        "deduplicated": [],
+        "maintenance": apply_maintained_sources(ROOT),
+    }
     for path in sorted((ROOT / "lexicon").rglob("*.txt")):
-        if "en" in path.relative_to(ROOT / "lexicon").parts or path.name == "life_common_phrases.txt":
+        if (
+            "en" in path.relative_to(ROOT / "lexicon").parts
+            or path.name == "life_common_phrases.txt"
+        ):
             continue
         lines = path.read_text(encoding="utf-8-sig").splitlines()
         output = []
-        seen = set()
+        seen = {}
         for line in lines:
             if not line.strip() or line.startswith("#"):
                 output.append(line)
@@ -186,7 +323,14 @@ def apply_quality() -> dict:
             fields = line.split("\t")
             if fields[0] in SPELLING_CORRECTIONS and len(fields) >= 3:
                 phrase, reading = canonical_entry(fields[0], fields[1])
-                report["spelling_corrected"].append({"file": path.relative_to(ROOT).as_posix(), "row": line, "replacement": phrase, "reading": reading})
+                report["spelling_corrected"].append(
+                    {
+                        "file": path.relative_to(ROOT).as_posix(),
+                        "row": line,
+                        "replacement": phrase,
+                        "reading": reading,
+                    }
+                )
                 fields[0], fields[1] = phrase, reading
             if phrase_rejection_reason(fields[0]):
                 report["removed"].append({"file": path.relative_to(ROOT).as_posix(), "row": line})
@@ -194,13 +338,30 @@ def apply_quality() -> dict:
             if len(fields) >= 3:
                 reading = corrected_reading(fields[0], fields[1])
                 if reading != fields[1]:
-                    report["corrected"].append({"file": path.relative_to(ROOT).as_posix(), "row": line, "reading": reading})
+                    report["corrected"].append(
+                        {"file": path.relative_to(ROOT).as_posix(), "row": line, "reading": reading}
+                    )
                     fields[1] = reading
             revised = "\t".join(fields)
-            # Preserve independent pronunciation classes and scores here.
-            if revised not in seen:
+            # Merge only the same phrase, explicit reading AND reading class.
+            # In particular, lue/lve and colloquial/primary rows remain distinct.
+            key = (
+                fields[0],
+                fields[1] if len(fields) >= 3 else "",
+                fields[3] if len(fields) >= 4 else "",
+            )
+            if key in seen:
+                index = seen[key]
+                previous = output[index].split("\t")
+                weight_index = 1 if len(fields) == 2 else 2
+                if int(fields[weight_index]) > int(previous[weight_index]):
+                    output[index] = revised
+                report["deduplicated"].append(
+                    {"file": path.relative_to(ROOT).as_posix(), "row": revised}
+                )
+            else:
+                seen[key] = len(output)
                 output.append(revised)
-                seen.add(revised)
         if output != lines:
             if output:
                 output[0] = re.sub(r"(?<=：)\d+(?=\s*(?:条|个))", str(len(seen)), output[0])
@@ -233,8 +394,12 @@ def main():
         report = apply_quality()
         dest = ROOT / "dist/lexicon-quality"
         dest.mkdir(parents=True, exist_ok=True)
-        (dest / "last-cleanup.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(f"Quality cleanup: {len(report['removed'])} removed, {len(report['corrected'])} readings corrected, {report['reviewed_long_count']} reviewed long expressions")
+        (dest / "last-cleanup.json").write_text(
+            json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        print(
+            f"Quality cleanup: {len(report['removed'])} removed, {len(report['corrected'])} readings corrected, {report['reviewed_long_count']} reviewed long expressions"
+        )
     errors = check_quality(ROOT)
     for error in errors[:30]:
         print(error)

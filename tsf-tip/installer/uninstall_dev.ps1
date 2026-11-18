@@ -17,8 +17,8 @@ $SimplifiedChineseTip = ('0804:{0}{1}' -f $TextServiceClsid, $ProfileGuid)
 $AppDisplayName = '开心输入法'
 $AppPathName = 'kaixin'
 $TrayRunEntryName = $AppDisplayName
-$LegacyTrayRunEntryName = $AppDisplayName + (-join ([char[]](0x6258, 0x76D8)))
-$EngineRunEntryName = $AppDisplayName + (-join ([char[]](0x5F15, 0x64CE)))
+$LegacyTrayRunEntryName = $AppDisplayName + ( -join ([char[]](0x6258, 0x76D8)))
+$EngineRunEntryName = $AppDisplayName + ( -join ([char[]](0x5F15, 0x64CE)))
 $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $RuntimePayloadRootName = 'runtime'
 $script:UninstallLogPath = $null
@@ -59,9 +59,7 @@ function Write-UninstallLog {
         Ensure-Directory -Path $directory
         $line = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message)
         Add-Content -LiteralPath $script:UninstallLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
-    } catch {
-        # Best-effort logging only.
-    }
+    } catch { Write-Verbose 'Optional operation in Write-UninstallLog failed; continuing with the existing fallback.' }
 }
 
 function Get-UninstallKeyPath {
@@ -127,7 +125,7 @@ function Add-PendingDeleteOperations {
     }
 
     $dirs = @(Get-ChildItem -LiteralPath $Path -Recurse -Force -Directory -ErrorAction SilentlyContinue |
-        Sort-Object FullName -Descending)
+            Sort-Object FullName -Descending)
     foreach ($dir in $dirs) {
         [void]$operations.Add((ConvertTo-PendingDeletePath -Path $dir.FullName))
         [void]$operations.Add('')
@@ -246,7 +244,7 @@ function Remove-TipFromLoadedUserRegistry {
             $keys = @()
             try {
                 $keys = @((Get-Item -LiteralPath $root -ErrorAction Stop)) +
-                    @(Get-ChildItem -LiteralPath $root -Recurse -ErrorAction SilentlyContinue)
+                @(Get-ChildItem -LiteralPath $root -Recurse -ErrorAction SilentlyContinue)
             } catch {
                 Write-UninstallLog ("WARN: could not enumerate loaded user language registry root {0}: {1}" -f $root, $_.Exception.Message)
                 continue
@@ -284,8 +282,8 @@ function Remove-TipFromLoadedUserRegistry {
                                 $deleteValue = $true
                             } elseif ($text.IndexOf($Tip, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
                                 $parts = @($text -split '[;,]' | Where-Object {
-                                    -not ([string]$_).Trim().Equals($Tip, [System.StringComparison]::OrdinalIgnoreCase)
-                                })
+                                        -not ([string]$_).Trim().Equals($Tip, [System.StringComparison]::OrdinalIgnoreCase)
+                                    })
                                 if ($parts.Count -eq 0) {
                                     $deleteValue = $true
                                 } else {
@@ -548,8 +546,7 @@ function Stop-RunningHelpers {
                 if ($process.MainWindowHandle -ne 0) {
                     [void]$process.CloseMainWindow()
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
         }
     }
     Start-Sleep -Milliseconds 700
@@ -559,8 +556,7 @@ function Stop-RunningHelpers {
                 if (-not $process.HasExited) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
         }
     }
     foreach ($processName in $visibleTools) {

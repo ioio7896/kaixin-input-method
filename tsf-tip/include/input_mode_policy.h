@@ -23,8 +23,7 @@ inline std::uint32_t ClearSystemFullShapeConversion(std::uint32_t conversion,
   return conversion & ~fullShapeMask;
 }
 
-inline bool ShouldRegisterFullShapeHotkey(bool defaultFullShape,
-                                          bool fullShapeHotkeyEnabled) {
+inline bool ShouldRegisterFullShapeHotkey(bool defaultFullShape, bool fullShapeHotkeyEnabled) {
   // The default-full-shape setting promises Shift+Space as a temporary escape;
   // the explicit shortcut setting also makes it available from half shape.
   return defaultFullShape || fullShapeHotkeyEnabled;

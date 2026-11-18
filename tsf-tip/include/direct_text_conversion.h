@@ -78,8 +78,9 @@ inline std::wstring SrfConvertDirectText(const std::wstring& text, const SrfInpu
       replacement = L"\uff07";
     }
 
-    if (replacement.empty() && input.symbolFullwidth && ((ch >= 0x21 && ch <= 0x2f) || (ch >= 0x3a && ch <= 0x40) ||
-         (ch >= 0x5b && ch <= 0x60) || (ch >= 0x7b && ch <= 0x7e))) {
+    if (replacement.empty() && input.symbolFullwidth &&
+        ((ch >= 0x21 && ch <= 0x2f) || (ch >= 0x3a && ch <= 0x40) || (ch >= 0x5b && ch <= 0x60) ||
+         (ch >= 0x7b && ch <= 0x7e))) {
       replacement.push_back(static_cast<wchar_t>(0xff01 + (ch - 0x21)));
     }
 

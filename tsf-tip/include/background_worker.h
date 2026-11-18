@@ -11,7 +11,8 @@ extern "C" void SrfTip_BackgroundWorkerAddRef();
 extern "C" void SrfTip_BackgroundWorkerRelease();
 
 namespace srf_worker_detail {
-template <typename Fn> struct Context {
+template <typename Fn>
+struct Context {
   HMODULE module;
   Fn function;
   static DWORD WINAPI Run(void* parameter) noexcept {
@@ -19,7 +20,10 @@ template <typename Fn> struct Context {
     {
       std::unique_ptr<Context> context(static_cast<Context*>(parameter));
       module = context->module;
-      try { context->function(); } catch (...) {}
+      try {
+        context->function();
+      } catch (...) {
+      }
       // Destroy captures and callable while the module is still referenced.
     }
     SrfTip_BackgroundWorkerRelease();
@@ -27,14 +31,15 @@ template <typename Fn> struct Context {
     FreeLibraryAndExitThread(module, 0);
   }
 };
-}
+}  // namespace srf_worker_detail
 
 template <typename Fn>
 bool StartDetachedBackgroundWorker(Fn&& function) noexcept {
   using Context = srf_worker_detail::Context<std::decay_t<Fn>>;
   HMODULE module = nullptr;
   if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                         reinterpret_cast<LPCWSTR>(&Context::Run), &module)) return false;
+                          reinterpret_cast<LPCWSTR>(&Context::Run), &module))
+    return false;
   SrfTip_BackgroundWorkerAddRef();
   try {
     auto context = std::make_unique<Context>(Context{module, std::forward<Fn>(function)});
@@ -44,7 +49,8 @@ bool StartDetachedBackgroundWorker(Fn&& function) noexcept {
       CloseHandle(thread);
       return true;
     }
-  } catch (...) {}
+  } catch (...) {
+  }
   SrfTip_BackgroundWorkerRelease();
   FreeLibrary(module);
   return false;

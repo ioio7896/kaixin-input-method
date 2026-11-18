@@ -1,0 +1,8 @@
+{
+  "rust_profiles": {
+    "headless": ["--no-default-features", "--features", "pinyin-ime/dev-tools"],
+    "desktop": ["--all-features"]
+  },
+  "native_architectures": ["x64", "Win32"],
+  "native_target": "kaixin_check_targets"
+}

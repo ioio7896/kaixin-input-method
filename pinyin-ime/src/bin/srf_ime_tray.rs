@@ -18,20 +18,22 @@ mod win {
     };
     use chrono::{DateTime, FixedOffset, Local};
     use pinyin_ime::runtime_log::{self, RuntimeLogLevel};
+    use pinyin_ime::screenshot_trace::ScreenshotTrace;
     use pinyin_ime::{
         app_paths, clipboard_store, external_translation, screenshot_capture,
         screenshot_region_selector, screenshot_store, win_paste, windows_graphics_capture,
     };
+    use sha2::{Digest, Sha256};
     use std::ffi::c_void;
     use std::fs;
-    use std::io::Cursor;
     use std::mem::{size_of, zeroed};
     use std::path::{Path, PathBuf};
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-    use std::sync::{Mutex, OnceLock};
+    use std::sync::{Arc, Mutex, OnceLock};
     use std::thread;
     use std::time::{Duration, Instant, SystemTime};
+    use windows_sys::core::GUID;
     use windows_sys::Win32::Foundation::{
         CloseHandle, GetLastError, COLORREF, ERROR_ALREADY_EXISTS, HANDLE, HWND, LPARAM, LRESULT,
         POINT, RECT, WPARAM,
@@ -57,8 +59,8 @@ mod win {
         RegisterHotKey, UnregisterHotKey, MOD_ALT, MOD_CONTROL, MOD_NOREPEAT, MOD_SHIFT, MOD_WIN,
     };
     use windows_sys::Win32::UI::Shell::{
-        ShellExecuteW, Shell_NotifyIconW, NIF_ICON, NIF_MESSAGE, NIF_SHOWTIP, NIF_TIP, NIM_ADD,
-        NIM_DELETE, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICON_VERSION_4,
+        ShellExecuteW, Shell_NotifyIconW, NIF_GUID, NIF_ICON, NIF_MESSAGE, NIF_SHOWTIP, NIF_TIP,
+        NIM_ADD, NIM_DELETE, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICON_VERSION_4,
     };
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         CreateIconIndirect, CreateWindowExW, DefWindowProcW, DestroyIcon, DestroyWindow,
@@ -175,8 +177,7 @@ mod win {
     const INSTALL_MAINTENANCE_MAX_AGE_MS: u32 = 30 * 60 * 1000;
     /// 避免双击或菜单重复拉起设置窗口。
     static LAST_SETTINGS_OPEN: Mutex<Option<Instant>> = Mutex::new(None);
-    static SCREENSHOT_FLOW_ACTIVE: AtomicBool = AtomicBool::new(false);
-    static SCREENSHOT_CANCEL_REQUESTED: AtomicBool = AtomicBool::new(false);
+    static ACTIVE_SCREENSHOT: Mutex<Option<Arc<ScreenshotSession>>> = Mutex::new(None);
     static SCREENSHOT_RESUME_RECOVERY_PENDING: AtomicBool = AtomicBool::new(false);
     static SCREENSHOT_HANDOFF_COUNTER: AtomicU64 = AtomicU64::new(0);
     const SETTINGS_OPEN_DEBOUNCE: Duration = Duration::from_millis(1200);
@@ -218,6 +219,7 @@ mod win {
         }
         if std::env::args().any(|arg| arg == "--screenshot-capture") {
             run_screenshot_capture();
+            let _ = runtime_log::flush_pending_logs(Duration::from_millis(500));
             return;
         }
         unsafe {
@@ -272,18 +274,22 @@ mod win {
                 return;
             }
 
-            let _ = Box::into_raw(app);
-
             let mut msg: MSG = zeroed();
             while GetMessageW(&mut msg, 0, 0, 0) > 0 {
                 TranslateMessage(&msg);
                 DispatchMessageW(&msg);
+            }
+            // Keep the window's borrowed state and the singleton mutex alive
+            // through window destruction, including an unexpected pump exit.
+            if IsWindow(hwnd) != 0 {
+                let _ = DestroyWindow(hwnd);
             }
         }
     }
 
     struct TrayApp {
         mutex: HANDLE,
+        icon_guid: Option<GUID>,
         icon: isize,
         icon_owned: bool,
         last_icon_key: Option<TrayIconKey>,
@@ -493,6 +499,7 @@ mod win {
         fn new(mutex: HANDLE) -> Self {
             Self {
                 mutex,
+                icon_guid: tray_icon_guid(),
                 icon: 0,
                 icon_owned: false,
                 last_icon_key: None,
@@ -513,78 +520,28 @@ mod win {
             }
         }
 
-        unsafe fn add_tray_icon(&mut self, hwnd: HWND) -> bool {
-            let state = read_tray_visual_state();
-            let icon_key = state.icon_key();
-            let icon = create_status_icon(icon_key);
-            self.icon_owned = icon.is_some();
-            self.icon = icon.unwrap_or_else(|| LoadIconW(0, IDI_APPLICATION));
-            if self.icon == 0 {
-                return false;
+        unsafe fn tray_icon_identity(&self, hwnd: HWND) -> NOTIFYICONDATAW {
+            let mut nid: NOTIFYICONDATAW = zeroed();
+            nid.cbSize = size_of::<NOTIFYICONDATAW>() as u32;
+            nid.hWnd = hwnd;
+            nid.uID = TRAY_ICON_ID;
+            if let Some(guid) = self.icon_guid {
+                nid.uFlags = NIF_GUID;
+                nid.guidItem = guid;
             }
-
-            self.last_icon_key = Some(icon_key);
-            self.last_visual_state = Some(state.clone());
-
-            let mut nid = notify_icon_data(hwnd, self.icon, &state);
-            if Shell_NotifyIconW(NIM_ADD, &nid) == 0 {
-                return false;
-            }
-            nid.Anonymous.uVersion = NOTIFYICON_VERSION_4;
-            let _ = Shell_NotifyIconW(NIM_SETVERSION, &nid);
-            true
+            nid
         }
 
         unsafe fn restore_tray_icon_after_taskbar_created(&mut self, hwnd: HWND) {
-            let state = read_tray_visual_state();
-            let icon_key = state.icon_key();
-            if self.icon == 0 || self.last_icon_key != Some(icon_key) {
-                let old_icon = self.icon;
-                let old_icon_owned = self.icon_owned;
-                let icon = create_status_icon(icon_key);
-                self.icon_owned = icon.is_some();
-                self.icon = icon.unwrap_or_else(|| LoadIconW(0, IDI_APPLICATION));
-                if old_icon_owned && old_icon != 0 && old_icon != self.icon {
-                    let _ = DestroyIcon(old_icon);
-                }
-            }
-            if self.icon == 0 {
-                runtime_log::log_tray(
-                    RuntimeLogLevel::Error,
-                    "tray_icon_restore",
-                    "reason=taskbar_created result=0 error=no_icon",
-                );
-                return;
-            }
-
-            self.last_icon_key = Some(icon_key);
-            self.last_visual_state = Some(state.clone());
-
-            let mut nid = notify_icon_data(hwnd, self.icon, &state);
-            if Shell_NotifyIconW(NIM_ADD, &nid) != 0 {
-                nid.Anonymous.uVersion = NOTIFYICON_VERSION_4;
-                let _ = Shell_NotifyIconW(NIM_SETVERSION, &nid);
-                runtime_log::log_tray(
-                    RuntimeLogLevel::Basic,
-                    "tray_icon_restore",
-                    "reason=taskbar_created result=1 action=add",
-                );
-                return;
-            }
-
-            if Shell_NotifyIconW(NIM_MODIFY, &nid) != 0 {
-                runtime_log::log_tray(
-                    RuntimeLogLevel::Basic,
-                    "tray_icon_restore",
-                    "reason=taskbar_created result=1 action=modify",
-                );
-                return;
-            }
-
+            let restored = self.set_visual_state(hwnd, read_tray_visual_state(), true);
             runtime_log::log_tray(
-                RuntimeLogLevel::Error,
+                if restored {
+                    RuntimeLogLevel::Basic
+                } else {
+                    RuntimeLogLevel::Error
+                },
                 "tray_icon_restore",
-                format!("reason=taskbar_created result=0 error={}", GetLastError()),
+                format!("reason=taskbar_created result={}", u8::from(restored)),
             );
         }
 
@@ -598,11 +555,7 @@ mod win {
         }
 
         unsafe fn remove_tray_icon(&mut self, hwnd: HWND) {
-            let state = self
-                .last_visual_state
-                .clone()
-                .unwrap_or_else(read_tray_visual_state);
-            let nid = notify_icon_data(hwnd, self.icon, &state);
+            let nid = self.tray_icon_identity(hwnd);
             let _ = Shell_NotifyIconW(NIM_DELETE, &nid);
             self.destroy_owned_icon();
         }
@@ -640,9 +593,14 @@ mod win {
             self.set_visual_state(hwnd, state, false);
         }
 
-        unsafe fn set_visual_state(&mut self, hwnd: HWND, state: TrayVisualState, force: bool) {
+        unsafe fn set_visual_state(
+            &mut self,
+            hwnd: HWND,
+            state: TrayVisualState,
+            force: bool,
+        ) -> bool {
             if !force && self.last_visual_state.as_ref() == Some(&state) {
-                return;
+                return true;
             }
 
             let next_key = state.icon_key();
@@ -659,15 +617,32 @@ mod win {
                 (self.icon, self.icon_owned)
             };
             if next_icon == 0 {
-                return;
+                self.last_visual_state = None;
+                return false;
             }
 
-            let nid = notify_icon_data(hwnd, next_icon, &state);
-            if Shell_NotifyIconW(NIM_MODIFY, &nid) == 0 {
-                if icon_changed && next_icon_owned && next_icon != old_icon {
-                    let _ = DestroyIcon(next_icon);
+            let identity = self.tray_icon_identity(hwnd);
+            let mut nid = identity;
+            nid.uFlags |= NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
+            nid.uCallbackMessage = WM_TRAYICON;
+            nid.hIcon = next_icon;
+            write_wide_buffer(&mut nid.szTip, &tray_tooltip_text(&state));
+            if old_icon == 0 || Shell_NotifyIconW(NIM_MODIFY, &nid) == 0 {
+                // The singleton is held. Remove a previous process's entry
+                // before registering this window as the callback owner.
+                if old_icon == 0 && self.icon_guid.is_some() {
+                    let _ = Shell_NotifyIconW(NIM_DELETE, &identity);
                 }
-                return;
+                if Shell_NotifyIconW(NIM_ADD, &nid) == 0 {
+                    if icon_changed && next_icon_owned && next_icon != old_icon {
+                        let _ = DestroyIcon(next_icon);
+                    }
+                    // Explorer may still be starting. Retry on the next poll.
+                    self.last_visual_state = None;
+                    return false;
+                }
+                nid.Anonymous.uVersion = NOTIFYICON_VERSION_4;
+                let _ = Shell_NotifyIconW(NIM_SETVERSION, &nid);
             }
 
             self.icon = next_icon;
@@ -678,6 +653,7 @@ mod win {
             if icon_changed && old_icon_owned && old_icon != 0 && old_icon != next_icon {
                 let _ = DestroyIcon(old_icon);
             }
+            true
         }
 
         unsafe fn toggle_ascii_mode(&mut self, hwnd: HWND) {
@@ -894,19 +870,16 @@ mod win {
 
         match msg {
             WM_CREATE => {
-                if app.is_null() || !(*app).add_tray_icon(hwnd) {
-                    DestroyWindow(hwnd);
+                if app.is_null() {
+                    return -1;
                 }
-                if !app.is_null() {
-                    (*app).refresh_screenshot_hotkey_if_needed(hwnd, true);
-                    (*app).refresh_clipboard_background_if_needed(true);
-                }
+                (*app).refresh_icon_if_needed(hwnd);
+                (*app).refresh_screenshot_hotkey_if_needed(hwnd, true);
+                (*app).refresh_clipboard_background_if_needed(true);
                 // 轮询注册表中的 AsciiMode，更新托盘图标为「中 / 英」。
                 HOTKEY_TRAY_HWND.store(hwnd, Ordering::Relaxed);
-                if !app.is_null() {
-                    (*app).foreground_hook =
-                        SetWinEventHook(3, 3, 0, Some(on_foreground_changed), 0, 0, 0);
-                }
+                (*app).foreground_hook =
+                    SetWinEventHook(3, 3, 0, Some(on_foreground_changed), 0, 0, 0);
                 let _ = SetTimer(hwnd, TIMER_ID_STATE_POLL, STATE_POLL_MS, None);
                 0
             }
@@ -948,22 +921,20 @@ mod win {
                 0
             }
             WM_TRAYICON => {
-                let event = tray_event_code(lparam);
-                let icon_id = tray_icon_id(lparam);
-                if icon_id != 0 && icon_id != TRAY_ICON_ID as u16 {
+                if app.is_null() {
                     return 0;
                 }
-                match event {
-                    WM_RBUTTONUP | WM_CONTEXTMENU => {
-                        show_menu(hwnd, Some(tray_anchor_point(wparam)))
-                    }
+                // This window receives callbacks for a single GUID-based icon.
+                match tray_event_code(lparam) {
+                    WM_RBUTTONUP => show_menu(hwnd, None),
+                    WM_CONTEXTMENU => show_menu(hwnd, Some(tray_anchor_point(wparam))),
                     // 单击托盘图标切换中/英；设置从右键菜单进入。
-                    WM_LBUTTONUP if !app.is_null() => {
+                    WM_LBUTTONUP => {
                         (*app).toggle_ascii_mode(hwnd);
                     }
                     WM_LBUTTONDBLCLK => open_settings(),
                     // NOTIFYICON v4：键盘激活、部分 Win10/11 壳层用 NIN_SELECT 代替鼠标 up。
-                    NIN_SELECT | NIN_KEYSELECT if !app.is_null() => {
+                    NIN_SELECT | NIN_KEYSELECT => {
                         (*app).toggle_ascii_mode(hwnd);
                     }
                     _ => {}
@@ -1017,9 +988,8 @@ mod win {
                 let _ = UnregisterHotKey(hwnd, OCR_TRANSLATE_HOTKEY_ID);
                 let _ = UnregisterHotKey(hwnd, TRANSLATE_HOTKEY_ID);
                 if !app.is_null() {
-                    (*app).remove_tray_icon(hwnd);
-                    let _ = Box::from_raw(app);
                     let _ = SetWindowLongPtrW(hwnd, GWLP_USERDATA, 0);
+                    (*app).remove_tray_icon(hwnd);
                 }
                 PostQuitMessage(0);
                 0
@@ -1031,6 +1001,13 @@ mod win {
                 0
             }
             WM_HOTKEY => {
+                if matches!(
+                    wparam as i32,
+                    SCREENSHOT_HOTKEY_ID | OCR_HOTKEY_ID | OCR_TRANSLATE_HOTKEY_ID
+                ) && cancel_active_screenshot()
+                {
+                    return 0;
+                }
                 if foreground_suppresses_tool_hotkeys() {
                     if !app.is_null() {
                         (*app).refresh_screenshot_hotkey_if_needed(hwnd, false);
@@ -1085,21 +1062,21 @@ mod win {
         mutex
     }
 
-    unsafe fn notify_icon_data(
-        hwnd: HWND,
-        icon: isize,
-        state: &TrayVisualState,
-    ) -> NOTIFYICONDATAW {
-        let mut nid: NOTIFYICONDATAW = zeroed();
-        nid.cbSize = size_of::<NOTIFYICONDATAW>() as u32;
-        nid.hWnd = hwnd;
-        nid.uID = TRAY_ICON_ID;
-        nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
-        nid.uCallbackMessage = WM_TRAYICON;
-        nid.hIcon = icon;
-        let tip = tray_tooltip_text(state);
-        write_wide_buffer(&mut nid.szTip, &tip);
-        nid
+    fn tray_icon_guid() -> Option<GUID> {
+        // Explorer binds a notification GUID to its executable path. Keep
+        // the ID stable across restarts/upgrades at the same install path.
+        let exe = std::env::current_exe().ok()?;
+        let path = pinyin_ime::shared_rules::strip_windows_verbatim_prefix(
+            exe.canonicalize().unwrap_or(exe),
+        );
+        let mut hash = Sha256::new();
+        hash.update(b"KaixinImeTray/status-icon\0");
+        hash.update(path.to_string_lossy().to_lowercase().as_bytes());
+        let mut id = [0; 16];
+        id.copy_from_slice(&hash.finalize()[..16]);
+        id[6] = (id[6] & 0x0f) | 0x80; // UUID version 8 (custom payload)
+        id[8] = (id[8] & 0x3f) | 0x80; // RFC variant
+        Some(GUID::from_u128(u128::from_be_bytes(id)))
     }
 
     fn build_tray_menu_items(
@@ -1769,9 +1746,152 @@ mod win {
 
     #[derive(Clone)]
     struct CapturedScreenshot {
-        image: image::RgbaImage,
+        image: Arc<image::RgbaImage>,
         source: SavedScreenshotSource,
         action: screenshot_region_selector::RegionAction,
+        trace: ScreenshotTrace,
+    }
+
+    #[derive(Default)]
+    struct ScreenshotSession {
+        cancellation: screenshot_region_selector::RegionSelectorCancellation,
+        trace: ScreenshotTrace,
+    }
+
+    impl ScreenshotSession {
+        fn cancel(&self) {
+            if self.cancellation.request() {
+                runtime_log::log_screenshot_health(
+                    "screenshot_cancel_request",
+                    format!("capture_id={} reason=second_invocation", self.trace.id()),
+                );
+            }
+        }
+
+        fn is_cancelled(&self) -> bool {
+            self.cancellation.is_requested()
+        }
+    }
+
+    struct ActiveScreenshot(Arc<ScreenshotSession>);
+
+    impl ActiveScreenshot {
+        fn begin() -> Option<Self> {
+            let mut active = ACTIVE_SCREENSHOT.lock().unwrap();
+            if let Some(session) = active.as_ref() {
+                session.cancel();
+                return None;
+            }
+            let session = Arc::new(ScreenshotSession::default());
+            *active = Some(session.clone());
+            Some(Self(session))
+        }
+    }
+
+    impl Drop for ActiveScreenshot {
+        fn drop(&mut self) {
+            *ACTIVE_SCREENSHOT.lock().unwrap() = None;
+        }
+    }
+
+    fn cancel_active_screenshot() -> bool {
+        let active = ACTIVE_SCREENSHOT.lock().unwrap();
+        let Some(session) = active.as_ref() else {
+            return false;
+        };
+        session.cancel();
+        true
+    }
+
+    #[cfg(test)]
+    mod screenshot_tests {
+        use super::*;
+
+        struct OutputDir(PathBuf);
+
+        impl OutputDir {
+            fn new() -> Self {
+                let path = std::env::temp_dir().join(format!(
+                    "kaixin-screenshot-test-{}-{}",
+                    std::process::id(),
+                    SCREENSHOT_HANDOFF_COUNTER.fetch_add(1, Ordering::Relaxed),
+                ));
+                fs::create_dir(&path).unwrap();
+                Self(path)
+            }
+        }
+
+        impl Drop for OutputDir {
+            fn drop(&mut self) {
+                if let Ok(entries) = fs::read_dir(&self.0) {
+                    for entry in entries.flatten() {
+                        let _ = fs::remove_file(entry.path());
+                    }
+                }
+                let _ = fs::remove_dir(&self.0);
+            }
+        }
+
+        #[test]
+        fn a_second_invocation_cancels_the_current_capture_without_affecting_the_next() {
+            let capture = ActiveScreenshot::begin().unwrap();
+            let session = capture.0.clone();
+            assert!(cancel_active_screenshot());
+            assert!(session.is_cancelled());
+            drop(capture);
+            assert!(!cancel_active_screenshot());
+            let next = ActiveScreenshot::begin().unwrap();
+            assert!(!next.0.is_cancelled());
+        }
+
+        #[test]
+        fn overlapping_automatic_saves_do_not_replace_each_others_files() {
+            let dir = OutputDir::new();
+            let prefs = screenshot_prefs_from_text(
+                "[screenshot]\nformat=png\nname_pattern=shot_{width}x{height}_{seq}\n",
+            );
+            let prefs = ScreenshotPrefs {
+                save_dir: Some(dir.0.clone()),
+                ..prefs
+            };
+            let first = image::RgbaImage::from_pixel(8, 8, image::Rgba([24, 48, 96, 255]));
+            let second = image::RgbaImage::from_pixel(8, 8, image::Rgba([255, 0, 0, 255]));
+            let gate = std::sync::Barrier::new(2);
+            let (first_path, second_path) = thread::scope(|scope| {
+                let save = |image| {
+                    gate.wait();
+                    save_automatic_screenshot(image, &prefs, 0, ScreenshotTrace::default()).unwrap()
+                };
+                let first_pixels = &first;
+                let worker = scope.spawn(move || save(first_pixels));
+                let second_path = save(&second);
+                (worker.join().unwrap(), second_path)
+            });
+            assert_ne!(first_path, second_path);
+            let mut names = [
+                first_path.file_name().unwrap(),
+                second_path.file_name().unwrap(),
+            ];
+            names.sort();
+            assert_eq!(names, ["shot_8x8_001.png", "shot_8x8_002.png"]);
+            assert_eq!(image::open(first_path).unwrap().to_rgba8(), first);
+            assert_eq!(image::open(second_path).unwrap().to_rgba8(), second);
+            assert_eq!(fs::read_dir(&dir.0).unwrap().count(), 2);
+        }
+
+        #[test]
+        fn failed_save_keeps_existing_file_and_jpeg_can_replace_it() {
+            let dir = OutputDir::new();
+            let path = dir.0.join("shot.jpg");
+            fs::write(&path, b"previous").unwrap();
+            let image = image::RgbaImage::from_pixel(8, 8, image::Rgba([10, 50, 120, 255]));
+            let trace = ScreenshotTrace::default();
+            assert!(save_screenshot_image(&image, &path, image::ImageFormat::Gif, trace).is_err());
+            assert_eq!(fs::read(&path).unwrap(), b"previous");
+            save_screenshot_image(&image, &path, image::ImageFormat::Jpeg, trace).unwrap();
+            assert_eq!(image::open(path).unwrap().to_rgb8().dimensions(), (8, 8));
+            assert_eq!(fs::read_dir(&dir.0).unwrap().count(), 1);
+        }
     }
 
     #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1873,7 +1993,7 @@ mod win {
             "screenshot_helper_start",
             format!(
                 "target_hwnd={} foreground_hwnd={} target_source={} backend={} mode={} capture_only={}",
-                arg_hwnd.unwrap_or(0) as isize,
+                { arg_hwnd.unwrap_or(0) },
                 foreground_hwnd as isize,
                 if arg_hwnd.is_some() {
                     "arg"
@@ -1897,11 +2017,14 @@ mod win {
             write_screenshot_capture_only_status(args.status_path.as_deref(), &result);
             return;
         }
-        run_screenshot_flow(
-            capture_target,
-            action_target,
-            ScreenshotFlowAction::Configured,
-        );
+        if let Some(active) = ActiveScreenshot::begin() {
+            run_screenshot_flow(
+                active,
+                action_target,
+                ScreenshotFlowAction::Configured,
+                true,
+            );
+        }
     }
 
     fn screenshot_capture_only_args() -> Option<ScreenshotCaptureOnlyArgs> {
@@ -1932,6 +2055,7 @@ mod win {
         prefs: &ScreenshotPrefs,
         output_path: &Path,
     ) -> Result<bool, String> {
+        let session = ScreenshotSession::default();
         if let Some(parent) = output_path
             .parent()
             .filter(|path| !path.as_os_str().is_empty())
@@ -1939,11 +2063,17 @@ mod win {
             fs::create_dir_all(parent)
                 .map_err(|err| format!("创建 OCR 截图交接目录失败：{err}"))?;
         }
-        let captured = capture_with_native_fallback(target_hwnd, mode, prefs.selector_options());
+        let captured =
+            capture_with_native_fallback(target_hwnd, mode, prefs.selector_options(), &session);
         match captured? {
             ScreenshotCaptureResult::Captured(captured) => {
                 if !valid_saved_screenshot(output_path) {
-                    save_screenshot_image(&captured.image, output_path, false, prefs)?;
+                    save_screenshot_image(
+                        &captured.image,
+                        output_path,
+                        image::ImageFormat::Png,
+                        session.trace,
+                    )?;
                 }
                 runtime_log::log_tray(
                     RuntimeLogLevel::Basic,
@@ -2087,51 +2217,30 @@ mod win {
     }
 
     fn open_screenshot_action(target_hwnd: HWND, action: ScreenshotFlowAction) {
-        if SCREENSHOT_FLOW_ACTIVE
-            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
-            .is_err()
-        {
-            SCREENSHOT_CANCEL_REQUESTED.store(true, Ordering::Release);
-            runtime_log::log_tray(
-                RuntimeLogLevel::Basic,
-                "screenshot_cancel_request",
-                "status=requested reason=second_invocation",
-            );
+        let Some(active) = ActiveScreenshot::begin() else {
             return;
-        }
-        let prefs = screenshot_prefs();
-        let flow_target = if prefs.mode == ScreenshotModePref::CurrentWindow {
-            target_hwnd
-        } else {
-            0
         };
-        runtime_log::log_tray(
-            RuntimeLogLevel::Basic,
-            "screenshot_request",
-            format!(
-                "entry=tray target_hwnd={} flow_target_hwnd={} backend=native mode={} action={action:?}",
-                target_hwnd as isize,
-                flow_target as isize,
-                prefs.mode.as_config()
-            ),
-        );
-        thread::spawn(move || run_screenshot_flow(flow_target, target_hwnd, action));
+        if let Err(err) = thread::Builder::new()
+            .name("screenshot-capture".into())
+            .spawn(move || run_screenshot_flow(active, target_hwnd, action, false))
+        {
+            runtime_log::log_tray(
+                RuntimeLogLevel::Error,
+                "screenshot_flow_start",
+                format!("status=failed reason={err}"),
+            );
+        }
     }
 
     fn run_screenshot_flow(
-        target_hwnd: HWND,
+        active: ActiveScreenshot,
         action_target: HWND,
         requested_action: ScreenshotFlowAction,
+        one_shot: bool,
     ) {
-        struct ActiveGuard;
-        impl Drop for ActiveGuard {
-            fn drop(&mut self) {
-                SCREENSHOT_FLOW_ACTIVE.store(false, Ordering::Release);
-            }
-        }
-        let _active_guard = ActiveGuard;
-        SCREENSHOT_CANCEL_REQUESTED.store(false, Ordering::Release);
-
+        let session = active.0.clone();
+        let capture = session.trace.stage("capture");
+        let prepare = session.trace.stage("capture_prepare");
         let mut prefs = screenshot_prefs();
         match requested_action {
             ScreenshotFlowAction::Configured => {}
@@ -2144,13 +2253,20 @@ mod win {
                 prefs.translate_after_capture = true;
             }
         }
+        let target_hwnd = if prefs.mode == ScreenshotModePref::CurrentWindow {
+            action_target
+        } else {
+            0
+        };
+        let selector_options = prefs.selector_options();
+        prepare.finish("ok");
         runtime_log::log_tray(
             RuntimeLogLevel::Basic,
             "screenshot_flow_start",
             format!(
                 "target_hwnd={} action_target_hwnd={} requested_action={requested_action:?} auto_save={} copy={} ocr={} translate={} format={} silent_copy={} backend=native mode={}",
-                target_hwnd as isize,
-                action_target as isize,
+                { target_hwnd },
+                { action_target },
                 if prefs.auto_save { 1 } else { 0 },
                 if prefs.copy_after_capture { 1 } else { 0 },
                 if prefs.ocr_after_capture { 1 } else { 0 },
@@ -2162,35 +2278,29 @@ mod win {
         );
 
         let captured =
-            capture_with_native_fallback(target_hwnd, prefs.mode, prefs.selector_options());
+            capture_with_native_fallback(target_hwnd, prefs.mode, selector_options, &session);
+        drop(active);
+        let captured = if session.is_cancelled() {
+            Ok(ScreenshotCaptureResult::Cancelled)
+        } else {
+            captured
+        };
+        capture.finish(match &captured {
+            Ok(ScreenshotCaptureResult::Captured(_)) => "ok",
+            Ok(ScreenshotCaptureResult::Cancelled) => "cancelled",
+            Err(err) if err.starts_with(screenshot_capture::INTERRUPTED) => "interrupted",
+            Err(_) => "failed",
+        });
 
         match captured {
             Ok(ScreenshotCaptureResult::Captured(captured)) => {
-                let retained = captured.clone();
-                let result = finish_captured_screenshot(captured, action_target, &prefs);
-                let status = match &result {
-                    Ok(false) => "已取消另存，图片仍保留",
-                    Err(_) => "操作失败，图片仍保留",
-                    Ok(true) => match retained.action {
-                        screenshot_region_selector::RegionAction::Copy => "图片已复制",
-                        screenshot_region_selector::RegionAction::SaveAs => "图片已保存",
-                        screenshot_region_selector::RegionAction::Ocr => "OCR 已启动",
-                        screenshot_region_selector::RegionAction::Annotate => "已在画图中打开",
-                        screenshot_region_selector::RegionAction::Pin => "图片已固定",
-                        screenshot_region_selector::RegionAction::Configured => "截图处理完成",
-                    },
-                };
-                if let Err(err) = &result {
-                    runtime_log::log_tray(
-                        RuntimeLogLevel::Error,
-                        "screenshot_postprocess",
-                        format!("status=failed reason={err}"),
-                    );
-                    show_error_message(&format!("截图完成，但后续处理失败：{err}"));
-                }
-                if prefs.show_result_window || !matches!(result, Ok(true)) {
-                    pinned_screenshot::spawn_result(retained, action_target, status);
-                }
+                handle_captured_screenshot(
+                    captured,
+                    action_target,
+                    prefs,
+                    selector_options.ocr_available,
+                    one_shot,
+                );
             }
             Ok(ScreenshotCaptureResult::Cancelled) => {
                 runtime_log::log_tray(
@@ -2285,15 +2395,25 @@ mod win {
         target_hwnd: HWND,
         mode: ScreenshotModePref,
         selector_options: screenshot_region_selector::RegionSelectorOptions,
+        session: &ScreenshotSession,
     ) -> Result<ScreenshotCaptureResult, String> {
+        if session.is_cancelled() {
+            return Ok(ScreenshotCaptureResult::Cancelled);
+        }
         if mode == ScreenshotModePref::CurrentWindow && target_hwnd == 0 {
             return Err("当前窗口截图缺少有效的目标窗口，未改为区域截图。".to_string());
         }
-        let window = (mode == ScreenshotModePref::CurrentWindow).then_some(target_hwnd as isize);
+        let window = (mode == ScreenshotModePref::CurrentWindow).then_some(target_hwnd);
         let recovery = SCREENSHOT_RESUME_RECOVERY_PENDING.swap(false, Ordering::AcqRel);
-        let captured = screenshot_capture::capture(window, recovery, || {
-            SCREENSHOT_CANCEL_REQUESTED.load(Ordering::Acquire)
-        });
+        let captured = screenshot_capture::capture_traced(
+            window,
+            recovery,
+            || session.is_cancelled(),
+            session.trace,
+        );
+        if session.is_cancelled() {
+            return Ok(ScreenshotCaptureResult::Cancelled);
+        }
         match captured {
             Ok(outcome) => {
                 let backend = match outcome.backend {
@@ -2302,10 +2422,14 @@ mod win {
                 };
                 // Selection runs once, after capture recovery. Cancellation or a
                 // display change must never open a second selector/fallback UI.
-                captured_frame_result(outcome.frame, target_hwnd, mode, backend, selector_options)
-            }
-            Err(_) if SCREENSHOT_CANCEL_REQUESTED.load(Ordering::Acquire) => {
-                Ok(ScreenshotCaptureResult::Cancelled)
+                captured_frame_result(
+                    outcome.frame,
+                    target_hwnd,
+                    mode,
+                    backend,
+                    selector_options,
+                    session,
+                )
             }
             Err(error) if error.starts_with(screenshot_capture::INTERRUPTED) => Err(error),
             Err(error) => {
@@ -2315,16 +2439,24 @@ mod win {
                     &error,
                 );
                 if mode == ScreenshotModePref::CurrentWindow {
-                    if confirm_region_fallback(&error, "已尝试两次独立捕获") {
+                    let stage = session.trace.stage("region_fallback_prompt");
+                    let confirmed = confirm_region_fallback(&error, "已尝试两次独立捕获");
+                    stage.finish(if confirmed && !session.is_cancelled() {
+                        "ok"
+                    } else {
+                        "cancelled"
+                    });
+                    if confirmed && !session.is_cancelled() {
                         return capture_with_native_fallback(
                             0,
                             ScreenshotModePref::ManualRegion,
                             selector_options,
+                            session,
                         );
                     }
                     return Ok(ScreenshotCaptureResult::Cancelled);
                 }
-                capture_with_system_screenclip()
+                capture_with_system_screenclip(session)
                     .map_err(|fallback| format!("{error}；系统截图：{fallback}"))
             }
         }
@@ -2336,6 +2468,7 @@ mod win {
         mode: ScreenshotModePref,
         backend: CaptureBackendUsed,
         selector_options: screenshot_region_selector::RegionSelectorOptions,
+        session: &ScreenshotSession,
     ) -> Result<ScreenshotCaptureResult, String> {
         if mode == ScreenshotModePref::CurrentWindow {
             runtime_log::log_screenshot_health(
@@ -2360,25 +2493,32 @@ mod win {
                 ),
             );
             return Ok(ScreenshotCaptureResult::Captured(CapturedScreenshot {
-                image: frame.image,
+                image: Arc::new(frame.image),
                 source: SavedScreenshotSource::window(backend, target_hwnd),
                 action: screenshot_region_selector::RegionAction::Configured,
+                trace: session.trace,
             }));
         }
 
-        let selected =
-            screenshot_region_selector::select_region_action_with_options(&frame, selector_options)
-                .map_err(|err| {
-                    if err.message().starts_with("截图框选已中断：") {
-                        err.to_string()
-                    } else {
-                        format!("自定义框选界面失败：{err}")
-                    }
-                })?;
+        let selected = screenshot_region_selector::select_region_action_controlled(
+            &frame,
+            selector_options,
+            &session.cancellation,
+            session.trace,
+        )
+        .map_err(|err| {
+            if err.message().starts_with(screenshot_capture::INTERRUPTED) {
+                err.to_string()
+            } else {
+                format!("自定义框选界面失败：{err}")
+            }
+        })?;
         let Some((selected, action)) = selected else {
             return Ok(ScreenshotCaptureResult::Cancelled);
         };
-        let image = screenshot_capture::crop(&frame, selected)?;
+        let image = session
+            .trace
+            .measure("crop", || screenshot_capture::crop(&frame, selected))?;
         runtime_log::log_screenshot_health(
             "screenshot_capture_health",
             format!(
@@ -2401,28 +2541,45 @@ mod win {
             ),
         );
         Ok(ScreenshotCaptureResult::Captured(CapturedScreenshot {
-            image,
+            image: Arc::new(image),
             source: SavedScreenshotSource::region(backend),
             action,
+            trace: session.trace,
         }))
     }
 
-    fn capture_with_system_screenclip() -> Result<ScreenshotCaptureResult, String> {
+    fn capture_with_system_screenclip(
+        session: &ScreenshotSession,
+    ) -> Result<ScreenshotCaptureResult, String> {
+        if session.is_cancelled() {
+            return Ok(ScreenshotCaptureResult::Cancelled);
+        }
         let initial_seq = clipboard_win::seq_num().map(|n| n.get());
-        Command::new("explorer.exe")
-            .arg("ms-screenclip:")
-            .spawn()
-            .map_err(|err| format!("无法启动 Windows 截图工具：{err}"))?;
+        session.trace.measure("screenclip_launch", || {
+            Command::new("explorer.exe")
+                .arg("ms-screenclip:")
+                .spawn()
+                .map_err(|err| format!("无法启动 Windows 截图工具：{err}"))
+        })?;
         runtime_log::log_tray(
             RuntimeLogLevel::Basic,
             "screenclip_capture",
             "status=launched",
         );
-        match wait_for_clipboard_screenshot(initial_seq, Duration::from_secs(25))? {
+        let stage = session.trace.stage("screenclip_wait");
+        let image = wait_for_clipboard_screenshot(initial_seq, Duration::from_secs(25), session);
+        stage.finish(match &image {
+            Ok(Some(_)) => "ok",
+            Ok(None) if session.is_cancelled() => "cancelled",
+            Ok(None) => "no_image",
+            Err(_) => "failed",
+        });
+        match image? {
             Some(image) => Ok(ScreenshotCaptureResult::Captured(CapturedScreenshot {
-                image,
+                image: Arc::new(image),
                 source: SavedScreenshotSource::region(CaptureBackendUsed::ScreenClip),
                 action: screenshot_region_selector::RegionAction::Configured,
+                trace: session.trace,
             })),
             None => Ok(ScreenshotCaptureResult::Cancelled),
         }
@@ -2431,13 +2588,14 @@ mod win {
     fn wait_for_clipboard_screenshot(
         initial_seq: Option<u32>,
         timeout: Duration,
+        session: &ScreenshotSession,
     ) -> Result<Option<image::RgbaImage>, String> {
         let deadline = Instant::now() + timeout;
         let png_format = clipboard_win::register_format("PNG").map(|value| value.get());
         let mut last_err = None;
         let mut saw_image_format = false;
         while Instant::now() < deadline {
-            if SCREENSHOT_CANCEL_REQUESTED.load(Ordering::Acquire) {
+            if session.is_cancelled() {
                 return Ok(None);
             }
             thread::sleep(Duration::from_millis(120));
@@ -2510,6 +2668,7 @@ mod win {
 
     include!("srf_ime_tray/screenshot_postprocess.rs");
 
+    #[derive(Clone)]
     struct ScreenshotPrefs {
         auto_save: bool,
         copy_after_capture: bool,
@@ -2554,7 +2713,10 @@ mod win {
 
     fn screenshot_prefs() -> ScreenshotPrefs {
         let content = app_paths::read_config_text(config_path()).ok();
-        let text = content.as_deref().unwrap_or_default();
+        screenshot_prefs_from_text(content.as_deref().unwrap_or_default())
+    }
+
+    fn screenshot_prefs_from_text(text: &str) -> ScreenshotPrefs {
         let config_version = config_version_from_ini(text);
         let auto_save = if config_version < 4 {
             true
@@ -2636,97 +2798,73 @@ mod win {
         }
     }
 
-    fn next_screenshot_path(prefs: &ScreenshotPrefs, target_hwnd: HWND) -> Result<PathBuf, String> {
-        let mut dir = prefs
-            .save_dir
-            .clone()
-            .unwrap_or_else(default_screenshot_dir);
-        if prefs.date_subdirs {
-            let now = Local::now();
-            dir = dir
-                .join(now.format("%Y").to_string())
-                .join(now.format("%m").to_string())
-                .join(now.format("%d").to_string());
-        }
-        fs::create_dir_all(&dir).map_err(|e| format!("create {}: {e}", dir.display()))?;
-        let ext = prefs.format.as_str();
-        let captured_at = Local::now().fixed_offset();
-        let context = screenshot_name_context(target_hwnd);
-        let base_stem = render_screenshot_name_pattern_at(
-            &prefs.name_pattern,
-            1,
-            "screenshot",
-            &captured_at,
-            &context,
-        );
-        let mut path = dir.join(format!("{base_stem}.{ext}"));
-        if prefs.conflict_strategy == "overwrite" {
-            return Ok(path);
-        }
-        for idx in 2..1000 {
-            if !path.exists() {
-                return Ok(path);
-            }
-            let stem = if prefs.name_pattern.contains("{seq}") {
-                render_screenshot_name_pattern_at(
-                    &prefs.name_pattern,
-                    idx,
-                    "screenshot",
-                    &captured_at,
-                    &context,
-                )
-            } else {
-                format!("{base_stem}_{idx:03}")
-            };
-            path = dir.join(format!("{stem}.{ext}"));
-        }
-        Ok(path)
-    }
-
-    fn screenshot_path_with_dimensions(
-        source: &Path,
+    fn save_automatic_screenshot(
+        image: &image::RgbaImage,
         prefs: &ScreenshotPrefs,
         target_hwnd: HWND,
-        width: u32,
-        height: u32,
+        trace: ScreenshotTrace,
     ) -> Result<PathBuf, String> {
-        let dir = source
-            .parent()
-            .ok_or_else(|| format!("截图路径没有父目录：{}", source.display()))?;
         let captured_at = Local::now().fixed_offset();
-        let mut context = screenshot_name_context(target_hwnd);
-        context.width = width.to_string();
-        context.height = height.to_string();
-        let stem = render_screenshot_name_pattern_at(
-            &prefs.name_pattern,
-            1,
-            "screenshot",
-            &captured_at,
-            &context,
-        );
-        let ext = prefs.format.as_str();
-        let mut destination = dir.join(format!("{stem}.{ext}"));
-        if prefs.conflict_strategy == "overwrite" {
-            return Ok(destination);
-        }
-        for idx in 2..1000 {
-            if !destination.exists() {
-                return Ok(destination);
+        let overwrite = prefs.conflict_strategy == "overwrite";
+        let (dir, output_dir, context) = trace.measure("save_prepare", || {
+            let mut dir = prefs
+                .save_dir
+                .clone()
+                .unwrap_or_else(default_screenshot_dir);
+            if prefs.date_subdirs {
+                dir = dir
+                    .join(captured_at.format("%Y").to_string())
+                    .join(captured_at.format("%m").to_string())
+                    .join(captured_at.format("%d").to_string());
             }
-            let next_stem = if prefs.name_pattern.contains("{seq}") {
+            fs::create_dir_all(&dir)
+                .map_err(|err| format!("创建截图目录 {} 失败：{err}", dir.display()))?;
+            let output_dir = if overwrite {
+                dir.clone()
+            } else {
+                fs::canonicalize(&dir)
+                    .map_err(|err| format!("读取截图目录 {} 失败：{err}", dir.display()))?
+            };
+            let mut context = screenshot_name_context(target_hwnd);
+            context.width = image.width().to_string();
+            context.height = image.height().to_string();
+            Ok::<_, String>((dir, output_dir, context))
+        })?;
+        let ext = prefs.format.as_str();
+        let format = if ext == "jpg" {
+            image::ImageFormat::Jpeg
+        } else {
+            image::ImageFormat::Png
+        };
+        let mut output = encode_screenshot_file(image, &output_dir, format, trace)?;
+        trace.measure("save_publish", || {
+            let stem_for = |index| {
                 render_screenshot_name_pattern_at(
                     &prefs.name_pattern,
-                    idx,
+                    index,
                     "screenshot",
                     &captured_at,
                     &context,
                 )
-            } else {
-                format!("{stem}_{idx:03}")
             };
-            destination = dir.join(format!("{next_stem}.{ext}"));
-        }
-        Ok(destination)
+            let base = stem_for(1);
+            for index in 1..=999 {
+                let stem = if index == 1 {
+                    base.clone()
+                } else if prefs.name_pattern.contains("{seq}") {
+                    stem_for(index)
+                } else {
+                    format!("{base}_{index:03}")
+                };
+                let name = format!("{stem}.{ext}");
+                match output.publish(&output_dir.join(&name), overwrite) {
+                    Ok(()) => return Ok(dir.join(name)),
+                    Err(err) if !overwrite && err.kind() == io::ErrorKind::AlreadyExists => {}
+                    Err(err) => return Err(format!("发布截图文件失败：{err}")),
+                }
+            }
+            Err("截图文件名冲突过多，请更换命名规则。".to_string())
+        })
     }
 
     fn render_screenshot_name_pattern_at(
@@ -3261,10 +3399,6 @@ mod win {
         (lparam as u32) & 0xFFFF
     }
 
-    fn tray_icon_id(lparam: LPARAM) -> u16 {
-        ((lparam as u32) >> 16) as u16
-    }
-
     fn tray_anchor_point(wparam: WPARAM) -> POINT {
         let packed = wparam as u32;
         POINT {
@@ -3434,6 +3568,8 @@ mod win {
 
     mod pinned_screenshot {
         use super::*;
+        use screenshot_region_selector::RegionAction;
+        use std::sync::mpsc::{self, Receiver, TryRecvError};
         use windows_sys::Win32::Graphics::Gdi::{
             BeginPaint, EndPaint, GetSysColor, GetSysColorBrush, SetBkColor, StretchDIBits,
             BITMAPINFO, BITMAPINFOHEADER, BI_RGB, COLOR_WINDOW, COLOR_WINDOWTEXT, DIB_RGB_COLORS,
@@ -3447,10 +3583,10 @@ mod win {
         use windows_sys::Win32::UI::WindowsAndMessaging::{
             GetClientRect, IsDialogMessageW, MoveWindow, SendMessageW, SetWindowPos,
             SetWindowTextW, ShowWindow, SystemParametersInfoW, CREATESTRUCTW, GWLP_USERDATA,
-            HWND_TOPMOST, MINMAXINFO, SPI_GETHIGHCONTRAST, SW_SHOW, WM_CLOSE, WM_CTLCOLORSTATIC,
-            WM_DPICHANGED, WM_GETMINMAXINFO, WM_KEYDOWN, WM_NCDESTROY, WM_PAINT, WM_SETFONT,
-            WM_SIZE, WNDCLASSW, WS_CHILD, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_OVERLAPPEDWINDOW,
-            WS_TABSTOP, WS_VISIBLE,
+            HWND_TOPMOST, MINMAXINFO, SPI_GETHIGHCONTRAST, SW_SHOW, SW_SHOWNOACTIVATE, WM_CLOSE,
+            WM_CTLCOLORSTATIC, WM_DPICHANGED, WM_GETMINMAXINFO, WM_KEYDOWN, WM_NCDESTROY, WM_PAINT,
+            WM_SETFONT, WM_SIZE, WNDCLASSW, WS_CHILD, WS_EX_TOOLWINDOW, WS_EX_TOPMOST,
+            WS_OVERLAPPEDWINDOW, WS_TABSTOP, WS_VISIBLE,
         };
 
         const CLASS: &str = "KaixinPinnedScreenshot_v1";
@@ -3460,18 +3596,57 @@ mod win {
         const ID_ANNOTATE: usize = 2104;
         const ID_PIN: usize = 2105;
         const ID_CLOSE: usize = 2106;
+        const RESULT_TIMER_ID: usize = 1;
+        const RESULT_POLL_MS: u32 = 80;
+
+        pub(super) enum InitialAction {
+            Run(ScreenshotPrefs),
+            Completed(Result<bool, String>),
+        }
+
+        struct PendingAction {
+            action: RegionAction,
+            receiver: Receiver<Result<bool, String>>,
+        }
+
+        struct ActionJob {
+            worker: thread::JoinHandle<()>,
+            receiver: Receiver<Result<bool, String>>,
+        }
+
+        fn spawn_action_job(
+            work: impl FnOnce() -> (Result<bool, String>, Option<SilentScreenshotCopy>) + Send + 'static,
+        ) -> io::Result<ActionJob> {
+            let (sender, receiver) = mpsc::channel();
+            let worker = thread::Builder::new()
+                .name("screenshot-output".into())
+                .spawn(move || {
+                    let (result, silent_copy) = work();
+                    let _ = sender.send(result);
+                    if let Some(copy) = silent_copy {
+                        copy.run();
+                    }
+                })?;
+            Ok(ActionJob { worker, receiver })
+        }
+
         struct ResultActions {
             captured: CapturedScreenshot,
             target: HWND,
+            ocr_available: bool,
             buttons: Vec<HWND>,
             status_label: HWND,
-            initial_status: &'static str,
+            initial_status: String,
             button_font: isize,
             status_font: isize,
             status_failed: bool,
+            pending: Vec<PendingAction>,
+            wait_for_workers: bool,
+            workers: Vec<thread::JoinHandle<()>>,
         }
         struct State {
-            image: image::RgbaImage,
+            image: Arc<image::RgbaImage>,
+            trace: ScreenshotTrace,
             pixels: Vec<u8>,
             width: i32,
             height: i32,
@@ -3479,9 +3654,9 @@ mod win {
             actions: Option<ResultActions>,
         }
 
-        pub(super) fn spawn(image: image::RgbaImage) {
+        pub(super) fn spawn(image: Arc<image::RgbaImage>, trace: ScreenshotTrace) {
             thread::spawn(move || {
-                if let Err(err) = run(image, None) {
+                if let Err(err) = run(image, trace, None, None) {
                     runtime_log::log_tray(
                         RuntimeLogLevel::Error,
                         "screenshot_pin",
@@ -3491,33 +3666,55 @@ mod win {
             });
         }
 
-        pub(super) fn spawn_result(
+        pub(super) fn show_result(
             captured: CapturedScreenshot,
             target: HWND,
-            initial_status: &'static str,
-        ) {
-            thread::spawn(move || {
-                let image = captured.image.clone();
-                if let Err(err) = run(
-                    image,
-                    Some(ResultActions {
-                        captured,
-                        target,
-                        buttons: Vec::new(),
-                        status_label: 0,
-                        initial_status,
-                        button_font: 0,
-                        status_font: 0,
-                        status_failed: initial_status.contains("失败"),
-                    }),
-                ) {
-                    show_error_message(&format!("无法打开截图操作窗口：{err}"));
+            ocr_available: bool,
+            initial: InitialAction,
+            wait_for_workers: bool,
+        ) -> Result<(), String> {
+            let (initial_status, status_failed, initial_job) = match initial {
+                InitialAction::Run(prefs) => {
+                    (pending_status(captured.action).into(), false, Some(prefs))
                 }
-            });
+                InitialAction::Completed(result) => {
+                    let (status, failed) = completed_status(captured.action, result);
+                    (status, failed, None)
+                }
+            };
+            run(
+                captured.image.clone(),
+                captured.trace,
+                Some(ResultActions {
+                    captured,
+                    target,
+                    ocr_available,
+                    buttons: Vec::new(),
+                    status_label: 0,
+                    initial_status,
+                    button_font: 0,
+                    status_font: 0,
+                    status_failed,
+                    pending: Vec::new(),
+                    wait_for_workers,
+                    workers: Vec::new(),
+                }),
+                initial_job,
+            )
         }
 
-        fn run(image: image::RgbaImage, actions: Option<ResultActions>) -> Result<(), String> {
+        fn run(
+            image: Arc<image::RgbaImage>,
+            trace: ScreenshotTrace,
+            actions: Option<ResultActions>,
+            initial_job: Option<ScreenshotPrefs>,
+        ) -> Result<(), String> {
             let is_result = actions.is_some();
+            let stage = trace.stage(if is_result {
+                "preview_first_paint"
+            } else {
+                "pin_first_paint"
+            });
             let width = i32::try_from(image.width()).map_err(|_| "固定截图宽度过大")?;
             let height = i32::try_from(image.height()).map_err(|_| "固定截图高度过大")?;
             let pixels = image
@@ -3557,14 +3754,16 @@ mod win {
                 ..unsafe { zeroed() }
             };
             unsafe { RegisterClassW(&wc) };
-            let state = Box::into_raw(Box::new(State {
+            let mut state = Box::new(State {
                 image,
+                trace,
                 pixels,
                 width,
                 height,
                 info,
                 actions,
-            }));
+            });
+            let state_ptr = &raw mut *state;
             let scale = (900.0 / width as f64).min(700.0 / height as f64).min(1.0);
             let client_width = (width as f64 * scale).round() as i32;
             let client_height = (height as f64 * scale).round() as i32;
@@ -3578,7 +3777,7 @@ mod win {
                     },
                     class.as_ptr(),
                     title.as_ptr(),
-                    WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+                    WS_OVERLAPPEDWINDOW,
                     100,
                     100,
                     client_width.max(if is_result { 620 * dpi / 96 } else { 160 }) + 20,
@@ -3586,15 +3785,21 @@ mod win {
                     0,
                     0,
                     instance,
-                    state.cast(),
+                    state_ptr.cast(),
                 )
             };
             if hwnd == 0 {
-                unsafe { drop(Box::from_raw(state)) };
+                stage.finish("failed");
                 return Err("创建固定截图窗口失败".to_string());
             }
             unsafe {
-                ShowWindow(hwnd, SW_SHOW);
+                let show = if is_result && ACTIVE_SCREENSHOT.lock().unwrap().is_some() {
+                    SW_SHOWNOACTIVATE
+                } else {
+                    SW_SHOW
+                };
+                ShowWindow(hwnd, show);
+                windows_sys::Win32::Graphics::Gdi::UpdateWindow(hwnd);
                 if !is_result {
                     SetWindowPos(
                         hwnd,
@@ -3608,16 +3813,180 @@ mod win {
                     );
                 }
             }
+            stage.finish("ok");
+            if let (Some(prefs), Some(actions)) = (initial_job, state.actions.as_ref()) {
+                unsafe { queue_action(hwnd, state_ptr, actions.captured.action, Some(prefs)) };
+            }
             let mut msg: MSG = unsafe { zeroed() };
             while unsafe { GetMessageW(&mut msg, 0, 0, 0) } > 0 {
                 unsafe {
-                    if !is_result || IsDialogMessageW(hwnd, &msg) == 0 {
+                    if !is_result || msg.message == WM_TIMER || IsDialogMessageW(hwnd, &msg) == 0 {
                         TranslateMessage(&msg);
                         DispatchMessageW(&msg);
                     }
                 }
             }
+            if unsafe { IsWindow(hwnd) } != 0 {
+                unsafe { DestroyWindow(hwnd) };
+            }
+            if let Some(actions) = state.actions.as_mut() {
+                actions.pending.clear();
+                for worker in actions.workers.drain(..) {
+                    let _ = worker.join();
+                }
+            }
             Ok(())
+        }
+
+        fn pending_status(action: RegionAction) -> &'static str {
+            match action {
+                RegionAction::SaveAs => "正在另存，可继续截图",
+                RegionAction::Copy => "正在复制图片",
+                RegionAction::Ocr => "正在启动 OCR",
+                RegionAction::Annotate => "正在准备画图",
+                RegionAction::Pin => "正在固定图片",
+                RegionAction::Configured => "正在处理截图，可继续截图",
+            }
+        }
+
+        fn completed_status(action: RegionAction, result: Result<bool, String>) -> (String, bool) {
+            let status = match result {
+                Ok(true) => match action {
+                    RegionAction::SaveAs => "图片已保存",
+                    RegionAction::Copy => "图片已复制",
+                    RegionAction::Ocr => "OCR 已启动",
+                    RegionAction::Annotate => "已在画图中打开",
+                    RegionAction::Pin => "图片已固定",
+                    RegionAction::Configured => "截图处理完成",
+                },
+                Ok(false) => "已取消另存，图片仍保留",
+                Err(error) => return (format!("操作失败，可重试：{error}"), true),
+            };
+            (status.to_string(), false)
+        }
+
+        fn action_for_button(id: usize) -> Option<RegionAction> {
+            match id {
+                ID_COPY => Some(RegionAction::Copy),
+                ID_SAVE => Some(RegionAction::SaveAs),
+                ID_OCR => Some(RegionAction::Ocr),
+                ID_ANNOTATE => Some(RegionAction::Annotate),
+                ID_PIN => Some(RegionAction::Pin),
+                _ => None,
+            }
+        }
+
+        unsafe fn refresh_action_buttons(ptr: *mut State) {
+            let Some(actions) = ptr.as_ref().and_then(|state| state.actions.as_ref()) else {
+                return;
+            };
+            let states = [ID_COPY, ID_SAVE, ID_OCR, ID_ANNOTATE, ID_PIN]
+                .into_iter()
+                .zip(&actions.buttons)
+                .filter_map(|(id, &button)| {
+                    let action = action_for_button(id)?;
+                    let enabled = (action != RegionAction::Ocr || actions.ocr_available)
+                        && !actions.pending.iter().any(|job| job.action == action);
+                    Some((button, enabled))
+                })
+                .collect::<Vec<_>>();
+            for (button, enabled) in states {
+                EnableWindow(button, i32::from(enabled));
+            }
+        }
+
+        unsafe fn update_action_status(ptr: *mut State, mut status: String, failed: bool) {
+            let Some(actions) = ptr.as_mut().and_then(|state| state.actions.as_mut()) else {
+                return;
+            };
+            if let Some(job) = actions.pending.last() {
+                if status != pending_status(job.action) {
+                    let wait_status = pending_status(job.action);
+                    status.push_str(" · ");
+                    status.push_str(wait_status);
+                }
+            }
+            actions.status_failed = failed;
+            let label = actions.status_label;
+            SetWindowTextW(label, wide(&status).as_ptr());
+        }
+
+        unsafe fn queue_action(
+            hwnd: HWND,
+            ptr: *mut State,
+            action: RegionAction,
+            prefs: Option<ScreenshotPrefs>,
+        ) {
+            let Some(actions) = ptr.as_mut().and_then(|state| state.actions.as_mut()) else {
+                return;
+            };
+            if (action == RegionAction::Ocr && !actions.ocr_available)
+                || actions.pending.iter().any(|job| job.action == action)
+            {
+                return;
+            }
+            let stage = actions.captured.trace.stage("output_dispatch");
+            if actions.pending.is_empty()
+                && SetTimer(hwnd, RESULT_TIMER_ID, RESULT_POLL_MS, None) == 0
+            {
+                stage.finish("failed");
+                update_action_status(ptr, "无法启动截图后台操作，请重试。".into(), true);
+                return;
+            }
+            let mut captured = actions.captured.clone();
+            captured.action = action;
+            let target = actions.target;
+            let job = spawn_action_job(move || {
+                let stage = captured.trace.stage("output_prepare");
+                let prefs = prefs.unwrap_or_else(screenshot_prefs);
+                stage.finish("ok");
+                process_captured_screenshot(&captured, target, &prefs)
+            });
+            match job {
+                Ok(ActionJob { worker, receiver }) => {
+                    stage.finish("ok");
+                    actions.pending.push(PendingAction { action, receiver });
+                    if actions.wait_for_workers {
+                        actions.workers.retain(|worker| !worker.is_finished());
+                        actions.workers.push(worker);
+                    }
+                    refresh_action_buttons(ptr);
+                    update_action_status(ptr, pending_status(action).into(), false);
+                }
+                Err(err) => {
+                    stage.finish("failed");
+                    if actions.pending.is_empty() {
+                        KillTimer(hwnd, RESULT_TIMER_ID);
+                    }
+                    update_action_status(ptr, format!("无法启动截图后台操作：{err}"), true);
+                }
+            }
+        }
+
+        unsafe fn poll_actions(hwnd: HWND, ptr: *mut State) {
+            let Some(actions) = ptr.as_mut().and_then(|state| state.actions.as_mut()) else {
+                return;
+            };
+            let mut completed = None;
+            actions.pending.retain(|job| {
+                let result = match job.receiver.try_recv() {
+                    Ok(result) => result,
+                    Err(TryRecvError::Empty) => return true,
+                    Err(TryRecvError::Disconnected) => Err("截图后台操作已中断。".to_string()),
+                };
+                let status = completed_status(job.action, result);
+                if status.1 || completed.as_ref().is_none_or(|(_, failed)| !failed) {
+                    completed = Some(status);
+                }
+                false
+            });
+            if actions.pending.is_empty() {
+                KillTimer(hwnd, RESULT_TIMER_ID);
+            }
+            if let Some((status, failed)) = completed {
+                refresh_action_buttons(ptr);
+                update_action_status(ptr, status, failed);
+            }
         }
 
         unsafe extern "system" fn window_proc(
@@ -3633,18 +4002,14 @@ mod win {
             let ptr = GetWindowLongPtrW(hwnd, GWLP_USERDATA) as *mut State;
             match message {
                 WM_KEYDOWN if wparam == 0x43 && GetKeyState(i32::from(VK_CONTROL)) < 0 => {
-                    if let Some(state) = ptr.as_mut() {
-                        match copy_image_to_clipboard(&state.image) {
+                    if let Some(state) = ptr.as_ref() {
+                        if state.actions.is_some() {
+                            queue_action(hwnd, ptr, RegionAction::Copy, None);
+                            return 0;
+                        }
+                        match copy_image_to_clipboard(&state.image, state.trace) {
                             Ok(()) => {
-                                if let Some(actions) = &mut state.actions {
-                                    actions.status_failed = false;
-                                    SetWindowTextW(
-                                        actions.status_label,
-                                        wide("图片已复制").as_ptr(),
-                                    );
-                                } else {
-                                    SetWindowTextW(hwnd, wide("固定截图 · 图片已复制").as_ptr());
-                                }
+                                SetWindowTextW(hwnd, wide("固定截图 · 图片已复制").as_ptr());
                             }
                             Err(err) => show_error_message(&format!("复制失败：{err}")),
                         }
@@ -3656,7 +4021,7 @@ mod win {
                         actions.status_label = CreateWindowExW(
                             0,
                             wide("STATIC").as_ptr(),
-                            wide(actions.initial_status).as_ptr(),
+                            wide(&actions.initial_status).as_ptr(),
                             WS_CHILD | WS_VISIBLE,
                             0,
                             0,
@@ -3676,7 +4041,7 @@ mod win {
                             (ID_CLOSE, "关闭(&X)"),
                         ];
                         for (id, label) in specs {
-                            let title = wide(if id == ID_OCR && resolve_ocr_path().is_none() {
+                            let title = wide(if id == ID_OCR && !actions.ocr_available {
                                 "OCR未安装"
                             } else {
                                 label
@@ -3695,7 +4060,7 @@ mod win {
                                 GetModuleHandleW(std::ptr::null()),
                                 std::ptr::null(),
                             );
-                            if id == ID_OCR && resolve_ocr_path().is_none() {
+                            if id == ID_OCR && !actions.ocr_available {
                                 EnableWindow(button, 0);
                             }
                             actions.buttons.push(button);
@@ -3772,62 +4137,15 @@ mod win {
                         DestroyWindow(hwnd);
                         return 0;
                     }
-                    let action = match id {
-                        ID_COPY => Some(screenshot_region_selector::RegionAction::Copy),
-                        ID_SAVE => Some(screenshot_region_selector::RegionAction::SaveAs),
-                        ID_OCR => Some(screenshot_region_selector::RegionAction::Ocr),
-                        ID_ANNOTATE => Some(screenshot_region_selector::RegionAction::Annotate),
-                        ID_PIN => Some(screenshot_region_selector::RegionAction::Pin),
-                        _ => None,
-                    };
-                    if let Some(action) = action {
-                        if let Some((mut captured, target)) = ptr
-                            .as_ref()
-                            .and_then(|state| state.actions.as_ref())
-                            .map(|actions| (actions.captured.clone(), actions.target))
-                        {
-                            captured.action = action;
-                            let result =
-                                finish_captured_screenshot(captured, target, &screenshot_prefs());
-                            if IsWindow(hwnd) != 0
-                                && GetWindowLongPtrW(hwnd, GWLP_USERDATA) == ptr as isize
-                            {
-                                let (status, failed) = match &result {
-                                    Ok(done) => {
-                                        let status = if !done {
-                                            "已取消，图片仍保留"
-                                        } else {
-                                            match id {
-                                                ID_COPY => "图片已复制",
-                                                ID_SAVE => "图片已保存",
-                                                ID_OCR => "OCR 已启动",
-                                                ID_ANNOTATE => "已在画图中打开",
-                                                ID_PIN => "图片已固定",
-                                                _ => "操作完成",
-                                            }
-                                        };
-                                        (status.to_string(), false)
-                                    }
-                                    Err(err) => (format!("操作失败：{err}"), true),
-                                };
-                                let status_label = ptr
-                                    .as_mut()
-                                    .and_then(|state| state.actions.as_mut())
-                                    .map(|actions| {
-                                        actions.status_failed = failed;
-                                        actions.status_label
-                                    });
-                                if let Some(label) = status_label {
-                                    SetWindowTextW(label, wide(&status).as_ptr());
-                                }
-                            }
-                            if let Err(err) = result {
-                                show_error_message(&format!("截图操作失败，可重试：{err}"));
-                            }
-                            return 0;
-                        }
+                    if let Some(action) = action_for_button(id) {
+                        queue_action(hwnd, ptr, action, None);
+                        return 0;
                     }
                     DefWindowProcW(hwnd, message, wparam, lparam)
+                }
+                WM_TIMER if wparam == RESULT_TIMER_ID => {
+                    poll_actions(hwnd, ptr);
+                    0
                 }
                 WM_CTLCOLORSTATIC => {
                     if let Some(actions) = ptr.as_ref().and_then(|state| state.actions.as_ref()) {
@@ -3916,7 +4234,6 @@ mod win {
                                 DeleteObject(actions.status_font);
                             }
                         }
-                        drop(Box::from_raw(ptr));
                     }
                     windows_sys::Win32::UI::WindowsAndMessaging::PostQuitMessage(0);
                     DefWindowProcW(hwnd, message, wparam, lparam)
@@ -3939,29 +4256,6 @@ mod win {
             )
         }
 
-        #[cfg(test)]
-        mod tests {
-            use super::layout_metrics;
-
-            #[test]
-            fn result_buttons_fit_wide_and_narrow_windows_at_common_dpis() {
-                for dpi in [96, 120, 144, 192] {
-                    for (logical_width, expected_columns) in [(350, 3), (620, 6)] {
-                        let width = logical_width * dpi / 96;
-                        let (gap, height, columns, bar) = layout_metrics(width, dpi);
-                        let button_width = (width - gap * (columns + 1)) / columns;
-                        assert_eq!(columns, expected_columns);
-                        assert!(
-                            button_width >= 90 * dpi / 96,
-                            "dpi={dpi} width={logical_width}"
-                        );
-                        assert!(height >= 36 * dpi / 96);
-                        assert!(bar >= (28 + 36 * (6 / columns)) * dpi / 96);
-                    }
-                }
-            }
-        }
-
         unsafe fn update_fonts(actions: &mut ResultActions, dpi: u32) {
             let button_font = screenshot_region_selector::create_screenshot_ui_font(dpi, 15);
             let status_font = screenshot_region_selector::create_screenshot_ui_font(dpi, 14);
@@ -3980,6 +4274,53 @@ mod win {
                     DeleteObject(actions.status_font);
                 }
                 actions.status_font = status_font;
+            }
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use super::{layout_metrics, spawn_action_job};
+            use std::sync::mpsc::{self, TryRecvError};
+            use std::time::Duration;
+
+            #[test]
+            fn a_slow_output_job_does_not_hold_up_another_result_action() {
+                let (started, has_started) = mpsc::channel();
+                let (release, blocked) = mpsc::channel();
+                let deadline = Duration::from_secs(5);
+                let slow = spawn_action_job(move || {
+                    started.send(()).unwrap();
+                    blocked.recv_timeout(deadline).unwrap();
+                    (Ok(true), None)
+                })
+                .unwrap();
+                has_started.recv_timeout(deadline).unwrap();
+                assert!(matches!(slow.receiver.try_recv(), Err(TryRecvError::Empty)));
+
+                let other = spawn_action_job(|| (Ok(true), None)).unwrap();
+                assert_eq!(other.receiver.recv_timeout(deadline).unwrap(), Ok(true));
+                release.send(()).unwrap();
+                assert_eq!(slow.receiver.recv_timeout(deadline).unwrap(), Ok(true));
+                slow.worker.join().unwrap();
+                other.worker.join().unwrap();
+            }
+
+            #[test]
+            fn result_buttons_fit_wide_and_narrow_windows_at_common_dpis() {
+                for dpi in [96, 120, 144, 192] {
+                    for (logical_width, expected_columns) in [(350, 3), (620, 6)] {
+                        let width = logical_width * dpi / 96;
+                        let (gap, height, columns, bar) = layout_metrics(width, dpi);
+                        let button_width = (width - gap * (columns + 1)) / columns;
+                        assert_eq!(columns, expected_columns);
+                        assert!(
+                            button_width >= 90 * dpi / 96,
+                            "dpi={dpi} width={logical_width}"
+                        );
+                        assert!(height >= 36 * dpi / 96);
+                        assert!(bar >= (28 + 36 * (6 / columns)) * dpi / 96);
+                    }
+                }
             }
         }
     }

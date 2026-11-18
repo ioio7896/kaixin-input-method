@@ -54,7 +54,24 @@
 
 `lexicon_fragments/zh-ext/` 保存分类词库的可追溯源片段；
 `scripts/merge_zh_ext_lexicons.py` 按“词语 + 输入码”去重、同项保留最高权重，生成
-`lexicon/zh-ext/` 下 7 个用户可关闭的分类词库。
+`lexicon/zh-ext/` 的分类词库；当前为 99 个，默认开启 48 个。
+逐分类条数、分数范围及默认值由 `scripts/lexicon_quality.py --apply` 生成到
+`docs/lexicon-inventory.md`，以当前 `shared/category_lexicons.json` 为准。
+
+## 词库审核维护（2026-11-11）
+
+- `kaixin/reviewed_common_phrases.tsv`：39 条人工确认的完整日常/办公表达，生成
+  `lexicon/core/kaixin_reviewed_common.txt`，始终启用，进入精确全拼、简拼与混拼索引。
+- `kaixin/hot_terms_20261027.tsv`：完整保留原有 500 条用户选定表达，记录场景优先级、
+  输出归属和理由；分数为人工优先级，非实测词频。36 个与普通 Base 同词同读音的键
+  合并到原基础文件，其余写入热词增量文件。Core、分类开关及不同读音的记录不据此删除。
+- `shared/lexicon_quality.json` 维护精确词级读音修正和保留例外；
+  `shared/short_phrase_quality.json` 只按完整词条拒收残缺表达，保留复核理由及源位置。
+- `pinyin-ime/data/pinyin_character_readings.txt` 是 MIT 许可 rust-pinyin 0.10.0 的字音快照，
+  与常用字表一起由 `build_ai_lexicons` 重建。离线校验叠加项目单字读音覆盖及排除表，
+  再应用词级例外；地名、人名和古语专读不会推广到同字的其他词语。
+- 执行 `python scripts/lexicon_quality.py --apply` 可重建上述维护输出、更新分类元数据及清单。
+  导入归档保持原样；再次合并或重导入后同样应用维护规则。
 
 `lexicon_fragments/zh/life_common_3char_tail_15000.txt` 保存 wordfreq 三字词长尾的
 来源记录，由 `scripts/build_life_common_3char_20000.py` 生成。当前 15,000 个词语已全部

@@ -9590,7 +9590,6 @@
 中心广场	zhong xin guang chang	3658
 中文在线	zhong wen zai xian	3658
 临时价格	lin shi jia ge	3658
-主要是从	zhu yao shi cong	3658
 举办活动	ju ban huo dong	3658
 之前给我	zhi qian gei wo	3658
 乡村小学	xiang cun xiao xue	3658
@@ -28846,7 +28845,6 @@
 和谐花园	he xie hua yuan	3211
 咱们这儿	zan men zhe er	3211
 咱们这边	za men zhe bian	3211
-咱们这边	zan me zhe bian	3211
 咱们这边	zan men zhe bian	3211
 品质定位	pin zhi ding wei	3211
 品质管制	pin zhi guan zhi	3211
@@ -73111,7 +73109,7 @@
 近身保镖	jin shen bao biao	2527
 近身接触	jin shen jie chu	2527
 还在纠结	hai zai jiu jie	2527
-还我山河	huan wo he shan	2527
+还我山河	huan wo shan he	2527
 还有一包	hai you yi bao	2527
 还没办完	hai mei ban wan	2527
 还要军训	hai yao jun xun	2527
@@ -95250,7 +95248,7 @@
 镂冰劚雪	lou bing zhu xue	2369
 镂冰炊砾	lou bing chui li	2369
 镂心呕血	lou xin ou xue	2369
-镂心鉥肝	lou xin feng gan	2369
+镂心鉥肝	lou xin shu gan	2369
 镇子梁乡	zhen zi liang xiang	2369
 镌心铭骨	juan xin ming gu	2369
 镌空妄实	juan kong wang shi	2369
@@ -133133,7 +133131,6 @@
 我不想考	wo bu xiang kao	1869
 我不想聊	wo bu xiang liao	1869
 我不想补	wo bu xiang bu	1869
-我不想被	wo bu xiang bei	1869
 我不想让	wo bu xiang rang	1869
 我不想说	wo bu xiang shuo	1869
 我不想谈	wo bu xiang tan	1869
@@ -166823,7 +166820,7 @@
 做点饭吃	zuo dian fan chi	1395
 停水了吗	ting shui le ma	1395
 元气亏虚	yuan qi kui xu	1395
-元气囝仔	yue qi jian zai	1395
+元气囝仔	yuan qi jian zai	1395
 充会儿电	chong hui er dian	1395
 先洗个澡	xian xi ge zao	1395
 先致其知	xian zhi qi zhi	1395
@@ -170240,7 +170237,7 @@
 枪炮腰花	qiang pao yao hua	1343
 枫泾古镇	feng jing gu zhen	1343
 查济古镇	zha ji gu zhen	1343
-栎阳公主	yue fang gong zhu	1343
+栎阳公主	yue yang gong zhu	1343
 栽种之法	zai zhong zhi fa	1343
 梦游的人	meng you de ren	1343
 棣花古镇	di hua gu zhen	1343
@@ -191747,7 +191744,6 @@
 鞗革忡忡	tiao ge chong chong	685
 鞗革有鸧	tiao ge you cang	685
 鞗革金厄	tiao ge jin e	685
-鞙鞙佩璲	xuan xuan juan pei	685
 鞙鞙佩璲	xuan xuan pei sui	685
 鞞琫容刀	bing beng rong dao	685
 鞫人忮忒	ju ren zhi te	685

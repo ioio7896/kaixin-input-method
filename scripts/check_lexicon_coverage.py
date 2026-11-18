@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate lexicon coverage: phrase-length distribution, initial coverage,
 and character-level coverage of the pinyin-supported character set."""
+
 from __future__ import annotations
 
 import argparse
@@ -104,18 +105,14 @@ def check_coverage(
     for length, minimum in min_per_length.items():
         actual = length_counts.get(length, 0)
         if actual < minimum:
-            warnings.append(
-                f"phrase length {length}: {actual} entries (minimum: {minimum})"
-            )
+            warnings.append(f"phrase length {length}: {actual} entries (minimum: {minimum})")
 
     # Check initial consonant coverage
     expected_initials = set("bpmfdtnlgkhjqxrzcsyw")
     for initial in sorted(expected_initials):
         actual = initial_counts.get(initial, 0)
         if actual < min_per_initial:
-            warnings.append(
-                f"initial '{initial}': {actual} entries (minimum: {min_per_initial})"
-            )
+            warnings.append(f"initial '{initial}': {actual} entries (minimum: {min_per_initial})")
 
     # Check character coverage if supported_chars_path provided
     char_warnings: list[str] = []
@@ -140,7 +137,9 @@ def check_coverage(
     print(f"Initial coverage: {dict(sorted(initial_counts.items()))}")
     print(f"Unique CJK chars in lexicon: {len(all_chars)}")
     if supported_chars_path:
-        print(f"Supported chars with coverage: {len(supported & all_chars) if supported_chars_path.is_file() else 0}")
+        print(
+            f"Supported chars with coverage: {len(supported & all_chars) if supported_chars_path.is_file() else 0}"
+        )
 
     for w in warnings:
         print(f"WARNING: {w}")

@@ -3,7 +3,7 @@
 pub mod config_schema;
 #[rustfmt::skip]
 pub mod game_rules;
-#[path = "../../../pinyin-ime/src/shared_rules.rs"]
+pub mod engine_contract;
 pub mod shared_rules;
 pub fn config_default(section: &str, key: &str) -> Option<&'static str> {
     config_schema::ENTRIES

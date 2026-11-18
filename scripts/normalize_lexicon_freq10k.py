@@ -33,10 +33,7 @@ def score_by_rank(values: list[int], low: int, high: int) -> list[int]:
         return [midpoint] * len(values)
     positions = {value: index for index, value in enumerate(unique)}
     last = len(unique) - 1
-    return [
-        high - round(positions[max(1, value)] * (high - low) / last)
-        for value in values
-    ]
+    return [high - round(positions[max(1, value)] * (high - low) / last) for value in values]
 
 
 def profile(path: Path, rows: list[tuple[str, list[str], int]]) -> tuple[int, int]:
@@ -121,11 +118,10 @@ def rewrite_file(path: Path) -> tuple[int, int, int]:
     # Keep source comments truthful after replacing corpus counts/weights.
     updated: list[str] = []
     for line in lines:
-        if line.startswith("#") and (
-            "词频为 10^Zipf" in line
-            or "词频 = round(" in line
-        ):
-            line = "# 格式：词语<TAB>全拼<TAB>万分制排序分数；范围 1-10000，按来源与原频次排序归一化。"
+        if line.startswith("#") and ("词频为 10^Zipf" in line or "词频 = round(" in line):
+            line = (
+                "# 格式：词语<TAB>全拼<TAB>万分制排序分数；范围 1-10000，按来源与原频次排序归一化。"
+            )
         if (
             line.startswith("# 格式：")
             and "万分制" not in line

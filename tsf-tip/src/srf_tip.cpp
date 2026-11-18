@@ -1,4 +1,5 @@
 #include "background_worker.h"
+#include "engine_contract.generated.h"
 #include "srf_tip.h"
 #include "direct_text_conversion.h"
 #include "input_mode_policy.h"

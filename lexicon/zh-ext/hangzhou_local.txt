@@ -1050,7 +1050,7 @@
 麻梗浦路	ma geng pu lu	175
 将军亭桥	jiang jun ting qiao	175
 走运桥	zou yun qiao	175
-沿山港桥	yan shang ang qiao	175
+沿山港桥	yan shan gang qiao	175
 清澜桥	qing lan qiao	175
 骆家塘南桥	luo jia tang nan qiao	175
 骆家塘北桥	luo jia tang bei qiao	175
@@ -1064,7 +1064,7 @@
 茗启桥	ming qi qiao	175
 思学桥	si xue qiao	175
 栖鹭桥	qi lu qiao	175
-横山港桥	heng shang ang qiao	175
+横山港桥	heng shan gang qiao	175
 翠屿桥	cui yu qiao	175
 莲济桥	lian ji qiao	175
 谋福桥	mou fu qiao	175
@@ -1407,7 +1407,7 @@
 南宋德寿宫遗址博物馆	nan song de shou gong yi zhi bo wu guan	2200
 杭州南宋官窑博物馆	hang zhou nan song guan yao bo wu guan	2200
 杭州西湖博物馆	hang zhou xi hu bo wu guan	2200
-杭州奥体中心体育馆	hang zhou ao ti zhong xin ti yu chang	2200
+杭州奥体中心体育馆	hang zhou ao ti zhong xin ti yu guan	2200
 西湖龙井茶	xi hu long jing cha	2200
 杭州亚残运会	hang zhou ya can yun hui	2200
 杭州地铁站	hang zhou di tie zhan	2200

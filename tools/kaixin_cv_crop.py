@@ -32,12 +32,20 @@ if hasattr(sys.stderr, "reconfigure"):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Crop an image to the strongest rectangular border.")
+    parser = argparse.ArgumentParser(
+        description="Crop an image to the strongest rectangular border."
+    )
     parser.add_argument("input", type=Path, help="Input image path.")
     parser.add_argument("output", type=Path, help="Output image path written only when cropped.")
-    parser.add_argument("--padding", type=int, default=6, help="Pixels to keep around the detected border.")
-    parser.add_argument("--min-area", type=float, default=0.04, help="Minimum rectangle area ratio.")
-    parser.add_argument("--max-area", type=float, default=0.985, help="Maximum rectangle area ratio.")
+    parser.add_argument(
+        "--padding", type=int, default=6, help="Pixels to keep around the detected border."
+    )
+    parser.add_argument(
+        "--min-area", type=float, default=0.04, help="Minimum rectangle area ratio."
+    )
+    parser.add_argument(
+        "--max-area", type=float, default=0.985, help="Maximum rectangle area ratio."
+    )
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON.")
     return parser.parse_args()
 
@@ -72,7 +80,6 @@ def write_image(path: Path, image) -> None:
 
 def border_density(edges, x: int, y: int, width: int, height: int) -> float:
     import cv2
-    import numpy as np
 
     strip = max(2, min(6, min(width, height) // 80))
     roi = edges[y : y + height, x : x + width]
@@ -127,8 +134,16 @@ def find_rect(image, min_area: float, max_area: float):
         if density < 0.025 and fill_ratio < 0.35:
             continue
 
-        margin_penalty = 0.9 if min(x, y, width - (x + rect_width), height - (y + rect_height)) <= 2 else 1.0
-        score = area_ratio * (0.55 + density * 3.0) * (0.55 + fill_ratio) * corner_bonus * margin_penalty
+        margin_penalty = (
+            0.9 if min(x, y, width - (x + rect_width), height - (y + rect_height)) <= 2 else 1.0
+        )
+        score = (
+            area_ratio
+            * (0.55 + density * 3.0)
+            * (0.55 + fill_ratio)
+            * corner_bonus
+            * margin_penalty
+        )
         if best is None or score > best[0]:
             best = (score, (x, y, rect_width, rect_height), density)
 
@@ -181,15 +196,29 @@ def main() -> int:
         found = find_rect(image, args.min_area, args.max_area)
         if found is None:
             return emit(
-                {"ok": True, "cropped": False, "reason": "no-confident-border", "width": width, "height": height},
+                {
+                    "ok": True,
+                    "cropped": False,
+                    "reason": "no-confident-border",
+                    "width": width,
+                    "height": height,
+                },
                 args.pretty,
             )
 
         score, (x, y, rect_width, rect_height), density = found
-        crop_rect = safe_border_crop_rect(x, y, rect_width, rect_height, width, height, args.padding)
+        crop_rect = safe_border_crop_rect(
+            x, y, rect_width, rect_height, width, height, args.padding
+        )
         if crop_rect is None:
             return emit(
-                {"ok": True, "cropped": False, "reason": "unsafe-or-full-image-border", "width": width, "height": height},
+                {
+                    "ok": True,
+                    "cropped": False,
+                    "reason": "unsafe-or-full-image-border",
+                    "width": width,
+                    "height": height,
+                },
                 args.pretty,
             )
         x0, y0, x1, y1 = crop_rect

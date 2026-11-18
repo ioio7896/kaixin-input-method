@@ -28,14 +28,11 @@ class CExternalCandidateOverlayClient {
   // QueryStatus reports that a sequence has actually been applied. Once the
   // same owner is visible, later updates may keep that previous external frame
   // during the short asynchronous apply window.
-  bool Show(HWND senderHwnd, std::uint64_t ownerId,
-            const SrfCandidateOverlaySnapshot& snapshot,
+  bool Show(HWND senderHwnd, std::uint64_t ownerId, const SrfCandidateOverlaySnapshot& snapshot,
             std::uint64_t* acceptedSequence = nullptr);
-  SrfCandidateOverlayStatus QueryStatus(HWND senderHwnd,
-                                        std::uint64_t ownerId,
+  SrfCandidateOverlayStatus QueryStatus(HWND senderHwnd, std::uint64_t ownerId,
                                         std::uint64_t sequence);
-  void Hide(HWND senderHwnd, std::uint64_t ownerId, HWND targetHwnd,
-            DWORD targetProcessId,
+  void Hide(HWND senderHwnd, std::uint64_t ownerId, HWND targetHwnd, DWORD targetProcessId,
             std::uint64_t focusGeneration);
   void Shutdown();
 

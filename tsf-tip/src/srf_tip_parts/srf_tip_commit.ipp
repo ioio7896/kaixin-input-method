@@ -3,7 +3,8 @@ CSrfTip::SrfPhraseComposeStateGuard::SrfPhraseComposeStateGuard(CSrfTip* tip)
       wasActive_(tip->m_userPhraseComposeActive),
       wasValid_(tip->m_userPhraseComposeValid),
       originalReading_(tip->m_userPhraseComposeOriginalReading),
-      committed_(tip->m_userPhraseComposeCommitted) {}
+      committed_(tip->m_userPhraseComposeCommitted) {
+}
 
 CSrfTip::SrfPhraseComposeStateGuard::~SrfPhraseComposeStateGuard() {
   tip_->m_userPhraseComposeActive = wasActive_;
@@ -52,14 +53,13 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     return !m_reading.empty() ? m_reading : std::wstring();
   };
   std::wstring committed =
-      commitReading
-          ? snapshotOrCurrentReading()
-          : (snapshotCommitted && !snapshotCommitted->empty()
-                 ? *snapshotCommitted
-                 : (idx < m_candidates.size()
-                        ? m_candidates[idx]
-                        : (!m_candidates.empty() ? m_candidates.front()
-                                                 : snapshotOrCurrentReading())));
+      commitReading ? snapshotOrCurrentReading()
+                    : (snapshotCommitted && !snapshotCommitted->empty()
+                           ? *snapshotCommitted
+                           : (idx < m_candidates.size()
+                                  ? m_candidates[idx]
+                                  : (!m_candidates.empty() ? m_candidates.front()
+                                                           : snapshotOrCurrentReading())));
   if (committed.empty()) return S_OK;
 
   CandidateMetaParts committedMeta;
@@ -71,8 +71,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   if (!commitReading && committedMeta.prefixPlaceholder) {
     std::wstring line = L"idx=" + std::to_wstring(idx);
     line += L", reading=";
-    line += ShortenForLog(snapshotReading && !snapshotReading->empty() ? *snapshotReading : m_reading,
-                          24);
+    line += ShortenForLog(
+        snapshotReading && !snapshotReading->empty() ? *snapshotReading : m_reading, 24);
     SrfTsfDiagnosticLog(L"commit-candidate.skip-placeholder", line.c_str());
     return S_OK;
   }
@@ -108,8 +108,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     // clipboard://{id} placeholder that needs the pipe round trip.  Skipping
     // the resolve for inline texts keeps the common commit offline-safe and
     // removes a blocking pipe wait from the key thread.
-    if (!committedMeta.clipboardId.empty() &&
-        committed.rfind(L"clipboard://", 0) == 0) {
+    if (!committedMeta.clipboardId.empty() && committed.rfind(L"clipboard://", 0) == 0) {
       std::wstring resolved;
       if (!SrfTip_ResolveClipboardTextCached(committedMeta.clipboardId, &resolved)) {
         if (committed.rfind(L"clipboard://", 0) == 0) {
@@ -142,12 +141,12 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
                                           : (requestContext ? requestContext : m_pFocusContext);
   UINT readingFunctionVk = 0;
   UINT committedFunctionVk = 0;
-  const bool commitAsFunctionKey =
-      TryParseFunctionKeyToken(reading, &readingFunctionVk) &&
-      TryParseFunctionKeyToken(committed, &committedFunctionVk) && readingFunctionVk == committedFunctionVk;
+  const bool commitAsFunctionKey = TryParseFunctionKeyToken(reading, &readingFunctionVk) &&
+                                   TryParseFunctionKeyToken(committed, &committedFunctionVk) &&
+                                   readingFunctionVk == committedFunctionVk;
 
-  // 单字候选 + 至少两个完整音节：上屏一字并保留后续拼音（与引擎「前 7 多字 + 首音节单字」策略配套）。
-  // ClipboardPaste has a full clipboard/OLE round trip per commit.  Do not
+  // 单字候选 + 至少两个完整音节：上屏一字并保留后续拼音（与引擎「前 7 多字 +
+  // 首音节单字」策略配套）。 ClipboardPaste has a full clipboard/OLE round trip per commit.  Do not
   // enter the single-character continuation path in game mode: repeatedly
   // selecting a long phrase would otherwise perform one expensive paste for
   // every character and make the game input feel frozen.  The normal commit
@@ -156,9 +155,9 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
     appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
   }
-  const bool gameCompatibilityActive =
-      appGameProfile || m_gameCompatActive || m_configuredGameCompatActive ||
-      m_builtinGameCompatActive || m_fullscreenCompatActive || m_manualGameCompatActive;
+  const bool gameCompatibilityActive = appGameProfile || m_gameCompatActive ||
+                                       m_configuredGameCompatActive || m_builtinGameCompatActive ||
+                                       m_fullscreenCompatActive || m_manualGameCompatActive;
   const bool clipboardGameContinuation =
       EffectiveCommitTransport() == SrfCommitTransport::ClipboardPaste && gameCompatibilityActive;
   if (committed.size() == 1 && pic && !clipboardGameContinuation) {
@@ -166,7 +165,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
                                         const std::wstring* learnReading) -> HRESULT {
       if (m_candidateUi) m_candidateUi->End();
 
-      ITfContext* ctx = m_pCompositionContext ? m_pCompositionContext : (pic ? pic : m_pFocusContext);
+      ITfContext* ctx =
+          m_pCompositionContext ? m_pCompositionContext : (pic ? pic : m_pFocusContext);
       if (!ctx) return E_FAIL;
       ctx->AddRef();
 
@@ -188,9 +188,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
         if (FAILED(hr) || !insertAtSelection) return FAILED(hr) ? hr : E_FAIL;
 
         ITfRange* insertedRange = nullptr;
-        hr = insertAtSelection->InsertTextAtSelection(ec, 0, committed.c_str(),
-                                                      static_cast<LONG>(committed.size()),
-                                                      &insertedRange);
+        hr = insertAtSelection->InsertTextAtSelection(
+            ec, 0, committed.c_str(), static_cast<LONG>(committed.size()), &insertedRange);
         insertAtSelection->Release();
         if (SUCCEEDED(hr) && insertedRange) {
           (void)insertedRange->Collapse(ec, TF_ANCHOR_END);
@@ -210,7 +209,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
         return hr;
       };
 
-      // 逐字上屏必须是“稳定的直接插入”，避免随后 SyncCompositionText 复用 composition range 覆盖已选字导致吞字。
+      // 逐字上屏必须是“稳定的直接插入”，避免随后 SyncCompositionText 复用 composition range
+      // 覆盖已选字导致吞字。
       HRESULT hrIns = EffectiveCommitTransport() != SrfCommitTransport::Tsf
                           ? CommitDirectText(ec, ctx, committed)
                           : commitSingleCharByInsert();
@@ -224,7 +224,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       }
 
       if (!suppressPhraseComposeLearning) {
-        // 启动/继续“用户造词”累计：用最初 reading 作为 key，把逐字上屏的结果拼成一个整词写入用户词典。
+        // 启动/继续“用户造词”累计：用最初 reading 作为
+        // key，把逐字上屏的结果拼成一个整词写入用户词典。
         if (!m_userPhraseComposeActive) {
           std::wstring trimmedOrig = reading;
           TrimWstringInPlace(trimmedOrig);
@@ -250,9 +251,9 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       // 保留旧候选作为不可点击的短暂占位（m_candidatesReading 与 reading
       // 不匹配时 UI 会拒绝提交）。这样不会在首字上屏后闪灭/跳位。
       if (m_hasLastCandidateRect) m_preserveCandidateAnchorReading = m_reading;
-      SetCandidateViewState(m_candidates.empty() ? SrfCandidateViewState::Pending
-                                                  : SrfCandidateViewState::Stale,
-                            L"commit-rest-reading");
+      SetCandidateViewState(
+          m_candidates.empty() ? SrfCandidateViewState::Pending : SrfCandidateViewState::Stale,
+          L"commit-rest-reading");
       m_candSel = 0;
       m_candPage = 0;
 
@@ -270,8 +271,8 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     std::wstring trimmed = reading;
     TrimWstringInPlace(trimmed);
     std::array<uint32_t, 64> bounds{};
-    const size_t n = SrfTip_SyllableBoundaryOffsetsUtf16(trimmed.c_str(), trimmed.size(), bounds.data(),
-                                                         bounds.size());
+    const size_t n = SrfTip_SyllableBoundaryOffsetsUtf16(trimmed.c_str(), trimmed.size(),
+                                                         bounds.data(), bounds.size());
     if (n >= 3 && bounds[1] < trimmed.size()) {
       const std::wstring firstSyl = trimmed.substr(0, bounds[1]);
       std::wstring restReading = trimmed.substr(bounds[1]);
@@ -353,14 +354,17 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     ITfRange* range = nullptr;
     hr = m_pComposition->GetRange(&range);
     if (SUCCEEDED(hr) && range) {
-      const auto result = SrfWriteAndFinishComposition([&]() {
-        const HRESULT write = range->SetText(ec, 0, committed.c_str(), static_cast<LONG>(committed.size()));
-        if (SUCCEEDED(write)) {
-          ITfContext* commitContext = m_pCompositionContext ? m_pCompositionContext : pic;
-          (void)CollapseSelectionToRangeEnd(ec, commitContext, range);
-        }
-        return write;
-      }, [&]() { return FinishCompositionPreservingText(ec); });
+      const auto result = SrfWriteAndFinishComposition(
+          [&]() {
+            const HRESULT write =
+                range->SetText(ec, 0, committed.c_str(), static_cast<LONG>(committed.size()));
+            if (SUCCEEDED(write)) {
+              ITfContext* commitContext = m_pCompositionContext ? m_pCompositionContext : pic;
+              (void)CollapseSelectionToRangeEnd(ec, commitContext, range);
+            }
+            return write;
+          },
+          [&]() { return FinishCompositionPreservingText(ec); });
       // A failed EndComposition must never turn a completed write into a
       // failed commit: compatibility fallback would send the text twice.
       hr = result.write;
@@ -391,19 +395,20 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   }
 
   // 用户选择候选：把强跳过项和当前页弱未选项回传为用户词交互反馈。
-  if (SUCCEEDED(hr) && !suppressCandidateLearning && !reading.empty() && committed != reading
-      && idx != static_cast<size_t>(-1)) {
+  if (SUCCEEDED(hr) && !suppressCandidateLearning && !reading.empty() && committed != reading &&
+      idx != static_cast<size_t>(-1)) {
     const std::vector<std::wstring> emptySkippedCandidates;
     const std::vector<std::wstring>& skippedCandidates =
         snapshotSkippedCandidates ? *snapshotSkippedCandidates : emptySkippedCandidates;
     if (idx > 0 || !skippedCandidates.empty()) {
-      SrfTip_LearnSelectionFeedback(reading, committed, static_cast<unsigned long>(idx),
-                                    m_candPage, skippedCandidates);
+      SrfTip_LearnSelectionFeedback(reading, committed, static_cast<unsigned long>(idx), m_candPage,
+                                    skippedCandidates);
     }
   }
 
   // 若刚才处于逐字拼词模式，则在结束上屏时把整词写入用户词典。
-  // 触发条件：逐字路径已累计过，且这次不是继续保留剩余 reading 的路径（到这里意味着 composition 将结束）。
+  // 触发条件：逐字路径已累计过，且这次不是继续保留剩余 reading 的路径（到这里意味着 composition
+  // 将结束）。
   if (SUCCEEDED(hr) && m_userPhraseComposeActive) {
     // 把本次上屏也纳入最终词组（最后一步可能是单字或直接选中某个短语）。
     if (!suppressPhraseComposeLearning && !committed.empty()) {
@@ -417,8 +422,7 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       if (EnsureDeferredTimerWindow()) {
         const unsigned long long requestId = SrfTip_LearnCommitExWithCompletion(
             m_userPhraseComposeOriginalReading, m_userPhraseComposeCommitted,
-            kSrfLearnCommitComposedPhrase, m_deferredTimerHwnd,
-            kLearnCommitCompletedMessage);
+            kSrfLearnCommitComposedPhrase, m_deferredTimerHwnd, kLearnCommitCompletedMessage);
         if (requestId != 0) {
           if (m_pendingLearnNotifications.size() >= 64) {
             m_pendingLearnNotifications.erase(m_pendingLearnNotifications.begin());
@@ -449,10 +453,9 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
         CancelCompositionEdit(ec);
         SetGameChatActive(false);
       }
-      ShowGameInputStatus(
-          hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) ?
-          L"部分上屏，已停止重试；请检查游戏聊天框" :
-          L"上屏失败，请用游戏测试向导选择上屏方式");
+      ShowGameInputStatus(hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY)
+                              ? L"部分上屏，已停止重试；请检查游戏聊天框"
+                              : L"上屏失败，请用游戏测试向导选择上屏方式");
     }
     RecordCompatibilityFallback(L"CommitCandidate", hr);
     wchar_t hrBuf[16] = {};
@@ -469,8 +472,9 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   // send OnCompositionTerminated for an EndComposition initiated by this TIP.
   // Retaining it would make EnsureEngineInputReady reject every following key.
   ReleaseCompositionState();
-  std::wstring line = EffectiveCommitTransport() == SrfCommitTransport::Tsf ?
-      L"status=written, total_ms=" : L"status=sent_unconfirmed, total_ms=";
+  std::wstring line = EffectiveCommitTransport() == SrfCommitTransport::Tsf
+                          ? L"status=written, total_ms="
+                          : L"status=sent_unconfirmed, total_ms=";
   line += std::to_wstring(GetTickCount64() - commitStart);
   line += L", committed_len=";
   line += std::to_wstring(committed.size());
@@ -578,9 +582,9 @@ void CSrfTip::ApplyCandidateMenuCommand(size_t idx, int command) {
   const std::wstring reading = m_reading;
   const std::wstring candidate = m_candidates[idx];
   const bool remove = command == kSrfCandidateWindowMenuRemoveUserPhrase;
-  SrfTip_ApplyCandidateAction(reading, candidate,
-                              remove ? kSrfCandidateActionRemoveUserPhrase
-                                     : kSrfCandidateActionBlockPhrase);
+  SrfTip_ApplyCandidateAction(
+      reading, candidate,
+      remove ? kSrfCandidateActionRemoveUserPhrase : kSrfCandidateActionBlockPhrase);
 
   const std::wstring pinKey = CandidatePinStateKey(reading, candidate);
   m_locallyPinnedCandidateKeys.erase(pinKey);
@@ -629,8 +633,9 @@ void CSrfTip::ApplyCandidatePinChoice(size_t idx, bool pinned) {
   SrfTsfDiagnosticLog(L"candidate-pin-menu.apply", line.c_str());
   if (!SrfTip_SetCandidatePin(reading, candidate, pinned)) {
     SrfTsfDiagnosticLog(L"candidate-pin-menu.apply-failed",
-                        (L"idx=" + std::to_wstring(idx) + L" pinned=" +
-                         (pinned ? L"1" : L"0") + L" reason=ipc-failed").c_str());
+                        (L"idx=" + std::to_wstring(idx) + L" pinned=" + (pinned ? L"1" : L"0") +
+                         L" reason=ipc-failed")
+                            .c_str());
     return;
   }
 
@@ -651,7 +656,7 @@ void CSrfTip::ApplyCandidatePinChoice(size_t idx, bool pinned) {
   RedrawCandidateUi();
 
   if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
-    ShowNotification(SrfNotificationKind::AppOptions,
-                     pinned ? L"\u5df2\u56fa\u5b9a\u7f6e\u9876" : L"\u5df2\u53d6\u6d88\u56fa\u5b9a");
+    ShowNotification(SrfNotificationKind::AppOptions, pinned ? L"\u5df2\u56fa\u5b9a\u7f6e\u9876"
+                                                             : L"\u5df2\u53d6\u6d88\u56fa\u5b9a");
   }
 }

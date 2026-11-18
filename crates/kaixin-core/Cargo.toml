@@ -1,12 +1,9 @@
 [package]
 name = "kaixin-core"
-version = "2026.1111.2039"
+version = "2026.1118.1215"
 edition = "2021"
-rust-version = "1.88"
+rust-version = "1.99"
 license = "Apache-2.0"
-build = "../../pinyin-ime/build.rs"
-[lib]
-path = "../../pinyin-ime/src/lib.rs"
 [features]
 default = []
 desktop = ["dep:egui", "dep:xcap"]
@@ -31,7 +28,6 @@ flate2 = "1.1.9"
 
 [build-dependencies]
 pinyin = "0.10"
-embed-resource = "3"
 
 [target.'cfg(windows)'.dependencies]
 clipboard-win = "5.4.1"

@@ -636,7 +636,18 @@
       "一半则",
       "应立即",
       "夏秋之",
-      "米斯之"
+      "米斯之",
+      "的应该",
+      "主要是从",
+      "越活越",
+      "越梳越",
+      "越笑越",
+      "越说越",
+      "我快被",
+      "让我把",
+      "我不想被",
+      "这都被",
+      "还能被"
     ],
     "cutoff_word_or_entity": [
       "阿尔及",
@@ -1168,5 +1179,128 @@
       "decision": "keep",
       "note": "Complete quantities, statistical units and regional quantity expressions are not sentence fragments merely because they are not dictionary headwords."
     }
-  }
+  },
+  "review_records": [
+    {
+      "phrase": "的应该",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 9656
+        }
+      ]
+    },
+    {
+      "phrase": "主要是从",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_four.txt",
+          "line": 9593
+        }
+      ]
+    },
+    {
+      "phrase": "越活越",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 122016
+        }
+      ]
+    },
+    {
+      "phrase": "越梳越",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 68972
+        }
+      ]
+    },
+    {
+      "phrase": "越笑越",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 68974
+        }
+      ]
+    },
+    {
+      "phrase": "越说越",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 207078
+        }
+      ]
+    },
+    {
+      "phrase": "我快被",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 50267
+        }
+      ]
+    },
+    {
+      "phrase": "让我把",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 205469
+        }
+      ]
+    },
+    {
+      "phrase": "我不想被",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_four.txt",
+          "line": 133136
+        }
+      ]
+    },
+    {
+      "phrase": "这都被",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 26909
+        }
+      ]
+    },
+    {
+      "phrase": "还能被",
+      "date": "2026-11-11",
+      "reason": "依赖后文的比较结构或未完成分句；仅移除精确词条，保留完整表达和临时组句",
+      "sources": [
+        {
+          "file": "lexicon/zh-ext/category_common_three.txt",
+          "line": 37453
+        }
+      ]
+    }
+  ]
 }

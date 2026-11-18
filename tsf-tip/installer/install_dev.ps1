@@ -27,8 +27,8 @@ $SimplifiedChineseTip = ('0804:{0}{1}' -f $TextServiceClsid, $ProfileGuid)
 $AppDisplayName = '开心输入法'
 $AppPathName = 'kaixin'
 $TrayRunEntryName = $AppDisplayName
-$LegacyTrayRunEntryName = $AppDisplayName + (-join ([char[]](0x6258, 0x76D8)))
-$EngineRunEntryName = $AppDisplayName + (-join ([char[]](0x5F15, 0x64CE)))
+$LegacyTrayRunEntryName = $AppDisplayName + ( -join ([char[]](0x6258, 0x76D8)))
+$EngineRunEntryName = $AppDisplayName + ( -join ([char[]](0x5F15, 0x64CE)))
 $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $PackageManifestName = 'package_manifest.sha256'
 $RuntimeSuccessManifestName = 'successful_runtime_payload.txt'
@@ -75,9 +75,7 @@ function Write-InstallLog {
         Ensure-Directory -Path $directory
         $line = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message)
         Add-Content -LiteralPath $script:InstallLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
-    } catch {
-        # Best-effort logging only.
-    }
+    } catch { Write-Verbose 'Optional operation in Write-InstallLog failed; continuing with the existing fallback.' }
 }
 
 function Remove-StalePerUserComRegistration {
@@ -510,8 +508,7 @@ function Stop-RunningHelpers {
                 if ($process.MainWindowHandle -ne 0) {
                     [void]$process.CloseMainWindow()
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
         }
     }
     Start-Sleep -Milliseconds 700
@@ -522,8 +519,7 @@ function Stop-RunningHelpers {
                 if (-not $process.HasExited) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
         }
     }
     foreach ($processName in $visibleTools) {
@@ -542,8 +538,7 @@ function Stop-TextInputStackForInstall {
                 if (-not $process.HasExited) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-TextInputStackForInstall failed; continuing with the existing fallback.' }
         }
     }
     Write-InstallLog 'OK: stopped text input stack before file replacement'
@@ -755,7 +750,7 @@ function Test-PathWithinRoot {
     $rootFull = [System.IO.Path]::GetFullPath($Root).TrimEnd('\')
     $pathFull = [System.IO.Path]::GetFullPath($Path).TrimEnd('\')
     return $pathFull.Equals($rootFull, [System.StringComparison]::OrdinalIgnoreCase) -or
-        $pathFull.StartsWith($rootFull + '\', [System.StringComparison]::OrdinalIgnoreCase)
+    $pathFull.StartsWith($rootFull + '\', [System.StringComparison]::OrdinalIgnoreCase)
 }
 
 function Assert-PackageHashManifest {
@@ -1062,9 +1057,7 @@ function Add-InputMethodToCurrentUserLanguageList {
             Ensure-Directory -Path $directory
             $line = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message)
             Add-Content -LiteralPath $languageLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
-        } catch {
-            # Best-effort logging only.
-        }
+        } catch { Write-Verbose 'Optional operation in Write-ImeLanguageLog failed; continuing with the existing fallback.' }
     }
 
     $getCommand = Get-Command -Name Get-WinUserLanguageList -ErrorAction SilentlyContinue
@@ -1261,9 +1254,7 @@ function Get-LoadedRuntimePayloadRoots {
                     [void]$loaded.Add($payloadFull)
                 }
             }
-        } catch {
-            # Access-denied/system processes are expected.
-        }
+        } catch { Write-Verbose 'Optional operation in Get-LoadedRuntimePayloadRoots failed; continuing with the existing fallback.' }
     }
     return $loaded
 }
@@ -1318,8 +1309,8 @@ function Remove-OldRuntimePayloads {
     $resolvedRuntimeRoot = [System.IO.Path]::GetFullPath($runtimeRoot).TrimEnd('\')
     $current = [System.IO.Path]::GetFullPath($CurrentPayloadRoot).TrimEnd('\')
     $entries = @(Get-ChildItem -LiteralPath $runtimeRoot -Directory -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -like 'pkg-*' } |
-        Sort-Object LastWriteTimeUtc -Descending)
+            Where-Object { $_.Name -like 'pkg-*' } |
+            Sort-Object LastWriteTimeUtc -Descending)
 
     $keep = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
     [void]$keep.Add($current)
@@ -1416,13 +1407,11 @@ function Get-StaleRuntimeHosts {
                             $commandLine = [string]$cim.CommandLine
                             $executablePath = [string]$cim.ExecutablePath
                         }
-                    } catch {
-                    }
+                    } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
                     if ([string]::IsNullOrWhiteSpace($executablePath)) {
                         try {
                             $executablePath = [string]$process.Path
-                        } catch {
-                        }
+                        } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
                     }
                     $hostsById[$process.Id] = [pscustomobject]@{
                         Id = [int]$process.Id
@@ -1433,9 +1422,7 @@ function Get-StaleRuntimeHosts {
                     }
                 }
             }
-        } catch {
-            # Access-denied/system processes are expected; this is best-effort maintenance.
-        }
+        } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
     }
 
     return @($hostsById.Values | Sort-Object ProcessName, Id)
@@ -1566,8 +1553,7 @@ function Restart-StaleRuntimeHosts {
             if ($process.MainWindowHandle -ne 0) {
                 $requestedClose = $process.CloseMainWindow()
             }
-        } catch {
-        }
+        } catch { Write-Verbose 'Optional operation in Restart-StaleRuntimeHosts failed; continuing with the existing fallback.' }
         if (-not $requestedClose) {
             $skipped++
             Write-InstallLog ("SKIP: stale runtime host has no closable main window: {0}" -f $line)
@@ -1805,7 +1791,6 @@ if (-not $InstallationRoot) {
 $InstallationRoot = [System.IO.Path]::GetFullPath($InstallationRoot)
 Assert-TrustedInstallRoot -Path $InstallationRoot
 $script:InstallLogPath = Get-DefaultInstallLogPath -InstallRoot $InstallationRoot -MachineScope:$Machine.IsPresent
-$lexiconPrefix = (-join ([char[]](0x8BCD, 0x5E93, 0x002D)))
 
 Write-InstallLog 'event=install_session_start'
 Write-InstallLog ("BEGIN: install_dev.ps1 Machine={0} SkipFileCopy={1} SkipRegistration={2} SkipLanguageList={3} SkipTextServiceRestart={4} SkipTextInputUx={5} SkipUninstallEntry={6} SkipTraySetup={7} SkipStaleHostRestart={8} PromptStaleHostRestart={9}" -f
@@ -1906,45 +1891,45 @@ if (-not $SkipFileCopy) {
         Copy-Item -LiteralPath $packagePayloadRoot -Destination $installedPayloadParent -Recurse -Force
     }
 
-        foreach ($dir in $lexiconDirs) {
-            $target = Join-Path $InstallationRoot $dir.Name
-            if (Test-Path -LiteralPath $target) {
-                Remove-Item -LiteralPath $target -Recurse -Force
-            }
-            Copy-Item -LiteralPath $dir.FullName -Destination $target -Recurse -Force
+    foreach ($dir in $lexiconDirs) {
+        $target = Join-Path $InstallationRoot $dir.Name
+        if (Test-Path -LiteralPath $target) {
+            Remove-Item -LiteralPath $target -Recurse -Force
         }
+        Copy-Item -LiteralPath $dir.FullName -Destination $target -Recurse -Force
+    }
 
-        if (Test-Path -LiteralPath $fontDir) {
-            $target = Join-Path $InstallationRoot 'font1'
-            if (Test-Path -LiteralPath $target) {
-                Remove-Item -LiteralPath $target -Recurse -Force
-            }
-            Copy-Item -LiteralPath $fontDir -Destination $target -Recurse -Force
+    if (Test-Path -LiteralPath $fontDir) {
+        $target = Join-Path $InstallationRoot 'font1'
+        if (Test-Path -LiteralPath $target) {
+            Remove-Item -LiteralPath $target -Recurse -Force
         }
+        Copy-Item -LiteralPath $fontDir -Destination $target -Recurse -Force
+    }
 
-        if (Test-Path -LiteralPath $skinDir) {
-            $target = Join-Path $InstallationRoot 'skins'
-            if (Test-Path -LiteralPath $target) {
-                Remove-Item -LiteralPath $target -Recurse -Force
-            }
-            Copy-Item -LiteralPath $skinDir -Destination $target -Recurse -Force
+    if (Test-Path -LiteralPath $skinDir) {
+        $target = Join-Path $InstallationRoot 'skins'
+        if (Test-Path -LiteralPath $target) {
+            Remove-Item -LiteralPath $target -Recurse -Force
         }
+        Copy-Item -LiteralPath $skinDir -Destination $target -Recurse -Force
+    }
 
-        foreach ($optionalDir in @(
+    foreach ($optionalDir in @(
             @{ Source = $assetsDir; Name = 'assets' },
             @{ Source = $toolsDir; Name = 'tools' },
             @{ Source = $pythonRuntimeDir; Name = '.python-runtime' },
             @{ Source = $rapidOcrPackagesDir; Name = '.python-packages' },
             @{ Source = $rapidOcrDir; Name = 'RapidOCRLite' }
         )) {
-            if (Test-Path -LiteralPath $optionalDir.Source) {
-                $target = Join-Path $InstallationRoot $optionalDir.Name
-                if (Test-Path -LiteralPath $target) {
-                    Remove-Item -LiteralPath $target -Recurse -Force
-                }
-                Copy-Item -LiteralPath $optionalDir.Source -Destination $target -Recurse -Force
+        if (Test-Path -LiteralPath $optionalDir.Source) {
+            $target = Join-Path $InstallationRoot $optionalDir.Name
+            if (Test-Path -LiteralPath $target) {
+                Remove-Item -LiteralPath $target -Recurse -Force
             }
+            Copy-Item -LiteralPath $optionalDir.Source -Destination $target -Recurse -Force
         }
+    }
 
     Write-InstallLog 'OK: copied package files'
 }

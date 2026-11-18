@@ -14,16 +14,13 @@
 
 namespace {
 
-constexpr GUID kCandidateUiGuid = {0x36c3c795,
-                                   0x7159,
-                                   0x45aa,
-                                   {0xab, 0x12, 0x30, 0x22, 0x9a, 0x51, 0xdb, 0xd3}};
+constexpr GUID kCandidateUiGuid = {
+    0x36c3c795, 0x7159, 0x45aa, {0xab, 0x12, 0x30, 0x22, 0x9a, 0x51, 0xdb, 0xd3}};
 
 std::atomic<std::uint64_t> g_nextExternalOverlayOwnerId{1};
 
 std::uint64_t AllocateExternalOverlayOwnerId() {
-  std::uint64_t value =
-      g_nextExternalOverlayOwnerId.fetch_add(1, std::memory_order_relaxed);
+  std::uint64_t value = g_nextExternalOverlayOwnerId.fetch_add(1, std::memory_order_relaxed);
   if (value == 0) {
     value = g_nextExternalOverlayOwnerId.fetch_add(1, std::memory_order_relaxed);
   }
@@ -56,7 +53,9 @@ CSrfCandidateListUIElement::CSrfCandidateListUIElement(CSrfTip* tip)
   m_window.SetEvents(this);
 }
 
-CSrfCandidateListUIElement::~CSrfCandidateListUIElement() { End(); }
+CSrfCandidateListUIElement::~CSrfCandidateListUIElement() {
+  End();
+}
 
 STDMETHODIMP CSrfCandidateListUIElement::QueryInterface(REFIID riid, void** ppvObject) {
   if (!ppvObject) return E_POINTER;
@@ -73,7 +72,9 @@ STDMETHODIMP CSrfCandidateListUIElement::QueryInterface(REFIID riid, void** ppvO
   return S_OK;
 }
 
-STDMETHODIMP_(ULONG) CSrfCandidateListUIElement::AddRef() { return InterlockedIncrement(&m_cRef); }
+STDMETHODIMP_(ULONG) CSrfCandidateListUIElement::AddRef() {
+  return InterlockedIncrement(&m_cRef);
+}
 
 STDMETHODIMP_(ULONG) CSrfCandidateListUIElement::Release() {
   const ULONG count = InterlockedDecrement(&m_cRef);
@@ -96,7 +97,9 @@ STDMETHODIMP CSrfCandidateListUIElement::GetGUID(GUID* pguid) {
 STDMETHODIMP CSrfCandidateListUIElement::Show(BOOL bShow) {
   m_hostRequestedShow = bShow;
   m_showWindow = SrfCandidateHostMayShow(bShow != FALSE,
-      m_tip && m_tip->ShouldOverrideHostCandidateVisibility()) ? TRUE : FALSE;
+                                         m_tip && m_tip->ShouldOverrideHostCandidateVisibility())
+                     ? TRUE
+                     : FALSE;
   RefreshWindow();
   return S_OK;
 }
@@ -218,7 +221,8 @@ void CSrfCandidateListUIElement::OnCandidateInteractionStarted() {
 void CSrfCandidateListUIElement::OnCandidateClicked(UINT indexInPage) {
   if (!m_tip) return;
   if (m_tip->m_candidatesReading != m_tip->m_reading) return;
-  const size_t idx = static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
+  const size_t idx =
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
   if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
   m_tip->m_candSel = static_cast<UINT>(idx);
   (void)m_tip->RequestCommitCandidate(idx);
@@ -234,7 +238,8 @@ void CSrfCandidateListUIElement::OnCandidateRightClicked(UINT indexInPage, POINT
   (void)screenPoint;
   if (!m_tip) return;
   if (m_tip->m_candidatesReading != m_tip->m_reading) return;
-  const size_t idx = static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
+  const size_t idx =
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
   if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
   m_tip->m_candSel = static_cast<UINT>(idx);
   m_tip->ClampCandidateState();
@@ -245,7 +250,8 @@ void CSrfCandidateListUIElement::OnCandidateRightClicked(UINT indexInPage, POINT
 void CSrfCandidateListUIElement::OnCandidatePinRequested(UINT indexInPage, bool pinned) {
   if (!m_tip) return;
   if (m_tip->m_candidatesReading != m_tip->m_reading) return;
-  const size_t idx = static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
+  const size_t idx =
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
   if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
   m_tip->m_candSel = static_cast<UINT>(idx);
   m_tip->ApplyCandidatePinChoice(idx, pinned);
@@ -254,7 +260,8 @@ void CSrfCandidateListUIElement::OnCandidatePinRequested(UINT indexInPage, bool 
 void CSrfCandidateListUIElement::OnCandidateMenuCommand(UINT indexInPage, int command) {
   if (!m_tip) return;
   if (m_tip->m_candidatesReading != m_tip->m_reading) return;
-  const size_t idx = static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
+  const size_t idx =
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
   if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
   m_tip->m_candSel = static_cast<UINT>(idx);
   m_tip->ApplyCandidateMenuCommand(idx, command);
@@ -308,22 +315,18 @@ void CSrfCandidateListUIElement::OnCandidateAnchorRefreshed() {
 }
 
 void CSrfCandidateListUIElement::ScheduleExternalOverlayHealthCheck() {
-  if (m_externalOverlayHealthTimerPending || !m_tip ||
-      !m_tip->EnsureDeferredTimerWindow()) {
+  if (m_externalOverlayHealthTimerPending || !m_tip || !m_tip->EnsureDeferredTimerWindow()) {
     return;
   }
-  if (SetTimer(m_tip->m_deferredTimerHwnd,
-               CSrfTip::kExternalOverlayHealthTimerId,
+  if (SetTimer(m_tip->m_deferredTimerHwnd, CSrfTip::kExternalOverlayHealthTimerId,
                CSrfTip::kExternalOverlayHealthIntervalMs, nullptr)) {
     m_externalOverlayHealthTimerPending = true;
   }
 }
 
 void CSrfCandidateListUIElement::CancelExternalOverlayHealthCheck() {
-  if (m_externalOverlayHealthTimerPending && m_tip &&
-      m_tip->m_deferredTimerHwnd) {
-    KillTimer(m_tip->m_deferredTimerHwnd,
-              CSrfTip::kExternalOverlayHealthTimerId);
+  if (m_externalOverlayHealthTimerPending && m_tip && m_tip->m_deferredTimerHwnd) {
+    KillTimer(m_tip->m_deferredTimerHwnd, CSrfTip::kExternalOverlayHealthTimerId);
   }
   m_externalOverlayHealthTimerPending = false;
 }
@@ -346,10 +349,8 @@ void CSrfCandidateListUIElement::OnExternalOverlayStatusChanged() {
     CancelExternalOverlayHealthCheck();
     return;
   }
-  const SrfCandidateOverlayStatus status =
-      GetExternalCandidateOverlayClient().QueryStatus(
-          m_externalOverlaySenderHwnd, m_externalOverlayOwnerId,
-          m_externalOverlayPendingSequence);
+  const SrfCandidateOverlayStatus status = GetExternalCandidateOverlayClient().QueryStatus(
+      m_externalOverlaySenderHwnd, m_externalOverlayOwnerId, m_externalOverlayPendingSequence);
   if (status == SrfCandidateOverlayStatus::SequenceApplied) {
     m_externalOverlayAppliedSequence = m_externalOverlayPendingSequence;
     m_externalOverlayPendingSinceTick = 0;
@@ -357,8 +358,7 @@ void CSrfCandidateListUIElement::OnExternalOverlayStatusChanged() {
     ScheduleExternalOverlayHealthCheck();
     return;
   }
-  if (status == SrfCandidateOverlayStatus::OwnerVisible &&
-      m_externalOverlayAppliedSequence != 0) {
+  if (status == SrfCandidateOverlayStatus::OwnerVisible && m_externalOverlayAppliedSequence != 0) {
     m_window.Hide();
     ScheduleExternalOverlayHealthCheck();
     return;
@@ -434,12 +434,14 @@ HRESULT CSrfCandidateListUIElement::BeginOrUpdate() {
     BOOL show = TRUE;
     hr = manager->BeginUIElement(this, &show, &m_uiElementId);
     m_hostRequestedShow = show;
-    m_showWindow = SrfCandidateHostMayShow(show != FALSE,
-        m_tip->ShouldOverrideHostCandidateVisibility()) ? TRUE : FALSE;
+    m_showWindow =
+        SrfCandidateHostMayShow(show != FALSE, m_tip->ShouldOverrideHostCandidateVisibility())
+            ? TRUE
+            : FALSE;
     if (SUCCEEDED(hr) && !show) {
       // A host taking over drawing starts reading after BeginUIElement.
       m_updatedFlags = TF_CLUIE_DOCUMENTMGR | TF_CLUIE_COUNT | TF_CLUIE_SELECTION |
-          TF_CLUIE_STRING | TF_CLUIE_PAGEINDEX | TF_CLUIE_CURRENTPAGE;
+                       TF_CLUIE_STRING | TF_CLUIE_PAGEINDEX | TF_CLUIE_CURRENTPAGE;
       hr = manager->UpdateUIElement(m_uiElementId);
       SrfTsfDiagnosticLog(L"game-candidate.host", L"renderer=host reason=host_requested_hide");
     }
@@ -482,8 +484,7 @@ void CSrfCandidateListUIElement::UpdatePresentationState() {
   if (!m_tip || !m_renderCacheValid) return;
   const bool interactive = m_tip->CandidateViewInteractive();
   const bool pendingVisual = m_tip->CandidateViewPendingVisual();
-  if (m_cachedRenderInteractive == interactive &&
-      m_cachedRenderPendingVisual == pendingVisual) {
+  if (m_cachedRenderInteractive == interactive && m_cachedRenderPendingVisual == pendingVisual) {
     return;
   }
 
@@ -500,8 +501,9 @@ void CSrfCandidateListUIElement::UpdatePresentationState() {
 
   if (!m_tip->m_pThreadMgr || m_uiElementId == TF_INVALID_UIELEMENTID) return;
   ITfUIElementMgr* manager = nullptr;
-  if (SUCCEEDED(m_tip->m_pThreadMgr->QueryInterface(
-          IID_ITfUIElementMgr, reinterpret_cast<void**>(&manager))) && manager) {
+  if (SUCCEEDED(m_tip->m_pThreadMgr->QueryInterface(IID_ITfUIElementMgr,
+                                                    reinterpret_cast<void**>(&manager))) &&
+      manager) {
     manager->UpdateUIElement(m_uiElementId);
     manager->Release();
   }
@@ -512,8 +514,8 @@ void CSrfCandidateListUIElement::PrepareWindowResources() {
   if (m_tip->ShouldHideUiForCompatibility()) return;
   const bool gameOverlay = m_tip->CandidateGameOverlayActive();
   const bool fullscreenOverlay = m_tip->FullscreenCandidateOverlayActive();
-  m_window.SetGameOverlay(
-      gameOverlay, fullscreenOverlay, gameOverlay ? m_tip->CandidateOverlayTargetWindow() : nullptr);
+  m_window.SetGameOverlay(gameOverlay, fullscreenOverlay,
+                          gameOverlay ? m_tip->CandidateOverlayTargetWindow() : nullptr);
   m_window.SetStyle(m_tip->EffectiveCandidateUiStyle());
   m_window.PrepareResources();
   if (m_tip->ShouldUseExternalCandidateOverlay()) {
@@ -552,8 +554,8 @@ void CSrfCandidateListUIElement::End() {
   if (!m_tip || !m_tip->m_pThreadMgr || m_uiElementId == TF_INVALID_UIELEMENTID) return;
 
   ITfUIElementMgr* manager = nullptr;
-  if (SUCCEEDED(
-          m_tip->m_pThreadMgr->QueryInterface(IID_ITfUIElementMgr, reinterpret_cast<void**>(&manager))) &&
+  if (SUCCEEDED(m_tip->m_pThreadMgr->QueryInterface(IID_ITfUIElementMgr,
+                                                    reinterpret_cast<void**>(&manager))) &&
       manager) {
     manager->EndUIElement(m_uiElementId);
     manager->Release();
@@ -567,27 +569,27 @@ void CSrfCandidateListUIElement::End() {
 void CSrfCandidateListUIElement::HideExternalOverlay() {
   if (m_externalOverlayVisible && m_externalOverlaySenderHwnd) {
     GetExternalCandidateOverlayClient().Hide(
-        m_externalOverlaySenderHwnd, m_externalOverlayOwnerId,
-        m_externalOverlayTargetHwnd,
+        m_externalOverlaySenderHwnd, m_externalOverlayOwnerId, m_externalOverlayTargetHwnd,
         m_externalOverlayTargetProcessId, m_externalOverlayFocusGeneration);
   }
   ResetExternalOverlayState();
 }
 
 void CSrfCandidateListUIElement::RefreshWindow() {
-  if (m_tip) m_showWindow = SrfCandidateHostMayShow(m_hostRequestedShow != FALSE,
-      m_tip->ShouldOverrideHostCandidateVisibility()) ? TRUE : FALSE;
+  if (m_tip)
+    m_showWindow = SrfCandidateHostMayShow(m_hostRequestedShow != FALSE,
+                                           m_tip->ShouldOverrideHostCandidateVisibility())
+                       ? TRUE
+                       : FALSE;
   if (!m_tip || m_tip->ShouldHideUiForCompatibility() || !m_showWindow ||
       !m_tip->m_hasLastCandidateRect || !m_tip->m_status.composing ||
       m_tip->m_context.candidates.Empty()) {
     const bool fullscreenShowUi =
         m_tip && m_tip->m_fullscreenCompatActive &&
         m_tip->EffectiveCompatibilityPolicy() == SrfFullscreenPolicy::ShowUi;
-    if (fullscreenShowUi && m_tip->m_status.composing &&
-        !m_tip->m_context.candidates.Empty() &&
+    if (fullscreenShowUi && m_tip->m_status.composing && !m_tip->m_context.candidates.Empty() &&
         m_showWindow && !m_tip->m_hasLastCandidateRect) {
-      m_tip->RecordCompatibilityUiFallback(
-          L"CandidateAnchorMissing", E_FAIL);
+      m_tip->RecordCompatibilityUiFallback(L"CandidateAnchorMissing", E_FAIL);
     }
     std::wstring line = L"tip=";
     line += m_tip ? L"1" : L"0";
@@ -640,11 +642,9 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   const bool gameOverlay = m_tip->CandidateGameOverlayActive();
   const bool fullscreenOverlay = m_tip->FullscreenCandidateOverlayActive();
   const bool wantsExternalOverlay =
-      m_tip->ShouldUseExternalCandidateOverlay() &&
-      !m_externalOverlayAnchorRefreshBlocked;
+      m_tip->ShouldUseExternalCandidateOverlay() && !m_externalOverlayAnchorRefreshBlocked;
   HWND overlayTarget =
-      (gameOverlay || wantsExternalOverlay) ? m_tip->CandidateOverlayTargetWindow()
-                                           : nullptr;
+      (gameOverlay || wantsExternalOverlay) ? m_tip->CandidateOverlayTargetWindow() : nullptr;
   m_window.SetGameOverlay(gameOverlay, fullscreenOverlay, overlayTarget);
   HWND owner = nullptr;
   ITfContextView* view = nullptr;
@@ -667,53 +667,45 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       m_layoutCacheValid && m_cachedLayoutItemsVersion == m_tip->CandidateDisplayVersion() &&
       m_cachedLayoutItems.size() == displayItems.size() &&
       std::equal(m_cachedLayoutItems.begin(), m_cachedLayoutItems.end(), displayItems.begin());
-  const bool sameAnchor =
-      m_layoutCacheValid && m_cachedAnchorRect.left == layoutAnchor.left &&
-      m_cachedAnchorRect.top == layoutAnchor.top &&
-      m_cachedAnchorRect.right == layoutAnchor.right &&
-      m_cachedAnchorRect.bottom == layoutAnchor.bottom;
+  const bool sameAnchor = m_layoutCacheValid && m_cachedAnchorRect.left == layoutAnchor.left &&
+                          m_cachedAnchorRect.top == layoutAnchor.top &&
+                          m_cachedAnchorRect.right == layoutAnchor.right &&
+                          m_cachedAnchorRect.bottom == layoutAnchor.bottom;
   const bool sameDpi = m_layoutCacheValid && m_cachedAnchorDpi == anchorDpi;
-  const bool sameDisplay =
-      m_layoutCacheValid && m_cachedAnchorMonitor == anchorDisplay.monitor &&
-      m_cachedAnchorWorkArea.left == anchorDisplay.workArea.left &&
-      m_cachedAnchorWorkArea.top == anchorDisplay.workArea.top &&
-      m_cachedAnchorWorkArea.right == anchorDisplay.workArea.right &&
-      m_cachedAnchorWorkArea.bottom == anchorDisplay.workArea.bottom;
-  const bool sameStyle = m_layoutCacheValid && m_cachedStyleFontSize == st.candidateFontSize &&
-                         m_cachedStyleAbbreviateLength == st.candidateAbbreviateLength &&
-                         m_cachedStyleHorizontal == st.candidateHorizontal &&
-                         m_cachedStylePageSize == st.candidatePageSize &&
-                         m_cachedStyleHorizontalCount == st.candidateHorizontalCount &&
-                         m_cachedStyleHorizontalCompact == st.candidateHorizontalCompact &&
-                         m_cachedStyleFontFile == st.candidateFontFile &&
-                         m_cachedStyleSkinFile == st.candidateSkinFile &&
-                         m_cachedStyleMaterial == st.candidateMaterial &&
-                         m_cachedStyleDensity == st.candidateDensity &&
-                         m_cachedStyleLayoutVariant == st.candidateLayoutVariant &&
-                         m_cachedStyleScalePercent == st.candidateScalePercent &&
-                         m_cachedStyleOverlayAnchor == st.candidateOverlayAnchor &&
-                         m_cachedStyleFullscreenPlacement == st.candidateFullscreenPlacement &&
-                         m_cachedStyleSkinLoaded == st.skinLoaded &&
-                         m_cachedSkinOuterPadX == st.skinOuterPadX &&
-                         m_cachedSkinOuterPadY == st.skinOuterPadY &&
-                         m_cachedSkinHeaderPadX == st.skinHeaderPadX &&
-                         m_cachedSkinHeaderPadY == st.skinHeaderPadY &&
-                         m_cachedSkinHeaderGap == st.skinHeaderGap &&
-                         m_cachedSkinItemGap == st.skinItemGap &&
-                         m_cachedSkinItemPadX == st.skinItemPadX &&
-                         m_cachedSkinItemPadY == st.skinItemPadY &&
-                         m_cachedSkinLabelWidth == st.skinLabelWidth &&
-                         m_cachedSkinLabelGap == st.skinLabelGap &&
-                         m_cachedSkinCommentGap == st.skinCommentGap &&
-                         m_cachedSkinMinWidth == st.skinMinWidth &&
-                         m_cachedSkinPreferredWidth == st.skinPreferredWidth &&
-                         m_cachedSkinMaxWidth == st.skinMaxWidth &&
-                         m_cachedSkinMinHorizontalCardWidth == st.skinMinHorizontalCardWidth &&
-                         m_cachedSkinMaxHorizontalCardWidth == st.skinMaxHorizontalCardWidth;
+  const bool sameDisplay = m_layoutCacheValid && m_cachedAnchorMonitor == anchorDisplay.monitor &&
+                           m_cachedAnchorWorkArea.left == anchorDisplay.workArea.left &&
+                           m_cachedAnchorWorkArea.top == anchorDisplay.workArea.top &&
+                           m_cachedAnchorWorkArea.right == anchorDisplay.workArea.right &&
+                           m_cachedAnchorWorkArea.bottom == anchorDisplay.workArea.bottom;
+  const bool sameStyle =
+      m_layoutCacheValid && m_cachedStyleFontSize == st.candidateFontSize &&
+      m_cachedStyleAbbreviateLength == st.candidateAbbreviateLength &&
+      m_cachedStyleHorizontal == st.candidateHorizontal &&
+      m_cachedStylePageSize == st.candidatePageSize &&
+      m_cachedStyleHorizontalCount == st.candidateHorizontalCount &&
+      m_cachedStyleHorizontalCompact == st.candidateHorizontalCompact &&
+      m_cachedStyleFontFile == st.candidateFontFile &&
+      m_cachedStyleSkinFile == st.candidateSkinFile &&
+      m_cachedStyleMaterial == st.candidateMaterial &&
+      m_cachedStyleDensity == st.candidateDensity &&
+      m_cachedStyleLayoutVariant == st.candidateLayoutVariant &&
+      m_cachedStyleScalePercent == st.candidateScalePercent &&
+      m_cachedStyleOverlayAnchor == st.candidateOverlayAnchor &&
+      m_cachedStyleFullscreenPlacement == st.candidateFullscreenPlacement &&
+      m_cachedStyleSkinLoaded == st.skinLoaded && m_cachedSkinOuterPadX == st.skinOuterPadX &&
+      m_cachedSkinOuterPadY == st.skinOuterPadY && m_cachedSkinHeaderPadX == st.skinHeaderPadX &&
+      m_cachedSkinHeaderPadY == st.skinHeaderPadY && m_cachedSkinHeaderGap == st.skinHeaderGap &&
+      m_cachedSkinItemGap == st.skinItemGap && m_cachedSkinItemPadX == st.skinItemPadX &&
+      m_cachedSkinItemPadY == st.skinItemPadY && m_cachedSkinLabelWidth == st.skinLabelWidth &&
+      m_cachedSkinLabelGap == st.skinLabelGap && m_cachedSkinCommentGap == st.skinCommentGap &&
+      m_cachedSkinMinWidth == st.skinMinWidth &&
+      m_cachedSkinPreferredWidth == st.skinPreferredWidth &&
+      m_cachedSkinMaxWidth == st.skinMaxWidth &&
+      m_cachedSkinMinHorizontalCardWidth == st.skinMinHorizontalCardWidth &&
+      m_cachedSkinMaxHorizontalCardWidth == st.skinMaxHorizontalCardWidth;
 
   if (!sameItems || !sameAnchor || !sameStyle || !sameDpi || !sameDisplay) {
-    m_cachedLayout =
-        BuildCandidatePageLayoutMetrics(st, &layoutAnchor, displayItems, anchorDpi);
+    m_cachedLayout = BuildCandidatePageLayoutMetrics(st, &layoutAnchor, displayItems, anchorDpi);
     m_cachedLayoutItems = displayItems;
     m_cachedLayoutItemsVersion = m_tip->CandidateDisplayVersion();
     m_cachedAnchorRect = layoutAnchor;
@@ -755,21 +747,21 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   }
 
   const CandidatePageLayoutMetrics& layout = m_cachedLayout;
-  const UINT clampedPage = layout.pageStarts.empty()
-                               ? 0u
-                               : std::min(m_tip->m_candPage, static_cast<UINT>(layout.pageStarts.size() - 1));
+  const UINT clampedPage =
+      layout.pageStarts.empty()
+          ? 0u
+          : std::min(m_tip->m_candPage, static_cast<UINT>(layout.pageStarts.size() - 1));
   const UINT start = layout.pageStarts.empty() ? 0u : layout.pageStarts[clampedPage];
   const UINT end = clampedPage + 1 < layout.pageStarts.size()
                        ? layout.pageStarts[clampedPage + 1]
                        : static_cast<UINT>(displayItems.size());
   const bool clipboardPanel = m_tip->CurrentCandidatesClipboardQuickMode();
-  const bool samePageData =
-      m_pageDataCacheValid &&
-      m_cachedPageDataVersion == m_tip->CandidateDisplayVersion() &&
-      m_cachedPageDataStart == start && m_cachedPageDataEnd == end &&
-      m_cachedPageDataSelected == m_tip->m_candSel &&
-      m_cachedPageDataHorizontal == st.candidateHorizontal &&
-      m_cachedPageDataClipboardPanel == clipboardPanel;
+  const bool samePageData = m_pageDataCacheValid &&
+                            m_cachedPageDataVersion == m_tip->CandidateDisplayVersion() &&
+                            m_cachedPageDataStart == start && m_cachedPageDataEnd == end &&
+                            m_cachedPageDataSelected == m_tip->m_candSel &&
+                            m_cachedPageDataHorizontal == st.candidateHorizontal &&
+                            m_cachedPageDataClipboardPanel == clipboardPanel;
   std::vector<std::wstring> pageItems;
   std::vector<std::wstring> pageComments;
   std::vector<std::wstring> pageLabels;
@@ -800,27 +792,24 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       const bool clipboardCandidate = m_tip->IsClipboardQuickCandidate(i);
       const bool clipboardItem = clipboardPanel || clipboardCandidate;
       if (clipboardCandidate && !hasClipboardPage) {
-        hasClipboardPage =
-            m_tip->ClipboardCandidatePageInfo(i, &clipboardPage, &clipboardPages);
+        hasClipboardPage = m_tip->ClipboardCandidatePageInfo(i, &clipboardPage, &clipboardPages);
       }
       const bool useDisplayItem = i < displayItems.size();
-      pageItems.push_back(useDisplayItem
-                              ? displayItems[i]
-                              : (i < m_tip->m_context.candidates.items.size()
-                                     ? m_tip->m_context.candidates.items[i].str
-                                     : std::wstring()));
+      pageItems.push_back(useDisplayItem ? displayItems[i]
+                                         : (i < m_tip->m_context.candidates.items.size()
+                                                ? m_tip->m_context.candidates.items[i].str
+                                                : std::wstring()));
       const bool selectedItem = i == m_tip->m_candSel;
       if (selectedItem && !clipboardItem) {
         pageItems.back() = m_tip->FormatCandidateDisplayText(i);
       }
       // 横排必须保持单行；纠错候选已有“~”前缀，不再用第二行注释重复表达。
       // 纵排中，拼音、注解与调试分数只跟随当前候选，减少整栏视觉噪音。
-      const bool showComment = ShouldShowCandidateComment(
-          st.candidateHorizontal, clipboardItem, selectedItem);
-      pageComments.push_back(
-          showComment && i < m_tip->m_context.candidates.comments.size()
-              ? m_tip->m_context.candidates.comments[i].str
-              : std::wstring());
+      const bool showComment =
+          ShouldShowCandidateComment(st.candidateHorizontal, clipboardItem, selectedItem);
+      pageComments.push_back(showComment && i < m_tip->m_context.candidates.comments.size()
+                                 ? m_tip->m_context.candidates.comments[i].str
+                                 : std::wstring());
       pageLabels.push_back(i < m_tip->m_context.candidates.labels.size()
                                ? m_tip->m_context.candidates.labels[i].str
                                : std::to_wstring(i - start + 1));
@@ -850,8 +839,8 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   const UINT totalPages = std::max(1u, static_cast<UINT>(layout.pageStarts.size()));
   // CCandidateWindow stores the current page as a zero-based index. Clipboard
   // metadata is user-facing (1-based), so normalize it at this boundary.
-  const UINT renderPage = hasClipboardPage ? (clipboardPage > 0 ? clipboardPage - 1 : 0)
-                                           : clampedPage;
+  const UINT renderPage =
+      hasClipboardPage ? (clipboardPage > 0 ? clipboardPage - 1 : 0) : clampedPage;
   const UINT renderTotalPages = hasClipboardPage ? clipboardPages : totalPages;
   const std::wstring title = m_tip->CandidateBarMainTitle();
   std::vector<std::wstring> modeTags = m_tip->CandidateBarModeTags();
@@ -859,14 +848,13 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   const bool pendingVisual = m_tip->CandidateViewPendingVisual();
   m_window.SetStyle(st);
   if (!m_renderCacheValid || !CandidateWindowStyleEquals(m_cachedStyle, st)) {
-    m_updatedFlags = TF_CLUIE_DOCUMENTMGR | TF_CLUIE_COUNT | TF_CLUIE_SELECTION |
-                     TF_CLUIE_STRING | TF_CLUIE_PAGEINDEX | TF_CLUIE_CURRENTPAGE;
+    m_updatedFlags = TF_CLUIE_DOCUMENTMGR | TF_CLUIE_COUNT | TF_CLUIE_SELECTION | TF_CLUIE_STRING |
+                     TF_CLUIE_PAGEINDEX | TF_CLUIE_CURRENTPAGE;
   } else {
     DWORD flags = TF_CLUIE_DOCUMENTMGR;
     if (m_cachedRenderItems.size() != pageItems.size()) flags |= TF_CLUIE_COUNT;
     if (m_cachedRenderItems != pageItems || m_cachedRenderComments != pageComments ||
-        m_cachedRenderLabels != pageLabels ||
-        m_cachedRenderClipboardItems != pageClipboardItems) {
+        m_cachedRenderLabels != pageLabels || m_cachedRenderClipboardItems != pageClipboardItems) {
       flags |= TF_CLUIE_STRING;
     }
     if (m_cachedRenderSelected != selectedInPage) flags |= TF_CLUIE_SELECTION;
@@ -875,24 +863,21 @@ void CSrfCandidateListUIElement::RefreshWindow() {
     }
     if (flags == TF_CLUIE_DOCUMENTMGR &&
         (m_cachedRenderTitle != title || m_cachedRenderModeTags != modeTags ||
-         m_cachedRenderPinnedItems != pagePinnedItems ||
-         m_cachedRenderInteractive != interactive ||
+         m_cachedRenderPinnedItems != pagePinnedItems || m_cachedRenderInteractive != interactive ||
          m_cachedRenderPendingVisual != pendingVisual)) {
       flags |= TF_CLUIE_STRING;
     }
     m_updatedFlags = flags;
   }
   const bool sameRender =
-      m_renderCacheValid && CandidateWindowStyleEquals(m_cachedStyle, st) &&
-      sameAnchor && sameDpi && sameDisplay &&
-      m_cachedRenderTitle == title && m_cachedRenderItems == pageItems &&
+      m_renderCacheValid && CandidateWindowStyleEquals(m_cachedStyle, st) && sameAnchor &&
+      sameDpi && sameDisplay && m_cachedRenderTitle == title && m_cachedRenderItems == pageItems &&
       m_cachedRenderComments == pageComments && m_cachedRenderLabels == pageLabels &&
       m_cachedRenderPinnedItems == pagePinnedItems &&
       m_cachedRenderClipboardItems == pageClipboardItems && m_cachedRenderModeTags == modeTags &&
-      m_cachedRenderInteractive == interactive &&
-      m_cachedRenderPendingVisual == pendingVisual &&
-      m_cachedRenderPage == renderPage &&
-      m_cachedRenderTotalPages == renderTotalPages && m_cachedRenderSelected == selectedInPage &&
+      m_cachedRenderInteractive == interactive && m_cachedRenderPendingVisual == pendingVisual &&
+      m_cachedRenderPage == renderPage && m_cachedRenderTotalPages == renderTotalPages &&
+      m_cachedRenderSelected == selectedInPage &&
       m_cachedRenderAnchor.left == m_tip->m_lastCandidateRect.left &&
       m_cachedRenderAnchor.top == m_tip->m_lastCandidateRect.top &&
       m_cachedRenderAnchor.right == m_tip->m_lastCandidateRect.right &&
@@ -937,8 +922,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       snapshot.horizontalLayout = st.candidateHorizontal;
       snapshot.horizontalCompact = st.candidateHorizontalCompact;
       snapshot.anchorPhysical = anchorPhysical;
-      snapshot.caretAnchor =
-          !gameOverlay || st.candidateOverlayAnchor == SrfOverlayAnchor::Caret;
+      snapshot.caretAnchor = !gameOverlay || st.candidateOverlayAnchor == SrfOverlayAnchor::Caret;
       snapshot.targetProcessId = targetProcessId;
       snapshot.targetHwnd = targetHwnd;
       snapshot.focusGeneration = focus.generation;
@@ -954,12 +938,11 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       snapshot.pinnedItems = pagePinnedItems;
       snapshot.clipboardItems = pageClipboardItems;
       snapshot.modeTags = modeTags;
-      const bool sameExternalSession =
-          m_externalOverlayVisible &&
-          m_externalOverlaySenderHwnd == m_tip->m_deferredTimerHwnd &&
-          m_externalOverlayTargetHwnd == targetHwnd &&
-          m_externalOverlayTargetProcessId == targetProcessId &&
-          m_externalOverlayFocusGeneration == focus.generation;
+      const bool sameExternalSession = m_externalOverlayVisible &&
+                                       m_externalOverlaySenderHwnd == m_tip->m_deferredTimerHwnd &&
+                                       m_externalOverlayTargetHwnd == targetHwnd &&
+                                       m_externalOverlayTargetProcessId == targetProcessId &&
+                                       m_externalOverlayFocusGeneration == focus.generation;
       if (sameRender && sameExternalSession && m_externalOverlayPendingSequence != 0) {
         // The helper already accepted this exact render snapshot. Its health
         // timer owns pending/applied confirmation; a normal redraw must not
@@ -969,8 +952,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       } else {
         std::uint64_t acceptedSequence = 0;
         externalAccepted = GetExternalCandidateOverlayClient().Show(
-            m_tip->m_deferredTimerHwnd, m_externalOverlayOwnerId, snapshot,
-            &acceptedSequence);
+            m_tip->m_deferredTimerHwnd, m_externalOverlayOwnerId, snapshot, &acceptedSequence);
         if (externalAccepted) {
           if (!sameExternalSession) m_externalOverlayAppliedSequence = 0;
           m_externalOverlayVisible = true;
@@ -985,15 +967,14 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       }
     }
   }
-  const bool externalReady =
-      externalAccepted && m_externalOverlayAppliedSequence != 0;
+  const bool externalReady = externalAccepted && m_externalOverlayAppliedSequence != 0;
   if (externalReady) {
     m_window.Hide();
   } else {
     if (!externalAccepted) HideExternalOverlay();
-    m_window.Show(title, pageItems, pageComments, pageLabels, pagePinnedItems,
-                  pageClipboardItems, renderPage, renderTotalPages, selectedInPage,
-                  m_tip->m_lastCandidateRect, modeTags, interactive, pendingVisual);
+    m_window.Show(title, pageItems, pageComments, pageLabels, pagePinnedItems, pageClipboardItems,
+                  renderPage, renderTotalPages, selectedInPage, m_tip->m_lastCandidateRect,
+                  modeTags, interactive, pendingVisual);
   }
   m_cachedStyle = st;
   m_renderCacheValid = true;

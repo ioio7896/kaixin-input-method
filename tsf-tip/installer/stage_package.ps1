@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$OutputRoot,
     [string]$TipDllPath,
     [string]$OverlayExePath,
@@ -173,7 +173,7 @@ function Copy-PowerShellScriptUtf8Bom {
     $utf8Bom = New-Object System.Text.UTF8Encoding($true)
     [System.IO.File]::WriteAllText($DestinationPath, $text, $utf8Bom)
     (Get-Item -LiteralPath $DestinationPath).LastWriteTimeUtc =
-        (Get-Item -LiteralPath $SourcePath).LastWriteTimeUtc
+    (Get-Item -LiteralPath $SourcePath).LastWriteTimeUtc
 }
 
 function Get-Sha256Hex {
@@ -233,9 +233,9 @@ function Sync-DirectoryContents {
         Get-ChildItem -LiteralPath $SourceDir -Force |
             Where-Object {
                 -not (Test-ExcludedEntryName `
-                    -Name $_.Name `
-                    -ExcludedNames $excludedNames `
-                    -ExcludePatterns $ExcludePatterns)
+                        -Name $_.Name `
+                        -ExcludedNames $excludedNames `
+                        -ExcludePatterns $ExcludePatterns)
             }
     )
     $sourceNames = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -317,19 +317,19 @@ function Sync-PythonRuntimeFromVenv {
         -SourceDir $pythonHome `
         -DestinationDir $DestinationDir `
         -ExcludeNames @(
-            'Doc',
-            'include',
-            'libs',
-            'Scripts',
-            'tcl',
-            'site-packages',
-            'test',
-            '__pycache__',
-            'idlelib',
-            'tkinter',
-            'turtledemo',
-            'ensurepip'
-        ) `
+        'Doc',
+        'include',
+        'libs',
+        'Scripts',
+        'tcl',
+        'site-packages',
+        'test',
+        '__pycache__',
+        'idlelib',
+        'tkinter',
+        'turtledemo',
+        'ensurepip'
+    ) `
         -ExcludePatterns $PythonPackageExcludePatterns
 
     $runtimePython = Join-Path $DestinationDir 'python.exe'
@@ -409,8 +409,8 @@ function Write-ComponentManifestFromPackageManifest {
     $packageManifestPath = Join-Path $rootFull $PackageManifest
     $componentManifestPath = Join-Path $rootFull $ComponentManifest
     $packageLines = @(Get-Content -LiteralPath $packageManifestPath -Encoding UTF8 | Where-Object {
-        -not [string]::IsNullOrWhiteSpace($_) -and -not $_.StartsWith('#')
-    })
+            -not [string]::IsNullOrWhiteSpace($_) -and -not $_.StartsWith('#')
+        })
     $components = [ordered]@{
         python_runtime = '.python-runtime/'
         rapidocr_packages = '.python-packages/'
@@ -421,9 +421,9 @@ function Write-ComponentManifestFromPackageManifest {
     foreach ($entry in $components.GetEnumerator()) {
         $prefix = $entry.Value
         $matching = @($packageLines | Where-Object {
-            $separator = $_.IndexOf(' *')
-            $separator -ge 0 -and $_.Substring($separator + 2).StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)
-        })
+                $separator = $_.IndexOf(' *')
+                $separator -ge 0 -and $_.Substring($separator + 2).StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)
+            })
         $componentId = if ($matching.Count -gt 0) {
             Get-StringSha256Hex -Value (($matching -join "`n") + "`n")
         } else {

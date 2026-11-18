@@ -214,9 +214,9 @@ void RotateTraceLogIfNeeded(const std::filesystem::path& path) {
 std::wstring FormatTraceTimestamp(const SYSTEMTIME& st) {
   wchar_t buf[64] = {};
   swprintf_s(buf, L"%04u-%02u-%02u %02u:%02u:%02u.%03u", static_cast<unsigned>(st.wYear),
-              static_cast<unsigned>(st.wMonth), static_cast<unsigned>(st.wDay),
-              static_cast<unsigned>(st.wHour), static_cast<unsigned>(st.wMinute),
-              static_cast<unsigned>(st.wSecond), static_cast<unsigned>(st.wMilliseconds));
+             static_cast<unsigned>(st.wMonth), static_cast<unsigned>(st.wDay),
+             static_cast<unsigned>(st.wHour), static_cast<unsigned>(st.wMinute),
+             static_cast<unsigned>(st.wSecond), static_cast<unsigned>(st.wMilliseconds));
   return buf;
 }
 
@@ -298,8 +298,8 @@ void TsfAsyncLogWorkerMain() {
       {
         std::unique_lock<std::mutex> lock(g_tsfAsyncLogMutex);
         if (g_tsfAsyncLogQueue.empty()) {
-          const bool ready = g_tsfAsyncLogWake.wait_for(
-              lock, kTsfLogWorkerIdleTimeout, [] { return !g_tsfAsyncLogQueue.empty(); });
+          const bool ready = g_tsfAsyncLogWake.wait_for(lock, kTsfLogWorkerIdleTimeout,
+                                                        [] { return !g_tsfAsyncLogQueue.empty(); });
           if (!ready && g_tsfAsyncLogQueue.empty()) {
             g_tsfAsyncLogWorkerRunning = false;
             break;
@@ -392,23 +392,24 @@ void SrfTsfPerfLog(const wchar_t* tag, const wchar_t* msg) {
 
 namespace {
 
-constexpr DWORD kRustModeFuzzy = 0x0001;
-constexpr DWORD kRustModeDouble = 0x0002;
-constexpr DWORD kRustModeJianpin = 0x0004;
-constexpr DWORD kRustModeVAssist = 0x0008;
-constexpr DWORD kRustModeUMode = 0x0010;
-constexpr DWORD kRustModeDateAutoFormat = 0x0020;
-constexpr DWORD kRustModeClipboardBackground = 0x0040;
-constexpr DWORD kRustModeMixedPinyin = 0x0080;
-constexpr DWORD kRustModeMixedPinyinAggressive = 0x0100;
-constexpr DWORD kRustModeTraditionalOutput = 0x0200;
-constexpr DWORD kRustModeEnglishWordInput = 0x0400;
-constexpr DWORD kRustModeClipboardDisabled = 0x0800;
-constexpr DWORD kRustModeUserPhraseComposeActive = 0x1000;
-constexpr DWORD kRustModeSymbolToolbox = 0x2000;
-constexpr DWORD kRustModeEmojiInput = 0x4000;
-constexpr DWORD kRustModeLearningAggressive = 0x8000;
-constexpr DWORD kRustModeLearningConservative = 0x10000;
+constexpr DWORD kRustModeFuzzy = srf_engine_contract::MODE_FUZZY_PINYIN;
+constexpr DWORD kRustModeDouble = srf_engine_contract::MODE_DOUBLE_PINYIN;
+constexpr DWORD kRustModeJianpin = srf_engine_contract::MODE_JIANPIN;
+constexpr DWORD kRustModeVAssist = srf_engine_contract::MODE_V_ASSIST;
+constexpr DWORD kRustModeUMode = srf_engine_contract::MODE_U_MODE;
+constexpr DWORD kRustModeDateAutoFormat = srf_engine_contract::MODE_DATE_AUTO_FORMAT;
+constexpr DWORD kRustModeClipboardBackground = srf_engine_contract::MODE_CLIPBOARD_BACKGROUND;
+constexpr DWORD kRustModeMixedPinyin = srf_engine_contract::MODE_MIXED_PINYIN;
+constexpr DWORD kRustModeMixedPinyinAggressive = srf_engine_contract::MODE_MIXED_PINYIN_AGGRESSIVE;
+constexpr DWORD kRustModeTraditionalOutput = srf_engine_contract::MODE_TRADITIONAL_OUTPUT;
+constexpr DWORD kRustModeEnglishWordInput = srf_engine_contract::MODE_ENGLISH_WORD_INPUT;
+constexpr DWORD kRustModeClipboardDisabled = srf_engine_contract::MODE_CLIPBOARD_DISABLED;
+constexpr DWORD kRustModeUserPhraseComposeActive =
+    srf_engine_contract::MODE_USER_PHRASE_COMPOSE_ACTIVE;
+constexpr DWORD kRustModeSymbolToolbox = srf_engine_contract::MODE_SYMBOL_TOOLBOX;
+constexpr DWORD kRustModeEmojiInput = srf_engine_contract::MODE_EMOJI_INPUT;
+constexpr DWORD kRustModeLearningAggressive = srf_engine_contract::MODE_LEARNING_AGGRESSIVE;
+constexpr DWORD kRustModeLearningConservative = srf_engine_contract::MODE_LEARNING_CONSERVATIVE;
 constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
 constexpr wchar_t kStateAsciiValue[] = L"AsciiMode";
 constexpr wchar_t kStatePureGameModeValue[] = L"PureGameMode";
@@ -465,40 +466,38 @@ void NotifyTrayStateChanged() {
 
 bool WriteStateDwordValue(const wchar_t* name, DWORD value) {
   HKEY key = nullptr;
-  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
-                      &key, nullptr) != ERROR_SUCCESS) {
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
+                      nullptr) != ERROR_SUCCESS) {
     return false;
   }
-  const bool wrote =
-      RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value),
-                     sizeof(value)) == ERROR_SUCCESS;
+  const bool wrote = RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value),
+                                    sizeof(value)) == ERROR_SUCCESS;
   RegCloseKey(key);
   return wrote;
 }
 
 bool WriteStateQwordValue(const wchar_t* name, ULONGLONG value) {
   HKEY key = nullptr;
-  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
-                      &key, nullptr) != ERROR_SUCCESS) {
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
+                      nullptr) != ERROR_SUCCESS) {
     return false;
   }
-  const bool wrote =
-      RegSetValueExW(key, name, 0, REG_QWORD, reinterpret_cast<const BYTE*>(&value),
-                     sizeof(value)) == ERROR_SUCCESS;
+  const bool wrote = RegSetValueExW(key, name, 0, REG_QWORD, reinterpret_cast<const BYTE*>(&value),
+                                    sizeof(value)) == ERROR_SUCCESS;
   RegCloseKey(key);
   return wrote;
 }
 
 bool WriteStateStringValue(const wchar_t* name, const std::wstring& value) {
   HKEY key = nullptr;
-  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr,
-                      &key, nullptr) != ERROR_SUCCESS) {
+  if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
+                      nullptr) != ERROR_SUCCESS) {
     return false;
   }
   const DWORD byteCount = static_cast<DWORD>((value.size() + 1) * sizeof(wchar_t));
-  const bool wrote = RegSetValueExW(key, name, 0, REG_SZ,
-                                    reinterpret_cast<const BYTE*>(value.c_str()),
-                                    byteCount) == ERROR_SUCCESS;
+  const bool wrote =
+      RegSetValueExW(key, name, 0, REG_SZ, reinterpret_cast<const BYTE*>(value.c_str()),
+                     byteCount) == ERROR_SUCCESS;
   RegCloseKey(key);
   return wrote;
 }
@@ -624,11 +623,17 @@ bool IsLetterVk(UINT vk) {
   return (vk >= 'A' && vk <= 'Z') || (vk >= 'a' && vk <= 'z');
 }
 
-bool IsVkShift(UINT vk) { return vk == VK_SHIFT || vk == VK_LSHIFT || vk == VK_RSHIFT; }
+bool IsVkShift(UINT vk) {
+  return vk == VK_SHIFT || vk == VK_LSHIFT || vk == VK_RSHIFT;
+}
 
-bool IsDigitVk(UINT vk) { return vk >= '0' && vk <= '9'; }
+bool IsDigitVk(UINT vk) {
+  return vk >= '0' && vk <= '9';
+}
 
-bool IsNumpadDigitVk(UINT vk) { return vk >= VK_NUMPAD0 && vk <= VK_NUMPAD9; }
+bool IsNumpadDigitVk(UINT vk) {
+  return vk >= VK_NUMPAD0 && vk <= VK_NUMPAD9;
+}
 
 bool IsShiftedNumberRowSymbolVk(UINT vk) {
   return IsDigitVk(vk) && (GetKeyState(VK_SHIFT) & 0x8000) != 0;
@@ -649,15 +654,16 @@ int CandidateNumberIndexFromVk(UINT vk) {
 }
 
 void TrimWstringInPlace(std::wstring& s) {
-  while (!s.empty() && iswspace(s.front())) s.erase(0, 1);
-  while (!s.empty() && iswspace(s.back())) s.pop_back();
+  while (!s.empty() && iswspace(s.front()))
+    s.erase(0, 1);
+  while (!s.empty() && iswspace(s.back()))
+    s.pop_back();
 }
 
 bool IsAsciiAlphaText(const std::wstring& text) {
-  return !text.empty() &&
-         std::all_of(text.begin(), text.end(), [](wchar_t ch) {
-           return (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z');
-         });
+  return !text.empty() && std::all_of(text.begin(), text.end(), [](wchar_t ch) {
+    return (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z');
+  });
 }
 
 bool HasPhraseCandidateInTop(const std::vector<std::wstring>& candidates, size_t topN) {
@@ -669,8 +675,8 @@ bool HasPhraseCandidateInTop(const std::vector<std::wstring>& candidates, size_t
 }
 
 void MaybeInsertPredictedPhraseCandidates(const std::wstring& reading,
-                                         std::vector<std::wstring>* candidates,
-                                         std::vector<std::wstring>* candidateMeta) {
+                                          std::vector<std::wstring>* candidates,
+                                          std::vector<std::wstring>* candidateMeta) {
   if (!candidates || reading.empty()) return;
 
   // 仅在“多音节 + 缺少短语候选”时插入少量预测组合，避免干扰正常排序。
@@ -988,7 +994,8 @@ bool SendVirtualKeyTap(UINT vk) {
   }
   inputs[0].ki.dwExtraInfo = kSrfInjectedInputMarker;
   inputs[1].ki.dwExtraInfo = kSrfInjectedInputMarker;
-  return SendInput(static_cast<UINT>(std::size(inputs)), inputs, sizeof(INPUT)) == std::size(inputs);
+  return SendInput(static_cast<UINT>(std::size(inputs)), inputs, sizeof(INPUT)) ==
+         std::size(inputs);
 }
 
 HRESULT SendCtrlVPaste() {
@@ -1038,9 +1045,11 @@ void CALLBACK RestoreClipboardTimer(HWND, UINT, UINT_PTR timer, DWORD) {
   if (task->sequence != 0 && current == task->sequence) {
     HRESULT hr = OleSetClipboard(task->previous);
     if (SUCCEEDED(hr)) hr = OleFlushClipboard();
-    SrfTsfDiagnosticLog(L"clipboard-paste.restore", SUCCEEDED(hr) ? L"status=restored" : L"status=restore_failed");
+    SrfTsfDiagnosticLog(L"clipboard-paste.restore",
+                        SUCCEEDED(hr) ? L"status=restored" : L"status=restore_failed");
   } else {
-    SrfTsfDiagnosticLog(L"clipboard-paste.restore", L"status=skipped reason=clipboard_changed_during_paste");
+    SrfTsfDiagnosticLog(L"clipboard-paste.restore",
+                        L"status=skipped reason=clipboard_changed_during_paste");
   }
   task->previous->Release();
   g_clipboardRestoreTask = nullptr;
@@ -1082,7 +1091,10 @@ class ScopedOleClipboardRestore {
     task->previous = previous_;
     task->owner = owner_;
     task->timer = SetTimer(nullptr, 0, 120, RestoreClipboardTimer);
-    if (!task->timer) { delete task; return E_FAIL; }
+    if (!task->timer) {
+      delete task;
+      return E_FAIL;
+    }
     task->owner->AddRef();
     g_clipboardRestoreTask = task;
     previous_ = nullptr;
@@ -1115,13 +1127,12 @@ HWND ClipboardOwnerWindow() {
     return nullptr;
   }
 
-  owner = CreateWindowExW(0, kClassName, L"", 0, 0, 0, 0, 0, HWND_MESSAGE,
-                          nullptr, wc.hInstance, nullptr);
+  owner = CreateWindowExW(0, kClassName, L"", 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, wc.hInstance,
+                          nullptr);
   return owner;
 }
 
-HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text,
-                                        DWORD* out_sequence = nullptr) {
+HRESULT SetUnicodeClipboardTextForPaste(const std::wstring& text, DWORD* out_sequence = nullptr) {
   HWND owner = ClipboardOwnerWindow();
   if (!owner) owner = GetForegroundWindow();
   if (!OpenClipboard(owner)) {
@@ -1187,7 +1198,8 @@ HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text, CSrfTip* tip, Val
   const DWORD targetThread = GetWindowThreadProcessId(target, &targetPid);
   GUITHREADINFO initialFocus = {sizeof(initialFocus)};
   if (!target || !targetPid || !GetGUIThreadInfo(targetThread, &initialFocus) ||
-      !SrfInjectionModifiersClear()) return HRESULT_FROM_WIN32(ERROR_BUSY);
+      !SrfInjectionModifiersClear())
+    return HRESULT_FROM_WIN32(ERROR_BUSY);
   const ULONGLONG pasteStart = GetTickCount64();
   ScopedOleClipboardRestore restore(tip);
   DWORD temporary_sequence = 0;
@@ -1198,7 +1210,8 @@ HRESULT PasteUnicodeTextViaClipboard(const std::wstring& text, CSrfTip* tip, Val
     GUITHREADINFO currentFocus = {sizeof(currentFocus)};
     GetWindowThreadProcessId(target, &currentPid);
     const bool matches = GetForegroundWindow() == target && currentPid == targetPid &&
-        GetGUIThreadInfo(targetThread, &currentFocus) && currentFocus.hwndFocus == initialFocus.hwndFocus;
+                         GetGUIThreadInfo(targetThread, &currentFocus) &&
+                         currentFocus.hwndFocus == initialFocus.hwndFocus;
     hr = matches && valid() ? SendCtrlVPaste() : HRESULT_FROM_WIN32(ERROR_CANCELLED);
   }
   if (restore.HasData()) {
@@ -1241,10 +1254,10 @@ HRESULT SendUnicodeTextInput(const std::wstring& text) {
   GUITHREADINFO currentFocus = {sizeof(currentFocus)};
   GetWindowThreadProcessId(target, &currentPid);
   if (GetForegroundWindow() != target || currentPid != targetPid ||
-      !GetGUIThreadInfo(targetThread, &currentFocus) || currentFocus.hwndFocus != initialFocus.hwndFocus ||
-      !SrfInjectionModifiersClear()) return HRESULT_FROM_WIN32(ERROR_CANCELLED);
-  const UINT sent =
-      SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+      !GetGUIThreadInfo(targetThread, &currentFocus) ||
+      currentFocus.hwndFocus != initialFocus.hwndFocus || !SrfInjectionModifiersClear())
+    return HRESULT_FROM_WIN32(ERROR_CANCELLED);
+  const UINT sent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
   if (sent == inputs.size()) return S_OK;
   if (sent != 0) {
     if ((sent & 1u) != 0) {
@@ -1329,7 +1342,8 @@ bool ParseClipboardQuickReading(const std::wstring& reading, UINT* outPage,
       rest = TrimAsciiWhitespace(reading.substr(3));
     } else if (reading[3] >= L'0' && reading[3] <= L'9') {
       size_t pos = 3;
-      while (pos < reading.size() && reading[pos] >= L'0' && reading[pos] <= L'9') ++pos;
+      while (pos < reading.size() && reading[pos] >= L'0' && reading[pos] <= L'9')
+        ++pos;
       if (!ParseClipboardQuickPageToken(reading.substr(3, pos - 3), &page)) return false;
       filter = TrimAsciiWhitespace(reading.substr(pos));
     } else {
@@ -1338,8 +1352,7 @@ bool ParseClipboardQuickReading(const std::wstring& reading, UINT* outPage,
   }
   if (!rest.empty()) {
     const auto split = rest.find_first_of(L" \t\r\n");
-    const std::wstring first =
-        split == std::wstring::npos ? rest : rest.substr(0, split);
+    const std::wstring first = split == std::wstring::npos ? rest : rest.substr(0, split);
     const std::wstring tail =
         split == std::wstring::npos ? L"" : TrimAsciiWhitespace(rest.substr(split + 1));
     if (!first.empty() && (first[0] == L'p' || first[0] == L'P') &&
@@ -1650,12 +1663,12 @@ bool TryGetWindowBottomLeftRect(HWND hwnd, RECT* rect) {
   if (!monitor || !GetMonitorInfoW(monitor, &mi)) return false;
 
   const int margin = 24;
-  const int x = std::clamp(static_cast<int>(windowRect.left + margin),
-                           static_cast<int>(mi.rcWork.left + margin),
-                           static_cast<int>(std::max<LONG>(mi.rcWork.left + margin, mi.rcWork.right - margin)));
-  const int y = std::clamp(static_cast<int>(windowRect.bottom - margin),
-                           static_cast<int>(mi.rcWork.top + margin),
-                           static_cast<int>(std::max<LONG>(mi.rcWork.top + margin, mi.rcWork.bottom - margin)));
+  const int x = std::clamp(
+      static_cast<int>(windowRect.left + margin), static_cast<int>(mi.rcWork.left + margin),
+      static_cast<int>(std::max<LONG>(mi.rcWork.left + margin, mi.rcWork.right - margin)));
+  const int y = std::clamp(
+      static_cast<int>(windowRect.bottom - margin), static_cast<int>(mi.rcWork.top + margin),
+      static_cast<int>(std::max<LONG>(mi.rcWork.top + margin, mi.rcWork.bottom - margin)));
   rect->left = x;
   rect->right = x + 1;
   rect->top = y;
@@ -1719,8 +1732,8 @@ bool TryGetFullscreenOverlayRect(HWND targetHwnd, RECT* rect) {
 void DebugLogCandidateAnchorSource(const wchar_t* source, const RECT& rect) {
   if (!SrfTsfDebugTraceEnabled()) return;
   wchar_t buf[192] = {};
-  swprintf_s(buf, L"CandidateAnchor source=%s rect=(%ld,%ld,%ld,%ld)", source, rect.left,
-             rect.top, rect.right, rect.bottom);
+  swprintf_s(buf, L"CandidateAnchor source=%s rect=(%ld,%ld,%ld,%ld)", source, rect.left, rect.top,
+             rect.right, rect.bottom);
   SrfTsfDebugLog(buf);
 }
 
@@ -1757,17 +1770,22 @@ bool WildcardMatchNoCase(const std::wstring& pattern, const std::wstring& value)
       return false;
     }
   }
-  while (p < pat.size() && pat[p] == L'*') ++p;
+  while (p < pat.size() && pat[p] == L'*')
+    ++p;
   return p == pat.size();
 }
 
 bool IsBuiltinStrictFocusProcessName(const std::wstring& appName) {
-  const wchar_t* patterns[] = {L"winword.exe", L"excel.exe", L"powerpnt.exe", L"outlook.exe",
-      L"onenote.exe", L"wps.exe", L"wpp.exe", L"et.exe", L"chrome.exe", L"msedge.exe",
-      L"firefox.exe", L"applicationframehost.exe", L"wechat.exe", L"wechatapp.exe", L"qq.exe",
-      L"dingding.exe", L"feishu.exe", L"lark.exe", L"slack.exe", L"teams.exe", L"code.exe", L"cursor.exe"};
+  const wchar_t* patterns[] = {
+      L"winword.exe", L"excel.exe",     L"powerpnt.exe", L"outlook.exe",
+      L"onenote.exe", L"wps.exe",       L"wpp.exe",      L"et.exe",
+      L"chrome.exe",  L"msedge.exe",    L"firefox.exe",  L"applicationframehost.exe",
+      L"wechat.exe",  L"wechatapp.exe", L"qq.exe",       L"dingding.exe",
+      L"feishu.exe",  L"lark.exe",      L"slack.exe",    L"teams.exe",
+      L"code.exe",    L"cursor.exe"};
   const auto baseName = BaseName(appName);
-  for (const auto* pattern : patterns) if (WildcardMatchNoCase(pattern, baseName)) return true;
+  for (const auto* pattern : patterns)
+    if (WildcardMatchNoCase(pattern, baseName)) return true;
   return false;
 }
 
@@ -1798,10 +1816,11 @@ std::wstring CurrentProcessIntegrityLabel() {
     auto* label = reinterpret_cast<TOKEN_MANDATORY_LABEL*>(buffer.data());
     if (IsValidSid(label->Label.Sid)) {
       const auto count = *GetSidSubAuthorityCount(label->Label.Sid);
-      const auto rid = count ? *GetSidSubAuthority(label->Label.Sid, count-1) : 0;
-      result = rid >= SECURITY_MANDATORY_SYSTEM_RID ? L"system" :
-               rid >= SECURITY_MANDATORY_HIGH_RID ? L"high" :
-               rid >= SECURITY_MANDATORY_MEDIUM_RID ? L"medium" : L"low";
+      const auto rid = count ? *GetSidSubAuthority(label->Label.Sid, count - 1) : 0;
+      result = rid >= SECURITY_MANDATORY_SYSTEM_RID   ? L"system"
+               : rid >= SECURITY_MANDATORY_HIGH_RID   ? L"high"
+               : rid >= SECURITY_MANDATORY_MEDIUM_RID ? L"medium"
+                                                      : L"low";
     }
   }
   CloseHandle(token);
@@ -1809,7 +1828,8 @@ std::wstring CurrentProcessIntegrityLabel() {
 }
 
 std::wstring SanitizeDiagnosticValue(std::wstring value) {
-  for (auto& ch : value) if (ch < L' ' || ch == L',' || ch == L'{' || ch == L'}') ch = L' ';
+  for (auto& ch : value)
+    if (ch < L' ' || ch == L',' || ch == L'{' || ch == L'}') ch = L' ';
   return value;
 }
 
@@ -1873,8 +1893,8 @@ bool IsFullscreenForegroundWindow(HWND hwnd) {
   if ((exStyle & WS_EX_TOOLWINDOW) != 0) return false;
 
   RECT windowRect = {};
-  HRESULT hr = DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &windowRect,
-                                     sizeof(windowRect));
+  HRESULT hr =
+      DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &windowRect, sizeof(windowRect));
   if (FAILED(hr) || !IsUsableRect(windowRect)) {
     if (!GetWindowRect(hwnd, &windowRect) || !IsUsableRect(windowRect)) return false;
   }
@@ -1891,8 +1911,7 @@ bool IsFullscreenForegroundWindow(HWND hwnd) {
   const bool borderless = popupWindow || captionlessWindow;
   const bool knownGameClass = IsBuiltinGameWindowClass(WindowClassName(hwnd));
 
-  const bool coversMonitor =
-      CandidateOverlayRectCoversMonitor(windowRect, monitorRect);
+  const bool coversMonitor = CandidateOverlayRectCoversMonitor(windowRect, monitorRect);
   HWND owner = GetWindow(hwnd, GW_OWNER);
   if (owner && IsWindowVisible(owner)) return false;
   if (!coversMonitor) return false;
@@ -1921,8 +1940,8 @@ void AppendUtf8FileLine(const std::filesystem::path& path, const std::wstring& l
                                         nullptr, 0, nullptr, nullptr);
   if (bytes <= 0) return;
   std::string utf8(static_cast<size_t>(bytes), '\0');
-  WideCharToMultiByte(CP_UTF8, 0, line.c_str(), static_cast<int>(line.size()), utf8.data(),
-                      bytes, nullptr, nullptr);
+  WideCharToMultiByte(CP_UTF8, 0, line.c_str(), static_cast<int>(line.size()), utf8.data(), bytes,
+                      nullptr, nullptr);
   utf8.append("\r\n");
 
   HANDLE file = CreateFileW(path.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -1935,9 +1954,9 @@ void AppendUtf8FileLine(const std::filesystem::path& path, const std::wstring& l
 
 std::filesystem::path ModuleDirFromAddress(const void* address) {
   HMODULE module = nullptr;
-  if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                              GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                          reinterpret_cast<LPCWSTR>(address), &module) ||
+  if (!GetModuleHandleExW(
+          GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+          reinterpret_cast<LPCWSTR>(address), &module) ||
       !module) {
     return {};
   }
@@ -2023,21 +2042,20 @@ void EnsureTrayHelperRunning() {
 
 UINT PageStartFromMetrics(const CandidatePageLayoutMetrics& metrics, UINT page) {
   if (metrics.pageStarts.empty()) return 0;
-  const UINT clampedPage =
-      std::min(page, static_cast<UINT>(metrics.pageStarts.size() - 1));
+  const UINT clampedPage = std::min(page, static_cast<UINT>(metrics.pageStarts.size() - 1));
   return metrics.pageStarts[clampedPage];
 }
 
 UINT PageEndExclusiveFromMetrics(const CandidatePageLayoutMetrics& metrics, UINT page,
                                  UINT totalItems) {
   if (metrics.pageStarts.empty()) return totalItems;
-  const UINT clampedPage =
-      std::min(page, static_cast<UINT>(metrics.pageStarts.size() - 1));
+  const UINT clampedPage = std::min(page, static_cast<UINT>(metrics.pageStarts.size() - 1));
   if (clampedPage + 1 < metrics.pageStarts.size()) return metrics.pageStarts[clampedPage + 1];
   return totalItems;
 }
 
-UINT PageForIndexFromMetrics(const CandidatePageLayoutMetrics& metrics, UINT index, UINT totalItems) {
+UINT PageForIndexFromMetrics(const CandidatePageLayoutMetrics& metrics, UINT index,
+                             UINT totalItems) {
   if (metrics.pageStarts.empty() || totalItems == 0) return 0;
   const UINT clampedIndex = std::min(index, totalItems - 1);
   auto it = std::upper_bound(metrics.pageStarts.begin(), metrics.pageStarts.end(), clampedIndex);
@@ -2070,7 +2088,8 @@ HRESULT GetInsertionRange(TfEditCookie ec, ITfContext* pic, ITfRange** ppRange) 
   return S_OK;
 }
 
-HRESULT SetCompositionDisplay(TfEditCookie ec, ITfComposition* composition, const std::wstring& text) {
+HRESULT SetCompositionDisplay(TfEditCookie ec, ITfComposition* composition,
+                              const std::wstring& text) {
   if (!composition) return E_FAIL;
   ITfRange* range = nullptr;
   HRESULT hr = composition->GetRange(&range);
@@ -2213,7 +2232,10 @@ class CEditSessionCompatibilityAsciiCleanup final : public ITfEditSession {
 
  public:
   explicit CEditSessionCompatibilityAsciiCleanup(CSrfTip* tip) : m_tip(tip) {
-    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
+    if (m_tip) {
+      m_tip->AddRef();
+      m_focus = m_tip->CaptureFocusSnapshot(nullptr);
+    }
   }
 
   ~CEditSessionCompatibilityAsciiCleanup() {
@@ -2260,10 +2282,9 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
   bool m_explicitSelection = false;
 
  public:
-  CEditSessionCommitCandidate(CSrfTip* tip, ITfContext* context, size_t index,
-                              std::wstring reading, std::wstring committed, std::wstring meta,
-                              std::vector<std::wstring> skippedCandidates,
-                              bool explicitSelection)
+  CEditSessionCommitCandidate(CSrfTip* tip, ITfContext* context, size_t index, std::wstring reading,
+                              std::wstring committed, std::wstring meta,
+                              std::vector<std::wstring> skippedCandidates, bool explicitSelection)
       : m_tip(tip),
         m_context(context),
         m_index(index),
@@ -2272,7 +2293,10 @@ class CEditSessionCommitCandidate final : public ITfEditSession {
         m_meta(std::move(meta)),
         m_skippedCandidates(std::move(skippedCandidates)),
         m_explicitSelection(explicitSelection) {
-    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
+    if (m_tip) {
+      m_tip->AddRef();
+      m_focus = m_tip->CaptureFocusSnapshot(nullptr);
+    }
     if (m_context) m_context->AddRef();
   }
 
@@ -2315,7 +2339,10 @@ class CEditSessionCommitReadingText final : public ITfEditSession {
 
  public:
   explicit CEditSessionCommitReadingText(CSrfTip* tip) : m_tip(tip) {
-    if (m_tip) { m_tip->AddRef(); m_focus = m_tip->CaptureFocusSnapshot(nullptr); }
+    if (m_tip) {
+      m_tip->AddRef();
+      m_focus = m_tip->CaptureFocusSnapshot(nullptr);
+    }
   }
 
   ~CEditSessionCommitReadingText() {

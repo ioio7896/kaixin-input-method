@@ -121,9 +121,8 @@ enum class SrfOverlayAnchor : UINT {
 };
 enum class SrfOverlayBackend : UINT { Auto = 0, InProcess = 1, External = 2 };
 
-inline bool ShouldUseExternalCandidateOverlayBackend(
-    SrfOverlayBackend backend, bool fullscreen, bool uiLess,
-    bool hideCandidateUi) {
+inline bool ShouldUseExternalCandidateOverlayBackend(SrfOverlayBackend backend, bool fullscreen,
+                                                     bool uiLess, bool hideCandidateUi) {
   if (hideCandidateUi) return false;
   switch (backend) {
     case SrfOverlayBackend::External:
@@ -387,7 +386,15 @@ struct SrfAppOptions {
   SrfOverlayBackend overlayBackend = SrfOverlayBackend::Auto;
 };
 
-enum class SrfNotificationKind { Ime, FullShape, Punctuation, Fuzzy, DoublePinyin, AppOptions, Engine };
+enum class SrfNotificationKind {
+  Ime,
+  FullShape,
+  Punctuation,
+  Fuzzy,
+  DoublePinyin,
+  AppOptions,
+  Engine
+};
 
 struct CaseInsensitiveWHash {
   size_t operator()(const std::wstring& value) const noexcept {
@@ -460,8 +467,7 @@ struct SrfConfig {
   }
 };
 
-inline const SrfAppOptions* FindAppOptions(const SrfConfig& config,
-                                           const std::wstring& appPath) {
+inline const SrfAppOptions* FindAppOptions(const SrfConfig& config, const std::wstring& appPath) {
   if (appPath.empty()) return nullptr;
 
   // A path-specific rule must win over a generic executable-name rule. The

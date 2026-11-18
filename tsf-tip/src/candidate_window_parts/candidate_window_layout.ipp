@@ -69,7 +69,8 @@ void ApplyDensityOverrides(const SrfUIStyle& style, LayoutSpec& spec) {
     spec.preferredWidth = std::max(spec.minWidth, spec.preferredWidth - 40);
     spec.maxWidth = std::max(spec.preferredWidth, spec.maxWidth - 64);
     spec.minHorizontalCardWidth = std::max(56, spec.minHorizontalCardWidth - 12);
-    spec.maxHorizontalCardWidth = std::max(spec.minHorizontalCardWidth, spec.maxHorizontalCardWidth - 24);
+    spec.maxHorizontalCardWidth =
+        std::max(spec.minHorizontalCardWidth, spec.maxHorizontalCardWidth - 24);
   } else if (style.candidateDensity == SrfCandidateDensity::Comfortable) {
     spec.outerPadX += 4;
     spec.outerPadY += 3;
@@ -200,16 +201,16 @@ int ResolveHorizontalCardsAreaWidth(const SrfUIStyle& style, const RECT* anchorR
 
   const RECT work = PlacementAreaForAnchor(anchorRect, style.candidateFullscreenPlacement);
   const int screenMargin = ScaleForDpi(10, dpi);
-  const int maxWidth =
-      std::max(ScaleForDpi(260, dpi), static_cast<int>((work.right - work.left) - screenMargin * 2));
+  const int maxWidth = std::max(ScaleForDpi(260, dpi),
+                                static_cast<int>((work.right - work.left) - screenMargin * 2));
   int usableMaxWidth = std::max(minWidth, maxWidth);
   if (reservePageIndicator) {
     // Keep a small, stable slot for the trailing page indicator. Without this
     // reservation the last card can be laid out underneath the badge when a
     // horizontal candidate list spans multiple pages.
-    usableMaxWidth = std::max(
-        minWidth, usableMaxWidth - ScaleForDpi(kHorizontalPageBadgeMinWidth, dpi) -
-                       ScaleForDpi(kHorizontalPageBadgeGap, dpi));
+    usableMaxWidth =
+        std::max(minWidth, usableMaxWidth - ScaleForDpi(kHorizontalPageBadgeMinWidth, dpi) -
+                               ScaleForDpi(kHorizontalPageBadgeGap, dpi));
   }
   return std::max(ScaleForDpi(100, dpi), usableMaxWidth - hOuterPadX * 2);
 }
@@ -222,8 +223,8 @@ int ResolveHorizontalVisibleCountForArea(const SrfUIStyle& style, UINT dpi, int 
   const int itemGap = ScaleForDpi(spec.itemGap, dpi);
   const int compact1 = HorizontalCompactDeltaForDpi(style, dpi);
   const int hItemGap = std::max(0, itemGap - compact1);
-  const int minCardWidth =
-      std::max(ScaleForDpi(56, dpi), std::max(ScaleForDpi(48, dpi), minHorizontalCardWidth - compact1 * 4));
+  const int minCardWidth = std::max(
+      ScaleForDpi(56, dpi), std::max(ScaleForDpi(48, dpi), minHorizontalCardWidth - compact1 * 4));
   const int maxByWidth = std::max(1, (areaWidth + hItemGap) / (minCardWidth + hItemGap));
   const int configuredMax = static_cast<int>(std::clamp(style.candidateHorizontalCount, 3u, 9u));
   const int remaining = static_cast<int>(remainingItems);
@@ -239,11 +240,10 @@ int EstimateHorizontalItemWidthForPaging(const SrfUIStyle& style, UINT dpi,
   const int labelGap = ScaleForDpi(spec.labelGap, dpi);
   const int compact1 = HorizontalCompactDeltaForDpi(style, dpi);
   const int hItemPadX = std::max(0, itemPadX - compact1);
-  const int fontPx = std::max(ScaleForDpi(12, dpi),
-                              MulDiv(static_cast<int>(style.candidateFontSize == 0
-                                                          ? 14u
-                                                          : style.candidateFontSize),
-                                     static_cast<int>(dpi == 0 ? 96u : dpi), 72));
+  const int fontPx = std::max(
+      ScaleForDpi(12, dpi),
+      MulDiv(static_cast<int>(style.candidateFontSize == 0 ? 14u : style.candidateFontSize),
+             static_cast<int>(dpi == 0 ? 96u : dpi), 72));
 
   const std::wstring displayText =
       AbbreviateCandidateForDisplay(text, style.candidateAbbreviateLength);
@@ -269,16 +269,15 @@ int EstimateHorizontalItemWidthForPaging(const SrfUIStyle& style, UINT dpi,
 }
 
 int ResolveHorizontalVisibleCountForItems(const SrfUIStyle& style, UINT dpi, int areaWidth,
-                                          const std::vector<std::wstring>& items,
-                                          size_t start) {
+                                          const std::vector<std::wstring>& items, size_t start) {
   if (start >= items.size() || areaWidth <= 0) return 0;
   const LayoutSpec spec = ResolveLayoutSpec(style);
   const int minHorizontalCardWidth = ScaleForDpi(spec.minHorizontalCardWidth, dpi);
   const int itemGap = ScaleForDpi(spec.itemGap, dpi);
   const int compact1 = HorizontalCompactDeltaForDpi(style, dpi);
   const int hItemGap = std::max(0, itemGap - compact1);
-  const int minCardWidth =
-      std::max(ScaleForDpi(56, dpi), std::max(ScaleForDpi(48, dpi), minHorizontalCardWidth - compact1 * 4));
+  const int minCardWidth = std::max(
+      ScaleForDpi(56, dpi), std::max(ScaleForDpi(48, dpi), minHorizontalCardWidth - compact1 * 4));
   const int configuredMax = static_cast<int>(std::clamp(style.candidateHorizontalCount, 3u, 9u));
   const int remaining = static_cast<int>(items.size() - start);
   const int target = std::min(configuredMax, remaining);
@@ -287,7 +286,8 @@ int ResolveHorizontalVisibleCountForItems(const SrfUIStyle& style, UINT dpi, int
   int usedWidth = 0;
   for (int i = 0; i < target; ++i) {
     const size_t idx = start + static_cast<size_t>(i);
-    const int itemWidth = std::max(minCardWidth, EstimateHorizontalItemWidthForPaging(style, dpi, items[idx]));
+    const int itemWidth =
+        std::max(minCardWidth, EstimateHorizontalItemWidthForPaging(style, dpi, items[idx]));
     const int nextWidth = usedWidth + (visible > 0 ? hItemGap : 0) + itemWidth;
     if (visible > 0 && nextWidth > areaWidth) break;
     usedWidth = nextWidth;
@@ -296,15 +296,16 @@ int ResolveHorizontalVisibleCountForItems(const SrfUIStyle& style, UINT dpi, int
   return std::max(1, visible);
 }
 
-int ResolveHorizontalCardWidthForArea(const SrfUIStyle& style, UINT dpi, int areaWidth, int visibleCount) {
+int ResolveHorizontalCardWidthForArea(const SrfUIStyle& style, UINT dpi, int areaWidth,
+                                      int visibleCount) {
   if (visibleCount <= 0 || areaWidth <= 0) return 0;
   const LayoutSpec spec = ResolveLayoutSpec(style);
   const int minHorizontalCardWidth = ScaleForDpi(spec.minHorizontalCardWidth, dpi);
   const int itemGap = ScaleForDpi(spec.itemGap, dpi);
   const int compact1 = HorizontalCompactDeltaForDpi(style, dpi);
   const int hItemGap = std::max(0, itemGap - compact1);
-  const int minCardWidth =
-      std::max(ScaleForDpi(56, dpi), std::max(ScaleForDpi(48, dpi), minHorizontalCardWidth - compact1 * 4));
+  const int minCardWidth = std::max(
+      ScaleForDpi(56, dpi), std::max(ScaleForDpi(48, dpi), minHorizontalCardWidth - compact1 * 4));
 
   const int totalGaps = hItemGap * std::max(0, visibleCount - 1);
   const int raw = std::max(1, areaWidth - totalGaps) / visibleCount;

@@ -2036,8 +2036,6 @@ pub(crate) fn discover_skin_previews() -> Vec<SkinPreview> {
                 header_bg: field("header_bg", "#F1F5F9"),
                 border: field("border", "#CBD5E1"),
                 divider: field("divider", "#E2E8F0"),
-                item_bg: field("item_bg", "#FFFFFF"),
-                item_border: field("item_border", "#E2E8F0"),
                 selected_bg: field("selected_bg", "#EAF3FF"),
                 selected_border: field("selected_border", "#2563EB"),
                 text: field("text", "#0F172A"),

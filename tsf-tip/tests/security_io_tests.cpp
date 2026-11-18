@@ -20,8 +20,9 @@ struct PipePair {
   HANDLE server = INVALID_HANDLE_VALUE;
   HANDLE client = INVALID_HANDLE_VALUE;
   explicit PipePair(unsigned index) {
-    const std::wstring name = L"\\\\.\\pipe\\KaixinIoTest-" + std::to_wstring(GetCurrentProcessId()) +
-                              L"-" + std::to_wstring(index);
+    const std::wstring name = L"\\\\.\\pipe\\KaixinIoTest-" +
+                              std::to_wstring(GetCurrentProcessId()) + L"-" +
+                              std::to_wstring(index);
     // This local test pipe carries only a fixed payload. An explicit DACL lets
     // both ordinary and restricted test runners connect to their own server.
     SECURITY_DESCRIPTOR descriptor = {};
@@ -31,8 +32,8 @@ struct PipePair {
             "set test descriptor");
     SECURITY_ATTRIBUTES security = {sizeof(security), &descriptor, FALSE};
     server = CreateNamedPipeW(name.c_str(), PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
-                              PIPE_TYPE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
-                              1, 4096, 4096, 0, &security);
+                              PIPE_TYPE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS, 1, 4096,
+                              4096, 0, &security);
     Require(server != INVALID_HANDLE_VALUE, "create pipe");
     auto connect = SrfOverlappedIo::Create(server, 1);
     Require(connect != nullptr, "create connect operation");
@@ -40,8 +41,8 @@ struct PipePair {
     const DWORD error = connected ? ERROR_SUCCESS : GetLastError();
     Require(connected || error == ERROR_IO_PENDING, "start connect");
     connect->pending = !connected;
-    client = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
-                         0, nullptr);
+    client = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0,
+                         nullptr);
     Require(client != INVALID_HANDLE_VALUE, "open client");
     DWORD count = 0;
     Require(!connect->pending || connect->Await(1000, &count), "complete connect");
@@ -53,31 +54,44 @@ struct PipePair {
 };
 
 int main() {
-  Require(translation_response::accepted(R"({"ok":true,"request_id":"abc","provider":"hy-mt2","queued":2})", "abc", true), "accept matching HY2 response");
-  Require(!translation_response::accepted(R"({"ok":false,"request_id":"abc","message":"\"ok\":true"})", "abc", false), "reject text spoofing");
-  Require(!translation_response::accepted(R"({"ok":true,"request_id":"other"})", "abc", false), "reject mismatched identity");
-  Require(!translation_response::accepted(R"({"ok":true,"request_id":"abc","provider":"other"})", "abc", true), "reject wrong provider");
-  Require(!translation_response::accepted(R"({"ok":true,"ok":false,"request_id":"abc"})", "abc", false), "reject duplicate acknowledgement keys");
-  Require(!translation_response::accepted(R"({"ok":true,"request_id":"abc"} garbage)", "abc", false), "reject trailing junk");
+  Require(translation_response::accepted(
+              R"({"ok":true,"request_id":"abc","provider":"hy-mt2","queued":2})", "abc", true),
+          "accept matching HY2 response");
+  Require(!translation_response::accepted(
+              R"({"ok":false,"request_id":"abc","message":"\"ok\":true"})", "abc", false),
+          "reject text spoofing");
+  Require(!translation_response::accepted(R"({"ok":true,"request_id":"other"})", "abc", false),
+          "reject mismatched identity");
+  Require(!translation_response::accepted(R"({"ok":true,"request_id":"abc","provider":"other"})",
+                                          "abc", true),
+          "reject wrong provider");
+  Require(
+      !translation_response::accepted(R"({"ok":true,"ok":false,"request_id":"abc"})", "abc", false),
+      "reject duplicate acknowledgement keys");
+  Require(
+      !translation_response::accepted(R"({"ok":true,"request_id":"abc"} garbage)", "abc", false),
+      "reject trailing junk");
   const std::wstring marker = L"KX_PRIVATE_MARKER_9a";
   const std::wstring redacted = RedactDiagnosticMessage(
-      (L"reading=" + marker + L" current=" + marker + L" result=" + marker +
-       L" reason=" + marker + L" status=" + marker + L" count=" + marker +
-       L" process=" + marker + L" current_reading_units=12 request_id=42 status=ok hr=0x80004005").c_str());
+      (L"reading=" + marker + L" current=" + marker + L" result=" + marker + L" reason=" + marker +
+       L" status=" + marker + L" count=" + marker + L" process=" + marker +
+       L" current_reading_units=12 request_id=42 status=ok hr=0x80004005")
+          .c_str());
   Require(redacted.find(marker) == std::wstring::npos, "private text must be absent");
   Require(redacted.find(L"current_reading_units=12") != std::wstring::npos, "keep length");
   Require(redacted.find(L"request_id=42") != std::wstring::npos, "keep request id");
   Require(redacted.find(L"status=ok") != std::wstring::npos, "keep enum");
   Require(redacted.find(L"hr=0x80004005") != std::wstring::npos, "keep HRESULT");
-  const std::wstring health = RedactDiagnosticMessage(
-      L"reason=watchdog_mutex_missing status=failed pid=1234 error=2");
+  const std::wstring health =
+      RedactDiagnosticMessage(L"reason=watchdog_mutex_missing status=failed pid=1234 error=2");
   Require(health.find(L"reason=watchdog_mutex_missing") != std::wstring::npos,
           "keep bounded watchdog reason");
   Require(health.find(L"pid=1234") != std::wstring::npos, "keep watchdog owner pid");
   Require(health.find(L"error=2") != std::wstring::npos, "keep watchdog Win32 error");
-  Require(RedactDiagnosticMessage(L"reason=private-path-sensitive").find(L"private-path-sensitive") ==
-              std::wstring::npos,
-          "reject arbitrary watchdog reason");
+  Require(
+      RedactDiagnosticMessage(L"reason=private-path-sensitive").find(L"private-path-sensitive") ==
+          std::wstring::npos,
+      "reject arbitrary watchdog reason");
   Require(!IsNumericDiagnosticValue(L"12secret"), "reject numeric prefix");
   Require(!IsNumericDiagnosticValue(L"0x"), "reject empty hex");
 
@@ -87,39 +101,45 @@ int main() {
     Require(read != nullptr, "create read operation");
     DWORD count = 0;
     Require(!ReadFile(read->handle, read->buffer.data(), 4, &count, &read->overlapped) &&
-            GetLastError() == ERROR_IO_PENDING, "start pending read");
+                GetLastError() == ERROR_IO_PENDING,
+            "start pending read");
     read->pending = true;
     if (index % 2 == 0) {
       const char payload[] = "test";
       Require(WriteFile(pair.client, payload, 4, &count, nullptr) != FALSE, "write payload");
       Require(read->Await(1000, &count) && count == 4, "complete read");
-      Require(std::string(read->buffer.begin(), read->buffer.end()) == "test", "owned buffer contents");
+      Require(std::string(read->buffer.begin(), read->buffer.end()) == "test",
+              "owned buffer contents");
     } else {
       Require(!read->Await(1, &count) && GetLastError() == ERROR_TIMEOUT, "read timeout");
       HANDLE completion = nullptr;
       Require(DuplicateHandle(GetCurrentProcess(), read->overlapped.hEvent, GetCurrentProcess(),
-                              &completion, 0, FALSE, DUPLICATE_SAME_ACCESS) != FALSE, "copy event");
+                              &completion, 0, FALSE, DUPLICATE_SAME_ACCESS) != FALSE,
+              "copy event");
       CloseHandle(pair.server);
       pair.server = INVALID_HANDLE_VALUE;
       read.reset();
-      Require(WaitForSingleObject(completion, 1000) == WAIT_OBJECT_0, "cancel completes after caller leaves");
+      Require(WaitForSingleObject(completion, 1000) == WAIT_OBJECT_0,
+              "cancel completes after caller leaves");
       CloseHandle(completion);
     }
   }
   const auto watchDir = std::filesystem::temp_directory_path() /
-      (L"KaixinDirectoryIoTest-" + std::to_wstring(GetCurrentProcessId()));
+                        (L"KaixinDirectoryIoTest-" + std::to_wstring(GetCurrentProcessId()));
   Require(CreateDirectoryW(watchDir.c_str(), nullptr) != FALSE, "create watch directory");
   for (unsigned index = 0; index < 8; ++index) {
-    HANDLE directory = CreateFileW(watchDir.c_str(), FILE_LIST_DIRECTORY,
-        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
-        FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
+    HANDLE directory =
+        CreateFileW(watchDir.c_str(), FILE_LIST_DIRECTORY,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING,
+                    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
     Require(directory != INVALID_HANDLE_VALUE, "open watch directory");
     auto watch = SrfOverlappedIo::Create(directory, 4096);
     CloseHandle(directory);
     Require(watch != nullptr, "own directory operation after original handle closes");
-    Require(ReadDirectoryChangesW(watch->handle, watch->buffer.data(),
-        static_cast<DWORD>(watch->buffer.size()), FALSE, FILE_NOTIFY_CHANGE_DIR_NAME,
-        nullptr, &watch->overlapped, nullptr) != FALSE, "start directory watch");
+    Require(ReadDirectoryChangesW(
+                watch->handle, watch->buffer.data(), static_cast<DWORD>(watch->buffer.size()),
+                FALSE, FILE_NOTIFY_CHANGE_DIR_NAME, nullptr, &watch->overlapped, nullptr) != FALSE,
+            "start directory watch");
     watch->pending = true;
     DWORD count = 0;
     if (index % 2 == 0) {
@@ -128,8 +148,7 @@ int main() {
       Require(watch->Await(1000, &count) && count != 0, "complete directory watch");
       Require(RemoveDirectoryW(changedDir.c_str()) != FALSE, "remove changed directory");
     } else {
-      Require(!watch->Await(1, &count) && GetLastError() == ERROR_TIMEOUT,
-              "directory timeout");
+      Require(!watch->Await(1, &count) && GetLastError() == ERROR_TIMEOUT, "directory timeout");
       watch.reset();
     }
   }

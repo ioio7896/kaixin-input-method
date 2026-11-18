@@ -52,7 +52,7 @@ function Get-StaleRuntimeHosts {
                 $commandLine = if ($cim) { [string]$cim.CommandLine } else { '' }
                 $executablePath = if ($cim) { [string]$cim.ExecutablePath } else { '' }
                 if ([string]::IsNullOrWhiteSpace($executablePath)) {
-                    try { $executablePath = [string]$process.Path } catch {}
+                    try { $executablePath = [string]$process.Path } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
                 }
 
                 $hosts[$process.Id] = [pscustomobject]@{
@@ -64,9 +64,7 @@ function Get-StaleRuntimeHosts {
                 }
                 break
             }
-        } catch {
-            # Access-denied processes are expected and cannot be safely restarted here.
-        }
+        } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
     }
 
     return @($hosts.Values | Sort-Object ProcessName, Id)

@@ -17,6 +17,7 @@ class SrfEngineRecoveryBudget {
     return false;
   }
   void Reset() { m_attempts.store(0); }
+
  private:
   std::atomic<std::size_t> m_attempts{0};
 };

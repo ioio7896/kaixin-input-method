@@ -61,8 +61,7 @@ def wordfreq_characters(supported: set[str]) -> list[str]:
         if len(selected) == CHARACTER_COUNT:
             return selected
     raise RuntimeError(
-        f"wordfreq yielded only {len(selected)} supported Han characters; "
-        f"need {CHARACTER_COUNT}"
+        f"wordfreq yielded only {len(selected)} supported Han characters; need {CHARACTER_COUNT}"
     )
 
 
@@ -149,8 +148,7 @@ def main() -> int:
         installed = version("wordfreq")
         if installed != WORDFREQ_VERSION:
             raise RuntimeError(
-                f"wordfreq {WORDFREQ_VERSION} is required to refresh the source; "
-                f"found {installed}"
+                f"wordfreq {WORDFREQ_VERSION} is required to refresh the source; found {installed}"
             )
         source = wordfreq_characters(supported)
         SOURCE_ORDER.write_text(

@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2026.1111.2039**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1118.1215**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -320,7 +320,7 @@ log_level=error
 
 构建脚本仅支持 Windows。基础依赖：
 
-- Python 3
+- Python 3.12+
 - Rust/Cargo（MSVC 工具链及 `i686-pc-windows-msvc` 目标）
 - CMake 3.20 或更高版本
 - Visual Studio C++/MSVC 构建工具
@@ -328,17 +328,21 @@ log_level=error
 - Inno Setup 6（生成安装包时）
 - OCR 变体所需的本地 RapidOCR、Python 环境及模型
 
-完整 Release 构建默认同时构建 `ime` 和 `ocr` 变体，不运行代码测试及冒烟检查；
-仍执行构建所需的产物完整性检查：
+正式发布统一使用：
 
 ```powershell
-python build.py
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_dev_tools.ps1
+python scripts/release.py
 ```
 
-`build_latest_installers.cmd` 使用相同默认参数，并透传命令行参数，例如
-`build_latest_installers.cmd --package-variants ime`。自动化调用前设置环境变量
-`KX_BUILD_NO_PAUSE=1` 可关闭结束暂停。需要检查时可显式传入 `--verify`、`--smoke`
-或 `--perf-smoke`。
+也可运行 `build_latest_installers.cmd`。发布入口一次生成上海时间戳版本，强制源码规范、
+Rust 全目标/功能组合、x64/x86 原生测试及冒烟验证，产出 `ime` 和 `ocr` 两个安装器，
+并写入包含版本、大小和 SHA-256 的 `dist/release-<版本>.json`。
+自动化调用前设置 `KX_BUILD_NO_PAUSE=1` 可关闭结束暂停。
+
+`build.py` 保留开发构建选项；完整 Release 打包默认执行正确性检查，
+开发时可显式传入 `--no-verify`。发布入口明确传入 `--skip-tests` 时跳过代码测试和冒烟检查，
+并在发布报告中记录；双安装器及包体完整性校验仍执行。
 
 安装包先在临时目录全部生成并完成配置的签名步骤，再发布到 `dist/`。
 被替换变体的旧安装包保存在 `dist/previous-installers/`，其他变体保持原位置。

@@ -6,6 +6,11 @@ project(srf_tsf_tip LANGUAGES CXX)
 
 include(CTest)
 
+set(SRF_CANDIDATE_WINDOW_SOURCES
+  src/candidate_window.cpp
+  src/candidate_window_animation.cpp
+  src/candidate_window_interaction.cpp)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -127,7 +132,7 @@ add_library(srf_tsf_tip SHARED
   src/candidate_overlay_client.cpp
   src/candidate_overlay_placement.cpp
   src/candidate_ui.cpp
-  src/candidate_window.cpp
+  ${SRF_CANDIDATE_WINDOW_SOURCES}
   src/candidate_accessibility.cpp
   src/candidate_input_pane.cpp
   src/composition_sink.cpp
@@ -175,6 +180,25 @@ target_link_libraries(srf_tsf_tip PRIVATE
   msimg32
 )
 
+if(BUILD_TESTING)
+  # This executable compiles the real bridge with a test-only entry point.
+  # It is run separately against an isolated helper after the real idle timeout.
+  add_executable(srf_idle_recovery_probe tests/idle_recovery_probe.cpp src/pinyin_stub.cpp)
+  target_include_directories(srf_idle_recovery_probe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+  target_compile_definitions(srf_idle_recovery_probe PRIVATE
+    UNICODE _UNICODE SRF_IDLE_RECOVERY_TEST
+    SRF_APP_VERSION="${SRF_APP_VERSION}"
+    SRF_GIT_COMMIT="${SRF_GIT_COMMIT}"
+    SRF_GIT_DIRTY=${SRF_GIT_DIRTY}
+    SRF_ENGINE_PROTOCOL_VERSION=${SRF_ENGINE_PROTOCOL_VERSION})
+  target_link_libraries(srf_idle_recovery_probe PRIVATE ole32 advapi32 crypt32 user32 shell32)
+  if(MSVC)
+    set_property(TARGET srf_idle_recovery_probe PROPERTY
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    target_compile_options(srf_idle_recovery_probe PRIVATE /W3 /EHsc /utf-8)
+  endif()
+endif()
+
 if(MSVC)
   target_compile_options(srf_tsf_tip PRIVATE /W3 /EHsc /utf-8)
   target_link_options(srf_tsf_tip PRIVATE "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/srf_tsf_tip.def")
@@ -183,7 +207,7 @@ endif()
 add_executable(srf_ime_overlay WIN32
   src/candidate_overlay_main.cpp
   src/candidate_overlay_placement.cpp
-  src/candidate_window.cpp
+  ${SRF_CANDIDATE_WINDOW_SOURCES}
   src/candidate_accessibility.cpp
   src/candidate_input_pane.cpp
   src/ime_config.cpp
@@ -217,7 +241,7 @@ endif()
 if(BUILD_TESTING)
   add_executable(srf_candidate_window_tests
     tests/candidate_window_tests.cpp
-    src/candidate_window.cpp
+    ${SRF_CANDIDATE_WINDOW_SOURCES}
   src/candidate_accessibility.cpp
   src/candidate_input_pane.cpp
     src/candidate_overlay_placement.cpp
@@ -234,4 +258,8 @@ if(BUILD_TESTING)
   add_test(NAME srf_candidate_window_tests COMMAND srf_candidate_window_tests)
   add_dependencies(srf_candidate_window_tests srf_tsf_tip)
   set_tests_properties(srf_candidate_window_tests PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+  add_custom_target(kaixin_check_targets DEPENDS
+    srf_tsf_tip srf_ime_overlay srf_release_probe
+    srf_background_worker_tests srf_policy_tests srf_game_config_tests
+    srf_security_io_tests srf_candidate_window_tests)
 endif()

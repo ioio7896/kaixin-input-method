@@ -39,18 +39,17 @@ BOOL CALLBACK CollectOverlayMonitor(HMONITOR monitor, HDC, LPRECT, LPARAM contex
 
 int DisplayDeviceNumber(const std::wstring& device) {
   std::size_t firstDigit = device.size();
-  while (firstDigit > 0 && std::iswdigit(device[firstDigit - 1])) --firstDigit;
+  while (firstDigit > 0 && std::iswdigit(device[firstDigit - 1]))
+    --firstDigit;
   if (firstDigit == device.size()) return 1000;
   wchar_t* end = nullptr;
   const long parsed = wcstol(device.c_str() + firstDigit, &end, 10);
-  return end && *end == L'\0' && parsed >= 0 && parsed <= 999 ? static_cast<int>(parsed)
-                                                               : 1000;
+  return end && *end == L'\0' && parsed >= 0 && parsed <= 999 ? static_cast<int>(parsed) : 1000;
 }
 
 std::vector<OverlayMonitorInfo> EnumerateOverlayMonitors() {
   std::vector<OverlayMonitorInfo> monitors;
-  EnumDisplayMonitors(nullptr, nullptr, CollectOverlayMonitor,
-                      reinterpret_cast<LPARAM>(&monitors));
+  EnumDisplayMonitors(nullptr, nullptr, CollectOverlayMonitor, reinterpret_cast<LPARAM>(&monitors));
   std::sort(monitors.begin(), monitors.end(), [](const auto& left, const auto& right) {
     const int leftNumber = DisplayDeviceNumber(left.device);
     const int rightNumber = DisplayDeviceNumber(right.device);
@@ -63,9 +62,8 @@ std::vector<OverlayMonitorInfo> EnumerateOverlayMonitors() {
   return monitors;
 }
 
-const OverlayMonitorInfo* FindOverlayMonitor(
-    const std::vector<OverlayMonitorInfo>& monitors, HWND targetHwnd,
-    const SrfAppOptions* options) {
+const OverlayMonitorInfo* FindOverlayMonitor(const std::vector<OverlayMonitorInfo>& monitors,
+                                             HWND targetHwnd, const SrfAppOptions* options) {
   if (monitors.empty()) return nullptr;
   const std::wstring selection =
       options && options->hasOverlayMonitor ? options->overlayMonitor : L"auto";
@@ -90,21 +88,19 @@ const OverlayMonitorInfo* FindOverlayMonitor(
       targetMonitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTONEAREST);
     }
   }
-  const auto it = std::find_if(monitors.begin(), monitors.end(),
-                               [targetMonitor](const auto& item) {
-                                 return item.monitor == targetMonitor;
-                               });
+  const auto it = std::find_if(monitors.begin(), monitors.end(), [targetMonitor](const auto& item) {
+    return item.monitor == targetMonitor;
+  });
   if (it != monitors.end()) return &*it;
-  const auto primary = std::find_if(monitors.begin(), monitors.end(),
-                                    [](const auto& item) { return item.primary; });
+  const auto primary =
+      std::find_if(monitors.begin(), monitors.end(), [](const auto& item) { return item.primary; });
   return primary != monitors.end() ? &*primary : &monitors.front();
 }
 
 RECT TargetWindowRect(HWND targetHwnd) {
   RECT rect = {};
   if (!targetHwnd || !IsWindow(targetHwnd)) return rect;
-  if (FAILED(DwmGetWindowAttribute(targetHwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect,
-                                   sizeof(rect))) ||
+  if (FAILED(DwmGetWindowAttribute(targetHwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect))) ||
       rect.right <= rect.left || rect.bottom <= rect.top) {
     rect = {};
     (void)GetWindowRect(targetHwnd, &rect);
@@ -127,8 +123,7 @@ void OffsetAnchorLogical(const SrfAppOptions* options, RECT* rect) {
 }  // namespace
 
 SrfOverlayAnchor EffectiveOverlayAnchor(const SrfAppOptions* options) {
-  return options && options->hasOverlayAnchor ? options->overlayAnchor
-                                               : SrfOverlayAnchor::Auto;
+  return options && options->hasOverlayAnchor ? options->overlayAnchor : SrfOverlayAnchor::Auto;
 }
 
 bool ResolveCandidateGameOverlayAnchor(HWND targetHwnd, bool fullscreenPlacement,
@@ -210,8 +205,7 @@ void ApplyCandidateGameOverlayOffset(const SrfAppOptions* options, RECT* rect) {
   OffsetAnchorLogical(options, rect);
 }
 
-bool ConvertCandidateOverlayAnchorToPhysical(HWND targetHwnd, const RECT& input,
-                                             RECT* output) {
+bool ConvertCandidateOverlayAnchorToPhysical(HWND targetHwnd, const RECT& input, RECT* output) {
   if (!output || !targetHwnd || !IsWindow(targetHwnd) || input.right <= input.left ||
       input.bottom <= input.top) {
     return false;
@@ -238,8 +232,7 @@ bool IsCandidateOverlayTargetFullscreen(HWND targetHwnd) {
   if (windowRect.right <= windowRect.left || windowRect.bottom <= windowRect.top) {
     return false;
   }
-  const HMONITOR monitor =
-      MonitorFromWindow(targetHwnd, MONITOR_DEFAULTTONEAREST);
+  const HMONITOR monitor = MonitorFromWindow(targetHwnd, MONITOR_DEFAULTTONEAREST);
   MONITORINFO info = {};
   info.cbSize = sizeof(info);
   if (!monitor || !GetMonitorInfoW(monitor, &info)) return false;

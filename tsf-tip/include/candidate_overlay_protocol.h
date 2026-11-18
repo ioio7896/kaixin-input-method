@@ -34,8 +34,8 @@ inline UINT SrfCandidateOverlayStatusChangedMessage() {
   // Avoid colliding with another WM_APP user of the shared deferred window.
   // RegisterWindowMessage gives the TIP and its helper the same session-wide
   // message id without reserving a fixed application-message slot.
-  static const UINT message = RegisterWindowMessageW(
-      L"SRF_IME_Candidate_Overlay_Status_Changed_v2");
+  static const UINT message =
+      RegisterWindowMessageW(L"SRF_IME_Candidate_Overlay_Status_Changed_v2");
   return message;
 }
 
@@ -137,17 +137,14 @@ inline SrfCandidateOverlayStatus ResolveCandidateOverlayStatus(
   if (state.queryOwnerId == 0 || state.querySequence == 0) {
     return SrfCandidateOverlayStatus::Unavailable;
   }
-  if (state.lastAcceptedSequence > state.querySequence &&
-      state.lastAcceptedOwnerId != 0 &&
+  if (state.lastAcceptedSequence > state.querySequence && state.lastAcceptedOwnerId != 0 &&
       state.lastAcceptedOwnerId != state.queryOwnerId) {
     return SrfCandidateOverlayStatus::Superseded;
   }
 
   const bool sequencePending =
-      state.pendingOwnerId == state.queryOwnerId &&
-      state.pendingSequence >= state.querySequence;
-  if (state.activeOwnerId != state.queryOwnerId ||
-      !state.activeWindowVisible) {
+      state.pendingOwnerId == state.queryOwnerId && state.pendingSequence >= state.querySequence;
+  if (state.activeOwnerId != state.queryOwnerId || !state.activeWindowVisible) {
     return sequencePending ? SrfCandidateOverlayStatus::OwnerVisible
                            : SrfCandidateOverlayStatus::Unavailable;
   }
@@ -192,8 +189,7 @@ struct SrfCandidateOverlaySnapshot {
 
 namespace srf_candidate_overlay_wire {
 
-inline bool AppendBytes(std::vector<std::uint8_t>* output, const void* data,
-                        std::size_t bytes) {
+inline bool AppendBytes(std::vector<std::uint8_t>* output, const void* data, std::size_t bytes) {
   if (!output || (!data && bytes != 0)) return false;
   if (bytes == 0) return true;
   if (bytes > kSrfCandidateOverlayMaxPacketBytes ||
@@ -224,8 +220,7 @@ inline bool AppendStrings(std::vector<std::uint8_t>* output,
   return true;
 }
 
-inline bool AppendBools(std::vector<std::uint8_t>* output,
-                        const std::vector<bool>& values) {
+inline bool AppendBools(std::vector<std::uint8_t>* output, const std::vector<bool>& values) {
   if (values.size() > kSrfCandidateOverlayMaxItems) return false;
   for (bool value : values) {
     const std::uint8_t byte = value ? 1u : 0u;
@@ -250,8 +245,7 @@ class Reader {
   bool ReadString(std::wstring* output) {
     if (!output) return false;
     std::uint32_t length = 0;
-    if (!ReadBytes(&length, sizeof(length)) ||
-        length > kSrfCandidateOverlayMaxTextUnits) {
+    if (!ReadBytes(&length, sizeof(length)) || length > kSrfCandidateOverlayMaxTextUnits) {
       return false;
     }
     const std::size_t bytes = static_cast<std::size_t>(length) * sizeof(wchar_t);
@@ -295,8 +289,8 @@ class Reader {
 
 }  // namespace srf_candidate_overlay_wire
 
-inline bool SerializeCandidateOverlaySnapshot(
-    const SrfCandidateOverlaySnapshot& snapshot, std::vector<std::uint8_t>* output) {
+inline bool SerializeCandidateOverlaySnapshot(const SrfCandidateOverlaySnapshot& snapshot,
+                                              std::vector<std::uint8_t>* output) {
   if (!output || snapshot.items.size() > kSrfCandidateOverlayMaxItems ||
       snapshot.comments.size() > kSrfCandidateOverlayMaxItems ||
       snapshot.labels.size() > kSrfCandidateOverlayMaxItems ||
@@ -313,9 +307,7 @@ inline bool SerializeCandidateOverlaySnapshot(
                  (snapshot.fullscreenPlacement ? kSrfCandidateOverlayFullscreen : 0u) |
                  (snapshot.layoutResolved ? kSrfCandidateOverlayLayoutResolved : 0u) |
                  (snapshot.horizontalLayout ? kSrfCandidateOverlayHorizontal : 0u) |
-                 (snapshot.horizontalCompact
-                      ? kSrfCandidateOverlayHorizontalCompact
-                      : 0u) |
+                 (snapshot.horizontalCompact ? kSrfCandidateOverlayHorizontalCompact : 0u) |
                  (snapshot.anchorPhysical ? kSrfCandidateOverlayAnchorPhysical : 0u) |
                  (snapshot.caretAnchor ? kSrfCandidateOverlayCaretAnchor : 0u);
   header.sourceProcessId = snapshot.sourceProcessId;
@@ -323,8 +315,8 @@ inline bool SerializeCandidateOverlaySnapshot(
   header.ownerId = snapshot.ownerId;
   header.authSecretHigh = snapshot.authSecret.high;
   header.authSecretLow = snapshot.authSecret.low;
-  header.targetHwnd = static_cast<std::uint64_t>(
-      reinterpret_cast<std::uintptr_t>(snapshot.targetHwnd));
+  header.targetHwnd =
+      static_cast<std::uint64_t>(reinterpret_cast<std::uintptr_t>(snapshot.targetHwnd));
   header.focusGeneration = snapshot.focusGeneration;
   header.sequence = snapshot.sequence;
   header.anchorLeft = snapshot.anchor.left;
@@ -364,18 +356,17 @@ inline bool SerializeCandidateOverlaySnapshot(
   return true;
 }
 
-inline bool DeserializeCandidateOverlaySnapshot(
-    const void* data, std::size_t bytes, SrfCandidateOverlaySnapshot* snapshot) {
+inline bool DeserializeCandidateOverlaySnapshot(const void* data, std::size_t bytes,
+                                                SrfCandidateOverlaySnapshot* snapshot) {
   if (!data || !snapshot || bytes < sizeof(SrfCandidateOverlayWireHeader) ||
       bytes > kSrfCandidateOverlayMaxPacketBytes) {
     return false;
   }
   SrfCandidateOverlayWireHeader header = {};
   std::memcpy(&header, data, sizeof(header));
-  if (header.magic != kSrfCandidateOverlayMagic ||
-      header.version != kSrfCandidateOverlayVersion ||
-      header.headerBytes != sizeof(SrfCandidateOverlayWireHeader) ||
-      header.totalBytes != bytes || header.itemCount > kSrfCandidateOverlayMaxItems ||
+  if (header.magic != kSrfCandidateOverlayMagic || header.version != kSrfCandidateOverlayVersion ||
+      header.headerBytes != sizeof(SrfCandidateOverlayWireHeader) || header.totalBytes != bytes ||
+      header.itemCount > kSrfCandidateOverlayMaxItems ||
       header.commentCount > kSrfCandidateOverlayMaxItems ||
       header.labelCount > kSrfCandidateOverlayMaxItems ||
       header.pinnedCount > kSrfCandidateOverlayMaxItems ||
@@ -384,34 +375,26 @@ inline bool DeserializeCandidateOverlaySnapshot(
     return false;
   }
 
-  srf_candidate_overlay_wire::Reader reader(
-      static_cast<const std::uint8_t*>(data) + sizeof(header), bytes - sizeof(header));
+  srf_candidate_overlay_wire::Reader reader(static_cast<const std::uint8_t*>(data) + sizeof(header),
+                                            bytes - sizeof(header));
   SrfCandidateOverlaySnapshot parsed = {};
   parsed.visible = (header.flags & kSrfCandidateOverlayVisible) != 0;
   parsed.pendingVisual = (header.flags & kSrfCandidateOverlayPending) != 0;
   parsed.gameCompact = (header.flags & kSrfCandidateOverlayGameCompact) != 0;
-  parsed.fullscreenPlacement =
-      (header.flags & kSrfCandidateOverlayFullscreen) != 0;
-  parsed.layoutResolved =
-      (header.flags & kSrfCandidateOverlayLayoutResolved) != 0;
-  parsed.horizontalLayout =
-      (header.flags & kSrfCandidateOverlayHorizontal) != 0;
-  parsed.horizontalCompact =
-      (header.flags & kSrfCandidateOverlayHorizontalCompact) != 0;
-  parsed.anchorPhysical =
-      (header.flags & kSrfCandidateOverlayAnchorPhysical) != 0;
-  parsed.caretAnchor =
-      (header.flags & kSrfCandidateOverlayCaretAnchor) != 0;
+  parsed.fullscreenPlacement = (header.flags & kSrfCandidateOverlayFullscreen) != 0;
+  parsed.layoutResolved = (header.flags & kSrfCandidateOverlayLayoutResolved) != 0;
+  parsed.horizontalLayout = (header.flags & kSrfCandidateOverlayHorizontal) != 0;
+  parsed.horizontalCompact = (header.flags & kSrfCandidateOverlayHorizontalCompact) != 0;
+  parsed.anchorPhysical = (header.flags & kSrfCandidateOverlayAnchorPhysical) != 0;
+  parsed.caretAnchor = (header.flags & kSrfCandidateOverlayCaretAnchor) != 0;
   parsed.sourceProcessId = header.sourceProcessId;
   parsed.targetProcessId = header.targetProcessId;
   parsed.ownerId = header.ownerId;
   parsed.authSecret = {header.authSecretHigh, header.authSecretLow};
-  parsed.targetHwnd = reinterpret_cast<HWND>(
-      static_cast<std::uintptr_t>(header.targetHwnd));
+  parsed.targetHwnd = reinterpret_cast<HWND>(static_cast<std::uintptr_t>(header.targetHwnd));
   parsed.focusGeneration = header.focusGeneration;
   parsed.sequence = header.sequence;
-  parsed.anchor = {header.anchorLeft, header.anchorTop, header.anchorRight,
-                   header.anchorBottom};
+  parsed.anchor = {header.anchorLeft, header.anchorTop, header.anchorRight, header.anchorBottom};
   parsed.pageIndex = header.pageIndex;
   parsed.totalPages = header.totalPages;
   parsed.selectedInPage = header.selectedInPage;
@@ -424,12 +407,11 @@ inline bool DeserializeCandidateOverlaySnapshot(
       !reader.ReadStrings(header.modeTagCount, &parsed.modeTags) || !reader.Empty()) {
     return false;
   }
-  if (parsed.visible &&
-      (parsed.items.empty() || parsed.comments.size() != parsed.items.size() ||
-       parsed.labels.size() != parsed.items.size() ||
-       parsed.pinnedItems.size() != parsed.items.size() ||
-       parsed.clipboardItems.size() != parsed.items.size() ||
-       parsed.selectedInPage >= parsed.items.size())) {
+  if (parsed.visible && (parsed.items.empty() || parsed.comments.size() != parsed.items.size() ||
+                         parsed.labels.size() != parsed.items.size() ||
+                         parsed.pinnedItems.size() != parsed.items.size() ||
+                         parsed.clipboardItems.size() != parsed.items.size() ||
+                         parsed.selectedInPage >= parsed.items.size())) {
     return false;
   }
   *snapshot = std::move(parsed);

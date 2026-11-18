@@ -23,9 +23,20 @@ from pathlib import Path
 from typing import Any
 
 from kaixin_ocr_policy import (
-    PROFILE_LIMITS, PROFILE_MODELS, PROFILE_SECONDS, WorkBudget, analyze_image,
-    image_tiles, intersection, line_bounds, lines_in_region, needs_detector_retry,
-    normalize_profile, rect_area, refinement_regions, should_retry_preprocess,
+    PROFILE_LIMITS,
+    PROFILE_MODELS,
+    PROFILE_SECONDS,
+    WorkBudget,
+    analyze_image,
+    image_tiles,
+    intersection,
+    line_bounds,
+    lines_in_region,
+    needs_detector_retry,
+    normalize_profile,
+    rect_area,
+    refinement_regions,
+    should_retry_preprocess,
 )
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -135,11 +146,19 @@ def parse_args() -> argparse.Namespace:
         help="Compatibility option; OCR always runs on CPU.",
     )
     parser.add_argument("--min-score", type=float, default=0.5, help="Minimum line score.")
-    parser.add_argument("--cache-engines", type=int, choices=(1, 2), default=2,
-                        help="Maximum resident model configurations (LRU).")
-    parser.add_argument("--fast-mode", action=argparse.BooleanOptionalAction,
-                        default=env_bool("KAIXIN_OCR_FAST_MODE", False),
-                        help="Opt-in recognition width optimization, fast profile only.")
+    parser.add_argument(
+        "--cache-engines",
+        type=int,
+        choices=(1, 2),
+        default=2,
+        help="Maximum resident model configurations (LRU).",
+    )
+    parser.add_argument(
+        "--fast-mode",
+        action=argparse.BooleanOptionalAction,
+        default=env_bool("KAIXIN_OCR_FAST_MODE", False),
+        help="Opt-in recognition width optimization, fast profile only.",
+    )
     parser.add_argument(
         "--download-retries",
         type=int,
@@ -246,9 +265,7 @@ def missing_required_models(model_root: Path) -> list[Path]:
 
 def elapsed_ms(values: Any) -> list[float]:
     return [
-        round(float(value) * 1000, 2)
-        for value in (values or [])
-        if isinstance(value, (int, float))
+        round(float(value) * 1000, 2) for value in (values or []) if isinstance(value, (int, float))
     ]
 
 
@@ -275,11 +292,7 @@ def to_line_items(result: Any, min_score: float) -> list[dict[str, Any]]:
 
 def recognition_stats(lines: list[dict[str, Any]]) -> tuple[int, float, int]:
     chars = sum(len(str(line.get("text", "")).strip()) for line in lines)
-    average = (
-        sum(float(line.get("score", 0.0)) for line in lines) / len(lines)
-        if lines
-        else 0.0
-    )
+    average = sum(float(line.get("score", 0.0)) for line in lines) / len(lines) if lines else 0.0
     return chars, average, len(lines)
 
 
@@ -300,26 +313,41 @@ def recognition_quality(lines: list[dict[str, Any]]) -> tuple[float, float]:
         repeat_penalty = 1.0 - min(0.75, repeats / max(1, len(text) - 2))
         duplicate_weight = 0.5 if text in seen else 1.0
         seen.add(text)
-        weight = score ** 3 * (0.5 + useful * 0.5) * repeat_penalty * duplicate_weight
+        weight = score**3 * (0.5 + useful * 0.5) * repeat_penalty * duplicate_weight
         evidence += math.log1p(len(text)) * weight
         box = line.get("box")
         if box:
-            area = abs(sum(box[i][0] * box[(i + 1) % len(box)][1]
-                           - box[(i + 1) % len(box)][0] * box[i][1]
-                           for i in range(len(box)))) / 2
+            area = (
+                abs(
+                    sum(
+                        box[i][0] * box[(i + 1) % len(box)][1]
+                        - box[(i + 1) % len(box)][0] * box[i][1]
+                        for i in range(len(box))
+                    )
+                )
+                / 2
+            )
             coverage += area * weight
     _, average, _ = recognition_stats(lines)
-    return average ** 2 * math.log1p(evidence) * (1.0 + 0.03 * math.log1p(coverage)), average
+    return average**2 * math.log1p(evidence) * (1.0 + 0.03 * math.log1p(coverage)), average
 
 
 def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Suppress overlapping detections, never equal text at unrelated locations."""
+
     def bounds(line: dict[str, Any]) -> tuple[float, float, float, float]:
         box = line["box"]
-        return min(p[0] for p in box), min(p[1] for p in box), max(p[0] for p in box), max(p[1] for p in box)
+        return (
+            min(p[0] for p in box),
+            min(p[1] for p in box),
+            max(p[0] for p in box),
+            max(p[1] for p in box),
+        )
 
     kept: list[dict[str, Any]] = []
-    for line in sorted(lines, key=lambda item: (not item.get("tile_edge", False), item["score"]), reverse=True):
+    for line in sorted(
+        lines, key=lambda item: (not item.get("tile_edge", False), item["score"]), reverse=True
+    ):
         x0, y0, x1, y1 = bounds(line)
         duplicate = False
         replace = []
@@ -332,8 +360,13 @@ def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 previous_text = "".join(str(previous["text"]).split())
                 # A clipped prefix often has an even higher confidence than
                 # the complete line from its neighbour. Preserve completeness.
-                if (previous_text and previous_text != text and previous_text in text
-                        and line["score"] >= 0.8 and (x1-x0)*(y1-y0) >= (a1-a0)*(b1-b0)):
+                if (
+                    previous_text
+                    and previous_text != text
+                    and previous_text in text
+                    and line["score"] >= 0.8
+                    and (x1 - x0) * (y1 - y0) >= (a1 - a0) * (b1 - b0)
+                ):
                     replace.append(previous)
                     continue
                 duplicate = True
@@ -348,7 +381,9 @@ def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
         _, top, _, bottom = bounds(line)
         if rows:
             _, row_top, _, row_bottom = bounds(rows[-1][0])
-            same_row = abs((top + bottom) - (row_top + row_bottom)) <= min(bottom - top, row_bottom - row_top)
+            same_row = abs((top + bottom) - (row_top + row_bottom)) <= min(
+                bottom - top, row_bottom - row_top
+            )
         else:
             same_row = False
         if same_row:
@@ -365,14 +400,23 @@ def merge_tile_lines(lines: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 x0, y0, x1, y1 = bounds(line)
                 overlap = max(0, min(a1, x1) - max(a0, x0))
                 left, right = str(previous["text"]).rstrip(), str(line["text"]).lstrip()
-                common = next((n for n in range(min(len(left), len(right)), 1, -1)
-                               if left[-n:] == right[:n]), 0)
+                common = next(
+                    (n for n in range(min(len(left), len(right)), 1, -1) if left[-n:] == right[:n]),
+                    0,
+                )
                 if overlap and common:
-                    previous = dict(previous, text=left + right[common:],
-                                    score=min(previous["score"], line["score"]),
-                                    box=[[a0, min(b0, y0)], [max(a1, x1), min(b0, y0)],
-                                         [max(a1, x1), max(b1, y1)], [a0, max(b1, y1)]],
-                                    clip_right=line.get("clip_right", False))
+                    previous = dict(
+                        previous,
+                        text=left + right[common:],
+                        score=min(previous["score"], line["score"]),
+                        box=[
+                            [a0, min(b0, y0)],
+                            [max(a1, x1), min(b0, y0)],
+                            [max(a1, x1), max(b1, y1)],
+                            [a0, max(b1, y1)],
+                        ],
+                        clip_right=line.get("clip_right", False),
+                    )
                     joined[-1] = previous
                     continue
             joined.append(line)
@@ -396,8 +440,7 @@ def decode_memory_image(encoded: Any) -> bytes:
     value = str(encoded)
     if len(value) > MAX_ENCODED_IMAGE_BYTES:
         raise ValueError(
-            f"encoded image is too large: {len(value)} bytes "
-            f"(limit {MAX_ENCODED_IMAGE_BYTES})"
+            f"encoded image is too large: {len(value)} bytes (limit {MAX_ENCODED_IMAGE_BYTES})"
         )
     image_bytes = base64.b64decode(value, validate=True)
     if len(image_bytes) > MAX_DECODED_IMAGE_BYTES:
@@ -458,13 +501,15 @@ class RapidOcrService:
             self._rapidocr_cls = RapidOCR
         return self._rapidocr_cls
 
-    def _engine_params(self, profile: str, detector: str | None = None,
-                       limit: int | None = None) -> tuple[dict[str, Any], tuple[Any, ...]]:
+    def _engine_params(
+        self, profile: str, detector: str | None = None, limit: int | None = None
+    ) -> tuple[dict[str, Any], tuple[Any, ...]]:
         params = enum_params(self.model_root, self.args, profile, detector, limit)
         return params, tuple(sorted((key, str(value)) for key, value in params.items()))
 
-    def _load_engine(self, profile: str, detector: str | None = None,
-                     limit: int | None = None) -> tuple[Any, float, bool, tuple[Any, ...]]:
+    def _load_engine(
+        self, profile: str, detector: str | None = None, limit: int | None = None
+    ) -> tuple[Any, float, bool, tuple[Any, ...]]:
         params, key = self._engine_params(profile, detector, limit)
         if key in self._engines:
             self._engines.move_to_end(key)
@@ -503,8 +548,16 @@ class RapidOcrService:
         already_warm = key in self._warmed
         if not already_warm:
             sample = np.full((48, 320, 3), 255, dtype=np.uint8)
-            cv2.putText(sample, "Kaixin OCR 2026", (8, 33), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.8, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(
+                sample,
+                "Kaixin OCR 2026",
+                (8, 33),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (0, 0, 0),
+                2,
+                cv2.LINE_AA,
+            )
             try:
                 with contextlib.redirect_stdout(sys.stderr):
                     engine(sample, use_det=True, use_cls=False, use_rec=True)
@@ -542,7 +595,13 @@ class RapidOcrService:
         height, width = source.shape[:2]
         found = find_rect(source, 0.04, 0.985)
         if found is None:
-            return {"ok": True, "command": "crop", "cropped": False, "width": width, "height": height}
+            return {
+                "ok": True,
+                "command": "crop",
+                "cropped": False,
+                "width": width,
+                "height": height,
+            }
         score, (x, y, rect_width, rect_height), density = found
         crop_rect = safe_border_crop_rect(x, y, rect_width, rect_height, width, height)
         if crop_rect is None:
@@ -595,12 +654,15 @@ class RapidOcrService:
         max_attempts = max(1, min(2, int(self.args.download_retries) + 1))
         load_start = time.perf_counter()
         from rapidocr.utils.load_image import LoadImage
+
         with contextlib.redirect_stdout(sys.stderr):
             image_array = LoadImage()(image_bytes if image_bytes is not None else image)
         validate_image_shape(image_array)
         print("KAIXIN_OCR_STAGE image-loaded", file=sys.stderr, flush=True)
         load_seconds = time.perf_counter() - load_start
-        applied_max_side, applied_min_side = adaptive_limits(profile, image_array.shape, max_side_len)
+        applied_max_side, applied_min_side = adaptive_limits(
+            profile, image_array.shape, max_side_len
+        )
         tiles = image_tiles(image_array.shape, applied_max_side)
         budget = WorkBudget(PROFILE_SECONDS[profile])
         analysis_start = time.perf_counter()
@@ -613,9 +675,13 @@ class RapidOcrService:
         primary_det, primary_rec = PROFILE_MODELS[profile]
         step_seconds: list[float] = []
 
-        def run_region(region: tuple[int, int, int, int], kind: str = "primary",
-                       scale: float = 1.0, detector: str | None = None,
-                       enhance: bool = False) -> list[dict[str, Any]] | None:
+        def run_region(
+            region: tuple[int, int, int, int],
+            kind: str = "primary",
+            scale: float = 1.0,
+            detector: str | None = None,
+            enhance: bool = False,
+        ) -> list[dict[str, Any]] | None:
             nonlocal total_init, total_infer, preprocess_seconds, all_cached
             import cv2
 
@@ -641,7 +707,9 @@ class RapidOcrService:
                         file=sys.stderr,
                         flush=True,
                     )
-                    engine, init_seconds, cached, key = self._load_engine(profile, detector, applied_max_side)
+                    engine, init_seconds, cached, key = self._load_engine(
+                        profile, detector, applied_max_side
+                    )
                     total_init += init_seconds
                     all_cached = all_cached and cached
                     attempt_init = init_seconds
@@ -652,10 +720,14 @@ class RapidOcrService:
                     prepare_start = time.perf_counter()
                     source = image_array[y0:y1, x0:x1]
                     if source.shape[:2] != (target_height, target_width):
-                        source = cv2.resize(source, (target_width, target_height), interpolation=cv2.INTER_CUBIC)
+                        source = cv2.resize(
+                            source, (target_width, target_height), interpolation=cv2.INTER_CUBIC
+                        )
                     if enhance:
                         lab = cv2.cvtColor(source, cv2.COLOR_BGR2LAB)
-                        lab[:, :, 0] = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(lab[:, :, 0])
+                        lab[:, :, 0] = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(
+                            lab[:, :, 0]
+                        )
                         source = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
                     preprocess_seconds += time.perf_counter() - prepare_start
                     with contextlib.redirect_stdout(sys.stderr):
@@ -675,14 +747,26 @@ class RapidOcrService:
                             continue
                         box = line["box"]
                         line["clip_left"] = x0 > 0 and min(p[0] for p in box) < 4 * sx
-                        line["clip_right"] = x1 < image_array.shape[1] and max(p[0] for p in box) > target_width - 4 * sx
+                        line["clip_right"] = (
+                            x1 < image_array.shape[1]
+                            and max(p[0] for p in box) > target_width - 4 * sx
+                        )
                         line["tile_edge"] = (
                             (x0 > 0 and min(p[0] for p in box) < 4 * sx)
                             or (y0 > 0 and min(p[1] for p in box) < 4 * sy)
-                            or (x1 < image_array.shape[1] and max(p[0] for p in box) > target_width - 4 * sx)
-                            or (y1 < image_array.shape[0] and max(p[1] for p in box) > target_height - 4 * sy))
-                        line["box"] = [[min(x1, max(x0, p[0] / sx + x0)),
-                                        min(y1, max(y0, p[1] / sy + y0))] for p in box]
+                            or (
+                                x1 < image_array.shape[1]
+                                and max(p[0] for p in box) > target_width - 4 * sx
+                            )
+                            or (
+                                y1 < image_array.shape[0]
+                                and max(p[1] for p in box) > target_height - 4 * sy
+                            )
+                        )
+                        line["box"] = [
+                            [min(x1, max(x0, p[0] / sx + x0)), min(y1, max(y0, p[1] / sy + y0))]
+                            for p in box
+                        ]
                         mapped.append(line)
                     return mapped
                 except Exception as exc:
@@ -690,19 +774,30 @@ class RapidOcrService:
                     if key is not None:
                         self._clear_engine(key)
                     if attempt < max_attempts:
-                        print(f"RapidOCR init/inference failed, retrying ({attempt}/{max_attempts})...", file=sys.stderr)
+                        print(
+                            f"RapidOCR init/inference failed, retrying ({attempt}/{max_attempts})...",
+                            file=sys.stderr,
+                        )
                 finally:
                     if infer_start is not None and not succeeded:
                         attempt_infer = time.perf_counter() - infer_start
                     total_infer += attempt_infer
-                    attempts.append({
-                        "kind": kind, "language": "multilingual", "retry": attempt, "ok": succeeded,
-                        "detector": detector or primary_det, "recognizer": primary_rec,
-                        "rect": list(region), "scale": round(scale, 3), "pixels": pixels,
-                        "init_ms": round(attempt_init * 1000, 2),
-                        "infer_ms": round(attempt_infer * 1000, 2),
-                        "total_ms": round((time.perf_counter() - attempt_start) * 1000, 2),
-                    })
+                    attempts.append(
+                        {
+                            "kind": kind,
+                            "language": "multilingual",
+                            "retry": attempt,
+                            "ok": succeeded,
+                            "detector": detector or primary_det,
+                            "recognizer": primary_rec,
+                            "rect": list(region),
+                            "scale": round(scale, 3),
+                            "pixels": pixels,
+                            "init_ms": round(attempt_init * 1000, 2),
+                            "infer_ms": round(attempt_infer * 1000, 2),
+                            "total_ms": round((time.perf_counter() - attempt_start) * 1000, 2),
+                        }
+                    )
             if optional:
                 budget.skipped.append(f"{kind}:inference-error")
                 print(f"Optional OCR pass failed: {last_error}", file=sys.stderr, flush=True)
@@ -715,7 +810,9 @@ class RapidOcrService:
             tile_lines.extend(run_region(tile, scale=tiny_scale) or [])
         lines = merge_tile_lines(tile_lines)
 
-        def accept_region(region: tuple[int, int, int, int], candidate: list[dict[str, Any]] | None) -> None:
+        def accept_region(
+            region: tuple[int, int, int, int], candidate: list[dict[str, Any]] | None
+        ) -> None:
             nonlocal lines
             if not candidate:
                 return
@@ -724,8 +821,12 @@ class RapidOcrService:
                 return
             # Do not remove a full line when an optional crop covers only part
             # of it. Seam deduplication prefers interior, confident results.
-            remove = {id(line) for line in previous if (bounds := line_bounds(line)) is not None
-                      and intersection(bounds, region) >= rect_area(bounds) * 0.95}
+            remove = {
+                id(line)
+                for line in previous
+                if (bounds := line_bounds(line)) is not None
+                and intersection(bounds, region) >= rect_area(bounds) * 0.95
+            }
             lines = merge_tile_lines([line for line in lines if id(line) not in remove] + candidate)
 
         upscale = PROFILE_LIMITS[profile][1]
@@ -747,7 +848,9 @@ class RapidOcrService:
         if profile == "balanced" and needs_detector_retry(lines, analysis):
             for region in analysis.regions:
                 if not lines_in_region(lines, region):
-                    accept_region(region, run_region(region, "detector-fallback", detector="medium"))
+                    accept_region(
+                        region, run_region(region, "detector-fallback", detector="medium")
+                    )
                 if budget.extra_calls >= 8:
                     break
 
@@ -758,9 +861,14 @@ class RapidOcrService:
 
             result = RapidOCROutput(
                 img=image_array,
-                boxes=np.asarray([line["box"] for line in lines], dtype=np.float32).reshape(-1, 4, 2),
+                boxes=np.asarray([line["box"] for line in lines], dtype=np.float32).reshape(
+                    -1, 4, 2
+                ),
                 txts=tuple(line["text"] for line in lines),
-                scores=tuple(line["score"] for line in lines), elapse_list=step_seconds, word_results=(None,))
+                scores=tuple(line["score"] for line in lines),
+                elapse_list=step_seconds,
+                word_results=(None,),
+            )
             vis_path = Path(str(vis_value)).expanduser().resolve()
             vis_path.parent.mkdir(parents=True, exist_ok=True)
             with contextlib.redirect_stdout(sys.stderr):

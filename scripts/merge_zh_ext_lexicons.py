@@ -9,6 +9,8 @@ from pathlib import Path
 import json
 
 
+from build_professional_lexicons import CATEGORIES as PROFESSIONAL_CATEGORIES
+
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "data_sources" / "lexicon_fragments" / "zh-ext"
 OUTPUT_DIR = ROOT / "lexicon" / "zh-ext"
@@ -75,7 +77,7 @@ CATEGORIES = OrderedDict(
 
 
 # Preserve independent professional switches during regeneration.
-from build_professional_lexicons import CATEGORIES as PROFESSIONAL_CATEGORIES
+
 for tag, (title, _) in PROFESSIONAL_CATEGORIES.items():
     name = f"professional_{tag}.txt"
     CATEGORIES[name] = Category(title, (name,))
@@ -103,6 +105,7 @@ def parse_row(path: Path, line_number: int, line: str) -> tuple[str, str, int]:
 
 def merge_category(category: Category) -> list[tuple[str, str, int]]:
     from lexicon_quality import clean_rows
+
     entries: OrderedDict[tuple[str, str], tuple[str, int]] = OrderedDict()
     for source_name in category.sources:
         path = SOURCE_DIR / source_name
@@ -121,17 +124,11 @@ def merge_category(category: Category) -> list[tuple[str, str, int]]:
             _, previous_weight = previous
             if weight > previous_weight:
                 entries[entry_key] = (code, weight)
-    rows = [
-        (phrase, code, weight)
-        for (phrase, _), (code, weight) in entries.items()
-    ]
+    rows = [(phrase, code, weight) for (phrase, _), (code, weight) in entries.items()]
     if category.limit is not None:
         rows = rows[: category.limit]
     if category.fixed_weight is not None:
-        rows = [
-            (phrase, code, category.fixed_weight)
-            for phrase, code, _ in rows
-        ]
+        rows = [(phrase, code, category.fixed_weight) for phrase, code, _ in rows]
     return clean_rows(rows)
 
 
@@ -139,16 +136,20 @@ def write_category(path: Path, category: Category, rows: list[tuple[str, str, in
     if path.name.startswith("category_") and category.sources == (path.name,):
         original = (SOURCE_DIR / path.name).read_bytes()
         source = original.decode("utf-8-sig")
-        original_rows = [parse_row(SOURCE_DIR / path.name, n, line)
-                         for n, line in enumerate(source.splitlines(), 1)
-                         if line.strip() and not line.startswith("#")]
+        original_rows = [
+            parse_row(SOURCE_DIR / path.name, n, line)
+            for n, line in enumerate(source.splitlines(), 1)
+            if line.strip() and not line.startswith("#")
+        ]
         if original_rows == rows:
             path.write_bytes(original)
             return
         comments = [line for line in source.splitlines() if line.startswith("#")]
-        path.write_text("\n".join(comments) + "\n"
-                        + "".join(f"{p}\t{r}\t{s}\n" for p, r, s in rows),
-                        encoding="utf-8", newline="\n")
+        path.write_text(
+            "\n".join(comments) + "\n" + "".join(f"{p}\t{r}\t{s}\n" for p, r, s in rows),
+            encoding="utf-8",
+            newline="\n",
+        )
         return
     source_names = ", ".join(category.sources)
     text = (
@@ -171,6 +172,16 @@ def merge_lexicons() -> dict[str, int]:
         rows = merge_category(category)
         write_category(OUTPUT_DIR / output_name, category, rows)
         counts[output_name] = len(rows)
+    # Reimports must also retain current authored priorities, exact rejections,
+    # common-word ownership and the maintained catalog's counts/score bands.
+    from lexicon_quality import apply_quality
+
+    apply_quality()
+    for output_name in counts:
+        counts[output_name] = sum(
+            bool(line.strip()) and not line.startswith("#")
+            for line in (OUTPUT_DIR / output_name).read_text(encoding="utf-8-sig").splitlines()
+        )
     return counts
 
 

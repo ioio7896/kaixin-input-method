@@ -12,8 +12,10 @@ bool WildcardMatchNoCase(const std::wstring& pattern, const std::wstring& text) 
   size_t retry = 0;
   std::wstring pat = pattern;
   std::wstring value = text;
-  for (wchar_t& ch : pat) ch = static_cast<wchar_t>(towlower(ch));
-  for (wchar_t& ch : value) ch = static_cast<wchar_t>(towlower(ch));
+  for (wchar_t& ch : pat)
+    ch = static_cast<wchar_t>(towlower(ch));
+  for (wchar_t& ch : value)
+    ch = static_cast<wchar_t>(towlower(ch));
   while (t < value.size()) {
     if (p < pat.size() && (pat[p] == L'?' || pat[p] == value[t])) {
       ++p;
@@ -28,7 +30,8 @@ bool WildcardMatchNoCase(const std::wstring& pattern, const std::wstring& text) 
       return false;
     }
   }
-  while (p < pat.size() && pat[p] == L'*') ++p;
+  while (p < pat.size() && pat[p] == L'*')
+    ++p;
   return p == pat.size();
 }
 
@@ -48,9 +51,8 @@ bool IsBuiltinSensitiveProcessName(const std::wstring& appName) {
   if (appName.empty()) return false;
   const std::wstring baseName = BaseName(appName);
   const wchar_t* patterns[] = {
-      L"credentialui*.exe", L"credwiz.exe",   L"keepass*.exe",
-      L"1password*.exe",    L"bitwarden*.exe", L"lastpass*.exe",
-      L"dashlane*.exe",     L"enpass*.exe",    L"authy*.exe",
+      L"credentialui*.exe", L"credwiz.exe",   L"keepass*.exe", L"1password*.exe", L"bitwarden*.exe",
+      L"lastpass*.exe",     L"dashlane*.exe", L"enpass*.exe",  L"authy*.exe",
   };
   for (const wchar_t* pattern : patterns) {
     if (WildcardMatchNoCase(pattern, baseName)) return true;
@@ -78,9 +80,8 @@ bool WindowOrParentHasPasswordStyle(HWND hwnd) {
     if ((style & ES_PASSWORD) != 0) return true;
 
     const std::wstring className = WindowClassName(current);
-    if (!className.empty() &&
-        (WildcardMatchNoCase(L"*password*", className) ||
-         WildcardMatchNoCase(L"*credential*", className))) {
+    if (!className.empty() && (WildcardMatchNoCase(L"*password*", className) ||
+                               WildcardMatchNoCase(L"*credential*", className))) {
       return true;
     }
   }

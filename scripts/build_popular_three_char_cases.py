@@ -29,6 +29,8 @@ from polyphone_corrections import (
 DEFAULT_LIMIT = 1_000
 DEFAULT_HELDOUT_START = 20_001
 DEFAULT_HELDOUT_WINDOW = 10_000
+
+
 def evenly_spaced_slice(
     candidates: Sequence[RankedPhrase],
     *,
@@ -51,9 +53,7 @@ def evenly_spaced_slice(
         return []
     if count == 1:
         return [candidates[first]]
-    indexes = [
-        first + index * (window - 1) // (count - 1) for index in range(count)
-    ]
+    indexes = [first + index * (window - 1) // (count - 1) for index in range(count)]
     return [candidates[index] for index in indexes]
 
 
@@ -72,10 +72,18 @@ def build_rows(
     required = heldout_start - 1 + heldout_window
     candidates = collect_candidates(required, pool_size=pool_size)
 
+    from lexicon_quality import phrase_rejection_reason
+
+    # Keep independent corpus membership, but do not reward a rejected fragment.
+    # Sample the original held-out window first, then choose only approved rows.
+    window = candidates[heldout_start - 1 : heldout_start - 1 + heldout_window]
+    approved = [item for item in window if not phrase_rejection_reason(item.phrase)]
+    if len(approved) < limit:
+        raise ValueError("Not enough complete phrases in the held-out window")
     selected = evenly_spaced_slice(
-        candidates,
-        start=heldout_start,
-        window=heldout_window,
+        approved,
+        start=1,
+        window=len(approved),
         count=limit,
     )
 
@@ -85,9 +93,7 @@ def build_rows(
         if len(reading) != 3 or any(
             not PINYIN_SYLLABLE.fullmatch(syllable) for syllable in reading
         ):
-            raise RuntimeError(
-                f"invalid pinyin for {candidate.phrase!r}: {' '.join(reading)}"
-            )
+            raise RuntimeError(f"invalid pinyin for {candidate.phrase!r}: {' '.join(reading)}")
         rows.append(
             (
                 "wordfreq_rank_heldout",
@@ -116,12 +122,10 @@ def write_rows(
         stream.write(
             f"# heldout: filtered three-character ranks {heldout_start}.."
             f"{heldout_start + heldout_window - 1}, deterministically spaced; "
-            "all rows are outside the generated 20,000-entry lexicon\n"
+            "reviewed fragment exclusions applied within that window\n"
         )
         for category, phrase, reading, weight in rows:
-            stream.write(
-                f"{category}\t{phrase}\t{' '.join(reading)}\t{weight}\n"
-            )
+            stream.write(f"{category}\t{phrase}\t{' '.join(reading)}\t{weight}\n")
 
 
 def main() -> int:

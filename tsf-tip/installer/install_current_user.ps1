@@ -23,8 +23,8 @@ $SimplifiedChineseTip = ('0804:{0}{1}' -f $TextServiceClsid, $ProfileGuid)
 $AppDisplayName = '开心输入法'
 $AppPathName = 'kaixin'
 $TrayRunEntryName = $AppDisplayName
-$LegacyTrayRunEntryName = $AppDisplayName + (-join ([char[]](0x6258, 0x76D8)))
-$EngineRunEntryName = $AppDisplayName + (-join ([char[]](0x5F15, 0x64CE)))
+$LegacyTrayRunEntryName = $AppDisplayName + ( -join ([char[]](0x6258, 0x76D8)))
+$EngineRunEntryName = $AppDisplayName + ( -join ([char[]](0x5F15, 0x64CE)))
 $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $PackageManifestName = 'package_manifest.sha256'
 $RuntimePayloadRootName = 'runtime'
@@ -55,9 +55,7 @@ function Write-InstallLog {
         Ensure-Directory -Path $directory
         $line = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message)
         Add-Content -LiteralPath $script:InstallLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
-    } catch {
-        # Best-effort logging only.
-    }
+    } catch { Write-Verbose 'Optional operation in Write-InstallLog failed; continuing with the existing fallback.' }
 }
 
 function Get-DefaultInstallLogPath {
@@ -151,7 +149,7 @@ function Test-PathWithinRoot {
     $rootFull = [System.IO.Path]::GetFullPath($Root).TrimEnd('\')
     $pathFull = [System.IO.Path]::GetFullPath($Path).TrimEnd('\')
     return $pathFull.Equals($rootFull, [System.StringComparison]::OrdinalIgnoreCase) -or
-        $pathFull.StartsWith($rootFull + '\', [System.StringComparison]::OrdinalIgnoreCase)
+    $pathFull.StartsWith($rootFull + '\', [System.StringComparison]::OrdinalIgnoreCase)
 }
 
 function Test-PackageHashManifest {
@@ -706,8 +704,7 @@ function Stop-RunningHelpers {
                 if ($process.MainWindowHandle -ne 0) {
                     [void]$process.CloseMainWindow()
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
         }
     }
     Start-Sleep -Milliseconds 700
@@ -718,8 +715,7 @@ function Stop-RunningHelpers {
                 if (-not $process.HasExited) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
         }
     }
     foreach ($processName in $visibleTools) {
@@ -738,8 +734,7 @@ function Stop-TextInputStackForInstall {
                 if (-not $process.HasExited) {
                     Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
                 }
-            } catch {
-            }
+            } catch { Write-Verbose 'Optional operation in Stop-TextInputStackForInstall failed; continuing with the existing fallback.' }
         }
     }
     Write-InstallLog 'OK: stopped text input stack before current-user setup'
@@ -783,9 +778,7 @@ function Add-InputMethodToCurrentUserLanguageList {
             Ensure-Directory -Path $directory
             $line = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message)
             Add-Content -LiteralPath $languageLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
-        } catch {
-            # Best-effort logging only.
-        }
+        } catch { Write-Verbose 'Optional operation in Write-ImeLanguageLog failed; continuing with the existing fallback.' }
     }
 
     $getCommand = Get-Command -Name Get-WinUserLanguageList -ErrorAction SilentlyContinue
@@ -938,9 +931,7 @@ function Get-LoadedRuntimePayloadRoots {
                     [void]$loaded.Add($payloadFull)
                 }
             }
-        } catch {
-            # Access-denied/system processes are expected.
-        }
+        } catch { Write-Verbose 'Optional operation in Get-LoadedRuntimePayloadRoots failed; continuing with the existing fallback.' }
     }
     return $loaded
 }
@@ -995,8 +986,8 @@ function Remove-OldRuntimePayloads {
     $resolvedRuntimeRoot = [System.IO.Path]::GetFullPath($runtimeRoot).TrimEnd('\')
     $current = [System.IO.Path]::GetFullPath($CurrentPayloadRoot).TrimEnd('\')
     $entries = @(Get-ChildItem -LiteralPath $runtimeRoot -Directory -ErrorAction SilentlyContinue |
-        Where-Object { $_.Name -like 'pkg-*' } |
-        Sort-Object LastWriteTimeUtc -Descending)
+            Where-Object { $_.Name -like 'pkg-*' } |
+            Sort-Object LastWriteTimeUtc -Descending)
 
     $keep = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
     [void]$keep.Add($current)
@@ -1095,13 +1086,11 @@ function Get-StaleRuntimeHosts {
                             $commandLine = [string]$cim.CommandLine
                             $executablePath = [string]$cim.ExecutablePath
                         }
-                    } catch {
-                    }
+                    } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
                     if ([string]::IsNullOrWhiteSpace($executablePath)) {
                         try {
                             $executablePath = [string]$process.Path
-                        } catch {
-                        }
+                        } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
                     }
                     $hostsById[$process.Id] = [pscustomobject]@{
                         Id = [int]$process.Id
@@ -1112,9 +1101,7 @@ function Get-StaleRuntimeHosts {
                     }
                 }
             }
-        } catch {
-            # Access-denied/system processes are expected; this is diagnostic only.
-        }
+        } catch { Write-Verbose 'Optional operation in Get-StaleRuntimeHosts failed; continuing with the existing fallback.' }
     }
 
     return @($hostsById.Values | Sort-Object ProcessName, Id)
@@ -1245,8 +1232,7 @@ function Restart-StaleRuntimeHosts {
             if ($process.MainWindowHandle -ne 0) {
                 $requestedClose = $process.CloseMainWindow()
             }
-        } catch {
-        }
+        } catch { Write-Verbose 'Optional operation in Restart-StaleRuntimeHosts failed; continuing with the existing fallback.' }
         if (-not $requestedClose) {
             $skipped++
             Write-InstallLog ("SKIP: stale runtime host has no closable main window: {0}" -f $line)

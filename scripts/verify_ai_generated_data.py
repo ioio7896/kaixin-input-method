@@ -86,9 +86,21 @@ TEXT_FILES = {
         124,
         4,
     ),
-    "data_sources/kaixin/core_priority_corrections.tsv": ("0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765", 38, 2),
-    "data_sources/kaixin/pronunciation_exclusions.tsv": ("e10c95ce4999b9e3d252e91f4c8c28b9ca512f88632f61b08b30e33be3de1a0f", 19, 4),
-    "data_sources/kaixin/recall_phrases.tsv": ("55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8", 7, 3),
+    "data_sources/kaixin/core_priority_corrections.tsv": (
+        "0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765",
+        38,
+        2,
+    ),
+    "data_sources/kaixin/pronunciation_exclusions.tsv": (
+        "e10c95ce4999b9e3d252e91f4c8c28b9ca512f88632f61b08b30e33be3de1a0f",
+        19,
+        4,
+    ),
+    "data_sources/kaixin/recall_phrases.tsv": (
+        "55d491e7ca248924d80ec08f297807a8612b6e6dbe95f8b552cbfd7ec81195b8",
+        7,
+        3,
+    ),
 }
 SQLITE_FILE = "pinyin-ime/data/s2t_chars.sqlite"
 SQLITE_SHA256 = "f09b4aa90b1569a22c49d222e7930bf98406b81a1a12c581a6b67f9e3915cc3a"

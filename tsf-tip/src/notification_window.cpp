@@ -28,7 +28,8 @@ UINT CurrentDpi(HWND hwnd) {
 LOGFONTW BaseFont() {
   NONCLIENTMETRICSW ncm = {};
   ncm.cbSize = sizeof(ncm);
-  if (SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0)) return ncm.lfMessageFont;
+  if (SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0))
+    return ncm.lfMessageFont;
 
   LOGFONTW font = {};
   font.lfHeight = -14;
@@ -37,7 +38,9 @@ LOGFONTW BaseFont() {
   return font;
 }
 
-int PointToPixels(int points, UINT dpi) { return -MulDiv(points, static_cast<int>(dpi), 72); }
+int PointToPixels(int points, UINT dpi) {
+  return -MulDiv(points, static_cast<int>(dpi), 72);
+}
 
 struct NotificationColors {
   COLORREF bg;
@@ -58,7 +61,9 @@ NotificationColors ColorsForTone(SrfNotificationTone tone) {
 
 }  // namespace
 
-CNotificationWindow::~CNotificationWindow() { Destroy(); }
+CNotificationWindow::~CNotificationWindow() {
+  Destroy();
+}
 
 void CNotificationWindow::Show(const std::wstring& text, const RECT* anchorRect, UINT timeoutMs,
                                SrfNotificationTone tone, UINT scalePercent) {
@@ -74,8 +79,8 @@ void CNotificationWindow::Show(const std::wstring& text, const RECT* anchorRect,
   m_text = text;
   m_tone = tone;
   const RECT rect = CalculateWindowRect(anchorRect);
-  SetWindowPos(m_hwnd, HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top,
-               SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+  SetWindowPos(m_hwnd, HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left,
+               rect.bottom - rect.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
   InvalidateRect(m_hwnd, nullptr, TRUE);
 
   KillTimer(m_hwnd, kHideTimerId);
@@ -101,8 +106,8 @@ bool CNotificationWindow::EnsureWindow() {
   if (!EnsureWindowClass()) return false;
 
   m_hwnd = CreateWindowExW(WS_EX_TOOLWINDOW | WS_EX_TOPMOST | WS_EX_NOACTIVATE, kNotificationClass,
-                           L"\u5f00\u5fc3\u8f93\u5165\u6cd5\u901a\u77e5", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, 240, 48,
-                           nullptr, nullptr, DllOrFallbackInstance(), this);
+                           L"\u5f00\u5fc3\u8f93\u5165\u6cd5\u901a\u77e5", WS_POPUP, CW_USEDEFAULT,
+                           CW_USEDEFAULT, 240, 48, nullptr, nullptr, DllOrFallbackInstance(), this);
   if (!m_hwnd) return false;
 
   m_dpi = CurrentDpi(m_hwnd);
@@ -159,7 +164,8 @@ SIZE CNotificationWindow::MeasureWindow() const {
   HDC hdc = GetDC(measureWindow);
   if (!hdc) return size;
 
-  HFONT oldFont = static_cast<HFONT>(SelectObject(hdc, m_font ? m_font : GetStockObject(DEFAULT_GUI_FONT)));
+  HFONT oldFont =
+      static_cast<HFONT>(SelectObject(hdc, m_font ? m_font : GetStockObject(DEFAULT_GUI_FONT)));
   RECT textRect = {0, 0, Scale(320), 0};
   DrawTextW(hdc, m_text.c_str(), static_cast<int>(m_text.size()), &textRect,
             DT_CALCRECT | DT_SINGLELINE | DT_NOPREFIX);
@@ -196,7 +202,8 @@ void CNotificationWindow::Paint(HDC hdc) {
   SelectObject(hdc, oldPen);
   DeleteObject(borderPen);
 
-  HFONT oldFont = static_cast<HFONT>(SelectObject(hdc, m_font ? m_font : GetStockObject(DEFAULT_GUI_FONT)));
+  HFONT oldFont =
+      static_cast<HFONT>(SelectObject(hdc, m_font ? m_font : GetStockObject(DEFAULT_GUI_FONT)));
   SetBkMode(hdc, TRANSPARENT);
   SetTextColor(hdc, colors.text);
   RECT textRect = client;
@@ -256,8 +263,7 @@ LRESULT CALLBACK CNotificationWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam
         const SIZE measured = self->MeasureWindow();
         RECT* suggested = reinterpret_cast<RECT*>(lParam);
         if (suggested) {
-          SetWindowPos(hwnd, nullptr, suggested->left, suggested->top,
-                       measured.cx, measured.cy,
+          SetWindowPos(hwnd, nullptr, suggested->left, suggested->top, measured.cx, measured.cy,
                        SWP_NOACTIVATE | SWP_NOZORDER);
         } else {
           RECT current = {};

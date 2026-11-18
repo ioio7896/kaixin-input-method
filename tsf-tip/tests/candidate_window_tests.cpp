@@ -101,7 +101,8 @@ void TestSkinContrast() {
         const float progress = step / 20.0f;
         const COLORREF fill = AlphaBlendColor(target, colors.windowBg, progress);
         const COLORREF text = AlphaBlendColor(colors.selectedText, colors.text, progress);
-        const COLORREF muted = AlphaBlendColor(colors.selectedMutedText, colors.mutedText, progress);
+        const COLORREF muted =
+            AlphaBlendColor(colors.selectedMutedText, colors.mutedText, progress);
         Check(ContrastRatio(CandidateRowTextColor(text, colors, true, fill, 4.5), fill) >= 4.5,
               "skin body text readable throughout state transition");
         Check(ContrastRatio(CandidateRowTextColor(muted, colors, true, fill, 4.5), fill) >= 4.5,
@@ -177,13 +178,15 @@ void RenderSkinSamples() {
               L"\u660e\u5929\u4e0b\u5348\u4e09\u70b9\u8ba8\u8bba\u65b0\u7248\u5019\u9009\u680f\u3002\n\u8bf7\u5e26\u4e0a\u4f60\u559c\u6b22\u7684\u5b57\u4f53\u548c\u76ae\u80a4\u3002\n\u672a\u9009\u4e2d\u65f6\u4e0d\u663e\u793a\u7b2c\u4e09\u884c\u3002",
               L"https://example.com/design"}
           : std::vector<std::wstring>{L"\u5f00\u5fc3", L"\u5f00\u65b0", L"\u5f00\u4fe1", L"\u5f00\u5fc3\u8f93\u5165\u6cd5"};
-      std::vector<std::wstring> comments(items.size(), clipboard ? L"\u8bb0\u4e8b\u672c \u00b7 14:30\t\u6587\u672c" : L"");
+      std::vector<std::wstring> comments(
+          items.size(), clipboard ? L"\u8bb0\u4e8b\u672c \u00b7 14:30\t\u6587\u672c" : L"");
       std::vector<std::wstring> labels;
-      for (size_t i = 0; i < items.size(); ++i) labels.push_back(std::to_wstring(i + 1));
+      for (size_t i = 0; i < items.size(); ++i)
+        labels.push_back(std::to_wstring(i + 1));
       std::vector<bool> pins(items.size(), false);
       pins[0] = clipboard;
-      window.Show(clipboard ? L"\u5feb\u6377\u526a\u8d34\u677f" : L"kaixin", items, comments, labels,
-                  pins, std::vector<bool>(items.size(), clipboard), 0, 2, 0, anchor);
+      window.Show(clipboard ? L"\u5feb\u6377\u526a\u8d34\u677f" : L"kaixin", items, comments,
+                  labels, pins, std::vector<bool>(items.size(), clipboard), 0, 2, 0, anchor);
       window.FlushPendingPaint();
       RECT rect = {};
       GetClientRect(CandidateHwnd(), &rect);
@@ -206,7 +209,8 @@ void RenderSkinSamples() {
       header.bfType = 0x4d42;
       header.bfOffBits = sizeof(header) + sizeof(BITMAPINFOHEADER);
       header.bfSize = header.bfOffBits + size;
-      const auto path = destination / (entry.path().filename().wstring() + (clipboard ? L"-clipboard.bmp" : L"-horizontal.bmp"));
+      const auto path = destination / (entry.path().filename().wstring() +
+                                       (clipboard ? L"-clipboard.bmp" : L"-horizontal.bmp"));
       std::ofstream output(path, std::ios::binary);
       output.write(reinterpret_cast<const char*>(&header), sizeof(header));
       output.write(reinterpret_cast<const char*>(&info.bmiHeader), sizeof(BITMAPINFOHEADER));
@@ -437,8 +441,12 @@ int main(int argc, char** argv) {
   std::cout << "test: clipboard text colors\n";
   TestClipboardTextColors();
   std::cout << "test: bundled skin contrast\n";
-  try { TestSkinContrast(); }
-  catch (const std::exception& error) { std::cerr << "skin test exception: " << error.what() << '\n'; return 1; }
+  try {
+    TestSkinContrast();
+  } catch (const std::exception& error) {
+    std::cerr << "skin test exception: " << error.what() << '\n';
+    return 1;
+  }
   std::cout << "test: shrink\n";
   TestShrink();
   std::cout << "test: keyboard placement\n";

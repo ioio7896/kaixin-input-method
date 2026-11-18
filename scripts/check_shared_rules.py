@@ -19,7 +19,9 @@ ENGINE_MUTEX_BASE = r"Local\KaixinInput_Engine_Mutex_V6"
 FNV64_OFFSET = 1469598103934665603
 FNV64_PRIME = 1099511628211
 MASK64 = (1 << 64) - 1
-APP_VERSION = (Path(__file__).resolve().parent.parent / "VERSION").read_text(encoding="utf-8").strip()
+APP_VERSION = (
+    (Path(__file__).resolve().parent.parent / "VERSION").read_text(encoding="utf-8").strip()
+)
 
 
 def strip_windows_verbatim_prefix(text: str) -> str:
@@ -57,11 +59,19 @@ def suffix_for_install_root(path: str) -> str:
 
 
 def pipe_name_for_suffix(suffix: str) -> str:
-    return f"{ENGINE_PIPE_BASE}_{APP_VERSION}_{suffix}" if suffix else f"{ENGINE_PIPE_BASE}_{APP_VERSION}"
+    return (
+        f"{ENGINE_PIPE_BASE}_{APP_VERSION}_{suffix}"
+        if suffix
+        else f"{ENGINE_PIPE_BASE}_{APP_VERSION}"
+    )
 
 
 def mutex_name_for_suffix(suffix: str) -> str:
-    return f"{ENGINE_MUTEX_BASE}_{APP_VERSION}_{suffix}" if suffix else f"{ENGINE_MUTEX_BASE}_{APP_VERSION}"
+    return (
+        f"{ENGINE_MUTEX_BASE}_{APP_VERSION}_{suffix}"
+        if suffix
+        else f"{ENGINE_MUTEX_BASE}_{APP_VERSION}"
+    )
 
 
 def check_spec_samples() -> list[str]:
@@ -142,17 +152,20 @@ def check_runtime(install_root: str | None) -> list[str]:
     mismatches = [pipe for pipe in current_pipes if pipe != expected_pipe]
     if mismatches:
         errors.append(
-            "running engine pipe mismatch: expected "
-            f"{expected_pipe}, found {', '.join(mismatches)}"
+            f"running engine pipe mismatch: expected {expected_pipe}, found {', '.join(mismatches)}"
         )
     else:
-        print(f"shared-rules runtime: {len(current_pipes)} current-version engine process(es), pipe={expected_pipe}")
+        print(
+            f"shared-rules runtime: {len(current_pipes)} current-version engine process(es), pipe={expected_pipe}"
+        )
     return errors
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--runtime", action="store_true", help="also check running engine process pipes")
+    parser.add_argument(
+        "--runtime", action="store_true", help="also check running engine process pipes"
+    )
     parser.add_argument("--install-root", help="install root used for --runtime checks")
     args = parser.parse_args()
 

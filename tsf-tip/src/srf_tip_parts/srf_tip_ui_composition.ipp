@@ -2,12 +2,12 @@ void CSrfTip::EnsureTrayHelperRunningAsync() {
   static std::atomic<bool> inFlight{false};
   if (inFlight.exchange(true, std::memory_order_acq_rel)) return;
   if (!StartDetachedBackgroundWorker([] {
-      try {
-        EnsureTrayHelperRunning();
-      } catch (...) {
-      }
-      inFlight.store(false, std::memory_order_release);
-    })) {
+        try {
+          EnsureTrayHelperRunning();
+        } catch (...) {
+        }
+        inFlight.store(false, std::memory_order_release);
+      })) {
     inFlight.store(false, std::memory_order_release);
   }
 }
@@ -159,11 +159,11 @@ HWND CSrfTip::CandidateOverlayTargetWindow() const {
 
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
+    appGameProfile =
+        (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
   }
   if (appGameProfile || m_fullscreenCompatActive || m_gameCompatActive ||
-      m_configuredGameCompatActive || m_builtinGameCompatActive ||
-      m_manualGameCompatActive) {
+      m_configuredGameCompatActive || m_builtinGameCompatActive || m_manualGameCompatActive) {
     return foreground;
   }
 
@@ -178,7 +178,8 @@ bool CSrfTip::CandidateGameOverlayActive() const {
   if (EffectiveCompatibilityPolicy() != SrfFullscreenPolicy::ShowUi) return false;
   bool appGameProfile = false;
   if (const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
+    appGameProfile =
+        (options->hasGameProfile && options->gameCompactProfile) || options->hasGameInputMode;
   }
   return appGameProfile || m_fullscreenCompatActive || m_gameCompatActive ||
          m_configuredGameCompatActive || m_builtinGameCompatActive || m_manualGameCompatActive;
@@ -191,8 +192,7 @@ bool CSrfTip::FullscreenCandidateOverlayActive() const {
 }
 
 void CSrfTip::RefreshCandidateWindowEnvironment() {
-  if (!m_candidateUi || !m_status.composing || m_reading.empty() ||
-      m_context.candidates.Empty()) {
+  if (!m_candidateUi || !m_status.composing || m_reading.empty() || m_context.candidates.Empty()) {
     return;
   }
 
@@ -209,12 +209,11 @@ void CSrfTip::RefreshCandidateWindowEnvironment() {
   UINT quality = m_lastCandidateAnchorQuality;
   if (gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret &&
       (overlayAnchor != SrfOverlayAnchor::Auto || !m_gameEditableVerified ||
-       (overlayOptions && overlayOptions->hasOverlayMonitor && overlayOptions->overlayMonitor != L"auto"))) {
-    foundRect = ResolveCandidateGameOverlayAnchor(
-        target, fullscreenOverlay, overlayOptions, &rect);
+       (overlayOptions && overlayOptions->hasOverlayMonitor &&
+        overlayOptions->overlayMonitor != L"auto"))) {
+    foundRect = ResolveCandidateGameOverlayAnchor(target, fullscreenOverlay, overlayOptions, &rect);
     if (foundRect) {
-      source = fullscreenOverlay ? L"fullscreen-overlay-environment"
-                                 : L"game-overlay-environment";
+      source = fullscreenOverlay ? L"fullscreen-overlay-environment" : L"game-overlay-environment";
       quality = kCandidateAnchorQualityWindow;
     }
   } else if (m_hasLastCandidateRect && IsUsableRect(m_lastCandidateRect)) {
@@ -292,17 +291,17 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
   const SrfAppOptions* overlayOptions = FindAppOptions(m_config, CompatibilityAppName());
   const SrfOverlayAnchor overlayAnchor = EffectiveOverlayAnchor(overlayOptions);
   const bool fixedGameOverlay = gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret &&
-      (overlayAnchor != SrfOverlayAnchor::Auto ||
-       (overlayOptions && overlayOptions->hasOverlayMonitor && overlayOptions->overlayMonitor != L"auto"));
+                                (overlayAnchor != SrfOverlayAnchor::Auto ||
+                                 (overlayOptions && overlayOptions->hasOverlayMonitor &&
+                                  overlayOptions->overlayMonitor != L"auto"));
   const bool windowFocusPolicy = focusPolicy == SrfFocusPolicy::Window;
   const bool allowTextExt = !fixedGameOverlay && !windowFocusPolicy;
-  const bool allowGuiCaret =
-      !fixedGameOverlay && m_uiStyle.enhancedPosition && !windowFocusPolicy;
+  const bool allowGuiCaret = !fixedGameOverlay && m_uiStyle.enhancedPosition && !windowFocusPolicy;
   const bool allowMouseFallback =
       !fixedGameOverlay && m_uiStyle.enhancedPosition && focusPolicy == SrfFocusPolicy::Normal;
-  const bool allowForegroundFallback =
-      !fixedGameOverlay && focusPolicy == SrfFocusPolicy::Normal;
-  const bool allowScreenSafeFallback = focusPolicy == SrfFocusPolicy::Normal || contextHwnd != nullptr;
+  const bool allowForegroundFallback = !fixedGameOverlay && focusPolicy == SrfFocusPolicy::Normal;
+  const bool allowScreenSafeFallback =
+      focusPolicy == SrfFocusPolicy::Normal || contextHwnd != nullptr;
   RECT rect = {};
   bool foundRect = false;
   const wchar_t* anchorSource = L"none";
@@ -312,8 +311,7 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
   if (fixedGameOverlay) {
     HWND hwnd = CandidateOverlayTargetWindow();
     if (!hwnd) hwnd = contextHwnd;
-    foundRect = ResolveCandidateGameOverlayAnchor(
-        hwnd, fullscreenOverlay, overlayOptions, &rect);
+    foundRect = ResolveCandidateGameOverlayAnchor(hwnd, fullscreenOverlay, overlayOptions, &rect);
     if (foundRect) {
       anchorSource = fullscreenOverlay ? L"fullscreen-overlay" : L"game-overlay";
       anchorQuality = kCandidateAnchorQualityWindow;
@@ -354,8 +352,8 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
     }
   }
   if (!foundRect && gameOverlay && overlayAnchor == SrfOverlayAnchor::Auto) {
-    foundRect = ResolveCandidateGameOverlayAnchor(CandidateOverlayTargetWindow(),
-        fullscreenOverlay, overlayOptions, &rect);
+    foundRect = ResolveCandidateGameOverlayAnchor(CandidateOverlayTargetWindow(), fullscreenOverlay,
+                                                  overlayOptions, &rect);
     if (foundRect) {
       anchorSource = L"game-overlay-fallback";
       anchorQuality = kCandidateAnchorQualityWindow;
@@ -425,9 +423,8 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
       foundRect = true;
       anchorSource = L"sticky";
       anchorQuality = m_stickyCandidateAnchorQuality;
-    } else if (ShouldReplaceStickyCandidateAnchor(m_stickyCandidateRect,
-                                                  m_stickyCandidateAnchorQuality,
-                                                  rect, anchorQuality)) {
+    } else if (ShouldReplaceStickyCandidateAnchor(
+                   m_stickyCandidateRect, m_stickyCandidateAnchorQuality, rect, anchorQuality)) {
       m_stickyCandidateRect = rect;
       m_stickyCandidateAnchorQuality = anchorQuality;
     } else {
@@ -445,12 +442,10 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
     std::wstring anchorSourceText = anchorSource;
     const ULONGLONG now = GetTickCount64();
     const bool sourceChanged =
-        !m_lastCandidateAnchorSource.empty() &&
-        m_lastCandidateAnchorSource != anchorSourceText;
-    const bool rapidSourceSwitch =
-        m_lastCandidateAnchorSourceSwitchTick != 0 &&
-        now >= m_lastCandidateAnchorSourceSwitchTick &&
-        now - m_lastCandidateAnchorSourceSwitchTick <= 48;
+        !m_lastCandidateAnchorSource.empty() && m_lastCandidateAnchorSource != anchorSourceText;
+    const bool rapidSourceSwitch = m_lastCandidateAnchorSourceSwitchTick != 0 &&
+                                   now >= m_lastCandidateAnchorSourceSwitchTick &&
+                                   now - m_lastCandidateAnchorSourceSwitchTick <= 48;
     if (sourceChanged && hadPreviousRect && rapidSourceSwitch &&
         anchorQuality <= m_lastCandidateAnchorQuality &&
         !CandidateAnchorCrossedMonitor(previousRect, rect) &&
@@ -752,8 +747,8 @@ HRESULT CSrfTip::EnsureComposition(TfEditCookie ec, ITfContext* pic) {
   ITfRange* insertion = nullptr;
   hr = GetInsertionRange(ec, pic, &insertion);
   if (SUCCEEDED(hr) && insertion) {
-    hr = contextComposition->StartComposition(ec, insertion, static_cast<ITfCompositionSink*>(m_pCompSink),
-                                              &m_pComposition);
+    hr = contextComposition->StartComposition(
+        ec, insertion, static_cast<ITfCompositionSink*>(m_pCompSink), &m_pComposition);
     insertion->Release();
   }
   contextComposition->Release();
@@ -790,7 +785,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
   DWORD foregroundPid = 0;
   GetWindowThreadProcessId(GetForegroundWindow(), &foregroundPid);
   if (m_gameChatActive && (GetAncestor(GetForegroundWindow(), GA_ROOT) != m_gameChatOwner ||
-      foregroundPid != m_gameChatOwnerProcessId)) return HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                           foregroundPid != m_gameChatOwnerProcessId))
+    return HRESULT_FROM_WIN32(ERROR_CANCELLED);
 
   const LONG textLength = static_cast<LONG>(text.size());
   if (cursorOffset < 0 || cursorOffset > textLength) cursorOffset = textLength;
@@ -806,7 +802,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
       if (SUCCEEDED(cleanup) && range) {
         cleanup = range->SetText(ec, 0, L"", 0);
         range->Release();
-      } else if (SUCCEEDED(cleanup)) cleanup = E_FAIL;
+      } else if (SUCCEEDED(cleanup))
+        cleanup = E_FAIL;
       if (FAILED(cleanup)) return cleanup;
       cleanup = FinishCompositionPreservingText(ec);
       if (FAILED(cleanup)) return cleanup;
@@ -822,12 +819,12 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
       if (ShouldSuppressClipboardForPrivacy()) {
         transportHr = HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
       } else {
-        transportHr = PasteUnicodeTextViaClipboard(text, this,
-            [&]() { return FocusSnapshotMatches(commitFocus); });
+        transportHr = PasteUnicodeTextViaClipboard(
+            text, this, [&]() { return FocusSnapshotMatches(commitFocus); });
       }
     } else if (commitTransport == SrfCommitTransport::UnicodeSendInput) {
-      transportHr = FocusSnapshotMatches(commitFocus) ? SendUnicodeTextInput(text) :
-          HRESULT_FROM_WIN32(ERROR_CANCELLED);
+      transportHr = FocusSnapshotMatches(commitFocus) ? SendUnicodeTextInput(text)
+                                                      : HRESULT_FROM_WIN32(ERROR_CANCELLED);
     }
 
     std::wstring line = L"transport=";
@@ -851,7 +848,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
 
   auto insertAtSelectionOnly = [&]() -> HRESULT {
     ITfInsertAtSelection* insertAtSelection = nullptr;
-    HRESULT hr = pic->QueryInterface(IID_ITfInsertAtSelection, reinterpret_cast<void**>(&insertAtSelection));
+    HRESULT hr =
+        pic->QueryInterface(IID_ITfInsertAtSelection, reinterpret_cast<void**>(&insertAtSelection));
     if (FAILED(hr) || !insertAtSelection) {
       if (SrfTsfDebugTraceEnabled()) {
         wchar_t buf[120] = {};
@@ -863,8 +861,8 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
     }
 
     ITfRange* insertedRange = nullptr;
-    hr = insertAtSelection->InsertTextAtSelection(ec, 0, text.c_str(), static_cast<LONG>(text.size()),
-                                                  &insertedRange);
+    hr = insertAtSelection->InsertTextAtSelection(ec, 0, text.c_str(),
+                                                  static_cast<LONG>(text.size()), &insertedRange);
     insertAtSelection->Release();
     if (SUCCEEDED(hr) && insertedRange) {
       (void)CollapseSelectionToRangeOffset(ec, pic, insertedRange, cursorOffset);
@@ -902,17 +900,21 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
     ITfRange* range = nullptr;
     hr = m_pComposition->GetRange(&range);
     if (SUCCEEDED(hr) && range) {
-      const auto result = SrfWriteAndFinishComposition([&]() {
-        const HRESULT write = range->SetText(ec, 0, text.c_str(), static_cast<LONG>(text.size()));
-        if (SUCCEEDED(write)) (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
-        return write;
-      }, [&]() {
-        const HRESULT endHr = FinishCompositionPreservingText(ec);
-        if (SUCCEEDED(endHr)) {
-          (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
-        }
-        return endHr;
-      });
+      const auto result = SrfWriteAndFinishComposition(
+          [&]() {
+            const HRESULT write =
+                range->SetText(ec, 0, text.c_str(), static_cast<LONG>(text.size()));
+            if (SUCCEEDED(write))
+              (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
+            return write;
+          },
+          [&]() {
+            const HRESULT endHr = FinishCompositionPreservingText(ec);
+            if (SUCCEEDED(endHr)) {
+              (void)CollapseSelectionToRangeOffset(ec, pic, range, cursorOffset);
+            }
+            return endHr;
+          });
       hr = result.write;
       range->Release();
     } else if (SUCCEEDED(hr)) {
@@ -947,7 +949,8 @@ HRESULT CSrfTip::CommitReadingText(TfEditCookie ec, ITfContext* pic) {
   return hr;
 }
 
-HRESULT CSrfTip::CommitReadingThenDirectText(TfEditCookie ec, ITfContext* pic, const std::wstring& text) {
+HRESULT CSrfTip::CommitReadingThenDirectText(TfEditCookie ec, ITfContext* pic,
+                                             const std::wstring& text) {
   return CommitReadingThenDirectTextWithCursor(ec, pic, text, -1);
 }
 

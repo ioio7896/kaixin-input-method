@@ -4,9 +4,9 @@ cd /d "%~dp0" || exit /b 1
 
 set "VENV_PYTHON=%~dp0.venv\Scripts\python.exe"
 if exist "%VENV_PYTHON%" (
-  "%VENV_PYTHON%" "%~dp0build.py" %*
+  "%VENV_PYTHON%" "%~dp0scripts\release.py" %*
 ) else (
-  python "%~dp0build.py" %*
+  python "%~dp0scripts\release.py" %*
 )
 
 set "BUILD_EXIT_CODE=%ERRORLEVEL%"

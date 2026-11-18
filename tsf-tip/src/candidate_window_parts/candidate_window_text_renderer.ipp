@@ -14,9 +14,8 @@ bool TextMayNeedEmojiFallback(const std::wstring& text) {
     if (ch >= 0xD800 && ch <= 0xDBFF && i + 1 < text.size()) {
       const wchar_t lo = text[i + 1];
       if (lo >= 0xDC00 && lo <= 0xDFFF) {
-        const uint32_t codepoint =
-            0x10000u + ((static_cast<uint32_t>(ch) - 0xD800u) << 10) +
-            (static_cast<uint32_t>(lo) - 0xDC00u);
+        const uint32_t codepoint = 0x10000u + ((static_cast<uint32_t>(ch) - 0xD800u) << 10) +
+                                   (static_cast<uint32_t>(lo) - 0xDC00u);
         if ((codepoint >= 0x1F000u && codepoint <= 0x1FAFFu) ||
             (codepoint >= 0x1FC00u && codepoint <= 0x1FFFFu)) {
           return true;
@@ -77,8 +76,8 @@ UINT DpiFromHdc(HDC hdc) {
 UINT ResolveTextRenderDpi(HDC hdc, UINT requestedDpi) {
   const UINT hdcDpi = DpiFromHdc(hdc);
   const UINT resolved = requestedDpi == 0 ? hdcDpi : requestedDpi;
-  if (requestedDpi != 0 && hdcDpi != 0 && std::abs(static_cast<int>(hdcDpi) -
-                                                    static_cast<int>(requestedDpi)) >= 2) {
+  if (requestedDpi != 0 && hdcDpi != 0 &&
+      std::abs(static_cast<int>(hdcDpi) - static_cast<int>(requestedDpi)) >= 2) {
     static ULONGLONG lastLogTick = 0;
     const ULONGLONG now = GetTickCount64();
     if (lastLogTick == 0 || now < lastLogTick || now - lastLogTick >= 1000) {
@@ -124,15 +123,13 @@ DirectWriteFontSpec DirectWriteFontSpecFromHfont(HFONT font, UINT dpi) {
   const int resolvedWeight = lf.lfWeight > 0 ? lf.lfWeight : FW_NORMAL;
   spec.weight = static_cast<DWRITE_FONT_WEIGHT>(std::clamp(resolvedWeight, 100, 999));
   spec.style = lf.lfItalic ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
-  spec.sizeDip =
-      PixelsToDips(static_cast<float>(std::max(1, std::abs(static_cast<int>(lf.lfHeight)))),
-                   spec.dpi);
+  spec.sizeDip = PixelsToDips(
+      static_cast<float>(std::max(1, std::abs(static_cast<int>(lf.lfHeight)))), spec.dpi);
   return spec;
 }
 
 D2D1_COLOR_F ToD2DColor(COLORREF color) {
-  return {GetRValue(color) / 255.0f, GetGValue(color) / 255.0f,
-          GetBValue(color) / 255.0f, 1.0f};
+  return {GetRValue(color) / 255.0f, GetGValue(color) / 255.0f, GetBValue(color) / 255.0f, 1.0f};
 }
 
 DWRITE_TEXT_ALIGNMENT ResolveDirectWriteTextAlignment(UINT format) {
@@ -149,15 +146,13 @@ DWRITE_PARAGRAPH_ALIGNMENT ResolveDirectWriteParagraphAlignment(UINT format) {
 
 DWRITE_WORD_WRAPPING ResolveDirectWriteWrapping(UINT format) {
   if (format & DT_SINGLELINE) return DWRITE_WORD_WRAPPING_NO_WRAP;
-  return (format & DT_WORDBREAK) ? DWRITE_WORD_WRAPPING_WRAP
-                                 : DWRITE_WORD_WRAPPING_NO_WRAP;
+  return (format & DT_WORDBREAK) ? DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING_NO_WRAP;
 }
 
 D2D1_DRAW_TEXT_OPTIONS DirectWriteDrawOptions() {
   D2D1_DRAW_TEXT_OPTIONS options = D2D1_DRAW_TEXT_OPTIONS_CLIP;
 #ifdef D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
-  options = static_cast<D2D1_DRAW_TEXT_OPTIONS>(
-      options | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+  options = static_cast<D2D1_DRAW_TEXT_OPTIONS>(options | D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
 #endif
   return options;
 }
@@ -192,8 +187,7 @@ class DirectTextRenderer {
       if (FAILED(hr)) return;
     } else {
       Microsoft::WRL::ComPtr<IDWriteFontFaceReference> faceReference;
-      hr = factory3->CreateFontFaceReference(fontFile.Get(), 0,
-                                             DWRITE_FONT_SIMULATIONS_NONE,
+      hr = factory3->CreateFontFaceReference(fontFile.Get(), 0, DWRITE_FONT_SIMULATIONS_NONE,
                                              &faceReference);
       if (FAILED(hr) || !faceReference) return;
       hr = builder->AddFontFaceReference(faceReference.Get());
@@ -227,8 +221,8 @@ class DirectTextRenderer {
     Microsoft::WRL::ComPtr<IDWriteTextLayout> layout;
     constexpr float kMeasureMaxPx = 65535.0f;
     const float maxDip = PixelsToDips(kMeasureMaxPx, dpi);
-    if (!CreateTextLayout(text, format.Get(), formatKey, maxDip, maxDip,
-                          DT_LEFT | DT_SINGLELINE, &layout)) {
+    if (!CreateTextLayout(text, format.Get(), formatKey, maxDip, maxDip, DT_LEFT | DT_SINGLELINE,
+                          &layout)) {
       return false;
     }
 
@@ -236,7 +230,8 @@ class DirectTextRenderer {
     HRESULT hr = layout->GetMetrics(&metrics);
     if (FAILED(hr)) return false;
     out->cx = std::max(
-        0, static_cast<int>(std::ceil(DipsToPixels(metrics.widthIncludingTrailingWhitespace, dpi))));
+        0,
+        static_cast<int>(std::ceil(DipsToPixels(metrics.widthIncludingTrailingWhitespace, dpi))));
     out->cy = std::max(0, static_cast<int>(std::ceil(DipsToPixels(metrics.height, dpi))));
     return true;
   }
@@ -265,8 +260,8 @@ class DirectTextRenderer {
     return true;
   }
 
-  bool DrawTextBlock(HDC hdc, HFONT font, COLORREF color, const std::wstring& text,
-                     RECT rect, UINT formatFlags, UINT dpiOverride = 0) {
+  bool DrawTextBlock(HDC hdc, HFONT font, COLORREF color, const std::wstring& text, RECT rect,
+                     UINT formatFlags, UINT dpiOverride = 0) {
     if (!hdc || !font || text.empty()) return false;
     const int width = rect.right - rect.left;
     const int height = rect.bottom - rect.top;
@@ -282,16 +277,15 @@ class DirectTextRenderer {
     const D2D1_RECT_F dipRect = PixelRectToDipRect(rect, dpi);
     const float layoutWidth = std::max(1.0f, dipRect.right - dipRect.left);
     const float layoutHeight = std::max(1.0f, dipRect.bottom - dipRect.top);
-    if (!CreateTextLayout(text, format.Get(), formatKey, layoutWidth, layoutHeight,
-                          formatFlags, &layout)) {
+    if (!CreateTextLayout(text, format.Get(), formatKey, layoutWidth, layoutHeight, formatFlags,
+                          &layout)) {
       return false;
     }
 
     if (!EnsureBrush(color)) return false;
     const D2D1_POINT_2F origin = {dipRect.left, dipRect.top};
     m_renderTarget->BeginDraw();
-    m_renderTarget->DrawTextLayout(origin, layout.Get(), m_brush.Get(),
-                                   DirectWriteDrawOptions());
+    m_renderTarget->DrawTextLayout(origin, layout.Get(), m_brush.Get(), DirectWriteDrawOptions());
     HRESULT hr = m_renderTarget->EndDraw();
     if (hr == D2DERR_RECREATE_TARGET) {
       ResetRenderTarget();
@@ -313,24 +307,23 @@ class DirectTextRenderer {
   bool EnsureFactories() {
     if (m_dwriteFactory && m_d2dFactory) return true;
     if (!m_dwriteFactory) {
-      HRESULT hr = DWriteCreateFactory(
-          DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-          reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
+      HRESULT hr =
+          DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+                              reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
       if (FAILED(hr)) return false;
     }
     if (!m_d2dFactory) {
       D2D1_FACTORY_OPTIONS options = {};
-      HRESULT hr = D2D1CreateFactory(
-          D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), &options,
-          reinterpret_cast<void**>(m_d2dFactory.GetAddressOf()));
+      HRESULT hr =
+          D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), &options,
+                            reinterpret_cast<void**>(m_d2dFactory.GetAddressOf()));
       if (FAILED(hr)) return false;
     }
     return true;
   }
 
   bool CreateFormat(HFONT font, UINT formatFlags, UINT dpi,
-                    Microsoft::WRL::ComPtr<IDWriteTextFormat>* out,
-                    std::wstring* outKey) {
+                    Microsoft::WRL::ComPtr<IDWriteTextFormat>* out, std::wstring* outKey) {
     if (!out || !EnsureFactories()) return false;
     const DirectWriteFontSpec spec = DirectWriteFontSpecFromHfont(font, dpi);
     Microsoft::WRL::ComPtr<IDWriteFontCollection> collection;
@@ -345,9 +338,9 @@ class DirectTextRenderer {
       return true;
     }
 
-    HRESULT hr = m_dwriteFactory->CreateTextFormat(
-        spec.family.c_str(), collection.Get(), spec.weight, spec.style, spec.stretch,
-        spec.sizeDip, L"zh-CN", out->GetAddressOf());
+    HRESULT hr = m_dwriteFactory->CreateTextFormat(spec.family.c_str(), collection.Get(),
+                                                   spec.weight, spec.style, spec.stretch,
+                                                   spec.sizeDip, L"zh-CN", out->GetAddressOf());
     if (FAILED(hr) || !*out) return false;
     (*out)->SetTextAlignment(ResolveDirectWriteTextAlignment(formatFlags));
     (*out)->SetParagraphAlignment(ResolveDirectWriteParagraphAlignment(formatFlags));
@@ -361,8 +354,7 @@ class DirectTextRenderer {
   }
 
   bool ResolveFontCollection(const std::wstring& family,
-                             Microsoft::WRL::ComPtr<IDWriteFontCollection>* out,
-                             bool* outCustom) {
+                             Microsoft::WRL::ComPtr<IDWriteFontCollection>* out, bool* outCustom) {
     if (!out || !outCustom || family.empty()) return false;
     out->Reset();
     *outCustom = false;
@@ -393,8 +385,7 @@ class DirectTextRenderer {
     return available;
   }
 
-  bool IsFamilyAvailableInCollection(IDWriteFontCollection* collection,
-                                     const std::wstring& family,
+  bool IsFamilyAvailableInCollection(IDWriteFontCollection* collection, const std::wstring& family,
                                      bool assumeAvailableOnFailure = false) const {
     if (!collection || family.empty()) return false;
     UINT32 index = 0;
@@ -455,8 +446,7 @@ class DirectTextRenderer {
 
   bool CreateTextLayout(const std::wstring& text, IDWriteTextFormat* format,
                         const std::wstring& formatKey, float widthDip, float heightDip,
-                        UINT formatFlags,
-                        Microsoft::WRL::ComPtr<IDWriteTextLayout>* out) {
+                        UINT formatFlags, Microsoft::WRL::ComPtr<IDWriteTextLayout>* out) {
     if (!out || !format || !m_dwriteFactory) return false;
     const std::wstring layoutKey = MakeLayoutKey(formatKey, text, widthDip, heightDip, formatFlags);
     auto cached = m_layoutCache.find(layoutKey);
@@ -466,9 +456,9 @@ class DirectTextRenderer {
       return true;
     }
 
-    HRESULT hr = m_dwriteFactory->CreateTextLayout(
-        text.c_str(), static_cast<UINT32>(text.size()), format, widthDip, heightDip,
-        out->GetAddressOf());
+    HRESULT hr =
+        m_dwriteFactory->CreateTextLayout(text.c_str(), static_cast<UINT32>(text.size()), format,
+                                          widthDip, heightDip, out->GetAddressOf());
     if (FAILED(hr) || !*out) return false;
     ApplyFontFallback(out->Get());
     ApplyTrimming(format, out->Get(), formatFlags);
@@ -568,8 +558,8 @@ class DirectTextRenderer {
       return clip;
     }
 
-    return {std::min(0L, fallback.left), std::min(0L, fallback.top),
-            std::max(1L, fallback.right), std::max(1L, fallback.bottom)};
+    return {std::min(0L, fallback.left), std::min(0L, fallback.top), std::max(1L, fallback.right),
+            std::max(1L, fallback.bottom)};
   }
 
   void ResetRenderTarget() {
@@ -583,9 +573,7 @@ class DirectTextRenderer {
     m_layoutCache.clear();
   }
 
-  static int QuantizeDip(float value) {
-    return static_cast<int>(std::lround(value * 64.0f));
-  }
+  static int QuantizeDip(float value) { return static_cast<int>(std::lround(value * 64.0f)); }
 
   std::wstring MakeFormatKey(const DirectWriteFontSpec& spec, UINT formatFlags,
                              bool customCollection) const {
@@ -597,7 +585,8 @@ class DirectTextRenderer {
     key += L"|t=" + std::to_wstring(static_cast<int>(spec.stretch));
     key += L"|z=" + std::to_wstring(QuantizeDip(spec.sizeDip));
     key += L"|a=" + std::to_wstring(static_cast<int>(ResolveDirectWriteTextAlignment(formatFlags)));
-    key += L"|p=" + std::to_wstring(static_cast<int>(ResolveDirectWriteParagraphAlignment(formatFlags)));
+    key += L"|p=" +
+           std::to_wstring(static_cast<int>(ResolveDirectWriteParagraphAlignment(formatFlags)));
     key += L"|r=" + std::to_wstring(static_cast<int>(ResolveDirectWriteWrapping(formatFlags)));
     key += customCollection ? L"|c=1" : L"|c=0";
     key += L"|g=" + std::to_wstring(m_customGeneration);

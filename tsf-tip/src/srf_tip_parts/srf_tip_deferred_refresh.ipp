@@ -57,9 +57,9 @@ LRESULT CALLBACK CSrfTip::DeferredTimerWndProc(HWND hwnd, UINT msg, WPARAM wPara
 }
 
 void CSrfTip::OnLearnCommitCompleted(unsigned long long requestId, bool succeeded) {
-  const auto it = std::find_if(
-      m_pendingLearnNotifications.begin(), m_pendingLearnNotifications.end(),
-      [requestId](const auto& pending) { return pending.requestId == requestId; });
+  const auto it =
+      std::find_if(m_pendingLearnNotifications.begin(), m_pendingLearnNotifications.end(),
+                   [requestId](const auto& pending) { return pending.requestId == requestId; });
   if (it == m_pendingLearnNotifications.end()) return;
   std::wstring reading = std::move(it->reading);
   std::wstring phrase = std::move(it->phrase);
@@ -96,9 +96,8 @@ bool CSrfTip::EnsureDeferredTimerWindow() {
   }
   if (!atom) return false;
 
-  m_deferredTimerHwnd = CreateWindowExW(0, SrfCandidateOverlayClientWindowClass(), L"", 0,
-                                        0, 0, 0, 0,
-                                        HWND_MESSAGE, nullptr, GetModuleHandleW(nullptr), this);
+  m_deferredTimerHwnd = CreateWindowExW(0, SrfCandidateOverlayClientWindowClass(), L"", 0, 0, 0, 0,
+                                        0, HWND_MESSAGE, nullptr, GetModuleHandleW(nullptr), this);
   return m_deferredTimerHwnd != nullptr;
 }
 
@@ -145,8 +144,8 @@ void CSrfTip::OnAsyncCandidateResultMessage() {
   HRESULT hr = context->RequestEditSession(m_tid, edit, TF_ES_ASYNC | TF_ES_READWRITE, &hrSession);
   edit->Release();
   wchar_t buf[176] = {};
-  swprintf_s(buf, L"RequestEditSession hr=0x%08lX session=0x%08lX",
-             static_cast<unsigned long>(hr), static_cast<unsigned long>(hrSession));
+  swprintf_s(buf, L"RequestEditSession hr=0x%08lX session=0x%08lX", static_cast<unsigned long>(hr),
+             static_cast<unsigned long>(hrSession));
   SrfTsfPerfLog(L"candidate-refresh.async-edit", buf);
 
   if (FAILED(hr) || FAILED(hrSession)) {
@@ -223,8 +222,8 @@ bool CSrfTip::ScheduleDeferredFocusContextClear() {
     m_deferredFocusClearSnapshot = {};
   }
 
-  if (SetTimer(m_deferredTimerHwnd, kDeferredFocusClearTimerId,
-               kTransientFocusLossGraceMs, nullptr)) {
+  if (SetTimer(m_deferredTimerHwnd, kDeferredFocusClearTimerId, kTransientFocusLossGraceMs,
+               nullptr)) {
     m_deferredFocusClearPending = true;
     m_deferredFocusClearDueTick = dueTick;
     m_deferredFocusClearSnapshot = scheduledFocus;
@@ -256,12 +255,12 @@ void CSrfTip::CancelCandidateWindowAnchorRefreshRetry() {
 }
 
 void CSrfTip::ScheduleCandidateWindowAnchorRefreshRetry() {
-  if (m_candidateAnchorRefreshRetryPending || m_reading.empty() ||
-      !m_status.composing || !EnsureDeferredTimerWindow()) {
+  if (m_candidateAnchorRefreshRetryPending || m_reading.empty() || !m_status.composing ||
+      !EnsureDeferredTimerWindow()) {
     return;
   }
-  if (SetTimer(m_deferredTimerHwnd, kCandidateAnchorRefreshTimerId,
-               kCandidateAnchorRefreshRetryMs, nullptr)) {
+  if (SetTimer(m_deferredTimerHwnd, kCandidateAnchorRefreshTimerId, kCandidateAnchorRefreshRetryMs,
+               nullptr)) {
     m_candidateAnchorRefreshRetryPending = true;
   }
 }
@@ -271,16 +270,14 @@ bool CSrfTip::RequestCandidateWindowAnchorRefresh() {
   const ULONGLONG now = GetTickCount64();
   if (m_candidateAnchorRefreshEditPending) {
     if (m_candidateAnchorRefreshRequestTick != 0 &&
-        now - m_candidateAnchorRefreshRequestTick <
-            kCandidateAnchorRefreshStaleMs) {
+        now - m_candidateAnchorRefreshRequestTick < kCandidateAnchorRefreshStaleMs) {
       return true;
     }
     m_candidateAnchorRefreshEditPending = false;
     m_candidateAnchorRefreshRequestTick = 0;
   }
 
-  ITfContext* context =
-      m_pCompositionContext ? m_pCompositionContext : m_pFocusContext;
+  ITfContext* context = m_pCompositionContext ? m_pCompositionContext : m_pFocusContext;
   if (!context) {
     ScheduleCandidateWindowAnchorRefreshRetry();
     return false;
@@ -296,8 +293,7 @@ bool CSrfTip::RequestCandidateWindowAnchorRefresh() {
   m_candidateAnchorRefreshEditPending = true;
   m_candidateAnchorRefreshRequestTick = now;
   HRESULT hrSession = E_FAIL;
-  const HRESULT hr = context->RequestEditSession(
-      m_tid, edit, TF_ES_ASYNC | TF_ES_READ, &hrSession);
+  const HRESULT hr = context->RequestEditSession(m_tid, edit, TF_ES_ASYNC | TF_ES_READ, &hrSession);
   edit->Release();
   if (FAILED(hr) || FAILED(hrSession)) {
     m_candidateAnchorRefreshEditPending = false;
@@ -307,8 +303,7 @@ bool CSrfTip::RequestCandidateWindowAnchorRefresh() {
     line += std::to_wstring(static_cast<unsigned long>(hr));
     line += L", session=";
     line += std::to_wstring(static_cast<unsigned long>(hrSession));
-    SrfTsfDiagnosticLog(L"candidate-anchor.refresh-request-failed",
-                        line.c_str());
+    SrfTsfDiagnosticLog(L"candidate-anchor.refresh-request-failed", line.c_str());
     return false;
   }
   CancelCandidateWindowAnchorRefreshRetry();
@@ -337,8 +332,7 @@ void CSrfTip::OnDeferredFocusContextClearTimer() {
     SrfTsfPerfLog(L"focus-context.defer-clear.skip", L"state already stable");
     return;
   }
-  if (scheduledFocus.generation != m_focusGeneration ||
-      !FocusSnapshotMatches(scheduledFocus)) {
+  if (scheduledFocus.generation != m_focusGeneration || !FocusSnapshotMatches(scheduledFocus)) {
     std::wstring line = L"scheduled=";
     line += FormatFocusSnapshotForLog(scheduledFocus);
     line += L", current=";
@@ -405,8 +399,8 @@ void CSrfTip::OnDeferredCandidateRefreshTimer() {
   HRESULT hr = context->RequestEditSession(m_tid, edit, TF_ES_ASYNC | TF_ES_READWRITE, &hrSession);
   edit->Release();
   wchar_t buf[160] = {};
-  swprintf_s(buf, L"RequestEditSession hr=0x%08lX session=0x%08lX",
-             static_cast<unsigned long>(hr), static_cast<unsigned long>(hrSession));
+  swprintf_s(buf, L"RequestEditSession hr=0x%08lX session=0x%08lX", static_cast<unsigned long>(hr),
+             static_cast<unsigned long>(hrSession));
   SrfTsfPerfLog(L"candidate-refresh.defer-edit", buf);
 
   // If the async edit session also fails while recovery is active, try again later.

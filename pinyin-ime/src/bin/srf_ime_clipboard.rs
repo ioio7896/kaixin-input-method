@@ -146,7 +146,7 @@ struct Response {
 }
 
 enum WorkerCommand {
-    Call(Request),
+    Call(Box<Request>),
     Stop,
 }
 
@@ -200,7 +200,7 @@ impl AsyncServiceClient {
         request.capability.clone_from(&self.capability);
         configure(&mut request);
         let req = request.req;
-        let _ = self.commands.send(WorkerCommand::Call(request));
+        let _ = self.commands.send(WorkerCommand::Call(Box::new(request)));
         req
     }
 
@@ -925,11 +925,8 @@ impl ClipboardApp {
 
     fn process_completions(&mut self, ctx: &egui::Context) {
         let mut completed = Vec::new();
-        loop {
-            match self.client.try_recv() {
-                Ok(completion) => completed.push(completion),
-                Err(TryRecvError::Empty | TryRecvError::Disconnected) => break,
-            }
+        while let Ok(completion) = self.client.try_recv() {
+            completed.push(completion);
         }
         for completion in completed {
             let Some(kind) = self.pending.remove(&completion.req) else {
@@ -1768,7 +1765,7 @@ fn clipboard_card(
     let frame = Frame::none()
         .fill(fill)
         .stroke(Stroke::new(
-            1.0,
+            1.0_f32,
             if selected {
                 palette.accent
             } else {
@@ -1799,7 +1796,7 @@ fn keycap(ui: &mut egui::Ui, number: usize) {
     let palette = UiPalette::from_visuals(ui.visuals());
     Frame::none()
         .fill(palette.surface_alt)
-        .stroke(Stroke::new(1.0, palette.border))
+        .stroke(Stroke::new(1.0_f32, palette.border))
         .rounding(4.0)
         .inner_margin(egui::Margin::symmetric(6.0, 2.0))
         .show(ui, |ui| {
@@ -2119,6 +2116,33 @@ fn display_text(text: &str) -> String {
         .collect()
 }
 
+fn main() -> eframe::Result<()> {
+    let _single_instance_guard = match pinyin_ime::win_single_instance::claim_or_activate_existing(
+        SINGLE_INSTANCE_MUTEX,
+        WINDOW_TITLE,
+    ) {
+        Ok(Some(guard)) => Some(guard),
+        Ok(None) => return Ok(()),
+        Err(_) => None,
+    };
+    #[cfg(windows)]
+    let target_hwnd = unsafe { GetForegroundWindow() } as isize;
+    #[cfg(not(windows))]
+    let target_hwnd = 0;
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_title(WINDOW_TITLE)
+            .with_inner_size(WINDOW_DEFAULT_SIZE.map(|value| value as f32))
+            .with_min_inner_size(WINDOW_MIN_SIZE.map(|value| value as f32)),
+        ..Default::default()
+    };
+    eframe::run_native(
+        WINDOW_TITLE,
+        options,
+        Box::new(move |cc| Ok(Box::new(ClipboardApp::new(cc, target_hwnd)))),
+    )
+}
+
 #[cfg(test)]
 mod clipboard_ui_tests {
     use super::*;
@@ -2144,8 +2168,10 @@ mod clipboard_ui_tests {
 
     fn key(app: &mut ClipboardApp, key: Key, modifiers: egui::Modifiers) {
         let ctx = egui::Context::default();
-        let mut input = egui::RawInput::default();
-        input.modifiers = modifiers;
+        let mut input = egui::RawInput {
+            modifiers,
+            ..Default::default()
+        };
         input.events.push(egui::Event::Key {
             key,
             physical_key: None,
@@ -2239,31 +2265,4 @@ mod clipboard_ui_tests {
         assert!(app.refresh_force_requested);
         assert!(app.pending.is_empty());
     }
-}
-
-fn main() -> eframe::Result<()> {
-    let _single_instance_guard = match pinyin_ime::win_single_instance::claim_or_activate_existing(
-        SINGLE_INSTANCE_MUTEX,
-        WINDOW_TITLE,
-    ) {
-        Ok(Some(guard)) => Some(guard),
-        Ok(None) => return Ok(()),
-        Err(_) => None,
-    };
-    #[cfg(windows)]
-    let target_hwnd = unsafe { GetForegroundWindow() } as isize;
-    #[cfg(not(windows))]
-    let target_hwnd = 0;
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_title(WINDOW_TITLE)
-            .with_inner_size(WINDOW_DEFAULT_SIZE.map(|value| value as f32))
-            .with_min_inner_size(WINDOW_MIN_SIZE.map(|value| value as f32)),
-        ..Default::default()
-    };
-    eframe::run_native(
-        WINDOW_TITLE,
-        options,
-        Box::new(move |cc| Ok(Box::new(ClipboardApp::new(cc, target_hwnd)))),
-    )
 }

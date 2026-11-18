@@ -15,9 +15,10 @@ bool ContextBelongsToDocument(ITfContext* context, ITfDocumentMgr* document) {
   if (owner) owner->Release();
   return matches;
 }
-}
+}  // namespace
 
-CThreadMgrEventSink::CThreadMgrEventSink(CSrfTip* tip) : m_pTip(tip) {}
+CThreadMgrEventSink::CThreadMgrEventSink(CSrfTip* tip) : m_pTip(tip) {
+}
 
 STDMETHODIMP CThreadMgrEventSink::QueryInterface(REFIID riid, void** ppv) {
   if (!ppv) return E_POINTER;
@@ -30,7 +31,9 @@ STDMETHODIMP CThreadMgrEventSink::QueryInterface(REFIID riid, void** ppv) {
   return E_NOINTERFACE;
 }
 
-STDMETHODIMP_(ULONG) CThreadMgrEventSink::AddRef() { return InterlockedIncrement(&m_cRef); }
+STDMETHODIMP_(ULONG) CThreadMgrEventSink::AddRef() {
+  return InterlockedIncrement(&m_cRef);
+}
 
 STDMETHODIMP_(ULONG) CThreadMgrEventSink::Release() {
   ULONG c = InterlockedDecrement(&m_cRef);
@@ -38,7 +41,9 @@ STDMETHODIMP_(ULONG) CThreadMgrEventSink::Release() {
   return c;
 }
 
-STDMETHODIMP CThreadMgrEventSink::OnInitDocumentMgr(ITfDocumentMgr* /*pdim*/) { return S_OK; }
+STDMETHODIMP CThreadMgrEventSink::OnInitDocumentMgr(ITfDocumentMgr* /*pdim*/) {
+  return S_OK;
+}
 
 STDMETHODIMP CThreadMgrEventSink::OnUninitDocumentMgr(ITfDocumentMgr* pdim) {
   if (!m_pTip || !pdim) return S_OK;
@@ -50,7 +55,8 @@ STDMETHODIMP CThreadMgrEventSink::OnUninitDocumentMgr(ITfDocumentMgr* pdim) {
   return S_OK;
 }
 
-STDMETHODIMP CThreadMgrEventSink::OnSetFocus(ITfDocumentMgr* pdimFocus, ITfDocumentMgr* pdimPrevFocus) {
+STDMETHODIMP CThreadMgrEventSink::OnSetFocus(ITfDocumentMgr* pdimFocus,
+                                             ITfDocumentMgr* pdimPrevFocus) {
   const ULONGLONG start = GetTickCount64();
   if (m_pTip) {
     const bool focusChanged =

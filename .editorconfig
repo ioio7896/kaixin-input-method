@@ -2,9 +2,23 @@ root = true
 
 [*]
 charset = utf-8
-end_of_line = crlf
+end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
+
+[*.cmd]
+end_of_line = crlf
+
+[*.ps1]
+charset = utf-8-bom
+
+[*.{rs,py,ps1,toml}]
+indent_style = space
+indent_size = 4
+
+[*.{cpp,h,hpp,ipp,cmake,json,yml,yaml}]
+indent_style = space
+indent_size = 2
 
 [*.{rs,py,toml,yaml,yml,json,md,txt,tsv,ps1,cmd,cpp,h,hpp,ipp,cmake,iss,manifest,def}]
 charset = utf-8

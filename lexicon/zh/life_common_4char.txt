@@ -76,7 +76,7 @@
 意识形态	yi shi xing tai	9920
 除此之外	chu ci zhi wai	9918
 全国政协	quan guo zheng xie	9916
-工作效率	gong zuo xiao lv	6758
+工作效率	gong zuo xiao lv	8300
 西班牙语	xi ban ya yu	9914
 请等一下	qing deng yi xia	712
 高等教育	gao deng jiao yu	9912
@@ -1124,7 +1124,7 @@
 情报机构	qing bao ji gou	7720
 搞不清楚	gao bu qing chu	7717
 摩尔多瓦	mo er duo wa	7715
-数据分析	shu ju fen xi	7713
+数据分析	shu ju fen xi	8300
 无中生有	wu zhong sheng you	7711
 民主党派	min zhu dang pai	7709
 水利工程	shui li gong cheng	7707
@@ -1281,7 +1281,7 @@
 辛辛苦苦	xin xin ku ku	7383
 适得其反	shi de qi fan	7381
 从那以后	cong na yi hou	1477
-顺其自然	shun qi zi ran	7379
+顺其自然	shun qi zi ran	8000
 一切顺利	yi qie shun li	7377
 一本正经	yi ben zheng jing	7375
 不怎么样	bu zen me yang	7373
@@ -1337,7 +1337,7 @@
 同性恋者	tong xing lian zhe	7267
 后顾之忧	hou gu zhi you	7265
 需不需要	xu bu xu yao	1352
-售后服务	shou hou fu wu	7263
+售后服务	shou hou fu wu	8000
 国家机密	guo jia ji mi	7260
 国家标准	guo jia biao zhun	7258
 多明尼加	duo ming ni jia	7256
@@ -1551,7 +1551,7 @@
 进退两难	jin tui liang nan	6801
 铺天盖地	pu tian gai di	6799
 时候未到	shi hou wei dao	764
-项目管理	xiang mu guan li	6797
+项目管理	xiang mu guan li	8300
 高度评价	gao du ping jia	6795
 黑色幽默	hei se you mo	6793
 一脉相承	yi mai xiang cheng	6791
@@ -1710,7 +1710,7 @@
 彻头彻尾	che tou che wei	6467
 微乎其微	wei hu qi wei	6465
 总领事馆	zong ling shi guan	6463
-恶意软件	e yi ruan jian	6461
+恶意软件	e yi ruan jian	7400
 愤世嫉俗	fen shi ji su	6459
 成百上千	cheng bai shang qian	6459
 新英格兰	xin ying ge lan	6456
@@ -2067,7 +2067,7 @@
 爱新觉罗	ai xin jue luo	5750
 玩忽职守	wan hu zhi shou	5747
 示威抗议	shi wei kang yi	5745
-精神状态	jing shen zhuang tai	5743
+精神状态	jing shen zhuang tai	6200
 精神病学	jing shen bing xue	5743
 经济基础	jing ji ji chu	5741
 美好生活	mei hao sheng huo	5739
@@ -2187,7 +2187,7 @@
 美国使馆	mei guo shi guan	5502
 负责管理	fu ze guan li	5499
 贫困地区	pin kun di qu	5497
-适可而止	shi ke er zhi	5495
+适可而止	shi ke er zhi	8000
 遇到困难	yu dao kun nan	5493
 长生不老	chang sheng bu lao	5491
 陆陆续续	lu lu xu xu	5489
@@ -2623,7 +2623,7 @@
 索马利亚	suo ma li ya	4639
 纽卡斯尔	niu ka si er	4637
 血流成河	xue liu cheng he	4635
-说来话长	shuo lai hua chang	4633
+说来话长	shuo lai hua chang	8000
 贪官污吏	tan guan wu li	4631
 超级市场	chao ji shi chang	4629
 这就是说	zhe jiu shi shuo	4627
@@ -2963,7 +2963,7 @@
 第一人称	di yi ren cheng	3969
 粮食安全	liang shi an quan	3967
 精心策划	jing xin ce hua	3967
-精打细算	jing da xi suan	3965
+精打细算	jing da xi suan	8000
 网络连接	wang luo lian jie	3963
 自暴自弃	zi bao zi qi	3961
 自私自利	zi si zi li	3961
@@ -3248,7 +3248,7 @@
 平面设计	ping mian she ji	3413
 开幕典礼	kai mu dian li	3411
 循规蹈矩	xun gui dao ju	3409
-心理咨询	xin li zi xun	3407
+心理咨询	xin li zi xun	8000
 感情用事	gan qing yong shi	3404
 文理学院	wen li xue yuan	3402
 施特劳斯	shi te lao si	3400
@@ -4593,7 +4593,7 @@
 还珠格格	huan zhu ge ge	883
 连带责任	lian dai ze ren	880
 逍遥自在	xiao yao zi zai	878
-量力而行	liang li er xing	876
+量力而行	liang li er xing	8000
 铁石心肠	tie shi xin chang	874
 铜墙铁壁	tong qiang tie bi	872
 雄心壮志	xiong xin zhuang zhi	870

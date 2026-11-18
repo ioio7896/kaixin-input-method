@@ -1,4 +1,5 @@
 """Generate and verify the twenty coordinated candidate palettes (stdlib only)."""
+
 import json
 from pathlib import Path
 
@@ -29,11 +30,13 @@ PALETTES = [
 
 
 def rgb(value):
-    return tuple(int(value[i:i + 2], 16) for i in (1, 3, 5))
+    return tuple(int(value[i : i + 2], 16) for i in (1, 3, 5))
 
 
 def mix(a, b, weight):
-    return "#" + "".join(f"{round(x * (1 - weight) + y * weight):02X}" for x, y in zip(rgb(a), rgb(b)))
+    return "#" + "".join(
+        f"{round(x * (1 - weight) + y * weight):02X}" for x, y in zip(rgb(a), rgb(b))
+    )
 
 
 def contrast(a, b):
@@ -41,6 +44,7 @@ def contrast(a, b):
         channels = [v / 255 for v in rgb(value)]
         linear = [v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4 for v in channels]
         return sum(x * w for x, w in zip(linear, (0.2126, 0.7152, 0.0722)))
+
     x, y = sorted((lum(a), lum(b)))
     return (y + 0.05) / (x + 0.05)
 
@@ -50,25 +54,74 @@ def themes():
         hover = mix(bg, selected, 0.55)
         pressed = mix(selected, accent, 0.08)
         theme = dict(
-            name=name, material="solid", layout="classic", font_size=16,
-            window_bg=bg, header_bg=bg, border=mix(bg, muted, 0.30), divider=mix(bg, muted, 0.16),
-            item_bg=bg, item_border=bg, hover_bg=hover, hover_border=hover,
-            selected_bg=selected, selected_border=accent, pressed_bg=pressed, pressed_border=pressed,
-            text=text, muted_text=muted, selected_text=text, selected_muted_text=muted,
-            badge_bg=bg, badge_border=bg, badge_text=muted,
-            chip_bg=hover, chip_border=hover, chip_text=muted,
-            chip_active_bg=selected, chip_active_border=selected, chip_active_text=text,
-            selected_outline=accent, selected_accent_width=2, selected_ring_opacity=0,
-            selected_indicator="left_bar", border_opacity=0.8, divider_opacity=0.12,
-            shadow_enabled=True, shadow_opacity=0.10 if dark else 0.07, shadow_size=9,
-            font_weight=400, selected_font_weight=600, label_font_weight=400, chip_font_weight=400,
-            corner_radius=12, header_corner_radius=8, row_corner_radius=7, badge_corner_radius=4,
-            outer_pad_x=8, outer_pad_y=7, header_pad_x=10, header_pad_y=5, header_gap=5,
-            item_gap=3, item_pad_x=10, item_pad_y=6, label_width=22, label_gap=8, comment_gap=5,
-            min_width=220, preferred_width=340, max_width=600,
-            min_horizontal_card_width=88, max_horizontal_card_width=200,
-            animations_enabled=True, show_animation_ms=0, selection_animation_ms=65,
-            hover_animation_ms=45, press_animation_ms=24, page_animation_ms=0,
+            name=name,
+            material="solid",
+            layout="classic",
+            font_size=16,
+            window_bg=bg,
+            header_bg=bg,
+            border=mix(bg, muted, 0.30),
+            divider=mix(bg, muted, 0.16),
+            item_bg=bg,
+            item_border=bg,
+            hover_bg=hover,
+            hover_border=hover,
+            selected_bg=selected,
+            selected_border=accent,
+            pressed_bg=pressed,
+            pressed_border=pressed,
+            text=text,
+            muted_text=muted,
+            selected_text=text,
+            selected_muted_text=muted,
+            badge_bg=bg,
+            badge_border=bg,
+            badge_text=muted,
+            chip_bg=hover,
+            chip_border=hover,
+            chip_text=muted,
+            chip_active_bg=selected,
+            chip_active_border=selected,
+            chip_active_text=text,
+            selected_outline=accent,
+            selected_accent_width=2,
+            selected_ring_opacity=0,
+            selected_indicator="left_bar",
+            border_opacity=0.8,
+            divider_opacity=0.12,
+            shadow_enabled=True,
+            shadow_opacity=0.10 if dark else 0.07,
+            shadow_size=9,
+            font_weight=400,
+            selected_font_weight=600,
+            label_font_weight=400,
+            chip_font_weight=400,
+            corner_radius=12,
+            header_corner_radius=8,
+            row_corner_radius=7,
+            badge_corner_radius=4,
+            outer_pad_x=8,
+            outer_pad_y=7,
+            header_pad_x=10,
+            header_pad_y=5,
+            header_gap=5,
+            item_gap=3,
+            item_pad_x=10,
+            item_pad_y=6,
+            label_width=22,
+            label_gap=8,
+            comment_gap=5,
+            min_width=220,
+            preferred_width=340,
+            max_width=600,
+            min_horizontal_card_width=88,
+            max_horizontal_card_width=200,
+            animations_enabled=True,
+            show_animation_ms=0,
+            selection_animation_ms=65,
+            hover_animation_ms=45,
+            press_animation_ms=24,
+            page_animation_ms=0,
         )
         # Keep all small text >= 4.5:1, including every interactive surface.
         surfaces = [bg, selected, hover, pressed]
@@ -84,6 +137,7 @@ def themes():
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
@@ -93,5 +147,7 @@ if __name__ == "__main__":
             assert json.loads(path.read_text(encoding="utf-8")) == theme, path
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(theme, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            path.write_text(
+                json.dumps(theme, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
     print("20 candidate skins verified: normal, hover, selected and pressed text >= 4.5:1")

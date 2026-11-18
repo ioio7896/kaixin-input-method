@@ -4,6 +4,7 @@
 No model is loaded here. Geometry/budget rules also run in source-only CI.
 Image analysis uses a downsampled copy; all returned rectangles use source pixels.
 """
+
 from __future__ import annotations
 
 import math
@@ -12,8 +13,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 PROFILE_LIMITS = {"fast": (1280, 1.0), "balanced": (1920, 1.5), "accurate": (2560, 2.0)}
-PROFILE_MODELS = {"fast": ("small", "small"), "balanced": ("small", "medium"),
-                  "accurate": ("medium", "medium")}
+PROFILE_MODELS = {
+    "fast": ("small", "small"),
+    "balanced": ("small", "medium"),
+    "accurate": ("medium", "medium"),
+}
 PROFILE_SECONDS = {"fast": 30, "balanced": 60, "accurate": 90}
 MAX_TILES = 32
 MAX_WORK_PIXELS = 64_000_000
@@ -41,9 +45,13 @@ def image_tiles(shape: Any, limit: int) -> list[Rect]:
         if length <= limit:
             return [(0, length)]
         count = math.ceil(length / (limit - overlap))
-        return [(max(0, round(length * i / count) - overlap // 2),
-                 min(length, round(length * (i + 1) / count) + overlap // 2))
-                for i in range(count)]
+        return [
+            (
+                max(0, round(length * i / count) - overlap // 2),
+                min(length, round(length * (i + 1) / count) + overlap // 2),
+            )
+            for i in range(count)
+        ]
 
     tiles = [(x0, y0, x1, y1) for y0, y1 in segments(height) for x0, x1 in segments(width)]
     if len(tiles) > MAX_TILES or sum(rect_area(r) for r in tiles) > MAX_WORK_PIXELS:
@@ -60,8 +68,12 @@ def line_bounds(line: dict[str, Any]) -> Rect | None:
     box = line.get("box")
     if not box:
         return None
-    return (math.floor(min(p[0] for p in box)), math.floor(min(p[1] for p in box)),
-            math.ceil(max(p[0] for p in box)), math.ceil(max(p[1] for p in box)))
+    return (
+        math.floor(min(p[0] for p in box)),
+        math.floor(min(p[1] for p in box)),
+        math.ceil(max(p[0] for p in box)),
+        math.ceil(max(p[1] for p in box)),
+    )
 
 
 def intersection(a: Rect, b: Rect) -> int:
@@ -81,9 +93,14 @@ class ImageAnalysis:
         return self.components >= 2 and 3.0 < self.contrast < 65.0
 
     def summary(self) -> dict[str, Any]:
-        return {"components": self.components, "small_components": self.small_components,
-                "contrast": round(self.contrast, 2), "low_contrast": self.low_contrast,
-                "regions": len(self.regions), "small_regions": len(self.small_regions)}
+        return {
+            "components": self.components,
+            "small_components": self.small_components,
+            "contrast": round(self.contrast, 2),
+            "low_contrast": self.low_contrast,
+            "regions": len(self.regions),
+            "small_regions": len(self.small_regions),
+        }
 
 
 def analyze_image(image: Any) -> ImageAnalysis:
@@ -100,8 +117,11 @@ def analyze_image(image: Any) -> ImageAnalysis:
     scale = min(1.0, 2048.0 / max(width, height))
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     if scale < 1:
-        gray = cv2.resize(gray, (max(1, round(width * scale)), max(1, round(height * scale))),
-                          interpolation=cv2.INTER_AREA)
+        gray = cv2.resize(
+            gray,
+            (max(1, round(width * scale)), max(1, round(height * scale))),
+            interpolation=cv2.INTER_AREA,
+        )
     gradient = cv2.morphologyEx(gray, cv2.MORPH_GRADIENT, np.ones((3, 3), np.uint8))
     if int(gradient.max()) < 4:
         return ImageAnalysis()
@@ -114,15 +134,20 @@ def analyze_image(image: Any) -> ImageAnalysis:
     for x, y, w, h, area in stats[1:]:
         # The gradient adds roughly two pixels to character bounds.
         source_h = max(1.0, (int(h) - 2) / scale)
-        if not (3 <= h and 5 <= source_h <= 64 and 2 <= w <= h * 5 and area >= 5
-                and 0.12 <= area / (w * h) <= 1.0):
+        if not (
+            3 <= h
+            and 5 <= source_h <= 64
+            and 2 <= w <= h * 5
+            and area >= 5
+            and 0.12 <= area / (w * h) <= 1.0
+        ):
             continue
         glyphs.append((x, y, w, h))
-        text_mask[y:y+h, x:x+w] = 255
-        strengths.append(float(gradient[y:y+h, x:x+w].max()))
+        text_mask[y : y + h, x : x + w] = 255
+        strengths.append(float(gradient[y : y + h, x : x + w].max()))
         if source_h <= 19:
             small.append((x, y, w, h))
-            small_mask[y:y+h, x:x+w] = 255
+            small_mask[y : y + h, x : x + w] = 255
     del labels
 
     def groups(source: Any) -> list[Rect]:
@@ -132,18 +157,32 @@ def analyze_image(image: Any) -> ImageAnalysis:
         for x, y, w, h, area in regions[1:]:
             if w / scale < 24 or h / scale > 192 or area < 18:
                 continue
-            output.append((max(0, math.floor(x / scale) - 8), max(0, math.floor(y / scale) - 6),
-                           min(width, math.ceil((x + w) / scale) + 8),
-                           min(height, math.ceil((y + h) / scale) + 6)))
+            output.append(
+                (
+                    max(0, math.floor(x / scale) - 8),
+                    max(0, math.floor(y / scale) - 6),
+                    min(width, math.ceil((x + w) / scale) + 8),
+                    min(height, math.ceil((y + h) / scale) + 6),
+                )
+            )
         return sorted(output, key=lambda r: (r[1], r[0]))
 
-    return ImageAnalysis(len(glyphs), len(small), float(np.median(strengths)) if strengths else 0.0,
-                         groups(text_mask), groups(small_mask) if len(small) >= 3 else [])
+    return ImageAnalysis(
+        len(glyphs),
+        len(small),
+        float(np.median(strengths)) if strengths else 0.0,
+        groups(text_mask),
+        groups(small_mask) if len(small) >= 3 else [],
+    )
 
 
 def lines_in_region(lines: list[dict[str, Any]], region: Rect) -> list[dict[str, Any]]:
-    return [line for line in lines if (bounds := line_bounds(line)) is not None
-            and intersection(bounds, region) >= min(rect_area(bounds), rect_area(region)) * 0.5]
+    return [
+        line
+        for line in lines
+        if (bounds := line_bounds(line)) is not None
+        and intersection(bounds, region) >= min(rect_area(bounds), rect_area(region)) * 0.5
+    ]
 
 
 def needs_detector_retry(lines: list[dict[str, Any]], analysis: ImageAnalysis) -> bool:
@@ -164,16 +203,21 @@ def refinement_regions(lines: list[dict[str, Any]], analysis: ImageAnalysis) -> 
     candidates = []
     for region in analysis.small_regions:
         covered = lines_in_region(lines, region)
-        confidence = sum(float(line.get("score", 0)) for line in covered) / len(covered) if covered else 0.0
+        confidence = (
+            sum(float(line.get("score", 0)) for line in covered) / len(covered) if covered else 0.0
+        )
         if confidence < 0.94:
             candidates.append((confidence, region))
     # Missing/uncertain regions first, stable reading order on ties.
-    return [region for _, region in sorted(candidates, key=lambda value: (value[0], value[1][1], value[1][0]))
-            ][:MAX_REFINEMENTS]
+    return [
+        region
+        for _, region in sorted(candidates, key=lambda value: (value[0], value[1][1], value[1][0]))
+    ][:MAX_REFINEMENTS]
 
 
 class WorkBudget:
     """Bound work between native calls; the Rust parent enforces a hard timeout."""
+
     def __init__(self, seconds: float, clock: Any = time.perf_counter) -> None:
         self.clock = clock
         self.deadline = clock() + seconds
@@ -188,8 +232,10 @@ class WorkBudget:
             reason = "time"
         elif self.pixels + pixels > MAX_WORK_PIXELS:
             reason = "pixels"
-        elif optional and (self.extra_calls >= MAX_REFINEMENTS
-                           or self.extra_pixels + pixels > MAX_REFINEMENT_PIXELS):
+        elif optional and (
+            self.extra_calls >= MAX_REFINEMENTS
+            or self.extra_pixels + pixels > MAX_REFINEMENT_PIXELS
+        ):
             reason = "refinement"
         if reason:
             if not optional:

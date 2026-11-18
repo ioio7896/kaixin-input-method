@@ -19,8 +19,8 @@ class SrfOverlappedIo {
       SetLastError(ERROR_NOT_ENOUGH_MEMORY);
       return operation;
     }
-    if (!DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), &operation->handle,
-                         0, FALSE, DUPLICATE_SAME_ACCESS)) {
+    if (!DuplicateHandle(GetCurrentProcess(), source, GetCurrentProcess(), &operation->handle, 0,
+                         FALSE, DUPLICATE_SAME_ACCESS)) {
       return Ptr(nullptr, Dispose);
     }
     operation->overlapped.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
@@ -83,7 +83,7 @@ class SrfOverlappedIo {
       if (!operation->Await(200, &transferred) && operation->pending) {
         HMODULE module = nullptr;
         if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-                              reinterpret_cast<LPCWSTR>(&Cleanup), &module)) {
+                               reinterpret_cast<LPCWSTR>(&Cleanup), &module)) {
           operation->cleanupModule = module;
           PTP_WORK work = CreateThreadpoolWork(Cleanup, operation, nullptr);
           if (work) {

@@ -133,8 +133,7 @@ IniDocument ParseIniDocument(const std::filesystem::path& path, const std::wstri
   size_t start = 0;
   while (start <= text.size()) {
     const size_t end = text.find_first_of(L"\r\n", start);
-    const size_t lineLength =
-        end == std::wstring::npos ? text.size() - start : end - start;
+    const size_t lineLength = end == std::wstring::npos ? text.size() - start : end - start;
     if (lineLength > kMaxConfigLineChars) {
       if (end == std::wstring::npos) break;
       start = end + 1;
@@ -480,9 +479,9 @@ void AppendDefaultGameProcessPatterns(std::vector<std::wstring>& list) {
 
 std::filesystem::path ModuleDir() {
   HMODULE module = nullptr;
-  if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                              GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                          reinterpret_cast<LPCWSTR>(&ResolveSrfConfigPath), &module) ||
+  if (!GetModuleHandleExW(
+          GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+          reinterpret_cast<LPCWSTR>(&ResolveSrfConfigPath), &module) ||
       !module) {
     return {};
   }
@@ -540,8 +539,8 @@ bool IsAllowedLocalSkinPath(const std::filesystem::path& path) {
     const wchar_t drive = raw[4];
     const wchar_t colon = raw[5];
     const wchar_t slash = raw[6];
-    if (((drive >= L'A' && drive <= L'Z') || (drive >= L'a' && drive <= L'z')) &&
-        colon == L':' && (slash == L'\\' || slash == L'/')) {
+    if (((drive >= L'A' && drive <= L'Z') || (drive >= L'a' && drive <= L'z')) && colon == L':' &&
+        (slash == L'\\' || slash == L'/')) {
       return true;
     }
   }
@@ -550,12 +549,13 @@ bool IsAllowedLocalSkinPath(const std::filesystem::path& path) {
 }
 
 SrfThemeMode ParseTheme(const std::filesystem::path& path) {
-  const std::wstring v = ToLower(Trim(ReadIniString(path, SrfConfigSchema::section::kStyle,
-                                                    SrfConfigSchema::key::kTheme,
-                                                    SrfConfigSchema::defaults::kTheme)));
+  const std::wstring v =
+      ToLower(Trim(ReadIniString(path, SrfConfigSchema::section::kStyle,
+                                 SrfConfigSchema::key::kTheme, SrfConfigSchema::defaults::kTheme)));
   if (v == L"light") return SrfThemeMode::Light;
   if (v == L"dark") return SrfThemeMode::Dark;
-  if (v == L"high_contrast" || v == L"highcontrast" || v == L"hc") return SrfThemeMode::HighContrast;
+  if (v == L"high_contrast" || v == L"highcontrast" || v == L"hc")
+    return SrfThemeMode::HighContrast;
   return SrfThemeMode::Auto;
 }
 
@@ -591,12 +591,11 @@ SrfFullscreenPolicy ParseFullscreenPolicy(const std::wstring& value) {
       lowered == L"hide" || lowered == L"1") {
     return SrfFullscreenPolicy::HideUi;
   }
-  if (lowered == L"off" || lowered == L"disabled" || lowered == L"disable" ||
-      lowered == L"none" || lowered == L"0") {
+  if (lowered == L"off" || lowered == L"disabled" || lowered == L"disable" || lowered == L"none" ||
+      lowered == L"0") {
     return SrfFullscreenPolicy::Off;
   }
-  if (lowered == L"ascii" || lowered == L"english" || lowered == L"en" ||
-      lowered == L"2") {
+  if (lowered == L"ascii" || lowered == L"english" || lowered == L"en" || lowered == L"2") {
     return SrfFullscreenPolicy::Ascii;
   }
   if (lowered == L"show_ui" || lowered == L"show-ui" || lowered == L"showui" ||
@@ -613,14 +612,12 @@ SrfCommitTransport ParseCommitTransport(const std::wstring& value) {
       lowered == L"compat_auto" || lowered == L"compat-auto") {
     return SrfCommitTransport::Auto;
   }
-  if (lowered == L"clipboard_paste" || lowered == L"clipboard-paste" ||
-      lowered == L"clipboard" || lowered == L"paste" || lowered == L"ctrl_v" ||
-      lowered == L"ctrl-v" || lowered == L"1") {
+  if (lowered == L"clipboard_paste" || lowered == L"clipboard-paste" || lowered == L"clipboard" ||
+      lowered == L"paste" || lowered == L"ctrl_v" || lowered == L"ctrl-v" || lowered == L"1") {
     return SrfCommitTransport::ClipboardPaste;
   }
-  if (lowered == L"unicode_sendinput" || lowered == L"unicode-sendinput" ||
-      lowered == L"unicode" || lowered == L"sendinput" || lowered == L"send_input" ||
-      lowered == L"2") {
+  if (lowered == L"unicode_sendinput" || lowered == L"unicode-sendinput" || lowered == L"unicode" ||
+      lowered == L"sendinput" || lowered == L"send_input" || lowered == L"2") {
     return SrfCommitTransport::UnicodeSendInput;
   }
   return SrfCommitTransport::Tsf;
@@ -628,9 +625,9 @@ SrfCommitTransport ParseCommitTransport(const std::wstring& value) {
 
 bool ParseGameCompactProfile(const std::wstring& value) {
   const std::wstring lowered = ToLower(Trim(value));
-  return lowered == L"1" || lowered == L"true" || lowered == L"yes" ||
-         lowered == L"on" || lowered == L"game" || lowered == L"compact" ||
-         lowered == L"game_compact" || lowered == L"game-compact";
+  return lowered == L"1" || lowered == L"true" || lowered == L"yes" || lowered == L"on" ||
+         lowered == L"game" || lowered == L"compact" || lowered == L"game_compact" ||
+         lowered == L"game-compact";
 }
 
 bool TryParseOverlayAnchor(const std::wstring& value, SrfOverlayAnchor* output) {
@@ -665,8 +662,8 @@ bool TryParseOverlayBackend(const std::wstring& value, SrfOverlayBackend* output
   if (lowered.empty()) return false;
   if (lowered == L"auto" || lowered == L"default") {
     *output = SrfOverlayBackend::Auto;
-  } else if (lowered == L"in_process" || lowered == L"in-process" ||
-             lowered == L"local" || lowered == L"tip") {
+  } else if (lowered == L"in_process" || lowered == L"in-process" || lowered == L"local" ||
+             lowered == L"tip") {
     *output = SrfOverlayBackend::InProcess;
   } else if (lowered == L"external" || lowered == L"out_of_process" ||
              lowered == L"out-of-process" || lowered == L"helper") {
@@ -703,8 +700,8 @@ bool TryParseFocusPolicy(const std::wstring& value, SrfFocusPolicy* out) {
   if (!out) return false;
   const std::wstring lowered = ToLower(Trim(value));
   if (lowered.empty()) return false;
-  if (lowered == L"normal" || lowered == L"default" || lowered == L"global" ||
-      lowered == L"off" || lowered == L"0") {
+  if (lowered == L"normal" || lowered == L"default" || lowered == L"global" || lowered == L"off" ||
+      lowered == L"0") {
     *out = SrfFocusPolicy::Normal;
     return true;
   }
@@ -722,26 +719,27 @@ bool TryParseFocusPolicy(const std::wstring& value, SrfFocusPolicy* out) {
 }
 
 void LoadStyle(const std::filesystem::path& path, SrfConfig& config) {
-  config.style.inlinePreedit =
-      ParseBool(ReadIniString(path, L"style", L"inline_preedit", config.style.inlinePreedit ? L"1" : L"0"),
-                config.style.inlinePreedit);
-  config.style.enhancedPosition = ParseBool(
-      ReadIniString(path, L"style", L"enhanced_position", config.style.enhancedPosition ? L"1" : L"0"),
-      config.style.enhancedPosition);
+  config.style.inlinePreedit = ParseBool(
+      ReadIniString(path, L"style", L"inline_preedit", config.style.inlinePreedit ? L"1" : L"0"),
+      config.style.inlinePreedit);
+  config.style.enhancedPosition =
+      ParseBool(ReadIniString(path, L"style", L"enhanced_position",
+                              config.style.enhancedPosition ? L"1" : L"0"),
+                config.style.enhancedPosition);
   config.style.pagingOnScroll = ParseBool(
       ReadIniString(path, L"style", L"paging_on_scroll", config.style.pagingOnScroll ? L"1" : L"0"),
       config.style.pagingOnScroll);
-  config.style.candidateAbbreviateLength = ParseUInt(
-      ReadIniString(path, L"style", L"candidate_abbreviate_length", L"64"),
-      config.style.candidateAbbreviateLength);
-  config.style.candidateFontSize = std::clamp(
-      ParseUInt(ReadIniString(path, L"style", L"candidate_font_size", L"16"),
-                config.style.candidateFontSize),
-      14u, 28u);
-  config.style.candidateOpacity = std::clamp(
-      ParseUInt(ReadIniString(path, L"style", L"candidate_opacity", L"100"),
-                config.style.candidateOpacity),
-      90u, 100u);
+  config.style.candidateAbbreviateLength =
+      ParseUInt(ReadIniString(path, L"style", L"candidate_abbreviate_length", L"64"),
+                config.style.candidateAbbreviateLength);
+  config.style.candidateFontSize =
+      std::clamp(ParseUInt(ReadIniString(path, L"style", L"candidate_font_size", L"16"),
+                           config.style.candidateFontSize),
+                 14u, 28u);
+  config.style.candidateOpacity =
+      std::clamp(ParseUInt(ReadIniString(path, L"style", L"candidate_opacity", L"100"),
+                           config.style.candidateOpacity),
+                 90u, 100u);
   config.style.candidateReduceMotion =
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kStyle,
                               SrfConfigSchema::key::kCandidateReduceMotion,
@@ -756,40 +754,44 @@ void LoadStyle(const std::filesystem::path& path, SrfConfig& config) {
       static_cast<int>(ParseUInt(ReadIniString(path, L"style", L"candidate_font_weight", L"500"),
                                  static_cast<UINT>(std::max(1, config.style.candidateFontWeight)))),
       300, 700);
-  config.style.candidateSelectedFontWeight = std::clamp(
-      static_cast<int>(
-          ParseUInt(ReadIniString(path, L"style", L"candidate_selected_font_weight", L"600"),
-                    static_cast<UINT>(std::max(1, config.style.candidateSelectedFontWeight)))),
-      400, 800);
-  config.style.candidateLabelFontWeight = std::clamp(
-      static_cast<int>(ParseUInt(ReadIniString(path, L"style", L"candidate_label_font_weight", L"600"),
-                                 static_cast<UINT>(std::max(1, config.style.candidateLabelFontWeight)))),
-      400, 800);
-  config.style.candidateChipFontWeight = std::clamp(
-      static_cast<int>(ParseUInt(ReadIniString(path, L"style", L"candidate_chip_font_weight", L"500"),
-                                 static_cast<UINT>(std::max(1, config.style.candidateChipFontWeight)))),
-      350, 700);
+  config.style.candidateSelectedFontWeight =
+      std::clamp(static_cast<int>(ParseUInt(
+                     ReadIniString(path, L"style", L"candidate_selected_font_weight", L"600"),
+                     static_cast<UINT>(std::max(1, config.style.candidateSelectedFontWeight)))),
+                 400, 800);
+  config.style.candidateLabelFontWeight =
+      std::clamp(static_cast<int>(ParseUInt(
+                     ReadIniString(path, L"style", L"candidate_label_font_weight", L"600"),
+                     static_cast<UINT>(std::max(1, config.style.candidateLabelFontWeight)))),
+                 400, 800);
+  config.style.candidateChipFontWeight =
+      std::clamp(static_cast<int>(ParseUInt(
+                     ReadIniString(path, L"style", L"candidate_chip_font_weight", L"500"),
+                     static_cast<UINT>(std::max(1, config.style.candidateChipFontWeight)))),
+                 350, 700);
   config.style.candidateSkinFile =
       Trim(ReadIniStringLong(path, L"style", L"candidate_skin_file", L""));
-  config.style.candidateHorizontal = ParseBool(
-      ReadIniString(path, L"style", L"candidate_horizontal", L"1"),
-      config.style.candidateHorizontal);
-  config.style.candidatePageSize = std::clamp(
-      ParseUInt(ReadIniString(path, L"style", L"candidate_page_size", L"9"),
-                config.style.candidatePageSize),
-      3u, 9u);
-  config.style.candidateHorizontalCount = std::clamp(
-      ParseUInt(ReadIniString(path, L"style", L"candidate_horizontal_count", L"5"),
-                config.style.candidateHorizontalCount),
-      3u, 9u);
-  config.style.candidateHorizontalCompact = ParseBool(
-      ReadIniString(path, L"style", L"candidate_horizontal_compact",
-                    config.style.candidateHorizontalCompact ? L"1" : L"0"),
-      config.style.candidateHorizontalCompact);
-  config.style.showCandidateReading = ParseBool(
-      ReadIniString(path, L"style", L"show_candidate_reading", L"0"), config.style.showCandidateReading);
-  config.style.showCandidateScore = ParseBool(
-      ReadIniString(path, L"style", L"show_candidate_score", L"0"), config.style.showCandidateScore);
+  config.style.candidateHorizontal =
+      ParseBool(ReadIniString(path, L"style", L"candidate_horizontal", L"1"),
+                config.style.candidateHorizontal);
+  config.style.candidatePageSize =
+      std::clamp(ParseUInt(ReadIniString(path, L"style", L"candidate_page_size", L"9"),
+                           config.style.candidatePageSize),
+                 3u, 9u);
+  config.style.candidateHorizontalCount =
+      std::clamp(ParseUInt(ReadIniString(path, L"style", L"candidate_horizontal_count", L"5"),
+                           config.style.candidateHorizontalCount),
+                 3u, 9u);
+  config.style.candidateHorizontalCompact =
+      ParseBool(ReadIniString(path, L"style", L"candidate_horizontal_compact",
+                              config.style.candidateHorizontalCompact ? L"1" : L"0"),
+                config.style.candidateHorizontalCompact);
+  config.style.showCandidateReading =
+      ParseBool(ReadIniString(path, L"style", L"show_candidate_reading", L"0"),
+                config.style.showCandidateReading);
+  config.style.showCandidateScore =
+      ParseBool(ReadIniString(path, L"style", L"show_candidate_score", L"0"),
+                config.style.showCandidateScore);
   config.style.highlightTypoCandidates =
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kStyle,
                               SrfConfigSchema::key::kHighlightTypoCandidates, L"1"),
@@ -798,25 +800,22 @@ void LoadStyle(const std::filesystem::path& path, SrfConfig& config) {
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kStyle,
                               SrfConfigSchema::key::kShowCandidateSource, L"0"),
                 config.style.showCandidateSource);
-  config.style.showModeInCandidateHeader = ParseBool(
-      ReadIniString(path, L"style", L"show_mode_in_candidate_header", L"0"),
-      config.style.showModeInCandidateHeader);
-  config.style.candidateTopmost = ParseBool(
-      ReadIniString(path, L"style", L"candidate_topmost",
-                    config.style.candidateTopmost ? L"1" : L"0"),
-      config.style.candidateTopmost);
+  config.style.showModeInCandidateHeader =
+      ParseBool(ReadIniString(path, L"style", L"show_mode_in_candidate_header", L"0"),
+                config.style.showModeInCandidateHeader);
+  config.style.candidateTopmost =
+      ParseBool(ReadIniString(path, L"style", L"candidate_topmost",
+                              config.style.candidateTopmost ? L"1" : L"0"),
+                config.style.candidateTopmost);
   config.style.themeMode = ParseTheme(path);
-  config.style.candidateMaterial =
-      ParseCandidateMaterial(ReadIniString(path, SrfConfigSchema::section::kStyle,
-                                           SrfConfigSchema::key::kCandidateMaterial,
-                                           SrfConfigSchema::defaults::kCandidateMaterial));
-  config.style.candidateDensity =
-      ParseCandidateDensity(ReadIniString(path, SrfConfigSchema::section::kStyle,
-                                          SrfConfigSchema::key::kCandidateDensity,
-                                          SrfConfigSchema::defaults::kCandidateDensity));
-  const std::wstring legacyLayout =
-      Trim(ReadIniString(path, SrfConfigSchema::section::kStyle,
-                         SrfConfigSchema::key::kCandidateLayoutVariant, L""));
+  config.style.candidateMaterial = ParseCandidateMaterial(ReadIniString(
+      path, SrfConfigSchema::section::kStyle, SrfConfigSchema::key::kCandidateMaterial,
+      SrfConfigSchema::defaults::kCandidateMaterial));
+  config.style.candidateDensity = ParseCandidateDensity(
+      ReadIniString(path, SrfConfigSchema::section::kStyle, SrfConfigSchema::key::kCandidateDensity,
+                    SrfConfigSchema::defaults::kCandidateDensity));
+  const std::wstring legacyLayout = Trim(ReadIniString(
+      path, SrfConfigSchema::section::kStyle, SrfConfigSchema::key::kCandidateLayoutVariant, L""));
   const std::wstring verticalLayout =
       Trim(ReadIniString(path, SrfConfigSchema::section::kStyle,
                          SrfConfigSchema::key::kCandidateVerticalLayoutVariant, L""));
@@ -825,18 +824,16 @@ void LoadStyle(const std::filesystem::path& path, SrfConfig& config) {
                          SrfConfigSchema::key::kCandidateHorizontalLayoutVariant, L""));
   const bool hasExplicitLayout =
       !legacyLayout.empty() || !verticalLayout.empty() || !horizontalLayout.empty();
-  const SrfCandidateLayoutVariant explicitVerticalLayout =
-      ParseCandidateLayoutVariant(verticalLayout.empty()
-                                      ? (legacyLayout.empty()
-                                             ? SrfConfigSchema::defaults::kCandidateLayoutVariant
-                                             : legacyLayout)
-                                      : verticalLayout);
-  const SrfCandidateLayoutVariant explicitHorizontalLayout =
-      ParseCandidateLayoutVariant(horizontalLayout.empty()
-                                      ? (legacyLayout.empty()
-                                             ? SrfConfigSchema::defaults::kCandidateHorizontalLayoutVariant
-                                             : legacyLayout)
-                                      : horizontalLayout);
+  const SrfCandidateLayoutVariant explicitVerticalLayout = ParseCandidateLayoutVariant(
+      verticalLayout.empty()
+          ? (legacyLayout.empty() ? SrfConfigSchema::defaults::kCandidateLayoutVariant
+                                  : legacyLayout)
+          : verticalLayout);
+  const SrfCandidateLayoutVariant explicitHorizontalLayout = ParseCandidateLayoutVariant(
+      horizontalLayout.empty()
+          ? (legacyLayout.empty() ? SrfConfigSchema::defaults::kCandidateHorizontalLayoutVariant
+                                  : legacyLayout)
+          : horizontalLayout);
   config.style.candidateLayoutVariant =
       config.style.candidateHorizontal ? explicitHorizontalLayout : explicitVerticalLayout;
   const UINT configuredFontSize = config.style.candidateFontSize;
@@ -867,20 +864,20 @@ void LoadEngine(const std::filesystem::path& path, SrfConfig& config) {
       ParseLearningSensitivity(ReadIniString(path, L"engine", L"learning_sensitivity",
                                              config.engine.learningSensitivity.c_str()),
                                config.engine.learningSensitivity);
-  config.engine.vAssist = ParseBool(
-      ReadIniString(path, L"engine", L"v_assist", config.engine.vAssist ? L"1" : L"0"),
-      config.engine.vAssist);
+  config.engine.vAssist =
+      ParseBool(ReadIniString(path, L"engine", L"v_assist", config.engine.vAssist ? L"1" : L"0"),
+                config.engine.vAssist);
   config.engine.uMode =
       ParseBool(ReadIniString(path, L"engine", L"u_mode", config.engine.uMode ? L"1" : L"0"),
                 config.engine.uMode);
-  config.engine.retryOnFailure = ParseBool(
-      ReadIniString(path, L"engine", L"retry_on_failure",
-                    config.engine.retryOnFailure ? L"1" : L"0"),
-      config.engine.retryOnFailure);
-  config.engine.showStatusNotifications = ParseBool(
-      ReadIniString(path, L"engine", L"show_status_notifications",
-                    config.engine.showStatusNotifications ? L"1" : L"0"),
-      config.engine.showStatusNotifications);
+  config.engine.retryOnFailure =
+      ParseBool(ReadIniString(path, L"engine", L"retry_on_failure",
+                              config.engine.retryOnFailure ? L"1" : L"0"),
+                config.engine.retryOnFailure);
+  config.engine.showStatusNotifications =
+      ParseBool(ReadIniString(path, L"engine", L"show_status_notifications",
+                              config.engine.showStatusNotifications ? L"1" : L"0"),
+                config.engine.showStatusNotifications);
 }
 
 void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
@@ -888,57 +885,54 @@ void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
       ParseBool(ReadIniString(path, L"input", L"default_ascii", L"0"), config.input.defaultAscii);
   config.input.defaultFullShape = ParseBool(
       ReadIniString(path, L"input", L"default_full_shape", L"0"), config.input.defaultFullShape);
-  config.input.defaultChinesePunct = ParseBool(
-      ReadIniString(path, L"input", L"default_chinese_punct", L"1"), config.input.defaultChinesePunct);
-  config.input.defaultFuzzyPinyin = ParseBool(
-      ReadIniString(path, L"input", L"default_fuzzy_pinyin", L"0"), config.input.defaultFuzzyPinyin);
-  config.input.defaultDoublePinyin = ParseBool(
-      ReadIniString(path, L"input", L"default_double_pinyin", L"0"), config.input.defaultDoublePinyin);
+  config.input.defaultChinesePunct =
+      ParseBool(ReadIniString(path, L"input", L"default_chinese_punct", L"1"),
+                config.input.defaultChinesePunct);
+  config.input.defaultFuzzyPinyin =
+      ParseBool(ReadIniString(path, L"input", L"default_fuzzy_pinyin", L"0"),
+                config.input.defaultFuzzyPinyin);
+  config.input.defaultDoublePinyin =
+      ParseBool(ReadIniString(path, L"input", L"default_double_pinyin", L"0"),
+                config.input.defaultDoublePinyin);
   config.input.curlyPunct =
       ParseBool(ReadIniString(path, L"input", L"curly_punct", L"1"), config.input.curlyPunct);
-  config.input.autoPairPunct =
-      ParseBool(ReadIniString(path, L"input", L"auto_pair_punct", L"1"), config.input.autoPairPunct);
-  config.input.numberFullwidth = ParseBool(
-      ReadIniString(path, L"input", L"number_fullwidth", L"0"), config.input.numberFullwidth);
+  config.input.autoPairPunct = ParseBool(ReadIniString(path, L"input", L"auto_pair_punct", L"1"),
+                                         config.input.autoPairPunct);
+  config.input.numberFullwidth = ParseBool(ReadIniString(path, L"input", L"number_fullwidth", L"0"),
+                                           config.input.numberFullwidth);
   config.input.chineseHalfwidth = ParseBool(
       ReadIniString(path, L"input", L"chinese_halfwidth", L"0"), config.input.chineseHalfwidth);
-  config.input.symbolFullwidth = ParseBool(
-      ReadIniString(path, L"input", L"symbol_fullwidth", L"0"), config.input.symbolFullwidth);
+  config.input.symbolFullwidth = ParseBool(ReadIniString(path, L"input", L"symbol_fullwidth", L"0"),
+                                           config.input.symbolFullwidth);
   config.input.shiftSymbolTemporaryAscii =
       ParseBool(ReadIniString(path, L"input", L"shift_symbol_temporary_ascii", L"0"),
                 config.input.shiftSymbolTemporaryAscii);
-  config.input.dateAutoFormat = ParseBool(
-      ReadIniString(path, L"input", L"date_auto_format", L"1"), config.input.dateAutoFormat);
+  config.input.dateAutoFormat = ParseBool(ReadIniString(path, L"input", L"date_auto_format", L"1"),
+                                          config.input.dateAutoFormat);
   config.input.englishWordInput = ParseBool(
       ReadIniString(path, L"input", L"english_word_input", L"0"), config.input.englishWordInput);
   config.input.symbolToolbox =
       ParseBool(ReadIniString(path, L"input", L"symbol_toolbox", L"1"), config.input.symbolToolbox);
   config.input.emojiInput =
       ParseBool(ReadIniString(path, L"input", L"emoji_input", L"1"), config.input.emojiInput);
-  config.input.traditionalOutput =
-      ParseBool(ReadIniString(path, L"input", L"traditional_output", L"0"),
-                config.input.traditionalOutput);
-  config.input.cnEnHotkey =
-      ParseCnEnHotkey(ReadIniString(path, L"input", L"cn_en_hotkey", L"none"),
-                      config.input.cnEnHotkey);
-  config.input.fullShapeHotkeyEnabled = ParseBool(
-      ReadIniString(path, L"input", L"full_shape_hotkey", L"0"),
-      config.input.fullShapeHotkeyEnabled);
-  config.input.punctHotkeyEnabled =
-      ParseBool(ReadIniString(path, L"input", L"punct_hotkey", L"0"),
-                config.input.punctHotkeyEnabled);
-  config.input.fuzzyHotkeyEnabled =
-      ParseBool(ReadIniString(path, L"input", L"fuzzy_hotkey", L"0"),
-                config.input.fuzzyHotkeyEnabled);
+  config.input.traditionalOutput = ParseBool(
+      ReadIniString(path, L"input", L"traditional_output", L"0"), config.input.traditionalOutput);
+  config.input.cnEnHotkey = ParseCnEnHotkey(ReadIniString(path, L"input", L"cn_en_hotkey", L"none"),
+                                            config.input.cnEnHotkey);
+  config.input.fullShapeHotkeyEnabled =
+      ParseBool(ReadIniString(path, L"input", L"full_shape_hotkey", L"0"),
+                config.input.fullShapeHotkeyEnabled);
+  config.input.punctHotkeyEnabled = ParseBool(ReadIniString(path, L"input", L"punct_hotkey", L"0"),
+                                              config.input.punctHotkeyEnabled);
+  config.input.fuzzyHotkeyEnabled = ParseBool(ReadIniString(path, L"input", L"fuzzy_hotkey", L"0"),
+                                              config.input.fuzzyHotkeyEnabled);
   config.input.doubleHotkeyEnabled =
       ParseBool(ReadIniString(path, L"input", L"double_pinyin_hotkey", L"0"),
                 config.input.doubleHotkeyEnabled);
-  config.input.shiftTapHotkeyEnabled =
-      ParseBool(ReadIniString(path, L"input", L"shift_tap_hotkey", L"1"),
-                config.input.shiftTapHotkeyEnabled);
+  config.input.shiftTapHotkeyEnabled = ParseBool(
+      ReadIniString(path, L"input", L"shift_tap_hotkey", L"1"), config.input.shiftTapHotkeyEnabled);
   config.input.hotkeyScope = ParseHotkeyScope(
-      ReadIniString(path, L"input", SrfConfigSchema::key::kHotkeyScope,
-                    L"disabled_in_game"),
+      ReadIniString(path, L"input", SrfConfigSchema::key::kHotkeyScope, L"disabled_in_game"),
       config.input.hotkeyScope);
   config.input.candidateNumberSelect =
       ParseBool(ReadIniString(path, L"input", L"candidate_number_select", L"1"),
@@ -951,62 +945,58 @@ void LoadInput(const std::filesystem::path& path, SrfConfig& config) {
                 config.input.candidateRightClick);
   config.style.candidateLeftClick = config.input.candidateLeftClick;
   config.style.candidateRightClick = config.input.candidateRightClick;
-  config.input.pageMinusEqual =
-      ParseBool(ReadIniString(path, L"input", L"page_minus_equal", L"1"), config.input.pageMinusEqual);
+  config.input.pageMinusEqual = ParseBool(ReadIniString(path, L"input", L"page_minus_equal", L"1"),
+                                          config.input.pageMinusEqual);
   config.input.pageCommaPeriod = ParseBool(
       ReadIniString(path, L"input", L"page_comma_period", L"1"), config.input.pageCommaPeriod);
   config.input.pagePgUpDown =
       ParseBool(ReadIniString(path, L"input", L"page_pgup_pgdn", L"1"), config.input.pagePgUpDown);
 
   SrfHotkeyOptions traditionalHotkey = config.input.traditionalHotkey;
-  if (TryParseHotkey(ReadIniString(path, L"input", L"traditional_hotkey", L"off"),
-                     'F', TF_MOD_CONTROL | TF_MOD_SHIFT | TF_MOD_ALT, &traditionalHotkey)) {
+  if (TryParseHotkey(ReadIniString(path, L"input", L"traditional_hotkey", L"off"), 'F',
+                     TF_MOD_CONTROL | TF_MOD_SHIFT | TF_MOD_ALT, &traditionalHotkey)) {
     config.input.traditionalHotkey = traditionalHotkey;
   }
   SrfHotkeyOptions gameModeHotkey = config.input.gameModeHotkey;
-  if (TryParseHotkey(ReadIniString(path, L"input", L"game_mode_hotkey", L"Ctrl+Shift+Alt+G"),
-                     'G', TF_MOD_CONTROL | TF_MOD_SHIFT | TF_MOD_ALT, &gameModeHotkey)) {
+  if (TryParseHotkey(ReadIniString(path, L"input", L"game_mode_hotkey", L"Ctrl+Shift+Alt+G"), 'G',
+                     TF_MOD_CONTROL | TF_MOD_SHIFT | TF_MOD_ALT, &gameModeHotkey)) {
     config.input.gameModeHotkey = gameModeHotkey;
   }
   SrfHotkeyOptions temporaryAsciiHotkey = config.input.temporaryAsciiHotkey;
-  if (TryParseHotkey(
-          ReadIniString(path, L"input", L"temporary_ascii_hotkey", L"off"),
-          VK_SPACE, TF_MOD_CONTROL | TF_MOD_SHIFT, &temporaryAsciiHotkey)) {
+  if (TryParseHotkey(ReadIniString(path, L"input", L"temporary_ascii_hotkey", L"off"), VK_SPACE,
+                     TF_MOD_CONTROL | TF_MOD_SHIFT, &temporaryAsciiHotkey)) {
     config.input.temporaryAsciiHotkey = temporaryAsciiHotkey;
   }
 }
 
 void LoadClipboard(const std::filesystem::path& path, SrfConfig& config) {
-  config.clipboard.backgroundEnabled = ParseBool(
-      ReadIniString(path, L"clipboard", L"background_enabled", L"0"), config.clipboard.backgroundEnabled);
-  config.clipboard.maxHistoryItems = std::clamp(
-      ParseUInt(ReadIniString(path, L"clipboard", L"max_history_items", L"60"),
-                config.clipboard.maxHistoryItems),
-      0u, 300u);
-  config.clipboard.maxPinnedItems = std::clamp(
-      ParseUInt(ReadIniString(path, L"clipboard", L"max_pinned_items", L"24"),
-                config.clipboard.maxPinnedItems),
-      0u, 100u);
-  config.clipboard.maxTextUtf16Units = std::clamp(
-      ParseUInt(ReadIniString(path, L"clipboard", L"max_text_utf16_units", L"20000"),
-                config.clipboard.maxTextUtf16Units),
-      20u, 20000u);
+  config.clipboard.backgroundEnabled =
+      ParseBool(ReadIniString(path, L"clipboard", L"background_enabled", L"0"),
+                config.clipboard.backgroundEnabled);
+  config.clipboard.maxHistoryItems =
+      std::clamp(ParseUInt(ReadIniString(path, L"clipboard", L"max_history_items", L"60"),
+                           config.clipboard.maxHistoryItems),
+                 0u, 300u);
+  config.clipboard.maxPinnedItems =
+      std::clamp(ParseUInt(ReadIniString(path, L"clipboard", L"max_pinned_items", L"24"),
+                           config.clipboard.maxPinnedItems),
+                 0u, 100u);
+  config.clipboard.maxTextUtf16Units =
+      std::clamp(ParseUInt(ReadIniString(path, L"clipboard", L"max_text_utf16_units", L"20000"),
+                           config.clipboard.maxTextUtf16Units),
+                 20u, 20000u);
 }
 
 void LoadPrivacy(const std::filesystem::path& path, SrfConfig& config) {
-  config.privacy.enabled = ParseBool(
-      ReadIniString(path, SrfConfigSchema::section::kPrivacy,
-                    SrfConfigSchema::key::kPrivacyEnabled, L"0"),
-      config.privacy.enabled);
-  config.privacy.neverLearnProcessList =
-      ReadIniList(path, SrfConfigSchema::section::kPrivacy,
-                  SrfConfigSchema::key::kNeverLearnProcesses);
-  config.privacy.neverClipboardProcessList =
-      ReadIniList(path, SrfConfigSchema::section::kPrivacy,
-                  SrfConfigSchema::key::kNeverClipboardProcesses);
-  config.privacy.neverCandidateProcessList =
-      ReadIniList(path, SrfConfigSchema::section::kPrivacy,
-                  SrfConfigSchema::key::kNeverCandidateProcesses);
+  config.privacy.enabled = ParseBool(ReadIniString(path, SrfConfigSchema::section::kPrivacy,
+                                                   SrfConfigSchema::key::kPrivacyEnabled, L"0"),
+                                     config.privacy.enabled);
+  config.privacy.neverLearnProcessList = ReadIniList(path, SrfConfigSchema::section::kPrivacy,
+                                                     SrfConfigSchema::key::kNeverLearnProcesses);
+  config.privacy.neverClipboardProcessList = ReadIniList(
+      path, SrfConfigSchema::section::kPrivacy, SrfConfigSchema::key::kNeverClipboardProcesses);
+  config.privacy.neverCandidateProcessList = ReadIniList(
+      path, SrfConfigSchema::section::kPrivacy, SrfConfigSchema::key::kNeverCandidateProcesses);
 }
 
 void LoadScreenshot(const std::filesystem::path& path, SrfConfig& config) {
@@ -1036,30 +1026,36 @@ SrfGameInputMode ParseGameInputMode(const std::wstring& value) {
 }
 
 void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
-  const auto enter = ToLower(Trim(ReadIniString(path, L"compatibility", L"game_enter_behavior", L"auto")));
-  config.compatibility.gameEnterBehavior = enter == L"stay" ? SrfGameEnterBehavior::Stay :
-      enter == L"close" ? SrfGameEnterBehavior::Close : SrfGameEnterBehavior::Auto;
-  config.compatibility.gameAutoUia = ParseBool(ReadIniString(path, L"compatibility", L"game_auto_uia", L"1"), true);
-  config.compatibility.gameStatusIndicator = ParseBool(ReadIniString(path, L"compatibility", L"game_status_indicator", L"1"), true);
+  const auto enter =
+      ToLower(Trim(ReadIniString(path, L"compatibility", L"game_enter_behavior", L"auto")));
+  config.compatibility.gameEnterBehavior = enter == L"stay"    ? SrfGameEnterBehavior::Stay
+                                           : enter == L"close" ? SrfGameEnterBehavior::Close
+                                                               : SrfGameEnterBehavior::Auto;
+  config.compatibility.gameAutoUia =
+      ParseBool(ReadIniString(path, L"compatibility", L"game_auto_uia", L"1"), true);
+  config.compatibility.gameStatusIndicator =
+      ParseBool(ReadIniString(path, L"compatibility", L"game_status_indicator", L"1"), true);
   int statusSetting = 0;
-  if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_duration_ms", L"1600"), &statusSetting))
-    config.compatibility.gameStatusDurationMs = static_cast<UINT>(std::clamp(statusSetting, 500, 5000));
-  if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_scale_percent", L"100"), &statusSetting))
-    config.compatibility.gameStatusScalePercent = static_cast<UINT>(std::clamp(statusSetting, 70, 200));
-  config.compatibility.gameInputMode = ParseGameInputMode(
-      ReadIniString(path, L"compatibility", L"game_input_mode", L"auto_text"));
+  if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_duration_ms", L"1600"),
+                  &statusSetting))
+    config.compatibility.gameStatusDurationMs =
+        static_cast<UINT>(std::clamp(statusSetting, 500, 5000));
+  if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_scale_percent", L"100"),
+                  &statusSetting))
+    config.compatibility.gameStatusScalePercent =
+        static_cast<UINT>(std::clamp(statusSetting, 70, 200));
+  config.compatibility.gameInputMode =
+      ParseGameInputMode(ReadIniString(path, L"compatibility", L"game_input_mode", L"auto_text"));
   config.compatibility.fullscreenDetection =
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kCompatibility,
                               SrfConfigSchema::key::kFullscreenDetection, L"1"),
                 config.compatibility.fullscreenDetection);
-  config.compatibility.fullscreenPolicy = ParseFullscreenPolicy(
-      ReadIniString(path, SrfConfigSchema::section::kCompatibility,
-                    SrfConfigSchema::key::kFullscreenPolicy,
-                    SrfConfigSchema::defaults::kFullscreenPolicy));
-  config.compatibility.commitTransport = ParseCommitTransport(
-      ReadIniString(path, SrfConfigSchema::section::kCompatibility,
-                    SrfConfigSchema::key::kCommitTransport,
-                    SrfConfigSchema::defaults::kCommitTransport));
+  config.compatibility.fullscreenPolicy = ParseFullscreenPolicy(ReadIniString(
+      path, SrfConfigSchema::section::kCompatibility, SrfConfigSchema::key::kFullscreenPolicy,
+      SrfConfigSchema::defaults::kFullscreenPolicy));
+  config.compatibility.commitTransport = ParseCommitTransport(ReadIniString(
+      path, SrfConfigSchema::section::kCompatibility, SrfConfigSchema::key::kCommitTransport,
+      SrfConfigSchema::defaults::kCommitTransport));
   config.compatibility.builtinGameList =
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kCompatibility,
                               SrfConfigSchema::key::kBuiltinGameList, L"1"),
@@ -1068,9 +1064,8 @@ void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
       ParseBool(ReadIniString(path, SrfConfigSchema::section::kCompatibility,
                               SrfConfigSchema::key::kAutoSuggestAppOptions, L"1"),
                 config.compatibility.autoSuggestAppOptions);
-  config.compatibility.gameProcessList =
-      ReadIniList(path, SrfConfigSchema::section::kCompatibility,
-                  SrfConfigSchema::key::kGameProcesses);
+  config.compatibility.gameProcessList = ReadIniList(path, SrfConfigSchema::section::kCompatibility,
+                                                     SrfConfigSchema::key::kGameProcesses);
   if (config.compatibility.builtinGameList) {
     AppendDefaultGameProcessPatterns(config.compatibility.gameProcessList);
   }
@@ -1110,11 +1105,9 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
       }
       SrfAppOptions options = {};
 
-      const std::wstring appPolicy =
-          ToLower(Trim(ReadIniString(path, section.c_str(), L"policy")));
-      if (appPolicy == L"show_ui" || appPolicy == L"show-ui" ||
-          appPolicy == L"showui" || appPolicy == L"show" ||
-          appPolicy == L"overlay" || appPolicy == L"candidate" ||
+      const std::wstring appPolicy = ToLower(Trim(ReadIniString(path, section.c_str(), L"policy")));
+      if (appPolicy == L"show_ui" || appPolicy == L"show-ui" || appPolicy == L"showui" ||
+          appPolicy == L"show" || appPolicy == L"overlay" || appPolicy == L"candidate" ||
           appPolicy == L"candidate_ui") {
         options.hasAsciiMode = true;
         options.asciiMode = false;
@@ -1122,42 +1115,45 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
         options.hideUi = false;
         options.hasCandidateTopmost = true;
         options.candidateTopmost = true;
-      } else if (appPolicy == L"ascii" || appPolicy == L"ascii_mode" ||
-                 appPolicy == L"english" || appPolicy == L"en") {
+      } else if (appPolicy == L"ascii" || appPolicy == L"ascii_mode" || appPolicy == L"english" ||
+                 appPolicy == L"en") {
         options.hasAsciiMode = true;
         options.asciiMode = true;
-      } else if (appPolicy == L"hide" || appPolicy == L"hide_ui" ||
-                 appPolicy == L"hide-ui" || appPolicy == L"hideui") {
+      } else if (appPolicy == L"hide" || appPolicy == L"hide_ui" || appPolicy == L"hide-ui" ||
+                 appPolicy == L"hideui") {
         options.hasHideUi = true;
         options.hideUi = true;
-      } else if (appPolicy == L"topmost_off" ||
-                 appPolicy == L"candidate_topmost_off") {
+      } else if (appPolicy == L"topmost_off" || appPolicy == L"candidate_topmost_off") {
         options.hasCandidateTopmost = true;
         options.candidateTopmost = false;
       }
 
       const auto gameInputMode = ReadIniString(path, section.c_str(), L"game_input_mode");
-      const auto enter = ToLower(Trim(ReadIniString(path, section.c_str(), L"game_enter_behavior")));
+      const auto enter =
+          ToLower(Trim(ReadIniString(path, section.c_str(), L"game_enter_behavior")));
       if (enter == L"auto" || enter == L"close" || enter == L"stay") {
         options.hasGameEnterBehavior = true;
-        options.gameEnterBehavior = enter == L"stay" ? SrfGameEnterBehavior::Stay :
-            enter == L"close" ? SrfGameEnterBehavior::Close : SrfGameEnterBehavior::Auto;
+        options.gameEnterBehavior = enter == L"stay"    ? SrfGameEnterBehavior::Stay
+                                    : enter == L"close" ? SrfGameEnterBehavior::Close
+                                                        : SrfGameEnterBehavior::Auto;
       }
       const auto uia = ToLower(Trim(ReadIniString(path, section.c_str(), L"game_auto_uia")));
       if (!uia.empty() && uia != L"inherit") {
         options.hasGameAutoUia = true;
         options.gameAutoUia = ParseBool(uia, true);
       }
-      const auto indicator = ToLower(Trim(ReadIniString(path, section.c_str(), L"game_status_indicator")));
+      const auto indicator =
+          ToLower(Trim(ReadIniString(path, section.c_str(), L"game_status_indicator")));
       if (!indicator.empty() && indicator != L"inherit") {
         options.hasGameStatusIndicator = true;
         options.gameStatusIndicator = ParseBool(indicator, true);
       }
-      (void)TryParseHotkey(ReadIniString(path, section.c_str(), L"game_chat_open_key", L"off"),
-                           'T', 0, &options.gameChatOpenKey);
+      (void)TryParseHotkey(ReadIniString(path, section.c_str(), L"game_chat_open_key", L"off"), 'T',
+                           0, &options.gameChatOpenKey);
       (void)TryParseHotkey(ReadIniString(path, section.c_str(), L"game_chat_close_key", L"Escape"),
                            VK_ESCAPE, 0, &options.gameChatCloseKey);
-      options.overlayForceUi = ParseBool(ReadIniString(path, section.c_str(), L"overlay_force_ui", L"0"), false);
+      options.overlayForceUi =
+          ParseBool(ReadIniString(path, section.c_str(), L"overlay_force_ui", L"0"), false);
       if (!Trim(gameInputMode).empty() && ToLower(Trim(gameInputMode)) != L"inherit") {
         options.hasGameInputMode = true;
         options.gameInputMode = ParseGameInputMode(gameInputMode);
@@ -1222,29 +1218,29 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
       }
 
       SrfOverlayAnchor overlayAnchor = SrfOverlayAnchor::Auto;
-      const std::wstring overlayAnchorValue = ReadIniString(
-          path, section.c_str(), SrfConfigSchema::key::kOverlayAnchor);
+      const std::wstring overlayAnchorValue =
+          ReadIniString(path, section.c_str(), SrfConfigSchema::key::kOverlayAnchor);
       if (TryParseOverlayAnchor(overlayAnchorValue, &overlayAnchor)) {
         options.hasOverlayAnchor = true;
         options.overlayAnchor = overlayAnchor;
       }
 
       int overlayOffset = 0;
-      const std::wstring overlayOffsetX = ReadIniString(
-          path, section.c_str(), SrfConfigSchema::key::kOverlayOffsetX);
+      const std::wstring overlayOffsetX =
+          ReadIniString(path, section.c_str(), SrfConfigSchema::key::kOverlayOffsetX);
       if (TryParseInt(overlayOffsetX, &overlayOffset)) {
         options.hasOverlayOffsetX = true;
         options.overlayOffsetX = std::clamp(overlayOffset, -4000, 4000);
       }
-      const std::wstring overlayOffsetY = ReadIniString(
-          path, section.c_str(), SrfConfigSchema::key::kOverlayOffsetY);
+      const std::wstring overlayOffsetY =
+          ReadIniString(path, section.c_str(), SrfConfigSchema::key::kOverlayOffsetY);
       if (TryParseInt(overlayOffsetY, &overlayOffset)) {
         options.hasOverlayOffsetY = true;
         options.overlayOffsetY = std::clamp(overlayOffset, -4000, 4000);
       }
 
-      const std::wstring overlayScale = ReadIniString(
-          path, section.c_str(), SrfConfigSchema::key::kOverlayScale);
+      const std::wstring overlayScale =
+          ReadIniString(path, section.c_str(), SrfConfigSchema::key::kOverlayScale);
       if (!Trim(overlayScale).empty()) {
         options.hasOverlayScale = true;
         options.overlayScalePercent = std::clamp(ParseUInt(overlayScale, 100), 50u, 200u);
@@ -1351,20 +1347,20 @@ std::filesystem::path CurrentConfigWatchDirectory() {
 
 bool WaitForConfigDirectoryChange(const std::filesystem::path& dir) {
   if (dir.empty()) return false;
-  HANDLE directory = CreateFileW(dir.c_str(), FILE_LIST_DIRECTORY,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                                OPEN_EXISTING,
-                                FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
+  HANDLE directory = CreateFileW(
+      dir.c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
   if (directory == INVALID_HANDLE_VALUE) return false;
 
   auto operation = SrfOverlappedIo::Create(directory, 4096);
   CloseHandle(directory);
   if (!operation) return false;
-  const BOOL started = ReadDirectoryChangesW(
-      operation->handle, operation->buffer.data(), static_cast<DWORD>(operation->buffer.size()), FALSE,
-      FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SIZE |
-          FILE_NOTIFY_CHANGE_CREATION,
-      nullptr, &operation->overlapped, nullptr);
+  const BOOL started =
+      ReadDirectoryChangesW(operation->handle, operation->buffer.data(),
+                            static_cast<DWORD>(operation->buffer.size()), FALSE,
+                            FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE |
+                                FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_CREATION,
+                            nullptr, &operation->overlapped, nullptr);
   if (!started) {
     return false;
   }
@@ -1508,14 +1504,30 @@ bool ParseJsonStringAt(const std::string& json, size_t start, std::string& out, 
     if (pos >= json.size()) return false;
     const char esc = json[pos++];
     switch (esc) {
-      case '"': out.push_back('"'); break;
-      case '\\': out.push_back('\\'); break;
-      case '/': out.push_back('/'); break;
-      case 'b': out.push_back('\b'); break;
-      case 'f': out.push_back('\f'); break;
-      case 'n': out.push_back('\n'); break;
-      case 'r': out.push_back('\r'); break;
-      case 't': out.push_back('\t'); break;
+      case '"':
+        out.push_back('"');
+        break;
+      case '\\':
+        out.push_back('\\');
+        break;
+      case '/':
+        out.push_back('/');
+        break;
+      case 'b':
+        out.push_back('\b');
+        break;
+      case 'f':
+        out.push_back('\f');
+        break;
+      case 'n':
+        out.push_back('\n');
+        break;
+      case 'r':
+        out.push_back('\r');
+        break;
+      case 't':
+        out.push_back('\t');
+        break;
       case 'u': {
         uint32_t cp = 0;
         if (!ReadJsonHex4(json, pos, cp)) return false;
@@ -1544,8 +1556,8 @@ std::string ParseJsonBareValue(const std::string& json, size_t start, size_t& ne
   }
   next = end;
   std::string value = json.substr(start, end - start);
-  while (!value.empty() && (value.back() == ' ' || value.back() == '\t' ||
-                            value.back() == '\n' || value.back() == '\r')) {
+  while (!value.empty() && (value.back() == ' ' || value.back() == '\t' || value.back() == '\n' ||
+                            value.back() == '\r')) {
     value.pop_back();
   }
   return value;
@@ -1631,8 +1643,7 @@ void ApplySkinFloat(const std::string& content, const std::string& key, bool isY
   if (!val.empty()) outField = ParseFloatStr(val, outField);
 }
 
-void ApplySkinInt(const std::string& content, const std::string& key, bool isYaml,
-                  int& outField) {
+void ApplySkinInt(const std::string& content, const std::string& key, bool isYaml, int& outField) {
   std::string val = isYaml ? SimpleYamlGetValue(content, key) : SimpleJsonGetValue(content, key);
   if (!val.empty()) outField = ParseIntStr(val, outField);
 }
@@ -1808,14 +1819,16 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
 
   // Material and layout overrides from skin
   {
-    std::string mat = isYaml ? SimpleYamlGetValue(content, "material")
-                              : SimpleJsonGetValue(content, "material");
-    if (!mat.empty()) st.candidateMaterial = ParseCandidateMaterial(std::wstring(mat.begin(), mat.end()));
+    std::string mat =
+        isYaml ? SimpleYamlGetValue(content, "material") : SimpleJsonGetValue(content, "material");
+    if (!mat.empty())
+      st.candidateMaterial = ParseCandidateMaterial(std::wstring(mat.begin(), mat.end()));
   }
   {
-    std::string lay = isYaml ? SimpleYamlGetValue(content, "layout")
-                              : SimpleJsonGetValue(content, "layout");
-    if (!lay.empty()) st.candidateLayoutVariant = ParseCandidateLayoutVariant(std::wstring(lay.begin(), lay.end()));
+    std::string lay =
+        isYaml ? SimpleYamlGetValue(content, "layout") : SimpleJsonGetValue(content, "layout");
+    if (!lay.empty())
+      st.candidateLayoutVariant = ParseCandidateLayoutVariant(std::wstring(lay.begin(), lay.end()));
   }
   {
     std::string fontSize = isYaml ? SimpleYamlGetValue(content, "font_size")
@@ -1865,16 +1878,14 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   ApplySkinInt(content, "selected_accent_width", isYaml, st.skinSelectedAccentWidth);
   ApplySkinFloat(content, "selected_ring_opacity", isYaml, st.skinSelectedRingOpacity);
   {
-    std::string selectedIndicator =
-        isYaml ? SimpleYamlGetValue(content, "selected_indicator")
-               : SimpleJsonGetValue(content, "selected_indicator");
+    std::string selectedIndicator = isYaml ? SimpleYamlGetValue(content, "selected_indicator")
+                                           : SimpleJsonGetValue(content, "selected_indicator");
     if (!selectedIndicator.empty()) {
       std::transform(selectedIndicator.begin(), selectedIndicator.end(), selectedIndicator.begin(),
                      [](unsigned char ch) { return static_cast<char>(std::tolower(ch)); });
       if (selectedIndicator == "left_bar" || selectedIndicator == "bottom_bar" ||
           selectedIndicator == "outline" || selectedIndicator == "none") {
-        st.skinSelectedIndicator =
-            std::wstring(selectedIndicator.begin(), selectedIndicator.end());
+        st.skinSelectedIndicator = std::wstring(selectedIndicator.begin(), selectedIndicator.end());
       }
     }
   }
@@ -1929,10 +1940,14 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   if (st.skinFontWeight >= 0) st.skinFontWeight = std::clamp(st.skinFontWeight, 300, 700);
   if (st.skinSelectedFontWeight >= 0)
     st.skinSelectedFontWeight = std::clamp(st.skinSelectedFontWeight, 400, 800);
-  if (st.skinLabelFontWeight >= 0) st.skinLabelFontWeight = std::clamp(st.skinLabelFontWeight, 400, 800);
-  if (st.skinChipFontWeight >= 0) st.skinChipFontWeight = std::clamp(st.skinChipFontWeight, 350, 700);
-  if (st.skinSelectedAccentWidth >= 0) st.skinSelectedAccentWidth = std::clamp(st.skinSelectedAccentWidth, 0, 8);
-  if (st.skinSelectedRingOpacity >= 0.0f) st.skinSelectedRingOpacity = std::clamp(st.skinSelectedRingOpacity, 0.0f, 1.0f);
+  if (st.skinLabelFontWeight >= 0)
+    st.skinLabelFontWeight = std::clamp(st.skinLabelFontWeight, 400, 800);
+  if (st.skinChipFontWeight >= 0)
+    st.skinChipFontWeight = std::clamp(st.skinChipFontWeight, 350, 700);
+  if (st.skinSelectedAccentWidth >= 0)
+    st.skinSelectedAccentWidth = std::clamp(st.skinSelectedAccentWidth, 0, 8);
+  if (st.skinSelectedRingOpacity >= 0.0f)
+    st.skinSelectedRingOpacity = std::clamp(st.skinSelectedRingOpacity, 0.0f, 1.0f);
   st.skinShadowOpacity = std::clamp(st.skinShadowOpacity, 0.0f, 1.0f);
   st.skinShadowSize = std::clamp(st.skinShadowSize, 0, 24);
 

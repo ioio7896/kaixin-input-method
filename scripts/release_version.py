@@ -1,4 +1,5 @@
 """One timestamp command updates all app manifests/locks/docs; native/Inno read VERSION."""
+
 from __future__ import annotations
 
 import argparse
@@ -42,19 +43,27 @@ def update_version(repo: Path, version: str) -> None:
     updates = {repo / "VERSION": version + "\n"}
     for relative in ("pinyin-ime/Cargo.toml", "crates/kaixin-core/Cargo.toml"):
         path = repo / relative
-        text, count = re.subn(r'(?m)^version = "[^"]+"', f'version = "{version}"',
-                              path.read_text(encoding="utf-8"), count=1)
+        text, count = re.subn(
+            r'(?m)^version = "[^"]+"',
+            f'version = "{version}"',
+            path.read_text(encoding="utf-8"),
+            count=1,
+        )
         if count != 1:
             raise RuntimeError(f"Missing package version: {path}")
         updates[path] = text
     for relative in ("Cargo.lock", "pinyin-ime/Cargo.lock"):
         path = repo / relative
         if path.exists():
-            updates[path] = re.sub(r'(name = "(?:pinyin-ime|kaixin-core)"\nversion = ")[^"]+',
-                                   lambda match: match[1] + version, path.read_text(encoding="utf-8"))
+            updates[path] = re.sub(
+                r'(name = "(?:pinyin-ime|kaixin-core)"\nversion = ")[^"]+',
+                lambda match: match[1] + version,
+                path.read_text(encoding="utf-8"),
+            )
     readme = repo / "README.md"
-    updates[readme], count = re.subn(r"当前版本为 \*\*[^*]+\*\*", f"当前版本为 **{version}**",
-                                    readme.read_text(encoding="utf-8"))
+    updates[readme], count = re.subn(
+        r"当前版本为 \*\*[^*]+\*\*", f"当前版本为 **{version}**", readme.read_text(encoding="utf-8")
+    )
     if count != 1:
         raise RuntimeError("README version marker missing")
     for path, text in updates.items():

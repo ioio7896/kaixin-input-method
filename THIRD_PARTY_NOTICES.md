@@ -76,7 +76,7 @@ Ubuntu Font Licence 1.0；后者原文保存在
 | `data_sources/kaixin/*.tsv`、`lexicon/core/kaixin_polyphone.txt` | 基础候选、多音词读音修正及其生成结果 | 开心输入法项目作者使用生成式 AI 辅助添加并自行维护；见 `docs/licenses/AI_DATA_PROVENANCE.md` |
 | `lexicon/zh-ext/animals.txt`、`data_sources/kaixin/*.tsv` | 项目自维护中文词库与读音数据 | 项目作者使用生成式 AI 辅助生成、整理、校正并人工筛选；见 `docs/licenses/AI_DATA_PROVENANCE.md` |
 | `lexicon/zh-ext/geography_admin.txt`、`lexicon/zh-ext/hangzhou_local.txt` | 行政区划及杭州本地词库 | 项目作者使用生成式 AI 辅助添加并自行维护；可追溯源片段位于 `data_sources/lexicon_fragments/zh-ext/` |
-| `pinyin-ime/src/handwrite_lookup/` | 手写查字匹配和数据 | 目录内已有 LGPL/APL 许可说明，发布时应保留 |
+| `crates/kaixin-core/src/handwrite_lookup/` | 手写查字匹配和数据 | 目录内已有 LGPL/APL 许可说明，发布时应保留 |
 | Windows TSF / Win32 API | 系统输入法接入 | 平台 API，不属于开心输入法自研源程序主张范围 |
 
 ## 发布前核验清单

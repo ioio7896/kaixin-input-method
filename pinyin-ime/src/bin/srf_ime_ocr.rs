@@ -1350,7 +1350,7 @@ impl OcrApp {
             let preview_height = (ui.available_height() * 0.32).clamp(148.0, 240.0);
             Frame::none()
                 .fill(Color32::WHITE)
-                .stroke(Stroke::new(1.0, Color32::from_rgb(226, 232, 240)))
+                .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
                 .rounding(Rounding::same(8.0))
                 .inner_margin(Margin::symmetric(8.0, 8.0))
                 .show(ui, |ui| {
@@ -1505,7 +1505,7 @@ impl OcrApp {
         ui.painter().rect_stroke(
             crop_rect,
             Rounding::same(2.0),
-            Stroke::new(2.0, Color32::from_rgb(37, 99, 235)),
+            Stroke::new(2.0_f32, Color32::from_rgb(37, 99, 235)),
         );
     }
 
@@ -1562,11 +1562,11 @@ impl OcrApp {
             return;
         }
         egui::CollapsingHeader::new(format!("低置信度校对（{} 行）", self.review_lines.len()))
-            .id_source("ocr_low_confidence")
+            .id_salt("ocr_low_confidence")
             .show(ui, |ui| {
                 ui.label("选择疑似文字查看对应图像，修改后可加入正文。");
                 egui::ScrollArea::vertical()
-                    .id_source("ocr_review_lines")
+                    .id_salt("ocr_review_lines")
                     .max_height(110.0)
                     .show(ui, |ui| {
                         for (index, line) in self.review_lines.iter().enumerate() {
@@ -1784,7 +1784,7 @@ impl OcrApp {
                 (ui.available_height() - reserved_for_history - 12.0).max(min_editor_height);
             Frame::none()
                 .fill(Color32::WHITE)
-                .stroke(Stroke::new(1.0, Color32::from_rgb(226, 232, 240)))
+                .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
                 .rounding(Rounding::same(8.0))
                 .inner_margin(Margin::symmetric(10.0, 10.0))
                 .show(ui, |ui| {
@@ -1818,9 +1818,18 @@ impl OcrApp {
                             job.wrap.break_anywhere = true;
                             ui.fonts(|fonts| fonts.layout_job(job))
                         };
+                        let editor_id = ui.make_persistent_id("ocr_result_editor");
+                        if self.focus_result_once {
+                            let mut state =
+                                TextEdit::load_state(ui.ctx(), editor_id).unwrap_or_default();
+                            state.cursor.set_char_range(None);
+                            state.clear_undoer();
+                            TextEdit::store_state(ui.ctx(), editor_id, state);
+                        }
                         let response = ui.add_sized(
                             [editor_width, editor_height],
                             TextEdit::multiline(&mut self.text)
+                                .id(editor_id)
                                 .hint_text("识别结果会显示在这里")
                                 .desired_width(editor_width)
                                 .layouter(&mut layouter),
@@ -1839,7 +1848,7 @@ impl OcrApp {
                 ui.add_space(10.0);
                 Frame::none()
                     .fill(Color32::WHITE)
-                    .stroke(Stroke::new(1.0, Color32::from_rgb(226, 232, 240)))
+                    .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
                     .rounding(Rounding::same(8.0))
                     .inner_margin(Margin::symmetric(8.0, 8.0))
                     .show(ui, |ui| {
@@ -1941,7 +1950,7 @@ impl eframe::App for OcrApp {
             .frame(
                 Frame::none()
                     .fill(Color32::from_rgb(248, 250, 252))
-                    .stroke(Stroke::new(1.0, Color32::from_rgb(226, 232, 240)))
+                    .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
                     .inner_margin(Margin::symmetric(12.0, 10.0)),
             )
             .show(ctx, |ui| {
@@ -1981,6 +1990,8 @@ fn capture_screenshot_image(
     target_hwnd: isize,
     mode: CaptureMode,
 ) -> Result<CaptureResult, String> {
+    use pinyin_ime::screenshot_trace::ScreenshotTrace;
+
     if mode == CaptureMode::AutoWindow && target_hwnd == 0 {
         return Err("没有可截取的目标窗口。".to_string());
     }
@@ -1988,18 +1999,26 @@ fn capture_screenshot_image(
     let output_path = temp_ocr_image_path("capture");
     let _ = fs::remove_file(&output_path);
 
-    let outcome = screenshot_capture::capture(
+    let trace = ScreenshotTrace::default();
+    let cancellation = screenshot_region_selector::RegionSelectorCancellation::default();
+    let outcome = screenshot_capture::capture_traced(
         (mode == CaptureMode::AutoWindow).then_some(target_hwnd),
         false,
-        || false,
+        || cancellation.is_requested(),
+        trace,
     )?;
     let fallback_reason = outcome.recovery_note;
     let mut frame = outcome.frame;
     if mode == CaptureMode::ManualRegion {
-        let selected = screenshot_region_selector::select_region(&frame)
-            .map_err(|err| format!("打开框选界面失败：{err}"))?
-            .ok_or_else(|| "已取消截图。".to_string())?;
-        let image = screenshot_capture::crop(&frame, selected)?;
+        let (selected, _) = screenshot_region_selector::select_region_action_controlled(
+            &frame,
+            screenshot_region_selector::RegionSelectorOptions::default(),
+            &cancellation,
+            trace,
+        )
+        .map_err(|err| format!("打开框选界面失败：{err}"))?
+        .ok_or_else(|| "已取消截图。".to_string())?;
+        let image = trace.measure("crop", || screenshot_capture::crop(&frame, selected))?;
         frame = windows_graphics_capture::CapturedFrame {
             image,
             origin_x: selected.x,
@@ -2009,7 +2028,10 @@ fn capture_screenshot_image(
         };
     }
 
-    windows_graphics_capture::save_png(&frame.image, &output_path)
+    trace
+        .measure("save_encode_write", || {
+            windows_graphics_capture::save_png(&frame.image, &output_path)
+        })
         .map_err(|err| format!("保存 OCR 截图失败：{err}"))?;
     Ok(CaptureResult {
         path: output_path,

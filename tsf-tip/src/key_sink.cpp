@@ -21,7 +21,9 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace {
 
-bool IsVkShift(UINT vk) { return vk == VK_SHIFT || vk == VK_LSHIFT || vk == VK_RSHIFT; }
+bool IsVkShift(UINT vk) {
+  return vk == VK_SHIFT || vk == VK_LSHIFT || vk == VK_RSHIFT;
+}
 
 bool IsKeyDownNow(int vk) {
   return (GetKeyState(vk) & 0x8000) != 0 || (GetAsyncKeyState(vk) & 0x8000) != 0;
@@ -113,13 +115,17 @@ class CEditSessionProcessKey final : public ITfEditSession {
   }
 
  public:
-  CEditSessionProcessKey(CSrfTip* tip, ITfContext* pic, UINT vk, LPARAM lParam, bool shiftDown, CKeyEventSink* sink)
+  CEditSessionProcessKey(CSrfTip* tip, ITfContext* pic, UINT vk, LPARAM lParam, bool shiftDown,
+                         CKeyEventSink* sink)
       : m_pTip(tip), m_vk(vk), m_lParam(lParam), m_shiftDown(shiftDown), m_sink(sink) {
     m_sink->AddRef();
     m_pendingGeneration = m_sink->m_pendingKeyEdits.Begin(GetTickCount64());
     m_pic = pic;
     m_foreground = GetForegroundWindow();
-    if (m_pTip) { m_pTip->AddRef(); m_focus = m_pTip->CaptureFocusSnapshot(pic); }
+    if (m_pTip) {
+      m_pTip->AddRef();
+      m_focus = m_pTip->CaptureFocusSnapshot(pic);
+    }
     if (m_pic) m_pic->AddRef();
   }
   ~CEditSessionProcessKey() {
@@ -148,9 +154,13 @@ class CEditSessionProcessKey final : public ITfEditSession {
 
   STDMETHODIMP DoEditSession(TfEditCookie ec) override {
     if (!m_execution.Begin()) return S_OK;
-    struct PendingGuard { CEditSessionProcessKey* edit; ~PendingGuard() { edit->FinishPending(); } } guard{this};
+    struct PendingGuard {
+      CEditSessionProcessKey* edit;
+      ~PendingGuard() { edit->FinishPending(); }
+    } guard{this};
     if (!m_pTip || !m_pic) return E_FAIL;
-    if (GetForegroundWindow() != m_foreground || !m_pTip->FocusSnapshotMatches(m_focus)) return S_OK;
+    if (GetForegroundWindow() != m_foreground || !m_pTip->FocusSnapshotMatches(m_focus))
+      return S_OK;
     m_handled = false;
     if (!m_pTip->EnsureEngineInputReady()) return S_OK;
     return m_pTip->ProcessKey(ec, m_pic, m_vk, m_lParam, m_shiftDown, &m_handled);
@@ -198,7 +208,8 @@ bool RequestEditSessionWithFallback(ITfContext* pic, TfClientId tid,
 
 }  // namespace
 
-CKeyEventSink::CKeyEventSink(CSrfTip* tip) : m_pTip(tip) {}
+CKeyEventSink::CKeyEventSink(CSrfTip* tip) : m_pTip(tip) {
+}
 
 void CKeyEventSink::ResetKeyState() {
   m_touchPagePacketOwned = false;
@@ -211,8 +222,10 @@ void CKeyEventSink::ResetKeyState() {
 
 void CKeyEventSink::RefreshToggleLatches() {
   if (!m_pTip) return;
-  if (!(GetAsyncKeyState(m_pTip->m_config.input.gameModeHotkey.vk) & 0x8000)) m_gameToggleLatched = false;
-  if (!(GetAsyncKeyState(m_pTip->m_config.input.temporaryAsciiHotkey.vk) & 0x8000)) m_asciiToggleLatched = false;
+  if (!(GetAsyncKeyState(m_pTip->m_config.input.gameModeHotkey.vk) & 0x8000))
+    m_gameToggleLatched = false;
+  if (!(GetAsyncKeyState(m_pTip->m_config.input.temporaryAsciiHotkey.vk) & 0x8000))
+    m_asciiToggleLatched = false;
 }
 
 STDMETHODIMP CKeyEventSink::QueryInterface(REFIID riid, void** ppv) {
@@ -231,7 +244,9 @@ STDMETHODIMP CKeyEventSink::QueryInterface(REFIID riid, void** ppv) {
   return E_NOINTERFACE;
 }
 
-STDMETHODIMP_(ULONG) CKeyEventSink::AddRef() { return InterlockedIncrement(&m_cRef); }
+STDMETHODIMP_(ULONG) CKeyEventSink::AddRef() {
+  return InterlockedIncrement(&m_cRef);
+}
 
 STDMETHODIMP_(ULONG) CKeyEventSink::Release() {
   ULONG c = InterlockedDecrement(&m_cRef);
@@ -261,8 +276,10 @@ STDMETHODIMP CKeyEventSink::OnKeyTraceDown(WPARAM wParam, LPARAM lParam) {
     m_keyOwnership.ObserveDown(vk, (lParam & 0x40000000) != 0, true);
     return S_OK;
   }
-  if (vk == m_pTip->m_config.input.gameModeHotkey.vk) m_gameToggleRepeated = (lParam & 0x40000000) != 0;
-  if (vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk) m_asciiToggleRepeated = (lParam & 0x40000000) != 0;
+  if (vk == m_pTip->m_config.input.gameModeHotkey.vk)
+    m_gameToggleRepeated = (lParam & 0x40000000) != 0;
+  if (vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk)
+    m_asciiToggleRepeated = (lParam & 0x40000000) != 0;
   if (IsVkShift(vk)) UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
   // Trace notifications describe a real keyboard event. TestKey callbacks can
   // be repeated or abandoned and therefore must not exit a chat or own a key.
@@ -279,13 +296,16 @@ STDMETHODIMP CKeyEventSink::OnKeyTraceUp(WPARAM wParam, LPARAM lParam) {
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (m_pTip && vk == m_pTip->m_config.input.gameModeHotkey.vk) {
-    m_gameToggleLatched = false; m_gameToggleRepeated = false;
+    m_gameToggleLatched = false;
+    m_gameToggleRepeated = false;
   }
   if (m_pTip && vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk) {
-    m_asciiToggleLatched = false; m_asciiToggleRepeated = false;
+    m_asciiToggleLatched = false;
+    m_asciiToggleRepeated = false;
   }
   m_keyOwnership.ObserveUp(vk);
-  if (IsVkShift(vk)) UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
+  if (IsVkShift(vk))
+    UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
   return S_OK;
 }
 
@@ -298,14 +318,16 @@ STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM
   const UINT vk = static_cast<UINT>(wParam);
   if (const UINT pageKey = SrfReadTouchKeyboardPageKey(vk)) {
     *pfEaten = pic && m_pTip->m_pFocusContext == pic && !m_pTip->m_reading.empty() &&
-        !m_pTip->m_context.candidates.Empty() && m_pTip->WouldEatKey(pageKey);
+               !m_pTip->m_context.candidates.Empty() && m_pTip->WouldEatKey(pageKey);
     return S_OK;
   }
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (m_traceAvailable && m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
-      m_pTip->IsGameHotkeyPassthroughActive())) return S_OK;
-  if ((vk == VK_RETURN || vk == VK_ESCAPE) && m_keyOwnership.ConsumeRepeat(vk,
-      (lParam & 0x40000000) != 0, m_pTip->IsGameHotkeyPassthroughActive())) {
+                                                  m_pTip->IsGameHotkeyPassthroughActive()))
+    return S_OK;
+  if ((vk == VK_RETURN || vk == VK_ESCAPE) &&
+      m_keyOwnership.ConsumeRepeat(vk, (lParam & 0x40000000) != 0,
+                                   m_pTip->IsGameHotkeyPassthroughActive())) {
     *pfEaten = TRUE;
     return S_OK;
   }
@@ -352,14 +374,17 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
 
   const UINT packetPageKey = SrfReadTouchKeyboardPageKey(static_cast<UINT>(wParam));
   const UINT vk = packetPageKey ? packetPageKey : static_cast<UINT>(wParam);
-  if (packetPageKey && (m_pTip->m_reading.empty() || m_pTip->m_context.candidates.Empty())) return S_OK;
+  if (packetPageKey && (m_pTip->m_reading.empty() || m_pTip->m_context.candidates.Empty()))
+    return S_OK;
   if (!packetPageKey && SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceDown(wParam, lParam);
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   if (m_keyOwnership.PassDown(vk, (lParam & 0x40000000) != 0,
-      m_pTip->IsGameHotkeyPassthroughActive())) return S_OK;
-  if ((vk == VK_RETURN || vk == VK_ESCAPE) && m_keyOwnership.ConsumeRepeat(vk,
-      (lParam & 0x40000000) != 0, m_pTip->IsGameHotkeyPassthroughActive())) {
+                              m_pTip->IsGameHotkeyPassthroughActive()))
+    return S_OK;
+  if ((vk == VK_RETURN || vk == VK_ESCAPE) &&
+      m_keyOwnership.ConsumeRepeat(vk, (lParam & 0x40000000) != 0,
+                                   m_pTip->IsGameHotkeyPassthroughActive())) {
     *pfEaten = TRUE;
     return S_OK;
   }
@@ -434,8 +459,8 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
   // PreserveKey is global to the active TSF profile. Keep a final runtime
   // guard as foreground transitions can race dynamic unregistration.
   m_pTip->RefreshKeyHotPathState();
-  const bool gameChatKey = IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE) &&
-                           m_pTip->ShouldHandleGameChatHotkey();
+  const bool gameChatKey =
+      IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE) && m_pTip->ShouldHandleGameChatHotkey();
   if (!gameChatKey && !m_pTip->ShouldHandleImeHotkeys()) return S_OK;
 
   const bool hasReading = m_pTip->m_imeOpen && !m_pTip->m_reading.empty();
@@ -476,7 +501,10 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
     const bool gameToggle = IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE);
     bool& latched = gameToggle ? m_gameToggleLatched : m_asciiToggleLatched;
     const bool repeated = gameToggle ? m_gameToggleRepeated : m_asciiToggleRepeated;
-    if (latched || (m_traceAvailable && repeated)) { *pfEaten = TRUE; return S_OK; }
+    if (latched || (m_traceAvailable && repeated)) {
+      *pfEaten = TRUE;
+      return S_OK;
+    }
     const ULONGLONG now = GetTickCount64();
     if (now - m_pTip->m_lastManualToggleTick >= CSrfTip::kManualToggleDedupMs) {
       m_pTip->m_lastManualToggleTick = now;
@@ -485,7 +513,8 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
         SrfTsfDiagnosticLog(L"manual-compatibility.hotkey", L"source=preserved-key,action=game");
         m_pTip->ToggleManualGameCompat(TF_INVALID_COOKIE);
       } else {
-        SrfTsfDiagnosticLog(L"manual-compatibility.hotkey", L"source=preserved-key,action=temp-ascii");
+        SrfTsfDiagnosticLog(L"manual-compatibility.hotkey",
+                            L"source=preserved-key,action=temp-ascii");
         m_pTip->ToggleManualAsciiMode(TF_INVALID_COOKIE);
       }
     }

@@ -86,29 +86,6 @@ pub(super) fn check_latency_gate(
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn modern_learning_scenarios_fail_independently() {
-        for label in [
-            "post_feedback_same",
-            "post_feedback_next",
-            "post_commit_next",
-        ] {
-            assert!(check_latency_gate(label, 100, 10, 30, Some(20), Some(20)).is_err());
-            assert!(check_latency_gate(label, 100, 30, 30, Some(20), Some(40)).is_err());
-            assert!(check_latency_gate(label, 100, 20, 30, Some(20), Some(30)).is_ok());
-        }
-    }
-
-    #[test]
-    fn empty_sample_set_cannot_pass() {
-        assert!(check_latency_gate("post_feedback_same", 0, 0, 0, None, None).is_err());
-    }
-}
-
 pub(super) fn print_stats(
     json_path: Option<&Path>,
     label: &str,
@@ -148,4 +125,27 @@ pub(super) fn print_stats(
     }
 
     (p95_us, p99_us)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn modern_learning_scenarios_fail_independently() {
+        for label in [
+            "post_feedback_same",
+            "post_feedback_next",
+            "post_commit_next",
+        ] {
+            assert!(check_latency_gate(label, 100, 10, 30, Some(20), Some(20)).is_err());
+            assert!(check_latency_gate(label, 100, 30, 30, Some(20), Some(40)).is_err());
+            assert!(check_latency_gate(label, 100, 20, 30, Some(20), Some(30)).is_ok());
+        }
+    }
+
+    #[test]
+    fn empty_sample_set_cannot_pass() {
+        assert!(check_latency_gate("post_feedback_same", 0, 0, 0, None, None).is_err());
+    }
 }

@@ -56,8 +56,13 @@ def _is_mixed_entity(phrase: str) -> bool:
     return MIXED_ENTITY_RE.search(phrase) is not None
 
 
-def scan_lexicons(lexicon_dir: Path, syllables: set[str] | None, *,
-                  check_counts: bool = False, progress: bool = False):
+def scan_lexicons(
+    lexicon_dir: Path,
+    syllables: set[str] | None,
+    *,
+    check_counts: bool = False,
+    progress: bool = False,
+):
     """Read/tokenize each row once for both checks; retain existing diagnostics."""
     unknown: dict[str, list[tuple[Path, int, str, str]]] = {}
     mismatches: list[tuple[Path, int, str, str, int, int]] = []
@@ -92,12 +97,16 @@ def scan_lexicons(lexicon_dir: Path, syllables: set[str] | None, *,
                 if char_count and len(tokens) != char_count:
                     mismatches.append((path, line_no, phrase, code, char_count, len(tokens)))
     if progress:
-        print(f"  Lexicon scan complete: {len(files)} file(s), "
-              f"{time.monotonic() - started:.1f}s", flush=True)
+        print(
+            f"  Lexicon scan complete: {len(files)} file(s), {time.monotonic() - started:.1f}s",
+            flush=True,
+        )
     return unknown, mismatches, len(files)
 
 
-def scan_unknown_syllables(lexicon_dir: Path, syllables: set[str]) -> dict[str, list[tuple[Path, int, str, str]]]:
+def scan_unknown_syllables(
+    lexicon_dir: Path, syllables: set[str]
+) -> dict[str, list[tuple[Path, int, str, str]]]:
     return scan_lexicons(lexicon_dir, syllables)[0]
 
 
@@ -147,8 +156,10 @@ def main() -> int:
 
     check_counts = args.check_syllable_count or args.strict_syllable_count
     unknown, mismatches, checked = scan_lexicons(
-        lexicon_dir, load_syllables(syllables_path),
-        check_counts=check_counts, progress=args.progress,
+        lexicon_dir,
+        load_syllables(syllables_path),
+        check_counts=check_counts,
+        progress=args.progress,
     )
     if unknown:
         total_refs = sum(len(items) for items in unknown.values())
@@ -168,17 +179,10 @@ def main() -> int:
 
     if check_counts:
         if mismatches:
-            print(
-                f"Lexicon syllable count check: {len(mismatches)} mismatch(es) found"
-            )
-            for path, line_no, phrase, code, cc, sc in mismatches[
-                : max(args.max_samples, 0)
-            ]:
+            print(f"Lexicon syllable count check: {len(mismatches)} mismatch(es) found")
+            for path, line_no, phrase, code, cc, sc in mismatches[: max(args.max_samples, 0)]:
                 rel = path.relative_to(root).as_posix()
-                print(
-                    f"  - {rel}:{line_no} '{phrase}' code='{code}' "
-                    f"chars={cc} syllables={sc}"
-                )
+                print(f"  - {rel}:{line_no} '{phrase}' code='{code}' chars={cc} syllables={sc}")
             if args.strict_syllable_count:
                 exit_code = 1
             else:

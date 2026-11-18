@@ -346,7 +346,8 @@ pub(super) fn table_mode_with_positions(text: &str, lines: &[OcrReviewLine]) -> 
         let by = (b.1 .1 + b.1 .3) * 0.5;
         ay.total_cmp(&by).then_with(|| a.1 .0.total_cmp(&b.1 .0))
     });
-    let mut rows: Vec<Vec<(&OcrReviewLine, (f32, f32, f32, f32))>> = Vec::new();
+    type PositionedReviewLine<'a> = (&'a OcrReviewLine, (f32, f32, f32, f32));
+    let mut rows: Vec<Vec<PositionedReviewLine<'_>>> = Vec::new();
     for item in positioned {
         let center = (item.1 .1 + item.1 .3) * 0.5;
         let height = (item.1 .3 - item.1 .1).max(1.0);

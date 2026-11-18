@@ -1,4 +1,5 @@
 """Regression checks for category membership, migration coverage and weights."""
+
 from pathlib import Path
 from contextlib import contextmanager
 import shutil
@@ -29,8 +30,13 @@ class LexiconOptimizationTests(unittest.TestCase):
     def test_frequency_pool_cannot_fill_a_technology_category(self):
         with fixture_directory() as directory:
             output = Path(directory) / "tech.txt"
-            write_technology(output, "technology", ["机器学习"], ("学习",),
-                             [("妈妈", 1), ("吃饭", 2), ("我爱你", 3)])
+            write_technology(
+                output,
+                "technology",
+                ["机器学习"],
+                ("学习",),
+                [("妈妈", 1), ("吃饭", 2), ("我爱你", 3)],
+            )
             self.assertEqual([row[0] for row in optimize.read_rows(output)], ["机器学习"])
 
     def test_three_char_union_preserves_readings_and_first_source_weights(self):
@@ -40,9 +46,12 @@ class LexiconOptimizationTests(unittest.TestCase):
             source.mkdir()
             zh.mkdir()
             (source / "life_common_3char_full.txt").write_text(
-                "计算机\tji suan ji\t9200\n重庆市\tchong qing shi\t7000\n", encoding="utf-8")
+                "计算机\tji suan ji\t9200\n重庆市\tchong qing shi\t7000\n", encoding="utf-8"
+            )
             (source / "life_common_3char_hot.txt").write_text(
-                "计算机\tji suan ji\t9999\n重庆市\tzhong qing shi\t100\n没问题\tmei wen ti\t8000\n", encoding="utf-8")
+                "计算机\tji suan ji\t9999\n重庆市\tzhong qing shi\t100\n没问题\tmei wen ti\t8000\n",
+                encoding="utf-8",
+            )
             with patch.object(optimize, "SOURCE", source), patch.object(optimize, "ZH", zh):
                 self.assertEqual(optimize.consolidate_three_char(), 4)
             rows = optimize.read_rows(zh / "life_common_3char.txt")
@@ -52,8 +61,16 @@ class LexiconOptimizationTests(unittest.TestCase):
 
     def test_published_categories_exclude_known_noise_and_keep_useful_phrases(self):
         for name, excluded, required in (
-            ("technology.txt", {"妈妈", "吃饭", "我爱你", "云梦县"}, {"机器学习", "数据库", "大语言模型", "ChatGPT"}),
-            ("daily_communication.txt", {"贝多芬", "运载火箭", "毛泽东"}, {"稍后回复你", "附件请查收", "辛苦了"}),
+            (
+                "technology.txt",
+                {"妈妈", "吃饭", "我爱你", "云梦县"},
+                {"机器学习", "数据库", "大语言模型", "ChatGPT"},
+            ),
+            (
+                "daily_communication.txt",
+                {"贝多芬", "运载火箭", "毛泽东"},
+                {"稍后回复你", "附件请查收", "辛苦了"},
+            ),
         ):
             rows = optimize.read_rows(ROOT / "lexicon/zh-ext" / name)
             words = {word for word, _, _ in rows}
@@ -64,9 +81,13 @@ class LexiconOptimizationTests(unittest.TestCase):
     def test_all_three_char_readings_survive_consolidation(self):
         def keys(path):
             from lexicon_quality import clean_rows
+
             return {(word, code) for word, code, _ in clean_rows(optimize.read_rows(path))}
+
         source = ROOT / "data_sources/lexicon_fragments"
-        expected = keys(source / "zh/life_common_3char_full.txt") | keys(source / "zh/life_common_3char_hot.txt")
+        expected = keys(source / "zh/life_common_3char_full.txt") | keys(
+            source / "zh/life_common_3char_hot.txt"
+        )
         actual = keys(ROOT / "lexicon/zh/life_common_3char.txt")
         self.assertEqual(actual, expected)
 

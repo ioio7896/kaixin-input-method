@@ -7,9 +7,13 @@ import audit_short_lexicons as audit
 
 class ShortLexiconAuditTests(unittest.TestCase):
     def test_risk_flag_does_not_reject_complete_terms_names_or_expressions(self):
-        for phrase, longer in (("张量分析", "张量分析方法"), ("谱分析", "频谱分析"),
-                               ("名作家", "著名作家"), ("越来越", "越来越好"),
-                               ("芯片组", "芯片组驱动")):
+        for phrase, longer in (
+            ("张量分析", "张量分析方法"),
+            ("谱分析", "频谱分析"),
+            ("名作家", "著名作家"),
+            ("越来越", "越来越好"),
+            ("芯片组", "芯片组驱动"),
+        ):
             self.assertTrue(audit.risk_flags(phrase, {longer}))
         # Flags deliberately include valid words. No rejection decision is
         # inferred from substring membership or from functional characters.
@@ -20,11 +24,13 @@ class ShortLexiconAuditTests(unittest.TestCase):
             root = Path(directory)
             path = root / "lexicon/zh/sample.txt"
             path.parent.mkdir(parents=True)
-            text = ("# source\n计算机\tji suan ji\t9000\n"
-                    "张量分析\tzhang liang fen xi\t3000\n"
-                    "我也不知道\two ye bu zhi dao\t8000\n"
-                    "朝阳门\tchao yang men\t1000\n朝阳门\tzhao yang men\t100\n"
-                    "甲\tjia\t1\n")
+            text = (
+                "# source\n计算机\tji suan ji\t9000\n"
+                "张量分析\tzhang liang fen xi\t3000\n"
+                "我也不知道\two ye bu zhi dao\t8000\n"
+                "朝阳门\tchao yang men\t1000\n朝阳门\tzhao yang men\t100\n"
+                "甲\tjia\t1\n"
+            )
             path.write_text(text, encoding="utf-8")
             before = path.read_bytes()
             result = audit.scan(root)

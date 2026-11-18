@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """OCR recovery/geometry regressions. Native model quality is checked separately."""
+
 from __future__ import annotations
 
 import argparse
@@ -7,7 +8,6 @@ import base64
 from collections import OrderedDict
 from pathlib import Path
 import sys
-import tempfile
 import types
 import unittest
 from unittest.mock import patch
@@ -15,9 +15,18 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 import kaixin_ocr_engine as helper
-from kaixin_ocr_policy import (ImageAnalysis, MAX_REFINEMENTS, MAX_WORK_PIXELS,
-    WorkBudget, analyze_image, image_tiles, rect_area, should_retry_preprocess,
-    refinement_regions, needs_detector_retry)
+from kaixin_ocr_policy import (
+    ImageAnalysis,
+    MAX_REFINEMENTS,
+    MAX_WORK_PIXELS,
+    WorkBudget,
+    analyze_image,
+    image_tiles,
+    rect_area,
+    should_retry_preprocess,
+    refinement_regions,
+    needs_detector_retry,
+)
 from ocr_benchmark import distance, normalized, percentile
 
 
@@ -29,7 +38,7 @@ class GeometryTests(unittest.TestCase):
         for x in [0, 1183, 1280, 1376, 1920, 2464, 2560, 2656, 3839]:
             for y in [0, 984, 1080, 1176, 2159]:
                 self.assertTrue(any(x0 <= x < x1 and y0 <= y < y1 for x0, y0, x1, y1 in tiles))
-        self.assertTrue(all(max(x1-x0, y1-y0) <= 1920 for x0, y0, x1, y1 in tiles))
+        self.assertTrue(all(max(x1 - x0, y1 - y0) <= 1920 for x0, y0, x1, y1 in tiles))
 
     def test_boundary_does_not_duplicate_whole_image(self):
         tiles = image_tiles((1921, 1921, 3), 1920)
@@ -56,41 +65,69 @@ class GeometryTests(unittest.TestCase):
 
     def test_valid_single_character_is_not_a_retry_trigger(self):
         for analysis in (ImageAnalysis(), ImageAnalysis(5, 0, 40)):
-            self.assertFalse(should_retry_preprocess([{"text": "好", "score": .99}], analysis))
-        self.assertTrue(should_retry_preprocess([{"text": "?", "score": .4}], ImageAnalysis(5, 0, 40)))
+            self.assertFalse(should_retry_preprocess([{"text": "好", "score": 0.99}], analysis))
+        self.assertTrue(
+            should_retry_preprocess([{"text": "?", "score": 0.4}], ImageAnalysis(5, 0, 40))
+        )
         self.assertFalse(should_retry_preprocess([], ImageAnalysis()))
 
     def test_small_component_inside_recognized_line_does_not_duplicate_a_suffix(self):
-        lines = [{"text": "金额 128.50 元", "score": .99,
-                  "box": [[0, 0], [300, 0], [300, 30], [0, 30]]}]
+        lines = [
+            {"text": "金额 128.50 元", "score": 0.99, "box": [[0, 0], [300, 0], [300, 30], [0, 30]]}
+        ]
         analysis = ImageAnalysis(8, 4, 255, [(270, 0, 300, 30)], [(270, 0, 300, 30)])
         self.assertFalse(needs_detector_retry(lines, analysis))
         self.assertEqual(refinement_regions(lines, analysis), [])
 
     def test_dedup_keeps_repeated_text_at_distinct_positions(self):
         def line(x, score):
-            return {"text": "测试", "score": score, "box": [[x, 0], [x+40, 0], [x+40, 20], [x, 20]]}
-        self.assertEqual(len(helper.merge_tile_lines([line(0, .8), line(1, .95), line(100, .9)])), 2)
+            return {
+                "text": "测试",
+                "score": score,
+                "box": [[x, 0], [x + 40, 0], [x + 40, 20], [x, 20]],
+            }
+
+        self.assertEqual(
+            len(helper.merge_tile_lines([line(0, 0.8), line(1, 0.95), line(100, 0.9)])), 2
+        )
 
     def test_seam_prefix_cannot_replace_a_complete_line(self):
-        clipped = {"text": "跨越分块接缝", "score": .9999, "tile_edge": True,
-                   "box": [[100, 0], [200, 0], [200, 20], [100, 20]]}
-        full = {"text": "跨越分块接缝的完整文字", "score": .99, "tile_edge": True,
-                "box": [[100, 0], [400, 0], [400, 20], [100, 20]]}
-        self.assertEqual([x["text"] for x in helper.merge_tile_lines([clipped, full])], [full["text"]])
+        clipped = {
+            "text": "跨越分块接缝",
+            "score": 0.9999,
+            "tile_edge": True,
+            "box": [[100, 0], [200, 0], [200, 20], [100, 20]],
+        }
+        full = {
+            "text": "跨越分块接缝的完整文字",
+            "score": 0.99,
+            "tile_edge": True,
+            "box": [[100, 0], [400, 0], [400, 20], [100, 20]],
+        }
+        self.assertEqual(
+            [x["text"] for x in helper.merge_tile_lines([clipped, full])], [full["text"]]
+        )
 
     def test_seam_stitches_overlapping_suffix_and_prefix(self):
-        left = {"text": "第一段接缝文字", "score": .99, "clip_right": True,
-                "box": [[0, 0], [150, 0], [150, 20], [0, 20]]}
-        right = {"text": "接缝文字继续识别", "score": .98, "clip_left": True,
-                 "box": [[80, 0], [260, 0], [260, 20], [80, 20]]}
+        left = {
+            "text": "第一段接缝文字",
+            "score": 0.99,
+            "clip_right": True,
+            "box": [[0, 0], [150, 0], [150, 20], [0, 20]],
+        }
+        right = {
+            "text": "接缝文字继续识别",
+            "score": 0.98,
+            "clip_left": True,
+            "box": [[80, 0], [260, 0], [260, 20], [80, 20]],
+        }
         merged = helper.merge_tile_lines([left, right])
         self.assertEqual([x["text"] for x in merged], ["第一段接缝文字继续识别"])
 
     def test_benchmark_counts_errors_and_keeps_tail(self):
         self.assertEqual(distance("你好ABC", "你好ADC!"), 2)
         self.assertEqual(normalized("你 好\nABC"), "你好ABC")
-        self.assertEqual(percentile([1] * 18 + [100, 200], .95), 100)
+        self.assertEqual(percentile([1] * 18 + [100, 200], 0.95), 100)
 
 
 def fake_rapidocr_module():
@@ -125,11 +162,24 @@ class FakeEngine:
 
     def __call__(self, image, **kwargs):
         import numpy as np
+
         self.calls.append(kwargs)
         height, width = image.shape[:2]
-        return types.SimpleNamespace(txts=("好",), scores=(.99,),
-            boxes=np.array([[[5, 5], [min(width-1, 30), 5], [min(width-1, 30), min(height-1, 28)], [5, min(height-1, 28)]]]),
-            elapse_list=[.001])
+        return types.SimpleNamespace(
+            txts=("好",),
+            scores=(0.99,),
+            boxes=np.array(
+                [
+                    [
+                        [5, 5],
+                        [min(width - 1, 30), 5],
+                        [min(width - 1, 30), min(height - 1, 28)],
+                        [5, min(height - 1, 28)],
+                    ]
+                ]
+            ),
+            elapse_list=[0.001],
+        )
 
 
 class EngineFixture:
@@ -153,7 +203,11 @@ class EngineFixture:
 
 class CacheTests(EngineFixture, unittest.TestCase):
     def test_profiles_use_distinct_real_models_and_fast_mode_is_opt_in(self):
-        for profile, expected in (("fast", ("small", "small")), ("balanced", ("small", "medium")), ("accurate", ("medium", "medium"))):
+        for profile, expected in (
+            ("fast", ("small", "small")),
+            ("balanced", ("small", "medium")),
+            ("accurate", ("medium", "medium")),
+        ):
             params, _ = self.service._engine_params(profile)
             self.assertTrue(params["Det.model_path"].endswith(f"det_{expected[0]}.onnx"))
             self.assertTrue(params["Rec.model_path"].endswith(f"rec_{expected[1]}.onnx"))
@@ -195,7 +249,11 @@ class ImageTests(EngineFixture, unittest.TestCase):
         with patch.dict(sys.modules, {"rapidocr.utils.load_image": loader}):
             return self.service.recognize(
                 {"image": "memory", "image_bytes_base64": base64.b64encode(b"test").decode()},
-                "auto", .5, profile="balanced", **kwargs)
+                "auto",
+                0.5,
+                profile="balanced",
+                **kwargs,
+            )
 
     def test_warmup_runs_detection_and_recognition_and_language_reuses_cache(self):
         first = self.service.warmup("zh", "balanced")
@@ -209,7 +267,16 @@ class ImageTests(EngineFixture, unittest.TestCase):
     def test_blank_and_low_contrast_text_are_distinguished(self):
         image = np.full((150, 600, 3), 220, np.uint8)
         self.assertEqual(analyze_image(image).components, 0)
-        cv2.putText(image, "Small text 12345", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, .5, (180, 180, 180), 1, cv2.LINE_AA)
+        cv2.putText(
+            image,
+            "Small text 12345",
+            (10, 50),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.5,
+            (180, 180, 180),
+            1,
+            cv2.LINE_AA,
+        )
         result = analyze_image(image)
         self.assertGreaterEqual(result.small_components, 3)
         self.assertTrue(result.small_regions)
@@ -247,15 +314,25 @@ class ImageTests(EngineFixture, unittest.TestCase):
         class SmallRegion(FakeEngine):
             def __call__(self, image, **kwargs):
                 if image.shape[0] == 200:
-                    return types.SimpleNamespace(txts=(), scores=(), boxes=np.empty((0, 4, 2)), elapse_list=[.001])
-                return types.SimpleNamespace(txts=("小字",), scores=(.99,),
-                    boxes=np.array([[[0, 0], [60, 0], [60, 45], [0, 45]]]), elapse_list=[.001])
+                    return types.SimpleNamespace(
+                        txts=(), scores=(), boxes=np.empty((0, 4, 2)), elapse_list=[0.001]
+                    )
+                return types.SimpleNamespace(
+                    txts=("小字",),
+                    scores=(0.99,),
+                    boxes=np.array([[[0, 0], [60, 0], [60, 45], [0, 45]]]),
+                    elapse_list=[0.001],
+                )
 
         self.service._rapidocr_cls = SmallRegion
         region = (80, 60, 120, 90)
-        with patch.object(helper, "analyze_image", return_value=ImageAnalysis(3, 3, 255, [region], [region])):
+        with patch.object(
+            helper, "analyze_image", return_value=ImageAnalysis(3, 3, 255, [region], [region])
+        ):
             result = self.recognize_memory(np.full((200, 200, 3), 255, np.uint8))
-        self.assertEqual(result["lines"][0]["box"], [[80., 60.], [120., 60.], [120., 90.], [80., 90.]])
+        self.assertEqual(
+            result["lines"][0]["box"], [[80.0, 60.0], [120.0, 60.0], [120.0, 90.0], [80.0, 90.0]]
+        )
         self.assertEqual([x["kind"] for x in result["attempts"]], ["primary", "small-text"])
 
 

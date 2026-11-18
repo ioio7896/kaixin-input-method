@@ -20,8 +20,7 @@ bool IsShiftedDirectSymbolText(const std::wstring& text) {
   if (text.size() != 1) return false;
   const wchar_t ch = text[0];
   if (ch == L' ') return false;
-  if ((ch >= L'0' && ch <= L'9') || (ch >= L'a' && ch <= L'z') ||
-      (ch >= L'A' && ch <= L'Z')) {
+  if ((ch >= L'0' && ch <= L'9') || (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z')) {
     return false;
   }
   return IsDirectInsertPreferredChar(ch);
@@ -32,11 +31,21 @@ std::wstring JsonEscapeTranslationText(const std::wstring& text) {
   escaped.reserve(text.size() + 16);
   for (wchar_t ch : text) {
     switch (ch) {
-      case L'\\': escaped += L"\\\\"; break;
-      case L'\"': escaped += L"\\\""; break;
-      case L'\r': escaped += L"\\r"; break;
-      case L'\n': escaped += L"\\n"; break;
-      case L'\t': escaped += L"\\t"; break;
+      case L'\\':
+        escaped += L"\\\\";
+        break;
+      case L'\"':
+        escaped += L"\\\"";
+        break;
+      case L'\r':
+        escaped += L"\\r";
+        break;
+      case L'\n':
+        escaped += L"\\n";
+        break;
+      case L'\t':
+        escaped += L"\\t";
+        break;
       default:
         if (ch < 0x20) {
           wchar_t encoded[7] = {};
@@ -56,8 +65,9 @@ bool WideTextToUtf8(const std::wstring& text, std::string* output) {
   if (!output) return false;
   output->clear();
   if (text.empty()) return true;
-  const int bytes = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(),
-                                        static_cast<int>(text.size()), nullptr, 0, nullptr, nullptr);
+  const int bytes =
+      WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()),
+                          nullptr, 0, nullptr, nullptr);
   if (bytes <= 0) return false;
   output->resize(static_cast<size_t>(bytes));
   return WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(),
@@ -69,7 +79,8 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
                                 uint64_t focusGeneration) {
   if (text.empty() || !targetHwnd) return false;
 
-  const auto executable = FindTrayHelper(ModuleDirFromAddress(reinterpret_cast<const void*>(&LaunchCandidateTranslation)));
+  const auto executable = FindTrayHelper(
+      ModuleDirFromAddress(reinterpret_cast<const void*>(&LaunchCandidateTranslation)));
   if (executable.empty()) return false;
 
   DWORD targetProcessId = 0;
@@ -77,27 +88,33 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
   const unsigned long long counter =
       g_candidateTranslationRequestCounter.fetch_add(1, std::memory_order_relaxed);
   const std::wstring requestId = std::to_wstring(GetCurrentProcessId()) + L"-" +
-                                 std::to_wstring(GetTickCount64()) + L"-" + std::to_wstring(counter);
+                                 std::to_wstring(GetTickCount64()) + L"-" +
+                                 std::to_wstring(counter);
   std::wstring target = L"auto-opposite", resultAction = L"show";
   wchar_t localRoot[MAX_PATH] = {}, language[64] = {};
   if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
     const auto ini = std::filesystem::path(localRoot) / L"kaixin" / L"kaixin.ini";
-    GetPrivateProfileStringW(L"tools", L"translate_target_language", L"auto-opposite", language, 64, ini.c_str());
+    GetPrivateProfileStringW(L"tools", L"translate_target_language", L"auto-opposite", language, 64,
+                             ini.c_str());
     target = language;
-    GetPrivateProfileStringW(L"tools", L"translate_result_action", L"show", language, 64, ini.c_str());
+    GetPrivateProfileStringW(L"tools", L"translate_result_action", L"show", language, 64,
+                             ini.c_str());
     resultAction = language;
   }
-  const std::wstring json = L"{\"protocol_version\":" +
-      std::to_wstring(wintranslator_protocol::kVersion) + L",\"request_id\":\"" + requestId +
-      L"\",\"action\":\"translate\",\"text\":\"" + JsonEscapeTranslationText(text) +
-      L"\",\"source\":\"auto\",\"target\":\"" + JsonEscapeTranslationText(target) + L"\","
+  const std::wstring json =
+      L"{\"protocol_version\":" + std::to_wstring(wintranslator_protocol::kVersion) +
+      L",\"request_id\":\"" + requestId + L"\",\"action\":\"translate\",\"text\":\"" +
+      JsonEscapeTranslationText(text) + L"\",\"source\":\"auto\",\"target\":\"" +
+      JsonEscapeTranslationText(target) +
+      L"\","
       L"\"origin\":\"kaixin-ime-candidate\",\"target_hwnd\":" +
-      std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) +
-      L",\"target_process_id\":" + std::to_wstring(targetProcessId) +
-      L",\"result_action\":\"" + JsonEscapeTranslationText(resultAction) + L"\",\"interactive\":true,"
+      std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) + L",\"target_process_id\":" +
+      std::to_wstring(targetProcessId) + L",\"result_action\":\"" +
+      JsonEscapeTranslationText(resultAction) +
+      L"\",\"interactive\":true,"
       L"\"presentation\":\"compact\",\"delivery\":\"show\","
-      L"\"focus_generation\":" + std::to_wstring(focusGeneration) +
-      L",\"replace_selection\":false}";
+      L"\"focus_generation\":" +
+      std::to_wstring(focusGeneration) + L",\"replace_selection\":false}";
   std::string request;
   if (!WideTextToUtf8(json, &request)) return false;
   if (request.size() + 1 > wintranslator_protocol::kMaximumRequestBytes) return false;
@@ -109,26 +126,39 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
       HANDLE reader = nullptr, writer = nullptr;
       if (!CreatePipe(&reader, &writer, &security, 0)) return;
       SetHandleInformation(writer, HANDLE_FLAG_INHERIT, 0);
-      STARTUPINFOEXW startup{}; startup.StartupInfo.cb = sizeof(startup);
+      STARTUPINFOEXW startup{};
+      startup.StartupInfo.cb = sizeof(startup);
       startup.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
       startup.StartupInfo.hStdInput = reader;
       SIZE_T bytes = 0;
       InitializeProcThreadAttributeList(nullptr, 1, 0, &bytes);
       std::vector<unsigned char> attributes(bytes);
       startup.lpAttributeList = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(attributes.data());
-      if (!InitializeProcThreadAttributeList(startup.lpAttributeList, 1, 0, &bytes)) { CloseHandle(reader); CloseHandle(writer); return; }
-      if (!UpdateProcThreadAttribute(startup.lpAttributeList, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST, &reader, sizeof(reader), nullptr, nullptr)) {
-        DeleteProcThreadAttributeList(startup.lpAttributeList); CloseHandle(reader); CloseHandle(writer); return;
+      if (!InitializeProcThreadAttributeList(startup.lpAttributeList, 1, 0, &bytes)) {
+        CloseHandle(reader);
+        CloseHandle(writer);
+        return;
+      }
+      if (!UpdateProcThreadAttribute(startup.lpAttributeList, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                                     &reader, sizeof(reader), nullptr, nullptr)) {
+        DeleteProcThreadAttributeList(startup.lpAttributeList);
+        CloseHandle(reader);
+        CloseHandle(writer);
+        return;
       }
       std::wstring command = L"\"" + executable.wstring() + L"\" --translation-preview";
       PROCESS_INFORMATION process{};
-      const BOOL launched = CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE,
-          CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT, nullptr, executable.parent_path().c_str(), &startup.StartupInfo, &process);
-      DeleteProcThreadAttributeList(startup.lpAttributeList); CloseHandle(reader);
+      const BOOL launched =
+          CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE,
+                         CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT, nullptr,
+                         executable.parent_path().c_str(), &startup.StartupInfo, &process);
+      DeleteProcThreadAttributeList(startup.lpAttributeList);
+      CloseHandle(reader);
       if (launched) {
         DWORD written = 0;
         WriteFile(writer, request.data(), static_cast<DWORD>(request.size()), &written, nullptr);
-        CloseHandle(process.hThread); CloseHandle(process.hProcess);
+        CloseHandle(process.hThread);
+        CloseHandle(process.hProcess);
       }
       CloseHandle(writer);
     });
@@ -145,11 +175,11 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   if (m_pureGameMode) return false;
   if (!EnsureEngineInputReady()) return false;
   const bool allowImeHotkeys = ShouldHandleImeHotkeys();
-  if (ShouldHandleGameChatHotkey() && IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) return true;
-  if (allowImeHotkeys &&
-      (IsConfiguredHotkey(vk, m_config.input.traditionalHotkey) ||
-       IsConfiguredHotkey(vk, m_config.input.gameModeHotkey) ||
-       IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey))) {
+  if (ShouldHandleGameChatHotkey() && IsConfiguredHotkey(vk, m_config.input.gameModeHotkey))
+    return true;
+  if (allowImeHotkeys && (IsConfiguredHotkey(vk, m_config.input.traditionalHotkey) ||
+                          IsConfiguredHotkey(vk, m_config.input.gameModeHotkey) ||
+                          IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey))) {
     return true;
   }
   if (ShouldForceAsciiForCompatibility()) return false;
@@ -161,7 +191,8 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   // exclusive-fullscreen games lose their keyboard/focus state.
   const bool gameCompatibilityActive = IsGameHotkeyPassthroughActive();
   if (gameCompatibilityActive && m_gameChatActive && m_pKeySink &&
-      m_pKeySink->m_pendingKeyEdits.Pending() && (vk == VK_RETURN || vk == VK_ESCAPE)) return true;
+      m_pKeySink->m_pendingKeyEdits.Pending() && (vk == VK_RETURN || vk == VK_ESCAPE))
+    return true;
   if (gameCompatibilityActive && IsVkShift(vk)) {
     m_shiftTapActive = false;
     m_shiftTapUsedWithOtherKey = false;
@@ -186,8 +217,7 @@ bool CSrfTip::WouldEatKey(UINT vk) {
   }
 
   if (!m_reading.empty()) {
-    const bool translateCandidate = vk == VK_RETURN &&
-                                    (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
+    const bool translateCandidate = vk == VK_RETURN && (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
                                     (GetKeyState(VK_SHIFT) & 0x8000) != 0 &&
                                     (GetKeyState(VK_MENU) & 0x8000) == 0;
     if (translateCandidate) return true;
@@ -252,7 +282,8 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
     *pHandled = true;
     return S_OK;
   }
-  if ((allowImeHotkeys || ShouldHandleGameChatHotkey()) && IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) {
+  if ((allowImeHotkeys || ShouldHandleGameChatHotkey()) &&
+      IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) {
     if (keyDownTransition) ToggleManualGameCompat(ec);
     *pHandled = true;
     return S_OK;
@@ -277,15 +308,13 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
   }
   ClampReadingCursor();
 
-  const bool translateCandidate = !m_reading.empty() && vk == VK_RETURN &&
-                                  (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
-                                  (GetKeyState(VK_SHIFT) & 0x8000) != 0 &&
-                                  (GetKeyState(VK_MENU) & 0x8000) == 0;
+  const bool translateCandidate =
+      !m_reading.empty() && vk == VK_RETURN && (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
+      (GetKeyState(VK_SHIFT) & 0x8000) != 0 && (GetKeyState(VK_MENU) & 0x8000) == 0;
   if (translateCandidate) {
     if (keyDownTransition) {
-      const std::wstring candidate = m_candSel < m_candidates.size()
-                                         ? m_candidates[m_candSel]
-                                         : m_reading;
+      const std::wstring candidate =
+          m_candSel < m_candidates.size() ? m_candidates[m_candSel] : m_reading;
       const HWND target = GetForegroundWindow();
       if (LaunchCandidateTranslation(candidate, target, m_compositionGeneration)) {
         CancelCompositionEdit(ec);
@@ -313,8 +342,8 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
 
     const ULONGLONG now = GetTickCount64();
     const ULONGLONG heldMs = now - m_shiftTapStartTick;
-    const bool shouldToggle =
-        m_shiftTapActive && !m_shiftTapUsedWithOtherKey && heldMs >= 30 && heldMs <= 420 && !HasCtrlOrAltDown();
+    const bool shouldToggle = m_shiftTapActive && !m_shiftTapUsedWithOtherKey && heldMs >= 30 &&
+                              heldMs <= 420 && !HasCtrlOrAltDown();
     m_shiftTapActive = false;
     m_shiftTapUsedWithOtherKey = false;
 
@@ -446,9 +475,9 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
       UINT page = 0;
       std::wstring filter;
       if (!ParseClipboardQuickReading(m_reading, &page, &filter)) return false;
-      const bool hasQuickCandidates = std::any_of(
-          m_candidateMeta.begin(), m_candidateMeta.end(),
-          [](const std::wstring& meta) { return IsClipboardQuickMeta(meta); });
+      const bool hasQuickCandidates =
+          std::any_of(m_candidateMeta.begin(), m_candidateMeta.end(),
+                      [](const std::wstring& meta) { return IsClipboardQuickMeta(meta); });
       if (!hasQuickCandidates && page == 0 && m_reading != L"vvu") return false;
       if (!candidatesReadyForCurrentReading()) return true;
       if (!ShouldChangeClipboardQuickBatch(nextPage, m_candPage, MaxCandidatePage())) {
@@ -735,10 +764,10 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
         if (selectionCandidatesReadyForCurrentReading()) {
           return CommitCandidate(ec, m_candSel);
         }
-        const bool shouldWaitForCandidates =
-            hadVisibleCandidates || ShouldUseBlindCommitForCompatibility() ||
-            stateBefore != SrfEngineState::Ready ||
-            SrfTip_GetEngineState() == SrfEngineState::Loading;
+        const bool shouldWaitForCandidates = hadVisibleCandidates ||
+                                             ShouldUseBlindCommitForCompatibility() ||
+                                             stateBefore != SrfEngineState::Ready ||
+                                             SrfTip_GetEngineState() == SrfEngineState::Loading;
         if (shouldWaitForCandidates) return S_OK;
         return CommitCandidate(ec, static_cast<size_t>(-1));
       }
@@ -782,7 +811,8 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
         std::wstring output = ConvertDirectTextWithCompletion(std::move(reading), &cursorOffset);
         return CommitReadingThenDirectTextWithCursor(ec, pic, output, cursorOffset);
       }
-      for (wchar_t& ch : reading) ch = static_cast<wchar_t>(towlower(ch));
+      for (wchar_t& ch : reading)
+        ch = static_cast<wchar_t>(towlower(ch));
       invalidateUserPhraseCompose();
       m_reading.insert(m_readingCursor, reading);
       m_readingCursor += reading.size();
@@ -805,7 +835,8 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
   if (IsLetterVk(vk)) {
     std::wstring reading = TranslateDirectKey(vk, lParam, shiftDown);
     if (reading.empty()) reading.push_back(static_cast<wchar_t>(vk));
-    for (wchar_t& ch : reading) ch = static_cast<wchar_t>(towlower(ch));
+    for (wchar_t& ch : reading)
+      ch = static_cast<wchar_t>(towlower(ch));
     m_reading = reading;
     m_readingCursor = m_reading.size();
     *pHandled = true;

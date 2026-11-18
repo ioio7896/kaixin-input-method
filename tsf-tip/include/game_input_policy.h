@@ -6,8 +6,7 @@ enum class SrfGameEnterBehavior { Auto, Close, Stay };
 enum class SrfGameChatPhase { Passive, Awaiting, Editing, Committing };
 enum class SrfGameTextSource { None, Manual, Native, Tsf, Automation, AlwaysChinese };
 
-inline SrfGameInputMode SrfEffectiveGameInputMode(bool pureGameMode,
-                                                SrfGameInputMode configured) {
+inline SrfGameInputMode SrfEffectiveGameInputMode(bool pureGameMode, SrfGameInputMode configured) {
   return pureGameMode ? SrfGameInputMode::Passthrough : configured;
 }
 
@@ -19,6 +18,7 @@ class SrfGameCommitScope {
   ~SrfGameCommitScope() {
     phase_ = active_ ? SrfGameChatPhase::Editing : SrfGameChatPhase::Passive;
   }
+
  private:
   SrfGameChatPhase& phase_;
   const bool& active_;
@@ -42,8 +42,7 @@ inline bool SrfClassifyGame(bool explicitProfile, bool processMatch, bool /*clas
   return explicitProfile || processMatch;
 }
 
-inline bool SrfGameShouldPassThrough(bool game, SrfGameInputMode mode, bool chat,
-                                    bool editable) {
+inline bool SrfGameShouldPassThrough(bool game, SrfGameInputMode mode, bool chat, bool editable) {
   if (!game) return false;
   if (mode == SrfGameInputMode::Passthrough) return true;
   if (chat || mode == SrfGameInputMode::Chinese) return false;
@@ -54,8 +53,8 @@ inline bool SrfGameKeepHeldKey(bool passedDown, bool repeated) {
   return passedDown && repeated;
 }
 
-inline bool SrfGameShouldExitChat(bool game, bool chat, bool reading, bool exitKey,
-                                  bool modified, bool repeated) {
+inline bool SrfGameShouldExitChat(bool game, bool chat, bool reading, bool exitKey, bool modified,
+                                  bool repeated) {
   return game && chat && !reading && exitKey && !modified && !repeated;
 }
 

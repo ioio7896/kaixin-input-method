@@ -4,6 +4,7 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#include "engine_contract.generated.h"
 
 #include <string>
 #include <vector>
@@ -30,9 +31,9 @@ enum class SrfLookupCandidatesStatus : unsigned char {
 
 enum SrfLearnCommitFlags : unsigned long {
   kSrfLearnCommitDefault = 0,
-  kSrfLearnCommitWeak = 1u << 0,
-  kSrfLearnCommitComposedPhrase = 1u << 1,
-  kSrfLearnCommitExplicitSelection = 1u << 3,
+  kSrfLearnCommitWeak = srf_engine_contract::LEARN_FLAG_WEAK,
+  kSrfLearnCommitComposedPhrase = srf_engine_contract::LEARN_FLAG_COMPOSED_PHRASE,
+  kSrfLearnCommitExplicitSelection = srf_engine_contract::LEARN_FLAG_EXPLICIT_SELECTION,
 };
 
 enum SrfCandidateAction : unsigned long {
@@ -54,23 +55,21 @@ void SrfTip_LearnCommitEx(const std::wstring& reading, const std::wstring& commi
 // Queue learning and post completionMessage to completionWindow only after the
 // engine has answered. WPARAM is the returned request id; LPARAM is non-zero
 // on success. Returning zero means the request was not queued.
-unsigned long long SrfTip_LearnCommitExWithCompletion(
-    const std::wstring& reading, const std::wstring& committedText, unsigned long flags,
-    HWND completionWindow, UINT completionMessage);
-/// 学习一次纠错对：用户从纠错候选上屏后，把 raw reading 与 corrected reading 的对应关系写入用户词库。
-void SrfTip_LearnCorrection(const std::wstring& rawReading,
-                            const std::wstring& correctedReading,
+unsigned long long SrfTip_LearnCommitExWithCompletion(const std::wstring& reading,
+                                                      const std::wstring& committedText,
+                                                      unsigned long flags, HWND completionWindow,
+                                                      UINT completionMessage);
+/// 学习一次纠错对：用户从纠错候选上屏后，把 raw reading 与 corrected reading
+/// 的对应关系写入用户词库。
+void SrfTip_LearnCorrection(const std::wstring& rawReading, const std::wstring& correctedReading,
                             const std::wstring& committedText);
-void SrfTip_LearnSelectionFeedback(const std::wstring& reading,
-                                   const std::wstring& committedText,
-                                   unsigned long selectedIndex,
-                                   unsigned long page,
+void SrfTip_LearnSelectionFeedback(const std::wstring& reading, const std::wstring& committedText,
+                                   unsigned long selectedIndex, unsigned long page,
                                    const std::vector<std::wstring>& skippedCandidates = {});
 void SrfTip_ResetLearningContext();
 bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
-                          bool pinned);
-void SrfTip_ApplyCandidateAction(const std::wstring& reading,
-                                 const std::wstring& committedText,
+                            bool pinned);
+void SrfTip_ApplyCandidateAction(const std::wstring& reading, const std::wstring& committedText,
                                  SrfCandidateAction action);
 void SrfTip_RecordClipboardText(const std::wstring& text);
 bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text);
@@ -82,10 +81,11 @@ unsigned long long SrfTip_NextLookupRequestId();
 // Best-effort, non-blocking publication of a newer request. The helper only
 // cancels an active lookup from this TIP process whose request id is older.
 void SrfTip_CancelPendingLookupBefore(unsigned long long requestId);
-SrfLookupCandidatesStatus SrfTip_LookupCandidates(
-    const std::wstring& reading, std::vector<std::wstring>& candidates,
-    std::vector<std::wstring>* metaScores = nullptr, unsigned long long requestId = 0,
-    bool fullResult = false, bool* hasMore = nullptr);
+SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
+                                                  std::vector<std::wstring>& candidates,
+                                                  std::vector<std::wstring>* metaScores = nullptr,
+                                                  unsigned long long requestId = 0,
+                                                  bool fullResult = false, bool* hasMore = nullptr);
 bool SrfTip_TryGetCachedLookupCandidates(const std::wstring& reading,
                                          std::vector<std::wstring>& candidates,
                                          std::vector<std::wstring>* metaScores = nullptr,

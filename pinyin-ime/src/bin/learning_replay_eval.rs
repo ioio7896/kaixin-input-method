@@ -19,37 +19,6 @@ struct Metrics {
     missing: usize,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn missing_count_matches_bucket_total() {
-        let mut total = Metrics::default();
-        let mut bucket = Metrics::default();
-        for rank in [Some(1), None, Some(10)] {
-            total.record(rank, 9);
-            bucket.record(rank, 9);
-        }
-        assert_eq!(total.lookups, 3);
-        assert_eq!(total.missing, 1);
-        assert_eq!(total.missing, bucket.missing);
-        assert_eq!(total.page_turn_sum, 1);
-    }
-
-    #[test]
-    fn numeric_and_named_learning_flags_agree() {
-        assert_eq!(parse_flags("0"), Ok(0));
-        assert_eq!(parse_flags("2"), Ok(LEARN_FLAG_COMPOSED_PHRASE));
-        assert_eq!(parse_flags("weak|composed"), parse_flags("3"));
-        assert!(parse_flags("typo").is_err());
-        assert_eq!(parse_flags("4"), Ok(LEARN_FLAG_NO_LEARN));
-        assert_eq!(parse_flags("8"), Ok(LEARN_FLAG_EXPLICIT_SELECTION));
-        assert!(parse_flags("16").is_err());
-        assert!(parse_flags("weak|").is_err());
-    }
-}
-
 impl Metrics {
     fn record(&mut self, rank: Option<usize>, page_size: usize) {
         self.lookups += 1;
@@ -216,6 +185,10 @@ fn main() {
     );
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Keep the existing algorithm inputs explicit at this stage boundary."
+)]
 fn run_replay(
     events_path: &Path,
     lexicon_dir: &Path,
@@ -395,5 +368,36 @@ fn run_replay(
         || max_avg_page_turns.is_some_and(|maximum| metrics.avg_page_turns() > maximum);
     if gate_failed {
         std::process::exit(2);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn missing_count_matches_bucket_total() {
+        let mut total = Metrics::default();
+        let mut bucket = Metrics::default();
+        for rank in [Some(1), None, Some(10)] {
+            total.record(rank, 9);
+            bucket.record(rank, 9);
+        }
+        assert_eq!(total.lookups, 3);
+        assert_eq!(total.missing, 1);
+        assert_eq!(total.missing, bucket.missing);
+        assert_eq!(total.page_turn_sum, 1);
+    }
+
+    #[test]
+    fn numeric_and_named_learning_flags_agree() {
+        assert_eq!(parse_flags("0"), Ok(0));
+        assert_eq!(parse_flags("2"), Ok(LEARN_FLAG_COMPOSED_PHRASE));
+        assert_eq!(parse_flags("weak|composed"), parse_flags("3"));
+        assert!(parse_flags("typo").is_err());
+        assert_eq!(parse_flags("4"), Ok(LEARN_FLAG_NO_LEARN));
+        assert_eq!(parse_flags("8"), Ok(LEARN_FLAG_EXPLICIT_SELECTION));
+        assert!(parse_flags("16").is_err());
+        assert!(parse_flags("weak|").is_err());
     }
 }

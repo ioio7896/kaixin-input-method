@@ -12,7 +12,7 @@ $ProfileGuid = '{A3F0B2C1-4D5E-6789-ABCD-EF0123456789}'
 $SimplifiedChineseTip = ('0804:{0}{1}' -f $TextServiceClsid, $ProfileGuid)
 $AppDisplayName = '开心输入法'
 $RunEntryName = $AppDisplayName
-$EngineRunEntryName = $AppDisplayName + (-join ([char[]](0x5F15, 0x64CE)))
+$EngineRunEntryName = $AppDisplayName + ( -join ([char[]](0x5F15, 0x64CE)))
 
 function Assert-PathExists {
     param([string]$Path)

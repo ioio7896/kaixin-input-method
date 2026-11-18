@@ -12,6 +12,7 @@ class SrfEditSessionOnce {
     return true;
   }
   bool Executed() const { return executed_; }
+
  private:
   bool executed_ = false;
 };
@@ -24,7 +25,8 @@ struct SrfTsfCommitResult {
   bool TextWritten() const { return SUCCEEDED(write); }
   bool MayRetryText() const {
     return FAILED(write) && write != HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY) &&
-        write != HRESULT_FROM_WIN32(ERROR_CANCELLED) && write != HRESULT_FROM_WIN32(ERROR_PROCESS_ABORTED);
+           write != HRESULT_FROM_WIN32(ERROR_CANCELLED) &&
+           write != HRESULT_FROM_WIN32(ERROR_PROCESS_ABORTED);
   }
 };
 
@@ -42,12 +44,12 @@ class SrfScopedCompositionEnd {
   ~SrfScopedCompositionEnd() { --depth_; }
   SrfScopedCompositionEnd(const SrfScopedCompositionEnd&) = delete;
   SrfScopedCompositionEnd& operator=(const SrfScopedCompositionEnd&) = delete;
+
  private:
   unsigned& depth_;
 };
 
 // A comparison failure is unknown, not evidence that the caret left the range.
-inline bool SrfSelectionOutsideComposition(HRESULT startHr, LONG start,
-                                           HRESULT endHr, LONG end) {
+inline bool SrfSelectionOutsideComposition(HRESULT startHr, LONG start, HRESULT endHr, LONG end) {
   return SUCCEEDED(startHr) && SUCCEEDED(endHr) && (start < 0 || end > 0);
 }

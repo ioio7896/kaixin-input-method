@@ -64,9 +64,7 @@ def main() -> int:
         package_cell = package.replace("|", "\\|")
         declared_cell = declared.replace("|", "\\|")
         project_url_cell = project_url.replace("|", "\\|")
-        lines.append(
-            f"| {package_cell} | {version} | {declared_cell} | {project_url_cell} |"
-        )
+        lines.append(f"| {package_cell} | {version} | {declared_cell} | {project_url_cell} |")
 
         license_files = []
         for item in dist.files or []:
@@ -78,7 +76,9 @@ def main() -> int:
                 license_files.append((relative, absolute))
         details.extend(["", f"## {package} {version}", "", f"Declared: `{declared}`", ""])
         if not license_files:
-            details.append("No bundled license/notice text was found in the installed distribution.")
+            details.append(
+                "No bundled license/notice text was found in the installed distribution."
+            )
         for relative, absolute in license_files:
             try:
                 content = absolute.read_text(encoding="utf-8", errors="replace").strip()

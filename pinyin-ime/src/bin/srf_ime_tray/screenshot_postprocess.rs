@@ -1,16 +1,106 @@
-fn finish_captured_screenshot(
+use std::io::{self, BufWriter, Write};
+use std::os::windows::ffi::OsStrExt;
+
+fn handle_captured_screenshot(
     captured: CapturedScreenshot,
+    target: HWND,
+    prefs: ScreenshotPrefs,
+    ocr_available: bool,
+    one_shot: bool,
+) {
+    if prefs.show_result_window {
+        match pinned_screenshot::show_result(
+            captured.clone(),
+            target,
+            ocr_available,
+            pinned_screenshot::InitialAction::Run(prefs.clone()),
+            one_shot,
+        ) {
+            Ok(()) => return,
+            Err(err) => runtime_log::log_tray(
+                RuntimeLogLevel::Error,
+                "screenshot_result_window",
+                format!("status=failed reason={err}"),
+            ),
+        }
+    }
+    let (result, silent_copy) = process_captured_screenshot(&captured, target, &prefs);
+    if matches!(result, Ok(true)) {
+        if let Some(copy) = silent_copy {
+            copy.run();
+        }
+        return;
+    }
+    let worker = silent_copy.and_then(|copy| thread::Builder::new().spawn(move || copy.run()).ok());
+    if let Err(err) = pinned_screenshot::show_result(
+        captured,
+        target,
+        ocr_available,
+        pinned_screenshot::InitialAction::Completed(result),
+        one_shot,
+    ) {
+        show_error_message(&format!("无法打开截图操作窗口：{err}"));
+    }
+    if one_shot {
+        if let Some(worker) = worker {
+            let _ = worker.join();
+        }
+    }
+}
+
+struct SilentScreenshotCopy {
+    source: PathBuf,
+    dir: PathBuf,
+    trace: ScreenshotTrace,
+}
+
+impl SilentScreenshotCopy {
+    fn run(self) {
+        save_silent_screenshot_copy(&self.source, &self.dir, self.trace);
+    }
+}
+
+fn process_captured_screenshot(
+    captured: &CapturedScreenshot,
     action_target: HWND,
     prefs: &ScreenshotPrefs,
+) -> (Result<bool, String>, Option<SilentScreenshotCopy>) {
+    let stage = captured.trace.stage("postprocess");
+    let mut silent_copy = None;
+    let result = finish_captured_screenshot(captured, action_target, prefs, &mut silent_copy);
+    stage.finish(screenshot_action_status(&result));
+    (result, silent_copy)
+}
+
+fn screenshot_action_status(result: &Result<bool, String>) -> &'static str {
+    match result {
+        Ok(true) => "ok",
+        Ok(false) => "cancelled",
+        Err(_) => "failed",
+    }
+}
+
+fn finish_captured_screenshot(
+    captured: &CapturedScreenshot,
+    action_target: HWND,
+    prefs: &ScreenshotPrefs,
+    silent_copy: &mut Option<SilentScreenshotCopy>,
 ) -> Result<bool, String> {
+    let trace = captured.trace;
     if captured.action == screenshot_region_selector::RegionAction::SaveAs {
-        let Some(destination) = rfd::FileDialog::new()
+        let stage = trace.stage("save_dialog");
+        let destination = rfd::FileDialog::new()
             .set_title("另存截图")
             .add_filter("PNG 图片", &["png"])
             .add_filter("JPG 图片", &["jpg", "jpeg"])
             .set_file_name("截图.png")
-            .save_file()
-        else {
+            .save_file();
+        stage.finish(if destination.is_some() {
+            "ok"
+        } else {
+            "cancelled"
+        });
+        let Some(destination) = destination else {
             return Ok(false);
         };
         let destination = if destination.extension().is_none() {
@@ -18,36 +108,38 @@ fn finish_captured_screenshot(
         } else {
             destination
         };
-        let mut save_prefs = screenshot_prefs();
-        save_prefs.format = match destination.extension().and_then(|value| value.to_str()) {
+        let format = match destination.extension().and_then(|value| value.to_str()) {
             Some(value)
                 if value.eq_ignore_ascii_case("jpg") || value.eq_ignore_ascii_case("jpeg") =>
             {
-                "jpg"
+                image::ImageFormat::Jpeg
             }
-            Some(value) if value.eq_ignore_ascii_case("png") => "png",
+            Some(value) if value.eq_ignore_ascii_case("png") => image::ImageFormat::Png,
             _ => return Err("另存截图仅支持 PNG 或 JPG 文件名。".to_string()),
-        }
-        .to_string();
-        return save_screenshot_image(&captured.image, &destination, true, &save_prefs)
-            .map(|()| true);
+        };
+        return save_screenshot_image(&captured.image, &destination, format, trace).map(|()| true);
     }
     if captured.action == screenshot_region_selector::RegionAction::Annotate {
-        let destination = next_temporary_screenshot_path()?;
-        let mut save_prefs = screenshot_prefs();
-        save_prefs.format = "png".to_string();
-        save_screenshot_image(&captured.image, &destination, false, &save_prefs)?;
-        Command::new("mspaint.exe")
-            .arg(&destination)
-            .spawn()
-            .map_err(|err| format!("打开画图标注失败：{err}"))?;
+        let destination = trace.measure("save_prepare", next_temporary_screenshot_path)?;
+        save_screenshot_image(
+            &captured.image,
+            &destination,
+            image::ImageFormat::Png,
+            trace,
+        )?;
+        trace.measure("annotate_launch", || {
+            Command::new("mspaint.exe")
+                .arg(&destination)
+                .spawn()
+                .map_err(|err| format!("打开画图标注失败：{err}"))
+        })?;
         return Ok(true);
     }
     if captured.action == screenshot_region_selector::RegionAction::Pin {
-        pinned_screenshot::spawn(captured.image);
+        pinned_screenshot::spawn(captured.image.clone(), trace);
         return Ok(true);
     }
-    let mut action_prefs = screenshot_prefs();
+    let mut action_prefs = prefs.clone();
     match captured.action {
         screenshot_region_selector::RegionAction::Copy => {
             action_prefs.auto_save = false;
@@ -74,39 +166,48 @@ fn finish_captured_screenshot(
     let mut persistent = false;
     let mut errors = Vec::new();
 
+    let copy_status = if !prefs.copy_after_capture {
+        "disabled"
+    } else if let Err(err) = copy_image_to_clipboard(&captured.image, trace) {
+        errors.push(err);
+        "failed"
+    } else {
+        "ok"
+    };
+
     if needs_handoff_path {
         if prefs.auto_save {
-            let destination = next_screenshot_path(prefs, action_target);
-            match destination.and_then(|destination| {
-                let destination = if prefs.name_pattern.contains("{width}")
-                    || prefs.name_pattern.contains("{height}")
-                {
-                    screenshot_path_with_dimensions(
-                        &destination,
-                        prefs,
-                        action_target,
-                        captured.image.width(),
-                        captured.image.height(),
-                    )?
-                } else {
-                    destination
-                };
-                save_screenshot_image(&captured.image, &destination, true, prefs)
-                    .map(|()| destination)
-            }) {
+            match save_automatic_screenshot(&captured.image, prefs, action_target, trace) {
                 Ok(destination) => {
                     persistent = true;
-                    let _ = save_silent_screenshot_copy(&destination, prefs);
+                    if let Some(dir) = prefs
+                        .silent_copy_dir
+                        .as_ref()
+                        .filter(|_| prefs.silent_copy_enabled)
+                    {
+                        *silent_copy = Some(SilentScreenshotCopy {
+                            source: destination.clone(),
+                            dir: dir.clone(),
+                            trace,
+                        });
+                    }
                     path = Some(destination);
                 }
                 Err(err) => errors.push(format!("保存截图失败：{err}")),
             }
         }
         if path.is_none() && (prefs.ocr_after_capture || prefs.translate_after_capture) {
-            match next_temporary_screenshot_path().and_then(|destination| {
-                save_screenshot_image(&captured.image, &destination, false, prefs)
+            match trace
+                .measure("save_prepare", next_temporary_screenshot_path)
+                .and_then(|destination| {
+                    save_screenshot_image(
+                        &captured.image,
+                        &destination,
+                        image::ImageFormat::Png,
+                        trace,
+                    )
                     .map(|()| destination)
-            }) {
+                }) {
                 Ok(destination) => path = Some(destination),
                 Err(err) => errors.push(format!("创建 OCR 交接文件失败：{err}")),
             }
@@ -115,19 +216,12 @@ fn finish_captured_screenshot(
 
     if persistent {
         if let Some(saved_path) = path.as_deref() {
+            let stage = trace.stage("save_record");
             record_last_screenshot(saved_path);
             record_screenshot_metadata_async(saved_path.to_path_buf(), captured.source);
+            stage.finish("ok");
         }
     }
-
-    let copy_status = if !prefs.copy_after_capture {
-        "disabled"
-    } else if let Err(err) = copy_image_to_clipboard(&captured.image) {
-        errors.push(err);
-        "failed"
-    } else {
-        "ok"
-    };
 
     if prefs.ocr_after_capture || prefs.translate_after_capture {
         if let Some(image_path) = path.as_deref() {
@@ -137,16 +231,18 @@ fn finish_captured_screenshot(
                 format!(
                     "status=launch path={} target_hwnd={} translate={}",
                     runtime_log::path_for_log(image_path),
-                    action_target as isize,
+                    { action_target },
                     if prefs.translate_after_capture { 1 } else { 0 }
                 ),
             );
-            if let Err(err) = open_ocr_with_image(
-                action_target,
-                image_path,
-                prefs.translate_after_capture,
-                !persistent,
-            ) {
+            if let Err(err) = trace.measure("ocr_handoff", || {
+                open_ocr_with_image(
+                    action_target,
+                    image_path,
+                    prefs.translate_after_capture,
+                    !persistent,
+                )
+            }) {
                 runtime_log::log_tray(
                     RuntimeLogLevel::Error,
                     "screenshot_ocr_handoff",
@@ -203,37 +299,114 @@ fn valid_saved_screenshot(path: &Path) -> bool {
 fn save_screenshot_image(
     image: &image::RgbaImage,
     path: &Path,
-    persistent: bool,
-    prefs: &ScreenshotPrefs,
+    format: image::ImageFormat,
+    trace: ScreenshotTrace,
 ) -> Result<(), String> {
-    let format = if persistent && prefs.format == "jpg" {
-        image::ImageFormat::Jpeg
-    } else {
-        image::ImageFormat::Png
-    };
-    // Desktop capture surfaces are BGRA and some drivers leave their alpha
-    // channel undefined.  PNG viewers then composite an otherwise correct
-    // frame against their accent colour (often purple).  A screenshot is
-    // an opaque desktop image, so flatten alpha before both file encoding
-    // and clipboard publication.
-    image::DynamicImage::ImageRgba8(opaque_screenshot_image(image))
-        .save_with_format(path, format)
-        .map_err(|err| format!("写入截图 {} 失败：{err}", path.display()))
+    let dir = path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let mut pending = encode_screenshot_file(image, dir, format, trace)?;
+    trace.measure("save_publish", || {
+        pending
+            .publish(path, true)
+            .map_err(|err| format!("写入截图 {} 失败：{err}", path.display()))
+    })
 }
 
-fn copy_image_to_clipboard(image: &image::RgbaImage) -> Result<(), String> {
-    let image = opaque_screenshot_image(image);
-    let png = encode_clipboard_png(&image)?;
-    let dibv5 = encode_clipboard_dibv5(&image)?;
-    write_screenshot_formats_to_clipboard(&png, &dibv5)
+struct PendingScreenshotFile(PathBuf);
+
+impl PendingScreenshotFile {
+    fn create(dir: &Path) -> io::Result<(Self, fs::File)> {
+        loop {
+            let sequence = SCREENSHOT_HANDOFF_COUNTER.fetch_add(1, Ordering::Relaxed);
+            let path = dir.join(format!(
+                ".kaixin-screenshot-{}-{sequence}.tmp",
+                std::process::id()
+            ));
+            match fs::File::options().write(true).create_new(true).open(&path) {
+                Ok(file) => return Ok((Self(path), file)),
+                Err(error) if error.kind() == io::ErrorKind::AlreadyExists => {}
+                Err(error) => return Err(error),
+            }
+        }
+    }
+
+    fn publish(&mut self, path: &Path, overwrite: bool) -> io::Result<()> {
+        if overwrite {
+            fs::rename(&self.0, path)?;
+        } else {
+            use windows_sys::Win32::Storage::FileSystem::MoveFileExW;
+            let wide_path = |path: &Path| {
+                path.as_os_str()
+                    .encode_wide()
+                    .chain(Some(0))
+                    .collect::<Vec<_>>()
+            };
+            let source = wide_path(&self.0);
+            let destination = wide_path(path);
+            if unsafe { MoveFileExW(source.as_ptr(), destination.as_ptr(), 0) } == 0 {
+                return Err(io::Error::last_os_error());
+            }
+        }
+        self.0.clear();
+        Ok(())
+    }
 }
 
-fn encode_clipboard_png(image: &image::RgbaImage) -> Result<Vec<u8>, String> {
-    let mut bytes = Cursor::new(Vec::new());
-    image::DynamicImage::ImageRgba8(image.clone())
-        .write_to(&mut bytes, image::ImageFormat::Png)
-        .map_err(|err| format!("编码剪贴板 PNG 失败：{err}"))?;
-    Ok(bytes.into_inner())
+impl Drop for PendingScreenshotFile {
+    fn drop(&mut self) {
+        if !self.0.as_os_str().is_empty() {
+            let _ = fs::remove_file(&self.0);
+        }
+    }
+}
+
+fn encode_screenshot_file(
+    image: &image::RgbaImage,
+    dir: &Path,
+    format: image::ImageFormat,
+    trace: ScreenshotTrace,
+) -> Result<PendingScreenshotFile, String> {
+    trace.measure("save_encode_write", || {
+        let (pending, output) = PendingScreenshotFile::create(dir)
+            .map_err(|err| format!("创建截图临时文件失败：{err}"))?;
+        let mut output = BufWriter::new(output);
+        let encoded = match format {
+            image::ImageFormat::Jpeg => {
+                image::codecs::jpeg::JpegEncoder::new(&mut output).encode_image(image)
+            }
+            image::ImageFormat::Png => encode_screenshot_png(image, &mut output),
+            _ => return Err("截图仅支持 PNG 和 JPG。".to_string()),
+        };
+        encoded.map_err(|err| format!("编码截图失败：{err}"))?;
+        output
+            .flush()
+            .map_err(|err| format!("写入截图失败：{err}"))?;
+        Ok(pending)
+    })
+}
+
+fn copy_image_to_clipboard(image: &image::RgbaImage, trace: ScreenshotTrace) -> Result<(), String> {
+    let (png, dibv5) = trace.measure("clipboard_encode", || {
+        let mut png = Vec::new();
+        encode_screenshot_png(image, &mut png)
+            .map_err(|err| format!("编码剪贴板 PNG 失败：{err}"))?;
+        Ok::<_, String>((png, encode_clipboard_dibv5(image)?))
+    })?;
+    trace.measure("clipboard_write", || {
+        write_screenshot_formats_to_clipboard(&png, &dibv5)
+    })
+}
+
+fn encode_screenshot_png(image: &image::RgbaImage, output: impl Write) -> image::ImageResult<()> {
+    use image::ImageEncoder;
+    image::codecs::png::PngEncoder::new(output).write_image(
+        image.as_raw(),
+        image.width(),
+        image.height(),
+        image::ExtendedColorType::Rgba8,
+    )
 }
 
 /// Builds the exact CF_DIBV5 payload expected by the Windows clipboard:
@@ -292,7 +465,7 @@ fn encode_clipboard_dibv5(image: &image::RgbaImage) -> Result<Vec<u8>, String> {
 
     let row_bytes = width as usize * 4;
     for row in image.as_raw().chunks_exact(row_bytes).rev() {
-        for pixel in row.chunks_exact(4) {
+        for pixel in row.as_chunks::<4>().0 {
             dib.extend_from_slice(&[pixel[2], pixel[1], pixel[0], 255]);
         }
     }
@@ -375,14 +548,8 @@ fn cleanup_old_temporary_screenshots(dir: &Path) {
     }
 }
 
-fn save_silent_screenshot_copy(source: &Path, prefs: &ScreenshotPrefs) -> Option<PathBuf> {
-    if !prefs.silent_copy_enabled {
-        return None;
-    }
-    let Some(dir) = prefs.silent_copy_dir.as_ref() else {
-        return None;
-    };
-    match copy_screenshot_file_to_dir(source, dir) {
+fn save_silent_screenshot_copy(source: &Path, dir: &Path, trace: ScreenshotTrace) {
+    match trace.measure("silent_copy", || copy_screenshot_file_to_dir(source, dir)) {
         Ok(path) => {
             runtime_log::log_tray(
                 RuntimeLogLevel::Basic,
@@ -393,7 +560,6 @@ fn save_silent_screenshot_copy(source: &Path, prefs: &ScreenshotPrefs) -> Option
                     runtime_log::path_for_log(&path)
                 ),
             );
-            Some(path)
         }
         Err(err) => {
             runtime_log::log_tray(
@@ -406,28 +572,21 @@ fn save_silent_screenshot_copy(source: &Path, prefs: &ScreenshotPrefs) -> Option
                     err
                 ),
             );
-            None
         }
     }
 }
 
 fn copy_screenshot_file_to_dir(source: &Path, dir: &Path) -> Result<PathBuf, String> {
     fs::create_dir_all(dir).map_err(|e| format!("create {}: {e}", dir.display()))?;
-    let dest = unique_screenshot_copy_path(source, dir)?;
-    fs::copy(source, &dest)
-        .map(|_| dest.clone())
-        .map_err(|e| format!("copy {} to {}: {e}", source.display(), dest.display()))
-}
-
-fn unique_screenshot_copy_path(source: &Path, dir: &Path) -> Result<PathBuf, String> {
     let file_name = source
         .file_name()
         .ok_or_else(|| format!("source path has no file name: {}", source.display()))?;
-    let mut path = dir.join(file_name);
-    if !path.exists() {
-        return Ok(path);
-    }
-
+    let output_dir = fs::canonicalize(dir).map_err(|err| format!("读取静默保存目录失败：{err}"))?;
+    let (mut pending, file) = PendingScreenshotFile::create(&output_dir)
+        .map_err(|err| format!("创建静默保存临时文件失败：{err}"))?;
+    drop(file);
+    fs::copy(source, &pending.0)
+        .map_err(|err| format!("复制截图 {} 失败：{err}", source.display()))?;
     let stem = source
         .file_stem()
         .and_then(|value| value.to_str())
@@ -437,18 +596,21 @@ fn unique_screenshot_copy_path(source: &Path, dir: &Path) -> Result<PathBuf, Str
         .extension()
         .and_then(|value| value.to_str())
         .filter(|value| !value.trim().is_empty());
-    for idx in 2..1000 {
-        let file_name = if let Some(extension) = extension {
-            format!("{stem}_{idx:03}.{extension}")
+    for index in 1..=999 {
+        let name = if index == 1 {
+            file_name.to_os_string()
+        } else if let Some(extension) = extension {
+            format!("{stem}_{index:03}.{extension}").into()
         } else {
-            format!("{stem}_{idx:03}")
+            format!("{stem}_{index:03}").into()
         };
-        path = dir.join(file_name);
-        if !path.exists() {
-            return Ok(path);
+        match pending.publish(&output_dir.join(&name), false) {
+            Ok(()) => return Ok(dir.join(name)),
+            Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {}
+            Err(err) => return Err(format!("发布静默保存文件失败：{err}")),
         }
     }
-    Ok(path)
+    Err("静默保存文件名冲突过多。".to_string())
 }
 
 fn last_screenshot_record_path() -> Option<PathBuf> {
@@ -498,7 +660,7 @@ fn screenshot_record_for_path(
     screenshot_store::ScreenshotRecord {
         path,
         source: source.source_key(),
-        target_hwnd: source.target_hwnd as isize,
+        target_hwnd: source.target_hwnd,
         source_window_title: if source.kind == CapturedScreenshotKind::Window
             && source.target_hwnd != 0
         {

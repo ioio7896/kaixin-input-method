@@ -1,6 +1,6 @@
 # 候选词跨拼音路径稳定显示
 
-实现入口：`pinyin-ime/src/core/stable_words.rs`。
+实现入口：`crates/kaixin-core/src/core/stable_words.rs`。
 
 ## 召回与排序
 

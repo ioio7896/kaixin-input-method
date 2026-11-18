@@ -1,11 +1,5 @@
 #pragma once
-
-#include <cstddef>
-
+#include "engine_contract.generated.h"
 namespace srf_candidate_limits {
-
-// Keep in sync with Rust LOOKUP_FULL_MAX_CANDIDATES. This covers the largest
-// compiled single-syllable character pool, including its uncommon tail.
-inline constexpr std::size_t kFullResult = 1024;
-
+inline constexpr std::size_t kFullResult = srf_engine_contract::LOOKUP_FULL_MAX_CANDIDATES;
 }  // namespace srf_candidate_limits

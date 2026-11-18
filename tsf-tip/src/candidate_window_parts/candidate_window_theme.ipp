@@ -6,7 +6,7 @@ struct CandidateColors {
   COLORREF headerBg = RGB(241, 245, 249);
   COLORREF headerBgTo = CLR_INVALID;  // Gradient end color
   COLORREF border = RGB(203, 213, 225);
-  COLORREF divider = CLR_INVALID;     // Divider line color
+  COLORREF divider = CLR_INVALID;  // Divider line color
   COLORREF itemBg = RGB(255, 255, 255);
   COLORREF itemBorder = RGB(226, 232, 240);
   COLORREF hoverBg = RGB(240, 248, 245);
@@ -94,12 +94,12 @@ COLORREF EnsureReadableTextColor(COLORREF preferred, const COLORREF* backgrounds
 
 // Unselected rows have no card fill. Check the actual window/gradient or the
 // current interaction fill, never unrelated backgrounds or border colors.
-COLORREF CandidateRowTextColor(COLORREF preferred, const CandidateColors& colors,
-                               bool filledRow, COLORREF rowFill, double minContrast) {
+COLORREF CandidateRowTextColor(COLORREF preferred, const CandidateColors& colors, bool filledRow,
+                               COLORREF rowFill, double minContrast) {
   const COLORREF backgrounds[] = {
       filledRow ? rowFill : colors.windowBg,
-      filledRow ? rowFill : (colors.windowBgTo == CLR_INVALID ? colors.windowBg
-                                                            : colors.windowBgTo)};
+      filledRow ? rowFill
+                : (colors.windowBgTo == CLR_INVALID ? colors.windowBg : colors.windowBgTo)};
   return EnsureReadableTextColor(preferred, backgrounds, _countof(backgrounds), minContrast);
 }
 
@@ -218,14 +218,17 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
     if (style.skinPressedBg != CLR_INVALID) colors.pressedBg = style.skinPressedBg;
     if (style.skinPressedBorder != CLR_INVALID) colors.pressedBorder = style.skinPressedBorder;
     if (style.skinSelectedText != CLR_INVALID) colors.selectedText = style.skinSelectedText;
-    if (style.skinSelectedMutedText != CLR_INVALID) colors.selectedMutedText = style.skinSelectedMutedText;
+    if (style.skinSelectedMutedText != CLR_INVALID)
+      colors.selectedMutedText = style.skinSelectedMutedText;
     if (style.skinChipBg != CLR_INVALID) colors.chipBg = style.skinChipBg;
     if (style.skinChipBorder != CLR_INVALID) colors.chipBorder = style.skinChipBorder;
     if (style.skinChipText != CLR_INVALID) colors.chipText = style.skinChipText;
     if (style.skinChipActiveBg != CLR_INVALID) colors.chipActiveBg = style.skinChipActiveBg;
-    if (style.skinChipActiveBorder != CLR_INVALID) colors.chipActiveBorder = style.skinChipActiveBorder;
+    if (style.skinChipActiveBorder != CLR_INVALID)
+      colors.chipActiveBorder = style.skinChipActiveBorder;
     if (style.skinChipActiveText != CLR_INVALID) colors.chipActiveText = style.skinChipActiveText;
-    if (style.skinSelectedOutline != CLR_INVALID) colors.selectedOutline = style.skinSelectedOutline;
+    if (style.skinSelectedOutline != CLR_INVALID)
+      colors.selectedOutline = style.skinSelectedOutline;
     colors.borderOpacity = style.skinBorderOpacity;
     colors.dividerOpacity = style.skinDividerOpacity;
     colors.shadowOpacity = style.skinShadowOpacity;
@@ -241,10 +244,12 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
   // 皮肤可能配置出低对比配色。这里仅在可读性不足时自动矫正文本颜色。
   // Keep unrelated interaction surfaces out of each color's contrast check.
   // Per-row painting checks the current fill again, including animation frames.
-  const COLORREF normalBackgrounds[] = {colors.windowBg,
-      colors.windowBgTo == CLR_INVALID ? colors.windowBg : colors.windowBgTo};
-  colors.text = EnsureReadableTextColor(colors.text, normalBackgrounds, _countof(normalBackgrounds), 4.5);
-  colors.mutedText = EnsureReadableTextColor(colors.mutedText, normalBackgrounds, _countof(normalBackgrounds), 4.5);
+  const COLORREF normalBackgrounds[] = {
+      colors.windowBg, colors.windowBgTo == CLR_INVALID ? colors.windowBg : colors.windowBgTo};
+  colors.text =
+      EnsureReadableTextColor(colors.text, normalBackgrounds, _countof(normalBackgrounds), 4.5);
+  colors.mutedText = EnsureReadableTextColor(colors.mutedText, normalBackgrounds,
+                                             _countof(normalBackgrounds), 4.5);
   colors.badgeText = EnsureReadableTextColor(colors.badgeText, &colors.badgeBg, 1, 4.5);
 
   const COLORREF selectedBackgrounds[] = {colors.selectedBg};

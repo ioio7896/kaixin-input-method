@@ -245,7 +245,9 @@ def build(output: Path) -> tuple[int, int]:
             entries.append((phrase, code, weight))
     with output.open("w", encoding="utf-8", newline="\n") as stream:
         stream.write("# 开心输入法原生词库：世界国家及主要城市\n")
-        stream.write("# 195 个国家（193 个联合国会员国＋巴勒斯坦、梵蒂冈）及每国 5 个代表性城市。\n")
+        stream.write(
+            "# 195 个国家（193 个联合国会员国＋巴勒斯坦、梵蒂冈）及每国 5 个代表性城市。\n"
+        )
         stream.write("# 城市为常用中文名称；格式：词语<TAB>全拼<TAB>权重。\n")
         for phrase, code, weight in entries:
             stream.write(f"{phrase}\t{code}\t{weight}\n")
