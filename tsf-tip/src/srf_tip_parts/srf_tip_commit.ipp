@@ -145,22 +145,12 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
                                    TryParseFunctionKeyToken(committed, &committedFunctionVk) &&
                                    readingFunctionVk == committedFunctionVk;
 
-  // 单字候选 + 至少两个完整音节：上屏一字并保留后续拼音（与引擎「前 7 多字 +
-  // 首音节单字」策略配套）。 ClipboardPaste has a full clipboard/OLE round trip per commit.  Do not
-  // enter the single-character continuation path in game mode: repeatedly
-  // selecting a long phrase would otherwise perform one expensive paste for
-  // every character and make the game input feel frozen.  The normal commit
-  // path still submits the selected character through the configured transport.
-  bool appGameProfile = false;
-  if (const SrfAppOptions* appOptions = FindAppOptions(m_config, CompatibilityAppName())) {
-    appGameProfile = appOptions->hasGameProfile && appOptions->gameCompactProfile;
-  }
-  const bool gameCompatibilityActive = appGameProfile || m_gameCompatActive ||
-                                       m_configuredGameCompatActive || m_builtinGameCompatActive ||
-                                       m_fullscreenCompatActive || m_manualGameCompatActive;
-  const bool clipboardGameContinuation =
-      EffectiveCommitTransport() == SrfCommitTransport::ClipboardPaste && gameCompatibilityActive;
-  if (committed.size() == 1 && pic && !clipboardGameContinuation) {
+  const SrfCommitTransport transport = EffectiveCommitTransport();
+  const bool clipboardGameContinuation = m_gameChatActive &&
+                                         transport == SrfCommitTransport::ClipboardPaste &&
+                                         !ShouldSuppressClipboardForPrivacy();
+  if (!clipboardGameContinuation) m_gamePendingPaste.clear();
+  if (!commitReading && committed.size() == 1 && pic && !commitAsFunctionKey) {
     auto continueSingleCharCommit = [&](std::wstring restReading,
                                         const std::wstring* learnReading) -> HRESULT {
       if (m_candidateUi) m_candidateUi->End();
@@ -170,77 +160,82 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
       if (!ctx) return E_FAIL;
       ctx->AddRef();
 
-      {
-        const SrfPhraseComposeStateGuard phraseComposeGuard(this);
+      if (clipboardGameContinuation) {
+        if (m_gamePendingPaste.empty()) ShowGameInputStatus(L"继续选字，整句确认后一次粘贴");
+        m_gamePendingPaste += committed;
+      } else {
+        {
+          const SrfPhraseComposeStateGuard phraseComposeGuard(this);
 
-        // 关键：先结束当前 composition。否则后续 SyncCompositionText 可能复用同一范围，
-        // 把刚刚直插上屏的前一个字覆盖掉，表现为“只剩最后一次选字”。
-        if (m_pComposition) {
-          CancelCompositionEdit(ec);
-          ReleaseCompositionObjects();
-        }
-      }
-
-      auto commitSingleCharByInsert = [&]() -> HRESULT {
-        ITfInsertAtSelection* insertAtSelection = nullptr;
-        HRESULT hr = ctx->QueryInterface(IID_ITfInsertAtSelection,
-                                         reinterpret_cast<void**>(&insertAtSelection));
-        if (FAILED(hr) || !insertAtSelection) return FAILED(hr) ? hr : E_FAIL;
-
-        ITfRange* insertedRange = nullptr;
-        hr = insertAtSelection->InsertTextAtSelection(
-            ec, 0, committed.c_str(), static_cast<LONG>(committed.size()), &insertedRange);
-        insertAtSelection->Release();
-        if (SUCCEEDED(hr) && insertedRange) {
-          (void)insertedRange->Collapse(ec, TF_ANCHOR_END);
-          TF_SELECTION selection = {};
-          selection.range = insertedRange;
-          selection.style.ase = TF_AE_NONE;
-          selection.style.fInterimChar = FALSE;
-          (void)ctx->SetSelection(ec, 1, &selection);
-          insertedRange->Release();
-        }
-        if (SrfTsfDebugTraceEnabled()) {
-          wchar_t buf[152] = {};
-          swprintf_s(buf, L"continueSingleCharCommit direct-insert hr=0x%08lX ch=%lc",
-                     static_cast<unsigned long>(hr), committed[0]);
-          SrfTsfDebugLog(buf);
-        }
-        return hr;
-      };
-
-      // 逐字上屏必须是“稳定的直接插入”，避免随后 SyncCompositionText 复用 composition range
-      // 覆盖已选字导致吞字。
-      HRESULT hrIns = EffectiveCommitTransport() != SrfCommitTransport::Tsf
-                          ? CommitDirectText(ec, ctx, committed)
-                          : commitSingleCharByInsert();
-      if (FAILED(hrIns) && EffectiveCommitTransport() == SrfCommitTransport::Tsf) {
-        // 个别宿主可能不支持 InsertTextAtSelection，兜底沿用旧路径。
-        hrIns = CommitDirectText(ec, ctx, committed);
-      }
-      if (FAILED(hrIns)) {
-        ctx->Release();
-        return hrIns;
-      }
-
-      if (!suppressPhraseComposeLearning) {
-        // 启动/继续“用户造词”累计：用最初 reading 作为
-        // key，把逐字上屏的结果拼成一个整词写入用户词典。
-        if (!m_userPhraseComposeActive) {
-          std::wstring trimmedOrig = reading;
-          TrimWstringInPlace(trimmedOrig);
-          m_userPhraseComposeOriginalReading = std::move(trimmedOrig);
-          m_userPhraseComposeCommitted.clear();
-          m_userPhraseComposeActive = !m_userPhraseComposeOriginalReading.empty();
-          m_userPhraseComposeValid = m_userPhraseComposeActive;
-        }
-        if (m_userPhraseComposeActive) {
-          m_userPhraseComposeCommitted += committed;
-          if (m_userPhraseComposeCommitted.size() > 8) m_userPhraseComposeValid = false;
+          // 关键：先结束当前 composition。否则后续 SyncCompositionText 可能复用同一范围，
+          // 把刚刚直插上屏的前一个字覆盖掉，表现为“只剩最后一次选字”。
+          if (m_pComposition) {
+            CancelCompositionEdit(ec);
+            ReleaseCompositionObjects();
+          }
         }
 
-        if (learnReading && !learnReading->empty()) {
-          SrfTip_LearnCommitEx(*learnReading, committed, kSrfLearnCommitWeak);
+        auto commitSingleCharByInsert = [&]() -> HRESULT {
+          ITfInsertAtSelection* insertAtSelection = nullptr;
+          HRESULT hr = ctx->QueryInterface(IID_ITfInsertAtSelection,
+                                           reinterpret_cast<void**>(&insertAtSelection));
+          if (FAILED(hr) || !insertAtSelection) return FAILED(hr) ? hr : E_FAIL;
+
+          ITfRange* insertedRange = nullptr;
+          hr = insertAtSelection->InsertTextAtSelection(
+              ec, 0, committed.c_str(), static_cast<LONG>(committed.size()), &insertedRange);
+          insertAtSelection->Release();
+          if (SUCCEEDED(hr) && insertedRange) {
+            (void)insertedRange->Collapse(ec, TF_ANCHOR_END);
+            TF_SELECTION selection = {};
+            selection.range = insertedRange;
+            selection.style.ase = TF_AE_NONE;
+            selection.style.fInterimChar = FALSE;
+            (void)ctx->SetSelection(ec, 1, &selection);
+            insertedRange->Release();
+          }
+          if (SrfTsfDebugTraceEnabled()) {
+            wchar_t buf[152] = {};
+            swprintf_s(buf, L"continueSingleCharCommit direct-insert hr=0x%08lX ch=%lc",
+                       static_cast<unsigned long>(hr), committed[0]);
+            SrfTsfDebugLog(buf);
+          }
+          return hr;
+        };
+
+        // 逐字上屏必须是“稳定的直接插入”，避免随后 SyncCompositionText 复用 composition range
+        // 覆盖已选字导致吞字。
+        HRESULT hrIns = EffectiveCommitTransport() != SrfCommitTransport::Tsf
+                            ? CommitDirectText(ec, ctx, committed)
+                            : commitSingleCharByInsert();
+        if (FAILED(hrIns) && EffectiveCommitTransport() == SrfCommitTransport::Tsf) {
+          // 个别宿主可能不支持 InsertTextAtSelection，兜底沿用旧路径。
+          hrIns = CommitDirectText(ec, ctx, committed);
+        }
+        if (FAILED(hrIns)) {
+          ctx->Release();
+          return hrIns;
+        }
+
+        if (!suppressPhraseComposeLearning) {
+          // 启动/继续“用户造词”累计：用最初 reading 作为
+          // key，把逐字上屏的结果拼成一个整词写入用户词典。
+          if (!m_userPhraseComposeActive) {
+            std::wstring trimmedOrig = reading;
+            TrimWstringInPlace(trimmedOrig);
+            m_userPhraseComposeOriginalReading = std::move(trimmedOrig);
+            m_userPhraseComposeCommitted.clear();
+            m_userPhraseComposeActive = !m_userPhraseComposeOriginalReading.empty();
+            m_userPhraseComposeValid = m_userPhraseComposeActive;
+          }
+          if (m_userPhraseComposeActive) {
+            m_userPhraseComposeCommitted += committed;
+            if (m_userPhraseComposeCommitted.size() > 8) m_userPhraseComposeValid = false;
+          }
+
+          if (learnReading && !learnReading->empty()) {
+            SrfTip_LearnCommitEx(*learnReading, committed, kSrfLearnCommitWeak);
+          }
         }
       }
       ApplyRustModeFlags();
@@ -290,11 +285,6 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
                           L"status=skipped reason=syllable_bounds_unavailable");
     }
   }
-  if (committed.size() == 1 && pic && clipboardGameContinuation) {
-    SrfTsfDiagnosticLog(L"commit-candidate.single-char-continuation",
-                        L"status=skipped reason=clipboard_transport");
-  }
-
   // 逐字续组词路径会在上面提前返回并保留候选 UI；其余提交都结束候选会话。
   if (m_candidateUi) {
     const ULONGLONG uiHideStart = GetTickCount64();
@@ -320,13 +310,17 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   }
 
   HRESULT hr = E_FAIL;
+  const std::wstring delivery =
+      m_gamePendingPaste.empty() ? committed : m_gamePendingPaste + committed;
+  const auto deliveryFocus = pic ? CaptureFocusSnapshot(pic) : SrfFocusSnapshot{};
+  const bool directNative = !m_pComposition && CanUseNativeGameEdit(pic);
   const ULONGLONG textWriteStart = GetTickCount64();
   const bool finishUserPhraseByDirectInsert = m_userPhraseComposeActive && pic != nullptr;
-  if (EffectiveCommitTransport() != SrfCommitTransport::Tsf) {
+  if (transport != SrfCommitTransport::Tsf) {
     ITfContext* ctx = m_pCompositionContext ? m_pCompositionContext : (pic ? pic : m_pFocusContext);
     if (ctx) {
       ctx->AddRef();
-      hr = CommitDirectText(ec, ctx, committed);
+      hr = CommitDirectText(ec, ctx, delivery);
       ctx->Release();
     } else {
       hr = E_FAIL;
@@ -449,13 +443,23 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
 
   if (FAILED(hr)) {
     if (IsGameHotkeyPassthroughActive()) {
-      if (hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY)) {
+      const bool partial = hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY);
+      LogGameChatEvent(partial ? L"commit_partial" : L"commit_failed", L"candidate",
+                       GetTickCount64() - textWriteStart);
+      if (partial) {
         CancelCompositionEdit(ec);
         SetGameChatActive(false);
+        ShowGameInputStatus(L"部分上屏，请检查聊天框", true);
+      } else if (hr != HRESULT_FROM_WIN32(ERROR_CANCELLED) && pic &&
+                 !ShouldSuppressClipboardForPrivacy() && FocusSnapshotMatches(deliveryFocus) &&
+                 SUCCEEDED(SetUnicodeClipboardTextForPaste(delivery))) {
+        if (m_pComposition) CancelCompositionEdit(ec);
+        ReleaseCompositionState();
+        ShowGameInputStatus(L"已复制，按 Ctrl+V 粘贴", true);
+        return S_OK;
+      } else {
+        ShowGameInputStatus(L"上屏失败，请在游戏向导检查上屏方式", true);
       }
-      ShowGameInputStatus(hr == HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY)
-                              ? L"部分上屏，已停止重试；请检查游戏聊天框"
-                              : L"上屏失败，请用游戏测试向导选择上屏方式");
     }
     RecordCompatibilityFallback(L"CommitCandidate", hr);
     wchar_t hrBuf[16] = {};
@@ -471,6 +475,11 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
   // A successful final commit has ended the composition. TSF hosts need not
   // send OnCompositionTerminated for an EndComposition initiated by this TIP.
   // Retaining it would make EnsureEngineInputReady reject every following key.
+  if (IsGameHotkeyPassthroughActive()) {
+    LogGameChatEvent(
+        transport == SrfCommitTransport::Tsf && !directNative ? L"commit_written" : L"commit_sent",
+        directNative ? L"native_edit" : L"candidate", GetTickCount64() - textWriteStart);
+  }
   ReleaseCompositionState();
   std::wstring line = EffectiveCommitTransport() == SrfCommitTransport::Tsf
                           ? L"status=written, total_ms="

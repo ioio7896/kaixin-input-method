@@ -16,7 +16,10 @@ HRESULT CSrfTip::_UnadviseSinks() {
   // A host may retain the sink through an old composition after deactivation.
   if (m_pCompSink) m_pCompSink->Detach();
   UnbindTextContextSinks();
-  if (m_deferredTimerHwnd) KillTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId);
+  if (m_deferredTimerHwnd) {
+    KillTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId);
+    KillTimer(m_deferredTimerHwnd, kGameChatProbeTimerId);
+  }
   EndInputSession(L"host-deactivate", TF_INVALID_COOKIE, false);
   CancelDeferredCandidateRefresh();
   CancelScheduledCandidateUiRedraw();
@@ -49,9 +52,11 @@ HRESULT CSrfTip::_UnadviseSinks() {
   m_gameChatPhase = SrfGameChatPhase::Passive;
   m_gameChatSource = SrfGameTextSource::None;
   m_gameEditableVerified = false;
+  m_gameCandidateFieldWidthDip = 0;
   m_gameTsfEvidence = {};
   ++m_gameTsfProbeSerial;
   m_gameTsfProbePending = false;
+  m_gameLearnedFields.clear();
 
   if (m_pThreadMgrSink) {
     m_pThreadMgrSink->Release();
@@ -207,10 +212,18 @@ void CSrfTip::RefreshCandidateWindowEnvironment() {
   bool foundRect = false;
   const wchar_t* source = L"environment-existing";
   UINT quality = m_lastCandidateAnchorQuality;
-  if (gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret &&
-      (overlayAnchor != SrfOverlayAnchor::Auto || !m_gameEditableVerified ||
-       (overlayOptions && overlayOptions->hasOverlayMonitor &&
-        overlayOptions->overlayMonitor != L"auto"))) {
+  const bool explicitMonitor = overlayOptions && overlayOptions->hasOverlayMonitor &&
+                               overlayOptions->overlayMonitor != L"auto";
+  if (gameOverlay && overlayAnchor == SrfOverlayAnchor::Auto && !explicitMonitor &&
+      !m_gameEditableVerified && TryGetMouseRect(target, &rect)) {
+    ApplyCandidateGameOverlayOffset(overlayOptions, &rect);
+    foundRect = true;
+    source = L"game-cursor";
+    quality = kCandidateAnchorQualityWindow;
+  } else if (gameOverlay && overlayAnchor != SrfOverlayAnchor::Caret &&
+             (overlayAnchor != SrfOverlayAnchor::Auto || !m_gameEditableVerified ||
+              (overlayOptions && overlayOptions->hasOverlayMonitor &&
+               overlayOptions->overlayMonitor != L"auto"))) {
     foundRect = ResolveCandidateGameOverlayAnchor(target, fullscreenOverlay, overlayOptions, &rect);
     if (foundRect) {
       source = fullscreenOverlay ? L"fullscreen-overlay-environment" : L"game-overlay-environment";
@@ -342,7 +355,19 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
       IsUsableRect(m_gameEditableBounds)) {
     RECT visible = {}, target = {};
     HWND hwnd = CandidateOverlayTargetWindow();
-    GetWindowRect(hwnd, &target);
+    if (fullscreenOverlay && hwnd &&
+        SUCCEEDED(
+            DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, &target, sizeof(target)))) {
+      POINT points[2] = {{target.left, target.top}, {target.right, target.bottom}};
+      if (PhysicalToLogicalPointForPerMonitorDPI(hwnd, &points[0]) &&
+          PhysicalToLogicalPointForPerMonitorDPI(hwnd, &points[1])) {
+        target = {points[0].x, points[0].y, points[1].x, points[1].y};
+      } else {
+        GetWindowRect(hwnd, &target);
+      }
+    } else if (hwnd) {
+      GetWindowRect(hwnd, &target);
+    }
     if (IntersectRect(&visible, &target, &m_gameEditableBounds)) {
       rect = visible;
       rect.right = rect.left + 1;
@@ -351,7 +376,13 @@ void CSrfTip::UpdateCandidateWindow(TfEditCookie ec) {
       anchorQuality = kCandidateAnchorQualityCaret;
     }
   }
-  if (!foundRect && gameOverlay && overlayAnchor == SrfOverlayAnchor::Auto) {
+  if (!foundRect && gameOverlay && !fixedGameOverlay && overlayAnchor == SrfOverlayAnchor::Auto &&
+      TryGetMouseRect(CandidateOverlayTargetWindow(), &rect)) {
+    foundRect = true;
+    anchorSource = L"game-cursor";
+    anchorQuality = kCandidateAnchorQualityWindow;
+  }
+  if (!foundRect && gameOverlay && !fixedGameOverlay && overlayAnchor == SrfOverlayAnchor::Auto) {
     foundRect = ResolveCandidateGameOverlayAnchor(CandidateOverlayTargetWindow(), fullscreenOverlay,
                                                   overlayOptions, &rect);
     if (foundRect) {
@@ -844,6 +875,12 @@ HRESULT CSrfTip::CommitDirectTextWithCursor(TfEditCookie ec, ITfContext* pic,
     if (SUCCEEDED(transportHr)) return S_OK;
     // An explicit transport never silently changes delivery method.
     return transportHr;
+  }
+
+  if (cursorAtEnd && commitTransport == SrfCommitTransport::Tsf && CanUseNativeGameEdit(pic) &&
+      FocusSnapshotMatches(commitFocus)) {
+    SendMessageW(m_gameNativeEdit, EM_REPLACESEL, TRUE, reinterpret_cast<LPARAM>(text.c_str()));
+    return S_OK;
   }
 
   auto insertAtSelectionOnly = [&]() -> HRESULT {

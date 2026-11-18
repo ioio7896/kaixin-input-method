@@ -23,7 +23,7 @@ namespace {
 
 constexpr UINT_PTR kOverlayWatchTimerId = 1;
 constexpr UINT kOverlayWatchIntervalMs = 250;
-constexpr ULONGLONG kOverlayHiddenIdleExitMs = 60000;
+constexpr UINT kOverlayHiddenWatchIntervalMs = 1000;
 constexpr UINT kOverlayApplySnapshotMessage = WM_APP + 0x31;
 constexpr UINT_PTR kCandidatePreviewTimerId = 0x4B585052u;  // "KXPR"
 constexpr UINT kCandidatePreviewDurationMs = 10000;
@@ -162,6 +162,8 @@ SrfUIStyle ResolveOverlayStyle(const SrfConfig& config,
     style.candidateHorizontalCompact = snapshot.horizontalLayout && snapshot.horizontalCompact;
   }
   style.candidateFullscreenPlacement = snapshot.fullscreenPlacement;
+  style.candidateFieldWidthDip = snapshot.fieldWidthDip;
+  if (style.candidateFieldWidthDip) style.candidateHorizontalCount = 9;
   // The external game overlay is intentionally read-only. It must never steal
   // a click or activate itself even if a stale config still enables mouse UI.
   style.candidateTopmost = true;
@@ -219,8 +221,7 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
         CreateWindowExW(0, SrfCandidateOverlayControlWindowClass(), controlToken.c_str(), 0, 0, 0,
                         0, 0, HWND_MESSAGE, nullptr, instance_, this);
     if (!controlWindow_) return false;
-    lastMessageTick_ = GetTickCount64();
-    SetTimer(controlWindow_, kOverlayWatchTimerId, kOverlayWatchIntervalMs, nullptr);
+    SetTimer(controlWindow_, kOverlayWatchTimerId, kOverlayHiddenWatchIntervalMs, nullptr);
     return true;
   }
 
@@ -346,7 +347,6 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
     }
     if (!CanAcceptSequence(snapshot)) return false;
 
-    lastMessageTick_ = GetTickCount64();
     if (!applySnapshotPosted_) {
       if (!PostMessageW(controlWindow_, kOverlayApplySnapshotMessage, 0, 0)) {
         return false;
@@ -512,10 +512,13 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
                           snapshot.pinnedItems, snapshot.clipboardItems, snapshot.pageIndex,
                           snapshot.totalPages, snapshot.selectedInPage, snapshot.anchor,
                           snapshot.modeTags, false, snapshot.pendingVisual);
+    if (!visible_) SetTimer(controlWindow_, kOverlayWatchTimerId, kOverlayWatchIntervalMs, nullptr);
   }
 
   void Hide() {
     candidateWindow_.Hide();
+    if (visible_)
+      SetTimer(controlWindow_, kOverlayWatchTimerId, kOverlayHiddenWatchIntervalMs, nullptr);
     visible_ = false;
     activeOwnerId_ = 0;
     activeTargetProcessId_ = 0;
@@ -526,7 +529,6 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
   }
 
   void OnWatchTimer() {
-    const ULONGLONG now = GetTickCount64();
     if (!clientProcess_ || WaitForSingleObject(clientProcess_, 0) != WAIT_TIMEOUT) {
       PostQuitMessage(0);
       return;
@@ -542,9 +544,6 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
         OnCandidateEnvironmentChanged();
       }
       return;
-    }
-    if (now - lastMessageTick_ >= kOverlayHiddenIdleExitMs) {
-      PostQuitMessage(0);
     }
   }
 
@@ -620,7 +619,6 @@ class CandidateOverlayHost : public ICandidateWindowEvents {
   std::uint64_t lastAcceptedOwnerId_ = 0;
   std::uint64_t lastAcceptedSequence_ = 0;
   std::uint64_t lastAppliedSequence_ = 0;
-  ULONGLONG lastMessageTick_ = 0;
   SrfCandidateOverlaySnapshot activeSnapshot_ = {};
   SrfCandidateOverlaySnapshot pendingSnapshot_ = {};
   HWND pendingSenderHwnd_ = nullptr;

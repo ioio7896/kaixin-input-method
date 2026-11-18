@@ -309,7 +309,7 @@ pub(super) fn ocr_translation_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_toggle(
             ui,
             "OCR 模型常驻",
-            "开启后首次识别会加载模型，之后复用以减少等待；关闭后每次识别结束释放模型以降低内存占用。",
+            "开启后关闭 OCR 窗口会保留模型，后台空闲 5 分钟后自动退出。",
             &mut app.model.ocr_keep_alive,
         );
         setting_combo_row(

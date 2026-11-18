@@ -4,7 +4,16 @@
 enum class SrfGameInputMode { Manual, Passthrough, Chinese, AutoText };
 enum class SrfGameEnterBehavior { Auto, Close, Stay };
 enum class SrfGameChatPhase { Passive, Awaiting, Editing, Committing };
-enum class SrfGameTextSource { None, Manual, Native, Tsf, Automation, AlwaysChinese };
+enum class SrfGameTextSource {
+  None,
+  Manual,
+  Native,
+  Tsf,
+  Automation,
+  Learned,
+  Geometry,
+  AlwaysChinese
+};
 
 inline SrfGameInputMode SrfEffectiveGameInputMode(bool pureGameMode, SrfGameInputMode configured) {
   return pureGameMode ? SrfGameInputMode::Passthrough : configured;
@@ -35,6 +44,12 @@ inline bool SrfCandidateHostMayShow(bool hostShow, bool explicitOverride) {
 
 inline bool SrfGameFocusEvidenceFresh(std::uint64_t checked, std::uint64_t now) {
   return checked != 0 && now >= checked && now - checked <= 350;
+}
+
+inline bool SrfGameTextEvidenceReady(std::uint64_t checked, std::uint64_t stableSince,
+                                     bool needsStability, bool learned) {
+  return !needsStability || learned ||
+         (stableSince != 0 && checked >= stableSince && checked - stableSince >= 100);
 }
 
 // A window class alone is shared by games, tools, editors and launchers.

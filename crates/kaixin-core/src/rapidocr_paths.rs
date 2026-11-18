@@ -1,3 +1,4 @@
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs;
@@ -5,8 +6,9 @@ use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::{Mutex, OnceLock};
-use std::time::UNIX_EPOCH;
 
+#[cfg(windows)]
+use std::os::windows::io::AsRawHandle;
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
 
@@ -144,20 +146,56 @@ pub fn validate_rapidocr_models(rapidocr_root: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Hash models once, then use a cheap metadata fingerprint until a model or
-/// manifest changes. This keeps the integrity guarantee while avoiding a full
-/// disk scan every time a crashed OCR worker is recreated.
+/// Reuse a successful scan while the package manifest and model metadata match.
+/// Explicit package checks still call `validate_rapidocr_models` directly.
 pub fn validate_rapidocr_models_cached(rapidocr_root: &Path) -> Result<(), String> {
     static CACHE: OnceLock<Mutex<Option<String>>> = OnceLock::new();
-    let stamp = rapidocr_model_stamp(rapidocr_root)?;
     let cache = CACHE.get_or_init(|| Mutex::new(None));
     let mut cached = cache
         .lock()
         .map_err(|_| "RapidOCR 模型校验缓存锁定失败。".to_string())?;
+    let receipt = crate::app_paths::local_data_dir().map(|dir| dir.join("ocr-model-validation.v1"));
+    validate_models_with_cache(rapidocr_root, receipt.as_deref(), &mut cached)
+}
+
+fn validate_models_with_cache(
+    rapidocr_root: &Path,
+    receipt: Option<&Path>,
+    cached: &mut Option<String>,
+) -> Result<(), String> {
+    let Ok(stamp) = rapidocr_model_stamp(rapidocr_root) else {
+        return validate_rapidocr_models(rapidocr_root);
+    };
     if cached.as_deref() == Some(stamp.as_str()) {
         return Ok(());
     }
+    if receipt.is_some_and(|path| {
+        let mut contents = Vec::new();
+        fs::File::open(path)
+            .and_then(|file| file.take(65).read_to_end(&mut contents))
+            .is_ok()
+            && contents == stamp.as_bytes()
+    }) {
+        *cached = Some(stamp);
+        return Ok(());
+    }
+
     validate_rapidocr_models(rapidocr_root)?;
+    if rapidocr_model_stamp(rapidocr_root).as_ref() != Ok(&stamp) {
+        return Err("RapidOCR 模型在校验期间发生变化，请重试。".to_string());
+    }
+    if let Some(path) = receipt {
+        let temp = path.with_extension(format!("{}.tmp", std::process::id()));
+        if let Some(dir) = path.parent() {
+            if fs::create_dir_all(dir)
+                .and_then(|_| fs::write(&temp, &stamp))
+                .and_then(|_| fs::rename(&temp, path))
+                .is_err()
+            {
+                let _ = fs::remove_file(temp);
+            }
+        }
+    }
     *cached = Some(stamp);
     Ok(())
 }
@@ -170,27 +208,59 @@ fn rapidocr_model_stamp(rapidocr_root: &Path) -> Result<String, String> {
         )
     })?;
     let model_dir = rapidocr_root.join("python").join("rapidocr").join("models");
-    let mut paths = vec![install_dir.join(PACKAGE_MANIFEST_NAME)];
-    paths.extend(
-        REQUIRED_ONNX_MODELS
-            .iter()
-            .chain(OPTIONAL_ONNX_MODELS.iter())
-            .map(|name| model_dir.join(name))
-            .filter(|path| path.is_file()),
+    let mut stamp = Sha256::new();
+    stamp.update(b"kaixin-rapidocr-models-v1\0");
+    stamp.update(rapidocr_root.as_os_str().as_encoded_bytes());
+    stamp.update(
+        sha256_file_hex(&install_dir.join(PACKAGE_MANIFEST_NAME))
+            .map_err(|err| format!("read RapidOCR model manifest: {err}"))?,
     );
-    let mut stamp = rapidocr_root.to_string_lossy().into_owned();
-    for path in paths {
-        let metadata = fs::metadata(&path)
+    for (name, required) in REQUIRED_ONNX_MODELS
+        .iter()
+        .map(|name| (*name, true))
+        .chain(OPTIONAL_ONNX_MODELS.iter().map(|name| (*name, false)))
+    {
+        let path = model_dir.join(name);
+        let file = match fs::File::open(&path) {
+            Ok(file) => file,
+            Err(err) if !required && err.kind() == io::ErrorKind::NotFound => continue,
+            Err(err) => return Err(format!("open RapidOCR model {}: {err}", path.display())),
+        };
+        stamp.update(name);
+        update_model_stamp(&file, &mut stamp)
             .map_err(|err| format!("read RapidOCR model metadata {}: {err}", path.display()))?;
-        let modified = metadata
-            .modified()
-            .ok()
-            .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-            .map(|time| time.as_nanos())
-            .unwrap_or_default();
-        stamp.push_str(&format!("|{}:{}", metadata.len(), modified));
     }
-    Ok(stamp)
+    Ok(hex_lower(&stamp.finalize()))
+}
+
+fn update_model_stamp(file: &fs::File, stamp: &mut Sha256) -> io::Result<()> {
+    let metadata = file.metadata()?;
+    stamp.update(metadata.len().to_le_bytes());
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::Storage::FileSystem::{
+            FileBasicInfo, GetFileInformationByHandleEx, FILE_BASIC_INFO,
+        };
+        let mut info = std::mem::MaybeUninit::<FILE_BASIC_INFO>::uninit();
+        let ok = unsafe {
+            GetFileInformationByHandleEx(
+                file.as_raw_handle() as isize,
+                FileBasicInfo,
+                info.as_mut_ptr().cast(),
+                std::mem::size_of::<FILE_BASIC_INFO>() as u32,
+            )
+        };
+        if ok == 0 {
+            return Err(io::Error::last_os_error());
+        }
+        let info = unsafe { info.assume_init() };
+        stamp.update(info.CreationTime.to_le_bytes());
+        stamp.update(info.LastWriteTime.to_le_bytes());
+        stamp.update(info.ChangeTime.to_le_bytes());
+    }
+    #[cfg(not(windows))]
+    stamp.update(format!("{:?}", metadata.modified()?));
+    Ok(())
 }
 
 pub fn missing_root_message() -> String {
@@ -308,140 +378,62 @@ fn hex_lower(bytes: &[u8]) -> String {
     out
 }
 
-struct Sha256 {
-    state: [u32; 8],
-    buffer: [u8; 64],
-    buffer_len: usize,
-    bit_len: u64,
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
 
-impl Sha256 {
-    fn new() -> Self {
-        Self {
-            state: [
-                0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
-                0x5be0cd19,
-            ],
-            buffer: [0; 64],
-            buffer_len: 0,
-            bit_len: 0,
+    #[test]
+    fn model_cache_survives_restart_and_rechecks_changed_files() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let install = std::env::temp_dir().join(format!(
+            "kaixin-model-cache-{}-{unique}",
+            std::process::id()
+        ));
+        let root = install.join(RAPIDOCR_DIR_NAME);
+        let models = root.join("python").join("rapidocr").join("models");
+        fs::create_dir_all(&models).unwrap();
+        let mut manifest = String::new();
+        for name in REQUIRED_ONNX_MODELS {
+            let file = models.join(name);
+            fs::write(&file, b"original").unwrap();
+            let hash = sha256_file_hex(&file).unwrap();
+            manifest.push_str(&format!(
+                "{hash}  RapidOCRLite/python/rapidocr/models/{name}\n"
+            ));
         }
+        let manifest_path = install.join(PACKAGE_MANIFEST_NAME);
+        fs::write(&manifest_path, &manifest).unwrap();
+        let receipt = install.join("user-cache").join("validated");
+        let mut first = None;
+        validate_models_with_cache(&root, Some(&receipt), &mut first).unwrap();
+        assert_eq!(
+            fs::read_to_string(&receipt).unwrap(),
+            first.as_deref().unwrap()
+        );
+
+        let mut after_restart = None;
+        validate_models_with_cache(&root, Some(&receipt), &mut after_restart).unwrap();
+        assert_eq!(after_restart, first);
+
+        manifest.push('\n');
+        fs::write(&manifest_path, &manifest).unwrap();
+        validate_models_with_cache(&root, Some(&receipt), &mut after_restart).unwrap();
+        assert_ne!(after_restart, first);
+        assert_eq!(
+            fs::read_to_string(&receipt).unwrap(),
+            after_restart.as_deref().unwrap()
+        );
+
+        fs::write(models.join(REQUIRED_ONNX_MODELS[0]), b"modified").unwrap();
+        assert!(
+            validate_models_with_cache(&root, Some(&receipt), &mut after_restart)
+                .unwrap_err()
+                .contains("hash mismatch")
+        );
+        fs::remove_dir_all(install).unwrap();
     }
-
-    fn update(&mut self, mut data: &[u8]) {
-        self.bit_len = self
-            .bit_len
-            .wrapping_add((data.len() as u64).wrapping_mul(8));
-
-        if self.buffer_len > 0 {
-            let take = (64 - self.buffer_len).min(data.len());
-            self.buffer[self.buffer_len..self.buffer_len + take].copy_from_slice(&data[..take]);
-            self.buffer_len += take;
-            data = &data[take..];
-            if self.buffer_len == 64 {
-                process_sha256_block(&mut self.state, &self.buffer);
-                self.buffer_len = 0;
-            }
-        }
-
-        while data.len() >= 64 {
-            let block: &[u8; 64] = data[..64].try_into().expect("sha256 block len");
-            process_sha256_block(&mut self.state, block);
-            data = &data[64..];
-        }
-
-        if !data.is_empty() {
-            self.buffer[..data.len()].copy_from_slice(data);
-            self.buffer_len = data.len();
-        }
-    }
-
-    fn finalize(mut self) -> [u8; 32] {
-        self.buffer[self.buffer_len] = 0x80;
-        self.buffer_len += 1;
-
-        if self.buffer_len > 56 {
-            self.buffer[self.buffer_len..].fill(0);
-            process_sha256_block(&mut self.state, &self.buffer);
-            self.buffer_len = 0;
-        }
-
-        self.buffer[self.buffer_len..56].fill(0);
-        self.buffer[56..64].copy_from_slice(&self.bit_len.to_be_bytes());
-        process_sha256_block(&mut self.state, &self.buffer);
-
-        let mut out = [0u8; 32];
-        for (chunk, value) in out.as_chunks_mut::<4>().0.iter_mut().zip(self.state) {
-            chunk.copy_from_slice(&value.to_be_bytes());
-        }
-        out
-    }
-}
-
-fn process_sha256_block(state: &mut [u32; 8], block: &[u8; 64]) {
-    const K: [u32; 64] = [
-        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4,
-        0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe,
-        0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f,
-        0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
-        0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc,
-        0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
-        0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116,
-        0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
-        0xc67178f2,
-    ];
-
-    let mut w = [0u32; 64];
-    for (idx, chunk) in block.as_chunks::<4>().0.iter().enumerate().take(16) {
-        w[idx] = u32::from_be_bytes(*chunk);
-    }
-    for idx in 16..64 {
-        let s0 = w[idx - 15].rotate_right(7) ^ w[idx - 15].rotate_right(18) ^ (w[idx - 15] >> 3);
-        let s1 = w[idx - 2].rotate_right(17) ^ w[idx - 2].rotate_right(19) ^ (w[idx - 2] >> 10);
-        w[idx] = w[idx - 16]
-            .wrapping_add(s0)
-            .wrapping_add(w[idx - 7])
-            .wrapping_add(s1);
-    }
-
-    let mut a = state[0];
-    let mut b = state[1];
-    let mut c = state[2];
-    let mut d = state[3];
-    let mut e = state[4];
-    let mut f = state[5];
-    let mut g = state[6];
-    let mut h = state[7];
-
-    for idx in 0..64 {
-        let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
-        let ch = (e & f) ^ ((!e) & g);
-        let temp1 = h
-            .wrapping_add(s1)
-            .wrapping_add(ch)
-            .wrapping_add(K[idx])
-            .wrapping_add(w[idx]);
-        let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
-        let maj = (a & b) ^ (a & c) ^ (b & c);
-        let temp2 = s0.wrapping_add(maj);
-
-        h = g;
-        g = f;
-        f = e;
-        e = d.wrapping_add(temp1);
-        d = c;
-        c = b;
-        b = a;
-        a = temp1.wrapping_add(temp2);
-    }
-
-    state[0] = state[0].wrapping_add(a);
-    state[1] = state[1].wrapping_add(b);
-    state[2] = state[2].wrapping_add(c);
-    state[3] = state[3].wrapping_add(d);
-    state[4] = state[4].wrapping_add(e);
-    state[5] = state[5].wrapping_add(f);
-    state[6] = state[6].wrapping_add(g);
-    state[7] = state[7].wrapping_add(h);
 }

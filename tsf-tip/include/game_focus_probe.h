@@ -13,7 +13,13 @@ struct SrfGameFocusEvidence {
   std::uint64_t generation = 0;
   std::uint64_t element = 0;
   ULONGLONG checked = 0;
+  ULONGLONG stableSince = 0;
+  std::uint64_t focusRevision = 0;
   bool editable = false;
+  bool needsStability = false;
+  bool insertProbePerformed = false;
+  bool insertAtSelectionAvailable = false;
+  bool insertQueryAccepted = false;
   RECT bounds = {};
 };
 

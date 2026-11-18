@@ -390,6 +390,10 @@ void SrfTsfPerfLog(const wchar_t* tag, const wchar_t* msg) {
   QueueTsfTraceLog(SrfTsfLogLevel::Perf, TsfAsyncLogKind::Perf, tag, msg);
 }
 
+bool SrfTsfPerfLogEnabled() {
+  return SrfTsfLogEnabled(SrfTsfLogLevel::Perf);
+}
+
 namespace {
 
 constexpr DWORD kRustModeFuzzy = srf_engine_contract::MODE_FUZZY_PINYIN;

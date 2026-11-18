@@ -201,8 +201,10 @@ int ResolveHorizontalCardsAreaWidth(const SrfUIStyle& style, const RECT* anchorR
 
   const RECT work = PlacementAreaForAnchor(anchorRect, style.candidateFullscreenPlacement);
   const int screenMargin = ScaleForDpi(10, dpi);
-  const int maxWidth = std::max(ScaleForDpi(260, dpi),
-                                static_cast<int>((work.right - work.left) - screenMargin * 2));
+  int maxWidth = std::max(ScaleForDpi(260, dpi),
+                          static_cast<int>((work.right - work.left) - screenMargin * 2));
+  if (style.candidateFieldWidthDip)
+    maxWidth = std::min(maxWidth, ScaleForDpi(static_cast<int>(style.candidateFieldWidthDip), dpi));
   int usableMaxWidth = std::max(minWidth, maxWidth);
   if (reservePageIndicator) {
     // Keep a small, stable slot for the trailing page indicator. Without this

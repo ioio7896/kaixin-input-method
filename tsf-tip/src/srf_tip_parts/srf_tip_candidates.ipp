@@ -1247,7 +1247,9 @@ SrfUIStyle CSrfTip::EffectiveCandidateUiStyle() const {
     style.candidateHorizontal = true;
     style.candidateHorizontalCompact = true;
     style.candidatePageSize = std::min(style.candidatePageSize, 5u);
-    style.candidateHorizontalCount = std::min(style.candidateHorizontalCount, 5u);
+    style.candidateFieldWidthDip = m_gameCandidateFieldWidthDip;
+    style.candidateHorizontalCount =
+        style.candidateFieldWidthDip ? 9u : std::min(style.candidateHorizontalCount, 5u);
     style.candidateTopmost = true;
     style.candidateOpacity = 100;
     style.candidateMaterial = SrfCandidateMaterial::Solid;
@@ -1274,20 +1276,26 @@ SrfUIStyle CSrfTip::EffectiveCandidateUiStyle() const {
     style.candidateDensity = SrfCandidateDensity::Comfortable;
     style.candidateRightClick = false;
 
-    RECT work = {0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)};
-    if (m_hasLastCandidateRect) {
-      HMONITOR monitor = MonitorFromRect(&m_lastCandidateRect, MONITOR_DEFAULTTONEAREST);
-      MONITORINFO info = {};
-      info.cbSize = sizeof(info);
-      if (monitor && GetMonitorInfoW(monitor, &info)) work = info.rcWork;
+    const POINT anchor = {m_lastCandidateRect.left, m_lastCandidateRect.top};
+    if (!m_clipboardPageSize || m_clipboardPageUsesAnchor != m_hasLastCandidateRect ||
+        (m_hasLastCandidateRect && !PtInRect(&m_clipboardPageMonitorRect, anchor))) {
+      RECT work = {0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)};
+      m_clipboardPageMonitorRect = work;
+      const RECT* anchorRect = m_hasLastCandidateRect ? &m_lastCandidateRect : nullptr;
+      if (anchorRect) {
+        const HMONITOR monitor = MonitorFromRect(anchorRect, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO info = {sizeof(info)};
+        if (monitor && GetMonitorInfoW(monitor, &info)) {
+          work = info.rcWork;
+          m_clipboardPageMonitorRect = info.rcMonitor;
+        }
+      }
+      m_clipboardPageUsesAnchor = m_hasLastCandidateRect;
+      const int dpi = static_cast<int>(DpiForScreenRect(anchorRect));
+      const int height = MulDiv(std::max<LONG>(1, work.bottom - work.top), 96, dpi);
+      m_clipboardPageSize = height >= 1000 ? 8u : height >= 850 ? 7u : height >= 720 ? 6u : 5u;
     }
-    const UINT dpi = DpiForScreenRect(m_hasLastCandidateRect ? &m_lastCandidateRect : nullptr);
-    const int logicalHeight = MulDiv(std::max<LONG>(1, work.bottom - work.top), 96,
-                                     static_cast<int>(dpi == 0 ? 96 : dpi));
-    style.candidatePageSize = logicalHeight >= 1000  ? 8u
-                              : logicalHeight >= 850 ? 7u
-                              : logicalHeight >= 720 ? 6u
-                                                     : 5u;
+    style.candidatePageSize = m_clipboardPageSize;
   }
   return style;
 }

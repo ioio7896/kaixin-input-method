@@ -46,6 +46,7 @@ CandidateAnchorDisplay DisplayForCandidateAnchor(const RECT& anchor, bool fullsc
 }  // namespace
 
 extern void SrfTsfDiagnosticLog(const wchar_t* tag, const wchar_t* msg);
+extern bool SrfTsfPerfLogEnabled();
 extern void SrfTsfPerfLog(const wchar_t* tag, const wchar_t* msg);
 
 CSrfCandidateListUIElement::CSrfCandidateListUIElement(CSrfTip* tip)
@@ -299,6 +300,7 @@ void CSrfCandidateListUIElement::OnCandidateWheel(int wheelDelta) {
 }
 
 void CSrfCandidateListUIElement::OnCandidateEnvironmentChanged() {
+  if (m_tip) m_tip->m_clipboardPageSize = 0;
   if (!m_tip) return;
   m_layoutCacheValid = false;
   m_renderCacheValid = false;
@@ -636,6 +638,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   }
 
   const auto& displayItems = m_tip->BuildCandidateDisplayItems();
+  m_window.SetPerfLogging(SrfTsfPerfLogEnabled());
   m_tip->m_notificationWindow.Hide();
   const RECT& anchor = m_tip->m_lastCandidateRect;
   const SrfUIStyle st = m_tip->EffectiveCandidateUiStyle();
@@ -922,7 +925,10 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       snapshot.horizontalLayout = st.candidateHorizontal;
       snapshot.horizontalCompact = st.candidateHorizontalCompact;
       snapshot.anchorPhysical = anchorPhysical;
-      snapshot.caretAnchor = !gameOverlay || st.candidateOverlayAnchor == SrfOverlayAnchor::Caret;
+      snapshot.caretAnchor = !gameOverlay || st.candidateOverlayAnchor == SrfOverlayAnchor::Caret ||
+                             m_tip->m_lastCandidateAnchorQuality >= 3 ||
+                             m_tip->m_lastCandidateAnchorSource == L"game-cursor";
+      snapshot.fieldWidthDip = st.candidateFieldWidthDip;
       snapshot.targetProcessId = targetProcessId;
       snapshot.targetHwnd = targetHwnd;
       snapshot.focusGeneration = focus.generation;

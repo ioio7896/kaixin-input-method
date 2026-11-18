@@ -474,9 +474,17 @@ void CSrfTip::SetFocusContext(ITfContext* pic) {
   // The new field must not wait for that host to grant an asynchronous lock.
   // Capture the preedit before leaving game chat clears the reading buffer.
   if (m_pComposition) ScheduleHostCompositionEnd(true);
-  if (m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting) SetGameChatActive(false);
+  const bool awaitingInSameGame = m_gameChatPhase == SrfGameChatPhase::Awaiting &&
+                                  m_gameChatOwner &&
+                                  GetAncestor(GetForegroundWindow(), GA_ROOT) == m_gameChatOwner;
+  if (m_gameChatActive || (m_gameChatPhase == SrfGameChatPhase::Awaiting && !awaitingInSameGame))
+    SetGameChatActive(false);
   m_autoGameChatFocus = nullptr;
   ++m_focusGeneration;
+  m_gameTsfEvidence = {};
+  ++m_gameTsfProbeSerial;
+  m_gameTsfProbePending = false;
+  m_gameTsfProbeTick = 0;
   if (m_pFocusContext) m_pFocusContext->Release();
   m_pFocusContext = pic;
   if (m_pFocusContext) m_pFocusContext->AddRef();
@@ -857,6 +865,7 @@ void CSrfTip::ClearCompositionBufferState() {
   m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel);
   CancelCandidateWindowAnchorRefreshRetry();
   m_reading.clear();
+  m_gamePendingPaste.clear();
   m_readingCursor = 0;
   m_candidates.clear();
   m_candidateMeta.clear();

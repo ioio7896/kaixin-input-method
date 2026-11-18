@@ -1670,6 +1670,7 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   st.skinBadgeBorder = CLR_INVALID;
   st.skinBadgeText = CLR_INVALID;
   st.skinHoverBg = CLR_INVALID;
+  st.skinHoverText = CLR_INVALID;
   st.skinHoverBorder = CLR_INVALID;
   st.skinItemBg = CLR_INVALID;
   st.skinItemBorder = CLR_INVALID;
@@ -1859,6 +1860,7 @@ void LoadSkinFileFromConfigDir(SrfConfig& config, const std::filesystem::path& c
   ApplySkinColor(content, "badge_border", isYaml, st.skinBadgeBorder);
   ApplySkinColor(content, "badge_text", isYaml, st.skinBadgeText);
   ApplySkinColor(content, "hover_bg", isYaml, st.skinHoverBg);
+  ApplySkinColor(content, "hover_text", isYaml, st.skinHoverText);
   ApplySkinColor(content, "hover_border", isYaml, st.skinHoverBorder);
   ApplySkinColor(content, "item_bg", isYaml, st.skinItemBg);
   ApplySkinColor(content, "item_border", isYaml, st.skinItemBorder);

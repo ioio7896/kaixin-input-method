@@ -47,6 +47,9 @@ const RAPIDOCR_STDERR_LIMIT: usize = 16 * 1024;
 const OPENCV_CROP_PROCESS_TIMEOUT: Duration = Duration::from_secs(12);
 const OCR_WINDOW_HIDE_DELAY: Duration = Duration::from_millis(50);
 const OCR_REQUEST_POLL_INTERVAL: Duration = Duration::from_millis(50);
+const OCR_HIDDEN_POLL_INTERVAL: Duration = Duration::from_millis(150);
+const OCR_RESIDENT_IDLE_TIMEOUT: Duration = Duration::from_secs(5 * 60);
+const OCR_RESIDENT_PREFS_INTERVAL: Duration = Duration::from_secs(5);
 const OCR_WINDOW_REQUEST_MAX_AGE_MS: u128 = 120_000;
 const MAX_OCR_IMPORT_BYTES: u64 = 128 * 1024 * 1024;
 const MAX_OCR_IMPORT_PIXELS: u64 = 134_217_728;
@@ -446,6 +449,8 @@ struct OcrApp {
     show_history: bool,
     focus_result_once: bool,
     last_request_poll: Instant,
+    hidden_since: Option<Instant>,
+    next_resident_prefs_check: Instant,
     pending_window_requests: VecDeque<OcrWindowRequest>,
     pending_window_capture_error: Option<String>,
 }
@@ -518,6 +523,8 @@ impl OcrApp {
             show_history: false,
             focus_result_once: false,
             last_request_poll: Instant::now(),
+            hidden_since: None,
+            next_resident_prefs_check: Instant::now(),
             pending_window_requests: VecDeque::new(),
             pending_window_capture_error: None,
         };
@@ -552,7 +559,9 @@ impl OcrApp {
     }
 
     fn poll_window_request(&mut self, ctx: &egui::Context) {
-        if self.last_request_poll.elapsed() < OCR_REQUEST_POLL_INTERVAL {
+        if self.hidden_since.is_none()
+            && self.last_request_poll.elapsed() < OCR_REQUEST_POLL_INTERVAL
+        {
             return;
         }
         self.last_request_poll = Instant::now();
@@ -610,6 +619,10 @@ impl OcrApp {
         );
         self.target_hwnd = request.target_hwnd;
         self.translate_after_ocr = request.translate;
+        if self.hidden_since.take().is_some() {
+            self.language = OcrLanguageMode::from_config(&tool_prefs::ocr_language());
+            self.profile = ocr_speed_profile();
+        }
         if let Some(image) = request.image {
             // A screenshot handoff does not go through `start_capture`, so an
             // already-running OCR window may still be hidden from a previous
@@ -632,6 +645,7 @@ impl OcrApp {
     }
 
     fn reveal_window(&self, ctx: &egui::Context) {
+        set_hidden_window_wake_timer(false);
         // Capturing temporarily hides this window. Raising its window level before
         // showing it avoids Windows leaving the restored OCR window behind the
         // application that was just captured.
@@ -643,13 +657,37 @@ impl OcrApp {
         ctx.request_repaint();
     }
 
+    fn hide_for_reuse(&mut self, ctx: &egui::Context) {
+        self.cancel_task();
+        self.cleanup_current_images();
+        self.text.clear();
+        self.original_text.clear();
+        self.last_saved_text.clear();
+        self.ocr_lines.clear();
+        self.undo_state = None;
+        self.review_lines.clear();
+        self.review_preview = None;
+        self.review_preview_error = None;
+        self.selected_review = None;
+        self.pending_window_capture_error = None;
+        let now = Instant::now();
+        self.hidden_since = Some(now);
+        self.next_resident_prefs_check = now + OCR_RESIDENT_PREFS_INTERVAL;
+        self.hide_window(ctx);
+    }
+
+    fn hide_window(&self, ctx: &egui::Context) {
+        set_hidden_window_wake_timer(true);
+        ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+    }
+
     fn start_capture(&mut self, ctx: Option<&egui::Context>, mode: CaptureMode) {
         if self.busy {
             return;
         }
         let hide_before_capture = ctx.is_some();
         if let Some(ctx) = ctx {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Visible(false));
+            self.hide_window(ctx);
             ctx.request_repaint_after(OCR_WINDOW_HIDE_DELAY);
         }
         self.crop = CropRect::default();
@@ -686,6 +724,7 @@ impl OcrApp {
                 if fallback_reason.is_some() { 1 } else { 0 }
             ),
         );
+        let repaint = ctx.cloned();
         std::thread::spawn(move || {
             if hide_before_capture {
                 std::thread::sleep(OCR_WINDOW_HIDE_DELAY);
@@ -693,7 +732,6 @@ impl OcrApp {
             let capture_started = Instant::now();
             match capture_screenshot_image(target_hwnd, mode) {
                 Ok(capture) => {
-                    show_ocr_window_best_effort();
                     runtime_log::log_ocr(
                         runtime_log::RuntimeLogLevel::Basic,
                         "ocr_capture_result",
@@ -727,10 +765,20 @@ impl OcrApp {
                         save_note,
                         detected_crop: None,
                     };
-                    let _ = tx.send(OcrWorkerMessage::Captured {
-                        generation,
-                        session: session.clone(),
-                    });
+                    let original_path = session.original_path.clone();
+                    if tx
+                        .send(OcrWorkerMessage::Captured {
+                            generation,
+                            session: session.clone(),
+                        })
+                        .is_err()
+                    {
+                        let _ = fs::remove_file(original_path);
+                        return;
+                    }
+                    if let Some(ctx) = &repaint {
+                        ctx.request_repaint();
+                    }
                     let (processed_path, result, detected_crop) =
                         recognize_from_image(&session.original_path, options, |status| {
                             let _ = tx.send(OcrWorkerMessage::Stage { generation, status });
@@ -746,13 +794,13 @@ impl OcrApp {
                         })
                         .is_err()
                     {
+                        let _ = fs::remove_file(original_path);
                         if let Some(path) = cleanup_path {
                             let _ = fs::remove_file(path);
                         }
                     }
                 }
                 Err(err) => {
-                    show_ocr_window_best_effort();
                     runtime_log::log_ocr(
                         runtime_log::RuntimeLogLevel::Error,
                         "ocr_capture_result",
@@ -768,6 +816,9 @@ impl OcrApp {
                         mode,
                         error: err,
                     });
+                    if let Some(ctx) = &repaint {
+                        ctx.request_repaint();
+                    }
                 }
             }
         });
@@ -1151,6 +1202,7 @@ impl OcrApp {
         }
         match copy_to_system_clipboard(&self.text) {
             Ok(()) => match win_paste::send_ctrl_v_to_target(self.target_hwnd) {
+                Ok(()) if !rapidocr_persistent_disabled() => self.hide_for_reuse(ctx),
                 Ok(()) => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
                 Err(err) => self.status = format!("已复制，但快粘失败：{err}"),
             },
@@ -1902,7 +1954,29 @@ impl Drop for OcrApp {
 
 impl eframe::App for OcrApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if ctx.input(|input| input.viewport().close_requested()) {
+            if self.hidden_since.is_some() || rapidocr_persistent_disabled() {
+                return;
+            }
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.hide_for_reuse(ctx);
+        }
         self.poll_window_request(ctx);
+        if let Some(since) = self.hidden_since {
+            let now = Instant::now();
+            let disabled = if now >= self.next_resident_prefs_check {
+                self.next_resident_prefs_check = now + OCR_RESIDENT_PREFS_INTERVAL;
+                rapidocr_persistent_disabled()
+            } else {
+                false
+            };
+            if now.duration_since(since) >= OCR_RESIDENT_IDLE_TIMEOUT || disabled {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            } else {
+                ctx.request_repaint_after(OCR_HIDDEN_POLL_INTERVAL);
+            }
+            return;
+        }
         self.poll_result(ctx);
         ctx.request_repaint_after(if self.busy {
             Duration::from_millis(120)
@@ -2053,34 +2127,69 @@ fn capture_screenshot_image(
 }
 
 #[cfg(windows)]
-fn show_ocr_window_best_effort() {
-    use windows_sys::Win32::UI::WindowsAndMessaging::{
-        BringWindowToTop, FindWindowW, SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST,
-        SWP_NOMOVE, SWP_NOSIZE, SWP_SHOWWINDOW, SW_RESTORE, SW_SHOW,
-    };
+fn find_ocr_window() -> isize {
+    use windows_sys::Win32::UI::WindowsAndMessaging::FindWindowW;
     let title = wide(WINDOW_TITLE);
-    let hwnd = unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) };
-    if hwnd != 0 {
+    unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) }
+}
+
+#[cfg(windows)]
+fn set_hidden_window_wake_timer(enabled: bool) {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        GetWindowThreadProcessId, IsWindowVisible, KillTimer, PostMessageW, SetTimer, WM_PAINT,
+    };
+    const WAKE_TIMER_ID: usize = 0x4B58;
+
+    unsafe extern "system" fn wake_hidden_window(hwnd: isize, _: u32, _: usize, _: u32) {
+        // Windows can defer winit's normal redraw requests for an invisible HWND.
+        // Post a paint message so eframe still processes the inbox and idle deadline.
+        if unsafe { IsWindowVisible(hwnd) } == 0 {
+            unsafe { PostMessageW(hwnd, WM_PAINT, 0, 0) };
+        }
+    }
+
+    let hwnd = find_ocr_window();
+    let mut pid = 0;
+    if hwnd == 0
+        || unsafe { GetWindowThreadProcessId(hwnd, &mut pid) } == 0
+        || pid != std::process::id()
+    {
+        return;
+    }
+    if enabled {
         unsafe {
-            let _ = ShowWindow(hwnd, SW_RESTORE);
-            let _ = ShowWindow(hwnd, SW_SHOW);
-            let _ = SetWindowPos(
+            SetTimer(
                 hwnd,
-                HWND_TOPMOST,
-                0,
-                0,
-                0,
-                0,
-                SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW,
-            );
-            let _ = BringWindowToTop(hwnd);
-            let _ = SetForegroundWindow(hwnd);
+                WAKE_TIMER_ID,
+                OCR_HIDDEN_POLL_INTERVAL.as_millis() as u32,
+                Some(wake_hidden_window),
+            )
+        };
+    } else {
+        unsafe { KillTimer(hwnd, WAKE_TIMER_ID) };
+    }
+}
+
+#[cfg(not(windows))]
+fn set_hidden_window_wake_timer(_enabled: bool) {}
+
+#[cfg(windows)]
+fn allow_ocr_window_activation() {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        AllowSetForegroundWindow, GetWindowThreadProcessId,
+    };
+    let hwnd = find_ocr_window();
+    if hwnd != 0 {
+        let mut pid = 0;
+        unsafe { GetWindowThreadProcessId(hwnd, &mut pid) };
+        if pid != 0 {
+            unsafe { AllowSetForegroundWindow(pid) };
         }
     }
 }
 
 #[cfg(not(windows))]
-fn show_ocr_window_best_effort() {}
+fn allow_ocr_window_activation() {}
 
 fn recognize_from_image(
     original_path: &Path,
@@ -2779,6 +2888,16 @@ fn rapidocr_process_slot() -> &'static Mutex<Option<RapidOcrProcess>> {
 }
 
 impl RapidOcrProcess {
+    fn recognize(
+        &mut self,
+        request: &RapidOcrStdioRequest<'_>,
+        timeout: Duration,
+    ) -> Result<RapidOcrCommandOutput, String> {
+        #[cfg(windows)]
+        let _priority = OcrRecognitionPriority::raise(&self.child);
+        self.request(request, timeout)
+    }
+
     fn request<T: Serialize>(
         &mut self,
         request: &T,
@@ -2860,6 +2979,41 @@ impl RapidOcrProcess {
         let _ = self.child.kill();
         let _ = self.child.wait();
         let _ = ACTIVE_RAPIDOCR_PID.compare_exchange(pid, 0, Ordering::SeqCst, Ordering::Relaxed);
+    }
+}
+
+#[cfg(windows)]
+struct OcrRecognitionPriority {
+    handle: isize,
+    previous: u32,
+}
+
+#[cfg(windows)]
+impl OcrRecognitionPriority {
+    fn raise(child: &Child) -> Option<Self> {
+        use windows_sys::Win32::System::Threading::{
+            GetPriorityClass, SetPriorityClass, ABOVE_NORMAL_PRIORITY_CLASS,
+            BELOW_NORMAL_PRIORITY_CLASS, IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
+        };
+        let handle = child.as_raw_handle() as isize;
+        let previous = unsafe { GetPriorityClass(handle) };
+        if matches!(
+            previous,
+            IDLE_PRIORITY_CLASS | BELOW_NORMAL_PRIORITY_CLASS | NORMAL_PRIORITY_CLASS
+        ) && unsafe { SetPriorityClass(handle, ABOVE_NORMAL_PRIORITY_CLASS) } != 0
+        {
+            Some(Self { handle, previous })
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(windows)]
+impl Drop for OcrRecognitionPriority {
+    fn drop(&mut self) {
+        use windows_sys::Win32::System::Threading::SetPriorityClass;
+        unsafe { SetPriorityClass(self.handle, self.previous) };
     }
 }
 
@@ -3251,7 +3405,7 @@ fn run_rapidocr_persistent_command_with_timeout(
     let first = guard
         .as_mut()
         .expect("rapidocr process initialized")
-        .request(&request, remaining_ocr_timeout(started, timeout)?);
+        .recognize(&request, remaining_ocr_timeout(started, timeout)?);
     match first {
         Ok(output) => Ok(output),
         Err(first_err) => {
@@ -3269,7 +3423,7 @@ fn run_rapidocr_persistent_command_with_timeout(
             guard
                 .as_mut()
                 .expect("rapidocr process restarted")
-                .request(&request, remaining_ocr_timeout(started, timeout)?)
+                .recognize(&request, remaining_ocr_timeout(started, timeout)?)
                 .map_err(|second_err| {
                     format!("RapidOCR 常驻进程失败：{first_err}；重启后仍失败：{second_err}")
                 })
@@ -3373,7 +3527,8 @@ fn run_rapidocr_oneshot_command_with_timeout(
     rapidocr_paths::apply_python_runtime_env(&mut command, &python);
     #[cfg(windows)]
     {
-        command.creation_flags(CREATE_NO_WINDOW);
+        use windows_sys::Win32::System::Threading::ABOVE_NORMAL_PRIORITY_CLASS;
+        command.creation_flags(CREATE_NO_WINDOW | ABOVE_NORMAL_PRIORITY_CLASS);
     }
     command
         .arg(helper)
@@ -3573,6 +3728,7 @@ fn ocr_window_request_dir() -> PathBuf {
 }
 
 fn write_ocr_window_request(request: &OcrWindowRequest) -> Result<PathBuf, String> {
+    allow_ocr_window_activation();
     let dir = ocr_window_request_dir();
     fs::create_dir_all(&dir).map_err(|e| format!("创建 OCR 请求目录失败：{e}"))?;
     let sequence = OCR_REQUEST_SEQUENCE.fetch_add(1, Ordering::Relaxed);
@@ -3590,16 +3746,26 @@ fn write_ocr_window_request(request: &OcrWindowRequest) -> Result<PathBuf, Strin
     Ok(path.with_extension("ack"))
 }
 
-fn wait_for_ocr_window_request_ack(path: &Path) -> bool {
+fn wait_for_ocr_window_request_ack(
+    path: &Path,
+) -> Result<(bool, Option<win_single_instance::SingleInstanceGuard>), String> {
     let deadline = Instant::now() + Duration::from_secs(2);
     while Instant::now() < deadline {
         if path.is_file() {
             let _ = fs::remove_file(path);
-            return true;
+            return Ok((true, None));
+        }
+        // The owner may have exited between the mutex check and the handoff.
+        if let Some(guard) = win_single_instance::claim(OCR_SINGLE_INSTANCE_MUTEX)? {
+            match fs::remove_file(path.with_extension("json")) {
+                Ok(()) => return Ok((false, Some(guard))),
+                Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+                Err(err) => return Err(format!("收回 OCR 请求失败：{err}")),
+            }
         }
         std::thread::sleep(Duration::from_millis(25));
     }
-    false
+    Ok((false, None))
 }
 
 fn take_ocr_window_request() -> Option<OcrWindowRequest> {
@@ -3756,44 +3922,44 @@ fn main() -> eframe::Result<()> {
                 .unwrap_or_else(|| "(none)".to_string())
         ),
     );
-    let _single_instance_guard = match win_single_instance::claim_or_activate_existing(
-        OCR_SINGLE_INSTANCE_MUTEX,
-        WINDOW_TITLE,
-    ) {
+    let _single_instance_guard = match win_single_instance::claim(OCR_SINGLE_INSTANCE_MUTEX) {
         Ok(Some(guard)) => Some(guard),
-        Ok(None) => {
-            match write_ocr_window_request(&startup_request) {
-                Ok(ack_path) => {
-                    let acknowledged = wait_for_ocr_window_request_ack(&ack_path);
-                    runtime_log::log_ocr(
-                        runtime_log::RuntimeLogLevel::Basic,
-                        "ocr_single_instance_forward",
-                        format!(
-                            "status={} target_hwnd={} manual_region={} translate={} image={}",
-                            if acknowledged {
-                                "accepted"
-                            } else {
-                                "ack_timeout"
-                            },
-                            startup_request.target_hwnd,
-                            if startup_request.manual_region { 1 } else { 0 },
-                            if startup_request.translate { 1 } else { 0 },
-                            startup_request
-                                .image
-                                .as_deref()
-                                .map(runtime_log::path_for_log)
-                                .unwrap_or_else(|| "(none)".to_string())
-                        ),
-                    );
-                }
-                Err(err) => runtime_log::log_ocr(
+        Ok(None) => match write_ocr_window_request(&startup_request)
+            .and_then(|path| wait_for_ocr_window_request_ack(&path))
+        {
+            Ok((_, Some(guard))) => Some(guard),
+            Ok((acknowledged, None)) => {
+                runtime_log::log_ocr(
+                    runtime_log::RuntimeLogLevel::Basic,
+                    "ocr_single_instance_forward",
+                    format!(
+                        "status={} target_hwnd={} manual_region={} translate={} image={}",
+                        if acknowledged {
+                            "accepted"
+                        } else {
+                            "ack_timeout"
+                        },
+                        startup_request.target_hwnd,
+                        if startup_request.manual_region { 1 } else { 0 },
+                        if startup_request.translate { 1 } else { 0 },
+                        startup_request
+                            .image
+                            .as_deref()
+                            .map(runtime_log::path_for_log)
+                            .unwrap_or_else(|| "(none)".to_string())
+                    ),
+                );
+                return Ok(());
+            }
+            Err(err) => {
+                runtime_log::log_ocr(
                     runtime_log::RuntimeLogLevel::Error,
                     "ocr_single_instance_forward",
                     format!("status=failed reason={}", log_error_detail(&err)),
-                ),
+                );
+                return Ok(());
             }
-            return Ok(());
-        }
+        },
         Err(err) => {
             runtime_log::log_ocr(
                 runtime_log::RuntimeLogLevel::Error,
@@ -3806,7 +3972,7 @@ fn main() -> eframe::Result<()> {
 
     let target_hwnd = startup_request.target_hwnd;
     let translate_after_ocr = startup_request.translate;
-    // Start Python, load the model and execute one tiny graph while the user
+    // Start Python, load the models and warm the active profile while the user
     // is selecting/capturing the screen region. The recognition worker shares
     // the same process slot and will simply wait if capture completes first.
     start_rapidocr_prewarm(

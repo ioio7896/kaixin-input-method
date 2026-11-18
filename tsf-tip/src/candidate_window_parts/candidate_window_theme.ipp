@@ -10,6 +10,7 @@ struct CandidateColors {
   COLORREF itemBg = RGB(255, 255, 255);
   COLORREF itemBorder = RGB(226, 232, 240);
   COLORREF hoverBg = RGB(240, 248, 245);
+  COLORREF hoverText = CLR_INVALID;
   COLORREF hoverBorder = RGB(159, 213, 195);
   COLORREF selectedBg = RGB(218, 241, 234);
   COLORREF selectedBorder = RGB(111, 190, 164);
@@ -103,10 +104,12 @@ COLORREF CandidateRowTextColor(COLORREF preferred, const CandidateColors& colors
   return EnsureReadableTextColor(preferred, backgrounds, _countof(backgrounds), minContrast);
 }
 
-CandidateColors ResolveColors(const SrfUIStyle& style) {
+CandidateColors ResolveColors(const SrfUIStyle& style,
+                              SrfThemeMode systemTheme = SrfThemeMode::Light) {
+  const auto theme = style.themeMode == SrfThemeMode::Auto ? systemTheme : style.themeMode;
   CandidateColors colors = {};
   // Set divider defaults based on theme
-  if (style.themeMode == SrfThemeMode::Dark) {
+  if (theme == SrfThemeMode::Dark) {
     colors.windowBg = RGB(31, 33, 37);
     colors.headerBg = RGB(44, 47, 54);
     colors.border = RGB(83, 88, 99);
@@ -133,7 +136,7 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
     colors.chipActiveBorder = RGB(76, 209, 151);
     colors.chipActiveText = RGB(225, 255, 242);
     colors.selectedOutline = RGB(76, 209, 151);
-  } else if (style.themeMode == SrfThemeMode::HighContrast) {
+  } else if (theme == SrfThemeMode::HighContrast) {
     const COLORREF highlight = GetSysColor(COLOR_HIGHLIGHT);
     const COLORREF highlightText = GetSysColor(COLOR_HIGHLIGHTTEXT);
     const COLORREF hotlight = GetSysColor(COLOR_HOTLIGHT);
@@ -172,10 +175,10 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
   // Apply material effects
   const SrfCandidateMaterial material = style.candidateMaterial;
   if (material == SrfCandidateMaterial::Gradient) {
-    if (style.themeMode == SrfThemeMode::Dark) {
+    if (theme == SrfThemeMode::Dark) {
       colors.windowBgTo = RGB(37, 39, 45);
       colors.headerBgTo = RGB(50, 54, 62);
-    } else if (style.themeMode != SrfThemeMode::HighContrast) {
+    } else if (theme != SrfThemeMode::HighContrast) {
       colors.windowBgTo = RGB(241, 245, 249);
       colors.headerBgTo = RGB(226, 232, 240);
     }
@@ -183,12 +186,12 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
     colors.isMist = true;
     colors.shadowOpacity = 0.06f;
     colors.shadowSize = 5;
-    if (style.themeMode == SrfThemeMode::Dark) {
+    if (theme == SrfThemeMode::Dark) {
       colors.windowBg = RGB(35, 37, 42);
       colors.windowBgTo = RGB(28, 30, 34);
       colors.headerBg = RGB(42, 45, 52);
       colors.headerBgTo = RGB(38, 40, 47);
-    } else if (style.themeMode != SrfThemeMode::HighContrast) {
+    } else if (theme != SrfThemeMode::HighContrast) {
       colors.windowBg = RGB(248, 250, 252);
       colors.windowBgTo = RGB(241, 245, 249);
       colors.headerBg = RGB(241, 245, 249);
@@ -210,6 +213,7 @@ CandidateColors ResolveColors(const SrfUIStyle& style) {
     if (style.skinBadgeBorder != CLR_INVALID) colors.badgeBorder = style.skinBadgeBorder;
     if (style.skinBadgeText != CLR_INVALID) colors.badgeText = style.skinBadgeText;
     if (style.skinHoverBg != CLR_INVALID) colors.hoverBg = style.skinHoverBg;
+    colors.hoverText = style.skinHoverText;
     if (style.skinHoverBorder != CLR_INVALID) colors.hoverBorder = style.skinHoverBorder;
     if (style.skinItemBg != CLR_INVALID) colors.itemBg = style.skinItemBg;
     if (style.skinItemBorder != CLR_INVALID) colors.itemBorder = style.skinItemBorder;

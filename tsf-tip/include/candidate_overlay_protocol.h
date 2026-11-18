@@ -21,7 +21,7 @@ inline constexpr ULONG_PTR kSrfCandidateOverlayStatusCopyDataId =
     static_cast<ULONG_PTR>(0x4B584F53u);  // "KXOS"
 inline constexpr std::uint32_t kSrfCandidateOverlayMagic = 0x564F584Bu;
 inline constexpr std::uint32_t kSrfCandidateOverlayStatusMagic = 0x534F584Bu;
-inline constexpr std::uint16_t kSrfCandidateOverlayVersion = 2;
+inline constexpr std::uint16_t kSrfCandidateOverlayVersion = 3;
 inline constexpr std::size_t kSrfCandidateOverlayMaxPacketBytes = 256u * 1024u;
 inline constexpr std::size_t kSrfCandidateOverlayMaxTextUnits = 32u * 1024u;
 inline constexpr std::size_t kSrfCandidateOverlayMaxItems = 32u;
@@ -35,7 +35,7 @@ inline UINT SrfCandidateOverlayStatusChangedMessage() {
   // RegisterWindowMessage gives the TIP and its helper the same session-wide
   // message id without reserving a fixed application-message slot.
   static const UINT message =
-      RegisterWindowMessageW(L"SRF_IME_Candidate_Overlay_Status_Changed_v2");
+      RegisterWindowMessageW(L"SRF_IME_Candidate_Overlay_Status_Changed_v3");
   return message;
 }
 
@@ -80,6 +80,7 @@ struct SrfCandidateOverlayWireHeader {
   std::uint32_t pageIndex = 0;
   std::uint32_t totalPages = 0;
   std::uint32_t selectedInPage = 0;
+  std::uint32_t fieldWidthDip = 0;
   std::uint32_t itemCount = 0;
   std::uint32_t commentCount = 0;
   std::uint32_t labelCount = 0;
@@ -89,7 +90,7 @@ struct SrfCandidateOverlayWireHeader {
 };
 #pragma pack(pop)
 
-static_assert(sizeof(SrfCandidateOverlayWireHeader) == 124,
+static_assert(sizeof(SrfCandidateOverlayWireHeader) == 128,
               "candidate overlay wire header changed unexpectedly");
 
 #pragma pack(push, 1)
@@ -177,6 +178,7 @@ struct SrfCandidateOverlaySnapshot {
   UINT pageIndex = 0;
   UINT totalPages = 0;
   UINT selectedInPage = 0;
+  UINT fieldWidthDip = 0;
   std::wstring appPath;
   std::wstring title;
   std::vector<std::wstring> items;
@@ -326,6 +328,7 @@ inline bool SerializeCandidateOverlaySnapshot(const SrfCandidateOverlaySnapshot&
   header.pageIndex = snapshot.pageIndex;
   header.totalPages = snapshot.totalPages;
   header.selectedInPage = snapshot.selectedInPage;
+  header.fieldWidthDip = snapshot.fieldWidthDip;
   header.itemCount = static_cast<std::uint32_t>(snapshot.items.size());
   header.commentCount = static_cast<std::uint32_t>(snapshot.comments.size());
   header.labelCount = static_cast<std::uint32_t>(snapshot.labels.size());
@@ -366,7 +369,7 @@ inline bool DeserializeCandidateOverlaySnapshot(const void* data, std::size_t by
   std::memcpy(&header, data, sizeof(header));
   if (header.magic != kSrfCandidateOverlayMagic || header.version != kSrfCandidateOverlayVersion ||
       header.headerBytes != sizeof(SrfCandidateOverlayWireHeader) || header.totalBytes != bytes ||
-      header.itemCount > kSrfCandidateOverlayMaxItems ||
+      header.fieldWidthDip > 4096 || header.itemCount > kSrfCandidateOverlayMaxItems ||
       header.commentCount > kSrfCandidateOverlayMaxItems ||
       header.labelCount > kSrfCandidateOverlayMaxItems ||
       header.pinnedCount > kSrfCandidateOverlayMaxItems ||
@@ -398,6 +401,7 @@ inline bool DeserializeCandidateOverlaySnapshot(const void* data, std::size_t by
   parsed.pageIndex = header.pageIndex;
   parsed.totalPages = header.totalPages;
   parsed.selectedInPage = header.selectedInPage;
+  parsed.fieldWidthDip = header.fieldWidthDip;
   if (!reader.ReadString(&parsed.appPath) || !reader.ReadString(&parsed.title) ||
       !reader.ReadStrings(header.itemCount, &parsed.items) ||
       !reader.ReadStrings(header.commentCount, &parsed.comments) ||
@@ -420,8 +424,8 @@ inline bool DeserializeCandidateOverlaySnapshot(const void* data, std::size_t by
 
 inline const wchar_t* SrfCandidateOverlayControlWindowClass() {
 #if defined(_WIN64)
-  return L"SRF_IME_Candidate_Overlay_Control_v2_x64";
+  return L"SRF_IME_Candidate_Overlay_Control_v3_x64";
 #else
-  return L"SRF_IME_Candidate_Overlay_Control_v2_x86";
+  return L"SRF_IME_Candidate_Overlay_Control_v3_x86";
 #endif
 }

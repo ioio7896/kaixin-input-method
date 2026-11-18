@@ -4,18 +4,9 @@
 using namespace srf_candidate_window_detail;
 
 bool CCandidateWindow::MotionEnabled() const {
-  BOOL clientAnimations = TRUE;
-  if (!SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &clientAnimations, 0)) {
-    clientAnimations = TRUE;
-  }
-  HIGHCONTRASTW highContrast = {};
-  highContrast.cbSize = sizeof(highContrast);
-  const bool systemHighContrast =
-      SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0) &&
-      (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
   return ShouldAnimateCandidateWindow(
-      m_style.candidateReduceMotion, clientAnimations != FALSE,
-      m_style.themeMode == SrfThemeMode::HighContrast || systemHighContrast, m_gameOverlay,
+      m_style.candidateReduceMotion, m_systemAnimations,
+      m_style.themeMode == SrfThemeMode::HighContrast || m_systemHighContrast, m_gameOverlay,
       !m_style.skinLoaded || m_style.skinAnimationsEnabled);
 }
 

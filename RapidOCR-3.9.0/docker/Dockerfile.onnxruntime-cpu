@@ -1,5 +1,0 @@
-FROM rapidocr-base:latest
-
-RUN pip install --no-cache-dir onnxruntime
-
-CMD ["bash"]

@@ -4,17 +4,13 @@
 using namespace srf_candidate_window_detail;
 
 ATOM CCandidateWindow::EnsureWindowClass() {
-  static ATOM atom = 0;
-  if (atom != 0) return atom;
-
   WNDCLASSW wc = {};
   wc.lpfnWndProc = &CCandidateWindow::WndProc;
   wc.hInstance = DllOrFallbackInstance();
   wc.lpszClassName = kCandidateWndClass;
   wc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-  atom = RegisterClassW(&wc);
-  if (!atom && GetLastError() == ERROR_CLASS_ALREADY_EXISTS) atom = 1;
-  return atom;
+  const ATOM atom = RegisterClassW(&wc);
+  return !atom && GetLastError() == ERROR_CLASS_ALREADY_EXISTS ? 1 : atom;
 }
 
 LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -35,6 +31,7 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
     case WM_GETOBJECT:
       return self->m_accessibility.GetObject(hwnd, wParam, lParam);
     case WM_SHOWWINDOW:
+      self->m_ignoreStationaryMouse = wParam && GetCursorPos(&self->m_cursorAtShow);
       NotifyWinEvent(wParam ? EVENT_OBJECT_IME_SHOW : EVENT_OBJECT_IME_HIDE, hwnd, OBJID_CLIENT,
                      CHILDID_SELF);
       if (wParam)
@@ -133,11 +130,16 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
       SrfTsfDiagnosticLog(L"candidate-window.environment", L"display-change");
       return 0;
     case WM_SETTINGCHANGE:
+      self->RefreshSystemAppearance();
       if (wParam == SPI_SETWORKAREA) {
         self->ScheduleEnvironmentRefresh();
         SrfTsfDiagnosticLog(L"candidate-window.environment", L"work-area-change");
         return 0;
       }
+      break;
+    case WM_THEMECHANGED:
+    case WM_SYSCOLORCHANGE:
+      self->RefreshSystemAppearance();
       break;
     case WM_DWMCOMPOSITIONCHANGED:
       self->ScheduleEnvironmentRefresh();
@@ -196,13 +198,21 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
       break;
     }
     case WM_MOUSEMOVE: {
-      if (!self->m_interactive) {
+      if (!self->m_interactive || !IsWindowVisible(hwnd)) {
         self->UpdatePinMenuHotCommand(kPinMenuCommandNone);
         self->UpdateHotIndex(-1);
         return 0;
       }
       self->BeginTrackMouseLeave();
       POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+      if (self->m_ignoreStationaryMouse) {
+        POINT screenPoint = pt;
+        if (ClientToScreen(hwnd, &screenPoint) &&
+            !CandidatePointerMoved(self->m_cursorAtShow.x, self->m_cursorAtShow.y, screenPoint.x,
+                                   screenPoint.y))
+          return 0;
+        self->m_ignoreStationaryMouse = false;
+      }
       if (self->m_pinMenuVisible) {
         const int rawPinCommand = self->HitTestPinMenuRaw(pt);
         self->UpdatePinMenuHotCommand(
@@ -214,11 +224,17 @@ LRESULT CALLBACK CCandidateWindow::WndProc(HWND hwnd, UINT msg, WPARAM wParam, L
       }
       return 0;
     }
-    case WM_MOUSELEAVE:
+    case WM_MOUSELEAVE: {
       self->m_trackingMouse = false;
+      POINT cursor = {};
+      if (self->m_ignoreStationaryMouse && GetCursorPos(&cursor)) {
+        self->m_ignoreStationaryMouse = !CandidatePointerMoved(
+            self->m_cursorAtShow.x, self->m_cursorAtShow.y, cursor.x, cursor.y);
+      }
       self->UpdatePinMenuHotCommand(kPinMenuCommandNone);
       self->UpdateHotIndex(-1);
       return 0;
+    }
     case WM_LBUTTONDOWN: {
       if (!self->m_interactive) return 0;
       self->m_rightPressedIndex = -1;

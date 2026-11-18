@@ -77,7 +77,7 @@ pub(super) fn ocr_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         setting_toggle(
             ui,
             "OCR 模型常驻",
-            "开启后复用模型以减少等待；关闭后释放内存。",
+            "开启后关闭 OCR 窗口会保留模型，后台空闲 5 分钟后自动退出。",
             &mut app.model.ocr_keep_alive,
         );
         setting_combo_row(

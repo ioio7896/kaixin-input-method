@@ -160,6 +160,7 @@ struct SrfUIStyle {
   UINT candidatePageSize = 9;
   /// 横向候选单行最多显示多少个候选（设置页可选 3..=9；极端窄屏/超长词仍允许布局退化到更少）。
   UINT candidateHorizontalCount = 5;
+  UINT candidateFieldWidthDip = 0;
   /// 横向候选是否启用“更紧凑”的间距/内边距（字体大小不变）。
   bool candidateHorizontalCompact = false;
   bool showCandidateReading = false;
@@ -193,6 +194,7 @@ struct SrfUIStyle {
   COLORREF skinBadgeBorder = CLR_INVALID;
   COLORREF skinBadgeText = CLR_INVALID;
   COLORREF skinHoverBg = CLR_INVALID;
+  COLORREF skinHoverText = CLR_INVALID;
   COLORREF skinHoverBorder = CLR_INVALID;
   COLORREF skinItemBg = CLR_INVALID;
   COLORREF skinItemBorder = CLR_INVALID;

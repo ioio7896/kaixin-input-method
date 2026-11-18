@@ -8,7 +8,7 @@ Apache-2.0 **不自动覆盖**仓库中标明为第三方作品的数据、模�
 
 | 路径 | 许可证或状态 | 说明 |
 | --- | --- | --- |
-| `RapidOCR-3.9.0/` | Apache-2.0（工程代码） | OCR 模型须按 `docs/licenses/OCR_MODELS.md` 单独核验 |
+| `dist/vendor-reference/RapidOCR-3.9.0/` | Apache-2.0（上游参考工程） | 本地参考副本不参与构建。OCR 模型须按 `docs/licenses/OCR_MODELS.md` 单独核验 |
 | `crates/kaixin-core/src/handwrite_lookup/` 中的匹配器 | LGPL-3.0 | 见目录内 `NOTICE.md` 和 `LICENSE-LGPL` |
 | `crates/kaixin-core/src/handwrite_lookup/data/mmah.bin` | Arphic Public License | 见目录内 `LICENSE-APL` |
 | `data_sources/pinyin/` | MIT | 见该目录 `LICENSE` |

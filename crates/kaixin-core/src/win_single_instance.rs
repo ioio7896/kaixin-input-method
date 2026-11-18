@@ -11,6 +11,20 @@ pub fn claim_or_activate_existing(
     mutex_name: &str,
     window_title: &str,
 ) -> Result<Option<SingleInstanceGuard>, String> {
+    claim_instance(mutex_name, Some(window_title))
+}
+
+/// Claims an instance that uses its own request handoff to wake the window.
+#[cfg(windows)]
+pub fn claim(mutex_name: &str) -> Result<Option<SingleInstanceGuard>, String> {
+    claim_instance(mutex_name, None)
+}
+
+#[cfg(windows)]
+fn claim_instance(
+    mutex_name: &str,
+    window_title: Option<&str>,
+) -> Result<Option<SingleInstanceGuard>, String> {
     use windows_sys::Win32::Foundation::{GetLastError, ERROR_ALREADY_EXISTS};
     use windows_sys::Win32::System::Threading::CreateMutexW;
     use windows_sys::Win32::UI::WindowsAndMessaging::{
@@ -27,13 +41,15 @@ pub fn claim_or_activate_existing(
     }
 
     if unsafe { GetLastError() } == ERROR_ALREADY_EXISTS {
-        let title = wide(window_title);
-        let hwnd = unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) };
-        if hwnd != 0 {
-            unsafe {
-                let _ = ShowWindow(hwnd, SW_RESTORE);
-                let _ = ShowWindow(hwnd, SW_SHOW);
-                let _ = SetForegroundWindow(hwnd);
+        if let Some(window_title) = window_title {
+            let title = wide(window_title);
+            let hwnd = unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) };
+            if hwnd != 0 {
+                unsafe {
+                    let _ = ShowWindow(hwnd, SW_RESTORE);
+                    let _ = ShowWindow(hwnd, SW_SHOW);
+                    let _ = SetForegroundWindow(hwnd);
+                }
             }
         }
         // SAFETY: CreateMutexW returned a new handle owned by this function.
@@ -54,6 +70,11 @@ fn wide(text: &str) -> Vec<u16> {
 
 #[cfg(not(windows))]
 pub struct SingleInstanceGuard;
+
+#[cfg(not(windows))]
+pub fn claim(_mutex_name: &str) -> Result<Option<SingleInstanceGuard>, String> {
+    Ok(Some(SingleInstanceGuard))
+}
 
 #[cfg(not(windows))]
 pub fn claim_or_activate_existing(

@@ -547,23 +547,26 @@ class RapidOcrService:
         warm_start = time.perf_counter()
         already_warm = key in self._warmed
         if not already_warm:
-            sample = np.full((48, 320, 3), 255, dtype=np.uint8)
-            cv2.putText(
-                sample,
-                "Kaixin OCR 2026",
-                (8, 33),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.8,
-                (0, 0, 0),
-                2,
-                cv2.LINE_AA,
-            )
+            width = PROFILE_LIMITS[profile][0]
+            height = width * 9 // 16
+            sample = np.full((height, width, 3), 255, dtype=np.uint8)
+            for top in (height // 5, height // 2, height * 4 // 5):
+                cv2.putText(
+                    sample,
+                    "Kaixin OCR 2026",
+                    (width // 12, top),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    1.0,
+                    (0, 0, 0),
+                    2,
+                    cv2.LINE_AA,
+                )
+            top = height // 2
+            text_line = sample[top - 40 : top + 8, width // 12 - 8 : width // 12 + 320].copy()
             try:
                 with contextlib.redirect_stdout(sys.stderr):
-                    engine(sample, use_det=True, use_cls=False, use_rec=True)
-                    # Explicit rec-only execution also works if detection found
-                    # no box, and warms the recognizer's first graph execution.
-                    engine(sample, use_det=False, use_cls=False, use_rec=True)
+                    engine(sample, use_det=True, use_cls=False, use_rec=False)
+                    engine(text_line, use_det=False, use_cls=False, use_rec=True)
                 self._warmed.add(key)
             except Exception:
                 self._clear_engine(key)

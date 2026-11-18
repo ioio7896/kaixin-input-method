@@ -25,3 +25,7 @@ inline bool ShouldAnimateCandidateWindow(bool reduceMotion, bool systemAnimation
   return !reduceMotion && systemAnimationsEnabled && !highContrast && !gameOverlay &&
          skinAnimationsEnabled;
 }
+
+inline bool CandidatePointerMoved(long shownAtX, long shownAtY, long currentX, long currentY) {
+  return shownAtX != currentX || shownAtY != currentY;
+}

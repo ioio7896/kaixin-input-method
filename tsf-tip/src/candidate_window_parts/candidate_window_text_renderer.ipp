@@ -53,7 +53,7 @@ struct EmojiFontCache {
 
 HFONT ResolveTextFont(HFONT font, const std::wstring& text) {
   if (!TextMayNeedEmojiFallback(text)) return font;
-  static EmojiFontCache emojiCache;
+  thread_local EmojiFontCache emojiCache;
   HFONT emojiFont = emojiCache.Get(font);
   return emojiFont ? emojiFont : font;
 }
@@ -78,7 +78,7 @@ UINT ResolveTextRenderDpi(HDC hdc, UINT requestedDpi) {
   const UINT resolved = requestedDpi == 0 ? hdcDpi : requestedDpi;
   if (requestedDpi != 0 && hdcDpi != 0 &&
       std::abs(static_cast<int>(hdcDpi) - static_cast<int>(requestedDpi)) >= 2) {
-    static ULONGLONG lastLogTick = 0;
+    thread_local ULONGLONG lastLogTick = 0;
     const ULONGLONG now = GetTickCount64();
     if (lastLogTick == 0 || now < lastLogTick || now - lastLogTick >= 1000) {
       lastLogTick = now;
@@ -157,6 +157,42 @@ D2D1_DRAW_TEXT_OPTIONS DirectWriteDrawOptions() {
   return options;
 }
 
+template <class T, size_t Capacity>
+class DirectWriteLru {
+ public:
+  bool Get(const std::wstring& key, Microsoft::WRL::ComPtr<T>* out) {
+    auto found = entries_.find(key);
+    if (found == entries_.end()) return false;
+    order_.splice(order_.begin(), order_, found->second);
+    *out = found->second->second;
+    return true;
+  }
+
+  void Put(std::wstring key, const Microsoft::WRL::ComPtr<T>& value) {
+    order_.emplace_front(std::move(key), value);
+    try {
+      entries_.emplace(order_.front().first, order_.begin());
+    } catch (...) {
+      order_.pop_front();
+      throw;
+    }
+    if (entries_.size() > Capacity) {
+      entries_.erase(order_.back().first);
+      order_.pop_back();
+    }
+  }
+
+  void Clear() {
+    entries_.clear();
+    order_.clear();
+  }
+
+ private:
+  using List = std::list<std::pair<std::wstring, Microsoft::WRL::ComPtr<T>>>;
+  List order_;
+  std::unordered_map<std::wstring, typename List::iterator> entries_;
+};
+
 class DirectTextRenderer {
  public:
   void ConfigureCustomFont(const std::filesystem::path& path, const std::wstring& family) {
@@ -208,6 +244,10 @@ class DirectTextRenderer {
     if (!m_customFamilyAvailable) {
       m_customCollection.Reset();
     }
+  }
+
+  bool PrimeRenderTarget(HDC hdc, const RECT& rect, UINT dpi) {
+    return EnsureRenderTarget(hdc, rect, dpi);
   }
 
   bool MeasureSingleLine(HDC hdc, HFONT font, const std::wstring& text, SIZE* out,
@@ -295,15 +335,6 @@ class DirectTextRenderer {
   }
 
  private:
-  static constexpr size_t kMaxFormatCacheEntries = 32;
-  static constexpr size_t kMaxLayoutCacheEntries = 256;
-  static constexpr size_t kTrimmedLayoutCacheEntries = 192;
-
-  struct LayoutCacheEntry {
-    Microsoft::WRL::ComPtr<IDWriteTextLayout> layout;
-    ULONGLONG tick = 0;
-  };
-
   bool EnsureFactories() {
     if (m_dwriteFactory && m_d2dFactory) return true;
     if (!m_dwriteFactory) {
@@ -331,9 +362,7 @@ class DirectTextRenderer {
     if (!ResolveFontCollection(spec.family, &collection, &customCollection)) return false;
 
     const std::wstring key = MakeFormatKey(spec, formatFlags, customCollection);
-    auto cached = m_formatCache.find(key);
-    if (cached != m_formatCache.end() && cached->second) {
-      *out = cached->second;
+    if (m_formatCache.Get(key, out)) {
       if (outKey) *outKey = key;
       return true;
     }
@@ -347,8 +376,7 @@ class DirectTextRenderer {
     (*out)->SetWordWrapping(ResolveDirectWriteWrapping(formatFlags));
     ApplyLineSpacing(out->Get(), spec, collection.Get());
 
-    if (m_formatCache.size() >= kMaxFormatCacheEntries) m_formatCache.clear();
-    m_formatCache[key] = *out;
+    m_formatCache.Put(key, *out);
     if (outKey) *outKey = key;
     return true;
   }
@@ -449,12 +477,7 @@ class DirectTextRenderer {
                         UINT formatFlags, Microsoft::WRL::ComPtr<IDWriteTextLayout>* out) {
     if (!out || !format || !m_dwriteFactory) return false;
     const std::wstring layoutKey = MakeLayoutKey(formatKey, text, widthDip, heightDip, formatFlags);
-    auto cached = m_layoutCache.find(layoutKey);
-    if (cached != m_layoutCache.end() && cached->second.layout) {
-      cached->second.tick = ++m_cacheTick;
-      *out = cached->second.layout;
-      return true;
-    }
+    if (m_layoutCache.Get(layoutKey, out)) return true;
 
     HRESULT hr =
         m_dwriteFactory->CreateTextLayout(text.c_str(), static_cast<UINT32>(text.size()), format,
@@ -463,11 +486,7 @@ class DirectTextRenderer {
     ApplyFontFallback(out->Get());
     ApplyTrimming(format, out->Get(), formatFlags);
 
-    LayoutCacheEntry entry = {};
-    entry.layout = *out;
-    entry.tick = ++m_cacheTick;
-    m_layoutCache[layoutKey] = entry;
-    TrimLayoutCache();
+    m_layoutCache.Put(layoutKey, *out);
     return true;
   }
 
@@ -569,8 +588,8 @@ class DirectTextRenderer {
   }
 
   void ClearTextCaches() {
-    m_formatCache.clear();
-    m_layoutCache.clear();
+    m_formatCache.Clear();
+    m_layoutCache.Clear();
   }
 
   static int QuantizeDip(float value) { return static_cast<int>(std::lround(value * 64.0f)); }
@@ -603,22 +622,6 @@ class DirectTextRenderer {
     return key;
   }
 
-  void TrimLayoutCache() {
-    while (m_layoutCache.size() > kMaxLayoutCacheEntries) {
-      auto victim = m_layoutCache.end();
-      ULONGLONG oldest = static_cast<ULONGLONG>(-1);
-      for (auto it = m_layoutCache.begin(); it != m_layoutCache.end(); ++it) {
-        if (it->second.tick < oldest) {
-          oldest = it->second.tick;
-          victim = it;
-        }
-      }
-      if (victim == m_layoutCache.end()) break;
-      m_layoutCache.erase(victim);
-      if (m_layoutCache.size() <= kTrimmedLayoutCacheEntries) break;
-    }
-  }
-
   Microsoft::WRL::ComPtr<IDWriteFactory> m_dwriteFactory;
   Microsoft::WRL::ComPtr<ID2D1Factory> m_d2dFactory;
   Microsoft::WRL::ComPtr<ID2D1DCRenderTarget> m_renderTarget;
@@ -630,31 +633,23 @@ class DirectTextRenderer {
   bool m_customFamilyAvailable = false;
   UINT m_renderDpi = 0;
   UINT m_customGeneration = 0;
-  ULONGLONG m_cacheTick = 0;
   std::unordered_map<std::wstring, bool> m_systemFamilyAvailability;
-  std::unordered_map<std::wstring, Microsoft::WRL::ComPtr<IDWriteTextFormat>> m_formatCache;
-  std::unordered_map<std::wstring, LayoutCacheEntry> m_layoutCache;
+  DirectWriteLru<IDWriteTextFormat, 32> m_formatCache;
+  DirectWriteLru<IDWriteTextLayout, 256> m_layoutCache;
 };
 
 DirectTextRenderer*& DirectTextRendererStorage() {
-  static DirectTextRenderer* renderer = nullptr;
+  thread_local DirectTextRenderer* renderer = nullptr;
   return renderer;
 }
 
-std::mutex& DirectTextRendererStorageMutex() {
-  static std::mutex mutex;
-  return mutex;
-}
-
 DirectTextRenderer& GetDirectTextRenderer() {
-  std::lock_guard<std::mutex> lock(DirectTextRendererStorageMutex());
   DirectTextRenderer*& renderer = DirectTextRendererStorage();
   if (!renderer) renderer = new DirectTextRenderer();
   return *renderer;
 }
 
 void ShutdownDirectTextRenderer() {
-  std::lock_guard<std::mutex> lock(DirectTextRendererStorageMutex());
   DirectTextRenderer*& renderer = DirectTextRendererStorage();
   delete renderer;
   renderer = nullptr;

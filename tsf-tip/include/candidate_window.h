@@ -7,12 +7,15 @@
 
 #include <array>
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ime_model.h"
 #include "candidate_accessibility.h"
 #include "candidate_input_pane.h"
+
+struct CandidateColors;
 
 struct CandidatePageLayoutMetrics {
   std::vector<UINT> pageStarts;
@@ -62,6 +65,9 @@ struct CandidateItemPaintCache {
   int w = 0;
   int h = 0;
   size_t itemIndex = SIZE_MAX;
+  ULONGLONG generation = 0;
+  ULONGLONG contentRevision = 0;
+  RECT sourceRect = {};
   bool selected = false;
   bool hot = false;
   bool pressed = false;
@@ -108,6 +114,7 @@ class CCandidateWindow {
   void SetEvents(ICandidateWindowEvents* events);
   void SetOwnerWindow(HWND owner);
   void SetStyle(const SrfUIStyle& style);
+  void SetPerfLogging(bool enabled) { m_perfLogging = enabled; }
   void SetGameOverlay(bool enabled, bool fullscreen, HWND targetHwnd);
   void PrepareResources();
   void Show(const std::wstring& title, const std::vector<std::wstring>& pageItems,
@@ -143,6 +150,7 @@ class CCandidateWindow {
   std::vector<ClipboardCommentParts> m_clipboardCommentParts;
   std::vector<RECT> m_itemRects;
   std::vector<std::array<CandidateItemPaintCache, 4>> m_itemPaintCaches;
+  std::vector<ULONGLONG> m_itemPaintRevisions;
   UINT m_pageIndex = 0;
   UINT m_totalPages = 0;
   UINT m_selectedInPage = 0;
@@ -164,6 +172,11 @@ class CCandidateWindow {
   bool m_hasAnchorRect = false;
   UINT m_dpi = 96;
   SrfUIStyle m_style = {};
+  std::unique_ptr<CandidateColors> m_colors;
+  SrfThemeMode m_systemTheme = SrfThemeMode::Light;
+  bool m_systemAnimations = true;
+  bool m_systemHighContrast = false;
+  ULONGLONG m_paintGeneration = 1;
   std::filesystem::path m_customFontPath;
   std::wstring m_customFontFace;
   HFONT m_titleFont = nullptr;
@@ -183,6 +196,8 @@ class CCandidateWindow {
   int m_staticBufferW = 0;
   int m_staticBufferH = 0;
   bool m_trackingMouse = false;
+  bool m_ignoreStationaryMouse = false;
+  POINT m_cursorAtShow = {};
   bool m_interactive = true;
   bool m_pendingVisual = false;
   ULONGLONG m_pendingVisualSince = 0;
@@ -225,6 +240,7 @@ class CCandidateWindow {
   bool m_hasPendingDirtyRgn = false;
   unsigned long long m_paintCount = 0;
   unsigned long long m_fullPaintCount = 0;
+  bool m_perfLogging = false;
 
   bool m_showAnimationActive = false;
   ULONGLONG m_showAnimationStart = 0;
@@ -262,6 +278,8 @@ class CCandidateWindow {
   bool EnsureWindow();
   bool EnsureShadowWindow();
   void UpdateShadowWindow();
+  void RefreshSystemAppearance();
+  int ShadowMargin() const;
   void ShowShadowWindow();
   void HideShadowWindow();
   void ApplyMouseTransparency();
@@ -278,10 +296,14 @@ class CCandidateWindow {
   void ApplyAnimatedWindowRect(float showProgress);
   void Paint(HDC hdc, const RECT& paintRect);
   void PaintFull(HDC memDc, const RECT& client, const RECT* dirtyRect = nullptr);
+  void PaintStaticLayer(HDC dc, const RECT& client, bool clipboardMode);
+  struct RowPaint;
+  void PaintHorizontalRow(const RowPaint& row);
+  void PaintVerticalRow(const RowPaint& row);
   void ReleasePaintBuffer();
   void ReleaseStaticPaintBuffer();
   void ReleaseItemPaintCaches();
-  void ReleaseItemPaintCacheAt(size_t index);
+  void InvalidateItemPaintCacheAt(size_t index);
   void FlushPendingInvalidates();
   void ScheduleDeferredPaint(ULONGLONG now);
   void FlushDeferredPaint();

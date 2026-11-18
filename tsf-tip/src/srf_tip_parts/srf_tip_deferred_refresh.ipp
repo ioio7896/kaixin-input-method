@@ -16,6 +16,15 @@ LRESULT CALLBACK CSrfTip::DeferredTimerWndProc(HWND hwnd, UINT msg, WPARAM wPara
     if (!self->m_reading.empty()) self->EnsureEngineInputReady();
     return 0;
   }
+  if (msg == WM_TIMER && wParam == kGameChatProbeTimerId && self) {
+    if (self->m_gameChatPhase == SrfGameChatPhase::Awaiting &&
+        !self->RefreshPureGameModeFromRegistry()) {
+      self->RefreshGameChatFocus();
+    } else {
+      KillTimer(hwnd, kGameChatProbeTimerId);
+    }
+    return 0;
+  }
   if (msg == WM_TIMER && wParam == kDeferredCandidateTimerId && self) {
     self->OnDeferredCandidateRefreshTimer();
     return 0;

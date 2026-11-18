@@ -1,4 +1,5 @@
 #include "candidate_window.h"
+#include "candidate_layout_policy.h"
 #include "ime_config.h"
 #include <UIAutomation.h>
 #include <wrl/client.h>
@@ -11,6 +12,8 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <atomic>
+#include <thread>
 
 // Test bundled skins without starting the user's live configuration watcher.
 void LoadSkinFileFromConfigDir(SrfConfig&, const std::filesystem::path&);
@@ -158,6 +161,117 @@ const std::vector<std::wstring> longItems = {L"中华人民共和国", L"中华�
 const std::vector<std::wstring> mediumItems = {L"开心输入法", L"开心输入法", L"开心输入法"};
 const std::vector<std::wstring> shortItems = {L"开", L"心", L"好"};
 const RECT anchor = {100, 100, 101, 124};
+
+std::vector<std::uint32_t> CaptureCandidatePixels(HWND hwnd) {
+  RECT rect = {};
+  Check(GetClientRect(hwnd, &rect) && rect.right > 0 && rect.bottom > 0,
+        "query the candidate bitmap size");
+  BITMAPINFO info = {};
+  info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+  info.bmiHeader.biWidth = rect.right;
+  info.bmiHeader.biHeight = -rect.bottom;
+  info.bmiHeader.biPlanes = 1;
+  info.bmiHeader.biBitCount = 32;
+  HDC dc = CreateCompatibleDC(nullptr);
+  void* bits = nullptr;
+  HBITMAP bitmap = CreateDIBSection(dc, &info, DIB_RGB_COLORS, &bits, nullptr, 0);
+  Check(dc && bitmap && bits, "allocate candidate regression bitmap");
+  HGDIOBJ old = SelectObject(dc, bitmap);
+  SendMessageW(hwnd, WM_PRINTCLIENT, reinterpret_cast<WPARAM>(dc), PRF_CLIENT);
+  GdiFlush();
+  const auto* first = static_cast<const std::uint32_t*>(bits);
+  std::vector<std::uint32_t> pixels(first, first + rect.right * rect.bottom);
+  for (auto& pixel : pixels)
+    pixel &= 0x00ffffff;
+  SelectObject(dc, old);
+  DeleteObject(bitmap);
+  DeleteDC(dc);
+  return pixels;
+}
+
+void ShowClipboardFixture(CCandidateWindow& window) {
+  window.Show(L"快捷剪贴板", {L"第一项", L"第二项", L"第三项"}, {}, {}, {}, {true, true, true}, 0,
+              1, 0, anchor);
+  window.FlushPendingPaint();
+}
+
+SrfUIStyle ClipboardFixtureStyle(COLORREF text) {
+  SrfUIStyle style;
+  style.candidateHorizontal = false;
+  style.candidateReduceMotion = true;
+  style.skinLoaded = true;
+  style.skinShadowEnabled = false;
+  style.skinWindowBg = style.skinWindowBgTo = RGB(25, 27, 30);
+  style.skinText = text;
+  style.skinHoverBg = RGB(240, 245, 250);
+  return style;
+}
+
+void TestConcurrentClipboardRendering() {
+  std::atomic<unsigned> ready{0};
+  auto paint = [&ready](COLORREF color) {
+    const HRESULT com = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    ++ready;
+    while (ready < 2)
+      std::this_thread::yield();
+    for (int i = 0; i < 12; ++i) {
+      CCandidateWindow window;
+      window.SetStyle(ClipboardFixtureStyle(color));
+      window.PrepareResources();
+      ShowClipboardFixture(window);
+      const auto pixels = CaptureCandidatePixels(CandidateHwnd());
+      const auto rgb = static_cast<std::uint32_t>((GetRValue(color) << 16) |
+                                                  (GetGValue(color) << 8) | GetBValue(color));
+      Check(std::find(pixels.begin(), pixels.end(), rgb) != pixels.end(),
+            "clipboard glyphs retain their configured color during parallel prewarm and paint");
+    }
+    if (SUCCEEDED(com)) CoUninitialize();
+  };
+  std::thread first(paint, RGB(235, 240, 245));
+  std::thread second(paint, RGB(110, 250, 130));
+  first.join();
+  second.join();
+}
+
+void TestClipboardHoverOnShow() {
+  Check(!CandidatePointerMoved(-500, 240, -500, 240), "stationary screen cursor ignores hover");
+  Check(CandidatePointerMoved(-500, 240, -499, 240) && CandidatePointerMoved(-500, 240, -500, 241),
+        "movement on either screen axis enables hover");
+  POINT cursor = {};
+  if (!GetCursorPos(&cursor)) {
+    std::cout << "  live cursor unavailable on this desktop\n";
+    return;
+  }
+  CCandidateWindow window;
+  window.SetStyle(ClipboardFixtureStyle(RGB(235, 240, 245)));
+  ShowClipboardFixture(window);
+  const HWND hwnd = CandidateHwnd();
+  const auto initial = CaptureCandidatePixels(hwnd);
+  RECT client = {};
+  GetClientRect(hwnd, &client);
+  POINT row = {client.right / 2, client.bottom - 2};
+  for (; row.y > client.bottom / 2; --row.y) {
+    SendMessageW(hwnd, WM_MOUSEMOVE, 0, MAKELPARAM(row.x, row.y));
+    if (CaptureCandidatePixels(hwnd) != initial) break;
+  }
+  Check(row.y > client.bottom / 2, "fixture has an unselected hoverable clipboard row");
+  window.Hide();
+  Check(GetCursorPos(&cursor), "read stationary screen cursor");
+  ShowClipboardFixture(window);
+  POINT offset = {};
+  ClientToScreen(hwnd, &offset);
+  RECT frame = {};
+  GetWindowRect(hwnd, &frame);
+  Check(SetWindowPos(hwnd, nullptr, frame.left + cursor.x - offset.x - row.x,
+                     frame.top + cursor.y - offset.y - row.y, 0, 0,
+                     SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER),
+        "position the clipboard row beneath the stationary cursor");
+  const auto reopened = CaptureCandidatePixels(hwnd);
+  SendMessageW(hwnd, WM_MOUSEMOVE, 0, MAKELPARAM(row.x, row.y));
+  Check(CaptureCandidatePixels(hwnd) == reopened, "opening beneath the cursor does not hover");
+  SendMessageW(hwnd, WM_MOUSEMOVE, 0, MAKELPARAM(row.x + 1, row.y));
+  Check(CaptureCandidatePixels(hwnd) != reopened, "real cursor movement enables clipboard hover");
+}
 
 void RenderSkinSamples() {
   const auto destination = SkinsRoot().parent_path() / "dist" / "candidate-design-preview";
@@ -440,6 +554,10 @@ int main(int argc, char** argv) {
   const HRESULT initialized = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   std::cout << "test: clipboard text colors\n";
   TestClipboardTextColors();
+  std::cout << "test: parallel clipboard rendering\n";
+  TestConcurrentClipboardRendering();
+  std::cout << "test: clipboard hover after show\n";
+  TestClipboardHoverOnShow();
   std::cout << "test: bundled skin contrast\n";
   try {
     TestSkinContrast();

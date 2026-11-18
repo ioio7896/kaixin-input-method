@@ -199,6 +199,13 @@ void TestGameInputPolicy() {
   Check(!SrfGameFocusEvidenceFresh(100, 451), "stale provider response cannot enable chat");
   Check(!SrfGameFocusEvidenceFresh(0, 10), "missing provider evidence remains passive");
   Check(!SrfGameFocusEvidenceFresh(100, 99), "future provider timestamp is rejected");
+  Check(SrfGameTextEvidenceReady(100, 100, false, false),
+        "a verified edit control requires no settling time");
+  Check(!SrfGameTextEvidenceReady(199, 100, true, false) &&
+            SrfGameTextEvidenceReady(200, 100, true, false),
+        "an unfamiliar custom field is stable for 100 ms before activation");
+  Check(SrfGameTextEvidenceReady(100, 100, true, true),
+        "a verified field matching the learned identity skips the settling time");
   Check(SrfIsInjectedTextEvent(VK_PACKET, 0), "Unicode packets do not loop back into pinyin");
   Check(SrfTouchKeyboardPageKey(0xf003, 0) == VK_NEXT, "touch keyboard next page");
   Check(SrfTouchKeyboardPageKey(0xf004, 0) == VK_PRIOR, "touch keyboard previous page");

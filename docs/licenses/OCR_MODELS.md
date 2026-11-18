@@ -12,7 +12,7 @@ status: verified
 | `PP-OCRv6_rec_small.onnx` | `https://www.modelscope.cn/models/RapidAI/RapidOCR/resolve/v3.9.2/onnx/PP-OCRv6/rec/PP-OCRv6_rec_small.onnx` | `6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884` |
 
 URL 和预期哈希来自
-`RapidOCR-3.9.0/python/rapidocr/default_models.yaml`。ModelScope 上固定到 `v3.9.2`
+RapidAI/RapidOCR 3.9.0 的 `python/rapidocr/default_models.yaml`。构建使用 `RapidOCRLite/`，上游工程及演示文件可按需另取，本地参考副本位于 `dist/vendor-reference/RapidOCR-3.9.0/`。ModelScope 上固定到 `v3.9.2`
 的模型卡声明 `license: Apache License 2.0`，模型仓库 API 同样返回
 `License: Apache License 2.0`。核验日期为 2026-07-26。
 

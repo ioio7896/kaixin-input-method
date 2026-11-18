@@ -187,8 +187,8 @@ bool CSrfTip::EffectiveGameStatusIndicator() const {
                                                     : m_config.compatibility.gameStatusIndicator;
 }
 
-void CSrfTip::ShowGameInputStatus(const wchar_t* text) {
-  if (!EffectiveGameStatusIndicator() || m_uiLessMode ||
+void CSrfTip::ShowGameInputStatus(const wchar_t* text, bool actionRequired) {
+  if ((!actionRequired && !EffectiveGameStatusIndicator()) || m_uiLessMode ||
       GetAncestor(GetForegroundWindow(), GA_ROOT) != m_compatibilityHwnd ||
       m_sensitiveInputActive || m_config.privacy.enabled)
     return;
@@ -197,7 +197,8 @@ void CSrfTip::ShowGameInputStatus(const wchar_t* text) {
   RECT anchor = {};
   if (ResolveCandidateGameOverlayAnchor(m_compatibilityHwnd, m_fullscreenCompatActive,
                                         FindAppOptions(m_config, CompatibilityAppName()),
-                                        &anchor)) {
+                                        &anchor) ||
+      (actionRequired && TryGetScreenSafeRect(m_compatibilityHwnd, &anchor))) {
     m_notificationWindow.Show(text, &anchor, m_config.compatibility.gameStatusDurationMs,
                               SrfNotificationTone::Chinese,
                               m_config.compatibility.gameStatusScalePercent);
@@ -208,7 +209,11 @@ void CSrfTip::SetGameChatActive(bool active) {
   if (m_gameChatActive == active) {
     if (!active && m_gameChatPhase == SrfGameChatPhase::Awaiting) {
       m_gameChatPhase = SrfGameChatPhase::Passive;
+      m_gameChatSource = SrfGameTextSource::None;
       m_gameAwaitingUntil = 0;
+      m_gameAwaitingHintAt = 0;
+      m_gameOpenAttemptAt = 0;
+      if (m_deferredTimerHwnd) KillTimer(m_deferredTimerHwnd, kGameChatProbeTimerId);
       m_gameChatOwner = nullptr;
       m_gameChatOwnerProcessId = 0;
       m_notificationWindow.Hide();
@@ -216,6 +221,7 @@ void CSrfTip::SetGameChatActive(bool active) {
     return;
   }
   const SrfGameTextSource previousSource = m_gameChatSource;
+  const ULONGLONG now = GetTickCount64();
   if (active) {
     if (m_pComposition) {
       RequestCancelCompositionOnFocusLoss();
@@ -227,10 +233,15 @@ void CSrfTip::SetGameChatActive(bool active) {
     m_gameChatEditableIdentity = m_gameEditableVerified ? m_gameEditableIdentity : 0;
     m_gameChatActive = true;
     m_gameChatPhase = SrfGameChatPhase::Editing;
+    m_gameChatOpenedAt = now;
+    m_gameAwaitingUntil = 0;
+    m_gameAwaitingHintAt = 0;
+    if (m_deferredTimerHwnd) KillTimer(m_deferredTimerHwnd, kGameChatProbeTimerId);
     if (m_gameChatSource == SrfGameTextSource::None) m_gameChatSource = SrfGameTextSource::Manual;
     m_imeOpen = true;
     ShowGameInputStatus(L"中文聊天");
   } else {
+    m_gamePendingPaste.clear();
     m_gameDismissedIdentity = m_gameEditableIdentity;
     if (m_pKeySink) m_pKeySink->m_pendingKeyEdits.Cancel();
     ++m_gameTsfProbeSerial;
@@ -255,6 +266,8 @@ void CSrfTip::SetGameChatActive(bool active) {
   const wchar_t* source = loggedSource == SrfGameTextSource::Native          ? L"native"
                           : loggedSource == SrfGameTextSource::Tsf           ? L"tsf_scope"
                           : loggedSource == SrfGameTextSource::Automation    ? L"uia"
+                          : loggedSource == SrfGameTextSource::Learned       ? L"learned"
+                          : loggedSource == SrfGameTextSource::Geometry      ? L"geometry"
                           : loggedSource == SrfGameTextSource::AlwaysChinese ? L"always_chinese"
                                                                              : L"manual";
   std::wstring line = active ? L"phase=editing source=" : L"phase=passthrough source=";
@@ -264,6 +277,39 @@ void CSrfTip::SetGameChatActive(bool active) {
   line += L" app=";
   line += CompatibilityAppName();
   SrfTsfDiagnosticLog(L"game-chat.state", line.c_str());
+  if (active) {
+    const bool automatic = loggedSource != SrfGameTextSource::Manual &&
+                           loggedSource != SrfGameTextSource::AlwaysChinese;
+    LogGameChatEvent(automatic ? L"open_confirmed" : L"open_manual", source,
+                     m_gameOpenAttemptAt ? now - m_gameOpenAttemptAt : 0);
+    m_gameOpenAttemptAt = 0;
+  } else {
+    LogGameChatEvent(L"close", source, m_gameChatOpenedAt ? now - m_gameChatOpenedAt : 0);
+    m_gameChatOpenedAt = 0;
+  }
+}
+
+void CSrfTip::LogGameChatEvent(const wchar_t* event, const wchar_t* source,
+                               ULONGLONG elapsed) const {
+  if (m_config.privacy.enabled || m_sensitiveInputActive ||
+      !SrfTsfLogEnabled(SrfTsfLogLevel::Basic))
+    return;
+  auto token = [](std::wstring value) {
+    for (auto& ch : value) {
+      if (std::iswspace(ch) || ch == L'=' || ch == L',') ch = L'_';
+    }
+    return value;
+  };
+  const std::wstring line =
+      std::wstring(L"event=") + event + L" source=" + source + L" app=" +
+      token(CompatibilityAppName()) + L" class=" + token(WindowClassName(m_compatibilityHwnd)) +
+      L" display=" + (m_fullscreenCompatActive ? L"fullscreen_like" : L"windowed") + L" channel=" +
+      EffectiveCommitTransportName() + L" tsf_insert=" +
+      (m_gameTsfEvidence.insertQueryAccepted
+           ? L"query_ok"
+           : (m_gameTsfEvidence.insertAtSelectionAvailable ? L"available" : L"unconfirmed")) +
+      L" elapsed_ms=" + std::to_wstring(elapsed);
+  SrfTsfDiagnosticLog(L"game-chat.session", line.c_str());
 }
 
 class CEditSessionGameTextProbe final : public ITfEditSession {
@@ -316,6 +362,18 @@ class CEditSessionGameTextProbe final : public ITfEditSession {
     if (SUCCEEDED(context_->GetStatus(&status)) && !(status.dwDynamicFlags & TF_SD_READONLY) &&
         SUCCEEDED(context_->GetSelection(cookie, TF_DEFAULT_SELECTION, 1, &selection, &count)) &&
         count && selection.range) {
+      evidence.insertProbePerformed = true;
+      ITfInsertAtSelection* insert = nullptr;
+      if (SUCCEEDED(context_->QueryInterface(IID_ITfInsertAtSelection,
+                                             reinterpret_cast<void**>(&insert))) &&
+          insert) {
+        ITfRange* insertionRange = nullptr;
+        evidence.insertAtSelectionAvailable = true;
+        evidence.insertQueryAccepted = SUCCEEDED(
+            insert->InsertTextAtSelection(cookie, TF_IAS_QUERYONLY, L"", 0, &insertionRange));
+        if (insertionRange) insertionRange->Release();
+        insert->Release();
+      }
       ITfProperty* property = nullptr;
       VARIANT value;
       VariantInit(&value);
@@ -361,7 +419,8 @@ class CEditSessionGameTextProbe final : public ITfEditSession {
 
 void CSrfTip::ScheduleGameTextProbe() {
   const ULONGLONG now = GetTickCount64();
-  if (!m_pFocusContext || !m_tid || now - m_gameTsfProbeTick < 150) return;
+  const ULONGLONG interval = m_gameChatPhase == SrfGameChatPhase::Awaiting ? 50 : 150;
+  if (!m_pFocusContext || !m_tid || now - m_gameTsfProbeTick < interval) return;
   if (m_gameTsfProbePending && now - m_gameTsfProbeTick < 500) return;
   m_gameTsfProbeTick = now;
   auto* probe =
@@ -375,18 +434,116 @@ void CSrfTip::ScheduleGameTextProbe() {
   if (FAILED(hr) || FAILED(session)) m_gameTsfProbePending = false;
 }
 
+static std::vector<std::wstring> GameFocusWindowClasses(HWND focus, HWND root) {
+  std::vector<std::wstring> classes;
+  for (HWND hwnd = focus; hwnd && classes.size() < 16; hwnd = GetAncestor(hwnd, GA_PARENT)) {
+    auto name = LowerAscii(WindowClassName(hwnd));
+    if (name.empty()) break;
+    classes.push_back(std::move(name));
+    if (hwnd == root) return classes;
+  }
+  return {};
+}
+
+static std::wstring GameChatFieldRegistryPath(std::wstring app) {
+  const auto slash = app.find_last_of(L"\\/");
+  if (slash != std::wstring::npos) app.erase(0, slash + 1);
+  if (app.empty() || app.size() > 128 || app.find_first_of(L"*?:") != std::wstring::npos) return {};
+  return L"Software\\kaixin\\GameChatFields\\" + app;
+}
+
+static std::uint64_t GameFieldRegistryNumber(const std::wstring& path, const wchar_t* name) {
+  std::uint64_t value = 0;
+  DWORD bytes = sizeof(value);
+  if (path.empty() || RegGetValueW(HKEY_CURRENT_USER, path.c_str(), name, RRF_RT_REG_QWORD, nullptr,
+                                   &value, &bytes) != ERROR_SUCCESS)
+    return 0;
+  return value;
+}
+
+static bool GameNativeFieldBounds(HWND focus, HWND root, RECT* bounds) {
+  RECT frame = {};
+  DWORD focusPid = 0, rootPid = 0;
+  GetWindowThreadProcessId(focus, &focusPid);
+  GetWindowThreadProcessId(root, &rootPid);
+  return focus && focus != root && GetAncestor(focus, GA_ROOT) == root && focusPid &&
+         focusPid == rootPid && IsWindowVisible(focus) && IsWindowEnabled(focus) &&
+         GetWindowRect(focus, bounds) && GetWindowRect(root, &frame) &&
+         bounds->left >= frame.left && bounds->top >= frame.top && bounds->right <= frame.right &&
+         bounds->bottom <= frame.bottom && bounds->right - bounds->left >= 60 &&
+         bounds->bottom > bounds->top &&
+         (bounds->bottom - bounds->top) * 2ll < frame.bottom - frame.top;
+}
+
+static std::uint64_t GameNativeFieldSignature(HWND focus, HWND root) {
+  std::uint64_t hash = 14695981039346656037ull;
+  for (int depth = 0; focus && depth < 16; ++depth, focus = GetAncestor(focus, GA_PARENT)) {
+    const auto name = LowerAscii(WindowClassName(focus));
+    if (name.empty() || name.find(L"password") != std::wstring::npos) return 0;
+    const DWORD style = static_cast<DWORD>(GetWindowLongPtrW(focus, GWL_STYLE));
+    if ((name == L"edit" || name.find(L"richedit") == 0) && (style & (ES_READONLY | ES_PASSWORD)))
+      return 0;
+    for (wchar_t ch : name)
+      hash = (hash ^ ch) * 1099511628211ull;
+    hash = (hash ^ (style & ~(WS_VISIBLE | WS_DISABLED | WS_MAXIMIZE | WS_MINIMIZE))) *
+           1099511628211ull;
+    if (focus == root) return hash;
+    hash = (hash ^ static_cast<unsigned>(GetDlgCtrlID(focus))) * 1099511628211ull;
+  }
+  return 0;
+}
+
+void CSrfTip::LearnGameChatField() {
+  const auto path = GameChatFieldRegistryPath(CompatibilityAppName());
+  const std::uint64_t until = GameFieldRegistryNumber(path, L"LearnUntil");
+  if (!until) return;
+  FILETIME timestamp = {};
+  GetSystemTimeAsFileTime(&timestamp);
+  ULARGE_INTEGER clock = {};
+  clock.LowPart = timestamp.dwLowDateTime;
+  clock.HighPart = timestamp.dwHighDateTime;
+  const auto now = clock.QuadPart / 10000000ull - 11644473600ull;
+  if (until < now || until - now > 120) return;
+  TF_STATUS status = {};
+  const HWND focus = GetFocus();
+  RECT bounds = {};
+  if (!m_pFocusContext || FAILED(m_pFocusContext->GetStatus(&status)) ||
+      (status.dwDynamicFlags & TF_SD_READONLY) ||
+      !GameNativeFieldBounds(focus, m_compatibilityHwnd, &bounds)) {
+    ShowGameInputStatus(L"未找到可记录的聊天焦点");
+    return;
+  }
+  const auto signature = GameNativeFieldSignature(focus, m_compatibilityHwnd);
+  if (!signature || RegSetKeyValueW(HKEY_CURRENT_USER, path.c_str(), L"FieldSignature", REG_QWORD,
+                                    &signature, sizeof(signature)) != ERROR_SUCCESS) {
+    ShowGameInputStatus(L"未能保存聊天输入栏特征");
+    return;
+  }
+  RegDeleteKeyValueW(HKEY_CURRENT_USER, path.c_str(), L"LearnUntil");
+  m_gameLearnedNativeSignature = signature;
+  ShowGameInputStatus(L"已记录此游戏的聊天输入栏");
+}
+
 void CSrfTip::RefreshGameChatFocus() {
   const bool game = IsGameHotkeyPassthroughActive();
   const bool allowed = game && EffectiveGameInputMode() != SrfGameInputMode::Passthrough &&
-                       !m_config.privacy.enabled && !m_sensitiveInputActive;
+                       !m_config.privacy.enabled && !m_sensitiveInputActive &&
+                       m_compatibilityHwnd &&
+                       GetAncestor(GetForegroundWindow(), GA_ROOT) == m_compatibilityHwnd;
   if ((m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting) &&
       (m_gameChatOwner != m_compatibilityHwnd ||
        m_gameChatOwnerProcessId != m_compatibilityProcessId || !allowed))
     SetGameChatActive(false);
   m_gameEditableVerified = false;
   m_gameEditableIdentity = 0;
+  m_gameNativeEdit = nullptr;
+  const RECT previousBounds = m_gameEditableBounds;
   m_gameEditableBounds = {};
   if (!allowed) {
+    if (m_gameCandidateFieldWidthDip) {
+      m_gameCandidateFieldWidthDip = 0;
+      InvalidateCandidatePageLayoutCache();
+    }
     m_gameDismissedIdentity = 0;
     m_gameAwaitingUntil = 0;
     return;
@@ -401,7 +558,16 @@ void CSrfTip::RefreshGameChatFocus() {
     m_gameTsfEvidence = {};
     ++m_gameTsfProbeSerial;
     m_gameTsfProbePending = false;
+    m_gameTsfProbeTick = 0;
     m_gameDismissedIdentity = 0;
+    m_gameGeometryFocus = nullptr;
+  }
+  if (m_gameLearningTarget != m_compatibilityHwnd ||
+      m_gameLearningProcessId != m_compatibilityProcessId) {
+    m_gameLearningTarget = m_compatibilityHwnd;
+    m_gameLearningProcessId = m_compatibilityProcessId;
+    m_gameLearnedNativeSignature = GameFieldRegistryNumber(
+        GameChatFieldRegistryPath(CompatibilityAppName()), L"FieldSignature");
   }
   TF_STATUS status = {};
   bool contextFocused = false;
@@ -422,9 +588,12 @@ void CSrfTip::RefreshGameChatFocus() {
                         SUCCEEDED(m_pFocusContext->GetStatus(&status)) &&
                         !(status.dwDynamicFlags & TF_SD_READONLY);
   SrfGameTextSource source = SrfGameTextSource::None;
+  LearnedGameField automationField;
+  bool knownAutomationField = false;
   const bool detecting = EffectiveGameInputMode() == SrfGameInputMode::AutoText ||
                          m_gameChatActive || m_gameChatPhase == SrfGameChatPhase::Awaiting;
   if (detecting && nativeFocusValid && writable) {
+    ScheduleGameTextProbe();
     const auto cls = LowerAscii(WindowClassName(info.hwndFocus));
     const LONG_PTR style = GetWindowLongPtrW(info.hwndFocus, GWL_STYLE);
     if ((cls == L"edit" || cls.find(L"richedit") == 0) && IsWindowVisible(info.hwndFocus) &&
@@ -433,8 +602,8 @@ void CSrfTip::RefreshGameChatFocus() {
       m_gameEditableVerified = true;
       GetWindowRect(info.hwndFocus, &m_gameEditableBounds);
       source = SrfGameTextSource::Native;
+      m_gameNativeEdit = info.hwndFocus;
     } else {
-      ScheduleGameTextProbe();
       const ULONGLONG now = GetTickCount64();
       if (m_gameTsfEvidence.context == reinterpret_cast<std::uintptr_t>(m_pFocusContext) &&
           m_gameTsfEvidence.generation == m_focusGeneration &&
@@ -448,6 +617,29 @@ void CSrfTip::RefreshGameChatFocus() {
         m_gameEditableBounds = m_gameTsfEvidence.bounds;
         source = SrfGameTextSource::Tsf;
       }
+      const bool openedWithNewCaret = (m_gameChatPhase == SrfGameChatPhase::Awaiting ||
+                                       m_gameChatSource == SrfGameTextSource::Geometry) &&
+                                      info.hwndFocus != m_gameOpeningFocus &&
+                                      info.hwndCaret == info.hwndFocus;
+      RECT bounds = {};
+      if (!m_gameEditableVerified && (m_gameLearnedNativeSignature || openedWithNewCaret) &&
+          GameNativeFieldBounds(info.hwndFocus, m_compatibilityHwnd, &bounds)) {
+        const auto signature = GameNativeFieldSignature(info.hwndFocus, m_compatibilityHwnd);
+        const bool learned = signature && signature == m_gameLearnedNativeSignature;
+        const auto checked = GetTickCount64();
+        if (signature && openedWithNewCaret &&
+            (m_gameGeometryFocus != info.hwndFocus || !EqualRect(&m_gameGeometryBounds, &bounds))) {
+          m_gameGeometryFocus = info.hwndFocus;
+          m_gameGeometryBounds = bounds;
+          m_gameGeometrySince = checked;
+        }
+        if (learned || (signature && openedWithNewCaret && checked - m_gameGeometrySince >= 100)) {
+          m_gameEditableVerified = true;
+          m_gameEditableIdentity = reinterpret_cast<std::uintptr_t>(info.hwndFocus);
+          m_gameEditableBounds = bounds;
+          source = learned ? SrfGameTextSource::Learned : SrfGameTextSource::Geometry;
+        }
+      }
       if (!m_gameEditableVerified && EffectiveGameAutoUia()) {
         SrfGameFocusEvidence request = {}, evidence = {};
         request.target = m_compatibilityHwnd;
@@ -455,7 +647,24 @@ void CSrfTip::RefreshGameChatFocus() {
         request.nativeFocus = info.hwndFocus;
         request.context = reinterpret_cast<std::uintptr_t>(m_pFocusContext);
         request.generation = m_focusGeneration;
-        if (SrfPollGameFocusEvidence(request, &evidence) && evidence.editable) {
+        const bool polled = SrfPollGameFocusEvidence(request, &evidence);
+        if (polled && evidence.editable && evidence.needsStability) {
+          automationField = {LowerAscii(CompatibilityAppName()),
+                             GameFocusWindowClasses(info.hwndFocus, request.target),
+                             request.processId, evidence.element};
+          knownAutomationField =
+              !automationField.windowClasses.empty() &&
+              std::any_of(m_gameLearnedFields.begin(), m_gameLearnedFields.end(),
+                          [&automationField](const LearnedGameField& field) {
+                            return field.app == automationField.app &&
+                                   field.processId == automationField.processId &&
+                                   field.windowClasses == automationField.windowClasses &&
+                                   field.element == automationField.element;
+                          });
+        }
+        if (polled && evidence.editable &&
+            SrfGameTextEvidenceReady(evidence.checked, evidence.stableSince,
+                                     evidence.needsStability, knownAutomationField)) {
           m_gameEditableVerified = true;
           m_gameEditableIdentity = evidence.element;
           m_gameEditableBounds = evidence.bounds;
@@ -477,14 +686,44 @@ void CSrfTip::RefreshGameChatFocus() {
   if (!nativeFocusValid ||
       (nativeFocusValid && (!IsWindowVisible(info.hwndFocus) || !IsWindowEnabled(info.hwndFocus))))
     m_gameDismissedIdentity = 0;
+  if (!EqualRect(&m_gameEditableBounds, &previousBounds)) {
+    const LONG width = m_gameEditableBounds.right - m_gameEditableBounds.left;
+    const UINT fieldWidth =
+        width >= 120 ? static_cast<UINT>(std::clamp(
+                           MulDiv(width, 96, DpiForScreenRect(&m_gameEditableBounds)), 260, 4096))
+                     : 0;
+    if (fieldWidth != m_gameCandidateFieldWidthDip) {
+      m_gameCandidateFieldWidthDip = fieldWidth;
+      InvalidateCandidatePageLayoutCache();
+    }
+  }
   if (m_gameChatActive && m_gameChatEditableIdentity &&
       (!m_gameEditableVerified || m_gameEditableIdentity != m_gameChatEditableIdentity)) {
     SetGameChatActive(false);
   }
   if (m_gameEditableIdentity && m_gameEditableIdentity != m_gameDismissedIdentity)
     m_gameDismissedIdentity = 0;
-  if (m_gameChatPhase == SrfGameChatPhase::Awaiting && GetTickCount64() > m_gameAwaitingUntil) {
-    m_gameChatPhase = SrfGameChatPhase::Passive;
+  const bool awaiting = m_gameChatPhase == SrfGameChatPhase::Awaiting;
+  const bool autoMode = EffectiveGameInputMode() == SrfGameInputMode::AutoText;
+  const bool verifiedOpen = (autoMode || awaiting) && m_gameEditableVerified &&
+                            m_gameEditableIdentity != m_gameDismissedIdentity;
+  if (!m_gameChatActive &&
+      (verifiedOpen || EffectiveGameInputMode() == SrfGameInputMode::Chinese)) {
+    m_gameChatSource = verifiedOpen ? source : SrfGameTextSource::AlwaysChinese;
+    SetGameChatActive(true);
+    if (m_gameChatActive && source == SrfGameTextSource::Automation && !knownAutomationField &&
+        !automationField.app.empty() && !automationField.windowClasses.empty()) {
+      constexpr size_t kMaxLearnedFields = 16;
+      if (m_gameLearnedFields.size() == kMaxLearnedFields)
+        m_gameLearnedFields.erase(m_gameLearnedFields.begin());
+      m_gameLearnedFields.push_back(std::move(automationField));
+    }
+    if (m_gameChatActive) return;
+  }
+  const ULONGLONG now = GetTickCount64();
+  if (awaiting && now >= m_gameAwaitingUntil) {
+    const auto attempt = m_gameOpenAttemptAt;
+    SetGameChatActive(false);
     ShowGameInputStatus(L"未确认输入栏，请用中文聊天热键");
     const wchar_t* reason = !nativeFocusValid ? L"no_native_focus"
                             : (!m_pFocusContext || !contextFocused || !contextOwner)
@@ -496,15 +735,10 @@ void CSrfTip::RefreshGameChatFocus() {
     detail += L" app=";
     detail += CompatibilityAppName();
     SrfTsfDiagnosticLog(L"game-chat.open", detail.c_str());
-  }
-  const bool autoMode = EffectiveGameInputMode() == SrfGameInputMode::AutoText;
-  const bool verifiedOpen = (autoMode || m_gameChatPhase == SrfGameChatPhase::Awaiting) &&
-                            m_gameEditableVerified &&
-                            m_gameEditableIdentity != m_gameDismissedIdentity;
-  if (!m_gameChatActive &&
-      (verifiedOpen || EffectiveGameInputMode() == SrfGameInputMode::Chinese)) {
-    m_gameChatSource = verifiedOpen ? source : SrfGameTextSource::AlwaysChinese;
-    SetGameChatActive(true);
+    LogGameChatEvent(L"open_missed", reason, attempt ? now - attempt : 0);
+  } else if (awaiting && m_gameAwaitingHintAt && now >= m_gameAwaitingHintAt) {
+    m_gameAwaitingHintAt = 0;
+    ShowGameInputStatus(L"等待确认聊天输入栏");
   }
 }
 
@@ -515,9 +749,13 @@ void CSrfTip::ObserveGameChatOpen(UINT vk, LPARAM lParam) {
   m_gameChatPhase = SrfGameChatPhase::Awaiting;
   m_gameChatOwner = m_compatibilityHwnd;
   m_gameChatOwnerProcessId = m_compatibilityProcessId;
-  m_gameAwaitingUntil = GetTickCount64() + 1200;
+  const ULONGLONG now = GetTickCount64();
+  m_gameAwaitingUntil = now + 1200;
+  m_gameOpenAttemptAt = now;
+  m_gameOpeningFocus = m_gameLastNativeFocus;
+  m_gameAwaitingHintAt = now + 600;
   m_gameDismissedIdentity = 0;
-  ShowGameInputStatus(L"等待确认聊天输入栏");
+  if (m_deferredTimerHwnd) SetTimer(m_deferredTimerHwnd, kGameChatProbeTimerId, 50, nullptr);
   std::wstring detail = L"phase=awaiting reason=configured_open_key app=";
   detail += CompatibilityAppName();
   SrfTsfDiagnosticLog(L"game-chat.open", detail.c_str());
@@ -534,6 +772,10 @@ bool CSrfTip::ObserveGameChatExit(UINT vk, LPARAM lParam) {
   const bool enter =
       vk == VK_RETURN && SrfGameExitOnEnter(EffectiveGameEnterBehavior(), m_gameEditableVerified);
   const bool modified = HasCtrlOrAltDown() || (GetKeyState(VK_SHIFT) & 0x8000);
+  if (m_gameChatPhase == SrfGameChatPhase::Awaiting && close && !(lParam & 0x40000000)) {
+    SetGameChatActive(false);
+    return true;
+  }
   if (!SrfGameShouldExitChat(IsGameHotkeyPassthroughActive(), m_gameChatActive,
                              !m_reading.empty() ||
                                  m_gameChatPhase == SrfGameChatPhase::Committing ||
@@ -763,6 +1005,7 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
       SyncCompartmentState();
       SyncStatusModel();
       ShowGameInputStatus(L"中文聊天");
+      LearnGameChatField();
       return;
     }
     m_autoGameChatDismissedFocus = m_autoGameChatFocus;
@@ -770,6 +1013,7 @@ void CSrfTip::ToggleManualGameCompat(TfEditCookie ec) {
     m_gameChatSource = SrfGameTextSource::Manual;
     m_gameDismissedIdentity = 0;
     SetGameChatActive(!m_gameChatActive);
+    if (m_gameChatActive) LearnGameChatField();
     UpdatePreservedKeysForHotkeyScope();
     if (m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
       ShowNotification(SrfNotificationKind::AppOptions,
@@ -1569,22 +1813,30 @@ bool CSrfTip::ShouldUseExternalCandidateOverlay() const {
                                                   ShouldHideUiForCompatibility());
 }
 
-SrfCommitTransport CSrfTip::EffectiveCommitTransport() const {
-  SrfCommitTransport requested = m_config.compatibility.commitTransport;
-  bool appGameProfile = false;
+SrfCommitTransport CSrfTip::RequestedCommitTransport() const {
   const SrfAppOptions* options = FindAppOptions(m_config, CompatibilityAppName());
-  if (options && options->hasCommitTransport) {
-    requested = options->commitTransport;
-  }
-  if (options && options->hasGameProfile && options->gameCompactProfile) {
-    appGameProfile = true;
-  }
-  if (requested == SrfCommitTransport::Auto) {
-    // An explicit tested per-game transport overrides Auto above. Do not
-    // guess whether a game accepted injected text or replay it via another path.
-    return SrfCommitTransport::Tsf;
-  }
-  return requested;
+  return options && options->hasCommitTransport ? options->commitTransport
+                                                : m_config.compatibility.commitTransport;
+}
+
+SrfCommitTransport CSrfTip::EffectiveCommitTransport() const {
+  const auto requested = RequestedCommitTransport();
+  return requested == SrfCommitTransport::Auto ? SrfCommitTransport::Tsf : requested;
+}
+
+bool CSrfTip::CanUseNativeGameEdit(ITfContext* context) const {
+  if (!context || !m_gameChatActive || m_config.privacy.enabled || m_sensitiveInputActive ||
+      !m_gameNativeEdit || GetFocus() != m_gameNativeEdit ||
+      GetWindowThreadProcessId(m_gameNativeEdit, nullptr) != GetCurrentThreadId() ||
+      RequestedCommitTransport() != SrfCommitTransport::Auto ||
+      m_gameTsfEvidence.context != reinterpret_cast<std::uintptr_t>(context) ||
+      m_gameTsfEvidence.nativeFocus != m_gameNativeEdit ||
+      m_gameTsfEvidence.generation != m_focusGeneration ||
+      !SrfGameFocusEvidenceFresh(m_gameTsfEvidence.checked, GetTickCount64()) ||
+      !m_gameTsfEvidence.insertProbePerformed || m_gameTsfEvidence.insertAtSelectionAvailable)
+    return false;
+  return IsWindowEnabled(m_gameNativeEdit) && IsWindowVisible(m_gameNativeEdit) &&
+         !(GetWindowLongPtrW(m_gameNativeEdit, GWL_STYLE) & (ES_READONLY | ES_PASSWORD));
 }
 
 const wchar_t* CSrfTip::EffectiveCommitTransportName() const {

@@ -24,6 +24,7 @@ Colors use `#RRGGBB`.
 | `border`, `divider` | Outer border and row divider. |
 | `item_bg`, `item_border` | Normal candidate row/card. |
 | `hover_bg`, `hover_border` | Mouse hover candidate row/card. |
+| `hover_text` | Preferred text color for a hovered row. Text contrast follows the actual row fill. |
 | `selected_bg`, `selected_border` | Selected candidate row/card. |
 | `pressed_bg`, `pressed_border` | Mouse pressed candidate row/card. |
 | `text`, `muted_text` | Normal candidate text and metadata text. |

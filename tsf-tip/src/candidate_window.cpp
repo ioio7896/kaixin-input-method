@@ -9,6 +9,7 @@ using namespace srf_candidate_window_detail;
 #include <cstdint>
 #include <cwctype>
 #include <filesystem>
+#include <list>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -62,6 +63,9 @@ void CandidateItemPaintCache::Release() {
   w = 0;
   h = 0;
   itemIndex = SIZE_MAX;
+  generation = 0;
+  contentRevision = 0;
+  sourceRect = {};
   selected = false;
   hot = false;
   pressed = false;
@@ -336,23 +340,20 @@ struct GdiplusRuntime {
   bool ready = false;
 };
 
-std::mutex g_candidateRenderingLifetimeMutex;
-size_t g_candidateRenderingUsers = 0;
+// Release the Direct2D resources on their owner thread before the TIP unloads.
+thread_local size_t g_candidateRenderingUsers = 0;
 
 void AcquireCandidateWindowRendering() {
-  std::lock_guard<std::mutex> lock(g_candidateRenderingLifetimeMutex);
   ++g_candidateRenderingUsers;
 }
 
 void ReleaseCandidateWindowRendering() {
-  std::lock_guard<std::mutex> lock(g_candidateRenderingLifetimeMutex);
   if (g_candidateRenderingUsers != 0 && --g_candidateRenderingUsers == 0) {
     ShutdownDirectTextRenderer();
   }
 }
 
 void ShutdownCandidateWindowRendering() {
-  std::lock_guard<std::mutex> lock(g_candidateRenderingLifetimeMutex);
   if (g_candidateRenderingUsers == 0) ShutdownDirectTextRenderer();
 }
 
@@ -595,33 +596,30 @@ bool PrimeCandidateRenderResources(HFONT titleFont, HFONT bodyFont, HFONT bodySt
   const bool measuresOk =
       MeasureSingleLine(screenDc, titleFont, L"1 / 9").cx > 0 &&
       MeasureSingleLine(screenDc, bodyFont, L"\u5f00\u5fc3\u8f93\u5165\u6cd5").cx > 0 &&
+      MeasureSingleLine(screenDc, bodyStrongFont, L"\u5f00\u5fc3\u8f93\u5165\u6cd5").cx > 0 &&
       MeasureSingleLine(screenDc, metaFont, L"1 / 1").cx > 0 &&
       MeasureSingleLine(screenDc, labelFont, L"ni").cx > 0 &&
       MeasureSingleLine(screenDc, chipFont, L"ABC").cx > 0;
 
-  bool drawOk = true;
-  if (memDc && bitmap) {
-    RECT rc = {0, 0, 64, 64};
-    drawOk = GetDirectTextRenderer().DrawTextBlock(memDc, bodyStrongFont, RGB(0, 0, 0),
-                                                   L"\u5f00\u5fc3\u8f93\u5165\u6cd5", rc,
-                                                   DT_LEFT | DT_TOP | DT_SINGLELINE);
-  }
+  const RECT bounds = {0, 0, 64, 64};
+  const bool targetOk =
+      !oldBitmap || GetDirectTextRenderer().PrimeRenderTarget(memDc, bounds, DpiFromHdc(memDc));
 
   release();
-  return measuresOk && drawOk;
+  return measuresOk && targetOk;
 }
 
 #include "candidate_window_parts/candidate_window_theme.ipp"
 
 #include "candidate_window_parts/candidate_window_layout.ipp"
 
-int CandidateShadowMarginForStyle(const SrfUIStyle& style, UINT dpi) {
-  const CandidateColors colors = ResolveColors(style);
+int CCandidateWindow::ShadowMargin() const {
+  const CandidateColors& colors = *m_colors;
   if (!colors.shadowEnabled || colors.shadowOpacity <= 0.001f || colors.shadowSize <= 0 ||
-      style.themeMode == SrfThemeMode::HighContrast) {
+      m_style.themeMode == SrfThemeMode::HighContrast || m_systemHighContrast) {
     return 0;
   }
-  return ScaleForDpi(std::clamp(colors.shadowSize, 0, 24), dpi);
+  return ScaleForDpi(std::clamp(colors.shadowSize, 0, 24), m_dpi);
 }
 
 int ResolveFontWeight(int value, int fallback, int minWeight = 300, int maxWeight = 800) {
@@ -698,6 +696,65 @@ void DrawTextBlockWithOutline(HDC hdc, HFONT font, COLORREF color, COLORREF outl
   if (oldFont) SelectObject(hdc, oldFont);
 }
 
+// Bounded per-thread GDI handles. Restore selected objects before another lookup.
+struct GdiCache {
+  struct BrushSlot {
+    COLORREF color = CLR_INVALID;
+    HBRUSH handle = nullptr;
+  };
+  struct PenSlot {
+    COLORREF color = CLR_INVALID;
+    int width = 0;
+    HPEN handle = nullptr;
+  };
+  std::array<BrushSlot, 16> brushes = {};
+  std::array<PenSlot, 16> pens = {};
+  size_t nextBrush = 0;
+  size_t nextPen = 0;
+
+  ~GdiCache() { Reset(); }
+
+  HBRUSH GetBrush(COLORREF color) {
+    for (const auto& slot : brushes) {
+      if (slot.color == color && slot.handle) return slot.handle;
+    }
+    auto& slot = brushes[nextBrush++ % brushes.size()];
+    DeleteGdiObject(slot.handle);
+    slot = {color, CreateSolidBrush(color)};
+    return slot.handle;
+  }
+
+  HPEN GetPen(COLORREF color, int width) {
+    width = std::max(1, width);
+    for (const auto& slot : pens) {
+      if (slot.color == color && slot.width == width && slot.handle) return slot.handle;
+    }
+    auto& slot = pens[nextPen++ % pens.size()];
+    DeleteGdiObject(slot.handle);
+    slot = {color, width, CreatePen(PS_SOLID, width, color)};
+    return slot.handle;
+  }
+
+  void Reset() {
+    for (auto& slot : brushes)
+      DeleteGdiObject(slot.handle);
+    for (auto& slot : pens)
+      DeleteGdiObject(slot.handle);
+    brushes = {};
+    pens = {};
+    nextBrush = nextPen = 0;
+  }
+};
+
+GdiCache& GetGdiCache() {
+  thread_local GdiCache cache;
+  return cache;
+}
+
+void srf_candidate_window_detail::ResetGdiCache() {
+  GetGdiCache().Reset();
+}
+
 void FillBorderedRoundRect(HDC hdc, const RECT& rect, COLORREF fill, COLORREF border, int radius,
                            int strokeWidth) {
   HBRUSH brush = CreateSolidBrush(fill);
@@ -712,9 +769,7 @@ void FillBorderedRoundRect(HDC hdc, const RECT& rect, COLORREF fill, COLORREF bo
 }
 
 void FillSolidRect(HDC hdc, const RECT& rect, COLORREF color) {
-  HBRUSH brush = CreateSolidBrush(color);
-  FillRect(hdc, &rect, brush);
-  DeleteGdiObject(brush);
+  FillRect(hdc, &rect, GetGdiCache().GetBrush(color));
 }
 
 void FillGradientRect(HDC hdc, const RECT& rect, COLORREF colorTop, COLORREF colorBottom) {
@@ -755,58 +810,11 @@ void DrawDivider(HDC hdc, int y, int left, int right, const CandidateColors& col
                  int strokeWidth) {
   if (colors.divider == CLR_INVALID) return;
   const COLORREF divColor = AlphaBlendColor(colors.divider, colors.windowBg, colors.dividerOpacity);
-  HPEN pen = CreatePen(PS_SOLID, std::max(1, strokeWidth), divColor);
+  HPEN pen = GetGdiCache().GetPen(divColor, strokeWidth);
   HGDIOBJ oldPen = SelectObject(hdc, pen);
   MoveToEx(hdc, left, y, nullptr);
   LineTo(hdc, right, y);
-  SelectObject(hdc, oldPen);
-  DeleteGdiObject(pen);
-}
-
-// GDI brush/pen cache for high-frequency paint operations.
-struct GdiCache {
-  COLORREF brushColor = CLR_INVALID;
-  HBRUSH brush = nullptr;
-  COLORREF penColor = CLR_INVALID;
-  int penWidth = 0;
-  HPEN pen = nullptr;
-
-  HBRUSH GetBrush(COLORREF color) {
-    if (brush && brushColor == color) return brush;
-    DeleteGdiObject(brush);
-    brush = CreateSolidBrush(color);
-    brushColor = color;
-    return brush;
-  }
-
-  HPEN GetPen(COLORREF color, int width) {
-    width = std::max(1, width);
-    if (pen && penColor == color && penWidth == width) return pen;
-    DeleteGdiObject(pen);
-    pen = CreatePen(PS_SOLID, width, color);
-    penColor = color;
-    penWidth = width;
-    return pen;
-  }
-
-  void Reset() {
-    DeleteGdiObject(brush);
-    DeleteGdiObject(pen);
-    brush = nullptr;
-    pen = nullptr;
-    brushColor = CLR_INVALID;
-    penColor = CLR_INVALID;
-    penWidth = 0;
-  }
-};
-
-GdiCache& GetGdiCache() {
-  static GdiCache cache;
-  return cache;
-}
-
-void srf_candidate_window_detail::ResetGdiCache() {
-  GetGdiCache().Reset();
+  if (oldPen) SelectObject(hdc, oldPen);
 }
 
 double SignedDistanceToRoundedRect(double x, double y, double left, double top, double right,
@@ -924,7 +932,7 @@ struct SoftShadowCache {
 };
 
 SoftShadowCache& GetSoftShadowCache() {
-  static SoftShadowCache cache;
+  thread_local SoftShadowCache cache;
   return cache;
 }
 
@@ -1008,11 +1016,11 @@ bool CandidateWindowPaintStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
          a.skinDivider == b.skinDivider && a.skinText == b.skinText &&
          a.skinMutedText == b.skinMutedText && a.skinBadgeBg == b.skinBadgeBg &&
          a.skinBadgeBorder == b.skinBadgeBorder && a.skinBadgeText == b.skinBadgeText &&
-         a.skinHoverBg == b.skinHoverBg && a.skinHoverBorder == b.skinHoverBorder &&
-         a.skinItemBg == b.skinItemBg && a.skinItemBorder == b.skinItemBorder &&
-         a.skinSelectedBg == b.skinSelectedBg && a.skinSelectedBorder == b.skinSelectedBorder &&
-         a.skinPressedBg == b.skinPressedBg && a.skinPressedBorder == b.skinPressedBorder &&
-         a.skinSelectedText == b.skinSelectedText &&
+         a.skinHoverBg == b.skinHoverBg && a.skinHoverText == b.skinHoverText &&
+         a.skinHoverBorder == b.skinHoverBorder && a.skinItemBg == b.skinItemBg &&
+         a.skinItemBorder == b.skinItemBorder && a.skinSelectedBg == b.skinSelectedBg &&
+         a.skinSelectedBorder == b.skinSelectedBorder && a.skinPressedBg == b.skinPressedBg &&
+         a.skinPressedBorder == b.skinPressedBorder && a.skinSelectedText == b.skinSelectedText &&
          a.skinSelectedMutedText == b.skinSelectedMutedText && a.skinChipBg == b.skinChipBg &&
          a.skinChipBorder == b.skinChipBorder && a.skinChipText == b.skinChipText &&
          a.skinChipActiveBg == b.skinChipActiveBg &&
@@ -1053,6 +1061,7 @@ bool CandidateWindowStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
          a.candidateHorizontal == b.candidateHorizontal &&
          a.candidatePageSize == b.candidatePageSize &&
          a.candidateHorizontalCount == b.candidateHorizontalCount &&
+         a.candidateFieldWidthDip == b.candidateFieldWidthDip &&
          a.candidateHorizontalCompact == b.candidateHorizontalCompact &&
          a.showCandidateReading == b.showCandidateReading &&
          a.showCandidateScore == b.showCandidateScore &&
@@ -1072,10 +1081,11 @@ bool CandidateWindowStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) {
          a.skinText == b.skinText && a.skinMutedText == b.skinMutedText &&
          a.skinBadgeBg == b.skinBadgeBg && a.skinBadgeBorder == b.skinBadgeBorder &&
          a.skinBadgeText == b.skinBadgeText && a.skinHoverBg == b.skinHoverBg &&
-         a.skinHoverBorder == b.skinHoverBorder && a.skinItemBg == b.skinItemBg &&
-         a.skinItemBorder == b.skinItemBorder && a.skinSelectedBg == b.skinSelectedBg &&
-         a.skinSelectedBorder == b.skinSelectedBorder && a.skinPressedBg == b.skinPressedBg &&
-         a.skinPressedBorder == b.skinPressedBorder && a.skinSelectedText == b.skinSelectedText &&
+         a.skinHoverText == b.skinHoverText && a.skinHoverBorder == b.skinHoverBorder &&
+         a.skinItemBg == b.skinItemBg && a.skinItemBorder == b.skinItemBorder &&
+         a.skinSelectedBg == b.skinSelectedBg && a.skinSelectedBorder == b.skinSelectedBorder &&
+         a.skinPressedBg == b.skinPressedBg && a.skinPressedBorder == b.skinPressedBorder &&
+         a.skinSelectedText == b.skinSelectedText &&
          a.skinSelectedMutedText == b.skinSelectedMutedText && a.skinChipBg == b.skinChipBg &&
          a.skinChipBorder == b.skinChipBorder && a.skinChipText == b.skinChipText &&
          a.skinChipActiveBg == b.skinChipActiveBg &&
@@ -1124,6 +1134,7 @@ bool CandidateWindowLayoutStyleEquals(const SrfUIStyle& a, const SrfUIStyle& b) 
          a.candidateHorizontal == b.candidateHorizontal &&
          a.candidatePageSize == b.candidatePageSize &&
          a.candidateHorizontalCount == b.candidateHorizontalCount &&
+         a.candidateFieldWidthDip == b.candidateFieldWidthDip &&
          a.candidateHorizontalCompact == b.candidateHorizontalCompact &&
          a.showCandidateReading == b.showCandidateReading &&
          a.showCandidateScore == b.showCandidateScore &&
@@ -1161,16 +1172,11 @@ UINT DpiForScreenRect(const RECT* rect) {
   if (!rect) return systemDpi();
   HMONITOR mon = MonitorFromRect(rect, MONITOR_DEFAULTTONEAREST);
   using GetDpiForMonitorFn = HRESULT(WINAPI*)(HMONITOR, int, UINT*, UINT*);
-  static GetDpiForMonitorFn pGetDpiForMonitor = nullptr;
-  static bool resolved = false;
-  if (!resolved) {
-    resolved = true;
+  static const auto pGetDpiForMonitor = []() -> GetDpiForMonitorFn {
     HMODULE shcore = LoadLibraryW(L"shcore.dll");
-    if (shcore) {
-      pGetDpiForMonitor =
-          reinterpret_cast<GetDpiForMonitorFn>(GetProcAddress(shcore, "GetDpiForMonitor"));
-    }
-  }
+    return shcore ? reinterpret_cast<GetDpiForMonitorFn>(GetProcAddress(shcore, "GetDpiForMonitor"))
+                  : nullptr;
+  }();
   UINT dpiX = 0, dpiY = 0;
   if (pGetDpiForMonitor && mon &&
       SUCCEEDED(pGetDpiForMonitor(mon, 0 /* MDT_EFFECTIVE_DPI */, &dpiX, &dpiY)) && dpiX != 0) {
@@ -1225,13 +1231,40 @@ CandidatePageLayoutMetrics BuildCandidatePageLayoutMetrics(const SrfUIStyle& sty
   return metrics;
 }
 
-CCandidateWindow::CCandidateWindow() {
+CCandidateWindow::CCandidateWindow() : m_colors(std::make_unique<CandidateColors>()) {
   AcquireCandidateWindowRendering();
+  RefreshSystemAppearance();
 }
 
 CCandidateWindow::~CCandidateWindow() {
   Destroy();
   ReleaseCandidateWindowRendering();
+}
+
+void CCandidateWindow::RefreshSystemAppearance() {
+  BOOL animations = TRUE;
+  if (!SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &animations, 0)) animations = TRUE;
+  m_systemAnimations = animations != FALSE;
+  HIGHCONTRASTW contrast = {sizeof(contrast)};
+  m_systemHighContrast =
+      SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(contrast), &contrast, 0) &&
+      (contrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+  DWORD light = 1;
+  DWORD bytes = sizeof(light);
+  RegGetValueW(HKEY_CURRENT_USER,
+               L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+               L"AppsUseLightTheme", RRF_RT_REG_DWORD, nullptr, &light, &bytes);
+  m_systemTheme = m_systemHighContrast ? SrfThemeMode::HighContrast
+                                       : (light ? SrfThemeMode::Light : SrfThemeMode::Dark);
+  *m_colors = ResolveColors(m_style, m_systemTheme);
+  ++m_paintGeneration;
+  m_staticPaintDirty = true;
+  m_fullPaintDirty = true;
+  if (m_hwnd) {
+    if (!MotionEnabled()) CancelAnimations(true);
+    UpdateShadowWindow();
+    InvalidateRect(m_hwnd, nullptr, FALSE);
+  }
 }
 
 void CCandidateWindow::SetEvents(ICandidateWindowEvents* events) {
@@ -1292,6 +1325,8 @@ void CCandidateWindow::SetStyle(const SrfUIStyle& style) {
   const bool fontChanged = !CandidateWindowResourceStyleEquals(m_style, style);
   const bool paintChanged = !CandidateWindowPaintStyleEquals(m_style, style);
   m_style = style;
+  *m_colors = ResolveColors(m_style, m_systemTheme);
+  ++m_paintGeneration;
   m_pendingStyleUpdate = true;
   m_pendingLayoutStyleUpdate = layoutChanged;
   if (!m_style.candidateRightClick && m_pinMenuVisible) {
@@ -1364,6 +1399,7 @@ void CCandidateWindow::PrepareResources() {
 }
 
 bool CCandidateWindow::PrimeRenderResources() {
+  GetDirectTextRenderer().ConfigureCustomFont(m_customFontPath, m_customFontFace);
   return PrimeCandidateRenderResources(m_titleFont, m_bodyFont, m_bodyStrongFont, m_metaFont,
                                        m_labelFont, m_chipFont);
 }
@@ -1436,10 +1472,10 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
     m_layoutDirty = true;
   }
 
-  if (!selectionChangesClipboardLayout && !m_layoutDirty && m_hasAnchorRect && m_title == title &&
-      m_items == pageItems && m_comments == nextComments && m_labels == nextLabels &&
-      m_pinnedItems == nextPinned && m_clipboardItems == nextClipboard && m_modeTags == modeTags &&
-      m_pageIndex == nextPageIndex && m_totalPages == nextTotalPages &&
+  if (wasVisible && !m_needsMeasure && !selectionChangesClipboardLayout && !m_layoutDirty &&
+      m_hasAnchorRect && m_title == title && m_items == pageItems && m_comments == nextComments &&
+      m_labels == nextLabels && m_pinnedItems == nextPinned && m_clipboardItems == nextClipboard &&
+      m_modeTags == modeTags && m_pageIndex == nextPageIndex && m_totalPages == nextTotalPages &&
       m_interactive == interactive && m_pendingVisual == pendingVisual &&
       EqualRect(&m_anchorRect, &anchorRect) && m_dpi == nextDpi &&
       m_lastLayoutHorizontal == m_style.candidateHorizontal &&
@@ -1574,7 +1610,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
     ReleaseItemPaintCaches();
   } else if (itemsChanged || commentsChanged || labelsChanged || clipboardItemsChanged) {
     for (size_t index : changedItemIndices) {
-      ReleaseItemPaintCacheAt(index);
+      InvalidateItemPaintCacheAt(index);
     }
   }
   m_title = title;
@@ -1607,7 +1643,7 @@ void CCandidateWindow::Show(const std::wstring& title, const std::vector<std::ws
   }
 
   const RECT work = PlacementAreaForAnchor(&anchorRect, m_fullscreenOverlayPlacement);
-  const int screenInset = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+  const int screenInset = std::max(Scale(10), ShadowMargin());
   const int maxWidth =
       std::max(Scale(260), static_cast<int>((work.right - work.left) - screenInset * 2));
   m_measuredClientSize = MeasureClientSize(maxWidth, &m_itemRects);
@@ -1813,6 +1849,7 @@ void CCandidateWindow::Destroy() {
 bool CCandidateWindow::EnsureWindow() {
   if (m_hwnd) return true;
   if (!EnsureWindowClass()) return false;
+  RefreshSystemAppearance();
   const DWORD exStyle = WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED |
                         (m_gameOverlay ? WS_EX_TRANSPARENT : 0) |
                         (m_style.candidateTopmost ? WS_EX_TOPMOST : 0);
@@ -1855,14 +1892,9 @@ bool CCandidateWindow::EnsureShadowWindow() {
 
 void CCandidateWindow::UpdateShadowWindow() {
   if (!m_hwnd) return;
-  const CandidateColors colors = ResolveColors(m_style);
-  HIGHCONTRASTW highContrast = {};
-  highContrast.cbSize = sizeof(highContrast);
-  const bool systemHighContrast =
-      SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0) &&
-      (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+  const CandidateColors& colors = *m_colors;
   if (!colors.shadowEnabled || colors.shadowSize <= 0 || colors.shadowOpacity <= 0.001f ||
-      m_style.themeMode == SrfThemeMode::HighContrast || systemHighContrast) {
+      m_style.themeMode == SrfThemeMode::HighContrast || m_systemHighContrast) {
     HideShadowWindow();
     return;
   }
@@ -2021,7 +2053,6 @@ void CCandidateWindow::RefreshFonts() {
       m_chipFont = makeFont(chipPt, chipWeight);
     }
   }
-  GetDirectTextRenderer().ConfigureCustomFont(m_customFontPath, m_customFontFace);
   m_lastFontDpi = m_dpi;
   m_lastFontFace = m_customFontFace;
   m_lastFontSize = bodyPt;
@@ -2049,7 +2080,6 @@ void CCandidateWindow::DestroyFonts() {
   m_chipFont = nullptr;
   m_customFontPath.clear();
   m_customFontFace.clear();
-  GetDirectTextRenderer().ConfigureCustomFont({}, {});
   m_measuredClientSize = {};
   m_staticPaintDirty = true;
   m_fontsDirty = true;
@@ -2093,6 +2123,9 @@ int CCandidateWindow::Scale(int value) const {
 }
 
 SIZE CCandidateWindow::MeasureClientSize(int maxWidth, std::vector<RECT>* outRects) {
+  GetDirectTextRenderer().ConfigureCustomFont(m_customFontPath, m_customFontFace);
+  if (m_style.candidateHorizontal && m_style.candidateFieldWidthDip)
+    maxWidth = std::min(maxWidth, Scale(static_cast<int>(m_style.candidateFieldWidthDip)));
   const LayoutSpec spec = ResolveLayoutSpec(m_style);
   const int outerPadX = Scale(spec.outerPadX);
   const int outerPadY = Scale(spec.outerPadY);
@@ -2429,7 +2462,7 @@ RECT CCandidateWindow::CalculateWindowRect(const RECT& anchorRect, SIZE content)
   const RECT work = PlacementAreaForAnchor(&anchorRect, m_fullscreenOverlayPlacement);
   const RECT pane = m_inputPane.Location(m_hwnd);
   const auto avoidPane = [&](RECT rect) { return SrfAvoidInputPane(rect, pane, work, Scale(6)); };
-  const int screenMargin = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+  const int screenMargin = std::max(Scale(10), ShadowMargin());
   const int gap = Scale(6);
   if (content.cx <= 0 || content.cy <= 0) {
     const int maxWidth =
@@ -2567,13 +2600,11 @@ void CCandidateWindow::ReleaseItemPaintCaches() {
     }
   }
   m_itemPaintCaches.clear();
+  m_itemPaintRevisions.clear();
 }
 
-void CCandidateWindow::ReleaseItemPaintCacheAt(size_t index) {
-  if (index >= m_itemPaintCaches.size()) return;
-  for (auto& cache : m_itemPaintCaches[index]) {
-    cache.Release();
-  }
+void CCandidateWindow::InvalidateItemPaintCacheAt(size_t index) {
+  if (index < m_itemPaintRevisions.size()) ++m_itemPaintRevisions[index];
 }
 
 bool CCandidateWindow::EnsurePaintBuffer(HDC hdc, int w, int h) {
@@ -2615,7 +2646,409 @@ bool CCandidateWindow::EnsureStaticPaintBuffer(HDC hdc, int w, int h) {
   return true;
 }
 
+void CCandidateWindow::PaintStaticLayer(HDC targetDc, const RECT& client, bool clipboardMode) {
+  const bool isHorizontal = m_style.candidateHorizontal;
+  const CandidateColors& colors = *m_colors;
+  const auto spec = ResolveLayoutSpec(m_style);
+  const int strokeWidth = StrokeWidthForDpi(m_dpi);
+  const int radius = SnapGdiRadiusForDpi(
+      Scale(m_style.skinLoaded && m_style.skinCornerRadius >= 0 ? m_style.skinCornerRadius
+                                                                : spec.cornerRadius),
+      m_dpi);
+  const int headerRadius =
+      SnapGdiRadiusForDpi(Scale(m_style.skinLoaded && m_style.skinHeaderCornerRadius >= 0
+                                    ? m_style.skinHeaderCornerRadius
+                                    : spec.itemRadius),
+                          m_dpi);
+  const int badgeRadius = SnapGdiRadiusForDpi(
+      Scale(m_style.skinLoaded && m_style.skinBadgeCornerRadius >= 0 ? m_style.skinBadgeCornerRadius
+                                                                     : spec.badgeRadius),
+      m_dpi);
+
+  const int outerPadX = Scale(spec.outerPadX);
+  const int outerPadY = Scale(spec.outerPadY);
+  const int headerPadX = Scale(spec.headerPadX);
+  const int headerPadY = Scale(spec.headerPadY);
+  const int compact1 = isHorizontal ? HorizontalCompactDeltaForDpi(m_style, m_dpi) : 0;
+  const int compact2 = isHorizontal ? std::max(Scale(2), compact1 * 2) : 0;
+  const int hOuterPadX = isHorizontal ? std::max(0, outerPadX - compact1) : outerPadX;
+  const int hOuterPadY = isHorizontal ? std::max(0, outerPadY - compact1) : outerPadY;
+  const int hBadgeHeight = isHorizontal ? std::max(Scale(16), Scale(22) - compact2) : Scale(22);
+  const bool showHorizontalPageBadge = isHorizontal && m_totalPages > 1;
+
+  FillBackgroundClippedToRoundRect(targetDc, client, colors, radius);
+  const COLORREF borderColor =
+      AlphaBlendColor(colors.border, colors.windowBg, colors.borderOpacity);
+  DrawRoundRectBorderCached(targetDc, client, borderColor, radius, strokeWidth);
+
+  if (!isHorizontal) {
+    const bool showPageBadge = m_totalPages > 1;
+    std::wstring pageText;
+    int pageBadgeWidth = 0;
+    if (showPageBadge) {
+      pageText = CandidatePageIndicatorText(m_pageIndex, m_totalPages);
+      const SIZE pageTextSize = MeasureSingleLineCached(targetDc, m_metaFont, pageText);
+      pageBadgeWidth = std::max(Scale(kHorizontalPageBadgeMinWidth),
+                                static_cast<int>(pageTextSize.cx) + Scale(12));
+    }
+    const SIZE titleSize = MeasureSingleLineCached(targetDc, m_titleFont, m_title);
+    const int headerHeight =
+        std::max(Scale(m_style.candidateDensity == SrfCandidateDensity::Compact ? 26 : 30),
+                 static_cast<int>(titleSize.cy) + headerPadY * 2);
+
+    RECT headerRect = {outerPadX, outerPadY, client.right - outerPadX, outerPadY + headerHeight};
+    FillHeaderBackgroundClippedToRoundRect(targetDc, headerRect, colors, headerRadius);
+    if (m_style.themeMode == SrfThemeMode::HighContrast)
+      DrawRoundRectBorderCached(targetDc, headerRect, borderColor, headerRadius, strokeWidth);
+
+    RECT pageRect = {};
+    if (showPageBadge) {
+      pageRect = {headerRect.right - headerPadX - pageBadgeWidth, headerRect.top + headerPadY / 2,
+                  headerRect.right - headerPadX, headerRect.bottom - headerPadY / 2};
+      FillBorderedRoundRectCached(targetDc, pageRect, colors.badgeBg, colors.badgeBorder,
+                                  badgeRadius, strokeWidth);
+      DrawTextBlock(targetDc, m_metaFont, colors.badgeText, pageText, pageRect,
+                    DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    }
+
+    const int modeChipGap = Scale(4);
+    const int modeChipPadX = Scale(m_style.skinLoaded ? 6 : 7);
+    const int modeChipHeight = std::max<int>(
+        Scale(17), static_cast<int>(headerRect.bottom - headerRect.top - headerPadY * 2));
+    int chipRightBound = showPageBadge ? pageRect.left - Scale(8) : headerRect.right - headerPadX;
+    int modeChipX = chipRightBound;
+    for (size_t idx = m_modeTags.size(); idx > 0; --idx) {
+      const std::wstring& tag = m_modeTags[idx - 1];
+      if (tag.empty()) continue;
+      const SIZE tagSize = MeasureSingleLine(targetDc, m_chipFont, tag, m_dpi);
+      const int chipWidth = std::max(Scale(30), static_cast<int>(tagSize.cx) + modeChipPadX * 2);
+      modeChipX -= chipWidth;
+      RECT chipRect = {modeChipX,
+                       headerRect.top + (headerRect.bottom - headerRect.top - modeChipHeight) / 2,
+                       modeChipX + chipWidth,
+                       headerRect.top + (headerRect.bottom - headerRect.top - modeChipHeight) / 2 +
+                           modeChipHeight};
+      const bool active = tag == L"\u4e2d" || tag == L"\u5168\u89d2" || tag == L"\u4e2d\u6807" ||
+                          tag == L"\u53cc\u62fc" || tag == L"\u6a21\u7cca";
+      const COLORREF chipFill = active ? colors.chipActiveBg : colors.chipBg;
+      const COLORREF chipBorder = active ? colors.chipActiveBorder : colors.chipBorder;
+      const COLORREF chipText = active ? colors.chipActiveText : colors.chipText;
+      FillBorderedRoundRectCached(targetDc, chipRect, chipFill, chipBorder, badgeRadius,
+                                  strokeWidth);
+      DrawTextBlock(targetDc, m_chipFont, chipText, tag, chipRect,
+                    DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+      modeChipX -= modeChipGap;
+    }
+
+    RECT titleRect = {
+        headerRect.left + headerPadX, headerRect.top + headerPadY,
+        std::max<int>(static_cast<int>(headerRect.left + headerPadX), modeChipX - Scale(6)),
+        headerRect.bottom - headerPadY};
+    const COLORREF headerBackgrounds[] = {
+        colors.headerBg, colors.headerBgTo == CLR_INVALID ? colors.headerBg : colors.headerBgTo};
+    const COLORREF headerText = EnsureReadableTextColor(colors.text, headerBackgrounds, 2, 4.5);
+    DrawTextBlock(targetDc, m_titleFont, headerText, m_title, titleRect,
+                  DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+
+    if (m_style.candidateLayoutVariant != SrfCandidateLayoutVariant::Card) {
+      for (size_t i = 0; i + 1 < m_itemRects.size(); ++i) {
+        const int divY = (m_itemRects[i].bottom + m_itemRects[i + 1].top) / 2;
+        DrawDivider(targetDc, divY, outerPadX + Scale(8), client.right - outerPadX - Scale(8),
+                    colors, strokeWidth);
+      }
+    }
+    if (clipboardMode) {
+      for (size_t i = 0; i + 1 < m_itemRects.size() && i + 1 < m_pinnedItems.size(); ++i) {
+        if (!m_pinnedItems[i] || m_pinnedItems[i + 1]) continue;
+        const int centerY = (m_itemRects[i].bottom + m_itemRects[i + 1].top) / 2;
+        RECT recentRect = {outerPadX + Scale(10), centerY - Scale(8), outerPadX + Scale(48),
+                           centerY + Scale(8)};
+        DrawTextBlock(targetDc, m_metaFont, colors.mutedText, L"\u6700\u8fd1", recentRect,
+                      DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+        DrawDivider(targetDc, centerY, recentRect.right + Scale(6),
+                    client.right - outerPadX - Scale(8), colors, strokeWidth);
+        break;
+      }
+
+      const int footerHeight = Scale(28);
+      RECT footerRect = {outerPadX + Scale(8), client.bottom - outerPadY - footerHeight,
+                         client.right - outerPadX - Scale(8), client.bottom - outerPadY};
+      DrawDivider(targetDc, footerRect.top - Scale(4), footerRect.left, footerRect.right, colors,
+                  strokeWidth);
+      DrawTextBlock(targetDc, m_metaFont, colors.mutedText,
+                    L"\u2191\u2193 \u9009\u62e9   PgUp/PgDn \u7ffb\u9875   Enter \u7c98\u8d34   "
+                    L"Esc \u5173\u95ed",
+                    footerRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    }
+  } else {
+    const std::wstring horizontalPageText = CandidatePageIndicatorText(m_pageIndex, m_totalPages);
+    const SIZE horizontalPageTextSize =
+        showHorizontalPageBadge ? MeasureSingleLineCached(targetDc, m_metaFont, horizontalPageText)
+                                : SIZE{};
+    const int horizontalPageBadgeWidth =
+        showHorizontalPageBadge ? std::max(Scale(kHorizontalPageBadgeMinWidth),
+                                           static_cast<int>(horizontalPageTextSize.cx) + Scale(12))
+                                : 0;
+    const int horizontalPageBadgeHeight =
+        showHorizontalPageBadge
+            ? std::max(hBadgeHeight, static_cast<int>(horizontalPageTextSize.cy) +
+                                         Scale(kHorizontalPageBadgePaddingY))
+            : 0;
+    // Horizontal mode intentionally stays compact, but a small trailing
+    // page badge makes additional candidates discoverable without adding a
+    // second row or a footer.
+    if (showHorizontalPageBadge) {
+      RECT pageRect = {client.right - hOuterPadX - horizontalPageBadgeWidth, hOuterPadY,
+                       client.right - hOuterPadX, hOuterPadY + horizontalPageBadgeHeight};
+      FillBorderedRoundRectCached(targetDc, pageRect, colors.badgeBg, colors.badgeBorder,
+                                  badgeRadius, strokeWidth);
+      DrawTextBlock(targetDc, m_metaFont, colors.badgeText, horizontalPageText, pageRect,
+                    DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    }
+    const ULONGLONG now = GetTickCount64();
+    const bool showPendingIndicator =
+        m_pendingVisual && m_pendingVisualSince != 0 && now >= m_pendingVisualSince &&
+        now - m_pendingVisualSince >= kCandidatePendingIndicatorDelayMs;
+    if (showPendingIndicator) {
+      // A stale/pending snapshot remains readable and non-interactive. Show
+      // only a tiny accent dot after the async state changes; avoid dimming
+      // the whole strip and making fast typing feel sluggish.
+      const int dot = std::max(Scale(3), strokeWidth + 1);
+      const int right = client.right - hOuterPadX -
+                        (showHorizontalPageBadge ? horizontalPageBadgeWidth + Scale(6) : 0);
+      RECT dotRect = {right - dot, hOuterPadY + Scale(2), right, hOuterPadY + Scale(2) + dot};
+      FillSolidRect(targetDc, dotRect, colors.selectedBorder);
+    }
+  }
+}
+
+struct CCandidateWindow::RowPaint {
+  HDC targetDc;
+  RECT rect;
+  size_t i;
+  COLORREF itemFill;
+  COLORREF itemBorder;
+  COLORREF visualAccentColor;
+  COLORREF textColor;
+  COLORREF mutedColor;
+  HFONT bodyFontForState;
+  float selectionWeight;
+  float pressWeight;
+  float hoverWeight;
+  float selectedRingOpacity;
+  float pageProgress;
+  std::wstring_view selectedIndicator;
+  int selectedAccentWidth;
+  int itemH;
+  int itemW;
+  int strokeWidth;
+  int itemRadius;
+  int hItemPadX;
+  int hItemPadY;
+  int itemPadX;
+  int itemPadY;
+  int labelWidth;
+  int labelGap;
+  int commentGap;
+  bool isSelected;
+  bool clipboardMode;
+};
+
+void CCandidateWindow::PaintHorizontalRow(const RowPaint& row) {
+  HDC targetDc = row.targetDc;
+  const RECT& rect = row.rect;
+  const size_t i = row.i;
+  const CandidateColors& colors = *m_colors;
+  const bool drawHorizontalCard =
+      row.selectionWeight > 0.001f || row.pressWeight > 0.001f || row.hoverWeight > 0.001f;
+  if (drawHorizontalCard) {
+    FillBorderedRoundRectCached(
+        targetDc, rect, row.itemFill,
+        (m_style.themeMode == SrfThemeMode::HighContrast || m_systemHighContrast) ? row.itemBorder
+                                                                                  : row.itemFill,
+        std::max(Scale(4), row.itemRadius / 2), row.strokeWidth);
+  }
+  if (row.selectionWeight > 0.001f && row.selectedIndicator == L"bottom_bar" &&
+      row.selectedAccentWidth > 0) {
+    const int accentH = std::min(row.selectedAccentWidth, std::max(1, row.itemH / 3));
+    RECT accentRect = {rect.left + Scale(6), rect.bottom - accentH - Scale(1),
+                       rect.right - Scale(6), rect.bottom - Scale(1)};
+    FillSolidRect(targetDc, accentRect, row.visualAccentColor);
+  } else if (row.selectionWeight > 0.001f && row.selectedIndicator == L"left_bar" &&
+             row.selectedAccentWidth > 0) {
+    const int accentW = std::min(row.selectedAccentWidth, std::max(1, row.itemW / 3));
+    RECT accentRect = {rect.left + Scale(2), rect.top + Scale(4), rect.left + Scale(2) + accentW,
+                       rect.bottom - Scale(4)};
+    FillSolidRect(targetDc, accentRect, row.visualAccentColor);
+  } else if (row.selectionWeight > 0.001f && row.selectedIndicator == L"outline") {
+    DrawRoundRectBorderCached(targetDc, rect, row.visualAccentColor,
+                              std::max(Scale(4), row.itemRadius / 2), row.strokeWidth);
+  }
+  if (row.selectionWeight > 0.001f && row.selectedRingOpacity > 0.001f) {
+    const COLORREF ringColor = AlphaBlendColor(row.visualAccentColor, row.itemFill,
+                                               row.selectedRingOpacity * row.selectionWeight);
+    RECT ringRect = {rect.left + row.strokeWidth, rect.top + row.strokeWidth,
+                     rect.right - row.strokeWidth, rect.bottom - row.strokeWidth};
+    DrawRoundRectBorderCached(targetDc, ringRect, ringColor,
+                              std::max(Scale(3), row.itemRadius / 2 - row.strokeWidth),
+                              row.strokeWidth);
+  }
+
+  const std::wstring labelText = i < m_labels.size() ? m_labels[i] : std::wstring();
+  const SIZE labelSize = MeasureLabelCached(targetDc, labelText, i);
+  const int labelW = std::max(Scale(10), static_cast<int>(labelSize.cx));
+  COLORREF inlineLabelColor = row.mutedColor;
+  if (m_pageAnimationActive) {
+    inlineLabelColor = AlphaBlendColor(inlineLabelColor, colors.windowBg, row.pageProgress);
+  }
+  const int contentLeft = rect.left + row.hItemPadX;
+  const int contentRight = std::max(contentLeft, static_cast<int>(rect.right) - row.hItemPadX);
+  const int contentTop = rect.top + row.hItemPadY;
+  const int contentBottom = std::max(contentTop, static_cast<int>(rect.bottom) - row.hItemPadY);
+  const int labelRight = std::min(contentRight, contentLeft + labelW);
+  const int textLeft = std::min(contentRight, labelRight + row.labelGap);
+  const bool hasComment = row.isSelected && i < m_comments.size() && !m_comments[i].empty();
+
+  if (hasComment) {
+    const SIZE bodySize =
+        MeasureSingleLine(targetDc, row.bodyFontForState, m_displayItems[i], m_dpi);
+    const SIZE commentSize = MeasureSingleLine(targetDc, m_metaFont, m_comments[i], m_dpi);
+    const int mainH =
+        std::max({Scale(18), static_cast<int>(labelSize.cy), static_cast<int>(bodySize.cy)});
+    const int commentH = std::max(Scale(12), static_cast<int>(commentSize.cy));
+    const int stackH = mainH + row.commentGap + commentH;
+    const int availableH = contentBottom - contentTop;
+    const int stackTop = contentTop + std::max(0, (availableH - stackH) / 2);
+    const int mainTop = std::min(contentBottom, stackTop + commentH + row.commentGap);
+    RECT commentRect = {textLeft, stackTop, contentRight,
+                        std::min(contentBottom, stackTop + commentH)};
+    RECT labelRect = {contentLeft, mainTop, labelRight, contentBottom};
+    RECT textRect = {textLeft, mainTop, contentRight, contentBottom};
+    DrawTextBlock(targetDc, m_metaFont, row.mutedColor, m_comments[i], commentRect,
+                  DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    DrawTextBlock(targetDc, m_labelFont, inlineLabelColor, labelText, labelRect,
+                  DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    DrawTextBlock(targetDc, row.bodyFontForState, row.textColor, m_displayItems[i], textRect,
+                  DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+  } else {
+    RECT labelRect = {contentLeft, contentTop, labelRight, contentBottom};
+    RECT textRect = {textLeft, contentTop, contentRight, contentBottom};
+    DrawTextBlock(targetDc, m_labelFont, inlineLabelColor, labelText, labelRect,
+                  DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    DrawTextBlock(targetDc, row.bodyFontForState, row.textColor, m_displayItems[i], textRect,
+                  DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+  }
+}
+
+void CCandidateWindow::PaintVerticalRow(const RowPaint& row) {
+  HDC targetDc = row.targetDc;
+  const RECT& rect = row.rect;
+  const size_t i = row.i;
+  const bool drawVerticalCard =
+      row.selectionWeight > 0.001f || row.pressWeight > 0.001f || row.hoverWeight > 0.001f;
+  if (drawVerticalCard) {
+    FillBorderedRoundRectCached(
+        targetDc, rect, row.itemFill,
+        (m_style.themeMode == SrfThemeMode::HighContrast || m_systemHighContrast) ? row.itemBorder
+                                                                                  : row.itemFill,
+        row.itemRadius, row.strokeWidth);
+  }
+
+  if (row.selectionWeight > 0.001f && row.selectedIndicator == L"left_bar" &&
+      row.selectedAccentWidth > 0) {
+    const int accentW = row.selectedAccentWidth;
+    const int indicatorTop = rect.top + row.itemPadY;
+    RECT accentRect = {rect.left + Scale(3), indicatorTop, rect.left + Scale(3) + accentW,
+                       std::min<LONG>(rect.bottom - Scale(4), indicatorTop + Scale(20))};
+    FillSolidRect(targetDc, accentRect, row.visualAccentColor);
+  } else if (row.selectionWeight > 0.001f && row.selectedIndicator == L"outline") {
+    DrawRoundRectBorderCached(targetDc, rect, row.visualAccentColor, row.itemRadius,
+                              row.strokeWidth);
+  }
+  if (row.selectionWeight > 0.001f && row.selectedRingOpacity > 0.001f) {
+    const COLORREF ringColor = AlphaBlendColor(row.visualAccentColor, row.itemFill,
+                                               row.selectedRingOpacity * row.selectionWeight);
+    RECT ringRect = {rect.left + row.strokeWidth, rect.top + row.strokeWidth,
+                     rect.right - row.strokeWidth, rect.bottom - row.strokeWidth};
+    DrawRoundRectBorderCached(targetDc, ringRect, ringColor,
+                              std::max(Scale(3), row.itemRadius - row.strokeWidth),
+                              row.strokeWidth);
+  }
+  const int badgeH = row.clipboardMode ? Scale(19) : std::max(Scale(22), row.labelWidth);
+  const int badgeW = row.clipboardMode ? Scale(20) : row.labelWidth;
+  RECT badgeRect = {rect.left + row.itemPadX, rect.top + row.itemPadY,
+                    rect.left + row.itemPadX + badgeW, rect.top + row.itemPadY + badgeH};
+  badgeRect.bottom = std::min(badgeRect.bottom, rect.bottom - row.itemPadY);
+  DrawTextBlock(targetDc, m_labelFont, row.mutedColor,
+                i < m_labels.size() ? m_labels[i] : std::wstring(), badgeRect,
+                DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+
+  RECT textRect = {badgeRect.right + row.labelGap, rect.top + row.itemPadY,
+                   rect.right - row.itemPadX, rect.bottom - row.itemPadY};
+  const ClipboardCommentParts clipboardComment =
+      i < m_clipboardCommentParts.size() ? m_clipboardCommentParts[i] : ClipboardCommentParts{};
+  int commentHeight = 0;
+  if (i < m_comments.size() && !m_comments[i].empty() && (row.clipboardMode || row.isSelected)) {
+    if (row.clipboardMode) {
+      const SIZE detailSize =
+          MeasureSingleLine(targetDc, m_metaFont, clipboardComment.detail, m_dpi);
+      const SIZE typeSize = MeasureSingleLine(targetDc, m_chipFont, clipboardComment.type, m_dpi);
+      commentHeight = std::max<int>(Scale(16), std::max(detailSize.cy, typeSize.cy));
+    } else {
+      commentHeight = MeasureWrappedHeight(targetDc, m_metaFont, m_comments[i],
+                                           textRect.right - textRect.left, m_dpi);
+    }
+  }
+  RECT mainRect = textRect;
+  if (commentHeight > 0) {
+    mainRect.bottom = std::max(mainRect.top, textRect.bottom - commentHeight - row.commentGap);
+  }
+  DrawTextBlock(targetDc, row.bodyFontForState, row.textColor, m_displayItems[i], mainRect,
+                DT_LEFT | DT_TOP | DT_WORDBREAK | DT_END_ELLIPSIS, m_dpi);
+
+  if (commentHeight > 0) {
+    RECT commentRect = {textRect.left, mainRect.bottom + row.commentGap, textRect.right,
+                        textRect.bottom};
+    if (row.clipboardMode) {
+      int detailRight = commentRect.right;
+      if (!clipboardComment.type.empty()) {
+        const SIZE typeSize = MeasureSingleLine(targetDc, m_chipFont, clipboardComment.type, m_dpi);
+        const int chipWidth = std::max(Scale(34), static_cast<int>(typeSize.cx) + Scale(12));
+        RECT typeRect = {std::max(commentRect.left, commentRect.right - chipWidth), commentRect.top,
+                         commentRect.right, commentRect.bottom};
+        DrawTextBlock(targetDc, m_chipFont, row.mutedColor, clipboardComment.type, typeRect,
+                      DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+        detailRight = typeRect.left - Scale(8);
+      }
+      RECT detailRect = {commentRect.left, commentRect.top,
+                         std::max<int>(static_cast<int>(commentRect.left), detailRight),
+                         commentRect.bottom};
+      if (i < m_pinnedItems.size() && m_pinnedItems[i]) {
+        // Draw a pin with GDI so it remains legible with any user font.
+        const int x = detailRect.left + Scale(5);
+        const int y = (detailRect.top + detailRect.bottom) / 2;
+        HPEN pen = GetGdiCache().GetPen(row.mutedColor, row.strokeWidth);
+        HGDIOBJ oldPen = SelectObject(targetDc, pen);
+        MoveToEx(targetDc, x - Scale(3), y - Scale(4), nullptr);
+        LineTo(targetDc, x + Scale(3), y - Scale(4));
+        MoveToEx(targetDc, x, y - Scale(4), nullptr);
+        LineTo(targetDc, x, y + Scale(5));
+        MoveToEx(targetDc, x - Scale(4), y, nullptr);
+        LineTo(targetDc, x + Scale(4), y);
+        if (oldPen) SelectObject(targetDc, oldPen);
+        detailRect.left = std::min(detailRect.right, detailRect.left + Scale(15));
+      }
+      DrawTextBlock(targetDc, m_metaFont, row.mutedColor, clipboardComment.detail, detailRect,
+                    DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
+    } else {
+      DrawTextBlock(targetDc, m_metaFont, row.mutedColor, m_comments[i], commentRect,
+                    DT_LEFT | DT_TOP | DT_WORDBREAK, m_dpi);
+    }
+  }
+}
+
 void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirtyRect) {
+  GetDirectTextRenderer().ConfigureCustomFont(m_customFontPath, m_customFontFace);
   // 每次整窗重绘按当前 client 宽度重算卡片位置，避免横向换行/皮肤 DPI 后与 m_itemRects 脱节。
   // m_needsMeasure：SetStyle/DPI 变更等场景下显式标记需要重测布局。
   const SIZE currentSize = {client.right - client.left, client.bottom - client.top};
@@ -2630,7 +3063,7 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
 
   const bool isHorizontal = m_style.candidateHorizontal;
   const bool clipboardMode = !isHorizontal && HasClipboardCandidateItems(m_clipboardItems);
-  CandidateColors colors = ResolveColors(m_style);
+  const CandidateColors& colors = *m_colors;
   // Keep retained candidates visually stable while an asynchronous lookup is
   // pending. Their interaction state is still synchronized through
   // m_interactive, but blending the whole palette with the window background
@@ -2640,29 +3073,10 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
 
   // Apply skin corner radius overrides
   const int strokeWidth = StrokeWidthForDpi(m_dpi);
-  const int radius = SnapGdiRadiusForDpi(
-      Scale(m_style.skinLoaded && m_style.skinCornerRadius >= 0 ? m_style.skinCornerRadius
-                                                                : spec.cornerRadius),
-      m_dpi);
-  const int headerRadius =
-      SnapGdiRadiusForDpi(Scale(m_style.skinLoaded && m_style.skinHeaderCornerRadius >= 0
-                                    ? m_style.skinHeaderCornerRadius
-                                    : spec.itemRadius),
-                          m_dpi);
   const int itemRadius = SnapGdiRadiusForDpi(
       Scale(m_style.skinLoaded && m_style.skinRowCornerRadius >= 0 ? m_style.skinRowCornerRadius
                                                                    : spec.itemRadius),
       m_dpi);
-  const int badgeRadius = SnapGdiRadiusForDpi(
-      Scale(m_style.skinLoaded && m_style.skinBadgeCornerRadius >= 0 ? m_style.skinBadgeCornerRadius
-                                                                     : spec.badgeRadius),
-      m_dpi);
-
-  const int outerPadX = Scale(spec.outerPadX);
-  const int outerPadY = Scale(spec.outerPadY);
-  const int headerPadX = Scale(spec.headerPadX);
-  const int headerPadY = Scale(spec.headerPadY);
-  const int headerGap = Scale(spec.headerGap);
   const int itemPadX = Scale(spec.itemPadX);
   const int itemPadY = Scale(spec.itemPadY);
   int labelWidth = Scale(spec.labelWidth);
@@ -2674,183 +3088,30 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
   if (isHorizontal) {
     compact1 = HorizontalCompactDeltaForDpi(m_style, m_dpi);
   }
-  const int compact2 = isHorizontal ? std::max(Scale(2), compact1 * 2) : 0;
-  const int hOuterPadX = isHorizontal ? std::max(0, outerPadX - compact1) : outerPadX;
-  const int hOuterPadY = isHorizontal ? std::max(0, outerPadY - compact1) : outerPadY;
   const int hItemPadX = isHorizontal ? std::max(0, itemPadX - compact1) : itemPadX;
   const int hItemPadY = isHorizontal ? std::max(0, itemPadY - compact1) : itemPadY;
-  const int hBadgeHeight = isHorizontal ? std::max(Scale(16), Scale(22) - compact2) : Scale(22);
-  const int hBadgeGap = isHorizontal ? std::max(0, Scale(4) - compact1) : Scale(4);
-  const bool showHorizontalPageBadge = isHorizontal && m_totalPages > 1;
-
-  auto drawStaticLayer = [&](HDC targetDc) {
-    FillBackgroundClippedToRoundRect(targetDc, client, colors, radius);
-    const COLORREF borderColor =
-        AlphaBlendColor(colors.border, colors.windowBg, colors.borderOpacity);
-    DrawRoundRectBorderCached(targetDc, client, borderColor, radius, strokeWidth);
-
-    if (!isHorizontal) {
-      const bool showPageBadge = m_totalPages > 1;
-      std::wstring pageText;
-      int pageBadgeWidth = 0;
-      if (showPageBadge) {
-        pageText = CandidatePageIndicatorText(m_pageIndex, m_totalPages);
-        const SIZE pageTextSize = MeasureSingleLineCached(targetDc, m_metaFont, pageText);
-        pageBadgeWidth = std::max(Scale(kHorizontalPageBadgeMinWidth),
-                                  static_cast<int>(pageTextSize.cx) + Scale(12));
-      }
-      const SIZE titleSize = MeasureSingleLineCached(targetDc, m_titleFont, m_title);
-      const int headerHeight =
-          std::max(Scale(m_style.candidateDensity == SrfCandidateDensity::Compact ? 26 : 30),
-                   static_cast<int>(titleSize.cy) + headerPadY * 2);
-
-      RECT headerRect = {outerPadX, outerPadY, client.right - outerPadX, outerPadY + headerHeight};
-      FillHeaderBackgroundClippedToRoundRect(targetDc, headerRect, colors, headerRadius);
-      if (m_style.themeMode == SrfThemeMode::HighContrast)
-        DrawRoundRectBorderCached(targetDc, headerRect, borderColor, headerRadius, strokeWidth);
-
-      RECT pageRect = {};
-      if (showPageBadge) {
-        pageRect = {headerRect.right - headerPadX - pageBadgeWidth, headerRect.top + headerPadY / 2,
-                    headerRect.right - headerPadX, headerRect.bottom - headerPadY / 2};
-        FillBorderedRoundRectCached(targetDc, pageRect, colors.badgeBg, colors.badgeBorder,
-                                    badgeRadius, strokeWidth);
-        DrawTextBlock(targetDc, m_metaFont, colors.badgeText, pageText, pageRect,
-                      DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-      }
-
-      const int modeChipGap = Scale(4);
-      const int modeChipPadX = Scale(m_style.skinLoaded ? 6 : 7);
-      const int modeChipHeight = std::max<int>(
-          Scale(17), static_cast<int>(headerRect.bottom - headerRect.top - headerPadY * 2));
-      int chipRightBound = showPageBadge ? pageRect.left - Scale(8) : headerRect.right - headerPadX;
-      int modeChipX = chipRightBound;
-      for (size_t idx = m_modeTags.size(); idx > 0; --idx) {
-        const std::wstring& tag = m_modeTags[idx - 1];
-        if (tag.empty()) continue;
-        const SIZE tagSize = MeasureSingleLine(targetDc, m_chipFont, tag, m_dpi);
-        const int chipWidth = std::max(Scale(30), static_cast<int>(tagSize.cx) + modeChipPadX * 2);
-        modeChipX -= chipWidth;
-        RECT chipRect = {
-            modeChipX, headerRect.top + (headerRect.bottom - headerRect.top - modeChipHeight) / 2,
-            modeChipX + chipWidth,
-            headerRect.top + (headerRect.bottom - headerRect.top - modeChipHeight) / 2 +
-                modeChipHeight};
-        const bool active = tag == L"\u4e2d" || tag == L"\u5168\u89d2" || tag == L"\u4e2d\u6807" ||
-                            tag == L"\u53cc\u62fc" || tag == L"\u6a21\u7cca";
-        const COLORREF chipFill = active ? colors.chipActiveBg : colors.chipBg;
-        const COLORREF chipBorder = active ? colors.chipActiveBorder : colors.chipBorder;
-        const COLORREF chipText = active ? colors.chipActiveText : colors.chipText;
-        FillBorderedRoundRectCached(targetDc, chipRect, chipFill, chipBorder, badgeRadius,
-                                    strokeWidth);
-        DrawTextBlock(targetDc, m_chipFont, chipText, tag, chipRect,
-                      DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-        modeChipX -= modeChipGap;
-      }
-
-      RECT titleRect = {
-          headerRect.left + headerPadX, headerRect.top + headerPadY,
-          std::max<int>(static_cast<int>(headerRect.left + headerPadX), modeChipX - Scale(6)),
-          headerRect.bottom - headerPadY};
-      const COLORREF headerBackgrounds[] = {
-          colors.headerBg, colors.headerBgTo == CLR_INVALID ? colors.headerBg : colors.headerBgTo};
-      const COLORREF headerText = EnsureReadableTextColor(colors.text, headerBackgrounds, 2, 4.5);
-      DrawTextBlock(targetDc, m_titleFont, headerText, m_title, titleRect,
-                    DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-
-      if (m_style.candidateLayoutVariant != SrfCandidateLayoutVariant::Card) {
-        for (size_t i = 0; i + 1 < m_itemRects.size(); ++i) {
-          const int divY = (m_itemRects[i].bottom + m_itemRects[i + 1].top) / 2;
-          DrawDivider(targetDc, divY, outerPadX + Scale(8), client.right - outerPadX - Scale(8),
-                      colors, strokeWidth);
-        }
-      }
-      if (clipboardMode) {
-        for (size_t i = 0; i + 1 < m_itemRects.size() && i + 1 < m_pinnedItems.size(); ++i) {
-          if (!m_pinnedItems[i] || m_pinnedItems[i + 1]) continue;
-          const int centerY = (m_itemRects[i].bottom + m_itemRects[i + 1].top) / 2;
-          RECT recentRect = {outerPadX + Scale(10), centerY - Scale(8), outerPadX + Scale(48),
-                             centerY + Scale(8)};
-          DrawTextBlock(targetDc, m_metaFont, colors.mutedText, L"\u6700\u8fd1", recentRect,
-                        DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-          DrawDivider(targetDc, centerY, recentRect.right + Scale(6),
-                      client.right - outerPadX - Scale(8), colors, strokeWidth);
-          break;
-        }
-
-        const int footerHeight = Scale(28);
-        RECT footerRect = {outerPadX + Scale(8), client.bottom - outerPadY - footerHeight,
-                           client.right - outerPadX - Scale(8), client.bottom - outerPadY};
-        DrawDivider(targetDc, footerRect.top - Scale(4), footerRect.left, footerRect.right, colors,
-                    strokeWidth);
-        DrawTextBlock(targetDc, m_metaFont, colors.mutedText,
-                      L"\u2191\u2193 \u9009\u62e9   PgUp/PgDn \u7ffb\u9875   Enter \u7c98\u8d34   "
-                      L"Esc \u5173\u95ed",
-                      footerRect, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-      }
-    } else {
-      const std::wstring horizontalPageText = CandidatePageIndicatorText(m_pageIndex, m_totalPages);
-      const SIZE horizontalPageTextSize =
-          showHorizontalPageBadge
-              ? MeasureSingleLineCached(targetDc, m_metaFont, horizontalPageText)
-              : SIZE{};
-      const int horizontalPageBadgeWidth =
-          showHorizontalPageBadge
-              ? std::max(Scale(kHorizontalPageBadgeMinWidth),
-                         static_cast<int>(horizontalPageTextSize.cx) + Scale(12))
-              : 0;
-      const int horizontalPageBadgeHeight =
-          showHorizontalPageBadge
-              ? std::max(hBadgeHeight, static_cast<int>(horizontalPageTextSize.cy) +
-                                           Scale(kHorizontalPageBadgePaddingY))
-              : 0;
-      // Horizontal mode intentionally stays compact, but a small trailing
-      // page badge makes additional candidates discoverable without adding a
-      // second row or a footer.
-      if (showHorizontalPageBadge) {
-        RECT pageRect = {client.right - hOuterPadX - horizontalPageBadgeWidth, hOuterPadY,
-                         client.right - hOuterPadX, hOuterPadY + horizontalPageBadgeHeight};
-        FillBorderedRoundRectCached(targetDc, pageRect, colors.badgeBg, colors.badgeBorder,
-                                    badgeRadius, strokeWidth);
-        DrawTextBlock(targetDc, m_metaFont, colors.badgeText, horizontalPageText, pageRect,
-                      DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-      }
-      const ULONGLONG now = GetTickCount64();
-      const bool showPendingIndicator =
-          m_pendingVisual && m_pendingVisualSince != 0 && now >= m_pendingVisualSince &&
-          now - m_pendingVisualSince >= kCandidatePendingIndicatorDelayMs;
-      if (showPendingIndicator) {
-        // A stale/pending snapshot remains readable and non-interactive. Show
-        // only a tiny accent dot after the async state changes; avoid dimming
-        // the whole strip and making fast typing feel sluggish.
-        const int dot = std::max(Scale(3), strokeWidth + 1);
-        const int right = client.right - hOuterPadX -
-                          (showHorizontalPageBadge ? horizontalPageBadgeWidth + Scale(6) : 0);
-        RECT dotRect = {right - dot, hOuterPadY + Scale(2), right, hOuterPadY + Scale(2) + dot};
-        FillSolidRect(targetDc, dotRect, colors.selectedBorder);
-      }
-    }
-  };
 
   const int clientW = client.right - client.left;
   const int clientH = client.bottom - client.top;
   const bool staticReady = EnsureStaticPaintBuffer(memDc, clientW, clientH);
   if (staticReady) {
     if (m_staticPaintDirty) {
-      drawStaticLayer(m_staticMemDc);
+      ++m_paintGeneration;
+      PaintStaticLayer(m_staticMemDc, client, clipboardMode);
       m_staticPaintDirty = false;
     }
     const RECT copyRect = dirtyRect ? *dirtyRect : client;
     BitBlt(memDc, copyRect.left, copyRect.top, copyRect.right - copyRect.left,
            copyRect.bottom - copyRect.top, m_staticMemDc, copyRect.left, copyRect.top, SRCCOPY);
   } else {
-    drawStaticLayer(memDc);
+    ++m_paintGeneration;
+    PaintStaticLayer(memDc, client, clipboardMode);
   }
   if (m_displayItems.size() != m_items.size()) RebuildDisplayItems();
-  const std::vector<std::wstring>& displayItems = m_displayItems;
 
   if (m_itemPaintCaches.size() < m_itemRects.size()) {
     m_itemPaintCaches.resize(m_itemRects.size());
+    m_itemPaintRevisions.resize(m_itemRects.size());
   }
 
   const ULONGLONG animationNow = GetTickCount64();
@@ -2918,6 +3179,10 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     COLORREF textColor = AlphaBlendColor(colors.selectedText, colors.text, selectionWeight);
     COLORREF mutedColor =
         AlphaBlendColor(colors.selectedMutedText, colors.mutedText, selectionWeight);
+    if (colors.hoverText != CLR_INVALID && hoverWeight > 0.001f) {
+      const float hoverTextWeight = hoverWeight * (1.0f - selectionWeight) * (1.0f - pressWeight);
+      textColor = AlphaBlendColor(colors.hoverText, textColor, hoverTextWeight);
+    }
     {
       const bool filledRow =
           selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
@@ -2943,9 +3208,11 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
     const bool canUseCache = !anyItemAnimation;
     CandidateItemPaintCache& cache =
         m_itemPaintCaches[i][CandidateItemPaintStateSlot(isSelected, isHot, isPressed)];
-    const bool cacheHit = canUseCache && cache.valid && cache.itemIndex == i && cache.w == itemW &&
-                          cache.h == itemH && cache.selected == isSelected && cache.hot == isHot &&
-                          cache.pressed == isPressed;
+    const bool cacheHit =
+        canUseCache && cache.valid && cache.itemIndex == i &&
+        cache.generation == m_paintGeneration && cache.contentRevision == m_itemPaintRevisions[i] &&
+        EqualRect(&cache.sourceRect, &srcRect) && cache.w == itemW && cache.h == itemH &&
+        cache.selected == isSelected && cache.hot == isHot && cache.pressed == isPressed;
 
     if (cacheHit) {
       BitBlt(memDc, srcRect.left, srcRect.top, itemW, itemH, cache.memDc, 0, 0, SRCCOPY);
@@ -2969,188 +3236,45 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
 
     RECT rect = {offsetX, offsetY, offsetX + itemW, offsetY + itemH};
 
-    if (m_style.candidateHorizontal) {
-      const bool drawHorizontalCard =
-          selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
-      if (drawHorizontalCard) {
-        FillBorderedRoundRectCached(
-            targetDc, rect, itemFill,
-            m_style.themeMode == SrfThemeMode::HighContrast ? itemBorder : itemFill,
-            std::max(Scale(4), itemRadius / 2), strokeWidth);
-      }
-      if (selectionWeight > 0.001f && selectedIndicator == L"bottom_bar" &&
-          selectedAccentWidth > 0) {
-        const int accentH = std::min(selectedAccentWidth, std::max(1, itemH / 3));
-        RECT accentRect = {rect.left + Scale(6), rect.bottom - accentH - Scale(1),
-                           rect.right - Scale(6), rect.bottom - Scale(1)};
-        FillSolidRect(targetDc, accentRect, visualAccentColor);
-      } else if (selectionWeight > 0.001f && selectedIndicator == L"left_bar" &&
-                 selectedAccentWidth > 0) {
-        const int accentW = std::min(selectedAccentWidth, std::max(1, itemW / 3));
-        RECT accentRect = {rect.left + Scale(2), rect.top + Scale(4),
-                           rect.left + Scale(2) + accentW, rect.bottom - Scale(4)};
-        FillSolidRect(targetDc, accentRect, visualAccentColor);
-      } else if (selectionWeight > 0.001f && selectedIndicator == L"outline") {
-        DrawRoundRectBorderCached(targetDc, rect, visualAccentColor,
-                                  std::max(Scale(4), itemRadius / 2), strokeWidth);
-      }
-      if (selectionWeight > 0.001f && selectedRingOpacity > 0.001f) {
-        const COLORREF ringColor =
-            AlphaBlendColor(visualAccentColor, itemFill, selectedRingOpacity * selectionWeight);
-        RECT ringRect = {rect.left + strokeWidth, rect.top + strokeWidth, rect.right - strokeWidth,
-                         rect.bottom - strokeWidth};
-        DrawRoundRectBorderCached(targetDc, ringRect, ringColor,
-                                  std::max(Scale(3), itemRadius / 2 - strokeWidth), strokeWidth);
-      }
-
-      const std::wstring labelText = i < m_labels.size() ? m_labels[i] : std::wstring();
-      const SIZE labelSize = MeasureLabelCached(targetDc, labelText, i);
-      const int labelW = std::max(Scale(10), static_cast<int>(labelSize.cx));
-      COLORREF inlineLabelColor = mutedColor;
-      if (m_pageAnimationActive) {
-        inlineLabelColor = AlphaBlendColor(inlineLabelColor, colors.windowBg, pageProgress);
-      }
-      const int contentLeft = rect.left + hItemPadX;
-      const int contentRight = std::max(contentLeft, static_cast<int>(rect.right) - hItemPadX);
-      const int contentTop = rect.top + hItemPadY;
-      const int contentBottom = std::max(contentTop, static_cast<int>(rect.bottom) - hItemPadY);
-      const int labelRight = std::min(contentRight, contentLeft + labelW);
-      const int textLeft = std::min(contentRight, labelRight + labelGap);
-      const bool hasComment = isSelected && i < m_comments.size() && !m_comments[i].empty();
-
-      if (hasComment) {
-        const SIZE bodySize = MeasureSingleLine(targetDc, bodyFontForState, displayItems[i], m_dpi);
-        const SIZE commentSize = MeasureSingleLine(targetDc, m_metaFont, m_comments[i], m_dpi);
-        const int mainH =
-            std::max({Scale(18), static_cast<int>(labelSize.cy), static_cast<int>(bodySize.cy)});
-        const int commentH = std::max(Scale(12), static_cast<int>(commentSize.cy));
-        const int stackH = mainH + commentGap + commentH;
-        const int availableH = contentBottom - contentTop;
-        const int stackTop = contentTop + std::max(0, (availableH - stackH) / 2);
-        const int mainTop = std::min(contentBottom, stackTop + commentH + commentGap);
-        RECT commentRect = {textLeft, stackTop, contentRight,
-                            std::min(contentBottom, stackTop + commentH)};
-        RECT labelRect = {contentLeft, mainTop, labelRight, contentBottom};
-        RECT textRect = {textLeft, mainTop, contentRight, contentBottom};
-        DrawTextBlock(targetDc, m_metaFont, mutedColor, m_comments[i], commentRect,
-                      DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-        DrawTextBlock(targetDc, m_labelFont, inlineLabelColor, labelText, labelRect,
-                      DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-        DrawTextBlock(targetDc, bodyFontForState, textColor, displayItems[i], textRect,
-                      DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-      } else {
-        RECT labelRect = {contentLeft, contentTop, labelRight, contentBottom};
-        RECT textRect = {textLeft, contentTop, contentRight, contentBottom};
-        DrawTextBlock(targetDc, m_labelFont, inlineLabelColor, labelText, labelRect,
-                      DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-        DrawTextBlock(targetDc, bodyFontForState, textColor, displayItems[i], textRect,
-                      DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-      }
-    } else {
-      const bool drawVerticalCard =
-          selectionWeight > 0.001f || pressWeight > 0.001f || hoverWeight > 0.001f;
-      if (drawVerticalCard) {
-        FillBorderedRoundRectCached(
-            targetDc, rect, itemFill,
-            m_style.themeMode == SrfThemeMode::HighContrast ? itemBorder : itemFill, itemRadius,
-            strokeWidth);
-      }
-
-      if (selectionWeight > 0.001f && selectedIndicator == L"left_bar" && selectedAccentWidth > 0) {
-        const int accentW = selectedAccentWidth;
-        const int indicatorTop = rect.top + itemPadY;
-        RECT accentRect = {rect.left + Scale(3), indicatorTop, rect.left + Scale(3) + accentW,
-                           std::min<LONG>(rect.bottom - Scale(4), indicatorTop + Scale(20))};
-        FillSolidRect(targetDc, accentRect, visualAccentColor);
-      } else if (selectionWeight > 0.001f && selectedIndicator == L"outline") {
-        DrawRoundRectBorderCached(targetDc, rect, visualAccentColor, itemRadius, strokeWidth);
-      }
-      if (selectionWeight > 0.001f && selectedRingOpacity > 0.001f) {
-        const COLORREF ringColor =
-            AlphaBlendColor(visualAccentColor, itemFill, selectedRingOpacity * selectionWeight);
-        RECT ringRect = {rect.left + strokeWidth, rect.top + strokeWidth, rect.right - strokeWidth,
-                         rect.bottom - strokeWidth};
-        DrawRoundRectBorderCached(targetDc, ringRect, ringColor,
-                                  std::max(Scale(3), itemRadius - strokeWidth), strokeWidth);
-      }
-      const int badgeH = clipboardMode ? Scale(19) : std::max(Scale(22), labelWidth);
-      const int badgeW = clipboardMode ? Scale(20) : labelWidth;
-      RECT badgeRect = {rect.left + itemPadX, rect.top + itemPadY, rect.left + itemPadX + badgeW,
-                        rect.top + itemPadY + badgeH};
-      badgeRect.bottom = std::min(badgeRect.bottom, rect.bottom - itemPadY);
-      DrawTextBlock(targetDc, m_labelFont, mutedColor,
-                    i < m_labels.size() ? m_labels[i] : std::wstring(), badgeRect,
-                    DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-
-      RECT textRect = {badgeRect.right + labelGap, rect.top + itemPadY, rect.right - itemPadX,
-                       rect.bottom - itemPadY};
-      const ClipboardCommentParts clipboardComment =
-          i < m_clipboardCommentParts.size() ? m_clipboardCommentParts[i] : ClipboardCommentParts{};
-      int commentHeight = 0;
-      if (i < m_comments.size() && !m_comments[i].empty() && (clipboardMode || isSelected)) {
-        if (clipboardMode) {
-          const SIZE detailSize =
-              MeasureSingleLine(targetDc, m_metaFont, clipboardComment.detail, m_dpi);
-          const SIZE typeSize =
-              MeasureSingleLine(targetDc, m_chipFont, clipboardComment.type, m_dpi);
-          commentHeight = std::max<int>(Scale(16), std::max(detailSize.cy, typeSize.cy));
-        } else {
-          commentHeight = MeasureWrappedHeight(targetDc, m_metaFont, m_comments[i],
-                                               textRect.right - textRect.left, m_dpi);
-        }
-      }
-      RECT mainRect = textRect;
-      if (commentHeight > 0) {
-        mainRect.bottom = std::max(mainRect.top, textRect.bottom - commentHeight - commentGap);
-      }
-      DrawTextBlock(targetDc, bodyFontForState, textColor, displayItems[i], mainRect,
-                    DT_LEFT | DT_TOP | DT_WORDBREAK | DT_END_ELLIPSIS, m_dpi);
-
-      if (commentHeight > 0) {
-        RECT commentRect = {textRect.left, mainRect.bottom + commentGap, textRect.right,
-                            textRect.bottom};
-        if (clipboardMode) {
-          int detailRight = commentRect.right;
-          if (!clipboardComment.type.empty()) {
-            const SIZE typeSize =
-                MeasureSingleLine(targetDc, m_chipFont, clipboardComment.type, m_dpi);
-            const int chipWidth = std::max(Scale(34), static_cast<int>(typeSize.cx) + Scale(12));
-            RECT typeRect = {std::max(commentRect.left, commentRect.right - chipWidth),
-                             commentRect.top, commentRect.right, commentRect.bottom};
-            DrawTextBlock(targetDc, m_chipFont, mutedColor, clipboardComment.type, typeRect,
-                          DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-            detailRight = typeRect.left - Scale(8);
-          }
-          RECT detailRect = {commentRect.left, commentRect.top,
-                             std::max<int>(static_cast<int>(commentRect.left), detailRight),
-                             commentRect.bottom};
-          if (i < m_pinnedItems.size() && m_pinnedItems[i]) {
-            // Draw a pin with GDI so it remains legible with any user font.
-            const int x = detailRect.left + Scale(5);
-            const int y = (detailRect.top + detailRect.bottom) / 2;
-            HPEN pen = CreatePen(PS_SOLID, strokeWidth, mutedColor);
-            HGDIOBJ oldPen = SelectObject(targetDc, pen);
-            MoveToEx(targetDc, x - Scale(3), y - Scale(4), nullptr);
-            LineTo(targetDc, x + Scale(3), y - Scale(4));
-            MoveToEx(targetDc, x, y - Scale(4), nullptr);
-            LineTo(targetDc, x, y + Scale(5));
-            MoveToEx(targetDc, x - Scale(4), y, nullptr);
-            LineTo(targetDc, x + Scale(4), y);
-            SelectObject(targetDc, oldPen);
-            DeleteObject(pen);
-            detailRect.left = std::min(detailRect.right, detailRect.left + Scale(15));
-          }
-          DrawTextBlock(targetDc, m_metaFont, mutedColor, clipboardComment.detail, detailRect,
-                        DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS, m_dpi);
-        } else {
-          DrawTextBlock(targetDc, m_metaFont, mutedColor, m_comments[i], commentRect,
-                        DT_LEFT | DT_TOP | DT_WORDBREAK, m_dpi);
-        }
-      }
-    }
+    const RowPaint row = {targetDc,
+                          rect,
+                          i,
+                          itemFill,
+                          itemBorder,
+                          visualAccentColor,
+                          textColor,
+                          mutedColor,
+                          bodyFontForState,
+                          selectionWeight,
+                          pressWeight,
+                          hoverWeight,
+                          selectedRingOpacity,
+                          pageProgress,
+                          selectedIndicator,
+                          selectedAccentWidth,
+                          itemH,
+                          itemW,
+                          strokeWidth,
+                          itemRadius,
+                          hItemPadX,
+                          hItemPadY,
+                          itemPadX,
+                          itemPadY,
+                          labelWidth,
+                          labelGap,
+                          commentGap,
+                          isSelected,
+                          clipboardMode};
+    if (isHorizontal)
+      PaintHorizontalRow(row);
+    else
+      PaintVerticalRow(row);
 
     if (willCache) {
       cache.itemIndex = i;
+      cache.generation = m_paintGeneration;
+      cache.contentRevision = m_itemPaintRevisions[i];
+      cache.sourceRect = srcRect;
       cache.selected = isSelected;
       cache.hot = isHot;
       cache.pressed = isPressed;
@@ -3195,8 +3319,8 @@ void CCandidateWindow::PaintFull(HDC memDc, const RECT& client, const RECT* dirt
 }
 
 void CCandidateWindow::Paint(HDC hdc, const RECT& paintRect) {
-  const ULONGLONG paintStart = GetTickCount64();
-  ++m_paintCount;
+  const ULONGLONG paintStart = m_perfLogging ? GetTickCount64() : 0;
+  if (m_perfLogging) ++m_paintCount;
   RECT client = {};
   GetClientRect(m_hwnd, &client);
   const int w = client.right - client.left;
@@ -3206,10 +3330,11 @@ void CCandidateWindow::Paint(HDC hdc, const RECT& paintRect) {
   bool fullPaint = false;
   if (!EnsurePaintBuffer(hdc, w, h)) {
     fullPaint = true;
-    ++m_fullPaintCount;
+    if (m_perfLogging) ++m_fullPaintCount;
     PaintFull(hdc, client);
     m_layoutDirty = false;
     m_fullPaintDirty = false;
+    if (!m_perfLogging) return;
     const unsigned long long fullPct =
         m_paintCount == 0 ? 0 : (m_fullPaintCount * 100 / m_paintCount);
     wchar_t line[224] = {};
@@ -3223,7 +3348,7 @@ void CCandidateWindow::Paint(HDC hdc, const RECT& paintRect) {
   }
   if (m_layoutDirty || m_fullPaintDirty || !hadBuffer) {
     fullPaint = true;
-    ++m_fullPaintCount;
+    if (m_perfLogging) ++m_fullPaintCount;
     PaintFull(m_paintMemDc, client);
     m_layoutDirty = false;
     m_fullPaintDirty = false;
@@ -3233,6 +3358,7 @@ void CCandidateWindow::Paint(HDC hdc, const RECT& paintRect) {
     BitBlt(hdc, paintRect.left, paintRect.top, paintRect.right - paintRect.left,
            paintRect.bottom - paintRect.top, m_paintMemDc, paintRect.left, paintRect.top, SRCCOPY);
   }
+  if (!m_perfLogging) return;
   const unsigned long long fullPct =
       m_paintCount == 0 ? 0 : (m_fullPaintCount * 100 / m_paintCount);
   wchar_t line[224] = {};
@@ -3318,7 +3444,7 @@ void CCandidateWindow::ShowPinMenu(UINT indexInPage) {
   m_staticPaintDirty = true;
   if (m_hasAnchorRect) {
     const RECT work = PlacementAreaForAnchor(&m_anchorRect, m_fullscreenOverlayPlacement);
-    const int screenInset = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+    const int screenInset = std::max(Scale(10), ShadowMargin());
     const int maxWidth =
         std::max(Scale(260), static_cast<int>((work.right - work.left) - screenInset * 2));
     m_measuredClientSize = MeasureClientSize(maxWidth, &m_itemRects);
@@ -3361,7 +3487,7 @@ void CCandidateWindow::HidePinMenu() {
   m_staticPaintDirty = true;
   if (m_hwnd && m_hasAnchorRect) {
     const RECT work = PlacementAreaForAnchor(&m_anchorRect, m_fullscreenOverlayPlacement);
-    const int screenInset = std::max(Scale(10), CandidateShadowMarginForStyle(m_style, m_dpi));
+    const int screenInset = std::max(Scale(10), ShadowMargin());
     const int maxWidth =
         std::max(Scale(260), static_cast<int>((work.right - work.left) - screenInset * 2));
     m_measuredClientSize = MeasureClientSize(maxWidth, &m_itemRects);

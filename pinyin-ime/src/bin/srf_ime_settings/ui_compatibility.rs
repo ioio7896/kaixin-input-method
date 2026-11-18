@@ -5,6 +5,7 @@ use super::*;
 enum GameTestWizardAction {
     ApplyRecommended,
     ActivateGame,
+    LearnInputField,
     InputReady,
     InputMissing,
     CandidateVisible,
@@ -70,7 +71,7 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                         game_test_metadata_ui(ui, &mut rule.game_chat);
                     }
                     ui.label("第二步：切回游戏并打开聊天输入栏。确认自动进入中文、可以输入拼音，关闭输入栏后移动键恢复直通；无法识别的自绘输入栏可用中文聊天热键。");
-                    ui.label("本向导只记录您确认的结果，不会自动输入文字或发送聊天消息。");
+                    ui.label("学习输入栏时只保存窗口类、层级和样式特征。探测使用位置、焦点和可写性。");
                     if let Some((line, hint)) = recent_game_input_event(&wizard.process) {
                         ui.label(format!("该进程最近的诊断：{hint}"));
                         ui.label(RichText::new(line).monospace().small().color(palette.muted));
@@ -78,6 +79,7 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     }
                     ui.horizontal_wrapped(|ui| {
                         if ui.button("切换到游戏窗口").clicked() { action = Some(GameTestWizardAction::ActivateGame); }
+                        if ui.button("学习此游戏的输入栏").clicked() { action = Some(GameTestWizardAction::LearnInputField); }
                         if ui.button("已进入中文输入").clicked() { action = Some(GameTestWizardAction::InputReady); }
                         if ui.button("无法启用中文").clicked() { action = Some(GameTestWizardAction::InputMissing); }
                     });
@@ -222,6 +224,17 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                         "已切换到 {}，请打开聊天框并键入 nihao；若未自动启用中文，可用游戏聊天快捷键。",
                         wizard.process
                     );
+                }
+                Err(err) => app.status = err,
+            }
+        }
+        Some(GameTestWizardAction::LearnInputField) => {
+            match arm_game_field_learning(&wizard.process)
+                .and_then(|()| activate_process_window(&wizard.process))
+            {
+                Ok(()) => {
+                    app.status =
+                        "请在 2 分钟内打开聊天框，再按中文聊天热键记录输入栏。".to_string();
                 }
                 Err(err) => app.status = err,
             }
@@ -517,10 +530,178 @@ pub(super) fn compatibility_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     });
     section_panel(ui, "运行状态", |ui| {
         compatibility_match_status_ui(ui, app);
+        egui::CollapsingHeader::new("游戏诊断与上屏预设")
+            .id_salt("game_input_summary")
+            .show(ui, |ui| game_input_summary_ui(ui, app));
         egui::CollapsingHeader::new("最近兼容 / 降级日志")
             .id_salt("compat_recent_logs")
             .show(ui, compatibility_recent_logs_ui);
     });
+}
+
+#[cfg(windows)]
+fn arm_game_field_learning(process: &str) -> Result<(), String> {
+    use windows_sys::Win32::System::Registry::{
+        RegCloseKey, RegCreateKeyExW, RegSetValueExW, HKEY_CURRENT_USER, KEY_SET_VALUE,
+        REG_OPTION_NON_VOLATILE, REG_QWORD,
+    };
+    if process.is_empty()
+        || process.encode_utf16().count() > 128
+        || process.contains(['\\', '/', '*', '?', ':', '\0'])
+    {
+        return Err("请选择具体的游戏进程。".to_string());
+    }
+    let path: Vec<u16> = format!("Software\\kaixin\\GameChatFields\\{process}")
+        .encode_utf16()
+        .chain(Some(0))
+        .collect();
+    let name: Vec<u16> = "LearnUntil".encode_utf16().chain(Some(0)).collect();
+    let until = (std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|err| err.to_string())?
+        .as_secs()
+        + 120)
+        .to_le_bytes();
+    let mut key = 0;
+    let open = unsafe {
+        RegCreateKeyExW(
+            HKEY_CURRENT_USER,
+            path.as_ptr(),
+            0,
+            std::ptr::null(),
+            REG_OPTION_NON_VOLATILE,
+            KEY_SET_VALUE,
+            std::ptr::null(),
+            &mut key,
+            std::ptr::null_mut(),
+        )
+    };
+    if open != 0 {
+        return Err(format!("无法启动输入栏学习（{open}）。"));
+    }
+    let write = unsafe {
+        RegSetValueExW(
+            key,
+            name.as_ptr(),
+            0,
+            REG_QWORD,
+            until.as_ptr(),
+            until.len() as u32,
+        )
+    };
+    unsafe { RegCloseKey(key) };
+    if write != 0 {
+        return Err(format!("无法启动输入栏学习（{write}）。"));
+    }
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn arm_game_field_learning(_process: &str) -> Result<(), String> {
+    Err("游戏输入栏学习需要 Windows。".to_string())
+}
+
+#[derive(Clone, Default)]
+struct GameInputSummary {
+    confirmed: usize,
+    missed: usize,
+    tsf_written: usize,
+    tsf_failed: usize,
+    sent: usize,
+    source: String,
+    display: String,
+}
+
+fn read_game_input_summaries() -> BTreeMap<String, GameInputSummary> {
+    let mut summaries = BTreeMap::<String, GameInputSummary>::new();
+    for line in runtime_log::recent_lines_matching(400, &["game-chat.session"]) {
+        let field = |key: &str| {
+            line.split_whitespace()
+                .filter_map(|word| word.split_once('='))
+                .find_map(|(name, value)| (name == key).then_some(value))
+                .unwrap_or_default()
+        };
+        let process = field("app");
+        if process.is_empty() {
+            continue;
+        }
+        let summary = summaries.entry(process.to_ascii_lowercase()).or_default();
+        let event = field("event");
+        match event {
+            "open_confirmed" => {
+                summary.confirmed += 1;
+                summary.source = field("source").to_string();
+            }
+            "open_missed" => summary.missed += 1,
+            "commit_written" if field("channel") == "tsf" => summary.tsf_written += 1,
+            "commit_failed" | "commit_partial" if field("channel") == "tsf" => {
+                summary.tsf_failed += 1;
+            }
+            "commit_sent" => summary.sent += 1,
+            _ => {}
+        }
+        summary.display = field("display").to_string();
+    }
+    summaries
+}
+
+fn game_input_summary_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    let id = ui.id().with("game_input_summaries");
+    let refresh = ui.button("刷新诊断").clicked();
+    let cached: Option<BTreeMap<String, GameInputSummary>> = ui.data(|data| data.get_temp(id));
+    let summaries = match cached {
+        Some(summaries) if !refresh => summaries,
+        _ => {
+            let summaries = read_game_input_summaries();
+            ui.data_mut(|data| data.insert_temp(id, summaries.clone()));
+            summaries
+        }
+    };
+    if summaries.is_empty() {
+        ui.label("暂无游戏诊断记录。开启基础日志后，打开聊天栏并上屏一次即可查看。");
+        return;
+    }
+    let mut presets = Vec::new();
+    for (process, summary) in &summaries {
+        let reliable_tsf = summary.tsf_written >= 3 && summary.tsf_failed == 0;
+        let display = if summary.display == "fullscreen_like" {
+            "全屏窗口"
+        } else {
+            "窗口"
+        };
+        let source = match summary.source.as_str() {
+            "native" => "原生编辑框",
+            "tsf_scope" => "TSF",
+            "uia" => "UI Automation",
+            "learned" => "已学习特征",
+            "geometry" => "焦点与光标",
+            _ => "待确认",
+        };
+        ui.label(format!(
+            "{process}（{display}）　自动识别 {}/{}　来源 {source}　TSF 写入 {} 次　发送未确认 {} 次",
+            summary.confirmed,
+            summary.confirmed + summary.missed,
+            summary.tsf_written,
+            summary.sent
+        ));
+        if reliable_tsf {
+            ui.label("建议通道：TSF");
+            if matching_compat_rule(&app.model.compat_rules, process).is_some_and(|rule| {
+                rule.process.eq_ignore_ascii_case(process)
+                    && matches!(rule.commit_transport.as_str(), "auto" | "global")
+            }) {
+                presets.push(process.clone());
+            }
+        }
+    }
+    if !presets.is_empty() && ui.button("保存已验证的 TSF 预设").clicked() {
+        for process in presets {
+            app.set_commit_transport_for_process(&process, "tsf");
+        }
+        if app.save().is_ok() {
+            app.status = "已保存诊断中验证过的 TSF 上屏预设。".to_string();
+        }
+    }
 }
 
 pub(super) fn compatibility_game_controls_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {

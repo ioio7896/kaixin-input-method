@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | Windows TSF / Win32 API | 系统输入法接入、窗口和消息处理 | 平台 API，不作为自研代码提交 |
 | Rust crates (`pinyin-ime/Cargo.toml`, `Cargo.lock`) | UI、SQLite、序列化、图像处理等依赖 | 发布前用 cargo-about 或 cargo-deny 生成许可证清单 |
-| `RapidOCR-3.9.0/` | 本地 OCR 引擎源码和包结构 | 第三方项目，Apache-2.0；软著源码材料中排除；安装包内保留许可文件 |
+| `dist/vendor-reference/RapidOCR-3.9.0/` | 上游参考工程与演示文件 | 第三方项目，Apache-2.0，构建使用 `RapidOCRLite/`，安装包内保留许可文件 |
 | `.venv-rapidocr/` | OCR Python 运行环境 | 本地依赖环境，软著源码材料中排除 |
 | OCR 模型文件 | 屏幕文字识别 | 模型数据，需核验来源和再分发许可；不作为自研源程序提交 |
 | `lexicon/en/` | 20,000 词常用英文词库 | 高频顺序来自 wordfreq 3.1.1（Apache-2.0），并由本项目筛选及补充常用技术词；发布时保留 README 与许可证摘要 |
@@ -44,7 +44,7 @@
 
 在软著申请材料中，建议把本软件描述为“集成本地 OCR，并可联动独立翻译软件的 Windows 本地拼音输入法”。自研贡献重点放在输入法核心、候选排序、TSF 前端、候选窗、设置页、本地数据保护、工具集成和安装部署逻辑上。
 
-不要把 `RapidOCR-3.9.0/`、`.venv-rapidocr/`、OCR 模型文件、外部词库、第三方手写数据描述为申请人独立开发的源程序。
+第三方参考工程、`RapidOCRLite/`、`.venv-rapidocr/`、OCR 模型文件、外部词库和第三方手写数据应按其来源列出。
 
 ## OCR 和外部翻译联动权属声明模板
 
