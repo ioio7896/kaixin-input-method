@@ -461,10 +461,5 @@ fn main() {
     println!("cargo:rerun-if-changed={}", corpus.display());
     println!("cargo:rerun-if-changed={}", syllables.display());
     println!("cargo:rerun-if-changed={}", version_path.display());
-    println!(
-        "cargo:rerun-if-changed={}",
-        Path::new(&env::var("CARGO_MANIFEST_DIR").expect("manifest dir"))
-            .join("src")
-            .display()
-    );
+    println!("cargo:rerun-if-changed=src/dict.rs");
 }

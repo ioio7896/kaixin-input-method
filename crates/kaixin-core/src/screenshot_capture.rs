@@ -92,6 +92,9 @@ impl Drop for OwnedChild {
 /// Called at process entry, before single-instance/UI initialization. A child
 /// never calls capture() again and therefore cannot recursively spawn helpers.
 pub fn run_helper_from_args() -> Option<i32> {
+    if let Some(code) = crate::screenshot_region_selector::run_uia_snap_helper_from_args() {
+        return Some(code);
+    }
     let args: Vec<_> = std::env::args().collect();
     let index = args
         .iter()

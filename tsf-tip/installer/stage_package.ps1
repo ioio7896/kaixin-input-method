@@ -10,10 +10,15 @@
     [ValidateSet('Debug', 'Release')]
     [string]$Profile = 'Release',
     [ValidateSet('standard', 'full')]
-    [string]$LexiconProfile = 'standard'
+    [string]$LexiconProfile = 'standard',
+    [string]$PreparedLexiconDir,
+    [switch]$FinalizeInBuild
 )
 
 $ErrorActionPreference = 'Stop'
+if ($Zip -and $FinalizeInBuild) {
+    throw 'Create the portable ZIP after the build finalizes package manifests'
+}
 
 $PackageManifestName = 'package_manifest.sha256'
 $ComponentManifestName = 'component_manifest.ini'
@@ -694,61 +699,78 @@ if ((Test-Path -LiteralPath $generatedLicenseDir) -or (Test-Path -LiteralPath $d
 [System.IO.File]::WriteAllText((Join-Path $OutputRoot 'current_runtime_payload.txt'), $runtimeRelativePath, [System.Text.Encoding]::ASCII)
 
 $lexiconTarget = Join-Path $OutputRoot $lexiconDir.Name
-$lexiconSyncExcludes = @('translate')
-Sync-DirectoryContents -SourceDir $lexiconDir.FullName -DestinationDir $lexiconTarget -ExcludeNames $lexiconSyncExcludes
-Remove-ItemWithRetry -Path (Join-Path $lexiconTarget 'translate')
-
-# Old upgrades left these optional files behind. Keep them out of new payloads
-# even if a developer restages a source tree containing an older dictionary.
-$retiredLexiconTags = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared\retired_optional_lexicons.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$retiredLexiconFiles = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared\retired_lexicon_files.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$stagedLexiconPrefix = [System.IO.Path]::GetFullPath($lexiconTarget).TrimEnd('\') + '\'
-foreach ($relative in $retiredLexiconFiles) {
-    $retiredFile = [System.IO.Path]::GetFullPath((Join-Path $lexiconTarget $relative))
-    if (-not $retiredFile.StartsWith($stagedLexiconPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Retired lexicon path escaped staged directory: $retiredFile"
+if ($PreparedLexiconDir) {
+    $prepared = (Get-Item -LiteralPath $PreparedLexiconDir -ErrorAction Stop).FullName.TrimEnd('\')
+    $targetPath = [System.IO.Path]::GetFullPath($lexiconTarget).TrimEnd('\')
+    if ($prepared -eq $targetPath -or
+        $prepared.StartsWith($targetPath + '\', [System.StringComparison]::OrdinalIgnoreCase) -or
+        $targetPath.StartsWith($prepared + '\', [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Prepared lexicon must come from a different package stage'
     }
-    if (Test-Path -LiteralPath $retiredFile -PathType Leaf) {
-        Remove-Item -LiteralPath $retiredFile -Force -ErrorAction Stop
+    Write-Output "Reusing prepared lexicon: $prepared"
+    foreach ($name in @('lexicon.pack', 'cold_lexicon.sqlite')) {
+        if (-not (Test-Path -LiteralPath (Join-Path $prepared $name) -PathType Leaf)) {
+            throw "Missing prepared lexicon file: $name"
+        }
     }
-}
-foreach ($file in @(Get-ChildItem -LiteralPath $lexiconTarget -Recurse -File -Filter '*.txt')) {
-    $fullPath = [System.IO.Path]::GetFullPath($file.FullName)
-    if (-not $fullPath.StartsWith($stagedLexiconPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "Lexicon cleanup path escaped staged directory: $fullPath"
+    Sync-DirectoryContents -SourceDir $prepared -DestinationDir $lexiconTarget
+} else {
+    $lexiconSyncExcludes = @('translate')
+    Sync-DirectoryContents -SourceDir $lexiconDir.FullName -DestinationDir $lexiconTarget -ExcludeNames $lexiconSyncExcludes
+    Remove-ItemWithRetry -Path (Join-Path $lexiconTarget 'translate')
+
+    # Old upgrades left these optional files behind. Keep them out of new payloads
+    # even if a developer restages a source tree containing an older dictionary.
+    $retiredLexiconTags = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared\retired_optional_lexicons.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $retiredLexiconFiles = Get-Content -LiteralPath (Join-Path $RepoRoot 'shared\retired_lexicon_files.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $stagedLexiconPrefix = [System.IO.Path]::GetFullPath($lexiconTarget).TrimEnd('\') + '\'
+    foreach ($relative in $retiredLexiconFiles) {
+        $retiredFile = [System.IO.Path]::GetFullPath((Join-Path $lexiconTarget $relative))
+        if (-not $retiredFile.StartsWith($stagedLexiconPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Retired lexicon path escaped staged directory: $retiredFile"
+        }
+        if (Test-Path -LiteralPath $retiredFile -PathType Leaf) {
+            Remove-Item -LiteralPath $retiredFile -Force -ErrorAction Stop
+        }
     }
-    $relative = $fullPath.Substring($stagedLexiconPrefix.Length)
-    if (-not ($relative -match '(^|\\)(zh-ext|ext)\\')) { continue }
-    $tag = $file.BaseName.ToLowerInvariant()
-    if ($tag.StartsWith('thuocl_')) { $tag = $tag.Substring(7) }
-    elseif ($tag.Contains('__thuocl_')) { $tag = $tag.Substring($tag.IndexOf('__thuocl_') + 9) }
-    if ($retiredLexiconTags -contains $tag) {
-        Remove-Item -LiteralPath $fullPath -Force -ErrorAction Stop
+    foreach ($file in @(Get-ChildItem -LiteralPath $lexiconTarget -Recurse -File -Filter '*.txt')) {
+        $fullPath = [System.IO.Path]::GetFullPath($file.FullName)
+        if (-not $fullPath.StartsWith($stagedLexiconPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Lexicon cleanup path escaped staged directory: $fullPath"
+        }
+        $relative = $fullPath.Substring($stagedLexiconPrefix.Length)
+        if (-not ($relative -match '(^|\\)(zh-ext|ext)\\')) { continue }
+        $tag = $file.BaseName.ToLowerInvariant()
+        if ($tag.StartsWith('thuocl_')) { $tag = $tag.Substring(7) }
+        elseif ($tag.Contains('__thuocl_')) { $tag = $tag.Substring($tag.IndexOf('__thuocl_') + 9) }
+        if ($retiredLexiconTags -contains $tag) {
+            Remove-Item -LiteralPath $fullPath -Force -ErrorAction Stop
+        }
     }
-}
 
-# 与仓库 scripts/prebake_lexicon.ps1 相同产物：词库目录内的 lexicon.bin（运行时优先加载）
-# Keep behavior aligned with scripts/prebake_lexicon.ps1:
-# generate lexicon.bin inside the staged lexicon directory.
-$lexiconBin = Join-Path $lexiconTarget 'lexicon.bin'
-& $bakeLexiconExe $lexiconDir.FullName $lexiconBin --profile $LexiconProfile
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $lexiconBin)) {
-    throw "Failed to prebake lexicon.bin: $lexiconBin"
-}
+    # 与仓库 scripts/prebake_lexicon.ps1 相同产物：词库目录内的 lexicon.bin（运行时优先加载）
+    # Keep behavior aligned with scripts/prebake_lexicon.ps1:
+    # generate lexicon.bin inside the staged lexicon directory.
+    $lexiconBin = Join-Path $lexiconTarget 'lexicon.bin'
+    & $bakeLexiconExe $lexiconDir.FullName $lexiconBin --profile $LexiconProfile
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $lexiconBin)) {
+        throw "Failed to prebake lexicon.bin: $lexiconBin"
+    }
 
-$coldLexiconIndex = Join-Path $lexiconTarget 'cold_lexicon.sqlite'
-if (-not (Test-Path -LiteralPath $coldLexiconIndex)) {
-    throw "Missing cold exact-pinyin index; rebuild bake_lexicon.exe: $coldLexiconIndex"
-}
+    $coldLexiconIndex = Join-Path $lexiconTarget 'cold_lexicon.sqlite'
+    if (-not (Test-Path -LiteralPath $coldLexiconIndex)) {
+        throw "Missing cold exact-pinyin index; rebuild bake_lexicon.exe: $coldLexiconIndex"
+    }
 
-$hotLexiconBin = Join-Path $lexiconTarget 'hot_lexicon.bin'
-& $bakeLexiconExe $lexiconDir.FullName $hotLexiconBin --profile hot
-if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $hotLexiconBin)) {
-    throw "Failed to prebake hot_lexicon.bin: $hotLexiconBin"
-}
+    $hotLexiconBin = Join-Path $lexiconTarget 'hot_lexicon.bin'
+    & $bakeLexiconExe $lexiconDir.FullName $hotLexiconBin --profile hot
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $hotLexiconBin)) {
+        throw "Failed to prebake hot_lexicon.bin: $hotLexiconBin"
+    }
 
-& python (Join-Path $RepoRoot 'scripts\lexicon_pack.py') $lexiconTarget
-if ($LASTEXITCODE -ne 0) { throw 'Lossless lexicon packing failed' }
+    & python (Join-Path $RepoRoot 'scripts\lexicon_pack.py') $lexiconTarget
+    if ($LASTEXITCODE -ne 0) { throw 'Lossless lexicon packing failed' }
+}
 
 if (Test-Path -LiteralPath $fontDir) {
     Sync-DirectoryContents -SourceDir $fontDir -DestinationDir (Join-Path $OutputRoot 'font1')
@@ -822,13 +844,15 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
 & python (Join-Path $RepoRoot 'scripts\trim_package.py') $OutputRoot
 if ($LASTEXITCODE -ne 0) { throw 'Verified package trim failed' }
 
-$componentManifestPath = Join-Path $OutputRoot $ComponentManifestName
-Remove-ItemWithRetry -Path $componentManifestPath
-Write-PackageHashManifest -Root $OutputRoot -ManifestName $PackageManifestName
-Write-ComponentManifestFromPackageManifest `
-    -Root $OutputRoot `
-    -PackageManifest $PackageManifestName `
-    -ComponentManifest $ComponentManifestName
+if (-not $FinalizeInBuild) {
+    $componentManifestPath = Join-Path $OutputRoot $ComponentManifestName
+    Remove-ItemWithRetry -Path $componentManifestPath
+    Write-PackageHashManifest -Root $OutputRoot -ManifestName $PackageManifestName
+    Write-ComponentManifestFromPackageManifest `
+        -Root $OutputRoot `
+        -PackageManifest $PackageManifestName `
+        -ComponentManifest $ComponentManifestName
+}
 if ($Zip) {
     $zipPath = "$OutputRoot.zip"
     if (Test-Path -LiteralPath $zipPath) {

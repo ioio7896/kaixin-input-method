@@ -175,7 +175,6 @@ target_link_libraries(srf_tsf_tip PRIVATE
   user32
   shell32
   gdi32
-  gdiplus
   uiautomationcore
   msimg32
 )
@@ -201,7 +200,11 @@ endif()
 
 if(MSVC)
   target_compile_options(srf_tsf_tip PRIVATE /W3 /EHsc /utf-8)
-  target_link_options(srf_tsf_tip PRIVATE "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/srf_tsf_tip.def")
+  target_link_libraries(srf_tsf_tip PRIVATE delayimp)
+  target_link_options(srf_tsf_tip PRIVATE
+    "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/srf_tsf_tip.def"
+    /DELAYLOAD:d2d1.dll
+    /DELAYLOAD:dwrite.dll)
 endif()
 
 add_executable(srf_ime_overlay WIN32
@@ -227,7 +230,6 @@ target_link_libraries(srf_ime_overlay PRIVATE
   user32
   shell32
   gdi32
-  gdiplus
   uiautomationcore
   msimg32
 )
@@ -250,7 +252,7 @@ if(BUILD_TESTING)
   target_include_directories(srf_candidate_window_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
   target_compile_definitions(srf_candidate_window_tests PRIVATE UNICODE _UNICODE)
   target_link_libraries(srf_candidate_window_tests PRIVATE
-    ole32 oleaut32 uuid advapi32 crypt32 d2d1 dwmapi dwrite user32 shell32 gdi32 gdiplus msimg32 uiautomationcore)
+    ole32 oleaut32 uuid advapi32 crypt32 d2d1 dwmapi dwrite user32 shell32 gdi32 msimg32 uiautomationcore)
   if(MSVC)
     set_property(TARGET srf_candidate_window_tests PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     target_compile_options(srf_candidate_window_tests PRIVATE /W4 /EHsc /utf-8)

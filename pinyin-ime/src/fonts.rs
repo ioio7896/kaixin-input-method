@@ -103,12 +103,12 @@ pub fn install_cjk_fonts_with_candidate_preview(
     let preview_loaded = if !preview_loaded {
         preview_family
             .and_then(|requested| {
-                let mut db = Database::new();
-                db.load_system_fonts();
                 let path = Path::new(requested);
                 let (bytes, index) = if path.is_file() {
                     (std::fs::read(path).ok()?, 0)
                 } else {
+                    let mut db = Database::new();
+                    db.load_system_fonts();
                     let id = db.query(&Query {
                         families: &[Family::Name(requested)],
                         weight: Weight::NORMAL,

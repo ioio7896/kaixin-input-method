@@ -185,6 +185,7 @@ std::atomic<unsigned> g_consecutiveLookupTimeouts{0};
 std::atomic<ULONGLONG> g_lastLookupTimeoutRestartTick{0};
 std::atomic<unsigned long long> g_latestLookupRequestId{0};
 std::atomic<unsigned long long> g_latestLookupCancelRequestId{0};
+std::atomic<unsigned long long> g_remoteLookupInFlight{0};
 std::atomic<bool> g_lookupCancelWorkerRunning{false};
 std::atomic<bool> g_trayWatchdogRunning{false};
 std::wstring g_lastEngineFailure;
@@ -3018,6 +3019,16 @@ bool RemoteLookupWithReconnectLocked(const std::wstring& reading, unsigned long 
                                      std::vector<std::wstring>* candidates,
                                      std::vector<std::wstring>* metaScores, int* count,
                                      std::wstring* error, bool fullResult, bool* hasMore) {
+  struct LookupFlight {
+    explicit LookupFlight(unsigned long long id) {
+      g_remoteLookupInFlight.store(id, std::memory_order_release);
+    }
+    ~LookupFlight() { g_remoteLookupInFlight.store(0, std::memory_order_release); }
+  } flight(requestId);
+  if (IsLookupRequestSuperseded(requestId)) {
+    if (error) *error = L"lookup superseded before sending";
+    return false;
+  }
   const auto lexiconDir = g_bridge.loadedLexiconDir;
   if (RemoteLookupLocked(reading, requestId, candidates, metaScores, count, error, fullResult,
                          hasMore)) {
@@ -3380,6 +3391,8 @@ unsigned long long SrfTip_NextLookupRequestId() {
 
 void SrfTip_CancelPendingLookupBefore(unsigned long long requestId) {
   if (requestId == 0) return;
+  const auto inFlight = g_remoteLookupInFlight.load(std::memory_order_acquire);
+  if (inFlight == 0 || inFlight >= requestId) return;
   unsigned long long current = g_latestLookupCancelRequestId.load(std::memory_order_acquire);
   while (requestId > current &&
          !g_latestLookupCancelRequestId.compare_exchange_weak(

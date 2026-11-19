@@ -1,6 +1,8 @@
 use crate::app_paths;
 use std::fs;
+use std::io::{self, Write};
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 const OCR_KEEP_ALIVE_ENV: &str = "KAIXIN_OCR_KEEP_ALIVE";
 
@@ -82,13 +84,30 @@ fn set_ini_value(text: &str, section: &str, key: &str, value: &str) -> String {
 }
 
 fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
+    static NEXT_TEMP: AtomicU64 = AtomicU64::new(0);
     let parent = path
         .parent()
         .ok_or_else(|| "OCR 配置目录不可用。".to_string())?;
     fs::create_dir_all(parent).map_err(|err| format!("创建 OCR 配置目录失败：{err}"))?;
-    // Windows does not reliably replace an existing target with `rename`; the
-    // preference is tiny and a direct overwrite avoids a delete-then-rename gap.
-    fs::write(path, bytes).map_err(|err| format!("更新 OCR 配置失败：{err}"))
+    let result = (|| -> io::Result<()> {
+        let (staging, mut file) = loop {
+            let nonce = NEXT_TEMP.fetch_add(1, Ordering::Relaxed);
+            let staging = parent.join(format!(".kaixin-ocr-{}-{nonce}.tmp", std::process::id()));
+            match fs::File::create_new(&staging) {
+                Ok(file) => break (staging, file),
+                Err(err) if err.kind() == io::ErrorKind::AlreadyExists => continue,
+                Err(err) => return Err(err),
+            }
+        };
+        let written = file.write_all(bytes).and_then(|()| file.sync_all());
+        drop(file);
+        let result = written.and_then(|()| fs::rename(&staging, path));
+        if result.is_err() {
+            let _ = fs::remove_file(&staging);
+        }
+        result
+    })();
+    result.map_err(|err| format!("更新 OCR 配置失败：{err}"))
 }
 
 fn parse_bool(value: &str) -> Option<bool> {
@@ -126,4 +145,26 @@ fn ini_value(text: &str, section: &str, key: &str) -> Option<String> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn atomic_write_creates_and_replaces_config() {
+        let stamp = std::time::SystemTime::UNIX_EPOCH
+            .elapsed()
+            .unwrap()
+            .as_nanos();
+        let dir =
+            std::env::temp_dir().join(format!("kaixin-tool-prefs-{}-{stamp}", std::process::id()));
+        let path = dir.join("kaixin.ini");
+        write_atomic(&path, b"[ocr]\r\nlanguage=zh_tw\r\n").unwrap();
+        write_atomic(&path, b"[ocr]\r\nlanguage=zh\r\n").unwrap();
+        assert_eq!(fs::read(&path).unwrap(), b"[ocr]\r\nlanguage=zh\r\n");
+        assert_eq!(fs::read_dir(&dir).unwrap().count(), 1);
+        fs::remove_file(path).unwrap();
+        fs::remove_dir(dir).unwrap();
+    }
 }

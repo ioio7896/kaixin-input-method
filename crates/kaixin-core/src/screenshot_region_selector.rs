@@ -150,6 +150,12 @@ pub fn select_region_action_with_options(
     platform::select_region_action_from_image(&frame.image, frame.origin_x, frame.origin_y, options)
 }
 
+/// Runs the isolated UIA snap-candidate worker when invoked via
+/// `--uia-snap-helper <handoff_dir>`.
+pub fn run_uia_snap_helper_from_args() -> Option<i32> {
+    platform::run_uia_snap_helper_from_args()
+}
+
 #[cfg(windows)]
 pub use platform::RegionSelectorCancellation;
 
@@ -201,6 +207,10 @@ pub fn select_region_from_image_with_options(
 mod platform {
     use super::*;
 
+    pub(super) fn run_uia_snap_helper_from_args() -> Option<i32> {
+        None
+    }
+
     pub(super) fn select_region_action_from_image(
         _image: &RgbaImage,
         _origin_x: i32,
@@ -215,11 +225,17 @@ mod platform {
 mod platform {
     use super::*;
     use crate::screenshot_trace::ScreenshotTrace;
+    use serde::{Deserialize, Serialize};
     use std::ffi::c_void;
+    use std::fs;
     use std::mem::{size_of, zeroed};
+    use std::path::{Path, PathBuf};
+    use std::process::{Child, Command, Stdio};
     use std::ptr::null;
+    use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
     use std::sync::mpsc::{self, Receiver, TryRecvError};
     use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
+    use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
     use windows_sys::Win32::Foundation::{
         GetLastError, ERROR_CLASS_ALREADY_EXISTS, HWND, LPARAM, LRESULT, POINT, RECT, WPARAM,
     };
@@ -235,7 +251,8 @@ mod platform {
     };
     use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
     use windows_sys::Win32::UI::HiDpi::{
-        GetDpiForWindow, SetThreadDpiAwarenessContext, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
+        GetDpiForWindow, SetProcessDpiAwarenessContext, SetThreadDpiAwarenessContext,
+        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
     };
     use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
         GetKeyState, ReleaseCapture, SetCapture, SetFocus, VK_CONTROL, VK_DOWN, VK_ESCAPE, VK_F1,
@@ -244,18 +261,26 @@ mod platform {
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, EnumChildWindows,
         EnumWindows, GetClientRect, GetCursorPos, GetMessageW, GetWindowLongPtrW, GetWindowRect,
-        IsIconic, IsWindow, IsWindowVisible, LoadCursorW, PostMessageW, RegisterClassW, SetCursor,
-        SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow, TranslateMessage,
-        CREATESTRUCTW, CS_DBLCLKS, CS_HREDRAW, CS_VREDRAW, GWLP_USERDATA, HWND_TOPMOST, IDC_CROSS,
-        IDC_SIZEALL, IDC_SIZENESW, IDC_SIZENS, IDC_SIZENWSE, IDC_SIZEWE, MSG, SWP_NOOWNERZORDER,
-        SWP_SHOWWINDOW, SW_SHOW, WM_CHAR, WM_CLOSE, WM_DISPLAYCHANGE, WM_DPICHANGED, WM_ERASEBKGND,
-        WM_KEYDOWN, WM_KILLFOCUS, WM_LBUTTONDBLCLK, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MOUSEMOVE,
-        WM_MOUSEWHEEL, WM_NCCREATE, WM_NCDESTROY, WM_PAINT, WM_RBUTTONDOWN, WM_SETCURSOR,
-        WNDCLASSW, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP,
+        GetWindowThreadProcessId, IsIconic, IsWindow, IsWindowVisible, LoadCursorW, PostMessageW,
+        RegisterClassW, SetCursor, SetForegroundWindow, SetWindowLongPtrW, SetWindowPos,
+        ShowWindow, TranslateMessage, CREATESTRUCTW, CS_DBLCLKS, CS_HREDRAW, CS_VREDRAW,
+        GWLP_USERDATA, HWND_TOPMOST, IDC_CROSS, IDC_SIZEALL, IDC_SIZENESW, IDC_SIZENS,
+        IDC_SIZENWSE, IDC_SIZEWE, MSG, SWP_NOOWNERZORDER, SWP_SHOWWINDOW, SW_SHOW, WM_CHAR,
+        WM_CLOSE, WM_DISPLAYCHANGE, WM_DPICHANGED, WM_ERASEBKGND, WM_KEYDOWN, WM_KILLFOCUS,
+        WM_LBUTTONDBLCLK, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MOUSEMOVE, WM_MOUSEWHEEL, WM_NCCREATE,
+        WM_NCDESTROY, WM_PAINT, WM_RBUTTONDOWN, WM_SETCURSOR, WNDCLASSW, WS_EX_TOOLWINDOW,
+        WS_EX_TOPMOST, WS_POPUP,
     };
 
     const CLASS_NAME: &str = "KaixinScreenshotRegionSelector_v1";
     const WINDOW_TITLE: &str = "开心输入法截图区域选择";
+    const UIA_SNAP_HELPER_ARG: &str = "--uia-snap-helper";
+    const UIA_HELPER_TIMEOUT: Duration = Duration::from_millis(1_500);
+    const UIA_SCAN_BUDGET: Duration = Duration::from_millis(600);
+    const UIA_TIMEOUT_MS: u32 = 120;
+    const MAX_UIA_TOP_WINDOWS: usize = 24;
+    const MAX_UIA_ELEMENTS: usize = 2_000;
+    static NEXT_UIA_SCAN: AtomicU64 = AtomicU64::new(0);
 
     #[derive(Default)]
     struct CancellationState {
@@ -357,9 +382,59 @@ mod platform {
             assert_eq!(message.message, WM_CLOSE);
             assert_eq!(cancellation.state().window, 0);
         }
+
+        #[test]
+        fn uia_scan_respects_preexisting_cancellation() {
+            let collector = CandidateCollector {
+                origin_x: 0,
+                origin_y: 0,
+                desktop: LocalRect {
+                    left: 0,
+                    top: 0,
+                    right: 1920,
+                    bottom: 1080,
+                },
+                current_pid: std::process::id(),
+                candidates: Vec::new(),
+                top_windows: vec![(1, 0)],
+            };
+            let cancel = Arc::new(AtomicBool::new(true));
+            let receiver = start_uia_candidate_scan(&collector, cancel);
+            assert!(matches!(
+                receiver.try_recv(),
+                Err(TryRecvError::Disconnected)
+            ));
+        }
+
+        #[test]
+        fn uia_snap_helper_writes_empty_candidates_without_windows() {
+            let handoff = UiaHandoff::new().unwrap();
+            let request = UiaSnapRequest {
+                origin_x: 0,
+                origin_y: 0,
+                desktop: LocalRect {
+                    left: 0,
+                    top: 0,
+                    right: 1920,
+                    bottom: 1080,
+                },
+                caller_pid: std::process::id(),
+                windows: Vec::new(),
+            };
+            fs::write(
+                handoff.0.join("request.json"),
+                serde_json::to_vec(&request).unwrap(),
+            )
+            .unwrap();
+            run_uia_snap_helper(&handoff.0).unwrap();
+            let candidates: Vec<SnapCandidate> =
+                serde_json::from_slice(&fs::read(handoff.0.join("candidates.json")).unwrap())
+                    .unwrap();
+            assert!(candidates.is_empty());
+        }
     }
 
-    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
     struct LocalRect {
         left: i32,
         top: i32,
@@ -367,11 +442,55 @@ mod platform {
         bottom: i32,
     }
 
-    #[derive(Clone, Copy, Debug)]
+    #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
     struct SnapCandidate {
         rect: LocalRect,
         is_control: bool,
         z_rank: usize,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct UiaSnapRequest {
+        origin_x: i32,
+        origin_y: i32,
+        desktop: LocalRect,
+        caller_pid: u32,
+        windows: Vec<(isize, usize)>,
+    }
+
+    struct UiaHandoff(PathBuf);
+
+    impl UiaHandoff {
+        fn new() -> Result<Self, String> {
+            let stamp = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos();
+            let path = std::env::temp_dir().join(format!(
+                "kaixin-uia-{}-{stamp}-{}",
+                std::process::id(),
+                NEXT_UIA_SCAN.fetch_add(1, Ordering::Relaxed)
+            ));
+            fs::create_dir(&path).map_err(|err| format!("创建 UIA 交接目录失败：{err}"))?;
+            Ok(Self(path))
+        }
+    }
+
+    impl Drop for UiaHandoff {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    struct OwnedHelperChild(Child);
+
+    impl Drop for OwnedHelperChild {
+        fn drop(&mut self) {
+            if !matches!(self.0.try_wait(), Ok(Some(_))) {
+                let _ = self.0.kill();
+            }
+            let _ = self.0.wait();
+        }
     }
 
     #[derive(Clone, Copy, Debug)]
@@ -434,6 +553,7 @@ mod platform {
         origin_x: i32,
         origin_y: i32,
         desktop: LocalRect,
+        current_pid: u32,
         candidates: Vec<SnapCandidate>,
         top_windows: Vec<(HWND, usize)>,
     }
@@ -443,6 +563,7 @@ mod platform {
         origin_y: i32,
         width: i32,
         height: i32,
+        uia_cancel: Arc<AtomicBool>,
     ) -> (Vec<SnapCandidate>, Receiver<Vec<SnapCandidate>>) {
         let mut collector = CandidateCollector {
             origin_x,
@@ -453,6 +574,7 @@ mod platform {
                 right: width,
                 bottom: height,
             },
+            current_pid: std::process::id(),
             candidates: Vec::new(),
             top_windows: Vec::new(),
         };
@@ -463,7 +585,7 @@ mod platform {
             );
         }
         sort_snap_candidates(&mut collector.candidates);
-        let uia_candidates = start_uia_candidate_scan(&collector);
+        let uia_candidates = start_uia_candidate_scan(&collector, uia_cancel);
         (collector.candidates, uia_candidates)
     }
 
@@ -487,6 +609,11 @@ mod platform {
     unsafe extern "system" fn collect_top_level_candidate(hwnd: HWND, lparam: LPARAM) -> i32 {
         let collector = &mut *(lparam as *mut CandidateCollector);
         if IsWindowVisible(hwnd) == 0 || IsIconic(hwnd) != 0 {
+            return 1;
+        }
+        let mut window_pid = 0u32;
+        GetWindowThreadProcessId(hwnd, &mut window_pid);
+        if window_pid == collector.current_pid {
             return 1;
         }
         if let Some(rect) = window_local_rect(hwnd, collector) {
@@ -520,58 +647,172 @@ mod platform {
         1
     }
 
-    fn start_uia_candidate_scan(collector: &CandidateCollector) -> Receiver<Vec<SnapCandidate>> {
-        let windows = collector.top_windows.clone();
-        let origin_x = collector.origin_x;
-        let origin_y = collector.origin_y;
-        let desktop = collector.desktop;
+    /// Runs UIA snap-candidate enumeration in a short-lived helper process so
+    /// `uiautomationcore.dll` COM/MTA faults or broken third-party providers can
+    /// never crash the resident tray or OCR process.
+    pub(super) fn run_uia_snap_helper_from_args() -> Option<i32> {
+        let args: Vec<String> = std::env::args().collect();
+        let index = args.iter().position(|arg| arg == UIA_SNAP_HELPER_ARG)?;
+        let Some(path) = args.get(index + 1).map(PathBuf::from) else {
+            return Some(2);
+        };
+        Some(if run_uia_snap_helper(&path).is_ok() {
+            0
+        } else {
+            1
+        })
+    }
+
+    fn run_uia_snap_helper(path: &Path) -> Result<(), String> {
+        unsafe {
+            let _ = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            let _ = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        }
+        let request: UiaSnapRequest = serde_json::from_slice(
+            &fs::read(path.join("request.json")).map_err(|err| err.to_string())?,
+        )
+        .map_err(|err| err.to_string())?;
+        let candidates = enumerate_uia_candidates(&request);
+        let bytes = serde_json::to_vec(&candidates).map_err(|err| err.to_string())?;
+        let tmp_path = path.join("candidates.json.tmp");
+        fs::write(&tmp_path, bytes).map_err(|err| err.to_string())?;
+        fs::rename(&tmp_path, path.join("candidates.json")).map_err(|err| err.to_string())
+    }
+
+    fn uia_snap_helper_executable() -> Option<PathBuf> {
+        let helper = std::env::current_exe()
+            .ok()?
+            .with_file_name("srf_ime_tray.exe");
+        helper.is_file().then_some(helper)
+    }
+
+    fn start_uia_candidate_scan(
+        collector: &CandidateCollector,
+        cancel: Arc<AtomicBool>,
+    ) -> Receiver<Vec<SnapCandidate>> {
         let (sender, receiver) = mpsc::channel();
-        std::thread::spawn(move || {
-            let _dpi_guard = DpiContextGuard::enter();
-            let _ = sender.send(enumerate_uia_candidates(
-                windows, origin_x, origin_y, desktop,
-            ));
-        });
+        if cancel.load(Ordering::Acquire) || collector.top_windows.is_empty() {
+            return receiver;
+        }
+        let Some(helper) = uia_snap_helper_executable() else {
+            return receiver;
+        };
+        let request = UiaSnapRequest {
+            origin_x: collector.origin_x,
+            origin_y: collector.origin_y,
+            desktop: collector.desktop,
+            caller_pid: collector.current_pid,
+            windows: collector
+                .top_windows
+                .iter()
+                .copied()
+                .take(MAX_UIA_TOP_WINDOWS)
+                .collect(),
+        };
+        let _ = std::thread::Builder::new()
+            .name("screenshot-uia-snap".into())
+            .spawn(move || {
+                if let Some(candidates) =
+                    run_uia_candidate_scan_isolated(&helper, &request, &cancel)
+                {
+                    let _ = sender.send(candidates);
+                }
+            });
         receiver
     }
 
-    fn enumerate_uia_candidates(
-        top_windows: Vec<(HWND, usize)>,
-        origin_x: i32,
-        origin_y: i32,
-        desktop: LocalRect,
-    ) -> Vec<SnapCandidate> {
+    fn run_uia_candidate_scan_isolated(
+        helper: &Path,
+        request: &UiaSnapRequest,
+        cancel: &AtomicBool,
+    ) -> Option<Vec<SnapCandidate>> {
+        use std::os::windows::process::CommandExt;
+
+        let handoff = UiaHandoff::new().ok()?;
+        let payload = serde_json::to_vec(request).ok()?;
+        fs::write(handoff.0.join("request.json"), payload).ok()?;
+        let mut command = Command::new(helper);
+        command
+            .arg(UIA_SNAP_HELPER_ARG)
+            .arg(&handoff.0)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .creation_flags(0x0800_0000); // CREATE_NO_WINDOW
+        let mut child = OwnedHelperChild(command.spawn().ok()?);
+        let started = Instant::now();
+        loop {
+            if cancel.load(Ordering::Acquire) {
+                return None;
+            }
+            match child.0.try_wait() {
+                Ok(Some(status)) => {
+                    if !status.success() {
+                        return None;
+                    }
+                    break;
+                }
+                Ok(None) => {}
+                Err(_) => return None,
+            }
+            if started.elapsed() >= UIA_HELPER_TIMEOUT {
+                return None;
+            }
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        if cancel.load(Ordering::Acquire) {
+            return None;
+        }
+        let bytes = fs::read(handoff.0.join("candidates.json")).ok()?;
+        serde_json::from_slice(&bytes).ok()
+    }
+
+    fn enumerate_uia_candidates(request: &UiaSnapRequest) -> Vec<SnapCandidate> {
+        use windows::core::Interface;
         use windows::Win32::Foundation::HWND as WinHwnd;
         use windows::Win32::System::Com::{
-            CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_INPROC_SERVER,
-            COINIT_MULTITHREADED,
+            CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
         };
-        use windows::Win32::UI::Accessibility::{CUIAutomation8, IUIAutomation};
+        use windows::Win32::UI::Accessibility::{CUIAutomation8, IUIAutomation, IUIAutomation2};
 
-        const MAX_UIA_ELEMENTS: usize = 2_000;
         let mut result = Vec::new();
+        if request.windows.is_empty() {
+            return result;
+        }
+        let started = Instant::now();
+        let own_pid = std::process::id();
         unsafe {
+            // Keep the COM MTA alive until this short-lived helper process exits.
+            // Calling CoUninitialize() on the sole MTA thread right after using
+            // CUIAutomation8 can tear down the MTA while uiautomationcore.dll's
+            // internal worker threads are still winding down (0xc0000005).
             if CoInitializeEx(None, COINIT_MULTITHREADED).is_err() {
                 return result;
             }
-            struct ComGuard;
-            impl Drop for ComGuard {
-                fn drop(&mut self) {
-                    unsafe { CoUninitialize() };
-                }
-            }
-            let _guard = ComGuard;
-            let Ok(automation): Result<IUIAutomation, _> =
+            let Ok(automation2): Result<IUIAutomation2, _> =
                 CoCreateInstance(&CUIAutomation8, None, CLSCTX_INPROC_SERVER)
             else {
+                return result;
+            };
+            let _ = automation2.SetConnectionTimeout(UIA_TIMEOUT_MS);
+            let _ = automation2.SetTransactionTimeout(UIA_TIMEOUT_MS);
+            let Ok(automation): Result<IUIAutomation, _> = automation2.cast() else {
                 return result;
             };
             let Ok(walker) = automation.RawViewWalker() else {
                 return result;
             };
-            for (hwnd, z_rank) in top_windows {
-                if result.len() >= MAX_UIA_ELEMENTS {
+            for &(hwnd, z_rank) in &request.windows {
+                if result.len() >= MAX_UIA_ELEMENTS || started.elapsed() >= UIA_SCAN_BUDGET {
                     break;
+                }
+                if IsWindow(hwnd) == 0 {
+                    continue;
+                }
+                let mut window_pid = 0u32;
+                GetWindowThreadProcessId(hwnd, &mut window_pid);
+                if window_pid == request.caller_pid || window_pid == own_pid {
+                    continue;
                 }
                 let Ok(root) = automation.ElementFromHandle(WinHwnd(hwnd as *mut _)) else {
                     continue;
@@ -581,7 +822,7 @@ mod platform {
                     stack.push(child);
                 }
                 while let Some(element) = stack.pop() {
-                    if result.len() >= MAX_UIA_ELEMENTS {
+                    if result.len() >= MAX_UIA_ELEMENTS || started.elapsed() >= UIA_SCAN_BUDGET {
                         break;
                     }
                     if element
@@ -591,10 +832,22 @@ mod platform {
                     {
                         if let Ok(rect) = element.CurrentBoundingRectangle() {
                             let local = LocalRect {
-                                left: rect.left.saturating_sub(origin_x).max(desktop.left),
-                                top: rect.top.saturating_sub(origin_y).max(desktop.top),
-                                right: rect.right.saturating_sub(origin_x).min(desktop.right),
-                                bottom: rect.bottom.saturating_sub(origin_y).min(desktop.bottom),
+                                left: rect
+                                    .left
+                                    .saturating_sub(request.origin_x)
+                                    .max(request.desktop.left),
+                                top: rect
+                                    .top
+                                    .saturating_sub(request.origin_y)
+                                    .max(request.desktop.top),
+                                right: rect
+                                    .right
+                                    .saturating_sub(request.origin_x)
+                                    .min(request.desktop.right),
+                                bottom: rect
+                                    .bottom
+                                    .saturating_sub(request.origin_y)
+                                    .min(request.desktop.bottom),
                             };
                             if local.width() >= 8 && local.height() >= 8 {
                                 result.push(SnapCandidate {
@@ -695,6 +948,7 @@ mod platform {
         selection: Option<LocalRect>,
         snap_candidates: Vec<SnapCandidate>,
         uia_candidates: Option<Receiver<Vec<SnapCandidate>>>,
+        uia_cancel: Arc<AtomicBool>,
         snap_matches: Vec<usize>,
         snap_match_index: usize,
         stable_snap: Option<LocalRect>,
@@ -796,8 +1050,14 @@ mod platform {
                 biClrImportant: 0,
             };
 
-            let (snap_candidates, uia_candidates) =
-                enumerate_snap_candidates(origin_x, origin_y, image_width, image_height);
+            let uia_cancel = Arc::new(AtomicBool::new(false));
+            let (snap_candidates, uia_candidates) = enumerate_snap_candidates(
+                origin_x,
+                origin_y,
+                image_width,
+                image_height,
+                uia_cancel.clone(),
+            );
             Ok(Self {
                 origin_x,
                 origin_y,
@@ -814,6 +1074,7 @@ mod platform {
                 selection: None,
                 snap_candidates,
                 uia_candidates: Some(uia_candidates),
+                uia_cancel,
                 snap_matches: Vec::new(),
                 snap_match_index: 0,
                 stable_snap: None,
@@ -1230,6 +1491,7 @@ mod platform {
             ));
             self.completed = true;
             self.cancelled = false;
+            self.uia_cancel.store(true, Ordering::Release);
             Ok(true)
         }
 
@@ -1237,11 +1499,13 @@ mod platform {
             self.result = None;
             self.completed = true;
             self.cancelled = true;
+            self.uia_cancel.store(true, Ordering::Release);
         }
     }
 
     impl Drop for SelectorState {
         fn drop(&mut self) {
+            self.uia_cancel.store(true, Ordering::Release);
             unsafe {
                 release_paint_resources(self);
             }

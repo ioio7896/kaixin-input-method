@@ -195,6 +195,38 @@ class DirectWriteLru {
 
 class DirectTextRenderer {
  public:
+  std::wstring ReadFontFamilyName(const std::filesystem::path& fontPath) {
+    if (fontPath.empty() || !EnsureDWriteFactory()) return {};
+    Microsoft::WRL::ComPtr<IDWriteFactory3> factory;
+    Microsoft::WRL::ComPtr<IDWriteFontFaceReference> reference;
+    Microsoft::WRL::ComPtr<IDWriteFontFace3> face;
+    if (FAILED(m_dwriteFactory.As(&factory)) ||
+        FAILED(factory->CreateFontFaceReference(fontPath.c_str(), nullptr, 0,
+                                                DWRITE_FONT_SIMULATIONS_NONE, &reference)) ||
+        FAILED(reference->CreateFontFace(&face))) {
+      return {};
+    }
+
+    Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> names;
+    BOOL exists = FALSE;
+    if (FAILED(face->GetInformationalStrings(DWRITE_INFORMATIONAL_STRING_WIN32_FAMILY_NAMES, &names,
+                                             &exists)) ||
+        !exists) {
+      if (FAILED(face->GetFamilyNames(names.ReleaseAndGetAddressOf()))) return {};
+    }
+    if (!names || names->GetCount() == 0) return {};
+    wchar_t locale[LOCALE_NAME_MAX_LENGTH] = {};
+    UINT32 index = 0;
+    BOOL found = FALSE;
+    if (GetUserDefaultLocaleName(locale, LOCALE_NAME_MAX_LENGTH) != 0) {
+      names->FindLocaleName(locale, &index, &found);
+    }
+    if (!found) names->FindLocaleName(L"en-us", &index, &found);
+    wchar_t family[LF_FACESIZE] = {};
+    if (FAILED(names->GetString(found ? index : 0, family, LF_FACESIZE))) return {};
+    return family;
+  }
+
   void ConfigureCustomFont(const std::filesystem::path& path, const std::wstring& family) {
     if (path == m_customFontPath && family == m_customFontFamily) return;
     m_customFontPath = path;
@@ -335,18 +367,18 @@ class DirectTextRenderer {
   }
 
  private:
+  bool EnsureDWriteFactory() {
+    return m_dwriteFactory || SUCCEEDED(DWriteCreateFactory(
+                                  DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+                                  reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf())));
+  }
+
   bool EnsureFactories() {
-    if (m_dwriteFactory && m_d2dFactory) return true;
-    if (!m_dwriteFactory) {
-      HRESULT hr =
-          DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-                              reinterpret_cast<IUnknown**>(m_dwriteFactory.GetAddressOf()));
-      if (FAILED(hr)) return false;
-    }
+    if (!EnsureDWriteFactory()) return false;
     if (!m_d2dFactory) {
       D2D1_FACTORY_OPTIONS options = {};
       HRESULT hr =
-          D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), &options,
+          D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory), &options,
                             reinterpret_cast<void**>(m_d2dFactory.GetAddressOf()));
       if (FAILED(hr)) return false;
     }

@@ -19,7 +19,6 @@ using namespace srf_candidate_window_detail;
 #include <dwrite.h>
 #include <dwrite_2.h>
 #include <dwrite_3.h>
-#include <gdiplus.h>
 #include <wrl/client.h>
 #include <windowsx.h>
 
@@ -328,18 +327,6 @@ std::filesystem::path ModuleDirFromAddress(const void* address) {
   return std::filesystem::path(path).parent_path();
 }
 
-struct GdiplusRuntime {
-  GdiplusRuntime() {
-    Gdiplus::GdiplusStartupInput input;
-    ready = Gdiplus::GdiplusStartup(&token, &input, nullptr) == Gdiplus::Ok;
-  }
-  ~GdiplusRuntime() {
-    if (ready) Gdiplus::GdiplusShutdown(token);
-  }
-  ULONG_PTR token = 0;
-  bool ready = false;
-};
-
 // Release the Direct2D resources on their owner thread before the TIP unloads.
 thread_local size_t g_candidateRenderingUsers = 0;
 
@@ -461,26 +448,6 @@ std::wstring FontCacheKey(const std::filesystem::path& path) {
   return key;
 }
 
-std::wstring ReadFontFamilyName(const std::filesystem::path& fontPath) {
-  if (fontPath.empty()) return {};
-  // All GDI+ objects below die before the scoped runtime. No GDI+ teardown is
-  // needed in DllMain, including when the host exits without releasing its TIP.
-  GdiplusRuntime runtime;
-  if (!runtime.ready) return {};
-  Gdiplus::PrivateFontCollection collection;
-  if (collection.AddFontFile(fontPath.c_str()) != Gdiplus::Ok) return {};
-  const int familyCount = collection.GetFamilyCount();
-  if (familyCount <= 0) return {};
-  std::vector<Gdiplus::FontFamily> families(static_cast<size_t>(familyCount));
-  int found = 0;
-  if (collection.GetFamilies(familyCount, families.data(), &found) != Gdiplus::Ok || found <= 0) {
-    return {};
-  }
-  WCHAR familyName[LF_FACESIZE] = {};
-  if (families[0].GetFamilyName(familyName) != Gdiplus::Ok) return {};
-  return familyName;
-}
-
 struct PreparedFontEntry {
   std::wstring faceName;
   bool registered = false;
@@ -516,7 +483,7 @@ PreparedFontEntry EnsurePreparedFontEntry(const std::filesystem::path& fontPath)
   PreparedFontEntry entry;
   entry.writeTime = writeTime;
   entry.fileSize = fileSize;
-  entry.faceName = ReadFontFamilyName(fontPath);
+  entry.faceName = GetDirectTextRenderer().ReadFontFamilyName(fontPath);
   entry.registered = AddFontResourceExW(fontPath.c_str(), FR_PRIVATE, nullptr) > 0;
   if (!entry.registered) entry.faceName.clear();
   std::lock_guard<std::mutex> lock(g_preparedFontMutex);
@@ -826,11 +793,8 @@ double SignedDistanceToRoundedRect(double x, double y, double left, double top, 
   const double r = std::clamp(radius, 0.0, std::min(hx, hy));
   const double qx = std::abs(x - cx) - (hx - r);
   const double qy = std::abs(y - cy) - (hy - r);
-  const double ox = std::max(qx, 0.0);
-  const double oy = std::max(qy, 0.0);
-  const double outside = std::sqrt(ox * ox + oy * oy);
-  const double inside = std::min(std::max(qx, qy), 0.0);
-  return outside + inside - r;
+  if (qx <= 0.0 || qy <= 0.0) return std::max(qx, qy) - r;
+  return std::sqrt(qx * qx + qy * qy) - r;
 }
 
 struct SoftShadowCache {

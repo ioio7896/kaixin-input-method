@@ -2894,8 +2894,15 @@ impl RapidOcrProcess {
         timeout: Duration,
     ) -> Result<RapidOcrCommandOutput, String> {
         #[cfg(windows)]
-        let _priority = OcrRecognitionPriority::raise(&self.child);
-        self.request(request, timeout)
+        let previous_priority = raise_child_priority(&self.child);
+        let result = self.request(request, timeout);
+        #[cfg(windows)]
+        if let Some(previous) = previous_priority {
+            if matches!(self.child.try_wait(), Ok(None)) {
+                restore_child_priority(&self.child, previous);
+            }
+        }
+        result
     }
 
     fn request<T: Serialize>(
@@ -2983,37 +2990,33 @@ impl RapidOcrProcess {
 }
 
 #[cfg(windows)]
-struct OcrRecognitionPriority {
-    handle: isize,
-    previous: u32,
-}
-
-#[cfg(windows)]
-impl OcrRecognitionPriority {
-    fn raise(child: &Child) -> Option<Self> {
-        use windows_sys::Win32::System::Threading::{
-            GetPriorityClass, SetPriorityClass, ABOVE_NORMAL_PRIORITY_CLASS,
-            BELOW_NORMAL_PRIORITY_CLASS, IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
-        };
-        let handle = child.as_raw_handle() as isize;
-        let previous = unsafe { GetPriorityClass(handle) };
-        if matches!(
-            previous,
-            IDLE_PRIORITY_CLASS | BELOW_NORMAL_PRIORITY_CLASS | NORMAL_PRIORITY_CLASS
-        ) && unsafe { SetPriorityClass(handle, ABOVE_NORMAL_PRIORITY_CLASS) } != 0
-        {
-            Some(Self { handle, previous })
-        } else {
-            None
-        }
+fn raise_child_priority(child: &Child) -> Option<u32> {
+    use windows_sys::Win32::System::Threading::{
+        GetPriorityClass, SetPriorityClass, ABOVE_NORMAL_PRIORITY_CLASS,
+        BELOW_NORMAL_PRIORITY_CLASS, IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
+    };
+    let handle = child.as_raw_handle() as isize;
+    if handle == 0 {
+        return None;
+    }
+    let previous = unsafe { GetPriorityClass(handle) };
+    if matches!(
+        previous,
+        IDLE_PRIORITY_CLASS | BELOW_NORMAL_PRIORITY_CLASS | NORMAL_PRIORITY_CLASS
+    ) && unsafe { SetPriorityClass(handle, ABOVE_NORMAL_PRIORITY_CLASS) } != 0
+    {
+        Some(previous)
+    } else {
+        None
     }
 }
 
 #[cfg(windows)]
-impl Drop for OcrRecognitionPriority {
-    fn drop(&mut self) {
-        use windows_sys::Win32::System::Threading::SetPriorityClass;
-        unsafe { SetPriorityClass(self.handle, self.previous) };
+fn restore_child_priority(child: &Child, previous: u32) {
+    use windows_sys::Win32::System::Threading::SetPriorityClass;
+    let handle = child.as_raw_handle() as isize;
+    if handle != 0 {
+        unsafe { SetPriorityClass(handle, previous) };
     }
 }
 
@@ -3975,10 +3978,12 @@ fn main() -> eframe::Result<()> {
     // Start Python, load the models and warm the active profile while the user
     // is selecting/capturing the screen region. The recognition worker shares
     // the same process slot and will simply wait if capture completes first.
-    start_rapidocr_prewarm(
-        OcrLanguageMode::from_config(&tool_prefs::ocr_language()),
-        ocr_speed_profile(),
-    );
+    if startup_request.image.is_none() {
+        start_rapidocr_prewarm(
+            OcrLanguageMode::from_config(&tool_prefs::ocr_language()),
+            ocr_speed_profile(),
+        );
+    }
     let startup_capture = if let Some(image) = startup_request.image.as_ref() {
         match capture_session_from_image_file(
             image,

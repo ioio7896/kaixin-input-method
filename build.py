@@ -2387,10 +2387,9 @@ def step_stage(
     x86_overlay_exe: Path,
     output_root: Path,
     powershell: Path,
-    make_zip: bool,
     profile_cap: str,
     include_ocr: bool = True,
-    include_translation: bool = False,
+    prepared_lexicon_dir: Path | None = None,
 ) -> None:
     """Build helper: step_stage."""
     script = tsf_tip / "installer" / "stage_package.ps1"
@@ -2418,9 +2417,10 @@ def step_stage(
         profile_cap,
         "-IncludeOcr",
         "1" if include_ocr else "0",
+        "-FinalizeInBuild",
     ]
-    if make_zip:
-        cmd.append("-Zip")
+    if prepared_lexicon_dir is not None:
+        cmd.extend(["-PreparedLexiconDir", str(prepared_lexicon_dir)])
     run(cmd, cwd=repo)
 
 
@@ -2614,7 +2614,6 @@ def verify_staged_package(
     """Build helper: verify_staged_package."""
     if not output_root.is_dir():
         raise FileNotFoundError(f"stage directory does not exist: {output_root}")
-    verify_package_hash_manifest(output_root)
     marker = output_root / "current_runtime_payload.txt"
     if not marker.is_file():
         raise FileNotFoundError(f"missing current_runtime_payload.txt: {marker}")
@@ -3889,6 +3888,7 @@ def main() -> int:
                 assert_pe_arch(x86_tip_dll, ARCH_X86, "x86 srf_tsf_tip.dll")
                 assert_pe_arch(x86_overlay_exe, ARCH_X86, "x86 srf_ime_overlay.exe")
             make_zip = bool(args.portable_zip)
+            prepared_lexicon_dir = None
             for variant in package_variants:
                 stage_root = stage_root_for_variant(repo, variant)
                 purged = purge_lexicon_caches(repo, output_root=stage_root)
@@ -3906,11 +3906,12 @@ def main() -> int:
                     x86_overlay_exe,
                     stage_root,
                     powershell,
-                    make_zip=make_zip,
                     profile_cap=profile_cap,
                     include_ocr=variant.include_ocr,
-                    include_translation=variant.include_translation,
+                    prepared_lexicon_dir=prepared_lexicon_dir,
                 )
+                if prepared_lexicon_dir is None:
+                    prepared_lexicon_dir = stage_root / find_lexicon_dir(repo).name
                 if not ctx.dry_run and stage_root.is_dir():
                     verify_staged_package(
                         stage_root,
@@ -4011,23 +4012,39 @@ def main() -> int:
                     else installer_pending_directory(dist_dir)
                 )
                 with pending_context as pending_dir:
-                    installers: list[Path] = []
-                    for variant in package_variants:
-                        exe = step_inno(
+                    installer_dir = Path(pending_dir)
+
+                    def build_installer(variant: PackageVariant) -> None:
+                        step_inno(
                             repo,
                             script_name=installer_script,
                             output_name=installer_output_by_variant[variant.id],
                             package_dir=stage_root_for_variant(repo, variant),
                             include_ocr=variant.include_ocr,
                             include_translation=variant.include_translation,
-                            output_dir=Path(pending_dir),
+                            output_dir=installer_dir,
                         )
-                        if not ctx.dry_run:
+
+                    if ctx.dry_run:
+                        for variant in package_variants:
+                            build_installer(variant)
+                    else:
+                        errors = run_parallel_tasks(
+                            [
+                                (variant.label, lambda variant=variant: build_installer(variant))
+                                for variant in package_variants
+                            ],
+                            context="installer",
+                        )
+                        if errors:
+                            raise errors[0][1]
+                        installers = []
+                        for variant in package_variants:
+                            exe = installer_dir / installer_output_by_variant[variant.id]
                             sign_file(exe, args)
                             installers.append(exe)
                             print_msg(f"  {green('OK')} {variant.label}: {exe.name}")
                             print_msg(f"  {green('OK')} size: {fmt_size(exe.stat().st_size)}")
-                    if not ctx.dry_run:
                         prefix = "kaixin-user-setup" if args.user_installer else "kaixin-setup"
                         publish_installers(
                             dist_dir,

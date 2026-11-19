@@ -528,7 +528,9 @@ fn process_running_summary(name: &str) -> String {
     #[cfg(windows)]
     {
         let filter = format!("IMAGENAME eq {name}");
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
         let output = Command::new("tasklist")
+            .creation_flags(CREATE_NO_WINDOW)
             .arg("/FI")
             .arg(&filter)
             .arg("/NH")

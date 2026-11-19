@@ -96,7 +96,7 @@ mod win {
         }
     }
 
-    unsafe fn foreground_suppresses_tool_hotkeys() -> bool {
+    unsafe fn foreground_suppresses_tool_hotkeys(content: &str) -> bool {
         if pure_game_mode_enabled() {
             return true;
         }
@@ -108,8 +108,7 @@ mod win {
             format!("{name}.exe")
         };
         let class = window_class_name(hwnd);
-        let content = fs::read_to_string(config_path()).unwrap_or_default();
-        pinyin_ime::game_keyboard_policy::suppress_tool_hotkeys(&content, &process, &class)
+        pinyin_ime::game_keyboard_policy::suppress_tool_hotkeys(content, &process, &class)
     }
 
     const CLASS_NAME: &str = "KaixinImeTrayWindow";
@@ -301,7 +300,8 @@ mod win {
         ocr_hotkey: Option<HotkeySpec>,
         ocr_translate_hotkey: Option<HotkeySpec>,
         translate_hotkey: Option<HotkeySpec>,
-        hotkey_config_mtime: Option<SystemTime>,
+        hotkey_config_stamp: Option<(PathBuf, SystemTime, u64)>,
+        hotkey_config_text: String,
         tool_hotkeys_suppressed: bool,
         foreground_hook: isize,
         clipboard_config_mtime: Option<SystemTime>,
@@ -511,7 +511,8 @@ mod win {
                 ocr_hotkey: None,
                 ocr_translate_hotkey: None,
                 translate_hotkey: None,
-                hotkey_config_mtime: None,
+                hotkey_config_stamp: None,
+                hotkey_config_text: String::new(),
                 tool_hotkeys_suppressed: false,
                 foreground_hook: 0,
                 clipboard_config_mtime: None,
@@ -668,49 +669,69 @@ mod win {
 
         unsafe fn refresh_screenshot_hotkey_if_needed(&mut self, hwnd: HWND, force: bool) {
             let path = config_path();
-            let mtime = fs::metadata(&path).and_then(|m| m.modified()).ok();
-            let suppressed = foreground_suppresses_tool_hotkeys();
-            if !force
-                && mtime == self.hotkey_config_mtime
-                && suppressed == self.tool_hotkeys_suppressed
-            {
+            let (stamp, read_config) = match fs::metadata(&path) {
+                Ok(meta) => (
+                    meta.modified()
+                        .ok()
+                        .map(|mtime| (path.clone(), mtime, meta.len())),
+                    true,
+                ),
+                Err(err) if err.kind() == std::io::ErrorKind::NotFound => (None, true),
+                Err(_) => (None, false),
+            };
+            let mut changed = false;
+            if read_config && (force || stamp.is_none() || stamp != self.hotkey_config_stamp) {
+                let content = match fs::read_to_string(&path) {
+                    Ok(content) => Some(content),
+                    Err(err) if err.kind() == std::io::ErrorKind::NotFound => Some(String::new()),
+                    Err(_) => None,
+                };
+                if let Some(content) = content {
+                    changed = content != self.hotkey_config_text;
+                    self.hotkey_config_text = content;
+                    self.hotkey_config_stamp = stamp;
+                }
+            }
+            let suppressed = foreground_suppresses_tool_hotkeys(&self.hotkey_config_text);
+            if !force && !changed && suppressed == self.tool_hotkeys_suppressed {
                 return;
             }
-            self.hotkey_config_mtime = mtime;
             self.tool_hotkeys_suppressed = suppressed;
+            let hotkey =
+                |section, key| read_hotkey_config(&self.hotkey_config_text, section, key, "off");
             let next_screenshot = if suppressed {
                 None
             } else {
-                read_hotkey_config("screenshot", "hotkey", "off")
+                hotkey("screenshot", "hotkey")
             };
             let next_clipboard = if suppressed {
                 None
             } else {
-                read_hotkey_config("clipboard", "hotkey", "off")
+                hotkey("clipboard", "hotkey")
             };
             let next_settings = if suppressed {
                 None
             } else {
-                read_hotkey_config("tools", "settings_hotkey", "off")
+                hotkey("tools", "settings_hotkey")
             };
             let next_handwrite = if suppressed {
                 None
             } else {
-                read_hotkey_config("tools", "handwrite_hotkey", "off")
+                hotkey("tools", "handwrite_hotkey")
             };
             let next_ocr = if suppressed {
                 None
             } else {
-                read_hotkey_config("tools", "ocr_hotkey", "off")
+                hotkey("tools", "ocr_hotkey")
             };
             let next_ocr_translate = if suppressed {
                 None
             } else {
-                read_hotkey_config("tools", "ocr_translate_hotkey", "off")
+                hotkey("tools", "ocr_translate_hotkey")
             };
             let translate_available = is_translate_available();
             let next_translate = if translate_available && !suppressed {
-                read_hotkey_config("tools", "translate_hotkey", "off")
+                hotkey("tools", "translate_hotkey")
             } else {
                 None
             };
@@ -1008,17 +1029,14 @@ mod win {
                 {
                     return 0;
                 }
-                if foreground_suppresses_tool_hotkeys() {
-                    if !app.is_null() {
-                        (*app).refresh_screenshot_hotkey_if_needed(hwnd, false);
-                    }
+                if app.is_null() {
                     return 0;
                 }
-                let target_hwnd = if !app.is_null() {
-                    (*app).capture_target_or_foreground(hwnd)
-                } else {
-                    capture_target_from_foreground(hwnd)
-                };
+                (*app).refresh_screenshot_hotkey_if_needed(hwnd, false);
+                if (*app).tool_hotkeys_suppressed {
+                    return 0;
+                }
+                let target_hwnd = (*app).capture_target_or_foreground(hwnd);
                 if wparam as i32 == SCREENSHOT_HOTKEY_ID {
                     open_screenshot_autosave(target_hwnd);
                 } else if wparam as i32 == CLIPBOARD_HOTKEY_ID {
@@ -3006,13 +3024,14 @@ mod win {
         })
     }
 
-    fn read_hotkey_config(section: &str, key: &str, fallback: &str) -> Option<HotkeySpec> {
-        let content = fs::read_to_string(config_path()).ok();
-        let value = content
-            .as_deref()
-            .and_then(|text| ini_value(text, section, key))
-            .unwrap_or_else(|| fallback.to_string());
-        parse_hotkey_with_fallback(&value, fallback)
+    fn read_hotkey_config(
+        content: &str,
+        section: &str,
+        key: &str,
+        fallback: &str,
+    ) -> Option<HotkeySpec> {
+        let value = ini_value(content, section, key);
+        parse_hotkey_with_fallback(value.as_deref().unwrap_or(fallback), fallback)
     }
 
     fn read_bool_config(section: &str, key: &str, fallback: bool) -> bool {

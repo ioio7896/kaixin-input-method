@@ -18,8 +18,6 @@ const POLL_INTERVAL: Duration = Duration::from_millis(1200);
 const FALLBACK_POLL_INTERVAL: Duration = Duration::from_millis(250);
 const BACKGROUND_POLL_TICK: Duration = Duration::from_millis(250);
 #[cfg(windows)]
-const CLIPBOARD_LISTENER_IDLE_TICK: Duration = Duration::from_millis(5);
-#[cfg(windows)]
 const CLIPBOARD_READ_MAX_ATTEMPTS: usize = 3;
 const STORE_WRITE_DEBOUNCE: Duration = Duration::from_millis(50);
 const SYSTEM_CLIPBOARD_DUPLICATE_WINDOW_SECS: u64 = 2;
@@ -493,9 +491,9 @@ fn run_clipboard_listener_or_poll() {
     };
     use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
     use windows_sys::Win32::UI::WindowsAndMessaging::{
-        CreateWindowExW, DefWindowProcW, DispatchMessageW, IsWindow, PeekMessageW, RegisterClassW,
-        TranslateMessage, CS_HREDRAW, CS_VREDRAW, HWND_MESSAGE, MSG, PM_REMOVE, WM_CLIPBOARDUPDATE,
-        WNDCLASSW,
+        CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetMessageW, IsWindow,
+        RegisterClassW, TranslateMessage, UnregisterClassW, CS_HREDRAW, CS_VREDRAW, HWND_MESSAGE,
+        MSG, WM_CLIPBOARDUPDATE, WNDCLASSW,
     };
 
     unsafe extern "system" fn wnd_proc(
@@ -575,7 +573,7 @@ fn run_clipboard_listener_or_poll() {
             hwnd
         } else {
             if hwnd != 0 {
-                unsafe { RemoveClipboardFormatListener(hwnd) };
+                unsafe { DestroyWindow(hwnd) };
             }
             0
         }
@@ -600,18 +598,27 @@ fn run_clipboard_listener_or_poll() {
         }
 
         let mut msg: MSG = unsafe { std::mem::zeroed() };
-        let mut processed = false;
-        while unsafe { PeekMessageW(&mut msg, 0, 0, 0, PM_REMOVE) } != 0 {
-            processed = true;
+        let result = unsafe { GetMessageW(&mut msg, 0, 0, 0) };
+        if result > 0 {
             unsafe {
                 TranslateMessage(&msg);
                 DispatchMessageW(&msg);
             }
+            continue;
         }
-        if !processed {
-            // Dispatch promptly; text capture is never debounced.
-            std::thread::sleep(CLIPBOARD_LISTENER_IDLE_TICK);
+        unsafe {
+            RemoveClipboardFormatListener(hwnd);
+            DestroyWindow(hwnd);
         }
+        hwnd = 0;
+        CLIPBOARD_EVENT_MODE.store(false, Ordering::Release);
+        if result == 0 && worker_started {
+            break;
+        }
+        std::thread::sleep(BACKGROUND_POLL_TICK);
+    }
+    if class_registered {
+        unsafe { UnregisterClassW(class_name.as_ptr(), instance) };
     }
 }
 

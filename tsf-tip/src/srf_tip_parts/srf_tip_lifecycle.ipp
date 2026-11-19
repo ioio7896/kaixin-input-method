@@ -133,9 +133,9 @@ class CEditSessionApplyAsyncCandidates final : public ITfEditSession {
 };
 
 CSrfTip::CSrfTip() {
-  m_candidateUi = new (std::nothrow) CSrfCandidateListUIElement(this);
   LoadConfiguration();
   SyncStatusModel();
+  m_candidateUi = new (std::nothrow) CSrfCandidateListUIElement(this);
   InterlockedIncrement(&g_cSrfTipObjects);
 }
 
@@ -334,11 +334,6 @@ STDMETHODIMP CSrfTip::ActivateEx(ITfThreadMgr* ptim, TfClientId tid, DWORD dwFla
   if (!ShouldForceAsciiForCompatibility()) {
     SrfTip_WarmupEngineAsync();
     SrfTip_PrewarmSingleLetterLookupCacheAsync();
-  }
-  if (m_candidateUi) {
-    const ULONGLONG prepStart = GetTickCount64();
-    m_candidateUi->PrepareWindowResources();
-    DebugLogPerfMs(L"ActivateEx/prewarm-candidate-resources", prepStart);
   }
   if (EnsureDeferredTimerWindow()) {
     SetTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId, 250, nullptr);

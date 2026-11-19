@@ -21,16 +21,19 @@ use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
 use std::sync::{Condvar, Mutex, MutexGuard, OnceLock, TryLockError};
 use std::time::{Duration, Instant, SystemTime};
 use windows_sys::Win32::Foundation::{
-    GetLastError, ERROR_MORE_DATA, ERROR_NO_DATA, ERROR_PIPE_BUSY, ERROR_PIPE_CONNECTED, HANDLE,
-    INVALID_HANDLE_VALUE,
+    GetLastError, BOOL, ERROR_IO_INCOMPLETE, ERROR_IO_PENDING, ERROR_MORE_DATA, ERROR_PIPE_BUSY,
+    ERROR_PIPE_CONNECTED, INVALID_HANDLE_VALUE, WAIT_TIMEOUT,
 };
 use windows_sys::Win32::Storage::FileSystem::{
-    FlushFileBuffers, ReadFile, WriteFile, PIPE_ACCESS_DUPLEX,
+    FlushFileBuffers, ReadFile, WriteFile, FILE_FLAG_OVERLAPPED, PIPE_ACCESS_DUPLEX,
 };
 use windows_sys::Win32::System::Pipes::{
     ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, GetNamedPipeClientProcessId,
-    SetNamedPipeHandleState, PIPE_NOWAIT, PIPE_READMODE_MESSAGE, PIPE_REJECT_REMOTE_CLIENTS,
-    PIPE_TYPE_MESSAGE, PIPE_WAIT,
+    PIPE_READMODE_MESSAGE, PIPE_REJECT_REMOTE_CLIENTS, PIPE_TYPE_MESSAGE, PIPE_WAIT,
+};
+use windows_sys::Win32::System::Threading::{CreateEventW, INFINITE};
+use windows_sys::Win32::System::IO::{
+    CancelIoEx, GetOverlappedResult, GetOverlappedResultEx, OVERLAPPED,
 };
 
 const PIPE_NAME_ENV: &str = "SRF_ENGINE_PIPE_NAME";
@@ -1781,7 +1784,7 @@ fn listen_loop_inner() {
         let pipe = unsafe {
             CreateNamedPipeW(
                 pipe_name.as_ptr(),
-                PIPE_ACCESS_DUPLEX,
+                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
                 PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
                 PIPE_MAX_INSTANCES,
                 PIPE_BUFFER_BYTES,
@@ -1820,9 +1823,11 @@ fn listen_loop_inner() {
         // SAFETY: CreateNamedPipeW returned a new handle owned by this loop.
         let pipe = unsafe { OwnedWinHandle::from_raw(pipe) }.expect("validated engine pipe");
 
-        let connected = unsafe { ConnectNamedPipe(pipe.as_raw(), null_mut()) } != 0
-            || unsafe { GetLastError() } == ERROR_PIPE_CONNECTED;
-        if connected {
+        let Ok(mut pipe) = ServerPipe::new(pipe) else {
+            std::thread::sleep(Duration::from_millis(50));
+            continue;
+        };
+        if pipe.connect() {
             let Some(client_guard) = ActivePipeClient::try_acquire() else {
                 runtime_log::log_engine(
                     RuntimeLogLevel::Error,
@@ -1834,15 +1839,11 @@ fn listen_loop_inner() {
                     ),
                 );
                 unsafe {
-                    let _ = DisconnectNamedPipe(pipe.as_raw());
+                    let _ = DisconnectNamedPipe(pipe.handle.as_raw());
                 }
                 std::thread::sleep(Duration::from_millis(20));
                 continue;
             };
-            let mode = PIPE_READMODE_MESSAGE | PIPE_NOWAIT;
-            unsafe {
-                let _ = SetNamedPipeHandleState(pipe.as_raw(), &mode, null_mut(), null_mut());
-            }
             if std::thread::Builder::new()
                 .name("srf-engine-pipe-client".to_string())
                 .spawn(move || handle_client(pipe, client_guard))
@@ -2013,8 +2014,8 @@ fn cached_engine_capability_token() -> io::Result<String> {
     Ok(token)
 }
 
-fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
-    let pipe = pipe_guard.as_raw();
+fn handle_client(mut server: ServerPipe, _client_guard: ActivePipeClient) {
+    let pipe = server.handle.as_raw();
     // A persistent pipe is owned by one TIP process. Keep composition-local
     // lookup state on that connection without changing the V5 wire format.
     let mut client_process_id = 0u32;
@@ -2022,7 +2023,7 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
         let _ = GetNamedPipeClientProcessId(pipe, &mut client_process_id);
     }
     let mut lookup_session = ClientLookupSession::new(client_process_id);
-    while let Some((command, payload)) = read_request(pipe) {
+    while let Some((command, payload)) = read_request(&mut server) {
         if crate::windows_security::verify_ime_pipe_client(pipe).is_err() {
             runtime_log::log_engine(
                 RuntimeLogLevel::Error,
@@ -2055,7 +2056,7 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
             );
         }
         let write_started = Instant::now();
-        let written = write_response(pipe, command, status, &response);
+        let written = write_response(&mut server, command, status, &response);
         if command == EngineCommand::Lookup && perf_log_enabled() {
             runtime_log::log_engine(RuntimeLogLevel::Perf, "srf_ipc_lookup_write",
                 format!("session_id={} request_id={} client_pid={} bytes={} write={}us status={} written={}",
@@ -2100,14 +2101,13 @@ fn handle_client(pipe_guard: OwnedWinHandle, _client_guard: ActivePipeClient) {
     }
 
     unsafe {
-        let _ = FlushFileBuffers(pipe);
         let _ = DisconnectNamedPipe(pipe);
     }
 }
 
-fn read_request(pipe: HANDLE) -> Option<(EngineCommand, Vec<u8>)> {
+fn read_request(pipe: &mut ServerPipe) -> Option<(EngineCommand, Vec<u8>)> {
     let mut header = [0u8; 12];
-    if !read_exact_with_timeout(pipe, &mut header, PIPE_HEADER_IO_TIMEOUT) {
+    if !pipe.read_exact(&mut header, PIPE_HEADER_IO_TIMEOUT) {
         return None;
     }
 
@@ -2124,20 +2124,25 @@ fn read_request(pipe: HANDLE) -> Option<(EngineCommand, Vec<u8>)> {
         return None;
     }
     let mut payload = vec![0u8; payload_len];
-    if payload_len > 0 && !read_exact(pipe, &mut payload) {
+    if payload_len > 0 && !pipe.read_exact(&mut payload, PIPE_CLIENT_IO_TIMEOUT) {
         return None;
     }
     Some((command, payload))
 }
 
-fn write_response(pipe: HANDLE, command: EngineCommand, status: i32, payload: &[u8]) -> bool {
+fn write_response(
+    pipe: &mut ServerPipe,
+    command: EngineCommand,
+    status: i32,
+    payload: &[u8],
+) -> bool {
     let mut header = Vec::with_capacity(16);
     header.extend_from_slice(&PROTOCOL_MAGIC.to_le_bytes());
     header.extend_from_slice(&PROTOCOL_VERSION.to_le_bytes());
     header.extend_from_slice(&(command as u16).to_le_bytes());
     header.extend_from_slice(&status.to_le_bytes());
     header.extend_from_slice(&(payload.len() as u32).to_le_bytes());
-    write_all(pipe, &header) && (payload.is_empty() || write_all(pipe, payload))
+    pipe.write_all(&header) && (payload.is_empty() || pipe.write_all(payload))
 }
 
 fn error_payload(message: &str) -> Vec<u8> {
@@ -3183,75 +3188,117 @@ impl<'a> PayloadCursor<'a> {
     }
 }
 
-fn read_exact(handle: HANDLE, buf: &mut [u8]) -> bool {
-    read_exact_with_timeout(handle, buf, PIPE_CLIENT_IO_TIMEOUT)
+struct ServerPipe {
+    handle: OwnedWinHandle,
+    event: OwnedWinHandle,
 }
 
-fn read_exact_with_timeout(handle: HANDLE, mut buf: &mut [u8], timeout: Duration) -> bool {
-    let deadline = Instant::now() + timeout;
-    while !buf.is_empty() {
-        let mut read = 0u32;
-        let ok = unsafe {
-            ReadFile(
-                handle,
-                buf.as_mut_ptr().cast(),
-                buf.len() as u32,
-                &mut read,
-                null_mut(),
-            )
-        };
-        if ok == 0 {
-            let err = unsafe { GetLastError() };
-            if err == ERROR_MORE_DATA && read > 0 {
-                let consumed = read as usize;
-                buf = &mut buf[consumed..];
-                continue;
-            }
-            if err == ERROR_NO_DATA && Instant::now() < deadline {
-                // 轮询粒度即每个请求的排队延迟上限：PIPE_NOWAIT 下服务端
-                // 靠此循环等待客户端的下一条消息。10ms 会让持久连接上每个
-                // 请求固定多吃一个轮询周期；1ms 把该开销压到 ~0.5ms 均值，
-                // 空闲时每个客户端线程约 1000 次/秒唤醒，客户端数量有限，
-                // CPU 代价可忽略。
-                std::thread::sleep(Duration::from_millis(1));
-                continue;
-            }
-            return false;
-        }
-        if read == 0 {
-            return false;
-        }
-        let consumed = read as usize;
-        buf = &mut buf[consumed..];
+impl ServerPipe {
+    fn new(handle: OwnedWinHandle) -> io::Result<Self> {
+        let event =
+            unsafe { OwnedWinHandle::from_raw(CreateEventW(null_mut(), 1, 0, null_mut())) }?;
+        Ok(Self { handle, event })
     }
-    true
-}
 
-fn write_all(handle: HANDLE, mut buf: &[u8]) -> bool {
-    let deadline = Instant::now() + PIPE_CLIENT_IO_TIMEOUT;
-    while !buf.is_empty() {
-        let mut written = 0u32;
-        let ok = unsafe {
-            WriteFile(
-                handle,
-                buf.as_ptr().cast(),
-                buf.len() as u32,
-                &mut written,
-                null_mut(),
-            )
-        };
-        if ok == 0 || written == 0 {
-            let err = unsafe { GetLastError() };
-            if err == ERROR_NO_DATA && Instant::now() < deadline {
-                // 与读侧一致：1ms 轮询粒度，避免响应写侧放大每个请求的延迟。
-                std::thread::sleep(Duration::from_millis(1));
-                continue;
-            }
-            return false;
+    fn overlapped(&self) -> OVERLAPPED {
+        OVERLAPPED {
+            hEvent: self.event.as_raw(),
+            ..unsafe { std::mem::zeroed() }
         }
-        buf = &buf[written as usize..];
     }
-    true
+
+    fn connect(&mut self) -> bool {
+        let mut operation = self.overlapped();
+        let mut transferred = 0;
+        let started = unsafe { ConnectNamedPipe(self.handle.as_raw(), &mut operation) };
+        matches!(
+            self.complete(started, &mut operation, &mut transferred, INFINITE),
+            Ok(()) | Err(ERROR_PIPE_CONNECTED)
+        )
+    }
+
+    fn complete(
+        &self,
+        started: BOOL,
+        operation: &mut OVERLAPPED,
+        transferred: &mut u32,
+        timeout_ms: u32,
+    ) -> Result<(), u32> {
+        if started != 0 {
+            return Ok(());
+        }
+        let error = unsafe { GetLastError() };
+        if error != ERROR_IO_PENDING {
+            return Err(error);
+        }
+        let handle = self.handle.as_raw();
+        if unsafe { GetOverlappedResultEx(handle, operation, transferred, timeout_ms, 0) } != 0 {
+            return Ok(());
+        }
+        let error = unsafe { GetLastError() };
+        if matches!(error, WAIT_TIMEOUT | ERROR_IO_INCOMPLETE) {
+            unsafe {
+                CancelIoEx(handle, operation);
+                GetOverlappedResult(handle, operation, transferred, 1);
+            }
+        }
+        Err(error)
+    }
+
+    fn read_exact(&mut self, mut buf: &mut [u8], timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        while !buf.is_empty() {
+            let mut operation = self.overlapped();
+            let mut read = 0u32;
+            let started = unsafe {
+                ReadFile(
+                    self.handle.as_raw(),
+                    buf.as_mut_ptr(),
+                    buf.len() as u32,
+                    &mut read,
+                    &mut operation,
+                )
+            };
+            let timeout_ms = deadline
+                .saturating_duration_since(Instant::now())
+                .as_millis() as u32;
+            match self.complete(started, &mut operation, &mut read, timeout_ms) {
+                Ok(()) if read != 0 => buf = &mut buf[read as usize..],
+                Err(ERROR_MORE_DATA) => return true,
+                _ => return false,
+            }
+        }
+        true
+    }
+
+    fn write_all(&mut self, mut buf: &[u8]) -> bool {
+        let deadline = Instant::now() + PIPE_CLIENT_IO_TIMEOUT;
+        while !buf.is_empty() {
+            let mut operation = self.overlapped();
+            let mut written = 0u32;
+            let started = unsafe {
+                WriteFile(
+                    self.handle.as_raw(),
+                    buf.as_ptr(),
+                    buf.len() as u32,
+                    &mut written,
+                    &mut operation,
+                )
+            };
+            let timeout_ms = deadline
+                .saturating_duration_since(Instant::now())
+                .as_millis() as u32;
+            if self
+                .complete(started, &mut operation, &mut written, timeout_ms)
+                .is_err()
+                || written == 0
+            {
+                return false;
+            }
+            buf = &buf[written as usize..];
+        }
+        true
+    }
 }
 
 fn wide(value: &str) -> Vec<u16> {
@@ -3265,6 +3312,44 @@ fn wide(value: &str) -> Vec<u16> {
 mod tests {
     use super::*;
     use std::sync::Arc;
+
+    #[test]
+    fn overlapped_pipe_cancels_idle_read_and_preserves_message_remainder() {
+        let stamp = SystemTime::UNIX_EPOCH.elapsed().unwrap().as_nanos();
+        let name = format!("\\\\.\\pipe\\kaixin-io-test-{}-{stamp}", std::process::id());
+        let handle = unsafe {
+            OwnedWinHandle::from_raw(CreateNamedPipeW(
+                wide(&name).as_ptr(),
+                PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+                PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_REJECT_REMOTE_CLIENTS,
+                1,
+                4096,
+                4096,
+                0,
+                null_mut(),
+            ))
+        }
+        .unwrap();
+        let mut server = ServerPipe::new(handle).unwrap();
+        let mut client = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(name)
+            .unwrap();
+        assert!(server.connect());
+
+        let mut chunk = [0; 3];
+        assert!(!server.read_exact(&mut chunk, Duration::from_millis(5)));
+        client.write_all(b"abcdef").unwrap();
+        assert!(server.read_exact(&mut chunk, Duration::from_secs(1)));
+        assert_eq!(&chunk, b"abc");
+        assert!(server.read_exact(&mut chunk, Duration::from_secs(1)));
+        assert_eq!(&chunk, b"def");
+        assert!(server.write_all(b"ok"));
+        let mut reply = [0; 2];
+        client.read_exact(&mut reply).unwrap();
+        assert_eq!(&reply, b"ok");
+    }
 
     #[test]
     fn learning_status_reports_success_once() {

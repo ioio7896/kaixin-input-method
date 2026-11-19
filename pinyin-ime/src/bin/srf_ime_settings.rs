@@ -135,7 +135,6 @@ enum UserDictTaskResult {
 impl SettingsApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
         cc.egui_ctx.set_theme(egui::ThemePreference::Light);
-        let _ = fonts::install_cjk_fonts(&cc.egui_ctx);
         enforce_settings_min_font_size(&cc.egui_ctx);
         let config_path = app_paths::config_ini_path()
             .unwrap_or_else(|| PathBuf::from(app_paths::CONFIG_FILE_NAME));

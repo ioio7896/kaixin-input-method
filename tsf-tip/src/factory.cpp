@@ -11,7 +11,7 @@ extern "C" void SrfTip_LockServer(BOOL lock);
 namespace {
 
 class CClassFactory : public IClassFactory {
-  ULONG m_cRef = 1;
+  LONG m_cRef = 1;
 
  public:
   CClassFactory() = default;
@@ -27,15 +27,15 @@ class CClassFactory : public IClassFactory {
     return E_NOINTERFACE;
   }
 
-  STDMETHODIMP_(ULONG) AddRef() override { return ++m_cRef; }
+  STDMETHODIMP_(ULONG) AddRef() override { return InterlockedIncrement(&m_cRef); }
 
   STDMETHODIMP_(ULONG) Release() override {
-    ULONG c = --m_cRef;
-    if (c == 0) delete this;
-    return c;
+    const ULONG count = InterlockedDecrement(&m_cRef);
+    if (count == 0) delete this;
+    return count;
   }
 
-  STDMETHODIMP CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppv) override {
+  STDMETHODIMP CreateInstance(IUnknown* pUnkOuter, REFIID riid, void** ppv) override try {
     if (!ppv) return E_POINTER;
     *ppv = nullptr;
     if (pUnkOuter) return CLASS_E_NOAGGREGATION;
@@ -46,6 +46,10 @@ class CClassFactory : public IClassFactory {
     HRESULT hr = p->QueryInterface(riid, ppv);
     p->Release();
     return hr;
+  } catch (const std::bad_alloc&) {
+    return E_OUTOFMEMORY;
+  } catch (...) {
+    return E_FAIL;
   }
 
   STDMETHODIMP LockServer(BOOL fLock) override {

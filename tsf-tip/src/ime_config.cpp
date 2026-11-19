@@ -390,13 +390,10 @@ std::wstring ReadIniString(const std::filesystem::path& path, const wchar_t* sec
                            const wchar_t* key, const wchar_t* fallback = L"") {
   if (const auto* canonical = SrfConfigSchema::DefaultValue(section, key)) fallback = canonical;
   std::wstring value;
-  if (ActiveIniDocumentMatches(path) &&
-      TryReadIniValue(*g_activeIniDocument, section, key, &value)) {
-    return value;
-  }
-  IniDocument doc = LoadIniDocument(path);
-  return TryReadIniValue(doc, section, key, &value) ? value
-                                                    : std::wstring(fallback ? fallback : L"");
+  const bool found = ActiveIniDocumentMatches(path)
+                         ? TryReadIniValue(*g_activeIniDocument, section, key, &value)
+                         : TryReadIniValue(LoadIniDocument(path), section, key, &value);
+  return found ? value : std::wstring(fallback ? fallback : L"");
 }
 
 // 候选字体可为绝对路径，需大于默认 ReadIniString 的 512 缓冲。
