@@ -2,7 +2,7 @@
 
 status: verified
 
-核验日期：2026-10-18；最近文件身份与结构复核：2026-11-11
+核验日期：2026-10-18；最近文件身份与结构复核：2026-11-21
 核验负责人：项目作者  
 核验脚本：`python scripts/verify_ai_generated_data.py`
 
@@ -70,7 +70,7 @@ status: verified
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_public_services.txt` | 165 | `e25892eb12a1e83bc26e0e4e888e74258db28263a68a156edfc63df67a1b5dae` |
 | `data_sources/lexicon_fragments/zh-ext/hangzhou_transport.txt` | 445 | `cec8680c6d790c5845559745b6e74ae7eeac99e653188ab20a16cc4e94066f85` |
 | `data_sources/kaixin/common_phrases.tsv` | 41 | `76ebea960afc6618592b9082a80ec96dc929db1897481b0246f6d0254aab2cb5` |
-| `data_sources/kaixin/polyphone_corrections.tsv` | 145 | `dbf0cb652d83005ea997ba298301cfeb906695105104c06048f718f053e11f2a` |
+| `data_sources/kaixin/polyphone_corrections.tsv` | 148 | `3eb7dfba9a6dbf79fafd37fdac78d309915013be68cf56ec10c625ed93aadcd6` |
 | `data_sources/kaixin/pronunciation_aliases.tsv` | 124 | `c8eddab0e56f4b730f8651f7fe51453c1cd3ecdf56045429fbb3fe19c0d50e06` |
 | `data_sources/kaixin/core_priority_corrections.tsv` | 38 | `0801fa27ad3943c7207ca9cb8d46a39754238ad7633db709ecd469a3e7cae765` |
 | `data_sources/kaixin/pronunciation_exclusions.tsv` | 19 | `e10c95ce4999b9e3d252e91f4c8c28b9ca512f88632f61b08b30e33be3de1a0f` |
@@ -91,3 +91,5 @@ status: verified
 包含此前已发布的本地生活用语及完整地铁出行表达。本次仅同步行数和 SHA-256，
 重新检查列数、空字段、重复组合和正整数权重；未改动词库内容，未重新核验现实名称
 或运营状态，也不补充推测历史生成过程。
+
+2026-11-21 核对多音词表新增的“调休”“差旅”和“给排水”与运行时词库的读音，更新该表的行数和 SHA-256。

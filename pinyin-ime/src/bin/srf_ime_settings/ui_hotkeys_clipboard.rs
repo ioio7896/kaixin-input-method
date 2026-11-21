@@ -20,7 +20,7 @@ pub(super) fn hotkeys_ui(ui: &mut egui::Ui, model: &mut SettingsModel) {
                     .selected_text(cn_en_hotkey_label(&model.cn_en_hotkey))
                     .width(bounded_control_width(ui, SETTINGS_CONTROL_WIDTH))
                     .wrap()
-                    .show_ui(ui, |ui| {
+                    .show_settings(ui, |ui| {
                         selectable_string(
                             ui,
                             &mut model.cn_en_hotkey,
@@ -228,18 +228,9 @@ fn hotkey_setting_row(
     description: &str,
     add_control: impl FnOnce(&mut egui::Ui),
 ) {
-    let response = egui::Frame::none()
-        .inner_margin(egui::Margin::symmetric(0.0, SETTINGS_ROW_PAD_Y))
-        .show(ui, |ui| {
-            responsive_settings_row(
-                ui,
-                HOTKEY_CONTROL_WIDTH,
-                |ui| setting_text(ui, title, description, RestartRequirement::None),
-                |ui| setting_row_help(ui.scope(add_control).response, description),
-            );
-        })
-        .response;
-    setting_row_help(response, description);
+    let mut spec = SettingSpec::new(title, description);
+    spec.control_width = HOTKEY_CONTROL_WIDTH;
+    setting_spec_row(ui, spec, add_control);
 }
 
 fn hotkey_setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut bool) {

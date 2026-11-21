@@ -1,10 +1,13 @@
 use crate::dict::{is_project_primary_reading, pinyin_plain_options};
+use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
 const SINGLE_CHAR_COMMON_FILE: &str = "single_char_common_8105.txt";
+const READING_PRIORITIES: &str =
+    include_str!("../../../../data_sources/kaixin/single_char_reading_priorities.tsv");
 
 /// Authoritative frequency order for common single-character candidates.
 ///
@@ -51,6 +54,19 @@ impl SingleCharCommonIndex {
     fn from_text(text: &str, path: Option<PathBuf>) -> io::Result<Self> {
         let mut out = Self::default();
         let mut seen = HashSet::new();
+        let reading_priorities = READING_PRIORITIES
+            .lines()
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
+            .map(|line| {
+                let (character, reading_and_weight) =
+                    line.split_once('\t').expect("character field");
+                let (reading, weight) = reading_and_weight.split_once('\t').expect("reading field");
+                let character = character.chars().next().expect("nonempty character");
+                let weight = weight.parse::<u64>().expect("numeric reading priority");
+                ((character, reading), weight)
+            })
+            .collect::<HashMap<_, _>>();
+        let mut primary_by_pinyin: HashMap<String, Vec<(char, u64)>> = HashMap::new();
         let mut secondary_by_pinyin: HashMap<String, Vec<char>> = HashMap::new();
         let mut secondary_by_initial: HashMap<char, Vec<char>> = HashMap::new();
         let mut previous_weight = None;
@@ -102,12 +118,15 @@ impl SingleCharCommonIndex {
                 }
                 let is_primary =
                     primary.as_ref() == Some(&key) || is_project_primary_reading(ch, &key);
-                let by_pinyin = if is_primary {
-                    &mut out.by_pinyin
+                let priority = reading_priorities.get(&(ch, key.as_str()));
+                if is_primary || priority.is_some() {
+                    primary_by_pinyin
+                        .entry(key.clone())
+                        .or_default()
+                        .push((ch, priority.copied().unwrap_or(weight)));
                 } else {
-                    &mut secondary_by_pinyin
-                };
-                push_unique(by_pinyin.entry(key.clone()).or_default(), ch);
+                    push_unique(secondary_by_pinyin.entry(key.clone()).or_default(), ch);
+                }
                 if let Some(initial) = key.chars().next().filter(char::is_ascii_alphabetic) {
                     let by_initial = if is_primary {
                         &mut out.by_initial
@@ -117,6 +136,11 @@ impl SingleCharCommonIndex {
                     push_unique(by_initial.entry(initial).or_default(), ch);
                 }
             }
+        }
+        for (key, mut chars) in primary_by_pinyin {
+            chars.sort_by_key(|&(_, score)| Reverse(score));
+            out.by_pinyin
+                .insert(key, chars.into_iter().map(|(ch, _)| ch).collect());
         }
         // Global character frequency is not a frequency for each pronunciation.
         // Keep every secondary reading reachable, but place it after characters

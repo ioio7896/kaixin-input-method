@@ -1,4 +1,4 @@
-use crate::text_norm::normalize_pinyin_line;
+use crate::text_norm::{canonical_pinyin_syllable, normalize_pinyin_line};
 use std::collections::{BTreeSet, HashSet, VecDeque};
 
 const LONG_VARIANT_REDUCE_INPUT_LEN: usize = 8;
@@ -138,14 +138,13 @@ fn strip_tone_digits(s: &str) -> String {
     s.chars().filter(|ch| !matches!(ch, '1'..='5')).collect()
 }
 
-pub fn normalize_compact_pinyin_aliases(s: &str) -> String {
-    s.replace("nue", "nve").replace("lue", "lve")
+fn has_umlaut_alias(s: &str) -> bool {
+    s.contains("lue") || s.contains("nue")
 }
 
 /// Normalize to lowercase, drop tone digits, and treat `ü` as `v`.
 pub fn normalize_token(s: &str) -> String {
-    let normalized = strip_tone_digits(&s.to_lowercase().replace('ü', "v"));
-    normalize_compact_pinyin_aliases(&normalized)
+    strip_tone_digits(&s.to_lowercase().replace('ü', "v"))
 }
 
 pub fn load_syllables(text: &str) -> HashSet<String> {
@@ -391,7 +390,8 @@ fn split_with_whitespace(
     let n = parts.len();
     let mut out = Vec::new();
     for (idx, w) in parts.iter().enumerate() {
-        let t = normalize_token(w);
+        let token = normalize_token(w);
+        let t = canonical_pinyin_syllable(&token).to_string();
         if t.is_empty() {
             continue;
         }
@@ -418,6 +418,20 @@ fn split_continuous(
 ) -> Result<(Vec<String>, Option<String>), String> {
     let s = normalize_token(trimmed);
     let b = s.as_bytes();
+    // A greedy alias such as "nue" can consume the e in "nu er". Prefer a
+    // complete split over an alias that leaves an incomplete or invalid tail.
+    let complete = if s.is_ascii() && has_umlaut_alias(&s) {
+        let mut suffix = vec![false; b.len() + 1];
+        suffix[b.len()] = true;
+        for start in (0..b.len()).rev() {
+            suffix[start] = (start + 1..=b.len().min(start + 6)).any(|end| {
+                suffix[end] && syllable_set.contains(canonical_pinyin_syllable(&s[start..end]))
+            });
+        }
+        suffix[0].then_some(suffix)
+    } else {
+        None
+    };
     let mut i = 0;
     let mut out = Vec::new();
     while i < b.len() {
@@ -428,8 +442,11 @@ fn split_continuous(
             }
             let piece =
                 std::str::from_utf8(&b[i..i + len]).map_err(|_| "invalid utf-8".to_string())?;
-            if syllable_set.contains(piece) {
-                found = Some((piece.to_string(), len));
+            let syllable = canonical_pinyin_syllable(piece);
+            if syllable_set.contains(syllable)
+                && complete.as_ref().is_none_or(|suffix| suffix[i + len])
+            {
+                found = Some((syllable.to_string(), len));
                 break;
             }
         }
@@ -445,6 +462,49 @@ fn split_continuous(
         }
     }
     Ok((out, None))
+}
+
+/// Form the lookup key after resolving aliases within explicit input boundaries.
+pub(crate) fn compact_pinyin_key(input: &str, syllable_set: &HashSet<String>) -> String {
+    if input.bytes().all(|ch| ch.is_ascii_lowercase()) && !has_umlaut_alias(input) {
+        return input.to_owned();
+    }
+    let normalized = input.to_lowercase().replace('ü', "v");
+    let mut key = String::with_capacity(normalized.len());
+    for part in normalized.split(|ch: char| !ch.is_ascii_alphabetic()) {
+        if has_umlaut_alias(part) {
+            if let Ok((syllables, tail)) = split_continuous(part, syllable_set) {
+                for syllable in syllables {
+                    key.push_str(&syllable);
+                }
+                if let Some(tail) = tail {
+                    key.push_str(&tail);
+                }
+                continue;
+            }
+        }
+        key.push_str(part);
+    }
+    key
+}
+
+#[test]
+fn umlaut_aliases_respect_syllable_boundaries() {
+    let syllables = load_syllables("lu\nnu\ner\ndao\nqu\nlve\nnve\nzhan\n");
+    for (input, expected) in [
+        ("luerdao", &["lu", "er", "dao"][..]),
+        ("lu'er'qu", &["lu", "er", "qu"]),
+        ("nuer", &["nu", "er"]),
+        ("nu'er", &["nu", "er"]),
+        ("zhanlue", &["zhan", "lve"]),
+        ("zhanlüe", &["zhan", "lve"]),
+        ("nue", &["nve"]),
+    ] {
+        let (parsed, tail) = split_full_pinyin_with_tail(input, &syllables).unwrap();
+        assert_eq!(parsed, expected, "{input}");
+        assert_eq!(tail, None, "{input}");
+        assert_eq!(compact_pinyin_key(input, &syllables), expected.concat());
+    }
 }
 
 /// 枚举连续串的所有合法「完整」音节切分（如 `xian` → `xian` 与 `xi+an`），用于消歧常用词（西安等）。
@@ -481,9 +541,10 @@ fn enumerate_complete_splittings(
                 Ok(p) => p,
                 Err(_) => continue,
             };
-            if syllable_set.contains(piece) {
+            let syllable = canonical_pinyin_syllable(piece);
+            if syllable_set.contains(syllable) {
                 let mut next = cur.clone();
-                next.push(piece.to_string());
+                next.push(syllable.to_string());
                 dfs(pos + len, b, syllable_set, next, out, max_results);
                 if out.len() >= max_results {
                     return;
@@ -1310,7 +1371,8 @@ impl MixedPinyinIncrementalCache {
                 }
                 let start = end - len;
                 let piece = &next[start..end];
-                if !syllable_set.contains(piece) {
+                let syllable = canonical_pinyin_syllable(piece);
+                if !syllable_set.contains(syllable) {
                     continue;
                 }
                 for base in self.states.get(start).into_iter().flatten() {
@@ -1319,7 +1381,7 @@ impl MixedPinyinIncrementalCache {
                     }
                     let mut path = base.clone();
                     path.segments
-                        .push(MixedPinyinSegment::Full(piece.to_string()));
+                        .push(MixedPinyinSegment::Full(syllable.to_string()));
                     path.full_count += 1;
                     if seen.insert(path.segments.clone()) {
                         paths.push(path);
@@ -1552,10 +1614,11 @@ fn collect_mixed_pinyin_patterns(
             continue;
         }
         let piece = &compact[offset..offset + len];
-        if !syllable_set.contains(piece) {
+        let syllable = canonical_pinyin_syllable(piece);
+        if !syllable_set.contains(syllable) {
             continue;
         }
-        current.push(MixedPinyinSegment::Full(piece.to_string()));
+        current.push(MixedPinyinSegment::Full(syllable.to_string()));
         collect_mixed_pinyin_patterns(
             compact,
             syllable_set,

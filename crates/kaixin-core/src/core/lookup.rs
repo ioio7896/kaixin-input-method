@@ -641,6 +641,18 @@ impl PinyinEngine {
             self.phrase_lexicon.as_ref(),
         );
         self.shape_partial_first_page_candidates(&mut ranked, raw, compact_key, now);
+        let page_size =
+            candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
+        if is_exact_complete_single_syllable_input(raw, compact_key, self.syllables.as_ref()) {
+            let common = self.single_char_common.pinyin_order(compact_key);
+            let common = &common[..common.len().min(page_size)];
+            if self.has_selection_feedback_for_reading(compact_key) {
+                append_missing_single_chars(&mut ranked, common);
+            } else {
+                promote_common_single_chars_after_user_priority(&mut ranked, common, true);
+            }
+            keep_only_single_char_candidates(&mut ranked);
+        }
         if lookup_request_superseded(request_id) {
             self.ranked_buf = ranked;
             self.merged_buf = std::mem::take(merged);
@@ -667,8 +679,6 @@ impl PinyinEngine {
             cache_epoch: self.cache_epoch,
             user_clock: now,
         });
-        let page_size =
-            candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
         if ranked.len() > page_size {
             ranked.truncate(page_size);
         }
@@ -3481,12 +3491,7 @@ impl Default for PinyinEngine {
 }
 
 pub(super) fn compact_lookup_key(s: &str) -> String {
-    let compact: String = s
-        .chars()
-        .filter(|ch| ch.is_ascii_alphabetic())
-        .map(|ch| ch.to_ascii_lowercase())
-        .collect();
-    normalize_compact_pinyin_aliases(&compact)
+    crate::segment::compact_pinyin_key(s, &shared_engine_model().syllables)
 }
 
 pub(super) fn load_phrase_lexicon(dir: &Path) -> Option<AbbrevLexicon> {

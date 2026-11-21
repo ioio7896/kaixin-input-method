@@ -77,8 +77,8 @@ TEXT_FILES = {
         3,
     ),
     "data_sources/kaixin/polyphone_corrections.tsv": (
-        "dbf0cb652d83005ea997ba298301cfeb906695105104c06048f718f053e11f2a",
-        145,
+        "3eb7dfba9a6dbf79fafd37fdac78d309915013be68cf56ec10c625ed93aadcd6",
+        148,
         2,
     ),
     "data_sources/kaixin/pronunciation_aliases.tsv": (

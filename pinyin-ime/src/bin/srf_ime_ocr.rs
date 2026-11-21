@@ -11,8 +11,9 @@ use eframe::egui::{
 use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use pinyin_ime::{
     app_paths, clipboard_store, external_translation, rapidocr_paths, runtime_log,
-    screenshot_capture, screenshot_region_selector, screenshot_store, tool_prefs, win_paste,
-    win_single_instance, windows_graphics_capture, windows_security,
+    screenshot_capture, screenshot_region_selector, screenshot_store, tool_prefs,
+    ui_theme::{apply_tool_style, sync_theme_from_prefs, UiPalette, CARD_RADIUS, CONTROL_RADIUS},
+    win_paste, win_single_instance, windows_graphics_capture, windows_security,
 };
 use rusqlite::{params, Connection, DatabaseName};
 use serde::{Deserialize, Serialize};
@@ -484,6 +485,8 @@ impl OcrApp {
         startup_capture: StartupCapture,
     ) -> Self {
         let _ = fonts::install_cjk_fonts(&cc.egui_ctx);
+        let _ = sync_theme_from_prefs(&cc.egui_ctx);
+        apply_tool_style(&cc.egui_ctx);
         let mut app = Self {
             text: String::new(),
             original_text: String::new(),
@@ -1331,9 +1334,16 @@ impl OcrApp {
                 self.cancel_task();
             }
             ui.separator();
+            let palette = UiPalette::from_visuals(ui.visuals());
             let has_text = self.has_text();
-            let primary = egui::Button::new(RichText::new("复制文字").color(Color32::WHITE))
-                .fill(Color32::from_rgb(37, 99, 235));
+            let primary = egui::Button::new(
+                RichText::new("复制文字")
+                    .strong()
+                    .color(palette.accent_text),
+            )
+            .fill(palette.accent)
+            .stroke(Stroke::new(1.0_f32, palette.accent))
+            .rounding(CONTROL_RADIUS);
             if ui.add_enabled(!self.busy && has_text, primary).clicked() {
                 self.copy_text();
             }
@@ -1354,6 +1364,7 @@ impl OcrApp {
     }
 
     fn draw_left_panel(&mut self, ui: &mut egui::Ui) {
+        let palette = UiPalette::from_visuals(ui.visuals());
         ui.vertical(|ui| {
             ui.horizontal(|ui| {
                 ui.label(RichText::new("截图预览").strong());
@@ -1368,15 +1379,15 @@ impl OcrApp {
                         .as_ref()
                         .is_some_and(|session| session.input_path.is_some());
                     let (label, color) = if received_image && self.busy {
-                        ("已接收 · 自动识别中", Color32::from_rgb(37, 99, 235))
+                        ("已接收 · 自动识别中", palette.accent)
                     } else if received_image {
-                        ("已接收", Color32::from_rgb(22, 163, 74))
+                        ("已接收", palette.success)
                     } else if self.capture_save_note.error.is_some() {
-                        ("保存失败", Color32::from_rgb(220, 38, 38))
+                        ("保存失败", palette.danger)
                     } else if self.capture_save_note.saved_path.is_some() {
-                        ("已保存", Color32::from_rgb(22, 163, 74))
+                        ("已保存", palette.success)
                     } else {
-                        ("未保存", Color32::from_rgb(100, 116, 139))
+                        ("未保存", palette.muted)
                     };
                     ui.label(RichText::new(label).small().color(color));
                 });
@@ -1387,7 +1398,7 @@ impl OcrApp {
                     ui.label(
                         RichText::new(format!("来源文件：{file_name}"))
                             .small()
-                            .color(Color32::from_rgb(71, 85, 105)),
+                            .color(palette.muted),
                     )
                     .on_hover_text(
                         session
@@ -1401,9 +1412,9 @@ impl OcrApp {
 
             let preview_height = (ui.available_height() * 0.32).clamp(148.0, 240.0);
             Frame::none()
-                .fill(Color32::WHITE)
-                .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
-                .rounding(Rounding::same(8.0))
+                .fill(palette.surface)
+                .stroke(Stroke::new(1.0_f32, palette.border_subtle))
+                .rounding(Rounding::same(CARD_RADIUS))
                 .inner_margin(Margin::symmetric(8.0, 8.0))
                 .show(ui, |ui| {
                     ui.set_min_width(ui.available_width());
@@ -1433,7 +1444,7 @@ impl OcrApp {
                             ui.label(
                                 RichText::new(format!("{w} x {h}"))
                                     .small()
-                                    .color(Color32::from_rgb(100, 116, 139)),
+                                    .color(palette.muted),
                             );
                         }
                         self.draw_detected_crop_controls(ui);
@@ -1443,13 +1454,10 @@ impl OcrApp {
                             if let Some(error) = self.preview_error.as_deref() {
                                 ui.label(
                                     RichText::new(format!("截图预览加载失败\n{error}"))
-                                        .color(Color32::from_rgb(220, 38, 38)),
+                                        .color(palette.danger),
                                 );
                             } else {
-                                ui.label(
-                                    RichText::new("暂无截图")
-                                        .color(Color32::from_rgb(100, 116, 139)),
-                                );
+                                ui.label(RichText::new("暂无截图").color(palette.muted));
                             }
                         });
                         ui.add_space(72.0);
@@ -1548,6 +1556,7 @@ impl OcrApp {
         let Some(crop) = self.detected_crop() else {
             return;
         };
+        let palette = UiPalette::from_visuals(ui.visuals());
         let rect = crop.rect;
         let left = image_rect.left() + image_rect.width() * rect.left;
         let top = image_rect.top() + image_rect.height() * rect.top;
@@ -1557,7 +1566,7 @@ impl OcrApp {
         ui.painter().rect_stroke(
             crop_rect,
             Rounding::same(2.0),
-            Stroke::new(2.0_f32, Color32::from_rgb(37, 99, 235)),
+            Stroke::new(2.0_f32, palette.accent),
         );
     }
 
@@ -1565,17 +1574,14 @@ impl OcrApp {
         let Some(crop) = self.detected_crop() else {
             return;
         };
+        let palette = UiPalette::from_visuals(ui.visuals());
         ui.add_space(4.0);
         let label = if crop.applied {
             format!("已自动裁边，置信度 {:.3}", crop.confidence)
         } else {
             format!("检测到边框，但置信度 {:.3} 较低，未裁剪", crop.confidence)
         };
-        ui.label(
-            RichText::new(label)
-                .small()
-                .color(Color32::from_rgb(37, 99, 235)),
-        );
+        ui.label(RichText::new(label).small().color(palette.accent));
         ui.horizontal_wrapped(|ui| {
             if ui
                 .add_enabled(
@@ -1698,6 +1704,7 @@ impl OcrApp {
     }
 
     fn draw_result_panel(&mut self, ui: &mut egui::Ui) {
+        let palette = UiPalette::from_visuals(ui.visuals());
         // The central panel owns all remaining horizontal space. Pin this UI
         // to that exact width so framed editors cannot grow beyond the native
         // window when button labels or DPI scaling change their minimum size.
@@ -1720,12 +1727,8 @@ impl OcrApp {
                 let summary_width = (ui.available_width() - history_width - 8.0).max(24.0);
                 ui.add_sized(
                     [summary_width, ui.spacing().interact_size.y],
-                    egui::Label::new(
-                        RichText::new(&summary)
-                            .small()
-                            .color(Color32::from_rgb(100, 116, 139)),
-                    )
-                    .truncate(),
+                    egui::Label::new(RichText::new(&summary).small().color(palette.muted))
+                        .truncate(),
                 )
                 .on_hover_text(&summary);
                 if ui
@@ -1835,9 +1838,9 @@ impl OcrApp {
             let editor_height =
                 (ui.available_height() - reserved_for_history - 12.0).max(min_editor_height);
             Frame::none()
-                .fill(Color32::WHITE)
-                .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
-                .rounding(Rounding::same(8.0))
+                .fill(palette.surface)
+                .stroke(Stroke::new(1.0_f32, palette.border_subtle))
+                .rounding(Rounding::same(CARD_RADIUS))
                 .inner_margin(Margin::symmetric(10.0, 10.0))
                 .show(ui, |ui| {
                     if self.busy {
@@ -1849,9 +1852,7 @@ impl OcrApp {
                                 ui.spinner();
                                 ui.add_space(8.0);
                                 ui.label(
-                                    RichText::new("正在识别...")
-                                        .strong()
-                                        .color(Color32::from_rgb(51, 65, 85)),
+                                    RichText::new("正在识别...").strong().color(palette.muted),
                                 );
                             },
                         );
@@ -1899,9 +1900,9 @@ impl OcrApp {
             if self.show_history {
                 ui.add_space(10.0);
                 Frame::none()
-                    .fill(Color32::WHITE)
-                    .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
-                    .rounding(Rounding::same(8.0))
+                    .fill(palette.surface)
+                    .stroke(Stroke::new(1.0_f32, palette.border_subtle))
+                    .rounding(Rounding::same(CARD_RADIUS))
                     .inner_margin(Margin::symmetric(8.0, 8.0))
                     .show(ui, |ui| {
                         ScrollArea::vertical()
@@ -1910,9 +1911,7 @@ impl OcrApp {
                             .show(ui, |ui| {
                                 if self.history.is_empty() {
                                     ui.label(
-                                        RichText::new("暂无历史")
-                                            .small()
-                                            .color(Color32::from_rgb(100, 116, 139)),
+                                        RichText::new("暂无历史").small().color(palette.muted),
                                     );
                                     return;
                                 }
@@ -1984,12 +1983,19 @@ impl eframe::App for OcrApp {
             OCR_REQUEST_POLL_INTERVAL
         });
 
+        apply_tool_style(ctx);
+        let palette = UiPalette::from_visuals(&ctx.style().visuals);
         let available_width = ctx.available_rect().width();
         let compact_toolbar = available_width < 640.0;
         let toolbar_height = if compact_toolbar { 94.0 } else { 60.0 };
         egui::TopBottomPanel::top("ocr_top")
             .exact_height(toolbar_height)
-            .frame(Frame::none().fill(Color32::from_rgb(248, 250, 252)))
+            .frame(
+                Frame::none()
+                    .fill(palette.surface)
+                    .stroke(Stroke::new(1.0_f32, palette.border_subtle))
+                    .inner_margin(Margin::symmetric(12.0, 0.0)),
+            )
             .show(ctx, |ui| {
                 ui.add_space(9.0);
                 self.draw_toolbar(ui, ctx);
@@ -1997,14 +2003,15 @@ impl eframe::App for OcrApp {
 
         egui::TopBottomPanel::bottom("ocr_status")
             .exact_height(44.0)
-            .frame(Frame::none().fill(Color32::from_rgb(248, 250, 252)))
+            .frame(
+                Frame::none()
+                    .fill(palette.command_bar)
+                    .stroke(Stroke::new(1.0_f32, palette.border_subtle))
+                    .inner_margin(Margin::symmetric(12.0, 0.0)),
+            )
             .show(ctx, |ui| {
                 ui.add_space(6.0);
-                ui.label(
-                    RichText::new(&self.status)
-                        .small()
-                        .color(Color32::from_rgb(71, 85, 105)),
-                );
+                ui.label(RichText::new(&self.status).small().color(palette.muted));
             });
 
         // Let egui own the split instead of manually subtracting widths inside
@@ -2023,8 +2030,8 @@ impl eframe::App for OcrApp {
             .max_width(left_panel_max)
             .frame(
                 Frame::none()
-                    .fill(Color32::from_rgb(248, 250, 252))
-                    .stroke(Stroke::new(1.0_f32, Color32::from_rgb(226, 232, 240)))
+                    .fill(palette.nav_bg)
+                    .stroke(Stroke::new(1.0_f32, palette.border_subtle))
                     .inner_margin(Margin::symmetric(12.0, 10.0)),
             )
             .show(ctx, |ui| {
@@ -2037,7 +2044,7 @@ impl eframe::App for OcrApp {
         egui::CentralPanel::default()
             .frame(
                 Frame::none()
-                    .fill(Color32::from_rgb(248, 250, 252))
+                    .fill(palette.app_bg)
                     .inner_margin(Margin::symmetric(12.0, 10.0)),
             )
             .show(ctx, |ui| self.draw_result_panel(ui));

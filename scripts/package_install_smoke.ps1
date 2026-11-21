@@ -137,11 +137,16 @@ try {
     }
 
     Assert-PathExists $uninstallScript
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $uninstallScript -InstallationRoot $installRoot
+    $uninstallArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $uninstallScript, '-InstallationRoot', $installRoot)
+    if (-not $ExerciseLanguageList) {
+        $uninstallArgs += '-SkipLanguageList'
+    }
+    & powershell.exe @uninstallArgs
     if ($LASTEXITCODE -ne 0) {
         throw "uninstall_dev.ps1 failed with exit code $LASTEXITCODE"
     }
     Start-Sleep -Seconds 4
+    Assert-PathMissing (Join-Path $smokeLocalAppData 'kaixin')
 
     if (Test-Path -Path ("HKCU:\Software\Classes\CLSID\{0}" -f $TextServiceClsid)) {
         throw "x64 current-user COM registration remains after uninstall"

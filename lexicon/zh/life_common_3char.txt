@@ -14164,7 +14164,7 @@
 米洛斯	mi luo si	3937
 线路板	xian lu ban	3936
 经营户	jing ying hu	3936
-给排水	gei pai shui	3936
+给排水	ji pai shui	3936
 绞肉机	jiao rou ji	3936
 罗宋汤	luo song tang	3936
 罗梅罗	luo mei luo	3936

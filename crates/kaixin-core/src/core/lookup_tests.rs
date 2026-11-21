@@ -59,6 +59,32 @@ fn lookup_returns_non_primary_heteronym_readings() {
 }
 
 #[test]
+fn partial_single_syllable_lookup_retains_curated_common_order() {
+    let mut engine = PinyinEngine::with_phrase_dir(None);
+    engine.clear_user_lexicon_for_eval();
+    let mut candidates = MergedCandidateMap::default();
+    merge_candidate(
+        &mut candidates,
+        "种".to_string(),
+        1_000.0,
+        Some(PINYIN_CANDIDATE_META),
+    );
+    let now = engine.user_lexicon.current_clock();
+    let (ranked, error) = engine.finish_partial_first_batch(
+        &mut candidates,
+        "chong",
+        "chong",
+        now,
+        0,
+        None,
+        "test_first_batch",
+    );
+    assert!(error.is_none());
+    assert_eq!(ranked[0].phrase, "冲");
+    assert_eq!(ranked[1].phrase, "重");
+}
+
+#[test]
 fn xiong_does_not_offer_neng_character() {
     let mut engine = PinyinEngine::with_phrase_dir(None);
     engine.clear_user_lexicon_for_eval();

@@ -302,12 +302,22 @@ pub fn primary_pinyin_syllables_for_phrase(phrase: &str) -> Option<Vec<String>> 
 }
 
 fn normalize_pinyin_code(code: &str) -> Option<String> {
-    let compact: String = code
-        .chars()
-        .filter(|ch| !ch.is_whitespace() && *ch != '\'' && *ch != '-' && *ch != '_')
-        .flat_map(char::to_lowercase)
-        .collect();
+    let compact = explicit_pinyin_syllables(code).concat();
     (!compact.is_empty()).then_some(compact)
+}
+
+#[test]
+fn explicit_lexicon_readings_normalize_only_whole_syllables() {
+    assert_eq!(
+        normalize_pinyin_code("zhan lue").as_deref(),
+        Some("zhanlve")
+    );
+    assert_eq!(normalize_pinyin_code("bao nüe").as_deref(), Some("baonve"));
+    assert_eq!(
+        normalize_pinyin_code("lu er dao").as_deref(),
+        Some("luerdao")
+    );
+    assert_eq!(normalize_pinyin_code("nu'er").as_deref(), Some("nuer"));
 }
 
 fn abbrev_key_for_pinyin_code(code: &str) -> Option<String> {
@@ -356,10 +366,11 @@ fn explicit_pinyin_syllables(code: &str) -> Vec<String> {
         .split(|ch: char| ch.is_whitespace() || matches!(ch, '\'' | '-' | '_'))
         .filter(|part| !part.is_empty())
     {
-        if !part.chars().all(|ch| ch.is_ascii_alphabetic()) {
+        let syllable = part.to_lowercase().replace('ü', "v");
+        if !syllable.bytes().all(|ch| ch.is_ascii_alphabetic()) {
             return Vec::new();
         }
-        out.push(part.to_ascii_lowercase());
+        out.push(crate::text_norm::canonical_pinyin_syllable(&syllable).to_string());
     }
     out
 }
@@ -1174,9 +1185,27 @@ impl AbbrevLexicon {
             .and_then(normalize_pinyin_code)
             .map(|key| vec![key])
             .unwrap_or_else(|| pinyin_keys_for_phrase(&entry.phrase));
-        for key in &pinyin_keys {
+        let generated_single = if entry.code.is_none()
+            && entry.pronunciation_kind == PronunciationKind::Unspecified
+            && lexicon_phrase_char_count(&entry.phrase) == 1
+        {
+            entry.phrase.chars().next()
+        } else {
+            None
+        };
+        for (reading_index, key) in pinyin_keys.iter().enumerate() {
+            // The global character frequency applies to its primary reading.
+            // Explicitly maintained readings retain their own score and class.
+            let inferred_alternate = reading_index != 0
+                && generated_single
+                    .is_some_and(|ch| !crate::dict::is_project_accepted_reading(ch, key));
+            let (freq, kind) = if inferred_alternate {
+                (entry.freq.min(3_000), PronunciationKind::Alternate)
+            } else {
+                (entry.freq, entry.pronunciation_kind)
+            };
             let v = self.pinyin_inner.entry(key.clone()).or_default();
-            merge_compact_entry_with_kind(v, phrase_id, entry.freq, entry.pronunciation_kind);
+            merge_compact_entry_with_kind(v, phrase_id, freq, kind);
             trim_compact_entries(v, PREBAKED_ENTRIES_PER_KEY_TOP_K);
             self.note_cold_source(key, phrase_id, optional_source_tag);
             inserted = true;

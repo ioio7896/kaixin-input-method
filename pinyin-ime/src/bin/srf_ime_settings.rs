@@ -13,8 +13,8 @@ use config::*;
 use model::*;
 use ui::{
     capsule_switch, diagnostic_log_paths, enforce_settings_min_font_size,
-    export_diagnostic_package_to, export_performance_log_to, fluent_palette,
-    privacy_statement_text,
+    export_diagnostic_package_to, export_performance_log_to, fluent_palette, hotkey_modifier,
+    privacy_statement_text, SettingsComboBoxExt,
 };
 
 use eframe::egui::{
@@ -110,6 +110,7 @@ struct SettingsApp {
     tool_page: ToolSettingsPage,
     system_page: SystemSettingsPage,
     settings_search: String,
+    search_focus_target: Option<(String, Instant)>,
     reset_section_scroll: bool,
     vv_command_filter: String,
     lexicon_filter: String,
@@ -134,7 +135,7 @@ enum UserDictTaskResult {
 
 impl SettingsApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        cc.egui_ctx.set_theme(egui::ThemePreference::Light);
+        let _ = pinyin_ime::ui_theme::sync_theme_from_prefs(&cc.egui_ctx);
         enforce_settings_min_font_size(&cc.egui_ctx);
         let config_path = app_paths::config_ini_path()
             .unwrap_or_else(|| PathBuf::from(app_paths::CONFIG_FILE_NAME));
@@ -192,6 +193,7 @@ impl SettingsApp {
             tool_page: ToolSettingsPage::Clipboard,
             system_page: SystemSettingsPage::General,
             settings_search: String::new(),
+            search_focus_target: None,
             reset_section_scroll: false,
             vv_command_filter: String::new(),
             lexicon_filter: String::new(),
@@ -1249,15 +1251,9 @@ fn hotkey_combo(
                 )
                 .truncate(),
             );
-            changed |= ui
-                .add_enabled(enabled, egui::Checkbox::new(&mut parts.ctrl, "Ctrl"))
-                .changed();
-            changed |= ui
-                .add_enabled(enabled, egui::Checkbox::new(&mut parts.shift, "Shift"))
-                .changed();
-            changed |= ui
-                .add_enabled(enabled, egui::Checkbox::new(&mut parts.alt, "Alt"))
-                .changed();
+            changed |= hotkey_modifier(ui, "Ctrl", enabled, &mut parts.ctrl);
+            changed |= hotkey_modifier(ui, "Shift", enabled, &mut parts.shift);
+            changed |= hotkey_modifier(ui, "Alt", enabled, &mut parts.alt);
             if !parts.ctrl && !parts.shift && !parts.alt {
                 parts.ctrl = true;
                 changed = true;
@@ -1269,10 +1265,10 @@ fn hotkey_combo(
             }
             ui.add_enabled_ui(enabled, |ui| {
                 ComboBox::from_id_salt(combo_id)
-                    .selected_text(hotkey_key_label(&parts.key))
+                    .selected_text(RichText::new(hotkey_key_label(&parts.key)).monospace())
                     .width(78.0)
                     .truncate()
-                    .show_ui(ui, |ui| {
+                    .show_settings(ui, |ui| {
                         for (key, label) in hotkey_key_options() {
                             changed |= ui
                                 .selectable_value(&mut parts.key, key.to_string(), label)

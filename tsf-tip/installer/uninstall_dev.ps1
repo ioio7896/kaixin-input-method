@@ -1,12 +1,11 @@
-﻿param(
+param(
     [string]$InstallationRoot = $PSScriptRoot,
     [switch]$Machine,
     [switch]$SkipFileRemoval,
     [switch]$SkipRegistration,
     [switch]$SkipUninstallEntry,
     [switch]$SkipCurrentUserCleanup,
-    [switch]$RemoveUserData,
-    [switch]$RemoveTransientUserData
+    [switch]$SkipLanguageList
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,16 +15,8 @@ $ProfileGuid = '{A3F0B2C1-4D5E-6789-ABCD-EF0123456789}'
 $SimplifiedChineseTip = ('0804:{0}{1}' -f $TextServiceClsid, $ProfileGuid)
 $AppDisplayName = '开心输入法'
 $AppPathName = 'kaixin'
-$TrayRunEntryName = $AppDisplayName
-$LegacyTrayRunEntryName = $AppDisplayName + ( -join ([char[]](0x6258, 0x76D8)))
-$EngineRunEntryName = $AppDisplayName + ( -join ([char[]](0x5F15, 0x64CE)))
 $RuntimePayloadManifestName = 'current_runtime_payload.txt'
 $RuntimePayloadRootName = 'runtime'
-$script:UninstallLogPath = $null
-
-function Get-UserStateRoot {
-    return Join-Path $env:LOCALAPPDATA $AppPathName
-}
 
 function Get-MachineStateRoot {
     $programData = [Environment]::GetFolderPath('CommonApplicationData')
@@ -35,31 +26,9 @@ function Get-MachineStateRoot {
     return Join-Path $programData $AppPathName
 }
 
-function Ensure-Directory {
-    param([string]$Path)
-    if ([string]::IsNullOrWhiteSpace($Path)) { return }
-    if (-not (Test-Path -LiteralPath $Path)) {
-        New-Item -ItemType Directory -Path $Path -Force | Out-Null
-    }
-}
-
-function Get-DefaultUninstallLogPath {
-    param([bool]$MachineScope)
-    if ($MachineScope) {
-        return Join-Path (Get-MachineStateRoot) 'uninstall_machine.log'
-    }
-    return Join-Path (Get-UserStateRoot) 'uninstall_user.log'
-}
-
 function Write-UninstallLog {
     param([string]$Message)
-    if ([string]::IsNullOrWhiteSpace($script:UninstallLogPath)) { return }
-    try {
-        $directory = Split-Path -Parent $script:UninstallLogPath
-        Ensure-Directory -Path $directory
-        $line = ('{0:yyyy-MM-dd HH:mm:ss} {1}' -f (Get-Date), $Message)
-        Add-Content -LiteralPath $script:UninstallLogPath -Value $line -Encoding UTF8 -ErrorAction Stop
-    } catch { Write-Verbose 'Optional operation in Write-UninstallLog failed; continuing with the existing fallback.' }
+    Write-Host $Message
 }
 
 function Get-UninstallKeyPath {
@@ -155,9 +124,7 @@ function Register-CurrentUserRunOnceRemoval {
     }
 
     try {
-        $stateRoot = Get-UserStateRoot
-        Ensure-Directory -Path $stateRoot
-        $cleanupScript = Join-Path $stateRoot ("cleanup-{0}.ps1" -f ([guid]::NewGuid().ToString('N')))
+        $cleanupScript = Join-Path ([IO.Path]::GetTempPath()) ("cleanup-{0}.ps1" -f ([guid]::NewGuid().ToString('N')))
         $escapedTarget = $TargetPath.Replace("'", "''")
         $cleanupContent = @"
 Start-Sleep -Seconds 3
@@ -177,49 +144,6 @@ Remove-Item -LiteralPath `$MyInvocation.MyCommand.Path -Force -ErrorAction Silen
     } catch {
         Write-UninstallLog ("WARN: could not register HKCU RunOnce cleanup for {0}: {1}" -f $TargetPath, $_.Exception.Message)
         return $false
-    }
-}
-
-function Remove-InputMethodFromCurrentUserLanguageList {
-    param([string]$Tip)
-
-    $getCommand = Get-Command -Name Get-WinUserLanguageList -ErrorAction SilentlyContinue
-    $setCommand = Get-Command -Name Set-WinUserLanguageList -ErrorAction SilentlyContinue
-    if (-not $getCommand -or -not $setCommand) {
-        Write-UninstallLog 'SKIP: Get/Set-WinUserLanguageList cmdlet unavailable'
-        return
-    }
-
-    $languageList = Get-WinUserLanguageList
-    $changed = $false
-    foreach ($targetLanguage in @($languageList)) {
-        $existingTips = New-Object 'System.Collections.Generic.List[string]'
-        foreach ($existingTip in @($targetLanguage.InputMethodTips)) {
-            if (-not [string]::IsNullOrWhiteSpace($existingTip) -and -not $existingTips.Contains($existingTip)) {
-                [void]$existingTips.Add($existingTip)
-            }
-        }
-
-        if (-not $existingTips.Remove($Tip)) {
-            continue
-        }
-
-        if ($targetLanguage.InputMethodTips -and $targetLanguage.InputMethodTips.PSObject.Methods.Name -contains 'Clear') {
-            $targetLanguage.InputMethodTips.Clear()
-            foreach ($value in $existingTips) {
-                [void]$targetLanguage.InputMethodTips.Add($value)
-            }
-        } else {
-            $targetLanguage.InputMethodTips = [string[]]$existingTips
-        }
-        $changed = $true
-    }
-
-    if ($changed) {
-        Set-WinUserLanguageList -LanguageList $languageList -Force
-        Write-UninstallLog 'OK: removed TIP from current user language list'
-    } else {
-        Write-UninstallLog 'OK: TIP was not present in current user language list'
     }
 }
 
@@ -307,131 +231,6 @@ function Remove-TipFromLoadedUserRegistry {
         }
     }
     Write-UninstallLog ("OK: loaded user language registry cleanup complete; users={0} removed_values={1} removed_keys={2}" -f $visitedUsers, $removedValues, $removedKeys)
-}
-
-function Remove-IfExists {
-    param([string]$Path)
-    if (Test-Path -LiteralPath $Path) {
-        Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction SilentlyContinue
-    }
-}
-
-function Remove-IfEmpty {
-    param([string]$Path)
-    if (-not (Test-Path -LiteralPath $Path)) {
-        return
-    }
-    $item = Get-Item -LiteralPath $Path -ErrorAction SilentlyContinue
-    if (-not $item -or -not $item.PSIsContainer) {
-        return
-    }
-    $hasEntries = Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $hasEntries) {
-        Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
-    }
-}
-
-function Remove-TrayRunEntry {
-    $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-    if (Test-Path -Path $runKey) {
-        Remove-ItemProperty -Path $runKey -Name $TrayRunEntryName -ErrorAction SilentlyContinue
-        Remove-ItemProperty -Path $runKey -Name $LegacyTrayRunEntryName -ErrorAction SilentlyContinue
-        Remove-ItemProperty -Path $runKey -Name $EngineRunEntryName -ErrorAction SilentlyContinue
-    }
-    $startupApprovedRunKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run'
-    if (Test-Path -Path $startupApprovedRunKey) {
-        Remove-ItemProperty -Path $startupApprovedRunKey -Name $TrayRunEntryName -ErrorAction SilentlyContinue
-        Remove-ItemProperty -Path $startupApprovedRunKey -Name $LegacyTrayRunEntryName -ErrorAction SilentlyContinue
-        Remove-ItemProperty -Path $startupApprovedRunKey -Name $EngineRunEntryName -ErrorAction SilentlyContinue
-    }
-    Write-UninstallLog 'OK: removed current user Run entries'
-}
-
-function Get-UserDataRemovalManifest {
-    $fallback = [pscustomobject]@{
-        files = @(
-            'kaixin.ini',
-            'user_dict.sqlite',
-            'user_dict.sqlite.partial',
-            'user_dict.sqlite.previous',
-            'user_dict.sqlite.bak',
-            'user_dict.sqlite.lock',
-            'user_dict.sqlite.reset',
-            'ocr_history.sqlite',
-            'ocr_history.sqlite.write.tmp',
-            'runtime_events.sqlite',
-            'runtime_events.sqlite-wal',
-            'runtime_events.sqlite-shm',
-            'runtime_events.sqlite-journal',
-            'cedict_cache.sqlite',
-            'cedict_cache.sqlite-journal',
-            'clipboard_store.sqlite.tmp',
-            'clipboard_store.sqlite.write.tmp',
-            'clipboard_store.sqlite.lock',
-            'clipboard_store.sqlite-journal',
-            'engine_capability.dat',
-            'clipboard_manager_window.sqlite',
-            'clipboard_manager_window.sqlite-journal',
-            'install_user.log',
-            'install_language_list.log'
-        )
-        directories = @('cache', 'logs')
-        registry_subkeys = @('State')
-    }
-
-    $manifestPath = Join-Path $InstallationRoot 'user_data_manifest.json'
-    if (-not (Test-Path -LiteralPath $manifestPath)) {
-        return $fallback
-    }
-    try {
-        return (Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json)
-    } catch {
-        Write-Warning ("Could not read user data manifest; using fallback list. {0}" -f $_.Exception.Message)
-        return $fallback
-    }
-}
-
-function Remove-SrfUserData {
-    $configDir = Get-UserStateRoot
-    $stateRoot = 'HKCU:\Software\' + $AppPathName
-    $manifest = Get-UserDataRemovalManifest
-
-    foreach ($name in @($manifest.files)) {
-        Remove-IfExists -Path (Join-Path $configDir $name)
-    }
-    foreach ($name in @($manifest.directories)) {
-        Remove-IfExists -Path (Join-Path $configDir $name)
-    }
-    foreach ($name in @($manifest.registry_subkeys)) {
-        $keyPath = Join-Path $stateRoot $name
-        if (Test-Path -Path $keyPath) {
-            Remove-Item -Path $keyPath -Recurse -Force -ErrorAction SilentlyContinue
-        }
-    }
-    Remove-IfEmpty -Path $configDir
-    if (Test-Path -Path $stateRoot) {
-        $hasKeys = Get-ChildItem -Path $stateRoot -ErrorAction SilentlyContinue | Select-Object -First 1
-        if (-not $hasKeys) {
-            Remove-Item -Path $stateRoot -Force -ErrorAction SilentlyContinue
-        }
-    }
-}
-
-function Remove-SrfTransientUserData {
-    $configDir = Get-UserStateRoot
-    $manifest = Get-UserDataRemovalManifest
-
-    foreach ($name in @($manifest.files)) {
-        if ($name -like '*.log') {
-            Remove-IfExists -Path (Join-Path $configDir $name)
-        }
-    }
-    foreach ($name in @($manifest.directories)) {
-        if ($name -in @('cache', 'logs')) {
-            Remove-IfExists -Path (Join-Path $configDir $name)
-        }
-    }
-    Remove-IfEmpty -Path $configDir
 }
 
 function Resolve-RuntimePayloadRoot {
@@ -525,7 +324,8 @@ function Invoke-TipUnregistration {
             $powerShell = 'powershell.exe'
         }
     } else {
-        $powerShell = 'powershell.exe'
+        $powerShellDir = if ([Environment]::Is64BitProcess) { 'System32' } else { 'Sysnative' }
+        $powerShell = Join-Path $env:WINDIR "$powerShellDir\WindowsPowerShell\v1.0\powershell.exe"
     }
 
     Write-UninstallLog ("BEGIN: {0} TIP unregistration DllPath={1} Machine={2}" -f $Arch, $DllPath, $MachineScope)
@@ -537,49 +337,11 @@ function Invoke-TipUnregistration {
     Write-UninstallLog ("OK: {0} TIP unregistration complete" -f $Arch)
 }
 
-function Stop-RunningHelpers {
-    $backgroundHelpers = @('srf_ime_engine', 'srf_ime_tray')
-    $visibleTools = @('srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_symbols', 'srf_ime_ocr', 'srf_ime_translate_result')
-    foreach ($processName in @($backgroundHelpers + $visibleTools)) {
-        foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {
-            try {
-                if ($process.MainWindowHandle -ne 0) {
-                    [void]$process.CloseMainWindow()
-                }
-            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
-        }
-    }
-    Start-Sleep -Milliseconds 700
-    foreach ($processName in $backgroundHelpers) {
-        foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {
-            try {
-                if (-not $process.HasExited) {
-                    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
-                }
-            } catch { Write-Verbose 'Optional operation in Stop-RunningHelpers failed; continuing with the existing fallback.' }
-        }
-    }
-    foreach ($processName in $visibleTools) {
-        foreach ($process in @(Get-Process -Name $processName -ErrorAction SilentlyContinue)) {
-            Write-Host ("Visible helper app is still running and was not force-closed: {0}({1})" -f $process.ProcessName, $process.Id)
-        }
-    }
-}
-
 $InstallationRoot = [System.IO.Path]::GetFullPath($InstallationRoot)
-$script:UninstallLogPath = Get-DefaultUninstallLogPath -MachineScope:$Machine.IsPresent
-Write-UninstallLog ("BEGIN: uninstall_dev.ps1 Machine={0} SkipFileRemoval={1} SkipRegistration={2} SkipUninstallEntry={3} SkipCurrentUserCleanup={4} RemoveUserData={5} RemoveTransientUserData={6} InstallationRoot={7}" -f
-    $Machine.IsPresent, $SkipFileRemoval.IsPresent, $SkipRegistration.IsPresent,
-    $SkipUninstallEntry.IsPresent, $SkipCurrentUserCleanup.IsPresent, $RemoveUserData.IsPresent,
-    $RemoveTransientUserData.IsPresent, $InstallationRoot)
-
-trap {
-    Write-UninstallLog ("FAIL: {0}" -f $_.Exception.Message)
-    throw
+if (-not $SkipCurrentUserCleanup) {
+    & (Join-Path $InstallationRoot 'uninstall_current_user.ps1') -InstallationRoot $InstallationRoot `
+        -SkipRegistration:($SkipRegistration -or $Machine) -SkipLanguageList:$SkipLanguageList -SkipRuntimeCleanup -FromMachineUninstaller:$Machine
 }
-
-Stop-RunningHelpers
-Write-UninstallLog 'OK: stopped running helpers'
 
 $registrationScript = Join-Path $InstallationRoot 'invoke_registration.ps1'
 $runtimePayloadRoot = Resolve-RuntimePayloadRoot -Root $InstallationRoot -AllowMissing
@@ -588,7 +350,7 @@ $runtimePayloadX86 = Resolve-RuntimePayloadArchRoot -Root $InstallationRoot -Arc
 $installedDll = if ($runtimePayloadX64) { Join-Path $runtimePayloadX64 'srf_tsf_tip.dll' } elseif ($runtimePayloadRoot) { Join-Path $runtimePayloadRoot 'srf_tsf_tip.dll' } else { Join-Path $InstallationRoot 'srf_tsf_tip.dll' }
 $installedDllX86 = if ($runtimePayloadX86) { Join-Path $runtimePayloadX86 'srf_tsf_tip.dll' } else { $null }
 
-if (-not $SkipRegistration -and (Test-Path -LiteralPath $registrationScript) -and (Test-Path -LiteralPath $installedDll)) {
+if (-not $SkipRegistration -and ($Machine -or $SkipCurrentUserCleanup) -and (Test-Path -LiteralPath $registrationScript) -and (Test-Path -LiteralPath $installedDll)) {
     try {
         Invoke-TipUnregistration -RegistrationScript $registrationScript -DllPath $installedDll -Arch x64 -MachineScope:$Machine.IsPresent
         if ($installedDllX86 -and (Test-Path -LiteralPath $installedDllX86)) {
@@ -602,15 +364,6 @@ if (-not $SkipRegistration -and (Test-Path -LiteralPath $registrationScript) -an
     }
 } else {
     Write-UninstallLog 'SKIP: TIP unregistration not requested or registration files missing'
-}
-
-if (-not $SkipRegistration -and -not $SkipCurrentUserCleanup) {
-    try {
-        Remove-InputMethodFromCurrentUserLanguageList -Tip $SimplifiedChineseTip
-    } catch {
-        Write-UninstallLog ("WARN: current user language-list cleanup failed: {0}" -f $_.Exception.Message)
-        Write-Warning $_
-    }
 }
 
 if (-not $SkipRegistration -and $Machine.IsPresent) {
@@ -632,22 +385,11 @@ if (-not $SkipUninstallEntry) {
     }
 }
 
-if (-not $SkipCurrentUserCleanup) {
-    Remove-TrayRunEntry
-
-    try {
-        if ($RemoveUserData) {
-            Remove-SrfUserData
-            Write-UninstallLog 'OK: removed current user data from manifest'
-        } elseif ($RemoveTransientUserData) {
-            Remove-SrfTransientUserData
-            Write-UninstallLog 'OK: removed transient current user data'
-        } else {
-            Write-UninstallLog 'OK: preserved current user data'
-        }
-    } catch {
-        Write-UninstallLog ("WARN: current user data cleanup failed: {0}" -f $_.Exception.Message)
-        Write-Warning $_
+if ($Machine) {
+    $machineData = Get-Item -LiteralPath (Get-MachineStateRoot) -Force -ErrorAction SilentlyContinue
+    if ($machineData) {
+        $isLink = [bool]($machineData.Attributes -band [IO.FileAttributes]::ReparsePoint)
+        [IO.Directory]::Delete($machineData.FullName, (-not $isLink))
     }
 }
 

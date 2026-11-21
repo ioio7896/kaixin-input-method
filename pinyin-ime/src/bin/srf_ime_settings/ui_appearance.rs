@@ -1025,13 +1025,11 @@ fn skin_card_grid_rows(
 fn skin_card_grid(ui: &mut egui::Ui, model: &mut SettingsModel, skins: &[SkinPreview]) {
     let filter_id = egui::Id::new("candidate_skin_filter");
     let mut filter = ui.memory(|memory| memory.data.get_temp::<u8>(filter_id).unwrap_or(0));
-    ui.horizontal_wrapped(|ui| {
-        for (value, label) in [(0, "全部"), (1, "浅色"), (2, "深色"), (3, "高对比度")] {
-            if ui.selectable_label(filter == value, label).clicked() {
-                filter = value;
-            }
-        }
-    });
+    let _ = sub_page_tabs(
+        ui,
+        &mut filter,
+        &[(0, "全部"), (1, "浅色"), (2, "深色"), (3, "高对比度")],
+    );
     ui.memory_mut(|memory| memory.data.insert_temp(filter_id, filter));
     ui.add_space(8.0);
     let visible: Vec<&SkinPreview> = skins
@@ -1044,6 +1042,128 @@ fn skin_card_grid(ui: &mut egui::Ui, model: &mut SettingsModel, skins: &[SkinPre
         })
         .collect();
     skin_card_grid_rows(ui, model, &visible, "candidate_skin_cards", filter == 0);
+}
+
+fn ui_design_style_selector(ui: &mut egui::Ui, status: &mut String) {
+    use pinyin_ime::ui_theme::{active_design_style, save_design_style, UiDesignStyle, UiPalette};
+
+    let current = active_design_style();
+    let dark_mode = ui.visuals().dark_mode;
+    let available = ui.available_width();
+    let columns = ((available + 8.0) / 184.0).floor().clamp(1.0, 5.0) as usize;
+    let card_width =
+        ((available - 8.0 * columns.saturating_sub(1) as f32) / columns as f32).clamp(140.0, 230.0);
+
+    egui::Grid::new("ui_design_style_cards")
+        .num_columns(columns)
+        .spacing([8.0, 8.0])
+        .show(ui, |ui| {
+            for (index, style) in UiDesignStyle::ALL.into_iter().enumerate() {
+                let selected = style == current;
+                let preview = UiPalette::for_style(style, dark_mode);
+                let (rect, response) =
+                    ui.allocate_exact_size(egui::vec2(card_width, 86.0), egui::Sense::click());
+                if ui.is_rect_visible(rect) {
+                    let painter = ui.painter();
+                    let stroke = if selected {
+                        Stroke::new(2.0_f32, preview.accent)
+                    } else if response.hovered() {
+                        Stroke::new(1.4_f32, preview.accent_hover)
+                    } else {
+                        Stroke::new(1.0_f32, preview.border)
+                    };
+                    painter.rect(
+                        rect,
+                        egui::Rounding::same(preview.card_radius),
+                        preview.surface,
+                        stroke,
+                    );
+
+                    // Top mini header strip showing app_bg + nav_bg + accent badge
+                    let band = egui::Rect::from_min_max(
+                        rect.min + egui::vec2(6.0, 6.0),
+                        egui::pos2(rect.max.x - 6.0, rect.min.y + 30.0),
+                    );
+                    painter.rect_filled(band, preview.control_radius, preview.app_bg);
+                    let nav_band = egui::Rect::from_min_max(
+                        band.min,
+                        egui::pos2(band.min.x + 36.0, band.max.y),
+                    );
+                    painter.rect_filled(nav_band, preview.control_radius, preview.nav_bg);
+                    let pill = egui::Rect::from_min_size(
+                        nav_band.min + egui::vec2(4.0, 7.0),
+                        egui::vec2(28.0, 10.0),
+                    );
+                    painter.rect_filled(pill, preview.control_radius, preview.nav_selected);
+
+                    // Mini keycap / switch swatch on right side of band
+                    let chip = egui::Rect::from_min_size(
+                        egui::pos2(band.max.x - 44.0, band.min.y + 5.0),
+                        egui::vec2(38.0, 14.0),
+                    );
+                    painter.rect(
+                        chip,
+                        egui::Rounding::same(preview.control_radius),
+                        preview.control_bg,
+                        Stroke::new(preview.border_width, preview.border),
+                    );
+                    painter.circle_filled(
+                        egui::pos2(chip.right() - 7.0, chip.center().y),
+                        3.5,
+                        preview.accent,
+                    );
+
+                    painter.text(
+                        egui::pos2(rect.left() + 8.0, rect.min.y + 45.0),
+                        egui::Align2::LEFT_CENTER,
+                        style.short_label(),
+                        FontId::proportional(13.5),
+                        preview.text,
+                    );
+                    let tag = if style == UiDesignStyle::TactileIndustrial {
+                        "默认 · 05 工业键帽"
+                    } else {
+                        match style {
+                            UiDesignStyle::Win11Mica => "01 · Win11 云母",
+                            UiDesignStyle::MacosBento => "02 · 12px 圆角网格",
+                            UiDesignStyle::LinearDark => "03 · 曜石黑极客",
+                            UiDesignStyle::OrientalInk => "04 · 宣纸朱砂玉青",
+                            UiDesignStyle::TactileIndustrial => "默认 · 05 工业键帽",
+                        }
+                    };
+                    painter.text(
+                        egui::pos2(rect.left() + 8.0, rect.bottom() - 14.0),
+                        egui::Align2::LEFT_CENTER,
+                        tag,
+                        FontId::proportional(11.5),
+                        preview.muted,
+                    );
+                    if selected {
+                        let badge_center = egui::pos2(rect.right() - 14.0, rect.bottom() - 15.0);
+                        painter.circle_filled(badge_center, 8.5, preview.accent);
+                        painter.text(
+                            badge_center,
+                            egui::Align2::CENTER_CENTER,
+                            "✓",
+                            FontId::proportional(11.5),
+                            preview.accent_text,
+                        );
+                    }
+                }
+                if response.on_hover_text(style.subtitle()).clicked() && style != current {
+                    save_design_style(style);
+                    if style == UiDesignStyle::LinearDark {
+                        ui.ctx().set_theme(egui::ThemePreference::Dark);
+                    }
+                    enforce_settings_min_font_size(ui.ctx());
+                    *status = format!("已切换设置页与工具箱视觉风格：{}", style.label());
+                    ui.ctx().request_repaint();
+                }
+                if (index + 1).is_multiple_of(columns) {
+                    ui.end_row();
+                }
+            }
+        });
 }
 
 pub(super) fn candidate_appearance_ui(
@@ -1069,46 +1189,44 @@ pub(super) fn candidate_appearance_ui(
         });
     });
 
+    section_panel(
+        ui,
+        "设置页与工具箱整体视觉风格（5 款可选）",
+        |ui| {
+            ui_design_style_selector(ui, status);
+        },
+    );
+
     match page {
         AppearanceSettingsPage::Layout => candidate_layout_controls(ui, model),
         AppearanceSettingsPage::Theme => candidate_theme_controls(ui, model, skins, chinese_fonts),
         AppearanceSettingsPage::Advanced => candidate_information_controls(ui, model),
     }
-    egui::CollapsingHeader::new("快捷外观方案")
-        .id_salt("candidate_presets")
-        .show(ui, |ui| {
-            section_panel(ui, "推荐外观", |ui| {
-                ui.horizontal_wrapped(|ui| {
-                    if outline_button(ui, "恢复推荐")
-                        .on_hover_text(
-                            "调整候选栏显示方案；保存后生效，热键、词库和隐私设置保持当前值。",
-                        )
-                        .clicked()
-                    {
-                        apply_candidate_recommended_defaults(model);
-                        *status = "候选栏已恢复推荐外观。".to_string();
-                    }
-                    if outline_button(ui, "游戏紧凑")
-                        .on_hover_text(
-                            "调整候选栏显示方案；保存后生效，热键、词库和隐私设置保持当前值。",
-                        )
-                        .clicked()
-                    {
-                        apply_candidate_game_compact(model);
-                        *status = "候选栏已切到游戏紧凑推荐。".to_string();
-                    }
-                    if outline_button(ui, "低延迟紧凑")
-                        .on_hover_text(
-                            "调整候选栏显示方案；保存后生效，热键、词库和隐私设置保持当前值。",
-                        )
-                        .clicked()
-                    {
-                        apply_candidate_low_latency_compact(model);
-                        *status = "候选栏已切到低延迟紧凑外观。".to_string();
-                    }
-                });
-            });
+    section_panel(ui, "快捷外观方案", |ui| {
+        ui.horizontal_wrapped(|ui| {
+            if outline_button(ui, "恢复推荐")
+                .on_hover_text("调整候选栏显示方案；保存后生效，热键、词库和隐私设置保持当前值。")
+                .clicked()
+            {
+                apply_candidate_recommended_defaults(model);
+                *status = "候选栏已恢复推荐外观。".to_string();
+            }
+            if outline_button(ui, "游戏紧凑")
+                .on_hover_text("调整候选栏显示方案；保存后生效，热键、词库和隐私设置保持当前值。")
+                .clicked()
+            {
+                apply_candidate_game_compact(model);
+                *status = "候选栏已切到游戏紧凑推荐。".to_string();
+            }
+            if outline_button(ui, "低延迟紧凑")
+                .on_hover_text("调整候选栏显示方案；保存后生效，热键、词库和隐私设置保持当前值。")
+                .clicked()
+            {
+                apply_candidate_low_latency_compact(model);
+                *status = "候选栏已切到低延迟紧凑外观。".to_string();
+            }
         });
+    });
 }
 
 fn candidate_layout_controls(ui: &mut egui::Ui, model: &mut SettingsModel) {
@@ -1360,7 +1478,7 @@ fn candidate_theme_controls(
                         .desired_width(f32::INFINITY)
                         .hint_text("例如：Microsoft YaHei、思源黑体，或字体文件路径"));
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("选择字体文件…").clicked() {
+                        if outline_button(ui, "选择字体文件…").clicked() {
                             if let Some(path) = rfd::FileDialog::new()
                                 .set_title("选择候选栏字体")
                                 .add_filter("字体文件", &["ttf", "otf", "ttc"])
@@ -1369,7 +1487,7 @@ fn candidate_theme_controls(
                                 model.candidate_font_file = path.to_string_lossy().into_owned();
                             }
                         }
-                        if ui.button("恢复默认字体").clicked() {
+                        if outline_button(ui, "恢复默认字体").clicked() {
                             model.candidate_font_file = DEFAULT_CANDIDATE_FONT_FAMILY.to_owned();
                         }
                     });
@@ -1482,21 +1600,9 @@ fn candidate_theme_controls(
         },
     );
 
-    egui::CollapsingHeader::new("皮肤库")
-        .id_salt("compact_skin_gallery")
-        .default_open(true)
-        .show(ui, |ui| {
-            let palette = fluent_palette(ui);
-            ui.label(
-                RichText::new("皮肤")
-                    .strong()
-                    .size(SETTINGS_FONT_SETTING_TITLE)
-                    .color(palette.text),
-            );
-            ui.add_space(8.0);
-            skin_card_grid(ui, model, skins);
-            ui.add_space(10.0);
-        });
+    section_panel(ui, "皮肤库", |ui| {
+        skin_card_grid(ui, model, skins);
+    });
 }
 
 fn candidate_information_controls(ui: &mut egui::Ui, model: &mut SettingsModel) {

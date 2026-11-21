@@ -8,6 +8,9 @@ use eframe::egui::{
     Stroke as EguiStroke,
 };
 use pinyin_ime::handwrite_lookup::{match_typed, Match as LookupMatch, Point, Stroke};
+use pinyin_ime::ui_theme::{
+    apply_tool_style, sync_theme_from_prefs, UiPalette, CARD_RADIUS, CONTROL_RADIUS,
+};
 use pinyin_ime::win_paste;
 
 const WINDOW_TITLE: &str = "开心输入法 手写查字";
@@ -28,6 +31,8 @@ struct HandwriteApp {
 impl HandwriteApp {
     fn new(cc: &eframe::CreationContext<'_>, target_hwnd: isize) -> Self {
         let _ = fonts::install_cjk_fonts(&cc.egui_ctx);
+        let _ = sync_theme_from_prefs(&cc.egui_ctx);
+        apply_tool_style(&cc.egui_ctx);
         Self {
             strokes: Vec::new(),
             candidates: Vec::new(),
@@ -178,6 +183,7 @@ impl HandwriteApp {
     }
 
     fn show_canvas(&mut self, ui: &mut egui::Ui) {
+        let palette = UiPalette::from_visuals(ui.visuals());
         let side = ui
             .available_width()
             .min(ui.available_height() - 58.0)
@@ -185,14 +191,14 @@ impl HandwriteApp {
         let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side), Sense::drag());
         let painter = ui.painter_at(rect);
 
-        painter.rect_filled(rect, Rounding::same(8.0), Color32::WHITE);
+        painter.rect_filled(rect, Rounding::same(CARD_RADIUS), palette.surface);
         painter.rect_stroke(
             rect,
-            Rounding::same(8.0),
-            EguiStroke::new(1.0_f32, Color32::from_rgb(203, 213, 225)),
+            Rounding::same(CARD_RADIUS),
+            EguiStroke::new(1.0_f32, palette.border),
         );
 
-        let grid = Color32::from_rgb(226, 232, 240);
+        let grid = palette.border_subtle;
         painter.line_segment(
             [rect.left_center(), rect.right_center()],
             EguiStroke::new(1.0_f32, grid),
@@ -226,23 +232,26 @@ impl HandwriteApp {
                 .map(|point| canvas_pos(rect, *point))
                 .collect();
             for pair in points.windows(2) {
-                painter.line_segment(
-                    [pair[0], pair[1]],
-                    EguiStroke::new(5.0_f32, Color32::from_rgb(15, 23, 42)),
-                );
+                painter.line_segment([pair[0], pair[1]], EguiStroke::new(5.0_f32, palette.text));
             }
             for point in points {
-                painter.circle_filled(point, 2.3, Color32::from_rgb(15, 23, 42));
+                painter.circle_filled(point, 2.3, palette.text);
             }
         }
 
         if self.strokes.is_empty() {
+            let watermark = Color32::from_rgba_unmultiplied(
+                palette.muted.r(),
+                palette.muted.g(),
+                palette.muted.b(),
+                45,
+            );
             painter.text(
                 rect.center(),
                 egui::Align2::CENTER_CENTER,
                 "写",
                 FontId::proportional(96.0),
-                Color32::from_gray(220),
+                watermark,
             );
         }
     }
@@ -307,11 +316,18 @@ impl HandwriteApp {
 
 impl eframe::App for HandwriteApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        apply_tool_style(ctx);
+        let palette = UiPalette::from_visuals(&ctx.style().visuals);
         self.handle_shortcuts(ctx);
 
         egui::TopBottomPanel::top("handwrite_top")
             .exact_height(54.0)
-            .frame(Frame::none().fill(Color32::from_rgb(248, 250, 252)))
+            .frame(
+                Frame::none()
+                    .fill(palette.surface)
+                    .stroke(EguiStroke::new(1.0_f32, palette.border_subtle))
+                    .inner_margin(Margin::symmetric(14.0, 0.0)),
+            )
             .show(ctx, |ui| {
                 ui.add_space(8.0);
                 ui.horizontal(|ui| {
@@ -329,14 +345,23 @@ impl eframe::App for HandwriteApp {
 
         egui::TopBottomPanel::bottom("handwrite_status")
             .exact_height(36.0)
-            .frame(Frame::none().fill(Color32::from_rgb(248, 250, 252)))
+            .frame(
+                Frame::none()
+                    .fill(palette.command_bar)
+                    .stroke(EguiStroke::new(1.0_f32, palette.border_subtle))
+                    .inner_margin(Margin::symmetric(14.0, 0.0)),
+            )
             .show(ctx, |ui| {
                 ui.add_space(5.0);
-                ui.label(RichText::new(&self.status).small().weak());
+                ui.label(RichText::new(&self.status).small().color(palette.muted));
             });
 
         egui::CentralPanel::default()
-            .frame(Frame::none().fill(Color32::from_rgb(248, 250, 252)))
+            .frame(
+                Frame::none()
+                    .fill(palette.app_bg)
+                    .inner_margin(Margin::same(14.0)),
+            )
             .show(ctx, |ui| {
                 ui.columns(2, |columns| {
                     columns[0].vertical_centered(|ui| {
@@ -356,20 +381,21 @@ fn candidate_row(
     candidate: &LookupMatch,
     selected: bool,
 ) -> egui::Response {
+    let palette = UiPalette::from_visuals(ui.visuals());
     let fill = if selected {
-        Color32::from_rgb(239, 246, 255)
+        palette.accent_soft
     } else {
-        Color32::WHITE
+        palette.surface
     };
     let stroke = if selected {
-        Color32::from_rgb(59, 130, 246)
+        palette.accent
     } else {
-        Color32::from_rgb(226, 232, 240)
+        palette.border_subtle
     };
     let response = Frame::none()
         .fill(fill)
         .stroke(EguiStroke::new(1.0_f32, stroke))
-        .rounding(Rounding::same(8.0))
+        .rounding(Rounding::same(CONTROL_RADIUS))
         .inner_margin(Margin::symmetric(10.0, 8.0))
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
@@ -377,19 +403,20 @@ fn candidate_row(
                 ui.label(
                     RichText::new(format!("{}", idx + 1))
                         .strong()
-                        .color(Color32::from_rgb(37, 99, 235)),
+                        .color(palette.accent),
                 );
                 ui.add_space(10.0);
                 ui.label(
                     RichText::new(candidate.hanzi.to_string())
                         .font(FontId::proportional(34.0))
+                        .color(palette.text)
                         .strong(),
                 );
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     ui.label(
                         RichText::new(format!("{:.2}", candidate.score))
                             .small()
-                            .color(Color32::from_rgb(100, 116, 139)),
+                            .color(palette.muted),
                     );
                 });
             });

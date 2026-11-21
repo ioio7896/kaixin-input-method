@@ -2929,11 +2929,9 @@ def verify_staged_package(
             raise RuntimeError(
                 f"staged {script_name} still creates a separate engine autorun entry"
             )
-    if "uninstall_machine.log" not in uninstall_dev_text:
-        raise RuntimeError("staged uninstall_dev.ps1 does not persist a machine uninstall log")
-    if "uninstall_user.log" not in uninstall_current_user_text:
+    if "Set-WinDefaultInputMethodOverride" not in uninstall_current_user_text:
         raise RuntimeError(
-            "staged uninstall_current_user.ps1 does not persist a user uninstall log"
+            "staged uninstall_current_user.ps1 does not restore the default input method"
         )
     if "RunOnce" not in uninstall_current_user_text:
         raise RuntimeError(

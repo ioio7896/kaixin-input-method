@@ -51,14 +51,13 @@ function Assert-FileContains {
     }
 }
 
-Assert-FileContains -Name "uninstall_current_user.ps1" -Needle "uninstall_user.log"
+Assert-FileContains -Name "uninstall_current_user.ps1" -Needle "Set-WinDefaultInputMethodOverride"
 Assert-FileContains -Name "uninstall_current_user.ps1" -Needle "RunOnce"
-Assert-FileContains -Name "uninstall_dev.ps1" -Needle "uninstall_machine.log"
 Assert-FileContains -Name "uninstall_dev.ps1" -Needle "Remove-TipFromLoadedUserRegistry"
-Assert-FileContains -Name "kaixin-common-code.iss" -Needle "CommandLineRequestsRemoveUserData"
-Assert-FileContains -Name "kaixin-common-code.iss" -Needle "CommandLineRequestsRemoveTransientUserData"
 Assert-FileContains -Name "kaixin.iss" -Needle "ArchitecturesAllowed=x64os"
+Assert-FileContains -Name "kaixin.iss" -Needle "RemoveCurrentUserData()"
 Assert-FileContains -Name "kaixin-user.iss" -Needle "ArchitecturesAllowed=x64os"
+Assert-FileContains -Name "kaixin-user.iss" -Needle "RemoveCurrentUserData()"
 
 [xml]$settingsManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_settings.exe.manifest") -Raw
 [xml]$trayManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_tray.exe.manifest") -Raw

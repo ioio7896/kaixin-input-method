@@ -34,7 +34,7 @@ struct SymbolsApp {
 impl SymbolsApp {
     fn new(cc: &eframe::CreationContext<'_>, tracker: target::Tracker) -> Self {
         fonts::install_cjk_fonts(&cc.egui_ctx);
-        cc.egui_ctx.set_visuals(egui::Visuals::light());
+        let _ = ui_theme::sync_theme_from_prefs(&cc.egui_ctx);
         ui_theme::apply_tool_style(&cc.egui_ctx);
         let symbols = catalog::load();
         let categories = catalog::categories(&symbols);

@@ -1,4 +1,10 @@
 use super::*;
+use pinyin_ime::ui_theme::UiDesignStyle;
+
+#[path = "ui_controls.rs"]
+mod controls;
+pub(super) use controls::SettingsComboBoxExt;
+use controls::{button, text_field, ButtonKind};
 
 #[path = "ui_layout.rs"]
 mod layout;
@@ -29,9 +35,9 @@ const SETTINGS_FONT_LOG: f32 = 12.0;
 const SETTINGS_CONTROL_WIDTH: f32 = 200.0;
 const SETTINGS_ROW_HEIGHT: f32 = 28.0;
 const SETTINGS_ROW_PAD_Y: f32 = 0.0;
-const SETTINGS_RADIUS_CONTROL: f32 = 1.0;
-const SETTINGS_RADIUS_CARD: f32 = 1.0;
-const SETTINGS_RADIUS_FULL: f32 = 1.0;
+const SETTINGS_RADIUS_CONTROL: f32 = pinyin_ime::ui_theme::CONTROL_RADIUS;
+const SETTINGS_RADIUS_CARD: f32 = pinyin_ime::ui_theme::CARD_RADIUS;
+const SETTINGS_RADIUS_FULL: f32 = pinyin_ime::ui_theme::FLOATING_RADIUS;
 const SETTINGS_BUTTON_WIDTH: f32 = 82.0;
 const DEFAULT_SCREENSHOT_DIR_DESCRIPTION: &str = "留空时使用“图片\\Kaixin Screenshots”。";
 const DEFAULT_SCREENSHOT_DIR_HINT: &str = "默认：图片\\Kaixin Screenshots";
@@ -102,6 +108,12 @@ impl eframe::App for SettingsApp {
         }
         enforce_settings_min_font_size(ctx);
         let palette = FluentPalette::from_visuals(&ctx.style().visuals);
+        if palette.style == UiDesignStyle::LinearDark && !self.confirm_close_with_unsaved_changes {
+            if let Some(section) = controls::navigation_shortcut(ctx) {
+                self.reset_section_scroll |= self.active_section != section;
+                self.active_section = section;
+            }
+        }
         // `SettingsModel` is already `PartialEq`; comparing it avoids cloning
         // and rendering the whole INI file on every egui repaint.  Rendering
         // is deliberately kept on the save path, where it belongs.
@@ -148,12 +160,7 @@ impl eframe::App for SettingsApp {
         game_test_wizard_ui(ctx, self);
         egui::TopBottomPanel::bottom("settings_actions")
             .resizable(false)
-            .frame(
-                egui::Frame::none()
-                    .fill(palette.command_bar)
-                    .stroke(Stroke::new(1.0_f32, palette.border_subtle))
-                    .inner_margin(egui::Margin::symmetric(16.0, 7.0)),
-            )
+            .frame(controls::footer_frame(palette))
             .show(ctx, |ui| {
                 settings_footer_ui(ui, self, palette, is_dirty, save_toast);
             });
@@ -174,8 +181,9 @@ impl eframe::App for SettingsApp {
                         ui.label(RichText::new(TITLE_CN).strong().color(palette.text));
                         ComboBox::from_id_salt("settings_compact_section")
                             .selected_text(self.active_section.label())
-                            .width(ui.available_width().clamp(1.0, 320.0))
-                            .show_ui(ui, |ui| {
+                            .width((ui.available_width() - 166.0).clamp(90.0, 280.0))
+                            .truncate()
+                            .show_settings(ui, |ui| {
                                 for section in SettingsSection::ALL {
                                     ui.selectable_value(
                                         &mut self.active_section,
@@ -184,6 +192,7 @@ impl eframe::App for SettingsApp {
                                     );
                                 }
                             });
+                        settings_style_picker(ui, 156.0);
                     });
                     if self.active_section != previous_section {
                         self.reset_section_scroll = true;
@@ -203,7 +212,7 @@ impl eframe::App for SettingsApp {
                     fluent_nav_header(ui);
                     ui.add_space(8.0);
 
-                    let nav_height = (ui.available_height() - 60.0).max(80.0);
+                    let nav_height = (ui.available_height() - 96.0).max(80.0);
                     egui::ScrollArea::vertical()
                         .max_height(nav_height)
                         .id_salt("settings_navigation_scroll")
@@ -240,15 +249,15 @@ impl eframe::App for SettingsApp {
                         });
                     ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
                         let mut preference = ui.ctx().options(|options| options.theme_preference);
-                        let previous = preference;
+                        let previous_pref = preference;
                         ComboBox::from_id_salt("settings_theme")
                             .selected_text(match preference {
-                                egui::ThemePreference::System => "主题：跟随系统",
-                                egui::ThemePreference::Dark => "主题：深色",
-                                egui::ThemePreference::Light => "主题：浅色",
+                                egui::ThemePreference::System => "明暗：跟随系统",
+                                egui::ThemePreference::Dark => "明暗：深色",
+                                egui::ThemePreference::Light => "明暗：浅色",
                             })
                             .width(ui.available_width())
-                            .show_ui(ui, |ui| {
+                            .show_settings(ui, |ui| {
                                 ui.selectable_value(
                                     &mut preference,
                                     egui::ThemePreference::System,
@@ -265,10 +274,14 @@ impl eframe::App for SettingsApp {
                                     "浅色",
                                 );
                             });
-                        if preference != previous {
+                        if preference != previous_pref {
                             ui.ctx().set_theme(preference);
+                            pinyin_ime::ui_theme::save_theme_preference(preference);
+                            enforce_settings_min_font_size(ui.ctx());
                             ui.ctx().request_repaint();
                         }
+                        ui.add_space(2.0);
+                        settings_style_picker(ui, ui.available_width());
                         ui.separator();
                     });
                 });
@@ -310,11 +323,51 @@ impl eframe::App for SettingsApp {
     }
 }
 
+use std::cell::RefCell;
+
+fn settings_style_picker(ui: &mut egui::Ui, width: f32) {
+    let previous = pinyin_ime::ui_theme::active_design_style();
+    let mut selected = previous;
+    ComboBox::from_id_salt("settings_design_style")
+        .selected_text(format!("风格：{}", selected.short_label()))
+        .width(width)
+        .truncate()
+        .show_settings(ui, |ui| {
+            for candidate in UiDesignStyle::ALL {
+                ui.selectable_value(&mut selected, candidate, candidate.label())
+                    .on_hover_text(candidate.subtitle());
+            }
+        });
+    if selected != previous {
+        pinyin_ime::ui_theme::save_design_style(selected);
+        let _ = pinyin_ime::ui_theme::sync_theme_from_prefs(ui.ctx());
+        enforce_settings_min_font_size(ui.ctx());
+        ui.ctx().request_repaint();
+    }
+}
+
+thread_local! {
+    static ACTIVE_SEARCH_FOCUS: RefCell<Option<(String, Instant)>> = const { RefCell::new(None) };
+}
+
 fn settings_content_ui(
     ui: &mut egui::Ui,
     app: &mut SettingsApp,
     request_real_candidate_preview: &mut bool,
 ) {
+    if app
+        .search_focus_target
+        .as_ref()
+        .is_some_and(|(_, at)| at.elapsed() > Duration::from_secs(3))
+    {
+        app.search_focus_target = None;
+    }
+    ACTIVE_SEARCH_FOCUS.with(|slot| {
+        *slot.borrow_mut() = app.search_focus_target.clone();
+    });
+    if app.search_focus_target.is_some() {
+        ui.ctx().request_repaint_after(Duration::from_millis(80));
+    }
     egui::Frame::none()
         .inner_margin(egui::Margin::symmetric(
             if ui.available_width() < 480.0 {
@@ -356,6 +409,7 @@ fn settings_content_ui(
             }
             scroll_area.show(ui, |ui| {
                 ui.set_width(ui.available_width().min(content_width));
+                ui.data_mut(|data| data.insert_temp(controls::module_counter(), 0_usize));
                 match app.active_section {
                     SettingsSection::Input => input_page_ui(ui, app),
                     SettingsSection::Appearance => {
@@ -382,6 +436,10 @@ fn settings_content_ui(
 
 #[derive(Clone, Copy)]
 pub(super) struct FluentPalette {
+    pub(super) style: pinyin_ime::ui_theme::UiDesignStyle,
+    pub(super) control_radius: f32,
+    pub(super) card_radius: f32,
+    pub(super) border_width: f32,
     pub(super) app_bg: Color32,
     pub(super) nav_bg: Color32,
     pub(super) command_bar: Color32,
@@ -406,64 +464,42 @@ pub(super) struct FluentPalette {
     pub(super) success_bg: Color32,
     pub(super) danger_bg: Color32,
     pub(super) info_bg: Color32,
+    pub(super) row_hover: Color32,
 }
 
 impl FluentPalette {
     fn from_visuals(visuals: &egui::Visuals) -> Self {
-        if visuals.dark_mode {
-            Self {
-                app_bg: Color32::from_rgb(32, 32, 32),
-                nav_bg: Color32::from_rgb(28, 28, 28),
-                command_bar: Color32::from_rgb(36, 36, 36),
-                surface: Color32::from_rgb(43, 43, 43),
-                surface_alt: Color32::from_rgb(37, 37, 37),
-                control_bg: Color32::from_rgb(49, 49, 49),
-                control_hover: Color32::from_rgb(56, 56, 56),
-                nav_hover: Color32::from_rgb(45, 45, 45),
-                nav_selected: Color32::from_rgb(52, 93, 135),
-                border: Color32::from_rgb(64, 64, 64),
-                border_subtle: Color32::from_rgb(48, 48, 48),
-                text: Color32::from_rgb(245, 245, 245),
-                muted: Color32::from_rgb(200, 200, 200),
-                accent: Color32::from_rgb(96, 180, 255),
-                accent_hover: Color32::from_rgb(135, 199, 255),
-                accent_pressed: Color32::from_rgb(67, 156, 235),
-                accent_text: Color32::WHITE,
-                warning: Color32::from_rgb(255, 202, 109),
-                success: Color32::from_rgb(96, 180, 255),
-                danger: Color32::from_rgb(255, 112, 112),
-                warning_bg: Color32::from_rgb(66, 52, 30),
-                success_bg: Color32::from_rgb(28, 58, 48),
-                danger_bg: Color32::from_rgb(66, 34, 34),
-                info_bg: Color32::from_rgb(38, 48, 58),
-            }
-        } else {
-            Self {
-                app_bg: Color32::from_rgb(236, 236, 236),
-                nav_bg: Color32::from_rgb(228, 230, 233),
-                command_bar: Color32::from_rgb(236, 236, 236),
-                surface: Color32::from_rgb(243, 243, 243),
-                surface_alt: Color32::from_rgb(230, 232, 235),
-                control_bg: Color32::WHITE,
-                control_hover: Color32::from_rgb(226, 234, 242),
-                nav_hover: Color32::from_rgb(211, 220, 230),
-                nav_selected: Color32::from_rgb(52, 93, 135),
-                border: Color32::from_rgb(159, 165, 174),
-                border_subtle: Color32::from_rgb(184, 189, 196),
-                text: Color32::from_rgb(32, 36, 42),
-                muted: Color32::from_rgb(88, 94, 104),
-                accent: Color32::from_rgb(52, 93, 135),
-                accent_hover: Color32::from_rgb(43, 80, 119),
-                accent_pressed: Color32::from_rgb(34, 65, 99),
-                accent_text: Color32::WHITE,
-                warning: Color32::from_rgb(157, 93, 0),
-                success: Color32::from_rgb(0, 120, 212),
-                danger: Color32::from_rgb(190, 45, 45),
-                warning_bg: Color32::from_rgb(255, 246, 224),
-                success_bg: Color32::from_rgb(226, 246, 240),
-                danger_bg: Color32::from_rgb(255, 235, 235),
-                info_bg: Color32::from_rgb(232, 241, 248),
-            }
+        let p = pinyin_ime::ui_theme::UiPalette::from_visuals(visuals);
+        Self {
+            style: p.style,
+            control_radius: p.control_radius,
+            card_radius: p.card_radius,
+            border_width: p.border_width,
+            app_bg: p.app_bg,
+            nav_bg: p.nav_bg,
+            command_bar: p.command_bar,
+            surface: p.surface,
+            surface_alt: p.surface_alt,
+            control_bg: p.control_bg,
+            control_hover: p.control_hover,
+            nav_hover: p.nav_hover,
+            nav_selected: p.nav_selected,
+            border: p.border,
+            border_subtle: p.border_subtle,
+            text: p.text,
+            muted: p.muted,
+            accent: p.accent,
+            accent_hover: p.accent_hover,
+            accent_pressed: p.accent_pressed,
+            accent_text: p.accent_text,
+            warning: p.warning,
+            success: p.success,
+            danger: p.danger,
+            warning_bg: p.warning_soft,
+            success_bg: p.success_soft,
+            danger_bg: p.danger_soft,
+            info_bg: p.info_soft,
+            row_hover: p.row_hover,
         }
     }
 }
@@ -472,20 +508,7 @@ pub(super) fn fluent_palette(ui: &egui::Ui) -> FluentPalette {
     FluentPalette::from_visuals(ui.visuals())
 }
 
-fn fluent_primary_button<'a>(label: &'a str, palette: FluentPalette) -> egui::Button<'a> {
-    egui::Button::new(RichText::new(label).strong().color(palette.accent_text))
-        .fill(palette.accent)
-        .stroke(Stroke::new(1.0_f32, palette.accent))
-        .rounding(SETTINGS_RADIUS_CONTROL)
-        .min_size(egui::vec2(104.0, 32.0))
-}
-
-fn settings_action_buttons(
-    ui: &mut egui::Ui,
-    app: &mut SettingsApp,
-    palette: FluentPalette,
-    is_dirty: bool,
-) {
+fn settings_action_buttons(ui: &mut egui::Ui, app: &mut SettingsApp, is_dirty: bool) {
     ui.horizontal_wrapped(|ui| {
         ui.menu_button("更多", |ui| {
             ui.set_min_width(150.0);
@@ -515,15 +538,19 @@ fn settings_action_buttons(
         } else {
             ui.allocate_space(egui::vec2(SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT));
         }
-        if ui.add_enabled(is_dirty, fluent_primary_button(SAVE_CN, palette)).clicked() {
+        if ui.add_enabled(is_dirty, button(SAVE_CN, ButtonKind::Primary)).clicked() {
             let _ = app.save();
         }
     });
 }
 
-fn footer_status(ui: &mut egui::Ui, text: &str, color: Color32) {
+fn footer_status(ui: &mut egui::Ui, text: &str, color: Color32, monospace: bool) {
     ui.set_min_height(38.0);
-    let mut job = egui::WidgetText::from(RichText::new(text).small().color(color)).into_layout_job(
+    let mut text_style = RichText::new(text).small().color(color);
+    if monospace {
+        text_style = text_style.monospace();
+    }
+    let mut job = egui::WidgetText::from(text_style).into_layout_job(
         ui.style(),
         egui::FontSelection::Default,
         egui::Align::Min,
@@ -566,7 +593,7 @@ fn settings_footer_ui(
             egui::Layout::top_down(egui::Align::Min),
             |ui| {
                 ui.set_width(width);
-                footer_status(ui, &status, color);
+                controls::footer_readout(ui, palette, &status, color, is_dirty);
             },
         );
         ui.horizontal(|ui| {
@@ -576,7 +603,7 @@ fn settings_footer_ui(
                 egui::Layout::left_to_right(egui::Align::Center),
                 |ui| {
                     ui.set_width(actions_width);
-                    settings_action_buttons(ui, app, palette, is_dirty);
+                    settings_action_buttons(ui, app, is_dirty);
                 },
             );
         });
@@ -588,7 +615,7 @@ fn settings_footer_ui(
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| {
                     ui.set_width(status_width);
-                    footer_status(ui, &status, color);
+                    controls::footer_readout(ui, palette, &status, color, is_dirty);
                 },
             );
             ui.allocate_ui_with_layout(
@@ -596,7 +623,7 @@ fn settings_footer_ui(
                 egui::Layout::left_to_right(egui::Align::Center),
                 |ui| {
                     ui.set_width(actions_width);
-                    settings_action_buttons(ui, app, palette, is_dirty);
+                    settings_action_buttons(ui, app, is_dirty);
                 },
             );
         });
@@ -608,7 +635,14 @@ fn fluent_nav_header(ui: &mut egui::Ui) {
     ui.horizontal(|ui| {
         let (mark, _) = ui.allocate_exact_size(egui::vec2(28.0, 28.0), egui::Sense::hover());
         ui.painter()
-            .rect_filled(mark, SETTINGS_RADIUS_CONTROL, palette.accent);
+            .rect_filled(mark, palette.control_radius, palette.accent);
+        if palette.style == pinyin_ime::ui_theme::UiDesignStyle::TactileIndustrial {
+            ui.painter().rect_stroke(
+                mark,
+                egui::Rounding::same(palette.control_radius),
+                Stroke::new(1.5_f32, palette.text),
+            );
+        }
         ui.painter().text(
             mark.center(),
             egui::Align2::CENTER_CENTER,
@@ -622,30 +656,26 @@ fn fluent_nav_header(ui: &mut egui::Ui) {
                     .strong()
                     .size(SETTINGS_FONT_BRAND_TITLE),
             );
-            ui.label(
-                RichText::new(format!("设置 · v{}", env!("CARGO_PKG_VERSION")))
-                    .small()
-                    .color(palette.muted),
-            );
+            let sub = if palette.style == pinyin_ime::ui_theme::UiDesignStyle::TactileIndustrial {
+                format!("KX-05 · v{}", env!("CARGO_PKG_VERSION"))
+            } else {
+                format!("设置 · v{}", env!("CARGO_PKG_VERSION"))
+            };
+            ui.label(RichText::new(sub).small().color(palette.muted));
         });
     });
 }
 
 fn section_header(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let palette = fluent_palette(ui);
-    ui.horizontal_wrapped(|ui| {
-        let section = app.active_section;
-        ui.label(
-            RichText::new(section.label())
-                .strong()
-                .size(SETTINGS_FONT_PAGE_TITLE)
-                .color(palette.text),
-        )
-        .on_hover_text(section.hint());
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if outline_button(ui, "恢复本页推荐").clicked() {
-                reset_active_page_defaults(app);
-            }
+    controls::header_frame(palette).show(ui, |ui| {
+        ui.horizontal(|ui| {
+            controls::page_title(ui, app.active_section, palette);
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if outline_button(ui, "恢复本页推荐").clicked() {
+                    reset_active_page_defaults(app);
+                }
+            });
         });
     });
 }
@@ -834,8 +864,8 @@ pub(super) fn enforce_settings_min_font_size(ctx: &egui::Context) {
     style.spacing.interact_size.y = SETTINGS_ROW_HEIGHT;
 
     let palette = FluentPalette::from_visuals(&style.visuals);
-    let radius = egui::Rounding::same(SETTINGS_RADIUS_CONTROL);
-    style.visuals.window_rounding = radius;
+    let radius = egui::Rounding::same(palette.control_radius);
+    style.visuals.window_rounding = egui::Rounding::same(palette.card_radius);
     style.visuals.menu_rounding = radius;
     style.visuals.window_fill = palette.app_bg;
     style.visuals.panel_fill = palette.app_bg;
@@ -852,9 +882,11 @@ pub(super) fn enforce_settings_min_font_size(ctx: &egui::Context) {
     style.visuals.widgets.hovered.weak_bg_fill = palette.control_hover;
     style.visuals.widgets.active.bg_fill = palette.control_hover;
     style.visuals.widgets.active.weak_bg_fill = palette.control_hover;
-    style.visuals.widgets.inactive.bg_stroke = Stroke::new(1.0_f32, palette.border);
-    style.visuals.widgets.hovered.bg_stroke = Stroke::new(1.0_f32, palette.accent_hover);
-    style.visuals.widgets.active.bg_stroke = Stroke::new(1.0_f32, palette.accent_pressed);
+    style.visuals.widgets.inactive.bg_stroke = Stroke::new(palette.border_width, palette.border);
+    style.visuals.widgets.hovered.bg_stroke =
+        Stroke::new(palette.border_width, palette.accent_hover);
+    style.visuals.widgets.active.bg_stroke =
+        Stroke::new(palette.border_width, palette.accent_pressed);
     style.visuals.widgets.inactive.rounding = radius;
     style.visuals.widgets.hovered.rounding = radius;
     style.visuals.widgets.active.rounding = radius;
@@ -871,48 +903,10 @@ fn nav_item(
     section: SettingsSection,
     model: &SettingsModel,
 ) {
-    let palette = fluent_palette(ui);
-    let selected = *current == section;
-    let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(ui.available_width(), 30.0), egui::Sense::click());
     let hint = nav_status_summary(section, model)
         .map(|summary| format!("{} · {summary}", section.hint()))
         .unwrap_or_else(|| section.hint().to_owned());
-    let response = response.on_hover_text(hint);
-    let fill = if selected {
-        palette.nav_selected
-    } else if response.hovered() {
-        palette.nav_hover
-    } else {
-        Color32::TRANSPARENT
-    };
-    if ui.is_rect_visible(rect) {
-        ui.painter().rect(
-            rect,
-            egui::Rounding::same(SETTINGS_RADIUS_CONTROL),
-            fill,
-            Stroke::new(0.0_f32, Color32::TRANSPARENT),
-        );
-        let text_color = if selected {
-            palette.accent_text
-        } else {
-            palette.text
-        };
-        paint_settings_icon(
-            ui,
-            egui::pos2(rect.left() + 24.0, rect.center().y),
-            section.icon(),
-            text_color,
-        );
-        ui.painter().text(
-            egui::pos2(rect.left() + 44.0, rect.center().y),
-            egui::Align2::LEFT_CENTER,
-            section.label(),
-            FontId::proportional(SETTINGS_FONT_NAV_TITLE),
-            text_color,
-        );
-    }
-    if response.clicked() {
+    if controls::navigation(ui, section, *current == section, hint).clicked() {
         *current = section;
     }
 }
@@ -1065,6 +1059,16 @@ const SETTINGS_SEARCH_ENTRIES: &[SettingsSearchEntry] = &[
         title: "候选字体",
         hint: "字体、字号和字重",
         keywords: "font",
+        section: SettingsSection::Appearance,
+        tool_page: None,
+        system_page: None,
+        appearance_page: Some(AppearanceSettingsPage::Theme),
+        lexicon_page: None,
+    },
+    SettingsSearchEntry {
+        title: "界面视觉风格",
+        hint: "5 款设置页与工具箱设计风格（默认风格 5 工业硬件风）",
+        keywords: "style design 风格 工业 云母 bento linear 水墨",
         section: SettingsSection::Appearance,
         tool_page: None,
         system_page: None,
@@ -1233,7 +1237,7 @@ fn settings_search_ui(ui: &mut egui::Ui, app: &mut SettingsApp, compact: bool) {
         };
         ui.add_sized(
             [width.max(1.0), SETTINGS_ROW_HEIGHT],
-            TextEdit::singleline(&mut app.settings_search).hint_text("搜索设置"),
+            text_field(TextEdit::singleline(&mut app.settings_search).hint_text("搜索设置")),
         );
         if !app.settings_search.is_empty()
             && ui.small_button("×").on_hover_text("清除搜索").clicked()
@@ -1281,43 +1285,17 @@ fn navigate_to_search_entry(app: &mut SettingsApp, entry: &SettingsSearchEntry) 
         app.lexicon_page = page;
     }
     app.status = format!("已定位到：{}", entry.title);
+    app.search_focus_target = Some((entry.title.to_string(), Instant::now()));
     app.settings_search.clear();
     app.reset_section_scroll = true;
 }
 
 fn section_panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut egui::Ui)) {
-    let palette = fluent_palette(ui);
-    let available_width = ui.available_width();
-    egui::Frame::none()
-        .fill(palette.surface)
-        .stroke(Stroke::new(1.0_f32, palette.border))
-        .rounding(SETTINGS_RADIUS_CARD)
-        .inner_margin(egui::Margin::same(8.0))
-        .show(ui, |ui| {
-            ui.set_width((available_width - 18.0).max(1.0));
-            ui.label(
-                RichText::new(title)
-                    .strong()
-                    .size(SETTINGS_FONT_SECTION_TITLE)
-                    .color(palette.text),
-            );
-            ui.add_space(4.0);
-            add_contents(ui);
-        });
-    ui.add_space(6.0);
+    controls::panel(ui, title, add_contents);
 }
 
 fn quiet_section(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&mut egui::Ui)) {
-    let palette = fluent_palette(ui);
-    ui.label(
-        RichText::new(title)
-            .strong()
-            .size(SETTINGS_FONT_SECTION_TITLE)
-            .color(palette.text),
-    );
-    ui.add_space(4.0);
-    add_contents(ui);
-    ui.add_space(12.0);
+    section_panel(ui, title, add_contents);
 }
 
 fn paint_settings_icon(ui: &egui::Ui, center: egui::Pos2, icon: SettingsIcon, color: Color32) {
@@ -1641,7 +1619,7 @@ fn inline_notice(ui: &mut egui::Ui, tone: StatusTone, text: &str) {
     egui::Frame::none()
         .fill(fill)
         .stroke(Stroke::new(1.0_f32, color))
-        .rounding(SETTINGS_RADIUS_FULL)
+        .rounding(SETTINGS_RADIUS_CARD)
         .inner_margin(egui::Margin::symmetric(10.0, 7.0))
         .show(ui, |ui| {
             ui.horizontal(|ui| {
@@ -1688,14 +1666,24 @@ fn diagnostic_status_table(ui: &mut egui::Ui, items: &[(&str, &str, Color32)]) {
 }
 
 fn outline_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
-    let palette = fluent_palette(ui);
-    ui.add(
-        egui::Button::new(label)
-            .fill(Color32::TRANSPARENT)
-            .stroke(Stroke::new(1.0_f32, palette.border))
-            .rounding(SETTINGS_RADIUS_CONTROL)
-            .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT)),
-    )
+    ui.add(button(label, ButtonKind::Secondary))
+}
+
+pub(super) fn hotkey_modifier(
+    ui: &mut egui::Ui,
+    label: &str,
+    enabled: bool,
+    value: &mut bool,
+) -> bool {
+    if ui
+        .add_enabled(enabled, button(label, ButtonKind::Key(*value)))
+        .clicked()
+    {
+        *value = !*value;
+        true
+    } else {
+        false
+    }
 }
 
 fn danger_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
@@ -1743,7 +1731,7 @@ impl<'a> SettingSpec<'a> {
 
 fn setting_toggle(ui: &mut egui::Ui, title: &str, description: &str, value: &mut bool) {
     setting_row(ui, title, description, |ui| {
-        capsule_switch(ui, value);
+        controls::switch(ui, title, value);
     });
 }
 
@@ -1792,24 +1780,7 @@ fn setting_row_help(response: egui::Response, help: &str) {
 }
 
 pub(super) fn capsule_switch(ui: &mut egui::Ui, value: &mut bool) -> egui::Response {
-    // Keep the existing shared API while using native egui checkbox interaction,
-    // including keyboard focus and accessibility metadata, for the classic UI.
-    ui.scope(|ui| {
-        if *value {
-            let palette = fluent_palette(ui);
-            let widgets = &mut ui.visuals_mut().widgets;
-            for (visuals, fill) in [
-                (&mut widgets.inactive, palette.accent),
-                (&mut widgets.hovered, palette.accent_hover),
-                (&mut widgets.active, palette.accent_pressed),
-            ] {
-                visuals.bg_fill = fill;
-                visuals.fg_stroke.color = palette.accent_text;
-            }
-        }
-        ui.checkbox(value, "")
-    })
-    .inner
+    controls::switch(ui, "开关", value)
 }
 
 fn setting_slider_usize(
@@ -1825,11 +1796,7 @@ fn setting_slider_usize(
             - numeric_width
             - ui.spacing().item_spacing.x)
             .max(40.0);
-        ui.spacing_mut().slider_width = track_width;
-        ui.add_sized(
-            [track_width, SETTINGS_ROW_HEIGHT],
-            Slider::new(value, range.clone()).show_value(false),
-        );
+        controls::slider(ui, value, range.clone(), track_width);
         ui.add_sized(
             [numeric_width, SETTINGS_ROW_HEIGHT],
             egui::DragValue::new(value).range(range).speed(1.0),
@@ -1850,11 +1817,7 @@ fn setting_slider_f64(
             - numeric_width
             - ui.spacing().item_spacing.x)
             .max(40.0);
-        ui.spacing_mut().slider_width = track_width;
-        ui.add_sized(
-            [track_width, SETTINGS_ROW_HEIGHT],
-            Slider::new(value, range.clone()).show_value(false),
-        );
+        controls::slider(ui, value, range.clone(), track_width);
         ui.add_sized(
             [numeric_width, SETTINGS_ROW_HEIGHT],
             egui::DragValue::new(value).range(range).speed(0.01),
@@ -1919,15 +1882,33 @@ fn setting_spec_row_enabled(
             );
         })
         .response;
-    if ui.rect_contains_pointer(response.rect) {
-        let color = if ui.visuals().dark_mode {
-            Color32::from_rgb(92, 77, 35)
-        } else {
-            Color32::from_rgb(255, 242, 184)
-        };
+    controls::row_divider(ui, response.rect, fluent_palette(ui));
+    let search_matched = ACTIVE_SEARCH_FOCUS.with(|slot| {
+        slot.borrow().as_ref().and_then(|(query, at)| {
+            let elapsed = at.elapsed().as_secs_f32();
+            (elapsed <= 3.0 && (spec.title.contains(query) || query.contains(spec.title)))
+                .then_some(elapsed)
+        })
+    });
+    if let Some(elapsed) = search_matched {
+        let palette = fluent_palette(ui);
+        if elapsed < 0.12 {
+            response.scroll_to_me(Some(egui::Align::Center));
+        }
         ui.painter().set(
             highlight,
-            egui::Shape::rect_filled(response.rect, 3.0, color),
+            egui::epaint::RectShape::new(
+                response.rect,
+                egui::Rounding::same(SETTINGS_RADIUS_CONTROL),
+                palette.row_hover,
+                Stroke::new(1.5_f32, palette.accent),
+            ),
+        );
+    } else if ui.rect_contains_pointer(response.rect) {
+        let color = fluent_palette(ui).row_hover;
+        ui.painter().set(
+            highlight,
+            egui::Shape::rect_filled(response.rect, SETTINGS_RADIUS_CONTROL, color),
         );
     }
     setting_row_help(
@@ -1949,7 +1930,7 @@ fn setting_combo_row(
             .selected_text(selected_text)
             .width(bounded_control_width(ui, SETTINGS_CONTROL_WIDTH))
             .wrap()
-            .show_ui(ui, add_options);
+            .show_settings(ui, add_options);
     });
 }
 
@@ -2080,41 +2061,58 @@ use lexicons::{extension_lexicon_controls, lexicon_learning_controls, user_lexic
 mod compatibility;
 use compatibility::{compatibility_ui, game_test_wizard_ui};
 
-fn appearance_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let previous = app.appearance_page;
-    ui.horizontal_wrapped(|ui| {
-        ui.selectable_value(
-            &mut app.appearance_page,
-            AppearanceSettingsPage::Layout,
-            "布局与显示",
-        );
-        ui.selectable_value(
-            &mut app.appearance_page,
-            AppearanceSettingsPage::Theme,
-            "字体与主题",
-        );
-        ui.selectable_value(
-            &mut app.appearance_page,
-            AppearanceSettingsPage::Advanced,
-            "高级标记",
-        );
+fn sub_page_tabs<T: Copy + PartialEq>(
+    ui: &mut egui::Ui,
+    current: &mut T,
+    items: &[(T, &str)],
+) -> bool {
+    let previous = *current;
+    let palette = fluent_palette(ui);
+    let animation_id = ui.auto_id_with("settings_segment_highlight");
+    controls::tabs_frame(palette).show(ui, |ui| {
+        let background = (palette.style == UiDesignStyle::MacosBento)
+            .then(|| ui.painter().add(egui::Shape::Noop));
+        let mut selected_rect = None;
+        ui.horizontal_wrapped(|ui| {
+            for &(value, label) in items {
+                let selected = *current == value;
+                let response = ui.add(button(label, ButtonKind::Tab(selected)));
+                if response.clicked() {
+                    *current = value;
+                    selected_rect = Some(response.rect);
+                } else if selected {
+                    selected_rect = Some(response.rect);
+                }
+            }
+        });
+        if let (Some(slot), Some(rect)) = (background, selected_rect) {
+            controls::paint_segment(ui, slot, animation_id, rect, palette);
+        }
     });
-    app.reset_section_scroll |= app.appearance_page != previous;
-    ui.separator();
+    *current != previous
+}
+
+fn appearance_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
+    app.reset_section_scroll |= sub_page_tabs(
+        ui,
+        &mut app.appearance_page,
+        &[
+            (AppearanceSettingsPage::Layout, "布局与显示"),
+            (AppearanceSettingsPage::Theme, "字体与主题"),
+            (AppearanceSettingsPage::Advanced, "高级标记"),
+        ],
+    );
 }
 
 fn lexicon_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let previous = app.lexicon_page;
-    ui.horizontal_wrapped(|ui| {
-        ui.selectable_value(
-            &mut app.lexicon_page,
-            LexiconSettingsPage::Learning,
-            "学习策略",
-        );
-        ui.selectable_value(&mut app.lexicon_page, LexiconSettingsPage::User, "用户词条");
-    });
-    app.reset_section_scroll |= app.lexicon_page != previous;
-    ui.separator();
+    app.reset_section_scroll |= sub_page_tabs(
+        ui,
+        &mut app.lexicon_page,
+        &[
+            (LexiconSettingsPage::Learning, "学习策略"),
+            (LexiconSettingsPage::User, "用户词条"),
+        ],
+    );
 }
 
 fn active_tool_page(app: &SettingsApp) -> Option<ToolSettingsPage> {
@@ -2130,23 +2128,16 @@ fn active_tool_page(app: &SettingsApp) -> Option<ToolSettingsPage> {
 }
 
 fn system_page_tabs(ui: &mut egui::Ui, app: &mut SettingsApp) {
-    let previous = app.system_page;
-    ui.horizontal_wrapped(|ui| {
-        ui.selectable_value(&mut app.system_page, SystemSettingsPage::General, "常规");
-        ui.selectable_value(
-            &mut app.system_page,
-            SystemSettingsPage::Privacy,
-            "隐私与数据",
-        );
-        ui.selectable_value(
-            &mut app.system_page,
-            SystemSettingsPage::Advanced,
-            "高级调优",
-        );
-        ui.selectable_value(&mut app.system_page, SystemSettingsPage::About, "关于");
-    });
-    app.reset_section_scroll |= previous != app.system_page;
-    ui.separator();
+    app.reset_section_scroll |= sub_page_tabs(
+        ui,
+        &mut app.system_page,
+        &[
+            (SystemSettingsPage::General, "常规"),
+            (SystemSettingsPage::Privacy, "隐私与数据"),
+            (SystemSettingsPage::Advanced, "高级调优"),
+            (SystemSettingsPage::About, "关于"),
+        ],
+    );
 }
 
 fn input_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
@@ -2271,27 +2262,6 @@ fn advanced_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     );
 }
 
-fn settings_collapsing_section(
-    ui: &mut egui::Ui,
-    title: &str,
-    id: &'static str,
-    add_contents: impl FnOnce(&mut egui::Ui),
-) {
-    let palette = fluent_palette(ui);
-    egui::CollapsingHeader::new(
-        RichText::new(title)
-            .strong()
-            .size(SETTINGS_FONT_SETTING_TITLE)
-            .color(palette.text),
-    )
-    .id_salt(id)
-    .default_open(true)
-    .show(ui, |ui| {
-        ui.add_space(4.0);
-        add_contents(ui);
-    });
-}
-
 #[path = "ui_advanced.rs"]
 mod advanced;
 use advanced::{advanced_engine_tuning_ui, advanced_rank_ui};
@@ -2368,7 +2338,9 @@ fn command_help_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             ui.label(RichText::new("筛选").small().color(palette.muted));
             ui.add_sized(
                 [260.0, 26.0],
-                TextEdit::singleline(&mut app.vv_command_filter).hint_text("mail / rq / md"),
+                text_field(
+                    TextEdit::singleline(&mut app.vv_command_filter).hint_text("mail / rq / md"),
+                ),
             );
         });
         ui.add_space(6.0);
@@ -2439,8 +2411,8 @@ fn handwrite_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         tool_row(
             ui,
             "手",
-            "手写查字",
-            "独立浮窗，识别后可复制或粘贴候选字。",
+            "手写查字窗口",
+            "打开独立手写画布，识别后可复制或直接粘贴候选字到当前焦点窗口。",
             |ui| {
                 if outline_button(ui, "打开")
                     .on_hover_text("打开手写查字")
@@ -2448,6 +2420,22 @@ fn handwrite_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 {
                     open_handwrite = true;
                 }
+            },
+        );
+        setting_row(
+            ui,
+            "直输调用命令",
+            "在拼音输入状态下输入 vv hw、vv handwrite 或 vv sx 即可调出手写窗口。",
+            |ui| {
+                status_badge(ui, StatusTone::Info, "vv hw / vv sx");
+            },
+        );
+        setting_row(
+            ui,
+            "画布快捷键",
+            "Enter 粘贴选中字 · Ctrl+C 复制 · 数字键 1–9 快粘 · Backspace/Ctrl+Z 撤销一笔 · Esc 清空。",
+            |ui| {
+                status_badge(ui, StatusTone::Success, "本地离线识别");
             },
         );
     });

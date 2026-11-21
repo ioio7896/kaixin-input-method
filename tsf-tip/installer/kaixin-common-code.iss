@@ -177,28 +177,25 @@ begin
   end;
 end;
 
-function UninstallParamEnabled(const ParamName: string): Boolean;
+procedure RemoveCurrentUserData();
 var
-  Value: string;
+  AppDir, Params: string;
+  ResultCode: Integer;
 begin
-  Value := Lowercase(ExpandConstant('{param:' + ParamName + '|}'));
-  Result := (Value = '1') or (Value = 'yes') or (Value = 'true') or (Value = 'on');
-end;
-
-function CommandLineRequestsRemoveUserData(): Boolean;
-begin
-  Result :=
-    UninstallParamEnabled('RemoveUserData') or
-    UninstallParamEnabled('DeleteUserData') or
-    UninstallParamEnabled('KaixinRemoveUserData');
-end;
-
-function CommandLineRequestsRemoveTransientUserData(): Boolean;
-begin
-  Result :=
-    UninstallParamEnabled('RemoveTransientUserData') or
-    UninstallParamEnabled('CleanupTransientUserData') or
-    UninstallParamEnabled('KaixinRemoveTransientUserData');
+  AppDir := ExpandConstant('{app}');
+  Params := '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' +
+    AppDir + '\uninstall_current_user.ps1" -InstallationRoot "' + AppDir + '"';
+#if KXMachineInstall
+  Params := Params + ' -FromMachineUninstaller';
+#endif
+  if not ExecAndLogOutput(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
+    Params, AppDir, SW_HIDE, ewWaitUntilTerminated, ResultCode, nil) or
+    (ResultCode <> 0) then begin
+    Log('Current-user uninstall cleanup failed. Code=' + IntToStr(ResultCode));
+    if not UninstallSilent then
+      MsgBox('未能完成用户数据清理或恢复微软拼音，请重试卸载。', mbError, MB_OK);
+    Abort;
+  end;
 end;
 
 function InstallScopeName(): string;

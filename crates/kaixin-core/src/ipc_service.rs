@@ -1197,6 +1197,18 @@ fn lock_shared_engine_for_lookup(
     }
 }
 
+fn engine_init_mutex() -> &'static Mutex<()> {
+    static INIT_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
+    INIT_MUTEX.get_or_init(|| Mutex::new(()))
+}
+
+fn lock_engine_init_recover() -> MutexGuard<'static, ()> {
+    match engine_init_mutex().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    }
+}
+
 fn ensure_shared_engine_loaded(requested_dir: Option<&Path>) -> Result<(), String> {
     if requested_dir.is_none() && DEFAULT_ENGINE_READY.load(Ordering::Acquire) {
         return Ok(());
@@ -1212,28 +1224,38 @@ fn ensure_shared_engine_loaded(requested_dir: Option<&Path>) -> Result<(), Strin
     };
 
     if !already_loaded {
-        let engine = PinyinEngine::with_hot_phrase_dir(trusted_dir.as_deref());
-        let mut state = lock_shared_engine_recover();
-        let reused = state.engine.is_some() && state.target_dir == trusted_dir;
-        if !reused {
-            state.install_fast_engine(engine, trusted_dir);
+        let _init_guard = lock_engine_init_recover();
+        if requested_dir.is_none() && DEFAULT_ENGINE_READY.load(Ordering::Acquire) {
+            return Ok(());
         }
-        state.schedule_full_load_if_needed();
+        let already_loaded_after_wait = {
+            let state = lock_shared_engine_recover();
+            state.engine.is_some() && state.target_dir == trusted_dir
+        };
+        if !already_loaded_after_wait {
+            let engine = PinyinEngine::with_hot_phrase_dir(trusted_dir.as_deref());
+            let mut state = lock_shared_engine_recover();
+            let reused = state.engine.is_some() && state.target_dir == trusted_dir;
+            if !reused {
+                state.install_fast_engine(engine, trusted_dir);
+            }
+            state.schedule_full_load_if_needed();
 
-        if perf_log_enabled() {
-            runtime_log::log_engine(
-                RuntimeLogLevel::Perf,
-                "srf_engine_ensure_loaded",
-                format!(
-                    "reused={} state={} full_in_flight={} elapsed={}us",
-                    if reused { 1 } else { 0 },
-                    state.lexicon_state.as_str(),
-                    if state.full_load_in_flight { 1 } else { 0 },
-                    started.elapsed().as_micros()
-                ),
-            );
+            if perf_log_enabled() {
+                runtime_log::log_engine(
+                    RuntimeLogLevel::Perf,
+                    "srf_engine_ensure_loaded",
+                    format!(
+                        "reused={} state={} full_in_flight={} elapsed={}us",
+                        if reused { 1 } else { 0 },
+                        state.lexicon_state.as_str(),
+                        if state.full_load_in_flight { 1 } else { 0 },
+                        started.elapsed().as_micros()
+                    ),
+                );
+            }
+            return Ok(());
         }
-        return Ok(());
     }
 
     let mut state = lock_shared_engine_recover();
@@ -1487,32 +1509,16 @@ pub fn warmup_shared_engine_async() {
     let _ = std::thread::Builder::new()
         .name("srf-engine-warmup".to_string())
         .spawn(|| {
-            let dir = SharedEngine::trusted_dir(None).ok().flatten();
-            let mut engine = PinyinEngine::with_hot_phrase_dir(dir.as_deref());
-            engine
-                .warmup_interactive_paths_until(|| !lookup_scheduler().has_interactive_pressure());
-            let mut state = lock_shared_engine_recover();
-            if state.engine.is_none() {
-                state.install_fast_engine(engine, dir);
-            }
-            state.schedule_full_load_if_needed();
+            warmup_shared_engine_sync();
         });
 }
 
 /// Synchronously warm up the engine after the tray/helper starts so first input
 /// does not pay the initialization cost.
 pub fn warmup_shared_engine_sync() {
-    // Build the engine outside the shared mutex. Otherwise TSF can send Init
-    // while startup warmup is still parsing/mapping the lexicon, causing the
-    // client to wait on this lock and making the first key feel stuck.
-    let dir = SharedEngine::trusted_dir(None).ok().flatten();
-    let mut engine = PinyinEngine::with_hot_phrase_dir(dir.as_deref());
-    engine.warmup_interactive_paths_until(|| !lookup_scheduler().has_interactive_pressure());
-    let mut state = lock_shared_engine_recover();
-    if state.engine.is_none() {
-        state.install_fast_engine(engine, dir);
-    }
-    state.schedule_full_load_if_needed();
+    // Serialize engine construction with concurrent TSF Init calls so startup
+    // cannot spawn multiple parallel PinyinEngine::with_hot_phrase_dir builds.
+    let _ = ensure_shared_engine_loaded(None);
 }
 
 pub fn probe_shared_engine(input: &str) -> Result<usize, String> {

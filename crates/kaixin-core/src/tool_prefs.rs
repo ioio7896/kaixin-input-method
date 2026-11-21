@@ -14,6 +14,28 @@ pub fn ocr_language() -> String {
     config_value("ocr", "language").unwrap_or_else(|| "zh".to_string())
 }
 
+pub fn ui_theme_preference() -> String {
+    config_value("style", "ui_theme_preference").unwrap_or_else(|| "light".to_string())
+}
+
+pub fn set_ui_theme_preference(value: &str) -> Result<(), String> {
+    let path = app_paths::config_ini_path().ok_or_else(|| "配置文件路径不可用。".to_string())?;
+    let original = fs::read_to_string(&path).unwrap_or_default();
+    let updated = set_ini_value(&original, "style", "ui_theme_preference", value);
+    write_atomic(&path, updated.as_bytes())
+}
+
+pub fn ui_design_style() -> String {
+    config_value("style", "ui_design_style").unwrap_or_else(|| "tactile".to_string())
+}
+
+pub fn set_ui_design_style(value: &str) -> Result<(), String> {
+    let path = app_paths::config_ini_path().ok_or_else(|| "配置文件路径不可用。".to_string())?;
+    let original = fs::read_to_string(&path).unwrap_or_default();
+    let updated = set_ini_value(&original, "style", "ui_design_style", value);
+    write_atomic(&path, updated.as_bytes())
+}
+
 /// Best-effort persistence for choices made in the standalone OCR window.
 /// A failed preference write must never prevent recognition.
 pub fn set_ocr_preference(key: &str, value: &str) -> Result<(), String> {

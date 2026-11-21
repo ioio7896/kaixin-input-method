@@ -95,6 +95,11 @@ Type: files; Name: "{app}\lexicon\translate\stardict_slim.db"
 Type: dirifempty; Name: "{app}\lexicon\translate"
 Type: dirifempty; Name: "{app}\models"
 
+[UninstallDelete]
+Type: files; Name: "{app}\install_machine.log"
+Type: files; Name: "{app}\tip_registration.log"
+Type: files; Name: "{app}\tip_registration_user.log"
+
 [Icons]
 Name: "{group}\开心输入法设置"; Filename: "{app}\srf_ime_settings.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法剪贴板"; Filename: "{app}\srf_ime_clipboard.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
@@ -116,8 +121,6 @@ const
   KaixinInstallMaintenanceTickValue = 'InstallMaintenanceTick';
 
 var
-  DeleteUserData: Boolean;
-  CleanupTransientUserData: Boolean;
   MachineRegistrationSucceeded: Boolean;
 
 #include "kaixin-common-code.iss"
@@ -360,28 +363,6 @@ begin
   SetInstallMaintenance(False);
 end;
 
-function InitializeUninstall(): Boolean;
-var
-  Choice: Integer;
-begin
-  DeleteUserData := CommandLineRequestsRemoveUserData();
-  CleanupTransientUserData := (not DeleteUserData) and CommandLineRequestsRemoveTransientUserData();
-  if (not UninstallSilent) and (not DeleteUserData) and (not CleanupTransientUserData) then
-  begin
-    Choice :=
-      MsgBox(
-        '请选择卸载后如何处理用户数据：' #13#10 #13#10 +
-        '是：删除配置、用户词库、缓存和日志；剪贴板历史会保留，可在设置页单独清空。' #13#10 +
-        '否：只清理缓存和日志，保留配置、用户词库和剪贴板。' #13#10 +
-        '取消：仅卸载程序，保留所有用户数据。',
-        mbConfirmation,
-        MB_YESNOCANCEL or MB_DEFBUTTON3);
-    DeleteUserData := Choice = IDYES;
-    CleanupTransientUserData := Choice = IDNO;
-  end;
-  Result := True;
-end;
-
 function GetInstallDevPs1Params(Param: string): string;
 var
   AppDir: string;
@@ -458,46 +439,16 @@ begin
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
-var
-  ResultCode: Integer;
-  AppDir: string;
-  Params: string;
 begin
   if CurUninstallStep = usUninstall then
-  begin
-    SetInstallMaintenance(True);
-    AppDir := ExpandConstant('{app}');
-    Params := '-NoProfile -ExecutionPolicy Bypass -File "' + AppDir + '\uninstall_current_user.ps1" ' +
-      '-InstallationRoot "' + AppDir + '"';
-    if DeleteUserData then
-      Params := Params + ' -RemoveUserData'
-    else if CleanupTransientUserData then
-      Params := Params + ' -RemoveTransientUserData';
-    if not ExecAsOriginalUser(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
-      Params, AppDir, SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-      Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
-        Params, AppDir, SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    StopHelperProcess('srf_ime_engine.exe');
-    StopHelperProcess('srf_ime_tray.exe');
-    StopHelperProcess('KaixinShareX.exe');
-    RequestCloseHelperProcess('srf_ime_settings.exe');
-    RequestCloseHelperProcess('srf_ime_clipboard.exe');
-    RequestCloseHelperProcess('srf_ime_handwrite.exe');
-  RequestCloseHelperProcess('srf_ime_symbols.exe');
-    RequestCloseHelperProcess('srf_ime_ocr.exe');
-    RequestCloseHelperProcess('srf_ime_translate.exe');
-    StopHelperProcess('srf_ime_clipboard_svc.exe');
-  end;
-  if CurUninstallStep = usPostUninstall then
-    SetInstallMaintenance(False);
+    RemoveCurrentUserData();
 end;
 
 procedure DeinitializeUninstall();
 begin
   if (not UninstallSilent) and DirExists(ExpandConstant('{app}\runtime')) then
     MsgBox('部分运行时文件可能仍被系统或应用占用，将在相关程序退出或下次重启后自动清理。', mbInformation, MB_OK);
-  SetInstallMaintenance(False);
 end;
 
 [UninstallRun]
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\uninstall_dev.ps1"" -InstallationRoot ""{app}"" -Machine -SkipFileRemoval -SkipCurrentUserCleanup"; Flags: runhidden waituntilterminated; RunOnceId: "KaixinInputUnregisterMachine"
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\uninstall_dev.ps1"" -InstallationRoot ""{app}"" -Machine -SkipFileRemoval -SkipCurrentUserCleanup"; Flags: runhidden waituntilterminated logoutput; RunOnceId: "KaixinInputUnregisterMachine"

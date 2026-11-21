@@ -389,7 +389,7 @@ pub(super) fn game_test_metadata_ui(ui: &mut egui::Ui, chat: &mut GameChatOption
                 "exclusive" => "独占全屏",
                 _ => "尚未验证",
             })
-            .show_ui(ui, |ui| {
+            .show_settings(ui, |ui| {
                 for (value, label) in [
                     ("unverified", "尚未验证"),
                     ("windowed", "窗口"),
@@ -430,7 +430,7 @@ pub(super) fn game_chat_options_ui(
         setting_row(ui, "空 Enter 后", "有拼音时始终先选词。", |ui| {
             ComboBox::from_id_salt("game_enter_behavior").selected_text(match chat.enter_behavior.as_str() {
                 "close" => "返回游戏直通", "stay" => "保留中文聊天", "inherit" => "使用全局设置", _ => "根据输入栏状态判断",
-            }).show_ui(ui, |ui| {
+            }).show_settings(ui, |ui| {
                 if per_app { ui.selectable_value(&mut chat.enter_behavior, "inherit".to_string(), "使用全局设置"); }
                 for (value, label) in [("auto", "根据输入栏状态判断"), ("close", "返回游戏直通"), ("stay", "保留中文聊天")] {
                     ui.selectable_value(&mut chat.enter_behavior, value.to_string(), label);
@@ -446,7 +446,7 @@ pub(super) fn game_chat_options_ui(
             };
             setting_row(ui, label, description, |ui| {
                 ComboBox::from_id_salt(key).selected_text(match value.as_str() { "0" => "关闭", "inherit" => "使用全局设置", _ => "开启" })
-                    .show_ui(ui, |ui| {
+                    .show_settings(ui, |ui| {
                         if per_app { ui.selectable_value(value, "inherit".to_string(), "使用全局设置"); }
                         ui.selectable_value(value, "1".to_string(), "开启");
                         ui.selectable_value(value, "0".to_string(), "关闭");
@@ -504,7 +504,7 @@ pub(super) fn game_input_mode_combo(
         .selected_text(game_input_mode_label(value))
         .width(bounded_control_width(ui, SETTINGS_CONTROL_WIDTH))
         .wrap()
-        .show_ui(ui, |ui| {
+        .show_settings(ui, |ui| {
             if per_app {
                 ui.selectable_value(
                     value,
@@ -647,7 +647,7 @@ fn read_game_input_summaries() -> BTreeMap<String, GameInputSummary> {
 
 fn game_input_summary_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let id = ui.id().with("game_input_summaries");
-    let refresh = ui.button("刷新诊断").clicked();
+    let refresh = outline_button(ui, "刷新诊断").clicked();
     let cached: Option<BTreeMap<String, GameInputSummary>> = ui.data(|data| data.get_temp(id));
     let summaries = match cached {
         Some(summaries) if !refresh => summaries,
@@ -694,7 +694,7 @@ fn game_input_summary_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             }
         }
     }
-    if !presets.is_empty() && ui.button("保存已验证的 TSF 预设").clicked() {
+    if !presets.is_empty() && outline_button(ui, "保存已验证的 TSF 预设").clicked() {
         for process in presets {
             app.set_commit_transport_for_process(&process, "tsf");
         }
@@ -1022,7 +1022,7 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 ComboBox::from_id_salt(("compat_policy", idx))
                     .selected_text(rule.policy.label())
                     .width(170.0)
-                    .show_ui(ui, |ui| {
+                    .show_settings(ui, |ui| {
                         for policy in CompatRulePolicy::ALL {
                             ui.selectable_value(&mut rule.policy, policy, policy.label());
                         }
@@ -1032,7 +1032,7 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                 ComboBox::from_id_salt(("compat_commit_transport", idx))
                     .selected_text(commit_transport_label(&rule.commit_transport))
                     .width(150.0)
-                    .show_ui(ui, |ui| {
+                    .show_settings(ui, |ui| {
                         ui.selectable_value(
                             &mut rule.commit_transport,
                             "global".to_string(),
@@ -1048,11 +1048,18 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     });
                 ui.checkbox(&mut rule.game_profile, "");
                 ui.horizontal(|ui| {
-                    if ui.button("编辑").clicked() {
+                    if outline_button(ui, "编辑").clicked() {
                         edit_index = Some(idx);
                     }
                     if ui
-                        .add_enabled(!rule.process.trim().is_empty(), egui::Button::new("测试"))
+                        .add_enabled(
+                            !rule.process.trim().is_empty(),
+                            egui::Button::new("测试")
+                                .fill(Color32::TRANSPARENT)
+                                .stroke(Stroke::new(1.0_f32, fluent_palette(ui).border))
+                                .rounding(SETTINGS_RADIUS_CONTROL)
+                                .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT)),
+                        )
                         .clicked()
                     {
                         test_process = Some(rule.process.clone());
@@ -1108,7 +1115,7 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         ComboBox::from_id_salt("compat_overlay_selected_rule")
             .selected_text(selected_rule_label)
             .width(260.0)
-            .show_ui(ui, |ui| {
+            .show_settings(ui, |ui| {
                 for (idx, rule) in app.model.compat_rules.iter().enumerate() {
                     let label = if rule.process.trim().is_empty() {
                         format!("未命名规则 {}", idx + 1)
@@ -1176,7 +1183,7 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                             "未确认"
                         }
                     ));
-                    if ui.button("清除验证结果").clicked() {
+                    if outline_button(ui, "清除验证结果").clicked() {
                         rule.game_chat.reset_test_results();
                     }
                 });
@@ -1215,86 +1222,92 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
             ))
             .id_salt(("compat_overlay", idx))
             .show(ui, |ui| {
-                egui::Grid::new(("compat_overlay_grid", idx))
-                    .num_columns(2)
-                    .spacing([18.0, 8.0])
-                    .show(ui, |ui| {
-                        ui.label("锚点").on_hover_text("选择独立候选窗相对于游戏窗口的定位基准。");
-                        ComboBox::from_id_salt(("compat_overlay_anchor", idx))
-                            .selected_text(overlay_anchor_label(&rule.overlay_anchor))
-                            .width(220.0)
-                            .show_ui(ui, |ui| {
-                                for anchor in schema_options::OVERLAY_ANCHORS {
-                                    ui.selectable_value(
-                                        &mut rule.overlay_anchor,
-                                        (*anchor).to_string(),
-                                        overlay_anchor_label(anchor),
-                                    );
-                                }
-                            });
-                        ui.end_row();
-
-                        ui.label("位置偏移 X / Y").on_hover_text("以像素调整候选窗相对于锚点的水平和垂直位置。");
-                        ui.horizontal(|ui| {
-                            ui.add(
-                                Slider::new(&mut rule.overlay_offset_x, -4000..=4000)
-                                    .suffix(" px")
-                                    .text("X"),
+                setting_combo_row(
+                    ui,
+                    "锚点",
+                    "选择独立候选窗相对于游戏窗口的定位基准。",
+                    overlay_anchor_label(&rule.overlay_anchor),
+                    ("compat_overlay_anchor", idx),
+                    |ui| {
+                        for anchor in schema_options::OVERLAY_ANCHORS {
+                            ui.selectable_value(
+                                &mut rule.overlay_anchor,
+                                (*anchor).to_string(),
+                                overlay_anchor_label(anchor),
                             );
-                            ui.add(
-                                Slider::new(&mut rule.overlay_offset_y, -4000..=4000)
-                                    .suffix(" px")
-                                    .text("Y"),
+                        }
+                    },
+                );
+                setting_row(
+                    ui,
+                    "位置偏移 X / Y",
+                    "以像素调整候选窗相对于锚点的水平和垂直位置。",
+                    |ui| {
+                        ui.add(
+                            egui::DragValue::new(&mut rule.overlay_offset_x)
+                                .range(-4000..=4000)
+                                .prefix("X: ")
+                                .suffix(" px"),
+                        );
+                        ui.add(
+                            egui::DragValue::new(&mut rule.overlay_offset_y)
+                                .range(-4000..=4000)
+                                .prefix("Y: ")
+                                .suffix(" px"),
+                        );
+                    },
+                );
+                setting_slider_usize(
+                    ui,
+                    "缩放",
+                    "单独调整该应用的候选窗大小，范围为 50% 到 200%。",
+                    &mut rule.overlay_scale_percent,
+                    50..=200,
+                );
+                setting_combo_row(
+                    ui,
+                    "目标显示器",
+                    "自动跟随游戏所在显示器，也可指定主显示器或显示器编号。",
+                    overlay_monitor_label(&rule.overlay_monitor),
+                    ("compat_overlay_monitor", idx),
+                    |ui| {
+                        ui.selectable_value(
+                            &mut rule.overlay_monitor,
+                            "auto".to_string(),
+                            "游戏所在显示器（推荐）",
+                        );
+                        ui.selectable_value(
+                            &mut rule.overlay_monitor,
+                            "primary".to_string(),
+                            "主显示器",
+                        );
+                        for monitor_index in 0..8 {
+                            ui.selectable_value(
+                                &mut rule.overlay_monitor,
+                                monitor_index.to_string(),
+                                format!("显示器 {}", monitor_index + 1),
                             );
-                        });
-                        ui.end_row();
-
-                        ui.label("缩放").on_hover_text("单独调整该应用的候选窗大小，范围为 50% 到 200%。");
-                        ui.add(Slider::new(&mut rule.overlay_scale_percent, 50..=200).suffix("%"));
-                        ui.end_row();
-
-                        ui.label("目标显示器").on_hover_text("自动跟随游戏所在显示器，也可指定主显示器或显示器编号。");
-                        ComboBox::from_id_salt(("compat_overlay_monitor", idx))
-                            .selected_text(overlay_monitor_label(&rule.overlay_monitor))
-                            .width(220.0)
-                            .show_ui(ui, |ui| {
-                                ui.selectable_value(
-                                    &mut rule.overlay_monitor,
-                                    "auto".to_string(),
-                                    "游戏所在显示器（推荐）",
-                                );
-                                ui.selectable_value(
-                                    &mut rule.overlay_monitor,
-                                    "primary".to_string(),
-                                    "主显示器",
-                                );
-                                for monitor_index in 0..8 {
-                                    ui.selectable_value(
-                                        &mut rule.overlay_monitor,
-                                        monitor_index.to_string(),
-                                        format!("显示器 {}", monitor_index + 1),
-                                    );
-                                }
-                            });
-                        ui.end_row();
-
-                        ui.label("Overlay 后端").on_hover_text("自动选择候选后端，并尊重游戏接管候选绘制；只有启用强制显示才覆盖宿主的隐藏要求。独占全屏可能仍无法显示外部候选。");
-                        ComboBox::from_id_salt(("compat_overlay_backend", idx))
-                            .selected_text(overlay_backend_label(&rule.overlay_backend))
-                            .width(220.0)
-                            .show_ui(ui, |ui| {
-                                for backend in schema_options::OVERLAY_BACKENDS {
-                                    ui.selectable_value(
-                                        &mut rule.overlay_backend,
-                                        (*backend).to_string(),
-                                        overlay_backend_label(backend),
-                                    );
-                                }
-                            });
-                        ui.end_row();
-                    });
+                        }
+                    },
+                );
+                setting_combo_row(
+                    ui,
+                    "Overlay 后端",
+                    "自动选择候选后端，并尊重游戏接管候选绘制；只有启用强制显示才覆盖宿主的隐藏要求。独占全屏可能仍无法显示外部候选。",
+                    overlay_backend_label(&rule.overlay_backend),
+                    ("compat_overlay_backend", idx),
+                    |ui| {
+                        for backend in schema_options::OVERLAY_BACKENDS {
+                            ui.selectable_value(
+                                &mut rule.overlay_backend,
+                                (*backend).to_string(),
+                                overlay_backend_label(backend),
+                            );
+                        }
+                    },
+                );
                 ui.horizontal_wrapped(|ui| {
-                    if ui.button("恢复游戏推荐").clicked() {
+                    if outline_button(ui, "恢复游戏推荐").clicked() {
                         rule.overlay_anchor = schema_default::OVERLAY_ANCHOR.to_string();
                         rule.overlay_offset_x = 0;
                         rule.overlay_offset_y = 0;
@@ -1305,7 +1318,11 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     if ui
                         .add_enabled(
                             !rule.process.trim().is_empty(),
-                            egui::Button::new("测试该游戏"),
+                            egui::Button::new("测试该游戏")
+                                .fill(Color32::TRANSPARENT)
+                                .stroke(Stroke::new(1.0_f32, fluent_palette(ui).border))
+                                .rounding(SETTINGS_RADIUS_CONTROL)
+                                .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT)),
                         )
                         .clicked()
                     {

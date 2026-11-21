@@ -66,42 +66,34 @@ pub(super) fn lexicon_learning_controls(ui: &mut egui::Ui, app: &mut SettingsApp
 
 pub(super) fn user_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
     let palette = fluent_palette(ui);
-    ui.add_space(6.0);
-    ui.label(
-        RichText::new("自定义短语")
-            .strong()
-            .size(SETTINGS_FONT_SECTION_TITLE),
+    setting_path_row(
+        ui,
+        "自定义短语",
+        "输入自定义编码与短语，点击“添加”立即写入用户词库。",
+        |ui| {
+            ui.label("编码");
+            ui.add(TextEdit::singleline(&mut app.user_phrase_key).desired_width(96.0));
+            ui.label("短语");
+            ui.add(TextEdit::singleline(&mut app.user_phrase_text).desired_width(140.0));
+            if outline_button(ui, "添加").clicked() {
+                app.add_user_phrase();
+            }
+        },
     );
-    ui.horizontal_wrapped(|ui| {
-        ui.label("编码")
-            .on_hover_text("输入自定义编码；输入该编码时可在候选栏选择对应短语。");
-        ui.add(TextEdit::singleline(&mut app.user_phrase_key).desired_width(120.0))
-            .on_hover_text("输入自定义编码；输入该编码时可在候选栏选择对应短语。");
-        ui.label("短语")
-            .on_hover_text("输入要加入用户词库的文字，点击“添加”保存。");
-        ui.add(TextEdit::singleline(&mut app.user_phrase_text).desired_width(180.0))
-            .on_hover_text("输入要加入用户词库的文字，点击“添加”保存。");
-        if outline_button(ui, "添加").clicked() {
-            app.add_user_phrase();
-        }
-    });
-    ui.add_space(8.0);
-    ui.horizontal_wrapped(|ui| {
-        ui.label(
-            RichText::new("永远不学")
-                .strong()
-                .size(SETTINGS_FONT_SECTION_TITLE),
-        )
-        .on_hover_text("加入后不再学习该短语；可从下方列表移出，恢复正常学习。");
-        ui.add(TextEdit::singleline(&mut app.blocked_phrase_text).desired_width(180.0))
-            .on_hover_text("输入不希望学习的短语，点击“加入”；点击“刷新”重新读取列表。");
-        if outline_button(ui, "加入").clicked() {
-            app.block_phrase_from_settings();
-        }
-        if outline_button(ui, "刷新").clicked() {
-            app.load_blocked_phrases(true);
-        }
-    });
+    setting_path_row(
+        ui,
+        "永远不学",
+        "加入后不再学习该短语；可从下方列表移出，恢复正常学习。",
+        |ui| {
+            ui.add(TextEdit::singleline(&mut app.blocked_phrase_text).desired_width(180.0));
+            if outline_button(ui, "加入").clicked() {
+                app.block_phrase_from_settings();
+            }
+            if outline_button(ui, "刷新").clicked() {
+                app.load_blocked_phrases(true);
+            }
+        },
+    );
     if !app.blocked_phrases_loaded {
         app.load_blocked_phrases(false);
     }

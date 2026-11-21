@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2026.1119.2204**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1121.2224**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -109,10 +109,9 @@ kaixin-setup-ocr-<version>-<timestamp>.exe   输入法 + 本地 OCR
 默认生成机器范围安装包。开发者也可使用 `python build.py --user-installer` 生成
 当前用户安装包。
 
-卸载默认保留用户数据。静默卸载可使用：
-
-- `/RemoveTransientUserData=1`：删除缓存和日志等临时数据。
-- `/RemoveUserData=1` 或 `/DeleteUserData=1`：删除配置和全部用户数据。
+普通卸载和静默卸载都会删除当前 Windows 用户的开心输入法数据，包括配置、学习词库、
+剪贴板历史、OCR 历史、缓存和日志，并将默认输入法恢复为微软拼音。自行保存到其他目录
+的截图和导出的文件可在原路径找到。
 
 ## 基本使用
 

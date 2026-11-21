@@ -98,6 +98,7 @@ constexpr size_t kEnginePipeMaxResponseBytes =
     kEnginePipeResponseHeaderBytes + 4 +
     srf_candidate_limits::kFullResult * kRustRowWidth * sizeof(uint16_t) + 4;
 constexpr int kRustFfiPanicRc = -100;
+constexpr int kRustEngineBusyRc = -5;
 constexpr int kRustLearnPendingRc = -7;
 constexpr wchar_t kAppPathName[] = L"kaixin";
 constexpr wchar_t kStateRegPath[] = L"Software\\kaixin\\State";
@@ -2281,7 +2282,10 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
   }
 
   if (status) *status = responseStatus;
-  if (responseStatus != 0) logFailure(L"remote_status", responseStatus);
+  if (responseStatus != 0 && !(command == EnginePipeCommand::Lookup && requestId == 0 &&
+                               responseStatus == kRustEngineBusyRc)) {
+    logFailure(L"remote_status", responseStatus);
+  }
   if (command == EnginePipeCommand::Shutdown) CloseRemotePipeOnlyLocked();
   return true;
 }
@@ -2943,6 +2947,8 @@ void ResetBridgeLocked() {
 
 void EnsureEngineWatchdogStarted(const std::filesystem::path& moduleDir);
 void EnsureRetryLoopScheduled();
+bool ShouldStartUserTriggeredWarmup();
+bool StartWarmupWorkerAsync();
 
 bool EnsureLoadedLocked() {
   if (g_bridge.initialized) {
@@ -3063,9 +3069,16 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
     HANDLE mutex = OpenMutexW(SYNCHRONIZE, FALSE, mutexName.c_str());
     if (mutex) {
       CloseHandle(mutex);
+      const SrfEngineState currentState = g_engineState.load(std::memory_order_acquire);
+      if (currentState == SrfEngineState::Failed && ShouldStartUserTriggeredWarmup()) {
+        // The helper process is alive again (e.g. restarted by tray or another
+        // host). Wake this host out of a Failed/cooldown state immediately.
+        (void)StartWarmupWorkerAsync();
+        continue;
+      }
       // The tray treats old health records as unknown. Keep this host's
       // liveness record fresh even when the engine state itself is unchanged.
-      PublishEngineState(g_engineState.load(std::memory_order_acquire));
+      PublishEngineState(currentState);
       continue;
     }
     const DWORD error = GetLastError();
@@ -3430,6 +3443,10 @@ void SrfTip_WarmupEngineAsync() {
   const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
   if (state == SrfEngineState::Ready) return;
   if (state == SrfEngineState::Failed) {
+    if (ShouldStartUserTriggeredWarmup()) {
+      (void)StartWarmupWorkerAsync();
+      return;
+    }
     EnsureRetryLoopScheduled();
     return;
   }

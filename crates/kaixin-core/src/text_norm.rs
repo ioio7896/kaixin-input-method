@@ -6,6 +6,15 @@ pub fn strip_bom_str(s: &str) -> &str {
     s.strip_prefix('\u{FEFF}').unwrap_or(s)
 }
 
+/// Canonical spelling for a complete, already separated syllable.
+pub(crate) fn canonical_pinyin_syllable(syllable: &str) -> &str {
+    match syllable {
+        "lue" => "lve",
+        "nue" => "nve",
+        _ => syllable,
+    }
+}
+
 /// 全角拉丁字母、数字、空格 → 半角，便于拼音解析；保留 ü / 声调数字。
 pub fn normalize_pinyin_line(s: &str) -> String {
     let s = strip_bom_str(s);

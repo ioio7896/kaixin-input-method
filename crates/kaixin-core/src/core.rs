@@ -7,10 +7,9 @@ use crate::rerank_prefs;
 use crate::runtime_log::{self, RuntimeLogLevel};
 use crate::segment::{
     expand_mixed_pinyin_exact_key_details_by_score, expand_mixed_pinyin_exact_keys,
-    normalize_compact_pinyin_aliases, parse_input_variants, parse_input_variants_detailed,
-    predict_syllable_completions_by_score, split_syllables_with_tail_mode, IncrementalParseCache,
-    MixedPinyinIncrementalCache, MixedPinyinKeyExpansion, ParseOptions, ParseVariant,
-    ParseVariantSource,
+    parse_input_variants, parse_input_variants_detailed, predict_syllable_completions_by_score,
+    split_syllables_with_tail_mode, IncrementalParseCache, MixedPinyinIncrementalCache,
+    MixedPinyinKeyExpansion, ParseOptions, ParseVariant, ParseVariantSource,
 };
 use crate::text_norm::normalize_pinyin_line;
 use crate::thuocl::{

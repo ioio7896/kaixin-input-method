@@ -1,3 +1,33 @@
-# 常用输入操作词语
+# 常用输入操作及反馈补充词语
 退格	tui ge	8000
 回车	hui che	9000
+# 日常输入反馈补充
+很急	hen ji	8700
+急着	ji zhe	8100
+时间紧急	shi jian jin ji	7200
+很忙	hen mang	7900
+很饿	hen e	7900
+不急	bu ji	7800
+等着	deng zhe	7600
+我很急	wo hen ji	8200
+不懂	bu dong	7900
+不忙	bu mang	7600
+不累	bu lei	7400
+很冷	hen leng	7700
+很疼	hen teng	7700
+很慢	hen man	7600
+别走	bie zou	7900
+别等	bie deng	7200
+别催	bie cui	7500
+等会	deng hui	8000
+快看	kuai kan	7900
+快走	kuai zou	7700
+快吃	kuai chi	7300
+干等	gan deng	6000
+有点急	you dian ji	7500
+急死了	ji si le	7600
+不用急	bu yong ji	7600
+联合战略	lian he zhan lve	5700
+战略规划	zhan lve gui hua	6400
+投资策略	tou zi ce lve	6100
+忒多了	tei duo le	5400

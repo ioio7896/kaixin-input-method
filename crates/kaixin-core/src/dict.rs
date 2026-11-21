@@ -94,6 +94,14 @@ pub(crate) fn is_project_primary_reading(c: char, reading: &str) -> bool {
 }
 
 #[allow(dead_code)]
+pub(crate) fn is_project_accepted_reading(c: char, reading: &str) -> bool {
+    pronunciation_aliases()
+        .accepted
+        .get(&c)
+        .is_some_and(|readings| readings.iter().any(|accepted| accepted == reading))
+}
+
+#[allow(dead_code)]
 pub(crate) fn is_excluded_reading(c: char, reading: &str) -> bool {
     pronunciation_aliases()
         .excluded

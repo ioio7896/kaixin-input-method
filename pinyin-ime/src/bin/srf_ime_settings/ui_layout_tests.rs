@@ -49,6 +49,60 @@ fn assert_inside(rect: egui::Rect, bounds: egui::Rect) {
 }
 
 #[test]
+fn custom_switch_handles_pointer_and_keyboard_and_respects_disabled_state() {
+    let ctx = egui::Context::default();
+    let mut value = false;
+    let mut id = egui::Id::NULL;
+    let mut center = egui::Pos2::ZERO;
+    let mut frame = |events, enabled| {
+        let mut changed = false;
+        let _ = ctx.run(
+            egui::RawInput {
+                events,
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let response = ui
+                        .add_enabled_ui(enabled, |ui| capsule_switch(ui, &mut value))
+                        .inner;
+                    id = response.id;
+                    center = response.rect.center();
+                    changed = response.changed();
+                });
+            },
+        );
+        (value, changed, id, center)
+    };
+    let (_, _, _, center) = frame(Vec::new(), true);
+    let mouse = |pressed| egui::Event::PointerButton {
+        pos: center,
+        button: egui::PointerButton::Primary,
+        pressed,
+        modifiers: egui::Modifiers::NONE,
+    };
+    frame(vec![egui::Event::PointerMoved(center), mouse(true)], true);
+    let (value, changed, id, _) = frame(vec![mouse(false)], true);
+    assert!(value && changed);
+
+    ctx.memory_mut(|memory| memory.request_focus(id));
+    let enter = egui::Event::Key {
+        key: egui::Key::Enter,
+        physical_key: None,
+        pressed: true,
+        repeat: false,
+        modifiers: egui::Modifiers::NONE,
+    };
+    let (value, changed, _, _) = frame(vec![enter], true);
+    assert!(!value && changed);
+
+    frame(Vec::new(), false);
+    frame(vec![mouse(true)], false);
+    let (value, changed, _, _) = frame(vec![mouse(false)], false);
+    assert!(!value && !changed);
+}
+
+#[test]
 fn responsive_columns_never_overlap_at_small_spacing() {
     for width in [
         240.0, 320.0, 440.0, 519.0, 520.0, 552.0, 600.0, 780.0, 792.0, 900.0,
@@ -562,6 +616,7 @@ pub(super) fn footer_test_app() -> SettingsApp {
         tool_page: ToolSettingsPage::Clipboard,
         system_page: SystemSettingsPage::General,
         settings_search: String::new(),
+        search_focus_target: None,
         reset_section_scroll: false,
         vv_command_filter: String::new(),
         lexicon_filter: String::new(),
@@ -674,8 +729,15 @@ fn export_hotkeys_layout_preview() {
     let Ok(destination) = std::env::var("KX_HOTKEY_LAYOUT_PREVIEW") else {
         return;
     };
+    let style =
+        UiDesignStyle::from_config(&std::env::var("KX_SETTINGS_PREVIEW_STYLE").unwrap_or_default());
+    pinyin_ime::ui_theme::set_active_design_style(style);
     let ctx = egui::Context::default();
-    ctx.set_visuals(egui::Visuals::light());
+    ctx.set_theme(if style == UiDesignStyle::LinearDark {
+        egui::ThemePreference::Dark
+    } else {
+        egui::ThemePreference::Light
+    });
     fonts::install_cjk_fonts(&ctx);
     enforce_settings_min_font_size(&ctx);
     let mut app = footer_test_app();
@@ -691,25 +753,24 @@ fn export_hotkeys_layout_preview() {
         .ok()
         .and_then(|value| value.parse().ok())
         .unwrap_or(1800);
+    let width: u32 = std::env::var("KX_SETTINGS_PREVIEW_WIDTH")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(1160);
     let mut textures = Vec::new();
     for _ in 0..2 {
         let output = ctx.run(
             egui::RawInput {
                 screen_rect: Some(egui::Rect::from_min_size(
                     egui::Pos2::ZERO,
-                    egui::vec2(1160.0, height as f32),
+                    egui::vec2(width as f32, height as f32),
                 )),
                 ..Default::default()
             },
             |ctx| {
                 let palette = FluentPalette::from_visuals(&ctx.style().visuals);
                 egui::TopBottomPanel::bottom("preview_actions")
-                    .frame(
-                        egui::Frame::none()
-                            .fill(palette.command_bar)
-                            .stroke(Stroke::new(1.0_f32, palette.border_subtle))
-                            .inner_margin(egui::Margin::symmetric(16.0, 7.0)),
-                    )
+                    .frame(controls::footer_frame(palette))
                     .show(ctx, |ui| {
                         settings_footer_ui(ui, &mut app, palette, false, None)
                     });
@@ -757,7 +818,7 @@ fn export_hotkeys_layout_preview() {
             let vertices: Vec<_> = mesh.vertices.iter().map(|v| serde_json::json!([v.pos.x, v.pos.y, v.uv.x, v.uv.y, v.color.to_array()])).collect();
             Some(serde_json::json!({"clip": [clipped.clip_rect.min.x, clipped.clip_rect.min.y, clipped.clip_rect.max.x, clipped.clip_rect.max.y], "texture": format!("{:?}", mesh.texture_id), "vertices": vertices, "indices": mesh.indices}))
         }).collect();
-        fs::write(&destination, serde_json::to_vec(&serde_json::json!({"width":1160, "height":height, "textures":textures, "meshes":meshes})).unwrap()).unwrap();
+        fs::write(&destination, serde_json::to_vec(&serde_json::json!({"width":width, "height":height, "textures":textures, "meshes":meshes})).unwrap()).unwrap();
     }
 }
 
