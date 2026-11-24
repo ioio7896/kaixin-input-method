@@ -54,23 +54,15 @@ for reading in ("nihao", "xiong", "zhrmghg"):
     json.dumps(engine, ensure_ascii=False, indent=2), encoding="utf-8"
 )
 package = ROOT / "dist/kaixin-package-ocr"
-helper = package / "tools/kaixin_ocr_engine.py"
-python = package / ".python-runtime/python.exe"
-bootstrap = "import sys,runpy;sys.path.insert(0,sys.argv.pop(1));runpy.run_path(sys.argv.pop(1),run_name='__main__')"
+ocr_exe = package / "srf_ime_ocr.exe"
 for profile in ("fast", "balanced", "accurate"):
     raw = run(
         [
-            python,
-            "-B",
-            "-c",
-            bootstrap,
-            package / ".python-packages",
-            helper,
+            ocr_exe,
+            "--ocr-worker",
             ROOT / "assets/kaixin-input-icon.png",
             "--rapidocr-root",
             package / "RapidOCRLite",
-            "--provider",
-            "cpu",
             "--profile",
             profile,
             "--vis",

@@ -9,7 +9,47 @@ from .config import (
     COMPONENT_MANIFEST,
     COMPONENT_PREFIXES,
     PE_MACHINE_BY_ARCH,
+    RAPIDOCR_DIR,
+    RAPIDOCR_DLL_NAME,
+    RAPIDOCR_REQUIRED_MODELS,
 )
+
+
+def validate_rapidocr_layout(package: Path, include_ocr: bool) -> list[str]:
+    errors: list[str] = []
+    root = package / RAPIDOCR_DIR
+    if not include_ocr:
+        if root.exists() or root.is_symlink():
+            errors.append(f"IME-only package must not include {RAPIDOCR_DIR}")
+        return errors
+    if not root.is_dir() or root.is_symlink():
+        return [f"missing or invalid staged OCR directory: {RAPIDOCR_DIR}"]
+
+    models = "models"
+    directories = {models}
+    required = {
+        "LICENSE",
+        "README.md",
+        "README-CN.md",
+        RAPIDOCR_DLL_NAME,
+        *(f"{models}/{name}" for name in RAPIDOCR_REQUIRED_MODELS),
+    }
+    allowed = required | {"windows-utf8.patch", f"{models}/PP-OCRv6_det_int8.onnx"}
+    seen = set()
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        if not path.is_symlink() and path.is_dir() and relative in directories:
+            continue
+        if not path.is_symlink() and path.is_file() and relative in allowed:
+            seen.add(relative)
+            if path.stat().st_size == 0:
+                errors.append(f"empty staged OCR file: {RAPIDOCR_DIR}/{relative}")
+        else:
+            errors.append(f"unexpected staged OCR entry: {RAPIDOCR_DIR}/{relative}")
+    errors.extend(
+        f"missing staged OCR file: {RAPIDOCR_DIR}/{name}" for name in sorted(required - seen)
+    )
+    return errors
 
 
 def sha256_prefix(path: Path, prefix_len: int = 8) -> str:

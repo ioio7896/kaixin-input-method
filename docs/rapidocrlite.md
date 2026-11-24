@@ -2,7 +2,7 @@
 
 OCR 引擎使用 RapidOCRLite 5.0.0a15（上游标签 `v5.0.0a15`），PP-OCRv6 的 small/medium 检测模型、small/medium 识别模型及其字符字典。模型和字典由 `scripts/fetch_rapidocr_models.ps1` 下载并校验；不使用 Indra 模型。
 
-Windows 原生库包含 `scripts/rapidocrlite-windows-utf8.patch`：将模型和字典的 UTF-8 路径通过 `std::filesystem::u8path` 交给 Windows 文件 API。构建时获取对应标签源码，应用补丁，使用 MSVC 和 CMake 编译 x64 Release 共享库，关闭 Vulkan（`PPOCR_ENABLE_VULKAN=OFF`），并设置 C++ 编译选项 `/EHsc /utf-8`；将得到的 `rapidocrlite.dll` 放入 `RapidOCRLite/python/rapidocr/`。需保留上游 Apache-2.0 许可和本补丁。
+Windows 原生库包含 `scripts/rapidocrlite-windows-utf8.patch`：将模型和字典的 UTF-8 路径通过 `std::filesystem::u8path` 交给 Windows 文件 API。构建时获取对应标签源码，应用补丁，使用 MSVC 和 CMake 编译 x64 Release 共享库，关闭 Vulkan（`PPOCR_ENABLE_VULKAN=OFF`），并设置 C++ 编译选项 `/EHsc /utf-8`；将得到的 `rapidocrlite.dll` 放入 `RapidOCRLite/`。需保留上游 Apache-2.0 许可和本补丁。
 
 OCR 仅使用 CPU；CUDA、DirectML 和 Vulkan 的命令行选项仅保留兼容性。常驻进程按实际模型路径、检测尺寸和识别参数缓存，默认最多 2 套，切换语言不会加载同一模型的副本；淘汰时立即关闭原生句柄。关闭模型常驻选项或退出 OCR 进程会释放缓存。
 
@@ -31,12 +31,12 @@ OCR 仅使用 CPU；CUDA、DirectML 和 Vulkan 的命令行选项仅保留兼容
 ## 验证
 
 ```powershell
-.venv-rapidocr/Scripts/python.exe -B -m unittest discover -s scripts -p test_ocr_pipeline.py
-.venv-rapidocr/Scripts/python.exe -B scripts/ocr_benchmark.py --tune --repeats 2
+python -B -m unittest discover -s scripts -p test_ocr_pipeline.py
+python -B scripts/ocr_benchmark.py --tune --repeats 2
 ```
 
-评测使用生成的中文和英文图片，覆盖普通、单字、暗色、低对比度、小字、4K、接缝、长图和空白图。`--baseline <旧辅助脚本>` 可比较旧版本，`--manifest <json>` 可使用人工标注图片。报告包含 CER、整行文本覆盖率、冷启动到预热完成、P50/P95 和 Windows 推理进程峰值工作集。整行覆盖率不等于检测召回率，合成样本不代表真实截图准确率。
+生成评测图片时，需在执行评测的 Python 环境中安装 Pillow。评测覆盖普通、单字、暗色、低对比度、小字、4K、接缝、长图和空白图。`--baseline <旧辅助脚本>` 可比较旧版本，`--manifest <json>` 可使用人工标注图片。报告包含 CER、整行文本覆盖率、冷启动到预热完成、P50/P95 和 Windows 推理进程峰值工作集。整行覆盖率不等于检测召回率，合成样本不代表真实截图准确率。
 
-生成安装器前，`build.py` 强制使用 OCR 包内的 Python、辅助脚本、DLL 和模型运行三个档位，检查真实文字输出、检测/识别预热、语言缓存复用和两套缓存上限。结果写入 `dist/ocr-validation-kaixin-package-ocr.json`，失败会阻止打包。
+生成安装器前，`build.py` 使用 OCR 暂存包内的 Rust 子进程、DLL 和模型运行三个档位，检查真实文字输出、检测和识别预热、语言缓存复用和两套缓存上限。结果写入 `dist/ocr-validation-kaixin-package-ocr.json`，失败会阻止打包。
 
 参考：[上游模型选型](https://rapidai.github.io/RapidOCRDocs/main/en/model_list/)、[原生识别快速模式](https://github.com/RapidAI/RapidOCRLite#recognition-fast-mode)。

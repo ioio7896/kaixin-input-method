@@ -31,7 +31,7 @@ REQUIRED = (
     "docs/licenses/AI_DATA_VERIFICATION.md",
 )
 FORBIDDEN_PARTS = {
-    ".venv-rapidocr",
+    "_archived_python_legacy",
     "__pycache__",
     "build",
     "dist",

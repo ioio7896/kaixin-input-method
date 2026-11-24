@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke-test the same PP-OCRv6 helper and models used by the OCR window."""
+"""Smoke-test the native Rust PP-OCRv6 worker and models used by the OCR window."""
 
 from __future__ import annotations
 
@@ -24,20 +24,31 @@ def default_rapidocr_root() -> Path:
     return repo_root() / "RapidOCRLite"
 
 
+def default_ocr_exe() -> Path:
+    for candidate in (
+        repo_root() / "pinyin-ime" / "target" / "release" / "srf_ime_ocr.exe",
+        repo_root() / "pinyin-ime" / "target" / "debug" / "srf_ime_ocr.exe",
+        repo_root() / "dist" / "kaixin-package-ocr" / "srf_ime_ocr.exe",
+    ):
+        if candidate.is_file():
+            return candidate
+    return repo_root() / "pinyin-ime" / "target" / "release" / "srf_ime_ocr.exe"
+
+
 def default_image() -> Path:
     return repo_root() / "assets" / "kaixin-input-icon.png"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run the production Kaixin PP-OCRv6 helper smoke test."
+        description="Run the production native Kaixin PP-OCRv6 worker smoke test."
     )
+    parser.add_argument("--ocr-exe", type=Path, default=default_ocr_exe())
     parser.add_argument("--rapidocr-root", type=Path, default=default_rapidocr_root())
     parser.add_argument("--image", type=Path, default=default_image())
     parser.add_argument("--model-root", type=Path, default=None)
     parser.add_argument("--profile", choices=("fast", "balanced", "accurate"), default="balanced")
     parser.add_argument("--lang", choices=("mixed", "zh", "en"), default="mixed")
-    parser.add_argument("--provider", choices=("auto", "cpu", "directml", "cuda"), default="auto")
     parser.add_argument("--vis", type=Path, default=repo_root() / "dist" / "rapidocr_smoke_vis.jpg")
     parser.add_argument("--json", type=Path, default=repo_root() / "dist" / "rapidocr_smoke.json")
     return parser.parse_args()
@@ -45,15 +56,17 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    helper = repo_root() / "tools" / "kaixin_ocr_engine.py"
-    if not helper.is_file():
-        raise SystemExit(f"Production OCR helper not found: {helper}")
+    if not args.ocr_exe.is_file():
+        raise SystemExit(
+            f"Native OCR executable not found: {args.ocr_exe} "
+            "(build it with `cargo build --bin srf_ime_ocr`)"
+        )
     if not args.image.is_file():
         raise SystemExit(f"Smoke image not found: {args.image}")
 
     command = [
-        sys.executable,
-        str(helper),
+        str(args.ocr_exe),
+        "--ocr-worker",
         str(args.image),
         "--rapidocr-root",
         str(args.rapidocr_root),
@@ -61,8 +74,6 @@ def main() -> int:
         args.profile,
         "--lang",
         args.lang,
-        "--provider",
-        args.provider,
         "--vis",
         str(args.vis),
     ]
@@ -76,12 +87,12 @@ def main() -> int:
         payload = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
         raise SystemExit(
-            f"OCR helper returned invalid JSON ({exc}); stderr: {completed.stderr.strip()}"
+            f"OCR worker returned invalid JSON ({exc}); stderr: {completed.stderr.strip()}"
         ) from exc
 
     report = {
         "ok": completed.returncode == 0 and payload.get("ok") is True,
-        "production_helper": str(helper),
+        "production_worker": str(args.ocr_exe),
         "process_elapsed_ms": elapsed_ms,
         "returncode": completed.returncode,
         "stderr": completed.stderr.strip(),

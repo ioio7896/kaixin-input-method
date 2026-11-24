@@ -1,5 +1,9 @@
 use super::compatibility::compatibility_game_controls_ui;
 use super::*;
+use std::sync::RwLock;
+
+// Theme switches update a process-wide value that render tests read across frames.
+static DESIGN_STYLE_LOCK: RwLock<()> = RwLock::new(());
 
 const LONG_DESCRIPTION: &str = "配置、词库、剪贴板和日志所在目录。路径与说明较长时应自动换行，操作按钮应保留足够空间，下一项设置不能覆盖当前内容。";
 
@@ -9,6 +13,7 @@ pub(super) fn with_layout(
     scale: f32,
     mut render: impl FnMut(&mut egui::Ui),
 ) {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     let ctx = egui::Context::default();
     fonts::install_cjk_fonts(&ctx);
     enforce_settings_min_font_size(&ctx);
@@ -50,6 +55,7 @@ fn assert_inside(rect: egui::Rect, bounds: egui::Rect) {
 
 #[test]
 fn custom_switch_handles_pointer_and_keyboard_and_respects_disabled_state() {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     let ctx = egui::Context::default();
     let mut value = false;
     let mut id = egui::Id::NULL;
@@ -280,6 +286,7 @@ fn actual_settings_rows_fit_and_reserve_wrapped_height() {
 
 #[test]
 fn compatibility_controls_have_no_overlapping_labels() {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     for width in [240.0, 320.0, 440.0, 600.0, 840.0, 1200.0] {
         for scale in [1.0, 1.5, 2.0] {
             let ctx = egui::Context::default();
@@ -482,6 +489,7 @@ fn hover_help_preserves_full_explanations_and_effect_conditions() {
 
 #[test]
 fn setting_explanations_are_hidden_until_hovering_label_space_or_control() {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     let description = "开启后记录复制来源进程路径；关闭后保留已有记录。";
     for enabled in [true, false] {
         for target in 0..3 {
@@ -652,6 +660,7 @@ fn painted_text(shape: &egui::Shape, texts: &mut Vec<(String, egui::Rect)>) {
 
 #[test]
 fn hotkeys_page_stays_inside_window_at_all_sizes_and_scales() {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     for width in [780.0, 960.0, 1160.0, 1440.0, 1920.0] {
         for scale in [1.0, 1.5, 2.0] {
             for height in [680.0, 860.0, 3000.0] {
@@ -735,6 +744,8 @@ fn export_hotkeys_layout_preview() {
     let Ok(destination) = std::env::var("KX_HOTKEY_LAYOUT_PREVIEW") else {
         return;
     };
+    let _style = DESIGN_STYLE_LOCK.write().unwrap();
+    let previous_style = pinyin_ime::ui_theme::active_design_style();
     let style =
         UiDesignStyle::from_config(&std::env::var("KX_SETTINGS_PREVIEW_STYLE").unwrap_or_default());
     pinyin_ime::ui_theme::set_active_design_style(style);
@@ -829,10 +840,12 @@ fn export_hotkeys_layout_preview() {
         }).collect();
         fs::write(&destination, serde_json::to_vec(&serde_json::json!({"width":width, "height":height, "textures":textures, "meshes":meshes})).unwrap()).unwrap();
     }
+    pinyin_ime::ui_theme::set_active_design_style(previous_style);
 }
 
 #[test]
 fn footer_save_button_does_not_move_when_status_wraps_or_dirty_state_changes() {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     for width in [320.0, 440.0, 680.0, 900.0] {
         let ctx = egui::Context::default();
         fonts::install_cjk_fonts(&ctx);
@@ -997,6 +1010,7 @@ fn compact_appearance_pages_fit_and_do_not_change_settings_on_render() {
 
 #[test]
 fn compact_navigation_titles_fit_the_narrow_rail() {
+    let _style = DESIGN_STYLE_LOCK.read().unwrap();
     let ctx = egui::Context::default();
     fonts::install_cjk_fonts(&ctx);
     enforce_settings_min_font_size(&ctx);
@@ -1151,6 +1165,7 @@ fn appearance_writer_keeps_latest_choices_and_other_settings() {
 
 #[test]
 fn style_switch_covers_viewport_edges_without_black_clear_leaks() {
+    let _style = DESIGN_STYLE_LOCK.write().unwrap();
     let previous_style = pinyin_ime::ui_theme::active_design_style();
     let ctx = egui::Context::default();
     fonts::install_cjk_fonts(&ctx);

@@ -60,6 +60,7 @@ from scripts.build_support.manifests import (
     write_package_hash_manifest,
     write_component_manifest_from_package_manifest,
     verify_package_hash_manifest,
+    validate_rapidocr_layout,
 )
 
 
@@ -98,16 +99,9 @@ from scripts.build_support.config import (
     PREBAKED_LEXICON_MIN_BYTES,
     DEFAULT_PERF_MAX_P99_US,
     DEFAULT_PERF_INCREMENTAL_MAX_P99_US,
-    PYTHON_RUNTIME,
     RAPIDOCR_DIR,
-    RAPIDOCR_VENV,
-    RAPIDOCR_PACKAGES,
-    RAPIDOCR_HELPER,
-    RAPIDOCR_HELPERS,
-    OPENCV_CROP_HELPER,
+    RAPIDOCR_DLL_NAME,
     RAPIDOCR_REQUIRED_MODELS,
-    PYTHON_PACKAGE_EXCLUDED_DIR_NAMES,
-    PYTHON_PACKAGE_EXCLUDED_FILE_SUFFIXES,
     RUST_TARGET_BY_ARCH,
     PE_MACHINE_BY_ARCH,
     PackageVariant,
@@ -394,13 +388,10 @@ def resolve_package_variants(
         variant = PACKAGE_VARIANTS[variant_id]
         if variant.include_ocr and not ocr_ready:
             raise RuntimeError(
-                f"package variant {variant.id!r} requires the local RapidOCR runtime; "
+                f"package variant {variant.id!r} requires the native RapidOCRLite runtime "
+                f"(RapidOCRLite/{RAPIDOCR_DLL_NAME} and PP-OCRv6 ONNX models); "
                 f"refusing to silently downgrade the requested package set. "
-                f"Create it with `python -m venv {RAPIDOCR_VENV}` and "
-                f"`{RAPIDOCR_VENV}\\Scripts\\python.exe -m pip install "
-                f"numpy Pillow PyYAML requests tqdm opencv-python-headless`, "
-                "then run `powershell -ExecutionPolicy Bypass -File "
-                "scripts/fetch_rapidocr_models.ps1`; "
+                f"Restore the RapidOCRLite native library and models, "
                 f"or explicitly request `--package-variants ime`."
             )
         selected.append(variant)
@@ -622,14 +613,9 @@ def write_build_manifest(
                 stage_root / "THIRD_PARTY_NOTICES.md",
                 stage_root / "current_runtime_payload.txt",
                 *[stage_root / name for name in staged_rust_exe_names()],
-                stage_root / "tools" / RAPIDOCR_HELPER,
-                stage_root / "tools" / OPENCV_CROP_HELPER,
-                packaged_python_runtime_path(stage_root),
-                packaged_python_stdlib_marker(stage_root),
-                rapidocr_packages_path(stage_root),
-                stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "__init__.py",
+                stage_root / RAPIDOCR_DIR / RAPIDOCR_DLL_NAME,
                 *[
-                    stage_root / RAPIDOCR_DIR / "python" / "rapidocr" / "models" / model
+                    stage_root / RAPIDOCR_DIR / "models" / model
                     for model in RAPIDOCR_REQUIRED_MODELS
                 ],
                 stage_root / "assets" / "kaixin-input.ico",
@@ -1195,83 +1181,21 @@ def collect_runtime_logs(repo: Path) -> list[Path]:
     return copied
 
 
-def packaged_python_runtime_path(root: Path) -> Path:
-    if sys.platform == "win32":
-        return root / PYTHON_RUNTIME / "python.exe"
-    return root / PYTHON_RUNTIME / "bin" / "python"
-
-
-def packaged_python_stdlib_marker(root: Path) -> Path:
-    return root / PYTHON_RUNTIME / "Lib" / "os.py"
-
-
-def rapidocr_venv_python_path(root: Path) -> Path:
-    if sys.platform == "win32":
-        return root / RAPIDOCR_VENV / "Scripts" / "python.exe"
-    return root / RAPIDOCR_VENV / "bin" / "python"
-
-
-def rapidocr_packages_path(root: Path) -> Path:
-    return root / RAPIDOCR_PACKAGES
-
-
-def rapidocr_source_site_packages_path(repo: Path) -> Path:
-    if sys.platform == "win32":
-        return repo / RAPIDOCR_VENV / "Lib" / "site-packages"
-    return repo / RAPIDOCR_VENV / "lib"
-
-
 def rapidocr_runtime_status(repo: Path) -> tuple[bool, list[str]]:
-    """Validate the OCR runtime before spending time on package staging.
-
-    A copied venv can retain an absolute ``home=`` path from the machine that
-    created it.  Detect that stale path early instead of failing in the
-    PowerShell staging step after Rust/C++ compilation has already completed.
-    """
+    """Validate the native RapidOCRLite DLL and ONNX models before staging."""
     problems: list[str] = []
-    tools_dir = repo / "tools"
-    for helper in RAPIDOCR_HELPERS:
-        path = tools_dir / helper
-        if not path.is_file():
-            problems.append(f"missing OCR helper: {path}")
-        elif path.stat().st_size <= 0:
-            problems.append(f"empty OCR helper: {path}")
-
-    rapidocr_root = repo / RAPIDOCR_DIR / "python" / "rapidocr"
-    if not (rapidocr_root / "__init__.py").is_file():
-        problems.append(f"missing RapidOCR package: {rapidocr_root / '__init__.py'}")
-    if not (rapidocr_root / "rapidocrlite.dll").is_file():
-        problems.append(f"missing RapidOCRLite DLL: {rapidocr_root / 'rapidocrlite.dll'}")
+    rapidocr_root = repo / RAPIDOCR_DIR
+    dll_path = rapidocr_root / RAPIDOCR_DLL_NAME
+    if not dll_path.is_file():
+        problems.append(f"missing RapidOCRLite DLL: {dll_path}")
+    elif dll_path.stat().st_size <= 0:
+        problems.append(f"empty RapidOCRLite DLL: {dll_path}")
     for model in RAPIDOCR_REQUIRED_MODELS:
         model_file = rapidocr_root / "models" / model
         if not model_file.is_file():
             problems.append(f"missing RapidOCR model: {model_file}")
-
-    venv_dir = repo / RAPIDOCR_VENV
-    cfg = venv_dir / "pyvenv.cfg"
-    venv_python = rapidocr_venv_python_path(repo)
-    site_packages = rapidocr_source_site_packages_path(repo)
-    if not cfg.is_file():
-        problems.append(f"missing OCR venv config: {cfg}")
-    else:
-        configured_home: Path | None = None
-        try:
-            for line in cfg.read_text(encoding="utf-8").splitlines():
-                key, separator, value = line.partition("=")
-                if separator and key.strip().lower() == "home":
-                    configured_home = Path(value.strip().strip('"'))
-                    break
-        except OSError as e:
-            problems.append(f"cannot read OCR venv config {cfg}: {e}")
-        if configured_home is not None and not configured_home.is_dir():
-            problems.append(
-                f"OCR venv Python home does not exist: {configured_home}; "
-                f"recreate {RAPIDOCR_VENV} with an installed Python"
-            )
-    if not venv_python.is_file():
-        problems.append(f"missing OCR venv Python: {venv_python}")
-    if not site_packages.is_dir():
-        problems.append(f"missing OCR site-packages: {site_packages}")
+        elif model_file.stat().st_size <= 0:
+            problems.append(f"empty RapidOCR model: {model_file}")
     return not problems, problems
 
 
@@ -2417,6 +2341,8 @@ def step_stage(
         profile_cap,
         "-IncludeOcr",
         "1" if include_ocr else "0",
+        "-PythonExecutable",
+        sys.executable,
         "-FinalizeInBuild",
     ]
     if prepared_lexicon_dir is not None:
@@ -2452,8 +2378,6 @@ def step_inno(
         component_config = configparser.ConfigParser(interpolation=None)
         component_config.read(component_manifest, encoding="utf-8-sig")
         component_defines = {
-            "python_runtime": "KXComponentPythonRuntime",
-            "rapidocr_packages": "KXComponentRapidOcrPackages",
             "rapidocr_payload": "KXComponentRapidOcrPayload",
         }
         for key, define_name in component_defines.items():
@@ -2646,83 +2570,17 @@ def verify_staged_package(
     elif ocr_exe.exists():
         raise RuntimeError(f"IME-only package must not include OCR extension: {ocr_exe}")
 
-    rapidocr_root = output_root / RAPIDOCR_DIR
-    rapidocr_python_package = rapidocr_root / "python" / "rapidocr"
-    rapidocr_model_dir = rapidocr_python_package / "models"
-    legacy_venv = output_root / RAPIDOCR_VENV
-    if legacy_venv.exists():
-        raise RuntimeError(f"staged package must not contain legacy OCR venv: {legacy_venv}")
-    if include_ocr:
-        rapidocr_required = [
-            *(output_root / "tools" / helper for helper in RAPIDOCR_HELPERS),
-            output_root / "tools" / OPENCV_CROP_HELPER,
-            rapidocr_python_package / "__init__.py",
-            rapidocr_packages_path(output_root),
-            packaged_python_runtime_path(output_root),
-            packaged_python_stdlib_marker(output_root),
-        ]
-        rapidocr_required.extend(rapidocr_model_dir / model for model in RAPIDOCR_REQUIRED_MODELS)
-        for path in rapidocr_required:
-            if path.is_dir():
-                continue
-            if not path.is_file():
-                raise FileNotFoundError(f"missing staged RapidOCR runtime file: {path}")
-            if path.stat().st_size <= 0:
-                raise RuntimeError(f"staged RapidOCR runtime file is empty: {path}")
-        python_runtime_root = output_root / PYTHON_RUNTIME
-        if sys.platform == "win32" and not any(python_runtime_root.glob("python*.dll")):
-            raise FileNotFoundError(f"missing staged Python runtime DLLs: {python_runtime_root}")
-    else:
-        forbidden_ocr_paths = [
-            rapidocr_root,
-            output_root / RAPIDOCR_PACKAGES,
-            output_root / PYTHON_RUNTIME,
-            *(output_root / "tools" / helper for helper in RAPIDOCR_HELPERS),
-        ]
-        for path in forbidden_ocr_paths:
-            if path.exists():
-                raise RuntimeError(f"IME-only package must not include OCR runtime file: {path}")
+    ocr_layout_errors = validate_rapidocr_layout(output_root, include_ocr)
+    if ocr_layout_errors:
+        raise RuntimeError("\n".join(ocr_layout_errors))
 
     forbidden_translation_paths = [
         output_root / "srf_ime_translate.exe",
-        output_root / ".venv-translate",
         output_root / "models" / "translate",
-        output_root / "tools" / "kaixin_translate_engine.py",
-        output_root / "tools" / "kaixin_translate_engine.cmd",
     ]
     for path in forbidden_translation_paths:
         if path.exists():
             raise RuntimeError(f"package must not include the removed translation runtime: {path}")
-
-    python_roots = [
-        output_root / PYTHON_RUNTIME,
-        output_root / RAPIDOCR_PACKAGES,
-        output_root / RAPIDOCR_DIR / "python",
-    ]
-    forbidden_python_artifacts: list[str] = []
-    for python_root in python_roots:
-        if not python_root.is_dir():
-            continue
-        for path in python_root.rglob("*"):
-            relative = path.relative_to(output_root).as_posix()
-            name = path.name.casefold()
-            if path.is_dir() and (
-                name in PYTHON_PACKAGE_EXCLUDED_DIR_NAMES
-                or (name.startswith("pip-") and name.endswith(".dist-info"))
-                or (name.startswith("setuptools-") and name.endswith(".dist-info"))
-            ):
-                forbidden_python_artifacts.append(relative)
-            elif path.is_file() and path.suffix.casefold() in PYTHON_PACKAGE_EXCLUDED_FILE_SUFFIXES:
-                forbidden_python_artifacts.append(relative)
-            if len(forbidden_python_artifacts) >= 20:
-                break
-        if len(forbidden_python_artifacts) >= 20:
-            break
-    if forbidden_python_artifacts:
-        raise RuntimeError(
-            "staged Python runtimes contain excluded cache/test/development artifacts: "
-            + ", ".join(forbidden_python_artifacts)
-        )
 
     icon_file = output_root / "assets" / "kaixin-input.ico"
     if not icon_file.is_file():
@@ -2826,13 +2684,6 @@ def verify_staged_package(
             repo, output_root, runtime_dir, profile, git_release_info(repo).get("commit_short")
         )
         print_msg(f"  {green('OK')} staged Rust/x64/x86 versions, protocol and nihao handshake")
-        if include_ocr:
-            from scripts.validate_ocr_package import verify_ocr_package
-
-            ocr_report = verify_ocr_package(repo, output_root)
-            print_msg(
-                f"  {green('OK')} staged OCR profiles, warmup and model cache: {ocr_report.name}"
-            )
 
     setup_exe = output_root / "srf_ime_setup.exe"
     if not setup_exe.is_file() or setup_exe.stat().st_size <= 0:
@@ -3921,6 +3772,13 @@ def main() -> int:
                         f"  {green('OK')} package integrity manifest: "
                         f"{package_manifest.name} ({verified} files)"
                     )
+                    if variant.include_ocr and not args.skip_runtime_checks:
+                        from scripts.validate_ocr_package import verify_ocr_package
+
+                        ocr_report = verify_ocr_package(repo, stage_root)
+                        print_msg(
+                            f"  {green('OK')} staged OCR profiles, warmup and model cache: {ocr_report.name}"
+                        )
 
                     if make_zip:
                         zip_path = rebuild_stage_zip(stage_root)

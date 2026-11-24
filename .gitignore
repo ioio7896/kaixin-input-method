@@ -15,6 +15,7 @@ build-*/
 # Packaged artifacts
 dist/
 *.msi
+/kaixin-source-*.zip
 
 # Nested .NET / ShareX build outputs
 **/bin/
@@ -30,11 +31,11 @@ __pycache__/
 *.py[cod]
 .venv*/
 venv/
+/kaixin_ime_tooling.egg-info/
 
 # Local dependency caches
-rocm-python-wheels-Windows/
-rocm-python-wheels-Windows.zip
 .cache/rime-benchmark/
+_archived_python_legacy/
 
 # Local/editor state
 .idea/
@@ -83,9 +84,8 @@ docs/licenses/generated/
 
 # Redistributable rights must be verified before these large data files are tracked.
 # See docs/licenses/ for provenance, hashes, and release-blocking status.
-RapidOCR-3.9.0/python/rapidocr/models/*.onnx
-RapidOCRLite/python/rapidocr/models/*.onnx
-RapidOCRLite/python/rapidocr/rapidocrlite.dll
+RapidOCRLite/models/*.onnx
+RapidOCRLite/rapidocrlite.dll
 pinyin-ime/data/corpus.txt
 
 # Accidental command-output scratch file
@@ -95,9 +95,13 @@ pinyin-ime/data/corpus.txt
 lexicon/cold_lexicon.sqlite*
 
 # Private runtime data and publication scratch copies
+kaixin.ini
 user_dict.sqlite*
 clipboard_store.sqlite*
+clipboard_manager_window.sqlite*
 ocr_history.sqlite*
+runtime_events.sqlite*
+cedict_cache.sqlite*
 engine_capability.dat
 engine_capability.token
 config.private.ini

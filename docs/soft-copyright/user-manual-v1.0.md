@@ -112,7 +112,7 @@
 
 OCR 工具用于识别屏幕区域中的文字。用户可通过托盘入口或快捷键打开 OCR 工具，选择屏幕区域后，软件调用本地 OCR 运行时识别文字。
 
-OCR 功能集成第三方开源项目 RapidOCR 及相关本地 OCR 模型。开心输入法自研部分包括截图交互、窗口界面、参数配置、结果处理、历史记录、剪贴板联动、输入法集成、安装部署和隐私数据管理；不主张 RapidOCR 工程源码、OCR 模型及 Python 运行时依赖的著作权。
+OCR 功能集成第三方开源项目 RapidOCRLite 原生库及相关本地 OCR 模型。开心输入法自研部分包括截图交互、窗口界面、参数配置、结果处理、历史记录、剪贴板联动、输入法集成、安装部署和隐私数据管理。不主张 RapidOCRLite 工程源码及 OCR 模型的著作权。
 
 OCR 工具支持：
 
@@ -162,7 +162,7 @@ OCR 工具支持：
 
 候选窗口不显示：检查当前应用是否处于全屏兼容模式，或在设置页调整候选窗口策略。
 
-OCR 不可用：检查安装目录中是否包含 OCR 运行时、RapidOCR 目录、Python 运行时和模型文件。
+OCR 不可用时，请确认已安装输入法＋OCR，并检查安装目录下的 `RapidOCRLite/rapidocrlite.dll` 和 `RapidOCRLite/models/`。
 
 翻译不可用：检查是否已安装 WinTranslator；默认路径为 `%LOCALAPPDATA%\Programs\WinTranslator\WinTranslator.exe`，也可通过 `WINTRANSLATOR_EXE` 指定。
 
@@ -170,4 +170,4 @@ OCR 不可用：检查安装目录中是否包含 OCR 运行时、RapidOCR 目�
 
 ## 17. 第三方组件声明
 
-OCR 引擎、OCR 模型、Python 运行时依赖、系统 API、外部词库和第三方手写数据不属于开心输入法自研源程序成果。WinTranslator 为独立软件，不随输入法安装包分发。发布包中的第三方组件、许可证和来源说明以随包 `THIRD_PARTY_NOTICES.md` 为准。
+OCR 引擎、OCR 模型、系统 API、外部词库和第三方手写数据不属于开心输入法自研源程序成果。WinTranslator 为独立软件，不随输入法安装包分发。发布包中的第三方组件、许可证和来源说明以随包 `THIRD_PARTY_NOTICES.md` 为准。

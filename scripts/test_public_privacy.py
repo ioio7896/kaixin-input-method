@@ -3,11 +3,22 @@ from check_public_privacy import violations
 
 
 class PublicPrivacyTests(unittest.TestCase):
+    def test_local_backups_and_development_transcripts_are_excluded(self):
+        for name in (
+            "kaixin-source-2026.1124.1736.zip",
+            "2026_11_23-16_29_23",
+            "2026_11_19-17_33_47.md",
+        ):
+            self.assertIn("local source backup or development transcript", violations(name, b""))
+
     def test_runtime_databases_and_logs_are_excluded(self):
         for name in (
             "user_dict.sqlite-wal",
             "clipboard_store.sqlite",
+            "clipboard_manager_window.sqlite-journal",
             "ocr_history.sqlite",
+            "runtime_events.sqlite-wal",
+            "cedict_cache.sqlite-journal",
             "engine_capability.dat",
             "engine.log",
         ):
@@ -19,6 +30,7 @@ class PublicPrivacyTests(unittest.TestCase):
 
     def test_private_configuration_and_credential_files_are_excluded(self):
         for name in (
+            "kaixin.ini",
             "config.private.ini",
             "settings.LOCAL.INI",
             ".cargo/credentials.toml",

@@ -1,25 +1,17 @@
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use std::ffi::OsString;
 use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 use std::sync::{Mutex, OnceLock};
 
 #[cfg(windows)]
 use std::os::windows::io::AsRawHandle;
-#[cfg(windows)]
-use std::os::windows::process::CommandExt;
-
-#[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 const RAPIDOCR_DIR_NAME: &str = "RapidOCRLite";
-pub(crate) const PYTHON_RUNTIME_DIR_NAME: &str = ".python-runtime";
-const RAPIDOCR_PACKAGES_DIR_NAME: &str = ".python-packages";
+const RAPIDOCR_DLL_NAME: &str = "rapidocrlite.dll";
 pub(crate) const PACKAGE_MANIFEST_NAME: &str = "package_manifest.sha256";
-const REQUIRED_ONNX_MODELS: &[&str] = &[
+pub const REQUIRED_ONNX_MODELS: &[&str] = &[
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
@@ -27,12 +19,6 @@ const REQUIRED_ONNX_MODELS: &[&str] = &[
     "ppocrv6_dict.txt",
 ];
 const OPTIONAL_ONNX_MODELS: &[&str] = &["PP-OCRv6_det_int8.onnx"];
-
-#[derive(Clone, Debug)]
-pub struct PythonRuntime {
-    pub executable: PathBuf,
-    pub env: Vec<(String, OsString)>,
-}
 
 pub fn install_dir() -> Option<PathBuf> {
     std::env::current_exe()
@@ -50,63 +36,16 @@ pub fn rapidocr_root() -> Option<PathBuf> {
     }
 }
 
+pub fn rapidocr_dll_path(rapidocr_root: &Path) -> PathBuf {
+    rapidocr_root.join(RAPIDOCR_DLL_NAME)
+}
+
+pub fn rapidocr_models_dir(rapidocr_root: &Path) -> PathBuf {
+    rapidocr_root.join("models")
+}
+
 pub fn is_rapidocr_root(path: &Path) -> bool {
-    path.join("python").join("rapidocr").is_dir()
-}
-
-pub fn ocr_helper_path() -> Option<PathBuf> {
-    let helper = install_dir()?.join("tools").join("kaixin_ocr_engine.py");
-    if helper.is_file() {
-        Some(fs::canonicalize(&helper).unwrap_or(helper))
-    } else {
-        None
-    }
-}
-
-pub fn python_exe(rapidocr_root: Option<&Path>) -> Result<PathBuf, String> {
-    Ok(python_runtime(rapidocr_root)?.executable)
-}
-
-pub fn python_runtime(rapidocr_root: Option<&Path>) -> Result<PythonRuntime, String> {
-    let owned_root;
-    let root = match rapidocr_root {
-        Some(root) => root,
-        None => {
-            owned_root = self::rapidocr_root().ok_or_else(missing_root_message)?;
-            owned_root.as_path()
-        }
-    };
-    let install_dir = root
-        .parent()
-        .ok_or_else(|| format!("RapidOCR path has no install parent: {}", root.display()))?;
-
-    let mut diagnostics = Vec::new();
-
-    let portable = shared_python_runtime_path(install_dir);
-    let portable_env = python_env_for_rapidocr_packages(install_dir);
-    match python_unavailable_reason(&portable, &portable_env) {
-        None => {
-            return Ok(PythonRuntime {
-                executable: fs::canonicalize(&portable).unwrap_or(portable),
-                env: portable_env,
-            });
-        }
-        Some(reason) => diagnostics.push(format!("{} ({reason})", portable.display())),
-    }
-
-    Err(format!(
-        "RapidOCR bundled Python is unavailable. Checked: {}",
-        diagnostics.join("; ")
-    ))
-}
-
-pub fn apply_python_runtime_env(command: &mut Command, runtime: &PythonRuntime) {
-    command
-        .env("PYTHONNOUSERSITE", "1")
-        .env("PYTHONDONTWRITEBYTECODE", "1");
-    for (key, value) in &runtime.env {
-        command.env(key, value);
-    }
+    rapidocr_dll_path(path).is_file() && rapidocr_models_dir(path).is_dir()
 }
 
 pub fn validate_rapidocr_models(rapidocr_root: &Path) -> Result<(), String> {
@@ -117,7 +56,21 @@ pub fn validate_rapidocr_models(rapidocr_root: &Path) -> Result<(), String> {
         )
     })?;
     let manifest = read_package_manifest(&install_dir.join(PACKAGE_MANIFEST_NAME))?;
-    let model_dir = rapidocr_root.join("python").join("rapidocr").join("models");
+    let dll_path = rapidocr_dll_path(rapidocr_root);
+    if !dll_path.is_file() {
+        return Err(format!(
+            "RapidOCRLite native library missing: {}",
+            dll_path.display()
+        ));
+    }
+    validate_manifest_file(
+        install_dir,
+        &manifest,
+        &dll_path,
+        "RapidOCRLite native library",
+    )?;
+
+    let model_dir = rapidocr_models_dir(rapidocr_root);
     for model_name in REQUIRED_ONNX_MODELS.iter().copied().chain(
         OPTIONAL_ONNX_MODELS
             .iter()
@@ -128,20 +81,40 @@ pub fn validate_rapidocr_models(rapidocr_root: &Path) -> Result<(), String> {
         if !model_path.is_file() {
             return Err(format!("RapidOCR model missing: {}", model_path.display()));
         }
-        let relative = format!("{RAPIDOCR_DIR_NAME}/python/rapidocr/models/{model_name}");
-        let expected = manifest.get(&relative).ok_or_else(|| {
-            format!("RapidOCR model hash is missing from {PACKAGE_MANIFEST_NAME}: {relative}")
-        })?;
-        let actual = sha256_file_hex(&model_path)
-            .map_err(|e| format!("hash RapidOCR model {}: {e}", model_path.display()))?;
-        if !actual.eq_ignore_ascii_case(expected) {
-            return Err(format!(
-                "RapidOCR model hash mismatch: {} expected={} actual={}",
-                model_path.display(),
-                expected,
-                actual
-            ));
-        }
+        validate_manifest_file(install_dir, &manifest, &model_path, "RapidOCR model")?;
+    }
+    Ok(())
+}
+
+fn validate_manifest_file(
+    install_dir: &Path,
+    manifest: &HashMap<String, String>,
+    file_path: &Path,
+    label: &str,
+) -> Result<(), String> {
+    let relative = file_path
+        .strip_prefix(install_dir)
+        .map_err(|_| {
+            format!(
+                "{label} escapes install root {}: {}",
+                install_dir.display(),
+                file_path.display()
+            )
+        })?
+        .to_string_lossy()
+        .replace('\\', "/");
+    let expected = manifest.get(&relative).ok_or_else(|| {
+        format!("{label} hash is missing from {PACKAGE_MANIFEST_NAME}: {relative}")
+    })?;
+    let actual = sha256_file_hex(file_path)
+        .map_err(|e| format!("hash {label} {}: {e}", file_path.display()))?;
+    if !actual.eq_ignore_ascii_case(expected) {
+        return Err(format!(
+            "{label} hash mismatch: {} expected={} actual={}",
+            file_path.display(),
+            expected,
+            actual
+        ));
     }
     Ok(())
 }
@@ -154,7 +127,7 @@ pub fn validate_rapidocr_models_cached(rapidocr_root: &Path) -> Result<(), Strin
     let mut cached = cache
         .lock()
         .map_err(|_| "RapidOCR 模型校验缓存锁定失败。".to_string())?;
-    let receipt = crate::app_paths::local_data_dir().map(|dir| dir.join("ocr-model-validation.v1"));
+    let receipt = crate::app_paths::local_data_dir().map(|dir| dir.join("ocr-model-validation.v2"));
     validate_models_with_cache(rapidocr_root, receipt.as_deref(), &mut cached)
 }
 
@@ -207,14 +180,25 @@ fn rapidocr_model_stamp(rapidocr_root: &Path) -> Result<String, String> {
             rapidocr_root.display()
         )
     })?;
-    let model_dir = rapidocr_root.join("python").join("rapidocr").join("models");
+    let dll_path = rapidocr_dll_path(rapidocr_root);
+    let model_dir = rapidocr_models_dir(rapidocr_root);
     let mut stamp = Sha256::new();
-    stamp.update(b"kaixin-rapidocr-models-v1\0");
+    stamp.update(b"kaixin-rapidocr-models-v2\0");
     stamp.update(rapidocr_root.as_os_str().as_encoded_bytes());
     stamp.update(
         sha256_file_hex(&install_dir.join(PACKAGE_MANIFEST_NAME))
             .map_err(|err| format!("read RapidOCR model manifest: {err}"))?,
     );
+    let dll_file = fs::File::open(&dll_path)
+        .map_err(|err| format!("open RapidOCRLite library {}: {err}", dll_path.display()))?;
+    stamp.update(RAPIDOCR_DLL_NAME);
+    update_model_stamp(&dll_file, &mut stamp).map_err(|err| {
+        format!(
+            "read RapidOCRLite library metadata {}: {err}",
+            dll_path.display()
+        )
+    })?;
+
     for (name, required) in REQUIRED_ONNX_MODELS
         .iter()
         .map(|name| (*name, true))
@@ -265,62 +249,100 @@ fn update_model_stamp(file: &fs::File, stamp: &mut Sha256) -> io::Result<()> {
 
 pub fn missing_root_message() -> String {
     format!(
-        "RapidOCR directory is unavailable: expected .\\{RAPIDOCR_DIR_NAME} inside the installed program directory."
+        "RapidOCR directory is unavailable: expected .\\{RAPIDOCR_DIR_NAME} with rapidocrlite.dll and models inside the installed program directory."
     )
 }
 
-fn shared_python_runtime_path(install_dir: &Path) -> PathBuf {
-    #[cfg(windows)]
-    {
-        install_dir.join(PYTHON_RUNTIME_DIR_NAME).join("python.exe")
-    }
-    #[cfg(not(windows))]
-    {
-        install_dir
-            .join(PYTHON_RUNTIME_DIR_NAME)
-            .join("bin")
-            .join("python")
-    }
+#[cfg(windows)]
+#[repr(C)]
+struct RpocrCpuInfo {
+    avx2_compiled: std::ffi::c_int,
+    avx512_compiled: std::ffi::c_int,
+    neon_compiled: std::ffi::c_int,
+    avx2: std::ffi::c_int,
+    avx512: std::ffi::c_int,
+    neon: std::ffi::c_int,
+    threads: std::ffi::c_int,
+    active_isa: [u8; 16],
 }
 
-fn python_env_for_rapidocr_packages(install_dir: &Path) -> Vec<(String, OsString)> {
-    let packages = rapidocr_packages_path(install_dir);
-    if packages.is_dir() {
-        vec![("PYTHONPATH".to_string(), packages.into_os_string())]
-    } else {
-        Vec::new()
+#[cfg(windows)]
+pub fn probe_native_runtime(rapidocr_root: &Path) -> Result<String, String> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Foundation::FreeLibrary;
+    use windows_sys::Win32::System::LibraryLoader::{GetProcAddress, LoadLibraryW};
+
+    let dll_path = rapidocr_dll_path(rapidocr_root);
+    if !dll_path.is_file() {
+        return Err(format!("RapidOCRLite 原生库不存在：{}", dll_path.display()));
     }
+    let wide: Vec<u16> = dll_path
+        .as_os_str()
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+    let module = unsafe { LoadLibraryW(wide.as_ptr()) };
+    if module == 0 {
+        return Err(format!(
+            "加载 RapidOCRLite 原生库失败（{}）：{}",
+            dll_path.display(),
+            io::Error::last_os_error()
+        ));
+    }
+
+    struct LibGuard(isize);
+    impl Drop for LibGuard {
+        fn drop(&mut self) {
+            unsafe {
+                FreeLibrary(self.0);
+            }
+        }
+    }
+    let _guard = LibGuard(module);
+
+    for symbol in [
+        b"rpocr_options_init_ex\0".as_slice(),
+        b"rpocr_create\0".as_slice(),
+        b"rpocr_destroy\0".as_slice(),
+        b"rpocr_recognize\0".as_slice(),
+        b"rpocr_result_free\0".as_slice(),
+    ] {
+        if unsafe { GetProcAddress(module, symbol.as_ptr()) }.is_none() {
+            let name = String::from_utf8_lossy(&symbol[..symbol.len() - 1]);
+            return Err(format!(
+                "RapidOCRLite 原生库缺少必要导出符号 {name}：{}",
+                dll_path.display()
+            ));
+        }
+    }
+
+    let summary = unsafe {
+        if let Some(proc_fn) = GetProcAddress(module, c"rpocr_query_cpu_info".as_ptr().cast()) {
+            let query: unsafe extern "C" fn(*mut RpocrCpuInfo) = std::mem::transmute(proc_fn);
+            let mut info = std::mem::zeroed::<RpocrCpuInfo>();
+            query(&mut info);
+            let nul = info
+                .active_isa
+                .iter()
+                .position(|&b| b == 0)
+                .unwrap_or(info.active_isa.len());
+            let isa = String::from_utf8_lossy(&info.active_isa[..nul]);
+            let isa = if isa.trim().is_empty() {
+                "cpu"
+            } else {
+                isa.trim()
+            };
+            format!("native {isa}, {} threads", info.threads.max(1))
+        } else {
+            "native cpu".to_string()
+        }
+    };
+    Ok(summary)
 }
 
-fn rapidocr_packages_path(install_dir: &Path) -> PathBuf {
-    install_dir.join(RAPIDOCR_PACKAGES_DIR_NAME)
-}
-
-fn python_unavailable_reason(path: &Path, env: &[(String, OsString)]) -> Option<String> {
-    if !path.is_file() {
-        return Some("file is missing".to_string());
-    }
-    let mut command = Command::new(path);
-    command
-        .args(["-c", "import os, sys; sys.exit(0)"])
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .stderr(Stdio::null());
-    command
-        .env("PYTHONNOUSERSITE", "1")
-        .env("PYTHONDONTWRITEBYTECODE", "1");
-    for (key, value) in env {
-        command.env(key, value);
-    }
-    #[cfg(windows)]
-    {
-        command.creation_flags(CREATE_NO_WINDOW);
-    }
-    match command.status() {
-        Ok(status) if status.success() => None,
-        Ok(status) => Some(format!("exited with {status}")),
-        Err(err) => Some(err.to_string()),
-    }
+#[cfg(not(windows))]
+pub fn probe_native_runtime(_rapidocr_root: &Path) -> Result<String, String> {
+    Err("RapidOCRLite native probe is only supported on Windows.".to_string())
 }
 
 pub(crate) fn read_package_manifest(path: &Path) -> Result<HashMap<String, String>, String> {
@@ -394,16 +416,18 @@ mod tests {
             std::process::id()
         ));
         let root = install.join(RAPIDOCR_DIR_NAME);
-        let models = root.join("python").join("rapidocr").join("models");
+        let models = root.join("models");
         fs::create_dir_all(&models).unwrap();
         let mut manifest = String::new();
+        let dll = root.join(RAPIDOCR_DLL_NAME);
+        fs::write(&dll, b"native-dll").unwrap();
+        let dll_hash = sha256_file_hex(&dll).unwrap();
+        manifest.push_str(&format!("{dll_hash}  RapidOCRLite/{RAPIDOCR_DLL_NAME}\n"));
         for name in REQUIRED_ONNX_MODELS {
             let file = models.join(name);
             fs::write(&file, b"original").unwrap();
             let hash = sha256_file_hex(&file).unwrap();
-            manifest.push_str(&format!(
-                "{hash}  RapidOCRLite/python/rapidocr/models/{name}\n"
-            ));
+            manifest.push_str(&format!("{hash}  RapidOCRLite/models/{name}\n"));
         }
         let manifest_path = install.join(PACKAGE_MANIFEST_NAME);
         fs::write(&manifest_path, &manifest).unwrap();

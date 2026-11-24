@@ -20,12 +20,9 @@
 
 | 路径 | 排除原因 |
 | --- | --- |
-| `RapidOCRLite/` | 第三方 OCR 运行时工程 |
-| `dist/vendor-reference/RapidOCR-3.9.0/` | 可选的上游工程参考副本 |
-| `.venv-rapidocr/` | 本地 OCR Python 运行时和依赖环境 |
+| `RapidOCRLite/` | 第三方 OCR 原生运行时库与模型 |
 | OCR 模型目录 | OCR 模型数据，不属于自研源程序 |
 | `lexicon/` | 内置词库和外部词库数据，不作为程序源码提交 |
-| `rocm-python-wheels-Windows*` | 临时 Python wheel 缓存 |
 | `build/`、`dist/`、`pinyin-ime/target/` | 构建产物和安装包 |
 | `.git/`、`.idea/`、`.vscode/` | 版本库和编辑器状态 |
 

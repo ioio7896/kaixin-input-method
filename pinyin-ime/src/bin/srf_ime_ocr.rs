@@ -1,17 +1,26 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
+#[path = "srf_ime_ocr/border_crop.rs"]
+mod border_crop;
 #[path = "../fonts.rs"]
 mod fonts;
+#[path = "srf_ime_ocr/ocr_engine.rs"]
+mod ocr_engine;
+#[path = "srf_ime_ocr/ocr_policy.rs"]
+mod ocr_policy;
+#[path = "srf_ime_ocr/rapidocr_ffi.rs"]
+mod rapidocr_ffi;
+#[path = "srf_ime_ocr/worker_process.rs"]
+mod worker_process;
 
-use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use eframe::egui::{
     self, Color32, ColorImage, ComboBox, Frame, Margin, RichText, Rounding, ScrollArea, Slider,
     Stroke, TextEdit, TextureHandle, TextureOptions, Vec2,
 };
 use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use pinyin_ime::{
-    app_paths, clipboard_store, external_translation, rapidocr_paths, runtime_log,
-    screenshot_capture, screenshot_region_selector, screenshot_store, tool_prefs,
+    app_paths, clipboard_store, external_translation, runtime_log, screenshot_capture,
+    screenshot_region_selector, screenshot_store, tool_prefs,
     ui_theme::{apply_tool_style, sync_theme_from_prefs, UiPalette, CARD_RADIUS, CONTROL_RADIUS},
     win_paste, win_single_instance, windows_graphics_capture, windows_security,
 };
@@ -19,20 +28,16 @@ use rusqlite::{params, Connection, DatabaseName};
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 use std::fs;
-use std::io::{BufRead, BufReader, Cursor, Read, Write};
-#[cfg(windows)]
-use std::os::windows::io::AsRawHandle;
-#[cfg(windows)]
-use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
-use std::process::{Child, ChildStdin, ChildStdout, Command, Output, Stdio};
+use std::process::Command;
 use std::ptr::NonNull;
 use std::sync::{
-    atomic::{AtomicU32, AtomicU64, Ordering},
+    atomic::{AtomicBool, AtomicU64, Ordering},
     mpsc::{self, Receiver},
-    Arc, Mutex, OnceLock,
+    Arc,
 };
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use worker_process::{CANCELLED, OCR_WORKER};
 
 const WINDOW_TITLE: &str = "开心输入法 OCR";
 const OCR_SINGLE_INSTANCE_MUTEX: &str = "Local\\KaixinInput_Ocr_SingleInstance_v1";
@@ -42,10 +47,6 @@ const LEFT_PANEL_MIN_WIDTH: f32 = 220.0;
 const LEFT_PANEL_MAX_WIDTH: f32 = 420.0;
 const RESULT_PANEL_TARGET_MIN_WIDTH: f32 = 320.0;
 const RESULT_FRAME_EDGE_INSET: f32 = 2.0;
-const RAPIDOCR_HOT_TIMEOUT: Duration = Duration::from_secs(30);
-const RAPIDOCR_COLD_TIMEOUT: Duration = Duration::from_secs(90);
-const RAPIDOCR_STDERR_LIMIT: usize = 16 * 1024;
-const OPENCV_CROP_PROCESS_TIMEOUT: Duration = Duration::from_secs(12);
 const OCR_WINDOW_HIDE_DELAY: Duration = Duration::from_millis(50);
 const OCR_REQUEST_POLL_INTERVAL: Duration = Duration::from_millis(50);
 const OCR_HIDDEN_POLL_INTERVAL: Duration = Duration::from_millis(150);
@@ -57,9 +58,6 @@ const MAX_OCR_IMPORT_PIXELS: u64 = 134_217_728;
 const AUTO_CROP_MIN_CONFIDENCE: f32 = 0.70;
 const HISTORY_LIMIT: usize = 30;
 static OCR_REQUEST_SEQUENCE: AtomicU64 = AtomicU64::new(0);
-static ACTIVE_RAPIDOCR_PID: AtomicU32 = AtomicU32::new(0);
-#[cfg(windows)]
-const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum OcrLanguageMode {
@@ -369,7 +367,7 @@ enum OcrWorkerMessage {
     },
     Captured {
         generation: u64,
-        session: CaptureSession,
+        session: PendingCapture,
     },
     CaptureFailed {
         generation: u64,
@@ -384,6 +382,16 @@ enum OcrWorkerMessage {
     },
 }
 
+struct PendingCapture(Option<CaptureSession>);
+
+impl Drop for PendingCapture {
+    fn drop(&mut self) {
+        if let Some(session) = &self.0 {
+            let _ = fs::remove_file(&session.original_path);
+        }
+    }
+}
+
 enum StartupCapture {
     Captured(CaptureSession),
     Failed(String),
@@ -394,9 +402,6 @@ struct PreparedImage {
     path: PathBuf,
     owned_temp: bool,
     detected_crop: Option<DetectedCrop>,
-    // The preview still uses `path`, but the persistent OCR worker can consume
-    // this buffer directly and avoid decoding the same processed PNG again.
-    transport_png: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -425,6 +430,7 @@ struct OcrApp {
     status: String,
     target_hwnd: isize,
     receiver: Option<Receiver<OcrWorkerMessage>>,
+    task_cancel: Option<Arc<AtomicBool>>,
     busy: bool,
     task_generation: u64,
     language: OcrLanguageMode,
@@ -457,14 +463,16 @@ struct OcrApp {
 }
 
 impl OcrApp {
-    fn begin_task(&mut self) -> u64 {
+    fn begin_task(&mut self) -> (u64, Arc<AtomicBool>) {
         self.review_lines.clear();
         self.review_preview = None;
         self.review_preview_error = None;
         self.selected_review = None;
         self.task_generation = self.task_generation.wrapping_add(1).max(1);
         self.busy = true;
-        self.task_generation
+        let cancel = Arc::new(AtomicBool::new(false));
+        self.task_cancel = Some(Arc::clone(&cancel));
+        (self.task_generation, cancel)
     }
 
     fn cancel_task(&mut self) {
@@ -473,9 +481,11 @@ impl OcrApp {
         }
         self.task_generation = self.task_generation.wrapping_add(1).max(1);
         self.busy = false;
+        if let Some(cancel) = self.task_cancel.take() {
+            cancel.store(true, Ordering::Relaxed);
+        }
         self.receiver = None;
         self.status = "已取消当前 OCR 任务。后续排队请求仍会继续处理。".to_string();
-        terminate_active_rapidocr_process();
     }
 
     fn new(
@@ -497,6 +507,7 @@ impl OcrApp {
             status: "正在截取目标窗口...".to_string(),
             target_hwnd,
             receiver: None,
+            task_cancel: None,
             busy: false,
             task_generation: 0,
             language: OcrLanguageMode::from_config(&tool_prefs::ocr_language()),
@@ -708,7 +719,7 @@ impl OcrApp {
         };
         let (tx, rx) = mpsc::channel();
         self.receiver = Some(rx);
-        let generation = self.begin_task();
+        let (generation, cancel) = self.begin_task();
         self.status = if mode == CaptureMode::ManualRegion {
             if fallback_reason.is_some() {
                 "窗口截图失败，已切换到配置的框选方案。请选择要识别的屏幕区域。".to_string()
@@ -771,22 +782,20 @@ impl OcrApp {
                         save_note,
                         detected_crop: None,
                     };
-                    let original_path = session.original_path.clone();
                     if tx
                         .send(OcrWorkerMessage::Captured {
                             generation,
-                            session: session.clone(),
+                            session: PendingCapture(Some(session.clone())),
                         })
                         .is_err()
                     {
-                        let _ = fs::remove_file(original_path);
                         return;
                     }
                     if let Some(ctx) = &repaint {
                         ctx.request_repaint();
                     }
                     let (processed_path, result, detected_crop) =
-                        recognize_from_image(&session.original_path, options, |status| {
+                        recognize_from_image(&session.original_path, options, &cancel, |status| {
                             let _ = tx.send(OcrWorkerMessage::Stage { generation, status });
                         });
                     session.detected_crop = detected_crop;
@@ -800,7 +809,6 @@ impl OcrApp {
                         })
                         .is_err()
                     {
-                        let _ = fs::remove_file(original_path);
                         if let Some(path) = cleanup_path {
                             let _ = fs::remove_file(path);
                         }
@@ -841,11 +849,11 @@ impl OcrApp {
         self.replace_capture_session(ctx, session.clone());
         let (tx, rx) = mpsc::channel();
         self.receiver = Some(rx);
-        let generation = self.begin_task();
+        let (generation, cancel) = self.begin_task();
         self.set_capture_status();
         std::thread::spawn(move || {
             let (processed_path, result, detected_crop) =
-                recognize_from_image(&path_for_worker, options, |status| {
+                recognize_from_image(&path_for_worker, options, &cancel, |status| {
                     let _ = tx.send(OcrWorkerMessage::Stage { generation, status });
                 });
             session.detected_crop = detected_crop;
@@ -879,11 +887,11 @@ impl OcrApp {
         let mut session = self.capture_session.clone();
         let (tx, rx) = mpsc::channel();
         self.receiver = Some(rx);
-        let generation = self.begin_task();
+        let (generation, cancel) = self.begin_task();
         self.status = "正在重新识别当前截图...".to_string();
         std::thread::spawn(move || {
             let (processed_path, result, detected_crop) =
-                recognize_from_image(&path, options, |status| {
+                recognize_from_image(&path, options, &cancel, |status| {
                     let _ = tx.send(OcrWorkerMessage::Stage { generation, status });
                 });
             if let Some(session) = session.as_mut() {
@@ -922,13 +930,13 @@ impl OcrApp {
                 }
                 OcrWorkerMessage::Captured {
                     generation,
-                    session,
+                    mut session,
                 } => {
                     if generation != self.task_generation {
                         return;
                     }
                     self.reveal_window(ctx);
-                    self.replace_capture_session(ctx, session);
+                    self.replace_capture_session(ctx, session.0.take().expect("pending capture"));
                     self.set_capture_status();
                     self.busy = true;
                     self.receiver = Some(rx);
@@ -943,6 +951,7 @@ impl OcrApp {
                     }
                     self.reveal_window(ctx);
                     self.busy = false;
+                    self.task_cancel = None;
                     self.receiver = None;
                     self.replace_processed_image(None);
                     if mode == CaptureMode::AutoWindow {
@@ -966,6 +975,7 @@ impl OcrApp {
                     }
                     self.reveal_window(ctx);
                     self.busy = false;
+                    self.task_cancel = None;
                     self.receiver = None;
                     if let Some(session) = session {
                         self.capture_save_note = session.save_note.clone();
@@ -986,6 +996,7 @@ impl OcrApp {
             Err(mpsc::TryRecvError::Disconnected) => {
                 self.reveal_window(ctx);
                 self.busy = false;
+                self.task_cancel = None;
                 self.receiver = None;
                 self.status = "OCR 任务已中断。".to_string();
             }
@@ -1959,6 +1970,9 @@ impl OcrApp {
 
 impl Drop for OcrApp {
     fn drop(&mut self) {
+        if let Some(cancel) = self.task_cancel.take() {
+            cancel.store(true, Ordering::Relaxed);
+        }
         self.cleanup_current_images();
     }
 }
@@ -2213,12 +2227,16 @@ fn allow_ocr_window_activation() {}
 fn recognize_from_image(
     original_path: &Path,
     options: OcrProcessOptions,
+    cancel: &AtomicBool,
     mut report_stage: impl FnMut(&'static str),
 ) -> (
     Option<PathBuf>,
     Result<OcrTextResult, String>,
     Option<DetectedCrop>,
 ) {
+    if cancel.load(Ordering::Relaxed) {
+        return (None, Err(CANCELLED.to_string()), None);
+    }
     let started = Instant::now();
     let prepare_started = Instant::now();
     report_stage("正在预处理图片...");
@@ -2230,16 +2248,11 @@ fn recognize_from_image(
         runtime_log::RuntimeLogLevel::Basic,
         "ocr_preprocess",
         format!(
-            "elapsed_ms={} source_pixels={} memory_transport={} options={}",
+            "elapsed_ms={} source_pixels={} options={}",
             prepare_started.elapsed().as_millis(),
             image::image_dimensions(original_path)
                 .map(|(width, height)| format!("{width}x{height}"))
                 .unwrap_or_else(|_| "unknown".to_string()),
-            if prepared.transport_png.is_some() {
-                1
-            } else {
-                0
-            },
             options.summary(),
         ),
     );
@@ -2250,17 +2263,13 @@ fn recognize_from_image(
     };
     let detected_crop = prepared.detected_crop;
     report_stage("正在加载模型并检测、识别文字...");
-    let mut result = recognize_image_with_rapidocr(
-        &prepared.path,
-        prepared.transport_png.as_deref(),
-        options.language,
-        options.profile,
-    )
-    .map(|mut result| {
-        result.elapsed = started.elapsed();
-        result.options = options.summary();
-        result
-    });
+    let mut result =
+        recognize_image_with_rapidocr(&prepared.path, options.language, options.profile, cancel)
+            .map(|mut result| {
+                result.elapsed = started.elapsed();
+                result.options = options.summary();
+                result
+            });
     if result
         .as_ref()
         .is_ok_and(|value| value.text.trim().is_empty())
@@ -2272,12 +2281,19 @@ fn recognize_from_image(
             "ocr_crop_retry",
             "reason=empty_result source=original",
         );
-        if let Ok(mut retry) =
-            recognize_image_with_rapidocr(original_path, None, options.language, options.profile)
-        {
-            retry.elapsed = started.elapsed();
-            retry.options = format!("{}；裁边为空，已用原图重试", options.summary());
-            result = Ok(retry);
+        match recognize_image_with_rapidocr(
+            original_path,
+            options.language,
+            options.profile,
+            cancel,
+        ) {
+            Ok(mut retry) => {
+                retry.elapsed = started.elapsed();
+                retry.options = format!("{}；裁边为空，已用原图重试", options.summary());
+                result = Ok(retry);
+            }
+            Err(err) if err == CANCELLED || err == worker_process::TIMED_OUT => result = Err(err),
+            Err(_) => {}
         }
     }
     if result.is_err() {
@@ -2294,7 +2310,6 @@ fn prepare_image_for_ocr(path: &Path, options: OcrProcessOptions) -> Result<Prep
             path: path.to_path_buf(),
             owned_temp: false,
             detected_crop: None,
-            transport_png: None,
         });
     }
 
@@ -2314,7 +2329,7 @@ fn prepare_image_for_ocr(path: &Path, options: OcrProcessOptions) -> Result<Prep
     }
 
     if options.auto_border_crop {
-        if let Ok(Some(crop_result)) = crop_border_with_opencv(&source_path) {
+        if let Ok(Some(crop_result)) = crop_border_native(&source_path) {
             let apply_crop = crop_result.crop.confidence >= AUTO_CROP_MIN_CONFIDENCE;
             if options.crop.is_full() {
                 detected_crop = Some(DetectedCrop {
@@ -2339,7 +2354,6 @@ fn prepare_image_for_ocr(path: &Path, options: OcrProcessOptions) -> Result<Prep
             path: source_path,
             owned_temp: owned_source,
             detected_crop,
-            transport_png: None,
         });
     }
 
@@ -2365,12 +2379,10 @@ fn prepare_image_for_ocr(path: &Path, options: OcrProcessOptions) -> Result<Prep
         image.invert();
     }
 
-    let mut png = Vec::new();
-    image
-        .write_to(&mut Cursor::new(&mut png), image::ImageFormat::Png)
-        .map_err(|e| format!("编码预处理图片失败：{e}"))?;
     let processed = temp_ocr_image_path("processed");
-    fs::write(&processed, &png).map_err(|e| format!("保存预处理图片失败：{e}"))?;
+    DynamicImage::ImageRgb8(image.into_rgb8())
+        .save_with_format(&processed, image::ImageFormat::Png)
+        .map_err(|e| format!("保存预处理图片失败：{e}"))?;
     if owned_source {
         let _ = std::fs::remove_file(&source_path);
     }
@@ -2378,7 +2390,6 @@ fn prepare_image_for_ocr(path: &Path, options: OcrProcessOptions) -> Result<Prep
         path: processed,
         owned_temp: true,
         detected_crop,
-        transport_png: Some(BASE64.encode(png)),
     })
 }
 
@@ -2691,127 +2702,44 @@ fn load_color_image(path: &Path) -> Result<(ColorImage, [usize; 2]), String> {
     Ok((ColorImage::from_rgba_unmultiplied(size, &pixels), size))
 }
 
-#[derive(Deserialize)]
-struct CvCropPayload {
-    ok: bool,
-    cropped: Option<bool>,
-    output: Option<String>,
-    rect: Option<[f32; 4]>,
-    width: Option<f32>,
-    height: Option<f32>,
-    confidence: Option<f32>,
-    error: Option<String>,
-    traceback: Option<String>,
-}
-
 struct CvCropResult {
     path: PathBuf,
     crop: DetectedCrop,
 }
 
-fn crop_border_with_opencv(path: &Path) -> Result<Option<CvCropResult>, String> {
+fn crop_border_native(path: &Path) -> Result<Option<CvCropResult>, String> {
+    let decoded = image::open(path).map_err(|err| format!("读取边框裁剪原图失败：{err}"))?;
+    let rgb = decoded.to_rgb8();
+    let Some(detected) = border_crop::detect_window_border(&rgb, 6, 0.04, 0.985) else {
+        return Ok(None);
+    };
+    let cropped = image::imageops::crop_imm(
+        &rgb,
+        detected.x,
+        detected.y,
+        detected.width,
+        detected.height,
+    )
+    .to_image();
     let output = temp_ocr_image_path("border");
-    let command_output =
-        run_rapidocr_crop_with_timeout(path, &output, OPENCV_CROP_PROCESS_TIMEOUT)?;
-    let stdout = String::from_utf8_lossy(&command_output.stdout);
-    let stdout = stdout.trim();
-    if stdout.is_empty() {
-        return Err(format!(
-            "OpenCV 边框裁剪没有返回 JSON，进程状态：{}",
-            command_output.status_label
-        ));
-    }
-
-    let payload: CvCropPayload = serde_json::from_str(stdout)
-        .map_err(|err| format!("解析 OpenCV 边框裁剪输出失败：{err}"))?;
-
-    if !payload.ok || !command_output.success {
-        let mut message = payload
-            .error
-            .clone()
-            .unwrap_or_else(|| format!("OpenCV 边框裁剪返回 {}", command_output.status_label));
-        if let Some(traceback) = payload
-            .traceback
-            .as_deref()
-            .filter(|value| !value.trim().is_empty())
-        {
-            message.push('\n');
-            message.push_str(traceback.trim());
-        }
-        let _ = std::fs::remove_file(&output);
-        return Err(message);
-    }
-
-    let output_path = if payload.cropped.unwrap_or(false) && output.is_file() {
-        Some(output.clone())
-    } else {
-        payload
-            .output
-            .as_deref()
-            .filter(|value| !value.trim().is_empty())
-            .map(PathBuf::from)
-            .filter(|path| path.is_file())
-    };
-    if let Some(output_path) = output_path {
-        if let Some(crop) = detected_crop_from_payload(&payload) {
-            return Ok(Some(CvCropResult {
-                path: output_path,
-                crop,
-            }));
-        }
-    }
-    let _ = std::fs::remove_file(&output);
-    Ok(None)
-}
-
-fn detected_crop_from_payload(payload: &CvCropPayload) -> Option<DetectedCrop> {
-    let [x, y, width, height] = payload.rect?;
-    let image_width = payload.width?.max(1.0);
-    let image_height = payload.height?.max(1.0);
-    if width <= 1.0 || height <= 1.0 {
-        return None;
-    }
-    Some(DetectedCrop {
-        rect: CropRect {
-            left: (x / image_width).clamp(0.0, 1.0),
-            top: (y / image_height).clamp(0.0, 1.0),
-            right: ((x + width) / image_width).clamp(0.0, 1.0),
-            bottom: ((y + height) / image_height).clamp(0.0, 1.0),
+    DynamicImage::ImageRgb8(cropped)
+        .save_with_format(&output, image::ImageFormat::Png)
+        .map_err(|err| format!("保存自动裁边图片失败：{err}"))?;
+    let image_w = (detected.image_width.max(1)) as f32;
+    let image_h = (detected.image_height.max(1)) as f32;
+    Ok(Some(CvCropResult {
+        path: output,
+        crop: DetectedCrop {
+            rect: CropRect {
+                left: (detected.x as f32 / image_w).clamp(0.0, 1.0),
+                top: (detected.y as f32 / image_h).clamp(0.0, 1.0),
+                right: ((detected.x + detected.width) as f32 / image_w).clamp(0.0, 1.0),
+                bottom: ((detected.y + detected.height) as f32 / image_h).clamp(0.0, 1.0),
+            },
+            confidence: detected.confidence.max(0.0),
+            applied: false,
         },
-        confidence: payload.confidence.unwrap_or(0.0).max(0.0),
-        applied: false,
-    })
-}
-
-fn run_rapidocr_crop_with_timeout(
-    input_path: &Path,
-    output_path: &Path,
-    timeout: Duration,
-) -> Result<RapidOcrCommandOutput, String> {
-    let image = input_path.to_string_lossy().to_string();
-    let output = output_path.to_string_lossy().to_string();
-    let request = RapidOcrCropRequest {
-        command: "crop",
-        image: &image,
-        output: &output,
-    };
-    let slot = rapidocr_process_slot();
-    let mut guard = slot
-        .lock()
-        .map_err(|err| format!("RapidOCR 常驻裁剪进程锁定失败：{err}"))?;
-    if guard.is_none() {
-        *guard = Some(spawn_rapidocr_process()?);
-    }
-    let result = guard
-        .as_mut()
-        .expect("rapidocr process initialized for crop")
-        .request(&request, timeout);
-    if result.is_err() {
-        if let Some(mut process) = guard.take() {
-            process.terminate();
-        }
-    }
-    result
+    }))
 }
 
 #[derive(Clone, Deserialize)]
@@ -2823,288 +2751,83 @@ struct OcrReviewLine {
 }
 
 #[derive(Deserialize)]
-struct RapidOcrPayload {
-    ok: bool,
-    engine: Option<String>,
-    backend: Option<String>,
-    profile: Option<String>,
-    ocr_version: Option<String>,
-    model_type: Option<String>,
-    language: Option<String>,
-    init_ms: Option<f64>,
-    load_ms: Option<f64>,
-    infer_ms: Option<f64>,
-    total_ms: Option<f64>,
-    preprocess_ms: Option<f64>,
-    #[serde(default)]
-    attempts: Vec<serde_json::Value>,
-    tile_count: Option<usize>,
-    #[serde(default)]
+struct WorkerRecognition {
+    engine: String,
+    backend: String,
+    ocr_version: String,
+    profile: String,
+    model_type: String,
+    language: String,
+    init_ms: f64,
+    load_ms: f64,
+    infer_ms: f64,
+    preprocess_ms: f64,
+    total_ms: f64,
+    tile_count: usize,
+    attempts: serde_json::Value,
+    text: String,
     lines: Vec<OcrReviewLine>,
-    #[serde(default)]
     low_confidence_lines: Vec<OcrReviewLine>,
-    text: Option<String>,
-    error: Option<String>,
-    traceback: Option<String>,
 }
 
-struct RapidOcrCommandOutput {
-    status_label: String,
-    success: bool,
-    stdout: Vec<u8>,
-    stderr: Vec<u8>,
+#[derive(Deserialize)]
+struct WorkerWarmup {
+    init_ms: f64,
+    warmup_ms: f64,
+    already_warm: bool,
 }
-
-impl RapidOcrCommandOutput {
-    fn from_output(output: Output) -> Self {
-        Self {
-            status_label: output.status.to_string(),
-            success: output.status.success(),
-            stdout: output.stdout,
-            stderr: output.stderr,
-        }
-    }
-}
-
-#[derive(Serialize)]
-struct RapidOcrStdioRequest<'a> {
-    image: &'a str,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    image_bytes_base64: Option<&'a str>,
-    lang: &'static str,
-    min_score: f32,
-    profile: &'static str,
-    max_side_len: u32,
-}
-
-#[derive(Serialize)]
-struct RapidOcrWarmupRequest {
-    command: &'static str,
-    lang: &'static str,
-    profile: &'static str,
-}
-
-#[derive(Serialize)]
-struct RapidOcrCropRequest<'a> {
-    command: &'static str,
-    image: &'a str,
-    output: &'a str,
-}
-
-struct RapidOcrProcess {
-    last_used: Instant,
-    child: Child,
-    stdin: ChildStdin,
-    stdout: Option<BufReader<ChildStdout>>,
-    stderr_tail: Arc<Mutex<VecDeque<u8>>>,
-    #[cfg(windows)]
-    _job: Option<ChildProcessJob>,
-}
-
-fn rapidocr_process_slot() -> &'static Mutex<Option<RapidOcrProcess>> {
-    static PROCESS: OnceLock<Mutex<Option<RapidOcrProcess>>> = OnceLock::new();
-    PROCESS.get_or_init(|| Mutex::new(None))
-}
-
-impl RapidOcrProcess {
-    fn recognize(
-        &mut self,
-        request: &RapidOcrStdioRequest<'_>,
-        timeout: Duration,
-    ) -> Result<RapidOcrCommandOutput, String> {
-        #[cfg(windows)]
-        let previous_priority = raise_child_priority(&self.child);
-        let result = self.request(request, timeout);
-        #[cfg(windows)]
-        if let Some(previous) = previous_priority {
-            if matches!(self.child.try_wait(), Ok(None)) {
-                restore_child_priority(&self.child, previous);
-            }
-        }
-        result
-    }
-
-    fn request<T: Serialize>(
-        &mut self,
-        request: &T,
-        timeout: Duration,
-    ) -> Result<RapidOcrCommandOutput, String> {
-        self.last_used = Instant::now();
-        serde_json::to_writer(&mut self.stdin, request)
-            .map_err(|err| format!("写入 RapidOCR 常驻请求失败：{err}"))?;
-        self.stdin
-            .write_all(b"\n")
-            .and_then(|_| self.stdin.flush())
-            .map_err(|err| format!("发送 RapidOCR 常驻请求失败：{err}"))?;
-
-        let mut stdout = self
-            .stdout
-            .take()
-            .ok_or_else(|| "RapidOCR 常驻进程 stdout 不可用。".to_string())?;
-        let (tx, rx) = mpsc::channel();
-        std::thread::spawn(move || {
-            let mut line = String::new();
-            let result = stdout.read_line(&mut line).map(|read| (read, line));
-            let _ = tx.send((stdout, result));
-        });
-
-        let (stdout, result) = match rx.recv_timeout(timeout) {
-            Ok(value) => value,
-            Err(mpsc::RecvTimeoutError::Timeout) => {
-                self.terminate();
-                return Err(format!(
-                    "RapidOCR 常驻进程等待响应超时（{} 秒），已重启。stderr: {}",
-                    timeout.as_secs(),
-                    self.stderr_snapshot()
-                ));
-            }
-            Err(mpsc::RecvTimeoutError::Disconnected) => {
-                return Err(format!(
-                    "RapidOCR 常驻进程读取线程退出。stderr: {}",
-                    self.stderr_snapshot()
-                ));
-            }
-        };
-        self.stdout = Some(stdout);
-        self.last_used = Instant::now();
-
-        let (read, line) = result.map_err(|err| {
-            format!(
-                "读取 RapidOCR 常驻响应失败：{err}；stderr: {}",
-                self.stderr_snapshot()
-            )
-        })?;
-        if read == 0 {
-            return Err(format!(
-                "RapidOCR 常驻进程已退出，没有返回结果。stderr: {}",
-                self.stderr_snapshot()
-            ));
-        }
-        Ok(RapidOcrCommandOutput {
-            status_label: "stdio".to_string(),
-            success: true,
-            stdout: line.into_bytes(),
-            stderr: self.stderr_snapshot().into_bytes(),
-        })
-    }
-
-    fn stderr_snapshot(&self) -> String {
-        let Ok(tail) = self.stderr_tail.lock() else {
-            return "<stderr buffer unavailable>".to_string();
-        };
-        let bytes = tail.iter().copied().collect::<Vec<_>>();
-        String::from_utf8_lossy(&bytes).trim().to_string()
-    }
-
-    fn terminate(&mut self) {
-        let pid = self.child.id();
-        #[cfg(windows)]
-        if let Some(job) = &self._job {
-            job.terminate();
-        }
-        let _ = self.child.kill();
-        let _ = self.child.wait();
-        let _ = ACTIVE_RAPIDOCR_PID.compare_exchange(pid, 0, Ordering::SeqCst, Ordering::Relaxed);
-    }
-}
-
-#[cfg(windows)]
-fn raise_child_priority(child: &Child) -> Option<u32> {
-    use windows_sys::Win32::System::Threading::{
-        GetPriorityClass, SetPriorityClass, ABOVE_NORMAL_PRIORITY_CLASS,
-        BELOW_NORMAL_PRIORITY_CLASS, IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
-    };
-    let handle = child.as_raw_handle() as isize;
-    if handle == 0 {
-        return None;
-    }
-    let previous = unsafe { GetPriorityClass(handle) };
-    if matches!(
-        previous,
-        IDLE_PRIORITY_CLASS | BELOW_NORMAL_PRIORITY_CLASS | NORMAL_PRIORITY_CLASS
-    ) && unsafe { SetPriorityClass(handle, ABOVE_NORMAL_PRIORITY_CLASS) } != 0
-    {
-        Some(previous)
-    } else {
-        None
-    }
-}
-
-#[cfg(windows)]
-fn restore_child_priority(child: &Child, previous: u32) {
-    use windows_sys::Win32::System::Threading::SetPriorityClass;
-    let handle = child.as_raw_handle() as isize;
-    if handle != 0 {
-        unsafe { SetPriorityClass(handle, previous) };
-    }
-}
-
-#[cfg(windows)]
-fn terminate_active_rapidocr_process() {
-    use windows_sys::Win32::Foundation::CloseHandle;
-    use windows_sys::Win32::System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE};
-
-    let pid = ACTIVE_RAPIDOCR_PID.swap(0, Ordering::SeqCst);
-    if pid == 0 {
-        return;
-    }
-    unsafe {
-        let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
-        if handle != 0 {
-            let _ = TerminateProcess(handle, 1223);
-            CloseHandle(handle);
-        }
-    }
-}
-
-#[cfg(not(windows))]
-fn terminate_active_rapidocr_process() {}
 
 fn recognize_image_with_rapidocr(
     path: &Path,
-    image_bytes_base64: Option<&str>,
     language: OcrLanguageMode,
     profile: OcrSpeedProfile,
+    cancel: &AtomicBool,
 ) -> Result<OcrTextResult, String> {
+    if cancel.load(Ordering::Relaxed) {
+        return Err(CANCELLED.to_string());
+    }
+    let image_path = path
+        .to_str()
+        .ok_or_else(|| "OCR 图片路径不是有效的 Unicode。".to_string())?;
     let started = Instant::now();
     runtime_log::log_ocr(
         runtime_log::RuntimeLogLevel::Basic,
         "rapidocr_start",
         format!(
-            "image={} memory_image={} language={} profile={} max_side_len={} timeout_secs={}",
+            "image={} language={} profile={} max_side_len={} mode=native_worker",
             runtime_log::path_for_log(path),
-            if image_bytes_base64.is_some() { 1 } else { 0 },
             language.rapidocr_lang(),
             profile.as_config(),
             profile.max_side_len(),
-            ocr_request_timeout(path, profile, false).as_secs()
         ),
     );
-    let output = match run_rapidocr_command_with_timeout(
-        path,
-        image_bytes_base64,
-        language,
-        profile,
-        ocr_request_timeout(path, profile, false),
-    ) {
-        Ok(output) => {
-            runtime_log::log_ocr(
-                runtime_log::RuntimeLogLevel::Basic,
-                "rapidocr_exit",
-                format!(
-                    "status={} elapsed_ms={} stdout_bytes={} stderr_bytes={}",
-                    output.status_label,
-                    started.elapsed().as_millis(),
-                    output.stdout.len(),
-                    output.stderr.len()
-                ),
-            );
-            output
-        }
+
+    let mut timeout_seconds = match profile {
+        OcrSpeedProfile::Fast => 45,
+        OcrSpeedProfile::Balanced => 75,
+        OcrSpeedProfile::Accurate => 105,
+    };
+    if let Ok((width, height)) = image::image_dimensions(path) {
+        timeout_seconds += (u64::from(width) * u64::from(height) / 1_000_000).min(15);
+    }
+    let response = OCR_WORKER.request::<WorkerRecognition>(
+        &serde_json::json!({
+            "image": image_path,
+            "lang": language.rapidocr_lang(),
+            "profile": profile.as_config(),
+            "max_side_len": profile.max_side_len(),
+        }),
+        cancel,
+        Duration::from_secs(timeout_seconds),
+        !rapidocr_persistent_disabled(),
+    );
+
+    let payload = match response {
+        Ok(payload) => payload,
         Err(err) => {
             runtime_log::log_ocr(
                 runtime_log::RuntimeLogLevel::Error,
-                "rapidocr_exit",
+                "rapidocr_result",
                 format!(
                     "status=failed elapsed_ms={} reason={}",
                     started.elapsed().as_millis(),
@@ -3114,79 +2837,6 @@ fn recognize_image_with_rapidocr(
             return Err(err);
         }
     };
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-    let stdout = stdout.trim();
-    if stdout.is_empty() {
-        let message = if stderr.is_empty() {
-            format!("RapidOCR 没有返回 JSON，进程状态：{}", output.status_label)
-        } else {
-            format!("RapidOCR 没有返回 JSON：{stderr}")
-        };
-        runtime_log::log_ocr(
-            runtime_log::RuntimeLogLevel::Error,
-            "rapidocr_result",
-            format!(
-                "status=failed elapsed_ms={} reason={}",
-                started.elapsed().as_millis(),
-                log_error_detail(&message)
-            ),
-        );
-        return Err(message);
-    }
-
-    let payload: RapidOcrPayload = match serde_json::from_str(stdout) {
-        Ok(payload) => payload,
-        Err(err) => {
-            let message = if stderr.is_empty() {
-                format!("解析 RapidOCR 输出失败：{err}")
-            } else {
-                format!("解析 RapidOCR 输出失败：{err}；stderr：{stderr}")
-            };
-            runtime_log::log_ocr(
-                runtime_log::RuntimeLogLevel::Error,
-                "rapidocr_result",
-                format!(
-                    "status=parse_failed elapsed_ms={} reason={}",
-                    started.elapsed().as_millis(),
-                    log_error_detail(&message)
-                ),
-            );
-            return Err(message);
-        }
-    };
-
-    if !payload.ok || !output.success {
-        let mut message = payload
-            .error
-            .clone()
-            .unwrap_or_else(|| format!("RapidOCR 返回 {}", output.status_label));
-        if message.trim().is_empty() {
-            message = format!("RapidOCR 返回 {}", output.status_label);
-        }
-        if let Some(traceback) = payload
-            .traceback
-            .as_deref()
-            .filter(|value| !value.trim().is_empty())
-        {
-            message.push('\n');
-            message.push_str(traceback.trim());
-        }
-        if !stderr.is_empty() {
-            message.push_str("\nstderr: ");
-            message.push_str(&stderr);
-        }
-        runtime_log::log_ocr(
-            runtime_log::RuntimeLogLevel::Error,
-            "rapidocr_result",
-            format!(
-                "status=failed elapsed_ms={} reason={}",
-                started.elapsed().as_millis(),
-                log_error_detail(&message)
-            ),
-        );
-        return Err(message);
-    }
 
     let engine = rapidocr_engine_label(&payload);
     runtime_log::log_ocr(
@@ -3194,26 +2844,22 @@ fn recognize_image_with_rapidocr(
         "rapidocr_attempts",
         format!(
             "tiles={} attempts={}",
-            payload.tile_count.unwrap_or(1),
+            payload.tile_count,
             serde_json::to_string(&payload.attempts).unwrap_or_default()
         ),
     );
-    let text = payload.text.unwrap_or_default().replace("\r\n", "\n");
+    let text = payload.text.replace("\r\n", "\n");
     runtime_log::log_ocr(
         runtime_log::RuntimeLogLevel::Basic,
         "rapidocr_result",
         format!(
-            "status=ok elapsed_ms={} init_ms={} load_ms={} infer_ms={} preprocess_ms={} worker_total_ms={} transport_overhead_ms={} chars={} lines={} engine={}",
+            "status=ok elapsed_ms={} init_ms={} load_ms={} infer_ms={} preprocess_ms={} worker_total_ms={} chars={} lines={} engine={}",
             started.elapsed().as_millis(),
-            payload.init_ms.unwrap_or_default(),
-            payload.load_ms.unwrap_or_default(),
-            payload.infer_ms.unwrap_or_default(),
-            payload.preprocess_ms.unwrap_or_default(),
-            payload.total_ms.unwrap_or_default(),
-            (started.elapsed().as_secs_f64() * 1000.0
-                - payload.total_ms.unwrap_or_else(|| payload.init_ms.unwrap_or_default()
-                    + payload.load_ms.unwrap_or_default() + payload.infer_ms.unwrap_or_default()))
-                .max(0.0),
+            payload.init_ms,
+            payload.load_ms,
+            payload.infer_ms,
+            payload.preprocess_ms,
+            payload.total_ms,
             text.chars().count(),
             text.lines().filter(|line| !line.trim().is_empty()).count(),
             engine
@@ -3242,101 +2888,28 @@ fn log_error_detail(value: &str) -> String {
     out
 }
 
-fn ocr_request_timeout(path: &Path, profile: OcrSpeedProfile, cold_start: bool) -> Duration {
-    // Worker budgets are 30/60/90 seconds, checked between native calls.
-    // Allow decode/transport and one in-flight call, then kill a stuck worker.
-    let mut seconds = match profile {
-        OcrSpeedProfile::Fast => RAPIDOCR_HOT_TIMEOUT.as_secs() + 15,
-        OcrSpeedProfile::Balanced => 75,
-        OcrSpeedProfile::Accurate => 105,
-    };
-    if let Ok((width, height)) = image::image_dimensions(path) {
-        let megapixels = u64::from(width) * u64::from(height) / 1_000_000;
-        seconds += megapixels.min(15);
-    }
-    if cold_start {
-        seconds = seconds.max(RAPIDOCR_COLD_TIMEOUT.as_secs());
-    }
-    Duration::from_secs(seconds)
-}
-
-fn run_rapidocr_command_with_timeout(
-    image_path: &Path,
-    image_bytes_base64: Option<&str>,
-    language: OcrLanguageMode,
-    profile: OcrSpeedProfile,
-    timeout: Duration,
-) -> Result<RapidOcrCommandOutput, String> {
-    let started = Instant::now();
-    let timeout = timeout.max(ocr_request_timeout(image_path, profile, true));
-    if rapidocr_persistent_disabled() {
-        shutdown_rapidocr_process();
-        return run_rapidocr_oneshot_command_with_timeout(image_path, language, profile, timeout)
-            .map(RapidOcrCommandOutput::from_output);
-    }
-
-    match run_rapidocr_persistent_command_with_timeout(
-        image_path,
-        image_bytes_base64,
-        language,
-        profile,
-        timeout,
-    ) {
-        Ok(output) => Ok(output),
-        Err(err) => {
-            if err.contains("超时") || err.contains("已取消") {
-                return Err(err);
-            }
-            runtime_log::log_ocr(
-                runtime_log::RuntimeLogLevel::Basic,
-                "rapidocr_worker",
-                format!(
-                    "status=fallback mode=oneshot reason={}",
-                    log_error_detail(&err)
-                ),
-            );
-            run_rapidocr_oneshot_command_with_timeout(
-                image_path,
-                language,
-                profile,
-                remaining_ocr_timeout(started, timeout)?,
-            )
-            .map(RapidOcrCommandOutput::from_output)
-        }
-    }
-}
-
-fn remaining_ocr_timeout(started: Instant, timeout: Duration) -> Result<Duration, String> {
-    timeout
-        .checked_sub(started.elapsed())
-        .filter(|remaining| !remaining.is_zero())
-        .ok_or_else(|| "OCR 总处理时间超时，请缩小选区后重试。".to_string())
-}
-
-fn shutdown_rapidocr_process() {
-    let Ok(mut guard) = rapidocr_process_slot().lock() else {
-        return;
-    };
-    if let Some(mut process) = guard.take() {
-        process.terminate();
-    }
-}
-
 fn start_rapidocr_prewarm(language: OcrLanguageMode, profile: OcrSpeedProfile) {
     if rapidocr_persistent_disabled() {
         return;
     }
     std::thread::spawn(move || {
         let started = Instant::now();
-        let result = run_rapidocr_warmup(language, profile);
+        let result = OCR_WORKER.request::<WorkerWarmup>(
+            &serde_json::json!({"command": "warmup", "profile": profile.as_config()}),
+            &AtomicBool::new(false),
+            Duration::from_secs(30),
+            true,
+        );
         match result {
-            Ok(output) => runtime_log::log_ocr(
+            Ok(resp) => runtime_log::log_ocr(
                 runtime_log::RuntimeLogLevel::Basic,
                 "rapidocr_warmup",
                 format!(
-                    "status={} elapsed_ms={} profile={} language={}",
-                    output.status_label,
+                    "status=ok elapsed_ms={} init_ms={} warmup_ms={} already_warm={} profile={} language={}",
                     started.elapsed().as_millis(),
+                    resp.init_ms,
+                    resp.warmup_ms,
+                    if resp.already_warm { 1 } else { 0 },
                     profile.as_config(),
                     language.rapidocr_lang()
                 ),
@@ -3355,223 +2928,6 @@ fn start_rapidocr_prewarm(language: OcrLanguageMode, profile: OcrSpeedProfile) {
     });
 }
 
-fn run_rapidocr_warmup(
-    language: OcrLanguageMode,
-    profile: OcrSpeedProfile,
-) -> Result<RapidOcrCommandOutput, String> {
-    let request = RapidOcrWarmupRequest {
-        command: "warmup",
-        lang: language.rapidocr_lang(),
-        profile: profile.as_config(),
-    };
-    let slot = rapidocr_process_slot();
-    let mut guard = slot
-        .lock()
-        .map_err(|err| format!("RapidOCR 预热进程锁定失败：{err}"))?;
-    if guard.is_none() {
-        *guard = Some(spawn_rapidocr_process()?);
-    }
-    let result = guard
-        .as_mut()
-        .expect("rapidocr process initialized for warmup")
-        .request(&request, RAPIDOCR_COLD_TIMEOUT)
-        .and_then(|output| {
-            let payload: serde_json::Value = serde_json::from_slice(&output.stdout)
-                .map_err(|err| format!("解析 RapidOCR 预热响应失败：{err}"))?;
-            if payload.get("ok").and_then(serde_json::Value::as_bool) == Some(true) {
-                return Ok(output);
-            }
-            Err(payload
-                .get("error")
-                .and_then(serde_json::Value::as_str)
-                .map(|message| format!("RapidOCR 预热失败：{message}"))
-                .unwrap_or_else(|| "RapidOCR 预热返回失败状态。".to_string()))
-        });
-    if result.is_err() {
-        if let Some(mut process) = guard.take() {
-            process.terminate();
-        }
-    }
-    result
-}
-
-fn run_rapidocr_persistent_command_with_timeout(
-    image_path: &Path,
-    image_bytes_base64: Option<&str>,
-    language: OcrLanguageMode,
-    profile: OcrSpeedProfile,
-    timeout: Duration,
-) -> Result<RapidOcrCommandOutput, String> {
-    let started = Instant::now();
-    let image = image_path.to_string_lossy().to_string();
-    let request = RapidOcrStdioRequest {
-        image: &image,
-        image_bytes_base64,
-        lang: language.rapidocr_lang(),
-        min_score: 0.5,
-        profile: profile.as_config(),
-        max_side_len: profile.max_side_len(),
-    };
-    let slot = rapidocr_process_slot();
-    let mut guard = slot
-        .lock()
-        .map_err(|err| format!("RapidOCR 常驻进程锁定失败：{err}"))?;
-
-    let cold_start = guard.is_none();
-    if cold_start {
-        *guard = Some(spawn_rapidocr_process()?);
-    }
-
-    let timeout = ocr_request_timeout(image_path, profile, cold_start).max(timeout);
-
-    let first = guard
-        .as_mut()
-        .expect("rapidocr process initialized")
-        .recognize(&request, remaining_ocr_timeout(started, timeout)?);
-    match first {
-        Ok(output) => Ok(output),
-        Err(first_err) => {
-            let was_cancelled = ACTIVE_RAPIDOCR_PID.load(Ordering::SeqCst) == 0;
-            if let Some(mut process) = guard.take() {
-                process.terminate();
-            }
-            if first_err.contains("超时") {
-                return Err(first_err);
-            }
-            if was_cancelled {
-                return Err("OCR 任务已取消。".to_string());
-            }
-            *guard = Some(spawn_rapidocr_process()?);
-            guard
-                .as_mut()
-                .expect("rapidocr process restarted")
-                .recognize(&request, remaining_ocr_timeout(started, timeout)?)
-                .map_err(|second_err| {
-                    format!("RapidOCR 常驻进程失败：{first_err}；重启后仍失败：{second_err}")
-                })
-        }
-    }
-}
-
-fn spawn_rapidocr_process() -> Result<RapidOcrProcess, String> {
-    let rapidocr_root =
-        rapidocr_paths::rapidocr_root().ok_or_else(rapidocr_paths::missing_root_message)?;
-    rapidocr_paths::validate_rapidocr_models_cached(&rapidocr_root)?;
-    let helper = rapidocr_paths::ocr_helper_path()
-        .ok_or_else(|| "RapidOCR helper is unavailable: expected .\\tools\\kaixin_ocr_engine.py inside the installed program directory.".to_string())?;
-    let python = rapidocr_paths::python_runtime(Some(&rapidocr_root))?;
-    let mut command = Command::new(&python.executable);
-    rapidocr_paths::apply_python_runtime_env(&mut command, &python);
-    #[cfg(windows)]
-    {
-        command.creation_flags(CREATE_NO_WINDOW);
-    }
-    command
-        .arg(helper)
-        .arg("--stdio")
-        .arg("--rapidocr-root")
-        .arg(&rapidocr_root)
-        .arg("--provider")
-        .arg("cpu")
-        .env("PYTHONUTF8", "1")
-        .env("PYTHONIOENCODING", "utf-8")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .stdin(Stdio::piped());
-
-    #[cfg(windows)]
-    let job = ChildProcessJob::new();
-    let mut child = command
-        .spawn()
-        .map_err(|e| format!("启动 RapidOCR 常驻进程失败：{e}"))?;
-    ACTIVE_RAPIDOCR_PID.store(child.id(), Ordering::SeqCst);
-    #[cfg(windows)]
-    if let Some(job) = &job {
-        job.assign(&child);
-    }
-    let stdin = child
-        .stdin
-        .take()
-        .ok_or_else(|| "RapidOCR 常驻进程 stdin 不可用。".to_string())?;
-    let stdout = child
-        .stdout
-        .take()
-        .map(BufReader::new)
-        .ok_or_else(|| "RapidOCR 常驻进程 stdout 不可用。".to_string())?;
-    let stderr = child
-        .stderr
-        .take()
-        .ok_or_else(|| "RapidOCR 常驻进程 stderr 不可用。".to_string())?;
-    let stderr_tail = Arc::new(Mutex::new(VecDeque::with_capacity(RAPIDOCR_STDERR_LIMIT)));
-    let stderr_tail_writer = Arc::clone(&stderr_tail);
-    std::thread::spawn(move || {
-        let mut reader = BufReader::new(stderr);
-        let mut chunk = [0_u8; 1024];
-        while let Ok(read) = reader.read(&mut chunk) {
-            if read == 0 {
-                break;
-            }
-            let Ok(mut tail) = stderr_tail_writer.lock() else {
-                break;
-            };
-            for byte in &chunk[..read] {
-                if tail.len() == RAPIDOCR_STDERR_LIMIT {
-                    tail.pop_front();
-                }
-                tail.push_back(*byte);
-            }
-        }
-    });
-    Ok(RapidOcrProcess {
-        last_used: Instant::now(),
-        child,
-        stdin,
-        stdout: Some(stdout),
-        stderr_tail,
-        #[cfg(windows)]
-        _job: job,
-    })
-}
-
-fn run_rapidocr_oneshot_command_with_timeout(
-    image_path: &Path,
-    language: OcrLanguageMode,
-    profile: OcrSpeedProfile,
-    timeout: Duration,
-) -> Result<Output, String> {
-    let rapidocr_root =
-        rapidocr_paths::rapidocr_root().ok_or_else(rapidocr_paths::missing_root_message)?;
-    rapidocr_paths::validate_rapidocr_models_cached(&rapidocr_root)?;
-    let helper = rapidocr_paths::ocr_helper_path()
-        .ok_or_else(|| "RapidOCR helper is unavailable: expected .\\tools\\kaixin_ocr_engine.py inside the installed program directory.".to_string())?;
-    let python = rapidocr_paths::python_runtime(Some(&rapidocr_root))?;
-    let mut command = Command::new(&python.executable);
-    rapidocr_paths::apply_python_runtime_env(&mut command, &python);
-    #[cfg(windows)]
-    {
-        use windows_sys::Win32::System::Threading::ABOVE_NORMAL_PRIORITY_CLASS;
-        command.creation_flags(CREATE_NO_WINDOW | ABOVE_NORMAL_PRIORITY_CLASS);
-    }
-    command
-        .arg(helper)
-        .arg(image_path)
-        .arg("--rapidocr-root")
-        .arg(&rapidocr_root)
-        .arg("--lang")
-        .arg(language.rapidocr_lang())
-        .arg("--profile")
-        .arg(profile.as_config())
-        .arg("--max-side-len")
-        .arg(profile.max_side_len().to_string())
-        .arg("--provider")
-        .arg("cpu")
-        .env("PYTHONUTF8", "1")
-        .env("PYTHONIOENCODING", "utf-8")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    run_command_with_timeout(command, timeout, "RapidOCR")
-}
-
 fn rapidocr_persistent_disabled() -> bool {
     if !tool_prefs::ocr_keep_alive_enabled() {
         return true;
@@ -3586,139 +2942,19 @@ fn rapidocr_persistent_disabled() -> bool {
         .unwrap_or(false)
 }
 
-fn rapidocr_engine_label(payload: &RapidOcrPayload) -> String {
-    let mut parts = vec![payload.engine.as_deref().unwrap_or("RapidOCR").to_string()];
-    for value in [
-        payload.backend.as_deref(),
-        payload.ocr_version.as_deref(),
-        payload.profile.as_deref(),
-        payload.model_type.as_deref(),
-        payload.language.as_deref(),
-    ]
-    .into_iter()
-    .flatten()
-    {
-        if !value.trim().is_empty() {
-            parts.push(value.to_string());
-        }
-    }
-    if let Some(ms) = payload.init_ms {
-        parts.push(format!("初始化 {:.0} ms", ms));
-    }
-    if let Some(ms) = payload.load_ms {
-        parts.push(format!("读图 {:.0} ms", ms));
-    }
-    if let Some(ms) = payload.infer_ms {
-        parts.push(format!("识别 {:.0} ms", ms));
-    }
+fn rapidocr_engine_label(payload: &WorkerRecognition) -> String {
+    let mut parts = vec![
+        payload.engine.to_string(),
+        payload.backend.to_string(),
+        payload.ocr_version.to_string(),
+        payload.profile.to_string(),
+        payload.model_type.clone(),
+        payload.language.clone(),
+    ];
+    parts.push(format!("初始化 {:.0} ms", payload.init_ms));
+    parts.push(format!("读图 {:.0} ms", payload.load_ms));
+    parts.push(format!("识别 {:.0} ms", payload.infer_ms));
     parts.join(" / ")
-}
-
-#[cfg(windows)]
-struct ChildProcessJob {
-    handle: windows_sys::Win32::Foundation::HANDLE,
-}
-
-#[cfg(windows)]
-impl ChildProcessJob {
-    fn new() -> Option<Self> {
-        use windows_sys::Win32::Foundation::CloseHandle;
-        use windows_sys::Win32::System::JobObjects::{
-            CreateJobObjectW, JobObjectExtendedLimitInformation, SetInformationJobObject,
-            JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
-        };
-
-        let handle = unsafe { CreateJobObjectW(std::ptr::null(), std::ptr::null()) };
-        if handle == 0 {
-            return None;
-        }
-
-        let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = unsafe { std::mem::zeroed() };
-        info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-        let ok = unsafe {
-            SetInformationJobObject(
-                handle,
-                JobObjectExtendedLimitInformation,
-                (&info as *const JOBOBJECT_EXTENDED_LIMIT_INFORMATION).cast(),
-                std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
-            )
-        };
-        if ok == 0 {
-            unsafe {
-                CloseHandle(handle);
-            }
-            return None;
-        }
-
-        Some(Self { handle })
-    }
-
-    fn assign(&self, child: &std::process::Child) {
-        use windows_sys::Win32::System::JobObjects::AssignProcessToJobObject;
-        let process = child.as_raw_handle() as windows_sys::Win32::Foundation::HANDLE;
-        if process != 0 {
-            unsafe {
-                let _ = AssignProcessToJobObject(self.handle, process);
-            }
-        }
-    }
-
-    fn terminate(&self) {
-        use windows_sys::Win32::System::JobObjects::TerminateJobObject;
-        unsafe {
-            let _ = TerminateJobObject(self.handle, 1);
-        }
-    }
-}
-
-#[cfg(windows)]
-impl Drop for ChildProcessJob {
-    fn drop(&mut self) {
-        use windows_sys::Win32::Foundation::CloseHandle;
-        if self.handle != 0 {
-            unsafe {
-                CloseHandle(self.handle);
-            }
-            self.handle = 0;
-        }
-    }
-}
-
-fn run_command_with_timeout(
-    mut command: Command,
-    timeout: Duration,
-    process_label: &str,
-) -> Result<Output, String> {
-    #[cfg(windows)]
-    let job = ChildProcessJob::new();
-
-    let mut child = command
-        .spawn()
-        .map_err(|e| format!("启动 {process_label} 失败：{e}"))?;
-    #[cfg(windows)]
-    if let Some(job) = &job {
-        job.assign(&child);
-    }
-
-    let deadline = Instant::now() + timeout;
-    loop {
-        if child.try_wait().map_err(|e| e.to_string())?.is_some() {
-            return child.wait_with_output().map_err(|e| e.to_string());
-        }
-        if Instant::now() >= deadline {
-            #[cfg(windows)]
-            if let Some(job) = &job {
-                job.terminate();
-            }
-            let _ = child.kill();
-            let _ = child.wait();
-            return Err(format!(
-                "{process_label} 超时（{} 秒），请重试。",
-                timeout.as_secs()
-            ));
-        }
-        std::thread::sleep(Duration::from_millis(80));
-    }
 }
 
 #[cfg(windows)]
@@ -3928,6 +3164,10 @@ fn wide(text: &str) -> Vec<u16> {
 
 fn main() -> eframe::Result<()> {
     windows_security::apply_process_hardening();
+    let cli_args: Vec<String> = std::env::args().skip(1).collect();
+    if cli_args.first().map(String::as_str) == Some("--ocr-worker") {
+        std::process::exit(ocr_engine::run_worker_cli(&cli_args[1..]));
+    }
     let startup_request = ocr_window_request_from_args();
     runtime_log::log_ocr(
         runtime_log::RuntimeLogLevel::Basic,
@@ -3994,9 +3234,7 @@ fn main() -> eframe::Result<()> {
 
     let target_hwnd = startup_request.target_hwnd;
     let translate_after_ocr = startup_request.translate;
-    // Start Python, load the models and warm the active profile while the user
-    // is selecting/capturing the screen region. The recognition worker shares
-    // the same process slot and will simply wait if capture completes first.
+    // Warm the active OCR profile while the user selects a screen region.
     if startup_request.image.is_none() {
         start_rapidocr_prewarm(
             OcrLanguageMode::from_config(&tool_prefs::ocr_language()),

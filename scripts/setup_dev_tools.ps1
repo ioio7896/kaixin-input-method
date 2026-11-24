@@ -2,8 +2,15 @@ param()
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $toolsDir = Join-Path $repo 'dist\dev-tools'
+$pyprojectPath = Join-Path $repo 'pyproject.toml'
 New-Item -ItemType Directory -Force -Path $toolsDir | Out-Null
-& python -m pip install --disable-pip-version-check --target (Join-Path $toolsDir 'python') -r (Join-Path $PSScriptRoot 'requirements-dev.txt')
+$devDeps = @(
+    & python -c "import pathlib, sys, tomllib; data = tomllib.loads(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8')); print('\n'.join(data['project']['optional-dependencies']['dev']))" $pyprojectPath
+)
+if ($LASTEXITCODE -ne 0 -or $devDeps.Count -eq 0) {
+    throw 'Unable to read pinned Python development tools from pyproject.toml'
+}
+& python -m pip install --disable-pip-version-check --target (Join-Path $toolsDir 'python') @devDeps
 if ($LASTEXITCODE -ne 0) { throw 'Unable to install Python development tools' }
 $moduleDir = Join-Path $toolsDir 'PSScriptAnalyzer\1.24.0'
 if (-not (Test-Path -LiteralPath (Join-Path $moduleDir 'PSScriptAnalyzer.psd1'))) {

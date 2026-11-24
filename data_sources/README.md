@@ -37,7 +37,7 @@
 - 许可证：Apache License 2.0
 - Copyright 2022 Robyn Speer
 - 本项目处理：按英文频率顺序选取常用词，过滤非 ASCII、单字母、重复及不适合主动候选的粗俗词，并补充少量电脑/开发常用词，生成 `lexicon/en/kaixin_common_english.txt`。
-- 重建：`python -m pip install -r scripts/requirements-lexicon.txt`，然后运行 `python scripts/generate_common_english.py`。
+- 重建：从项目根目录运行 `python -m pip install ".[lexicon]"`，然后运行 `python scripts/generate_common_english.py`。
 
 ## 自维护数据
 

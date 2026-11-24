@@ -6,7 +6,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$modelDir = Join-Path $repoRoot 'RapidOCRLite\python\rapidocr\models'
+$modelDir = Join-Path $repoRoot 'RapidOCRLite\models'
 $models = @(
     @{
         Name = 'PP-OCRv6_det_medium.onnx'

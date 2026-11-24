@@ -2,7 +2,7 @@
 
 本文件说明开心输入法软件中集成或随包分发的第三方组件、模型和外部数据。开心输入法的自研范围包括拼音输入引擎、候选排序与学习逻辑、Windows TSF 前端、候选窗口、设置页、托盘工具、剪贴板管理、截图/OCR/翻译交互集成、安装部署和本地隐私数据管理。
 
-OCR 引擎、OCR 模型、Python 运行时依赖、系统 API、外部词库和第三方手写数据不属于开心输入法自研源程序成果。本文件不改变任何第三方许可条款；使用、复制、修改和再分发相关组件时，应遵守其原始许可证。翻译由用户另行安装的 WinTranslator 提供，不随开心输入法分发。
+OCR 引擎、OCR 模型、系统 API、外部词库和第三方手写数据不属于开心输入法自研源程序成果。本文件不改变任何第三方许可条款；使用、复制、修改和再分发相关组件时，应遵守其原始许可证。翻译由用户另行安装的 WinTranslator 提供，不随开心输入法分发。
 
 ## 第三方作者权利保护方式
 
@@ -29,19 +29,12 @@ OCR 引擎、OCR 模型、Python 运行时依赖、系统 API、外部词库和�
 
 ## OCR 功能
 
-OCR 功能集成第三方开源项目 RapidOCR 及相关本地 OCR 模型。开心输入法自研部分包括截图交互、窗口界面、参数配置、OCR 结果处理、历史记录、剪贴板联动、输入法集成、安装部署和隐私数据管理；不主张 RapidOCR 工程源码、OCR 模型及 Python 运行时依赖的著作权。
+OCR 功能集成第三方开源项目 RapidOCR 及相关本地 OCR 模型。开心输入法自研部分包括截图交互、窗口界面、参数配置、OCR 结果处理、历史记录、剪贴板联动、输入法集成、安装部署和隐私数据管理；不主张 RapidOCR 工程源码及 OCR 模型的著作权。
 
 | 组件 | 用途 | 许可/来源说明 |
 | --- | --- | --- |
 | RapidOCRLite 5.0.0a15 (`RapidOCRLite/`) | 本地 PP-OCRv6 引擎 | Apache License 2.0；保留许可证；针对 Windows UTF-8 路径修改，补丁见 `scripts/rapidocrlite-windows-utf8.patch` |
 | PP-OCRv6 ONNX 模型 | 屏幕文字识别 | RapidAI/RapidOCR v3.9.0 模型仓库声明 Apache-2.0；固定 URL、模型卡和哈希见 `docs/licenses/OCR_MODELS.md`；不作为开心输入法自研成果主张 |
-
-| opencv-python 4.13.0.92 | 图像处理 | Apache License 2.0 |
-| numpy 2.5.0 | 数值计算 | 第三方 Python 依赖，发布前保留对应许可证记录 |
-| Pillow 12.2.0 | 图像读写 | 第三方 Python 依赖，发布前保留对应许可证记录 |
-| pyclipper 1.4.0 | 几何裁剪 | MIT License |
-| PyYAML 6.0.3 | 配置解析 | MIT License |
-| Shapely 2.1.2 | 几何处理 | BSD 3-Clause License |
 
 Rust GUI 依赖 `epaint_default_fonts` 随程序嵌入 Ubuntu Font Family、Noto Emoji、
 Hack 和 emoji icon font。依赖许可证报告覆盖 MIT/Apache-2.0、SIL OFL-1.1 和
@@ -86,7 +79,6 @@ Ubuntu Font Licence 1.0；后者原文保存在
 - OCR 模型的固定 URL、哈希及模型仓库 Apache-2.0 声明已经记录；正式发布时仍需保留
   模型卡、许可证和未修改说明。
 - 生成 Rust 依赖许可证报告，例如通过 `cargo-about` 或 `cargo-deny`。
-- 生成 Python 依赖许可证报告，覆盖 `.python-packages` 和 `.python-runtime` 中随包分发的依赖。
 - 保留 `data_sources/pinyin/LICENSE` 和 `data_sources/README.md`。
 - 确认 `pinyin-ime/data/s2t_chars.sqlite` 与 `docs/licenses/S2T_SOURCE.md` 中已核验的
   固定哈希一致。

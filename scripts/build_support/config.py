@@ -41,13 +41,7 @@ ARCH_X86 = "x86"
 BUILD_ARCHES = (ARCH_X64, ARCH_X86)
 PACKAGE_HASH_MANIFEST = "package_manifest.sha256"
 COMPONENT_MANIFEST = "component_manifest.ini"
-COMPONENT_PREFIXES = OrderedDict(
-    (
-        ("python_runtime", ".python-runtime/"),
-        ("rapidocr_packages", ".python-packages/"),
-        ("rapidocr_payload", "RapidOCRLite/"),
-    )
-)
+COMPONENT_PREFIXES = OrderedDict((("rapidocr_payload", "RapidOCRLite/"),))
 PREBAKED_LEXICON_MAGIC = b"SRFLX002"
 # Schema 13 preserves each indexed reading's weight and pronunciation class.
 PREBAKED_LEXICON_SCHEMA_VERSION = 14
@@ -63,44 +57,14 @@ REQUIRED_COMMON_ENGLISH_WORDS = frozenset(
 )
 DEFAULT_PERF_MAX_P99_US = 2000
 DEFAULT_PERF_INCREMENTAL_MAX_P99_US = 40000
-PYTHON_RUNTIME = ".python-runtime"
 RAPIDOCR_DIR = "RapidOCRLite"
-RAPIDOCR_VENV = ".venv-rapidocr"
-RAPIDOCR_PACKAGES = ".python-packages"
-RAPIDOCR_HELPER = "kaixin_ocr_engine.py"
-RAPIDOCR_HELPERS = (
-    "kaixin_ocr_engine.py",
-    "kaixin_ocr_policy.py",
-    "kaixin_ocr_engine.cmd",
-    "kaixin_cv_crop.py",
-)
-OPENCV_CROP_HELPER = "kaixin_cv_crop.py"
+RAPIDOCR_DLL_NAME = "rapidocrlite.dll"
 RAPIDOCR_REQUIRED_MODELS = (
     "PP-OCRv6_det_medium.onnx",
     "PP-OCRv6_det_small.onnx",
     "PP-OCRv6_rec_medium.onnx",
     "PP-OCRv6_rec_small.onnx",
     "ppocrv6_dict.txt",
-)
-PYTHON_PACKAGE_EXCLUDED_DIR_NAMES = frozenset(
-    {
-        "__pycache__",
-        ".pytest_cache",
-        ".mypy_cache",
-        ".ruff_cache",
-        "test",
-        "tests",
-        "testing",
-        "benchmark",
-        "benchmarks",
-        "example",
-        "examples",
-        "pip",
-        "setuptools",
-    }
-)
-PYTHON_PACKAGE_EXCLUDED_FILE_SUFFIXES = frozenset(
-    {".pyc", ".pyo", ".pdb", ".lib", ".exp", ".h", ".hpp", ".c", ".cpp", ".cxx", ".pxd", ".pyi"}
 )
 RUST_TARGET_BY_ARCH = {
     ARCH_X64: None,

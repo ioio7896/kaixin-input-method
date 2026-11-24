@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2026.1124.1319**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1124.1802**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -211,18 +211,16 @@ kaixin-setup-ocr-<version>-<timestamp>.exe   输入法 + 本地 OCR
 OCR 安装包要求以下内容完整存在于安装目录：
 
 ```text
-RapidOCRLite/
-.python-runtime/
-.python-packages/
-tools/kaixin_ocr_engine.py
-RapidOCRLite/python/rapidocr/models/PP-OCRv6_det_medium.onnx
-RapidOCRLite/python/rapidocr/models/PP-OCRv6_det_small.onnx
-RapidOCRLite/python/rapidocr/models/PP-OCRv6_rec_medium.onnx
-RapidOCRLite/python/rapidocr/models/ppocrv6_dict.txt
+RapidOCRLite/rapidocrlite.dll
+RapidOCRLite/models/PP-OCRv6_det_medium.onnx
+RapidOCRLite/models/PP-OCRv6_det_small.onnx
+RapidOCRLite/models/PP-OCRv6_rec_medium.onnx
+RapidOCRLite/models/PP-OCRv6_rec_small.onnx
+RapidOCRLite/models/ppocrv6_dict.txt
 ```
 
-程序会根据 `package_manifest.sha256` 校验模型哈希。快速档使用 `det_small`，均衡和
-高精度档使用 PP-OCRv6 `det_medium`。
+程序会根据 `package_manifest.sha256` 校验原生库和模型。快速档使用 `det_small` 和 `rec_small`，
+均衡档使用 `det_small` 和 `rec_medium`，高精度档使用 `det_medium` 和 `rec_medium`。
 
 开发环境首次准备或模型缺失时，运行
 `powershell -ExecutionPolicy Bypass -File scripts/fetch_rapidocr_models.ps1` 下载并校验全部必需模型。
@@ -325,7 +323,7 @@ log_level=error
 - Visual Studio C++/MSVC 构建工具
 - PowerShell
 - Inno Setup 6（生成安装包时）
-- OCR 变体所需的本地 RapidOCR、Python 环境及模型
+- OCR 变体所需的本地 RapidOCRLite 原生库及模型
 
 正式发布统一使用：
 

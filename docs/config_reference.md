@@ -69,7 +69,7 @@ new setting is added or a default changes.
 | `ocr` | `profile` | `balanced` | `fast`, `balanced`, `accurate`; controls maximum OCR image edge | OCR window, prewarm |
 | `ocr` | `language` | `zh` | `zh`, `en`, `mixed`/`auto`; last OCR language, used for prewarm | OCR window, prewarm |
 | `ocr` | `provider` | `auto` | CPU only; legacy provider settings are ignored | OCR window, RapidOCRLite |
-| `ocr` | `keep_alive` | `1` | boolean; keep the Python/RapidOCRLite worker resident while the OCR process runs | OCR |
+| `ocr` | `keep_alive` | `1` | boolean; keep the native RapidOCRLite worker resident while the OCR process runs | OCR |
 | `tools` | `settings_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `tools` | `handwrite_hotkey` | `off` | Windows hotkey or `off` | settings, tray |
 | `tools` | `ocr_hotkey` | `off` | Windows hotkey or `off` | settings, tray |

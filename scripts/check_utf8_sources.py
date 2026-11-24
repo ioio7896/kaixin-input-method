@@ -15,7 +15,7 @@ EXCLUDED_DIR_NAMES = {
     ".pytest_cache",
     ".ruff_cache",
     ".venv",
-    ".venv-rapidocr",
+    "_archived_python_legacy",
     "__pycache__",
     "build",
     "build-codex",

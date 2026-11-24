@@ -10,38 +10,14 @@ import re
 import sys
 from pathlib import Path, PurePosixPath
 
+if __package__:
+    from .build_support.manifests import validate_rapidocr_layout
+else:
+    from build_support.manifests import validate_rapidocr_layout
+
 
 PACKAGE_HASH_MANIFEST = "package_manifest.sha256"
 COMPONENT_MANIFEST = "component_manifest.ini"
-PYTHON_EXCLUDED_DIR_NAMES = {
-    "__pycache__",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
-    "test",
-    "tests",
-    "testing",
-    "benchmark",
-    "benchmarks",
-    "example",
-    "examples",
-    "pip",
-    "setuptools",
-}
-PYTHON_EXCLUDED_FILE_SUFFIXES = {
-    ".pyc",
-    ".pyo",
-    ".pdb",
-    ".lib",
-    ".exp",
-    ".h",
-    ".hpp",
-    ".c",
-    ".cpp",
-    ".cxx",
-    ".pxd",
-    ".pyi",
-}
 REQUIRED_FILES = {
     "srf_ime_setup.exe",
     "srf_ime_engine.exe",
@@ -54,8 +30,6 @@ REQUIRED_FILES = {
 }
 
 COMPONENT_PREFIXES = {
-    "python_runtime": ".python-runtime/",
-    "rapidocr_packages": ".python-packages/",
     "rapidocr_payload": "RapidOCRLite/",
 }
 
@@ -176,45 +150,12 @@ def validate_slim_package_layout(package: Path, errors: list[str]) -> None:
 
     for relative in (
         "srf_ime_translate.exe",
-        ".venv-translate",
         "models/translate",
-        "tools/kaixin_translate_engine.py",
-        "tools/kaixin_translate_engine.cmd",
     ):
         if (package / relative).exists():
             errors.append(f"removed translation runtime is still packaged: {relative}")
 
-    if (package / ".venv-rapidocr").exists():
-        errors.append("staged package still contains the legacy OCR virtual environment")
-
-    python_roots = [
-        package / ".python-runtime",
-        package / ".python-packages",
-        package / "RapidOCRLite" / "python",
-    ]
-    forbidden: list[str] = []
-    for python_root in python_roots:
-        if not python_root.is_dir():
-            continue
-        for path in python_root.rglob("*"):
-            name = path.name.casefold()
-            if path.is_dir() and (
-                name in PYTHON_EXCLUDED_DIR_NAMES
-                or (name.startswith("pip-") and name.endswith(".dist-info"))
-                or (name.startswith("setuptools-") and name.endswith(".dist-info"))
-            ):
-                forbidden.append(path.relative_to(package).as_posix())
-            elif path.is_file() and path.suffix.casefold() in PYTHON_EXCLUDED_FILE_SUFFIXES:
-                forbidden.append(path.relative_to(package).as_posix())
-            if len(forbidden) >= 20:
-                break
-        if len(forbidden) >= 20:
-            break
-    if forbidden:
-        errors.append(
-            "Python runtime contains excluded cache/test/development artifacts: "
-            + ", ".join(forbidden)
-        )
+    errors.extend(validate_rapidocr_layout(package, (package / "srf_ime_ocr.exe").is_file()))
 
 
 def validate_component_manifest(package: Path, errors: list[str]) -> None:

@@ -11,8 +11,8 @@ python scripts/check_open_source_readiness.py --release
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/generate_license_reports.ps1
 ```
 
-生成的依赖报告位于 `docs/licenses/generated/`，默认不提交；正式发行时应把报告复制到
-发行资产和安装包的第三方声明目录中。
+`cargo-about` 生成的 Rust 依赖许可证报告位于 `docs/licenses/generated/rust-dependencies.html`，
+默认不提交。正式发行时应将报告纳入发行资产和安装包的第三方声明目录。
 
 - [OCR 模型](OCR_MODELS.md)
 - [繁简映射数据库](S2T_SOURCE.md)

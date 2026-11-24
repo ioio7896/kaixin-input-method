@@ -11,7 +11,7 @@
 生成命令：
 
 ```powershell
-python -m pip install -r scripts/requirements-lexicon.txt
+python -m pip install ".[lexicon]"
 python scripts/generate_common_english.py
 ```
 

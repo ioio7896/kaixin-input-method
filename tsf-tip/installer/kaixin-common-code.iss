@@ -1,8 +1,6 @@
 var
   ComponentChecksReady: Boolean;
   MaintenanceStarted: Boolean;
-  InstallPythonRuntimeComponent: Boolean;
-  InstallRapidOcrPackagesComponent: Boolean;
   InstallRapidOcrPayloadComponent: Boolean;
 
 function CurrentInstallLogContains(const FileName: string; const Needle: string): Boolean;
@@ -49,8 +47,6 @@ procedure InitializeComponentChecks();
 begin
   if ComponentChecksReady then
     exit;
-  InstallPythonRuntimeComponent := InstalledComponentDiffers('python_runtime', '{#KXComponentPythonRuntime}');
-  InstallRapidOcrPackagesComponent := InstalledComponentDiffers('rapidocr_packages', '{#KXComponentRapidOcrPackages}');
   InstallRapidOcrPayloadComponent := InstalledComponentDiffers('rapidocr_payload', '{#KXComponentRapidOcrPayload}');
   ComponentChecksReady := True;
 end;
@@ -336,4 +332,26 @@ begin
   if (Result <> 0) and not ((Result = 10) and (Pos('--report-setup-status', Params) > 0)) then
     RaiseException(Status + #13#10 + '退出码 ' + IntToStr(Result) + #13#10 +
       '请查看安装目录的 install_machine.log 或桌面用户 %LOCALAPPDATA%\kaixin\install_user.log。');
+end;
+
+procedure LayoutFinishedPage(const Summary: string);
+var
+  RunListHeight: Integer;
+  RunListTop: Integer;
+  AvailableLabelHeight: Integer;
+begin
+  WizardForm.FinishedLabel.Caption := Summary;
+  if WizardForm.RunList.Visible then begin
+    RunListHeight := ScaleY(28);
+    WizardForm.FinishedLabel.AdjustHeight;
+    RunListTop := WizardForm.FinishedLabel.Top + WizardForm.FinishedLabel.Height + ScaleY(8);
+    if RunListTop + RunListHeight > WizardForm.FinishedPage.Height - ScaleY(8) then begin
+      RunListTop := WizardForm.FinishedPage.Height - RunListHeight - ScaleY(8);
+      AvailableLabelHeight := RunListTop - WizardForm.FinishedLabel.Top - ScaleY(8);
+      if AvailableLabelHeight > 0 then
+        WizardForm.FinishedLabel.Height := AvailableLabelHeight;
+    end;
+    WizardForm.RunList.Top := RunListTop;
+    WizardForm.RunList.Height := RunListHeight;
+  end;
 end;

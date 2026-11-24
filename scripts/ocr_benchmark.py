@@ -251,20 +251,33 @@ class Worker:
         batch: int,
         fast_mode: bool | None,
     ) -> None:
-        command = [
-            str(python),
-            "-B",
-            str(helper),
-            "--stdio",
-            "--rapidocr-root",
-            str(root),
-            "--provider",
-            "cpu",
-            "--intra-op-threads",
-            str(threads),
-            "--rec-batch-num",
-            str(batch),
-        ]
+        if helper.suffix.lower() == ".py":
+            command = [
+                str(python),
+                "-B",
+                str(helper),
+                "--stdio",
+                "--rapidocr-root",
+                str(root),
+                "--provider",
+                "cpu",
+                "--intra-op-threads",
+                str(threads),
+                "--rec-batch-num",
+                str(batch),
+            ]
+        else:
+            command = [
+                str(helper),
+                "--ocr-worker",
+                "--stdio",
+                "--rapidocr-root",
+                str(root),
+                "--intra-op-threads",
+                str(threads),
+                "--rec-batch-num",
+                str(batch),
+            ]
         if fast_mode is not None:
             command.append("--fast-mode" if fast_mode else "--no-fast-mode")
         self.log = log.open("w", encoding="utf-8")
@@ -380,7 +393,19 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=ROOT / "dist/ocr-optimization/evaluation")
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--helper", type=Path, default=ROOT / "tools/kaixin_ocr_engine.py")
+    default_worker = next(
+        (
+            p
+            for p in (
+                ROOT / "pinyin-ime/target/release/srf_ime_ocr.exe",
+                ROOT / "pinyin-ime/target/debug/srf_ime_ocr.exe",
+                ROOT / "dist/kaixin-package-ocr/srf_ime_ocr.exe",
+            )
+            if p.is_file()
+        ),
+        ROOT / "pinyin-ime/target/release/srf_ime_ocr.exe",
+    )
+    parser.add_argument("--helper", type=Path, default=default_worker)
     parser.add_argument("--rapidocr-root", type=Path, default=ROOT / "RapidOCRLite")
     parser.add_argument("--python", type=Path, default=Path(sys.executable))
     parser.add_argument("--repeats", type=int, default=2)

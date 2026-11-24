@@ -130,7 +130,7 @@ def build_words() -> list[str]:
     if installed != WORDFREQ_VERSION:
         raise RuntimeError(
             f"wordfreq {WORDFREQ_VERSION} is required, found {installed}; "
-            "install scripts/requirements-lexicon.txt"
+            'run `python -m pip install ".[lexicon]"` from the repository root'
         )
 
     ranked = []

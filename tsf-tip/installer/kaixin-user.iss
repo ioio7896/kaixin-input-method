@@ -13,12 +13,6 @@
 #ifndef KXIncludeOcr
 #define KXIncludeOcr "1"
 #endif
-#ifndef KXComponentPythonRuntime
-#define KXComponentPythonRuntime ""
-#endif
-#ifndef KXComponentRapidOcrPackages
-#define KXComponentRapidOcrPackages ""
-#endif
 #ifndef KXComponentRapidOcrPayload
 #define KXComponentRapidOcrPayload ""
 #endif
@@ -47,7 +41,7 @@ DisableDirPage=yes
 DisableProgramGroupPage=yes
 OutputDir=..\..\dist
 OutputBaseFilename={#KXOutputBaseFilename}
-Compression=lzma2/fast
+Compression=lzma2/max
 SolidCompression=yes
 ArchitecturesAllowed=x64os
 PrivilegesRequired=lowest
@@ -62,33 +56,31 @@ Name: "chinesesimp"; MessagesFile: "ChineseSimplified.isl"
 
 [Files]
 Source: "{#KXPackageDir}\srf_ime_setup.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete
-Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "srf_ime_setup.exe,runtime\*,.python-runtime\*,.python-packages\*,.venv-rapidocr\*,.venv-translate\*,RapidOCRLite\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete solidbreak
+Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "srf_ime_setup.exe,runtime\*,RapidOCRLite\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete solidbreak
 Source: "{#KXPackageDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs uninsrestartdelete solidbreak
-Source: "{#KXPackageDir}\.python-runtime\*"; DestDir: "{app}\.python-runtime"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallPythonRuntime
-Source: "{#KXPackageDir}\.python-packages\*"; DestDir: "{app}\.python-packages"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPackages
 Source: "{#KXPackageDir}\RapidOCRLite\*"; DestDir: "{app}\RapidOCRLite"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPayload
 Source: "{#KXPackageDir}\component_manifest.ini"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete solidbreak
 
 [InstallDelete]
 #include "retired_lexicons.generated.iss"
 Type: filesandordirs; Name: "{app}\ShareX"
-Type: filesandordirs; Name: "{app}\.python-runtime"; Check: ShouldInstallPythonRuntime
-Type: filesandordirs; Name: "{app}\.python-packages"; Check: ShouldInstallRapidOcrPackages
-Type: filesandordirs; Name: "{app}\.venv-rapidocr"
 Type: filesandordirs; Name: "{app}\RapidOCRLite"; Check: ShouldInstallRapidOcrPayload
-Type: filesandordirs; Name: "{app}\.venv-translate"
 Type: filesandordirs; Name: "{app}\models\translate"
 Type: filesandordirs; Name: "{app}\ShareX-Source"
 Type: files; Name: "{group}\开心输入法 OCR.lnk"; Check: not OcrIncluded
 Type: files; Name: "{app}\srf_ime_ocr.exe"; Check: not OcrIncluded
-Type: files; Name: "{app}\tools\kaixin_ocr_engine.py"; Check: not OcrIncluded
-Type: files; Name: "{app}\tools\kaixin_ocr_engine.cmd"; Check: not OcrIncluded
-Type: files; Name: "{app}\tools\kaixin_cv_crop.py"; Check: not OcrIncluded
-Type: filesandordirs; Name: "{app}\.python-runtime"; Check: not OcrIncluded
-Type: filesandordirs; Name: "{app}\.python-packages"; Check: not OcrIncluded
 Type: filesandordirs; Name: "{app}\RapidOCRLite"; Check: not OcrIncluded
 Type: files; Name: "{group}\开心输入法中英翻译.lnk"
 Type: files; Name: "{app}\srf_ime_translate.exe"
+; Clean up the retired Python components when upgrading an existing installation.
+Type: filesandordirs; Name: "{app}\.python-runtime"
+Type: filesandordirs; Name: "{app}\.python-packages"
+Type: filesandordirs; Name: "{app}\.venv-rapidocr"
+Type: filesandordirs; Name: "{app}\.venv-translate"
+Type: files; Name: "{app}\tools\kaixin_ocr_engine.py"
+Type: files; Name: "{app}\tools\kaixin_ocr_engine.cmd"
+Type: files; Name: "{app}\tools\kaixin_ocr_policy.py"
+Type: files; Name: "{app}\tools\kaixin_cv_crop.py"
 Type: files; Name: "{app}\tools\kaixin_translate_engine.py"
 Type: files; Name: "{app}\tools\kaixin_translate_engine.cmd"
 Type: dirifempty; Name: "{app}\tools"
@@ -121,6 +113,9 @@ Name: "{group}\开心输入法日志"; Filename: "{win}\explorer.exe"; Parameter
 Name: "{group}\导出开心输入法诊断包"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\export_diagnostics.ps1"" -InstallationRoot ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\卸载开心输入法"; Filename: "{uninstallexe}"; IconFilename: "{app}\assets\kaixin-input.ico"
 
+[Run]
+Filename: "{sys}\shutdown.exe"; Parameters: "/r /t 0"; Description: "安装完成后立即重启电脑"; Flags: postinstall unchecked skipifsilent runhidden nowait
+
 [Code]
 const
   KaixinStateRegKey = 'Software\kaixin\State';
@@ -137,18 +132,6 @@ end;
 function OcrIncluded(): Boolean;
 begin
   Result := '{#KXIncludeOcr}' = '1';
-end;
-
-function ShouldInstallPythonRuntime(): Boolean;
-begin
-  InitializeComponentChecks();
-  Result := OcrIncluded() and InstallPythonRuntimeComponent;
-end;
-
-function ShouldInstallRapidOcrPackages(): Boolean;
-begin
-  InitializeComponentChecks();
-  Result := OcrIncluded() and InstallRapidOcrPackagesComponent;
 end;
 
 function ShouldInstallRapidOcrPayload(): Boolean;
@@ -209,7 +192,7 @@ end;
 procedure CurPageChanged(CurPageID: Integer);
 begin
   if (CurPageID = wpFinished) and not WizardForm.YesRadio.Visible then
-    WizardForm.FinishedLabel.Caption := BuildFinishedSummary();
+    LayoutFinishedPage(BuildFinishedSummary());
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

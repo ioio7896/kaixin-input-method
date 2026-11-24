@@ -1305,43 +1305,11 @@ fn check_rapidocr_environment() -> Result<String, String> {
     let rapidocr_root =
         rapidocr_paths::rapidocr_root().ok_or_else(rapidocr_paths::missing_root_message)?;
     rapidocr_paths::validate_rapidocr_models(&rapidocr_root)?;
-    let rapidocr_python = rapidocr_root.join("python");
-    if !rapidocr_python.join("rapidocr").is_dir() {
-        return Err(format!(
-            "RapidOCR Python 包目录不存在：{}",
-            rapidocr_python.display()
-        ));
-    }
-
-    let script = format!(
-        "import sys; sys.path.insert(0, r'{python_dir}'); import rapidocr; import cv2; import numpy; import rapidocr._native; print('RapidOCR 可用：{root}')",
-        python_dir = rapidocr_python.display(),
-        root = rapidocr_root.display(),
-    );
-    let runtime = rapidocr_paths::python_runtime(Some(&rapidocr_root))?;
-    let mut command = Command::new(&runtime.executable);
-    rapidocr_paths::apply_python_runtime_env(&mut command, &runtime);
-    let output = command
-        .args(["-c", &script])
-        .env("PYTHONDONTWRITEBYTECODE", "1")
-        .env("PYTHONUTF8", "1")
-        .env("PYTHONIOENCODING", "utf-8")
-        .output()
-        .map_err(|err| format!("启动 Python 失败：{err}"))?;
-    if !output.status.success() {
-        let err = String::from_utf8_lossy(&output.stderr).trim().to_string();
-        return Err(if err.is_empty() {
-            format!("Python 返回 {}", output.status)
-        } else {
-            err
-        });
-    }
-    let message = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    Ok(if message.is_empty() {
-        format!("RapidOCR 可用：{}", rapidocr_root.display())
-    } else {
-        message
-    })
+    let runtime_info = rapidocr_paths::probe_native_runtime(&rapidocr_root)?;
+    Ok(format!(
+        "RapidOCR 原生引擎可用（{runtime_info}）：{}",
+        rapidocr_root.display()
+    ))
 }
 
 fn selectable_string(ui: &mut egui::Ui, value: &mut String, option: &str, label: &str) {

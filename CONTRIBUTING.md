@@ -7,8 +7,8 @@ Apache-2.0 许可证授权贡献。复制或改编第三方代码、模型、字
 ## 开发环境
 
 项目当前只支持在 Windows 上完整构建。需要 Python 3.12+、Rust 1.99.0、
-MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6；OCR
-功能有单独的 Python 依赖，桌面辅助程序均随 Rust 工作区构建。
+MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6。OCR
+使用原生 RapidOCRLite DLL 和模型，桌面辅助程序均随 Rust 工作区构建。
 
 首次开发运行 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_dev_tools.ps1`，
 将固定版本的 Ruff、clang-format 和 PSScriptAnalyzer 安装到 `dist/dev-tools/`。
@@ -17,7 +17,7 @@ MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6�
 ## 代码约定
 
 - 源码使用 UTF-8、LF；`.cmd` 使用 CRLF。包含中文的 PowerShell 脚本保留 UTF-8 BOM，兼容 Windows PowerShell 5.1。
-- Rust 使用 rustfmt，C++ 使用根目录 `.clang-format`，Python 使用 `ruff.toml`，PowerShell 使用 `scripts/PSScriptAnalyzerSettings.psd1`。
+- Rust 使用 rustfmt，C++ 使用根目录 `.clang-format`，Python 使用 `pyproject.toml` 中的 Ruff 配置，PowerShell 使用 `scripts/PSScriptAnalyzerSettings.psd1`。
 - 生成文件只改源配置或生成器；运行生成器后用 `--check` 验证。第三方源码不参与项目格式化。
 - `kaixin-common` 拥有契约与共享规则；`kaixin-core` 拥有引擎及其平台适配；`pinyin-ime` 拥有桌面程序。各 crate 使用自己的源码和构建入口，禁止反向引用应用源码。
 - 按职责拆分模块，接口只公开调用方需要的内容。大文件行数用于审查提示，不设机械拆分指标。

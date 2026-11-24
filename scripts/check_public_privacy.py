@@ -2,6 +2,7 @@
 """Check public Git contents for private runtime files, secrets and home paths."""
 
 from __future__ import annotations
+from fnmatch import fnmatchcase
 import re
 import subprocess
 from pathlib import Path, PurePosixPath
@@ -19,10 +20,14 @@ HOME_PATH = re.compile(
     rb"(?i)(?:[a-z]:[\\/]+Users[\\/]+(?!Public(?:[\\/]|$)|Default(?:[\\/]|$))[^\\/\s\"<>]+|/(?:Users|home)/[^/\s\"<>]+)"
 )
 WORKSPACE_PATH = re.compile(rb"(?i)G:[\\/]+code1[\\/]+")
+LOCAL_ROOT_FILES = ("kaixin-source-*.zip", "20??_??_??-??_??_??*")
 PRIVATE_NAMES = (
     "user_dict.sqlite",
     "clipboard_store.sqlite",
+    "clipboard_manager_window.sqlite",
     "ocr_history.sqlite",
+    "runtime_events.sqlite",
+    "cedict_cache.sqlite",
     "engine_capability.",
 )
 PRIVATE_PARTS = {
@@ -30,7 +35,7 @@ PRIVATE_PARTS = {
     "dist",
     "target",
     "__pycache__",
-    ".venv-rapidocr",
+    "_archived_python_legacy",
     ".agents",
     ".codex",
     ".aws",
@@ -39,6 +44,7 @@ PRIVATE_PARTS = {
     ".lexicon_cache",
 }
 PRIVATE_CONFIGS = {
+    "kaixin.ini",
     "config.private.ini",
     ".git-credentials",
     ".netrc",
@@ -56,6 +62,8 @@ def violations(relative: str, data: bytes) -> list[str]:
     parts = tuple(part.lower() for part in path.parts)
     name = path.name.lower()
     reasons = []
+    if len(parts) == 1 and any(fnmatchcase(name, pattern) for pattern in LOCAL_ROOT_FILES):
+        reasons.append("local source backup or development transcript")
     if any(
         part in PRIVATE_PARTS or part.startswith((".venv", "kaixin-diagnostics-")) for part in parts
     ):

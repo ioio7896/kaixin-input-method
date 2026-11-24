@@ -12,6 +12,7 @@
     [ValidateSet('standard', 'full')]
     [string]$LexiconProfile = 'standard',
     [string]$PreparedLexiconDir,
+    [string]$PythonExecutable = 'python',
     [switch]$FinalizeInBuild
 )
 
@@ -22,42 +23,6 @@ if ($Zip -and $FinalizeInBuild) {
 
 $PackageManifestName = 'package_manifest.sha256'
 $ComponentManifestName = 'component_manifest.ini'
-$PythonPackageExcludeNames = @(
-    '__pycache__',
-    '.pytest_cache',
-    '.mypy_cache',
-    '.ruff_cache',
-    'test',
-    'tests',
-    'testing',
-    'benchmark',
-    'benchmarks',
-    'example',
-    'examples',
-    'pip',
-    'setuptools',
-    'onnxruntime',
-    'onnxruntime-1.23.2.dist-info'
-)
-$PythonPackageExcludePatterns = @(
-    '*.pyc',
-    '*.pyo',
-    '*.pdb',
-    '*.lib',
-    '*.exp',
-    '*.h',
-    '*.hpp',
-    '*.c',
-    '*.cpp',
-    '*.cxx',
-    '*.pxd',
-    '*.pyi',
-    # Screenshot OCR uses OpenCV image functions, not its optional FFmpeg video backend.
-    'opencv_videoio_ffmpeg*.dll',
-    'pip-*.dist-info',
-    'setuptools-*.dist-info',
-    'onnxruntime-*.dist-info'
-)
 
 function Get-LexiconDirectory {
     param([string]$RepoRoot)
@@ -282,91 +247,6 @@ function Write-ThirdPartyDistributionNotices {
     )
 }
 
-function Get-VenvPythonHome {
-    param([string]$VenvDir)
-
-    $cfg = Join-Path $VenvDir 'pyvenv.cfg'
-    if (-not (Test-Path -LiteralPath $cfg)) {
-        throw "Python venv config not found: $cfg"
-    }
-
-    foreach ($line in Get-Content -LiteralPath $cfg -Encoding UTF8) {
-        if ($line -match '^\s*home\s*=\s*(.+?)\s*$') {
-            $pythonHomeCandidate = $Matches[1].Trim().Trim('"')
-            if (-not [System.IO.Path]::IsPathRooted($pythonHomeCandidate)) {
-                $pythonHomeCandidate = [System.IO.Path]::GetFullPath((Join-Path $VenvDir $pythonHomeCandidate))
-            }
-            if (-not (Test-Path -LiteralPath $pythonHomeCandidate)) {
-                throw "Python home from $cfg does not exist: $pythonHomeCandidate"
-            }
-            return [System.IO.Path]::GetFullPath($pythonHomeCandidate)
-        }
-    }
-
-    throw "Python home is missing from $cfg"
-}
-
-function Sync-PythonRuntimeFromVenv {
-    param(
-        [string]$VenvDir,
-        [string]$DestinationDir
-    )
-
-    $pythonHome = Get-VenvPythonHome -VenvDir $VenvDir
-    $pythonExe = Join-Path $pythonHome 'python.exe'
-    if (-not (Test-Path -LiteralPath $pythonExe)) {
-        throw "Python runtime executable not found: $pythonExe"
-    }
-
-    Sync-DirectoryContents `
-        -SourceDir $pythonHome `
-        -DestinationDir $DestinationDir `
-        -ExcludeNames @(
-        'Doc',
-        'include',
-        'libs',
-        'Scripts',
-        'tcl',
-        'site-packages',
-        'test',
-        '__pycache__',
-        'idlelib',
-        'tkinter',
-        'turtledemo',
-        'ensurepip'
-    ) `
-        -ExcludePatterns $PythonPackageExcludePatterns
-
-    $runtimePython = Join-Path $DestinationDir 'python.exe'
-    $runtimeStdlib = Join-Path $DestinationDir 'Lib\os.py'
-    if (-not (Test-Path -LiteralPath $runtimePython)) {
-        throw "Staged Python runtime executable is missing: $runtimePython"
-    }
-    if (-not (Test-Path -LiteralPath $runtimeStdlib)) {
-        throw "Staged Python standard library is missing: $runtimeStdlib"
-    }
-    if (-not (Get-ChildItem -LiteralPath $DestinationDir -Filter 'python*.dll' -File -ErrorAction SilentlyContinue)) {
-        throw "Staged Python runtime DLLs are missing: $DestinationDir"
-    }
-}
-
-function Sync-PythonPackagesFromVenv {
-    param(
-        [string]$VenvDir,
-        [string]$DestinationDir
-    )
-
-    $sitePackages = Join-Path $VenvDir 'Lib\site-packages'
-    if (-not (Test-Path -LiteralPath $sitePackages)) {
-        throw "Python site-packages directory not found: $sitePackages"
-    }
-    Sync-DirectoryContents `
-        -SourceDir $sitePackages `
-        -DestinationDir $DestinationDir `
-        -ExcludeNames $PythonPackageExcludeNames `
-        -ExcludePatterns $PythonPackageExcludePatterns
-}
-
 function Write-PackageHashManifest {
     param(
         [string]$Root,
@@ -417,8 +297,6 @@ function Write-ComponentManifestFromPackageManifest {
             -not [string]::IsNullOrWhiteSpace($_) -and -not $_.StartsWith('#')
         })
     $components = [ordered]@{
-        python_runtime = '.python-runtime/'
-        rapidocr_packages = '.python-packages/'
         rapidocr_payload = 'RapidOCRLite/'
     }
     $output = New-Object 'System.Collections.Generic.List[string]'
@@ -494,15 +372,7 @@ $lexiconDir = Get-LexiconDirectory -RepoRoot $RepoRoot
 $fontDir = Join-Path $RepoRoot 'font1'
 $skinDir = Join-Path $RepoRoot 'skins'
 $assetsDir = Join-Path $RepoRoot 'assets'
-$toolsDir = Join-Path $RepoRoot 'tools'
 $rapidOcrDir = Join-Path $RepoRoot 'RapidOCRLite'
-$rapidOcrVenvDir = Join-Path $RepoRoot '.venv-rapidocr'
-$pythonRuntimeDirName = '.python-runtime'
-$pythonPackagesDirName = '.python-packages'
-$pythonRuntimeSourceVenv = $null
-if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
-    $pythonRuntimeSourceVenv = $rapidOcrVenvDir
-}
 
 $requiredOutputs = @($tipDll, $bakeLexiconExe, $setupExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $clipboardSvcExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
 $requiredOutputs += $symbolsExe
@@ -609,17 +479,8 @@ if (Test-Path -LiteralPath $skinDir) {
 if (Test-Path -LiteralPath $assetsDir) {
     $managedRootEntries += 'assets'
 }
-if ($IncludeOcr -and (Test-Path -LiteralPath $toolsDir)) {
-    $managedRootEntries += 'tools'
-}
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
     $managedRootEntries += 'RapidOCRLite'
-}
-if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
-    $managedRootEntries += $pythonPackagesDirName
-}
-if ($pythonRuntimeSourceVenv) {
-    $managedRootEntries += $pythonRuntimeDirName
 }
 
 $managedEntryNames = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
@@ -676,10 +537,9 @@ if ((Test-Path -LiteralPath $generatedLicenseDir) -or (Test-Path -LiteralPath $d
             Copy-FileIfChanged -SourcePath $licenseFile.FullName -DestinationPath (Join-Path $stagedLicenseReportDir $licenseFile.Name)
         }
     }
-    if (Test-Path -LiteralPath $generatedLicenseDir) {
-        foreach ($reportFile in @(Get-ChildItem -LiteralPath $generatedLicenseDir -File)) {
-            Copy-FileIfChanged -SourcePath $reportFile.FullName -DestinationPath (Join-Path $stagedLicenseReportDir $reportFile.Name)
-        }
+    $rustLicenseReport = Join-Path $generatedLicenseDir 'rust-dependencies.html'
+    if (Test-Path -LiteralPath $rustLicenseReport -PathType Leaf) {
+        Copy-FileIfChanged -SourcePath $rustLicenseReport -DestinationPath (Join-Path $stagedLicenseReportDir 'rust-dependencies.html')
     }
 } else {
     Remove-ItemWithRetry -Path $stagedLicenseReportDir
@@ -756,7 +616,7 @@ if ($PreparedLexiconDir) {
         throw "Failed to prebake hot_lexicon.bin: $hotLexiconBin"
     }
 
-    & python (Join-Path $RepoRoot 'scripts\lexicon_pack.py') $lexiconTarget
+    & $PythonExecutable (Join-Path $RepoRoot 'scripts\lexicon_pack.py') $lexiconTarget
     if ($LASTEXITCODE -ne 0) { throw 'Lossless lexicon packing failed' }
 }
 
@@ -769,58 +629,33 @@ if (Test-Path -LiteralPath $skinDir) {
 if (Test-Path -LiteralPath $assetsDir) {
     Sync-DirectoryContents -SourceDir $assetsDir -DestinationDir (Join-Path $OutputRoot 'assets')
 }
-if ($IncludeOcr -and (Test-Path -LiteralPath $toolsDir)) {
-    $toolsTarget = Join-Path $OutputRoot 'tools'
-    if (-not (Test-Path -LiteralPath $toolsTarget)) {
-        New-Item -ItemType Directory -Path $toolsTarget -Force | Out-Null
-    }
-    foreach ($existingTool in @(Get-ChildItem -LiteralPath $toolsTarget -Force -ErrorAction SilentlyContinue)) {
-        Remove-ItemWithRetry -Path $existingTool.FullName
-    }
-    $toolNames = @()
-    if ($IncludeOcr) {
-        $toolNames += @('kaixin_ocr_engine.py', 'kaixin_ocr_policy.py', 'kaixin_ocr_engine.cmd', 'kaixin_cv_crop.py')
-    }
-    foreach ($toolName in ($toolNames | Select-Object -Unique)) {
-        $sourceTool = Join-Path $toolsDir $toolName
-        if (-not (Test-Path -LiteralPath $sourceTool)) {
-            throw "Missing tool helper: $sourceTool"
-        }
-        Copy-FileIfChanged -SourcePath $sourceTool -DestinationPath (Join-Path $toolsTarget $toolName)
-    }
-} else {
-    Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'tools')
-}
-if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
-    Sync-PythonPackagesFromVenv `
-        -VenvDir $rapidOcrVenvDir `
-        -DestinationDir (Join-Path $OutputRoot $pythonPackagesDirName)
-} else {
-    Remove-ItemWithRetry -Path (Join-Path $OutputRoot $pythonPackagesDirName)
-}
-# Remove the legacy full virtual environment from restaged packages.
-Remove-ItemWithRetry -Path (Join-Path $OutputRoot '.venv-rapidocr')
-if ($pythonRuntimeSourceVenv) {
-    Sync-PythonRuntimeFromVenv `
-        -VenvDir $pythonRuntimeSourceVenv `
-        -DestinationDir (Join-Path $OutputRoot $pythonRuntimeDirName)
-} else {
-    Remove-ItemWithRetry -Path (Join-Path $OutputRoot $pythonRuntimeDirName)
-}
-Remove-ItemWithRetry -Path (Join-Path $OutputRoot '.venv-translate')
+Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'tools')
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'models\translate')
 if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
     $rapidOcrTarget = Join-Path $OutputRoot 'RapidOCRLite'
-    $rapidOcrPythonTarget = Join-Path $rapidOcrTarget 'python'
-    if (-not (Test-Path -LiteralPath $rapidOcrPythonTarget)) {
-        New-Item -ItemType Directory -Path $rapidOcrPythonTarget -Force | Out-Null
+    $rapidOcrModelsSource = Join-Path $rapidOcrDir 'models'
+    $rapidOcrModelsTarget = Join-Path $rapidOcrTarget 'models'
+    $rapidOcrDllSource = Join-Path $rapidOcrDir 'rapidocrlite.dll'
+    if (-not (Test-Path -LiteralPath $rapidOcrDllSource -PathType Leaf)) {
+        throw "Missing RapidOCRLite native DLL: $rapidOcrDllSource"
     }
+    if (-not (Test-Path -LiteralPath $rapidOcrModelsSource -PathType Container)) {
+        throw "Missing RapidOCRLite models directory: $rapidOcrModelsSource"
+    }
+    New-Item -ItemType Directory -Path $rapidOcrTarget -Force | Out-Null
+    $rapidOcrRootFiles = @('README.md', 'README-CN.md', 'LICENSE', 'windows-utf8.patch')
+    $allowedRapidOcrEntries = @('rapidocrlite.dll', 'models') + $rapidOcrRootFiles
+    foreach ($existingEntry in @(Get-ChildItem -LiteralPath $rapidOcrTarget -Force -ErrorAction SilentlyContinue)) {
+        if ($existingEntry.Name -notin $allowedRapidOcrEntries) {
+            Remove-ItemWithRetry -Path $existingEntry.FullName
+        }
+    }
+    Copy-FileIfChanged -SourcePath $rapidOcrDllSource -DestinationPath (Join-Path $rapidOcrTarget 'rapidocrlite.dll')
     Sync-DirectoryContents `
-        -SourceDir (Join-Path $rapidOcrDir 'python\rapidocr') `
-        -DestinationDir (Join-Path $rapidOcrPythonTarget 'rapidocr') `
-        -ExcludeNames $PythonPackageExcludeNames `
-        -ExcludePatterns $PythonPackageExcludePatterns
-    foreach ($rapidOcrRootFile in @('README.md', 'README-CN.md', 'LICENSE', 'windows-utf8.patch')) {
+        -SourceDir $rapidOcrModelsSource `
+        -DestinationDir $rapidOcrModelsTarget `
+        -ExcludePatterns @('.gitkeep')
+    foreach ($rapidOcrRootFile in $rapidOcrRootFiles) {
         $source = Join-Path $rapidOcrDir $rapidOcrRootFile
         if (Test-Path -LiteralPath $source) {
             Copy-FileIfChanged -SourcePath $source -DestinationPath (Join-Path $rapidOcrTarget $rapidOcrRootFile)
@@ -829,7 +664,7 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrDir)) {
 } else {
     Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'RapidOCRLite')
 }
-& python (Join-Path $RepoRoot 'scripts\trim_package.py') $OutputRoot
+& $PythonExecutable (Join-Path $RepoRoot 'scripts\trim_package.py') $OutputRoot
 if ($LASTEXITCODE -ne 0) { throw 'Verified package trim failed' }
 
 if (-not $FinalizeInBuild) {

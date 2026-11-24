@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kaixin-ime-tooling"
+version = "0.0.0"
+description = "Development, build, and offline lexicon maintenance scripts for Kaixin IME (core build scripts use only the Python standard library)."
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.14.0",
+    "clang-format==20.1.8",
+]
+lexicon = [
+    "wordfreq==3.1.1",
+    "jieba==0.42.1",
+    "pypinyin==0.55.0",
+    "opencc-python-reimplemented==0.1.7",
+]
+
+[tool.setuptools]
+packages = []
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+include = ["build.py", "scripts/**/*.py", "tools/*.py"]
+exclude = ["dist", "third_party", "RapidOCRLite", "_archived_python_legacy"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+# Imports after sys.path setup are needed by standalone repository tools.
+[tool.ruff.lint.per-file-ignores]
+"scripts/test_*.py" = ["E402"]
+"tools/*.py" = ["E402"]

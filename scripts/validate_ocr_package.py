@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Run all OCR profiles with the Python, helpers and models inside a staged package."""
+"""Run all OCR profiles with the native srf_ime_ocr.exe worker and models inside a staged package."""
 
 from __future__ import annotations
 
@@ -33,23 +33,14 @@ def verify_ocr_package(repo: Path, package: Path) -> Path:
         )
     env = dict(
         os.environ,
-        PYTHONPATH=str(package / ".python-packages"),
-        PYTHONNOUSERSITE="1",
-        PYTHONDONTWRITEBYTECODE="1",
-        PYTHONUTF8="1",
-        PYTHONIOENCODING="utf-8",
         PPOCR_BENCH_THREADS="4",
     )
     env.pop("PPOCR_REC_FAST", None)
     command = [
-        str(package / ".python-runtime/python.exe"),
-        "-B",
-        str(package / "tools/kaixin_ocr_engine.py"),
+        str(package / "srf_ime_ocr.exe"),
+        "--ocr-worker",
         "--stdio",
-        "--rapidocr-root",
-        str(package / "RapidOCRLite"),
-        "--provider",
-        "cpu",
+        "--validate-installed",
         "--no-fast-mode",
     ]
     completed = subprocess.run(
