@@ -43,12 +43,10 @@ PYTHON_EXCLUDED_FILE_SUFFIXES = {
     ".pyi",
 }
 REQUIRED_FILES = {
+    "srf_ime_setup.exe",
     "srf_ime_engine.exe",
     "srf_ime_tray.exe",
     "srf_ime_settings.exe",
-    "install_dev.ps1",
-    "install_current_user.ps1",
-    "invoke_registration.ps1",
     "current_runtime_payload.txt",
     PACKAGE_HASH_MANIFEST,
     COMPONENT_MANIFEST,

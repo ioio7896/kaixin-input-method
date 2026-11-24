@@ -12,7 +12,7 @@ mod ui;
 use config::*;
 use model::*;
 use ui::{
-    capsule_switch, diagnostic_log_paths, enforce_settings_min_font_size,
+    capsule_switch, compact_button, diagnostic_log_paths, enforce_settings_min_font_size,
     export_diagnostic_package_to, export_performance_log_to, fluent_palette, hotkey_modifier,
     privacy_statement_text, SettingsComboBoxExt,
 };
@@ -56,11 +56,10 @@ const USER_DICT_RELOAD_HINT: &str =
 const HANDWRITE_EXE: &str = "srf_ime_handwrite.exe";
 const OCR_EXE: &str = "srf_ime_ocr.exe";
 const CANDIDATE_OVERLAY_EXE: &str = "srf_ime_overlay.exe";
-const SETTINGS_WINDOW_SIZE: [f32; 2] = [1160.0, 860.0];
-const SETTINGS_MAX_WINDOW_SIZE: [f32; 2] = [1440.0, 1040.0];
+const SETTINGS_WINDOW_SIZE: [f32; 2] = [960.0, 860.0];
 const SETTINGS_MIN_WINDOW_SIZE: [f32; 2] = [780.0, 680.0];
 const SETTINGS_NAV_WIDTH: f32 = 184.0;
-const SETTINGS_CONTENT_MAX_WIDTH: f32 = 1200.0;
+const SETTINGS_CONTENT_MAX_WIDTH: f32 = 880.0;
 const SETTINGS_USER_DICT_LIST_LIMIT: usize = 100;
 const MS_PINYIN_TIP: &str =
     r"0804:{81D4E9C9-1D3B-41BC-9E6C-4B40BF79E35E}{FA550B04-5AD7-411F-A5AC-CA038EC515D7}";
@@ -120,6 +119,57 @@ struct SettingsApp {
     diagnostics_rx: Option<mpsc::Receiver<ui::DiagnosticsSnapshot>>,
     performance_export_rx: Option<mpsc::Receiver<String>>,
     translation_check_rx: Option<mpsc::Receiver<String>>,
+    applied_style_key: Option<(pinyin_ime::ui_theme::UiDesignStyle, bool)>,
+    pending_design_style: Option<pinyin_ime::ui_theme::UiDesignStyle>,
+    pending_theme_preference: Option<egui::ThemePreference>,
+    appearance_config_writer: Option<AppearanceConfigWriter>,
+    pending_style_settle_frames: u8,
+    focus_search_requested: bool,
+}
+
+struct AppearanceConfigWriter {
+    changes: mpsc::Sender<AppearanceConfigChange>,
+    worker: thread::JoinHandle<Result<(), String>>,
+}
+
+struct AppearanceConfigChange {
+    design_style: Option<&'static str>,
+    theme_preference: Option<&'static str>,
+}
+
+impl AppearanceConfigWriter {
+    fn start(path: PathBuf) -> Self {
+        let (changes, queued_changes) = mpsc::channel::<AppearanceConfigChange>();
+        let worker = thread::spawn(move || {
+            let mut result = Ok(());
+            for change in queued_changes {
+                if let Err(err) = pinyin_ime::tool_prefs::set_ui_appearance(
+                    &path,
+                    change.design_style,
+                    change.theme_preference,
+                ) {
+                    result = Err(err);
+                }
+            }
+            result
+        });
+        Self { changes, worker }
+    }
+
+    fn finish(self) -> Result<(), String> {
+        drop(self.changes);
+        self.worker
+            .join()
+            .map_err(|_| "外观设置写入任务异常结束。".to_string())?
+    }
+}
+
+impl Drop for SettingsApp {
+    fn drop(&mut self) {
+        if let Some(writer) = self.appearance_config_writer.take() {
+            let _ = writer.finish();
+        }
+    }
 }
 
 enum UserDictTaskResult {
@@ -152,7 +202,7 @@ impl SettingsApp {
                 format!("{LOAD_FAIL_CN}: {err}"),
             ),
         };
-        merge_discovered_lexicon_tags_compat(&mut model);
+        merge_discovered_lexicon_tags(&mut model);
         let last_saved_model = model.clone();
         let preview_font_choice = model.candidate_font_file.clone();
         let _ = fonts::install_cjk_fonts_with_candidate_preview(
@@ -203,7 +253,92 @@ impl SettingsApp {
             diagnostics_rx: None,
             performance_export_rx: None,
             translation_check_rx: None,
+            applied_style_key: None,
+            pending_design_style: None,
+            pending_theme_preference: None,
+            appearance_config_writer: None,
+            pending_style_settle_frames: 0,
+            focus_search_requested: false,
         }
+    }
+
+    fn queue_design_style_change(
+        &mut self,
+        style: pinyin_ime::ui_theme::UiDesignStyle,
+        status: Option<String>,
+    ) {
+        self.pending_design_style = Some(style);
+        if let Some(message) = status {
+            self.status = message;
+        }
+    }
+
+    fn queue_theme_preference_change(&mut self, preference: egui::ThemePreference) {
+        self.pending_theme_preference = Some(preference);
+    }
+
+    fn apply_pending_appearance_changes(&mut self, ctx: &egui::Context) {
+        self.apply_pending_appearance_changes_inner(ctx, true);
+    }
+
+    fn apply_pending_appearance_changes_inner(
+        &mut self,
+        ctx: &egui::Context,
+        persist_to_disk: bool,
+    ) {
+        let design_style = self.pending_design_style.take();
+        let theme_preference = self.pending_theme_preference.take();
+        if design_style.is_none() && theme_preference.is_none() {
+            return;
+        }
+        if let Some(style) = design_style {
+            pinyin_ime::ui_theme::set_active_design_style(style);
+            self.config
+                .set("style", "ui_design_style", style.as_config());
+            let next_pref = if style == pinyin_ime::ui_theme::UiDesignStyle::LinearDark {
+                egui::ThemePreference::Dark
+            } else {
+                let stored = self
+                    .config
+                    .get("style", "ui_theme_preference")
+                    .map(str::to_string)
+                    .unwrap_or_else(pinyin_ime::tool_prefs::ui_theme_preference);
+                match stored.trim().to_ascii_lowercase().as_str() {
+                    "dark" => egui::ThemePreference::Dark,
+                    "system" => egui::ThemePreference::System,
+                    _ => egui::ThemePreference::Light,
+                }
+            };
+            ctx.set_theme(next_pref);
+        }
+        if let Some(preference) = theme_preference {
+            let value = pinyin_ime::ui_theme::theme_preference_as_config(preference);
+            self.config.set("style", "ui_theme_preference", value);
+            if pinyin_ime::ui_theme::active_design_style()
+                != pinyin_ime::ui_theme::UiDesignStyle::LinearDark
+            {
+                ctx.set_theme(preference);
+            }
+        }
+        if persist_to_disk {
+            let writer = self
+                .appearance_config_writer
+                .get_or_insert_with(|| AppearanceConfigWriter::start(self.config_path.clone()));
+            if writer
+                .changes
+                .send(AppearanceConfigChange {
+                    design_style: design_style.map(|style| style.as_config()),
+                    theme_preference: theme_preference
+                        .map(pinyin_ime::ui_theme::theme_preference_as_config),
+                })
+                .is_err()
+            {
+                self.status = "外观设置写入任务异常结束。".to_string();
+            }
+        }
+        self.applied_style_key = None;
+        self.pending_style_settle_frames = 2;
+        ctx.request_repaint();
     }
 
     fn reset_defaults(&mut self) {
@@ -402,6 +537,10 @@ impl SettingsApp {
 
         let previous_model = model_from_config(&self.config);
         let rendered = stabilized_rendered_config(&self.config, &next_model);
+        // The full save includes the current look. Drain earlier preference writes first.
+        if let Some(writer) = self.appearance_config_writer.take() {
+            let _ = writer.finish();
+        }
         if let Some(parent) = self.config_path.parent() {
             if let Err(err) = fs::create_dir_all(parent) {
                 self.status = format!("{SAVE_FAIL_CN}: {err}");
@@ -412,7 +551,7 @@ impl SettingsApp {
             Ok(()) => {
                 self.config = parse_ini(&rendered);
                 self.model = model_from_config(&self.config);
-                merge_discovered_lexicon_tags_compat(&mut self.model);
+                merge_discovered_lexicon_tags(&mut self.model);
                 self.last_saved_model = self.model.clone();
                 let effect_summary = save_effect_summary(&previous_model, &self.model);
                 self.status = format!(
@@ -841,7 +980,7 @@ impl SettingsApp {
         match fs::copy(&path, &dest) {
             Ok(_) => {
                 self.reload_lexicon_now();
-                merge_discovered_lexicon_tags_compat(&mut self.model);
+                merge_discovered_lexicon_tags(&mut self.model);
                 self.status = format!("已导入词库：{}。{}", dest.display(), self.status);
             }
             Err(err) => self.status = format!("导入词库失败: {err}"),
@@ -1281,13 +1420,13 @@ fn hotkey_combo(
             if ui
                 .add_enabled(
                     enabled,
-                    egui::SelectableLabel::new(
-                        capturing,
+                    compact_button(
                         if capturing {
                             "请按组合键…"
                         } else {
                             "按键录入"
                         },
+                        capturing,
                     ),
                 )
                 .clicked()
@@ -1296,7 +1435,7 @@ fn hotkey_combo(
                 ui.data_mut(|data| data.insert_temp(capture_id, capturing));
             }
             if ui
-                .add_enabled(enabled, egui::Button::new("清除"))
+                .add_enabled(enabled, compact_button("清除", false))
                 .on_hover_text("关闭此快捷键")
                 .clicked()
             {
@@ -1306,12 +1445,12 @@ fn hotkey_combo(
                 ui.data_mut(|data| data.insert_temp(capture_id, false));
             }
             if ui
-                .add_enabled(enabled, egui::Button::new("默认"))
+                .add(compact_button("默认", false))
                 .on_hover_text("恢复推荐组合键")
                 .clicked()
             {
-                *value = "off".to_string();
-                enabled = false;
+                *value = hotkey_value(hotkey_parts("", default_key));
+                enabled = true;
                 capturing = false;
                 ui.data_mut(|data| data.insert_temp(capture_id, false));
             }
@@ -2438,23 +2577,6 @@ fn overlay_monitor_label(value: &str) -> String {
     }
 }
 
-fn merge_discovered_lexicon_tags_compat(model: &mut SettingsModel) {
-    let previous = model.lexicon_tags.clone();
-    merge_discovered_lexicon_tags(model);
-    for (tag, enabled) in &mut model.lexicon_tags {
-        if previous.contains_key(tag) {
-            continue;
-        }
-        let legacy_values = pinyin_ime::lexicon_prefs::legacy_optional_lexicon_tags(tag)
-            .iter()
-            .filter_map(|legacy| previous.get(*legacy).copied())
-            .collect::<Vec<_>>();
-        if !legacy_values.is_empty() {
-            *enabled = legacy_values.into_iter().all(|value| value);
-        }
-    }
-}
-
 fn lexicon_tag_label(tag: &str) -> &str {
     if let Some((label, _)) = pinyin_ime::lexicon_prefs::category_lexicon_info(tag) {
         return label;
@@ -2607,9 +2729,8 @@ fn recommended_settings_window_placement() -> SettingsWindowPlacement {
             let dpi_scale = windows_system_dpi_scale();
             let work_width = work_width_px / dpi_scale;
             let work_height = work_height_px / dpi_scale;
-            let max_width = SETTINGS_MAX_WINDOW_SIZE[0].min((work_width - 32.0).max(1.0));
-            let min_width = SETTINGS_MIN_WINDOW_SIZE[0].min(max_width);
-            let width = (work_width * 0.72).clamp(min_width, max_width);
+            let width = SETTINGS_WINDOW_SIZE[0].min((work_width - 32.0).max(1.0));
+            let min_width = SETTINGS_MIN_WINDOW_SIZE[0].min(width);
             let outer_for_width = window_outer_size_for_inner([width, work_height], dpi_scale);
             let chrome_height = (outer_for_width[1] - work_height_px).max(0.0);
             let height = ((work_height_px - chrome_height).max(1.0) / dpi_scale).min(work_height);
@@ -2632,6 +2753,63 @@ fn recommended_settings_window_placement() -> SettingsWindowPlacement {
         position: None,
     }
 }
+
+#[cfg(windows)]
+fn sync_window_dwm_chrome(frame: &eframe::Frame, palette: pinyin_ime::ui_theme::UiPalette) {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    use windows_sys::Win32::Graphics::Dwm::DwmSetWindowAttribute;
+
+    const DWMWA_USE_IMMERSIVE_DARK_MODE: u32 = 20;
+    const DWMWA_BORDER_COLOR: u32 = 34;
+    const DWMWA_CAPTION_COLOR: u32 = 35;
+    const DWMWA_TEXT_COLOR: u32 = 36;
+
+    fn colorref(c: Color32) -> u32 {
+        (c.r() as u32) | ((c.g() as u32) << 8) | ((c.b() as u32) << 16)
+    }
+
+    let Ok(handle) = frame.window_handle() else {
+        return;
+    };
+    let RawWindowHandle::Win32(window) = handle.as_raw() else {
+        return;
+    };
+    let hwnd = window.hwnd.get();
+
+    let dark: i32 = if palette.dark_mode { 1 } else { 0 };
+    let border = colorref(palette.border_subtle);
+    let caption = colorref(palette.nav_bg);
+    let text = colorref(palette.text);
+    unsafe {
+        let _ = DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_USE_IMMERSIVE_DARK_MODE,
+            &dark as *const i32 as *const _,
+            std::mem::size_of::<i32>() as u32,
+        );
+        let _ = DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_BORDER_COLOR,
+            &border as *const u32 as *const _,
+            std::mem::size_of::<u32>() as u32,
+        );
+        let _ = DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_CAPTION_COLOR,
+            &caption as *const u32 as *const _,
+            std::mem::size_of::<u32>() as u32,
+        );
+        let _ = DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_TEXT_COLOR,
+            &text as *const u32 as *const _,
+            std::mem::size_of::<u32>() as u32,
+        );
+    }
+}
+
+#[cfg(not(windows))]
+fn sync_window_dwm_chrome(_frame: &eframe::Frame, _palette: pinyin_ime::ui_theme::UiPalette) {}
 
 fn settings_viewport() -> egui::ViewportBuilder {
     let placement = recommended_settings_window_placement();

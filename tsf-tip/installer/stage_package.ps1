@@ -471,6 +471,7 @@ $tipDll = if ($TipDllPath) {
     $x64RuntimePair.TipDll
 }
 $bakeLexiconExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\bake_lexicon.exe"
+$setupExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_setup.exe"
 $settingsExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_settings.exe"
 $trayExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_tray.exe"
 $engineExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_engine.exe"
@@ -482,7 +483,6 @@ $ocrExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_ocr.exe"
 $settingsManifest = Join-Path $PSScriptRoot 'srf_ime_settings.exe.manifest'
 $trayManifest = Join-Path $PSScriptRoot 'srf_ime_tray.exe.manifest'
 $userDataManifest = Join-Path $PSScriptRoot 'user_data_manifest.json'
-$repairInstallScript = Join-Path $PSScriptRoot 'repair_install.ps1'
 $versionFile = Join-Path $RepoRoot 'VERSION'
 $projectLicenseFile = Join-Path $RepoRoot 'LICENSE'
 $licenseScopeFile = Join-Path $RepoRoot 'LICENSE_SCOPE.md'
@@ -504,7 +504,7 @@ if ($IncludeOcr -and (Test-Path -LiteralPath $rapidOcrVenvDir)) {
     $pythonRuntimeSourceVenv = $rapidOcrVenvDir
 }
 
-$requiredOutputs = @($tipDll, $bakeLexiconExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $clipboardSvcExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $repairInstallScript, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
+$requiredOutputs = @($tipDll, $bakeLexiconExe, $setupExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $clipboardSvcExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
 $requiredOutputs += $symbolsExe
 if ($IncludeOcr) {
     $requiredOutputs += $ocrExe
@@ -576,14 +576,10 @@ $managedRootEntries = @(
     $PackageManifestName,
     $ComponentManifestName,
     'VERSION',
-    'install_dev.ps1',
-    'install_current_user.ps1',
-    'config_defaults.generated.ps1',
     'restart_stale_hosts.ps1',
-    'invoke_registration.ps1',
-    'repair_install.ps1',
     'export_diagnostics.ps1',
     'runtime',
+    'srf_ime_setup.exe',
     'srf_ime_settings.exe',
     'srf_ime_settings.exe.manifest',
     'srf_ime_tray.exe',
@@ -593,8 +589,6 @@ $managedRootEntries = @(
     'srf_ime_clipboard_svc.exe',
     'srf_ime_handwrite.exe',
     'srf_ime_symbols.exe',
-    'uninstall_dev.ps1',
-    'uninstall_current_user.ps1',
     'user_data_manifest.json',
     'LICENSE',
     'LICENSE_SCOPE.md',
@@ -647,6 +641,7 @@ Copy-FileIfChanged -SourcePath $tipDll -DestinationPath (Join-Path $runtimeOutpu
 Copy-FileIfChanged -SourcePath $x86TipDll -DestinationPath (Join-Path $runtimeOutputX86 'srf_tsf_tip.dll')
 Copy-FileIfChanged -SourcePath $overlayExe -DestinationPath (Join-Path $runtimeOutputX64 'srf_ime_overlay.exe')
 Copy-FileIfChanged -SourcePath $x86OverlayExe -DestinationPath (Join-Path $runtimeOutputX86 'srf_ime_overlay.exe')
+Copy-FileIfChanged -SourcePath $setupExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_setup.exe')
 Copy-FileIfChanged -SourcePath $settingsExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_settings.exe')
 Copy-FileIfChanged -SourcePath $settingsManifest -DestinationPath (Join-Path $OutputRoot 'srf_ime_settings.exe.manifest')
 Copy-FileIfChanged -SourcePath $trayExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_tray.exe')
@@ -662,15 +657,8 @@ if ($IncludeOcr) {
     Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_ocr.exe')
 }
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_translate.exe')
-Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $TsfTipRoot 'invoke_registration.ps1') -DestinationPath (Join-Path $OutputRoot 'invoke_registration.ps1')
-Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'install_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'install_dev.ps1')
-Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'config_defaults.generated.ps1') -DestinationPath (Join-Path $OutputRoot 'config_defaults.generated.ps1')
-Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'install_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'install_current_user.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'restart_stale_hosts.ps1') -DestinationPath (Join-Path $OutputRoot 'restart_stale_hosts.ps1')
-Copy-PowerShellScriptUtf8Bom -SourcePath $repairInstallScript -DestinationPath (Join-Path $OutputRoot 'repair_install.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'export_diagnostics.ps1') -DestinationPath (Join-Path $OutputRoot 'export_diagnostics.ps1')
-Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'uninstall_dev.ps1') -DestinationPath (Join-Path $OutputRoot 'uninstall_dev.ps1')
-Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'uninstall_current_user.ps1') -DestinationPath (Join-Path $OutputRoot 'uninstall_current_user.ps1')
 Copy-FileIfChanged -SourcePath $userDataManifest -DestinationPath (Join-Path $OutputRoot 'user_data_manifest.json')
 Copy-FileIfChanged -SourcePath $versionFile -DestinationPath (Join-Path $OutputRoot 'VERSION')
 Copy-FileIfChanged -SourcePath $projectLicenseFile -DestinationPath (Join-Path $OutputRoot 'LICENSE')

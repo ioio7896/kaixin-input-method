@@ -28,7 +28,8 @@ def read_rows(path: Path) -> list[tuple[str, str, int]]:
 
 
 def consolidate_three_char() -> int:
-    from lexicon_quality import clean_rows
+    from lexicon_maintenance import THREE_CHAR_BASE, folded_hot_scores, hot_sources
+    from lexicon_quality import THREE_CHAR_SCORE_OVERRIDES, clean_rows
 
     SOURCE.mkdir(parents=True, exist_ok=True)
     inputs = (
@@ -72,6 +73,11 @@ def consolidate_three_char() -> int:
             if len(phrase) != 3:
                 raise ValueError(f"Expected three characters: {phrase}")
             merged.setdefault((phrase, code), weight)
+    modern, seasonal = hot_sources(ROOT)
+    merged.update(folded_hot_scores(modern + seasonal).get(THREE_CHAR_BASE, {}))
+    for key, score in THREE_CHAR_SCORE_OVERRIDES.items():
+        if key in merged:
+            merged[key] = score
     text = (
         f"# 开心输入法原生词库：{len(merged)} 条三字词读音记录\n"
         "# Source: data_sources/lexicon_fragments/zh/life_common_3char_full.txt + life_common_3char_hot.txt\n"

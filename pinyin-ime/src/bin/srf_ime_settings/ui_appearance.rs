@@ -389,7 +389,7 @@ fn candidate_live_preview(ui: &mut egui::Ui, model: &SettingsModel, skins: &[Ski
     egui::Frame::none()
         .fill(palette.surface_alt)
         .stroke(Stroke::new(1.0_f32, palette.border))
-        .rounding(SETTINGS_RADIUS_CARD)
+        .rounding(palette.card_radius)
         .inner_margin(egui::Margin::same(8.0))
         .show(ui, |ui| {
             ui.set_width((ui.available_width()).max(1.0));
@@ -809,14 +809,14 @@ fn skin_preview_card(
         Stroke::new(1.0_f32, palette.border_subtle)
     };
     ui.painter()
-        .rect(rect, 10.0, palette.surface_alt, outer_stroke);
+        .rect(rect, palette.card_radius, palette.surface_alt, outer_stroke);
     let preview = egui::Rect::from_min_max(
         rect.min + egui::vec2(5.0, 5.0),
         egui::pos2(rect.right() - 5.0, rect.bottom() - 35.0),
     );
     ui.painter().rect(
         preview,
-        5.0,
+        palette.control_radius,
         colors.window,
         Stroke::new(1.0_f32, colors.border),
     );
@@ -1044,8 +1044,8 @@ fn skin_card_grid(ui: &mut egui::Ui, model: &mut SettingsModel, skins: &[SkinPre
     skin_card_grid_rows(ui, model, &visible, "candidate_skin_cards", filter == 0);
 }
 
-fn ui_design_style_selector(ui: &mut egui::Ui, status: &mut String) {
-    use pinyin_ime::ui_theme::{active_design_style, save_design_style, UiDesignStyle, UiPalette};
+fn ui_design_style_selector(ui: &mut egui::Ui) -> Option<pinyin_ime::ui_theme::UiDesignStyle> {
+    use pinyin_ime::ui_theme::{active_design_style, UiDesignStyle, UiPalette};
 
     let current = active_design_style();
     let dark_mode = ui.visuals().dark_mode;
@@ -1053,6 +1053,7 @@ fn ui_design_style_selector(ui: &mut egui::Ui, status: &mut String) {
     let columns = ((available + 8.0) / 184.0).floor().clamp(1.0, 5.0) as usize;
     let card_width =
         ((available - 8.0 * columns.saturating_sub(1) as f32) / columns as f32).clamp(140.0, 230.0);
+    let mut picked = None;
 
     egui::Grid::new("ui_design_style_cards")
         .num_columns(columns)
@@ -1151,19 +1152,14 @@ fn ui_design_style_selector(ui: &mut egui::Ui, status: &mut String) {
                     }
                 }
                 if response.on_hover_text(style.subtitle()).clicked() && style != current {
-                    save_design_style(style);
-                    if style == UiDesignStyle::LinearDark {
-                        ui.ctx().set_theme(egui::ThemePreference::Dark);
-                    }
-                    enforce_settings_min_font_size(ui.ctx());
-                    *status = format!("已切换设置页与工具箱视觉风格：{}", style.label());
-                    ui.ctx().request_repaint();
+                    picked = Some(style);
                 }
                 if (index + 1).is_multiple_of(columns) {
                     ui.end_row();
                 }
             }
         });
+    picked
 }
 
 pub(super) fn candidate_appearance_ui(
@@ -1174,7 +1170,7 @@ pub(super) fn candidate_appearance_ui(
     chinese_fonts: &[String],
     request_real_preview: &mut bool,
     page: AppearanceSettingsPage,
-) {
+) -> Option<pinyin_ime::ui_theme::UiDesignStyle> {
     // Keep the preview above the controls so layout and font changes are easy
     // to judge without scrolling past a long settings form.
     section_panel(ui, "候选栏实时预览", |ui| {
@@ -1189,17 +1185,19 @@ pub(super) fn candidate_appearance_ui(
         });
     });
 
-    section_panel(
-        ui,
-        "设置页与工具箱整体视觉风格（5 款可选）",
-        |ui| {
-            ui_design_style_selector(ui, status);
-        },
-    );
-
+    let mut picked_style = None;
     match page {
         AppearanceSettingsPage::Layout => candidate_layout_controls(ui, model),
-        AppearanceSettingsPage::Theme => candidate_theme_controls(ui, model, skins, chinese_fonts),
+        AppearanceSettingsPage::Theme => {
+            section_panel(
+                ui,
+                "设置页与工具箱整体视觉风格（5 款可选）",
+                |ui| {
+                    picked_style = ui_design_style_selector(ui);
+                },
+            );
+            candidate_theme_controls(ui, model, skins, chinese_fonts);
+        }
         AppearanceSettingsPage::Advanced => candidate_information_controls(ui, model),
     }
     section_panel(ui, "快捷外观方案", |ui| {
@@ -1227,6 +1225,7 @@ pub(super) fn candidate_appearance_ui(
             }
         });
     });
+    picked_style
 }
 
 fn candidate_layout_controls(ui: &mut egui::Ui, model: &mut SettingsModel) {
@@ -1447,7 +1446,9 @@ fn candidate_theme_controls(
                         |ui| {
                             let search_id = ui.make_persistent_id("candidate_font_search");
                             let mut search = ui.data_mut(|data| data.get_temp::<String>(search_id)).unwrap_or_default();
-                            ui.add(egui::TextEdit::singleline(&mut search).hint_text("搜索字体名称"));
+                            ui.add(text_field(
+                                egui::TextEdit::singleline(&mut search).hint_text("搜索字体名称"),
+                            ));
                             ui.data_mut(|data| data.insert_temp(search_id, search.clone()));
                             let search = search.trim().to_lowercase();
                             selectable_string(
@@ -1474,9 +1475,11 @@ fn candidate_theme_controls(
                         },
                     );
                     ui.label("字体名称或字体文件路径");
-                    ui.add(egui::TextEdit::singleline(&mut model.candidate_font_file)
-                        .desired_width(f32::INFINITY)
-                        .hint_text("例如：Microsoft YaHei、思源黑体，或字体文件路径"));
+                    ui.add(text_field(
+                        egui::TextEdit::singleline(&mut model.candidate_font_file)
+                            .desired_width(f32::INFINITY)
+                            .hint_text("例如：Microsoft YaHei、思源黑体，或字体文件路径"),
+                    ));
                     ui.horizontal_wrapped(|ui| {
                         if outline_button(ui, "选择字体文件…").clicked() {
                             if let Some(path) = rfd::FileDialog::new()

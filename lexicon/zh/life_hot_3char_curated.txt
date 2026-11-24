@@ -203,7 +203,6 @@
 摄影师	she ying shi	8717
 科学院	ke xue yuan	8715
 阿富汗	a fu han	8714
-希特勒	xi te lei	8712
 忍不住	ren bu zhu	8710
 蒋介石	jiang jie shi	8709
 火车站	huo che zhan	8707
@@ -294,7 +293,6 @@
 几十年	ji shi nian	8571
 孙中山	sun zhong shan	8570
 排行榜	pai hang bang	8568
-法西斯	fa xi si	8566
 注意力	zhu yi li	8565
 爱好者	ai hao zhe	8563
 目的地	mu di di	8562
@@ -399,5 +397,4 @@
 发电厂	fa dian chang	8403
 多伦多	duo lun duo	8402
 娱乐场	yu le chang	8400
-他妈的	ta ma de	9000
 客户端	ke hu duan	8400

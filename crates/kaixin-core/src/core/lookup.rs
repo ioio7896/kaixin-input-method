@@ -366,7 +366,7 @@ impl PinyinEngine {
     }
 
     pub fn reload_phrase_dir(&mut self, dir: Option<&Path>) -> Result<(), String> {
-        let (next_lexicon, next_single_chars) = match dir {
+        let (next_lexicon, mut next_single_chars) = match dir {
             Some(path) => {
                 let lexicon = Some(
                     load_phrase_lexicon_core(path).map_err(|e| format!("load lexicon: {}", e))?,
@@ -380,10 +380,13 @@ impl PinyinEngine {
                 let single_chars = trusted
                     .as_deref()
                     .map(load_single_char_common_index)
-                    .unwrap_or_default();
+                    .unwrap_or_else(|| {
+                        Arc::new(single_char_common::SingleCharCommonIndex::bundled())
+                    });
                 (lexicon, single_chars)
             }
         };
+        Arc::make_mut(&mut next_single_chars).extend_supported(self.dict.as_ref());
         self.clear_lookup_caches();
         self.phrase_lexicon = next_lexicon;
         self.cold_lexicon = None;
@@ -643,15 +646,24 @@ impl PinyinEngine {
         self.shape_partial_first_page_candidates(&mut ranked, raw, compact_key, now);
         let page_size =
             candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
-        if is_exact_complete_single_syllable_input(raw, compact_key, self.syllables.as_ref()) {
-            let common = self.single_char_common.pinyin_order(compact_key);
+        let exact_single_syllable =
+            is_exact_complete_single_syllable_input(raw, compact_key, self.syllables.as_ref());
+        let single_letter_syllable = !exact_single_syllable
+            && compact_key.chars().count() == 1
+            && raw.chars().count() == 1
+            && self.syllables.contains(compact_key);
+        if exact_single_syllable || single_letter_syllable {
+            let canonical_key = crate::text_norm::canonical_pinyin_syllable(compact_key);
+            let common = self.single_char_common.pinyin_order(canonical_key);
             let common = &common[..common.len().min(page_size)];
             if self.has_selection_feedback_for_reading(compact_key) {
                 append_missing_single_chars(&mut ranked, common);
             } else {
                 promote_common_single_chars_after_user_priority(&mut ranked, common, true);
             }
-            keep_only_single_char_candidates(&mut ranked);
+            if exact_single_syllable {
+                keep_only_single_char_candidates(&mut ranked);
+            }
         }
         if lookup_request_superseded(request_id) {
             self.ranked_buf = ranked;
@@ -2836,12 +2848,16 @@ impl PinyinEngine {
             self.merge_abbrev_chunk_fallback(&compact_key, &mut merged, now);
         }
 
-        if exact_single_syllable_input {
+        let single_letter_syllable = !exact_single_syllable_input
+            && compact_key.chars().count() == 1
+            && raw.chars().count() == 1
+            && self.syllables.contains(&compact_key);
+        if exact_single_syllable_input || single_letter_syllable {
             let syllable = primary_variant
                 .as_ref()
                 .filter(|variant| variant.tail.is_none() && variant.syllables.len() == 1)
                 .map(|variant| variant.syllables[0].as_str())
-                .unwrap_or(compact_key.as_str());
+                .unwrap_or_else(|| crate::text_norm::canonical_pinyin_syllable(&compact_key));
             self.merge_exact_single_syllable_chars(syllable, &mut merged, now);
         }
 
@@ -3263,7 +3279,8 @@ impl PinyinEngine {
         let common_full_pinyin_single = exact_single_syllable_input
             || (compact_key.chars().count() == 1 && self.syllables.contains(&compact_key));
         let common_order = if common_full_pinyin_single {
-            self.single_char_common.pinyin_order(&compact_key).to_vec()
+            let canonical_key = crate::text_norm::canonical_pinyin_syllable(&compact_key);
+            self.single_char_common.pinyin_order(canonical_key).to_vec()
         } else if self.jianpin_enabled()
             && raw.chars().count() == 1
             && compact_key.chars().count() == 1
@@ -3511,7 +3528,7 @@ fn load_single_char_common_index(dir: &Path) -> Arc<single_char_common::SingleCh
                 "single_char_common_load_failed",
                 format!("dir={} error={error}", dir.display()),
             );
-            Arc::default()
+            Arc::new(single_char_common::SingleCharCommonIndex::bundled())
         }
     }
 }

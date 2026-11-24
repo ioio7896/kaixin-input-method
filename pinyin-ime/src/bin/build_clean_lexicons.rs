@@ -41,6 +41,12 @@ struct Entry {
     freq: u64,
 }
 
+impl Entry {
+    fn same_reading(&self, other: &Self) -> bool {
+        self.phrase == other.phrase && self.code == other.code
+    }
+}
+
 fn normalize_syllable(value: &str) -> String {
     value
         .to_ascii_lowercase()
@@ -447,6 +453,7 @@ fn write_polyphone_lexicon(
     source_frequency: &BTreeMap<String, u64>,
     core_priority: &HashSet<(String, String)>,
     always_on_readings: &HashSet<(String, String)>,
+    reviewed_core: &[Entry],
 ) -> io::Result<(Vec<Entry>, Vec<Entry>)> {
     let mut entries = corrections
         .iter()
@@ -460,6 +467,11 @@ fn write_polyphone_lexicon(
         })
         .collect::<Vec<_>>();
     normalize_lexicon_weights(&mut entries);
+    entries.retain(|entry| {
+        !reviewed_core
+            .iter()
+            .any(|reviewed| entry.same_reading(reviewed))
+    });
     entries.sort_by(|left, right| left.phrase.cmp(&right.phrase));
     let mut core = Vec::new();
     let mut recall = Vec::new();
@@ -473,12 +485,14 @@ fn write_polyphone_lexicon(
             recall.push(low_priority);
         }
     }
+    core.extend_from_slice(reviewed_core);
     write_entries(
         path,
         "需要 Core 优先级的多音词",
         "多音词校正表与 Core 优先级清单",
         &core,
     )?;
+    entries.extend_from_slice(reviewed_core);
     Ok((entries, recall))
 }
 
@@ -578,6 +592,10 @@ fn main() -> io::Result<()> {
     let pronunciation_alias_path = repo.join("data_sources/kaixin/pronunciation_aliases.tsv");
     let common_phrase_path = repo.join("data_sources/kaixin/common_phrases.tsv");
     let recall_phrase_path = repo.join("data_sources/kaixin/recall_phrases.tsv");
+    let reviewed_core =
+        read_project_entries(&repo.join("data_sources/kaixin/reviewed_core_polyphones.tsv"))?;
+    let reviewed_recall =
+        read_project_entries(&repo.join("data_sources/kaixin/reviewed_recall_readings.tsv"))?;
     let lexicon_dir = repo.join("lexicon");
     let core_dir = lexicon_dir.join("core");
     let zh_dir = lexicon_dir.join("zh");
@@ -611,6 +629,7 @@ fn main() -> io::Result<()> {
         &source_frequency,
         &core_priority,
         &always_on_readings,
+        &reviewed_core,
     )?;
     recall_entries.extend(read_project_entries(&recall_phrase_path)?.into_iter().map(
         |mut entry| {
@@ -618,12 +637,18 @@ fn main() -> io::Result<()> {
             entry
         },
     ));
+    recall_entries.retain(|entry| {
+        !reviewed_recall
+            .iter()
+            .any(|reviewed| entry.same_reading(reviewed))
+    });
+    recall_entries.extend(reviewed_recall);
     recall_entries.sort_by(|left, right| {
         left.phrase
             .cmp(&right.phrase)
             .then_with(|| left.code.cmp(&right.code))
     });
-    recall_entries.dedup_by(|left, right| left.phrase == right.phrase && left.code == right.code);
+    recall_entries.dedup_by(|left, right| left.same_reading(right));
     write_entries(
         &zh_dir.join("kaixin_recall.txt"),
         "始终启用的低优先级读音",

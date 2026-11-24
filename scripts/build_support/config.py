@@ -50,7 +50,7 @@ COMPONENT_PREFIXES = OrderedDict(
 )
 PREBAKED_LEXICON_MAGIC = b"SRFLX002"
 # Schema 13 preserves each indexed reading's weight and pronunciation class.
-PREBAKED_LEXICON_SCHEMA_VERSION = 13
+PREBAKED_LEXICON_SCHEMA_VERSION = 14
 PREBAKED_LEXICON_HEADER_SIZE = len(PREBAKED_LEXICON_MAGIC) + 4
 PREBAKED_LEXICON_MIN_BYTES = 1000
 COMMON_ENGLISH_LEXICON_RELATIVE_PATH = Path("en") / "kaixin_common_english.txt"
@@ -158,6 +158,7 @@ PACKAGE_VARIANT_ALIASES: dict[str, str] = {
 
 PACKAGE_BUILD_TOOL_RUST_ARTIFACTS = ("bake_lexicon.exe", "input_perf.exe", "input_eval.exe")
 BASE_STAGED_RUST_ARTIFACTS = (
+    "srf_ime_setup.exe",
     "srf_ime_settings.exe",
     "srf_ime_tray.exe",
     "srf_ime_engine.exe",

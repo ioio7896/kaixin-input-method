@@ -1,0 +1,894 @@
+# 开心输入法扩展词库：文史哲地与音乐（891 条）
+# 来源合并：category_history.txt, category_geography.txt, category_philosophy.txt, category_music.txt, professional_history.txt, professional_geography.txt, professional_philosophy.txt, professional_music.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+世界历史	shi jie li shi	6200
+中国历史	zhong guo li shi	6200
+中国音乐	zhong guo yin yue	6200
+人际关系	ren ji guan xi	6200
+历史中心	li shi zhong xin	6200
+历史政治	li shi zheng zhi	6200
+历史文化	li shi wen hua	6200
+国家历史	guo jia li shi	6200
+地方志	di fang zhi	6200
+城市规划	cheng shi gui hua	6200
+心理健康	xin li jian kang	6200
+政治历史	zheng zhi li shi	6200
+文化遗产	wen hua yi chan	6200
+文物保护	wen wu bao hu	6200
+日本历史	ri ben li shi	6200
+电影音乐	dian ying yin yue	6200
+经纬度	jing wei du	6200
+美国历史	mei guo li shi	6200
+还有历史	hai you li shi	6200
+音乐中心	yin yue zhong xin	6200
+音乐游戏	yin yue you xi	6200
+音乐网站	yin yue wang zhan	6200
+乐器保养	yue qi bao yang	6100
+乐器演奏	yue qi yan zou	6100
+乐器练习	yue qi lian xi	6100
+乐器调音	yue qi tiao yin	6100
+乐队排练	yue dui pai lian	6100
+五线谱读谱	wu xian pu du pu	6100
+人格特质	ren ge te zhi	6100
+人际沟通	ren ji gou tong	6100
+价值取向	jia zhi qu xiang	6100
+伦理困境	lun li kun jing	6100
+伦理规范	lun li gui fan	6100
+依恋关系	yi lian guan xi	6100
+公共伦理	gong gong lun li	6100
+共鸣训练	gong ming xun lian	6100
+分配正义	fen pei zheng yi	6100
+创造性思维	chuang zao xing si wei	6100
+动机理论	dong ji li lun	6100
+历史叙事	li shi xu shi	6100
+历史建筑	li shi jian zhu	6100
+历史教育	li shi jiao yu	6100
+历史档案	li shi dang an	6100
+历史研究	li shi yan jiu	6100
+历史街区	li shi jie qu	6100
+压力管理	ya li guan li	6100
+发声训练	fa sheng xun lian	6100
+口述历史	kou shu li shi	6100
+古代交通	gu dai jiao tong	6100
+古代制度	gu dai zhi du	6100
+古代社会	gu dai she hui	6100
+古代经济	gu dai jing ji	6100
+古代贸易	gu dai mao yi	6100
+古城保护	gu cheng bao hu	6100
+古建筑保护	gu jian zhu bao hu	6100
+古籍修复	gu ji xiu fu	6100
+古籍整理	gu ji zheng li	6100
+古籍版本	gu ji ban ben	6100
+史料分析	shi liao fen xi	6100
+史料整理	shi liao zheng li	6100
+合唱排练	he chang pai lian	6100
+吉他弹唱	ji ta dan chang	6100
+听音训练	ting yin xun lian	6100
+呼吸训练	hu xi xun lian	6100
+和声进行	he sheng jin xing	6100
+和弦转位	he xian zhuan wei	6100
+和弦进行	he xian jin xing	6100
+因果推断	yin guo tui duan	6100
+国土规划	guo tu gui hua	6100
+土地覆盖	tu di fu gai	6100
+土壤侵蚀	tu rang qin shi	6100
+地下水位	di xia shui wei	6100
+地下水补给	di xia shui bu ji	6100
+地图制图	di tu zhi tu	6100
+地层岩性	di ceng yan xing	6100
+地形测绘	di xing ce hui	6100
+地理坐标	di li zuo biao	6100
+地表变形	di biao bian xing	6100
+地质勘探	di zhi kan tan	6100
+地质构造	di zhi gou zao	6100
+地质调查	di zhi diao cha	6100
+地震监测	di zhen jian ce	6100
+地震预警	di zhen yu jing	6100
+地面沉降	di mian chen jiang	6100
+均衡压缩	jun heng ya suo	6100
+坐标系统	zuo biao xi tong	6100
+墓葬形制	mu zang xing zhi	6100
+声乐练习	sheng yue lian xi	6100
+多轨录音	duo gui lu yin	6100
+对位法	dui wei fa	6100
+山洪预警	shan hong yu jing	6100
+岩石分类	yan shi fen lei	6100
+工程地质	gong cheng di zhi	6100
+年代测定	nian dai ce ding	6100
+弓法	gong fa	6100
+录音设备	lu yin she bei	6100
+心理支持	xin li zhi chi	6100
+心理韧性	xin li ren xing	6100
+情绪管理	qing xu guan li	6100
+情绪识别	qing xu shi bie	6100
+情绪调节	qing xu tiao jie	6100
+批判性思维	pi pan xing si wei	6100
+数字高程	shu zi gao cheng	6100
+文化遗址	wen hua yi zhi	6100
+文物修复	wen wu xiu fu	6100
+文物出土	wen wu chu tu	6100
+文物展览	wen wu zhan lan	6100
+文物断代	wen wu duan dai	6100
+文物鉴定	wen wu jian ding	6100
+文献校勘	wen xian jiao kan	6100
+方志编纂	fang zhi bian zuan	6100
+旋律写作	xuan lv xie zuo	6100
+曲式分析	qu shi fen xi	6100
+水文地质	shui wen di zhi	6100
+水文监测	shui wen jian ce	6100
+沟通边界	gou tong bian jie	6100
+河流径流	he liu jing liu	6100
+河道治理	he dao zhi li	6100
+注意力管理	zhu yi li guan li	6100
+洪水预报	hong shui yu bao	6100
+流域管理	liu yu guan li	6100
+海拔高度	hai ba gao du	6100
+混响延迟	hun xiang yan chi	6100
+滑坡泥石流	hua po ni shi liu	6100
+演奏技巧	yan zou ji qiao	6100
+理性判断	li xing pan duan	6100
+生命伦理	sheng ming lun li	6100
+生态空间	sheng tai kong jian	6100
+石器工具	shi qi gong ju	6100
+矿床勘查	kuang chuang kan cha	6100
+碑刻拓片	bei ke ta pian	6100
+社会正义	she hui zheng yi	6100
+程序正义	cheng xu zheng yi	6100
+空间分析	kong jian fen xi	6100
+简谱读谱	jian pu du pu	6100
+经验判断	jing yan pan duan	6100
+考古发掘	kao gu fa jue	6100
+考古调查	kao gu diao cha	6100
+考古遗址	kao gu yi zhi	6100
+职业伦理	zhi ye lun li	6100
+自我觉察	zi wo jue cha	6100
+自我认知	zi wo ren zhi	6100
+节奏训练	jie zou xun lian	6100
+节拍训练	jie pai xun lian	6100
+行为习惯	xing wei xi guan	6100
+视唱练耳	shi chang lian er	6100
+认知偏差	ren zhi pian cha	6100
+认知结构	ren zhi jie gou	6100
+认知能力	ren zhi neng li	6100
+认知行为	ren zhi xing wei	6100
+认识过程	ren shi guo cheng	6100
+调式音阶	diao shi yin jie	6100
+调性分析	diao xing fen xi	6100
+逻辑推理	luo ji tui li	6100
+道德判断	dao de pan duan	6100
+遥感影像	yao gan ying xiang	6100
+遥感监测	yao gan jian ce	6100
+钢琴伴奏	gang qin ban zou	6100
+防洪工程	fang hong gong cheng	6100
+陶瓷器物	tao ci qi wu	6100
+青铜器物	qing tong qi wu	6100
+音乐创作	yin yue chuang zuo	6100
+音乐制作	yin yue zhi zuo	6100
+音乐录制	yin yue lu zhi	6100
+音乐母带	yin yue mu dai	6100
+音乐混音	yin yue hun yin	6100
+音乐理论	yin yue li lun	6100
+音乐编曲	yin yue bian qu	6100
+音乐鉴赏	yin yue jian shang	6100
+音准节奏	yin zhun jie zou	6100
+音频剪辑	yin pin jian ji	6100
+音频接口	yin pin jie kou	6100
+历史作业	li shi zuo ye	6077
+七和弦	qi he xian	6000
+三和弦	san he xian	6000
+三国	san guo	6000
+下属和弦	xia shu he xian	6000
+世界大战	shi jie da zhan	6000
+东周	dong zhou	6000
+丝绸之路	si chou zhi lu	6000
+中世纪	zhong shi ji	6000
+中央集权	zhong yang ji quan	6000
+主体性	zhu ti xing	6000
+主和弦	zhu he xian	6000
+主观性	zhu guan xing	6000
+主调	zhu diao	6000
+义务论	yi wu lun	6000
+乐理	yue li	6000
+二胡	er hu	6000
+五四运动	wu si yun dong	6000
+五声音阶	wu sheng yin jie	6000
+五线谱	wu xian pu	6000
+交响曲	jiao xiang qu	6000
+产业布局	chan ye bu ju	6000
+人口密度	ren kou mi du	6000
+人文地理	ren wen di li	6000
+他者	ta zhe	6000
+价值判断	jia zhi pan duan	6000
+休止符	xiu zhi fu	6000
+伦理学	lun li xue	6000
+低音谱号	di yin pu hao	6000
+侵蚀	qin shi	6000
+偶然性	ou ran xing	6000
+元朝	yuan chao	6000
+先天	xian tian	6000
+先验	xian yan	6000
+全音	quan yin	6000
+冰川地貌	bing chuan di mao	6000
+冲积平原	chong ji ping yuan	6000
+决定论	jue ding lun	6000
+冷战	leng zhan	6000
+冷锋	leng feng	6000
+分封制	fen feng zhi	6000
+分析命题	fen xi ming ti	6000
+分水岭	fen shui ling	6000
+切分音	qie fen yin	6000
+力度	li du	6000
+功利主义	gong li zhu yi	6000
+区域规划	qu yu gui hua	6000
+升号	sheng hao	6000
+半音	ban yin	6000
+协奏曲	xie zou qu	6000
+单簧管	dan huang guan	6000
+历史地理	li shi di li	6000
+历史学	li shi xue	6000
+历史文献	li shi wen xian	6000
+反气旋	fan qi xuan	6000
+变奏	bian zou	6000
+口述史	kou shu shi	6000
+古代文明	gu dai wen ming	6000
+古埃及	gu ai ji	6000
+古希腊	gu xi la	6000
+古筝	gu zheng	6000
+古罗马	gu luo ma	6000
+可持续发展	ke chi xu fa zhan	6000
+可能性	ke neng xing	6000
+史前时代	shi qian shi dai	6000
+史学	shi xue	6000
+史料	shi liao	6000
+史料考证	shi liao kao zheng	6000
+合唱	he chang	6000
+同一性	tong yi xing	6000
+后天	hou tian	6000
+后现代主义	hou xian dai zhu yi	6000
+否定之否定	fou ding zhi fou ding	6000
+启蒙运动	qi meng yun dong	6000
+和声	he sheng	6000
+和弦	he xian	6000
+唐朝	tang chao	6000
+唯心主义	wei xin zhu yi	6000
+唯物主义	wei wu zhu yi	6000
+商朝	shang chao	6000
+喀斯特地貌	ka si te di mao	6000
+因果关系	yin guo guan xi	6000
+国别体	guo bie ti	6000
+土地利用	tu di li yong	6000
+土地制度	tu di zhi du	6000
+地下水	di xia shui	6000
+地图学	di tu xue	6000
+地图投影	di tu tou ying	6000
+地壳	di qiao	6000
+地幔	di man	6000
+地形	di xing	6000
+地核	di he	6000
+地貌	di mao	6000
+地震	di zhen	6000
+城市化	cheng shi hua	6000
+复调	fu diao	6000
+夏朝	xia chao	6000
+大提琴	da ti qin	6000
+大气圈	da qi quan	6000
+大调	da diao	6000
+大陆性气候	da lu xing qi hou	6000
+奏鸣曲	zou ming qu	6000
+存在主义	cun zai zhu yi	6000
+季风	ji feng	6000
+季风气候	ji feng qi hou	6000
+宋朝	song chao	6000
+宗教改革	zong jiao gai ge	6000
+实用主义	shi yong zhu yi	6000
+实证主义	shi zheng zhu yi	6000
+实践	shi jian	6000
+客观性	ke guan xing	6000
+室内乐	shi nei yue	6000
+寒带	han dai	6000
+对位	dui wei	6000
+小提琴	xiao ti qin	6000
+小调	xiao diao	6000
+属和弦	shu he xian	6000
+岩石圈	yan shi quan	6000
+工业革命	gong ye ge ming	6000
+平等	ping deng	6000
+年代学	nian dai xue	6000
+延音线	yan yin xian	6000
+异化	yi hua	6000
+弦乐	xian yue	6000
+弱起	ruo qi	6000
+归纳推理	gui na tui li	6000
+形式逻辑	xing shi luo ji	6000
+形而上学	xing er shang xue	6000
+德性伦理	de xing lun li	6000
+必然性	bi ran xing	6000
+意向性	yi xiang xing	6000
+意识	yi shi	6000
+戊戌变法	wu xu bian fa	6000
+战国	zhan guo	6000
+打击乐	da ji yue	6000
+文物	wen wu	6000
+文艺复兴	wen yi fu xing	6000
+断代史	duan dai shi	6000
+新文化运动	xin wen hua yun dong	6000
+新石器时代	xin shi qi shi dai	6000
+方法论	fang fa lun	6000
+旋律	xuan lv	6000
+旧石器时代	jiu shi qi shi dai	6000
+明朝	ming chao	6000
+春秋	chun qiu	6000
+普遍性	pu bian xing	6000
+暖锋	nuan feng	6000
+曲式	qu shi	6000
+木管	mu guan	6000
+本体论	ben ti lun	6000
+板块构造	ban kuai gou zao	6000
+歌剧	ge ju	6000
+正义	zheng yi	6000
+殖民主义	zhi min zhu yi	6000
+比例尺	bi li chi	6000
+民族音乐	min zu yin yue	6000
+气候带	qi hou dai	6000
+气压	qi ya	6000
+气旋	qi xuan	6000
+水圈	shui quan	6000
+水土流失	shui tu liu shi	6000
+水循环	shui xun huan	6000
+汉朝	han chao	6000
+沉积	chen ji	6000
+河流流域	he liu liu yu	6000
+法国大革命	fa guo da ge ming	6000
+洋务运动	yang wu yun dong	6000
+洋流	yang liu	6000
+海拔	hai ba	6000
+海洋性气候	hai yang xing qi hou	6000
+清唱剧	qing chang ju	6000
+清朝	qing chao	6000
+温带	wen dai	6000
+演绎推理	yan yi tui li	6000
+潮汐	chao xi	6000
+火山	huo shan	6000
+热带	re dai	6000
+爵士乐	jue shi yue	6000
+物质	wu zhi	6000
+特殊性	te shu xing	6000
+独唱	du chang	6000
+现实性	xian shi xing	6000
+现象学	xian xiang xue	6000
+理性主义	li xing zhu yi	6000
+琵琶	pi pa	6000
+生态承载力	sheng tai cheng zai li	6000
+生物圈	sheng wu quan	6000
+真理	zhen li	6000
+矛盾	mao dun	6000
+社会契约	she hui qi yue	6000
+科举制度	ke ju zhi du	6000
+秦朝	qin chao	6000
+等高线	deng gao xian	6000
+简谱	jian pu	6000
+管弦乐	guan xian yue	6000
+纪传体	ji zhuan ti	6000
+经济地理	jing ji di li	6000
+经验主义	jing yan zhu yi	6000
+结构主义	jie gou zhu yi	6000
+综合命题	zong he ming ti	6000
+编年体	bian nian ti	6000
+美学	mei xue	6000
+考古学	kao gu xue	6000
+自然地理	zi ran di li	6000
+自由	zi you	6000
+自由意志	zi you yi zhi	6000
+节奏	jie zou	6000
+节拍	jie pai	6000
+荒漠化	huang mo hua	6000
+蒸发	zheng fa	6000
+西周	xi zhou	6000
+认识论	ren shi lun	6000
+调式	diao shi	6000
+调性	diao xing	6000
+质变	zhi bian	6000
+资源环境	zi yuan huan jing	6000
+转位	zhuan wei	6000
+辛亥革命	xin hai ge ming	6000
+辩证法	bian zheng fa	6000
+辩证逻辑	bian zheng luo ji	6000
+还原号	huan yuan hao	6000
+连音	lian yin	6000
+通史	tong shi	6000
+速度	su du	6000
+逻辑学	luo ji xue	6000
+道德责任	dao de ze ren	6000
+遥感	yao gan	6000
+郡县制	jun xian zhi	6000
+配器	pei qi	6000
+重唱	chong chang	6000
+量变	liang bian	6000
+钢琴	gang qin	6000
+铁器时代	tie qi shi dai	6000
+铜管	tong guan	6000
+长笛	chang di	6000
+附点	fu dian	6000
+降号	jiang hao	6000
+降水	jiang shui	6000
+隋朝	sui chao	6000
+青铜时代	qing tong shi dai	6000
+音程	yin cheng	6000
+音阶	yin jie	6000
+风化	feng hua	6000
+高音谱号	gao yin pu hao	6000
+魏晋南北朝	wei jin nan bei chao	6000
+游戏音乐	you xi yin yue	5962
+电脑音乐	dian nao yin yue	5962
+网易音乐	wang yi yin yue	5962
+腾讯音乐	teng xun yin yue	5962
+这个音乐	zhe ge yin yue	5962
+这个音乐	zhei ge yin yue	5962
+音乐世界	yin yue shi jie	5962
+音乐教育	yin yue jiao yu	5962
+音乐文件	yin yue wen jian	5962
+音乐文化	yin yue wen hua	5962
+历史事实	li shi shi shi	5924
+历史信息	li shi xin xi	5924
+历史照片	li shi zhao pian	5924
+土地质量	tu di zhi liang	5924
+音乐银行	yin yue yin hang	5924
+历史故事	li shi gu shi	5885
+音乐不断	yin yue bu duan	5885
+音乐专业	yin yue zhuan ye	5885
+音乐故事	yin yue gu shi	5885
+音乐能力	yin yue neng li	5885
+家庭历史	jia ting li shi	5808
+相信音乐	xiang xin yin yue	5808
+音乐才能	yin yue cai neng	5808
+历史价值	li shi jia zhi	5770
+革命历史	ge ming li shi	5770
+指法	zhi fa	5744
+儿童音乐	er tong yin yue	5731
+历史人物	li shi ren wu	5731
+历史学者	li shi xue zhe	5731
+历史条件	li shi tiao jian	5731
+历史经验	li shi jing yan	5731
+历史解释	li shi jie shi	5731
+记录历史	ji lu li shi	5731
+音乐先生	yin yue xian sheng	5731
+历史学会	li shi xue hui	5693
+民族历史	min zu li shi	5693
+自然音乐	zi ran yin yue	5693
+音乐人生	yin yue ren sheng	5693
+免费音乐	mian fei yin yue	5654
+历史意义	li shi yi yi	5654
+死亡音乐	si wang yin yue	5616
+军事历史	jun shi li shi	5577
+历史小说	li shi xiao shuo	5577
+历史状态	li shi zhuang tai	5577
+音乐风格	yin yue feng ge	5577
+创造历史	chuang zao li shi	5539
+历史状况	li shi zhuang kuang	5500
+哲学问题	zhe xue wen ti	5500
+宗教音乐	zong jiao yin yue	5500
+音乐广场	yin yue guang chang	5500
+地理学会	di li xue hui	5462
+地理科学	di li ke xue	5462
+哲学理论	zhe xue li lun	5424
+哲学社会	zhe xue she hui	5424
+历史公园	li shi gong yuan	5385
+哲学博士	zhe xue bo shi	5385
+哲学著作	zhe xue zhu zuo	5385
+音乐公园	yin yue gong yuan	5385
+音乐表演	yin yue biao yan	5385
+哲学研究	zhe xue yan jiu	5347
+地理综合	di li zong he	5347
+播放歌曲	bo fang ge qu	5347
+英文音乐	ying wen yin yue	5347
+历史形象	li shi xing xiang	5308
+历史成本	li shi cheng ben	5308
+历史进程	li shi jin cheng	5308
+文物价值	wen wu jia zhi	5308
+歌曲名称	ge qu ming cheng	5308
+音乐帝国	yin yue di guo	5308
+历史书籍	li shi shu ji	5270
+哲学通信	zhe xue tong xin	5270
+民间音乐	min jian yin yue	5270
+音乐天使	yin yue tian shi	5270
+音乐少女	yin yue shao nv	5270
+历史成就	li shi cheng jiu	5231
+历史文物	li shi wen wu	5231
+历史频道	li shi pin dao	5231
+爱的历史	ai de li shi	5231
+音乐舞蹈	yin yue wu dao	5231
+音乐频道	yin yue pin dao	5231
+世界文化遗产	shi jie wen hua yi chan	5200
+全球定位系统	quan qiu ding wei xi tong	5200
+历史唯物主义	li shi wei wu zhu yi	5200
+地理信息系统	di li xin xi xi tong	5200
+资产阶级革命	zi chan jie ji ge ming	5200
+辩证唯物主义	bian zheng wei wu zhu yi	5200
+非物质文化遗产	fei wu zhi wen hua yi chan	5200
+历史答案	li shi da an	5193
+恐怖音乐	kong bu yin yue	5193
+等待音乐	deng dai yin yue	5193
+经典音乐	jing dian yin yue	5193
+绿色音乐	lv se yin yue	5193
+高中历史	gao zhong li shi	5193
+中国地理	zhong guo di li	5154
+主义哲学	zhu yi zhe xue	5154
+乡村音乐	xiang cun yin yue	5154
+人口地理	ren kou di li	5154
+人生哲学	ren sheng zhe xue	5154
+军事地理	jun shi di li	5154
+古代哲学	gu dai zhe xue	5154
+哲学体系	zhe xue ti xi	5154
+哲学思想	zhe xue si xiang	5154
+哲学现场	zhe xue xian chang	5154
+哲学领域	zhe xue ling yu	5154
+国家地理	guo jia di li	5154
+在线音乐	zai xian yin yue	5154
+地理作业	di li zuo ye	5154
+地理信息	di li xin xi	5154
+地理分布	di li fen bu	5154
+地理分析	di li fen xi	5154
+地理杂志	di li za zhi	5154
+地理标志	di li biao zhi	5154
+地理生物	di li sheng wu	5154
+地理知识	di li zhi shi	5154
+地理答案	di li da an	5154
+宗教地理	zong jiao di li	5154
+政治哲学	zheng zhi zhe xue	5154
+爱的哲学	ai de zhe xue	5154
+特定历史	te ding li shi	5154
+生物地理	sheng wu di li	5154
+空中音乐	kong zhong yin yue	5154
+精神哲学	jing shen zhe xue	5154
+经济哲学	jing ji zhe xue	5154
+自然哲学	zi ran zhe xue	5154
+艺术哲学	yi shu zhe xue	5154
+西方哲学	xi fang zhe xue	5154
+西部地理	xi bu di li	5154
+还有地理	hai you di li	5154
+退出历史	tui chu li shi	5154
+道德哲学	dao de zhe xue	5154
+高中地理	gao zhong di li	5154
+历史舞台	li shi wu tai	5077
+热爱音乐	re ai yin yue	5077
+观看历史	guan kan li shi	5077
+道德伦理	dao de lun li	5077
+音乐大师	yin yue da shi	5077
+中文歌曲	zhong wen ge qu	5039
+什么歌曲	shen me ge qu	5039
+儿童歌曲	er tong ge qu	5039
+全部歌曲	quan bu ge qu	5039
+医学哲学	yi xue zhe xue	5039
+历史上	li shi shang	5039
+历史书	li shi shu	5039
+历史家	li shi jia	5039
+品质音乐	pin zhi yin yue	5039
+在线歌曲	zai xian ge qu	5039
+学历史	xue li shi	5039
+恐怖歌曲	kong bu ge qu	5039
+欧美音乐	ou mei yin yue	5039
+电影歌曲	dian ying ge qu	5039
+网络歌曲	wang luo ge qu	5039
+艺术歌曲	yi shu ge qu	5039
+英文歌曲	ying wen ge qu	5039
+一首歌曲	yi shou ge qu	5000
+历史教训	li shi jiao xun	5000
+地下音乐	di xia yin yue	5000
+音乐商店	yin yue shang dian	4962
+音乐无限	yin yue wu xian	4962
+删除历史	shan chu li shi	4924
+历史画面	li shi hua mian	4924
+场地地形	chang di di xing	4924
+太白山脉	tai bai shan mai	4924
+文物图片	wen wu tu pian	4924
+音乐种类	yin yue zhong lei	4924
+历史变革	li shi bian ge	4885
+哲学原理	zhe xue yuan li	4885
+伦理管理	lun li guan li	4847
+佛教歌曲	fo jiao ge qu	4847
+佛教音乐	fo jiao yin yue	4847
+家庭伦理	jia ting lun li	4847
+音乐花园	yin yue hua yuan	4847
+中国地质	zhong guo di zhi	4808
+初中历史	chu zhong li shi	4808
+初中地理	chu zhong di li	4808
+地理考察	di li kao cha	4808
+地质中学	di zhi zhong xue	4808
+地质公园	di zhi gong yuan	4808
+地质大学	di zhi da xue	4808
+地质工程	di zhi gong cheng	4808
+地质年代	di zhi nian dai	4808
+地质测量	di zhi ce liang	4808
+地质灾难	di zhi zai nan	4808
+放音乐	fang yin yue	4808
+河流之下	he liu zhi xia	4808
+爱音乐	ai yin yue	4808
+糟糕历史	zao gao li shi	4808
+音乐大厅	yin yue da ting	4808
+音乐班	yin yue ban	4808
+音乐生	yin yue sheng	4808
+音乐谷	yin yue gu	4808
+音乐部	yin yue bu	4808
+历史片段	li shi pian duan	4770
+听听音乐	ting ting yin yue	4770
+欧美歌曲	ou mei ge qu	4770
+两条河流	liang tiao he liu	4731
+中小河流	zhong xiao he liu	4731
+哲学学派	zhe xue xue pai	4731
+复调音乐	fu diao yin yue	4731
+热门音乐	re men yin yue	4731
+遇见音乐	yu jian yin yue	4731
+音乐格式	yin yue ge shi	4731
+华语音乐	hua yu yin yue	4693
+历史使命	li shi shi ming	4693
+历史名人	li shi ming ren	4693
+历史瞬间	li shi shun jian	4693
+完美钢琴	wan mei gang qin	4693
+恋爱哲学	lian ai zhe xue	4693
+机械钢琴	ji xie gang qin	4693
+海伦钢琴	hai lun gang qin	4693
+自动钢琴	zi dong gang qin	4693
+讽刺歌曲	feng ci ge qu	4693
+钢琴大师	gang qin da shi	4693
+钢琴码头	gang qin ma tou	4693
+音乐之声	yin yue zhi sheng	4693
+上历史	shang li shi	4654
+你历史	ni li shi	4654
+全历史	quan li shi	4654
+写历史	xie li shi	4654
+历史了	li shi le	4654
+历史内涵	li shi nei han	4654
+历史卷	li shi juan	4654
+历史呢	li shi ne	4654
+历史所	li shi suo	4654
+历史的	li shi de	4654
+历史类	li shi lei	4654
+历史题	li shi ti	4654
+影视歌曲	ying shi ge qu	4654
+影视音乐	ying shi yin yue	4654
+我历史	wo li shi	4654
+有历史	you li shi	4654
+考历史	kao li shi	4654
+背历史	bei li shi	4654
+黑历史	hei li shi	4654
+历史见证	li shi jian zheng	4616
+文物考古	wen wu kao gu	4616
+新年歌曲	xin nian ge qu	4616
+珍贵历史	zhen gui li shi	4616
+考古专家	kao gu zhuan jia	4616
+考古公园	kao gu gong yuan	4616
+考古发现	kao gu fa xian	4616
+见证历史	jian zheng li shi	4616
+音乐教室	yin yue jiao shi	4616
+三角钢琴	san jiao gang qin	4577
+历史潮流	li shi chao liu	4577
+历史笔记	li shi bi ji	4577
+哲学笔记	zhe xue bi ji	4577
+哲学范畴	zhe xue fan chou	4577
+地理笔记	di li bi ji	4577
+文物普查	wen wu pu cha	4577
+演唱开始	yan chang kai shi	4577
+演唱风格	yan chang feng ge	4577
+爱好音乐	ai hao yin yue	4577
+考古笔记	kao gu bi ji	4577
+音乐演奏	yin yue yan zou	4577
+音乐笔记	yin yue bi ji	4577
+中央山脉	zhong yang shan mai	4539
+疯狂山脉	feng kuang shan mai	4539
+音乐喜剧	yin yue xi ju	4539
+水土保持	shui tu bao chi	4517
+中外历史	zhong wai li shi	4500
+历史方位	li shi fang wei	4500
+地理景观	di li jing guan	4500
+民族乐器	min zu yue qi	4500
+电子乐器	dian zi yue qi	4500
+这首歌曲	zhe shou ge qu	4500
+音乐脚步	yin yue jiao bu	4500
+华为音乐	hua wei yin yue	4462
+地形地貌	di xing di mao	4462
+地形模型	di xing mo xing	4462
+地形气候	di xing qi hou	4462
+地形测量	di xing ce liang	4462
+地形障碍	di xing zhang ai	4462
+有利地形	you li di xing	4462
+虾米音乐	xia mi yin yue	4462
+蜂鸟音乐	feng niao yin yue	4462
+音高	yin gao	4440
+云音乐	yun yin yue	4424
+历史之旅	li shi zhi lv	4424
+学音乐	xue yin yue	4424
+心理学史	xin li xue shi	4424
+有音乐	you yin yue	4424
+某音乐	mou yin yue	4424
+没音乐	mei yin yue	4424
+的音乐	de yin yue	4424
+过年歌曲	guo nian ge qu	4424
+这音乐	zhe yin yue	4424
+这音乐	zhei yin yue	4424
+陈音乐	chen yin yue	4424
+音乐书	yin yue shu	4424
+音乐了	yin yue le	4424
+音乐僵尸	yin yue jiang shi	4424
+音乐包	yin yue bao	4424
+音乐吗	yin yue ma	4424
+音乐圈	yin yue quan	4424
+音乐屋	yin yue wu	4424
+音乐狂	yin yue kuang	4424
+音乐疗法	yin yue liao fa	4424
+音乐的	yin yue de	4424
+音乐社	yin yue she	4424
+华夏地理	hua xia di li	4385
+太合音乐	tai he yin yue	4385
+悠久历史	you jiu li shi	4385
+爵士音乐	jue shi yin yue	4385
+地质矿产	di zhi kuang chan	4347
+摇滚歌曲	yao gun ge qu	4347
+数码钢琴	shu ma gang qin	4347
+极品钢琴	ji pin gang qin	4347
+粤语歌曲	yue yu ge qu	4347
+聆听音乐	ling ting yin yue	4347
+音色	yin se	4339
+吉他兄弟	ji ta xiong di	4308
+吉他英雄	ji ta ying xiong	4308
+地形匹配	di xing pi pei	4308
+地质力学	di zhi li xue	4308
+空气吉他	kong qi ji ta	4308
+歌曲排行	ge qu pai hang	4270
+二手钢琴	er shou gang qin	4231
+历史地段	li shi di duan	4231
+历史新高	li shi xin gao	4231
+抒情歌曲	shu qing ge qu	4231
+河流补给	he liu bu ji	4231
+历史风云	li shi feng yun	4193
+听歌曲	ting ge qu	4193
+好歌曲	hao ge qu	4193
+文物古迹	wen wu gu ji	4193
+西洋乐器	xi yang yue qi	4193
+重现历史	chong xian li shi	4193
+冰川河流	bing chuan he liu	4154
+历史沿革	li shi yan ge	4154
+叙事歌曲	xu shi ge qu	4154
+哲学之道	zhe xue zhi dao	4154
+哲学流派	zhe xue liu pai	4154
+地理界线	di li jie xian	4154
+音乐剪辑	yin yue jian ji	4154
+九天音乐	jiu tian yin yue	4116
+哲学思潮	zhe xue si chao	4116
+伤感歌曲	shang gan ge qu	4077
+伤感音乐	shang gan yin yue	4077
+下知地理	xia zhi di li	4039
+历史战绩	li shi zhan ji	4039
+历史长河	li shi chang he	4039
+历史风貌	li shi feng mao	4039
+通俗歌曲	tong su ge qu	4039
+丘陵地形	qiu ling di xing	4000
+历史卷子	li shi juan zi	4000
+历史正文	li shi zheng wen	4000
+历史沉淀	li shi chen dian	4000
+历史渊源	li shi yuan yuan	4000
+地理卷子	di li juan zi	4000
+日韩歌曲	ri han ge qu	4000
+河流如血	he liu ru xue	4000
+港台歌曲	gang tai ge qu	4000
+珠江钢琴	zhu jiang gang qin	4000
+音乐世家	yin yue shi jia	4000
+馆藏文物	guan cang wen wu	4000
+弹奏乐器	tan zou yue qi	3962
+汽水音乐	qi shui yin yue	3962
+地质储量	di zhi chu liang	3924
+深情演唱	shen qing yan chang	3924
+牢记历史	lao ji li shi	3924
+音乐周报	yin yue zhou bao	3924
+音乐盛典	yin yue sheng dian	3924
+上地理	shang di li	3885
+你地理	ni di li	3885
+写地理	xie di li	3885
+哲学王	zhe xue wang	3885
+地理也	di li ye	3885
+地理书	di li shu	3885
+地理了	di li le	3885
+地理卷	di li juan	3885
+地理图	di li tu	3885
+地理志	di li zhi	3885
+地理的	di li de	3885
+地理盲	di li mang	3885
+我地理	wo di li	3885
+考地理	kao di li	3885
+音乐喷泉	yin yue pen quan	3885
+音乐教父	yin yue jiao fu	3885
+历史试题	li shi shi ti	3847
+地理试题	di li shi ti	3847
+地质所	di zhi suo	3847
+波点音乐	bo dian yin yue	3847
+经院哲学	jing yuan zhe xue	3847
+历史厚重	li shi hou zhong	3808
+吉他调音	ji ta tiao yin	3808
+的歌曲	de ge qu	3808
+大历史观	da li shi guan	3770
+铭记历史	ming ji li shi	3770
+两河流域	liang he liu yu	3731
+太行山脉	tai hang shan mai	3731
+感悟历史	gan wu li shi	3731
+钢琴木马	gang qin mu ma	3731
+伦理剧	lun li ju	3693
+历史久远	li shi jiu yuan	3693
+同台演唱	tong tai yan chang	3693
+心理学系	xin li xue xi	3693
+地理纬度	di li wei du	3654
+地质勘查	di zhi kan cha	3654
+河流镇	he liu zhen	3654
+钢琴方块	gang qin fang kuai	3654
+音乐学系	yin yue xue xi	3654
+音乐茶座	yin yue cha zuo	3654
+麦田音乐	mai tian yin yue	3654
+历史典故	li shi dian gu	3616
+苦水音乐	ku shui yin yue	3616
+钢琴神童	gang qin shen tong	3616
+学钢琴	xue gang qin	3577
+山川河流	shan chuan he liu	3577
+练钢琴	lian gang qin	3577
+钢琴块	gang qin kuai	3577
+钢琴手	gang qin shou	3577
+钢琴曲谱	gang qin qu pu	3577
+钢琴梦	gang qin meng	3577
+钢琴漆	gang qin qi	3577
+钢琴版	gang qin ban	3577
+钢琴说	gang qin shuo	3577
+三弦乐器	san xian yue qi	3539
+地理制图	di li zhi tu	3539
+林山脉	lin shan mai	3539
+落基山脉	luo ji shan mai	3539
+钢琴独奏	gang qin du zou	3539
+扣扣音乐	kou kou yin yue	3500
+乐器厂	yue qi chang	3462
+典章文物	dian zhang wen wu	3462
+吉他曲	ji ta qu	3462
+吉他社	ji ta she	3462
+吉他谱	ji ta pu	3462
+吹奏乐器	chui zou yue qi	3462
+地理区位	di li qu wei	3462
+地质剖面	di zhi pou mian	3462
+地质录井	di zhi lu jing	3462
+弓弦乐器	gong xian yue qi	3462
+弦乐器组	xian yue qi zu	3462
+河流阶地	he liu jie di	3462
+洋奴哲学	yang nu zhe xue	3462
+渭河流域	wei he liu yu	3462
+钢琴之森	gang qin zhi sen	3462
+钢琴协奏	gang qin xie zou	3462
+音乐才子	yin yue cai zi	3424
+心理咨询	xin li zi xun	3407
+历史之眼	li shi zhi yan	3385
+吉他课	ji ta ke	3347
+学吉他	xue ji ta	3347
+弹吉他	tan ji ta	3347
+白吉他	bai ji ta	3347
+练吉他	lian ji ta	3347
+钢琴别恋	gang qin bie lian	3347
+古风歌曲	gu feng ge qu	3308
+历史长廊	li shi chang lang	3270
+闽南歌曲	min nan ge qu	3231
+不忘历史	bu wang li shi	3193
+夺命钢琴	duo ming gang qin	3193
+钢琴恋曲	gang qin lian qu	3154
+四朝代	si chao dai	3077
+听着音乐	ting zhe yin yue	3039
+我的音乐	wo de yin yue	3039
+洛雪音乐	luo xue yin yue	3039
+酷我音乐	ku wo yin yue	3039
+音乐与我	yin yue yu wo	3039
+音乐之城	yin yue zhi cheng	3039
+音乐之家	yin yue zhi jia	3039
+音乐导聆	yin yue dao ling	3039
+音乐的心	yin yue de xin	3039
+地质灾害	di zhi zai hai	2984
+矿产资源	kuang chan zi yuan	2935
+胎教音乐	tai jiao yin yue	2770
+刀的哲学	dao de zhe xue	2731
+你的歌曲	ni de ge qu	2693
+开演唱会	kai yan chang hui	2500
+看演唱会	kan yan chang hui	2500
+音乐傲骨	yin yue ao gu	2308
+咪咕音乐	mi gu yin yue	2077
+价值观念	jia zhi guan nian	1777
+配器法	pei qi fa	117

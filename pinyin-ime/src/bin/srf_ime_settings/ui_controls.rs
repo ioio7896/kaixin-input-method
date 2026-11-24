@@ -4,11 +4,6 @@ use egui::{
 };
 use UiDesignStyle::*;
 
-const CHARCOAL: Color32 = Color32::from_rgb(33, 35, 36);
-const PLATE_TEXT: Color32 = Color32::from_rgb(246, 242, 230);
-const TOP_LIGHT: Color32 = Color32::from_rgba_premultiplied(105, 105, 105, 105);
-const SHADE: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 70);
-
 fn shadow(y: f32, blur: f32, color: Color32) -> Shadow {
     Shadow {
         offset: vec2(0.0, y),
@@ -77,8 +72,8 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
     };
     let rounding = match p.style {
         TactileIndustrial => {
-            painter.rect(track, 2.0, CHARCOAL, Stroke::new(1.0_f32, Color32::BLACK));
-            horizontal_line(painter, track, track.bottom() - 1.0, 2.0, TOP_LIGHT);
+            painter.rect(track, 2.0, p.plate_bg, Stroke::new(1.0_f32, p.plate_border));
+            horizontal_line(painter, track, track.bottom() - 1.0, 2.0, p.bevel_highlight);
             let led = Rect::from_center_size(
                 pos2(track.right() - 4.0, track.center().y),
                 vec2(2.0, 10.0),
@@ -89,18 +84,10 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
                 if *value {
                     accent.gamma_multiply(0.32)
                 } else {
-                    CHARCOAL
+                    p.plate_bg
                 },
             );
-            painter.rect_filled(
-                led,
-                0.5,
-                if *value {
-                    accent
-                } else {
-                    Color32::from_gray(82)
-                },
-            );
+            painter.rect_filled(led, 0.5, if *value { accent } else { p.border });
             let knob_x = if *value {
                 track.right() - 13.0
             } else {
@@ -108,7 +95,7 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
             };
             let knob =
                 Rect::from_center_size(pos2(knob_x, track.center().y - 0.5), vec2(14.0, 15.0));
-            painter.rect_filled(knob.translate(vec2(0.0, 1.0)), 1.5, Color32::BLACK);
+            painter.rect_filled(knob.translate(vec2(0.0, 1.0)), 1.5, p.bevel_shadow);
             painter.rect(
                 knob,
                 1.5,
@@ -117,9 +104,9 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
                 } else {
                     p.control_bg
                 },
-                Stroke::new(1.0_f32, CHARCOAL),
+                Stroke::new(1.0_f32, p.plate_border),
             );
-            horizontal_line(painter, knob, knob.top() + 1.5, 2.0, TOP_LIGHT);
+            horizontal_line(painter, knob, knob.top() + 1.5, 2.0, p.bevel_highlight);
             for x in [-2.0, 2.0] {
                 painter.vline(
                     knob.center().x + x,
@@ -137,7 +124,7 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
             painter.circle_filled(
                 knob_center(9.5),
                 radius,
-                if *value { Color32::WHITE } else { p.muted },
+                if *value { p.accent_text } else { p.muted },
             );
             10.0
         }
@@ -149,12 +136,12 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
             );
             let center = knob_center(11.25);
             let knob = Rect::from_center_size(center, vec2(19.0, 19.0));
-            painter.add(shadow(1.0, 3.0, SHADE).as_shape(knob, 10.0));
+            painter.add(shadow(1.0, 3.0, p.shadow_color).as_shape(knob, 10.0));
             painter.circle(
                 center,
                 9.5,
                 Color32::WHITE,
-                Stroke::new(0.6_f32, Color32::from_black_alpha(30)),
+                Stroke::new(0.6_f32, p.border_subtle),
             );
             12.0
         }
@@ -167,7 +154,7 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
             painter.rect(
                 knob,
                 3.0,
-                if *value { p.info_bg } else { p.control_hover },
+                if *value { p.info_soft } else { p.control_hover },
                 Stroke::new(1.0_f32, if *value { accent } else { p.border }),
             );
             5.0
@@ -203,6 +190,8 @@ pub(super) fn switch(ui: &mut egui::Ui, label: &str, value: &mut bool) -> Respon
 pub(super) enum ButtonKind {
     Primary,
     Secondary,
+    Danger,
+    Compact(bool),
     Key(bool),
     Tab(bool),
 }
@@ -212,34 +201,38 @@ pub(super) fn button(label: &str, kind: ButtonKind) -> impl egui::Widget + '_ {
         let p = fluent_palette(ui);
         let (min_width, height) = match kind {
             ButtonKind::Primary => (104.0, 32.0),
-            ButtonKind::Secondary => (SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT),
+            ButtonKind::Secondary | ButtonKind::Danger => {
+                (SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT)
+            }
+            ButtonKind::Compact(_) => (42.0, 24.0),
             ButtonKind::Key(_) => (34.0, 24.0),
             ButtonKind::Tab(_) => (72.0, 27.0),
         };
         let font = if matches!(kind, ButtonKind::Key(_)) {
             FontId::monospace(12.0)
+        } else if matches!(kind, ButtonKind::Compact(_)) {
+            FontId::proportional(SETTINGS_FONT_SMALL)
         } else {
             FontId::proportional(SETTINGS_FONT_BODY)
         };
         let primary = matches!(kind, ButtonKind::Primary) && ui.is_enabled();
-        let selected = matches!(kind, ButtonKind::Key(true) | ButtonKind::Tab(true));
-        let accent_text = match p.style {
-            Win11Mica | MacosBento | OrientalInk | TactileIndustrial => {
-                if p.style == TactileIndustrial || (p.style == Win11Mica && ui.visuals().dark_mode)
-                {
-                    CHARCOAL
-                } else {
-                    p.accent_text
-                }
-            }
-            LinearDark => p.accent_text,
+        let danger = matches!(kind, ButtonKind::Danger) && ui.is_enabled();
+        let selected = matches!(
+            kind,
+            ButtonKind::Key(true) | ButtonKind::Tab(true) | ButtonKind::Compact(true)
+        );
+        let text_color = if primary {
+            p.accent_text
+        } else if danger {
+            p.danger
+        } else {
+            p.text
         };
-        let text_color = if primary { accent_text } else { p.text };
         let mut text = RichText::new(label).font(font).color(text_color);
-        if primary || selected {
+        if matches!(kind, ButtonKind::Primary) || danger || selected {
             text = text.strong();
         }
-        let padding = if matches!(kind, ButtonKind::Key(_)) {
+        let padding = if matches!(kind, ButtonKind::Key(_) | ButtonKind::Compact(_)) {
             6.0
         } else {
             9.0
@@ -262,21 +255,37 @@ pub(super) fn button(label: &str, kind: ButtonKind) -> impl egui::Widget + '_ {
             ButtonKind::Key(on) => {
                 WidgetInfo::selected(WidgetType::Checkbox, ui.is_enabled(), on, label)
             }
-            ButtonKind::Tab(on) => {
+            ButtonKind::Tab(on) | ButtonKind::Compact(on) => {
                 WidgetInfo::selected(WidgetType::SelectableLabel, ui.is_enabled(), on, label)
             }
             _ => WidgetInfo::labeled(WidgetType::Button, ui.is_enabled(), label),
         });
         if ui.is_rect_visible(rect) {
-            let face = button_face(ui, rect.shrink(0.75), &response, kind, p, primary, selected);
+            let face = button_face(
+                ui,
+                rect.shrink(0.75),
+                &response,
+                kind,
+                p,
+                primary,
+                danger,
+                selected,
+            );
             ui.painter()
                 .galley(face.center() - galley.size() * 0.5, galley, text_color);
-            focus_ring(ui.painter(), rect, p.control_radius, p.accent, &response);
+            focus_ring(
+                ui.painter(),
+                rect,
+                p.control_radius,
+                if danger { p.danger } else { p.accent },
+                &response,
+            );
         }
         response
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn button_face(
     ui: &egui::Ui,
     rect: Rect,
@@ -284,6 +293,7 @@ fn button_face(
     kind: ButtonKind,
     p: FluentPalette,
     primary: bool,
+    danger: bool,
     selected: bool,
 ) -> Rect {
     let painter = ui.painter();
@@ -296,10 +306,17 @@ fn button_face(
             (false, true) => p.accent_hover,
             _ => p.accent,
         }
+    } else if danger {
+        if down || hover {
+            p.danger
+                .gamma_multiply(if p.dark_mode { 0.30 } else { 0.18 })
+        } else {
+            p.danger_soft
+        }
     } else if down || hover {
         p.control_hover
     } else if selected {
-        p.info_bg
+        p.info_soft
     } else {
         p.control_bg
     };
@@ -316,82 +333,96 @@ fn button_face(
             let face = Rect::from_min_max(rect.min, rect.max - vec2(0.0, 2.5))
                 .translate(vec2(0.0, recess));
             if !down {
-                painter.rect_filled(rect, 3.0, CHARCOAL);
+                painter.rect_filled(rect, p.control_radius, p.plate_border);
             }
-            painter.rect(face, 3.0, fill, Stroke::new(1.5_f32, CHARCOAL));
-            horizontal_line(painter, face, face.top() + 1.5, 3.0, TOP_LIGHT);
+            let edge = if danger { p.danger } else { p.plate_border };
+            painter.rect(face, p.control_radius, fill, Stroke::new(1.2_f32, edge));
+            horizontal_line(painter, face, face.top() + 1.5, 3.0, p.bevel_highlight);
             if selected {
                 horizontal_line(painter, face, face.bottom() - 2.5, 4.0, p.accent);
             }
             face
         }
         Win11Mica => {
-            painter.rect(
-                rect,
-                4.0,
-                fill,
-                Stroke::new(1.0_f32, if primary { fill } else { p.border_subtle }),
-            );
-            horizontal_line(painter, rect, rect.top() + 1.0, 4.0, TOP_LIGHT);
-            horizontal_line(painter, rect, rect.bottom() - 1.0, 4.0, SHADE);
+            let edge = if primary {
+                fill
+            } else if danger {
+                p.danger
+            } else {
+                p.border_subtle
+            };
+            painter.rect(rect, p.control_radius, fill, Stroke::new(1.0_f32, edge));
+            horizontal_line(painter, rect, rect.top() + 1.0, 4.0, p.bevel_highlight);
+            horizontal_line(painter, rect, rect.bottom() - 1.0, 4.0, p.bevel_shadow);
             if tab && selected {
                 underline(painter, rect, p.accent);
             }
             rect
         }
         MacosBento => {
-            let radius = if tab { 13.0 } else { 8.0 };
+            let radius = if tab { 13.0 } else { p.control_radius };
             if !tab && !down {
-                painter.add(shadow(1.5, 5.0, Color32::from_black_alpha(36)).as_shape(rect, radius));
+                painter.add(shadow(1.5, 5.0, p.shadow_color).as_shape(rect, radius));
             }
             if !tab || (hover && !selected) {
-                painter.rect_filled(rect, radius, fill);
+                let stroke = if danger {
+                    Stroke::new(1.0_f32, p.danger)
+                } else if !primary && !tab {
+                    Stroke::new(1.0_f32, p.border_subtle)
+                } else {
+                    Stroke::NONE
+                };
+                painter.rect(rect, radius, fill, stroke);
             }
             rect
         }
         LinearDark => {
+            let glow_color = if danger { p.danger } else { p.accent };
             if hover {
-                painter.add(shadow(0.0, 8.0, p.accent.gamma_multiply(0.33)).as_shape(rect, 4.0));
+                painter.add(
+                    shadow(0.0, 8.0, glow_color.gamma_multiply(0.30))
+                        .as_shape(rect, p.control_radius),
+                );
             }
             if !tab || selected || hover {
                 painter.rect(
                     rect,
-                    4.0,
+                    p.control_radius,
                     fill,
                     Stroke::new(
                         1.0_f32,
-                        if hover || selected {
+                        if danger {
+                            p.danger
+                        } else if hover || selected {
                             p.accent
                         } else {
                             p.border
                         },
                     ),
                 );
-                horizontal_line(
-                    painter,
-                    rect,
-                    rect.top() + 1.0,
-                    4.0,
-                    Color32::from_white_alpha(44),
-                );
+                horizontal_line(painter, rect, rect.top() + 1.0, 4.0, p.bevel_highlight);
             }
             rect
         }
         OrientalInk => {
-            let edge = if primary || selected {
+            let edge = if danger {
+                p.danger
+            } else if primary || selected {
                 p.accent
             } else {
                 p.border
             };
             if down {
-                painter.add(shadow(0.0, 7.0, edge.gamma_multiply(0.30)).as_shape(rect, 2.0));
+                painter.add(
+                    shadow(0.0, 7.0, edge.gamma_multiply(0.30)).as_shape(rect, p.control_radius),
+                );
             }
-            painter.rect(rect, 2.0, fill, Stroke::new(1.0_f32, edge));
+            painter.rect(rect, p.control_radius, fill, Stroke::new(1.0_f32, edge));
             if primary {
                 painter.rect_stroke(
                     rect.shrink(2.0),
                     1.0,
-                    Stroke::new(0.7_f32, Color32::from_white_alpha(180)),
+                    Stroke::new(0.7_f32, p.bevel_highlight),
                 );
             } else if selected {
                 underline(painter, rect, edge);
@@ -435,7 +466,7 @@ pub(super) fn paint_segment(
         ),
     )
     .shrink(0.75);
-    let offset = shadow(1.5, 5.0, Color32::from_black_alpha(36)).as_shape(rect, 13.0);
+    let offset = shadow(1.5, 5.0, p.shadow_color).as_shape(rect, 13.0);
     ui.painter().set(
         slot,
         egui::Shape::Vec(vec![
@@ -456,24 +487,25 @@ pub(super) fn panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&m
     let card = egui::Frame::none().fill(p.surface);
     let card = match p.style {
         TactileIndustrial => card
-            .rounding(4.0)
-            .stroke(Stroke::new(1.4_f32, p.border))
+            .rounding(p.card_radius)
+            .stroke(Stroke::new(p.border_width, p.border))
             .inner_margin(egui::Margin::same(12.0)),
         Win11Mica => card
-            .rounding(6.0)
+            .rounding(p.card_radius)
             .stroke(Stroke::new(1.0_f32, p.border_subtle))
             .inner_margin(egui::Margin::symmetric(10.0, 4.0)),
         MacosBento => card
-            .rounding(14.0)
-            .shadow(shadow(3.0, 12.0, Color32::from_black_alpha(33)))
+            .rounding(p.card_radius)
+            .stroke(Stroke::new(1.0_f32, p.border_subtle))
+            .shadow(shadow(3.0, 12.0, p.shadow_color))
             .inner_margin(egui::Margin::same(14.0)),
         LinearDark => card
-            .rounding(3.0)
+            .rounding(p.card_radius)
             .stroke(Stroke::new(1.0_f32, p.border))
             .inner_margin(egui::Margin::same(10.0)),
         OrientalInk => card
-            .rounding(1.0)
-            .stroke(Stroke::new(1.3_f32, p.border))
+            .rounding(p.card_radius)
+            .stroke(Stroke::new(1.2_f32, p.border))
             .inner_margin(egui::Margin::same(13.0)),
     };
     let content_width = (ui.available_width() - card.total_margin().sum().x).max(1.0);
@@ -483,7 +515,8 @@ pub(super) fn panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&m
             match p.style {
                 TactileIndustrial => {
                     let mut strip = egui::Frame::none()
-                        .fill(CHARCOAL)
+                        .fill(p.plate_bg)
+                        .stroke(Stroke::new(1.0_f32, p.plate_border))
                         .rounding(2.0)
                         .inner_margin(egui::Margin::symmetric(8.0, 4.0))
                         .begin(ui);
@@ -501,10 +534,10 @@ pub(super) fn panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&m
                                 RichText::new(format!("MOD // {number:02}"))
                                     .monospace()
                                     .size(10.0)
-                                    .color(Color32::from_gray(183)),
+                                    .color(p.muted),
                             );
                         }
-                        ui.label(title.clone().color(PLATE_TEXT));
+                        ui.label(title.clone().color(p.plate_text));
                     });
                     let strip = strip.end(ui).rect;
                     cut_line(
@@ -557,21 +590,19 @@ pub(super) fn panel(ui: &mut egui::Ui, title: &str, add_contents: impl FnOnce(&m
                 for x in [rect.left() + 6.0, rect.right() - 6.0] {
                     for y in [rect.top() + 6.0, rect.bottom() - 6.0] {
                         painter.circle_filled(pos2(x, y), 2.7, p.border);
-                        let slot = Stroke::new(0.8_f32, CHARCOAL);
+                        let slot = Stroke::new(0.8_f32, p.plate_border);
                         painter.hline(x - 1.5..=x + 1.5, y, slot);
                         painter.vline(x, y - 1.5..=y + 1.5, slot);
                     }
                 }
             }
-            LinearDark => horizontal_line(
-                painter,
-                rect,
-                rect.top() + 1.0,
-                5.0,
-                Color32::from_white_alpha(42),
-            ),
+            LinearDark => horizontal_line(painter, rect, rect.top() + 1.0, 5.0, p.bevel_highlight),
             OrientalInk => {
-                painter.rect_stroke(rect.shrink(3.5), 0.0, Stroke::new(0.7_f32, p.border));
+                painter.rect_stroke(
+                    rect.shrink(3.5),
+                    (p.card_radius - 1.5).max(0.0),
+                    Stroke::new(0.7_f32, p.border_subtle),
+                );
             }
             _ => {}
         }
@@ -600,7 +631,7 @@ fn cut_line(painter: &Painter, rect: Rect, y: f32, groove: Color32, reflection: 
 pub(super) fn row_divider(ui: &egui::Ui, rect: Rect, p: FluentPalette) {
     let y = rect.bottom() + 1.0;
     match p.style {
-        TactileIndustrial => cut_line(ui.painter(), rect, y, p.border_subtle, TOP_LIGHT),
+        TactileIndustrial => cut_line(ui.painter(), rect, y, p.border_subtle, p.bevel_highlight),
         Win11Mica => horizontal_line(
             ui.painter(),
             rect.expand2(vec2(9.0, 0.0)),
@@ -652,33 +683,38 @@ pub(super) fn navigation(
     let (icon_x, text_x) = match p.style {
         TactileIndustrial => {
             if selected {
-                painter.rect(rect, 3.0, p.nav_hover, Stroke::new(1.3_f32, CHARCOAL));
-                horizontal_line(painter, rect, rect.top() + 1.5, 3.0, SHADE);
-                horizontal_line(painter, rect, rect.bottom() - 1.5, 3.0, TOP_LIGHT);
+                painter.rect(
+                    rect,
+                    p.control_radius,
+                    p.nav_hover,
+                    Stroke::new(1.2_f32, p.plate_border),
+                );
+                horizontal_line(painter, rect, rect.top() + 1.5, 3.0, p.bevel_shadow);
+                horizontal_line(painter, rect, rect.bottom() - 1.5, 3.0, p.bevel_highlight);
                 let lamp = Rect::from_center_size(
                     pos2(rect.right() - 9.0, rect.center().y),
                     vec2(6.0, 6.0),
                 );
-                painter.rect_filled(lamp.expand(1.0), 1.0, CHARCOAL);
+                painter.rect_filled(lamp.expand(1.0), 1.0, p.plate_bg);
                 painter.rect_filled(lamp, 0.5, p.accent);
             } else if hover {
-                painter.rect_filled(rect, 3.0, p.nav_hover);
+                painter.rect_filled(rect, p.control_radius, p.nav_hover);
             }
             let plate =
                 Rect::from_center_size(pos2(rect.left() + 15.0, rect.center().y), vec2(20.0, 16.0));
-            painter.rect_filled(plate, 1.5, CHARCOAL);
+            painter.rect_filled(plate, 1.5, p.plate_bg);
             painter.text(
                 plate.center(),
                 Align2::CENTER_CENTER,
                 format!("{:02}", section_number(section)),
                 FontId::monospace(10.0),
-                PLATE_TEXT,
+                p.plate_text,
             );
             (40.0, 56.0)
         }
         Win11Mica => {
             if selected || hover {
-                painter.rect_filled(rect, 4.0, p.nav_hover);
+                painter.rect_filled(rect, p.control_radius, p.nav_hover);
             }
             if selected {
                 let bar = Rect::from_center_size(
@@ -691,16 +727,16 @@ pub(super) fn navigation(
         }
         MacosBento => {
             if selected {
-                painter.add(shadow(1.5, 5.0, Color32::from_black_alpha(31)).as_shape(rect, 8.0));
-                painter.rect_filled(rect, 8.0, p.surface);
+                painter.add(shadow(1.5, 5.0, p.shadow_color).as_shape(rect, p.control_radius));
+                painter.rect_filled(rect, p.control_radius, p.surface);
             } else if hover {
-                painter.rect_filled(rect, 8.0, p.nav_hover);
+                painter.rect_filled(rect, p.control_radius, p.nav_hover);
             }
             (19.0, 37.0)
         }
         LinearDark => {
             if selected || hover {
-                painter.rect_filled(rect, 3.0, p.nav_hover);
+                painter.rect_filled(rect, p.control_radius, p.nav_hover);
             }
             if selected {
                 let bar = Rect::from_center_size(
@@ -730,7 +766,11 @@ pub(super) fn navigation(
         }
         OrientalInk => {
             if selected || hover {
-                painter.rect_filled(rect.shrink2(vec2(4.0, 2.0)), 1.0, p.surface_alt);
+                painter.rect_filled(
+                    rect.shrink2(vec2(4.0, 2.0)),
+                    p.control_radius,
+                    p.surface_alt,
+                );
             }
             if selected {
                 let x = rect.left() + 6.0;
@@ -863,7 +903,7 @@ pub(super) fn slider<T: egui::emath::Numeric>(
     };
     let rail = Rect::from_min_max(pos2(left, y - height * 0.5), pos2(right, y + height * 0.5));
     let groove = match p.style {
-        TactileIndustrial => CHARCOAL,
+        TactileIndustrial => p.plate_bg,
         OrientalInk => p.muted,
         _ => p.border,
     };
@@ -881,9 +921,9 @@ pub(super) fn slider<T: egui::emath::Numeric>(
                 painter.vline(x, y + 8.0..=y + 8.0 + tick, Stroke::new(0.8_f32, p.muted));
             }
             let cap = Rect::from_center_size(center, vec2(13.0, 17.0));
-            painter.rect_filled(cap.translate(vec2(0.0, 1.5)), 2.0, CHARCOAL);
-            painter.rect(cap, 2.0, p.control_bg, Stroke::new(1.0_f32, CHARCOAL));
-            horizontal_line(painter, cap, cap.top() + 1.5, 2.0, TOP_LIGHT);
+            painter.rect_filled(cap.translate(vec2(0.0, 1.5)), 2.0, p.bevel_shadow);
+            painter.rect(cap, 2.0, p.control_bg, Stroke::new(1.0_f32, p.plate_border));
+            horizontal_line(painter, cap, cap.top() + 1.5, 2.0, p.bevel_highlight);
             painter.vline(center.x, y - 5.0..=y + 5.0, Stroke::new(2.0_f32, accent));
         }
         Win11Mica => {
@@ -892,12 +932,12 @@ pub(super) fn slider<T: egui::emath::Numeric>(
         }
         MacosBento => {
             let knob = Rect::from_center_size(center, vec2(17.0, 17.0));
-            painter.add(shadow(1.0, 4.0, SHADE).as_shape(knob, 9.0));
+            painter.add(shadow(1.0, 4.0, p.shadow_color).as_shape(knob, 9.0));
             painter.circle(
                 center,
                 8.5,
                 Color32::WHITE,
-                Stroke::new(0.7_f32, Color32::from_black_alpha(44)),
+                Stroke::new(0.7_f32, p.border_subtle),
             );
         }
         LinearDark => {
@@ -911,18 +951,24 @@ pub(super) fn slider<T: egui::emath::Numeric>(
     focus_ring(painter, rect, p.control_radius, p.accent, &response);
 }
 
-fn lcd_fill(p: FluentPalette, dark: bool) -> Color32 {
-    if dark {
+fn lcd_fill(p: FluentPalette) -> Color32 {
+    if p.dark_mode {
         p.app_bg
     } else {
-        Color32::from_rgb(218, 221, 207)
+        Color32::from_rgb(220, 223, 210)
     }
 }
 
-fn recessed_edges(ui: &egui::Ui, rect: Rect) {
+fn recessed_edges(ui: &egui::Ui, rect: Rect, p: FluentPalette) {
     if ui.is_rect_visible(rect) {
-        horizontal_line(ui.painter(), rect, rect.top() + 1.0, 3.0, SHADE);
-        horizontal_line(ui.painter(), rect, rect.bottom() - 1.0, 3.0, TOP_LIGHT);
+        horizontal_line(ui.painter(), rect, rect.top() + 1.0, 3.0, p.bevel_shadow);
+        horizontal_line(
+            ui.painter(),
+            rect,
+            rect.bottom() - 1.0,
+            3.0,
+            p.bevel_highlight,
+        );
     }
 }
 
@@ -932,12 +978,11 @@ pub(super) fn text_field(edit: TextEdit<'_>) -> impl egui::Widget + '_ {
         if p.style != TactileIndustrial {
             return ui.add(edit);
         }
-        let dark = ui.visuals().dark_mode;
         let previous_fill = ui.visuals().extreme_bg_color;
-        ui.visuals_mut().extreme_bg_color = lcd_fill(p, dark);
+        ui.visuals_mut().extreme_bg_color = lcd_fill(p);
         let response = ui.add(edit);
         ui.visuals_mut().extreme_bg_color = previous_fill;
-        recessed_edges(ui, response.rect);
+        recessed_edges(ui, response.rect, p);
         response
     }
 }
@@ -960,7 +1005,7 @@ impl SettingsComboBoxExt for ComboBox {
         if p.style != TactileIndustrial {
             return self.show_ui(ui, menu);
         }
-        let fill = lcd_fill(p, ui.visuals().dark_mode);
+        let fill = lcd_fill(p);
         let previous_widgets = ui.visuals().widgets.clone();
         let widgets = &mut ui.visuals_mut().widgets;
         for widget in [
@@ -977,7 +1022,7 @@ impl SettingsComboBoxExt for ComboBox {
             menu(ui)
         });
         ui.visuals_mut().widgets = previous_widgets;
-        recessed_edges(ui, result.response.rect);
+        recessed_edges(ui, result.response.rect, p);
         result
     }
 }
@@ -986,21 +1031,22 @@ pub(super) fn header_frame(p: FluentPalette) -> egui::Frame {
     let frame = egui::Frame::none().inner_margin(egui::Margin::symmetric(9.0, 4.0));
     match p.style {
         TactileIndustrial => frame
-            .fill(CHARCOAL)
-            .rounding(3.0)
-            .stroke(Stroke::new(1.0_f32, Color32::BLACK)),
+            .fill(p.plate_bg)
+            .rounding(p.control_radius)
+            .stroke(Stroke::new(1.0_f32, p.plate_border)),
         Win11Mica => egui::Frame::none(),
-        MacosBento => frame.fill(p.surface).rounding(12.0).shadow(shadow(
-            2.0,
-            8.0,
-            Color32::from_black_alpha(26),
-        )),
+        MacosBento => frame
+            .fill(p.surface)
+            .rounding(p.card_radius)
+            .stroke(Stroke::new(1.0_f32, p.border_subtle))
+            .shadow(shadow(2.0, 8.0, p.shadow_color)),
         LinearDark => frame
             .fill(p.surface)
-            .rounding(3.0)
+            .rounding(p.control_radius)
             .stroke(Stroke::new(1.0_f32, p.border)),
         OrientalInk => frame
             .fill(p.surface_alt)
+            .rounding(p.control_radius)
             .stroke(Stroke::new(1.0_f32, p.border)),
     }
 }
@@ -1013,9 +1059,9 @@ pub(super) fn page_title(ui: &mut egui::Ui, section: SettingsSection, p: FluentP
                 RichText::new(format!("{:02}", section_number(section)))
                     .monospace()
                     .size(13.0)
-                    .color(PLATE_TEXT),
+                    .color(p.plate_text),
             );
-            PLATE_TEXT
+            p.plate_text
         }
         LinearDark => {
             ui.label(RichText::new(">").monospace().strong().color(p.accent));
@@ -1041,22 +1087,56 @@ pub(super) fn page_title(ui: &mut egui::Ui, section: SettingsSection, p: FluentP
     .on_hover_text(section.hint());
 }
 
-pub(super) fn footer_frame(p: FluentPalette) -> egui::Frame {
-    let frame = egui::Frame::none()
-        .fill(p.command_bar)
-        .inner_margin(egui::Margin::symmetric(16.0, 7.0));
+/// Outer frame for the bottom action panel.
+/// Always opaque edge-to-edge with zero outer_margin and no outer window stroke
+/// so clear_color never leaks through rounded corners or margins on any style.
+pub(super) fn footer_outer_frame(p: FluentPalette) -> egui::Frame {
     match p.style {
-        TactileIndustrial => frame.stroke(Stroke::new(1.4_f32, p.border)),
-        Win11Mica => frame.stroke(Stroke::new(1.0_f32, p.border_subtle)),
-        MacosBento => frame
-            .fill(p.command_bar.gamma_multiply(0.93))
-            .rounding(14.0)
-            .outer_margin(egui::Margin::symmetric(10.0, 5.0))
-            .shadow(shadow(1.0, 11.0, Color32::from_black_alpha(44))),
-        LinearDark => frame.fill(p.app_bg).stroke(Stroke::new(1.0_f32, p.border)),
-        OrientalInk => frame
+        MacosBento => egui::Frame::none()
+            .fill(p.app_bg)
+            // The capsule shadow extends seven points below its frame.
+            .inner_margin(egui::Margin::symmetric(10.0, 8.0)),
+        LinearDark => egui::Frame::none()
+            .fill(p.app_bg)
+            .inner_margin(egui::Margin::symmetric(16.0, 8.0)),
+        OrientalInk => egui::Frame::none()
             .fill(p.surface_alt)
-            .stroke(Stroke::new(1.0_f32, p.border)),
+            .inner_margin(egui::Margin::symmetric(16.0, 8.0)),
+        TactileIndustrial | Win11Mica => egui::Frame::none()
+            .fill(p.command_bar)
+            .inner_margin(egui::Margin::symmetric(16.0, 8.0)),
+    }
+}
+
+pub(super) fn show_footer_container(
+    ui: &mut egui::Ui,
+    p: FluentPalette,
+    add_contents: impl FnOnce(&mut egui::Ui),
+) {
+    let panel_rect = ui.clip_rect();
+    match p.style {
+        MacosBento => {
+            egui::Frame::none()
+                .fill(p.command_bar)
+                .stroke(Stroke::new(1.0_f32, p.border_subtle))
+                .rounding(p.card_radius)
+                .shadow(shadow(2.0, 10.0, p.shadow_color))
+                .inner_margin(egui::Margin::symmetric(14.0, 6.0))
+                .show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    add_contents(ui);
+                });
+        }
+        _ => {
+            let border_color = match p.style {
+                Win11Mica => p.border_subtle,
+                _ => p.border,
+            };
+            let y = ui.painter().round_to_pixel_center(panel_rect.top() + 0.5);
+            ui.painter()
+                .hline(panel_rect.x_range(), y, Stroke::new(1.0_f32, border_color));
+            add_contents(ui);
+        }
     }
 }
 
@@ -1070,9 +1150,9 @@ pub(super) fn footer_readout(
     match p.style {
         TactileIndustrial => {
             let frame = egui::Frame::none()
-                .fill(CHARCOAL)
-                .stroke(Stroke::new(1.4_f32, Color32::BLACK))
-                .rounding(3.0)
+                .fill(p.plate_bg)
+                .stroke(Stroke::new(1.0_f32, p.plate_border))
+                .rounding(p.control_radius)
                 .inner_margin(egui::Margin::symmetric(7.0, 3.0));
             let width = (ui.available_width() - frame.total_margin().sum().x).max(1.0);
             let rect = frame
@@ -1097,7 +1177,7 @@ pub(super) fn footer_readout(
                 })
                 .response
                 .rect;
-            recessed_edges(ui, rect);
+            recessed_edges(ui, rect, p);
             let y = rect.bottom() - 5.0;
             for index in 0..((rect.width() - 14.0) / 4.0).max(0.0) as usize {
                 let x = rect.left() + 7.0 + index as f32 * 4.0;

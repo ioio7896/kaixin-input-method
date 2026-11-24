@@ -1,90 +1,40 @@
+[CmdletBinding(DefaultParameterSetName = 'Register')]
 param(
     [string]$DllPath = (Join-Path $PSScriptRoot 'build\Release\srf_tsf_tip.dll'),
+    [ValidateSet('x64', 'x86')]
+    [string]$Arch = $(if ([Environment]::Is64BitProcess) { 'x64' } else { 'x86' }),
+    [Parameter(ParameterSetName = 'Register')]
     [switch]$Machine,
-    [switch]$Unregister
+    [Parameter(ParameterSetName = 'Register')]
+    [switch]$Unregister,
+    [Parameter(Mandatory, ParameterSetName = 'Profile')]
+    [ValidateSet('enable-profile', 'notify-language')]
+    [string]$ProfileAction
 )
 
 $ErrorActionPreference = 'Stop'
-
-if (-not (Test-Path -LiteralPath $DllPath)) {
-    throw "DLL not found: $DllPath"
+$dll = Get-Item -LiteralPath $DllPath -ErrorAction Stop
+$systemDir = if ($Arch -eq 'x86' -and [Environment]::Is64BitOperatingSystem) {
+    'SysWOW64'
+} elseif ($Arch -eq 'x64' -and -not [Environment]::Is64BitProcess) {
+    'Sysnative'
+} else {
+    'System32'
 }
+$registrar = Join-Path $env:WINDIR "$systemDir\regsvr32.exe"
+$arguments = @('/s')
+if ($Unregister) { $arguments += '/u' }
+if ($Machine) { $arguments += '/n', '/i:machine' }
+if ($ProfileAction) { $arguments += '/n', "/i:$ProfileAction" }
+$arguments += ('"{0}"' -f $dll.FullName)
 
-if (-not ('SrfTipRegistration.NativeMethods' -as [type])) {
-    Add-Type -Language CSharp -TypeDefinition @"
-using System;
-using System.Runtime.InteropServices;
-
-namespace SrfTipRegistration {
-    public static class NativeMethods {
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        public static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool FreeLibrary(IntPtr hModule);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Ansi)]
-        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-    }
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-    public delegate int DllRegisterServerDelegate();
-
-    [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode)]
-    public delegate int DllInstallDelegate([MarshalAs(UnmanagedType.Bool)] bool install, string cmdLine);
-}
-"@
-}
-
-$LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR = 0x00000100
-$LOAD_LIBRARY_SEARCH_SYSTEM32 = 0x00000800
-
-function Get-Delegate {
-    param(
-        [IntPtr]$Module,
-        [string]$Name,
-        [Type]$DelegateType
-    )
-
-    $proc = [SrfTipRegistration.NativeMethods]::GetProcAddress($Module, $Name)
-    if ($proc -eq [IntPtr]::Zero) {
-        throw "Export not found: $Name"
-    }
-    return [Runtime.InteropServices.Marshal]::GetDelegateForFunctionPointer($proc, $DelegateType)
-}
-
-$dllPath = [System.IO.Path]::GetFullPath($DllPath)
-$loadFlags = $LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR -bor $LOAD_LIBRARY_SEARCH_SYSTEM32
-$module = [SrfTipRegistration.NativeMethods]::LoadLibraryEx($dllPath, [IntPtr]::Zero, [uint32]$loadFlags)
-if ($module -eq [IntPtr]::Zero) {
-    $code = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
-    throw "LoadLibraryEx failed ($code): $dllPath"
-}
-
+# Wait for the registrar itself. A desktop service started by TSF may outlive it.
+$process = Start-Process -FilePath $registrar -ArgumentList $arguments -WindowStyle Hidden -PassThru
 try {
-    if ($Machine) {
-        $delegate = Get-Delegate -Module $module -Name 'DllInstall' -DelegateType ([SrfTipRegistration.DllInstallDelegate])
-        $hr = $delegate.Invoke(-not $Unregister, 'machine')
-    } else {
-        $exportName = if ($Unregister) { 'DllUnregisterServer' } else { 'DllRegisterServer' }
-        $delegate = Get-Delegate -Module $module -Name $exportName -DelegateType ([SrfTipRegistration.DllRegisterServerDelegate])
-        $hr = $delegate.Invoke()
+    $process.WaitForExit()
+    if ($process.ExitCode -ne 0) {
+        throw ("{0} regsvr32 failed (exit {1}): {2}" -f $Arch, $process.ExitCode, ($arguments -join ' '))
     }
-
-    if ($hr -lt 0) {
-        $hrHex = '{0:X8}' -f ([uint32]([int64]$hr + 0x100000000))
-    } else {
-        $hrHex = '{0:X8}' -f ([uint32]$hr)
-    }
-    Write-Output "HRESULT=0x$hrHex"
-    if ($hr -lt 0) {
-        $scope = if ($Machine) { 'machine' } else { 'user' }
-        $operation = if ($Unregister) { 'unregister' } else { 'register' }
-        $processArch = if ([Environment]::Is64BitProcess) { 'x64' } else { 'x86' }
-        $message = "Registration failed: HRESULT=0x$hrHex Operation=$operation Scope=$scope Process=$processArch DllPath=$dllPath"
-        throw [System.Runtime.InteropServices.COMException]::new($message, $hr)
-    }
-}
-finally {
-    [void][SrfTipRegistration.NativeMethods]::FreeLibrary($module)
+} finally {
+    $process.Dispose()
 }

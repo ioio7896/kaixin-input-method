@@ -409,6 +409,7 @@ void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
   m_candidateMeta.clear();
   m_candidateRows.clear();
   m_candidateHasMore = false;
+  ResetCandidateFullLookupState();
   m_candidatesReading.clear();
   m_clipboardQuickLastPageReading.clear();
   SetCandidateViewState(SrfCandidateViewState::Empty, reason ? reason : L"focus-bound-clear");
@@ -866,6 +867,7 @@ void CSrfTip::ClearCompositionBufferState() {
   m_candidateMeta.clear();
   m_candidateRows.clear();
   m_candidateHasMore = false;
+  ResetCandidateFullLookupState();
   m_candidatesReading.clear();
   m_clipboardQuickLastPageReading.clear();
   SetCandidateViewState(SrfCandidateViewState::Empty, L"composition-clear");

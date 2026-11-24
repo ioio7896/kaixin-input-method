@@ -72,9 +72,13 @@ pub(super) fn user_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
         "输入自定义编码与短语，点击“添加”立即写入用户词库。",
         |ui| {
             ui.label("编码");
-            ui.add(TextEdit::singleline(&mut app.user_phrase_key).desired_width(96.0));
+            ui.add(text_field(
+                TextEdit::singleline(&mut app.user_phrase_key).desired_width(96.0),
+            ));
             ui.label("短语");
-            ui.add(TextEdit::singleline(&mut app.user_phrase_text).desired_width(140.0));
+            ui.add(text_field(
+                TextEdit::singleline(&mut app.user_phrase_text).desired_width(140.0),
+            ));
             if outline_button(ui, "添加").clicked() {
                 app.add_user_phrase();
             }
@@ -85,7 +89,9 @@ pub(super) fn user_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsApp) {
         "永远不学",
         "加入后不再学习该短语；可从下方列表移出，恢复正常学习。",
         |ui| {
-            ui.add(TextEdit::singleline(&mut app.blocked_phrase_text).desired_width(180.0));
+            ui.add(text_field(
+                TextEdit::singleline(&mut app.blocked_phrase_text).desired_width(180.0),
+            ));
             if outline_button(ui, "加入").clicked() {
                 app.block_phrase_from_settings();
             }
@@ -147,18 +153,18 @@ pub(super) fn extension_lexicon_controls(ui: &mut egui::Ui, app: &mut SettingsAp
         )
         .on_hover_text("基础词库与读音修正始终启用；扩展词库按需选择，保存设置后生效。");
         ui.horizontal_wrapped(|ui| {
-            ui.add(
+            ui.add(text_field(
                 egui::TextEdit::singleline(&mut app.lexicon_filter)
                     .hint_text("搜索词库名称、用途或文件标识")
                     .desired_width(280.0),
-            );
+            ));
             if outline_button(ui, "恢复词库默认").clicked() {
                 for (tag, enabled) in &mut app.model.lexicon_tags {
                     *enabled = pinyin_ime::lexicon_prefs::default_optional_lexicon_tag_enabled(tag);
                 }
             }
             if outline_button(ui, "刷新列表与统计").clicked() {
-                merge_discovered_lexicon_tags_compat(&mut app.model);
+                merge_discovered_lexicon_tags(&mut app.model);
                 app.lexicon_catalog = None;
                 app.lexicon_catalog_rx = None;
             }

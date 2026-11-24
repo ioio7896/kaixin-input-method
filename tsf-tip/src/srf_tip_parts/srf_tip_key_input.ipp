@@ -75,9 +75,90 @@ bool WideTextToUtf8(const std::wstring& text, std::string* output) {
                              nullptr) == bytes;
 }
 
-bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
-                                uint64_t focusGeneration) {
-  if (text.empty() || !targetHwnd) return false;
+bool IsContinuousTranslateFlagPresent() {
+  static std::atomic<ULONGLONG> lastCheckedTick{0};
+  static std::atomic<bool> cachedEnabled{false};
+  const ULONGLONG now = GetTickCount64();
+  const ULONGLONG prev = lastCheckedTick.load(std::memory_order_relaxed);
+  if (prev != 0 && now - prev < 500) {
+    return cachedEnabled.load(std::memory_order_relaxed);
+  }
+  wchar_t localRoot[MAX_PATH] = {};
+  bool enabled = false;
+  if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
+    const auto flag = std::filesystem::path(localRoot) / L"kaixin" / L"translate_continuous.flag";
+    const DWORD attrs = GetFileAttributesW(flag.c_str());
+    enabled = attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY) == 0;
+  }
+  cachedEnabled.store(enabled, std::memory_order_relaxed);
+  lastCheckedTick.store(now, std::memory_order_relaxed);
+  return enabled;
+}
+
+bool IsTranslatorLikelyAvailable() {
+  if (WaitNamedPipeW(wintranslator_protocol::kHyMtRequestPipe, 0) != 0 ||
+      WaitNamedPipeW(wintranslator_protocol::kRequestPipe, 0) != 0) {
+    return true;
+  }
+  wchar_t envBuf[MAX_PATH] = {};
+  if (GetEnvironmentVariableW(L"HYMT_TRANSLATOR_EXE", envBuf, MAX_PATH) &&
+      GetFileAttributesW(envBuf) != INVALID_FILE_ATTRIBUTES) {
+    return true;
+  }
+  if (GetEnvironmentVariableW(L"WINTRANSLATOR_EXE", envBuf, MAX_PATH) &&
+      GetFileAttributesW(envBuf) != INVALID_FILE_ATTRIBUTES) {
+    return true;
+  }
+  wchar_t localRoot[MAX_PATH] = {};
+  if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
+    const auto ini = std::filesystem::path(localRoot) / L"kaixin" / L"kaixin.ini";
+    wchar_t configured[MAX_PATH] = {};
+    GetPrivateProfileStringW(L"tools", L"wintranslator_path", L"", configured, MAX_PATH,
+                             ini.c_str());
+    if (configured[0] != L'\0' && GetFileAttributesW(configured) != INVALID_FILE_ATTRIBUTES) {
+      return true;
+    }
+    const auto defaultHyMt =
+        std::filesystem::path(localRoot) / L"Programs" / L"Hy-MT2" / L"hy-mt2-desktop.exe";
+    if (GetFileAttributesW(defaultHyMt.c_str()) != INVALID_FILE_ATTRIBUTES) return true;
+    const auto defaultWinTr =
+        std::filesystem::path(localRoot) / L"Programs" / L"WinTranslator" / L"WinTranslator.exe";
+    if (GetFileAttributesW(defaultWinTr.c_str()) != INVALID_FILE_ATTRIBUTES) return true;
+  }
+  const wchar_t* regPath =
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\hy-mt2-desktop.exe";
+  for (HKEY hive : {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE}) {
+    wchar_t regVal[MAX_PATH] = {};
+    DWORD regSize = sizeof(regVal);
+    if (RegGetValueW(hive, regPath, nullptr, RRF_RT_REG_SZ, nullptr, regVal, &regSize) ==
+            ERROR_SUCCESS &&
+        regVal[0] != L'\0' && GetFileAttributesW(regVal) != INVALID_FILE_ATTRIBUTES) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool TryHandoffToRunningPreview(const std::string& request) {
+  constexpr wchar_t kPreviewPipe[] = LR"(\\.\pipe\Kaixin.TranslationPreview.Control)";
+  if (WaitNamedPipeW(kPreviewPipe, 80) == 0) return false;
+  HANDLE pipe = CreateFileW(kPreviewPipe, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+  if (pipe == INVALID_HANDLE_VALUE) return false;
+  DWORD written = 0;
+  const BOOL ok =
+      WriteFile(pipe, request.data(), static_cast<DWORD>(request.size()), &written, nullptr);
+  CloseHandle(pipe);
+  return ok != 0 && written == request.size();
+}
+
+bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd, uint64_t focusGeneration,
+                                const RECT* caretRect = nullptr,
+                                const wchar_t* targetOverride = nullptr,
+                                const wchar_t* originOverride = nullptr, bool ephemeral = false,
+                                bool allowClipboardFallback = false) {
+  if (!targetHwnd) return false;
+  if (text.empty() && !allowClipboardFallback) return false;
+  if (!IsTranslatorLikelyAvailable()) return false;
 
   const auto executable = FindTrayHelper(
       ModuleDirFromAddress(reinterpret_cast<const void*>(&LaunchCandidateTranslation)));
@@ -101,20 +182,43 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
                              ini.c_str());
     resultAction = language;
   }
+  if (targetOverride && targetOverride[0] != L'\0') {
+    target = targetOverride;
+  }
+  std::wstring effectiveText = text;
+  if (effectiveText.empty()) {
+    // Allow `vv tr` with no argument to translate current clipboard text safely.
+    if (OpenClipboard(nullptr)) {
+      HANDLE clip = GetClipboardData(CF_UNICODETEXT);
+      if (clip) {
+        if (const wchar_t* ptr = static_cast<const wchar_t*>(GlobalLock(clip))) {
+          effectiveText = ptr;
+          GlobalUnlock(clip);
+        }
+      }
+      CloseClipboard();
+    }
+    if (effectiveText.empty()) return false;
+  }
+  const std::wstring origin =
+      (originOverride && originOverride[0] != L'\0') ? originOverride : L"kaixin-ime-candidate";
+  std::wstring caretJson;
+  if (caretRect && (caretRect->left != 0 || caretRect->bottom != 0)) {
+    caretJson = L",\"caret_rect\":[" + std::to_wstring(caretRect->left) + L"," +
+                std::to_wstring(caretRect->top) + L"," + std::to_wstring(caretRect->right) + L"," +
+                std::to_wstring(caretRect->bottom) + L"]";
+  }
   const std::wstring json =
       L"{\"protocol_version\":" + std::to_wstring(wintranslator_protocol::kVersion) +
       L",\"request_id\":\"" + requestId + L"\",\"action\":\"translate\",\"text\":\"" +
-      JsonEscapeTranslationText(text) + L"\",\"source\":\"auto\",\"target\":\"" +
-      JsonEscapeTranslationText(target) +
-      L"\","
-      L"\"origin\":\"kaixin-ime-candidate\",\"target_hwnd\":" +
-      std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) + L",\"target_process_id\":" +
-      std::to_wstring(targetProcessId) + L",\"result_action\":\"" +
-      JsonEscapeTranslationText(resultAction) +
-      L"\",\"interactive\":true,"
-      L"\"presentation\":\"compact\",\"delivery\":\"show\","
-      L"\"focus_generation\":" +
-      std::to_wstring(focusGeneration) + L",\"replace_selection\":false}";
+      JsonEscapeTranslationText(effectiveText) + L"\",\"source\":\"auto\",\"target\":\"" +
+      JsonEscapeTranslationText(target) + L"\",\"origin\":\"" + JsonEscapeTranslationText(origin) +
+      L"\",\"target_hwnd\":" + std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) +
+      L",\"target_process_id\":" + std::to_wstring(targetProcessId) + L",\"result_action\":\"" +
+      JsonEscapeTranslationText(resultAction) + L"\",\"interactive\":true," +
+      L"\"presentation\":\"compact\",\"delivery\":\"show\"," + L"\"focus_generation\":" +
+      std::to_wstring(focusGeneration) + L",\"replace_selection\":false,\"ephemeral\":" +
+      (ephemeral ? L"true" : L"false") + caretJson + L"}";
   std::string request;
   if (!WideTextToUtf8(json, &request)) return false;
   if (request.size() + 1 > wintranslator_protocol::kMaximumRequestBytes) return false;
@@ -122,6 +226,7 @@ bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd,
 
   try {
     return StartDetachedBackgroundWorker([request = std::move(request), executable]() {
+      if (TryHandoffToRunningPreview(request)) return;
       SECURITY_ATTRIBUTES security{sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
       HANDLE reader = nullptr, writer = nullptr;
       if (!CreatePipe(&reader, &writer, &security, 0)) return;
@@ -313,10 +418,31 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
       (GetKeyState(VK_SHIFT) & 0x8000) != 0 && (GetKeyState(VK_MENU) & 0x8000) == 0;
   if (translateCandidate) {
     if (keyDownTransition) {
+      if (m_sensitiveInputActive || m_config.privacy.enabled) {
+        MessageBeep(MB_ICONWARNING);
+        *pHandled = true;
+        return S_OK;
+      }
       const std::wstring candidate =
           m_candSel < m_candidates.size() ? m_candidates[m_candSel] : m_reading;
       const HWND target = GetForegroundWindow();
-      if (LaunchCandidateTranslation(candidate, target, m_compositionGeneration)) {
+      RECT anchorRect = {};
+      const RECT* anchorPtr = nullptr;
+      if (pic && m_pComposition) {
+        ITfRange* range = nullptr;
+        if (SUCCEEDED(m_pComposition->GetRange(&range)) && range) {
+          if (TryGetTextExtRect(ec, pic, range, &anchorRect)) {
+            anchorPtr = &anchorRect;
+          }
+          range->Release();
+        }
+      }
+      if (!anchorPtr && m_hasLastCandidateRect) {
+        anchorPtr = &m_lastCandidateRect;
+      }
+      if (LaunchCandidateTranslation(candidate, target, m_compositionGeneration, anchorPtr, nullptr,
+                                     L"kaixin-ime-candidate",
+                                     ShouldSuppressClipboardForPrivacy())) {
         CancelCompositionEdit(ec);
         RebuildContextModel();
         SyncStatusModel();
@@ -579,6 +705,10 @@ HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lP
         return S_OK;
       case VK_DOWN:
         if (!candidatesReadyForCurrentReading()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (RequestMoreCandidatesForIndex(m_candSel + 1)) {
           *pHandled = true;
           return S_OK;
         }

@@ -5,15 +5,15 @@ use std::cell::RefCell;
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
 use std::fs;
-use std::io::{self, BufReader, BufWriter, Cursor, Read, Write};
+use std::io::{self, BufReader, BufWriter, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 /// Packaged lexicon without a source-path digest.
 const PREBAKED_MAGIC: &[u8; 8] = b"SRFLX002";
-// Revision 13 preserves per-reading weights and pronunciation classes in
-// prebaked indexes. Older payloads flatten them to phrase-level weights.
-const PREBAKED_SCHEMA_VERSION: u32 = 13;
+// Revision 13 preserves per-reading weights and pronunciation classes.
+// Revision 14 adds authored literal input codes after the pinyin indexes.
+const PREBAKED_SCHEMA_VERSION: u32 = 14;
 const PREBAKED_MIN_SUPPORTED_SCHEMA_VERSION: u32 = 13;
 
 const PREBAKED_MAX_STRING_BYTES: usize = 16_384;
@@ -304,6 +304,28 @@ pub fn primary_pinyin_syllables_for_phrase(phrase: &str) -> Option<Vec<String>> 
 fn normalize_pinyin_code(code: &str) -> Option<String> {
     let compact = explicit_pinyin_syllables(code).concat();
     (!compact.is_empty()).then_some(compact)
+}
+
+/// Normalize authored codes without interpreting Latin runs as pinyin syllables.
+fn normalize_literal_code(code: &str) -> Option<std::borrow::Cow<'_, str>> {
+    if !code.bytes().any(|byte| byte.is_ascii_alphabetic()) {
+        return None;
+    }
+    if code
+        .bytes()
+        .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit())
+    {
+        return Some(code.into());
+    }
+    let mut normalized = String::with_capacity(code.len());
+    for byte in code.bytes() {
+        if byte.is_ascii_alphanumeric() {
+            normalized.push(byte.to_ascii_lowercase() as char);
+        } else if !matches!(byte, b' ' | b'\'' | b'-' | b'_' | b'/' | b'.') {
+            return None;
+        }
+    }
+    Some(normalized.into())
 }
 
 #[test]
@@ -673,12 +695,49 @@ struct DeletionIndex {
     deletes: HashMap<String, Vec<u32>>,
 }
 
+#[derive(Debug, Clone)]
+struct PrebakedDeletionEntry {
+    variant_start: u32,
+    variant_end: u32,
+    indices_start: u32,
+}
+
+/// The on-disk variants are sorted. Keep their bytes and references contiguous
+/// so loading a prebaked lexicon does not allocate a hash table and two small
+/// buffers per variant.
+#[derive(Debug, Clone)]
+struct PrebakedDeletionIndex {
+    keys: Vec<String>,
+    entries: Vec<PrebakedDeletionEntry>,
+    variants: Vec<u8>,
+    indices: Vec<u32>,
+}
+
+impl PrebakedDeletionIndex {
+    fn indices_for(&self, variant: &str) -> Option<&[u32]> {
+        let index = self
+            .entries
+            .binary_search_by(|entry| {
+                self.variants[entry.variant_start as usize..entry.variant_end as usize]
+                    .cmp(variant.as_bytes())
+            })
+            .ok()?;
+        let start = self.entries[index].indices_start as usize;
+        let end = self
+            .entries
+            .get(index + 1)
+            .map_or(self.indices.len(), |next| next.indices_start as usize);
+        Some(&self.indices[start..end])
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 enum LazyDeletionIndex {
     #[default]
     Uninitialized,
     Disabled,
     Ready(DeletionIndex),
+    Prebaked(PrebakedDeletionIndex),
 }
 
 /// A bounded HashMap with FIFO eviction: when full, the oldest 25% of entries
@@ -762,27 +821,31 @@ impl DeletionIndex {
         Some(Self { keys, deletes })
     }
 
-    fn candidate_keys(&self, key: &str, max_distance: usize) -> Option<Vec<String>> {
-        if key.is_empty() || max_distance != 1 || key.len() > DELETION_INDEX_MAX_KEY_LEN {
-            return None;
-        }
-        let mut seen = HashSet::new();
-        let mut out = Vec::new();
-        for deleted in deletion_forms(key) {
-            let Some(indices) = self.deletes.get(&deleted) else {
-                continue;
-            };
-            for &idx in indices {
-                if !seen.insert(idx) {
-                    continue;
-                }
-                if let Some(candidate) = self.keys.get(idx as usize) {
-                    out.push(candidate.clone());
-                }
+    fn candidate_keys(&self, key: &str) -> Vec<String> {
+        deletion_candidate_keys(&self.keys, key, |variant| {
+            self.deletes.get(variant).map(Vec::as_slice)
+        })
+    }
+}
+
+fn deletion_candidate_keys<'a>(
+    keys: &[String],
+    key: &str,
+    mut indices_for: impl FnMut(&str) -> Option<&'a [u32]>,
+) -> Vec<String> {
+    let mut seen = HashSet::new();
+    let mut out = Vec::new();
+    for deleted in deletion_forms(key) {
+        let Some(indices) = indices_for(&deleted) else {
+            continue;
+        };
+        for &idx in indices {
+            if seen.insert(idx) {
+                out.push(keys[idx as usize].clone());
             }
         }
-        Some(out)
     }
+    out
 }
 
 fn write_deletion_index<W: Write>(
@@ -834,19 +897,43 @@ fn read_deletion_index<R: Read>(reader: &mut R) -> io::Result<LazyDeletionIndex>
             "prebaked deletion map exceeds max",
         ));
     }
-    let mut references = 0usize;
-    let mut deletes = HashMap::with_capacity(delete_count);
+    let mut entries: Vec<PrebakedDeletionEntry> = Vec::with_capacity(delete_count);
+    let mut variants = Vec::new();
+    let mut indices = Vec::new();
     for _ in 0..delete_count {
-        let deleted = read_string(reader)?;
+        let start = variants.len();
+        let end = start + read_string_length(reader)?;
+        let variant_end = u32::try_from(end).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "prebaked deletion variants exceed max",
+            )
+        })?;
+        variants.resize(end, 0);
+        let variant = &mut variants[start..end];
+        reader.read_exact(variant)?;
+        if std::str::from_utf8(variant).is_err()
+            || entries.last().is_some_and(|previous| {
+                variants[previous.variant_start as usize..start] >= variants[start..end]
+            })
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "prebaked deletion variants must be sorted UTF-8 keys",
+            ));
+        }
         let count = read_u32(reader)? as usize;
-        references = references.saturating_add(count);
-        if references > PREBAKED_MAX_DELETION_REFERENCES {
+        if indices.len().saturating_add(count) > PREBAKED_MAX_DELETION_REFERENCES {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 "prebaked deletion references exceed max",
             ));
         }
-        let mut indices = Vec::with_capacity(count);
+        entries.push(PrebakedDeletionEntry {
+            variant_start: start as u32,
+            variant_end,
+            indices_start: indices.len() as u32,
+        });
         for _ in 0..count {
             let index = read_u32(reader)?;
             if index as usize >= keys.len() {
@@ -857,9 +944,13 @@ fn read_deletion_index<R: Read>(reader: &mut R) -> io::Result<LazyDeletionIndex>
             }
             indices.push(index);
         }
-        deletes.insert(deleted, indices);
     }
-    Ok(LazyDeletionIndex::Ready(DeletionIndex { keys, deletes }))
+    Ok(LazyDeletionIndex::Prebaked(PrebakedDeletionIndex {
+        keys,
+        entries,
+        variants,
+        indices,
+    }))
 }
 
 fn merge_prefix_top(top: &mut Vec<CompactEntry>, entries: &[CompactEntry]) {
@@ -934,6 +1025,7 @@ pub struct AbbrevLexicon {
     pinyin_inner: BTreeMap<String, Vec<CompactEntry>>,
     long_pinyin_hot_inner: BTreeMap<String, Vec<CompactEntry>>,
     mixed_hot_inner: BTreeMap<String, Vec<CompactEntry>>,
+    literal_codes: BTreeMap<String, Vec<CompactEntry>>,
     prefix_inner: HashMap<String, Vec<CompactEntry>>,
     pinyin_prefix_inner: HashMap<String, Vec<CompactEntry>>,
     phrases: Vec<Arc<str>>,
@@ -956,6 +1048,7 @@ impl Default for AbbrevLexicon {
             pinyin_inner: BTreeMap::new(),
             long_pinyin_hot_inner: BTreeMap::new(),
             mixed_hot_inner: BTreeMap::new(),
+            literal_codes: BTreeMap::new(),
             prefix_inner: HashMap::new(),
             pinyin_prefix_inner: HashMap::new(),
             phrases: Vec::new(),
@@ -976,6 +1069,7 @@ impl Clone for AbbrevLexicon {
             pinyin_inner: self.pinyin_inner.clone(),
             long_pinyin_hot_inner: self.long_pinyin_hot_inner.clone(),
             mixed_hot_inner: self.mixed_hot_inner.clone(),
+            literal_codes: self.literal_codes.clone(),
             prefix_inner: self.prefix_inner.clone(),
             pinyin_prefix_inner: self.pinyin_prefix_inner.clone(),
             phrases: self.phrases.clone(),
@@ -1021,6 +1115,7 @@ impl AbbrevLexicon {
             &mut self.mixed_hot_inner,
             options.entries_per_key_limit.min(HOT_EXACT_TOP_K),
         );
+        trim_compact_map_entries(&mut self.literal_codes, options.entries_per_key_limit);
         if entries_changed {
             self.mark_runtime_dirty();
         }
@@ -1109,7 +1204,7 @@ impl AbbrevLexicon {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.inner.is_empty() && self.pinyin_inner.is_empty()
+        self.inner.is_empty() && self.pinyin_inner.is_empty() && self.literal_codes.is_empty()
     }
 
     /// Returns high-frequency exact-pinyin samples for offline ranking audits.
@@ -1165,8 +1260,26 @@ impl AbbrevLexicon {
         source_layer: LexiconLayer,
         optional_source_tag: Option<&str>,
     ) -> bool {
-        let mut inserted = false;
         let phrase_id = self.intern_phrase(&entry.phrase, entry.freq, source_layer);
+        let mut inserted = false;
+        if source_layer != LexiconLayer::En
+            && entry
+                .phrase
+                .bytes()
+                .any(|byte| byte.is_ascii_alphanumeric())
+        {
+            if let Some(key) = entry.code.as_deref().and_then(normalize_literal_code) {
+                let entries = self.literal_codes.entry(key.into_owned()).or_default();
+                merge_compact_entry_with_kind(
+                    entries,
+                    phrase_id,
+                    entry.freq,
+                    entry.pronunciation_kind,
+                );
+                trim_compact_entries(entries, PREBAKED_ENTRIES_PER_KEY_TOP_K);
+                inserted = true;
+            }
+        }
         let explicit_code = entry
             .code
             .as_deref()
@@ -1292,6 +1405,13 @@ impl AbbrevLexicon {
 
     pub fn lookup_pinyin(&self, pinyin_lower: &str) -> Option<Arc<[ThuoclEntry]>> {
         self.lookup_exact(pinyin_lower, true)
+    }
+
+    pub(crate) fn lookup_literal_code(&self, input: &str) -> Option<Arc<[ThuoclEntry]>> {
+        let key = normalize_literal_code(input)?;
+        self.literal_codes
+            .get(key.as_ref())
+            .map(|entries| self.materialize_entries(entries))
     }
 
     pub(crate) fn lookup_pinyin_hot(&self, pinyin_lower: &str) -> Option<Arc<[ThuoclEntry]>> {
@@ -1599,6 +1719,22 @@ impl AbbrevLexicon {
             }
             trim_compact_entries(target, LONG_PHRASE_HOT_TOP_K);
         }
+        for (key, entries) in &other.literal_codes {
+            let target = self.literal_codes.entry(key.clone()).or_default();
+            for entry in entries {
+                let Some(Some(phrase_id)) = remapped_phrase_ids.get(entry.phrase_id as usize)
+                else {
+                    continue;
+                };
+                merge_compact_entry_with_kind(
+                    target,
+                    *phrase_id,
+                    entry.freq,
+                    entry.pronunciation_kind,
+                );
+            }
+            trim_compact_entries(target, PREBAKED_ENTRIES_PER_KEY_TOP_K);
+        }
         self.mark_runtime_dirty();
     }
 
@@ -1628,7 +1764,12 @@ impl AbbrevLexicon {
             };
             match slot {
                 LazyDeletionIndex::Ready(index) => {
-                    return index.candidate_keys(key, max_distance);
+                    return Some(index.candidate_keys(key));
+                }
+                LazyDeletionIndex::Prebaked(index) => {
+                    return Some(deletion_candidate_keys(&index.keys, key, |variant| {
+                        index.indices_for(variant)
+                    }));
                 }
                 LazyDeletionIndex::Disabled => {
                     return Some(Vec::new());
@@ -1654,7 +1795,7 @@ impl AbbrevLexicon {
         }
 
         let built = DeletionIndex::build_from_until(map, should_stop)?;
-        let out = built.candidate_keys(key, max_distance);
+        let out = built.candidate_keys(key);
         let mut runtime = self.runtime.borrow_mut();
         let slot = if pinyin {
             &mut runtime.pinyin_delete
@@ -1662,7 +1803,7 @@ impl AbbrevLexicon {
             &mut runtime.abbrev_delete
         };
         *slot = LazyDeletionIndex::Ready(built);
-        out
+        Some(out)
     }
 
     fn intern_phrase(&mut self, phrase: &str, freq: u64, source_layer: LexiconLayer) -> u32 {
@@ -2224,15 +2365,19 @@ fn write_count<W: Write>(writer: &mut W, count: usize) -> io::Result<()> {
     write_u32(writer, value)
 }
 
-fn read_string<R: Read>(reader: &mut R) -> io::Result<String> {
-    let len = read_u32(reader)? as usize;
-    if len > PREBAKED_MAX_STRING_BYTES {
+fn read_string_length<R: Read>(reader: &mut R) -> io::Result<usize> {
+    let length = read_u32(reader)? as usize;
+    if length > PREBAKED_MAX_STRING_BYTES {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "prebaked string exceeds max length",
         ));
     }
-    let mut bytes = vec![0u8; len];
+    Ok(length)
+}
+
+fn read_string<R: Read>(reader: &mut R) -> io::Result<String> {
+    let mut bytes = vec![0u8; read_string_length(reader)?];
     reader.read_exact(&mut bytes)?;
     String::from_utf8(bytes)
         .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, format!("invalid utf-8: {err}")))
@@ -2350,6 +2495,7 @@ fn write_compact_prebaked<W: Write>(writer: &mut W, lexicon: &AbbrevLexicon) -> 
     write_compact_prebaked_base_fields(writer, lexicon)?;
     write_compact_map(writer, &lexicon.mixed_hot_inner)?;
     write_compact_map(writer, &lexicon.long_pinyin_hot_inner)?;
+    write_compact_map(writer, &lexicon.literal_codes)?;
     Ok(())
 }
 
@@ -2467,6 +2613,11 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
     } else {
         BTreeMap::new()
     };
+    let literal_codes = if version >= 14 {
+        read_compact_map(reader, &phrases, &phrase_freq)?
+    } else {
+        BTreeMap::new()
+    };
     extend_prefix_index_with_long_hot(&mut pinyin_prefix_inner, &long_pinyin_hot_inner);
 
     Ok(AbbrevLexicon {
@@ -2474,6 +2625,7 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
         pinyin_inner,
         long_pinyin_hot_inner,
         mixed_hot_inner,
+        literal_codes,
         prefix_inner,
         pinyin_prefix_inner,
         phrase_ids: Some(build_phrase_id_index(&phrases)),
@@ -2646,29 +2798,40 @@ pub fn try_load_hot_prebaked_near(dir: &Path) -> io::Result<Option<AbbrevLexicon
 }
 
 fn load_packed_profile(path: &Path, hot: bool) -> io::Result<AbbrevLexicon> {
-    let data = fs::read(path)?;
+    let mut file = fs::File::open(path)?;
+    let mut header = [0; 40];
+    file.read_exact(&mut header)?;
     let invalid = || io::Error::new(io::ErrorKind::InvalidData, "invalid lexicon.pack");
-    if data.len() < 40 || &data[..8] != b"KXLP0001" {
+    if &header[..8] != b"KXLP0001" {
         return Err(invalid());
     }
-    let number = |offset| u64::from_le_bytes(data[offset..offset + 8].try_into().unwrap());
-    let a = number(8);
-    let b = number(16);
+    let number = |offset| u64::from_le_bytes(header[offset..offset + 8].try_into().unwrap());
+    let standard_len = number(8);
+    let hot_len = number(16);
     let raw_len = number(if hot { 32 } else { 24 });
-    if a.checked_add(b).and_then(|v| v.checked_add(40)) != Some(data.len() as u64)
+    if standard_len
+        .checked_add(hot_len)
+        .and_then(|v| v.checked_add(40))
+        != Some(file.metadata()?.len())
         || raw_len > 512 * 1024 * 1024
     {
         return Err(invalid());
     }
-    let payload = if hot {
-        &data[40 + a as usize..]
+    let compressed_len = if hot {
+        file.seek(SeekFrom::Start(40 + standard_len))?;
+        hot_len
     } else {
-        &data[40..40 + a as usize]
+        standard_len
     };
-    let mut reader = flate2::read::ZlibDecoder::new(payload).take(raw_len + 1);
+    let payload = BufReader::with_capacity(64 * 1024, file.take(compressed_len));
+    let decoder = flate2::bufread::ZlibDecoder::new(payload);
+    let mut reader = BufReader::with_capacity(64 * 1024, decoder).take(raw_len + 1);
     let lex = read_prebaked_lexicon(&mut reader)?;
     let mut tail = [0u8; 1];
-    if reader.read(&mut tail)? != 0 || reader.limit() != 1 {
+    if reader.read(&mut tail)? != 0
+        || reader.limit() != 1
+        || reader.get_ref().get_ref().total_in() != compressed_len
+    {
         return Err(invalid());
     }
     Ok(lex)
@@ -3239,6 +3402,32 @@ mod tests {
 #[cfg(test)]
 mod packed_profile_tests {
     use super::*;
+
+    #[test]
+    fn prebaked_deletion_index_matches_in_memory_candidates() {
+        let map = ["beijing", "beiping", "nanjing", "ningjing"]
+            .into_iter()
+            .map(|key| (key.to_string(), Vec::new()))
+            .collect();
+        let in_memory = DeletionIndex::build_from(&map);
+        let mut bytes = Vec::new();
+        write_deletion_index(&mut bytes, &map).unwrap();
+        let LazyDeletionIndex::Prebaked(prebaked) =
+            read_deletion_index(&mut Cursor::new(bytes)).unwrap()
+        else {
+            panic!("expected a prebaked deletion index");
+        };
+        for input in ["beijng", "beiping", "nanjng", "ningjng", "unknown"] {
+            assert_eq!(
+                deletion_candidate_keys(&prebaked.keys, input, |variant| {
+                    prebaked.indices_for(variant)
+                }),
+                in_memory.candidate_keys(input),
+                "{input}"
+            );
+        }
+    }
+
     #[test]
     fn packed_profiles_retain_distinct_weights_and_reject_corruption() {
         let dir = std::env::temp_dir().join(format!(
@@ -3250,7 +3439,11 @@ mod packed_profile_tests {
                 .as_nanos()
         ));
         fs::create_dir_all(&dir).unwrap();
-        fs::write(dir.join("test.txt"), "测试\t100\n").unwrap();
+        fs::write(
+            dir.join("test.txt"),
+            "测试\t100\nAI办公\tai ban gong\t4600\n36氪\t36 ke\t4600\n",
+        )
+        .unwrap();
         let (mut lex, _) = load_dir_txt(&dir).unwrap();
         save_prebaked_lexicon(&dir.join("standard.bin"), &lex).unwrap();
         lex.phrase_freq.fill(999);
@@ -3279,14 +3472,18 @@ mod packed_profile_tests {
         }
         let path = dir.join("lexicon.pack");
         fs::write(&path, &data).unwrap();
+        let hot = load_packed_profile(&path, true).unwrap();
         assert_ne!(
             load_packed_profile(&path, false)
                 .unwrap()
                 .phrase_frequency("测试"),
-            load_packed_profile(&path, true)
-                .unwrap()
-                .phrase_frequency("测试")
+            hot.phrase_frequency("测试")
         );
+        for (code, phrase) in [("AI Ban Gong", "AI办公"), ("36-ke", "36氪")] {
+            assert_eq!(hot.lookup_literal_code(code).unwrap()[0].phrase, phrase);
+        }
+        assert!(hot.lookup_literal_code("aibangon").is_none());
+        assert!(hot.lookup_pinyin("aibangong").is_none());
         data[8] = 255;
         fs::write(&path, &data).unwrap();
         assert!(load_packed_profile(&path, false).is_err());

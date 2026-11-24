@@ -82,7 +82,7 @@
 东南亚	dong nan ya	9947
 基本上	ji ben shang	9946
 太平洋	tai ping yang	9946
-他妈的	ta ma de	9945
+他妈的	ta ma de	1200
 北京市	bei jing shi	9945
 设计师	she ji shi	9944
 公务员	gong wu yuan	9944
@@ -161,7 +161,7 @@
 小时候	xiao shi hou	9898
 摄影师	she ying shi	9898
 科学院	ke xue yuan	9897
-希特勒	xi te lei	9896
+希特勒	xi te lei	1200
 蒋介石	jiang jie shi	9895
 忍不住	ren bu zhu	9895
 火车站	huo che zhan	9894
@@ -248,7 +248,7 @@
 几十年	ji shi nian	9845
 孙中山	sun zhong shan	9844
 排行榜	pai hang bang	9843
-法西斯	fa xi si	9843
+法西斯	fa xi si	1200
 注意力	zhu yi li	9842
 爱好者	ai hao zhe	9842
 目的地	mu di di	9841
@@ -1918,7 +1918,7 @@
 热力学	re li xue	8837
 狂欢节	kuang huan jie	8837
 电磁波	dian ci bo	8836
-真他妈	zhen ta ma	8836
+真他妈	zhen ta ma	1200
 第一座	di yi zuo	8835
 第三者	di san zhe	8834
 胜利者	sheng li zhe	8834
@@ -1975,7 +1975,7 @@
 算了吧	suan le ba	8805
 系主任	xi zhu ren	8804
 纳粹党	na cui dang	8804
-草泥马	cao ni ma	8803
+草泥马	cao ni ma	1200
 误认为	wu ren wei	8802
 贵金属	gui jin shu	8802
 遇难者	yu nan zhe	8801
@@ -3281,7 +3281,7 @@
 克里特	ke li te	8077
 全运会	quan yun hui	8077
 内燃机	nei ran ji	8076
-去死吧	qu si ba	8076
+去死吧	qu si ba	1200
 反垄断	fan long duan	8075
 大公国	da gong guo	8075
 宁波市	ning bo shi	8074
@@ -8918,7 +8918,7 @@
 恩格尔	en ge er	5529
 意中人	yi zhong ren	5528
 扫描器	sao miao qi	5528
-找不着	zhao bu zhe	5527
+找不着	zhao bu zhao	5527
 报名费	bao ming fei	5527
 担保人	dan bao ren	5527
 拉维斯	la wei si	5527
@@ -9598,7 +9598,7 @@
 茶话会	cha hua hui	5285
 蓄水量	xu shui liang	5284
 藏经阁	cang jing ge	5284
-藏羚羊	cang ling yang	5284
+藏羚羊	zang ling yang	5284
 西柏林	xi bo lin	5283
 西蒙尼	xi meng ni	5283
 识时务	shi shi wu	5283
@@ -10939,7 +10939,7 @@
 警察厅	jing cha ting	4842
 认出来	ren chu lai	4841
 访问量	fang wen liang	4841
-谁他妈	shui ta ma	4840
+谁他妈	shui ta ma	1200
 货币化	huo bi hua	4840
 赢回来	ying hui lai	4839
 超高压	chao gao ya	4839
@@ -15428,7 +15428,7 @@
 艾丽丝	ai li si	3637
 花都区	hua dou qu	3637
 苏兆征	su zhao zheng	3637
-苏泊尔	su po er	3636
+苏泊尔	su bo er	3636
 若干名	ruo gan ming	3636
 莫利纳	mo li na	3636
 莫德斯	mo de si	3636
@@ -17337,7 +17337,7 @@
 人口学	ren kou xue	3230
 任丘市	ren qiu shi	3230
 任务书	ren wu shu	3230
-会稽山	hui ji shan	3229
+会稽山	kuai ji shan	3229
 传统型	chuan tong xing	3229
 儋州市	dan zhou shi	3229
 党小组	dang xiao zu	3229

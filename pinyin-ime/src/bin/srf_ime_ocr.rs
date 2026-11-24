@@ -622,6 +622,9 @@ impl OcrApp {
         );
         self.target_hwnd = request.target_hwnd;
         self.translate_after_ocr = request.translate;
+        if request.translate {
+            external_translation::preload_translator_async();
+        }
         if self.hidden_since.take().is_some() {
             self.language = OcrLanguageMode::from_config(&tool_prefs::ocr_language());
             self.profile = ocr_speed_profile();
@@ -1038,15 +1041,19 @@ impl OcrApp {
             history_status
         );
         if self.translate_after_ocr {
+            // Normalize OCR pseudo-line-breaks when the user hasn't manually edited the text.
+            let prepared = if self.text == self.original_text {
+                keep_paragraphs_smart(&self.text)
+            } else {
+                self.text.clone()
+            };
             match open_translate_from_ocr(
-                &self.text,
+                &prepared,
                 self.target_hwnd,
                 self.screenshot_library_path().as_deref(),
             ) {
-                Ok(()) => self.status.push_str(" 已发送到 WinTranslator。"),
-                Err(err) => self
-                    .status
-                    .push_str(&format!(" 打开 WinTranslator 失败：{err}")),
+                Ok(()) => self.status.push_str(" 已发送到翻译预览。"),
+                Err(err) => self.status.push_str(&format!(" 打开翻译预览失败：{err}")),
             }
         }
     }
@@ -1233,13 +1240,18 @@ impl OcrApp {
             self.status = "没有可翻译的识别文本。".to_string();
             return;
         }
+        let prepared = if self.text == self.original_text {
+            keep_paragraphs_smart(&self.text)
+        } else {
+            self.text.clone()
+        };
         match open_translate_from_ocr(
-            &self.text,
+            &prepared,
             self.target_hwnd,
             self.screenshot_library_path().as_deref(),
         ) {
-            Ok(()) => self.status = "已发送到 WinTranslator。".to_string(),
-            Err(err) => self.status = format!("打开 WinTranslator 失败：{err}"),
+            Ok(()) => self.status = "已发送到翻译预览。".to_string(),
+            Err(err) => self.status = format!("打开翻译预览失败：{err}"),
         }
     }
 

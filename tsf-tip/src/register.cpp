@@ -104,6 +104,15 @@ HRESULT EnableProfileForCurrentUser(LANGID lang) {
   AppendRegisterLog(L"EnableProfileForCurrentUser begin");
   AppendRegisterLog(tipId.c_str());
 
+  ITfInputProcessorProfiles* profiles = nullptr;
+  HRESULT hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+                                IID_ITfInputProcessorProfiles, reinterpret_cast<void**>(&profiles));
+  if (FAILED(hr)) return hr;
+  hr = profiles->EnableLanguageProfile(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, TRUE);
+  profiles->Release();
+  AppendRegisterLogHr(L"ITfInputProcessorProfiles::EnableLanguageProfile", hr);
+  if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+
   HRESULT bestHr = E_FAIL;
   HMODULE inputDll = LoadLibraryExW(L"input.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
   if (inputDll != nullptr) {
@@ -145,9 +154,8 @@ HRESULT EnableProfileForCurrentUser(LANGID lang) {
   }
 
   ITfInputProcessorProfileMgr* profileMgr = nullptr;
-  HRESULT hr =
-      CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
-                       IID_ITfInputProcessorProfileMgr, reinterpret_cast<void**>(&profileMgr));
+  hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+                        IID_ITfInputProcessorProfileMgr, reinterpret_cast<void**>(&profileMgr));
   AppendRegisterLogHr(L"CoCreateInstance(IID_ITfInputProcessorProfileMgr)", hr);
   if (SUCCEEDED(hr) && profileMgr != nullptr) {
     hr = profileMgr->ActivateProfile(
@@ -155,9 +163,9 @@ HRESULT EnableProfileForCurrentUser(LANGID lang) {
         TF_IPPMF_ENABLEPROFILE | TF_IPPMF_FORSESSION | TF_IPPMF_DONTCARECURRENTINPUTLANGUAGE);
     AppendRegisterLogHr(L"ITfInputProcessorProfileMgr::ActivateProfile", hr);
     profileMgr->Release();
-    if (SUCCEEDED(hr) || hr == TF_E_ALREADY_EXISTS) return S_OK;
+    if (hr == S_OK || hr == TF_E_ALREADY_EXISTS) return S_OK;
     if (FAILED(bestHr)) return bestHr;
-    return hr;
+    return FAILED(hr) ? hr : E_FAIL;
   }
 
   return FAILED(bestHr) ? bestHr : hr;
@@ -341,35 +349,15 @@ HRESULT RegisterProfiles(const WCHAR* dllPath, BOOL machineScope) {
     profiles->Release();
   }
 
-  ITfInputProcessorProfiles* profiles = nullptr;
-  hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
-                        IID_ITfInputProcessorProfiles, reinterpret_cast<void**>(&profiles));
-  AppendRegisterLogHr(L"CoCreateInstance(CLSID_TF_InputProcessorProfiles)/Enable", hr);
-  if (FAILED(hr)) return hr;
-
-  hr = profiles->EnableLanguageProfile(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, TRUE);
-  AppendRegisterLogHr(L"ITfInputProcessorProfiles::EnableLanguageProfile", hr);
-  if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) {
-    profiles->Release();
-    return hr;
-  }
-
-  HRESULT defaultHr =
-      profiles->EnableLanguageProfileByDefault(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, TRUE);
-  AppendRegisterLogHr(L"ITfInputProcessorProfiles::EnableLanguageProfileByDefault", defaultHr);
-  profiles->Release();
-  if (FAILED(defaultHr) && defaultHr != TF_E_ALREADY_EXISTS) {
-    if (!machineScope && defaultHr == E_FAIL) {
-      AppendRegisterLog(
-          L"ITfInputProcessorProfiles::EnableLanguageProfileByDefault returned E_FAIL in user "
-          L"scope; continuing because the machine-scope profile may already be the default");
-    } else {
-      return defaultHr;
-    }
-  }
-
   if (machineScope) {
-    AppendRegisterLog(L"RegisterProfiles machine scope requested");
+    ITfInputProcessorProfiles* profiles = nullptr;
+    hr = CoCreateInstance(CLSID_TF_InputProcessorProfiles, nullptr, CLSCTX_INPROC_SERVER,
+                          IID_ITfInputProcessorProfiles, reinterpret_cast<void**>(&profiles));
+    if (FAILED(hr)) return hr;
+    hr = profiles->EnableLanguageProfileByDefault(CLSID_SrfTsfTip, lang, GUID_PROFILE_SRF, TRUE);
+    profiles->Release();
+    AppendRegisterLogHr(L"ITfInputProcessorProfiles::EnableLanguageProfileByDefault", hr);
+    return hr == TF_E_ALREADY_EXISTS ? S_OK : hr;
   }
 
   hr = EnableProfileForCurrentUser(lang);
@@ -433,6 +421,23 @@ void UnregisterCategories() {
 }
 
 }  // namespace
+
+HRESULT SrfTip_EnableCurrentUser() {
+  const HRESULT com = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+  if (FAILED(com) && com != RPC_E_CHANGED_MODE) return com;
+  const HRESULT hr =
+      EnableProfileForCurrentUser(MAKELANGID(LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED));
+  if (SUCCEEDED(com)) CoUninitialize();
+  AppendRegisterLogHr(L"SrfTip_EnableCurrentUser", hr);
+  return hr;
+}
+
+void SrfTip_NotifyLanguageChange() {
+  if (!SendMessageTimeoutW(HWND_BROADCAST, WM_SETTINGCHANGE, 0, reinterpret_cast<LPARAM>(L"intl"),
+                           SMTO_ABORTIFHUNG, 1000, nullptr)) {
+    AppendRegisterLog(L"WM_SETTINGCHANGE(intl): one or more windows did not respond");
+  }
+}
 
 HRESULT SrfTip_RegisterServerEx(HMODULE hModule, BOOL machineScope) {
   WCHAR szPath[MAX_PATH];

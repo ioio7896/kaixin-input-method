@@ -1,0 +1,322 @@
+# 阶段性网络热词 319 条（温和权重，按季度复审归档）
+# Source: data_sources/kaixin/seasonal_hot_terms.tsv; scripts/lexicon_quality.py --apply
+# 词语<TAB>全拼<TAB>人工排序分数（1—10000）；不代表实测用户词频。
+不烧心	bu shao xin	4800
+丑东西	chou dong xi	4800
+丑萌	chou meng	4800
+世界巡演	shi jie xun yan	4800
+养龙虾	yang long xia	4800
+助我破鼎	zhu wo po ding	4800
+反向带娃	fan xiang dai wa	4800
+发疯文学	fa feng wen xue	4800
+嘴替文学	zui ti wen xue	4800
+噜噜操	lu lu cao	4800
+大水理论	da shui li lun	4800
+大睡理论	da shui li lun	4800
+太阳之子	tai yang zhi zi	4800
+宿命对视	su ming dui shi	4800
+宿命感	su ming gan	4800
+已读不回	yi du bu hui	4800
+已读乱回	yi du luan hui	4800
+情绪价值	qing xu jia zhi	4800
+情绪搭子	qing xu da zi	4800
+情绪稳定	qing xu wen ding	4800
+抽象文化	chou xiang wen hua	4800
+搭子文化	da zi wen hua	4800
+敬自己一杯	jing zi ji yi bei	4800
+村咖	cun ka	4800
+松弛感	song chi gan	4800
+样人笑幻	yang ren xiao huan	4800
+沉浸式体验	chen jin shi ti yan	4800
+活人感	huo ren gan	4800
+浪子踢球	lang zi ti qiu	4800
+浪浪山小妖怪	lang lang shan xiao yao guai	4800
+爱你老己	ai ni lao ji	4800
+狗熊哆嗦毛	gou xiong duo suo mao	4800
+班味	ban wei	4800
+电子榨菜	dian zi zha cai	4800
+破碎感	po sui gan	4800
+神之八秒	shen zhi ba miao	4800
+精神内耗	jing shen nei hao	4800
+红果体	hong guo ti	4800
+给自己充电	gei zi ji chong dian	4800
+蓝色大肥鱼	lan se da fei yu	4800
+薄肌理论	bao ji li lun	4800
+规矩体	gui ju ti	4800
+认祖归洲	ren zu gui zhou	4800
+赛博养龙虾	sai bo yang long xia	4800
+赛博对账	sai bo dui zhang	4800
+野生狗奶	ye sheng gou nai	4800
+钝感力	dun gan li	4800
+闪身步	shan shen bu	4800
+预制人生	yu zhi ren sheng	4800
+一切都在变好	yi qie dou zai bian hao	4600
+万物皆可搭子	wan wu jie ke da zi	4600
+万物皆可盘	wan wu jie ke pan	4600
+三伏天晒背	san fu tian shai bei	4600
+上班穿搭	shang ban chuan da	4600
+下班变身	xia ban bian shen	4600
+下班搭子	xia ban da zi	4600
+不被定义	bu bei ding yi	4600
+与自己和解	yu zi ji he jie	4600
+世界是个草台班子	shi jie shi ge cao tai ban zi	4600
+中式养生水	zhong shi yang sheng shui	4600
+中式血脉觉醒	zhong shi xue mai jue xing	4600
+主打听劝	zhu da ting quan	4600
+主打陪伴	zhu da pei ban	4600
+买菜自由	mai cai zi you	4600
+云养猫	yun yang mao	4600
+云吸猫	yun xi mao	4600
+云旅游	yun lv you	4600
+云监工	yun jian gong	4600
+云自习	yun zi xi	4600
+云陪伴	yun pei ban	4600
+互联网嘴替	hu lian wang zui ti	4600
+人夫感	ren fu gan	4600
+人机感	ren ji gan	4600
+人生旷野	ren sheng kuang ye	4600
+人生照片	ren sheng zhao pian	4600
+人间清醒语录	ren jian qing xing yu lu	4600
+今日份元气	jin ri fen yuan qi	4600
+今日份好运	jin ri fen hao yun	4600
+今日份开心	jin ri fen kai xin	4600
+今日份快乐	jin ri fen kuai le	4600
+今日份打卡	jin ri fen da ka	4600
+今日份治愈	jin ri fen zhi yu	4600
+今日份穿搭	jin ri fen chuan da	4600
+今日份美食	jin ri fen mei shi	4600
+今日份运动	jin ri fen yun dong	4600
+仪式感拉满	yi shi gan la man	4600
+低欲望生活	di yu wang sheng huo	4600
+低能量人群	di neng liang ren qun	4600
+保温杯泡枸杞	bao wen bei pao gou qi	4600
+偷偷努力	tou tou nu li	4600
+偷感	tou gan	4600
+偷感很重	tou gan hen zhong	4600
+允许一切发生	yun xu yi qie fa sheng	4600
+先爱自己	xian ai zi ji	4600
+八段锦打卡	ba duan jin da ka	4600
+关机模式	guan ji mo shi	4600
+养生血脉觉醒	yang sheng xue mai jue xing	4600
+内心丰盈	nei xin feng ying	4600
+内耗体质	nei hao ti zhi	4600
+凑单攻略	cou dan gong lve	4600
+出片率	chu pian lv	4600
+功德减一	gong de jian yi	4600
+功德加一	gong de jia yi	4600
+勿扰模式	wu rao mo shi	4600
+午休搭子	wu xiu da zi	4600
+南方小土豆	nan fang xiao tu dou	4600
+原生松弛感	yuan sheng song chi gan	4600
+去班味	qu ban wei	4600
+去除班味	qu chu ban wei	4600
+反内耗	fan nei hao	4600
+反向消费	fan xiang xiao fei	4600
+反向画饼	fan xiang hua bing	4600
+取悦自己	qu yue zi ji	4600
+听劝体	ting quan ti	4600
+周末模式	zhou mo mo shi	4600
+周末碎片	zhou mo sui pian	4600
+和自己和解	he zi ji he jie	4600
+咖啡续命	ka fei xu ming	4600
+咖啡自由	ka fei zi you	4600
+嘴替上线	zui ti shang xian	4600
+固体杨枝甘露	gu ti yang zhi gan lu	4600
+在职休假	zai zhi xiu jia	4600
+地理套利	di li tao li	4600
+外卖自由	wai mai zi you	4600
+多巴胺分泌	duo ba an fen mi	4600
+大圣归来	da sheng gui lai	4600
+大理旅居	da li lv ju	4600
+天命人	tian ming ren	4600
+天选打工人	tian xuan da gong ren	4600
+太抽象了	tai chou xiang le	4600
+奶皮子酸奶	nai pi zi suan nai	4600
+奶茶续命	nai cha xu ming	4600
+奶茶自由	nai cha zi you	4600
+好事即将发生	hao shi ji jiang fa sheng	4600
+好好爱自己	hao hao ai zi ji	4600
+好运正在派送	hao yun zheng zai pai song	4600
+妈生感	ma sheng gan	4600
+威海旅居	wei hai lv ju	4600
+安全感爆棚	an quan gan bao peng	4600
+宝宝巴士	bao bao ba shi	4600
+小孩哥	xiao hai ge	4600
+小孩姐	xiao hai jie	4600
+小砂糖橘	xiao sha tang ju	4600
+小确幸	xiao que xing	4600
+尔滨	er bin	4600
+山西古建	shan xi gu jian	4600
+工位养生	gong wei yang sheng	4600
+工位搭子	gong wei da zi	4600
+工位改造	gong wei gai zao	4600
+工位绿植	gong wei lv zhi	4600
+已老实	yi lao shi	4600
+已读不回症	yi du bu hui zheng	4600
+带薪发呆	dai xin fa dai	4600
+带薪学习	dai xin xue xi	4600
+带薪拉屎	dai xin la shi	4600
+干噎酸奶	gan ye suan nai	4600
+干饭搭子	gan fan da zi	4600
+平替天花板	ping ti tian hua ban	4600
+幸福感爆棚	xing fu gan bao peng	4600
+开机模式	kai ji mo shi	4600
+待机模式	dai ji mo shi	4600
+微微发疯	wei wei fa feng	4600
+微疯	wei feng	4600
+心中有爱	xin zhong you ai	4600
+心想事成呀	xin xiang shi cheng ya	4600
+忠于自己	zhong yu zi ji	4600
+恶心穿搭	e xin chuan da	4600
+悄悄变优秀	qiao qiao bian you xiu	4600
+悟空效应	wu kong xiao ying	4600
+情绪价值拉满	qing xu jia zhi la man	4600
+情绪片	qing xu pian	4600
+情绪稳定剂	qing xu wen ding ji	4600
+情绪自洽	qing xu zi qia	4600
+惊艳所有人	jing yan suo you ren	4600
+意念回复	yi nian hui fu	4600
+慢慢变好	man man bian hao	4600
+抠门经济学	kou men jing ji xue	4600
+抽象艺术	chou xiang yi shu	4600
+拍八虚	pai ba xu	4600
+拒绝标签	ju jue biao qian	4600
+拒绝画饼	ju jue hua bing	4600
+拔草贴	ba cao tie	4600
+接住泼天富贵	jie zhu po tian fu gui	4600
+接好运	jie hao yun	4600
+提前退休	ti qian tui xiu	4600
+摸鱼学	mo yu xue	4600
+放假模式	fang jia mo shi	4600
+数字游民社区	shu zi you min she qu	4600
+敲电子木鱼	qiao dian zi mu yu	4600
+整顿职场	zheng dun zhi chang	4600
+旅游特种兵	lv you te zhong bing	4600
+日常碎碎念	ri chang sui sui nian	4600
+早八穿搭	zao ba chuan da	4600
+早咖晚酒	zao ka wan jiu	4600
+早茶晚酒	zao cha wan jiu	4600
+时间自由	shi jian zi you	4600
+旷野而非轨道	kuang ye er fei gui dao	4600
+显眼包上线	xian yan bao shang xian	4600
+晒背养生	shai bei yang sheng	4600
+景德镇旅居	jing de zhen lv ju	4600
+智性恋	zhi xing lian	4600
+有效摸鱼	you xiao mo yu	4600
+朋克养生	peng ke yang sheng	4600
+未来闪闪发光	wei lai shan shan fa guang	4600
+松弛感拉满	song chi gan la man	4600
+松弛感穿搭	song chi gan chuan da	4600
+极简主义者	ji jian zhu yi zhe	4600
+格雷系	ge lei xi	4600
+榴莲自由	liu lian zi you	4600
+比价达人	bi jia da ren	4600
+氛围感大片	fen wei gan da pian	4600
+氛围感拉满	fen wei gan la man	4600
+水灵灵地	shui ling ling de	4600
+求放过	qiu fang guo	4600
+沉浸式做饭	chen jin shi zuo fan	4600
+沉浸式办公	chen jin shi ban gong	4600
+沉浸式学习	chen jin shi xue xi	4600
+沉浸式开箱	chen jin shi kai xiang	4600
+沉浸式护肤	chen jin shi hu fu	4600
+沉浸式收纳	chen jin shi shou na	4600
+沉浸式露营	chen jin shi lu ying	4600
+治愈瞬间	zhi yu shun jian	4600
+治愈系	zhi yu xi	4600
+泡脚养生	pao jiao yang sheng	4600
+泼天富贵	po tian fu gui	4600
+活人微死	huo ren wei si	4600
+浓人	nong ren	4600
+淡人	dan ren	4600
+淡学	dan xue	4600
+淡淡的死感	dan dan de si gan	4600
+淡淡的疯感	dan dan de feng gan	4600
+清澈的愚蠢	qing che de yu chun	4600
+满足感爆棚	man zu gan bao peng	4600
+灵魂有趣	ling hun you qu	4600
+烤橘子	kao ju zi	4600
+爹味	die wei	4600
+牛马打工人	niu ma da gong ren	4600
+特种兵打卡	te zhong bing da ka	4600
+独处充电	du chu chong dian	4600
+班味儿	ban wei er	4600
+班味太重	ban wei tai zhong	4600
+生腌自由	sheng yan zi you	4600
+电子功德	dian zi gong de	4600
+电子家人	dian zi jia ren	4600
+电子布洛芬	dian zi bu luo fen	4600
+电子护身符	dian zi hu shen fu	4600
+电子闺蜜	dian zi gui mi	4600
+电量不足	dian liang bu zu	4600
+盲盒旅行	mang he lv xing	4600
+直面天命	zhi mian tian ming	4600
+省电模式	sheng dian mo shi	4600
+省钱大作战	sheng qian da zuo zhan	4600
+真诚才是必杀技	zhen cheng cai shi bi sha ji	4600
+眼里有光	yan li you guang	4600
+知识分子风	zhi shi fen zi feng	4600
+硬控	ying kong	4600
+社交电量告急	she jiao dian liang gao ji	4600
+社恐噩梦	she kong e meng	4600
+社恐福音	she kong fu yin	4600
+社牛天花板	she niu tian hua ban	4600
+禁止蕉绿	jin zhi jiao lv	4600
+种草机	zhong cao ji	4600
+秒回选手	miao hui xuan shou	4600
+稳稳的幸福	wen wen de xing fu	4600
+窝囊废旅游	wo nang fei lv you	4600
+窝囊版漂流	wo nang ban piao liu	4600
+窝囊版蹦极	wo nang ban beng ji	4600
+粘豆包吃法	nian dou bao chi fa	4600
+精神充电	jing shen chong dian	4600
+精神回复	jing shen hui fu	4600
+精神离职	jing shen li zhi	4600
+精神自洽	jing shen zi qia	4600
+红豆薏米水	hong dou yi mi shui	4600
+经络拍打	jing luo pai da	4600
+羊毛党	yang mao dang	4600
+美拉德	mei la de	4600
+能量补给	neng liang bu ji	4600
+脆皮体质	cui pi ti zhi	4600
+脆皮养生	cui pi yang sheng	4600
+脆皮大学生	cui pi da xue sheng	4600
+脆皮年轻人	cui pi nian qing ren	4600
+脆皮打工人	cui pi da gong ren	4600
+脚下有路	jiao xia you lu	4600
+自洽	zi qia	4600
+艾灸养生	ai jiu yang sheng	4600
+苹果煮水	ping guo zhu shui	4600
+草台班子	cao tai ban zi	4600
+薄荷曼波	bo he man bo	4600
+血脉觉醒	xue mai jue xing	4600
+说教味	shuo jiao wei	4600
+课题分离	ke ti fen li	4600
+财务自由	cai wu zi you	4600
+赛博布洛芬	sai bo bu luo fen	4600
+赛博祈福	sai bo qi fu	4600
+赛博许愿	sai bo xu yuan	4600
+跟着悟空游山西	gen zhe wu kong you shan xi	4600
+躺平式旅游	tang ping shi lv you	4600
+车厘子自由	che li zi zi you	4600
+转发锦鲤	zhuan fa jin li	4600
+轮回式聊天	lun hui shi liao tian	4600
+轻养生	qing yang sheng	4600
+过年模式	guo nian mo shi	4600
+追剧搭子	zhui ju da zi	4600
+逻辑自洽	luo ji zi qia	4600
+遛弯搭子	liu wan da zi	4600
+避雷贴	bi lei tie	4600
+酒店宅度假	jiu dian zhai du jia	4600
+金刚功打卡	jin gang gong da ka	4600
+陈皮水	chen pi shui	4600
+随心飞	sui xin fei	4600
+需要充电	xu yao chong dian	4600
+青芒水培	qing mang shui pei	4600
+静奢风	jing she feng	4600
+静音模式	jing yin mo shi	4600
+饭搭子招募	fan da zi zhao mu	4600
+高智感	gao zhi gan	4600
+高能量人群	gao neng liang ren qun	4600
+鹤岗买房	he gang mai fang	4600
+黑神话	hei shen hua	4600

@@ -98,3 +98,23 @@ wordfreq 3.1.1 的原始单字顺序保存在 `kaixin/single_char_wordfreq_order
 生成，源片段写入 `lexicon_fragments/zh-ext/` 并合并为
 `lexicon/zh-ext/technology.txt`；其中 ASCII/中英混合实体使用显式输入码保留大小写、
 符号和产品名写法。
+
+## 第一阶段高频中文词库扩充（2026-11-24）
+
+- 源片段保存在 `data_sources/lexicon_fragments/phase1/`（`brands_seed.txt`、
+  `dining_seed.txt`、`daily_chat_seed.txt`、`office_seed.txt`、`modern_hot_seed.txt`），
+  采用项目自维护 + AI 辅助整理，按 Apache License 2.0 提供；离线重建脚本为
+  `scripts/expand_phase1_lexicons.py`，仅依赖仓库内固定 `rust-pinyin` 字音表、
+  既有已校验词库统计主读音及项目多音校正表，不引入不兼容协议的第三方词库。
+- 扩充 5 个默认开启的高频薄弱层：
+  - 品牌与应用 `lexicon/zh-ext/category_brands.txt`（55 → 2,549 条，含常见数码/App/汽车/消费品牌与中英混写）
+  - 美食烹饪与餐饮 `lexicon/zh-ext/category_dining.txt`（329 → 4,765 条）
+  - 聊天与社交 `lexicon/zh-ext/daily_communication.txt`（635 → 4,132 条，含日常社交中英混写）
+  - 办公协作与职场 `lexicon/zh-ext/category_office.txt`（834 → 2,751 条，含办公软件与职场中英混写）。复核拼音后合并了两条同词同音记录，现有 2,748 个不同词形。
+  - 精选常用四字词 `lexicon/zh/life_common_4char.txt`（5,000 → 12,500 条）。保留原 5,000 条的读音、分值与相对顺序。新增 7,500 条按分值排入原词之间及其后，新增条目分值均低于 3,500。
+  - 2024–2026 现代热词 `data_sources/kaixin/modern_life.tsv` 由 484 条增至 1,006 条，其中 970 条写入 `lexicon/zh/modern_life.txt`，36 条归并至基础词库。阶段热词 `data_sources/kaixin/seasonal_hot_terms.tsv` 及其生成词库均由 49 条增至 319 条。
+- 跨文件拼音复核修正了 11 处读音差异。保留有不同义项或用法的读音，包括品牌与普通词「脉脉」、两地品牌读法「壳牌」、口语「这个项目」「这个产品」及地区读法「一针见血」。既有异读「率」「穿着」「大夫」「朝阳」「口角」也继续可用。 [片仔癀说明书](https://www.pzhchina.com/gscp/info_46.aspx?itemid=156&lcid=1) · [会稽山公司章程](https://static.cninfo.com.cn/finalpage/2025-11-15/1224806774.PDF) · [壳牌中国名称说明](https://www.shell.com.cn/about-us/who-we-are/shell-china-history/years-of-wonderful-stories-to-share/the-story-behind-the-name.html) · [教育部《重编国语辞典》](https://dict.revised.moe.edu.tw/dictView.jsp?ID=149593&la=0&powerMode=0)
+- 已通过 `scripts/lexicon_quality.py --apply`、`scripts/check_lexicon_syllables.py --strict-syllable-count`
+  与 `scripts/check_lexicon_coverage.py` 校验，并同步更新 `shared/category_lexicons.json`、
+  `crates/kaixin-core/src/category_lexicons.generated.rs` 与 `docs/lexicon-inventory.md`。
+- `tests/phase1_lexicon_cases.tsv` 记录新增词及读音复核用例，涵盖全拼、简拼、中英混输和既有高频候选。用 `scripts/build_input_cases_sqlite.py --source tests/phase1_lexicon_cases.tsv --output dist/phase1-lexicon-cases.sqlite` 生成用例库，再用 `input_eval --cases dist/phase1-lexicon-cases.sqlite --engine-profile runtime-hot-cold --lexicon dist/kaixin-package-ime/lexicon` 复测。

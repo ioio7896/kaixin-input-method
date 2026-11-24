@@ -1,24 +1,120 @@
-# 开心离线输入法分类补充：旅游订票
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+# 开心输入法扩展词库：出行交通与旅游（1364 条）
+# 来源合并：category_travel.txt, category_transit.txt, category_hotel.txt, category_automotive.txt, category_outdoor.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+充电站	chong dian zhan	6200
+出租车	chu zu che	6200
+智能驾驶	zhi neng jia shi	6200
+网约车	wang yue che	6200
+候车室	hou che shi	6196
 登机口	deng ji kou	6107
+一等座	yi deng zuo	6100
+上车地点	shang che di dian	6100
+下车地点	xia che di dian	6100
 中转航班	zhong zhuan hang ban	6100
+临时停靠	lin shi ting kao	6100
+乘车码	cheng che ma	6100
+二等座	er deng zuo	6100
+交车手续	jiao che shou xu	6100
+交通罚款	jiao tong fa kuan	6100
+亲子房	qin zi fang	6100
 亲子游	qin zi you	6100
+住宿发票	zhu su fa piao	6100
 住宿安排	zhu su an pai	6100
+住宿评价	zhu su ping jia	6100
+保养周期	bao yang zhou qi	6100
+保暖层	bao nuan ceng	6100
+候补订单	hou bu ding dan	6100
+候补购票	hou bu gou piao	6100
+候车大厅	hou che da ting	6100
+候车时间	hou che shi jian	6100
 值机手续	zhi ji shou xu	6100
+停车优惠	ting che you hui	6100
+停车缴费	ting che jiao fei	6100
+充电功率	chong dian gong lv	6100
+充电接口	chong dian jie kou	6100
+充电枪	chong dian qiang	6100
+充电记录	chong dian ji lu	6100
+充电费用	chong dian fei yong	6100
+充电预约	chong dian yu yue	6100
+入住凭证	ru zhu ping zheng	6100
+入住时间	ru zhu shi jian	6100
+入住登记	ru zhu deng ji	6100
+公交换乘	gong jiao huan cheng	6100
+公交末班车	gong jiao mo ban che	6100
+公交站台	gong jiao zhan tai	6100
+冲锋衣	chong feng yi	6100
 出发大厅	chu fa da ting	6100
 出发时间	chu fa shi jian	6100
 出游计划	chu you ji hua	6100
+出行路线	chu xing lu xian	6100
+列车时刻	lie che shi ke	6100
+到站时间	dao zhan shi jian	6100
 到达大厅	dao da da ting	6100
 到达时间	dao da shi jian	6100
+刷码乘车	shua ma cheng che	6100
+加床服务	jia chuang fu wu	6100
+加床费用	jia chuang fei yong	6100
+动车车次	dong che che ci	6100
+双床房	shuang chuang fang	6100
+发票开具	fa piao kai ju	6100
+发车时间	fa che shi jian	6100
+叫醒服务	jiao xing fu wu	6100
+司机接单	si ji jie dan	6100
 周边游	zhou bian you	6100
+商务座	shang wu zuo	6100
+四轮定位	si lun ding wei	6100
+地铁换乘	di tie huan cheng	6100
+地铁末班车	di tie mo ban che	6100
+地铁站口	di tie zhan kou	6100
+地铁线路	di tie xian lu	6100
+地铁运营	di tie yun ying	6100
+增程汽车	zeng cheng qi che	6100
+大床房	da chuang fang	6100
+头灯电池	tou deng dian chi	6100
+定速巡航	ding su xun hang	6100
+客房升级	ke fang sheng ji	6100
+客房服务	ke fang fu wu	6100
+客房清洁	ke fang qing jie	6100
+客房电话	ke fang dian hua	6100
+客房设施	ke fang she shi	6100
+家庭房	jia ting fang	6100
+小米汽车	xiao mi qi che	6100
+岩壁攀爬	yan bi pan pa	6100
+应急装备	ying ji zhuang bei	6100
+座位号码	zuo wei hao ma	6100
+延迟退房	yan chi tui fang	6100
+徒步登山	tu bu deng shan	6100
+徒步装备	tu bu zhuang bei	6100
+徒步路线	tu bu lu xian	6100
+徒步轨迹	tu bu gui ji	6100
+快充慢充	kuai chong man chong	6100
+户外救援	hu wai jiu yuan	6100
+户外服装	hu wai fu zhuang	6100
+户外炊具	hu wai chui ju	6100
+户外电源	hu wai dian yuan	6100
+户外背包	hu wai bei bao	6100
+房卡补办	fang ka bu ban	6100
+房费明细	fang fei ming xi	6100
+房间号码	fang jian hao ma	6100
+房间有点吵	fang jian you dian chao	6100
+房间空调	fang jian kong tiao	6100
+房间网络	fang jian wang luo	6100
 托运行李	tuo yun xing li	6100
 护照换发	hu zhao huan fa	6100
 护照有效期	hu zhao you xiao qi	6100
+押金退还	ya jin tui huan	6100
+拼车出行	pin che chu xing	6100
+换乘方案	huan cheng fang an	6100
 接机服务	jie ji fu wu	6100
+接驾地点	jie jia di dian	6100
+提前入住	ti qian ru zhu	6100
+提车时间	ti che shi jian	6100
+插电混动	cha dian hun dong	6100
+攀岩装备	pan yan zhuang bei	6100
 改签费用	gai qian fei yong	6100
+故障灯	gu zhang deng	6100
+救援服务	jiu yuan fu wu	6100
+新能源汽车	xin neng yuan qi che	6100
 旅游保险	lv you bao xian	6100
 旅游攻略	lv you gong lve	6100
 旅游旺季	lv you wang ji	6100
@@ -26,39 +122,138 @@
 旅游路线	lv you lu xian	6100
 旅行计划	lv xing ji hua	6100
 旅行预算	lv xing yu suan	6100
+无座车票	wu zuo che piao	6100
+无烟房	wu yan fang	6100
+无痕山野	wu hen shan ye	6100
+早餐券	zao can quan	6100
+早餐时间	zao can shi jian	6100
+早餐费用	zao can fei yong	6100
 景区停车场	jing qu ting che chang	6100
 景区入口	jing qu ru kou	6100
 景区出口	jing qu chu kou	6100
 景区门票	jing qu men piao	6100
 景点预约	jing dian yu yue	6100
 机场接送	ji chang jie song	6100
+机油更换	ji you geng huan	6100
 机票预订	ji piao yu ding	6100
+民宿预订	min su yu ding	6100
+洗衣服务	xi yi fu wu	6100
+海拔爬升	hai ba pa sheng	6100
+涉水鞋	she shui xie	6100
 游客中心	you ke zhong xin	6100
+火车票预订	huo che piao yu ding	6100
+炉头气罐	lu tou qi guan	6100
 电子门票	dian zi men piao	6100
+电池保修	dian chi bao xiu	6100
+电池健康	dian chi jian kang	6100
+电池容量	dian chi rong liang	6100
+登山杖	deng shan zhang	6100
+登山背包	deng shan bei bao	6100
+登山路线	deng shan lu xian	6100
+移动电源	yi dong dian yuan	6100
+站台号码	zhan tai hao ma	6100
+站点查询	zhan dian cha xun	6100
 签证申请	qian zheng shen qing	6100
+累计爬升	lei ji pa sheng	6100
+纯电汽车	chun dian qi che	6100
+结伴出行	jie ban chu xing	6100
 网上值机	wang shang zhi ji	6100
+胎压监测	tai ya jian ce	6100
+自动泊车	zi dong bo che	6100
+自助早餐	zi zhu zao can	6100
 自由行	zi you xing	6100
+自适应巡航	zi shi ying xun hang	6100
 航班动态	hang ban dong tai	6100
 航班取消	hang ban qu xiao	6100
 航班延误	hang ban yan wu	6100
 航班查询	hang ban cha xun	6100
+营地停车	ying di ting che	6100
+营地设施	ying di she shi	6100
+营地费用	ying di fei yong	6100
+营地预约	ying di yu yue	6100
+行李保管	xing li bao guan	6100
+行李寄存	xing li ji cun	6100
 行李提取	xing li ti qu	6100
 行李额度	xing li e du	6100
 行程单	xing cheng dan	6100
 行程安排	xing cheng an pai	6100
+行车记录仪	xing che ji lu yi	6100
+订单行程	ding dan xing cheng	6100
+试驾体验	shi jia ti yan	6100
 跟团游	gen tuan you	6100
+路线导航	lu xian dao hang	6100
+路线规划	lu xian gui hua	6100
+车厢号码	che xiang hao ma	6100
+车机系统	che ji xi tong	6100
+车牌号码	che pai hao ma	6100
+车票改签	che piao gai qian	6100
+车票退票	che piao tui piao	6100
+车站入口	che zhan ru kou	6100
+车站出口	che zhan chu kou	6100
+车载导航	che zai dao hang	6100
+车辆上牌	che liang shang pai	6100
+车辆保养	che liang bao yang	6100
+车辆保险	che liang bao xian	6100
+车辆年检	che liang nian jian	6100
+车辆故障	che liang gu zhang	6100
+车辆续航	che liang xu hang	6100
+车辆过户	che liang guo hu	6100
+轮胎更换	lun tai geng huan	6100
+轮胎气压	lun tai qi ya	6100
+辅助驾驶	fu zhu jia shi	6100
+进站口	jin zhan kou	6100
+违章处理	wei zhang chu li	6100
+违章查询	wei zhang cha xun	6100
+退房时间	tui fang shi jian	6100
 退改签	tui gai qian	6100
 退票手续费	tui piao shou xu fei	6100
 送机服务	song ji fu wu	6100
+速干衣	su gan yi	6100
+道路救援	dao lu jiu yuan	6100
+酒店停车场	jiu dian ting che chang	6100
+酒店前台	jiu dian qian tai	6100
+酒店地址	jiu dian di zhi	6100
+酒店押金	jiu dian ya jin	6100
+酒店电话	jiu dian dian hua	6100
+酒店评价	jiu dian ping jia	6100
 酒店预订	jiu dian yu ding	6100
+野外防蚊	ye wai fang wen	6100
+野餐垫	ye can dian	6100
 门票预订	men piao yu ding	6100
+防晒衣	fang shai yi	6100
+防水收纳	fang shui shou na	6100
+防潮垫	fang chao dian	6100
+防蚊喷雾	fang wen pen wu	6100
+防风层	fang feng ceng	6100
 随身行李	sui shen xing li	6100
+露营地点	lu ying di dian	6100
+露营天幕	lu ying tian mu	6100
+露营帐篷	lu ying zhang peng	6100
+露营桌椅	lu ying zhuo yi	6100
+露营灯	lu ying deng	6100
+露营装备	lu ying zhuang bei	6100
+顺风车	shun feng che	6100
+预约试驾	yu yue shi jia	6100
+预订取消	yu ding qu xiao	6100
+预订号码	yu ding hao ma	6100
+预订确认	yu ding que ren	6100
+领队向导	ling dui xiang dao	6100
+驾驶证换证	jia shi zheng huan zheng	6100
+驾驶证补办	jia shi zheng bu ban	6100
+高铁车次	gao tie che ci	6100
 旅游城市	lv you cheng shi	5962
+汽车运动	qi che yun dong	5962
 中国旅游	zhong guo lv you	5924
 旅游学院	lv you xue yuan	5924
 旅游资源	lv you zi yuan	5924
+汽车价格	qi che jia ge	5924
+汽车工业	qi che gong ye	5924
+汽车行业	qi che hang ye	5924
 法国旅游	fa guo lv you	5924
 美国旅游	mei guo lv you	5924
+末班车	mo ban che	5790
+汽车出口	qi che chu kou	5731
+汽车工人	qi che gong ren	5731
 上海旅游	shang hai lv you	5693
 会议旅游	hui yi lv you	5693
 北京旅游	bei jing lv you	5693
@@ -77,29 +272,93 @@
 日本旅游	ri ben lv you	5693
 西安旅游	xi an lv you	5693
 香港旅游	xiang gang lv you	5693
+上海汽车	shang hai qi che	5654
+中国汽车	zhong guo qi che	5654
+北京汽车	bei jing qi che	5654
+国内汽车	guo nei qi che	5654
+成功汽车	cheng gong qi che	5654
+汽车产业	qi che chan ye	5654
+汽车图片	qi che tu pian	5654
+汽车学院	qi che xue yuan	5654
+汽车新闻	qi che xin wen	5654
+汽车服务	qi che fu wu	5654
+汽车游戏	qi che you xi	5654
+汽车设计	qi che she ji	5654
+汽车集团	qi che ji tuan	5654
+运动汽车	yun dong qi che	5654
+汽车评价	qi che ping jia	5616
+帝国酒店	di guo jiu dian	5577
 旅游商品	lv you shang pin	5577
+汽车交易	qi che jiao yi	5577
+汽车电子	qi che dian zi	5577
+汽车知识	qi che zhi shi	5577
+现代汽车	xian dai qi che	5577
 体育旅游	ti yu lv you	5539
+汽车交通	qi che jiao tong	5539
+汽车金融	qi che jin rong	5539
+青年汽车	qing nian qi che	5539
 旅游广告	lv you guang gao	5500
 旅行过程	lv xing guo cheng	5500
+汽车制造	qi che zhi zao	5500
+汽车广告	qi che guang gao	5500
+汽车销售	qi che xiao shou	5500
 国外旅游	guo wai lv you	5462
 旅游事业	lv you shi ye	5462
 旅游英语	lv you ying yu	5462
+汽车论坛	qi che lun tan	5462
+汽车贷款	qi che dai kuan	5462
+上海地铁	shang hai di tie	5424
+汽车司机	qi che si ji	5424
+汽车贸易	qi che mao yi	5424
 南京旅游	nan jing lv you	5385
+地铁等待	di tie deng dai	5385
 成都旅游	cheng du lv you	5385
 旅游邀请	lv you yao qing	5385
+汽车公园	qi che gong yuan	5385
+火车时刻	huo che shi ke	5385
 特色旅游	te se lv you	5385
+中华汽车	zhong hua qi che	5347
+概念汽车	gai nian qi che	5347
+汽车人才	qi che ren cai	5347
+汽车资讯	qi che zi xun	5347
 出去旅游	chu qu lv you	5308
+天津汽车	tian jin qi che	5308
+汽车培训	qi che pei xun	5308
+火车王国	huo che wang guo	5308
+主题酒店	zhu ti jiu dian	5270
+什么酒店	shen me jiu dian	5270
+哪个酒店	na ge jiu dian	5270
+国际酒店	guo ji jiu dian	5270
+成都酒店	cheng du jiu dian	5270
+汽车模型	qi che mo xing	5270
+爱情酒店	ai qing jiu dian	5270
+这个酒店	zhe ge jiu dian	5270
+这个酒店	zhei ge jiu dian	5270
+那个酒店	na ge jiu dian	5270
+酒店管理	jiu dian guan li	5270
+酒店设备	jiu dian she bei	5270
+酒店设施	jiu dian she shi	5270
+酒店设计	jiu dian she ji	5270
+套房	tao fang	5255
+品牌汽车	pin pai qi che	5231
 森林旅游	sen lin lv you	5231
+汽车品牌	qi che pin pai	5231
 西部旅游	xi bu lv you	5231
 红色旅游	hong se lv you	5193
 西藏旅游	xi zang lv you	5193
+酒店门口	jiu dian men kou	5193
 乡村旅游	xiang cun lv you	5154
+乡村酒店	xiang cun jiu dian	5154
 云南旅游	yun nan lv you	5154
+大众汽车	da zhong qi che	5154
 旅游地理	lv you di li	5154
+汽车装饰	qi che zhuang shi	5154
 空中旅行	kong zhong lv xing	5154
+解放汽车	jie fang qi che	5154
 一次旅行	yi ci lv xing	5116
 世界旅行	shi jie lv xing	5116
 交换旅行	jiao huan lv xing	5116
+台北车站	tai bei che zhan	5116
 家庭旅行	jia ting lv xing	5116
 快速旅行	kuai su lv xing	5116
 摄影旅游	she ying lv you	5116
@@ -107,64 +366,161 @@
 旅行拍摄	lv xing pai she	5116
 旅行摄影	lv xing she ying	5116
 时间旅行	shi jian lv xing	5116
+本地汽车	ben di qi che	5116
 毕业旅行	bi ye lv xing	5116
+火车快开	huo che kuai kai	5116
 爱的旅行	ai de lv xing	5116
+空气汽车	kong qi qi che	5116
 记录旅行	ji lu lv xing	5116
 集体旅行	ji ti lv xing	5116
 音乐旅行	yin yue lv xing	5116
+南京地铁	nan jing di tie	5077
+印象酒店	yin xiang jiu dian	5077
+地铁兄弟	di tie xiong di	5077
+地铁女孩	di tie nv hai	5077
+地铁故事	di tie gu shi	5077
+地铁明星	di tie ming xing	5077
+地铁游戏	di tie you xi	5077
+地铁设计	di tie she ji	5077
+天津地铁	tian jin di tie	5077
+广州地铁	guang zhou di tie	5077
+成都地铁	cheng du di tie	5077
 旅行风景	lv xing feng jing	5077
+死亡地铁	si wang di tie	5077
+汽车产量	qi che chan liang	5077
+酒店房间	jiu dian fang jian	5077
+长沙地铁	chang sha di tie	5077
+动力火车	dong li huo che	5039
 旅游通讯	lv you tong xun	5039
+火车事故	huo che shi gu	5039
+充电桩	chong dian zhuang	5001
+危险驾驶	wei xian jia shi	5000
+天堂酒店	tian tang jiu dian	5000
+学会驾驶	xue hui jia shi	5000
+安全驾驶	an quan jia shi	5000
 神秘旅行	shen mi lv xing	5000
+绿色驾驶	lv se jia shi	5000
 航班时刻	hang ban shi ke	5000
+超级驾驶	chao ji jia shi	5000
+车辆驾驶	che liang jia shi	5000
+阳光酒店	yang guang jiu dian	5000
+驾驶习惯	jia shi xi guan	5000
+驾驶模式	jia shi mo shi	5000
+驾驶经验	jia shi jing yan	5000
+奋斗汽车	fen dou qi che	4962
+无限汽车	wu xian qi che	4962
+理念汽车	li nian qi che	4962
 分开旅行	fen kai lv xing	4924
 旅游外汇	lv you wai hui	4924
+汽车公告	qi che gong gao	4924
+汽车宝贝	qi che bao bei	4924
+酒店公寓	jiu dian gong yu	4924
+青岛地铁	qing dao di tie	4924
+专用汽车	zhuan yong qi che	4885
+公交车上	gong jiao che shang	4885
+共享汽车	gong xiang qi che	4885
 周边旅游	zhou bian lv you	4885
+小型汽车	xiao xing qi che	4885
 山西旅游	shan xi lv you	4885
+汽车用品	qi che yong pin	4885
+驾驶技巧	jia shi ji qiao	4885
+急救包	ji jiu bao	4864
+公交大厦	gong jiao da sha	4847
 大连旅游	da lian lv you	4847
 太空旅行	tai kong lv xing	4847
 旅游时报	lv you shi bao	4847
 旅行日记	lv xing ri ji	4847
 旅行笔记	lv xing bi ji	4847
+智能汽车	zhi neng qi che	4847
+模拟火车	mo ni huo che	4847
+模拟驾驶	mo ni jia shi	4847
+汽车买卖	qi che mai mai	4847
+汽车玻璃	qi che bo li	4847
+花园酒店	hua yuan jiu dian	4847
 苏州旅游	su zhou lv you	4847
 西北旅游	xi bei lv you	4847
+骑士酒店	qi shi jiu dian	4847
+中央车站	zhong yang che zhan	4808
 北海景区	bei hai jing qu	4808
+南方车站	nan fang che zhan	4808
+地铁车站	di tie che zhan	4808
+度假酒店	du jia jiu dian	4808
 旅行婚礼	lv xing hun li	4808
 旅行愉快	lv xing yu kuai	4808
+汽车维修	qi che wei xiu	4808
+联合车站	lian he che zhan	4808
+车站小学	che zhan xiao xue	4808
+车站社区	che zhan she qu	4808
+车站附近	che zhan fu jin	4808
 东山景区	dong shan jing qu	4770
 东湖景区	dong hu jing qu	4770
 南山景区	nan shan jing qu	4770
 南湖景区	nan hu jing qu	4770
 商务旅行	shang wu lv xing	4770
+商务酒店	shang wu jiu dian	4770
 崂山景区	lao shan jing qu	4770
 昆山景区	kun shan jing qu	4770
+汽车小镇	qi che xiao zhen	4770
+汽车旅馆	qi che lv guan	4770
 浪漫旅行	lang man lv xing	4770
+火车车厢	huo che che xiang	4770
 灵山景区	ling shan jing qu	4770
 白云景区	bai yun jing qu	4770
 白山景区	bai shan jing qu	4770
 西山景区	xi shan jing qu	4770
 象山景区	xiang shan jing qu	4770
+郑州地铁	zheng zhou di tie	4770
 金山景区	jin shan jing qu	4770
+长江汽车	chang jiang qi che	4770
 门票价格	men piao jia ge	4770
 龙山景区	long shan jing qu	4770
 三亚旅游	san ya lv you	4731
+东南汽车	dong nan qi che	4731
+东风汽车	dong feng qi che	4731
 丽水旅游	li shui lv you	4731
+九龙汽车	jiu long qi che	4731
+光明车站	guang ming che zhan	4731
 北海旅游	bei hai lv you	4731
 南山旅游	nan shan lv you	4731
 威海旅游	wei hai lv you	4731
+徐州地铁	xu zhou di tie	4731
 桂林旅游	gui lin lv you	4731
 毕节旅游	bi jie lv you	4731
+江西宾馆	jiang xi bin guan	4731
+济南地铁	ji nan di tie	4731
 温泉旅游	wen quan lv you	4731
+温泉酒店	wen quan jiu dian	4731
 独自旅行	du zi lv xing	4731
+福州地铁	fu zhou di tie	4731
+福田汽车	fu tian qi che	4731
 腾冲旅游	teng chong lv you	4731
+莲花汽车	lian hua qi che	4731
 西沙旅游	xi sha lv you	4731
+酒店温泉	jiu dian wen quan	4731
+锦江酒店	jin jiang jiu dian	4731
+长丰汽车	chang feng qi che	4731
+长安汽车	chang an qi che	4731
 黄山旅游	huang shan lv you	4731
+发动机号	fa dong ji hao	4693
+国产汽车	guo chan qi che	4693
 国际航班	guo ji hang ban	4693
+地铁大厦	di tie da sha	4693
+地铁站台	di tie zhan tai	4693
 拓展旅游	tuo zhan lv you	4693
 旅游大厦	lv you da sha	4693
 旅游指南	lv you zhi nan	4693
+星星火车	xing xing huo che	4693
 死亡航班	si wang hang ban	4693
+汽车大厦	qi che da sha	4693
+汽车改装	qi che gai zhuang	4693
 航班信息	hang ban xin xi	4693
+酒店家具	jiu dian jia ju	4693
+华北汽车	hua bei qi che	4654
+大地汽车	da di qi che	4654
 旅游客车	lv you ke che	4654
+汽车行情	qi che hang qing	4654
+汽车轮胎	qi che lun tai	4654
+隔离酒店	ge li jiu dian	4654
 冬季旅行	dong ji lv xing	4616
 接待游客	jie dai you ke	4616
 旅游卡	lv you ka	4616
@@ -173,48 +529,170 @@
 旅游观光	lv you guan guang	4616
 旅行拍照	lv xing pai zhao	4616
 旅行途中	lv xing tu zhong	4616
+汽车上	qi che shang	4616
+汽车库	qi che ku	4616
+汽车灯	qi che deng	4616
+汽车的	qi che de	4616
+汽车空调	qi che kong tiao	4616
+汽车系	qi che xi	4616
+汽车锁	qi che suo	4616
+汽车队	qi che dui	4616
 致命旅行	zhi ming lv xing	4616
 观光旅游	guan guang lv you	4616
 观光旅行	guan guang lv xing	4616
 七星景区	qi xing jing qu	4577
 体验景区	ti yan jing qu	4577
+公交司机	gong jiao si ji	4577
+公交宿舍	gong jiao su she	4577
+公交查询	gong jiao cha xun	4577
+公交男女	gong jiao nan nv	4577
+公交路线	gong jiao lu xian	4577
+前途汽车	qian tu qi che	4577
+北京公交	bei jing gong jiao	4577
 南岳景区	nan yue jing qu	4577
 南沙景区	nan sha jing qu	4577
+城市公交	cheng shi gong jiao	4577
 天台景区	tian tai jing qu	4577
 婺源景区	wu yuan jing qu	4577
+实时公交	shi shi gong jiao	4577
+情侣酒店	qing lv jiu dian	4577
 旅游景区	lv you jing qu	4577
 核心景区	he xin jing qu	4577
 沙湾景区	sha wan jing qu	4577
 温泉景区	wen quan jing qu	4577
+精灵汽车	jing ling qi che	4577
+精灵酒店	jing ling jiu dian	4577
 红色景区	hong se jing qu	4577
+高铁管家	gao tie guan jia	4577
 黄龙景区	huang long jing qu	4577
 龙川景区	long chuan jing qu	4577
 龙潭景区	long tan jing qu	4577
 亲密旅行	qin mi lv xing	4539
+夜间驾驶	ye jian jia shi	4539
 旅游地	lv you di	4539
 旅游总局	lv you zong ju	4539
+汽车厂家	qi che chang jia	4539
+汽车钥匙	qi che yao shi	4539
+汽车销量	qi che xiao liang	4539
 环球旅行	huan qiu lv xing	4539
+长城汽车	chang cheng qi che	4539
+民宿	min su	4522
+上海宾馆	shang hai bin guan	4500
+东山宾馆	dong shan bin guan	4500
+东方宾馆	dong fang bin guan	4500
+东湖宾馆	dong hu bin guan	4500
+中国高铁	zhong guo gao tie	4500
+体育宾馆	ti yu bin guan	4500
+午夜火车	wu ye huo che	4500
+华侨宾馆	hua qiao bin guan	4500
+南湖宾馆	nan hu bin guan	4500
+友谊宾馆	you yi bin guan	4500
+和平宾馆	he ping bin guan	4500
+商务宾馆	shang wu bin guan	4500
+天美汽车	tian mei qi che	4500
+宾馆酒店	bin guan jiu dian	4500
+宾馆饭店	bin guan fan dian	4500
+广州宾馆	guang zhou bin guan	4500
+开心宾馆	kai xin bin guan	4500
 时空旅行	shi kong lv xing	4500
+橡胶轮胎	xiang jiao lun tai	4500
+汽车租赁	qi che zu lin	4500
+温泉宾馆	wen quan bin guan	4500
+瑞金宾馆	rui jin bin guan	4500
+站前宾馆	zhan qian bin guan	4500
+胜利宾馆	sheng li bin guan	4500
+豪华酒店	hao hua jiu dian	4500
+酒店宾馆	jiu dian bin guan	4500
+酒店用品	jiu dian yong pin	4500
+重庆宾馆	chong qing bin guan	4500
+金牛宾馆	jin niu bin guan	4500
+铁路宾馆	tie lu bin guan	4500
+锦江宾馆	jin jiang bin guan	4500
+长城宾馆	chang cheng bin guan	4500
+高铁列车	gao tie lie che	4500
+高铁英雄	gao tie ying xiong	4500
+原子汽车	yuan zi qi che	4462
 外出旅游	wai chu lv you	4462
 廉价航班	lian jia hang ban	4462
 旅行青蛙	lv xing qing wa	4462
+汽车塑料	qi che su liao	4462
+海马汽车	hai ma qi che	4462
+猎豹汽车	lie bao qi che	4462
+羚羊汽车	ling yang qi che	4462
+走私汽车	zou si qi che	4462
+远程汽车	yuan cheng qi che	4462
+连锁酒店	lian suo jiu dian	4462
+银河宾馆	yin he bin guan	4462
+麻雀酒店	ma que jiu dian	4462
 不要门票	bu yao men piao	4424
 充电旅行	chong dian lv xing	4424
 旅行轿车	lv xing jiao che	4424
+汽车修理	qi che xiu li	4424
+汽车前座	qi che qian zuo	4424
+汽车导航	qi che dao hang	4424
+汽车板块	qi che ban kuai	4424
+汽车电器	qi che dian qi	4424
+汽车精品	qi che jing pin	4424
 门票免费	men piao mian fei	4424
 门票收入	men piao shou ru	4424
+公交场站	gong jiao chang zhan	4385
+几何汽车	ji he qi che	4385
+刚上地铁	gang shang di tie	4385
+刚下地铁	gang xia di tie	4385
+国金汽车	guo jin qi che	4385
+改装汽车	gai zhuang qi che	4385
 旅游用地	lv you yong di	4385
 星际旅行	xing ji lv xing	4385
 春季旅行	chun ji lv xing	4385
+汽车功率	qi che gong lv	4385
+乘坐火车	cheng zuo huo che	4347
+产权酒店	chan quan jiu dian	4347
+汽车座椅	qi che zuo yi	4347
+汽车营地	qi che ying di	4347
+汽车配件	qi che pei jian	4347
+烟酒店	yan jiu dian	4347
+简易车站	jian yi che zhan	4347
+西成高铁	xi cheng gao tie	4347
+这酒店	zhe jiu dian	4347
+远东酒店	yuan dong jiu dian	4347
+酒店里	jiu dian li	4347
 高原旅游	gao yuan lv you	4347
+三角轮胎	san jiao lun tai	4308
+奔驰汽车	ben chi qi che	4308
 户外旅行	hu wai lv xing	4308
 月球旅行	yue qiu lv xing	4308
 民俗旅游	min su lv you	4308
+汽车电机	qi che dian ji	4308
+汽车部件	qi che bu jian	4308
+疲劳驾驶	pi lao jia shi	4308
+盛大汽车	sheng da qi che	4308
+空中轮胎	kong zhong lun tai	4308
+贵州轮胎	gui zhou lun tai	4308
+轮胎规格	lun tai gui ge	4308
+酒店客房	jiu dian ke fang	4308
 华东旅游	hua dong lv you	4270
+梦幻酒店	meng huan jiu dian	4270
+棺材汽车	guan cai qi che	4270
+汽车零件	qi che ling jian	4270
+没地铁	mei di tie	4270
+福特汽车	fu te qi che	4270
+老火车站	lao huo che zhan	4270
 航班管家	hang ban guan jia	4270
+乘汽车	cheng qi che	4231
+二手汽车	er shou qi che	4231
 你旅游	ni lv you	4231
+假日酒店	jia ri jiu dian	4231
+公交站点	gong jiao zhan dian	4231
+出地铁	chu di tie	4231
 去旅游	qu lv you	4231
+国机汽车	guo ji qi che	4231
+地铁上	di tie shang	4231
+坐汽车	zuo qi che	4231
+大汽车	da qi che	4231
+孟买酒店	meng mai jiu dian	4231
+开汽车	kai qi che	4231
 探险旅行	tan xian lv xing	4231
+擦汽车	ca qi che	4231
 旅旅游	lv lv you	4231
 旅游了	lv you le	4231
 旅游包	lv you bao	4231
@@ -235,87 +713,547 @@
 旅行商	lv xing shang	4231
 旅行装	lv xing zhuang	4231
 来旅游	lai lv you	4231
+水上公交	shui shang gong jiao	4231
+汽车人	qi che ren	4231
+汽车吊	qi che diao	4231
+汽车团	qi che tuan	4231
+汽车影院	qi che ying yuan	4231
+汽车漆	qi che qi	4231
+汽车蜡	qi che la	4231
+汽车衡	qi che heng	4231
+汽车连	qi che lian	4231
+源汽车	yuan qi che	4231
 真空旅行	zhen kong lv xing	4231
+离地铁	li di tie	4231
 花台景区	hua tai jing qu	4231
 西海景区	xi hai jing qu	4231
+货运汽车	huo yun qi che	4231
+起亚汽车	qi ya qi che	4231
 夏日旅行	xia ri lv xing	4193
+开火车	kai huo che	4193
+摩根汽车	mo gen qi che	4193
+汽车三包	qi che san bao	4193
+汽车报价	qi che bao jia	4193
+汽车窗帘	qi che chuang lian	4193
+汽车音响	qi che yin xiang	4193
+火车上	huo che shang	4193
+火车桥	huo che qiao	4193
+火车皮	huo che pi	4193
+火车道	huo che dao	4193
+短发动机	duan fa dong ji	4193
 秋季旅行	qiu ji lv xing	4193
+酒店风云	jiu dian feng yun	4193
+中兴汽车	zhong xing qi che	4154
+吉祥酒店	ji xiang jiu dian	4154
+备用轮胎	bei yong lun tai	4154
+宝马汽车	bao ma qi che	4154
 峡谷景区	xia gu jing qu	4154
+汽车北站	qi che bei zhan	4154
+汽车召回	qi che zhao hui	4154
+汽车喇叭	qi che la ba	4154
+汽车美容	qi che mei rong	4154
+汽车评测	qi che ping ce	4154
+火车北站	huo che bei zhan	4154
+蒸汽火车	zheng qi huo che	4154
+酒店之王	jiu dian zhi wang	4154
+发动机盖	fa dong ji gai	4116
+水稻汽车	shui dao qi che	4116
+遥控汽车	yao kong qi che	4116
 长途旅行	chang tu lv xing	4116
+长途驾驶	chang tu jia shi	4116
 登机牌	deng ji pai	4088
+丰田汽车	feng tian qi che	4077
+凯特汽车	kai te qi che	4077
 华山景区	hua shan jing qu	4077
+商用汽车	shang yong qi che	4077
 太清景区	tai qing jing qu	4077
+平壤地铁	ping rang di tie	4077
+掌上高铁	zhang shang gao tie	4077
 旅游专线	lv you zhuan xian	4077
+曙光汽车	shu guang qi che	4077
+汽车下乡	qi che xia xiang	4077
+汽车香水	qi che xiang shui	4077
 登山旅游	deng shan lv you	4077
+纳米汽车	na mi qi che	4077
+重型汽车	zhong xing qi che	4077
+便捷酒店	bian jie jiu dian	4039
+动车站	dong che zhan	4039
+回力轮胎	hui li lun tai	4039
+在车站	zai che zhan	4039
+天国车站	tian guo che zhan	4039
+客车站	ke che zhan	4039
+宾馆客房	bin guan ke fang	4039
+新车站	xin che zhan	4039
 旅行支票	lv xing zhi piao	4039
+无照驾驶	wu zhao jia shi	4039
+汽车中控	qi che zhong kong	4039
+汽车底盘	qi che di pan	4039
+汽车总站	qi che zong zhan	4039
+火车总站	huo che zong zhan	4039
+老车站	lao che zhan	4039
+轻型汽车	qing xing qi che	4039
+酒店自助	jiu dian zi zhu	4039
+万国酒店	wan guo jiu dian	4000
+上高铁	shang gao tie	4000
+兰新高铁	lan xin gao tie	4000
+实心轮胎	shi xin lun tai	4000
+快捷酒店	kuai jie jiu dian	4000
+汽车模具	qi che mu ju	4000
+珠江宾馆	zhu jiang bin guan	4000
+车轮轮胎	che lun lun tai	4000
 连岛景区	lian dao jing qu	4000
+云度汽车	yun du qi che	3962
+住酒店	zhu jiu dian	3962
+到酒店	dao jiu dian	3962
+去酒店	qu jiu dian	3962
+发动机舱	fa dong ji cang	3962
 启航班	qi hang ban	3962
+回酒店	hui jiu dian	3962
+在酒店	zai jiu dian	3962
+小酒店	xiao jiu dian	3962
+开酒店	kai jiu dian	3962
+找酒店	zhao jiu dian	3962
+来酒店	lai jiu dian	3962
+汽车涂料	qi che tu liao	3962
+汽车跑车	qi che pao che	3962
+的酒店	de jiu dian	3962
+订酒店	ding jiu dian	3962
+跑车汽车	pao che qi che	3962
+迪拜地铁	di bai di tie	3962
+酒店了	jiu dian le	3962
+酒店住	jiu dian zhu	3962
+酒店吗	jiu dian ma	3962
+酒店吧	jiu dian ba	3962
+酒店呢	jiu dian ne	3962
+酒店啊	jiu dian a	3962
+酒店的	jiu dian de	3962
+酒店系	jiu dian xi	3962
+停车牌	ting che pai	3924
 新婚旅行	xin hun lv xing	3924
+星级宾馆	xing ji bin guan	3924
+星级酒店	xing ji jiu dian	3924
+本田汽车	ben tian qi che	3924
+火车进站	huo che jin zhan	3924
 直飞航班	zhi fei hang ban	3924
+繁华酒店	fan hua jiu dian	3924
+乙醇汽车	yi chun qi che	3885
+公交上	gong jiao shang	3885
+公交了	gong jiao le	3885
+华天酒店	hua tian jiu dian	3885
+地铁逃生	di tie tao sheng	3885
 天湖景区	tian hu jing qu	3885
+神龙汽车	shen long qi che	3885
+红星汽车	hong xing qi che	3885
+醉酒驾驶	zui jiu jia shi	3885
+铃木汽车	ling mu qi che	3885
+领克汽车	ling ke qi che	3885
 香山景区	xiang shan jing qu	3885
+保温杯	bao wen bei	3867
+上地铁	shang di tie	3847
+下地铁	xia di tie	3847
+乘地铁	cheng di tie	3847
+京西宾馆	jing xi bin guan	3847
+修地铁	xiu di tie	3847
 修学旅行	xiu xue lv xing	3847
+做地铁	zuo di tie	3847
+八一宾馆	ba yi bin guan	3847
+到地铁	dao di tie	3847
 去旅行	qu lv xing	3847
+在地铁	zai di tie	3847
+地铁了	di tie le	3847
+地铁卡	di tie ka	3847
+地铁吗	di tie ma	3847
+地铁吧	di tie ba	3847
+地铁的	di tie de	3847
+地铁里	di tie li	3847
+天马汽车	tian ma qi che	3847
+宾馆里	bin guan li	3847
+成贵高铁	cheng gui gao tie	3847
+打地铁	da di tie	3847
+挤地铁	ji di tie	3847
+搭地铁	da di tie	3847
 旅行剑	lv xing jian	3847
 旅行图	lv xing tu	3847
 旅行杯	lv xing bei	3847
 旅行记	lv xing ji	3847
+有地铁	you di tie	3847
+汽车越野	qi che yue ye	3847
 爱旅行	ai lv xing	3847
 的旅行	de lv xing	3847
+等地铁	deng di tie	3847
+赶地铁	gan di tie	3847
+越野汽车	yue ye qi che	3847
+转地铁	zhuan di tie	3847
+进地铁	jin di tie	3847
+酒后驾驶	jiu hou jia shi	3847
+高铁上	gao tie shang	3847
+高铁票	gao tie piao	3847
+高铁线	gao tie xian	3847
+一火车	yi huo che	3808
+上火车	shang huo che	3808
+下火车	xia huo che	3808
+做火车	zuo huo che	3808
+农用汽车	nong yong qi che	3808
 国门景区	guo men jing qu	3808
+在火车	zai huo che	3808
+大白汽车	da bai qi che	3808
+奥迪汽车	ao di qi che	3808
+小火车	xiao huo che	3808
+渤海汽车	bo hai qi che	3808
+火车了	huo che le	3808
+火车吗	huo che ma	3808
+火车吧	huo che ba	3808
+火车摇	huo che yao	3808
+猜火车	cai huo che	3808
+的火车	de huo che	3808
+神州高铁	shen zhou gao tie	3808
+等火车	deng huo che	3808
+赶火车	gan huo che	3808
+跑火车	pao huo che	3808
 门票费	men piao fei	3808
+一驾驶	yi jia shi	3770
+主驾驶	zhu jia shi	3770
+啥驾驶	sha jia shi	3770
+天际汽车	tian ji qi che	3770
+天龙酒店	tian long jiu dian	3770
+戴斯酒店	dai si jiu dian	3770
+汽车养护	qi che yang hu	3770
+汽车饰品	qi che shi pin	3770
+深业汽车	shen ye qi che	3770
+雷诺汽车	lei nuo qi che	3770
+风行汽车	feng xing qi che	3770
+驾驶位	jia shi wei	3770
+驾驶感	jia shi gan	3770
+黄海汽车	huang hai qi che	3770
 众信旅游	zhong xin lv you	3731
+公交站牌	gong jiao zhan pai	3731
+北门车站	bei men che zhan	3731
+哈飞汽车	ha fei qi che	3731
+已入住	yi ru zhu	3731
+帆船酒店	fan chuan jiu dian	3731
+白马酒店	bai ma jiu dian	3731
+车牌子	che pai zi	3731
+车轮胎	che lun tai	3731
+轮胎螺丝	lun tai luo si	3731
+高铁动车	gao tie dong che	3731
+宝龙汽车	bao long qi che	3693
+掌上公交	zhang shang gong jiao	3693
+洲际酒店	zhou ji jiu dian	3693
 盘门景区	pan men jing qu	3693
+酒店大堂	jiu dian da tang	3693
+野马汽车	ye ma qi che	3693
+鲁南高铁	lu nan gao tie	3693
 九华旅游	jiu hua lv you	3654
 云谷景区	yun gu jing qu	3654
+交换民宿	jiao huan min su	3654
+候车站	hou che zhan	3654
+全季酒店	quan ji jiu dian	3654
+到车站	dao che zhan	3654
+单体酒店	dan ti jiu dian	3654
+去车站	qu che zhan	3654
+双环汽车	shuang huan qi che	3654
+后车站	hou che zhan	3654
+夜色酒店	ye se jiu dian	3654
+来车站	lai che zhan	3654
+欧拉汽车	ou la qi che	3654
+汽车内饰	qi che nei shi	3654
+湖畔酒店	hu pan jiu dian	3654
+美团民宿	mei tuan min su	3654
+虹桥宾馆	hong qiao bin guan	3654
 蜜月旅行	mi yue lv xing	3654
+蜜月酒店	mi yue jiu dian	3654
+车站了	che zhan le	3654
+车站的	che zhan de	3654
+车站路	che zhan lu	3654
+防弹汽车	fang dan qi che	3654
+飞碟汽车	fei die qi che	3654
+京张高铁	jing zhang gao tie	3616
+包入住	bao ru zhu	3616
 古镇景区	gu zhen jing qu	3616
+地铁惊魂	di tie jing hun	3616
+塔塔汽车	ta ta qi che	3616
 房车旅行	fang che lv xing	3616
+欧宝汽车	ou bao qi che	3616
+江淮汽车	jiang huai qi che	3616
+汽车南站	qi che nan zhan	3616
+汽车尾气	qi che wei qi	3616
 石湖景区	shi hu jing qu	3616
 赎罪旅行	shu zui lv xing	3616
+超速驾驶	chao su jia shi	3616
+车牌照	che pai zhao	3616
+载客汽车	zai ke qi che	3616
+酒店惊魂	jiu dian jing hun	3616
+三菱汽车	san ling qi che	3577
 同程旅游	tong cheng lv you	3577
 地底旅行	di di lv xing	3577
 旅游专列	lv you zhuan lie	3577
+日产汽车	ri chan qi che	3577
+沿江高铁	yan jiang gao tie	3577
+火车怪客	huo che guai ke	3577
 迫降航班	po jiang hang ban	3577
+睡袋	shui dai	3565
+京九高铁	jing jiu gao tie	3539
+京沪高铁	jing hu gao tie	3539
+住客房	zhu ke fang	3539
 公费旅游	gong fei lv you	3539
+唐城宾馆	tang cheng bin guan	3539
 唐城景区	tang cheng jing qu	3539
+奔腾汽车	ben teng qi che	3539
+气动汽车	qi dong qi che	3539
+电竞酒店	dian jing jiu dian	3539
+盖世汽车	gai shi qi che	3539
 石林景区	shi lin jing qu	3539
+载货汽车	zai huo qi che	3539
+上公交	shang gong jiao	3500
+下公交	xia gong jiao	3500
+乘公交	cheng gong jiao	3500
+京哈高铁	jing ha gao tie	3500
+公交卡	gong jiao ka	3500
+公交吗	gong jiao ma	3500
+公交吧	gong jiao ba	3500
+双龙汽车	shuang long qi che	3500
+在公交	zai gong jiao	3500
+坐公交	zuo gong jiao	3500
+大乘汽车	da cheng qi che	3500
 妩媚航班	wu mei hang ban	3500
 山景区	shan jing qu	3500
+挤公交	ji gong jiao	3500
+搭公交	da gong jiao	3500
+有公交	you gong jiao	3500
+汉十高铁	han shi gao tie	3500
+没公交	mei gong jiao	3500
+等公交	deng gong jiao	3500
+赶公交	gan gong jiao	3500
+跃进汽车	yue jin qi che	3500
+道奇汽车	dao qi qi che	3500
+万豪酒店	wan hao jiu dian	3462
+下高铁	xia gao tie	3462
 主峰景区	zhu feng jing qu	3462
+京广高铁	jing guang gao tie	3462
+住宾馆	zhu bin guan	3462
+全顺汽车	quan shun qi che	3462
+到宾馆	dao bin guan	3462
+副驾驶员	fu jia shi yuan	3462
+去宾馆	qu bin guan	3462
+吉奥汽车	ji ao qi che	3462
+回宾馆	hui bin guan	3462
+国宾酒店	guo bin jiu dian	3462
+在宾馆	zai bin guan	3462
+在高铁	zai gao tie	3462
+坐高铁	zuo gao tie	3462
+宾馆业	bin guan ye	3462
+宾馆了	bin guan le	3462
+宾馆吗	bin guan ma	3462
+宾馆吧	bin guan ba	3462
+宾馆呢	bin guan ne	3462
+宾馆的	bin guan de	3462
+小宾馆	xiao bin guan	3462
+废轮胎	fei lun tai	3462
+开宾馆	kai bin guan	3462
+有高铁	you gao tie	3462
+末班地铁	mo ban di tie	3462
+标致汽车	biao zhi qi che	3462
+汽车坐垫	qi che zuo dian	3462
+汽车尾灯	qi che wei deng	3462
+汽车尾翼	qi che wei yi	3462
 游客止步	you ke zhi bu	3462
 环岛旅行	huan dao lv xing	3462
+的高铁	de gao tie	3462
+绿皮火车	lv pi huo che	3462
+载重汽车	zai zhong qi che	3462
+金龙汽车	jin long qi che	3462
+陆风汽车	lu feng qi che	3462
+雷鸟汽车	lei niao qi che	3462
+高铁了	gao tie le	3462
+高铁吗	gao tie ma	3462
+高铁吧	gao tie ba	3462
 龟山景区	gui shan jing qu	3462
+下榻酒店	xia ta jiu dian	3424
 买门票	mai men piao	3424
 免门票	mian men piao	3424
 搭车旅行	da che lv xing	3424
+明君汽车	ming jun qi che	3424
+汽车桑拿	qi che sang na	3424
 要门票	yao men piao	3424
 门票钱	men piao qian	3424
+黑豹汽车	hei bao qi che	3424
+刚到酒店	gang dao jiu dian	3385
+华普汽车	hua pu qi che	3385
 大佛景区	da fo jing qu	3385
+威马汽车	wei ma qi che	3385
 宋城景区	song cheng jing qu	3385
+木炭汽车	mu tan qi che	3385
+汽车博览	qi che bo lan	3385
+玲珑轮胎	ling long lun tai	3385
+郑万高铁	zheng wan gao tie	3385
+卡威汽车	ka wei qi che	3347
+四星酒店	si xing jiu dian	3347
+广汇汽车	guang hui qi che	3347
+换轮胎	huan lun tai	3347
+斯威汽车	si wei qi che	3347
 江湾景区	jiang wan jing qu	3347
+汽车功放	qi che gong fang	3347
+火车轮渡	huo che lun du	3347
+环岛高铁	huan dao gao tie	3347
+破轮胎	po lun tai	3347
 红眼航班	hong yan hang ban	3347
+纸板汽车	zhi ban qi che	3347
+补轮胎	bu lun tai	3347
+轮胎店	lun tai dian	3347
+轮胎油	lun tai you	3347
+轮胎蜡	lun tai la	3347
+防爆轮胎	fang bao lun tai	3347
+首旅酒店	shou lv jiu dian	3347
+地铁跑酷	di tie pao ku	3308
+城际公交	cheng ji gong jiao	3308
+汽车年检	qi che nian jian	3308
+汽车抛锚	qi che pao mao	3308
+甲醇汽车	jia chun qi che	3308
 绝命航班	jue ming hang ban	3308
+酷派汽车	ku pai qi che	3308
+华泰宾馆	hua tai bin guan	3270
+华泰汽车	hua tai qi che	3270
+汽车尿素	qi che niao su	3270
+泛亚汽车	fan ya qi che	3270
+你车牌	ni che pai	3231
+入住了	ru zhu le	3231
+入住人	ru zhu ren	3231
+入住的	ru zhu de	3231
 全域旅游	quan yu lv you	3231
+公交技校	gong jiao ji xiao	3231
+办入住	ban ru zhu	3231
+南郊宾馆	nan jiao bin guan	3231
+大运汽车	da yun qi che	3231
+宾馆洗浴	bin guan xi yu	3231
+录车牌	lu che pai	3231
+无证驾驶	wu zheng jia shi	3231
+枫叶汽车	feng ye qi che	3231
+汽车坡道	qi che po dao	3231
+汽车西站	qi che xi zhan	3231
+洗浴宾馆	xi yu bin guan	3231
+济青高铁	ji qing gao tie	3231
+车牌架	che pai jia	3231
+华晨汽车	hua chen qi che	3193
 华阳景区	hua yang jing qu	3193
+华阳汽车	hua yang qi che	3193
+合众汽车	he zhong qi che	3193
+夺命地铁	duo ming di tie	3193
 夺命旅行	duo ming lv xing	3193
+扬子汽车	yang zi qi che	3193
+汽车贴膜	qi che tie mo	3193
+福迪汽车	fu di qi che	3193
+金冠汽车	jin guan qi che	3193
+金杯汽车	jin bei qi che	3193
+尼桑汽车	ni sang qi che	3154
+永源汽车	yong yuan qi che	3154
 焦山景区	jiao shan jing qu	3154
 仙都景区	xian du jing qu	3116
+凯马汽车	kai ma qi che	3116
+宾利汽车	bin li qi che	3116
+新凯汽车	xin kai qi che	3116
+万丰汽车	wan feng qi che	3077
 套娃景区	tao wa jing qu	3077
+安凯汽车	an kai qi che	3077
 巨峰景区	ju feng jing qu	3077
+开瑞汽车	kai rui qi che	3077
 灵峰景区	ling feng jing qu	3077
 研学旅行	yan xue lv xing	3077
 中岳景区	zhong yue jing qu	3039
+申通地铁	shen tong di tie	3039
+亡命驾驶	wang ming jia shi	3000
 兰亭景区	lan ting jing qu	3000
+奇瑞汽车	qi rui qi che	3000
+赣深高铁	gan shen gao tie	3000
+帝皇酒店	di huang jiu dian	2962
+帝豪汽车	di hao qi che	2962
 滨河景区	bin he jing qu	2962
 灵岩景区	ling yan jing qu	2962
+乐途汽车	le tu qi che	2924
+众泰汽车	zhong tai qi che	2924
+凌宝汽车	ling bao qi che	2924
+凯翼汽车	kai yi qi che	2924
+华域汽车	hua yu qi che	2924
+华颂汽车	hua song qi che	2924
+博郡汽车	bo jun qi che	2924
 去旅游了	qu lv you le	2924
+哪吒汽车	ne zha qi che	2924
+大迪汽车	da di qi che	2924
+宝和汽车	bao he qi che	2924
+宝沃汽车	bao wo qi che	2924
+宝骏汽车	bao jun qi che	2924
+宝骐汽车	bao qi qi che	2924
+富迪汽车	fu di qi che	2924
+开沃汽车	kai wo qi che	2924
+微面汽车	wei mian qi che	2924
+恒天汽车	heng tian qi che	2924
+拎包入住	lin bao ru zhu	2924
+揽福汽车	lan fu qi che	2924
+新汽车站	xin qi che zhan	2924
+新特汽车	xin te qi che	2924
 旅游去了	lv you qu le	2924
+极越汽车	ji yue qi che	2924
+森雅汽车	sen ya qi che	2924
+比速汽车	bi su qi che	2924
+汉腾汽车	han teng qi che	2924
+汉龙汽车	han long qi che	2924
+汽车之家	qi che zhi jia	2924
+汽车前束	qi che qian shu	2924
+汽车延保	qi che yan bao	2924
+汽车球笼	qi che qiu long	2924
+汽车顶架	qi che ding jia	2924
+汽车顶箱	qi che ding xiang	2924
+泉峰汽车	quan feng qi che	2924
+爱卡汽车	ai ka qi che	2924
+爱驰汽车	ai chi qi che	2924
+电咖汽车	dian ka qi che	2924
 百泉景区	bai quan jing qu	2924
+绿驰汽车	lv chi qi che	2924
+老汽车站	lao qi che zhan	2924
+观致汽车	guan zhi qi che	2924
+豪泰酒店	hao tai jiu dian	2924
+赛麟汽车	sai lin qi che	2924
 跟团旅游	gen tuan lv you	2924
+车驰汽车	che chi qi che	2924
+铂锐汽车	bo rui qi che	2924
+领翔汽车	ling xiang qi che	2924
+领途汽车	ling tu qi che	2924
+驭胜汽车	yu sheng qi che	2924
+骐铃汽车	qi ling qi che	2924
+保温箱	bao wen xiang	2906
+光冈汽车	guang gang qi che	2885
+汉庭酒店	han ting jiu dian	2885
 玉屏景区	yu ping jing qu	2885
 茨坪景区	ci ping jing qu	2885
+成渝高铁	cheng yu gao tie	2847
 宏村景区	hong cun jing qu	2808
+你在酒店	ni zai jiu dian	2770
+凌志汽车	ling zhi qi che	2770
+到酒店了	dao jiu dian le	2770
+咸亨酒店	xian heng jiu dian	2770
+回酒店了	hui jiu dian le	2770
+如家酒店	ru jia jiu dian	2770
+我在酒店	wo zai jiu dian	2770
+月之酒店	yue zhi jiu dian	2770
+灰马酒店	hui ma jiu dian	2770
+百星酒店	bai xing jiu dian	2770
+缸发动机	gang fa dong ji	2770
+轮胎胎面	lun tai tai mian	2770
+江铃汽车	jiang ling qi che	2731
+上地铁了	shang di tie le	2693
+下地铁了	xia di tie le	2693
+你坐地铁	ni zuo di tie	2693
+出地铁了	chu di tie le	2693
+到地铁站	dao di tie zhan	2693
+在地铁上	zai di tie shang	2693
+在地铁站	zai di tie zhan	2693
+地铁上了	di tie shang le	2693
+地铁口了	di tie kou le	2693
+地铁站了	di tie zhan le	2693
+地铁酷跑	di tie ku pao	2693
+坐上地铁	zuo shang di tie	2693
+坐地铁了	zuo di tie le	2693
+我在地铁	wo zai di tie	2693
+我坐地铁	wo zuo di tie	2693
 我的旅行	wo de lv xing	2693
 旅行者岩	lv xing zhe yan	2693
 旅行者空	lv xing zhe kong	2693
@@ -323,17 +1261,107 @@
 旅行者雷	lv xing zhe lei	2693
 旅行者风	lv xing zhe feng	2693
 蔚揽旅行	wei lan lv xing	2693
+交通卡	jiao tong ka	2667
+上火车了	shang huo che le	2654
+下火车了	xia huo che le	2654
+买火车票	mai huo che piao	2654
+云雀汽车	yun que qi che	2654
+你驾驶证	ni jia shi zheng	2654
+到火车站	dao huo che zhan	2654
+副驾驶座	fu jia shi zuo	2654
+北苑宾馆	bei yuan bin guan	2654
+去火车站	qu huo che zhan	2654
+在火车上	zai huo che shang	2654
+在火车站	zai huo che zhan	2654
+坐副驾驶	zuo fu jia shi	2654
+庆铃汽车	qing ling qi che	2654
+我坐火车	wo zuo huo che	2654
+我驾驶证	wo jia shi zheng	2654
+捷达汽车	jie da qi che	2654
+旧火车站	jiu huo che zhan	2654
+有驾驶证	you jia shi zheng	2654
+火车到站	huo che dao zhan	2654
+火车站了	huo che zhan le	2654
+离火车站	li huo che zhan	2654
+考驾驶证	kao jia shi zheng	2654
+轮胎螺母	lun tai luo mu	2654
+昌河汽车	chang he qi che	2616
+到车站了	dao che zhan le	2577
+我到车站	wo dao che zhan	2577
+我在车站	wo zai che zhan	2577
+牛行车站	niu xing che zhan	2577
 枫桥景区	feng qiao jing qu	2539
 航班蛇患	hang ban she huan	2539
+上公交了	shang gong jiao le	2500
+上公交车	shang gong jiao che	2500
+你坐公交	ni zuo gong jiao	2500
+公交车了	gong jiao che le	2500
+凯悦酒店	kai yue jiu dian	2500
 千垛景区	qian duo jing qu	2500
 国清景区	guo qing jing qu	2500
+在公交上	zai gong jiao shang	2500
+在公交车	zai gong jiao che	2500
+在等公交	zai deng gong jiao	2500
+坐上公交	zuo shang gong jiao	2500
+坐公交了	zuo gong jiao le	2500
+坐公交去	zuo gong jiao qu	2500
+坐公交吧	zuo gong jiao ba	2500
+坐公交车	zuo gong jiao che	2500
 怪坡景区	guai po jing qu	2500
+我在公交	wo zai gong jiao	2500
+我坐公交	wo zuo gong jiao	2500
+搭公交车	da gong jiao che	2500
 旺山景区	wang shan jing qu	2500
+星驰汽车	xing chi qi che	2500
+有公交车	you gong jiao che	2500
+枭龙汽车	xiao long qi che	2500
 濯水景区	zhuo shui jing qu	2500
 灵隐景区	ling yin jing qu	2500
+等公交车	deng gong jiao che	2500
 篁岭景区	huang ling jing qu	2500
 绵山景区	mian shan jing qu	2500
 西栅景区	xi zha jing qu	2500
+东泉宾馆	dong quan bin guan	2462
+你坐高铁	ni zuo gao tie	2462
+到宾馆了	dao bin guan le	2462
+到高铁站	dao gao tie zhan	2462
+去高铁站	qu gao tie zhan	2462
+在高铁上	zai gao tie shang	2462
+我在宾馆	wo zai bin guan	2462
+我坐高铁	wo zuo gao tie	2462
+杭黄高铁	hang huang gao tie	2462
+潍莱高铁	wei lai gao tie	2462
+郑济高铁	zheng ji gao tie	2462
+郑阜高铁	zheng fu gao tie	2462
+高铁站了	gao tie zhan le	2462
+自卸汽车	zi xie qi che	2424
+无气轮胎	wu qi lun tai	2385
+聚创轮胎	ju chuang lun tai	2385
+赛轮轮胎	sai lun lun tai	2385
+轮胎抱死	lun tai bao si	2385
+马牌轮胎	ma pai lun tai	2385
+你车牌号	ni che pai hao	2347
+轮胎扳手	lun tai ban shou	2347
+领包入住	ling bao ru zhu	2347
+标准间	biao zhun jian	2318
+力帆汽车	li fan qi che	2308
 自驾游	zi jia you	2262
+木鸟民宿	mu niao min su	2116
+出站口	chu zhan kou	2110
+刹车片	sha che pian	2065
+五菱汽车	wu ling qi che	2039
+轮胎螺栓	lun tai luo shuan	2000
+公交线路	gong jiao xian lu	1917
+检票口	jian piao kou	1915
+行驶证	xing shi zheng	1858
+哪咤汽车	na zha qi che	1847
 汾河景区	fen he jing qu	1808
+汽车轮毂	qi che lun gu	1693
+汽车轮辋	qi che lun wang	1654
 漓江景区	li jiang jing qu	1539
+门禁卡	men jin ka	1510
+潍柴汽车	wei chai qi che	1424
+首班车	shou ban che	1014
+防水层	fang shui ceng	769
+登山鞋	deng shan xie	702
+雨刮器	yu gua qi	229

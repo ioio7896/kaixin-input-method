@@ -83,28 +83,29 @@ New-Item -ItemType Directory -Path $smokeLocalAppData -Force | Out-Null
 
 try {
     $env:LOCALAPPDATA = $smokeLocalAppData
-    $installScript = Join-Path $PackageRoot 'install_dev.ps1'
-    $uninstallScript = Join-Path $installRoot 'uninstall_dev.ps1'
-    Assert-PathExists $installScript
+    $setupExe = Join-Path $PackageRoot 'srf_ime_setup.exe'
+    Assert-PathExists $setupExe
 
     $installArgs = @(
-        '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $installScript,
-        '-PackageRoot', $PackageRoot,
-        '-InstallationRoot', $installRoot,
-        '-SkipTextServiceRestart'
+        'install-user',
+        '--source', $PackageRoot,
+        '--root', $installRoot,
+        '--verify-core-only',
+        '--skip-text-service-restart'
     )
     if (-not $ExerciseLanguageList) {
-        $installArgs += '-SkipLanguageList'
+        $installArgs += '--skip-language-list'
     }
 
-    & powershell.exe @installArgs
+    & $setupExe @installArgs
     if ($LASTEXITCODE -ne 0) {
-        throw "install_dev.ps1 failed with exit code $LASTEXITCODE"
+        throw "srf_ime_setup.exe install-user failed with exit code $LASTEXITCODE"
     }
 
     $payload = Resolve-SmokePayloadRoot -InstallRoot $installRoot
     Assert-PathExists (Join-Path $payload 'x64\srf_tsf_tip.dll')
     Assert-PathExists (Join-Path $payload 'x86\srf_tsf_tip.dll')
+    Assert-PathExists (Join-Path $installRoot 'srf_ime_setup.exe')
     Assert-PathExists (Join-Path $installRoot 'srf_ime_settings.exe')
     Assert-PathExists (Join-Path $installRoot 'user_data_manifest.json')
     Assert-PathExists (Join-Path $installRoot 'component_manifest.ini')
@@ -136,16 +137,18 @@ try {
         Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
     }
 
-    Assert-PathExists $uninstallScript
-    $uninstallArgs = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $uninstallScript, '-InstallationRoot', $installRoot)
+    $uninstallArgs = @(
+        'uninstall-user',
+        '--root', $installRoot
+    )
     if (-not $ExerciseLanguageList) {
-        $uninstallArgs += '-SkipLanguageList'
+        $uninstallArgs += '--skip-language-list'
     }
-    & powershell.exe @uninstallArgs
+    & $setupExe @uninstallArgs
     if ($LASTEXITCODE -ne 0) {
-        throw "uninstall_dev.ps1 failed with exit code $LASTEXITCODE"
+        throw "srf_ime_setup.exe uninstall-user failed with exit code $LASTEXITCODE"
     }
-    Start-Sleep -Seconds 4
+    Start-Sleep -Seconds 2
     Assert-PathMissing (Join-Path $smokeLocalAppData 'kaixin')
 
     if (Test-Path -Path ("HKCU:\Software\Classes\CLSID\{0}" -f $TextServiceClsid)) {

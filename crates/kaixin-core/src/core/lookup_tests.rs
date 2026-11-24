@@ -513,3 +513,79 @@ fn cold_extension_words_are_tail_only_for_non_full_input() {
         "full pinyin could not recall the cold extension phrase: {full_pinyin:?}"
     );
 }
+
+#[test]
+fn reload_phrase_dir_preserves_full_single_char_recall() {
+    let repo_lexicon = std::path::Path::new(env!("KAIXIN_SOURCE_DIR"))
+        .parent()
+        .expect("repository root")
+        .join("lexicon");
+    let mut engine = PinyinEngine::with_phrase_dir(Some(&repo_lexicon));
+    engine.clear_user_lexicon_for_eval();
+    let yi_before = engine.lookup_tsf_candidates("yi").len();
+    let e_before = engine.lookup_tsf_candidates("e").len();
+    assert!(yi_before > 800, "unexpected initial yi count: {yi_before}");
+    assert!(e_before > 250, "unexpected initial e count: {e_before}");
+
+    engine
+        .reload_phrase_dir(Some(&repo_lexicon))
+        .expect("reload lexicon dir");
+    let yi_after = engine.lookup_tsf_candidates("yi").len();
+    let e_after = engine.lookup_tsf_candidates("e").len();
+    assert_eq!(
+        yi_after, yi_before,
+        "reload_phrase_dir dropped uncommon yi characters"
+    );
+    assert_eq!(
+        e_after, e_before,
+        "reload_phrase_dir dropped uncommon e characters"
+    );
+}
+
+#[test]
+fn umlaut_alias_and_supplemental_single_chars_are_reachable_in_full_pinyin() {
+    let mut engine_a = PinyinEngine::with_phrase_dir(None);
+    engine_a.clear_user_lexicon_for_eval();
+    let mut engine_b = PinyinEngine::with_phrase_dir(None);
+    engine_b.clear_user_lexicon_for_eval();
+
+    assert_eq!(
+        engine_a.lookup_tsf_candidates("nue"),
+        engine_b.lookup_tsf_candidates("nve")
+    );
+    assert_eq!(
+        engine_a.lookup_tsf_candidates("lue"),
+        engine_b.lookup_tsf_candidates("lve")
+    );
+
+    let mut partial_candidates = MergedCandidateMap::default();
+    let now = engine_a.user_lexicon.current_clock();
+    let (partial_nue, error) = engine_a.finish_partial_first_batch(
+        &mut partial_candidates,
+        "nue",
+        "nue",
+        now,
+        0,
+        None,
+        "test_nue_partial",
+    );
+    assert!(error.is_none());
+    assert_eq!(partial_nue.first().map(|c| c.phrase.as_str()), Some("虐"));
+
+    for (input, expected) in [
+        ("a", "啊"),
+        ("e", "鹅"),
+        ("o", "哦"),
+        ("ling", "〇"),
+        ("hui", "灰"),
+        ("shen", "谌"),
+        ("lao", "乐"),
+        ("yao", "乐"),
+    ] {
+        let candidates = engine_a.lookup_tsf_candidates(input);
+        assert!(
+            candidates.iter().any(|candidate| candidate == expected),
+            "{input} did not recall {expected}"
+        );
+    }
+}

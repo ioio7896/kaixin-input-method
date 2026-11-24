@@ -36,6 +36,25 @@ pub fn set_ui_design_style(value: &str) -> Result<(), String> {
     write_atomic(&path, updated.as_bytes())
 }
 
+pub fn set_ui_appearance(
+    path: &Path,
+    design_style: Option<&str>,
+    theme_preference: Option<&str>,
+) -> Result<(), String> {
+    let mut text = match fs::read_to_string(path) {
+        Ok(text) => text,
+        Err(err) if err.kind() == io::ErrorKind::NotFound => String::new(),
+        Err(err) => return Err(format!("读取外观设置失败：{err}")),
+    };
+    if let Some(style) = design_style {
+        text = set_ini_value(&text, "style", "ui_design_style", style);
+    }
+    if let Some(preference) = theme_preference {
+        text = set_ini_value(&text, "style", "ui_theme_preference", preference);
+    }
+    write_atomic(path, text.as_bytes())
+}
+
 /// Best-effort persistence for choices made in the standalone OCR window.
 /// A failed preference write must never prevent recognition.
 pub fn set_ocr_preference(key: &str, value: &str) -> Result<(), String> {

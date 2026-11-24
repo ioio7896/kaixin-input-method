@@ -2,6 +2,72 @@
   "schema_version": 1,
   "reading_corrections": [
     {
+      "phrase": "藏羚羊",
+      "rejected": "cang ling yang",
+      "reading": "zang ling yang",
+      "reason": "藏指青藏高原"
+    },
+    {
+      "phrase": "片仔癀",
+      "rejected": "pian zi huang",
+      "reading": "pian zai huang",
+      "reason": "生产商说明书标注 Pianzaihuang"
+    },
+    {
+      "phrase": "科勒",
+      "rejected": "ke lei",
+      "reading": "ke le",
+      "reason": "沿用品牌词库的中文品牌读音"
+    },
+    {
+      "phrase": "苏泊尔",
+      "rejected": "su po er",
+      "reading": "su bo er",
+      "reason": "沿用品牌词库的中文品牌读音"
+    },
+    {
+      "phrase": "雪佛兰",
+      "rejected": "xue fo lan",
+      "reading": "xue fu lan",
+      "reason": "沿用基础词库的品牌专读"
+    },
+    {
+      "phrase": "会稽山",
+      "rejected": "hui ji shan",
+      "reading": "kuai ji shan",
+      "reason": "会稽为地名专读，品牌章程使用 KUAI JI SHAN"
+    },
+    {
+      "phrase": "刺参",
+      "rejected": "ci can",
+      "reading": "ci shen",
+      "reason": "海参名称中的参读 shen"
+    },
+    {
+      "phrase": "重做",
+      "rejected": "zhong zuo",
+      "reading": "chong zuo",
+      "reason": "重表示重新做"
+    },
+    {
+      "phrase": "找不着",
+      "rejected": "zhao bu zhe",
+      "reading": "zhao bu zhao",
+      "reason": "着是表示找到的结果补语"
+    },
+    {
+      "phrase": "什么项目",
+      "rejected": "shen mo xiang mu",
+      "reading": "shen me xiang mu",
+      "reason": "疑问代词什么按 shen me 编码"
+    },
+    {
+      "phrase": "什么产品",
+      "rejected": "shen mo chan pin",
+      "reading": "shen me chan pin",
+      "reason": "疑问代词什么按 shen me 编码"
+    },
+    {
       "phrase": "还款",
       "rejected": "hai kuan",
       "reading": "huan kuan"
@@ -157,6 +223,503 @@
       "rejected": "mi ma zhong zhi",
       "reading": "mi ma chong zhi",
       "reason": "重新设置的重读 chong；词级校正，不修改其他含重词语"
+    },
+    {
+      "phrase": "上调",
+      "rejected": "shang diao",
+      "reading": "shang tiao"
+    },
+    {
+      "phrase": "丰都",
+      "rejected": "feng dou",
+      "reading": "feng du"
+    },
+    {
+      "phrase": "乐都",
+      "rejected": "le dou",
+      "reading": "le du"
+    },
+    {
+      "phrase": "乡长",
+      "rejected": "xiang chang",
+      "reading": "xiang zhang"
+    },
+    {
+      "phrase": "什邡",
+      "rejected": "shen fang",
+      "reading": "shi fang"
+    },
+    {
+      "phrase": "仙都",
+      "rejected": "xian dou",
+      "reading": "xian du"
+    },
+    {
+      "phrase": "伽师",
+      "rejected": "ga shi",
+      "reading": "jia shi"
+    },
+    {
+      "phrase": "体长",
+      "rejected": "ti zhang",
+      "reading": "ti chang"
+    },
+    {
+      "phrase": "佛冈",
+      "rejected": "fu gang",
+      "reading": "fo gang"
+    },
+    {
+      "phrase": "佛坪",
+      "rejected": "fu ping",
+      "reading": "fo ping"
+    },
+    {
+      "phrase": "全长",
+      "rejected": "quan zhang",
+      "reading": "quan chang"
+    },
+    {
+      "phrase": "出血",
+      "rejected": "chu xie",
+      "reading": "chu xue"
+    },
+    {
+      "phrase": "加长",
+      "rejected": "jia zhang",
+      "reading": "jia chang"
+    },
+    {
+      "phrase": "单县",
+      "rejected": "dan xian",
+      "reading": "shan xian"
+    },
+    {
+      "phrase": "南乐",
+      "rejected": "nan yue",
+      "reading": "nan le"
+    },
+    {
+      "phrase": "厂长",
+      "rejected": "chang chang",
+      "reading": "chang zhang"
+    },
+    {
+      "phrase": "召陵",
+      "rejected": "zhao ling",
+      "reading": "shao ling"
+    },
+    {
+      "phrase": "商都",
+      "rejected": "shang dou",
+      "reading": "shang du"
+    },
+    {
+      "phrase": "多重",
+      "rejected": "duo zhong",
+      "reading": "duo chong"
+    },
+    {
+      "phrase": "多长",
+      "rejected": "duo zhang",
+      "reading": "duo chang"
+    },
+    {
+      "phrase": "天长",
+      "rejected": "tian zhang",
+      "reading": "tian chang"
+    },
+    {
+      "phrase": "好长",
+      "rejected": "hao zhang",
+      "reading": "hao chang"
+    },
+    {
+      "phrase": "子长",
+      "rejected": "zi zhang",
+      "reading": "zi chang"
+    },
+    {
+      "phrase": "宁都",
+      "rejected": "ning dou",
+      "reading": "ning du"
+    },
+    {
+      "phrase": "宇都",
+      "rejected": "yu dou",
+      "reading": "yu du"
+    },
+    {
+      "phrase": "崆峒",
+      "rejected": "kong dong",
+      "reading": "kong tong"
+    },
+    {
+      "phrase": "弹奏",
+      "rejected": "dan zou",
+      "reading": "tan zou"
+    },
+    {
+      "phrase": "很长",
+      "rejected": "hen zhang",
+      "reading": "hen chang"
+    },
+    {
+      "phrase": "微调",
+      "rejected": "wei diao",
+      "reading": "wei tiao"
+    },
+    {
+      "phrase": "昌都",
+      "rejected": "chang dou",
+      "reading": "chang du"
+    },
+    {
+      "phrase": "更长",
+      "rejected": "geng zhang",
+      "reading": "geng chang"
+    },
+    {
+      "phrase": "最长",
+      "rejected": "zui zhang",
+      "reading": "zui chang"
+    },
+    {
+      "phrase": "武都",
+      "rejected": "wu dou",
+      "reading": "wu du"
+    },
+    {
+      "phrase": "洪洞",
+      "rejected": "hong dong",
+      "reading": "hong tong"
+    },
+    {
+      "phrase": "洪都",
+      "rejected": "hong dou",
+      "reading": "hong du"
+    },
+    {
+      "phrase": "流血",
+      "rejected": "liu xie",
+      "reading": "liu xue"
+    },
+    {
+      "phrase": "浚县",
+      "rejected": "jun xian",
+      "reading": "xun xian"
+    },
+    {
+      "phrase": "涡阳",
+      "rejected": "wo yang",
+      "reading": "guo yang"
+    },
+    {
+      "phrase": "爱乐",
+      "rejected": "ai le",
+      "reading": "ai yue"
+    },
+    {
+      "phrase": "片长",
+      "rejected": "pian zhang",
+      "reading": "pian chang"
+    },
+    {
+      "phrase": "献血",
+      "rejected": "xian xie",
+      "reading": "xian xue"
+    },
+    {
+      "phrase": "王都",
+      "rejected": "wang dou",
+      "reading": "wang du"
+    },
+    {
+      "phrase": "珲春",
+      "rejected": "hui chun",
+      "reading": "hun chun"
+    },
+    {
+      "phrase": "益都",
+      "rejected": "yi dou",
+      "reading": "yi du"
+    },
+    {
+      "phrase": "盐都",
+      "rejected": "yan dou",
+      "reading": "yan du"
+    },
+    {
+      "phrase": "着实",
+      "rejected": "zhe shi",
+      "reading": "zhuo shi"
+    },
+    {
+      "phrase": "矿藏",
+      "rejected": "kuang cang",
+      "reading": "kuang zang"
+    },
+    {
+      "phrase": "秦都",
+      "rejected": "qin dou",
+      "reading": "qin du"
+    },
+    {
+      "phrase": "穆棱",
+      "rejected": "mu leng",
+      "reading": "mu ling"
+    },
+    {
+      "phrase": "策勒",
+      "rejected": "ce lei",
+      "reading": "ce le"
+    },
+    {
+      "phrase": "筠连",
+      "rejected": "yun lian",
+      "reading": "jun lian"
+    },
+    {
+      "phrase": "繁峙",
+      "rejected": "fan zhi",
+      "reading": "fan shi"
+    },
+    {
+      "phrase": "花都",
+      "rejected": "hua dou",
+      "reading": "hua du"
+    },
+    {
+      "phrase": "荥经",
+      "rejected": "xing jing",
+      "reading": "ying jing"
+    },
+    {
+      "phrase": "药都",
+      "rejected": "yao dou",
+      "reading": "yao du"
+    },
+    {
+      "phrase": "藏语",
+      "rejected": "cang yu",
+      "reading": "zang yu"
+    },
+    {
+      "phrase": "见长",
+      "rejected": "jian zhang",
+      "reading": "jian chang"
+    },
+    {
+      "phrase": "许都",
+      "rejected": "xu dou",
+      "reading": "xu du"
+    },
+    {
+      "phrase": "调配",
+      "rejected": "diao pei",
+      "reading": "tiao pei"
+    },
+    {
+      "phrase": "身着",
+      "rejected": "shen zhe",
+      "reading": "shen zhuo"
+    },
+    {
+      "phrase": "较长",
+      "rejected": "jiao zhang",
+      "reading": "jiao chang"
+    },
+    {
+      "phrase": "都兰",
+      "rejected": "dou lan",
+      "reading": "du lan"
+    },
+    {
+      "phrase": "都司",
+      "rejected": "dou si",
+      "reading": "du si"
+    },
+    {
+      "phrase": "都昌",
+      "rejected": "dou chang",
+      "reading": "du chang"
+    },
+    {
+      "phrase": "都灵",
+      "rejected": "dou ling",
+      "reading": "du ling"
+    },
+    {
+      "phrase": "酒都",
+      "rejected": "jiu dou",
+      "reading": "jiu du"
+    },
+    {
+      "phrase": "重写",
+      "rejected": "zhong xie",
+      "reading": "chong xie"
+    },
+    {
+      "phrase": "重回",
+      "rejected": "zhong hui",
+      "reading": "chong hui"
+    },
+    {
+      "phrase": "重塑",
+      "rejected": "zhong su",
+      "reading": "chong su"
+    },
+    {
+      "phrase": "重开",
+      "rejected": "zhong kai",
+      "reading": "chong kai"
+    },
+    {
+      "phrase": "重拾",
+      "rejected": "zhong shi",
+      "reading": "chong shi"
+    },
+    {
+      "phrase": "重振",
+      "rejected": "zhong zhen",
+      "reading": "chong zhen"
+    },
+    {
+      "phrase": "重整",
+      "rejected": "zhong zheng",
+      "reading": "chong zheng"
+    },
+    {
+      "phrase": "重置",
+      "rejected": "zhong zhi",
+      "reading": "chong zhi"
+    },
+    {
+      "phrase": "长丰",
+      "rejected": "zhang feng",
+      "reading": "chang feng"
+    },
+    {
+      "phrase": "长凳",
+      "rejected": "zhang deng",
+      "reading": "chang deng"
+    },
+    {
+      "phrase": "长垣",
+      "rejected": "zhang yuan",
+      "reading": "chang yuan"
+    },
+    {
+      "phrase": "长宁",
+      "rejected": "zhang ning",
+      "reading": "chang ning"
+    },
+    {
+      "phrase": "长尾",
+      "rejected": "zhang wei",
+      "reading": "chang wei"
+    },
+    {
+      "phrase": "长岛",
+      "rejected": "zhang dao",
+      "reading": "chang dao"
+    },
+    {
+      "phrase": "长岭",
+      "rejected": "zhang ling",
+      "reading": "chang ling"
+    },
+    {
+      "phrase": "长效",
+      "rejected": "zhang xiao",
+      "reading": "chang xiao"
+    },
+    {
+      "phrase": "长治",
+      "rejected": "zhang zhi",
+      "reading": "chang zhi"
+    },
+    {
+      "phrase": "长泰",
+      "rejected": "zhang tai",
+      "reading": "chang tai"
+    },
+    {
+      "phrase": "长洲",
+      "rejected": "zhang zhou",
+      "reading": "chang zhou"
+    },
+    {
+      "phrase": "长海",
+      "rejected": "zhang hai",
+      "reading": "chang hai"
+    },
+    {
+      "phrase": "长清",
+      "rejected": "zhang qing",
+      "reading": "chang qing"
+    },
+    {
+      "phrase": "长腿",
+      "rejected": "zhang tui",
+      "reading": "chang tui"
+    },
+    {
+      "phrase": "长葛",
+      "rejected": "zhang ge",
+      "reading": "chang ge"
+    },
+    {
+      "phrase": "长裙",
+      "rejected": "zhang qun",
+      "reading": "chang qun"
+    },
+    {
+      "phrase": "长顺",
+      "rejected": "zhang shun",
+      "reading": "chang shun"
+    },
+    {
+      "phrase": "给排水",
+      "rejected": "gei pai shui",
+      "reading": "ji pai shui"
+    }
+  ],
+  "three_char_score_overrides": [
+    {
+      "phrase": "他妈的",
+      "reading": "ta ma de",
+      "score": 1200
+    },
+    {
+      "phrase": "希特勒",
+      "reading": "xi te lei",
+      "score": 1200
+    },
+    {
+      "phrase": "法西斯",
+      "reading": "fa xi si",
+      "score": 1200
+    },
+    {
+      "phrase": "真他妈",
+      "reading": "zhen ta ma",
+      "score": 1200
+    },
+    {
+      "phrase": "草泥马",
+      "reading": "cao ni ma",
+      "score": 1200
+    },
+    {
+      "phrase": "去死吧",
+      "reading": "qu si ba",
+      "score": 1200
+    },
+    {
+      "phrase": "谁他妈",
+      "reading": "shui ta ma",
+      "score": 1200
     }
   ],
   "reviewed_long_phrases": "data_sources/kaixin/reviewed_long_phrases.tsv",

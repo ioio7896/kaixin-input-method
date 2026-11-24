@@ -6,7 +6,20 @@
   "properties": {
     "protocol_version": { "const": 2 },
     "request_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$" },
-    "action": { "enum": ["translate", "ping", "capabilities", "cancel", "status", "ack", "present", "cancel_pending"] },
+    "action": {
+      "enum": [
+        "translate",
+        "ping",
+        "capabilities",
+        "cancel",
+        "status",
+        "ack",
+        "present",
+        "cancel_pending",
+        "preload",
+        "add_glossary"
+      ]
+    },
     "text": { "type": "string", "maxLength": 200000 },
     "source": { "type": "string" },
     "target": { "type": "string" },
@@ -23,6 +36,12 @@
     "generation": { "type": "integer", "minimum": 0 },
     "callback_ack": { "type": "boolean" },
     "query_request_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,128}$" },
-    "chunk_index": { "type": "integer", "minimum": 0 }
+    "chunk_index": { "type": "integer", "minimum": 0 },
+    "bypass_cache": { "type": "boolean" },
+    "ephemeral": { "type": "boolean" },
+    "stream_preview": { "type": "boolean" },
+    "duplex": { "type": "boolean" },
+    "glossary_source": { "type": "string", "maxLength": 80 },
+    "glossary_translation": { "type": "string", "maxLength": 80 }
   }
 }

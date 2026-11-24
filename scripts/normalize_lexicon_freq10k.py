@@ -53,9 +53,11 @@ def profile(path: Path, rows: list[tuple[str, list[str], int]]) -> tuple[int, in
         return 1, 10_000
 
     # Curated Base sources: useful, but should not outrank every ordinary word.
-    if "/base/" in rel:
+    if "/base/" in rel or "/zh/" in rel:
         if name == "life_short_hot_2char.txt":
             return 8_200, 8_800
+        if name == "seasonal_hot_terms.txt":
+            return 4_000, 5_200
         return 1, 10_000
 
     # Large is a recall tail and must remain below the normal Base head.

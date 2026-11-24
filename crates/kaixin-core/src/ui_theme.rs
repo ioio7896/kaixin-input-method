@@ -1,7 +1,7 @@
 //! Shared visual language for the egui-based settings and companion tools.
 //! Supports 5 distinct UI design styles with Style 5 (Tactile Industrial) as the default.
 
-use egui::{Color32, FontId, Frame, Margin, RichText, Stroke, TextStyle, Ui};
+use egui::{epaint::Shadow, vec2, Color32, FontId, Frame, Margin, RichText, Stroke, TextStyle, Ui};
 use std::sync::atomic::{AtomicU8, Ordering};
 
 pub const SPACE_XS: f32 = 4.0;
@@ -145,6 +145,7 @@ pub fn save_design_style(style: UiDesignStyle) {
 #[derive(Clone, Copy)]
 pub struct UiPalette {
     pub style: UiDesignStyle,
+    pub dark_mode: bool,
     pub control_radius: f32,
     pub card_radius: f32,
     pub border_width: f32,
@@ -174,6 +175,12 @@ pub struct UiPalette {
     pub success_soft: Color32,
     pub info_soft: Color32,
     pub row_hover: Color32,
+    pub plate_bg: Color32,
+    pub plate_text: Color32,
+    pub plate_border: Color32,
+    pub bevel_highlight: Color32,
+    pub bevel_shadow: Color32,
+    pub shadow_color: Color32,
 }
 
 impl UiPalette {
@@ -190,6 +197,7 @@ impl UiPalette {
                 if dark_mode {
                     Self {
                         style,
+                        dark_mode: true,
                         control_radius,
                         card_radius,
                         border_width,
@@ -210,7 +218,7 @@ impl UiPalette {
                         accent_hover: Color32::from_rgb(135, 199, 255),
                         accent_pressed: Color32::from_rgb(67, 156, 235),
                         accent_soft: Color32::from_rgb(39, 64, 92),
-                        accent_text: Color32::WHITE,
+                        accent_text: Color32::from_rgb(16, 20, 26),
                         warning: Color32::from_rgb(255, 202, 109),
                         warning_soft: Color32::from_rgb(66, 52, 30),
                         danger: Color32::from_rgb(255, 112, 112),
@@ -219,10 +227,17 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(28, 58, 48),
                         info_soft: Color32::from_rgb(38, 48, 58),
                         row_hover: Color32::from_rgb(48, 54, 64),
+                        plate_bg: Color32::from_rgb(35, 38, 43),
+                        plate_text: Color32::from_rgb(244, 246, 249),
+                        plate_border: Color32::from_rgb(68, 73, 82),
+                        bevel_highlight: Color32::from_white_alpha(26),
+                        bevel_shadow: Color32::from_black_alpha(48),
+                        shadow_color: Color32::from_black_alpha(64),
                     }
                 } else {
                     Self {
                         style,
+                        dark_mode: false,
                         control_radius,
                         card_radius,
                         border_width,
@@ -252,6 +267,12 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(226, 246, 234),
                         info_soft: Color32::from_rgb(232, 241, 248),
                         row_hover: Color32::from_rgb(231, 238, 247),
+                        plate_bg: Color32::from_rgb(236, 240, 245),
+                        plate_text: Color32::from_rgb(30, 35, 42),
+                        plate_border: Color32::from_rgb(186, 194, 204),
+                        bevel_highlight: Color32::from_white_alpha(150),
+                        bevel_shadow: Color32::from_black_alpha(28),
+                        shadow_color: Color32::from_black_alpha(26),
                     }
                 }
             }
@@ -259,12 +280,13 @@ impl UiPalette {
                 if dark_mode {
                     Self {
                         style,
+                        dark_mode: true,
                         control_radius,
                         card_radius,
                         border_width,
                         app_bg: Color32::from_rgb(26, 27, 32),
                         nav_bg: Color32::from_rgb(33, 35, 42),
-                        command_bar: Color32::from_rgb(31, 33, 39),
+                        command_bar: Color32::from_rgb(36, 39, 48),
                         surface: Color32::from_rgb(40, 43, 52),
                         surface_alt: Color32::from_rgb(47, 50, 60),
                         control_bg: Color32::from_rgb(54, 58, 70),
@@ -288,16 +310,23 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(26, 64, 42),
                         info_soft: Color32::from_rgb(34, 56, 86),
                         row_hover: Color32::from_rgb(50, 55, 68),
+                        plate_bg: Color32::from_rgb(47, 50, 60),
+                        plate_text: Color32::from_rgb(245, 246, 250),
+                        plate_border: Color32::from_rgb(76, 81, 96),
+                        bevel_highlight: Color32::from_white_alpha(28),
+                        bevel_shadow: Color32::from_black_alpha(52),
+                        shadow_color: Color32::from_black_alpha(62),
                     }
                 } else {
                     Self {
                         style,
+                        dark_mode: false,
                         control_radius,
                         card_radius,
                         border_width,
                         app_bg: Color32::from_rgb(242, 243, 247),
                         nav_bg: Color32::from_rgb(233, 235, 241),
-                        command_bar: Color32::from_rgb(237, 238, 244),
+                        command_bar: Color32::from_rgb(249, 250, 253),
                         surface: Color32::from_rgb(255, 255, 255),
                         surface_alt: Color32::from_rgb(245, 246, 250),
                         control_bg: Color32::from_rgb(248, 249, 252),
@@ -321,6 +350,12 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(226, 248, 233),
                         info_soft: Color32::from_rgb(229, 241, 255),
                         row_hover: Color32::from_rgb(236, 242, 252),
+                        plate_bg: Color32::from_rgb(245, 246, 250),
+                        plate_text: Color32::from_rgb(28, 28, 30),
+                        plate_border: Color32::from_rgb(208, 212, 222),
+                        bevel_highlight: Color32::from_white_alpha(180),
+                        bevel_shadow: Color32::from_black_alpha(26),
+                        shadow_color: Color32::from_black_alpha(24),
                     }
                 }
             }
@@ -329,6 +364,7 @@ impl UiPalette {
                 let _ = dark_mode;
                 Self {
                     style,
+                    dark_mode: true,
                     control_radius,
                     card_radius,
                     border_width,
@@ -358,6 +394,12 @@ impl UiPalette {
                     success_soft: Color32::from_rgb(18, 58, 46),
                     info_soft: Color32::from_rgb(24, 46, 68),
                     row_hover: Color32::from_rgb(29, 34, 45),
+                    plate_bg: Color32::from_rgb(18, 21, 28),
+                    plate_text: Color32::from_rgb(242, 244, 248),
+                    plate_border: Color32::from_rgb(52, 60, 76),
+                    bevel_highlight: Color32::from_white_alpha(36),
+                    bevel_shadow: Color32::from_black_alpha(64),
+                    shadow_color: Color32::from_black_alpha(72),
                 }
             }
             UiDesignStyle::OrientalInk => {
@@ -365,6 +407,7 @@ impl UiPalette {
                     // Night ink stone (端砚夜墨)
                     Self {
                         style,
+                        dark_mode: true,
                         control_radius,
                         card_radius,
                         border_width,
@@ -394,11 +437,18 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(26, 56, 50),
                         info_soft: Color32::from_rgb(38, 52, 54),
                         row_hover: Color32::from_rgb(46, 45, 41),
+                        plate_bg: Color32::from_rgb(43, 42, 38),
+                        plate_text: Color32::from_rgb(238, 233, 222),
+                        plate_border: Color32::from_rgb(82, 79, 72),
+                        bevel_highlight: Color32::from_white_alpha(26),
+                        bevel_shadow: Color32::from_black_alpha(52),
+                        shadow_color: Color32::from_black_alpha(64),
                     }
                 } else {
                     // Warm Rice Paper & Cinnabar Seal (宣纸水墨 · 朱砂玉青)
                     Self {
                         style,
+                        dark_mode: false,
                         control_radius,
                         card_radius,
                         border_width,
@@ -428,6 +478,12 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(223, 240, 235),
                         info_soft: Color32::from_rgb(228, 237, 234),
                         row_hover: Color32::from_rgb(242, 236, 224),
+                        plate_bg: Color32::from_rgb(240, 235, 223),
+                        plate_text: Color32::from_rgb(32, 33, 34),
+                        plate_border: Color32::from_rgb(184, 175, 158),
+                        bevel_highlight: Color32::from_white_alpha(140),
+                        bevel_shadow: Color32::from_black_alpha(26),
+                        shadow_color: Color32::from_black_alpha(22),
                     }
                 }
             }
@@ -436,27 +492,28 @@ impl UiPalette {
                     // Anodized Gunmetal & Industrial Orange (深空枪灰工程版)
                     Self {
                         style,
+                        dark_mode: true,
                         control_radius,
                         card_radius,
                         border_width,
                         app_bg: Color32::from_rgb(28, 30, 31),
                         nav_bg: Color32::from_rgb(22, 24, 25),
-                        command_bar: Color32::from_rgb(24, 26, 27),
+                        command_bar: Color32::from_rgb(25, 27, 29),
                         surface: Color32::from_rgb(37, 40, 42),
                         surface_alt: Color32::from_rgb(44, 47, 50),
                         control_bg: Color32::from_rgb(49, 53, 56),
                         control_hover: Color32::from_rgb(62, 66, 70),
                         nav_hover: Color32::from_rgb(42, 45, 48),
                         nav_selected: Color32::from_rgb(255, 85, 0),
-                        border: Color32::from_rgb(92, 96, 100),
-                        border_subtle: Color32::from_rgb(62, 66, 70),
+                        border: Color32::from_rgb(86, 91, 96),
+                        border_subtle: Color32::from_rgb(58, 62, 66),
                         text: Color32::from_rgb(242, 240, 234),
                         muted: Color32::from_rgb(174, 174, 168),
                         accent: Color32::from_rgb(255, 85, 0),
                         accent_hover: Color32::from_rgb(255, 112, 38),
                         accent_pressed: Color32::from_rgb(218, 68, 0),
                         accent_soft: Color32::from_rgb(82, 42, 22),
-                        accent_text: Color32::WHITE,
+                        accent_text: Color32::from_rgb(20, 21, 22),
                         warning: Color32::from_rgb(245, 176, 36),
                         warning_soft: Color32::from_rgb(68, 52, 18),
                         danger: Color32::from_rgb(242, 72, 58),
@@ -465,11 +522,18 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(22, 58, 40),
                         info_soft: Color32::from_rgb(38, 48, 56),
                         row_hover: Color32::from_rgb(48, 52, 55),
+                        plate_bg: Color32::from_rgb(26, 28, 30),
+                        plate_text: Color32::from_rgb(238, 234, 224),
+                        plate_border: Color32::from_rgb(76, 80, 84),
+                        bevel_highlight: Color32::from_white_alpha(30),
+                        bevel_shadow: Color32::from_black_alpha(64),
+                        shadow_color: Color32::from_black_alpha(64),
                     }
                 } else {
                     // Style 5 Default: Teenage Engineering Matte Aluminum & Industrial Orange
                     Self {
                         style,
+                        dark_mode: false,
                         control_radius,
                         card_radius,
                         border_width,
@@ -482,15 +546,15 @@ impl UiPalette {
                         control_hover: Color32::from_rgb(255, 237, 226),
                         nav_hover: Color32::from_rgb(208, 204, 194),
                         nav_selected: Color32::from_rgb(255, 85, 0),
-                        border: Color32::from_rgb(138, 134, 126),
-                        border_subtle: Color32::from_rgb(184, 180, 170),
+                        border: Color32::from_rgb(148, 144, 136),
+                        border_subtle: Color32::from_rgb(188, 184, 174),
                         text: Color32::from_rgb(24, 25, 26),
                         muted: Color32::from_rgb(92, 90, 84),
                         accent: Color32::from_rgb(255, 85, 0),
                         accent_hover: Color32::from_rgb(230, 72, 0),
                         accent_pressed: Color32::from_rgb(196, 58, 0),
                         accent_soft: Color32::from_rgb(255, 226, 208),
-                        accent_text: Color32::WHITE,
+                        accent_text: Color32::from_rgb(24, 25, 26),
                         warning: Color32::from_rgb(184, 98, 0),
                         warning_soft: Color32::from_rgb(252, 238, 206),
                         danger: Color32::from_rgb(204, 38, 28),
@@ -499,6 +563,12 @@ impl UiPalette {
                         success_soft: Color32::from_rgb(218, 242, 226),
                         info_soft: Color32::from_rgb(226, 233, 238),
                         row_hover: Color32::from_rgb(238, 233, 222),
+                        plate_bg: Color32::from_rgb(44, 46, 48),
+                        plate_text: Color32::from_rgb(246, 242, 230),
+                        plate_border: Color32::from_rgb(76, 78, 80),
+                        bevel_highlight: Color32::from_white_alpha(110),
+                        bevel_shadow: Color32::from_black_alpha(46),
+                        shadow_color: Color32::from_black_alpha(30),
                     }
                 }
             }
@@ -506,78 +576,123 @@ impl UiPalette {
     }
 }
 
+pub fn saved_theme_preference() -> egui::ThemePreference {
+    match crate::tool_prefs::ui_theme_preference()
+        .trim()
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "dark" => egui::ThemePreference::Dark,
+        "system" => egui::ThemePreference::System,
+        _ => egui::ThemePreference::Light,
+    }
+}
+
+pub fn effective_theme_preference(style: UiDesignStyle) -> egui::ThemePreference {
+    if style == UiDesignStyle::LinearDark {
+        egui::ThemePreference::Dark
+    } else {
+        saved_theme_preference()
+    }
+}
+
+pub fn theme_preference_as_config(pref: egui::ThemePreference) -> &'static str {
+    match pref {
+        egui::ThemePreference::Dark => "dark",
+        egui::ThemePreference::System => "system",
+        egui::ThemePreference::Light => "light",
+    }
+}
+
 pub fn sync_theme_from_prefs(ctx: &egui::Context) -> egui::ThemePreference {
     let style = UiDesignStyle::from_config(&crate::tool_prefs::ui_design_style());
     set_active_design_style(style);
-    let pref = if style == UiDesignStyle::LinearDark {
-        egui::ThemePreference::Dark
-    } else {
-        match crate::tool_prefs::ui_theme_preference()
-            .trim()
-            .to_ascii_lowercase()
-            .as_str()
-        {
-            "dark" => egui::ThemePreference::Dark,
-            "system" => egui::ThemePreference::System,
-            _ => egui::ThemePreference::Light,
-        }
-    };
+    let pref = effective_theme_preference(style);
     ctx.set_theme(pref);
     pref
 }
 
 pub fn save_theme_preference(pref: egui::ThemePreference) {
-    let value = match pref {
-        egui::ThemePreference::Dark => "dark",
-        egui::ThemePreference::System => "system",
-        egui::ThemePreference::Light => "light",
+    let _ = crate::tool_prefs::set_ui_theme_preference(theme_preference_as_config(pref));
+}
+
+pub fn clear_color_for_visuals(visuals: &egui::Visuals) -> [f32; 4] {
+    UiPalette::from_visuals(visuals)
+        .app_bg
+        .to_normalized_gamma_f32()
+}
+
+pub fn apply_palette_to_visuals(visuals: &mut egui::Visuals, palette: UiPalette) {
+    let radius = egui::Rounding::same(palette.control_radius);
+    let card_radius = egui::Rounding::same(palette.card_radius);
+    visuals.window_rounding = card_radius;
+    visuals.menu_rounding = radius;
+    visuals.window_fill = palette.surface;
+    visuals.window_stroke = Stroke::new(1.0_f32, palette.border);
+    visuals.window_shadow = Shadow {
+        offset: vec2(0.0, 6.0),
+        blur: 16.0,
+        spread: 0.0,
+        color: palette.shadow_color,
     };
-    let _ = crate::tool_prefs::set_ui_theme_preference(value);
+    visuals.popup_shadow = Shadow {
+        offset: vec2(0.0, 4.0),
+        blur: 10.0,
+        spread: 0.0,
+        color: palette.shadow_color,
+    };
+    visuals.panel_fill = palette.app_bg;
+    visuals.extreme_bg_color = palette.control_bg;
+    visuals.faint_bg_color = palette.surface_alt;
+    visuals.code_bg_color = palette.surface_alt;
+    visuals.widgets.noninteractive.bg_fill = palette.surface;
+    visuals.widgets.noninteractive.weak_bg_fill = palette.surface_alt;
+    visuals.widgets.noninteractive.bg_stroke = Stroke::new(1.0_f32, palette.border_subtle);
+    visuals.widgets.noninteractive.fg_stroke.color = palette.text;
+    visuals.widgets.noninteractive.rounding = radius;
+    visuals.widgets.inactive.fg_stroke.color = palette.text;
+    visuals.widgets.hovered.fg_stroke.color = palette.text;
+    visuals.widgets.active.fg_stroke.color = palette.text;
+    visuals.widgets.open.fg_stroke.color = palette.text;
+    visuals.widgets.inactive.bg_fill = palette.control_bg;
+    visuals.widgets.inactive.weak_bg_fill = palette.control_bg;
+    visuals.widgets.hovered.bg_fill = palette.control_hover;
+    visuals.widgets.hovered.weak_bg_fill = palette.control_hover;
+    visuals.widgets.active.bg_fill = palette.accent_soft;
+    visuals.widgets.active.weak_bg_fill = palette.accent_soft;
+    visuals.widgets.open.bg_fill = palette.control_hover;
+    visuals.widgets.open.weak_bg_fill = palette.control_hover;
+    visuals.widgets.inactive.bg_stroke = Stroke::new(palette.border_width, palette.border);
+    visuals.widgets.hovered.bg_stroke = Stroke::new(palette.border_width, palette.accent_hover);
+    visuals.widgets.active.bg_stroke = Stroke::new(palette.border_width, palette.accent_pressed);
+    visuals.widgets.open.bg_stroke = Stroke::new(palette.border_width, palette.accent);
+    visuals.widgets.inactive.rounding = radius;
+    visuals.widgets.hovered.rounding = radius;
+    visuals.widgets.active.rounding = radius;
+    visuals.widgets.open.rounding = radius;
+    visuals.selection.bg_fill = palette.accent_soft;
+    visuals.selection.stroke = Stroke::new(palette.border_width, palette.accent);
+    visuals.hyperlink_color = palette.accent;
+    visuals.text_cursor.stroke = Stroke::new(2.0_f32, palette.accent);
 }
 
 pub fn apply_tool_style(ctx: &egui::Context) {
-    let mut style = (*ctx.style()).clone();
-    let palette = UiPalette::from_visuals(&style.visuals);
-    let radius = egui::Rounding::same(palette.control_radius);
-    style.spacing.item_spacing = egui::vec2(SPACE_SM, SPACE_SM);
-    style.spacing.button_padding = egui::vec2(SPACE_MD, 6.0);
-    style.spacing.interact_size.y = CONTROL_HEIGHT;
-    style
-        .text_styles
-        .insert(TextStyle::Body, FontId::proportional(15.0));
-    style
-        .text_styles
-        .insert(TextStyle::Button, FontId::proportional(14.0));
-    style.visuals.window_rounding = egui::Rounding::same(palette.card_radius);
-    style.visuals.menu_rounding = radius;
-    style.visuals.window_fill = palette.app_bg;
-    style.visuals.panel_fill = palette.app_bg;
-    style.visuals.extreme_bg_color = palette.control_bg;
-    style.visuals.faint_bg_color = palette.surface_alt;
-    style.visuals.widgets.noninteractive.fg_stroke.color = palette.text;
-    style.visuals.widgets.inactive.fg_stroke.color = palette.text;
-    style.visuals.widgets.hovered.fg_stroke.color = palette.text;
-    style.visuals.widgets.active.fg_stroke.color = palette.text;
-    style.visuals.widgets.open.fg_stroke.color = palette.text;
-    style.visuals.widgets.inactive.bg_fill = palette.control_bg;
-    style.visuals.widgets.inactive.weak_bg_fill = palette.control_bg;
-    style.visuals.widgets.hovered.bg_fill = palette.control_hover;
-    style.visuals.widgets.hovered.weak_bg_fill = palette.control_hover;
-    style.visuals.widgets.active.bg_fill = palette.accent_soft;
-    style.visuals.widgets.active.weak_bg_fill = palette.accent_soft;
-    style.visuals.widgets.inactive.bg_stroke = Stroke::new(palette.border_width, palette.border);
-    style.visuals.widgets.hovered.bg_stroke =
-        Stroke::new(palette.border_width, palette.accent_hover);
-    style.visuals.widgets.active.bg_stroke =
-        Stroke::new(palette.border_width, palette.accent_pressed);
-    style.visuals.widgets.inactive.rounding = radius;
-    style.visuals.widgets.hovered.rounding = radius;
-    style.visuals.widgets.active.rounding = radius;
-    style.visuals.widgets.open.rounding = radius;
-    style.visuals.selection.bg_fill = palette.accent_soft;
-    style.visuals.selection.stroke = Stroke::new(palette.border_width, palette.accent);
-    style.visuals.hyperlink_color = palette.accent;
-    ctx.set_style(style);
+    let active = active_design_style();
+    for (theme, dark_mode) in [(egui::Theme::Light, false), (egui::Theme::Dark, true)] {
+        ctx.style_mut_of(theme, |style| {
+            let palette = UiPalette::for_style(active, dark_mode);
+            style.spacing.item_spacing = vec2(SPACE_SM, SPACE_SM);
+            style.spacing.button_padding = vec2(SPACE_MD, 6.0);
+            style.spacing.interact_size.y = CONTROL_HEIGHT;
+            style
+                .text_styles
+                .insert(TextStyle::Body, FontId::proportional(15.0));
+            style
+                .text_styles
+                .insert(TextStyle::Button, FontId::proportional(14.0));
+            apply_palette_to_visuals(&mut style.visuals, palette);
+        });
+    }
 }
 
 pub fn surface_card(ui: &mut Ui, selected: bool, add: impl FnOnce(&mut Ui)) -> egui::Response {

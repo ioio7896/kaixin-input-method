@@ -289,8 +289,13 @@ void CSrfCandidateListUIElement::OnCandidateWheel(int wheelDelta) {
   } else {
     if (wheelDelta > 0) {
       if (m_tip->m_candSel > 0) --m_tip->m_candSel;
-    } else if (wheelDelta < 0 && m_tip->m_candSel + 1 < m_tip->m_context.candidates.items.size()) {
-      ++m_tip->m_candSel;
+    } else if (wheelDelta < 0) {
+      if (m_tip->RequestMoreCandidatesForIndex(m_tip->m_candSel + 1)) {
+        return;
+      }
+      if (m_tip->m_candSel + 1 < m_tip->m_context.candidates.items.size()) {
+        ++m_tip->m_candSel;
+      }
     }
   }
 

@@ -1090,7 +1090,7 @@ pub(super) fn diagnostics_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         ui.add_space(8.0);
         egui::Frame::none()
             .fill(palette.surface_alt)
-            .rounding(6.0)
+            .rounding(palette.card_radius)
             .inner_margin(egui::Margin::symmetric(12.0, 10.0))
             .show(ui, |ui| {
                 egui::ScrollArea::vertical()

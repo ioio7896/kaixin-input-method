@@ -1682,6 +1682,7 @@ void CSrfTip::RefreshCompatibilityState() {
     m_candidateMeta.clear();
     m_candidateRows.clear();
     m_candidateHasMore = false;
+    ResetCandidateFullLookupState();
     m_candidatesReading.clear();
     SetCandidateViewState(SrfCandidateViewState::Empty, L"privacy-refresh");
     InvalidateCandidatePageLayoutCache();

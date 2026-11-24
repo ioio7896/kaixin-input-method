@@ -1,10 +1,8 @@
-# 开心离线输入法分类补充：就医检查
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
-核磁共振	he ci gong zhen	6726
-脂肪肝	zhi fang gan	6714
+# 开心输入法扩展词库：医疗健康与临床（704 条）
+# 来源合并：category_medical.txt, professional_medical.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+核磁共振	he ci gong zhen	6200
+脂肪肝	zhi fang gan	6200
 专家门诊	zhuan jia men zhen	6100
 住院手续	zhu yuan shou xu	6100
 住院押金	zhu yuan ya jin	6100
@@ -17,7 +15,6 @@
 出院手续	chu yuan shou xu	6100
 医保结算	yi bao jie suan	6100
 医疗费用	yi liao fei yong	6100
-反流性食管炎	fan liu xing shi guan yan	6100
 发热门诊	fa re men zhen	6100
 呼气试验	hu qi shi yan	6100
 复诊时间	fu zhen shi jian	6100
@@ -40,7 +37,6 @@
 检验指标	jian yan zhi biao	6100
 甲状腺功能	jia zhuang xian gong neng	6100
 甲状腺结节	jia zhuang xian jie jie	6100
-糖化血红蛋白	tang hua xue hong dan bai	6100
 肝肾功能	gan shen gong neng	6100
 肺部结节	fei bu jie jie	6100
 胰岛素抵抗	yi dao su di kang	6100
@@ -52,8 +48,66 @@
 门诊科室	men zhen ke shi	6100
 预约挂号	yu yue gua hao	6100
 骨密度检查	gu mi du jian cha	6100
+不良反应	bu liang fan ying	6000
+临床医学	lin chuang yi xue	6000
+儿科学	er ke xue	6000
+免疫反应	mian yi fan ying	6000
+免疫治疗	mian yi zhi liao	6000
+全科医学	quan ke yi xue	6000
+内科学	nei ke xue	6000
+冠心病	guan xin bing	6000
+化学治疗	hua xue zhi liao	6000
+发病率	fa bing lv	6000
+哮喘	xiao chuan	6000
+处方	chu fang	6000
+外科学	wai ke xue	6000
+妇产科学	fu chan ke xue	6000
+尿常规	niao chang gui	6000
+康复医学	kang fu yi xue	6000
+影像学	ying xiang xue	6000
+循证医学	xun zheng yi xue	6000
+心电图	xin dian tu	6000
+心肌梗死	xin ji geng si	6000
+心肺复苏	xin fei fu su	6000
+急诊医学	ji zhen yi xue	6000
+手术指征	shou shu zhi zheng	6000
+抗凝治疗	kang ning zhi liao	6000
+抗生素	kang sheng su	6000
+放射治疗	fang she zhi liao	6000
+无菌操作	wu jun cao zuo	6000
+气管插管	qi guan cha guan	6000
+潜伏期	qian fu qi	6000
+炎症反应	yan zheng fan ying	6000
+生命体征	sheng ming ti zheng	6000
+病历	bing li	6000
+病原体	bing yuan ti	6000
+病死率	bing si lv	6000
+病理学	bing li xue	6000
+知情同意	zhi qing tong yi	6000
 磁共振成像	ci gong zhen cheng xiang	6000
+禁忌证	jin ji zheng	6000
+糖尿病	tang niao bing	6000
+组织活检	zu zhi huo jian	6000
+肝功能	gan gong neng	6000
+肺栓塞	fei shuan se	6000
+肺炎	fei yan	6000
+肾功能	shen gong neng	6000
+肾功能不全	shen gong neng bu quan	6000
+脑卒中	nao zu zhong	6000
+血压	xue ya	6000
+血常规	xue chang gui	6000
+血糖	xue tang	6000
+血脂	xue zhi	6000
+诊断学	zhen duan xue	6000
 超声检查	chao sheng jian cha	6000
+转诊	zhuan zhen	6000
+适应证	shi ying zheng	6000
+鉴别诊断	jian bie zhen duan	6000
+随访	sui fang	6000
+静脉输液	jing mai shu ye	6000
+靶向治疗	ba xiang zhi liao	6000
+预防医学	yu fang yi xue	6000
+高血压	gao xue ya	6000
 医院里面	yi yuan li mian	5924
 行为治疗	xing wei zhi liao	5808
 新中医院	xin zhong yi yuan	5770
@@ -135,6 +189,8 @@
 爱的医院	ai de yi yuan	5231
 爱的治疗	ai de zhi liao	5231
 疯狂医生	feng kuang yi sheng	5231
+反流性食管炎	fan liu xing shi guan yan	5200
+糖化血红蛋白	tang hua xue hong dan bai	5200
 县中医院	xian zhong yi yuan	5193
 恐怖医院	kong bu yi yuan	5193
 没去医院	mei qu yi yuan	5193

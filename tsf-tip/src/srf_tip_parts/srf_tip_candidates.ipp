@@ -22,6 +22,7 @@ bool LookupStatusNeedsCandidateBackpressure(SrfLookupCandidatesStatus status) {
 
 void CSrfTip::RefreshCandidates() {
   CancelDeferredCandidateRefresh();
+  ResetCandidateFullLookupState();
   const unsigned long long engineRequestId = SrfTip_NextLookupRequestId();
   SrfTip_CancelPendingLookupBefore(engineRequestId);
   if (ShouldSuppressCandidatesForPrivacy()) {
@@ -397,6 +398,7 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
   const unsigned long long engineRequestId = SrfTip_NextLookupRequestId();
   SrfTip_CancelPendingLookupBefore(engineRequestId);
   if (m_reading.empty()) {
+    ResetCandidateFullLookupState();
     SetCandidateViewState(SrfCandidateViewState::Empty, L"async-empty-reading");
     return false;
   }
@@ -406,7 +408,7 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
     m_candidateRows.clear();
     m_candidatesReading.clear();
     m_candidateHasMore = false;
-    m_candidateFullLookupPending = false;
+    ResetCandidateFullLookupState();
     SetCandidateViewState(SrfCandidateViewState::Empty, L"async-privacy");
     InvalidateCandidatePageLayoutCache();
     ClampCandidateState();
@@ -418,9 +420,14 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
   }
 
   const std::wstring reading = m_reading;
-  if (fullResult) m_candidateFullLookupPending = true;
   const unsigned long long serial =
       m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel) + 1;
+  if (fullResult) {
+    m_candidateFullLookupPending = true;
+    m_candidateFullLookupSerial = serial;
+  } else {
+    ResetCandidateFullLookupState();
+  }
   const SrfEngineState stateBefore = SrfTip_GetEngineState();
   ITfContext* context = m_pCompositionContext ? m_pCompositionContext : m_pFocusContext;
   const SrfFocusSnapshot focus = CaptureFocusSnapshot(context);
@@ -518,8 +525,7 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
 
   if (!EnsureDeferredTimerWindow()) {
     if (fullResult) {
-      m_candidateFullLookupPending = false;
-      m_candidatePageAfterLoad = 0;
+      ResetCandidateFullLookupState();
     }
     std::wstring line = L"request_id=" + std::to_wstring(serial);
     line += L", reason=message_window_unavailable";
@@ -529,8 +535,7 @@ bool CSrfTip::RefreshCandidatesAsync(bool fullResult) {
   HWND hwnd = m_deferredTimerHwnd;
   if (!EnsureCandidateLookupWorker()) {
     if (fullResult) {
-      m_candidateFullLookupPending = false;
-      m_candidatePageAfterLoad = 0;
+      ResetCandidateFullLookupState();
     }
     std::wstring line = L"request_id=" + std::to_wstring(serial);
     line += L", reason=worker_unavailable";
@@ -682,6 +687,9 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
                                           unsigned long long requestId, bool hasMore,
                                           bool fullResult) {
   if (reading != m_reading) {
+    if (fullResult && CompleteCandidateFullLookupState(requestId)) {
+      ResetCandidateFullLookupState();
+    }
     if (!m_reading.empty()) {
       if (!m_candidates.empty() && m_candidatesReading != m_reading) {
         SetCandidateViewState(SrfCandidateViewState::Stale, L"result-reading-mismatch");
@@ -699,6 +707,9 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     return false;
   }
   if (stateAfterLookup != SrfEngineState::Ready) {
+    if (fullResult && CompleteCandidateFullLookupState(requestId)) {
+      ResetCandidateFullLookupState();
+    }
     EnsureEngineInputReady();
     return false;
   }
@@ -761,6 +772,9 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
       interimCandidateResult &&
       (holdAsyncReadyPartial || (hasCurrentCandidatesForReading && !applyInterimCandidateResult));
   if (holdInterimCandidateResult) {
+    if (fullResult && CompleteCandidateFullLookupState(requestId)) {
+      ResetCandidateFullLookupState();
+    }
     SetCandidateViewState(resolvedViewState(), L"retain-interim");
     ClampCandidateState();
     MaybeNotifyEngineHealth();
@@ -859,13 +873,23 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
       (lookupStatus == SrfLookupCandidatesStatus::Ok || !m_candidates.empty())) {
     m_candidateHasMore = hasMore;
   }
-  if (fullResult) {
-    m_candidateFullLookupPending = false;
-    if (!retainedPrevious && lookupStatus == SrfLookupCandidatesStatus::Ok &&
-        m_candidatePageAfterLoad != 0) {
-      m_candPage = m_candidatePageAfterLoad;
+  const UINT priorCandidatePage = m_candPage;
+  const UINT priorCandidateSelection = m_candSel;
+  if (fullResult && CompleteCandidateFullLookupState(requestId)) {
+    if (!retainedPrevious && lookupStatus == SrfLookupCandidatesStatus::Ok) {
+      if (m_candidateIndexAfterLoad != 0 && m_candidateIndexAfterLoad < m_candidates.size()) {
+        m_candSel = m_candidateIndexAfterLoad;
+        m_candPage = CandidatePageForIndex(m_candSel);
+      } else if (m_candidatePageAfterLoad != 0) {
+        m_candPage = std::min(m_candidatePageAfterLoad, MaxCandidatePage());
+        const UINT pageStart = CandidatePageStart(m_candPage);
+        const UINT pageEndExclusive = CandidatePageEndExclusive(m_candPage);
+        if (m_candSel < pageStart || m_candSel >= pageEndExclusive) {
+          m_candSel = pageStart;
+        }
+      }
     }
-    m_candidatePageAfterLoad = 0;
+    ResetCandidateFullLookupState();
   }
   SetCandidateViewState(resolvedViewState(),
                         retainedPrevious ? L"retain-transient"
@@ -982,7 +1006,7 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     // candidates are available. Request the complete result now, rather than
     // making the user press PageDown to trigger the same lookup path.
     const bool incompleteFirstPage = lookupStatus == SrfLookupCandidatesStatus::Ok && !fullResult &&
-                                     hasMore && !m_candidateFullLookupPending &&
+                                     hasMore && !IsCandidateFullLookupPending() &&
                                      hasCurrentUsableCandidates &&
                                      m_candidates.size() < visibleCandidateTarget;
     const bool hasFirstPaintCandidates =
@@ -1011,7 +1035,8 @@ bool CSrfTip::ApplyCandidateRefreshResult(const std::wstring& reading,
     }
     SrfTsfPerfLog(L"candidate-refresh.empty", detail.c_str());
   }
-  return !retainedPrevious && !unchangedCandidates;
+  return !retainedPrevious && (!unchangedCandidates || m_candPage != priorCandidatePage ||
+                               m_candSel != priorCandidateSelection);
 }
 
 void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
@@ -1054,6 +1079,7 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
     m_candidateRows.clear();
     m_candidatesReading.clear();
     m_candidateHasMore = false;
+    ResetCandidateFullLookupState();
     SetCandidateViewState(SrfCandidateViewState::Empty, L"async-drop-privacy");
     InvalidateCandidatePageLayoutCache();
     ClampCandidateState();
@@ -1066,6 +1092,9 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
 
   const unsigned long long currentSerial = m_candidateLookupSerial.load(std::memory_order_acquire);
   if (serial != currentSerial || reading != m_reading || m_reading.empty()) {
+    if (fullResult && CompleteCandidateFullLookupState(serial)) {
+      ResetCandidateFullLookupState();
+    }
     if (!m_reading.empty()) {
       if (!m_candidates.empty() && m_candidatesReading != m_reading) {
         SetCandidateViewState(SrfCandidateViewState::Stale, L"async-drop-stale");
@@ -1092,6 +1121,9 @@ void CSrfTip::ApplyAsyncCandidateResult(TfEditCookie ec) {
   }
 
   if (!FocusSnapshotMatches(focus)) {
+    if (fullResult && CompleteCandidateFullLookupState(serial)) {
+      ResetCandidateFullLookupState();
+    }
     if (!m_candidates.empty() && m_candidatesReading != m_reading) {
       SetCandidateViewState(SrfCandidateViewState::Stale, L"async-drop-focus");
     } else if (m_candidates.empty() && !m_reading.empty()) {
@@ -1356,16 +1388,53 @@ UINT CSrfTip::MaxCandidatePage() const {
   return CandidatePageCount() - 1;
 }
 
+bool CSrfTip::IsCandidateFullLookupPending() {
+  if (!m_candidateFullLookupPending) return false;
+  const unsigned long long currentSerial = m_candidateLookupSerial.load(std::memory_order_acquire);
+  if (m_candidateFullLookupSerial == 0 || m_candidateFullLookupSerial != currentSerial) {
+    ResetCandidateFullLookupState();
+    return false;
+  }
+  return true;
+}
+
+void CSrfTip::ResetCandidateFullLookupState() {
+  m_candidateFullLookupPending = false;
+  m_candidateFullLookupSerial = 0;
+  m_candidatePageAfterLoad = 0;
+  m_candidateIndexAfterLoad = 0;
+}
+
+bool CSrfTip::CompleteCandidateFullLookupState(unsigned long long requestId) {
+  if (!m_candidateFullLookupPending || requestId != m_candidateFullLookupSerial) return false;
+  m_candidateFullLookupPending = false;
+  m_candidateFullLookupSerial = 0;
+  return true;
+}
+
 bool CSrfTip::RequestMoreCandidatesForPage(UINT targetPage) {
-  if (!m_candidateHasMore || m_candidateFullLookupPending || m_reading.empty()) return false;
+  if (!m_candidateHasMore || m_reading.empty()) return false;
   if (targetPage <= MaxCandidatePage()) return false;
-  m_candidatePageAfterLoad = targetPage;
-  RefreshCandidatesAsync(true);
+  const bool pending = IsCandidateFullLookupPending();
+  ++m_candidateInteractionVersion;
+  m_candidateIndexAfterLoad = 0;
+  m_candidatePageAfterLoad = std::max(m_candidatePageAfterLoad, targetPage);
+  if (!pending) RefreshCandidatesAsync(true);
+  return true;
+}
+
+bool CSrfTip::RequestMoreCandidatesForIndex(UINT targetIndex) {
+  if (!m_candidateHasMore || m_reading.empty() || targetIndex < m_candidates.size()) return false;
+  const bool pending = IsCandidateFullLookupPending();
+  ++m_candidateInteractionVersion;
+  m_candidatePageAfterLoad = 0;
+  m_candidateIndexAfterLoad = targetIndex;
+  if (!pending) RefreshCandidatesAsync(true);
   return true;
 }
 
 bool CSrfTip::RequestMoreCandidatesToFillCurrentPage() {
-  if (!m_candidateHasMore || m_candidateFullLookupPending || m_reading.empty() ||
+  if (!m_candidateHasMore || IsCandidateFullLookupPending() || m_reading.empty() ||
       m_candidatesReading != m_reading || m_candPage != MaxCandidatePage()) {
     return false;
   }

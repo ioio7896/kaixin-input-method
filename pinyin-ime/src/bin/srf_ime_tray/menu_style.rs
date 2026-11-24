@@ -15,7 +15,7 @@ use windows_sys::Win32::UI::Controls::{DRAWITEMSTRUCT, ODS_DISABLED, ODS_SELECTE
 use windows_sys::Win32::UI::HiDpi::{GetDpiForMonitor, MDT_EFFECTIVE_DPI};
 use windows_sys::Win32::UI::WindowsAndMessaging::*;
 
-const MENU_WIDTH: i32 = 320;
+const MENU_WIDTH: i32 = 276;
 
 #[cfg(test)]
 mod tests {
@@ -84,7 +84,7 @@ mod tests {
             assert_ne!(hwnd, 0);
             let mut menu = Menu::new(POINT { x: 0, y: 0 }).unwrap();
             menu.palette = Palette::light();
-            menu.push(Item::header("中文模式", "引擎正常", true));
+            menu.push(Item::header("中文输入", false));
             menu.push(Item::action(100, "输入法设置…", Icon::Settings));
             SetTimer(hwnd, 1, 100, None);
             assert_eq!(menu.track(hwnd, POINT { x: 0, y: 0 }), 0);
@@ -107,7 +107,12 @@ mod tests {
             for id in 101..140 {
                 menu.push(Item::action(id, "截图", Icon::Screenshot));
             }
-            assert_eq!(GetMenuItemCount(menu.handle), 41);
+            menu.push(Item::submenu(
+                "最近截图",
+                Icon::Recent,
+                vec![Item::action(140, "识别最近截图", Icon::Ocr)],
+            ));
+            assert_eq!(GetMenuItemCount(menu.handle), 42);
             let mut name = [0u16; 32];
             let mut info = MENUITEMINFOW {
                 cbSize: size_of::<MENUITEMINFOW>() as u32,
@@ -132,6 +137,13 @@ mod tests {
             info.fMask = MIIM_STATE;
             assert_ne!(GetMenuItemInfoW(menu.handle, 0, 1, &mut info), 0);
             assert_ne!(info.fState & MFS_DISABLED, 0);
+            let child = GetSubMenu(menu.handle, 41);
+            assert_ne!(child, 0);
+            assert_ne!(GetMenuItemInfoW(menu.handle, 41, 1, &mut info), 0);
+            assert_eq!(info.fState & MFS_DISABLED, 0);
+            assert_eq!(GetMenuItemID(child, 0), 140);
+            drop(menu);
+            assert_eq!(IsMenu(child), 0);
         }
     }
 }
@@ -148,18 +160,16 @@ pub(super) enum Icon {
     Translate,
     Calculator,
     Screenshot,
+    Recent,
     Ocr,
     Exit,
 }
 
 pub(super) enum Kind {
-    Header {
-        mode: Vec<u16>,
-        engine: Vec<u16>,
-        healthy: bool,
-    },
+    Header(Vec<u16>),
     Section,
     Action,
+    Submenu(Vec<Item>),
     Footer,
 }
 
@@ -190,13 +200,16 @@ impl Item {
         }
     }
 
-    pub fn header(mode: &str, engine: &str, healthy: bool) -> Self {
+    pub fn header(status: &str, attention: bool) -> Self {
         let mut item = Self::action(0, "开心输入法", Icon::Status);
-        item.kind = Kind::Header {
-            mode: wide(mode),
-            engine: wide(engine),
-            healthy,
-        };
+        item.kind = Kind::Header(wide(status));
+        item.attention = attention;
+        item
+    }
+
+    pub fn submenu(text: &str, icon: Icon, children: Vec<Self>) -> Self {
+        let mut item = Self::action(0, text, icon);
+        item.kind = Kind::Submenu(children);
         item
     }
 
@@ -208,11 +221,11 @@ impl Item {
 
     pub fn height(&self) -> u32 {
         let height = match self.kind {
-            Kind::Header { .. } => 84,
-            Kind::Section => 28,
-            Kind::Footer => 42,
-            Kind::Action if self.subtitle.len() > 1 => 48,
-            Kind::Action => 34,
+            Kind::Header(_) => 66,
+            Kind::Section => 24,
+            Kind::Footer => 36,
+            Kind::Action if self.subtitle.len() > 1 => 42,
+            Kind::Action | Kind::Submenu(_) => 32,
         };
         px(height, self.dpi) as u32
     }
@@ -220,7 +233,10 @@ impl Item {
     pub unsafe fn width(&self, dc: HDC) -> u32 {
         // Account for long/localized labels instead of clipping text to a fixed width.
         let label = text_width(dc, &self.text, 14, self.dpi);
-        let subtitle = text_width(dc, &self.subtitle, 11, self.dpi);
+        let subtitle = match &self.kind {
+            Kind::Header(status) => text_width(dc, status, 12, self.dpi),
+            _ => text_width(dc, &self.subtitle, 11, self.dpi),
+        };
         let text = label.max(subtitle);
         (px(MENU_WIDTH, self.dpi).max(text + px(110, self.dpi))) as u32
     }
@@ -242,20 +258,13 @@ pub(super) struct Menu {
 
 impl Menu {
     pub unsafe fn new(anchor: POINT) -> Option<Self> {
-        let handle = CreatePopupMenu();
-        if handle == 0 {
-            return None;
-        }
         let palette = Palette::system();
         let brush = CreateSolidBrush(palette.background);
-        let info = MENUINFO {
-            cbSize: size_of::<MENUINFO>() as u32,
-            fMask: MIM_BACKGROUND | MIM_STYLE,
-            dwStyle: MNS_NOCHECK,
-            hbrBack: brush,
-            ..zeroed()
-        };
-        SetMenuInfo(handle, &info);
+        let handle = create_popup(brush);
+        if handle == 0 {
+            DeleteObject(brush);
+            return None;
+        }
         let monitor = MonitorFromPoint(anchor, MONITOR_DEFAULTTONEAREST);
         let (mut x, mut y) = (96, 96);
         let dpi = if GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &mut x, &mut y) >= 0 {
@@ -272,15 +281,27 @@ impl Menu {
         })
     }
 
-    pub unsafe fn push(&mut self, mut item: Item) {
+    pub unsafe fn push(&mut self, item: Item) {
+        self.insert(self.handle, item);
+    }
+
+    unsafe fn insert(&mut self, menu: HMENU, mut item: Item) {
+        let (submenu, children) = if let Kind::Submenu(children) = &mut item.kind {
+            let submenu = create_popup(self.brush);
+            if submenu == 0 {
+                return;
+            }
+            (submenu, std::mem::take(children))
+        } else {
+            (0, Vec::new())
+        };
         item.dpi = self.dpi;
         item.palette = self.palette;
         let item = Box::new(item);
         let mut native_text = match &item.kind {
-            Kind::Header { mode, engine, .. } => wide(&format!(
-                "开心输入法，{}，{}",
-                String::from_utf16_lossy(&mode[..mode.len() - 1]),
-                String::from_utf16_lossy(&engine[..engine.len() - 1])
+            Kind::Header(status) => wide(&format!(
+                "开心输入法，{}",
+                String::from_utf16_lossy(&status[..status.len() - 1])
             )),
             _ if item.subtitle.len() > 1 => wide(&format!(
                 "{}，{}",
@@ -291,22 +312,38 @@ impl Menu {
         };
         let info = MENUITEMINFOW {
             cbSize: size_of::<MENUITEMINFOW>() as u32,
-            fMask: MIIM_FTYPE | MIIM_ID | MIIM_STATE | MIIM_DATA | MIIM_STRING,
+            fMask: MIIM_FTYPE
+                | MIIM_ID
+                | MIIM_STATE
+                | MIIM_DATA
+                | MIIM_STRING
+                | if submenu != 0 { MIIM_SUBMENU } else { 0 },
             fType: MFT_OWNERDRAW,
-            fState: if item.command == 0 {
+            fState: if item.command == 0 && submenu == 0 {
                 MFS_DISABLED
             } else {
                 MFS_ENABLED
             } | if item.checked { MFS_CHECKED } else { 0 },
             wID: item.command as u32,
+            hSubMenu: submenu,
             dwItemData: (&*item as *const Item) as usize,
             // Keep a native text label for accessibility and mnemonic handling.
             dwTypeData: native_text.as_mut_ptr(),
             cch: native_text.len().saturating_sub(1) as u32,
             ..zeroed()
         };
-        InsertMenuItemW(self.handle, self.items.len() as u32, 1, &info);
+        if InsertMenuItemW(menu, GetMenuItemCount(menu) as u32, 1, &info) == 0 {
+            if submenu != 0 {
+                DestroyMenu(submenu);
+            }
+            return;
+        }
         self.items.push(item);
+        // The parent menu now owns the submenu handle. Keep all item data in
+        // the same arena until DestroyMenu has released the whole menu tree.
+        for child in children {
+            self.insert(submenu, child);
+        }
     }
 
     pub unsafe fn track(&self, owner: HWND, point: POINT) -> u32 {
@@ -321,6 +358,23 @@ impl Menu {
             std::ptr::null(),
         ) as u32
     }
+}
+
+unsafe fn create_popup(brush: HBRUSH) -> HMENU {
+    let handle = CreatePopupMenu();
+    if handle != 0 {
+        SetMenuInfo(
+            handle,
+            &MENUINFO {
+                cbSize: size_of::<MENUINFO>() as u32,
+                fMask: MIM_BACKGROUND | MIM_STYLE,
+                dwStyle: MNS_NOCHECK,
+                hbrBack: brush,
+                ..zeroed()
+            },
+        );
+    }
+    handle
 }
 
 thread_local! {
@@ -439,7 +493,6 @@ struct Palette {
     warning: COLORREF,
     danger_bg: COLORREF,
     danger: COLORREF,
-    dark: bool,
     high_contrast: bool,
 }
 
@@ -448,17 +501,16 @@ impl Palette {
         Self {
             background: rgb(250, 251, 255),
             text: rgb(31, 42, 68),
-            muted: rgb(113, 125, 151),
+            muted: rgb(82, 96, 121),
             line: rgb(226, 231, 241),
             hover: rgb(232, 238, 255),
             accent: rgb(48, 98, 220),
-            header_start: rgb(221, 246, 255),
-            header_end: rgb(231, 223, 255),
+            header_start: rgb(234, 247, 252),
+            header_end: rgb(243, 238, 252),
             warning_bg: rgb(255, 245, 225),
             warning: rgb(165, 94, 14),
             danger_bg: rgb(255, 235, 236),
             danger: rgb(198, 58, 65),
-            dark: false,
             high_contrast: false,
         }
     }
@@ -471,13 +523,12 @@ impl Palette {
             line: rgb(55, 64, 83),
             hover: rgb(47, 62, 94),
             accent: rgb(149, 187, 255),
-            header_start: rgb(31, 60, 79),
-            header_end: rgb(58, 45, 87),
+            header_start: rgb(33, 48, 64),
+            header_end: rgb(43, 39, 64),
             warning_bg: rgb(66, 49, 31),
             warning: rgb(255, 201, 112),
             danger_bg: rgb(75, 37, 45),
             danger: rgb(255, 156, 162),
-            dark: true,
             high_contrast: false,
         }
     }
@@ -496,7 +547,6 @@ impl Palette {
             warning: GetSysColor(COLOR_MENUTEXT),
             danger_bg: GetSysColor(COLOR_HIGHLIGHT),
             danger: GetSysColor(COLOR_HIGHLIGHTTEXT),
-            dark: false,
             high_contrast: true,
         }
     }
@@ -530,29 +580,6 @@ impl Palette {
             Self::dark()
         } else {
             Self::light()
-        }
-    }
-
-    fn icon_colors(self, icon: Icon) -> (COLORREF, COLORREF) {
-        if self.high_contrast {
-            return (self.text, self.background);
-        }
-        let ink = match icon {
-            Icon::Keyboard | Icon::Gamepad | Icon::Clipboard | Icon::Screenshot => {
-                rgb(49, 116, 236)
-            }
-            Icon::Settings | Icon::Calculator => rgb(23, 160, 159),
-            Icon::Handwrite | Icon::Ocr | Icon::Status => rgb(205, 133, 20),
-            Icon::Symbols | Icon::Translate => rgb(125, 84, 223),
-            Icon::Exit => self.muted,
-        };
-        if self.dark {
-            (
-                blend(ink, rgb(255, 255, 255), 80),
-                blend(self.background, ink, 45),
-            )
-        } else {
-            (rgb(255, 255, 255), ink)
         }
     }
 }
@@ -703,38 +730,6 @@ fn rect_at(rect: RECT, dpi: i32, x: i32, y: i32, w: i32, h: i32) -> RECT {
     }
 }
 
-unsafe fn chip(
-    dc: HDC,
-    text: &[u16],
-    x: i32,
-    y: i32,
-    dpi: i32,
-    background: COLORREF,
-    foreground: COLORREF,
-) -> i32 {
-    let width = text_width(dc, text, 11, dpi) + px(16, dpi);
-    let rect = RECT {
-        left: x,
-        top: y,
-        right: x + width,
-        bottom: y + px(23, dpi),
-    };
-    rounded(dc, rect, px(11, dpi), background);
-    label(
-        dc,
-        text,
-        RECT {
-            left: x + px(8, dpi),
-            ..rect
-        },
-        11,
-        dpi,
-        500,
-        foreground,
-    );
-    width
-}
-
 unsafe fn smile(dc: HDC, rect: RECT, color: COLORREF, dpi: i32) {
     let pen = CreatePen(PS_SOLID, px(2, dpi).max(1), color);
     if pen == 0 {
@@ -768,11 +763,7 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
     let (dc, r, d, p) = (draw.hDC, draw.rcItem, item.dpi, item.palette);
     fill(dc, r, p.background);
     match &item.kind {
-        Kind::Header {
-            mode,
-            engine,
-            healthy,
-        } => {
+        Kind::Header(ref status) => {
             let panel = RECT {
                 left: r.left + px(6, d),
                 top: r.top + px(5, d),
@@ -780,67 +771,52 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
                 bottom: r.bottom - px(3, d),
             };
             gradient(dc, panel, d, p.header_start, p.header_end);
-            let logo = rect_at(r, d, 18, 20, 40, 40);
+            let logo = rect_at(r, d, 17, 16, 34, 34);
             if p.high_contrast {
                 rounded(dc, logo, px(8, d), p.text);
-                smile(dc, rect_at(r, d, 23, 25, 30, 30), p.background, d);
+                smile(dc, rect_at(r, d, 21, 20, 26, 26), p.background, d);
             } else {
-                gradient(dc, logo, d, rgb(67, 181, 255), rgb(130, 84, 246));
-                smile(dc, rect_at(r, d, 23, 25, 30, 30), rgb(255, 255, 255), d);
+                gradient(dc, logo, d, rgb(42, 122, 184), rgb(114, 78, 199));
+                smile(dc, rect_at(r, d, 21, 20, 26, 26), rgb(255, 255, 255), d);
             }
             label(
                 dc,
                 &item.text,
                 RECT {
                     right: r.right - px(16, d),
-                    ..rect_at(r, d, 70, 15, 230, 26)
+                    ..rect_at(r, d, 62, 12, 194, 24)
                 },
-                20,
+                18,
                 d,
                 700,
                 p.text,
             );
-            let mode_w = chip(
+            label(
                 dc,
-                mode,
-                r.left + px(70, d),
-                r.top + px(46, d),
+                status,
+                RECT {
+                    right: r.right - px(16, d),
+                    ..rect_at(r, d, 62, 37, 194, 17)
+                },
+                12,
                 d,
-                p.hover,
-                p.accent,
-            );
-            let (bg, ink) = if *healthy && !p.high_contrast {
-                (
-                    blend(
-                        p.background,
-                        rgb(38, 160, 108),
-                        if p.dark { 45 } else { 30 },
-                    ),
-                    if p.dark {
-                        rgb(120, 230, 172)
-                    } else {
-                        rgb(26, 127, 78)
-                    },
-                )
-            } else {
-                (p.warning_bg, p.warning)
-            };
-            chip(
-                dc,
-                engine,
-                r.left + px(76, d) + mode_w,
-                r.top + px(46, d),
-                d,
-                bg,
-                ink,
+                400,
+                if item.attention {
+                    p.warning
+                } else if p.high_contrast {
+                    p.text
+                } else {
+                    p.muted
+                },
             );
             return;
         }
         Kind::Section => {
-            let text_r = rect_at(r, d, 18, 3, 130, 24);
-            label(dc, &item.text, text_r, 11, d, 500, p.muted);
-            let start = r.left + px(30, d) + text_width(dc, &item.text, 11, d);
-            let y = r.top + px(15, d);
+            let text_r = rect_at(r, d, 17, 0, 130, 24);
+            let section_ink = if p.high_contrast { p.text } else { p.muted };
+            label(dc, &item.text, text_r, 11, d, 500, section_ink);
+            let start = r.left + px(29, d) + text_width(dc, &item.text, 11, d);
+            let y = r.top + px(12, d);
             fill(
                 dc,
                 RECT {
@@ -859,6 +835,7 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
     let disabled = draw.itemState & ODS_DISABLED != 0;
     let footer = matches!(item.kind, Kind::Footer);
     let retry = matches!(item.icon, Icon::Status);
+    let settings = matches!(item.icon, Icon::Settings);
     let active = RECT {
         left: r.left + px(7, d),
         right: r.right - px(7, d),
@@ -893,31 +870,17 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
         p.accent
     } else if retry && item.attention {
         p.warning
-    } else if footer {
+    } else if footer && !p.high_contrast {
         p.muted
     } else {
         p.text
     };
-    let tile_y = r.top + (r.bottom - r.top - px(26, d)) / 2 + if footer { px(2, d) } else { 0 };
-    let tile = RECT {
-        left: r.left + px(18, d),
-        top: tile_y,
-        right: r.left + px(44, d),
-        bottom: tile_y + px(26, d),
-    };
-    let (icon_ink, icon_bg) = p.icon_colors(item.icon);
-    if !retry && !p.high_contrast {
-        if p.dark || p.high_contrast {
-            rounded(dc, tile, px(7, d), icon_bg);
-        } else {
-            gradient(dc, tile, d, blend(icon_bg, rgb(255, 255, 255), 35), icon_bg);
-        }
-    }
+    let icon_top = r.top + (r.bottom - r.top - px(18, d)) / 2 + if footer { px(2, d) } else { 0 };
     let icon_r = RECT {
-        left: tile.left + px(4, d),
-        top: tile.top + px(4, d),
-        right: tile.right - px(4, d),
-        bottom: tile.bottom - px(4, d),
+        left: r.left + px(19, d),
+        top: icon_top,
+        right: r.left + px(37, d),
+        bottom: icon_top + px(18, d),
     };
     if retry {
         draw_retry(dc, icon_r, ink, d);
@@ -926,19 +889,19 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
             dc,
             item.icon,
             icon_r,
-            if selected && footer {
-                p.danger
-            } else if p.high_contrast {
+            if selected || p.high_contrast {
                 ink
+            } else if settings {
+                p.accent
             } else {
-                icon_ink
+                p.muted
             },
             d,
         );
     }
     let label_r = RECT {
-        left: r.left + px(56, d),
-        right: r.right - px(62, d),
+        left: r.left + px(47, d),
+        right: r.right - px(53, d),
         top: r.top + if footer { px(4, d) } else { 0 },
         bottom: r.bottom,
     };
@@ -947,8 +910,8 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
             dc,
             &item.text,
             RECT {
-                top: r.top + px(4, d),
-                bottom: r.top + px(26, d),
+                top: r.top + px(2, d),
+                bottom: r.top + px(23, d),
                 ..label_r
             },
             14,
@@ -960,14 +923,18 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
             dc,
             &item.subtitle,
             RECT {
-                top: r.top + px(25, d),
-                bottom: r.bottom - px(3, d),
+                top: r.top + px(21, d),
+                bottom: r.bottom - px(2, d),
                 ..label_r
             },
             11,
             d,
             400,
-            p.muted,
+            if selected || p.high_contrast {
+                ink
+            } else {
+                p.muted
+            },
         );
     } else {
         label(
@@ -976,7 +943,7 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
             label_r,
             14,
             d,
-            if retry { 600 } else { 400 },
+            if retry || settings { 600 } else { 400 },
             ink,
         );
     }
@@ -984,8 +951,8 @@ unsafe fn paint(draw: &DRAWITEMSTRUCT, item: &Item) {
         let switch = RECT {
             left: r.right - px(52, d),
             right: r.right - px(18, d),
-            top: r.top + px(15, d),
-            bottom: r.top + px(33, d),
+            top: r.top + px(12, d),
+            bottom: r.top + px(30, d),
         };
         rounded(
             dc,
@@ -1296,6 +1263,10 @@ unsafe fn draw_vector_menu_icon(hdc: HDC, icon: Icon, rect: RECT, color: COLORRE
             menu_line(hdc, rect, 3, 21, 8, 21);
             menu_line(hdc, rect, 16, 21, 21, 21);
             menu_line(hdc, rect, 21, 21, 21, 16);
+        }
+        Icon::Recent => {
+            menu_circle(hdc, rect, 12, 12, 8);
+            menu_path(hdc, rect, &[(12, 7), (12, 12), (16, 14)]);
         }
         Icon::Ocr => {
             menu_rect(hdc, rect, 5, 3, 19, 21);

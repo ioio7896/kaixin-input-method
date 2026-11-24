@@ -15,3 +15,4 @@
 这	zhei	700
 闲事	xian shi	140
 闲适	xian shi	150
+谌	shen	250

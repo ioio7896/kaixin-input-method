@@ -19,14 +19,11 @@ foreach ($script in $scripts) {
 }
 
 $required = @(
-    "install_dev.ps1",
-    "install_current_user.ps1",
     "restart_stale_hosts.ps1",
     "export_diagnostics.ps1",
-    "uninstall_dev.ps1",
-    "uninstall_current_user.ps1",
     "stage_package.ps1",
     "kaixin.iss",
+    "kaixin-user.iss",
     "kaixin-common-code.iss",
     "srf_ime_settings.exe.manifest",
     "srf_ime_tray.exe.manifest"
@@ -38,26 +35,43 @@ foreach ($name in $required) {
     }
 }
 
-function Assert-FileContains {
-    param(
-        [string]$Name,
-        [string]$Needle
-    )
-
-    $path = Join-Path $installer $Name
-    $text = Get-Content -LiteralPath $path -Raw -Encoding UTF8
-    if ($text -notlike "*$Needle*") {
-        throw "Installer source $Name does not contain required text: $Needle"
+$nativeSetupSources = @(
+    "pinyin-ime\src\bin\srf_ime_setup.rs",
+    "pinyin-ime\src\bin\srf_ime_setup\config_migrate.rs",
+    "pinyin-ime\src\bin\srf_ime_setup\manifest.rs",
+    "pinyin-ime\src\bin\srf_ime_setup\win_acl.rs",
+    "pinyin-ime\src\bin\srf_ime_setup\win_system.rs"
+)
+foreach ($rel in $nativeSetupSources) {
+    $path = Join-Path $repo $rel
+    if (-not (Test-Path -LiteralPath $path)) {
+        throw "Missing native setup source: $rel"
     }
 }
 
-Assert-FileContains -Name "uninstall_current_user.ps1" -Needle "Set-WinDefaultInputMethodOverride"
-Assert-FileContains -Name "uninstall_current_user.ps1" -Needle "RunOnce"
-Assert-FileContains -Name "uninstall_dev.ps1" -Needle "Remove-TipFromLoadedUserRegistry"
-Assert-FileContains -Name "kaixin.iss" -Needle "ArchitecturesAllowed=x64os"
-Assert-FileContains -Name "kaixin.iss" -Needle "RemoveCurrentUserData()"
-Assert-FileContains -Name "kaixin-user.iss" -Needle "ArchitecturesAllowed=x64os"
-Assert-FileContains -Name "kaixin-user.iss" -Needle "RemoveCurrentUserData()"
+function Assert-PathContains {
+    param(
+        [string]$Path,
+        [string]$Needle
+    )
+
+    $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    if ($text -notlike "*$Needle*") {
+        throw "Source $Path does not contain required text: $Needle"
+    }
+}
+
+$winSystem = Join-Path $repo "pinyin-ime\src\bin\srf_ime_setup\win_system.rs"
+Assert-PathContains -Path $winSystem -Needle "restore_microsoft_pinyin"
+Assert-PathContains -Path $winSystem -Needle "InputMethodOverride"
+Assert-PathContains -Path $winSystem -Needle "RunOnce"
+Assert-PathContains -Path $winSystem -Needle "remove_tip_from_loaded_user_registry"
+Assert-PathContains -Path (Join-Path $installer "kaixin.iss") -Needle "ArchitecturesAllowed=x64os"
+Assert-PathContains -Path (Join-Path $installer "kaixin.iss") -Needle "RemoveCurrentUserData()"
+Assert-PathContains -Path (Join-Path $installer "kaixin.iss") -Needle "srf_ime_setup.exe"
+Assert-PathContains -Path (Join-Path $installer "kaixin-user.iss") -Needle "ArchitecturesAllowed=x64os"
+Assert-PathContains -Path (Join-Path $installer "kaixin-user.iss") -Needle "RemoveCurrentUserData()"
+Assert-PathContains -Path (Join-Path $installer "kaixin-user.iss") -Needle "srf_ime_setup.exe"
 
 [xml]$settingsManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_settings.exe.manifest") -Raw
 [xml]$trayManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_tray.exe.manifest") -Raw

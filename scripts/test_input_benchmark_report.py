@@ -16,8 +16,8 @@ class BenchmarkContractTests(unittest.TestCase):
         rows = read_rows(Path(__file__).resolve().parents[1] / "tests/category_ranking_cases.tsv")
         groups = {row[1] for row in rows}
         self.assertEqual(groups, {"daily", "office", "professional", "mixed", "correction"})
-        self.assertEqual(len(rows), 40)
-        self.assertTrue(all(sum(row[1] == group for row in rows) >= 8 for group in groups))
+        self.assertGreaterEqual(len(rows), 300)
+        self.assertTrue(all(sum(row[1] == group for row in rows) >= 50 for group in groups))
 
 
 if __name__ == "__main__":

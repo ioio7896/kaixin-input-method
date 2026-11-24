@@ -134,11 +134,78 @@ HRESULT CSrfTip::CommitCandidateResolved(TfEditCookie ec, ITfContext* requestCon
     // their separate priority.
     SrfTip_RecordClipboardText(committed);
   }
+  if (!commitReading && committed.rfind(L"translate://", 0) == 0) {
+    if (m_candidateUi) m_candidateUi->End();
+    const bool blocked = m_sensitiveInputActive || m_config.privacy.enabled;
+    if (!blocked) {
+      const std::wstring rest = committed.substr(12);
+      const size_t slash = rest.find(L'/');
+      const std::wstring targetLang =
+          slash == std::wstring::npos ? L"auto-opposite" : rest.substr(0, slash);
+      const std::wstring payloadText = slash == std::wstring::npos ? L"" : rest.substr(slash + 1);
+      const HWND targetHwnd = GetForegroundWindow();
+      const RECT* anchorPtr = m_hasLastCandidateRect ? &m_lastCandidateRect : nullptr;
+      const bool suppressClipboard = ShouldSuppressClipboardForPrivacy();
+      if (!LaunchCandidateTranslation(payloadText, targetHwnd, m_compositionGeneration, anchorPtr,
+                                      targetLang.c_str(), L"kaixin-ime-vv-translate",
+                                      suppressClipboard, !suppressClipboard)) {
+        MessageBeep(MB_ICONERROR);
+      }
+    } else {
+      MessageBeep(MB_ICONWARNING);
+    }
+    SrfTip_ResetLearningContext();
+    if (m_pComposition) {
+      CancelCompositionEdit(ec);
+    } else {
+      ReleaseCompositionState();
+    }
+    RebuildContextModel();
+    SyncStatusModel();
+    return S_OK;
+  }
   const std::wstring reading =
       snapshotReading && !snapshotReading->empty() ? *snapshotReading : m_reading;
   const bool usedComposition = m_pComposition != nullptr;
   ITfContext* pic = m_pCompositionContext ? m_pCompositionContext
                                           : (requestContext ? requestContext : m_pFocusContext);
+  if (!commitReading && !committedMeta.clipboardQuick && !m_sensitiveInputActive &&
+      !m_config.privacy.enabled && reading.rfind(L"vv", 0) != 0 && committed.size() >= 2 &&
+      IsContinuousTranslateFlagPresent()) {
+    bool hasCjk = false;
+    for (wchar_t ch : committed) {
+      if ((ch >= 0x3400 && ch <= 0x4DBF) || (ch >= 0x4E00 && ch <= 0x9FFF)) {
+        hasCjk = true;
+        break;
+      }
+    }
+    if (hasCjk) {
+      RECT anchorRect = {};
+      const RECT* anchorPtr = nullptr;
+      if (pic && m_pComposition) {
+        ITfRange* range = nullptr;
+        if (SUCCEEDED(m_pComposition->GetRange(&range)) && range) {
+          if (TryGetTextExtRect(ec, pic, range, &anchorRect)) anchorPtr = &anchorRect;
+          range->Release();
+        }
+      }
+      if (!anchorPtr && m_hasLastCandidateRect) anchorPtr = &m_lastCandidateRect;
+      const HWND targetHwnd = GetForegroundWindow();
+      if (LaunchCandidateTranslation(committed, targetHwnd, m_compositionGeneration, anchorPtr,
+                                     nullptr, L"kaixin-ime-candidate",
+                                     ShouldSuppressClipboardForPrivacy())) {
+        if (m_candidateUi) m_candidateUi->End();
+        if (m_pComposition) {
+          CancelCompositionEdit(ec);
+        } else {
+          ReleaseCompositionState();
+        }
+        RebuildContextModel();
+        SyncStatusModel();
+        return S_OK;
+      }
+    }
+  }
   UINT readingFunctionVk = 0;
   UINT committedFunctionVk = 0;
   const bool commitAsFunctionKey = TryParseFunctionKeyToken(reading, &readingFunctionVk) &&

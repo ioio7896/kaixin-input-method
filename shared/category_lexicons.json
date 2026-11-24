@@ -4,1211 +4,566 @@
   "score_scale": "1..10000 candidate priority; higher ranks earlier; not measured user input frequency",
   "categories": [
     {
-      "tag": "animals",
-      "file": "animals.txt",
-      "title": "常见动物",
+      "tag": "daily_communication",
+      "legacy_defaults": {
+        "category_chat_daily": true,
+        "category_chat_emotions": true,
+        "category_chat_requests": true,
+        "category_etiquette": true,
+        "category_slang": true
+      },
+      "file": "daily_communication.txt",
+      "title": "聊天与社交",
       "group": "日常表达",
       "default_enabled": true,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 499,
-      "sha256": "78d41d426bca3de133e47f0d5a85a921658e6106f64acbd62ae0ae81ae439c72",
-      "score_min": 6000,
-      "score_max": 6000,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 4132,
+      "sha256": "04a88473e9070ab0cb32d2c3c0f974b1a77acc9fcb30245e57e76dde2e03d4ec",
+      "score_min": 1430,
+      "score_max": 8200,
       "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 499,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_accessibility",
-      "file": "category_accessibility.txt",
-      "title": "无障碍服务",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 44,
-      "sha256": "b98600d9e0cc2e602266e6b4e868058b979cef746f2b9e075ee638cd48a49ef8",
-      "score_min": 6000,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 44,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_accounting",
-      "file": "category_accounting.txt",
-      "title": "财务会计",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 351,
-      "sha256": "6e1e4f9d67f8b666d54645d84a83ef50984c334a3083ea174a3197988c387008",
-      "score_min": 1613,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 65,
-        "2500-4999": 285,
+        "7500-10000": 67,
+        "5000-7499": 486,
+        "2500-4999": 3578,
         "100-2499": 1,
         "1-99": 0
       }
     },
     {
-      "tag": "category_aftersales",
-      "file": "category_aftersales.txt",
-      "title": "退换售后",
+      "tag": "category_life_daily",
+      "legacy_defaults": {
+        "category_accessibility": true,
+        "category_appliances": true,
+        "category_dates_planning": true,
+        "category_housing": true,
+        "category_renovation": true,
+        "category_weather": true
+      },
+      "file": "category_life_daily.txt",
+      "title": "日常生活与家居",
       "group": "日常表达",
       "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 255,
-      "sha256": "caa1d9b8aff06be185b47673b3c8638201f77eb03c6d753405d97d61ada748e2",
-      "score_min": 2077,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 76,
-        "2500-4999": 169,
-        "100-2499": 8,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_agriculture",
-      "file": "category_agriculture.txt",
-      "title": "农业园艺",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 114,
-      "sha256": "33f991c0cdece3706163fd06007e5aa5e5013ea0bc4bba5f2a88a4ed5e7bd25f",
-      "score_min": 2347,
-      "score_max": 6100,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1145,
+      "sha256": "cfa171a2e0960c13f44ec55b5d1614c8e8e7b6d063211e197e12355d04696efd",
+      "score_min": 56,
+      "score_max": 5800,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 76,
-        "2500-4999": 37,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_ai",
-      "file": "category_ai.txt",
-      "title": "人工智能",
-      "group": "科技与开发",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 54,
-      "sha256": "8fc7b1c34bf365d84225fed78f4f4ca8bc6c8596038311fe68fa3ba442e44355",
-      "score_min": 4000,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 25,
-        "5000-7499": 28,
-        "2500-4999": 1,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_appliances",
-      "file": "category_appliances.txt",
-      "title": "家电日用",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 50,
-      "sha256": "55381a0f0b91299a17427e2dbe5c6127524d7d9c63b6aeac24ddf0585b1ff2a0",
-      "score_min": 1029,
-      "score_max": 8722,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 46,
-        "2500-4999": 0,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_architecture",
-      "file": "category_architecture.txt",
-      "title": "建筑施工",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 284,
-      "sha256": "213e3154fd335410b37eb1d8ea3213c4ed9d2a82b8a55eda77d88b63b01fcdc7",
-      "score_min": 2270,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 123,
-        "2500-4999": 153,
-        "100-2499": 8,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_arts",
-      "file": "category_arts.txt",
-      "title": "文娱艺术",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 50,
-      "sha256": "efe7ae55ffbe77472864d115cf33ac3d67c0048e31335503356f16afba9559a1",
-      "score_min": 5616,
-      "score_max": 9363,
-      "score_tiers": {
-        "7500-10000": 3,
-        "5000-7499": 47,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_automotive",
-      "file": "category_automotive.txt",
-      "title": "汽车驾驶",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 455,
-      "sha256": "e3ccbb4fb5d5bbe3b2d312d8aaaab2c98d0e6df931554b3ad3aaa24f2b7fbaf4",
-      "score_min": 229,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 111,
-        "2500-4999": 325,
-        "100-2499": 18,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_beauty",
-      "file": "category_beauty.txt",
-      "title": "美妆个护",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 180,
-      "sha256": "ad5b5d14cfc6268bbdb88250da8c18ec6fe04bccf7274f9b4d4d947d1e0e259e",
-      "score_min": 72,
-      "score_max": 7614,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 40,
-        "2500-4999": 117,
-        "100-2499": 21,
+        "5000-7499": 277,
+        "2500-4999": 852,
+        "100-2499": 15,
         "1-99": 1
       }
     },
     {
-      "tag": "category_biology",
-      "file": "category_biology.txt",
-      "title": "生物实验",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 225,
-      "sha256": "12b670b117939a3c5bf55422ba707f3af454a1049c182a7501273a193c367a41",
-      "score_min": 1770,
-      "score_max": 6486,
+      "tag": "category_dining",
+      "legacy_defaults": {
+        "category_cooking": true,
+        "category_groceries": true
+      },
+      "file": "category_dining.txt",
+      "title": "美食烹饪与餐饮",
+      "group": "日常表达",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 4765,
+      "sha256": "8072e88f885e818f023db3a79a907c27ff27b0fbf322892412c7e044ef7e28de",
+      "score_min": 91,
+      "score_max": 6200,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 66,
-        "2500-4999": 155,
+        "5000-7499": 147,
+        "2500-4999": 4603,
+        "100-2499": 14,
+        "1-99": 1
+      }
+    },
+    {
+      "tag": "category_shopping",
+      "legacy_defaults": {
+        "category_aftersales": true,
+        "category_beauty": true,
+        "category_clothing": true,
+        "category_delivery": true,
+        "category_payment": true,
+        "category_retail": true
+      },
+      "file": "category_shopping.txt",
+      "title": "购物物流与支付",
+      "group": "日常表达",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1769,
+      "sha256": "c7395ee7275424cbc586b2efe14b2b9f12ac2c5b931feebb6d3d1ffec2b66ba5",
+      "score_min": 72,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 531,
+        "2500-4999": 1180,
+        "100-2499": 57,
+        "1-99": 1
+      }
+    },
+    {
+      "tag": "category_travel",
+      "legacy_defaults": {
+        "category_automotive": true,
+        "category_hotel": true,
+        "category_outdoor": true,
+        "category_transit": true
+      },
+      "file": "category_travel.txt",
+      "title": "出行交通与旅游",
+      "group": "日常表达",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1364,
+      "sha256": "dcaa0fe248a8df31c74459d10e579b1b2110d0856211cdadaaa05fb70b9b8990",
+      "score_min": 229,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 406,
+        "2500-4999": 914,
+        "100-2499": 44,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_office",
+      "legacy_defaults": {
+        "category_events": true,
+        "category_human_resources": true,
+        "category_project": true
+      },
+      "file": "category_office.txt",
+      "title": "办公协作与职场",
+      "group": "办公与办事",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 2751,
+      "sha256": "c97bb32ba2d39d3f8302e68e55042515606d05aca4b15b7d7132288238735881",
+      "score_min": 2010,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 488,
+        "2500-4999": 2261,
+        "100-2499": 2,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_government",
+      "legacy_defaults": {
+        "category_emergency": true,
+        "category_social_insurance": true
+      },
+      "file": "category_government.txt",
+      "title": "政务社保与应急",
+      "group": "办公与办事",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 420,
+      "sha256": "badc39d0c286facf9807b37a06cc257e57e747db573dd608885da4b3315e94c6",
+      "score_min": 2000,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 180,
+        "2500-4999": 236,
         "100-2499": 4,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_education",
+      "legacy_defaults": {
+        "category_exams": true,
+        "category_literature": true,
+        "category_parenting": true
+      },
+      "file": "category_education.txt",
+      "title": "教育考试与阅读",
+      "group": "日常表达",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 2271,
+      "sha256": "339d11a78ff75371479c3c0ee5d5e096c50306717f7ffc50b6e5d9642be297db",
+      "score_min": 1424,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 688,
+        "2500-4999": 1558,
+        "100-2499": 25,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_games",
+      "legacy_defaults": {
+        "category_arts": true,
+        "category_crafts": true,
+        "category_fitness": true,
+        "category_social_media": false,
+        "category_sports": true
+      },
+      "file": "category_games.txt",
+      "title": "游戏文娱与运动",
+      "group": "日常表达",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1586,
+      "sha256": "f9ae2ad7979717bb74e8ee2e609395836d9c786962d7956fc4c8779d6dec81cf",
+      "score_min": 658,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 440,
+        "2500-4999": 1074,
+        "100-2499": 72,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "animals",
+      "legacy_defaults": {
+        "category_pets": true
+      },
+      "file": "animals.txt",
+      "title": "动物与宠物",
+      "group": "日常表达",
+      "default_enabled": true,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 621,
+      "sha256": "dd7645eaf81157bc852ec1c259170b0c9eff401fb6cb8f939f1da80446294734",
+      "score_min": 1900,
+      "score_max": 5200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 55,
+        "2500-4999": 51,
+        "100-2499": 515,
         "1-99": 0
       }
     },
     {
       "tag": "category_brands",
       "file": "category_brands.txt",
-      "title": "品牌应用",
+      "title": "品牌与应用",
       "group": "名称与实体",
       "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 55,
-      "sha256": "0e1eb70c6f0b6745081d364e986ba314f1953b98261286778b4c10d66b48da5d",
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 2549,
+      "sha256": "52680ce5bb5f62db9cadd8b512acca6876f21c6726c7114affa39666458c6972",
       "score_min": 2160,
-      "score_max": 9211,
+      "score_max": 6200,
       "score_tiers": {
-        "7500-10000": 10,
-        "5000-7499": 41,
-        "2500-4999": 3,
+        "7500-10000": 0,
+        "5000-7499": 51,
+        "2500-4999": 2497,
         "100-2499": 1,
         "1-99": 0
       }
     },
     {
-      "tag": "category_chat_daily",
-      "file": "category_chat_daily.txt",
-      "title": "日常聊天",
-      "group": "日常表达",
+      "tag": "geography_admin",
+      "legacy_defaults": {
+        "category_proper_places": false
+      },
+      "file": "geography_admin.txt",
+      "title": "行政区划与地名",
+      "group": "地区词库 · 全国与世界",
       "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 64,
-      "sha256": "ae11aa47056335834b29ce76e368bdb85ec1e9ab47764d17973f17e00013fe75",
-      "score_min": 3481,
-      "score_max": 9836,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 5667,
+      "sha256": "5a98af4cae4745c65fa2a20997df2b746ff80c90905587e55ebac2ae6d005666",
+      "score_min": 1500,
+      "score_max": 6000,
       "score_tiers": {
-        "7500-10000": 8,
-        "5000-7499": 55,
-        "2500-4999": 1,
-        "100-2499": 0,
+        "7500-10000": 0,
+        "5000-7499": 106,
+        "2500-4999": 2096,
+        "100-2499": 3465,
         "1-99": 0
       }
     },
     {
-      "tag": "category_chat_emotions",
-      "file": "category_chat_emotions.txt",
-      "title": "情感社交",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 46,
-      "sha256": "ff6f3cad0c0ec825a7b6fba659acc67c18f7be2afe74cd80afea15ec7f52b532",
-      "score_min": 6500,
-      "score_max": 10000,
-      "score_tiers": {
-        "7500-10000": 9,
-        "5000-7499": 37,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_chat_requests",
-      "file": "category_chat_requests.txt",
-      "title": "请求沟通",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 48,
-      "sha256": "a14a6ace21dbef9f3bc3870766ff905f2d80d9be426235887b2e2344f53550ed",
-      "score_min": 3153,
-      "score_max": 9932,
-      "score_tiers": {
-        "7500-10000": 6,
-        "5000-7499": 40,
-        "2500-4999": 2,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_clothing",
-      "file": "category_clothing.txt",
-      "title": "服饰穿搭",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 491,
-      "sha256": "732d2fe8c8b7e6c1d9e5e5c01710a48115ceb59edfd0dd55031d8d8380df3da3",
-      "score_min": 1758,
-      "score_max": 8729,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 75,
-        "2500-4999": 402,
-        "100-2499": 12,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_common_four",
-      "file": "category_common_four.txt",
-      "title": "四字常用补充",
-      "group": "通用补充 · 待筛",
+      "tag": "hangzhou_local",
+      "file": "hangzhou_local.txt",
+      "title": "杭州本地生活与地理",
+      "group": "地区词库 · 杭州",
       "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 192067,
-      "sha256": "56e45dcefe6ac91a0aa021a110c898a27ccb639eda4e701227e15cf15746b0fe",
-      "score_min": 685,
-      "score_max": 5836,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1674,
+      "sha256": "d25dff05184d6e13de4add09ac66a66a34f59dcc068404eacb85278e518c5f5b",
+      "score_min": 175,
+      "score_max": 6200,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 28,
-        "2500-4999": 74810,
-        "100-2499": 117229,
+        "5000-7499": 96,
+        "2500-4999": 1089,
+        "100-2499": 489,
         "1-99": 0
       }
     },
     {
-      "tag": "category_common_long",
-      "file": "category_common_long.txt",
-      "title": "通用长词补充",
-      "group": "通用补充 · 待筛",
-      "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 737,
-      "sha256": "a77c9f6fc4cd57a6118685f7b0487dcdf7e82f0fad80cb0b3c86da97341544d2",
-      "score_min": 2734,
-      "score_max": 6103,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 11,
-        "2500-4999": 726,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_common_three",
-      "file": "category_common_three.txt",
-      "title": "三字通用补充",
-      "group": "通用补充 · 待筛",
-      "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 213043,
-      "sha256": "8934045aed2cef2a25e1685093e602a7e3310b3b2aa8127cda8847f91fe99f61",
-      "score_min": 790,
-      "score_max": 5263,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 3,
-        "2500-4999": 57173,
-        "100-2499": 155867,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_cooking",
-      "file": "category_cooking.txt",
-      "title": "烹饪食材",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 95,
-      "sha256": "2795d02d3c5e9cf48911a0bc37384f43eedef2e2688a34c066a4c35c14774c53",
-      "score_min": 91,
-      "score_max": 8684,
-      "score_tiers": {
-        "7500-10000": 4,
-        "5000-7499": 33,
-        "2500-4999": 44,
-        "100-2499": 13,
-        "1-99": 1
-      }
-    },
-    {
-      "tag": "category_crafts",
-      "file": "category_crafts.txt",
-      "title": "手工爱好",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 46,
-      "sha256": "0b91cac2455c30be8ee61b8769f130d35251d9d14e2629dc6cd3d440ba7ae27a",
-      "score_min": 1541,
-      "score_max": 7867,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 42,
-        "2500-4999": 2,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_dates_planning",
-      "file": "category_dates_planning.txt",
-      "title": "日程时间",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 48,
-      "sha256": "6c2b9f0c4ac6704a1bf1580d83eefc9fe2e1122a131a27e9a21195886771f0dd",
-      "score_min": 6100,
-      "score_max": 6900,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 48,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_delivery",
-      "file": "category_delivery.txt",
-      "title": "快递物流",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 528,
-      "sha256": "a588740cc4d344e85245ed3ec5acc4fd048d72e89a084077f516faebc1d8900a",
-      "score_min": 1308,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 126,
-        "2500-4999": 397,
-        "100-2499": 4,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_devices",
-      "file": "category_devices.txt",
-      "title": "数码连接",
+      "tag": "technology",
+      "legacy_defaults": {
+        "category_ai": false,
+        "category_devices": false,
+        "category_photography": false,
+        "category_programming": false,
+        "category_security": false,
+        "category_software": false,
+        "professional_computing": false
+      },
+      "file": "technology.txt",
+      "title": "科技编程与人工智能",
       "group": "科技与开发",
       "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 607,
-      "sha256": "164a9364925d5af3fd63b448e3cb1d7d8b0a83a37aadb59dc8f0c5007c866123",
-      "score_min": 1018,
-      "score_max": 6462,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 2188,
+      "sha256": "4f28c11289ad709208a1740cfa1cc6ae5193f6297e0ef571df753fb4235c18a1",
+      "score_min": 4600,
+      "score_max": 7200,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 134,
-        "2500-4999": 470,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_dining",
-      "file": "category_dining.txt",
-      "title": "餐饮外卖",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 183,
-      "sha256": "9496eddf3f43aea5b1f007546767ce5b321023fb6b0c14c0605bc1745a392031",
-      "score_min": 1885,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 59,
-        "2500-4999": 123,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_education",
-      "file": "category_education.txt",
-      "title": "学校教育",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 1691,
-      "sha256": "1a0d37f40d709d3dfc5b55cf80f0a0416b23d328876cd21204fb5b7014a6dc33",
-      "score_min": 1424,
-      "score_max": 8230,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 401,
-        "2500-4999": 1278,
-        "100-2499": 11,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_emergency",
-      "file": "category_emergency.txt",
-      "title": "安全应急",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 143,
-      "sha256": "225db45ca8b64c8444d3440fe53511631b1924eff82aa9e967f785c22ef1944d",
-      "score_min": 2462,
-      "score_max": 9358,
-      "score_tiers": {
-        "7500-10000": 3,
-        "5000-7499": 44,
-        "2500-4999": 95,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_energy",
-      "file": "category_energy.txt",
-      "title": "能源电气",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 124,
-      "sha256": "642bf0d3c4b6ae8b9fb8e7021dc5509e3d80989726a7d149e559aa553603a113",
-      "score_min": 533,
-      "score_max": 8628,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 62,
-        "2500-4999": 58,
-        "100-2499": 2,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_environment",
-      "file": "category_environment.txt",
-      "title": "环境环保",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 294,
-      "sha256": "ad8a9d4cb87846a136131e1ac3bd986a975892108362def172d432e704b390d4",
-      "score_min": 209,
-      "score_max": 6284,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 102,
-        "2500-4999": 189,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_etiquette",
-      "file": "category_etiquette.txt",
-      "title": "礼貌祝福",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 50,
-      "sha256": "b08a49bc1e576aba176ee6cd745d89e685a4f3a3f6814cd53b89e84ff45361e9",
-      "score_min": 1430,
-      "score_max": 9300,
-      "score_tiers": {
-        "7500-10000": 4,
-        "5000-7499": 45,
-        "2500-4999": 0,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_events",
-      "file": "category_events.txt",
-      "title": "活动会务",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 49,
-      "sha256": "28993dd568b9ce910bdfdaad450204c6ff22944af1e8191133731078a7a04795",
-      "score_min": 5360,
-      "score_max": 7631,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 48,
-        "2500-4999": 0,
+        "5000-7499": 960,
+        "2500-4999": 1228,
         "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_exams",
-      "file": "category_exams.txt",
-      "title": "考试升学",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 438,
-      "sha256": "957fc48567b66bfee6efefc4ad01d5626969e4d8b726615c743ae6a58695056f",
-      "score_min": 2154,
-      "score_max": 8533,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 112,
-        "2500-4999": 320,
-        "100-2499": 4,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_finance",
-      "file": "category_finance.txt",
-      "title": "金融投资",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 930,
-      "sha256": "9acc751e7395ce6b6ad65c3eb0f7218a2416fa92bb2dc5b201237ba6a181aa78",
-      "score_min": 1500,
-      "score_max": 8500,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 238,
-        "2500-4999": 677,
-        "100-2499": 14,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_fitness",
-      "file": "category_fitness.txt",
-      "title": "运动健身",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 452,
-      "sha256": "3b32b8259c2c542b37411ec640982c60e20a6b2544155032105712d46d47d7af",
-      "score_min": 1308,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 58,
-        "2500-4999": 332,
-        "100-2499": 62,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_games",
-      "file": "category_games.txt",
-      "title": "游戏电竞",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 594,
-      "sha256": "e42ecf7716e0a752c69c7e327978ee5515a43e9075ce5be6cdd0ada434a5b2cd",
-      "score_min": 2347,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 147,
-        "2500-4999": 445,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_geography",
-      "file": "category_geography.txt",
-      "title": "地理地质",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 133,
-      "sha256": "1abe7d2be2784c4a322caea5f927eea91698bdbe00408709c3b39705eacae394",
-      "score_min": 2935,
-      "score_max": 7582,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 63,
-        "2500-4999": 69,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_government",
-      "file": "category_government.txt",
-      "title": "政务办事",
-      "group": "办公与办事",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 337,
-      "sha256": "f42c46ac55b761ecb0a06746caf2e076fd1902e8cdf9f044121939d4449cb7e6",
-      "score_min": 2424,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 83,
-        "2500-4999": 253,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_groceries",
-      "file": "category_groceries.txt",
-      "title": "商超生鲜",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 51,
-      "sha256": "4283964585b30477dd065d0757f96fed5e8a13f6416b0723bc5c0f4998ce9755",
-      "score_min": 6100,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 51,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_history",
-      "file": "category_history.txt",
-      "title": "历史考古",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 167,
-      "sha256": "ae20fe35e1f9b113288c7411b04bf604e3b48e341126047bbdcdfbbb674e5f14",
-      "score_min": 3077,
-      "score_max": 9720,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 96,
-        "2500-4999": 69,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_hotel",
-      "file": "category_hotel.txt",
-      "title": "住宿酒店",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 224,
-      "sha256": "86c9dd2c32c8c0c2b599f52dea9a0ed1ee89d8a2d1cc60e30ff07545414185aa",
-      "score_min": 1510,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 68,
-        "2500-4999": 149,
-        "100-2499": 7,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_housing",
-      "file": "category_housing.txt",
-      "title": "房产物业",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 228,
-      "sha256": "659fd67421b740c15287a6916b0185a2e426a49c1a5c0d94eb96203ed9cb6cfe",
-      "score_min": 1942,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 51,
-        "2500-4999": 172,
-        "100-2499": 5,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_human_resources",
-      "file": "category_human_resources.txt",
-      "title": "人事考勤",
-      "group": "办公与办事",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 57,
-      "sha256": "b100b1ad39162c915552cd87fdb7673949d03edf4f2f7fd4b4d5cfabfb2ad7c6",
-      "score_min": 6100,
-      "score_max": 8197,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 56,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_idioms",
-      "file": "category_idioms.txt",
-      "title": "成语惯用语",
-      "group": "成语与固定表达",
-      "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 22720,
-      "sha256": "809ec10129a9d8521e3d3d6294d68bd437a2725bc943f91ed5444789d9900da6",
-      "score_min": 2373,
-      "score_max": 5416,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 6,
-        "2500-4999": 22009,
-        "100-2499": 705,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_insurance",
-      "file": "category_insurance.txt",
-      "title": "保险理赔",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 241,
-      "sha256": "f666638128df8a5c5de5597eac0b255414366acaaa519afc1a1a8a822e8927a2",
-      "score_min": 118,
-      "score_max": 9095,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 109,
-        "2500-4999": 127,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_law",
-      "file": "category_law.txt",
-      "title": "法律合同",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 214,
-      "sha256": "15b3f1010ef5fec25060a80c1729bfa54a64ffff392324433fd6bce3469d4266",
-      "score_min": 313,
-      "score_max": 6760,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 87,
-        "2500-4999": 124,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_life_daily",
-      "file": "category_life_daily.txt",
-      "title": "生活日常",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 548,
-      "sha256": "c36991746236f5fdf41a624a9d8e920b46ff674191f0861cd8b4e2a4e663f0c1",
-      "score_min": 8000,
-      "score_max": 8000,
-      "score_tiers": {
-        "7500-10000": 548,
-        "5000-7499": 0,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_literature",
-      "file": "category_literature.txt",
-      "title": "阅读写作",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 265,
-      "sha256": "7cab59af1fa3abbaeea970dc971ae0bb8b50d1cf2ff69347ad5918bc366a32a4",
-      "score_min": 1577,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 97,
-        "2500-4999": 161,
-        "100-2499": 7,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_manufacturing",
-      "file": "category_manufacturing.txt",
-      "title": "制造机械",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 50,
-      "sha256": "5a058596b83f0cb7d6e1eb2c138a5804f9b3844274b951769e268292d62fa752",
-      "score_min": 6100,
-      "score_max": 8062,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 49,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_math_statistics",
-      "file": "category_math_statistics.txt",
-      "title": "数学统计",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 244,
-      "sha256": "98058fc2c62e52b81caacfa16ab36f8bc0715ae8f706ccd3e1aa738e1406fd6a",
-      "score_min": 640,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 112,
-        "2500-4999": 131,
-        "100-2499": 1,
         "1-99": 0
       }
     },
     {
       "tag": "category_medical",
+      "legacy_defaults": {
+        "professional_medical": false
+      },
       "file": "category_medical.txt",
-      "title": "就医检查",
+      "title": "医疗健康与临床",
       "group": "专业领域",
       "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 646,
-      "sha256": "cb26c87922f9cee5d78864af0b38ff8da66ec298a0f0ba975a489c220ee2326f",
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 704,
+      "sha256": "9b76cf2ef3608ec6f10e83303e28c6492e5f3955045f5d16e2c1a26d4f36a28b",
       "score_min": 1654,
-      "score_max": 6726,
+      "score_max": 6200,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 152,
+        "5000-7499": 210,
         "2500-4999": 486,
         "100-2499": 8,
         "1-99": 0
       }
     },
     {
-      "tag": "category_music",
-      "file": "category_music.txt",
-      "title": "音乐乐理",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 270,
-      "sha256": "ecec05c4ac0fa85dec6f0d08bc9753909c3a65cf04c2f23b6837029f5b0fafe9",
-      "score_min": 117,
-      "score_max": 6347,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 109,
-        "2500-4999": 158,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_office",
-      "file": "category_office.txt",
-      "title": "办公协作",
-      "group": "办公与办事",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 788,
-      "sha256": "2889b8e8596b13b413329ecd219c47d9f4b53ea1b61b722801cf8282778d6736",
-      "score_min": 2010,
-      "score_max": 9300,
-      "score_tiers": {
-        "7500-10000": 5,
-        "5000-7499": 142,
-        "2500-4999": 639,
-        "100-2499": 2,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_outdoor",
-      "file": "category_outdoor.txt",
-      "title": "户外露营",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 51,
-      "sha256": "74d160103d154691c3e6de6aab30ff8fe6afec282ec94802adca3a8312341771",
-      "score_min": 702,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 45,
-        "2500-4999": 4,
-        "100-2499": 2,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_parenting",
-      "file": "category_parenting.txt",
-      "title": "家庭育儿",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 283,
-      "sha256": "9c5cd7574fd6f4db5cf9911f34c87c7c0106431f0a5353d642667341f6110194",
-      "score_min": 1693,
-      "score_max": 7250,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 75,
-        "2500-4999": 205,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_payment",
-      "file": "category_payment.txt",
-      "title": "支付票据",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 325,
-      "sha256": "eda323214f69418631cfc55c019ea61159321b22ad6cd7d9c8dc2ac125237843",
-      "score_min": 2231,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 84,
-        "2500-4999": 229,
-        "100-2499": 10,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_pets",
-      "file": "category_pets.txt",
-      "title": "宠物养护",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 122,
-      "sha256": "43c6c21d1930574dabd04e30036b59141febf9c25b853f71b8e5fe3166e1da6f",
-      "score_min": 902,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 50,
-        "2500-4999": 65,
-        "100-2499": 7,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_pharmacy",
-      "file": "category_pharmacy.txt",
-      "title": "药品护理",
+      "tag": "medicine",
+      "legacy_defaults": {
+        "category_pharmacy": false
+      },
+      "file": "medicine.txt",
+      "title": "常见药物与护理",
       "group": "药物名称",
       "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 145,
-      "sha256": "aaa6d0f7a57b06ca13c833820d0f32bd6f7510d22d2b02fb358173adb3a66ef7",
-      "score_min": 658,
-      "score_max": 7555,
-      "score_tiers": {
-        "7500-10000": 1,
-        "5000-7499": 51,
-        "2500-4999": 77,
-        "100-2499": 16,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_philosophy",
-      "file": "category_philosophy.txt",
-      "title": "哲学心理",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 86,
-      "sha256": "0c99776316ee6c4b417bdff3ae27d808f2e4af894004b1d31194f45f09d15291",
-      "score_min": 1777,
-      "score_max": 9166,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 65,
-        "2500-4999": 18,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_photography",
-      "file": "category_photography.txt",
-      "title": "摄影影像",
-      "group": "科技与开发",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 628,
-      "sha256": "a67022d19f94dbf56d22b99ec720ebabbb722090e21d897419175fdfca76a6f6",
-      "score_min": 1268,
-      "score_max": 6100,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 545,
+      "sha256": "970a616b651435e50ee58a7f7c2b9cbc6888744d090bad58eb1b701da894e673",
+      "score_min": 2400,
+      "score_max": 5200,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 181,
-        "2500-4999": 445,
-        "100-2499": 2,
+        "5000-7499": 13,
+        "2500-4999": 447,
+        "100-2499": 85,
         "1-99": 0
       }
     },
     {
-      "tag": "category_physics_chemistry",
-      "file": "category_physics_chemistry.txt",
-      "title": "物理化学",
+      "tag": "category_finance",
+      "legacy_defaults": {
+        "category_accounting": false,
+        "category_insurance": false,
+        "professional_finance": false
+      },
+      "file": "category_finance.txt",
+      "title": "金融财会与保险",
       "group": "专业领域",
       "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 369,
-      "sha256": "255fae97e58739daf7d50814b36e2165c14367d81e424c475d0686bb6a5fa998",
-      "score_min": 584,
-      "score_max": 8843,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1576,
+      "sha256": "2d973dbb4df08e215038d0a8489c07c1b814244a5caabff4e690a8228da46e88",
+      "score_min": 118,
+      "score_max": 6200,
       "score_tiers": {
-        "7500-10000": 4,
-        "5000-7499": 81,
-        "2500-4999": 273,
-        "100-2499": 11,
+        "7500-10000": 0,
+        "5000-7499": 469,
+        "2500-4999": 1089,
+        "100-2499": 18,
         "1-99": 0
       }
     },
     {
-      "tag": "category_programming",
-      "file": "category_programming.txt",
-      "title": "开发编程",
-      "group": "科技与开发",
+      "tag": "category_law",
+      "legacy_defaults": {
+        "professional_law": false
+      },
+      "file": "category_law.txt",
+      "title": "法律与合同",
+      "group": "专业领域",
       "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 134,
-      "sha256": "a389b9872d459944c8d4a98fcea8ec104589558e0da652e54b0a61d90266eedb",
-      "score_min": 2077,
-      "score_max": 8800,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 268,
+      "sha256": "3d062c62ea1f429da94dd15cf9a0d0d6e1c0db9db53e368330dbc16370a74efc",
+      "score_min": 313,
+      "score_max": 6200,
       "score_tiers": {
-        "7500-10000": 14,
-        "5000-7499": 51,
-        "2500-4999": 67,
-        "100-2499": 2,
+        "7500-10000": 0,
+        "5000-7499": 141,
+        "2500-4999": 124,
+        "100-2499": 3,
         "1-99": 0
       }
     },
     {
-      "tag": "category_project",
-      "file": "category_project.txt",
-      "title": "项目产品",
-      "group": "办公与办事",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 692,
-      "sha256": "e742e9c73f3fb6f4b378f9a9fa7bd16ce33e306c68e2e028daad7de38aae28f8",
-      "score_min": 2500,
-      "score_max": 9300,
+      "tag": "category_science",
+      "legacy_defaults": {
+        "category_biology": false,
+        "category_math_statistics": false,
+        "category_physics_chemistry": false,
+        "category_research": false,
+        "professional_biology": false,
+        "professional_chemistry": false,
+        "professional_math": false,
+        "professional_physics": false
+      },
+      "file": "category_science.txt",
+      "title": "数理化生与科研",
+      "group": "专业领域",
+      "default_enabled": false,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 1284,
+      "sha256": "134ce19e504c70b3dc89a69cc93d5322b871891e5ed7a8861b5e75b43833fcdc",
+      "score_min": 584,
+      "score_max": 6200,
       "score_tiers": {
-        "7500-10000": 6,
-        "5000-7499": 231,
-        "2500-4999": 455,
-        "100-2499": 0,
+        "7500-10000": 0,
+        "5000-7499": 589,
+        "2500-4999": 677,
+        "100-2499": 18,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_engineering",
+      "legacy_defaults": {
+        "category_agriculture": false,
+        "category_architecture": false,
+        "category_energy": false,
+        "category_environment": false,
+        "category_manufacturing": false,
+        "category_warehousing": false,
+        "professional_architecture": false
+      },
+      "file": "category_engineering.txt",
+      "title": "建筑制造与能源环保",
+      "group": "专业领域",
+      "default_enabled": false,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 973,
+      "sha256": "090cdf671e220e56fc986cac76649e9a6bfb3fa66ff6acfa5c892b9bc355202e",
+      "score_min": 209,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 522,
+        "2500-4999": 437,
+        "100-2499": 14,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_humanities",
+      "legacy_defaults": {
+        "category_geography": false,
+        "category_history": false,
+        "category_music": false,
+        "category_philosophy": false,
+        "professional_geography": false,
+        "professional_history": false,
+        "professional_music": false,
+        "professional_philosophy": false
+      },
+      "file": "category_humanities.txt",
+      "title": "文史哲地与音乐",
+      "group": "专业领域",
+      "default_enabled": false,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 891,
+      "sha256": "e25cdea5efadff5a57ebf9a07e3d7ebe5ee0aa3bd143e5740c71fbe3957966d1",
+      "score_min": 117,
+      "score_max": 6200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 573,
+        "2500-4999": 314,
+        "100-2499": 4,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "category_idioms",
+      "file": "category_idioms.txt",
+      "title": "成语与固定表达",
+      "group": "成语与固定表达",
+      "default_enabled": false,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 20905,
+      "sha256": "dae90a3bc70e38efc32ad013b4bb6a5821bf63098801bf8244129ca21e4aae21",
+      "score_min": 2373,
+      "score_max": 5416,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 6,
+        "2500-4999": 20352,
+        "100-2499": 547,
+        "1-99": 0
+      }
+    },
+    {
+      "tag": "people_names",
+      "legacy_defaults": {
+        "category_proper_people": false
+      },
+      "file": "people_names.txt",
+      "title": "人物姓名",
+      "group": "名称与实体",
+      "default_enabled": false,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 8000,
+      "sha256": "7ba8ee7baead327c2d85b878d7a4cb7bd69c202af4179e979afa44b84cace06c",
+      "score_min": 200,
+      "score_max": 1200,
+      "score_tiers": {
+        "7500-10000": 0,
+        "5000-7499": 0,
+        "2500-4999": 0,
+        "100-2499": 8000,
         "1-99": 0
       }
     },
     {
       "tag": "category_proper_organizations",
       "file": "category_proper_organizations.txt",
-      "title": "语料机构名称补充",
-      "group": "名称与实体 · 低优先级",
+      "title": "机构与组织名称",
+      "group": "名称与实体",
       "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
+      "frequency_basis": "分层排序优先级；非实测用户词频",
       "rows": 1114,
-      "sha256": "fd347223bd5bd4b8ec4d8ed245419bd391294fd9752b82efa1682f6198164be4",
+      "sha256": "4d63db8c757bed670c7e54c1bf08cbc20d90a1e809a7b639853d6b95a9d467bd",
       "score_min": 2135,
       "score_max": 3850,
       "score_tiers": {
@@ -1220,671 +575,48 @@
       }
     },
     {
-      "tag": "category_proper_people",
-      "file": "category_proper_people.txt",
-      "title": "语料人名补充",
-      "group": "名称与实体 · 低优先级",
+      "tag": "category_common_three",
+      "file": "category_common_three.txt",
+      "title": "三字精选补充",
+      "group": "通用补充",
       "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 12192,
-      "sha256": "c6b231c18e40bd6d41ebe4bd4cefcc9afcbdce284bb941488101428197fc191b",
-      "score_min": 1385,
-      "score_max": 2475,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 0,
-        "2500-4999": 0,
-        "100-2499": 12192,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_proper_places",
-      "file": "category_proper_places.txt",
-      "title": "语料地名补充",
-      "group": "名称与实体 · 低优先级",
-      "default_enabled": false,
-      "frequency_basis": "语料候选排序分数；非实测用户词频",
-      "rows": 1447,
-      "sha256": "287f1c36920e25e880e0e863b6cc0cb4a4f1f9385a8e068a5a09ac3ec67c6904",
-      "score_min": 2135,
-      "score_max": 3850,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 0,
-        "2500-4999": 878,
-        "100-2499": 569,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_renovation",
-      "file": "category_renovation.txt",
-      "title": "装修家居",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 50,
-      "sha256": "86d9a4205a9fd679a503c594b1390c6385d92ccb005fdac6cd17adbbe60b09c8",
-      "score_min": 56,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 46,
-        "2500-4999": 0,
-        "100-2499": 3,
-        "1-99": 1
-      }
-    },
-    {
-      "tag": "category_research",
-      "file": "category_research.txt",
-      "title": "学术科研",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 222,
-      "sha256": "eb9aec3f32c5bcf03898ecf60693a7e2662f5e8f2e1100448f7fc164346a50ae",
-      "score_min": 742,
-      "score_max": 7021,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 102,
-        "2500-4999": 118,
-        "100-2499": 2,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_retail",
-      "file": "category_retail.txt",
-      "title": "门店经营",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 49,
-      "sha256": "4105af979f882f84a7dc4e593e9902ddda87fdc721ac0e079ba9d6d696d06f6d",
-      "score_min": 3456,
-      "score_max": 9535,
-      "score_tiers": {
-        "7500-10000": 3,
-        "5000-7499": 45,
-        "2500-4999": 1,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_security",
-      "file": "category_security.txt",
-      "title": "网络安全",
-      "group": "科技与开发",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 75,
-      "sha256": "93f31553670740ff310a933d6c4496d63d44fe2d064eda7875530d76b0c3ce8e",
-      "score_min": 2006,
-      "score_max": 9681,
-      "score_tiers": {
-        "7500-10000": 9,
-        "5000-7499": 41,
-        "2500-4999": 24,
-        "100-2499": 1,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_shopping",
-      "file": "category_shopping.txt",
-      "title": "电商购物",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 183,
-      "sha256": "5c397c8661957542186d44fb3cb1cd4963108c774299056aa69aa1dca721b0fe",
-      "score_min": 2308,
-      "score_max": 9160,
-      "score_tiers": {
-        "7500-10000": 5,
-        "5000-7499": 71,
-        "2500-4999": 105,
-        "100-2499": 2,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_slang",
-      "file": "category_slang.txt",
-      "title": "网络口语",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 54,
-      "sha256": "e6800e4313030243b8d987d8772c3d4b036c289ee7301977d287ce2cbbc6b975",
-      "score_min": 3272,
-      "score_max": 9503,
-      "score_tiers": {
-        "7500-10000": 3,
-        "5000-7499": 49,
-        "2500-4999": 2,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_social_insurance",
-      "file": "category_social_insurance.txt",
-      "title": "社保公积金",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 100,
-      "sha256": "9d2c811b8e1243cd9cc3de76b2b7e75858b2ee3b3949302876fd3555ffab69f7",
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 25004,
+      "sha256": "1f21703a77812bdcc03a36f207773341d12fd6ed714b979560fafdaf46c5e61f",
       "score_min": 2000,
-      "score_max": 6100,
+      "score_max": 5263,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 50,
-        "2500-4999": 48,
-        "100-2499": 2,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_social_media",
-      "file": "category_social_media.txt",
-      "title": "内容社媒",
-      "group": "科技与开发",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 222,
-      "sha256": "2da824ebab2e706e269ace9f7e94774e39179b8189ccbdbf48961649d3738467",
-      "score_min": 2462,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 6,
-        "5000-7499": 58,
-        "2500-4999": 154,
+        "5000-7499": 3,
+        "2500-4999": 24997,
         "100-2499": 4,
         "1-99": 0
       }
     },
     {
-      "tag": "category_software",
-      "file": "category_software.txt",
-      "title": "软件系统",
-      "group": "科技与开发",
+      "tag": "category_common_four",
+      "legacy_defaults": {
+        "category_common_long": false
+      },
+      "file": "category_common_four.txt",
+      "title": "四字及以上精选补充",
+      "group": "通用补充",
       "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 215,
-      "sha256": "7dc44f7807680c651188079779c4ba187205aba169ec55fb404522ab3d9aff8b",
-      "score_min": 2731,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 3,
-        "5000-7499": 108,
-        "2500-4999": 104,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_sports",
-      "file": "category_sports.txt",
-      "title": "体育赛事",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 285,
-      "sha256": "2272acb8eb4ae6382fa64bb17d9a290edf80edde2f8fae4fe4743460c2e4dbac",
-      "score_min": 658,
-      "score_max": 9546,
-      "score_tiers": {
-        "7500-10000": 4,
-        "5000-7499": 73,
-        "2500-4999": 204,
-        "100-2499": 4,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_transit",
-      "file": "category_transit.txt",
-      "title": "公共交通",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 301,
-      "sha256": "31c720e6a744dd8fcd00da1e4f6b21c776e3c784ab4fe20b2665d721ede6a5d9",
-      "score_min": 1014,
-      "score_max": 9871,
-      "score_tiers": {
-        "7500-10000": 2,
-        "5000-7499": 67,
-        "2500-4999": 218,
-        "100-2499": 14,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_travel",
-      "file": "category_travel.txt",
-      "title": "旅游订票",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 334,
-      "sha256": "985bc14fb7dbdd27377c1059af38616321bda58670601ed44d09ecc8fa9ca6f1",
-      "score_min": 1539,
-      "score_max": 6107,
+      "frequency_basis": "分层排序优先级；非实测用户词频",
+      "rows": 25013,
+      "sha256": "96f8daef96805d5b4a8a40ddf436b4d810277b936b2c45c5aaf5ac40ae85ea53",
+      "score_min": 2000,
+      "score_max": 6103,
       "score_tiers": {
         "7500-10000": 0,
-        "5000-7499": 113,
-        "2500-4999": 218,
-        "100-2499": 3,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_warehousing",
-      "file": "category_warehousing.txt",
-      "title": "仓储供应链",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 49,
-      "sha256": "de32be0d020a6aa5496f65c9505d03e3782c61766baca0c93e00c2a6ce99d6ca",
-      "score_min": 6100,
-      "score_max": 6100,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 49,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "category_weather",
-      "file": "category_weather.txt",
-      "title": "天气季节",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 189,
-      "sha256": "25ac16981ba8016a86e904ed70f7c6e4957a49e162b6b6df3319c361174893f7",
-      "score_min": 2193,
-      "score_max": 8998,
-      "score_tiers": {
-        "7500-10000": 4,
-        "5000-7499": 69,
-        "2500-4999": 112,
-        "100-2499": 4,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "daily_communication",
-      "file": "daily_communication.txt",
-      "title": "聊天与办公沟通",
-      "group": "日常表达",
-      "default_enabled": true,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 400,
-      "sha256": "cdef7d9f3340fda40c1fa2bc9cae6fd0b0af1856e5e00f11e61a508dcaae7a54",
-      "score_min": 9300,
-      "score_max": 9300,
-      "score_tiers": {
-        "7500-10000": 400,
-        "5000-7499": 0,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "geography_admin",
-      "file": "geography_admin.txt",
-      "title": "行政区划、国家与城市",
-      "group": "地区词库 · 全国与世界",
-      "default_enabled": true,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 4220,
-      "sha256": "4a3a97045965a1a4b9bb33e5b757412e85af40e65be5544a5b1ceecc1d2cabd8",
-      "score_min": 1500,
-      "score_max": 6500,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 2866,
-        "2500-4999": 1151,
-        "100-2499": 203,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "hangzhou_local",
-      "file": "hangzhou_local.txt",
-      "title": "杭州本地生活与地理",
-      "group": "地区词库 · 杭州",
-      "default_enabled": false,
-      "frequency_basis": "项目原有排序分数；非实测用户词频",
-      "rows": 1674,
-      "sha256": "d13cbcc1843d731fd904eb9c6cb30391f1423c315430f027efb8179819bed85c",
-      "score_min": 175,
-      "score_max": 6500,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 96,
-        "2500-4999": 1089,
-        "100-2499": 489,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "medicine",
-      "file": "medicine.txt",
-      "title": "常见药物",
-      "group": "药物名称",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 400,
-      "sha256": "9be13dd92a1e9fc591955143c364b7427f6644fb716919d28a26d20ff998a878",
-      "score_min": 5000,
-      "score_max": 5000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 400,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "people_names",
-      "file": "people_names.txt",
-      "title": "姓氏与人物姓名",
-      "group": "名称与实体",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 2105,
-      "sha256": "5fceedc78724a5006281dca689057a7a9b4ed46de4e40d3bb34a9431cb594bef",
-      "score_min": 200,
-      "score_max": 250,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 0,
-        "2500-4999": 0,
-        "100-2499": 2105,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_architecture",
-      "file": "professional_architecture.txt",
-      "title": "建筑专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 61,
-      "sha256": "237eec75bdf9410af64d38ba6cf2f736420a9983a6161f5279662f509c3a3626",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 61,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_biology",
-      "file": "professional_biology.txt",
-      "title": "生物专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 60,
-      "sha256": "5a275b5712ee9e87790d487f22065f1111f4fc149fefb20cea4c8ee5c667e63b",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 60,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_chemistry",
-      "file": "professional_chemistry.txt",
-      "title": "化学专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 60,
-      "sha256": "48d4da421d5422f92f5cd6f68ad315f7cde128e1d1bb9c2b01e062695835a9f3",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 60,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_computing",
-      "file": "professional_computing.txt",
-      "title": "计算机专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 62,
-      "sha256": "612a27cb81808e0c4e0a248c7ec1057c71c57d0b9cccd43587d1c70529b60a2a",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 62,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_finance",
-      "file": "professional_finance.txt",
-      "title": "金融专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 61,
-      "sha256": "f9d0d3da571c84480b70a58b8f1ded6a8e4b82914a3d08a0ebdeb1ea5794bce9",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 61,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_geography",
-      "file": "professional_geography.txt",
-      "title": "地理专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 61,
-      "sha256": "c2121daa7a6119bcfc7117b95479b8f99437d247549d3ba2c25c5906b5bf20a8",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 61,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_history",
-      "file": "professional_history.txt",
-      "title": "历史专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 62,
-      "sha256": "f0c599f78b3acf1caeea56f344b287f73c834f56e4ecbc29bd1f41388ac318b7",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 62,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_law",
-      "file": "professional_law.txt",
-      "title": "法律专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 60,
-      "sha256": "f0c6a7bb525b4e9c08f6deef095e832ae0b8e7b2731c7639c6621d0cec3eba80",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 60,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_math",
-      "file": "professional_math.txt",
-      "title": "数学专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 60,
-      "sha256": "60789131226f6cbcddb2b2e8635894bef4287ca67a9a44fb1857c6b930fc3004",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 60,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_medical",
-      "file": "professional_medical.txt",
-      "title": "医学专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 60,
-      "sha256": "d0d36678b01e92b1151c15dca45cbcf99239bd4ff916f347319ad79c2e448897",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 60,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_music",
-      "file": "professional_music.txt",
-      "title": "音乐专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 66,
-      "sha256": "12af18c0a705d6e3d09620044f45928d98ea191555ac6cf48746b941b37e62ff",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 66,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_philosophy",
-      "file": "professional_philosophy.txt",
-      "title": "哲学专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 62,
-      "sha256": "fd1583cf8710cfcf396ffc6dfd1592156f330907109d093ae4eae6084330fd55",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 62,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "professional_physics",
-      "file": "professional_physics.txt",
-      "title": "物理专业词",
-      "group": "专业领域",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 60,
-      "sha256": "23ec061232d3a1051f8f2a0692716a312853fa71332fbf95bdf48bd379ccaa74",
-      "score_min": 6000,
-      "score_max": 6000,
-      "score_tiers": {
-        "7500-10000": 0,
-        "5000-7499": 60,
-        "2500-4999": 0,
-        "100-2499": 0,
-        "1-99": 0
-      }
-    },
-    {
-      "tag": "technology",
-      "file": "technology.txt",
-      "title": "科技、互联网与编程",
-      "group": "科技与开发",
-      "default_enabled": false,
-      "frequency_basis": "项目编排优先级；非实测用户词频",
-      "rows": 485,
-      "sha256": "0a837ada1033b583fe2ffa5f87db6a55927321340c4c2cf046785a21fab3bdd9",
-      "score_min": 8800,
-      "score_max": 8800,
-      "score_tiers": {
-        "7500-10000": 485,
-        "5000-7499": 0,
-        "2500-4999": 0,
-        "100-2499": 0,
+        "5000-7499": 39,
+        "2500-4999": 24961,
+        "100-2499": 13,
         "1-99": 0
       }
     }
   ],
-  "category_count": 99,
-  "category_rows": 472482
+  "category_count": 26,
+  "category_rows": 472482,
+  "default_enabled_count": 12
 }

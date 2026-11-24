@@ -7,6 +7,20 @@ const PRONUNCIATION_ALIASES: &str =
 const PRONUNCIATION_EXCLUSIONS: &str =
     include_str!("../../../data_sources/kaixin/pronunciation_exclusions.tsv");
 
+/// Characters and attested readings absent from the bundled pinyin data or
+/// supported-character list.
+const SUPPLEMENTAL_SINGLE_CHAR_READINGS: &[(char, &[&str])] = &[
+    ('〇', &["ling"]),
+    ('灰', &["hui"]),
+    ('谌', &["shen"]),
+    ('乐', &["lao", "yao"]),
+    ('骑', &["ji"]),
+    ('恒', &["geng"]),
+    ('阏', &["yu"]),
+    ('缪', &["liao"]),
+    ('齐', &["zi"]),
+];
+
 fn normalize_pinyin_key(key: &str) -> String {
     key.replace('ü', "v")
         .replace("nue", "nve")
@@ -127,10 +141,35 @@ pub(crate) fn pinyin_plain_options(c: char) -> Vec<String> {
             }
         }
     }
+    if let Some((_, extra_readings)) = SUPPLEMENTAL_SINGLE_CHAR_READINGS
+        .iter()
+        .find(|(ch, _)| *ch == c)
+    {
+        for reading in *extra_readings {
+            let plain = normalize_pinyin_key(&reading.to_ascii_lowercase());
+            if !plain.is_empty() && !out.contains(&plain) {
+                out.push(plain);
+            }
+        }
+    }
     if let Some(excluded) = overrides.excluded.get(&c) {
         out.retain(|reading| !excluded.contains(reading));
     }
     out
+}
+
+#[allow(dead_code)]
+pub fn build_dict_with_supplements(chars: &str) -> HashMap<String, Vec<char>> {
+    let mut dict = build_dict(chars);
+    for &(c, _) in SUPPLEMENTAL_SINGLE_CHAR_READINGS {
+        for s in pinyin_plain_options(c) {
+            let entries = dict.entry(s).or_default();
+            if !entries.contains(&c) {
+                entries.push(c);
+            }
+        }
+    }
+    dict
 }
 
 pub fn build_dict(chars: &str) -> HashMap<String, Vec<char>> {

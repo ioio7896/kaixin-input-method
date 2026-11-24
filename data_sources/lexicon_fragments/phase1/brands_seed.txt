@@ -1,0 +1,2512 @@
+# 开心输入法 Phase-1 品牌与应用扩充词表（人工整理 + AI 辅助；Apache-2.0）
+# 格式：词语[\t显式输入码[\t层级(high|mid|std)]]
+# 纯中文可省略输入码（由离线拼音引擎按 rust-pinyin 与项目多音表生成并校验）；中英混写或专读必须显式给出输入码。
+
+# === 国内超级 App 与互联网平台 ===
+微信	wei xin	high
+微信朋友圈	wei xin peng you quan	high
+微信小程序	wei xin xiao cheng xu	high
+微信公众号	wei xin gong zhong hao	high
+微信视频号	wei xin shi pin hao	high
+微信群聊	wei xin qun liao	high
+微信转账	wei xin zhuan zhang	high
+微信红包	wei xin hong bao	high
+微信零钱	wei xin ling qian	high
+微信零钱通	wei xin ling qian tong	mid
+微信语音	wei xin yu yin	high
+微信视频	wei xin shi pin	high
+微信好友	wei xin hao you	high
+微信收藏	wei xin shou cang	mid
+微信运动	wei xin yun dong	mid
+微信小店	wei xin xiao dian	mid
+微信输入法	wei xin shu ru fa	high
+企业微信	qi ye wei xin	high
+支付宝	zhi fu bao	high
+支付宝花呗	zhi fu bao hua bei	high
+支付宝借呗	zhi fu bao jie bei	mid
+支付宝余额宝	zhi fu bao yu e bao	mid
+支付宝账单	zhi fu bao zhang dan	mid
+支付宝扫一扫	zhi fu bao sao yi sao	mid
+蚂蚁森林	ma yi sen lin	mid
+蚂蚁庄园	ma yi zhuang yuan	mid
+蚂蚁财富	ma yi cai fu	mid
+蚂蚁集团	ma yi ji tuan	mid
+余额宝	yu e bao	high
+花呗	hua bei	high
+借呗	jie bei	mid
+芝麻信用	zhi ma xin yong	mid
+抖音	dou yin	high
+抖音直播	dou yin zhi bo	high
+抖音短视频	dou yin duan shi pin	high
+抖音团购	dou yin tuan gou	high
+抖音极速版	dou yin ji su ban	mid
+抖音小店	dou yin xiao dian	mid
+抖音号	dou yin hao	high
+抖音热榜	dou yin re bang	mid
+抖音火山版	dou yin huo shan ban	std
+快手	kuai shou	high
+快手直播	kuai shou zhi bo	high
+快手极速版	kuai shou ji su ban	mid
+小红书笔记	xiao hong shu bi ji	high
+小红书种草	xiao hong shu zhong cao	high
+小红书博主	xiao hong shu bo zhu	high
+小红书热搜	xiao hong shu re sou	mid
+淘宝	tao bao	high
+淘宝网	tao bao wang	high
+淘宝直播	tao bao zhi bo	high
+淘宝特价版	tao bao te jia ban	mid
+淘宝闪购	tao bao shan gou	mid
+淘宝客服	tao bao ke fu	mid
+天猫	tian mao	high
+天猫超市	tian mao chao shi	high
+天猫国际	tian mao guo ji	mid
+天猫精灵	tian mao jing ling	mid
+京东	jing dong	high
+京东商城	jing dong shang cheng	high
+京东自营	jing dong zi ying	high
+京东快递	jing dong kuai di	high
+京东外卖	jing dong wai mai	high
+京东金融	jing dong jin rong	mid
+京东白条	jing dong bai tiao	mid
+京东京造	jing dong jing zao	mid
+京东小时达	jing dong xiao shi da	mid
+京东健康	jing dong jian kang	mid
+拼多多买菜	pin duo duo mai cai	mid
+多多买菜	duo duo mai cai	high
+美团	mei tuan	high
+美团团购	mei tuan tuan gou	high
+美团闪购	mei tuan shan gou	high
+美团买菜	mei tuan mai cai	mid
+美团优选	mei tuan you xuan	mid
+美团酒店	mei tuan jiu dian	high
+美团打车	mei tuan da che	mid
+美团单车	mei tuan dan che	mid
+美团充电宝	mei tuan chong dian bao	mid
+大众点评	da zhong dian ping	high
+饿了么外卖	e le me wai mai	mid
+口碑	kou bei	mid
+高德	gao de	high
+高德导航	gao de dao hang	high
+高德打车	gao de da che	high
+百度	bai du	high
+百度搜索	bai du sou suo	high
+百度网盘	bai du wang pan	high
+百度百科	bai du bai ke	high
+百度贴吧	bai du tie ba	high
+百度翻译	bai du fan yi	high
+百度文库	bai du wen ku	high
+百度输入法	bai du shu ru fa	mid
+百度一下	bai du yi xia	high
+搜狗	sou gou	mid
+搜狗输入法	sou gou shu ru fa	high
+搜狗搜索	sou gou sou suo	mid
+讯飞输入法	xun fei shu ru fa	high
+开心输入法	kai xin shu ru fa	high
+知乎	zhi hu	high
+知乎热榜	zhi hu re bang	mid
+知乎日报	zhi hu ri bao	mid
+豆瓣	dou ban	high
+豆瓣电影	dou ban dian ying	high
+豆瓣评分	dou ban ping fen	high
+豆瓣小组	dou ban xiao zu	mid
+微博	wei bo	high
+微博热搜	wei bo re sou	high
+新浪微博	xin lang wei bo	high
+新浪新闻	xin lang xin wen	mid
+腾讯	teng xun	high
+腾讯新闻	teng xun xin wen	high
+腾讯会议	teng xun hui yi	high
+腾讯文档	teng xun wen dang	high
+腾讯体育	teng xun ti yu	mid
+腾讯动漫	teng xun dong man	mid
+腾讯游戏	teng xun you xi	high
+腾讯微云	teng xun wei yun	mid
+腾讯元宝	teng xun yuan bao	high
+腾讯云	teng xun yun	high
+阿里云	a li yun	high
+阿里云盘	a li yun pan	high
+阿里巴巴	a li ba ba	high
+蚂蚁花呗	ma yi hua bei	mid
+网易	wang yi	high
+网易新闻	wang yi xin wen	mid
+网易邮箱	wang yi you xiang	high
+网易严选	wang yi yan xuan	high
+网易有道	wang yi you dao	mid
+网易游戏	wang yi you xi	high
+网易大神	wang yi da shen	mid
+有道词典	you dao ci dian	high
+有道翻译	you dao fan yi	high
+有道云笔记	you dao yun bi ji	mid
+字节跳动	zi jie tiao dong	high
+今日头条	jin ri tou tiao	high
+西瓜视频	xi gua shi pin	high
+懂车帝	dong che di	high
+剪映	jian ying	high
+醒图	xing tu	high
+汽水音乐	qi shui yin yue	high
+飞书	fei shu	high
+飞书文档	fei shu wen dang	high
+飞书会议	fei shu hui yi	high
+飞书多维表格	fei shu duo wei biao ge	mid
+钉钉	ding ding	high
+钉钉打卡	ding ding da ka	high
+钉钉会议	ding ding hui yi	high
+夸克	kua ke	high
+夸克浏览器	kua ke liu lan qi	high
+夸克网盘	kua ke wang pan	high
+夸克搜索	kua ke sou suo	mid
+优酷	you ku	high
+芒果TV	mang guo tv	high
+咪咕视频	mi gu shi pin	high
+咪咕音乐	mi gu yin yue	mid
+央视频	yang shi pin	high
+央视新闻	yang shi xin wen	high
+学习强国	xue xi qiang guo	high
+哔哩哔哩动画	bi li bi li dong hua	mid
+B站	b zhan	high
+B站大会员	b zhan da hui yuan	high
+B站弹幕	b zhan dan mu	mid
+QQ	qq	high
+QQ音乐	qq yin yue	high
+QQ邮箱	qq you xiang	high
+QQ空间	qq kong jian	high
+QQ浏览器	qq liu lan qi	mid
+QQ阅读	qq yue du	mid
+QQ飞车	qq fei che	mid
+QQ群	qq qun	high
+酷我音乐	ku wo yin yue	mid
+全民K歌	quan min k ge	mid
+唱吧	chang ba	mid
+荔枝FM	li zhi fm	std
+蜻蜓FM	qing ting fm	std
+小宇宙	xiao yu zhou	high
+小宇宙播客	xiao yu zhou bo ke	mid
+起点中文网	qi dian zhong wen wang	high
+起点读书	qi dian du shu	high
+晋江文学城	jin jiang wen xue cheng	high
+掌阅	zhang yue	mid
+得到	de dao	mid
+樊登读书	fan deng du shu	mid
+帆书	fan shu	mid
+美图秀秀	mei tu xiu xiu	high
+轻颜相机	qing yan xiang ji	mid
+无他相机	wu ta xiang ji	std
+一甜相机	yi tian xiang ji	std
+黄油相机	huang you xiang ji	std
+得物	de wu	high
+闲鱼	xian yu	high
+转转	zhuan zhuan	high
+爱回收	ai hui shou	mid
+唯品会	wei pin hui	high
+苏宁易购	su ning yi gou	mid
+当当网	dang dang wang	mid
+考拉海购	kao la hai gou	std
+小红书商城	xiao hong shu shang cheng	mid
+盒马	he ma	high
+盒马鲜生	he ma xian sheng	high
+叮咚买菜	ding dong mai cai	high
+朴朴超市	pu pu chao shi	high
+小象超市	xiao xiang chao shi	high
+山姆	shan mu	high
+山姆会员店	shan mu hui yuan dian	high
+山姆超市	shan mu chao shi	high
+胖东来	pang dong lai	high
+胖东来超市	pang dong lai chao shi	high
+携程	xie cheng	high
+去哪儿	qu na er	high
+去哪儿网	qu na er wang	mid
+飞猪	fei zhu	high
+同程	tong cheng	mid
+马蜂窝	ma feng wo	mid
+穷游网	qiong you wang	std
+途牛	tu niu	mid
+航旅纵横	hang lv zong heng	high
+飞常准	fei chang zhun	high
+铁路12306	tie lu yi er san ling liu	high
+交管12123	jiao guan yi er yi er san	high
+个人所得税	ge ren suo de shui	high
+国家反诈中心	guo jia fan zha zhong xin	high
+浙里办	zhe li ban	high
+随申办	sui shen ban	high
+粤省事	yue sheng shi	high
+京通	jing tong	mid
+天府通办	tian fu tong ban	mid
+苏服办	su fu ban	mid
+国家医保服务平台	guo jia yi bao fu wu ping tai	mid
+滴滴	di di	high
+滴滴打车	di di da che	high
+滴滴顺风车	di di shun feng che	mid
+嘀嗒出行	di da chu xing	mid
+T3出行	t san chu xing	high
+享道出行	xiang dao chu xing	mid
+如祺出行	ru qi chu xing	std
+青桔单车	qing ju dan che	mid
+哈啰单车	ha luo dan che	high
+萝卜快跑	luo bo kuai pao	high
+汽车之家	qi che zhi jia	high
+易车网	yi che wang	mid
+瓜子二手车	gua zi er shou che	mid
+途虎养车	tu hu yang che	high
+贝壳找房	bei ke zhao fang	high
+链家	lian jia	high
+安居客	an ju ke	high
+自如	zi ru	high
+我爱我家	wo ai wo jia	mid
+58同城	wu ba tong cheng	high
+赶集网	gan ji wang	std
+BOSS直聘	boss zhi pin	high
+智联招聘	zhi lian zhao pin	high
+前程无忧	qian cheng wu you	high
+猎聘	lie pin	high
+脉脉	mai mai	high
+拉勾网	la gou wang	mid
+牛客网	niu ke wang	high
+实习僧	shi xi seng	mid
+东方财富	dong fang cai fu	high
+同花顺	tong hua shun	high
+雪球	xue qiu	high
+富途牛牛	fu tu niu niu	mid
+老虎证券	lao hu zheng quan	mid
+大智慧	da zhi hui	mid
+天天基金	tian tian ji jin	high
+金山办公	jin shan ban gong	high
+金山文档	jin shan wen dang	high
+WPS	wps	high
+WPS办公	wps ban gong	high
+石墨文档	shi mo wen dang	mid
+语雀	yu que	high
+印象笔记	yin xiang bi ji	mid
+幕布	mu bu	mid
+滴答清单	di da qing dan	high
+番茄ToDo	fan qie todo	mid
+讯雷	xun lei	std
+迅雷	xun lei	high
+向日葵远程	xiang ri kui yuan cheng	mid
+ToDesk	to desk	high
+虎牙直播	hu ya zhi bo	mid
+斗鱼直播	dou yu zhi bo	mid
+虎扑	hu pu	high
+懂球帝	dong qiu di	high
+直播吧	zhi bo ba	high
+猫眼电影	mao yan dian ying	high
+淘票票	tao piao piao	high
+大麦网	da mai wang	high
+摩天轮票务	mo tian lun piao wu	mid
+纷玩岛	fen wan dao	mid
+米哈游	mi ha you	high
+米游社	mi you she	high
+库洛游戏	ku luo you xi	mid
+鹰角网络	ying jiao wang luo	mid
+叠纸游戏	die zhi you xi	mid
+游戏科学	you xi ke xue	high
+小黑盒	xiao hei he	high
+TapTap	tap tap	high
+WeGame	we game	high
+Keep	keep	high
+薄荷健康	bo he jian kang	mid
+丁香医生	ding xiang yi sheng	high
+好大夫在线	hao da fu zai xian	mid
+春雨医生	chun yu yi sheng	mid
+平安好医生	ping an hao yi sheng	mid
+美柚	mei you	mid
+宝宝树	bao bao shu	std
+作业帮	zuo ye bang	high
+小猿搜题	xiao yuan sou ti	high
+猿辅导	yuan fu dao	mid
+学而思	xue er si	high
+新东方	xin dong fang	high
+东方甄选	dong fang zhen xuan	high
+与辉同行	yu hui tong xing	high
+百词斩	bai ci zhan	high
+墨墨背单词	mo mo bei dan ci	high
+扇贝单词	shan bei dan ci	mid
+多邻国	duo lin guo	high
+中国大学MOOC	zhong guo da xue mooc	mid
+中国知网	zhong guo zhi wang	high
+万方数据	wan fang shu ju	mid
+维普	wei pu	mid
+超星学习通	chao xing xue xi tong	high
+雨课堂	yu ke tang	high
+腾讯课堂	teng xun ke tang	mid
+慕课网	mu ke wang	mid
+CSDN	csdn	high
+博客园	bo ke yuan	mid
+掘金	jue jin	mid
+稀土掘金	xi tu jue jin	mid
+思否	si fou	std
+开源中国	kai yuan zhong guo	mid
+码云	ma yun	mid
+
+# === AI 大模型与新锐应用（含中英混写） ===
+DeepSeek	deep seek	high
+深度求索	shen du qiu suo	high
+ChatGPT	chat gpt	high
+OpenAI	open ai	high
+Claude	claude	high
+Anthropic	anthropic	mid
+Gemini	gemini	high
+Grok	grok	mid
+Perplexity	perplexity	mid
+Copilot	copilot	high
+Cursor	cursor	high
+Windsurf	windsurf	mid
+Midjourney	mid journey	high
+Sora	sora	high
+Runway	runway	mid
+Suno	suno	mid
+Llama	llama	mid
+Qwen	qwen	high
+豆包	dou bao	high
+Kimi	kimi	high
+月之暗面	yue zhi an mian	high
+元宝	yuan bao	high
+文心一言	wen xin yi yan	high
+文心大模型	wen xin da mo xing	mid
+通义	tong yi	high
+通义听悟	tong yi ting wu	mid
+讯飞星火	xun fei xing huo	high
+智谱清言	zhi pu qing yan	high
+智谱AI	zhi pu ai	high
+秘塔搜索	mi ta sou suo	high
+海螺AI	hai luo ai	high
+可灵AI	ke ling ai	high
+即梦AI	ji meng ai	high
+扣子	kou zi	high
+Coze	coze	mid
+Dify	dify	mid
+Notion	notion	high
+Obsidian	obsidian	high
+Figma	figma	high
+Canva	canva	high
+可画	ke hua	mid
+Slack	slack	mid
+Zoom	zoom	high
+Teams	teams	high
+Telegram	telegram	high
+WhatsApp	whats app	high
+Discord	discord	high
+YouTube	you tube	high
+Netflix	netflix	high
+Spotify	spotify	high
+Instagram	instagram	high
+TikTok	tik tok	high
+Facebook	face book	high
+Twitter	twitter	high
+Reddit	reddit	high
+LinkedIn	linked in	high
+GitHub	git hub	high
+GitLab	git lab	mid
+HuggingFace	hugging face	mid
+StackOverflow	stack overflow	mid
+Wikipedia	wiki pedia	mid
+Google	google	high
+Chrome	chrome	high
+Gmail	gmail	high
+Google Drive	google drive	mid
+Android	android	high
+Apple	apple	high
+iPhone	iphone	high
+iPhone 15	iphone	high
+iPhone 16	iphone	high
+iPhone 17	iphone	high
+iPad	ipad	high
+iPad Pro	ipad pro	high
+iPad Air	ipad air	high
+iPad mini	ipad mini	mid
+MacBook	mac book	high
+MacBook Pro	mac book pro	high
+MacBook Air	mac book air	high
+iMac	imac	high
+Mac mini	mac mini	high
+Mac Studio	mac studio	mid
+AirPods	air pods	high
+AirPods Pro	air pods pro	high
+Apple Watch	apple watch	high
+Vision Pro	vision pro	high
+Apple Pay	apple pay	mid
+iCloud	icloud	high
+App Store	app store	high
+iOS	ios	high
+macOS	macos	high
+iPadOS	ipados	mid
+Microsoft	microsoft	high
+Windows	windows	high
+Windows 11	windows	high
+Office	office	high
+Word	word	high
+Excel	excel	high
+PowerPoint	power point	high
+Outlook	outlook	high
+OneDrive	one drive	high
+OneNote	one note	mid
+Edge	edge	high
+VS Code	vs code	high
+Visual Studio	visual studio	mid
+Amazon	amazon	high
+AWS	aws	high
+Kindle	kindle	high
+Tesla	tesla	high
+SpaceX	space x	high
+Starlink	starlink	mid
+NVIDIA	nvidia	high
+GeForce	geforce	mid
+AMD	amd	high
+Intel	intel	high
+Qualcomm	qualcomm	mid
+Samsung	samsung	high
+Galaxy	galaxy	mid
+Sony	sony	high
+PlayStation	play station	high
+PS5	ps wu	high
+Nintendo	nintendo	high
+Switch	switch	high
+Switch 2	switch er	high
+Xbox	xbox	high
+Steam	steam	high
+Epic	epic	mid
+Blizzard	blizzard	mid
+Riot	riot	mid
+Oracle	oracle	mid
+IBM	ibm	mid
+SAP	sap	mid
+Salesforce	sales force	mid
+Adobe	adobe	high
+Photoshop	photo shop	high
+Premiere	premiere	high
+After Effects	after effects	mid
+Illustrator	illustrator	mid
+Lightroom	light room	mid
+Acrobat	acrobat	mid
+AutoCAD	auto cad	high
+Blender	blender	high
+Unity	unity	high
+Unreal	unreal	high
+苹果手机	ping guo shou ji	high
+苹果电脑	ping guo dian nao	high
+苹果平板	ping guo ping ban	high
+苹果手表	ping guo shou biao	high
+苹果耳机	ping guo er ji	high
+苹果商店	ping guo shang dian	mid
+苹果官网	ping guo guan wang	mid
+微软	wei ruan	high
+微软商店	wei ruan shang dian	mid
+微软办公	wei ruan ban gong	mid
+谷歌	gu ge	high
+谷歌浏览器	gu ge liu lan qi	high
+谷歌翻译	gu ge fan yi	high
+谷歌搜索	gu ge sou suo	high
+谷歌地图	gu ge di tu	mid
+亚马逊	ya ma xun	high
+亚马逊云	ya ma xun yun	mid
+特斯拉	te si la	high
+英伟达	ying wei da	high
+英特尔	ying te er	high
+高通	gao tong	high
+高通骁龙	gao tong xiao long	high
+联发科	lian fa ke	high
+联发科天玑	lian fa ke tian ji	high
+台积电	tai ji dian	high
+中芯国际	zhong xin guo ji	high
+三星手机	san xing shou ji	high
+索尼相机	suo ni xiang ji	high
+索尼耳机	suo ni er ji	mid
+任天堂	ren tian tang	high
+暴雪	bao xue	mid
+甲骨文	jia gu wen	mid
+思科	si ke	mid
+脸书	lian shu	mid
+推特	tui te	mid
+油管	you guan	high
+奈飞	nai fei	high
+网飞	wang fei	high
+星链	xing lian	high
+
+# === 手机、数码、电脑与家电品牌 ===
+华为	hua wei	high
+华为鸿蒙	hua wei hong meng	high
+鸿蒙系统	hong meng xi tong	high
+纯血鸿蒙	chun xue hong meng	high
+华为平板	hua wei ping ban	high
+华为电脑	hua wei dian nao	high
+华为手表	hua wei shou biao	high
+华为耳机	hua wei er ji	high
+华为手环	hua wei shou huan	mid
+华为智慧屏	hua wei zhi hui ping	mid
+华为商城	hua wei shang cheng	mid
+华为Mate	hua wei mate	high
+华为Pura	hua wei pura	high
+华为nova	hua wei nova	mid
+海思麒麟	hai si qi lin	high
+麒麟芯片	qi lin xin pian	high
+荣耀	rong yao	high
+荣耀平板	rong yao ping ban	mid
+荣耀电脑	rong yao dian nao	mid
+荣耀手表	rong yao shou biao	mid
+小米	xiao mi	high
+小米澎湃	xiao mi peng pai	high
+澎湃OS	peng pai os	high
+小米平板	xiao mi ping ban	high
+小米电脑	xiao mi dian nao	mid
+小米电视	xiao mi dian shi	high
+小米手环	xiao mi shou huan	high
+小米手表	xiao mi shou biao	high
+小米耳机	xiao mi er ji	mid
+小米空调	xiao mi kong tiao	high
+小米之家	xiao mi zhi jia	high
+小米商城	xiao mi shang cheng	mid
+米家	mi jia	high
+米家智能	mi jia zhi neng	mid
+红米	hong mi	high
+红米手机	hong mi shou ji	high
+Redmi	redmi	high
+OPPO	oppo	high
+OPPO手机	oppo shou ji	high
+一加	yi jia	high
+一加手机	yi jia shou ji	high
+OnePlus	one plus	mid
+真我	zhen wo	mid
+Realme	realme	mid
+vivo	vivo	high
+vivo手机	vivo shou ji	high
+iQOO	iqoo	high
+魅族	mei zu	high
+魅族手机	mei zu shou ji	mid
+努比亚	nu bi ya	mid
+红魔	hong mo	mid
+红魔手机	hong mo shou ji	mid
+中兴	zhong xing	high
+中兴手机	zhong xing shou ji	mid
+传音	chuan yin	mid
+摩托罗拉	mo tuo luo la	mid
+诺基亚	nuo ji ya	mid
+黑鲨	hei sha	std
+大疆	da jiang	high
+大疆无人机	da jiang wu ren ji	high
+DJI	dji	high
+影石	ying shi	high
+Insta360	insta	mid
+GoPro	go pro	high
+佳能	jia neng	high
+佳能相机	jia neng xiang ji	high
+尼康	ni kang	high
+尼康相机	ni kang xiang ji	high
+富士	fu shi	high
+富士相机	fu shi xiang ji	high
+徕卡	lai ka	high
+哈苏	ha su	high
+松下相机	song xia xiang ji	mid
+理光	li guang	mid
+腾龙	teng long	mid
+适马	shi ma	mid
+韶音	shao yin	high
+漫步者	man bu zhe	high
+森海塞尔	sen hai sai er	high
+铁三角	tie san jiao	mid
+拜雅	bai ya	std
+BOSE	bose	high
+JBL	jbl	high
+马歇尔	ma xie er	mid
+哈曼卡顿	ha man ka dun	mid
+马兰士	ma lan shi	std
+惠威	hui wei	mid
+飞傲	fei ao	mid
+水月雨	shui yue yu	mid
+科大讯飞	ke da xun fei	high
+小度	xiao du	high
+小爱同学	xiao ai tong xue	high
+小艺	xiao yi	high
+绿联	lv lian	high
+安克	an ke	high
+Anker	anker	high
+倍思	bei si	high
+品胜	pin sheng	mid
+罗马仕	luo ma shi	mid
+酷态科	ku tai ke	high
+公牛	gong niu	high
+公牛插座	gong niu cha zuo	high
+联想	lian xiang	high
+联想小新	lian xiang xiao xin	high
+联想拯救者	lian xiang zheng jiu zhe	high
+ThinkPad	think pad	high
+华硕	hua shuo	high
+华硕天选	hua shuo tian xuan	high
+玩家国度	wan jia guo du	mid
+ROG	rog	high
+惠普	hui pu	high
+惠普电脑	hui pu dian nao	high
+戴尔	dai er	high
+戴尔电脑	dai er dian nao	high
+外星人	wai xing ren	high
+宏碁	hong qi	mid
+微星	wei xing	high
+技嘉	ji jia	mid
+机械革命	ji xie ge ming	high
+神舟电脑	shen zhou dian nao	mid
+雷神	lei shen	mid
+七彩虹	qi cai hong	high
+影驰	ying chi	mid
+蓝宝石	lan bao shi	mid
+索泰	suo tai	std
+金士顿	jin shi dun	high
+三星固态	san xing gu tai	mid
+致态	zhi tai	high
+长江存储	chang jiang cun chu	high
+西部数据	xi bu shu ju	high
+希捷	xi jie	high
+铠侠	kai xia	mid
+海盗船	hai dao chuan	mid
+罗技	luo ji	high
+罗技鼠标	luo ji shu biao	high
+雷蛇	lei she	high
+赛睿	sai rui	mid
+樱桃键盘	ying tao jian pan	mid
+雷柏	lei bai	mid
+达尔优	da er you	mid
+迈从	mai cong	mid
+黑爵	hei jue	std
+群晖	qun hui	high
+威联通	wei lian tong	mid
+极空间	ji kong jian	high
+绿联私有云	lv lian si you yun	mid
+海康威视	hai kang wei shi	high
+大华股份	da hua gu fen	mid
+萤石	ying shi	high
+普联	pu lian	mid
+TP-Link	tp link	high
+华硕路由器	hua shuo lu you qi	mid
+中兴路由器	zhong xing lu you qi	mid
+小米路由器	xiao mi lu you qi	high
+华为路由器	hua wei lu you qi	high
+京东方	jing dong fang	high
+明基	ming ji	mid
+优派	you pai	mid
+飞利浦	fei li pu	high
+爱普生	ai pu sheng	high
+兄弟打印机	xiong di da yin ji	mid
+理光打印机	li guang da yin ji	std
+奔图	ben tu	mid
+海尔	hai er	high
+海尔冰箱	hai er bing xiang	high
+海尔洗衣机	hai er xi yi ji	high
+卡萨帝	ka sa di	high
+统帅	tong shuai	mid
+美的	mei de	high
+美的空调	mei de kong tiao	high
+美的冰箱	mei de bing xiang	mid
+美的洗衣机	mei de xi yi ji	mid
+小天鹅	xiao tian e	high
+小天鹅洗衣机	xiao tian e xi yi ji	high
+华凌	hua ling	high
+格力	ge li	high
+格力空调	ge li kong tiao	high
+海信	hai xin	high
+海信电视	hai xin dian shi	high
+容声	rong sheng	high
+容声冰箱	rong sheng bing xiang	mid
+TCL	tcl	high
+雷鸟	lei niao	high
+创维	chuang wei	high
+酷开	ku kai	mid
+长虹	chang hong	high
+康佳	kang jia	mid
+奥克斯	ao ke si	high
+志高	zhi gao	std
+格兰仕	ge lan shi	high
+方太	fang tai	high
+老板电器	lao ban dian qi	high
+华帝	hua di	high
+火星人	huo xing ren	mid
+亿田	yi tian	std
+万和	wan he	mid
+万家乐	wan jia le	mid
+林内	lin nei	high
+能率	neng lv	high
+史密斯	shi mi si	high
+苏泊尔	su bo er	high
+九阳	jiu yang	high
+小熊电器	xiao xiong dian qi	high
+摩飞	mo fei	mid
+北鼎	bei ding	mid
+美的电饭煲	mei de dian fan bao	mid
+虎牌	hu pai	mid
+象印	xiang yin	high
+膳魔师	shan mo shi	high
+松下	song xia	high
+西门子	xi men zi	high
+西门子冰箱	xi men zi bing xiang	mid
+博世	bo shi	high
+博世洗衣机	bo shi xi yi ji	mid
+美诺	mei nuo	mid
+大金	da jin	high
+大金空调	da jin kong tiao	high
+三菱电机	san ling dian ji	high
+日立	ri li	high
+东芝	dong zhi	high
+夏普	xia pu	mid
+戴森	dai sen	high
+戴森吹风机	dai sen chui feng ji	high
+戴森吸尘器	dai sen xi chen qi	high
+科沃斯	ke wo si	high
+石头科技	shi tou ke ji	high
+石头扫地机	shi tou sao di ji	mid
+追觅	zhui mi	high
+添可	tian ke	high
+云鲸	yun jing	high
+徕芬	lai fen	high
+徕芬吹风机	lai fen chui feng ji	high
+usmile	usmile	mid
+飞科	fei ke	high
+博朗	bo lang	mid
+欧乐B	ou le b	mid
+松下吹风机	song xia chui feng ji	mid
+九牧	jiu mu	high
+箭牌	jian pai	high
+恒洁	heng jie	high
+科勒	ke le	high
+TOTO	toto	high
+汉斯格雅	han si ge ya	mid
+摩恩	mo en	mid
+欧普照明	ou pu zhao ming	high
+雷士照明	lei shi zhao ming	high
+公牛开关	gong niu kai guan	mid
+施耐德	shi nai de	high
+德力西	de li xi	mid
+正泰	zheng tai	high
+立邦	li bang	high
+多乐士	duo le shi	high
+三棵树	san ke shu	high
+东方雨虹	dong fang yu hong	high
+兔宝宝	tu bao bao	high
+圣象地板	sheng xiang di ban	mid
+大自然地板	da zi ran di ban	mid
+马可波罗瓷砖	ma ke bo luo ci zhuan	mid
+东鹏瓷砖	dong peng ci zhuan	mid
+诺贝尔瓷砖	nuo bei er ci zhuan	mid
+
+# === 汽车与新能源品牌及热门车型 ===
+比亚迪	bi ya di	high
+比亚迪汉	bi ya di han	high
+比亚迪唐	bi ya di tang	high
+比亚迪宋	bi ya di song	high
+比亚迪秦	bi ya di qin	high
+比亚迪海鸥	bi ya di hai ou	high
+比亚迪海豚	bi ya di hai tun	high
+比亚迪海豹	bi ya di hai bao	high
+腾势	teng shi	high
+仰望	yang wang	high
+方程豹	fang cheng bao	high
+鸿蒙智行	hong meng zhi xing	high
+问界	wen jie	high
+问界新M7	wen jie xin m qi	mid
+智界	zhi jie	high
+享界	xiang jie	high
+尊界	zun jie	high
+赛力斯	sai li si	high
+小米SU7	xiao mi su qi	high
+小米YU7	xiao mi yu qi	high
+理想	li xiang	high
+理想L6	li xiang l liu	mid
+理想L7	li xiang l qi	mid
+理想L8	li xiang l ba	mid
+理想L9	li xiang l jiu	mid
+蔚来	wei lai	high
+蔚来换电	wei lai huan dian	mid
+乐道	le dao	high
+萤火虫	ying huo chong	mid
+小鹏	xiao peng	high
+小鹏MONA	xiao peng mona	mid
+零跑	ling pao	high
+零跑汽车	ling pao qi che	high
+极氪	ji ke	high
+极氪汽车	ji ke qi che	high
+领克	ling ke	high
+吉利	ji li	high
+吉利汽车	ji li qi che	high
+吉利银河	ji li yin he	high
+星越	xing yue	mid
+博越	bo yue	mid
+帝豪	di hao	mid
+长安汽车	chang an qi che	high
+深蓝汽车	shen lan qi che	high
+阿维塔	a wei ta	high
+长安启源	chang an qi yuan	mid
+奇瑞	qi rui	high
+奇瑞汽车	qi rui qi che	high
+捷途	jie tu	high
+星途	xing tu	mid
+瑞虎	rui hu	mid
+艾瑞泽	ai rui ze	mid
+智己	zhi ji	high
+智己汽车	zhi ji qi che	mid
+飞凡汽车	fei fan qi che	std
+上汽荣威	shang qi rong wei	mid
+荣威	rong wei	mid
+名爵	ming jue	mid
+上汽大通	shang qi da tong	mid
+广汽埃安	guang qi ai an	high
+埃安	ai an	high
+昊铂	hao bo	mid
+广汽传祺	guang qi chuan qi	high
+传祺	chuan qi	high
+长城汽车	chang cheng qi che	high
+哈弗	ha fu	high
+魏牌	wei pai	mid
+坦克	tan ke	high
+坦克300	tan ke san bai	high
+欧拉	ou la	mid
+岚图	lan tu	high
+岚图汽车	lan tu qi che	mid
+猛士	meng shi	mid
+红旗	hong qi	high
+红旗汽车	hong qi qi che	high
+一汽奔腾	yi qi ben teng	mid
+江淮汽车	jiang huai qi che	mid
+五菱	wu ling	high
+五菱宏光	wu ling hong guang	high
+宏光MINIEV	hong guang miniev	mid
+宝骏	bao jun	mid
+极狐	ji hu	mid
+极狐汽车	ji hu qi che	mid
+哪吒汽车	ne zha qi che	mid
+极越	ji yue	std
+东风日产	dong feng ri chan	mid
+东风本田	dong feng ben tian	mid
+广汽本田	guang qi ben tian	mid
+广汽丰田	guang qi feng tian	mid
+一汽丰田	yi qi feng tian	mid
+一汽大众	yi qi da zhong	high
+上汽大众	shang qi da zhong	high
+华晨宝马	hua chen bao ma	high
+北京奔驰	bei jing ben chi	high
+奔驰	ben chi	high
+梅赛德斯奔驰	mei sai de si ben chi	mid
+宝马	bao ma	high
+奥迪	ao di	high
+保时捷	bao shi jie	high
+大众汽车	da zhong qi che	high
+帕萨特	pa sa te	high
+迈腾	mai teng	high
+朗逸	lang yi	high
+途观	tu guan	mid
+高尔夫	gao er fu	mid
+丰田	feng tian	high
+凯美瑞	kai mei rui	high
+卡罗拉	ka luo la	high
+汉兰达	han lan da	high
+塞纳	sai na	mid
+雷克萨斯	lei ke sa si	high
+本田	ben tian	high
+雅阁	ya ge	high
+思域	si yu	high
+飞度	fei du	mid
+奥德赛	ao de sai	mid
+日产	ri chan	high
+轩逸	xuan yi	high
+天籁	tian lai	mid
+马自达	ma zi da	high
+斯巴鲁	si ba lu	mid
+铃木	ling mu	mid
+三菱	san ling	mid
+现代汽车	xian dai qi che	mid
+起亚	qi ya	mid
+福特	fu te	high
+蒙迪欧	meng di ou	mid
+野马	ye ma	mid
+别克	bie ke	high
+君威	jun wei	mid
+雪佛兰	xue fu lan	high
+凯迪拉克	kai di la ke	high
+林肯	lin ken	high
+吉普	ji pu	mid
+Jeep	jeep	mid
+沃尔沃	wo er wo	high
+路虎	lu hu	high
+揽胜	lan sheng	mid
+捷豹	jie bao	mid
+法拉利	fa la li	high
+兰博基尼	lan bo ji ni	high
+玛莎拉蒂	ma sha la di	high
+宾利	bin li	high
+劳斯莱斯	lao si lai si	high
+阿斯顿马丁	a si dun ma ding	mid
+迈凯伦	mai kai lun	mid
+迈巴赫	mai ba he	high
+标致	biao zhi	mid
+雪铁龙	xue tie long	mid
+雷诺	lei nuo	mid
+斯柯达	si ke da	mid
+宝马MINI	bao ma mini	mid
+特斯拉Model 3	te si la model san	mid
+特斯拉Model Y	te si la model y	mid
+宁德时代	ning de shi dai	high
+亿纬锂能	yi wei li neng	mid
+弗迪电池	fu di dian chi	mid
+米其林	mi qi lin	high
+米其林轮胎	mi qi lin lun tai	mid
+普利司通	pu li si tong	mid
+固特异	gu te yi	mid
+马牌轮胎	ma pai lun tai	mid
+倍耐力	bei nai li	mid
+朝阳轮胎	chao yang lun tai	mid
+壳牌	qiao pai	mid
+美孚	mei fu	mid
+嘉实多	jia shi duo	mid
+雅迪	ya di	high
+雅迪电动车	ya di dian dong che	high
+爱玛	ai ma	high
+台铃	tai ling	mid
+小牛电动	xiao niu dian dong	high
+九号电动	jiu hao dian dong	high
+九号公司	jiu hao gong si	mid
+捷安特	jie an te	high
+美利达	mei li da	high
+喜德盛	xi de sheng	high
+迪卡侬自行车	di ka nong zi xing che	mid
+崔克	cui ke	mid
+闪电自行车	shan dian zi xing che	mid
+
+# === 餐饮连锁、茶饮咖啡与食品饮料品牌 ===
+麦当劳	mai dang lao	high
+肯德基	ken de ji	high
+必胜客	bi sheng ke	high
+汉堡王	han bao wang	high
+赛百味	sai bai wei	high
+达美乐	da mei le	high
+塔斯汀	ta si ting	high
+华莱士	hua lai shi	high
+德克士	de ke shi	high
+棒约翰	bang yue han	mid
+萨莉亚	sa li ya	high
+蓝蛙	lan wa	mid
+海底捞	hai di lao	high
+海底捞火锅	hai di lao huo guo	high
+呷哺呷哺	xia bu xia bu	high
+凑凑火锅	cou cou huo guo	mid
+巴奴毛肚火锅	ba nu mao du huo guo	high
+小龙坎	xiao long kan	mid
+大龙燚	da long yi	mid
+蜀大侠	shu da xia	mid
+楠火锅	nan huo guo	mid
+朱光玉火锅	zhu guang yu huo guo	mid
+左庭右院	zuo ting you yuan	mid
+八合里	ba he li	high
+太二酸菜鱼	tai er suan cai yu	high
+九毛九	jiu mao jiu	mid
+怂火锅	song huo guo	mid
+西贝莜面村	xi bei you mian cun	high
+外婆家	wai po jia	high
+绿茶餐厅	lv cha can ting	high
+新白鹿	xin bai lu	mid
+弄堂里	nong tang li	std
+费大厨	fei da chu	high
+费大厨辣椒炒肉	fei da chu la jiao chao rou	mid
+兰湘子	lan xiang zi	mid
+农耕记	nong geng ji	mid
+老乡鸡	lao xiang ji	high
+乡村基	xiang cun ji	high
+大米先生	da mi xian sheng	high
+米村拌饭	mi cun ban fan	high
+和府捞面	he fu lao mian	high
+遇见小面	yu jian xiao mian	high
+陈香贵	chen xiang gui	mid
+马记永	ma ji yong	mid
+味千拉面	wei qian la mian	mid
+吉野家	ji ye jia	high
+食其家	shi qi jia	high
+松屋	song wu	mid
+永和大王	yong he da wang	high
+真功夫	zhen gong fu	mid
+南城香	nan cheng xiang	mid
+紫光园	zi guang yuan	mid
+庆丰包子铺	qing feng bao zi pu	mid
+全聚德	quan ju de	high
+便宜坊	bian yi fang	mid
+四季民福	si ji min fu	high
+东来顺	dong lai shun	high
+眉州东坡	mei zhou dong po	mid
+烤匠	kao jiang	high
+半天妖烤鱼	ban tian yao kao yu	high
+探鱼	tan yu	mid
+丰茂烤串	feng mao kao chuan	mid
+木屋烧烤	mu wu shao kao	high
+很久以前羊肉串	hen jiu yi qian yang rou chuan	mid
+西塔老太太	xi ta lao tai tai	high
+正新鸡排	zheng xin ji pai	high
+绝味鸭脖	jue wei ya bo	high
+周黑鸭	zhou hei ya	high
+煌上煌	huang shang huang	mid
+紫燕百味鸡	zi yan bai wei ji	high
+廖记棒棒鸡	liao ji bang bang ji	mid
+杨国福麻辣烫	yang guo fu ma la tang	high
+张亮麻辣烫	zhang liang ma la tang	high
+袁记云饺	yuan ji yun jiao	high
+喜家德	xi jia de	high
+吉祥馄饨	ji xiang hun tun	high
+巴比馒头	ba bi man tou	mid
+好利来	hao li lai	high
+鲍师傅	bao shi fu	high
+泸溪河	lu xi he	high
+墨茉点心局	mo mo dian xin ju	mid
+詹记桃酥	zhan ji tao su	mid
+稻香村	dao xiang cun	high
+杏花楼	xing hua lou	high
+知味观	zhi wei guan	high
+五芳斋	wu fang zhai	high
+元祖	yuan zu	mid
+味多美	wei duo mei	mid
+巴黎贝甜	ba li bei tian	high
+面包新语	mian bao xin yu	mid
+多乐之日	duo le zhi ri	mid
+星巴克	xing ba ke	high
+星巴克咖啡	xing ba ke ka fei	high
+瑞幸	rui xing	high
+瑞幸咖啡	rui xing ka fei	high
+库迪咖啡	ku di ka fei	high
+幸运咖	xing yun ka	high
+Manner咖啡	manner ka fei	high
+M Stand	m stand	mid
+蓝瓶咖啡	lan ping ka fei	mid
+皮爷咖啡	pi ye ka fei	high
+挪瓦咖啡	nuo wa ka fei	mid
+Tims咖啡	tims ka fei	mid
+Costa咖啡	costa ka fei	mid
+三顿半	san dun ban	high
+永璞咖啡	yong pu ka fei	mid
+隅田川	yu tian chuan	mid
+雀巢咖啡	que chao ka fei	high
+喜茶	xi cha	high
+奈雪的茶	nai xue de cha	high
+霸王茶姬	ba wang cha ji	high
+蜜雪冰城	mi xue bing cheng	high
+古茗	gu ming	high
+茶百道	cha bai dao	high
+沪上阿姨	hu shang a yi	high
+一点点	yi dian dian	high
+CoCo都可	coco dou ke	high
+书亦烧仙草	shu yi shao xian cao	high
+茶颜悦色	cha yan yue se	high
+爷爷不泡茶	ye ye bu pao cha	high
+茉莉奶白	mo li nai bai	high
+茉酸奶	mo suan nai	high
+乐乐茶	le le cha	high
+益禾堂	yi he tang	high
+甜啦啦	tian la la	high
+茶话弄	cha hua nong	mid
+阿嬷手作	a mo shou zuo	high
+去茶山	qu cha shan	mid
+裕莲茶楼	yu lian cha lou	mid
+柠季	ning ji	high
+林里柠檬茶	lin li ning meng cha	mid
+冰雪时光	bing xue shi guang	mid
+DQ冰雪皇后	dq bing xue huang hou	mid
+哈根达斯	ha gen da si	high
+野人先生	ye ren xian sheng	mid
+波司登	bo si deng	high
+可口可乐	ke kou ke le	high
+百事可乐	bai shi ke le	high
+雪碧	xue bi	high
+芬达	fen da	high
+美年达	mei nian da	mid
+七喜	qi xi	mid
+元气森林	yuan qi sen lin	high
+东方树叶	dong fang shu ye	high
+农夫山泉	nong fu shan quan	high
+怡宝	yi bao	high
+百岁山	bai sui shan	high
+景田	jing tian	mid
+娃哈哈	wa ha ha	high
+今麦郎	jin mai lang	high
+康师傅	kang shi fu	high
+统一	tong yi	high
+统一阿萨姆	tong yi a sa mu	mid
+三得利	san de li	high
+三得利乌龙茶	san de li wu long cha	high
+果子熟了	guo zi shu le	high
+茶派	cha pai	mid
+王老吉	wang lao ji	high
+加多宝	jia duo bao	high
+和其正	he qi zheng	std
+东鹏特饮	dong peng te yin	high
+红牛	hong niu	high
+战马	zhan ma	mid
+脉动	mai dong	high
+外星人电解质水	wai xing ren dian jie zhi shui	high
+宝矿力水特	bao kuang li shui te	high
+椰树牌椰汁	ye shu pai ye zhi	high
+菲诺	fei nuo	mid
+维他奶	wei ta nai	high
+维他柠檬茶	wei ta ning meng cha	high
+养元六个核桃	yang yuan liu ge he tao	mid
+六个核桃	liu ge he tao	high
+露露杏仁露	lu lu xing ren lu	mid
+汇源果汁	hui yuan guo zhi	high
+北冰洋	bei bing yang	high
+冰峰	bing feng	mid
+大窑汽水	da yao qi shui	high
+屈臣氏苏打水	qu chen shi su da shui	mid
+伊利	yi li	high
+蒙牛	meng niu	high
+金典	jin dian	high
+特仑苏	te lun su	high
+安慕希	an mu xi	high
+纯甄	chun zhen	mid
+光明牛奶	guang ming niu nai	high
+君乐宝	jun le bao	high
+三元牛奶	san yuan niu nai	mid
+简爱酸奶	jian ai suan nai	high
+认养一头牛	ren yang yi tou niu	high
+飞鹤	fei he	high
+飞鹤奶粉	fei he nai fen	high
+爱他美	ai ta mei	high
+美赞臣	mei zan chen	mid
+雀巢	que chao	high
+惠氏	hui shi	mid
+养乐多	yang le duo	high
+旺仔牛奶	wang zai niu nai	high
+旺旺	wang wang	high
+金龙鱼	jin long yu	high
+福临门	fu lin men	high
+鲁花	lu hua	high
+胡姬花	hu ji hua	mid
+十月稻田	shi yue dao tian	high
+海天酱油	hai tian jiang you	high
+千禾	qian he	high
+李锦记	li jin ji	high
+欣和	xin he	mid
+六月鲜	liu yue xian	mid
+厨邦	chu bang	mid
+太太乐	tai tai le	high
+老干妈	lao gan ma	high
+恒顺香醋	heng shun xiang cu	mid
+保宁醋	bao ning cu	mid
+王致和	wang zhi he	mid
+郫县豆瓣	pi xian dou ban	high
+海底捞底料	hai di lao di liao	mid
+好人家	hao ren jia	mid
+桥头火锅底料	qiao tou huo guo di liao	mid
+双汇	shuang hui	high
+金锣	jin luo	mid
+雨润	yu run	mid
+美好火腿	mei hao huo tui	mid
+圣农	sheng nong	high
+正大食品	zheng da shi pin	high
+安井	an jing	high
+思念水饺	si nian shui jiao	high
+三全水饺	san quan shui jiao	high
+湾仔码头	wan zai ma tou	high
+必品阁	bi pin ge	high
+白象	bai xiang	high
+白象方便面	bai xiang fang bian mian	high
+汤达人	tang da ren	high
+合味道	he wei dao	high
+出前一丁	chu qian yi ding	mid
+农心辛拉面	nong xin xin la mian	mid
+拉面说	la mian shuo	mid
+空刻意面	kong ke yi mian	mid
+阿宽红油面皮	a kuan hong you mian pi	mid
+好欢螺	hao huan luo	high
+李子柒	li zi qi	high
+臭宝螺蛳粉	chou bao luo si fen	mid
+卫龙	wei long	high
+卫龙辣条	wei long la tiao	high
+麻辣王子	ma la wang zi	high
+三只松鼠	san zhi song shu	high
+良品铺子	liang pin pu zi	high
+百草味	bai cao wei	high
+洽洽瓜子	qia qia gua zi	high
+盐津铺子	yan jin pu zi	high
+劲仔	jin zai	mid
+甘源	gan yuan	mid
+来伊份	lai yi fen	mid
+零食很忙	ling shi hen mang	high
+赵一鸣零食	zhao yi ming ling shi	high
+好想来	hao xiang lai	high
+徐福记	xu fu ji	high
+达利园	da li yuan	high
+盼盼	pan pan	high
+好丽友	hao li you	high
+乐事	le shi	high
+乐事薯片	le shi shu pian	high
+上好佳	shang hao jia	high
+品客	pin ke	mid
+奥利奥	ao li ao	high
+趣多多	qu duo duo	high
+太平梳打	tai ping shu da	mid
+嘉顿	jia dun	mid
+康元	kang yuan	std
+德芙	de fu	high
+费列罗	fei lie luo	high
+瑞士莲	rui shi lian	high
+明治	ming zhi	high
+歌帝梵	ge di fan	mid
+大白兔	da bai tu	high
+阿尔卑斯	a er bei si	mid
+炫迈	xuan mai	mid
+益达	yi da	high
+绿箭	lv jian	high
+和路雪	he lu xue	mid
+梦龙	meng long	high
+可爱多	ke ai duo	high
+巧乐兹	qiao le zi	high
+甄稀	zhen xi	mid
+钟薛高	zhong xue gao	mid
+马迭尔	ma die er	mid
+中街冰点	zhong jie bing dian	mid
+茅台	mao tai	high
+贵州茅台	gui zhou mao tai	high
+飞天茅台	fei tian mao tai	high
+五粮液	wu liang ye	high
+国窖1573	guo jiao yi wu qi san	high
+泸州老窖	lu zhou lao jiao	high
+山西汾酒	shan xi fen jiu	high
+汾酒	fen jiu	high
+洋河	yang he	high
+梦之蓝	meng zhi lan	high
+海之蓝	hai zhi lan	mid
+剑南春	jian nan chun	high
+郎酒	lang jiu	high
+青花郎	qing hua lang	mid
+习酒	xi jiu	high
+古井贡酒	gu jing gong jiu	high
+水井坊	shui jing fang	mid
+舍得酒	she de jiu	mid
+酒鬼酒	jiu gui jiu	mid
+西凤酒	xi feng jiu	mid
+今世缘	jin shi yuan	mid
+口子窖	kou zi jiao	mid
+牛栏山	niu lan shan	high
+红星二锅头	hong xing er guo tou	high
+青岛啤酒	qing dao pi jiu	high
+雪花啤酒	xue hua pi jiu	high
+勇闯天涯	yong chuang tian ya	mid
+燕京啤酒	yan jing pi jiu	high
+乌苏啤酒	wu su pi jiu	high
+哈尔滨啤酒	ha er bin pi jiu	high
+珠江啤酒	zhu jiang pi jiu	mid
+重庆啤酒	chong qing pi jiu	mid
+百威啤酒	bai wei pi jiu	high
+喜力啤酒	xi li pi jiu	high
+嘉士伯	jia shi bo	high
+科罗娜	ke luo na	high
+福佳白	fu jia bai	high
+1664啤酒	yi liu liu si pi jiu	mid
+朝日啤酒	zhao ri pi jiu	mid
+麒麟啤酒	qi lin pi jiu	mid
+锐澳鸡尾酒	rui ao ji wei jiu	mid
+张裕葡萄酒	zhang yu pu tao jiu	mid
+奔富	ben fu	high
+拉菲	la fei	high
+轩尼诗	xuan ni shi	high
+人头马	ren tou ma	high
+马爹利	ma die li	high
+尊尼获加	zun ni huo jia	mid
+麦卡伦	mai ka lun	mid
+山崎	shan qi	mid
+古越龙山	gu yue long shan	mid
+会稽山	kuai ji shan	mid
+塔牌黄酒	ta pai huang jiu	mid
+
+# === 服饰、运动、户外、奢侈品、珠宝与美妆护肤 ===
+优衣库	you yi ku	high
+ZARA	zara	high
+无印良品	wu yin liang pin	high
+MUJI	muji	high
+名创优品	ming chuang you pin	high
+泡泡玛特	pao pao ma te	high
+迪卡侬	di ka nong	high
+耐克	nai ke	high
+Nike	nike	high
+阿迪达斯	a di da si	high
+Adidas	adidas	high
+安踏	an ta	high
+李宁	li ning	high
+中国李宁	zhong guo li ning	high
+特步	te bu	high
+鸿星尔克	hong xing er ke	high
+匹克	pi ke	high
+乔丹体育	qiao dan ti yu	mid
+斐乐	fei le	high
+FILA	fila	high
+始祖鸟	shi zu niao	high
+萨洛蒙	sa luo meng	high
+北面	bei mian	high
+哥伦比亚	ge lun bi ya	high
+凯乐石	kai le shi	high
+骆驼户外	luo tuo hu wai	high
+探路者	tan lu zhe	mid
+伯希和	bo xi he	high
+迪桑特	di sang te	high
+可隆	ke long	high
+猛犸象	meng ma xiang	mid
+巴塔哥尼亚	ba ta ge ni ya	mid
+牧高笛	mu gao di	mid
+挪客	nuo ke	mid
+露露乐蒙	lu lu le meng	high
+Lululemon	lululemon	high
+安德玛	an de ma	high
+彪马	biao ma	high
+新百伦	xin bai lun	high
+New Balance	new balance	high
+亚瑟士	ya se shi	high
+美津浓	mei jin nong	mid
+索康尼	suo kang ni	high
+霍卡	huo ka	mid
+HOKA	hoka	high
+昂跑	ang pao	high
+斯凯奇	si kai qi	high
+匡威	kuang wei	high
+万斯	wan si	high
+Vans	vans	high
+回力	hui li	high
+飞跃	fei yue	mid
+人本	ren ben	std
+百丽	bai li	high
+思加图	si jia tu	mid
+他她	ta ta	mid
+天美意	tian mei yi	mid
+奥康	ao kang	mid
+红蜻蜓	hong qing ting	mid
+意尔康	yi er kang	mid
+海澜之家	hai lan zhi jia	high
+森马	sen ma	high
+美特斯邦威	mei te si bang wei	mid
+太平鸟	tai ping niao	high
+江南布衣	jiang nan bu yi	high
+鄂尔多斯	e er duo si	high
+雅戈尔	ya ge er	high
+杉杉	shan shan	mid
+报喜鸟	bao xi niao	mid
+七匹狼	qi pi lang	high
+劲霸男装	jin ba nan zhuang	mid
+利郎	li lang	mid
+九牧王	jiu mu wang	mid
+罗蒙	luo meng	mid
+波司登羽绒服	bo si deng yu rong fu	high
+鸭鸭羽绒服	ya ya yu rong fu	high
+雪中飞	xue zhong fei	high
+高梵	gao fan	mid
+加拿大鹅	jia na da e	high
+盟可睐	meng ke lai	mid
+巴拉巴拉	ba la ba la	high
+安奈儿	an nai er	mid
+全棉时代	quan mian shi dai	high
+蕉内	jiao nei	high
+蕉下	jiao xia	high
+内外	nei wai	mid
+ubras	ubras	high
+爱慕	ai mu	mid
+都市丽人	du shi li ren	mid
+红豆居家	hong dou ju jia	mid
+南极人	nan ji ren	mid
+恒源祥	heng yuan xiang	high
+猫人	mao ren	mid
+拉夫劳伦	la fu lao lun	high
+汤米	tang mi	mid
+鳄鱼	e yu	mid
+盖璞	gai pu	mid
+UR	ur	mid
+伊芙丽	yi fu li	mid
+歌莉娅	ge li ya	mid
+播	bo	std
+地素	di su	mid
+之禾	zhi he	mid
+朗姿	lang zi	mid
+赢家时尚	ying jia shi shang	std
+热风	re feng	mid
+西遇	xi yu	std
+新秀丽	xin xiu li	high
+日默瓦	ri mo wa	high
+地平线8号	di ping xian ba hao	mid
+外交官	wai jiao guan	mid
+小米行李箱	xiao mi xing li xiang	mid
+路易威登	lu yi wei deng	high
+LV	lv	high
+古驰	gu chi	high
+Gucci	gucci	high
+香奈儿	xiang nai er	high
+Chanel	chanel	high
+爱马仕	ai ma shi	high
+Hermes	hermes	high
+迪奥	di ao	high
+Dior	dior	high
+普拉达	pu la da	high
+Prada	prada	high
+巴宝莉	ba bao li	high
+博柏利	bo bai li	high
+圣罗兰	sheng luo lan	high
+YSL	ysl	high
+阿玛尼	a ma ni	high
+范思哲	fan si zhe	high
+芬迪	fen di	high
+巴黎世家	ba li shi jia	high
+赛琳	sai lin	high
+缪缪	miu miu	high
+葆蝶家	bao die jia	mid
+华伦天奴	hua lun tian nu	mid
+纪梵希	ji fan xi	high
+克罗心	ke luo xin	mid
+蔻驰	kou chi	high
+Coach	coach	high
+迈克科尔斯	mai ke ke er si	mid
+珑骧	long xiang	high
+卡地亚	ka di ya	high
+蒂芙尼	di fu ni	high
+宝格丽	bao ge li	high
+梵克雅宝	fan ke ya bao	high
+尚美巴黎	shang mei ba li	mid
+伯爵	bo jue	mid
+劳力士	lao li shi	high
+欧米茄	ou mi jia	high
+百达翡丽	bai da fei li	high
+江诗丹顿	jiang shi dan dun	high
+爱彼	ai bi	mid
+积家	ji jia	mid
+万国表	wan guo biao	mid
+浪琴	lang qin	high
+天梭	tian suo	high
+美度	mei du	mid
+汉米尔顿	han mi er dun	mid
+西铁城	xi tie cheng	mid
+精工	jing gong	mid
+卡西欧	ka xi ou	high
+斯沃琪	si wo qi	mid
+天王表	tian wang biao	mid
+海鸥表	hai ou biao	mid
+周大福	zhou da fu	high
+周生生	zhou sheng sheng	high
+六福珠宝	liu fu zhu bao	high
+周大生	zhou da sheng	high
+老凤祥	lao feng xiang	high
+老庙黄金	lao miao huang jin	high
+中国黄金	zhong guo huang jin	high
+菜百首饰	cai bai shou shi	high
+老铺黄金	lao pu huang jin	high
+潮宏基	chao hong ji	mid
+谢瑞麟	xie rui lin	mid
+潘多拉	pan duo la	high
+施华洛世奇	shi hua luo shi qi	high
+欧莱雅	ou lai ya	high
+巴黎欧莱雅	ba li ou lai ya	high
+兰蔻	lan kou	high
+雅诗兰黛	ya shi lan dai	high
+海蓝之谜	hai lan zhi mi	high
+赫莲娜	he lian na	high
+资生堂	zi sheng tang	high
+CPB	cpb	high
+SK-II	sk er	high
+神仙水	shen xian shui	high
+娇韵诗	jiao yun shi	high
+娇兰	jiao lan	high
+科颜氏	ke yan shi	high
+修丽可	xiu li ke	high
+理肤泉	li fu quan	high
+雅漾	ya yang	high
+薇姿	wei zi	mid
+适乐肤	shi le fu	high
+玉兰油	yu lan you	high
+OLAY	olay	high
+妮维雅	ni wei ya	high
+凡士林	fan shi lin	high
+多芬	duo fen	high
+力士	li shi	high
+清扬	qing yang	high
+海飞丝	hai fei si	high
+潘婷	pan ting	high
+飘柔	piao rou	high
+沙宣	sha xuan	high
+施华蔻	shi hua kou	high
+卡诗	ka shi	high
+欧舒丹	ou shu dan	high
+祖玛珑	zu ma long	high
+蒂普提克	di pu ti ke	mid
+柏芮朵	bo rui duo	std
+珀莱雅	po lai ya	high
+薇诺娜	wei nuo na	high
+自然堂	zi ran tang	high
+百雀羚	bai que ling	high
+相宜本草	xiang yi ben cao	high
+韩束	han shu	high
+丸美	wan mei	mid
+谷雨	gu yu	high
+润百颜	run bai yan	mid
+夸迪	kua di	mid
+米蓓尔	mi bei er	std
+可复美	ke fu mei	high
+敷尔佳	fu er jia	high
+绽媄娅	zhan mei ya	std
+林清轩	lin qing xuan	mid
+大宝	da bao	high
+郁美净	yu mei jing	high
+蜂花	feng hua	high
+六神	liu shen	high
+六神花露水	liu shen hua lu shui	high
+隆力奇	long li qi	mid
+上海家化	shang hai jia hua	mid
+佰草集	bai cao ji	mid
+玉泽	yu ze	high
+毛戈平	mao ge ping	high
+花西子	hua xi zi	high
+完美日记	wan mei ri ji	high
+橘朵	ju duo	high
+彩棠	cai tang	high
+酵色	jiao se	mid
+花知晓	hua zhi xiao	high
+卡姿兰	ka zi lan	mid
+美宝莲	mei bao lian	high
+魅可	mei ke	high
+MAC	mac	high
+NARS	nars	high
+植村秀	zhi cun xiu	high
+芭比波朗	ba bi bo lang	mid
+贝玲妃	bei ling fei	mid
+安耐晒	an nai shai	high
+蜜丝婷	mi si ting	high
+宝洁	bao jie	high
+联合利华	lian he li hua	high
+舒肤佳	shu fu jia	high
+滴露	di lu	high
+威露士	wei lu shi	high
+蓝月亮	lan yue liang	high
+立白	li bai	high
+奥妙	ao miao	high
+汰渍	tai zi	high
+碧浪	bi lang	high
+雕牌	diao pai	high
+超能	chao neng	high
+白猫	bai mao	mid
+维达	wei da	high
+清风	qing feng	high
+心相印	xin xiang yin	high
+洁柔	jie rou	high
+得宝	de bao	high
+舒洁	shu jie	mid
+云南白药	yun nan bai yao	high
+云南白药牙膏	yun nan bai yao ya gao	high
+高露洁	gao lu jie	high
+佳洁士	jia jie shi	high
+黑人牙膏	hei ren ya gao	mid
+好来	hao lai	mid
+舒适达	shu shi da	high
+冷酸灵	leng suan ling	high
+舒客	shu ke	mid
+参半	can ban	mid
+苏菲	su fei	high
+护舒宝	hu shu bao	high
+七度空间	qi du kong jian	high
+高洁丝	gao jie si	high
+自由点	zi you dian	high
+帮宝适	bang bao shi	high
+好奇	hao qi	mid
+花王	hua wang	high
+尤妮佳	you ni jia	mid
+babycare	baby care	high
+好孩子	hao hai zi	high
+乐高	le gao	high
+LEGO	lego	high
+布鲁可	bu lu ke	high
+万代	wan dai	high
+迪士尼	di shi ni	high
+三丽鸥	san li ou	high
+吉伊卡哇	ji yi ka wa	high
+得力	de li	high
+得力文具	de li wen ju	high
+晨光	chen guang	high
+晨光文具	chen guang wen ju	high
+百乐	bai le	high
+三菱铅笔	san ling qian bi	mid
+斑马文具	ban ma wen ju	mid
+英雄钢笔	ying xiong gang bi	mid
+凌美	ling mei	mid
+
+# === 商超零售、家居、金融、快递、航司、酒店与文旅 ===
+沃尔玛	wo er ma	high
+大润发	da run fa	high
+永辉超市	yong hui chao shi	high
+华润万家	hua run wan jia	high
+物美	wu mei	high
+物美超市	wu mei chao shi	high
+联华超市	lian hua chao shi	mid
+世纪联华	shi ji lian hua	high
+麦德龙	mai de long	high
+开市客	kai shi ke	high
+Costco	costco	high
+奥乐齐	ao le qi	high
+罗森	luo sen	high
+罗森便利店	luo sen bian li dian	high
+全家	quan jia	high
+全家便利店	quan jia bian li dian	high
+7-Eleven	qi shi yi	mid
+美宜佳	mei yi jia	high
+便利蜂	bian li feng	high
+红旗连锁	hong qi lian suo	mid
+十足便利店	shi zu bian li dian	mid
+屈臣氏	qu chen shi	high
+丝芙兰	si fu lan	high
+调色师	tiao se shi	mid
+万宁	wan ning	mid
+宜家	yi jia	high
+宜家家居	yi jia jia ju	high
+IKEA	ikea	high
+红星美凯龙	hong xing mei kai long	high
+居然之家	ju ran zhi jia	high
+顾家家居	gu jia jia ju	high
+欧派	ou pai	high
+欧派家居	ou pai jia ju	high
+索菲亚	suo fei ya	high
+志邦家居	zhi bang jia ju	mid
+尚品宅配	shang pin zhai pei	mid
+全友家居	quan you jia ju	high
+林氏家居	lin shi jia ju	high
+源氏木语	yuan shi mu yu	high
+芝华仕	zhi hua shi	high
+慕思	mu si	high
+喜临门	xi lin men	high
+雅兰	ya lan	mid
+水星家纺	shui xing jia fang	high
+罗莱家纺	luo lai jia fang	high
+富安娜	fu an na	high
+梦洁家纺	meng jie jia fang	mid
+亚朵星球	ya duo xing qiu	high
+中国工商银行	zhong guo gong shang yin hang	high
+中国建设银行	zhong guo jian she yin hang	high
+中国农业银行	zhong guo nong ye yin hang	high
+中国邮政储蓄银行	zhong guo you zheng chu xu yin hang	mid
+邮储银行	you chu yin hang	high
+交通银行	jiao tong yin hang	high
+中信银行	zhong xin yin hang	high
+中国光大银行	zhong guo guang da yin hang	mid
+光大银行	guang da yin hang	high
+华夏银行	hua xia yin hang	high
+民生银行	min sheng yin hang	high
+广发银行	guang fa yin hang	high
+平安银行	ping an yin hang	high
+浦发银行	pu fa yin hang	high
+兴业银行	xing ye yin hang	high
+浙商银行	zhe shang yin hang	high
+渤海银行	bo hai yin hang	mid
+恒丰银行	heng feng yin hang	mid
+北京银行	bei jing yin hang	high
+上海银行	shang hai yin hang	high
+江苏银行	jiang su yin hang	high
+宁波银行	ning bo yin hang	high
+南京银行	nan jing yin hang	high
+杭州银行	hang zhou yin hang	high
+徽商银行	hui shang yin hang	mid
+成都银行	cheng du yin hang	mid
+重庆银行	chong qing yin hang	mid
+长沙银行	chang sha yin hang	mid
+微众银行	wei zhong yin hang	high
+网商银行	wang shang yin hang	high
+新网银行	xin wang yin hang	mid
+汇丰银行	hui feng yin hang	high
+渣打银行	zha da yin hang	mid
+花旗银行	hua qi yin hang	high
+摩根大通	mo gen da tong	mid
+高盛	gao sheng	high
+中国银联	zhong guo yin lian	high
+中国平安	zhong guo ping an	high
+中国人寿	zhong guo ren shou	high
+中国人保	zhong guo ren bao	high
+太平洋保险	tai ping yang bao xian	high
+中国太平	zhong guo tai ping	mid
+新华保险	xin hua bao xian	high
+泰康保险	tai kang bao xian	high
+阳光保险	yang guang bao xian	mid
+众安保险	zhong an bao xian	high
+友邦保险	you bang bao xian	high
+中信证券	zhong xin zheng quan	high
+华泰证券	hua tai zheng quan	high
+国泰君安	guo tai jun an	high
+招商证券	zhao shang zheng quan	high
+广发证券	guang fa zheng quan	high
+海通证券	hai tong zheng quan	mid
+中金公司	zhong jin gong si	high
+易方达	yi fang da	high
+华夏基金	hua xia ji jin	high
+南方基金	nan fang ji jin	mid
+广发基金	guang fa ji jin	mid
+天弘基金	tian hong ji jin	mid
+顺丰	shun feng	high
+顺丰快递	shun feng kuai di	high
+顺丰同城	shun feng tong cheng	high
+圆通快递	yuan tong kuai di	high
+圆通速递	yuan tong su di	high
+中通快递	zhong tong kuai di	high
+申通快递	shen tong kuai di	high
+韵达快递	yun da kuai di	high
+极兔速递	ji tu su di	high
+极兔快递	ji tu kuai di	high
+德邦快递	de bang kuai di	high
+德邦物流	de bang wu liu	high
+邮政快递	you zheng kuai di	high
+菜鸟驿站	cai niao yi zhan	high
+菜鸟速递	cai niao su di	high
+跨越速运	kua yue su yun	high
+安能物流	an neng wu liu	mid
+货拉拉	huo la la	high
+快狗打车	kuai gou da che	mid
+闪送	shan song	high
+达达快送	da da kuai song	high
+蜂鸟即配	feng niao ji pei	mid
+丰巢	feng chao	high
+丰巢快递柜	feng chao kuai di gui	high
+中国移动	zhong guo yi dong	high
+中国联通	zhong guo lian tong	high
+中国电信	zhong guo dian xin	high
+中国广电	zhong guo guang dian	high
+国家电网	guo jia dian wang	high
+南方电网	nan fang dian wang	high
+中国石油	zhong guo shi you	high
+中国石化	zhong guo shi hua	high
+中国海油	zhong guo hai you	high
+中国国航	zhong guo guo hang	high
+东方航空	dong fang hang kong	high
+南方航空	nan fang hang kong	high
+海南航空	hai nan hang kong	high
+厦门航空	xia men hang kong	high
+深圳航空	shen zhen hang kong	high
+四川航空	si chuan hang kong	high
+山东航空	shan dong hang kong	high
+春秋航空	chun qiu hang kong	high
+吉祥航空	ji xiang hang kong	high
+长龙航空	chang long hang kong	mid
+首都航空	shou du hang kong	mid
+天津航空	tian jin hang kong	mid
+成都航空	cheng du hang kong	mid
+华夏航空	hua xia hang kong	mid
+国泰航空	guo tai hang kong	high
+新加坡航空	xin jia po hang kong	mid
+全日空	quan ri kong	mid
+阿联酋航空	a lian qiu hang kong	mid
+华住会	hua zhu hui	high
+全季酒店	quan ji jiu dian	high
+汉庭酒店	han ting jiu dian	high
+桔子酒店	ju zi jiu dian	high
+桔子水晶	ju zi shui jing	high
+你好酒店	ni hao jiu dian	mid
+海友酒店	hai you jiu dian	mid
+城际酒店	cheng ji jiu dian	mid
+亚朵酒店	ya duo jiu dian	high
+轻居酒店	qing ju jiu dian	mid
+如家酒店	ru jia jiu dian	high
+如家商旅	ru jia shang lv	mid
+锦江之星	jin jiang zhi xing	high
+维也纳酒店	wei ye na jiu dian	high
+丽枫酒店	li feng jiu dian	high
+希岸酒店	xi an jiu dian	mid
+喆啡酒店	zhe fei jiu dian	std
+七天酒店	qi tian jiu dian	high
+格林豪泰	ge lin hao tai	mid
+尚客优	shang ke you	mid
+东呈酒店	dong cheng jiu dian	std
+开元名都	kai yuan ming du	mid
+君澜酒店	jun lan jiu dian	mid
+万豪酒店	wan hao jiu dian	high
+喜来登	xi lai deng	high
+威斯汀	wei si ting	high
+丽思卡尔顿	li si ka er dun	high
+瑞吉酒店	rui ji jiu dian	mid
+JW万豪	jw wan hao	mid
+希尔顿	xi er dun	high
+希尔顿欢朋	xi er dun huan peng	high
+康莱德	kang lai de	mid
+华尔道夫	hua er dao fu	mid
+洲际酒店	zhou ji jiu dian	high
+皇冠假日	huang guan jia ri	high
+智选假日	zhi xuan jia ri	high
+英迪格	ying di ge	mid
+凯悦酒店	kai yue jiu dian	high
+柏悦酒店	bo yue jiu dian	mid
+君悦酒店	jun yue jiu dian	mid
+香格里拉	xiang ge li la	high
+雅高	ya gao	mid
+诺富特	nuo fu te	mid
+美居酒店	mei ju jiu dian	mid
+索菲特	suo fei te	mid
+四季酒店	si ji jiu dian	high
+文华东方	wen hua dong fang	mid
+半岛酒店	ban dao jiu dian	mid
+安缦	an man	mid
+悦榕庄	yue rong zhuang	mid
+万达广场	wan da guang chang	high
+万达影城	wan da ying cheng	high
+万象城	wan xiang cheng	high
+万象天地	wan xiang tian di	high
+万象汇	wan xiang hui	high
+大悦城	da yue cheng	high
+龙湖天街	long hu tian jie	high
+吾悦广场	wu yue guang chang	high
+银泰百货	yin tai bai huo	high
+银泰城	yin tai cheng	high
+恒隆广场	heng long guang chang	high
+太古里	tai gu li	high
+太古汇	tai gu hui	high
+凯德广场	kai de guang chang	high
+印象城	yin xiang cheng	high
+宝龙广场	bao long guang chang	mid
+永旺梦乐城	yong wang meng le cheng	high
+合生汇	he sheng hui	high
+环球港	huan qiu gang	high
+王府井百货	wang fu jing bai huo	mid
+百联	bai lian	mid
+SKP	skp	high
+北京环球影城	bei jing huan qiu ying cheng	high
+上海迪士尼	shang hai di shi ni	high
+香港迪士尼	xiang gang di shi ni	high
+长隆野生动物世界	chang long ye sheng dong wu shi jie	mid
+广州长隆	guang zhou chang long	high
+珠海长隆	zhu hai chang long	high
+方特	fang te	high
+欢乐谷	huan le gu	high
+宋城	song cheng	high
+乌镇景区	wu zhen jing qu	high
+古北水镇	gu bei shui zhen	high
+阿那亚	a na ya	high
+同仁堂	tong ren tang	high
+北京同仁堂	bei jing tong ren tang	high
+片仔癀	pian zai huang	high
+东阿阿胶	dong e e jiao	high
+九芝堂	jiu zhi tang	mid
+胡庆余堂	hu qing yu tang	high
+广誉远	guang yu yuan	mid
+白云山	bai yun shan	mid
+哈药	ha yao	mid
+修正药业	xiu zheng yao ye	mid
+华润三九	hua run san jiu	high
+三九胃泰	san jiu wei tai	high
+仁和药业	ren he yao ye	mid
+以岭药业	yi ling yao ye	mid
+恒瑞医药	heng rui yi yao	high
+药明康德	yao ming kang de	high
+迈瑞医疗	mai rui yi liao	high
+鱼跃医疗	yu yue yi liao	high
+欧姆龙	ou mu long	high
+汤臣倍健	tang chen bei jian	high
+善存	shan cun	mid
+钙尔奇	gai er qi	mid
+斯维诗	si wei shi	high
+Swisse	swisse	high
+大参林	da shen lin	mid
+益丰大药房	yi feng da yao fang	high
+老百姓大药房	lao bai xing da yao fang	high
+国大药房	guo da yao fang	mid
+一心堂	yi xin tang	mid
+海王星辰	hai wang xing chen	mid
+美年大健康	mei nian da jian kang	high
+爱康国宾	ai kang guo bin	high
+瑞尔齿科	rui er chi ke	mid
+爱尔眼科	ai er yan ke	high
+万科	wan ke	high
+保利发展	bao li fa zhan	high
+中海地产	zhong hai di chan	high
+华润置地	hua run zhi di	high
+绿城	lv cheng	high
+滨江房产	bin jiang fang chan	mid
+龙湖地产	long hu di chan	mid
+招行信用卡	zhao hang xin yong ka	high
+交行信用卡	jiao hang xin yong ka	mid
+工行手机银行	gong hang shou ji yin hang	mid
+建行手机银行	jian hang shou ji yin hang	mid
+农行掌上银行	nong hang zhang shang yin hang	mid
+中行手机银行	zhong hang shou ji yin hang	mid
+微信读书会员	wei xin du shu hui yuan	mid
+网易云黑胶	wang yi yun hei jiao	mid
+QQ音乐绿钻	qq yin yue lv zuan	mid
+百度网盘会员	bai du wang pan hui yuan	mid
+淘宝88VIP	tao bao ba ba vip	high
+京东PLUS	jing dong plus	high
+美团神会员	mei tuan shen hui yuan	high
+高德顺风车	gao de shun feng che	mid
+顺丰标快	shun feng biao kuai	high
+顺丰特快	shun feng te kuai	high
+菜鸟裹裹寄件	cai niao guo guo ji jian	mid
+支付宝碰一下	zhi fu bao peng yi xia	high
+微信刷掌	wei xin shua zhang	high
+抖音商城版	dou yin shang cheng ban	mid
+小红书直播	xiao hong shu zhi bo	mid
+快手商城	kuai shou shang cheng	mid
+拼多多百亿补贴	pin duo duo bai yi bu tie	high
+京东百亿补贴	jing dong bai yi bu tie	high
+淘宝百亿补贴	tao bao bai yi bu tie	high
+抖音精选	dou yin jing xuan	mid
+西瓜视频创作	xi gua shi pin chuang zuo	std
+哔哩哔哩漫画	bi li bi li man hua	mid
+爱奇艺黄金会员	ai qi yi huang jin hui yuan	mid
+腾讯视频VIP	teng xun shi pin vip	high
+优酷会员	you ku hui yuan	mid
+芒果会员	mang guo hui yuan	mid
+喜马拉雅会员	xi ma la ya hui yuan	mid
+知乎会员	zhi hu hui yuan	mid
+夸克扫描王	kua ke sao miao wang	high
+扫描全能王	sao miao quan neng wang	high
+白描	bai miao	mid
+讯飞语记	xun fei yu ji	mid
+讯飞听见	xun fei ting jian	high
+腾讯翻译君	teng xun fan yi jun	mid
+DeepL	deepl	high
+沉浸式翻译	chen jin shi fan yi	high
+欧路词典	ou lu ci dian	high
+墨刀	mo dao	mid
+蓝湖	lan hu	mid
+即时设计	ji shi she ji	mid
+MasterGo	master go	mid
+ProcessOn	process on	mid
+XMind	xmind	high
+亿图图示	yi tu tu shi	mid
+万兴喵影	wan xing miao ying	mid
+达芬奇剪辑	da fen qi jian ji	mid
+必剪	bi jian	mid
+快影	kuai ying	mid
+度加剪辑	du jia jian ji	mid
+稿定设计	gao ding she ji	mid
+创客贴	chuang ke tie	mid
+花瓣网	hua ban wang	mid
+站酷	zhan ku	high
+视觉中国	shi jue zhong guo	mid
+天眼查	tian yan cha	high
+企查查	qi cha cha	high
+爱企查	ai qi cha	high
+启信宝	qi xin bao	mid
+水滴筹	shui di chou	high
+轻松筹	qing song chou	mid
+腾讯公益	teng xun gong yi	mid
+支付宝公益	zhi fu bao gong yi	mid
+小天才	xiao tian cai	high
+小天才电话手表	xiao tian cai dian hua shou biao	high
+步步高	bu bu gao	high
+步步高学习机	bu bu gao xue xi ji	mid
+科大讯飞学习机	ke da xun fei xue xi ji	mid
+学而思学习机	xue er si xue xi ji	mid
+猿辅导小猿学练机	yuan fu dao xiao yuan xue lian ji	mid
+作业帮学习机	zuo ye bang xue xi ji	mid
+读书郎	du shu lang	mid
+极米	ji mi	high
+极米投影仪	ji mi tou ying yi	high
+坚果投影	jian guo tou ying	high
+当贝投影	dang bei tou ying	mid
+峰米	feng mi	mid
+海信激光电视	hai xin ji guang dian shi	mid
+索尼电视	suo ni dian shi	high
+三星电视	san xing dian shi	mid
+LG电视	lg dian shi	mid
+华为智慧生活	hua wei zhi hui sheng huo	mid
+米家生态	mi jia sheng tai	mid
+绿米	lv mi	high
+Aqara	aqara	mid
+易来	yi lai	mid
+Yeelight	yeelight	mid
+德施曼	de shi man	high
+凯迪仕	kai di shi	high
+鹿客	lu ke	mid
+小米智能门锁	xiao mi zhi neng men suo	high
+华为智能门锁	hua wei zhi neng men suo	high
+西昊	xi hao	high
+永艺	yong yi	mid
+黑白调	hei bai diao	mid
+保友	bao you	mid
+乐歌	le ge	high
+迈德斯特	mai de si te	std
+舒华	shu hua	mid
+麦瑞克	mai rui ke	mid
+野小兽	ye xiao shou	mid
+匹克球	pi ke qiu	mid
+尤尼克斯	you ni ke si	high
+威克多	wei ke duo	high
+李宁羽毛球	li ning yu mao qiu	mid
+红双喜	hong shuang xi	high
+蝴蝶乒乓	hu die ping pang	mid
+斯伯丁	si bo ding	high
+威尔胜	wei er sheng	high
+百保力	bai bao li	mid
+海德	hai de	mid
+速比涛	su bi tao	mid
+阿瑞娜	a rui na	mid
+佳明	jia ming	high
+佳明手表	jia ming shou biao	high
+高驰	gao chi	high
+颂拓	song tuo	mid
+卡罗特	ka luo te	high
+康巴赫	kang ba he	high
+双立人	shuang li ren	high
+菲仕乐	fei shi le	mid
+WMF	wmf	mid
+乐扣乐扣	le kou le kou	high
+特百惠	te bai hui	mid
+富光	fu guang	high
+哈尔斯	ha er si	mid
+希诺	xi nuo	mid
+康宁餐具	kang ning can ju	mid
+洁丽雅	jie li ya	high
+孚日	fu ri	mid
+金号	jin hao	mid
+网易严选猫粮	wang yi yan xuan mao liang	mid
+皇家猫粮	huang jia mao liang	mid
+渴望猫粮	ke wang mao liang	mid
+爱肯拿	ai ken na	mid
+百利	bai li	mid
+麦富迪	mai fu di	high
+顽皮	wan pi	mid
+比瑞吉	bi rui ji	mid
+伯纳天纯	bo na tian chun	mid
+卫仕	wei shi	mid
+福来恩	fu lai en	mid
+大宠爱	da chong ai	high
+海乐妙	hai le miao	mid
+小佩	xiao pei	high
+霍曼	huo man	mid
+网易严选人体工学椅	wang yi yan xuan ren ti gong xue yi	std
+名创优品盲盒	ming chuang you pin mang he	mid
+泡泡玛特盲盒	pao pao ma te mang he	high
+拉布布	la bu bu	high
+Labubu	labubu	high
+原神	yuan shen	high
+崩坏星穹铁道	beng huai xing qiong tie dao	high
+绝区零	jue qu ling	high
+鸣潮	ming chao	high
+王者荣耀	wang zhe rong yao	high
+和平精英	he ping jing ying	high
+英雄联盟	ying xiong lian meng	high
+英雄联盟手游	ying xiong lian meng shou you	high
+金铲铲之战	jin chan chan zhi zhan	high
+无畏契约	wu wei qi yue	high
+穿越火线	chuan yue huo xian	high
+地下城与勇士	di xia cheng yu yong shi	high
+逆水寒	ni shui han	high
+永劫无间	yong jie wu jian	high
+蛋仔派对	dan zai pai dui	high
+元梦之星	yuan meng zhi xing	mid
+第五人格	di wu ren ge	high
+阴阳师	yin yang shi	high
+梦幻西游	meng huan xi you	high
+大话西游	da hua xi you	mid
+剑网三	jian wang san	high
+魔兽世界	mo shou shi jie	high
+炉石传说	lu shi chuan shuo	high
+守望先锋	shou wang xian feng	high
+暗黑破坏神	an hei po huai shen	mid
+黑神话悟空	hei shen hua wu kong	high
+三角洲行动	san jiao zhou xing dong	high
+燕云十六声	yan yun shi liu sheng	high
+恋与深空	lian yu shen kong	high
+光与夜之恋	guang yu ye zhi lian	mid
+明日方舟	ming ri fang zhou	high
+碧蓝航线	bi lan hang xian	mid
+碧蓝档案	bi lan dang an	mid
+少女前线	shao nv qian xian	mid
+我的世界	wo de shi jie	high
+迷你世界	mi ni shi jie	mid
+泰拉瑞亚	tai la rui ya	mid
+星露谷物语	xing lu gu wu yu	high
+塞尔达传说	sai er da chuan shuo	high
+动物森友会	dong wu sen you hui	high
+马里奥赛车	ma li ao sai che	mid
+宝可梦	bao ke meng	high
+艾尔登法环	ai er deng fa huan	high
+博德之门	bo de zhi men	high
+赛博朋克	sai bo peng ke	high
+荒野大镖客	huang ye da biao ke	high
+侠盗猎车手	xia dao lie che shou	mid
+反恐精英	fan kong jing ying	high
+绝地求生	jue di qiu sheng	high
+使命召唤	shi ming zhao huan	high
+战地风云	zhan di feng yun	mid
+极品飞车	ji pin fei che	mid
+实况足球	shi kuang zu qiu	mid
+NBA	nba	high
+CBA	cba	high
+FIFA	fifa	high
+F1赛车	f yi sai che	mid
+央视一套	yang shi yi tao	high
+央视五套	yang shi wu tao	mid
+湖南卫视	hu nan wei shi	high
+浙江卫视	zhe jiang wei shi	high
+江苏卫视	jiang su wei shi	high
+东方卫视	dong fang wei shi	high
+北京卫视	bei jing wei shi	high
+新华社	xin hua she	high
+人民日报	ren min ri bao	high
+光明日报	guang ming ri bao	mid
+经济日报	jing ji ri bao	mid
+参考消息	can kao xiao xi	high
+环球时报	huan qiu shi bao	high
+澎湃新闻	peng pai xin wen	high
+界面新闻	jie mian xin wen	high
+第一财经	di yi cai jing	high
+财新网	cai xin wang	high
+财联社	cai lian she	high
+华尔街见闻	hua er jie jian wen	high
+36氪	san shi liu ke	high
+虎嗅	hu xiu	high
+钛媒体	tai mei ti	mid
+少数派	shao shu pai	high
+爱范儿	ai fan er	mid
+极客公园	ji ke gong yuan	mid
+量子位	liang zi wei	high
+机器之心	ji qi zhi xin	high
+新智元	xin zhi yuan	high
+InfoQ	infoq	mid
+小红书千帆	xiao hong shu qian fan	mid
+巨量引擎	ju liang yin qing	high
+巨量千川	ju liang qian chuan	high
+阿里妈妈	a li ma ma	high
+腾讯广告	teng xun guang gao	mid
+磁力引擎	ci li yin qing	mid
+微信小游戏	wei xin xiao you xi	high
+抖音小游戏	dou yin xiao you xi	mid
+支付宝小程序	zhi fu bao xiao cheng xu	mid
+百度地图导航	bai du di tu dao hang	mid
+腾讯地图导航	teng xun di tu dao hang	std
+高德地图导航	gao de di tu dao hang	high
+小鹏超充	xiao peng chao chong	mid
+蔚来超充	wei lai chao chong	mid
+特斯拉超充	te si la chao chong	high
+特来电	te lai dian	high
+星星充电	xing xing chong dian	high
+快电	kuai dian	mid
+云快充	yun kuai chong	mid
+小桔充电	xiao ju chong dian	high
+国家电网充电桩	guo jia dian wang chong dian zhuang	mid
+中国石化易捷	zhong guo shi hua yi jie	mid
+壳牌充电	qiao pai chong dian	mid
+蔚来能源	wei lai neng yuan	mid
+比亚迪迪空间	bi ya di di kong jian	std
+华为乾崑智驾	hua wei qian kun zhi jia	high
+小鹏智驾	xiao peng zhi jia	mid
+理想同学	li xiang tong xue	high
+小爱音箱	xiao ai yin xiang	high
+天猫魔盒	tian mao mo he	mid
+小米盒子	xiao mi he zi	mid
+Apple TV	apple tv	high
+Switch游戏	switch you xi	high
+Steam商店	steam shang dian	high
+Steam夏促	steam xia cu	high
+Steam秋促	steam qiu cu	mid
+Steam冬促	steam dong cu	mid
+App Store下载	app store xia zai	mid
+Google Play	google play	high
+华为应用市场	hua wei ying yong shi chang	high
+小米应用商店	xiao mi ying yong shang dian	high
+应用宝	ying yong bao	high
+豌豆荚	wan dou jia	mid
+TestFlight	test flight	mid
+Homebrew	home brew	mid
+Docker Hub	docker hub	mid
+Hugging Face	hugging face	high
+ModelScope	model scope	high
+魔搭社区	mo da she qu	high
+始智AI	shi zhi ai	std
+扣子空间	kou zi kong jian	mid
+飞书妙记	fei shu miao ji	high
+钉钉文档	ding ding wen dang	high
+企业微信文档	qi ye wei xin wen dang	mid
+腾讯会议纪要	teng xun hui yi ji yao	mid
+WPS AI	wps ai	high
+金山词霸	jin shan ci ba	mid
+网易云课堂	wang yi yun ke tang	mid
+腾讯微视	teng xun wei shi	std
+微信读书墨水屏	wei xin du shu mo shui ping	mid
+文石	wen shi	high
+掌阅电纸书	zhang yue dian zhi shu	mid
+汉王	han wang	mid
+墨案	mo an	mid
+科大讯飞办公本	ke da xun fei ban gong ben	high
+大疆Pocket	da jiang pocket	high
+大疆Action	da jiang action	high
+大疆Mavic	da jiang mavic	mid
+大疆Mini	da jiang mini	mid
+影石全景相机	ying shi quan jing xiang ji	mid
+富士胶片	fu shi jiao pian	mid
+索尼微单	suo ni wei dan	high
+佳能微单	jia neng wei dan	high
+尼康微单	ni kang wei dan	high
+苹果无线耳机	ping guo wu xian er ji	mid
+华为无线耳机	hua wei wu xian er ji	mid
+小米无线耳机	xiao mi wu xian er ji	mid
+华为运动健康	hua wei yun dong jian kang	high
+小米运动健康	xiao mi yun dong jian kang	high
+三星手表	san xing shou biao	mid
+佳明运动手表	jia ming yun dong shou biao	mid
+小度音箱	xiao du yin xiang	high
+哈曼卡顿音响	ha man ka dun yin xiang	mid
+马歇尔音响	ma xie er yin xiang	high
+索尼降噪耳机	suo ni jiang zao er ji	high
+苹果降噪耳机	ping guo jiang zao er ji	mid
+森海塞尔耳机	sen hai sai er er ji	mid
+罗技机械键盘	luo ji ji xie jian pan	mid
+雷蛇鼠标	lei she shu biao	high
+戴尔显示器	dai er xian shi qi	mid
+华硕显示器	hua shuo xian shi qi	mid
+明基显示器	ming ji xian shi qi	mid
+红米显示器	hong mi xian shi qi	mid
+小米显示器	xiao mi xian shi qi	high
+LG显示器	lg xian shi qi	mid
+三星显示器	san xing xian shi qi	mid
+AOC显示器	aoc xian shi qi	high
+飞利浦显示器	fei li pu xian shi qi	mid
+惠普打印机	hui pu da yin ji	high
+佳能打印机	jia neng da yin ji	high
+爱普生打印机	ai pu sheng da yin ji	high
+小米打印机	xiao mi da yin ji	high
+华为打印机	hua wei da yin ji	mid
+奔图打印机	ben tu da yin ji	mid
+绿联扩展坞	lv lian kuo zhan wu	high
+安克充电宝	an ke chong dian bao	high
+酷态科充电宝	ku tai ke chong dian bao	high
+小米充电宝	xiao mi chong dian bao	high
+罗马仕充电宝	luo ma shi chong dian bao	high
+倍思充电器	bei si chong dian qi	mid
+安克充电器	an ke chong dian qi	mid
+绿联充电器	lv lian chong dian qi	high
+公牛插线板	gong niu cha xian ban	high
+小米插线板	xiao mi cha xian ban	high
+得力碎纸机	de li sui zhi ji	mid
+极空间私有云	ji kong jian si you yun	mid
+群晖NAS	qun hui nas	high
+威联通NAS	wei lian tong nas	mid
+绿联NAS	lv lian nas	high
+飞牛NAS	fei niu nas	high
+飞牛OS	fei niu os	high
+小米扫地机器人	xiao mi sao di ji qi ren	high
+石头扫地机器人	shi tou sao di ji qi ren	high
+科沃斯扫地机器人	ke wo si sao di ji qi ren	high
+追觅扫地机器人	zhui mi sao di ji qi ren	high
+云鲸扫地机器人	yun jing sao di ji qi ren	high
+添可洗地机	tian ke xi di ji	high
+追觅洗地机	zhui mi xi di ji	high
+美的洗碗机	mei de xi wan ji	high
+方太洗碗机	fang tai xi wan ji	high
+西门子洗碗机	xi men zi xi wan ji	high
+海尔洗碗机	hai er xi wan ji	mid
+小米净水器	xiao mi jing shui qi	high
+美的净水器	mei de jing shui qi	high
+沁园净水器	qin yuan jing shui qi	mid
+安吉尔净水器	an ji er jing shui qi	mid
+史密斯热水器	shi mi si re shui qi	high
+林内热水器	lin nei re shui qi	high
+能率热水器	neng lv re shui qi	high
+海尔热水器	hai er re shui qi	high
+美的热水器	mei de re shui qi	high
+万和热水器	wan he re shui qi	mid
+方太油烟机	fang tai you yan ji	high
+老板油烟机	lao ban you yan ji	high
+华帝油烟机	hua di you yan ji	high
+美的油烟机	mei de you yan ji	mid
+火星人集成灶	huo xing ren ji cheng zao	mid
+小米空气净化器	xiao mi kong qi jing hua qi	high
+华为智选	hua wei zhi xuan	high
+米家加湿器	mi jia jia shi qi	mid
+小米电风扇	xiao mi dian feng shan	mid
+美的电风扇	mei de dian feng shan	mid
+艾美特	ai mei te	mid
+先锋取暖器	xian feng qu nuan qi	mid
+小熊养生壶	xiao xiong yang sheng hu	high
+北鼎养生壶	bei ding yang sheng hu	mid
+九阳豆浆机	jiu yang dou jiang ji	high
+九阳破壁机	jiu yang po bi ji	high
+苏泊尔电饭煲	su bo er dian fan bao	high
+苏泊尔炒锅	su bo er chao guo	high
+美的空气炸锅	mei de kong qi zha guo	high
+九阳空气炸锅	jiu yang kong qi zha guo	mid
+小米空气炸锅	xiao mi kong qi zha guo	high
+松下微波炉	song xia wei bo lu	high
+格兰仕微波炉	ge lan shi wei bo lu	high
+美的微波炉	mei de wei bo lu	high
+海氏烤箱	hai shi kao xiang	mid
+长帝烤箱	chang di kao xiang	mid
+柏翠咖啡机	bo cui ka fei ji	mid
+格米莱咖啡机	ge mi lai ka fei ji	mid
+德龙咖啡机	de long ka fei ji	high
+飞利浦电动牙刷	fei li pu dian dong ya shua	high
+飞利浦剃须刀	fei li pu ti xu dao	high
+博朗剃须刀	bo lang ti xu dao	high
+飞科剃须刀	fei ke ti xu dao	high
+松下剃须刀	song xia ti xu dao	mid
+徕芬电动牙刷	lai fen dian dong ya shua	high
+小米电动牙刷	xiao mi dian dong ya shua	high
+舒客电动牙刷	shu ke dian dong ya shua	mid
+康夫吹风机	kang fu chui feng ji	mid
+追觅吹风机	zhui mi chui feng ji	high
+松下电吹风	song xia dian chui feng	mid
+小佩猫砂盆	xiao pei mao sha pen	mid
+霍曼饮水机	huo man yin shui ji	mid
+网易严选猫砂	wang yi yan xuan mao sha	mid
+pidan猫砂	pidan mao sha	mid
+里兜猫砂	li dou mao sha	mid
+许翠花猫砂	xu cui hua mao sha	high
+蓝氏猫粮	lan shi mao liang	mid
+鲜朗猫粮	xian lang mao liang	high
+诚实一口	cheng shi yi kou	high
+弗列加特	fu lie jia te	mid
+网易天成	wang yi tian cheng	mid
+高爷家	gao ye jia	mid
+帕特	pa te	mid
+金故	jin gu	mid
+凯锐思	kai rui si	mid
+疯狂小狗	feng kuang xiao gou	mid
+倍内菲	bei nei fei	mid
+素力高	su li gao	mid
+纽翠斯	niu cui si	mid
+法米娜	fa mi na	mid
+巅峰罐头	dian feng guan tou	mid
+小李子罐头	xiao li zi guan tou	mid
+美士猫粮	mei shi mao liang	mid
+好主人	hao zhu ren	mid
+宝路狗粮	bao lu gou liang	mid
+伟嘉猫粮	wei jia mao liang	mid
+皇誉	huang yu	std
+希尔思	xi er si	mid
+冠能	guan neng	mid
+欧莱雅洗发水	ou lai ya xi fa shui	high
+卡诗洗发水	ka shi xi fa shui	high
+海飞丝洗发水	hai fei si xi fa shui	high
+清扬洗发水	qing yang xi fa shui	high
+蜂花护发素	feng hua hu fa su	high
+潘婷护发素	pan ting hu fa su	high
+多芬沐浴露	duo fen mu yu lu	high
+力士沐浴露	li shi mu yu lu	high
+舒肤佳沐浴露	shu fu jia mu yu lu	high
+六神沐浴露	liu shen mu yu lu	high
+可悠然	ke you ran	high
+半亩花田	ban mu hua tian	high
+浴见	yu jian	mid
+凡士林身体乳	fan shi lin shen ti ru	high
+欧舒丹护手霜	ou shu dan hu shou shuang	high
+曼秀雷敦	man xiu lei dun	high
+依泉唇膏	yi quan chun gao	mid
+芙丽芳丝	fu li fang si	high
+珂润	ke run	high
+珂润面霜	ke run mian shuang	high
+至本	zhi ben	high
+至本洗面奶	zhi ben xi mian nai	high
+溪木源	xi mu yuan	high
+逐本	zhu ben	high
+逐本卸妆油	zhu ben xie zhuang you	high
+植村秀卸妆油	zhi cun xiu xie zhuang you	high
+贝德玛	bei de ma	high
+美宝莲眼唇卸	mei bao lian yan chun xie	mid
+兰蔻小黑瓶	lan kou xiao hei ping	high
+雅诗兰黛小棕瓶	ya shi lan dai xiao zong ping	high
+海蓝之谜面霜	hai lan zhi mi mian shuang	high
+赫莲娜黑绷带	he lian na hei beng dai	high
+娇韵诗双萃	jiao yun shi shuang cui	high
+修丽可色修	xiu li ke se xiu	high
+珀莱雅早C晚A	po lai ya zao c wan a	high
+珀莱雅红宝石	po lai ya hong bao shi	high
+薇诺娜特护霜	wei nuo na te hu shuang	high
+可复美胶原棒	ke fu mei jiao yuan bang	high
+敷尔佳面膜	fu er jia mian mo	high
+自然堂面膜	zi ran tang mian mo	mid
+蒂佳婷	di jia ting	mid
+菲洛嘉	fei luo jia	mid
+欧缇丽	ou ti li	mid
+黛珂	dai ke	high
+奥尔滨	ao er bin	mid
+茵芙莎	yin fu sha	mid
+雪肌精	xue ji jing	mid
+资生堂红腰子	zi sheng tang hong yao zi	high
+安热沙	an re sha	high
+碧柔防晒	bi rou fang shai	high
+怡思丁	yi si ding	high
+兰蔻防晒	lan kou fang shai	high
+欧莱雅防晒	ou lai ya fang shai	high
+资生堂蓝胖子	zi sheng tang lan pang zi	high
+防晒小金瓶	fang shai xiao jin ping	mid
+香蕉船	xiang jiao chuan	mid
+大宝SOD蜜	da bao sod mi	high
+标婷维生素E乳	biao ting wei sheng su e ru	mid
+协和维E乳	xie he wei e ru	mid
+郁美净儿童霜	yu mei jing er tong shuang	mid
+启初	qi chu	high
+戴可思	dai ke si	high
+红色小象	hong se xiao xiang	mid
+松达	song da	mid
+贝亲	bei qin	high
+世喜	shi xi	mid
+赫根	he gen	mid
+新安怡	xin an yi	mid
+布朗博士	bu lang bo shi	mid
+美德乐	mei de le	mid
+小皮辅食	xiao pi fu shi	mid
+英氏辅食	ying shi fu shi	mid
+爷爷的农场	ye ye de nong chang	high
+窝小芽	wo xiao ya	mid
+秋田满满	qiu tian man man	mid
+君乐宝奶粉	jun le bao nai fen	high
+伊利金领冠	yi li jin ling guan	high
+美素佳儿	mei su jia er	high
+皇家美素佳儿	huang jia mei su jia er	high
+a2奶粉	a er nai fen	high
+合生元	he sheng yuan	high
+健合	jian he	std
+贝因美	bei yin mei	mid
+完达山	wan da shan	mid
+雅培	ya pei	high
+雀巢能恩	que chao neng en	mid
+迪巧	di qiao	high
+星鲨	xing sha	high
+伊可新	yi ke xin	high
+拜奥	bai ao	mid
+合生元益生菌	he sheng yuan yi sheng jun	mid
+妈咪爱	ma mi ai	high
+小葵花	xiao kui hua	high
+999感冒灵	jiu jiu jiu gan mao ling	high
+感康	gan kang	high
+快克	kuai ke	high
+泰诺	tai nuo	high
+芬必得	fen bi de	high
+美林	mei lin	high
+布洛芬缓释胶囊	bu luo fen huan shi jiao nang	high
+连花清瘟	lian hua qing wen	high
+板蓝根	ban lan gen	high
+健胃消食片	jian wei xiao shi pian	high
+斯达舒	si da shu	mid
+达喜	da xi	high
+蒙脱石散	meng tuo shi san	high
+思密达	si mi da	mid
+江中健胃消食片	jiang zhong jian wei xiao shi pian	mid
+京都念慈菴	jing du nian ci an	high
+急支糖浆	ji zhi tang jiang	high
+川贝枇杷膏	chuan bei pi pa gao	high
+西瓜霜	xi gua shuang	high
+金嗓子喉片	jin sang zi hou pian	high
+草珊瑚含片	cao shan hu han pian	mid
+慢严舒柠	man yan shu ning	mid
+云南白药气雾剂	yun nan bai yao qi wu ji	high
+云南白药创可贴	yun nan bai yao chuang ke tie	high
+邦迪创可贴	bang di chuang ke tie	high
+扶他林	fu ta lin	high
+奇正消痛贴膏	qi zheng xiao tong tie gao	mid
+马应龙	ma ying long	high
+派瑞松	pai rui song	mid
+达克宁	da ke ning	high
+皮炎平	pi yan ping	high
+999皮炎平	jiu jiu jiu pi yan ping	high
+复方樟脑乳膏	fu fang zhang nao ru gao	mid
+红霉素软膏	hong mei su ruan gao	high
+百多邦	bai duo bang	high
+莫匹罗星软膏	mo pi luo xing ruan gao	high
+开瑞坦	kai rui tan	high
+息斯敏	xi si min	mid
+仙特明	xian te ming	mid
+珍视明	zhen shi ming	high
+海露滴眼液	hai lu di yan ye	high
+参天眼药水	can tian yan yao shui	mid
+乐敦眼药水	le dun yan yao shui	mid
+博士伦	bo shi lun	high
+海昌	hai chang	high
+强生安视优	qiang sheng an shi you	mid
+库博光学	ku bo guang xue	mid
+蔡司镜片	cai si jing pian	high
+依视路	yi shi lu	high
+明月镜片	ming yue jing pian	high
+凯米镜片	kai mi jing pian	mid
+暴龙眼镜	bao long yan jing	high
+陌森眼镜	mo sen yan jing	mid
+雷朋眼镜	lei peng yan jing	high
+木九十	mu jiu shi	mid
+AOJO	aojo	std
+LOHO	loho	std
+JINS	jins	mid
+宝岛眼镜	bao dao yan jing	high
+博士眼镜	bo shi yan jing	mid
+大光明眼镜	da guang ming yan jing	mid

@@ -234,7 +234,8 @@ class LexiconQualityTests(unittest.TestCase):
         manifest = json.loads(
             (quality.ROOT / "shared/category_lexicons.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(len(manifest["categories"]), 99)
+        self.assertEqual(len(manifest["categories"]), 26)
+        self.assertEqual(manifest["category_count"], 26)
         for item in manifest["categories"]:
             path = quality.ROOT / "lexicon/zh-ext" / item["file"]
             data = path.read_bytes()

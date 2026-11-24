@@ -1,0 +1,823 @@
+# 开心输入法 Phase-1 办公协作与职场扩充词表（人工整理 + AI 辅助；Apache-2.0）
+# 原则：聚焦真实高频办公术语、协作表达与中英混写办公词；拒绝机械模板句。
+
+# === 项目管理与团队协作 ===
+[high]
+项目立项|立项申请|立项评审|立项报告|立项审批|需求评审|需求宣讲|需求拆解|需求排期|需求冻结|需求池|需求清单|需求文档|需求规格说明书|功能清单|功能模块|功能验收|交互评审|视觉评审|设计评审|技术评审|架构评审|方案评审|用例评审|代码评审|安全评审|合规评审|上线评审|排期确认|排期计划|排期评估|排期冲突|工期评估|工时估算|人力评估|人天评估|资源评估|资源协调|资源倾斜|资源到位|里程碑|里程碑节点|关键路径|关键节点|时间节点|交付节点|截止日期|交付日期|交付物|交付标准|交付质量|验收标准|验收报告|验收签字|上线清单|上线检查|上线审批|上线窗口|上线回滚|回滚方案|兜底方案|备选方案|应急预案|风险清单|风险台账|风险预警|风险提示|风险排查|风险防控|风险缓解|阻塞项|卡点排查|依赖项|前置条件|变更申请|变更评审|变更记录|变更日志|发版说明|发布公告|版本规划|版本迭代|版本冻结|封版测试|提测标准|提测邮件|冒烟测试|回归测试|集成测试|联调测试|联调排期|前后端联调|灰度发布|灰度放量|灰度观察|全量发布|线上巡检|线上监控|线上告警|线上故障|故障排查|故障定位|故障恢复|故障复盘|故障定级|根因分析|改进措施|整改清单|整改落实|复盘会议|项目复盘|阶段复盘|迭代复盘|月度复盘|季度复盘|年度复盘|复盘总结|复盘报告|经验沉淀|方法论沉淀|最佳实践|敏捷开发|看板管理|燃尽图|甘特图|思维导图|流程图|架构图|时序图|泳道图|原型图|线框图|高保真原型|低保真原型|每日站会|晨会同步|周例会|双周会|月度经营会|季度战略会|跨部门协作|跨团队协同|横向拉通|纵向对齐|目标对齐|信息拉齐|信息透明|信息闭环|业务闭环|工作闭环|闭环跟进|闭环管理|责任到人|权责清晰|分工明确|协同推进|统筹协调|统筹安排|重点跟进|专项跟进|专项攻坚|专项小组|项目组成员|项目负责人|业务负责人|技术负责人|产品负责人|测试负责人|运营负责人|设计负责人|对接人|接口人|协办人|审批人|抄送人|知会人|待办事项|待办清单|行动项|优先级排序|高优先级|中优先级|低优先级|紧急重要|加急处理|特事特办|并行推进|串行推进|分阶段实施|试点推广|试点运行|试运行|正式投产|平稳过渡|无缝衔接|降本增效|提质增效|流程再造|流程优化|流程规范|标准化建设|体系化建设|精细化管理|数字化转型|信息化建设|智能化升级|自动化办公|无纸化办公
+
+# === 会议、汇报、公文与职场沟通 ===
+[high]
+工作汇报|口头汇报|书面汇报|专题汇报|专项汇报|阶段汇报|进度汇报|周报|日报|月报|季报|年报|工作日报|工作周报|工作月报|工作季报|工作年报|年度总结|半年总结|季度总结|月度总结|个人总结|团队总结|部门总结|年终总结|年终述职|转正述职|晋升述职|述职报告|述职答辩|答辩材料|汇报材料|演示文稿|幻灯片|一页纸总结|执行摘要|核心结论|核心观点|关键发现|数据支撑|案例佐证|对比分析|趋势分析|归因分析|可行性分析|投入产出分析|成本效益分析|竞品分析|竞品调研|市场调研|行业研究|行业报告|白皮书|蓝皮书|商业计划书|经营分析报告|财务分析报告|调研问卷|用户访谈|深度访谈|焦点小组|会议通知|会议邀请|会议日程|会议议程|会议主题|会议纪要|会议记录|会议决议|会议共识|会议签到|会议录屏|会议转写|会议投屏|无线投屏|共享屏幕|远程会议|视频会议|电话会议|语音会议|线上会议|线下会议|混合会议|圆桌会议|头脑风暴|研讨会|宣贯会|动员会|启动会|誓师大会|表彰大会|答谢会|发布会|新闻发布会|产品发布会|渠道大会|合作伙伴大会|供应商大会|年度盛典|公司年会|部门团建|新人见面会|茶话会|座谈会|听证会|评审会|协调会|调度会|通气会|吹风会|闭门会|例会|早会|晚会|碰头会|对齐会|过方案|过需求|过设计|过排期|过数据|对口径|统一口径|官方口径|对外口径|内部口径|请示汇报|书面请示|签报审批|公文流转|红头文件|正式通知|内部通告|全员邮件|全体通知|公告栏|公示期|征求意见稿|试行办法|实施细则|管理制度|管理规范|操作规程|作业指导书|操作手册|用户手册|使用指南|入门指南|常见问题解答|知识库|团队知识库|企业知识库|在线文档|协同文档|共享文档|共享表格|多维表格|云文档|云盘共享|文档权限|只读权限|可编辑权限|评论权限|分享链接|提取码|文档加密|水印保护|禁止下载|禁止复制|版本历史|修订记录|审阅批注|定稿版本|最终版|终稿|初稿|草稿|修订稿|审定稿|文件归档|档案管理|电子档案|纸质归档|文件命名规范|邮件标题|邮件正文|邮件附件|邮件抄送|密送|邮件签名|自动回复|休假自动回复|已读回执|重要标记|星标邮件|定时发送|撤回邮件|请查收附件|请阅示|请批示|请审阅|请核定|请知悉|请悉知|特此说明|特此函告|顺颂商祺|顺祝商祺|敬请指正|感谢配合|感谢支持|辛苦协助|麻烦跟进|烦请处理|烦请确认|烦请审批|烦请反馈|尽快回复|及时同步|随时沟通|保持同步|有进展随时说|我来跟进|已处理完毕|已完成更新|已上传至共享盘|已同步至群里|已发您邮箱|请注意查收|详情见附件|具体如下|补充说明如下|整理如下|汇总如下|现汇报如下|请领导指示|请各位提出意见|欢迎补充指正|辛苦大家了|感谢各位配合
+
+# === 职场人事、招聘、绩效、薪酬与考勤 ===
+[high]
+人力资源|人才招聘|社会招聘|校园招聘|秋招|春招|实习招聘|内部推荐|内推码|猎头推荐|招聘渠道|招聘简章|岗位职责|任职资格|任职要求|岗位说明书|薪资范围|薪酬福利|招聘进度|简历筛选|简历初筛|电话初筛|面试邀请|一面|二面|三面|终面|技术面|业务面|总监面|老板面|高管面|笔试测评|在线笔试|性格测试|能力测评|群面|无领导小组讨论|结构化面试|面试评价|面试反馈|面试通过|背景调查|背调授权|薪资核定|谈薪沟通|录用审批|录用通知书|入职邀请|入职指引|入职材料|入职体检|入职报到|入职办理|入职培训|新人引导|导师制|双导师|岗位带教|试用期考核|试用期评估|试用期转正|转正申请|转正答辩|转正审批|提前转正|延期转正|在职培训|技能培训|管理培训|领导力培训|合规培训|新员工培训|内训师|课程体系|学习地图|职业通道|双通道发展|专业序列|管理序列|职级体系|职级晋升|晋升提名|晋升答辩|晋升评审|破格晋升|内部转岗|活水计划|岗位轮换|借调支援|外派驻场|绩效管理|绩效目标|目标设定|中期回顾|绩效自评|上级评估|互评打分|绩效校准|绩效面谈|绩效沟通|绩效改进计划|绩效结果|绩效等级|绩效奖金|绩效申诉|薪酬体系|基本工资|岗位工资|绩效工资|津贴补贴|交通补贴|餐饮补贴|通讯补贴|住房补贴|高温补贴|取暖补贴|出差补贴|外派补贴|加班费|倒班津贴|全勤奖|项目奖|专项奖|创新奖|伯乐奖|内推奖金|季度奖|半年奖|年终奖|十三薪|十四薪|十六薪|调薪窗口|普调薪资|股票期权|限制性股票|股权激励|员工持股计划|五险一金|六险二金|补充医疗保险|商业保险|企业年金|住房公积金|社保基数|公积金基数|个税扣缴|个税汇算清缴|专项附加扣除|工资条|薪资保密|发薪日|考勤管理|考勤打卡|人脸打卡|定位打卡|弹性工作制|标准工时制|综合工时制|不定时工时制|考勤异常|漏打卡|补卡申请|迟到早退|旷工记录|请假流程|年假|带薪年假|年假余额|病假|病假证明|事假|婚假|产假|陪产假|育儿假|哺乳假|护理假|丧假|公假|调休|调休余额|加班申请|加班调休|工作日加班|周末加班|法定节假日加班|外出报备|出差申请|差旅审批|居家办公申请|远程办公|混合办公|员工关系|员工关怀|节日礼品|生日福利|年度体检|家属体检|带薪团建|下午茶福利|健身福利|心理咨询|员工满意度|敬业度调研|组织诊断|组织架构|架构调整|部门合并|人员优化|离职面谈|离职申请|离职审批|离职交接|工作交接清单|资产归还|权限回收|邮箱停用|离职证明|竞业限制|竞业协议|保密协议|劳动合同|合同续签|无固定期限合同|经济补偿金|劳务派遣|外包人员|实习生|管培生|应届生
+
+# === 行政、财务、采购、法务与日常事务 ===
+[high]
+行政管理|行政支持|前台接待|访客预约|访客登记|来访指引|工牌制作|工牌补办|门禁开通|门禁权限|工位分配|工位调整|办公区改造|绿植养护|保洁服务|安保巡逻|物业报修|空调报修|照明维修|网络报修|设备报修|会议室管理|会议室设备|投影仪调试|茶歇准备|饮水机维护|快递收发|文件寄送|同城闪送|办公用品|文具申领|耗材申领|打印纸|硒鼓墨盒|打印机共享|扫描归档|碎纸机|固定资产|资产盘点|资产编号|资产领用|资产调拨|资产报废|电脑申领|显示器申领|配件申领|车辆调度|公务用车|用车申请|班车时刻表|停车位申请|停车费补贴|差旅管理|差旅标准|机票预订|高铁票预订|酒店预订|协议酒店|差旅报销|市内交通费|打车发票|行程单|电子客票|住宿发票|餐饮发票|业务招待费|会务费|培训费|咨询费|服务费|办公费|通讯费|福利费|报销单|报销流程|费用报销|借款申请|备用金|对公付款|对公转账|付款申请|打款凭证|银行回单|水单|资金计划|预算编制|预算审批|预算调整|预算执行|超预算审批|费用分摊|成本核算|成本中心|利润中心|应收账款|应付账款|预收账款|预付账款|账龄分析|对账单|月度对账|季度对账|年终结账|财务月结|财务审计|内控审计|税务筹划|发票开具|开票申请|开票资料|公司抬头|纳税人识别号|开户行账号|增值税专用发票|增值税普通发票|数电票|电子发票|发票查验|发票认证|抵扣联|发票作废|红字发票|跨月冲红|采购管理|采购申请|采购需求|寻源比价|三方比价|询价单|报价单|竞价采购|招投标|招标公告|招标文件|投标文件|标书封装|开标评标|中标通知书|供应商准入|供应商评估|供应商考核|合格供应商名录|年度框架协议|采购订单|发货通知|到货验收|入库单|出库单|退换货单|质保金|尾款结算|月结三十天|货到付款|先款后货|合同管理|合同起草|合同拟定|合同初审|法务审核|财务审核|领导审批|合同会签|合同定稿|用印申请|盖章流程|公章|合同专用章|财务专用章|法人章|发票专用章|骑缝章|电子签章|电子合同|合同签署|合同扫描件|合同原件|合同归档|合同台账|合同变更|补充协议|解除协议|续约提醒|保密条款|知识产权条款|违约责任|免责条款|争议解决|仲裁条款|管辖法院|授权委托书|营业执照副本|法人身份证复印件|开户许可证|一般纳税人证明|资信证明|合规审查|反舞弊|反商业贿赂|利益冲突申报|信息安全|数据合规|隐私保护|密级划分|绝密文件|机密文件|内部公开|保密检查|桌面清理|锁屏规范|密码策略|双因素认证|权限最小化|账号注销
+
+# === 产品、运营、市场、品牌与增长 ===
+[high]
+产品管理|产品规划|产品路线图|产品定位|产品矩阵|产品形态|核心功能|增值功能|基础功能|场景分析|用户痛点|用户需求|伪需求|强需求|高频刚需|使用场景|用户画像|目标客群|核心用户|种子用户|活跃用户|沉默用户|流失用户|付费用户|免费用户|高价值用户|用户分层|用户标签|用户旅程|用户路径|用户体验地图|交互流程|信息架构|页面布局|视觉规范|设计系统|组件库|图标库|可用性测试|眼动测试|灰度实验|对照实验|实验分组|显著性检验|指标监控|北极星指标|核心指标|过程指标|护栏指标|日活|周活|月活|新增注册|次日留存|七日留存|三十日留存|留存率|流失率|转化率|付费率|复购率|客单价|连带率|退货率|退款率|点击率|曝光量|展现量|浏览量|访客数|跳出率|停留时长|人均使用时长|完播率|互动率|点赞率|评论率|转发率|收藏率|涨粉数|掉粉数|投入产出比|获客成本|用户生命周期价值|交易总额|净交易额|毛利率|净利率|盈亏平衡点|商业化变现|广告变现|会员订阅|增值服务|佣金抽成|联运分成|生态合作|渠道分发|应用商店优化|搜索引擎优化|搜索引擎营销|信息流投放|精准投放|定向投放|人群包|素材测试|落地页优化|漏斗分析|路径分析|归因分析|留存分析|同期群分析|用户行为分析|数据埋点|埋点方案|埋点验收|数据清洗|数据看板|经营驾驶舱|实时大屏|异常波动分析|专题数据分析|内容运营|活动运营|用户运营|社群运营|商品运营|类目运营|商家运营|达人运营|直播运营|私域运营|新媒体运营|公众号运营|短视频运营|小红书运营|社区运营|拉新促活|留存转化|裂变增长|老带新|邀请有礼|签到打卡|积分商城|等级体系|会员权益|成长值|优惠券策略|满减满赠|秒杀活动|拼团活动|预售活动|大促筹备|双十一大促|六一八大促|年货节|周年庆|品类日|品牌日|超级品牌日|话题营销|事件营销|跨界联名|联名营销|内容种草|达人种草|口碑营销|整合营销|全域营销|品效合一|品牌定位|品牌调性|品牌资产|品牌心智|品牌升级|品牌焕新|视觉识别系统|品牌手册|主视觉设计|宣传海报|易拉宝|宣传折页|企业宣传片|产品介绍片|新闻通稿|媒体邀约|媒体专访|公关稿件|危机公关|舆情监测|舆情应对|官方声明|致歉声明|展会筹备|展位设计|展台搭建|物料制作|伴手礼|签到台|主持词|领导致辞|发言稿
+
+# === 销售、商务、客服与供应链 ===
+[high]
+销售管理|销售目标|业绩指标|业绩达成率|季度冲刺|年底冲刺|销售漏斗|商机管理|线索获取|线索清洗|线索分配|线索跟进|有效线索|意向客户|潜在客户|重点客户|大客户管理|战略客户|标杆客户|行业标杆|客户拜访|陌拜|电话销售|面销|方案宣讲|产品演示|现场演示|概念验证|试点项目|商务洽谈|商务谈判|价格谈判|折扣审批|特价申请|商务条款|报价方案|阶梯报价|年度框采|合同签约|回款计划|回款跟进|催款通知|逾期账款|坏账准备|销售提成|业绩核算|渠道管理|渠道拓展|代理商招募|经销商管理|渠道政策|返点政策|渠道赋能|渠道培训|区域保护|串货管控|客户成功|客户引导|客户培训|续费率|净留存率|增购扩购|客户健康度|流失预警|客户挽留|高层回访|客户满意度|净推荐值|售后服务|客服中心|在线客服|热线客服|工单系统|工单流转|工单升级|首次响应时间|平均处理时长|一次解决率|服务等级协议|客诉处理|投诉升级|客诉复盘|补偿方案|退换货政策|质保服务|上门维修|寄修服务|备件管理|话术库|标准应答|智能客服|人工坐席|质检抽查|满意度评价|供应链管理|需求预测|产销协同|生产计划|主生产计划|物料需求计划|安全库存|库存周转率|呆滞库存|缺货预警|补货计划|仓储管理|入库质检|上架存储|波次拣选|复核打包|称重出库|库存盘点|循环盘点|物流配送|干线运输|支线配送|同城配送|冷链物流|跨境物流|报关清关|国际货代|海运空运|运费核算|运单追踪|签收异常|破损理赔|丢件理赔|逆向物流
+
+# === 办公软件、效率工具与常见办公中英混写（显式输入码） ===
+PPT	ppt	high
+PPT模板	ppt mo ban	high
+PPT排版	ppt pai ban	high
+PPT汇报	ppt hui bao	high
+PPT制作	ppt zhi zuo	high
+PPT动画	ppt dong hua	mid
+Excel	excel	high
+Excel表格	excel biao ge	high
+Excel公式	excel gong shi	high
+Excel透视表	excel tou shi biao	high
+Excel函数	excel han shu	high
+Excel宏	excel hong	mid
+Word	word	high
+Word文档	word wen dang	high
+Word排版	word pai ban	high
+Word模板	word mo ban	high
+PDF	pdf	high
+PDF转换	pdf zhuan huan	high
+PDF合并	pdf he bing	high
+PDF拆分	pdf chai fen	high
+PDF压缩	pdf ya suo	high
+PDF加密	pdf jia mi	high
+PDF编辑	pdf bian ji	high
+PDF阅读器	pdf yue du qi	high
+PDF转Word	pdf zhuan word	high
+Word转PDF	word zhuan pdf	high
+WPS	wps	high
+WPS文档	wps wen dang	high
+WPS表格	wps biao ge	high
+WPS演示	wps yan shi	mid
+CSV	csv	high
+CSV导出	csv dao chu	high
+CSV导入	csv dao ru	mid
+JSON	json	high
+JSON格式	json ge shi	high
+XML	xml	mid
+YAML	yaml	mid
+Markdown	mark down	high
+Markdown笔记	mark down bi ji	high
+KPI	kpi	high
+KPI考核	kpi kao he	high
+KPI指标	kpi zhi biao	high
+OKR	okr	high
+OKR目标	okr mu biao	high
+OKR对齐	okr dui qi	high
+OKR复盘	okr fu pan	high
+A/B测试	ab ce shi	high
+SOP	sop	high
+SOP流程	sop liu cheng	high
+SOP文档	sop wen dang	high
+ROI	roi	high
+ROI分析	roi fen xi	high
+ROI测算	roi ce suan	mid
+GMV	gmv	high
+GMV数据	gmv shu ju	high
+GMV增长	gmv zeng zhang	high
+DAU	dau	high
+MAU	mau	high
+WAU	wau	mid
+UV	uv	high
+PV	pv	high
+CTR	ctr	high
+CVR	cvr	high
+LTV	ltv	high
+CAC	cac	high
+ARPU	arpu	mid
+ARPPU	arppu	mid
+NPS	nps	high
+SLA	sla	high
+SLA保障	sla bao zhang	high
+PRD	prd	high
+PRD文档	prd wen dang	high
+MRD	mrd	mid
+BRD	brd	mid
+UI	ui	high
+UI设计	ui she ji	high
+UI走查	ui zou cha	high
+UX	ux	high
+UX体验	ux ti yan	high
+UE	ue	mid
+PM	pm	high
+PMO	pmo	high
+QA	qa	high
+QA测试	qa ce shi	high
+RD	rd	high
+FE	fe	high
+BE	be	high
+OP	op	mid
+DBA	dba	high
+SRE	sre	high
+DevOps	dev ops	high
+HR	hr	high
+HR面试	hr mian shi	high
+HRBP	hrbp	high
+BP	bp	high
+PR	pr	high
+PR稿件	pr gao jian	high
+BD	bd	high
+BD合作	bd he zuo	high
+KA	ka	high
+KA客户	ka ke hu	high
+VIP客户	vip ke hu	high
+KOL	kol	high
+KOL合作	kol he zuo	high
+KOC	koc	high
+KOC种草	koc zhong cao	high
+CEO	ceo	high
+CTO	cto	high
+CFO	cfo	high
+COO	coo	high
+CMO	cmo	high
+CPO	cpo	mid
+CIO	cio	mid
+CSO	cso	mid
+VP	vp	high
+SVP	svp	mid
+GM	gm	mid
+ToB	to b	high
+ToC	to c	high
+ToG	to g	mid
+B端	b duan	high
+B端产品	b duan chan pin	high
+B端业务	b duan ye wu	high
+C端	c duan	high
+C端产品	c duan chan pin	high
+C端用户	c duan yong hu	high
+G端	g duan	mid
+SaaS	saas	high
+SaaS系统	saas xi tong	high
+SaaS平台	saas ping tai	high
+PaaS	paas	mid
+IaaS	iaas	mid
+OA	oa	high
+OA审批	oa shen pi	high
+OA系统	oa xi tong	high
+CRM	crm	high
+CRM系统	crm xi tong	high
+ERP	erp	high
+ERP系统	erp xi tong	high
+HRM	hrm	mid
+MES	mes	mid
+WMS	wms	mid
+OMS	oms	mid
+SCM	scm	mid
+BI	bi	high
+BI看板	bi kan ban	high
+BI报表	bi bao biao	high
+SQL	sql	high
+SQL查询	sql cha xun	high
+API	api	high
+API对接	api dui jie	high
+API文档	api wen dang	high
+SDK	sdk	high
+SDK集成	sdk ji cheng	high
+MVP	mvp	high
+MVP版本	mvp ban ben	high
+POC	poc	high
+POC验证	poc yan zheng	high
+NDA	nda	high
+NDA协议	nda xie yi	high
+SLA协议	sla xie yi	mid
+RFQ	rfq	mid
+RFP	rfp	mid
+PO单	po dan	mid
+SKU	sku	high
+SPU	spu	high
+OEM	oem	high
+ODM	odm	high
+OBM	obm	mid
+BOM	bom	high
+BOM清单	bom qing dan	high
+QC	qc	high
+IQC	iqc	mid
+OQC	oqc	mid
+ISO	iso	high
+ISO认证	iso ren zheng	high
+ESG	esg	high
+ESG报告	esg bao gao	high
+IPO	ipo	high
+IPO上市	ipo shang shi	high
+GDP	gdp	high
+CPI	cpi	high
+PPI	ppi	mid
+PMI	pmi	mid
+ETF	etf	high
+QDII	qdii	mid
+REITs	reits	mid
+Offer	offer	high
+Offer发放	offer fa fang	high
+Offer沟通	offer gou tong	mid
+Headcount	head count	mid
+HC	hc	high
+HC审批	hc shen pi	high
+Onboard	on board	mid
+Review	review	high
+Code Review	code review	high
+Sync	sync	high
+Align	align	mid
+Owner	owner	high
+Deadline	dead line	high
+DDL	ddl	high
+ETA	eta	high
+ASAP	asap	high
+FYI	fyi	high
+CC	cc	high
+BCC	bcc	mid
+TBD	tbd	high
+WIP	wip	mid
+Done	done	mid
+TODO	todo	high
+WFH	wfh	high
+WFH居家办公	wfh ju jia ban gong	high
+VPN	vpn	high
+VPN连接	vpn lian jie	high
+SSO	sso	mid
+SSO登录	sso deng lu	mid
+IT	it	high
+IT支持	it zhi chi	high
+IT部门	it bu men	high
+AI办公	ai ban gong	high
+AI助手	ai zhu shou	high
+AI写作	ai xie zuo	high
+AI总结	ai zong jie	high
+AI翻译	ai fan yi	high
+AI纪要	ai ji yao	high
+AI做PPT	ai zuo ppt	high
+AI表格	ai biao ge	high
+AI客服	ai ke fu	high
+AI编程	ai bian cheng	high
+AI搜索	ai sou suo	high
+AI绘画	ai hui hua	high
+AI生图	ai sheng tu	high
+AI视频	ai shi pin	high
+AI Agent	ai agent	high
+AIGC	aigc	high
+LLM	llm	high
+RAG	rag	high
+Prompt	prompt	high
+Token	token	high
+GPU算力	gpu suan li	high
+Wi-Fi连接	wi fi lian jie	high
+WiFi连接	wifi lian jie	high
+二维码	er wei ma	high
+二维码扫描	er wei ma sao miao	mid
+小程序码	xiao cheng xu ma	mid
+办公电脑	ban gong dian nao	high
+笔记本电脑	bi ji ben dian nao	high
+台式机	tai shi ji	high
+扩展坞	kuo zhan wu	high
+双屏办公	shuang ping ban gong	high
+机械键盘	ji xie jian pan	high
+无线鼠标	wu xian shu biao	high
+蓝牙耳机	lan ya er ji	high
+降噪耳机	jiang zao er ji	high
+人体工学椅	ren ti gong xue yi	high
+升降桌	sheng jiang zhuo	high
+电脑支架	dian nao zhi jia	high
+屏幕挂灯	ping mu gua deng	high
+会议麦克风	hui yi mai ke feng	mid
+翻页笔	fan ye bi	high
+白板笔	bai ban bi	high
+便利贴	bian li tie	high
+文件夹	wen jian jia	high
+文件袋	wen jian dai	high
+档案盒	dang an he	high
+订书机	ding shu ji	high
+回形针	hui xing zhen	high
+长尾夹	chang wei jia	high
+印泥	yin ni	high
+名片夹	ming pian jia	mid
+记事本	ji shi ben	high
+日程本	ri cheng ben	high
+工作牌	gong zuo pai	high
+门禁卡	men jin ka	high
+饭卡	fan ka	high
+班车	ban che	high
+茶水间	cha shui jian	high
+会议室	hui yi shi	high
+洽谈室	qia tan shi	high
+电话亭	dian hua ting	mid
+母婴室	mu ying shi	high
+休息区	xiu xi qu	high
+工位	gong wei	high
+开放办公区	kai fang ban gong qu	mid
+独立办公室	du li ban gong shi	high
+老板办公室	lao ban ban gong shi	mid
+总经办	zong jing ban	high
+董事会	dong shi hui	high
+监事会	jian shi hui	high
+股东大会	gu dong da hui	high
+执委会	zhi wei hui	mid
+战略部	zhan lve bu	high
+市场部	shi chang bu	high
+销售部	xiao shou bu	high
+运营部	yun ying bu	high
+产品部	chan pin bu	high
+研发部	yan fa bu	high
+技术部	ji shu bu	high
+测试部	ce shi bu	high
+设计部	she ji bu	high
+人事部	ren shi bu	high
+行政部	xing zheng bu	high
+财务部	cai wu bu	high
+法务部	fa wu bu	high
+采购部	cai gou bu	high
+供应链部	gong ying lian bu	high
+客服部	ke fu bu	high
+公关部	gong guan bu	high
+品牌部	pin pai bu	high
+风控部	feng kong bu	high
+审计部	shen ji bu	high
+合规部	he gui bu	high
+质量部	zhi liang bu	high
+生产部	sheng chan bu	high
+物流部	wu liu bu	high
+海外部	hai wai bu	high
+大客户部	da ke hu bu	high
+渠道部	qu dao bu	high
+商务部	shang wu bu	high
+政企部	zheng qi bu	high
+项目部	xiang mu bu	high
+总务部	zong wu bu	mid
+综合管理部	zong he guan li bu	high
+董事长	dong shi zhang	high
+总经理	zong jing li	high
+副总经理	fu zong jing li	high
+总裁	zong cai	high
+副总裁	fu zong cai	high
+总监	zong jian	high
+高级总监	gao ji zong jian	high
+部门经理	bu men jing li	high
+项目经理	xiang mu jing li	high
+产品经理	chan pin jing li	high
+高级产品经理	gao ji chan pin jing li	high
+运营经理	yun ying jing li	high
+市场经理	shi chang jing li	high
+销售经理	xiao shou jing li	high
+大客户经理	da ke hu jing li	high
+客户经理	ke hu jing li	high
+渠道经理	qu dao jing li	high
+商务经理	shang wu jing li	high
+财务经理	cai wu jing li	high
+人事经理	ren shi jing li	high
+行政经理	xing zheng jing li	high
+采购经理	cai gou jing li	high
+技术经理	ji shu jing li	high
+研发经理	yan fa jing li	high
+测试经理	ce shi jing li	high
+架构师	jia gou shi	high
+技术专家	ji shu zhuan jia	high
+算法工程师	suan fa gong cheng shi	high
+后端工程师	hou duan gong cheng shi	high
+前端工程师	qian duan gong cheng shi	high
+全栈工程师	quan zhan gong cheng shi	high
+测试工程师	ce shi gong cheng shi	high
+运维工程师	yun wei gong cheng shi	high
+安全工程师	an quan gong cheng shi	high
+数据分析师	shu ju fen xi shi	high
+数据工程师	shu ju gong cheng shi	high
+交互设计师	jiao hu she ji shi	high
+视觉设计师	shi jue she ji shi	high
+平面设计师	ping mian she ji shi	high
+品牌设计师	pin pai she ji shi	high
+文案策划	wen an ce hua	high
+活动策划	huo dong ce hua	high
+新媒体编辑	xin mei ti bian ji	high
+短视频编导	duan shi pin bian dao	high
+直播运营专员	zhi bo yun ying zhuan yuan	mid
+人事专员	ren shi zhuan yuan	high
+招聘专员	zhao pin zhuan yuan	high
+薪酬专员	xin chou zhuan yuan	high
+培训专员	pei xun zhuan yuan	high
+行政专员	xing zheng zhuan yuan	high
+行政前台	xing zheng qian tai	high
+行政助理	xing zheng zhu li	high
+总裁助理	zong cai zhu li	high
+总经理助理	zong jing li zhu li	high
+董事办秘书	dong shi ban mi shu	mid
+财务专员	cai wu zhuan yuan	high
+会计	kuai ji	high
+出纳	chu na	high
+税务会计	shui wu kuai ji	high
+成本会计	cheng ben kuai ji	high
+总账会计	zong zhang kuai ji	high
+财务总监	cai wu zong jian	high
+法务专员	fa wu zhuan yuan	high
+法务经理	fa wu jing li	high
+法务总监	fa wu zong jian	high
+知识产权专员	zhi shi chan quan zhuan yuan	mid
+采购专员	cai gou zhuan yuan	high
+跟单员	gen dan yuan	high
+计划员	ji hua yuan	high
+仓管员	cang guan yuan	high
+质检员	zhi jian yuan	high
+客服专员	ke fu zhuan yuan	high
+客服主管	ke fu zhu guan	high
+售后工程师	shou hou gong cheng shi	high
+实施工程师	shi shi gong cheng shi	high
+售前工程师	shou qian gong cheng shi	high
+解决方案架构师	jie jue fang an jia gou shi	high
+业务骨干	ye wu gu gan	high
+核心骨干	he xin gu gan	high
+中层干部	zhong ceng gan bu	high
+基层员工	ji ceng yuan gong	high
+一线员工	yi xian yuan gong	high
+研发团队	yan fa tuan dui	high
+产品团队	chan pin tuan dui	high
+运营团队	yun ying tuan dui	high
+销售团队	xiao shou tuan dui	high
+市场团队	shi chang tuan dui	high
+设计团队	she ji tuan dui	high
+支持团队	zhi chi tuan dui	high
+交付团队	jiao fu tuan dui	high
+项目团队	xiang mu tuan dui	high
+
+# === 办公常用多音词显式校正 ===
+调休	tiao xiu	high
+调休申请	tiao xiu shen qing	high
+调休余额	tiao xiu yu e	high
+调整方案	tiao zheng fang an	high
+调研报告	diao yan bao gao	high
+调研问卷	diao yan wen juan	high
+调岗申请	diao gang shen qing	high
+调动审批	diao dong shen pi	high
+调度会	diao du hui	high
+调拨单	diao bo dan	high
+出差	chu chai	high
+出差申请	chu chai shen qing	high
+出差补贴	chu chai bu tie	high
+出差报销	chu chai bao xiao	high
+差旅标准	chai lv biao zhun	high
+差旅报销	chai lv bao xiao	high
+差旅审批	chai lv shen pi	high
+差旅费	chai lv fei	high
+差异分析	cha yi fen xi	high
+校对	jiao dui	high
+校准	jiao zhun	high
+绩效校准	ji xiao jiao zhun	high
+校园招聘	xiao yuan zhao pin	high
+行业分析	hang ye fen xi	high
+行业报告	hang ye bao gao	high
+行业标杆	hang ye biao gan	high
+行长审批	hang zhang shen pi	mid
+银行回单	yin hang hui dan	high
+开户银行	kai hu yin hang	high
+可行性报告	ke xing xing bao gao	high
+执行力	zhi xing li	high
+执行方案	zhi xing fang an	high
+并行推进	bing xing tui jin	high
+串行推进	chuan xing tui jin	high
+试行办法	shi xing ban fa	high
+重做	chong zuo	high
+重启项目	chong qi xiang mu	high
+重复工作	chong fu gong zuo	high
+重难点	zhong nan dian	high
+重点工作	zhong dian gong zuo	high
+重点推进	zhong dian tui jin	high
+重量级	zhong liang ji	high
+会计报表	kuai ji bao biao	high
+会计凭证	kuai ji ping zheng	high
+财会人员	cai kuai ren yuan	high
+会议纪要	hui yi ji yao	high
+传真机	chuan zhen ji	high
+传达精神	chuan da jing shen	high
+传输速度	chuan shu su du	high
+处理意见	chu li yi jian	high
+处分决定	chu fen jue ding	mid
+办事处	ban shi chu	high
+总务处	zong wu chu	mid
+教务处	jiao wu chu	high
+财务处	cai wu chu	high
+人事处	ren shi chu	high
+战略规划	zhan lve gui hua	high
+策略调整	ce lve tiao zheng	high
+运营策略	yun ying ce lve	high
+增长策略	zeng zhang ce lve	high
+定价策略	ding jia ce lve	high
+投放策略	tou fang ce lve	high
+渠道策略	qu dao ce lve	high
+产品策略	chan pin ce lve	high
+营销策略	ying xiao ce lve	high
+竞争策略	jing zheng ce lve	high
+略过	lve guo	high
+简略说明	jian lve shuo ming	mid
+归还资产	gui huan zi chan	high
+还清借款	huan qing jie kuan	high
+还款计划	huan kuan ji hua	high
+还有待确认	hai you dai que ren	high
+效率提升	xiao lv ti sheng	high
+利用率	li yong lv	high
+达成率	da cheng lv	high
+完成率	wan cheng lv	high
+通过率	tong guo lv	high
+合格率	he ge lv	high
+满意度调查	man yi du diao cha	high
+率领团队	shuai ling tuan dui	high
+参与评审	can yu ping shen	high
+参考意见	can kao yi jian	high
+参考文档	can kao wen dang	high
+参会人员	can hui ren yuan	high
+参展商	can zhan shang	high
+干货分享	gan huo fen xiang	high
+骨干成员	gu gan cheng yuan	high
+干劲十足	gan jin shi zu	high
+单据核对	dan ju he dui	high
+单点登录	dan dian deng lu	high
+单位抬头	dan wei tai tou	high
+合同盖章	he tong gai zhang	high
+合约到期	he yue dao qi	high
+合规审计	he gui shen ji	high
+核心诉求	he xin su qiu	high
+核销报销	he xiao bao xiao	high
+核对无误	he dui wu wu	high
+核定预算	he ding yu suan	high
+审核通过	shen he tong guo	high
+考核标准	kao he biao zhun	high
+复核签字	fu he qian zi	high
+稽核审查	ji he shen cha	mid
+着重说明	zhuo zhong shuo ming	high
+着手推进	zhuo shou tui jin	high
+着力解决	zhuo li jie jue	high
+着陆页	zhuo lu ye	high
+着急确认	zhao ji que ren	high
+供需平衡	gong xu ping heng	high
+供应商管理	gong ying shang guan li	high
+提供支持	ti gong zhi chi	high
+提供协助	ti gong xie zhu	high
+供给侧	gong ji ce	high
+自给自足	zi ji zi zu	high
+给排水	ji pai shui	mid
+中标结果	zhong biao jie guo	high
+中标公告	zhong biao gong gao	high
+中期汇报	zhong qi hui bao	high
+中台能力	zhong tai neng li	high
+中长期规划	zhong chang qi gui hua	high
+长远规划	chang yuan gui hua	high
+增长曲线	zeng zhang qu xian	high
+成长空间	cheng zhang kong jian	high
+组长审批	zu zhang shen pi	high
+科长审批	ke zhang shen pi	mid
+部长审批	bu zhang shen pi	high
+院长审批	yuan zhang shen pi	mid
+所长审批	suo zhang shen pi	mid
+厂长审批	chang zhang shen pi	mid
+店长培训	dian zhang pei xun	high
+模板下载	mo ban xia zai	high
+模型训练	mo xing xun lian	high
+模式创新	mo shi chuang xin	high
+规模化推广	gui mo hua tui guang	high
+模拟演练	mo ni yan lian	high
+模糊需求	mo hu xu qiu	high
+角逐市场	jue zhu shi chang	mid
+角色权限	jue se quan xian	high
+多角度分析	duo jiao du fen xi	high
+视角切换	shi jiao qie huan	high
+落地执行	luo di zhi xing	high
+落实到位	luo shi dao wei	high
+落户办理	luo hu ban li	high
+降本增效	jiang ben zeng xiao	high
+降级处理	jiang ji chu li	high
+降维打击	jiang wei da ji	high
+空缺岗位	kong que gang wei	high
+空闲时间	kong xian shi jian	high
+空降高管	kong jiang gao guan	high
+空白市场	kong bai shi chang	high
+假条审批	jia tiao shen pi	high
+假期值班	jia qi zhi ban	high
+假期安排	jia qi an pai	high
+节假日值守	jie jia ri zhi shou	high
+倒班排班	dao ban pai ban	high
+倒排工期	dao pai gong qi	high
+倒推排期	dao tui pai qi	high
+倒逼改革	dao bi gai ge	high
+背靠背测试	bei kao bei ce shi	mid
+背景资料	bei jing zi liao	high
+背调报告	bei diao bao gao	high
+冲刺阶段	chong ci jie duan	high
+冲突解决	chong tu jie jue	high
+缓冲时间	huan chong shi jian	high
+冲抵费用	chong di fei yong	high
+红冲发票	hong chong fa piao	high
+分摊成本	fen tan cheng ben	high
+分工协作	fen gong xie zuo	high
+分解目标	fen jie mu biao	high
+分阶段交付	fen jie duan jiao fu	high
+分量很重	fen liang hen zhong	high
+分寸拿捏	fen cun na nie	high
+本分工作	ben fen gong zuo	high
+应届毕业生	ying jie bi ye sheng	high
+应急响应	ying ji xiang ying	high
+应用场景	ying yong chang jing	high
+应用商店	ying yong shang dian	high
+响应时间	xiang ying shi jian	high
+响应速度	xiang ying su du	high
+应当注意	ying dang zhu yi	high
+应该可以	ying gai ke yi	high
+当期业绩	dang qi ye ji	high
+当月结算	dang yue jie suan	high
+当前进度	dang qian jin du	high
+当面沟通	dang mian gou tong	high
+恰当处理	qia dang chu li	high
+妥当安排	tuo dang an pai	high
+担当作为	dan dang zuo wei	high
+相辅相成	xiang fu xiang cheng	high
+相关负责人	xiang guan fu ze ren	high
+相关材料	xiang guan cai liao	high
+相应措施	xiang ying cuo shi	high
+相互配合	xiang hu pei he	high
+数据看板	shu ju kan ban	high
+数据大屏	shu ju da ping	high
+数据透视	shu ju tou shi	high
+数据汇总	shu ju hui zong	high
+数据对账	shu ju dui zhang	high
+数据口径	shu ju kou jing	high
+数据脱敏	shu ju tuo min	high
+数据备份	shu ju bei fen	high
+数据迁移	shu ju qian yi	high
+数据治理	shu ju zhi li	high
+数据资产	shu ju zi chan	high
+数据驱动	shu ju qu dong	high
+数据赋能	shu ju fu neng	high
+数据闭环	shu ju bi huan	high
+数字化办公	shu zi hua ban gong	high
+数智化转型	shu zhi hua zhuan xing	high
+量产交付	liang chan jiao fu	high
+量化评估	liang hua ping gu	high
+量化指标	liang hua zhi biao	high
+批量处理	pi liang chu li	high
+批量导入	pi liang dao ru	high
+批量导出	pi liang dao chu	high
+商量一下	shang liang yi xia	high
+考量因素	kao liang yin su	high
+衡量子项	heng liang zi xiang	mid
+衡量标准	heng liang biao zhun	high
+间隔时间	jian ge shi jian	high
+间接成本	jian jie cheng ben	high
+间歇性故障	jian xie xing gu zhang	high
+期间费用	qi jian fei yong	high
+时间管理	shi jian guan li	high
+时间表	shi jian biao	high
+时间线	shi jian xian	high
+时间轴	shi jian zhou	high
+工作流	gong zuo liu	high
+审批流	shen pi liu	high
+业务流	ye wu liu	high
+数据流	shu ju liu	high
+资金流	zi jin liu	high
+信息流	xin xi liu	high
+现金流	xian jin liu	high
+现金流预测	xian jin liu yu ce	high
+收支平衡	shou zhi ping heng	high
+开源节流	kai yuan jie liu	high
+降费提效	jiang fei ti xiao	high
+精细运营	jing xi yun ying	high
+敏捷迭代	min jie die dai	high
+快速试错	kuai su shi cuo	high
+小步快跑	xiao bu kuai pao	high
+价值闭环	jia zhi bi huan	high
+商业闭环	shang ye bi huan	high
+增长飞轮	zeng zhang fei lun	high
+第二曲线	di er qu xian	high
+护城河	hu cheng he	high
+核心竞争力	he xin jing zheng li	high
+差异化优势	cha yi hua you shi	high
+先发优势	xian fa you shi	high
+规模效应	gui mo xiao ying	high
+网络效应	wang luo xiao ying	high
+马太效应	ma tai xiao ying	high
+长尾效应	chang wei xiao ying	high
+二八法则	er ba fa ze	high
+木桶效应	mu tong xiao ying	high
+破窗效应	po chuang xiao ying	high
+蝴蝶效应	hu die xiao ying	high
+边际成本	bian ji cheng ben	high
+边际收益	bian ji shou yi	high
+沉没成本	chen mo cheng ben	high
+机会成本	ji hui cheng ben	high
+试错成本	shi cuo cheng ben	high
+沟通成本	gou tong cheng ben	high
+协作成本	xie zuo cheng ben	high
+决策成本	jue ce cheng ben	high
+时间成本	shi jian cheng ben	high
+人力成本	ren li cheng ben	high
+运营成本	yun ying cheng ben	high
+研发成本	yan fa cheng ben	high
+获客成本	huo ke cheng ben	high
+履约成本	lv yue cheng ben	high
+合规成本	he gui cheng ben	high
+向上管理	xiang shang guan li	high
+向下赋能	xiang xia fu neng	high
+跨级沟通	kua ji gou tong	high
+平级协作	ping ji xie zuo	high
+职场沟通	zhi chang gou tong	high
+职场礼仪	zhi chang li yi	high
+职场规则	zhi chang gui ze	high
+职场素养	zhi chang su yang	high
+职场情商	zhi chang qing shang	high
+职业道德	zhi ye dao de	high
+职业操守	zhi ye cao shou	high
+敬业精神	jing ye jing shen	high
+团队精神	tuan dui jing shen	high
+主人翁意识	zhu ren weng yi shi	high
+结果导向	jie guo dao xiang	high
+目标导向	mu biao dao xiang	high
+问题导向	wen ti dao xiang	high
+客户导向	ke hu dao xiang	high
+用户导向	yong hu dao xiang	high
+价值导向	jia zhi dao xiang	high
+数据说话	shu ju shuo hua	high
+拿结果说话	na jie guo shuo hua	high
+以终为始	yi zhong wei shi	high
+先僵化后优化	xian jiang hua hou you hua	mid
+结构化思维	jie gou hua si wei	high
+系统化思考	xi tong hua si kao	high
+金字塔原理	jin zi ta yuan li	high
+第一性原理	di yi xing yuan li	high
+结论先行	jie lun xian xing	high
+以上统下	yi shang tong xia	high
+归类分组	gui lei fen zu	high
+逻辑递进	luo ji di jin	high
+抓大放小	zhua da fang xiao	high
+抓重点	zhua zhong dian	high
+找抓手	zhao zhua shou	high
+定策略	ding ce lve	high
+搭班子	da ban zi	high
+带队伍	dai dui wu	high
+建机制	jian ji zhi	high
+立规矩	li gui ju	high
+树标杆	shu biao gan	high
+拿结果	na jie guo	high
+复盘迭代	fu pan die dai	high
+持续改进	chi xu gai jin	high
+精益求精	jing yi qiu jing	high
+追求卓越	zhui qiu zhuo yue	high
+使命必达	shi ming bi da	high
+言出必行	yan chu bi xing	high
+高效协同	gao xiao xie tong	high
+透明沟通	tou ming gou tong	high
+及时反馈	ji shi fan kui	high
+主动同步	zhu dong tong bu	high
+提前预警	ti qian yu jing	high
+前置沟通	qian zhi gou tong	high
+留痕管理	liu hen guan li	high
+书面确认	shu mian que ren	high
+邮件确认	you jian que ren	high
+群内确认	qun nei que ren	high
+签字确认	qian zi que ren	high
+电子确认	dian zi que ren	high
+同步知悉	tong bu zhi xi	high
+请予批准	qing yu pi zhun	high
+请予支持	qing yu zhi chi	high
+请予协助	qing yu xie zhu	high
+妥否请批示	tuo fou qing pi shi	high
+以上报告请审阅	yi shang bao gao qing shen yue	high
+附件为最新版本	fu jian wei zui xin ban ben	high
+请按时提交	qing an shi ti jiao	high
+请按节点推进	qing an jie dian tui jin	high
+辛苦今日下班前反馈	xin ku jin ri xia ban qian fan kui	high
+如有疑问随时联系	ru you yi wen sui shi lian xi	high
+收到请回复确认	shou dao qing hui fu que ren	high
+请各位准时参会	qing ge wei zhun shi can hui	high
+会议链接稍后发出	hui yi lian jie shao hou fa chu	high
+纪要已整理发群	ji yao yi zheng li fa qun	high
+需求已更新请查看	xu qiu yi geng xin qing cha kan	high
+已提交审批请查收	yi ti jiao shen pi qing cha shou	high
+麻烦领导审批一下	ma fan ling dao shen pi yi xia	high
+辛苦帮忙走一下流程	xin ku bang mang zou yi xia liu cheng	high
+请尽快安排测试	qing jin kuai an pai ce shi	high
+测试通过准备上线	ce shi tong guo zhun bei shang xian	high
+已上线请验收	yi shang xian qing yan shou	high
+线上运行平稳	xian shang yun xing ping wen	high
+问题已定位正在修复	wen ti yi ding wei zheng zai xiu fu	high
+问题已修复请复测	wen ti yi xiu fu qing fu ce	high
+感谢大家辛苦付出	gan xie da jia xin ku fu chu	high
+本周工作进展顺利	ben zhou gong zuo jin zhan shun li	high
+下周重点工作如下	xia zhou zhong dian gong zuo ru xia	high
+本月目标已达成	ben yue mu biao yi da cheng	high
+本季度业绩超预期	ben ji du ye ji chao yu qi	high
+预祝项目顺利上线	yu zhu xiang mu shun li shang xian	high
+祝各位工作顺利	zhu ge wei gong zuo shun li	high
+祝合作圆满成功	zhu he zuo yuan man cheng gong	high
+期待进一步合作	qi dai jin yi bu he zuo	high
+欢迎莅临指导	huan ying li lin zhi dao	high
+敬请拨冗出席	jing qing bo rong chu xi	high
+感谢您的信任与支持	gan xie nin de xin ren yu zhi chi	high
+如有打扰敬请谅解	ru you da rao jing qing liang jie	high
+谨致谢忱	jin zhi xie chen	mid
+此致敬礼	ci zhi jing li	high
+顺祝工作愉快	shun zhu gong zuo yu kuai	high
+顺祝身体健康	shun zhu shen ti jian kang	high
+顺祝商安	shun zhu shang an	high
+顺祝冬安	shun zhu dong an	mid
+顺祝夏安	shun zhu xia an	mid
+顺祝秋安	shun zhu qiu an	mid
+顺祝春安	shun zhu chun an	mid

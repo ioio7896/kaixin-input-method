@@ -39,3 +39,5 @@
 长相	zhang xiang	2387
 长高	zhang gao	5506
 音乐	yin yue	8808
+大夫	dai fu	7200
+口角	kou jue	4800

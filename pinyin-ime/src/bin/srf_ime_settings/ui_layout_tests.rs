@@ -626,6 +626,12 @@ pub(super) fn footer_test_app() -> SettingsApp {
         diagnostics_rx: None,
         performance_export_rx: None,
         translation_check_rx: None,
+        applied_style_key: None,
+        pending_design_style: None,
+        pending_theme_preference: None,
+        appearance_config_writer: None,
+        pending_style_settle_frames: 0,
+        focus_search_requested: false,
     }
 }
 
@@ -770,16 +776,19 @@ fn export_hotkeys_layout_preview() {
             |ctx| {
                 let palette = FluentPalette::from_visuals(&ctx.style().visuals);
                 egui::TopBottomPanel::bottom("preview_actions")
-                    .frame(controls::footer_frame(palette))
+                    .show_separator_line(false)
+                    .frame(controls::footer_outer_frame(palette))
                     .show(ctx, |ui| {
-                        settings_footer_ui(ui, &mut app, palette, false, None)
+                        controls::show_footer_container(ui, palette, |ui| {
+                            settings_footer_ui(ui, &mut app, palette, false, None)
+                        });
                     });
                 egui::SidePanel::left("preview_navigation")
                     .exact_width(SETTINGS_NAV_WIDTH)
+                    .show_separator_line(false)
                     .frame(
                         egui::Frame::none()
                             .fill(palette.nav_bg)
-                            .stroke(Stroke::new(1.0_f32, palette.border_subtle))
                             .inner_margin(egui::Margin::same(10.0)),
                     )
                     .show(ctx, |ui| {
@@ -1105,4 +1114,135 @@ fn all_manifest_categories_have_a_visible_display_group() {
         lexicon_sort_key("category_law").0,
         lexicon_sort_key("professional_law").0
     );
+}
+
+#[test]
+fn appearance_writer_keeps_latest_choices_and_other_settings() {
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!(
+        "kaixin-settings-appearance-{}-{stamp}.ini",
+        std::process::id()
+    ));
+    fs::write(&path, "[ocr]\nlanguage=zh-Hant\n").unwrap();
+    let writer = AppearanceConfigWriter::start(path.clone());
+    for (design_style, theme_preference) in [
+        (Some("linear"), Some("dark")),
+        (None, Some("system")),
+        (Some("tactile"), None),
+    ] {
+        writer
+            .changes
+            .send(AppearanceConfigChange {
+                design_style,
+                theme_preference,
+            })
+            .unwrap();
+    }
+    writer.finish().unwrap();
+    let config = parse_ini(&fs::read_to_string(&path).unwrap());
+    fs::remove_file(path).unwrap();
+    assert_eq!(config.get("style", "ui_design_style"), Some("tactile"));
+    assert_eq!(config.get("style", "ui_theme_preference"), Some("system"));
+    assert_eq!(config.get("ocr", "language"), Some("zh-Hant"));
+}
+
+#[test]
+fn style_switch_covers_viewport_edges_without_black_clear_leaks() {
+    let previous_style = pinyin_ime::ui_theme::active_design_style();
+    let ctx = egui::Context::default();
+    fonts::install_cjk_fonts(&ctx);
+    let mut app = footer_test_app();
+    app.config.set("style", "ui_theme_preference", "light");
+    let sequence = [
+        UiDesignStyle::TactileIndustrial,
+        UiDesignStyle::MacosBento,
+        UiDesignStyle::LinearDark,
+        UiDesignStyle::Win11Mica,
+        UiDesignStyle::OrientalInk,
+        UiDesignStyle::MacosBento,
+    ];
+    for style in sequence {
+        app.queue_design_style_change(style, None);
+        app.apply_pending_appearance_changes_inner(&ctx, false);
+        enforce_settings_min_font_size(&ctx);
+
+        let visuals = ctx.style().visuals.clone();
+        let palette = FluentPalette::from_visuals(&visuals);
+        assert_eq!(palette.style, style);
+        assert_eq!(
+            app.config.get("style", "ui_design_style"),
+            Some(style.as_config())
+        );
+        if style == UiDesignStyle::LinearDark {
+            assert!(visuals.dark_mode);
+        } else {
+            assert!(
+                !visuals.dark_mode,
+                "leaving LinearDark must restore saved light preference for {style:?}"
+            );
+        }
+
+        let clear = pinyin_ime::ui_theme::clear_color_for_visuals(&visuals);
+        assert_eq!(clear, palette.app_bg.to_normalized_gamma_f32());
+        assert_eq!(clear[3], 1.0, "clear_color must be opaque for {style:?}");
+
+        let outer = controls::footer_outer_frame(palette);
+        assert_eq!(outer.outer_margin, egui::Margin::ZERO);
+        assert_eq!(outer.rounding, egui::Rounding::ZERO);
+        assert_eq!(outer.stroke, Stroke::NONE);
+        assert_eq!(outer.fill.a(), 255, "footer outer fill must be opaque");
+
+        assert_eq!(visuals.window_stroke.color, palette.border);
+        assert_eq!(
+            visuals.widgets.noninteractive.bg_stroke.color,
+            palette.border_subtle
+        );
+        assert_eq!(visuals.widgets.open.bg_stroke.color, palette.accent);
+
+        for _ in 0..2 {
+            let mut footer_rect = egui::Rect::NOTHING;
+            let mut nav_rect = egui::Rect::NOTHING;
+            let mut central_rect = egui::Rect::NOTHING;
+            let screen = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(960.0, 760.0));
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: Some(screen),
+                    ..Default::default()
+                },
+                |ctx| {
+                    footer_rect = show_settings_footer(ctx, &mut app, palette, false, None);
+                    nav_rect = egui::SidePanel::left("switch_test_nav")
+                        .resizable(false)
+                        .exact_width(SETTINGS_NAV_WIDTH)
+                        .show_separator_line(false)
+                        .frame(
+                            egui::Frame::none()
+                                .fill(palette.nav_bg)
+                                .inner_margin(egui::Margin::same(10.0)),
+                        )
+                        .show(ctx, fluent_nav_header)
+                        .response
+                        .rect;
+                    central_rect = egui::CentralPanel::default()
+                        .frame(egui::Frame::none().fill(palette.app_bg))
+                        .show(ctx, |ui| ui.label("content"))
+                        .response
+                        .rect;
+                },
+            );
+            assert!(
+                (footer_rect.bottom() - screen.bottom()).abs() <= 1.5,
+                "{style:?}: footer {footer_rect:?} missed the bottom of {screen:?}"
+            );
+            assert!((footer_rect.left() - screen.left()).abs() <= 1.0);
+            assert!((footer_rect.right() - screen.right()).abs() <= 1.0);
+            assert!((nav_rect.left() - screen.left()).abs() <= 1.0);
+            assert!((central_rect.right() - screen.right()).abs() <= 1.0);
+            assert!((central_rect.bottom() - footer_rect.top()).abs() <= 1.5);
+        }
+    }
+    pinyin_ime::ui_theme::set_active_design_style(previous_style);
 }

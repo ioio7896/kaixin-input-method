@@ -1,101 +1,821 @@
-# 开心离线输入法分类补充：电商购物
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
-优惠券	you hui quan	9160
-商品详情	shang pin xiang qing	8800
-积分兑换	ji fen dui huan	8800
-购物车	gou wu che	8800
-旗舰店	qi jian dian	8499
-分期付款	fen qi fu kuan	6582
+# 开心输入法扩展词库：购物物流与支付（1769 条）
+# 来源合并：category_shopping.txt, category_aftersales.txt, category_delivery.txt, category_payment.txt, category_retail.txt, category_clothing.txt, category_beauty.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+优惠券	you hui quan	6200
+会员权益	hui yuan quan yi	6200
+分期付款	fen qi fu kuan	6200
+可以快递	ke yi kuai di	6200
+售后服务	shou hou fu wu	6200
+商品详情	shang pin xiang qing	6200
+实名认证	shi ming ren zheng	6200
+客流量	ke liu liang	6200
+旗舰店	qi jian dian	6200
+洗发水	xi fa shui	6200
+物流信息	wu liu xin xi	6200
+积分兑换	ji fen dui huan	6200
+营业执照	ying ye zhi zhao	6200
+购物车	gou wu che	6200
+运动鞋	yun dong xie	6200
+连衣裙	lian yi qun	6200
+退货退款	tui huo tui kuan	6200
+销售额	xiao shou e	6200
+防晒霜	fang shai shuang	6200
+验证码	yan zheng ma	6200
+营业时间	ying ye shi jian	6150
+七天无理由	qi tian wu li you	6100
+上门取件	shang men qu jian	6100
+上门派送	shang men pai song	6100
+上门维修	shang men wei xiu	6100
+上门送件	shang men song jian	6100
+个人护理	ge ren hu li	6100
+中转仓	zhong zhuan cang	6100
 买家秀	mai jia xiu	6100
+交易明细	jiao yi ming xi	6100
+交易流水	jiao yi liu shui	6100
+仅退款	jin tui kuan	6100
+付款码	fu kuan ma	6100
+代收包裹	dai shou bao guo	6100
 以旧换新	yi jiu huan xin	6100
 价格保护	jia ge bao hu	6100
+价格差额	jia ge cha e	6100
+休闲穿搭	xiu xian chuan da	6100
+休闲西装	xiu xian xi zhuang	6100
+休闲长裤	xiu xian chang ku	6100
+优惠套餐	you hui tao can	6100
 优惠活动	you hui huo dong	6100
+会员回访	hui yuan hui fang	6100
+会员注册	hui yuan zhu ce	6100
+会员活动	hui yuan huo dong	6100
+会员管理	hui yuan guan li	6100
+余额不足	yu e bu zu	6100
+余额支付	yu e zhi fu	6100
+供应商管理	gong ying shang guan li	6100
+供应链管理	gong ying lian guan li	6100
+保价服务	bao jia fu wu	6100
 保价申请	bao jia shen qing	6100
+保价金额	bao jia jin e	6100
+保修卡	bao xiu ka	6100
+保修服务	bao xiu fu wu	6100
+保湿乳	bao shi ru	6100
+免密支付	mian mi zhi fu	6100
+冷链运输	leng lian yun shu	6100
+冷链配送	leng lian pei song	6100
 凑单商品	cou dan shang pin	6100
+分拣中心	fen jian zhong xin	6100
+到付运费	dao fu yun fei	6100
 到手价	dao shou jia	6100
+到账时间	dao zhang shi jian	6100
 到货通知	dao huo tong zhi	6100
 加购商品	jia gou shang pin	6100
+包装要求	bao zhuang yao qiu	6100
+包裹丢失	bao guo diu shi	6100
+包裹滞留	bao guo zhi liu	6100
+包裹破损	bao guo po sun	6100
+包裹退回	bao guo tui hui	6100
 包邮商品	bao you shang pin	6100
+化妆刷	hua zhuang shua	6100
+半身裙	ban shen qun	6100
+协商退款	xie shang tui kuan	6100
 卖家秀	mai jia xiu	6100
+卫生用品	wei sheng yong pin	6100
+卸妆水	xie zhuang shui	6100
+原路退回	yuan lu tui hui	6100
+发型设计	fa xing she ji	6100
+发票代码	fa piao dai ma	6100
+发票作废	fa piao zuo fei	6100
+发票内容	fa piao nei rong	6100
+发票冲红	fa piao chong hong	6100
+发票号码	fa piao hao ma	6100
+发票抬头	fa piao tai tou	6100
+发票查验	fa piao cha yan	6100
+发膜护理	fa mo hu li	6100
 发货时间	fa huo shi jian	6100
+取件码	qu jian ma	6100
+取件通知	qu jian tong zhi	6100
+取消免密	qu xiao mian mi	6100
+叠穿搭配	die chuan da pei	6100
 合并付款	he bing fu kuan	6100
+同城配送	tong cheng pei song	6100
+同意退款	tong yi tui kuan	6100
 同款商品	tong kuan shang pin	6100
+员工排班	yuan gong pai ban	6100
+唇膏口红	chun gao kou hong	6100
+唇部护理	chun bu hu li	6100
+售后凭证	shou hou ping zheng	6100
+售后回访	shou hou hui fang	6100
+售后工单	shou hou gong dan	6100
+售后申请	shou hou shen qing	6100
+售后记录	shou hou ji lu	6100
+售后进度	shou hou jin du	6100
 商品上架	shang pin shang jia	6100
 商品下架	shang pin xia jia	6100
+商品促销	shang pin cu xiao	6100
 商品参数	shang pin can shu	6100
 商品图片	shang pin tu pian	6100
+商品定价	shang pin ding jia	6100
 商品库存	shang pin ku cun	6100
 商品标题	shang pin biao ti	6100
+商品瑕疵	shang pin xia ci	6100
+商品盘点	shang pin pan dian	6100
 商品编号	shang pin bian hao	6100
+商品补货	shang pin bu huo	6100
 商品规格	shang pin gui ge	6100
 商品评价	shang pin ping jia	6100
+商品采购	shang pin cai gou	6100
 商品链接	shang pin lian jie	6100
+商品陈列	shang pin chen lie	6100
 团购优惠	tuan gou you hui	6100
+团购套餐	tuan gou tao can	6100
+围巾帽子	wei jin mao zi	6100
+大件快递	da jian kuai di	6100
+头皮护理	tou pi hu li	6100
+季节穿搭	ji jie chuan da	6100
 官方店	guan fang dian	6100
+定妆喷雾	ding zhuang pen wu	6100
+定妆粉	ding zhuang fen	6100
+实名信息	shi ming xin xi	6100
+客单价	ke dan jia	6100
+客户回访	ke hu hui fang	6100
+客户维护	ke hu wei hu	6100
+客服介入	ke fu jie ru	6100
+寄件地址	ji jian di zhi	6100
+对公账户	dui gong zhang hu	6100
+对公转账	dui gong zhuan zhang	6100
+对账单	dui zhang dan	6100
+少件漏件	shao jian lou jian	6100
+尺寸测量	chi cun ce liang	6100
 尺码表	chi ma biao	6100
+尺码选择	chi ma xuan ze	6100
 尾款支付	wei kuan zhi fu	6100
+差价退款	cha jia tui kuan	6100
+干性皮肤	gan xing pi fu	6100
+平台介入	ping tai jie ru	6100
 平台券	ping tai quan	6100
 库存不足	ku cun bu zu	6100
+库存周转	ku cun zhou zhuan	6100
+库存盘点	ku cun pan dian	6100
+库存管理	ku cun guan li	6100
+库存预警	ku cun yu jing	6100
+底妆产品	di zhuang chan pin	6100
 店铺券	dian pu quan	6100
+延长保修	yan chang bao xiu	6100
+开票信息	kai piao xin xi	6100
+开票申请	kai piao shen qing	6100
+弹性面料	tan xing mian liao	6100
+彩妆产品	cai zhuang chan pin	6100
 待付款	dai fu kuan	6100
 待发货	dai fa huo	6100
 待收货	dai shou huo	6100
 待评价	dai ping jia	6100
+快递单号	kuai di dan hao	6100
+快递拒收	kuai di ju shou	6100
+快递拦截	kuai di lan jie	6100
+快递改址	kuai di gai zhi	6100
+快递柜	kuai di gui	6100
+快递签收	kuai di qian shou	6100
+快递网点	kuai di wang dian	6100
+快递转寄	kuai di zhuan ji	6100
+快递驿站	kuai di yi zhan	6100
+扣款记录	kou kuan ji lu	6100
 扫码购买	sao ma gou mai	6100
 批量采购	pi liang cai gou	6100
+投诉处理	tou su chu li	6100
+护肤产品	hu fu chan pin	6100
+护肤步骤	hu fu bu zhou	6100
 拍错规格	pai cuo gui ge	6100
+拒绝退款	ju jue tui kuan	6100
 拼团订单	pin tuan ding dan	6100
+指甲护理	zhi jia hu li	6100
+换季整理	huan ji zheng li	6100
+换货单号	huan huo dan hao	6100
+换货商品	huan huo shang pin	6100
+换货地址	huan huo di zhi	6100
+提现失败	ti xian shi bai	6100
+提现申请	ti xian shen qing	6100
+提现额度	ti xian e du	6100
+揽收记录	lan shou ji lu	6100
+揽收超时	lan shou chao shi	6100
+支付凭证	zhi fu ping zheng	6100
+支付失败	zhi fu shi bai	6100
+支付密码	zhi fu mi ma	6100
+支付成功	zhi fu cheng gong	6100
+支付手续费	zhi fu shou xu fei	6100
+支付方式	zhi fu fang shi	6100
+支付订单	zhi fu ding dan	6100
+支付记录	zhi fu ji lu	6100
+支付超时	zhi fu chao shi	6100
+支付通知	zhi fu tong zhi	6100
+支付限额	zhi fu xian e	6100
+收款信息	shou kuan xin xi	6100
+收款码	shou kuan ma	6100
+收款记录	shou kuan ji lu	6100
+收款账户	shou kuan zhang hu	6100
 收货信息	shou huo xin xi	6100
+收货地址	shou huo di zhi	6100
+收银小票	shou yin xiao piao	6100
+收银系统	shou yin xi tong	6100
+放在门口	fang zai men kou	6100
+敏感肌	min gan ji	6100
+数电发票	shu dian fa piao	6100
+无人签收	wu ren qian shou	6100
+无理由退货	wu li you tui huo	6100
+日常穿搭	ri chang chuan da	6100
+服装尺码	fu zhuang chi ma	6100
+染发烫发	ran fa tang fa	6100
+检测报告	jian ce bao gao	6100
 正品保障	zheng pin bao zhang	6100
 比价工具	bi jia gong ju	6100
+油性皮肤	you xing pi fu	6100
+洗护标签	xi hu biao qian	6100
+洗涤说明	xi di shuo ming	6100
+派件通知	pai jian tong zhi	6100
+派送网点	pai song wang dian	6100
+派送范围	pai song fan wei	6100
+混合皮肤	hun he pi fu	6100
 满减券	man jian quan	6100
+漏发配件	lou fa pei jian	6100
+牛仔外套	niu zai wai tao	6100
+物流客服	wu liu ke fu	6100
+物流延迟	wu liu yan chi	6100
+物流异常	wu liu yi chang	6100
+物流更新	wu liu geng xin	6100
+物流轨迹	wu liu gui ji	6100
+理发预约	li fa yu yue	6100
+生鲜配送	sheng xian pei song	6100
+申请换货	shen qing huan huo	6100
+申请退款	shen qing tui kuan	6100
+申请退货	shen qing tui huo	6100
+电动牙刷	dian dong ya shua	6100
+电子发票	dian zi fa piao	6100
 电子购物卡	dian zi gou wu ka	6100
+皮肤保湿	pi fu bao shi	6100
+皮肤护理	pi fu hu li	6100
+皮肤清洁	pi fu qing jie	6100
 直播购物	zhi bo gou wu	6100
+直筒裤	zhi tong ku	6100
+眼影盘	yan ying pan	6100
+短信验证	duan xin yan zheng	6100
+短袖衬衫	duan xiu chen shan	6100
+破损补发	po sun bu fa	6100
 积分抵扣	ji fen di kou	6100
+签收异常	qian shou yi chang	6100
+签收证明	qian shou zheng ming	6100
+纠纷处理	jiu fen chu li	6100
+纸质发票	zhi zhi fa piao	6100
+经营成本	jing ying cheng ben	6100
+经营范围	jing ying fan wei	6100
+续重费用	xu zhong fei yong	6100
+维修申请	wei xiu shen qing	6100
+维修网点	wei xiu wang dian	6100
+维修费用	wei xiu fei yong	6100
+维修进度	wei xiu jin du	6100
+羊毛大衣	yang mao da yi	6100
+美妆蛋	mei zhuang dan	6100
+美甲预约	mei jia yu yue	6100
+羽绒外套	yu rong wai tao	6100
+联系快递员	lian xi kuai di yuan	6100
+肤质测试	fu zhi ce shi	6100
+腮红修容	sai hong xiu rong	6100
+腰带皮带	yao dai pi dai	6100
+自动扣款	zi dong kou kuan	6100
+自提柜	zi ti gui	6100
+自提点	zi ti dian	6100
 自营店	zi ying dian	6100
+营业收入	ying ye shou ru	6100
+衣服长度	yi fu chang du	6100
+衣物护理	yi wu hu li	6100
+衣物收纳	yi wu shou na	6100
+衣物晾晒	yi wu liang shai	6100
+衣物熨烫	yi wu yun tang	6100
+补发赠品	bu fa zeng pin	6100
+补寄配件	bu ji pei jian	6100
+补开发票	bu kai fa piao	6100
+裤子长度	ku zi chang du	6100
 规格选择	gui ge xuan ze	6100
 订单取消	ding dan qu xiao	6100
+订单截图	ding dan jie tu	6100
 订单编号	ding dan bian hao	6100
 订单详情	ding dan xiang qing	6100
+试穿效果	shi chuan xiao guo	6100
+账单分期	zhang dan fen qi	6100
+账户余额	zhang hu yu e	6100
 货到付款	huo dao fu kuan	6100
+质量检测	zhi liang jian ce	6100
+质量问题	zhi liang wen ti	6100
+购买凭证	gou mai ping zheng	6100
 购买数量	gou mai shu liang	6100
 购买记录	gou mai ji lu	6100
 购物清单	gou wu qing dan	6100
 赠品补发	zeng pin bu fa	6100
+身份验证	shen fen yan zheng	6100
+身体乳	shen ti ru	6100
+转账到账	zhuan zhang dao zhang	6100
+转账记录	zhuan zhang ji lu	6100
+转账限额	zhuan zhang xian e	6100
+运动穿搭	yun dong chuan da	6100
+运动长裤	yun dong chang ku	6100
+运单号码	yun dan hao ma	6100
+运费补贴	yun fei bu tie	6100
 运费说明	yun fei shuo ming	6100
+运费险	yun fei xian	6100
+返厂维修	fan chang wei xiu	6100
+进销存管理	jin xiao cun guan li	6100
+退换说明	tui huan shuo ming	6100
+退款凭证	tui kuan ping zheng	6100
+退款到账	tui kuan dao zhang	6100
+退款失败	tui kuan shi bai	6100
+退款进度	tui kuan jin du	6100
+退款金额	tui kuan jin e	6100
+退货单号	tui huo dan hao	6100
+退货原因	tui huo yuan yin	6100
+退货地址	tui huo di zhi	6100
+退货运费	tui huo yun fei	6100
+送货上门	song huo shang men	6100
+透气面料	tou qi mian liao	6100
+通勤穿搭	tong qin chuan da	6100
+遮瑕膏	zhe xia gao	6100
+配送地址	pei song di zhi	6100
+配送时段	pei song shi duan	6100
+配送电话	pei song dian hua	6100
+配送范围	pei song fan wei	6100
+配送进度	pei song jin du	6100
+配饰搭配	pei shi da pei	6100
+采购合同	cai gou he tong	6100
+采购订单	cai gou ding dan	6100
+重复扣款	chong fu kou kuan	6100
+针织开衫	zhen zhi kai shan	6100
+针织毛衣	zhen zhi mao yi	6100
+银行卡绑定	yin hang ka bang ding	6100
+银行卡解绑	yin hang ka jie bang	6100
+销售报表	xiao shou bao biao	6100
+销售记录	xiao shou ji lu	6100
+错发商品	cuo fa shang pin	6100
+长袖衬衫	chang xiu chen shan	6100
+门店地址	men dian di zhi	6100
+门店电话	men dian dian hua	6100
+门店管理	men dian guan li	6100
+门店营业	men dian ying ye	6100
+门店装修	men dian zhuang xiu	6100
+门店评价	men dian ping jia	6100
+门店运营	men dian yun ying	6100
+门店陈列	men dian chen lie	6100
+门店预约	men dian yu yue	6100
+阔腿裤	kuo tui ku	6100
 限时优惠	xian shi you hui	6100
+零钱提现	ling qian ti xian	6100
+零钱支付	ling qian zhi fu	6100
+面单信息	mian dan xin xi	6100
+面料成分	mian liao cheng fen	6100
+面料材质	mian liao cai zhi	6100
+面膜护理	mian mo hu li	6100
+鞋包搭配	xie bao da pei	6100
 预售商品	yu shou shang pin	6100
 预售定金	yu shou ding jin	6100
+预约取件	yu yue qu jian	6100
 领券中心	ling quan zhong xin	6100
+颜色搭配	yan se da pei	6100
+首重费用	shou zhong fei yong	6100
+快递信息	kuai di xin xi	6000
+快递过去	kuai di guo qu	6000
+粉底液	fen di ye	5833
+一个快递	yi ge kuai di	5808
 一次购物	yi ci gou wu	5808
+两个快递	liang ge kuai di	5808
+京东快递	jing dong kuai di	5808
 京东购物	jing dong gou wu	5808
+什么快递	shen me kuai di	5808
+其他快递	qi ta kuai di	5808
+快递公司	kuai di gong si	5808
+快递地址	kuai di di zhi	5808
+快递服务	kuai di fu wu	5808
+快递谢谢	kuai di xie xie	5808
+快递超市	kuai di chao shi	5808
+收到快递	shou dao kuai di	5808
+没有快递	mei you kuai di	5808
+现在快递	xian zai kuai di	5808
 电话购物	dian hua gou wu	5808
+还有快递	hai you kuai di	5808
+这个快递	zhe ge kuai di	5808
+这个快递	zhei ge kuai di	5808
+那个快递	na ge kuai di	5808
+洗面奶	xi mian nai	5785
+几个快递	ji ge kuai di	5770
+快递给你	kuai di gei ni	5770
+内衣	nei yi	5683
+快递过来	kuai di guo lai	5654
 电视购物	dian shi gou wu	5654
+精华液	jing hua ye	5621
+三个快递	san ge kuai di	5616
+支付费用	zhi fu fei yong	5616
+死亡快递	si wang kuai di	5616
+天天快递	tian tian kuai di	5577
 网上购物	wang shang gou wu	5577
 购物体验	gou wu ti yan	5577
 购物广场	gou wu guang chang	5500
+袜子	wa zi	5499
+给你快递	gei ni kuai di	5462
+保修期	bao xiu qi	5431
+普通快递	pu tong kuai di	5424
+收件人	shou jian ren	5414
 购物公园	gou wu gong yuan	5385
+哪个快递	na ge kuai di	5347
+好多快递	hao duo kuai di	5347
+快递人生	kuai di ren sheng	5347
+超级快递	chao ji kuai di	5347
+东京快递	dong jing kuai di	5308
+停止支付	ting zhi zhi fu	5308
+国际支付	guo ji zhi fu	5308
+怎么支付	zen me zhi fu	5308
+支付一下	zhi fu yi xia	5308
+支付不了	zhi fu bu liao	5308
+支付业务	zhi fu ye wu	5308
+支付中心	zhi fu zhong xin	5308
+支付全部	zhi fu quan bu	5308
+支付制度	zhi fu zhi du	5308
+支付工具	zhi fu gong ju	5308
+支付手段	zhi fu shou duan	5308
+支付系统	zhi fu xi tong	5308
+支付能力	zhi fu neng li	5308
+支付货币	zhi fu huo bi	5308
+支付过了	zhi fu guo le	5308
+支付风险	zhi fu feng xian	5308
+服装出口	fu zhuang chu kou	5308
+电子支付	dian zi zhi fu	5308
+网上支付	wang shang zhi fu	5308
+网易支付	wang yi zhi fu	5308
+一件衣服	yi jian yi fu	5270
+什么衣服	shen me yi fu	5270
+多少衣服	duo shao yi fu	5270
+很多衣服	hen duo yi fu	5270
+快递放在	kuai di fang zai	5270
+支付现金	zhi fu xian jin	5270
+没有衣服	mei you yi fu	5270
+爱情快递	ai qing kuai di	5270
+看看衣服	kan kan yi fu	5270
+联邦快递	lian bang kuai di	5270
+自己衣服	zi ji yi fu	5270
+衣服不错	yi fu bu cuo	5270
+衣服收到	yi fu shou dao	5270
+衣服质量	yi fu zhi liang	5270
+衣服里面	yi fu li mian	5270
+还有衣服	hai you yi fu	5270
+这个衣服	zhe ge yi fu	5270
+这个衣服	zhei ge yi fu	5270
+这件衣服	zhe jian yi fu	5270
+这件衣服	zhei jian yi fu	5270
+这种衣服	zhe zhong yi fu	5270
+这种衣服	zhei zhong yi fu	5270
+那个衣服	na ge yi fu	5270
+那些衣服	na xie yi fu	5270
+那些衣服	nei xie yi fu	5270
+夏天衣服	xia tian yi fu	5231
+小孩衣服	xiao hai yi fu	5231
+幸福快递	xing fu kuai di	5231
+有个快递	you ge kuai di	5231
+统一服装	tong yi fu zhuang	5231
+股份支付	gu fen zhi fu	5231
+衣服颜色	yi fu yan se	5231
+转移支付	zhuan yi zhi fu	5231
+修改收货地址	xiu gai shou huo di zhi	5200
+关闭自动续费	guan bi zi dong xu fei	5200
+包裹已经发出	bao guo yi jing fa chu	5200
+包裹已经签收	bao guo yi jing qian shou	5200
+包裹正在处理中	bao guo zheng zai chu li zhong	5200
+包裹正在配送	bao guo zheng zai pei song	5200
+包裹还没收到	bao guo hai mo shou dao	5200
+售后申请已经提交	shou hou shen qing yi jing ti jiao	5200
+售后申请已经通过	shou hou shen qing yi jing tong guo	5200
+售后申请正在审核	shou hou shen qing zheng zai shen he	5200
+售后申请需要补充材料	shou hou shen qing xu yao bu chong cai liao	5200
+商品与描述不符	shang pin yu miao shu bu fu	5200
+快递已经发出	kuai di yi jing fa chu	5200
+快递已经签收	kuai di yi jing qian shou	5200
+快递正在处理中	kuai di zheng zai chu li zhong	5200
+快递正在配送	kuai di zheng zai pei song	5200
+快递还没收到	kuai di hai mo shou dao	5200
+换货申请已经提交	huan huo shen qing yi jing ti jiao	5200
+换货申请已经通过	huan huo shen qing yi jing tong guo	5200
+换货申请正在审核	huan huo shen qing zheng zai shen he	5200
+换货申请需要补充材料	huan huo shen qing xu yao bu chong cai liao	5200
+纳税人识别号	na shui ren shi bie hao	5200
+订单已经发出	ding dan yi jing fa chu	5200
+订单已经签收	ding dan yi jing qian shou	5200
+订单正在处理中	ding dan zheng zai chu li zhong	5200
+订单正在配送	ding dan zheng zai pei song	5200
+订单还没收到	ding dan hai mo shou dao	5200
+请问能换货吗	qing wen neng huan huo ma	5200
+退款申请已经提交	tui kuan shen qing yi jing ti jiao	5200
+退款申请已经通过	tui kuan shen qing yi jing tong guo	5200
+退款申请正在审核	tui kuan shen qing zheng zai shen he	5200
+退款申请需要补充材料	tui kuan shen qing xu yao bu chong cai liao	5200
+退货申请已经提交	tui huo shen qing yi jing ti jiao	5200
+退货申请已经通过	tui huo shen qing yi jing tong guo	5200
+退货申请正在审核	tui huo shen qing zheng zai shen he	5200
+退货申请需要补充材料	tui huo shen qing xu yao bu chong cai liao	5200
+恐怖快递	kong bu kuai di	5193
+红色衣服	hong se yi fu	5193
+在线支付	zai xian zhi fu	5154
+工资支付	gong zi zhi fu	5154
 线上购物	xian shang gou wu	5154
+采购物流	cai gou wu liu	5154
+生产物流	sheng chan wu liu	5116
+衣服好看	yi fu hao kan	5116
+服装模特	fu zhuang mo te	5077
+黑色衣服	hei se yi fu	5077
+睫毛膏	jie mao gao	5070
+没有物流	mei you wu liu	5039
+物流中心	wu liu zhong xin	5039
+一套衣服	yi tao yi fu	5000
+整理衣服	zheng li yi fu	5000
+物流管理	wu liu guan li	5000
+物流线路	wu liu xian lu	5000
+物流网络	wu liu wang luo	5000
+物流金融	wu liu jin rong	5000
+现金支付	xian jin zhi fu	5000
+传统服装	chuan tong fu zhuang	4962
+儿童服装	er tong fu zhuang	4962
+北京服装	bei jing fu zhuang	4962
+品牌服装	pin pai fu zhuang	4962
+国际服装	guo ji fu zhuang	4962
+服装协会	fu zhuang xie hui	4962
+服装品牌	fu zhuang pin pai	4962
+服装商店	fu zhuang shang dian	4962
+服装学院	fu zhuang xue yuan	4962
+服装市场	fu zhuang shi chang	4962
+服装特点	fu zhuang te dian	4962
+服装色彩	fu zhuang se cai	4962
+服装行业	fu zhuang hang ye	4962
+服装贸易	fu zhuang mao yi	4962
+服装集团	fu zhuang ji tuan	4962
+服装颜色	fu zhuang yan se	4962
+民族服装	min zu fu zhuang	4962
+白色衣服	bai se yi fu	4962
+职业服装	zhi ye fu zhuang	4962
+舞蹈服装	wu dao fu zhuang	4962
+虚拟物流	xu ni wu liu	4962
+运动服装	yun dong fu zhuang	4962
+好多衣服	hao duo yi fu	4924
+指定快递	zhi ding kuai di	4924
+沐浴露	mu yu lu	4910
+请修改取件时间	qing xiu gai qu jian shi jian	4900
+请修改取件时间一下	qing xiu gai qu jian shi jian yi xia	4900
+请修改寄件地址	qing xiu gai ji jian di zhi	4900
+请修改寄件地址一下	qing xiu gai ji jian di zhi yi xia	4900
+请修改收件人信息	qing xiu gai shou jian ren xin xi	4900
+请修改收件人信息一下	qing xiu gai shou jian ren xin xi yi xia	4900
+请修改收件电话	qing xiu gai shou jian dian hua	4900
+请修改收件电话一下	qing xiu gai shou jian dian hua yi xia	4900
+请修改收货地址	qing xiu gai shou huo di zhi	4900
+请修改收货地址一下	qing xiu gai shou huo di zhi yi xia	4900
+请修改物流信息	qing xiu gai wu liu xin xi	4900
+请修改物流信息一下	qing xiu gai wu liu xin xi yi xia	4900
+请修改送货地址	qing xiu gai song huo di zhi	4900
+请修改送货地址一下	qing xiu gai song huo di zhi yi xia	4900
+请修改配送时间	qing xiu gai pei song shi jian	4900
+请修改配送时间一下	qing xiu gai pei song shi jian yi xia	4900
+不买衣服	bu mai yi fu	4885
+冬天衣服	dong tian yi fu	4885
+蓝色衣服	lan se yi fu	4885
+穿着衣服	chuan zhe yi fu	4847
 购物女王	gou wu nv wang	4847
+买过衣服	mai guo yi fu	4808
+发个快递	fa ge kuai di	4808
+没买衣服	mei mai yi fu	4808
+终极快递	zhong ji kuai di	4808
 购物愉快	gou wu yu kuai	4808
+皮鞋	pi xie	4787
+化妆水	hua zhuang shui	4772
+不支付	bu zhi fu	4770
+快递大哥	kuai di da ge	4770
 商家庭	shang jia ting	4731
+服装造型	fu zhuang zao xing	4731
+没穿衣服	mei chuan yi fu	4731
+面包快递	mian bao kuai di	4731
+交通物流	jiao tong wu liu	4693
+什么物流	shen me wu liu	4693
+什么物流	shen mo wu liu	4693
+企业物流	qi ye wu liu	4693
+传统物流	chuan tong wu liu	4693
+供应物流	gong ying wu liu	4693
+区域物流	qu yu wu liu	4693
+合同物流	he tong wu liu	4693
+回收物流	hui shou wu liu	4693
+国际物流	guo ji wu liu	4693
+城市物流	cheng shi wu liu	4693
+天快递	tian kuai di	4693
+工业物流	gong ye wu liu	4693
+我快递	wo kuai di	4693
+拿个快递	na ge kuai di	4693
+新宁物流	xin ning wu liu	4693
+服装大厦	fu zhuang da sha	4693
+港口物流	gang kou wu liu	4693
+物流企业	wu liu qi ye	4693
+物流作业	wu liu zuo ye	4693
+物流公司	wu liu gong si	4693
+物流咨询	wu liu zi xun	4693
+物流基地	wu liu ji di	4693
+物流大厦	wu liu da sha	4693
+物流工程	wu liu gong cheng	4693
+物流很快	wu liu hen kuai	4693
+物流战略	wu liu zhan lve	4693
+物流政策	wu liu zheng ce	4693
+物流效率	wu liu xiao lv	4693
+物流时间	wu liu shi jian	4693
+物流显示	wu liu xian shi	4693
+物流服务	wu liu fu wu	4693
+物流活动	wu liu huo dong	4693
+物流组织	wu liu zu zhi	4693
+物流联盟	wu liu lian meng	4693
+物流英语	wu liu ying yu	4693
+物流营销	wu liu ying xiao	4693
+物流运输	wu liu yun shu	4693
+物流部门	wu liu bu men	4693
+物流销售	wu liu xiao shou	4693
+现代物流	xian dai wu liu	4693
+社会物流	she hui wu liu	4693
+纺织服装	fang zhi fu zhuang	4693
+绿色物流	lv se wu liu	4693
+能源物流	neng yuan wu liu	4693
+钢铁物流	gang tie wu liu	4693
+销售物流	xiao shou wu liu	4693
+一身衣服	yi shen yi fu	4654
+不会化妆	bu hui hua zhuang	4654
+可以付款	ke yi fu kuan	4654
+快递高手	kuai di gao shou	4654
+棒球服装	bang qiu fu zhuang	4654
+还没付款	hai mei fu kuan	4654
+买买衣服	mai mai yi fu	4616
+搭配衣服	da pei yi fu	4616
+物流单元	wu liu dan yuan	4616
+致命快递	zhi ming kuai di	4616
+衣服裤子	yi fu ku zi	4616
+不开发票	bu kai fa piao	4577
+军团服装	jun tuan fu zhuang	4577
+外贸服装	wai mao fu zhuang	4577
+我换衣服	wo huan yi fu	4577
+收拾衣服	shou shi yi fu	4577
+物流总监	wu liu zong jian	4577
 今天下单	jin tian xia dan	4539
 可以下单	ke yi xia dan	4539
+宏观物流	hong guan wu liu	4539
+应付款项	ying fu kuan xiang	4539
+拿下快递	na xia kuai di	4539
+支付中介	zhi fu zhong jie	4539
+支付结算	zhi fu jie suan	4539
+服装服饰	fu zhuang fu shi	4539
+物流园区	wu liu yuan qu	4539
 重新下单	chong xin xia dan	4539
+一个包裹	yi ge bao guo	4500
+一堆衣服	yi dui yi fu	4500
+人口红利	ren kou hong li	4500
+包裹男人	bao guo nan ren	4500
 商家服务	shang jia fu wu	4500
 已经下单	yi jing xia dan	4500
+快递包裹	kuai di bao guo	4500
+没换衣服	mei huan yi fu	4500
+没有发票	mei you fa piao	4500
 美团商家	mei tuan shang jia	4500
+长久物流	chang jiu wu liu	4500
 马上下单	ma shang xia dan	4500
+塑料包裹	su liao bao guo	4462
+库存服装	ku cun fu zhuang	4462
 我下单	wo xia dan	4462
+穿个衣服	chuan ge yi fu	4462
+你家衣服	ni jia yi fu	4424
+打印发票	da yin fa piao	4424
 直接下单	zhi jie xia dan	4424
+精品服装	jing pin fu zhuang	4424
+统一发票	tong yi fa piao	4424
+美容大王	mei rong da wang	4424
+过年衣服	guo nian yi fu	4424
+邮政快递	you zheng kuai di	4424
+胸围	xiong wei	4420
+付款办法	fu kuan ban fa	4385
+付款周期	fu kuan zhou qi	4385
+付款成功	fu kuan cheng gong	4385
+付款截图	fu kuan jie tu	4385
+付款方式	fu kuan fang shi	4385
+付款期限	fu kuan qi xian	4385
+付款条件	fu kuan tiao jian	4385
+付款记录	fu kuan ji lu	4385
+即期付款	ji qi fu kuan	4385
+定期付款	ding qi fu kuan	4385
+已经付款	yi jing fu kuan	4385
+延迟付款	yan chi fu kuan	4385
+微信付款	wei xin fu kuan	4385
+怎么付款	zen me fu kuan	4385
+怎么付款	zen mo fu kuan	4385
+恐吓包裹	kong he bao guo	4385
+提示付款	ti shi fu kuan	4385
+服装道具	fu zhuang dao ju	4385
+现在付款	xian zai fu kuan	4385
+直接付款	zhi jie fu kuan	4385
 良心商家	liang xin shang jia	4385
+衣服鞋子	yi fu xie zi	4385
 购物津贴	gou wu jin tie	4385
+银行付款	yin hang fu kuan	4385
+一个裙子	yi ge qun zi	4347
+一条裙子	yi tiao qun zi	4347
+上衣服	shang yi fu	4347
+两条裙子	liang tiao qun zi	4347
+幼儿服装	you er fu zhuang	4347
+新衣服	xin yi fu	4347
+极品快递	ji pin kuai di	4347
+物流枢纽	wu liu shu niu	4347
+白色裙子	bai se qun zi	4347
+白衣服	bai yi fu	4347
+穿个裙子	chuan ge qun zi	4347
 能下单	neng xia dan	4347
+衣服上	yi fu shang	4347
+衣服是	yi fu shi	4347
+裙子好看	qun zi hao kan	4347
+裙子裤子	qun zi ku zi	4347
+这个裙子	zhe ge qun zi	4347
+这个裙子	zhei ge qun zi	4347
+这套衣服	zhe tao yi fu	4347
+这套衣服	zhei tao yi fu	4347
+这条裙子	zhe tiao qun zi	4347
+这条裙子	zhei tiao qun zi	4347
+那个裙子	na ge qun zi	4347
+黑色裙子	hei se qun zi	4347
 不法商家	bu fa shang jia	4308
+不用化妆	bu yong hua zhuang	4308
+专业化妆	zhuan ye hua zhuang	4308
+个快递	ge kuai di	4308
+么快递	me kuai di	4308
+买件衣服	mai jian yi fu	4308
+买快递	mai kuai di	4308
+你快递	ni kuai di	4308
+做快递	zuo kuai di	4308
+催快递	cui kuai di	4308
+化妆培训	hua zhuang pei xun	4308
+化妆技术	hua zhuang ji shu	4308
+化妆步骤	hua zhuang bu zhou	4308
+化妆造型	hua zhuang zao xing	4308
+发快递	fa kuai di	4308
+取快递	qu kuai di	4308
+叫快递	jiao kuai di	4308
+名牌服装	ming pai fu zhuang	4308
+啥快递	sha kuai di	4308
+在快递	zai kuai di	4308
+寄快递	ji kuai di	4308
+小快递	xiao kuai di	4308
+干快递	gan kuai di	4308
+延期付款	yan qi fu kuan	4308
+微快递	wei kuai di	4308
+快递不	kuai di bu	4308
+快递业	kuai di ye	4308
+快递了	kuai di le	4308
+快递侠	kuai di xia	4308
+快递到	kuai di dao	4308
+快递单	kuai di dan	4308
+快递去	kuai di qu	4308
+快递号	kuai di hao	4308
+快递吗	kuai di ma	4308
+快递吧	kuai di ba	4308
+快递呀	kuai di ya	4308
+快递呗	kuai di bei	4308
+快递员	kuai di yuan	4308
+快递呢	kuai di ne	4308
+快递哥	kuai di ge	4308
+快递哦	kuai di o	4308
+快递啊	kuai di a	4308
+快递店	kuai di dian	4308
+快递是	kuai di shi	4308
+快递来	kuai di lai	4308
+快递没	kuai di mei	4308
+快递点	kuai di dian	4308
+快递的	kuai di de	4308
+快递盒	kuai di he	4308
+快递站	kuai di zhan	4308
+快递箱	kuai di xiang	4308
+快递袋	kuai di dai	4308
+快递说	kuai di shuo	4308
+快递车	kuai di che	4308
+找快递	zhao kuai di	4308
+把快递	ba kuai di	4308
+拆快递	chai kuai di	4308
+拿快递	na kuai di	4308
+捡快递	jian kuai di	4308
+换了衣服	huan le yi fu	4308
+换好衣服	huan hao yi fu	4308
+收快递	shou kuai di	4308
+放快递	fang kuai di	4308
+政快递	zheng kuai di	4308
+新娘化妆	xin niang hua zhuang	4308
+是快递	shi kuai di	4308
+有快递	you kuai di	4308
+查快递	cha kuai di	4308
+没快递	mei kuai di	4308
+演员化妆	yan yuan hua zhuang	4308
+的快递	de kuai di	4308
 的购物	de gou wu	4308
+穿白衣服	chuan bai yi fu	4308
+穿红衣服	chuan hong yi fu	4308
+等快递	deng kuai di	4308
+紧紧包裹	jin jin bao guo	4308
+给快递	gei kuai di	4308
+让快递	rang kuai di	4308
 购物了	gou wu le	4308
 购物单	gou wu dan	4308
 购物卡	gou wu ka	4308
@@ -106,83 +826,947 @@
 购物的	gou wu de	4308
 购物群	gou wu qun	4308
 购物金	gou wu jin	4308
+这快递	zhe kuai di	4308
+退快递	tui kuai di	4308
+送快递	song kuai di	4308
+通快递	tong kuai di	4308
+邮快递	you kuai di	4308
+领快递	ling kuai di	4308
 你们店铺	ni men dian pu	4270
 关注店铺	guan zhu dian pu	4270
 分享店铺	fen xiang dian pu	4270
+并购支付	bing gou zhi fu	4270
 淘宝店铺	tao bao dian pu	4270
 特色店铺	te se dian pu	4270
 网上店铺	wang shang dian pu	4270
 这个店铺	zhe ge dian pu	4270
+男士服装	nan shi fu zhuang	4231
+直接转账	zhi jie zhuan zhang	4231
+那条裙子	na tiao qun zi	4231
+不洗衣服	bu xi yi fu	4193
 再下单	zai xia dan	4193
+口岸物流	kou an wu liu	4193
+商贸物流	shang mao wu liu	4193
 已下单	yi xia dan	4193
+我取快递	wo qu kuai di	4193
+支付不起	zhi fu bu qi	4193
+凉鞋	liang xie	4155
+不付款	bu fu kuan	4154
+人像美容	ren xiang mei rong	4154
+再付款	zai fu kuan	4154
+医学美容	yi xue mei rong	4154
+医疗美容	yi liao mei rong	4154
+取个快递	qu ge kuai di	4154
+提现金	ti xian jin	4154
+服装的	fu zhuang de	4154
+没洗衣服	mei xi yi fu	4154
+温馨快递	wen xin kuai di	4154
+穿件衣服	chuan jian yi fu	4154
+美容中心	mei rong zhong xin	4154
+美容仪器	mei rong yi qi	4154
+美容保健	mei rong bao jian	4154
+美容养生	mei rong yang sheng	4154
+美容医学	mei rong yi xue	4154
+美容外科	mei rong wai ke	4154
+美容护理	mei rong hu li	4154
+美容按摩	mei rong an mo	4154
+美容美体	mei rong mei ti	4154
 请下单	qing xia dan	4154
+预付款项	yu fu kuan xiang	4154
+牙线	ya xian	4135
+专用发票	zhuan yong fa piao	4116
+两张发票	liang zhang fa piao	4116
+仓储物流	cang chu wu liu	4116
+先洗衣服	xian xi yi fu	4116
+发票名称	fa piao ming cheng	4116
+发票记录	fa piao ji lu	4116
+商业发票	shang ye fa piao	4116
+形式发票	xing shi fa piao	4116
+收购发票	shou gou fa piao	4116
+普通发票	pu tong fa piao	4116
+海关发票	hai guan fa piao	4116
 淘宝网购	tao bao wang gou	4116
+网络发票	wang luo fa piao	4116
 购物车里	gou wu che li	4116
+贴身衣服	tie shen yi fu	4116
+销售发票	xiao shou fa piao	4116
+不化妆	bu hua zhuang	4077
+不能提现	bu neng ti xian	4077
+中通快递	zhong tong kuai di	4077
+付款凭证	fu kuan ping zheng	4077
+可以提现	ke yi ti xian	4077
 怎么下单	zen me xia dan	4077
 怎么下单	zen mo xia dan	4077
+怎么提现	zen me ti xian	4077
+才能提现	cai neng ti xian	4077
+提现不了	ti xian bu liao	4077
+有发票	you fa piao	4077
+牛仔服装	niu zai fu zhuang	4077
 现在下单	xian zai xia dan	4077
 电话下单	dian hua xia dan	4077
 网络下单	wang luo xia dan	4077
+不脱衣服	bu tuo yi fu	4039
+两件衣服	liang jian yi fu	4039
+化妆舞会	hua zhuang wu hui	4039
+哪家快递	na jia kuai di	4039
+我脱衣服	wo tuo yi fu	4039
+换个衣服	huan ge yi fu	4039
+换件衣服	huan jian yi fu	4039
+换洗衣服	huan xi yi fu	4039
+换身衣服	huan shen yi fu	4039
+服装款式	fu zhuang kuan shi	4039
+没脱衣服	mei tuo yi fu	4039
+海尔物流	hai er wu liu	4039
+要发票	yao fa piao	4039
+丝绸服装	si chou fu zhuang	4000
+云支付	yun zhi fu	4000
+你支付	ni zhi fu	4000
+先支付	xian zhi fu	4000
+在支付	zai zhi fu	4000
+小额支付	xiao e zhi fu	4000
+已支付	yi zhi fu	4000
+惠支付	hui zhi fu	4000
+我支付	wo zhi fu	4000
+支付下	zhi fu xia	4000
+支付了	zhi fu le	4000
+支付令	zhi fu ling	4000
+支付分	zhi fu fen	4000
+支付后	zhi fu hou	4000
+支付吗	zhi fu ma	4000
+支付吧	zhi fu ba	4000
+支付呢	zhi fu ne	4000
+支付啊	zhi fu a	4000
+支付完	zhi fu wan	4000
+支付方	zhi fu fang	4000
+支付的	zhi fu de	4000
+支付码	zhi fu ma	4000
+支付通	zhi fu tong	4000
+无感支付	wu gan zhi fu	4000
+未支付	wei zhi fu	4000
+条纹衬衫	tiao wen chen shan	4000
+校支付	xiao zhi fu	4000
+没发票	mei fa piao	4000
+没支付	mei zhi fu	4000
+红字发票	hong zi fa piao	4000
+翼支付	yi zhi fu	4000
 购物小票	gou wu xiao piao	4000
+这款衣服	zhe kuan yi fu	4000
+这款裙子	zhe kuan qun zi	4000
+龙支付	long zhi fu	4000
+个衣服	ge yi fu	3962
+买衣服	mai yi fu	3962
+了衣服	le yi fu	3962
+他衣服	ta yi fu	3962
+件衣服	jian yi fu	3962
+你衣服	ni yi fu	3962
+修衣服	xiu yi fu	3962
+做衣服	zuo yi fu	3962
+加衣服	jia yi fu	3962
+卖衣服	mai yi fu	3962
+厚衣服	hou yi fu	3962
+发物流	fa wu liu	3962
+发衣服	fa yi fu	3962
+取衣服	qu yi fu	3962
+叠衣服	die yi fu	3962
+和衣服	he yi fu	3962
+啥衣服	sha yi fu	3962
+在衣服	zai yi fu	3962
+套衣服	tao yi fu	3962
+女衣服	nv yi fu	3962
+好衣服	hao yi fu	3962
+完衣服	wan yi fu	3962
+寄衣服	ji yi fu	3962
+小衣服	xiao yi fu	3962
+带衣服	dai yi fu	3962
+床衣服	chuang yi fu	3962
+弄衣服	nong yi fu	3962
+我衣服	wo yi fu	3962
+找衣服	zhao yi fu	3962
+把衣服	ba yi fu	3962
+折衣服	zhe yi fu	3962
+拿衣服	na yi fu	3962
+挂衣服	gua yi fu	3962
+挑衣服	tiao yi fu	3962
+搭衣服	da yi fu	3962
+撕衣服	si yi fu	3962
+收件地址	shou jian di zhi	3962
+收衣服	shou yi fu	3962
+改衣服	gai yi fu	3962
+放衣服	fang yi fu	3962
+有物流	you wu liu	3962
+有衣服	you yi fu	3962
+棉衣服	mian yi fu	3962
+款衣服	kuan yi fu	3962
+没衣服	mei yi fu	3962
+添衣服	tian yi fu	3962
+湿衣服	shi yi fu	3962
+灰衣服	hui yi fu	3962
+点衣服	dian yi fu	3962
+烫衣服	tang yi fu	3962
+熨衣服	yun yi fu	3962
+爱衣服	ai yi fu	3962
+物流网	wu liu wang	3962
+的衣服	de yi fu	3962
+看衣服	kan yi fu	3962
+破衣服	po yi fu	3962
+租衣服	zu yi fu	3962
+粉色衣服	fen se yi fu	3962
+粉衣服	fen yi fu	3962
+绿衣服	lv yi fu	3962
+脏衣服	zang yi fu	3962
+花衣服	hua yi fu	3962
+蓝衣服	lan yi fu	3962
+薄衣服	bao yi fu	3962
+衣服不	yi fu bu	3962
+衣服也	yi fu ye	3962
+衣服了	yi fu le	3962
+衣服去	yi fu qu	3962
+衣服吗	yi fu ma	3962
+衣服吧	yi fu ba	3962
+衣服呀	yi fu ya	3962
+衣服呗	yi fu bei	3962
+衣服呢	yi fu ne	3962
+衣服和	yi fu he	3962
+衣服啊	yi fu a	3962
+衣服啦	yi fu la	3962
+衣服多	yi fu duo	3962
+衣服店	yi fu dian	3962
+衣服挂	yi fu gua	3962
+衣服来	yi fu lai	3962
+衣服架	yi fu jia	3962
+衣服没	yi fu mei	3962
+衣服洗	yi fu xi	3962
+衣服的	yi fu de	3962
+衣服穿	yi fu chuan	3962
+衣服都	yi fu dou	3962
+衣服里	yi fu li	3962
+衣服钱	yi fu qian	3962
+衣服鞋	yi fu xie	3962
+补衣服	bu yi fu	3962
+裁衣服	cai yi fu	3962
+装衣服	zhuang yi fu	3962
+要衣服	yao yi fu	3962
+试衣服	shi yi fu	3962
+跨境支付	kua jing zhi fu	3962
+身衣服	shen yi fu	3962
+这衣服	zhe yi fu	3962
+连衣服	lian yi fu	3962
+退衣服	tui yi fu	3962
+送衣服	song yi fu	3962
+选衣服	xuan yi fu	3962
+逛衣服	guang yi fu	3962
+那衣服	na yi fu	3962
+配衣服	pei yi fu	3962
+长衣服	chang yi fu	3962
+领衣服	ling yi fu	3962
+一口红	yi kou hong	3924
+定额发票	ding e fa piao	3924
+微信转账	wei xin zhuan zhang	3924
+支付宝上	zhi fu bao shang	3924
+支付宝的	zhi fu bao de	3924
+物流仓储	wu liu cang chu	3924
+电话转账	dian hua zhuan zhang	3924
+给你转账	gei ni zhuan zhang	3924
+给我转账	gei wo zhuan zhang	3924
+自动转账	zi dong zhuan zhang	3924
+转账凭证	zhuan zhang ping zheng	3924
+转账成功	zhuan zhang cheng gong	3924
+转账支票	zhuan zhang zhi piao	3924
+转账结算	zhuan zhang jie suan	3924
+转账给你	zhuan zhang gei ni	3924
+转账给我	zhuan zhang gei wo	3924
+转账过程	zhuan zhang guo cheng	3924
+三套衣服	san tao yi fu	3885
+免税发票	mian shui fa piao	3885
 免税购物	mian shui gou wu	3885
 批量下单	pi liang xia dan	3885
+支付宝号	zhi fu bao hao	3885
+一只口红	yi zhi kou hong	3847
+中创物流	zhong chuang wu liu	3847
+买套衣服	mai tao yi fu	3847
+口红先生	kou hong xian sheng	3847
+口红效应	kou hong xiao ying	3847
+口红王子	kou hong wang zi	3847
+没带衣服	mei dai yi fu	3847
+波点衬衫	bo dian chen shan	3847
+洗洗衣服	xi xi yi fu	3847
+物流配送	wu liu pei song	3847
+空包裹	kong bao guo	3847
+粉红口红	fen hong kou hong	3847
+衣服架子	yi fu jia zi	3847
+衣服没洗	yi fu mei xi	3847
+三件衣服	san jian yi fu	3808
+不转账	bu zhuan zhang	3808
+中式服装	zhong shi fu zhuang	3808
 网购中心	wang gou zhong xin	3808
+迪奥口红	di ao kou hong	3808
+代付款	dai fu kuan	3770
+会展物流	hui zhan wu liu	3770
+你付款	ni fu kuan	3770
+做服装	zuo fu zhuang	3770
+先付款	xian fu kuan	3770
+几套衣服	ji tao yi fu	3770
 刚下单	gang xia dan	3770
+到付款	dao fu kuan	3770
+包裹性	bao guo xing	3770
+卖服装	mai fu zhuang	3770
+后付款	hou fu kuan	3770
+实付款	shi fu kuan	3770
+已付款	yi fu kuan	3770
+已转账	yi zhuan zhang	3770
+我付款	wo fu kuan	3770
+支付对价	zhi fu dui jia	3770
+收付款	shou fu kuan	3770
+服装商	fu zhuang shang	3770
+服装界	fu zhuang jie	3770
+服装类	fu zhuang lei	3770
+服装网	fu zhuang wang	3770
+服装袋	fu zhuang dai	3770
+服装面料	fu zhuang mian liao	3770
+服装革	fu zhuang ge	3770
+未付款	wei fu kuan	3770
+没付款	mei fu kuan	3770
+没提现	mei ti xian	3770
+能付款	neng fu kuan	3770
+衬衫面料	chen shan mian liao	3770
+针灸美容	zhen jiu mei rong	3770
+两套衣服	liang tao yi fu	3731
+买个衣服	mai ge yi fu	3731
+买点衣服	mai dian yi fu	3731
+几件衣服	ji jian yi fu	3731
+委托收款	wei tuo shou kuan	3731
+提现了	ti xian le	3731
+提现过	ti xian guo	3731
+真皮包裹	zhen pi bao guo	3731
+短裙子	duan qun zi	3731
+会化妆	hui hua zhuang	3693
+先转账	xian zhuan zhang	3693
+别化妆	bie hua zhuang	3693
+受托支付	shou tuo zhi fu	3693
+学化妆	xue hua zhuang	3693
 店铺里	dian pu li	3693
 开店铺	kai dian pu	3693
+整形美容	zheng xing mei rong	3693
 新店铺	xin dian pu	3693
+格子衬衫	ge zi chen shan	3693
 看店铺	kan dian pu	3693
+要化妆	yao hua zhuang	3693
 进店铺	jin dian pu	3693
+铁龙物流	tie long wu liu	3693
 不下单	bu xia dan	3654
+口红了	kou hong le	3654
+口红的	kou hong de	3654
+我口红	wo kou hong	3654
+打发票	da fa piao	3654
+有口红	you kou hong	3654
+这口红	zhe kou hong	3654
 收藏夹	shou cang jia	3652
+一下退款	yi xia tui kuan	3616
+全额退款	quan e tui kuan	3616
+印花衬衫	yin hua chen shan	3616
+发票领购	fa piao ling gou	3616
+可以退款	ke yi tui kuan	3616
+售后回购	shou hou hui gou	3616
+多加衣服	duo jia yi fu	3616
+快递惊魂	kuai di jing hun	3616
+怎么退款	zen me tui kuan	3616
+我要退款	wo yao tui kuan	3616
+无效退款	wu xiao tui kuan	3616
+极速退款	ji su tui kuan	3616
+给我退款	gei wo tui kuan	3616
+美美容	mei mei rong	3616
+还不退款	hai bu tui kuan	3616
+还没退款	hai mei tui kuan	3616
+退款原因	tui kuan yuan yin	3616
+退款成功	tui kuan cheng gong	3616
+退款理由	tui kuan li you	3616
 下单人	xia dan ren	3577
+不提现	bu ti xian	3577
+发票上	fa piao shang	3577
+可以退货	ke yi tui huo	3577
+商品退货	shang pin tui huo	3577
+已收款	yi shou kuan	3577
+应收款项	ying shou kuan xiang	3577
+怎么退货	zen me tui huo	3577
+我要退货	wo yao tui huo	3577
+拒绝退货	ju jue tui huo	3577
+整件衣服	zheng jian yi fu	3577
+查物流	cha wu liu	3577
+没物流	mei wu liu	3577
+深色衣服	shen se yi fu	3577
+物流了	wu liu le	3577
+物流单	wu liu dan	3577
+物流吗	wu liu ma	3577
+物流吧	wu liu ba	3577
+物流城	wu liu cheng	3577
+物流学	wu liu xue	3577
+物流师	wu liu shi	3577
+物流快	wu liu kuai	3577
+物流港	wu liu gang	3577
+物流点	wu liu dian	3577
+物流的	wu liu de	3577
+物流说	wu liu shuo	3577
+物流费	wu liu fei	3577
+物流车	wu liu che	3577
+物流部	wu liu bu	3577
+看物流	kan wu liu	3577
+走物流	zou wu liu	3577
+这物流	zhe wu liu	3577
+退款退货	tui kuan tui huo	3577
+退货申请	tui huo shen qing	3577
+德邦快递	de bang kuai di	3539
+德邦物流	de bang wu liu	3539
+护肤品牌	hu fu pin pai	3539
+护肤用品	hu fu yong pin	3539
+按摩护肤	an mo hu fu	3539
+换换衣服	huan huan yi fu	3539
+未收款	wei shou kuan	3539
+美容护肤	mei rong hu fu	3539
+衬衫厂	chen shan chang	3539
+要换衣服	yao huan yi fu	3539
+那套衣服	na tao yi fu	3539
+去取快递	qu qu kuai di	3500
+有奖发票	you jiang fa piao	3500
+虚开发票	xu kai fa piao	3500
 三江购物	san jiang gou wu	3462
+上门收款	shang men shou kuan	3462
+付款单	fu kuan dan	3462
+付款日	fu kuan ri	3462
+代收款	dai shou kuan	3462
+保修包换	bao xiu bao huan	3462
+冷链物流	leng lian wu liu	3462
+包裹住	bao guo zhu	3462
+包裹单	bao guo dan	3462
+包裹着	bao guo zhe	3462
+包裹里	bao guo li	3462
+化妆柜	hua zhuang gui	3462
+化妆袋	hua zhuang dai	3462
+取包裹	qu bao guo	3462
 和商家	he shang jia	3462
 商家了	shang jia le	3462
 商家版	shang jia ban	3462
 商家的	shang jia de	3462
 商家码	shang jia ma	3462
 商家说	shang jia shuo	3462
+影楼化妆	ying lou hua zhuang	3462
+微信收款	wei xin shou kuan	3462
+快递小哥	kuai di xiao ge	3462
 找商家	zhao shang jia	3462
+拿包裹	na bao guo	3462
+收款业务	shou kuan ye wu	3462
+收款凭证	shou kuan ping zheng	3462
+收款单	shou kuan dan	3462
+收款员	shou kuan yuan	3462
+收款方式	shou kuan fang shi	3462
+暂收款	zan shou kuan	3462
+服装辅料	fu zhuang fu liao	3462
+服装鞋帽	fu zhuang xie mao	3462
+百世快递	bai shi kuai di	3462
 给商家	gei shang jia	3462
+美容厅	mei rong ting	3462
+美容品	mei rong pin	3462
+美容美发	mei rong mei fa	3462
+美甲机	mei jia ji	3462
+羽绒服装	yu rong fu zhuang	3462
+裘皮服装	qiu pi fu zhuang	3462
 跟商家	gen shang jia	3462
+顺丰快递	shun feng kuai di	3462
+收银台	shou yin tai	3456
+腰围	yao wei	3443
+什么尺码	shen me chi ma	3424
+圆通快递	yuan tong kuai di	3424
+多大尺码	duo da chi ma	3424
+大额转账	da e zhuan zhang	3424
+尺码合适	chi ma he shi	3424
+尺码标准	chi ma biao zhun	3424
+尺码问题	chi ma wen ti	3424
+玩命快递	wan ming kuai di	3424
+税控发票	shui kong fa piao	3424
 蓝莓购物	lan mei gou wu	3424
+预收款项	yu shou kuan xiang	3424
 黑心商家	hei xin shang jia	3424
+付款了	fu kuan le	3385
+付款前	fu kuan qian	3385
+付款后	fu kuan hou	3385
+付款吗	fu kuan ma	3385
+付款吧	fu kuan ba	3385
+付款呢	fu kuan ne	3385
+付款哈	fu kuan ha	3385
+付款啦	fu kuan la	3385
+付款图	fu kuan tu	3385
+付款时	fu kuan shi	3385
+付款的	fu kuan de	3385
+付款行	fu kuan xing	3385
+保修时间	bao xiu shi jian	3385
+保修期限	bao xiu qi xian	3385
+击剑服装	ji jian fu zhuang	3385
+别付款	bie fu kuan	3385
+包裹严实	bao guo yan shi	3385
+去付款	qu fu kuan	3385
+同款衣服	tong kuan yi fu	3385
+垫付款	dian fu kuan	3385
+就付款	jiu fu kuan	3385
+开具发票	kai ju fa piao	3385
+暂付款	zan fu kuan	3385
+浅色衣服	qian se yi fu	3385
+终身保修	zhong shen bao xiu	3385
+要付款	yao fu kuan	3385
+请付款	qing fu kuan	3385
+买裙子	mai qun zi	3347
+先退款	xian tui kuan	3347
+啥裙子	sha qun zi	3347
+大裙子	da qun zi	3347
+女裙子	nv qun zi	3347
+小裙子	xiao qun zi	3347
+已退款	yi tui kuan	3347
+已退货	yi tui huo	3347
+广汇物流	guang hui wu liu	3347
+我裙子	wo qun zi	3347
+新裙子	xin qun zi	3347
+是裙子	shi qun zi	3347
+白裙子	bai qun zi	3347
+的裙子	de qun zi	3347
+看裙子	kan qun zi	3347
+穿裙子	chuan qun zi	3347
+红裙子	hong qun zi	3347
+绿裙子	lv qun zi	3347
+花裙子	hua qun zi	3347
+蓝裙子	lan qun zi	3347
+裙子了	qun zi le	3347
+裙子吗	qun zi ma	3347
+裙子吧	qun zi ba	3347
+裙子呢	qun zi ne	3347
+裙子的	qun zi de	3347
+要裙子	yao qun zi	3347
+这裙子	zhe qun zi	3347
+那裙子	na qun zi	3347
+配裙子	pei qun zi	3347
+长裙子	chang qun zi	3347
+首期付款	shou qi fu kuan	3347
+黄裙子	huang qun zi	3347
+黑裙子	hei qun zi	3347
+臀围	tun wei	3320
+东航物流	dong hang wu liu	3308
+买化妆	mai hua zhuang	3308
+你化妆	ni hua zhuang	3308
 你店铺	ni dian pu	3308
+保税物流	bao shui wu liu	3308
+做个美甲	zuo ge mei jia	3308
+化化妆	hua hua zhuang	3308
+化妆了	hua zhuang le	3308
+化妆后	hua zhuang hou	3308
+化妆吗	hua zhuang ma	3308
+化妆吧	hua zhuang ba	3308
+化妆呢	hua zhuang ne	3308
+化妆店	hua zhuang dian	3308
+化妆桌	hua zhuang zhuo	3308
+化妆的	hua zhuang de	3308
+化妆费	hua zhuang fei	3308
+在化妆	zai hua zhuang	3308
 在店铺	zai dian pu	3308
 店铺了	dian pu le	3308
 店铺名	dian pu ming	3308
 店铺吗	dian pu ma	3308
 店铺的	dian pu de	3308
+我化妆	wo hua zhuang	3308
 我店铺	wo dian pu	3308
+护肤乳液	hu fu ru ye	3308
+收款台	shou kuan tai	3308
 有店铺	you dian pu	3308
+格纹衬衫	ge wen chen shan	3308
+没化妆	mei hua zhuang	3308
+绝命快递	jue ming kuai di	3308
+绳化妆	sheng hua zhuang	3308
+美容术	mei rong shu	3308
+美甲产品	mei jia chan pin	3308
+花衬衫	hua chen shan	3308
+薄化妆	bo hua zhuang	3308
+衬衫女	chen shan nv	3308
+衬衫裙	chen shan qun	3308
+还化妆	hai hua zhuang	3308
+都化妆	dou hua zhuang	3308
+采采衣服	cai cai yi fu	3308
+预收款	yu shou kuan	3308
+黑衬衫	hei chen shan	3308
+护肤彩妆	hu fu cai zhuang	3270
+退货单	tui huo dan	3270
+护发素	hu fa su	3262
+做美容	zuo mei rong	3231
+学美容	xue mei rong	3231
+洗个衣服	xi ge yi fu	3231
+洗完衣服	xi wan yi fu	3231
+美容仪	mei rong yi	3231
+美容学	mei rong xue	3231
+美容床	mei rong chuang	3231
+美容油	mei rong you	3231
+美容液	mei rong ye	3231
+美容的	mei rong de	3231
+美容线	mei rong xian	3231
+美容胶	mei rong jiao	3231
+美容觉	mei rong jiao	3231
+美容部	mei rong bu	3231
+美容针	mei rong zhen	3231
+退货款	tui huo kuan	3231
 下单了	xia dan le	3193
 下单后	xia dan hou	3193
 下单吗	xia dan ma	3193
 下单吧	xia dan ba	3193
 下单的	xia dan de	3193
 你下单	ni xia dan	3193
+你提现	ni ti xian	3193
 先下单	xian xia dan	3193
 去下单	qu xia dan	3193
+发票了	fa piao le	3193
+发票吗	fa piao ma	3193
+发票吧	fa piao ba	3193
+发票的	fa piao de	3193
+发票章	fa piao zhang	3193
+夺命快递	duo ming kuai di	3193
 就下单	jiu xia dan	3193
+就提现	jiu ti xian	3193
 您下单	nin xia dan	3193
+我提现	wo ti xian	3193
+把发票	ba fa piao	3193
+拿发票	na fa piao	3193
+提现到	ti xian dao	3193
+提现吗	ti xian ma	3193
+提现吧	ti xian ba	3193
+提现的	ti xian de	3193
+提现费	ti xian fei	3193
 无良商家	wu liang shang jia	3193
 未下单	wei xia dan	3193
 没下单	mei xia dan	3193
+的发票	de fa piao	3193
+能提现	neng ti xian	3193
 要下单	yao xia dan	3193
+送发票	song fa piao	3193
+都提现	dou ti xian	3193
+领发票	ling fa piao	3193
+优速快递	you su kuai di	3154
+你转账	ni zhuan zhang	3077
+我转账	wo zhuan zhang	3077
+转账了	zhuan zhang le	3077
+转账吗	zhuan zhang ma	3077
+转账吧	zhuan zhang ba	3077
+转账的	zhuan zhang de	3077
+漱口水	shu kou shui	3070
+买口红	mai kou hong	3039
+你口红	ni kou hong	3039
+口红吗	kou hong ma	3039
+口红吧	kou hong ba	3039
+抹口红	mo kou hong	3039
+涂口红	tu kou hong	3039
+申通快递	shen tong kuai di	3039
+的口红	de kou hong	3039
+送口红	song kou hong	3039
 不网购	bu wang gou	3000
+亡命快递	wang ming kuai di	3000
+你有快递	ni you kuai di	3000
+你的快递	ni de kuai di	3000
+全峰快递	quan feng kuai di	3000
 加购物车	jia gou wu che	3000
+去拿快递	qu na kuai di	3000
+发啥快递	fa sha kuai di	3000
+取下快递	qu xia kuai di	3000
+取完快递	qu wan kuai di	3000
+取快递了	qu kuai di le	3000
+国通快递	guo tong kuai di	3000
+寄个快递	ji ge kuai di	3000
+寄快递了	ji kuai di le	3000
+快递了吗	kuai di le ma	3000
+快递到了	kuai di dao le	3000
+快递拿了	kuai di na le	3000
+快递来了	kuai di lai le	3000
+我拿快递	wo na kuai di	3000
+我有快递	wo you kuai di	3000
+我的快递	wo de kuai di	3000
 我购物车	wo gou wu che	3000
+拿了快递	na le kuai di	3000
+拿完快递	na wan kuai di	3000
+拿快递了	na kuai di le	3000
+拿快递去	na kuai di qu	3000
 易网购	yi wang gou	3000
+有你快递	you ni kuai di	3000
+有快递吗	you kuai di ma	3000
+极兔快递	ji tu kuai di	3000
 网购了	wang gou le	3000
 网购的	wang gou de	3000
 购物车了	gou wu che le	3000
+送快递的	song kuai di de	3000
+销货发票	xiao huo fa piao	3000
+韵达快递	yun da kuai di	3000
+领个快递	ling ge kuai di	3000
+代开发票	dai kai fa piao	2962
+养颜美容	yang yan mei rong	2962
+开发票吗	kai fa piao ma	2962
+美容养颜	mei rong yang yan	2962
+能开发票	neng kai fa piao	2962
+肩宽	jian kuan	2954
+换货的	huan huo de	2924
+寄件人	ji jian ren	2895
+不售后	bu shou hou	2885
+不退款	bu tui kuan	2885
+你退款	ni tui kuan	2885
+做售后	zuo shou hou	2885
+售后了	shou hou le	2885
+售后吗	shou hou ma	2885
+售后的	shou hou de	2885
+售后群	shou hou qun	2885
+售后部	shou hou bu	2885
+就退款	jiu tui kuan	2885
+想退款	xiang tui kuan	2885
+我退款	wo tui kuan	2885
+有售后	you shou hou	2885
+没退款	mei tui kuan	2885
+能退款	neng tui kuan	2885
+要退款	yao tui kuan	2885
+请退款	qing tui kuan	2885
+货退款	huo tui kuan	2885
+退款了	tui kuan le	2885
+退款后	tui kuan hou	2885
+退款吗	tui kuan ma	2885
+退款吧	tui kuan ba	2885
+退款呢	tui kuan ne	2885
+退款的	tui kuan de	2885
+防晒乳	fang shai ru	2867
+不退货	bu tui huo	2847
+寄件码	ji jian ma	2847
+就退货	jiu tui huo	2847
+想退货	xiang tui huo	2847
 我下单了	wo xia dan le	2847
+我退货	wo tui huo	2847
+护肤乳	hu fu ru	2847
+护肤水	hu fu shui	2847
+护肤的	hu fu de	2847
+有退货	you tui huo	2847
+能退货	neng tui huo	2847
+要退货	yao tui huo	2847
+请退货	qing tui huo	2847
+退货了	tui huo le	2847
+退货吗	tui huo ma	2847
+退货吧	tui huo ba	2847
+退货呢	tui huo ne	2847
+退货率	tui huo lv	2847
+退货的	tui huo de	2847
+退货组	tui huo zu	2847
 那我下单	na wo xia dan	2847
+不换衣服	bu huan yi fu	2770
+不收款	bu shou kuan	2770
+不穿衣服	bu chuan yi fu	2770
+买了衣服	mai le yi fu	2770
+买啥衣服	mai sha yi fu	2770
+买完衣服	mai wan yi fu	2770
+买新衣服	mai xin yi fu	2770
+买的衣服	mai de yi fu	2770
+买衣服了	mai yi fu le	2770
+买衣服去	mai yi fu qu	2770
+买衣服吗	mai yi fu ma	2770
+买衣服吧	mai yi fu ba	2770
+买衣服呢	mai yi fu ne	2770
+买衣服的	mai yi fu de	2770
+买身衣服	mai shen yi fu	2770
+他的衣服	ta de yi fu	2770
+你买衣服	ni mai yi fu	2770
+你把衣服	ni ba yi fu	2770
+你换衣服	ni huan yi fu	2770
+你支付宝	ni zhi fu bao	2770
+你洗衣服	ni xi yi fu	2770
+你的衣服	ni de yi fu	2770
+你穿衣服	ni chuan yi fu	2770
+你脱衣服	ni tuo yi fu	2770
+你这衣服	ni zhe yi fu	2770
+你那衣服	ni na yi fu	2770
+刚洗衣服	gang xi yi fu	2770
+刷脸支付	shua lian zhi fu	2770
+卖衣服的	mai yi fu de	2770
+厚衣服了	hou yi fu le	2770
+去买衣服	qu mai yi fu	2770
+去支付宝	qu zhi fu bao	2770
+去洗衣服	qu xi yi fu	2770
+又洗衣服	you xi yi fu	2770
+发支付宝	fa zhi fu bao	2770
+和包支付	he bao zhi fu	2770
+在买衣服	zai mai yi fu	2770
+在换衣服	zai huan yi fu	2770
+在支付宝	zai zhi fu bao	2770
+在洗衣服	zai xi yi fu	2770
+在穿衣服	zai chuan yi fu	2770
+多穿衣服	duo chuan yi fu	2770
+好搭衣服	hao da yi fu	2770
+就洗衣服	jiu xi yi fu	2770
+尺码亲	chi ma qin	2770
+尺码的	chi ma de	2770
+想买衣服	xiang mai yi fu	2770
+我买衣服	wo mai yi fu	2770
+我把衣服	wo ba yi fu	2770
+我支付宝	wo zhi fu bao	2770
+我晾衣服	wo liang yi fu	2770
+我有衣服	wo you yi fu	2770
+我没衣服	wo mei yi fu	2770
+我洗衣服	wo xi yi fu	2770
+我的衣服	wo de yi fu	2770
+我穿衣服	wo chuan yi fu	2770
+把你衣服	ba ni yi fu	2770
+把我衣服	ba wo yi fu	2770
+换完衣服	huan wan yi fu	2770
+换衣服了	huan yi fu le	2770
+换衣服吧	huan yi fu ba	2770
+换衣服呢	huan yi fu ne	2770
+支付完了	zhi fu wan le	2770
+支付宝了	zhi fu bao le	2770
+支付宝吗	zhi fu bao ma	2770
+支付宝吧	zhi fu bao ba	2770
+支付宝码	zhi fu bao ma	2770
+支付宝里	zhi fu bao li	2770
+收款了	shou kuan le	2770
+收款吗	shou kuan ma	2770
+收款方	shou kuan fang	2770
+收款的	shou kuan de	2770
+收衣服了	shou yi fu le	2770
+新衣服了	xin yi fu le	2770
+晾个衣服	liang ge yi fu	2770
+晾完衣服	liang wan yi fu	2770
+晾衣服了	liang yi fu le	2770
+有尺码	you chi ma	2770
+有支付宝	you zhi fu bao	2770
+没支付宝	mei zhi fu bao	2770
+没衣服了	mei yi fu le	2770
+没衣服穿	mei yi fu chuan	2770
+洗了衣服	xi le yi fu	2770
+洗好衣服	xi hao yi fu	2770
+洗的衣服	xi de yi fu	2770
+洗衣服了	xi yi fu le	2770
+洗衣服去	xi yi fu qu	2770
+洗衣服吗	xi yi fu ma	2770
+洗衣服吧	xi yi fu ba	2770
+洗衣服呀	xi yi fu ya	2770
+洗衣服呢	xi yi fu ne	2770
+洗衣服啦	xi yi fu la	2770
+洗衣服来	xi yi fu lai	2770
+洗衣服的	xi yi fu de	2770
+洗过衣服	xi guo yi fu	2770
+环迅支付	huan xun zhi fu	2770
+用支付宝	yong zhi fu bao	2770
+白衣服的	bai yi fu de	2770
+的尺码	de chi ma	2770
+穿上衣服	chuan shang yi fu	2770
+穿啥衣服	chuan sha yi fu	2770
+穿好衣服	chuan hao yi fu	2770
+穿新衣服	chuan xin yi fu	2770
+穿点衣服	chuan dian yi fu	2770
+穿的衣服	chuan de yi fu	2770
+穿衣服了	chuan yi fu le	2770
+穿衣服呢	chuan yi fu ne	2770
+穿衣服的	chuan yi fu de	2770
+穿黑衣服	chuan hei yi fu	2770
+粲粲衣服	can can yi fu	2770
+群收款	qun shou kuan	2770
+脱了衣服	tuo le yi fu	2770
+脱衣服了	tuo yi fu le	2770
+衣服上了	yi fu shang le	2770
+衣服上的	yi fu shang de	2770
+衣服了吗	yi fu le ma	2770
+衣服到了	yi fu dao le	2770
+衣服去了	yi fu qu le	2770
+衣服啥的	yi fu sha de	2770
+衣服小了	yi fu xiao le	2770
+衣服很好	yi fu hen hao	2770
+衣服洗了	yi fu xi le	2770
+衣服湿了	yi fu shi le	2770
+衣服穿了	yi fu chuan le	2770
+衣服穿好	yi fu chuan hao	2770
+衣服脱了	yi fu tuo le	2770
+要买衣服	yao mai yi fu	2770
+要洗衣服	yao xi yi fu	2770
+请收款	qing shou kuan	2770
+转支付宝	zhuan zhi fu bao	2770
+还洗衣服	hai xi yi fu	2770
+这身衣服	zhe shen yi fu	2770
+这身衣服	zhei shen yi fu	2770
+那件衣服	na jian yi fu	2770
+隔着衣服	ge zhe yi fu	2770
+黑衣服的	hei yi fu de	2770
+不保修	bu bao xiu	2731
+保修吗	bao xiu ma	2731
+口红色号	kou hong se hao	2731
+契税发票	qi shui fa piao	2731
+有保修	you bao xiu	2731
 优惠券了	you hui quan le	2693
 优惠券吗	you hui quan ma	2693
+发票缴销	fa piao jiao xiao	2693
 我已下单	wo yi xia dan	2693
 有优惠券	you you hui quan	2693
 领优惠券	ling you hui quan	2693
+做美甲	zuo mei jia	2654
+学美甲	xue mei jia	2654
+美甲师	mei jia shi	2654
+美甲灯	mei jia deng	2654
+美甲贴	mei jia tie	2654
+这身服装	zhe shen fu zhuang	2654
+有发票吗	you fa piao ma	2616
+雪纺衬衫	xue fang chen shan	2616
+万林物流	wan lin wu liu	2539
+中谷物流	zhong gu wu liu	2539
+华贸物流	hua mao wu liu	2539
+宇鑫物流	yu xin wu liu	2539
+安能物流	an neng wu liu	2539
+物流也快	wu liu ye kuai	2539
+速运物流	su yun wu liu	2539
+付款了吗	fu kuan le ma	2424
+付款交单	fu kuan jiao dan	2424
+你提现了	ni ti xian le	2424
+我付款了	wo fu kuan le	2424
+我已付款	wo yi fu kuan	2424
+我提现了	wo ti xian le	2424
+提现了吗	ti xian le ma	2424
+都提现了	dou ti xian le	2424
+不化妆了	bu hua zhuang le	2385
+不穿裙子	bu chuan qun zi	2385
+买化妆品	mai hua zhuang pin	2385
+你不化妆	ni bu hua zhuang	2385
+你的裙子	ni de qun zi	2385
+你穿裙子	ni chuan qun zi	2385
+化不化妆	hua bu hua zhuang	2385
+化妆品了	hua zhuang pin le	2385
+我不化妆	wo bu hua zhuang	2385
+我化妆了	wo hua zhuang le	2385
+我在化妆	wo zai hua zhuang	2385
+我没化妆	wo mei hua zhuang	2385
+我的裙子	wo de qun zi	2385
+我穿裙子	wo chuan qun zi	2385
+死化妆师	si hua zhuang shi	2385
+穿小裙子	chuan xiao qun zi	2385
+穿的裙子	chuan de qun zi	2385
+穿裙子了	chuan qun zi le	2385
+穿裙子的	chuan qun zi de	2385
+都不化妆	dou bu hua zhuang	2385
 我去下单	wo qu xia dan	2308
 我就下单	wo jiu xia dan	2308
+汗蒸美容	han zheng mei rong	2308
+睡美容觉	shui mei rong jiao	2308
+睡美容觉	shui mei rong jue	2308
+美容汗蒸	mei rong han zheng	2308
+银期转账	yin qi zhuan zhang	2231
+银证转账	yin zheng zhuan zhang	2231
+涂个口红	tu ge kou hong	2193
+售后回租	shou hou hui zu	2116
+售后租回	shou hou zu hui	2116
+我想退款	wo xiang tui kuan	2116
+我退款了	wo tui kuan le	2116
+有尺码表	you chi ma biao	2116
+退款了吗	tui kuan le ma	2116
+买护肤品	mai hu fu pin	2077
+囤护肤品	dun hu fu pin	2077
+我想退货	wo xiang tui huo	2077
+我退货了	wo tui huo le	2077
+能退货吗	neng tui huo ma	2077
+帆布鞋	fan bu xie	2056
+美甲美睫	mei jia mei jie	2000
+休闲鞋	xiu xian xie	1758
+在派件	zai pai jian	1308
+派件中	pai jian zhong	1308
+派件了	pai jian le	1308
+派件员	pai jian yuan	1308
+眼线笔	yan xian bi	464
+保湿霜	bao shi shuang	374
+卸妆油	xie zhuang you	72

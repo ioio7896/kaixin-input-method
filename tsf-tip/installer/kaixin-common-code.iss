@@ -1,5 +1,6 @@
 var
   ComponentChecksReady: Boolean;
+  MaintenanceStarted: Boolean;
   InstallPythonRuntimeComponent: Boolean;
   InstallRapidOcrPackagesComponent: Boolean;
   InstallRapidOcrPayloadComponent: Boolean;
@@ -179,16 +180,19 @@ end;
 
 procedure RemoveCurrentUserData();
 var
-  AppDir, Params: string;
+  AppDir, SetupExe, RunnerExe, Params: string;
   ResultCode: Integer;
 begin
   AppDir := ExpandConstant('{app}');
-  Params := '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' +
-    AppDir + '\uninstall_current_user.ps1" -InstallationRoot "' + AppDir + '"';
+  SetupExe := AddBackslash(AppDir) + 'srf_ime_setup.exe';
+  RunnerExe := ExpandConstant('{tmp}\kaixin-setup-uninstall.exe');
+  if not FileCopy(SetupExe, RunnerExe, False) then
+    RunnerExe := SetupExe;
+  Params := 'uninstall-user --root "' + AppDir + '"';
 #if KXMachineInstall
-  Params := Params + ' -FromMachineUninstaller';
+  Params := Params + ' --from-machine-uninstaller --skip-registration';
 #endif
-  if not ExecAndLogOutput(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
+  if not ExecAndLogOutput(RunnerExe,
     Params, AppDir, SW_HIDE, ewWaitUntilTerminated, ResultCode, nil) or
     (ResultCode <> 0) then begin
     Log('Current-user uninstall cleanup failed. Code=' + IntToStr(ResultCode));
@@ -249,4 +253,87 @@ begin
       Log('Detected downgrade install; continuing directly. Installed=' + CurrentVersion + ' New={#KXAppVersion}');
     end;
   end;
+end;
+
+function WindowsGetTickCount(): LongWord;
+  external 'GetTickCount@kernel32.dll stdcall';
+
+#if KXMachineInstall
+procedure SetDesktopMaintenanceValue(const Name, Data: string);
+var
+  Params: string;
+  ResultCode: Integer;
+begin
+  if Data = '' then
+    Params := 'delete "HKCU\' + KaixinStateRegKey + '" /v ' + Name + ' /f'
+  else
+    Params := 'add "HKCU\' + KaixinStateRegKey + '" /v ' + Name + ' /t REG_DWORD /d ' + Data + ' /f';
+  if not ExecAsOriginalUser(ExpandConstant('{sys}\reg.exe'), Params, '', SW_HIDE,
+    ewWaitUntilTerminated, ResultCode) or (ResultCode <> 0) then
+    Log('Could not update the desktop maintenance flag ' + Name + '. Code=' + IntToStr(ResultCode));
+end;
+#endif
+
+procedure SetInstallMaintenance(Enabled: Boolean);
+begin
+  if Enabled = MaintenanceStarted then exit;
+  MaintenanceStarted := Enabled;
+#if KXMachineInstall
+  if Enabled then begin
+    SetDesktopMaintenanceValue(KaixinInstallMaintenanceTickValue, '0x' + Format('%.8x', [WindowsGetTickCount()]));
+    SetDesktopMaintenanceValue(KaixinInstallMaintenanceValue, '1');
+  end else begin
+    SetDesktopMaintenanceValue(KaixinInstallMaintenanceValue, '');
+    SetDesktopMaintenanceValue(KaixinInstallMaintenanceTickValue, '');
+  end;
+#else
+  if Enabled then begin
+    RegWriteDWordValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceTickValue,
+      WindowsGetTickCount());
+    RegWriteDWordValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceValue, 1);
+  end else begin
+    RegDeleteValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceValue);
+    RegDeleteValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceTickValue);
+  end;
+#endif
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  HelperExe: string;
+  ResultCode: Integer;
+begin
+  Result := '';
+  if not FileExists(ExpandConstant('{app}\srf_ime_tray.exe')) then exit;
+  SetInstallMaintenance(True);
+  try
+    ExtractTemporaryFile('srf_ime_setup.exe');
+    HelperExe := ExpandConstant('{tmp}\srf_ime_setup.exe');
+    if not Exec(HelperExe, 'stop-processes', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+      Log('Could not start srf_ime_setup stop-processes: ' + SysErrorMessage(ResultCode));
+  except
+    Log('ExtractTemporaryFile(srf_ime_setup.exe) failed: ' + GetExceptionMessage);
+  end;
+end;
+
+function RunSetupHelper(const Params, Status: string; AsOriginalUser: Boolean): Integer;
+var
+  Launched: Boolean;
+  SetupExe, AppDir: string;
+begin
+  WizardForm.StatusLabel.Caption := Status;
+  WizardForm.FilenameLabel.Caption := '';
+  WizardForm.StatusLabel.Update;
+  AppDir := ExpandConstant('{app}');
+  SetupExe := AddBackslash(AppDir) + 'srf_ime_setup.exe';
+  if AsOriginalUser then
+    Launched := ExecAsOriginalUser(SetupExe, Params, AppDir, SW_HIDE, ewWaitUntilTerminated, Result)
+  else
+    Launched := Exec(SetupExe, Params, AppDir, SW_HIDE, ewWaitUntilTerminated, Result);
+  if not Launched then
+    RaiseException(Status + #13#10 + SysErrorMessage(Result));
+  { Exit 10 is the desktop health report from --report-setup-status. }
+  if (Result <> 0) and not ((Result = 10) and (Pos('--report-setup-status', Params) > 0)) then
+    RaiseException(Status + #13#10 + '退出码 ' + IntToStr(Result) + #13#10 +
+      '请查看安装目录的 install_machine.log 或桌面用户 %LOCALAPPDATA%\kaixin\install_user.log。');
 end;

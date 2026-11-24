@@ -2143,7 +2143,7 @@ def step_cargo(
     lean_bins = [
         name
         for name in bin_names
-        if name in {"srf_ime_engine", "srf_ime_clipboard_svc", "bake_lexicon"}
+        if name in {"srf_ime_setup", "srf_ime_engine", "srf_ime_clipboard_svc", "bake_lexicon"}
     ]
     if lean_bins:
         lean_cmd = [cargo, "build", "--locked", "--no-default-features"]
@@ -2754,10 +2754,13 @@ def verify_staged_package(
         from scripts.lexicon_pack import read_pack
 
         profiles = read_pack(packed_lexicon)
-        for profile_bytes in profiles:
+        for profile_name, profile_bytes in zip(("standard", "hot"), profiles, strict=True):
             schema = int.from_bytes(profile_bytes[8:12], "little")
-            if schema != 13:
-                raise RuntimeError("unsupported packed lexicon schema")
+            if schema != PREBAKED_LEXICON_SCHEMA_VERSION:
+                raise RuntimeError(
+                    f"packed {profile_name} lexicon schema is v{schema}, "
+                    f"expected v{PREBAKED_LEXICON_SCHEMA_VERSION}"
+                )
         print_msg(f"  {green('OK')} verified lossless standard/hot lexicon pack")
     else:
         for name in ("lexicon.bin", "hot_lexicon.bin"):
@@ -2831,14 +2834,11 @@ def verify_staged_package(
                 f"  {green('OK')} staged OCR profiles, warmup and model cache: {ocr_report.name}"
             )
 
-    install_dev = output_root / "install_dev.ps1"
-    install_current_user = output_root / "install_current_user.ps1"
-    uninstall_dev = output_root / "uninstall_dev.ps1"
-    uninstall_current_user = output_root / "uninstall_current_user.ps1"
+    setup_exe = output_root / "srf_ime_setup.exe"
+    if not setup_exe.is_file() or setup_exe.stat().st_size <= 0:
+        raise FileNotFoundError(f"missing staged native setup helper: {setup_exe}")
     restart_stale_hosts = output_root / "restart_stale_hosts.ps1"
-    repair_install = output_root / "repair_install.ps1"
     export_diagnostics = output_root / "export_diagnostics.ps1"
-    invoke_registration = output_root / "invoke_registration.ps1"
     user_data_manifest = output_root / "user_data_manifest.json"
     version_file = output_root / "VERSION"
     third_party_notices = output_root / "THIRD_PARTY_NOTICES.md"
@@ -2848,20 +2848,28 @@ def verify_staged_package(
         output_root / "NOTICE",
     ]
     for script in (
-        install_dev,
-        install_current_user,
-        uninstall_dev,
-        uninstall_current_user,
         restart_stale_hosts,
-        repair_install,
         export_diagnostics,
-        invoke_registration,
     ):
         if not script.is_file():
-            raise FileNotFoundError(f"missing staged installer script: {script}")
+            raise FileNotFoundError(f"missing staged helper script: {script}")
         if not script.read_bytes().startswith(codecs.BOM_UTF8):
             raise RuntimeError(
                 f"staged PowerShell script must use UTF-8 BOM for Windows PowerShell 5.1: {script}"
+            )
+    for retired_ps1 in (
+        "install_dev.ps1",
+        "install_current_user.ps1",
+        "install_common.ps1",
+        "config_defaults.generated.ps1",
+        "invoke_registration.ps1",
+        "repair_install.ps1",
+        "uninstall_dev.ps1",
+        "uninstall_current_user.ps1",
+    ):
+        if (output_root / retired_ps1).exists():
+            raise RuntimeError(
+                f"retired PowerShell installer script must not be staged: {output_root / retired_ps1}"
             )
     if not version_file.is_file():
         raise FileNotFoundError(f"missing staged VERSION file: {version_file}")
@@ -2880,78 +2888,6 @@ def verify_staged_package(
             raise ValueError("files/directories must be arrays")
     except (OSError, ValueError, json.JSONDecodeError) as e:
         raise RuntimeError(f"invalid staged user data manifest: {user_data_manifest} ({e})") from e
-
-    install_dev_text = install_dev.read_text(encoding="utf-8", errors="replace")
-    install_current_user_text = install_current_user.read_text(encoding="utf-8", errors="replace")
-    uninstall_dev_text = uninstall_dev.read_text(encoding="utf-8", errors="replace")
-    uninstall_current_user_text = uninstall_current_user.read_text(
-        encoding="utf-8", errors="replace"
-    )
-    if "& $RegistrationScript @scriptArgs" in install_dev_text:
-        raise RuntimeError(
-            "staged install_dev.ps1 directly invokes invoke_registration.ps1; "
-            "use a child PowerShell with -ExecutionPolicy Bypass so DllPath is parsed reliably"
-        )
-    for script_name, script_text in (
-        ("install_dev.ps1", install_dev_text),
-        ("install_current_user.ps1", install_current_user_text),
-    ):
-        if "$preserveNames" in script_text:
-            raise RuntimeError(
-                f"staged {script_name} uses a preserve-list user-state cleanup; "
-                "use a transient-name cleanup so future user data is kept by default"
-            )
-        for transient_name in (
-            "cache",
-            "logs",
-            "install_user.log",
-            "install_language_list.log",
-        ):
-            if transient_name not in script_text:
-                raise RuntimeError(
-                    f"staged {script_name} does not include known transient cleanup entry: "
-                    f"{transient_name}"
-                )
-        if "preserving all other settings and user data" not in script_text:
-            raise RuntimeError(f"staged {script_name} does not document safe user-state cleanup")
-        if "Windows rejected TIP after Set-WinUserLanguageList" not in script_text:
-            raise RuntimeError(f"staged {script_name} does not verify language-list registration")
-        if "zh-CN" not in script_text or "zh-Hans-CN" not in script_text:
-            raise RuntimeError(f"staged {script_name} does not handle both zh-CN and zh-Hans-CN")
-        if (
-            "$EngineRunEntryName" not in script_text
-            or "Remove-ItemProperty -Path $runKey -Name $EngineRunEntryName" not in script_text
-        ):
-            raise RuntimeError(
-                f"staged {script_name} does not clean the legacy engine autorun entry"
-            )
-        if "New-ItemProperty -Path $runKey -Name $EngineRunEntryName" in script_text:
-            raise RuntimeError(
-                f"staged {script_name} still creates a separate engine autorun entry"
-            )
-    if "Set-WinDefaultInputMethodOverride" not in uninstall_current_user_text:
-        raise RuntimeError(
-            "staged uninstall_current_user.ps1 does not restore the default input method"
-        )
-    if "RunOnce" not in uninstall_current_user_text:
-        raise RuntimeError(
-            "staged uninstall_current_user.ps1 does not include current-user cleanup fallback"
-        )
-    if "Remove-TipFromLoadedUserRegistry" not in uninstall_dev_text:
-        raise RuntimeError(
-            "staged uninstall_dev.ps1 does not include loaded-user language-list cleanup"
-        )
-    for script_name, script_text in (
-        ("install_dev.ps1", install_dev_text),
-        ("install_current_user.ps1", install_current_user_text),
-    ):
-        if (
-            "-ExecutionPolicy', 'Bypass', '-File'" not in script_text
-            and "-ExecutionPolicy Bypass -File" not in script_text
-        ):
-            raise RuntimeError(
-                f"staged {script_name} does not force PowerShell bypass for TIP registration"
-            )
 
     # ---------------------------------------------------------------------------
     skins_dir = output_root / "skins"

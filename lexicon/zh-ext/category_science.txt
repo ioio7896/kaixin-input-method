@@ -1,0 +1,1287 @@
+# 开心输入法扩展词库：数理化生与科研（1284 条）
+# 来源合并：category_math_statistics.txt, category_physics_chemistry.txt, category_biology.txt, category_research.txt, professional_math.txt, professional_physics.txt, professional_chemistry.txt, professional_biology.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+化学反应	hua xue fan ying	6200
+培养基	pei yang ji	6200
+学术会议	xue shu hui yi	6200
+数据处理	shu ju chu li	6200
+核磁共振	he ci gong zhen	6200
+激光器	ji guang qi	6200
+电化学	dian hua xue	6200
+电容器	dian rong qi	6200
+电磁场	dian ci chang	6200
+工作研究	gong zuo yan jiu	6154
+技术研究	ji shu yan jiu	6154
+文化研究	wen hua yan jiu	6154
+研究发展	yan jiu fa zhan	6154
+研究工作	yan jiu gong zuo	6154
+研究研究	yan jiu yan jiu	6154
+自己研究	zi ji yan jiu	6154
+研究中心	yan jiu zhong xin	6116
+研究出来	yan jiu chu lai	6116
+研究支持	yan jiu zhi chi	6116
+电导率	dian dao lv	6107
+中期报告	zhong qi bao gao	6100
+主成分分析	zhu cheng fen fen xi	6100
+代谢组学	dai xie zu xue	6100
+仪器分析	yi qi fen xi	6100
+偏自相关	pian zi xiang guan	6100
+催化反应	cui hua fan ying	6100
+光学仪器	guang xue yi qi	6100
+光学成像	guang xue cheng xiang	6100
+光纤通信	guang xian tong xin	6100
+光谱分析	guang pu fen xi	6100
+免疫组化	mian yi zu hua	6100
+免疫荧光	mian yi ying guang	6100
+分子轨道	fen zi gui dao	6100
+分层抽样	fen ceng chou yang	6100
+化学分析	hua xue fen xi	6100
+化学电池	hua xue dian chi	6100
+半导体器件	ban dao ti qi jian	6100
+单细胞测序	dan xi bao ce xu	6100
+参数估计	can shu gu ji	6100
+参考文献	can kao wen xian	6100
+反应动力学	fan ying dong li xue	6100
+反应机理	fan ying ji li	6100
+可重复性	ke chong fu xing	6100
+同行评审	tong hang ping shen	6100
+回归模型	hui gui mo xing	6100
+回归系数	hui gui xi shu	6100
+培养条件	pei yang tiao jian	6100
+基因敲除	ji yin qiao chu	6100
+基因测序	ji yin ce xu	6100
+基因组学	ji yin zu xue	6100
+基因编辑	ji yin bian ji	6100
+基因调控	ji yin tiao kong	6100
+多元回归	duo yuan hui gui	6100
+奇异值分解	qi yi zhi fen jie	6100
+学位论文	xue wei lun wen	6100
+学术报告	xue shu bao gao	6100
+学术诚信	xue shu cheng xin	6100
+实验室管理	shi yan shi guan li	6100
+实验对照	shi yan dui zhao	6100
+实验方案	shi yan fang an	6100
+实验结果	shi yan jie guo	6100
+实验记录	shi yan ji lu	6100
+实验设计	shi yan she ji	6100
+审稿意见	shen gao yi jian	6100
+干涉衍射	gan she yan she	6100
+平稳序列	ping wen xu lie	6100
+序列比对	xu lie bi dui	6100
+开放数据	kai fang shu ju	6100
+开题报告	kai ti bao gao	6100
+异常值	yi chang zhi	6100
+引用格式	yin yong ge shi	6100
+引用规范	yin yong gui fan	6100
+微生物培养	wei sheng wu pei yang	6100
+抗体检测	kang ti jian ce	6100
+抗原检测	kang yuan jian ce	6100
+抽样误差	chou yang wu cha	6100
+推断统计	tui duan tong ji	6100
+描述统计	miao shu tong ji	6100
+数值分析	shu zhi fen xi	6100
+数值积分	shu zhi ji fen	6100
+数据分布	shu ju fen bu	6100
+数据归一化	shu ju gui yi hua	6100
+数据标准化	shu ju biao zhun hua	6100
+数据采集	shu ju cai ji	6100
+文献检索	wen xian jian suo	6100
+文献管理	wen xian guan li	6100
+文献综述	wen xian zong shu	6100
+方差分析	fang cha fen xi	6100
+时间序列	shi jian xu lie	6100
+显著性检验	xian zhu xing jian yan	6100
+显著性水平	xian zhu xing shui ping	6100
+最大似然	zui da shi ran	6100
+最小二乘	zui xiao er cheng	6100
+期刊投稿	qi kan tou gao	6100
+期刊论文	qi kan lun wen	6100
+标准误	biao zhun wu	6100
+样本保存	yang ben bao cun	6100
+样本均值	yang ben jun zhi	6100
+样本容量	yang ben rong liang	6100
+样本方差	yang ben fang cha	6100
+样本采集	yang ben cai ji	6100
+核酸提取	he suan ti qu	6100
+核酸检测	he suan jian ce	6100
+概率密度	gai lv mi du	6100
+概率模型	gai lv mo xing	6100
+波动方程	bo dong fang cheng	6100
+波长频率	bo chang pin lv	6100
+流式细胞术	liu shi xi bao shu	6100
+溶解平衡	rong jie ping heng	6100
+特征分解	te zheng fen jie	6100
+生物信息学	sheng wu xin xi xue	6100
+生物安全	sheng wu an quan	6100
+生物样本	sheng wu yang ben	6100
+电场强度	dian chang qiang du	6100
+电解反应	dian jie fan ying	6100
+相关分析	xiang guan fen xi	6100
+相关系数	xiang guan xi shu	6100
+矩阵分解	ju zhen fen jie	6100
+研究伦理	yan jiu lun li	6100
+研究意义	yan jiu yi yi	6100
+研究方法	yan jiu fang fa	6100
+研究目标	yan jiu mu biao	6100
+研究结论	yan jiu jie lun	6100
+研究背景	yan jiu bei jing	6100
+研究课题	yan jiu ke ti	6100
+研究进展	yan jiu jin zhan	6100
+磁感应强度	ci gan ying qiang du	6100
+科研经费	ke yan jing fei	6100
+科研计划	ke yan ji hua	6100
+答辩准备	da bian zhun bei	6100
+线性回归	xian xing hui gui	6100
+细胞传代	xi bao chuan dai	6100
+细胞信号	xi bao xin hao	6100
+细胞周期	xi bao zhou qi	6100
+细胞培养	xi bao pei yang	6100
+细胞增殖	xi bao zeng zhi	6100
+结果讨论	jie guo tao lun	6100
+结题报告	jie ti bao gao	6100
+缺失值	que shi zhi	6100
+置信估计	zhi xin gu ji	6100
+置信水平	zhi xin shui ping	6100
+联合概率	lian he gai lv	6100
+聚类分析	ju lei fen xi	6100
+能带结构	neng dai jie gou	6100
+自相关	zi xiang guan	6100
+色谱分析	se pu fen xi	6100
+菌株鉴定	jun zhu jian ding	6100
+蛋白质纯化	dan bai zhi chun hua	6100
+蛋白质组学	dan bai zhi zu xue	6100
+蛋白质结构	dan bai zhi jie gou	6100
+蛋白质表达	dan bai zhi biao da	6100
+论文修改	lun wen xiu gai	6100
+论文关键词	lun wen guan jian ci	6100
+论文审稿	lun wen shen gao	6100
+论文投稿	lun wen tou gao	6100
+论文提纲	lun wen ti gang	6100
+论文摘要	lun wen zhai yao	6100
+论文查重	lun wen cha zhong	6100
+论文选题	lun wen xuan ti	6100
+贝叶斯推断	bei ye si tui duan	6100
+质谱分析	zhi pu fen xi	6100
+转录组学	zhuan lu zu xue	6100
+返修意见	fan xiu yi jian	6100
+逻辑回归	luo ji hui gui	6100
+酶促反应	mei cu fan ying	6100
+酶活性	mei huo xing	6100
+酸碱平衡	suan jian ping heng	6100
+量子纠缠	liang zi jiu chan	6100
+量子计算	liang zi ji suan	6100
+阳性对照	yang xing dui zhao	6100
+阴性对照	yin xing dui zhao	6100
+随机抽样	sui ji chou yang	6100
+高分子材料	gao fen zi cai liao	6100
+作业研究	zuo ye yan jiu	6077
+市场研究	shi chang yan jiu	6077
+调查研究	diao cha yan jiu	6077
+万有引力	wan you yin li	6000
+三羧酸循环	san suo suan xun huan	6000
+不定积分	bu ding ji fen	6000
+二项分布	er xiang fen bu	6000
+值域	zhi yu	6000
+假设检验	jia she jian yan	6000
+偏导数	pian dao shu	6000
+偏微分方程	pian wei fen fang cheng	6000
+偏振	pian zhen	6000
+傅里叶变换	fu li ye bian huan	6000
+催化剂	cui hua ji	6000
+元素周期表	yuan su zhou qi biao	6000
+光合作用	guang he zuo yong	6000
+光学	guang xue	6000
+光电效应	guang dian xiao ying	6000
+光谱	guang pu	6000
+免疫反应	mian yi fan ying	6000
+免疫系统	mian yi xi tong	6000
+全反射	quan fan she	6000
+全微分	quan wei fen	6000
+共价键	gong jia jian	6000
+共振	gong zhen	6000
+内能	nei neng	6000
+内质网	nei zhi wang	6000
+减数分裂	jian shu fen lie	6000
+函数	han shu	6000
+分子生物学	fen zi sheng wu xue	6000
+分析化学	fen xi hua xue	6000
+加成反应	jia cheng fan ying	6000
+加速度	jia su du	6000
+动物学	dong wu xue	6000
+动量	dong liang	6000
+动量守恒	dong liang shou heng	6000
+化学平衡	hua xue ping heng	6000
+化学计量	hua xue ji liang	6000
+化学键	hua xue jian	6000
+半导体	ban dao ti	6000
+原子核	yuan zi he	6000
+原子轨道	yuan zi gui dao	6000
+反应速率	fan ying su lv	6000
+取代反应	qu dai fan ying	6000
+叶绿体	ye lv ti	6000
+同余	tong yu	6000
+同分异构体	tong fen yi gou ti	6000
+向心力	xiang xin li	6000
+向量空间	xiang liang kong jian	6000
+回归分析	hui gui fen xi	6000
+基因	ji yin	6000
+基因突变	ji yin tu bian	6000
+基因组	ji yin zu	6000
+基因表达	ji yin biao da	6000
+基因重组	ji yin chong zu	6000
+基本粒子	ji ben li zi	6000
+声学	sheng xue	6000
+复变函数	fu bian han shu	6000
+复数	fu shu	6000
+大数定律	da shu ding lv	6000
+官能团	guan neng tuan	6000
+定义域	ding yi yu	6000
+定积分	ding ji fen	6000
+导数	dao shu	6000
+常微分方程	chang wei fen fang cheng	6000
+干涉	gan she	6000
+干细胞	gan xi bao	6000
+平衡常数	ping heng chang shu	6000
+度量空间	du liang kong jian	6000
+引力波	yin li bo	6000
+微分	wei fen	6000
+微分方程	wei fen fang cheng	6000
+微生物学	wei sheng wu xue	6000
+抗体	kang ti	6000
+抗原	kang yuan	6000
+折射	zhe she	6000
+拓扑学	tuo pu xue	6000
+摩尔质量	mo er zhi liang	6000
+散度	san du	6000
+数学期望	shu xue qi wang	6000
+数理统计	shu li tong ji	6000
+数论	shu lun	6000
+方差	fang cha	6000
+旋度	xuan du	6000
+无机化学	wu ji hua xue	6000
+无菌操作	wu jun cao zuo	6000
+映射	ying she	6000
+显性遗传	xian xing yi chuan	6000
+晶体结构	jing ti jie gou	6000
+最大公约数	zui da gong yue shu	6000
+有丝分裂	you si fen lie	6000
+有机化学	you ji hua xue	6000
+杂化轨道	za hua gui dao	6000
+条件概率	tiao jian gai lv	6000
+极限	ji xian	6000
+染色体	ran se ti	6000
+标准差	biao zhun cha	6000
+核糖体	he tang ti	6000
+核糖核酸	he tang he suan	6000
+核聚变	he ju bian	6000
+核裂变	he lie bian	6000
+核酸	he suan	6000
+梯度	ti du	6000
+植物学	zhi wu xue	6000
+概率分布	gai lv fen bu	6000
+概率论	gai lv lun	6000
+欧姆定律	ou mu ding lv	6000
+正交矩阵	zheng jiao ju zhen	6000
+正态分布	zheng tai fen bu	6000
+氢键	qing jian	6000
+氧化剂	yang hua ji	6000
+氧化还原	yang hua huan yuan	6000
+水解反应	shui jie fan ying	6000
+泊松分布	po song fen bu	6000
+波函数	bo han shu	6000
+波动	bo dong	6000
+波粒二象性	bo li er xiang xing	6000
+泰勒展开	tai lei zhan kai	6000
+洛伦兹力	luo lun zi li	6000
+活化能	huo hua neng	6000
+消去反应	xiao qu fan ying	6000
+溶度积	rong du ji	6000
+溶解度	rong jie du	6000
+溶酶体	rong mei ti	6000
+滴定	di ding	6000
+炔烃	gui ting	6000
+热力学	re li xue	6000
+热容	re rong	6000
+烯烃	xi ting	6000
+烷烃	wan ting	6000
+焓	han	6000
+焦耳定律	jiao er ding lv	6000
+熵	shang	6000
+牛顿定律	niu dun ding lv	6000
+物理化学	wu li hua xue	6000
+物种形成	wu zhong xing cheng	6000
+物质循环	wu zhi xun huan	6000
+物质的量	wu zhi di liang	6000
+特征值	te zheng zhi	6000
+特征向量	te zheng xiang liang	6000
+状态方程	zhuang tai fang cheng	6000
+环论	huan lun	6000
+理想气体	li xiang qi ti	6000
+生态学	sheng tai xue	6000
+生态系统	sheng tai xi tong	6000
+生物化学	sheng wu hua xue	6000
+生物多样性	sheng wu duo yang xing	6000
+生物技术	sheng wu ji shu	6000
+生物进化	sheng wu jin hua	6000
+电势	dian shi	6000
+电场	dian chang	6000
+电容	dian rong	6000
+电感	dian gan	6000
+电流	dian liu	6000
+电磁学	dian ci xue	6000
+电磁感应	dian ci gan ying	6000
+电解质	dian jie zhi	6000
+电阻	dian zu	6000
+相对论	xiang dui lun	6000
+矩阵	ju zhen	6000
+磁场	ci chang	6000
+离子键	li zi jian	6000
+种群	zhong qun	6000
+秩	zhi	6000
+积分	ji fen	6000
+等位基因	deng wei ji yin	6000
+简谐运动	jian xie yun dong	6000
+糖酵解	tang jiao jie	6000
+素数	su shu	6000
+线性代数	xian xing dai shu	6000
+线性变换	xian xing bian huan	6000
+线粒体	xian li ti	6000
+细胞凋亡	xi bao diao wang	6000
+细胞分化	xi bao fen hua	6000
+细胞呼吸	xi bao hu xi	6000
+细胞核	xi bao he	6000
+细胞生物学	xi bao sheng wu xue	6000
+细胞膜	xi bao mo	6000
+细胞质	xi bao zhi	6000
+经典力学	jing dian li xue	6000
+结晶	jie jing	6000
+绝对零度	jue dui ling du	6000
+统计物理	tong ji wu li	6000
+缓冲溶液	huan chong rong ye	6000
+缩合反应	suo he fan ying	6000
+置信区间	zhi xin qu jian	6000
+群落	qun luo	6000
+群论	qun lun	6000
+羧酸	suo suan	6000
+翻译	fan yi	6000
+聚合反应	ju he fan ying	6000
+胺	an	6000
+能级	neng ji	6000
+能量守恒	neng liang shou heng	6000
+能量流动	neng liang liu dong	6000
+自然选择	zi ran xuan ze	6000
+色谱	se pu	6000
+芳香烃	fang xiang ting	6000
+萃取	cui qu	6000
+蒸馏	zheng liu	6000
+薛定谔方程	xue ding e fang cheng	6000
+蛋白质	dan bai zhi	6000
+行列式	hang lie shi	6000
+衍射	yan she	6000
+表观遗传	biao guan yi chuan	6000
+角动量	jiao dong liang	6000
+贝叶斯公式	bei ye si gong shi	6000
+质谱	zhi pu	6000
+超导体	chao dao ti	6000
+转录	zhuan lu	6000
+还原剂	huan yuan ji	6000
+连续性	lian xu xing	6000
+逆矩阵	ni ju zhen	6000
+遗传学	yi chuan xue	6000
+遗传密码	yi chuan mi ma	6000
+配位化合物	pei wei hua he wu	6000
+配位数	pei wei shu	6000
+酚	fen	6000
+酮	tong	6000
+酯	zhi	6000
+酶	mei	6000
+酸碱中和	suan jian zhong he	6000
+醇	chun	6000
+醛	quan	6000
+量子力学	liang zi li xue	6000
+量子态	liang zi tai	6000
+金属键	jin shu jian	6000
+阻尼振动	zu ni zhen dong	6000
+随机变量	sui ji bian liang	6000
+隐性遗传	yin xing yi chuan	6000
+隧穿效应	sui chuan xiao ying	6000
+集合	ji he	6000
+食物网	shi wu wang	6000
+食物链	shi wu lian	6000
+高分子化学	gao fen zi hua xue	6000
+高尔基体	gao er ji ti	6000
+黑体辐射	hei ti fu she	6000
+研究报告	yan jiu bao gao	5924
+研究机构	yan jiu ji gou	5924
+方法研究	fang fa yan jiu	5885
+研究一下	yan jiu yi xia	5885
+研究能力	yan jiu neng li	5885
+艺术研究	yi shu yan jiu	5885
+投资研究	tou zi yan jiu	5847
+机会研究	ji hui yan jiu	5847
+媒体研究	mei ti yan jiu	5808
+研究开发	yan jiu kai fa	5770
+行业研究	hang ye yan jiu	5770
+理论研究	li lun yan jiu	5731
+研究部门	yan jiu bu men	5731
+统计出来	tong ji chu lai	5731
+研究功能	yan jiu gong neng	5693
+应用研究	ying yong yan jiu	5654
+研究重点	yan jiu zhong dian	5654
+现场研究	xian chang yan jiu	5616
+创新研究	chuang xin yan jiu	5539
+数学不好	shu xue bu hao	5539
+数学成绩	shu xue cheng ji	5539
+研究方向	yan jiu fang xiang	5539
+除了数学	chu le shu xue	5539
+应用数学	ying yong shu xue	5500
+战略研究	zhan lve yan jiu	5500
+数学问题	shu xue wen ti	5500
+高中数学	gao zhong shu xue	5500
+中学化学	zhong xue hua xue	5462
+只有数学	zhi you shu xue	5462
+大学化学	da xue hua xue	5462
+数学课程	shu xue ke cheng	5462
+组合数学	zu he shu xue	5462
+还有化学	hai you hua xue	5462
+还有数学	hai you shu xue	5462
+那个数学	na ge shu xue	5462
+高中化学	gao zhong hua xue	5462
+价格统计	jia ge tong ji	5424
+化学分子	hua xue fen zi	5424
+化学工厂	hua xue gong chang	5424
+化学工程	hua xue gong cheng	5424
+工业统计	gong ye tong ji	5424
+应用统计	ying yong tong ji	5424
+数学分析	shu xue fen xi	5424
+数学报纸	shu xue bao zhi	5424
+理论文献	li lun wen xian	5424
+经济统计	jing ji tong ji	5424
+统计一下	tong ji yi xia	5424
+统计人员	tong ji ren yuan	5424
+统计人数	tong ji ren shu	5424
+统计信息	tong ji xin xi	5424
+统计制度	tong ji zhi du	5424
+统计工作	tong ji gong zuo	5424
+统计情况	tong ji qing kuang	5424
+统计报告	tong ji bao gao	5424
+统计模式	tong ji mo shi	5424
+统计调查	tong ji diao cha	5424
+统计资料	tong ji zi liao	5424
+计算数学	ji suan shu xue	5424
+金融统计	jin rong tong ji	5424
+中国学术	zhong guo xue shu	5385
+消费统计	xiao fei tong ji	5347
+物理性能	wu li xing neng	5347
+生物统计	sheng wu tong ji	5347
+会议论文	hui yi lun wen	5308
+好好研究	hao hao yan jiu	5308
+海洋化学	hai yang hua xue	5308
+研究实验	yan jiu shi yan	5308
+研究成本	yan jiu cheng ben	5308
+统计描述	tong ji miao shu	5308
+卫生统计	wei sheng tong ji	5270
+物理学院	wu li xue yuan	5270
+还有物理	hai you wu li	5270
+中国元素	zhong guo yuan su	5231
+动作研究	dong zuo yan jiu	5231
+预测研究	yu ce yan jiu	5231
+不确定性原理	bu que ding xing yuan li	5200
+中心极限定理	zhong xin ji xian ding li	5200
+分子间作用力	fen zi jian zuo yong li	5200
+实时荧光定量	shi shi ying guang ding liang	5200
+拉普拉斯变换	la pu la si bian huan	5200
+聚合酶链式反应	ju he mei lian shi fan ying	5200
+脱氧核糖核酸	tuo yang he tang he suan	5200
+麦克斯韦方程	mai ke si wei fang cheng	5200
+化学工艺	hua xue gong yi	5193
+增加元素	zeng jia yuan su	5193
+怀化学院	huai hua xue yuan	5193
+绥化学院	sui hua xue yuan	5193
+热传导	re chuan dao	5186
+热辐射	re fu she	5186
+中学数学	zhong xue shu xue	5154
+优秀分子	you xiu fen zi	5154
+先进分子	xian jin fen zi	5154
+分子生物	fen zi sheng wu	5154
+分子运动	fen zi yun dong	5154
+初中化学	chu zhong hua xue	5154
+初中数学	chu zhong shu xue	5154
+基因强大	ji yin qiang da	5154
+基础数学	ji chu shu xue	5154
+大学数学	da xue shu xue	5154
+小学数学	xiao xue shu xue	5154
+我们数学	wo men shu xue	5154
+数学作业	shu xue zuo ye	5154
+数学冠军	shu xue guan jun	5154
+数学基础	shu xue ji chu	5154
+数学多少	shu xue duo shao	5154
+数学少女	shu xue shao nv	5154
+数学应用	shu xue ying yong	5154
+数学数学	shu xue shu xue	5154
+数学方法	shu xue fang fa	5154
+数学知识	shu xue zhi shi	5154
+数学答案	shu xue da an	5154
+数学英语	shu xue ying yu	5154
+武装分子	wu zhuang fen zi	5154
+知道分子	zhi dao fen zi	5154
+破坏分子	po huai fen zi	5154
+经济数学	jing ji shu xue	5154
+英语数学	ying yu shu xue	5154
+财政统计	cai zheng tong ji	5154
+进步分子	jin bu fen zi	5154
+金融数学	jin rong shu xue	5154
+中国化学	zhong guo hua xue	5116
+化学专业	hua xue zhuan ye	5116
+化学作业	hua xue zuo ye	5116
+化学作用	hua xue zuo yong	5116
+化学处理	hua xue chu li	5116
+化学实验	hua xue shi yan	5116
+化学感觉	hua xue gan jue	5116
+化学材料	hua xue cai liao	5116
+化学答案	hua xue da an	5116
+学术价值	xue shu jia zhi	5116
+学术年会	xue shu nian hui	5116
+学术思想	xue shu si xiang	5116
+学术水平	xue shu shui ping	5116
+学术活动	xue shu huo dong	5116
+学术自由	xue shu zi you	5116
+学术观点	xue shu guan dian	5116
+学术讨论	xue shu tao lun	5116
+学术论坛	xue shu lun tan	5116
+学术贡献	xue shu gong xian	5116
+工业化学	gong ye hua xue	5116
+应用化学	ying yong hua xue	5116
+材料化学	cai liao hua xue	5116
+疯狂化学	feng kuang hua xue	5116
+石油化学	shi you hua xue	5116
+组织化学	zu zhi hua xue	5116
+计算化学	ji suan hua xue	5116
+学术著作	xue shu zhu zuo	5077
+情报研究	qing bao yan jiu	5077
+慢慢研究	man man yan jiu	5077
+统计指数	tong ji zhi shu	5077
+透明细胞	tou ming xi bao	5077
+场景元素	chang jing yuan su	5039
+学术腐败	xue shu fu bai	5039
+数学思维	shu xue si wei	5039
+数学模型	shu xue mo xing	5039
+研究模型	yan jiu mo xing	5039
+统计决策	tong ji jue ce	5039
+腐败分子	fu bai fen zi	5039
+动物细胞	dong wu xi bao	5000
+工作细胞	gong zuo xi bao	5000
+工程细胞	gong cheng xi bao	5000
+微软数学	wei ruan shu xue	5000
+死亡细胞	si wang xi bao	5000
+研究大楼	yan jiu da lou	5000
+研究部署	yan jiu bu shu	5000
+第五元素	di wu yuan su	5000
+组织细胞	zu zhi xi bao	5000
+细胞决定	xi bao jue ding	5000
+细胞化学	xi bao hua xue	5000
+细胞博士	xi bao bo shi	5000
+细胞工程	xi bao gong cheng	5000
+细胞水平	xi bao shui ping	5000
+细胞组织	xi bao zu zhi	5000
+细胞结合	xi bao jie he	5000
+细胞运动	xi bao yun dong	5000
+统计指标	tong ji zhi biao	5000
+统计整理	tong ji zheng li	5000
+艺术细胞	yi shu xi bao	5000
+记忆细胞	ji yi xi bao	5000
+中学物理	zhong xue wu li	4962
+优秀论文	you xiu lun wen	4962
+免费论文	mian fei lun wen	4962
+化学物理	hua xue wu li	4962
+医学论文	yi xue lun wen	4962
+发表论文	fa biao lun wen	4962
+大学物理	da xue wu li	4962
+应用物理	ying yong wu li	4962
+我大概率	wo da gai lv	4962
+政治论文	zheng zhi lun wen	4962
+数学物理	shu xue wu li	4962
+数学论文	shu xue lun wen	4962
+文化学	wen hua xue	4962
+材料物理	cai liao wu li	4962
+死亡论文	si wang lun wen	4962
+物理伤害	wu li shang hai	4962
+物理作业	wu li zuo ye	4962
+物理医学	wu li yi xue	4962
+物理实验	wu li shi yan	4962
+物理数学	wu li shu xue	4962
+物理检查	wu li jian cha	4962
+物理环境	wu li huan jing	4962
+物理现象	wu li xian xiang	4962
+物理研究	wu li yan jiu	4962
+物理答案	wu li da an	4962
+物理预防	wu li yu fang	4962
+科学论文	ke xue lun wen	4962
+艺术论文	yi shu lun wen	4962
+英语论文	ying yu lun wen	4962
+落后分子	luo hou fen zi	4962
+课程论文	ke cheng lun wen	4962
+高中物理	gao zhong wu li	4962
+不研究	bu yan jiu	4924
+专题研究	zhuan ti yan jiu	4924
+专题论文	zhuan ti lun wen	4924
+传递细胞	chuan di xi bao	4924
+再研究	zai yan jiu	4924
+分裂细胞	fen lie xi bao	4924
+数学竞赛	shu xue jing sai	4924
+活跃分子	huo yue fen zi	4924
+神经细胞	shen jing xi bao	4924
+细胞分裂	xi bao fen lie	4924
+统计总体	tong ji zong ti	4924
+谋杀论文	mou sha lun wen	4924
+首要分子	shou yao fen zi	4924
+学术争论	xue shu zheng lun	4885
+数学原理	shu xue yuan li	4885
+细胞混合	xi bao hun he	4885
+统计假设	tong ji jia she	4885
+一篇论文	yi pian lun wen	4847
+不统计	bu tong ji	4847
+主要元素	zhu yao yuan su	4847
+主题元素	zhu ti yuan su	4847
+元素之一	yuan su zhi yi	4847
+元素之间	yuan su zhi jian	4847
+元素反应	yuan su fan ying	4847
+元素周期	yuan su zhou qi	4847
+元素攻击	yuan su gong ji	4847
+元素构成	yuan su gou cheng	4847
+元素核心	yuan su he xin	4847
+元素爆发	yuan su bao fa	4847
+元素生命	yuan su sheng ming	4847
+元素能量	yuan su neng liang	4847
+元素转化	yuan su zhuan hua	4847
+全部元素	quan bu yuan su	4847
+创作元素	chuang zuo yuan su	4847
+动态元素	dong tai yuan su	4847
+基本元素	ji ben yuan su	4847
+学术权威	xue shu quan wei	4847
+必要元素	bi yao yuan su	4847
+数学语文	shu xue yu wen	4847
+文化元素	wen hua yuan su	4847
+时尚元素	shi shang yuan su	4847
+构成元素	gou cheng yuan su	4847
+核心元素	he xin yuan su	4847
+案例研究	an li yan jiu	4847
+流行元素	liu xing yuan su	4847
+物质元素	wu zhi yuan su	4847
+犯罪元素	fan zui yuan su	4847
+生活元素	sheng huo yuan su	4847
+画面元素	hua mian yuan su	4847
+空间元素	kong jian yuan su	4847
+细胞融合	xi bao rong he	4847
+绿色元素	lv se yuan su	4847
+色彩元素	se cai yuan su	4847
+艺术元素	yi shu yuan su	4847
+表现元素	biao xian yuan su	4847
+论文题目	lun wen ti mu	4847
+设计元素	she ji yuan su	4847
+重要元素	zhong yao yuan su	4847
+黑色元素	hei se yuan su	4847
+万物理论	wan wu li lun	4808
+人类基因	ren lei ji yin	4808
+创意元素	chuang yi yuan su	4808
+初中物理	chu zhong wu li	4808
+初步统计	chu bu tong ji	4808
+化学制品	hua xue zhi pin	4808
+基因产业	ji yin chan ye	4808
+基因功能	ji yin gong neng	4808
+基因定位	ji yin ding wei	4808
+基因家族	ji yin jia zu	4808
+基因战士	ji yin zhan shi	4808
+基因技术	ji yin ji shu	4808
+基因检测	ji yin jian ce	4808
+基因流动	ji yin liu dong	4808
+基因结合	ji yin jie he	4808
+基因转移	ji yin zhuan yi	4808
+完美基因	wan mei ji yin	4808
+家族基因	jia zu ji yin	4808
+差异基因	cha yi ji yin	4808
+战士基因	zhan shi ji yin	4808
+报告基因	bao gao ji yin	4808
+文化基因	wen hua ji yin	4808
+沉默基因	chen mo ji yin	4808
+疾病基因	ji bing ji yin	4808
+病毒基因	bing du ji yin	4808
+神话研究	shen hua yan jiu	4808
+红色基因	hong se ji yin	4808
+融合基因	rong he ji yin	4808
+辅助元素	fu zhu yuan su	4808
+辅助细胞	fu zhu xi bao	4808
+高等数学	gao deng shu xue	4808
+不良分子	bu liang fen zi	4770
+化学原料	hua xue yuan liao	4770
+化学合成	hua xue he cheng	4770
+基因频率	ji yin pin lv	4770
+有用元素	you yong yuan su	4770
+细胞聚集	xi bao ju ji	4770
+视觉元素	shi jue yuan su	4770
+数学好难	shu xue hao nan	4731
+物理光学	wu li guang xue	4731
+硕士论文	shuo shi lun wen	4731
+科研专家	ke yan zhuan jia	4731
+科研任务	ke yan ren wu	4731
+科研助理	ke yan zhu li	4731
+科研大楼	ke yan da lou	4731
+科研开发	ke yan kai fa	4731
+科研活动	ke yan huo dong	4731
+科研部门	ke yan bu men	4731
+立体化学	li ti hua xue	4731
+论文格式	lun wen ge shi	4731
+评论文集	ping lun wen ji	4731
+造型元素	zao xing yuan su	4731
+黄冈数学	huang gang shu xue	4731
+分子识别	fen zi shi bie	4693
+化学农药	hua xue nong yao	4693
+反复研究	fan fu yan jiu	4693
+基因诊断	ji yin zhen duan	4693
+开会研究	kai hui yan jiu	4693
+恋爱细胞	lian ai xi bao	4693
+投机分子	tou ji fen zi	4693
+敌对分子	di dui fen zi	4693
+物理诊断	wu li zhen duan	4693
+电阻率	dian zu lv	4693
+科研课题	ke yan ke ti	4693
+税收统计	shui shou tong ji	4693
+细胞识别	xi bao shi bie	4693
+财经研究	cai jing yan jiu	4693
+复制基因	fu zhi ji yin	4654
+撰写论文	zhuan xie lun wen	4654
+模糊数学	mo hu shu xue	4654
+优良基因	you liang ji yin	4616
+反动分子	fan dong fen zi	4616
+抑制基因	yi zhi ji yin	4616
+操纵基因	cao zong ji yin	4616
+精英分子	jing ying fen zi	4616
+化学化	hua xue hua	4577
+化学笔记	hua xue bi ji	4577
+化学防治	hua xue fang zhi	4577
+数学笔记	shu xue bi ji	4577
+物理疗法	wu li liao fa	4577
+物理笔记	wu li bi ji	4577
+你研究	ni yan jiu	4539
+先研究	xian yan jiu	4539
+化学渗透	hua xue shen tou	4539
+在研究	zai yan jiu	4539
+地主分子	di zhu fen zi	4539
+学术期刊	xue shu qi kan	4539
+就研究	jiu yan jiu	4539
+幽默元素	you mo yuan su	4539
+我研究	wo yan jiu	4539
+所研究	suo yan jiu	4539
+有研究	you yan jiu	4539
+没研究	mei yan jiu	4539
+研究下	yan jiu xia	4539
+研究个	yan jiu ge	4539
+研究了	yan jiu le	4539
+研究出	yan jiu chu	4539
+研究吧	yan jiu ba	4539
+研究呢	yan jiu ne	4539
+研究啥	yan jiu sha	4539
+研究的	yan jiu de	4539
+研究费	yan jiu fei	4539
+研究过	yan jiu guo	4539
+细胞学说	xi bao xue shuo	4539
+诈骗分子	zha pian fen zi	4539
+遗传基因	yi chuan ji yin	4539
+鲁迅研究	lu xun yan jiu	4539
+主观概率	zhu guan gai lv	4500
+学术刊物	xue shu kan wu	4500
+数学课本	shu xue ke ben	4500
+概率函数	gai lv han shu	4500
+概率分析	gai lv fen xi	4500
+概率统计	gai lv tong ji	4500
+生化学家	sheng hua xue jia	4500
+统计概率	tong ji gai lv	4500
+语文数学	yu wen shu xue	4500
+免疫化学	mian yi hua xue	4462
+免疫细胞	mian yi xi bao	4462
+分子光谱	fen zi guang pu	4462
+分子电流	fen zi dian liu	4462
+原子物理	yuan zi wu li	4462
+右派分子	you pai fen zi	4462
+基因连锁	ji yin lian suo	4462
+物理好难	wu li hao nan	4462
+累积概率	lei ji gai lv	4462
+细胞免疫	xi bao mian yi	4462
+细胞损伤	xi bao sun shang	4462
+细胞样本	xi bao yang ben	4462
+统计上	tong ji shang	4462
+统计出	tong ji chu	4462
+统计分组	tong ji fen zu	4462
+统计口径	tong ji kou jing	4462
+统计数	tong ji shu	4462
+统计过	tong ji guo	4462
+统计量	tong ji liang	4462
+叛乱分子	pan luan fen zi	4424
+商量研究	shang liang yan jiu	4424
+纤维细胞	xian wei xi bao	4424
+细胞移植	xi bao yi zhi	4424
+化学发光	hua xue fa guang	4385
+学术前沿	xue shu qian yan	4385
+狂热分子	kuang re fen zi	4385
+统计公报	tong ji gong bao	4385
+大概率	da gai lv	4347
+天体物理	tian ti wu li	4347
+夺冠概率	duo guan gai lv	4347
+我数学课	wo shu xue ke	4347
+无相元素	wu xiang yuan su	4347
+晶体化学	jing ti hua xue	4347
+深有研究	shen you yan jiu	4347
+细胞分选	xi bao fen xuan	4347
+脂肪细胞	zhi fang xi bao	4347
+致死基因	zhi si ji yin	4347
+骨干分子	gu gan fen zi	4347
+分子离子	fen zi li zi	4308
+化学建材	hua xue jian cai	4308
+基因之战	ji yin zhi zhan	4308
+基因文库	ji yin wen ku	4308
+物理定律	wu li ding lv	4308
+离子交换	li zi jiao huan	4308
+离子反应	li zi fan ying	4308
+离子注入	li zi zhu ru	4308
+离子通道	li zi tong dao	4308
+统计力学	tong ji li xue	4308
+统计图表	tong ji tu biao	4308
+金属离子	jin shu li zi	4308
+一分子	yi fen zi	4270
+上化学	shang hua xue	4270
+他数学	ta shu xue	4270
+低分子	di fen zi	4270
+分子力	fen zi li	4270
+化学书	hua xue shu	4270
+化学了	hua xue le	4270
+化学史	hua xue shi	4270
+化学部	hua xue bu	4270
+华大基因	hua da ji yin	4270
+可疑分子	ke yi fen zi	4270
+学化学	xue hua xue	4270
+就数学	jiu shu xue	4270
+我数学	wo shu xue	4270
+数学书	shu xue shu	4270
+数学了	shu xue le	4270
+数学好	shu xue hao	4270
+数学网	shu xue wang	4270
+有化学	you hua xue	4270
+有数学	you shu xue	4270
+的数学	de shu xue	4270
+管家基因	guan jia ji yin	4270
+补数学	bu shu xue	4270
+要数学	yao shu xue	4270
+这数学	zhe shu xue	4270
+化学切割	hua xue qie ge	4231
+基因变异	ji yin bian yi	4231
+日科化学	ri ke hua xue	4231
+个案研究	ge an yan jiu	4193
+化学修饰	hua xue xiu shi	4193
+固体物理	gu ti wu li	4193
+重生细胞	zhong sheng xi bao	4193
+高一化学	gao yi hua xue	4193
+高一数学	gao yi shu xue	4193
+初一数学	chu yi shu xue	4154
+化学方程	hua xue fang cheng	4154
+基因指纹	ji yin zhi wen	4154
+大论文	da lun wen	4154
+学术流派	xue shu liu pai	4154
+政论文	zheng lun wen	4154
+有物理	you wu li	4154
+细胞毒性	xi bao du xing	4154
+细胞毒素	xi bao du su	4154
+解码数学	jie ma shu xue	4154
+论文库	lun wen ku	4154
+论文选	lun wen xuan	4154
+趣味数学	qu wei shu xue	4154
+这篇论文	zhe pian lun wen	4154
+这篇论文	zhei pian lun wen	4154
+违约概率	wei yue gai lv	4154
+顽固分子	wan gu fen zi	4154
+颗粒细胞	ke li xi bao	4154
+人情物理	ren qing wu li	4116
+分子杂交	fen zi za jiao	4116
+吃掉物理	chi diao wu li	4116
+杂交细胞	za jiao xi bao	4116
+离子半径	li zi ban jing	4116
+精子细胞	jing zi xi bao	4116
+细胞杂交	xi bao za jiao	4116
+职称论文	zhi cheng lun wen	4116
+阳性细胞	yang xing xi bao	4116
+科研成果	ke yan cheng guo	4105
+你统计	ni tong ji	4077
+元素共鸣	yuan su gong ming	4077
+元素增幅	yuan su zeng fu	4077
+元素精通	yuan su jing tong	4077
+先统计	xian tong ji	4077
+在统计	zai tong ji	4077
+多元素	duo yuan su	4077
+我统计	wo tong ji	4077
+推论统计	tui lun tong ji	4077
+断裂基因	duan lie ji yin	4077
+没统计	mei tong ji	4077
+物理化	wu li hua	4077
+细胞因子	xi bao yin zi	4077
+统计下	tong ji xia	4077
+统计了	tong ji le	4077
+统计处	tong ji chu	4077
+统计好	tong ji hao	4077
+统计完	tong ji wan	4077
+统计室	tong ji shi	4077
+统计推断	tong ji tui duan	4077
+统计的	tong ji de	4077
+自律细胞	zi lv xi bao	4077
+要统计	yao tong ji	4077
+让统计	rang tong ji	4077
+达安基因	da an ji yin	4077
+重叠基因	chong die ji yin	4077
+两性离子	liang xing li zi	4039
+中泰化学	zhong tai hua xue	4039
+分子晶体	fen zi jing ti	4039
+初三化学	chu san hua xue	4039
+台独分子	tai du fen zi	4039
+学术造假	xue shu zao jia	4039
+张元素	zhang yuan su	4039
+水元素	shui yuan su	4039
+突变基因	tu bian ji yin	4039
+贩毒分子	fan du fen zi	4039
+化学制剂	hua xue zhi ji	4000
+化学卷子	hua xue juan zi	4000
+教科研	jiao ke yan	4000
+数学卷子	shu xue juan zi	4000
+物理卷子	wu li juan zi	4000
+物理降温	wu li jiang wen	4000
+反叛分子	fan pan fen zi	3962
+高三数学	gao san shu xue	3962
+万华化学	wan hua hua xue	3924
+修饰基因	xiu shi ji yin	3924
+初二数学	chu er shu xue	3924
+基因修饰	ji yin xiu shi	3924
+学年论文	xue nian lun wen	3924
+洋葱数学	yang cong shu xue	3924
+物理按键	wu li an jian	3924
+物理穿透	wu li chuan tou	3924
+研究馆员	yan jiu guan yuan	3924
+上数学	shang shu xue	3885
+你化学	ni hua xue	3885
+你数学	ni shu xue	3885
+做数学	zuo shu xue	3885
+写化学	xie hua xue	3885
+写数学	xie shu xue	3885
+分子灯	fen zi deng	3885
+分子热	fen zi re	3885
+分子病	fen zi bing	3885
+分子论	fen zi lun	3885
+化学卷	hua xue juan	3885
+化学吧	hua xue ba	3885
+化学呢	hua xue ne	3885
+化学楼	hua xue lou	3885
+化学物	hua xue wu	3885
+化学的	hua xue de	3885
+化学纯	hua xue chun	3885
+化学镀	hua xue du	3885
+化学题	hua xue ti	3885
+发数学	fa shu xue	3885
+和化学	he hua xue	3885
+和数学	he shu xue	3885
+咱数学	zan shu xue	3885
+学数学	xue shu xue	3885
+学术不端	xue shu bu duan	3885
+对数学	dui shu xue	3885
+小分子	xiao fen zi	3885
+我化学	wo hua xue	3885
+把数学	ba shu xue	3885
+捣乱分子	dao luan fen zi	3885
+教数学	jiao shu xue	3885
+数学二	shu xue er	3885
+数学卷	shu xue juan	3885
+数学吗	shu xue ma	3885
+数学吧	shu xue ba	3885
+数学呢	shu xue ne	3885
+数学和	shu xue he	3885
+数学啊	shu xue a	3885
+数学四	shu xue si	3885
+数学本	shu xue ben	3885
+数学桥	shu xue qiao	3885
+数学楼	shu xue lou	3885
+数学班	shu xue ban	3885
+数学的	shu xue de	3885
+数学群	shu xue qun	3885
+数学难	shu xue nan	3885
+是数学	shi shu xue	3885
+活分子	huo fen zi	3885
+看数学	kan shu xue	3885
+细胞溶解	xi bao rong jie	3885
+统计报表	tong ji bao biao	3885
+考化学	kao hua xue	3885
+考数学	kao shu xue	3885
+补化学	bu hua xue	3885
+跟数学	gen shu xue	3885
+不考数学	bu kao shu xue	3847
+化学灭火	hua xue mie huo	3847
+化学烧伤	hua xue shao shang	3847
+化学试题	hua xue shi ti	3847
+基因拷贝	ji yin kao bei	3847
+学术型	xue shu xing	3847
+数学试题	shu xue shi ti	3847
+流式细胞	liu shi xi bao	3847
+物理试题	wu li shi ti	3847
+试题研究	shi ti yan jiu	3847
+高一物理	gao yi wu li	3847
+细胞衰老	xi bao shuai lao	3808
+统计核算	tong ji he suan	3808
+热膨胀	re peng zhang	3792
+上物理	shang wu li	3770
+交论文	jiao lun wen	3770
+作案分子	zuo an fen zi	3770
+你物理	ni wu li	3770
+你论文	ni lun wen	3770
+做物理	zuo wu li	3770
+光物理	guang wu li	3770
+写物理	xie wu li	3770
+写论文	xie lun wen	3770
+助细胞	zhu xi bao	3770
+发论文	fa lun wen	3770
+和物理	he wu li	3770
+嗅细胞	xiu xi bao	3770
+字数统计	zi shu tong ji	3770
+学物理	xue wu li	3770
+小细胞	xiao xi bao	3770
+小论文	xiao lun wen	3770
+弄论文	nong lun wen	3770
+微细胞	wei xi bao	3770
+我物理	wo wu li	3770
+我论文	wo lun wen	3770
+把物理	ba wu li	3770
+持家基因	chi jia ji yin	3770
+搞论文	gao lun wen	3770
+改论文	gai lun wen	3770
+新物理	xin wu li	3770
+是物理	shi wu li	3770
+物理书	wu li shu	3770
+物理了	wu li le	3770
+物理卷	wu li juan	3770
+物理吗	wu li ma	3770
+物理吧	wu li ba	3770
+物理家	wu li jia	3770
+物理班	wu li ban	3770
+物理的	wu li de	3770
+物理类	wu li lei	3770
+物理组	wu li zu	3770
+物理题	wu li ti	3770
+的论文	de lun wen	3770
+看论文	kan lun wen	3770
+石细胞	shi xi bao	3770
+离散数学	li san shu xue	3770
+细胞内	xi bao nei	3770
+细胞库	xi bao ku	3770
+细胞液	xi bao ye	3770
+细胞病	xi bao bing	3770
+细胞瘤	xi bao liu	3770
+细胞癌	xi bao ai	3770
+细胞肉	xi bao rou	3770
+考完数学	kao wan shu xue	3770
+考物理	kao wu li	3770
+脓细胞	nong xi bao	3770
+补物理	bu wu li	3770
+论文了	lun wen le	3770
+论文吗	lun wen ma	3770
+论文吧	lun wen ba	3770
+论文呢	lun wen ne	3770
+论文的	lun wen de	3770
+赶论文	gan lun wen	3770
+选物理	xuan wu li	3770
+元素低潮	yuan su di chao	3731
+化学试剂	hua xue shi ji	3731
+多核细胞	duo he xi bao	3731
+显性基因	xian xing ji yin	3731
+细胞受体	xi bao shou ti	3731
+细胞骨架	xi bao gu jia	3731
+内皮细胞	nei pi xi bao	3693
+初三数学	chu san shu xue	3693
+初三物理	chu san wu li	3693
+外源基因	wai yuan ji yin	3693
+德育论文	de yu lun wen	3693
+杀伤细胞	sha shang xi bao	3693
+真核细胞	zhen he xi bao	3693
+骨髓细胞	gu sui xi bao	3693
+假基因	jia ji yin	3654
+元素多	yuan su duo	3654
+冰元素	bing yuan su	3654
+原核细胞	yuan he xi bao	3654
+基因图	ji yin tu	3654
+基因好	ji yin hao	3654
+基因带	ji yin dai	3654
+基因座	ji yin zuo	3654
+基因枪	ji yin qiang	3654
+基因簇	ji yin cu	3654
+岩元素	yan yuan su	3654
+欧拉数学	ou la shu xue	3654
+氮元素	dan yuan su	3654
+火元素	huo yuan su	3654
+点元素	dian yuan su	3654
+硒元素	xi yuan su	3654
+统计年鉴	tong ji nian jian	3654
+草元素	cao yuan su	3654
+蓝基因	lan ji yin	3654
+钾元素	jia yuan su	3654
+镁元素	mei yuan su	3654
+雷元素	lei yuan su	3654
+风元素	feng yuan su	3654
+单核细胞	dan he xi bao	3616
+抗癌基因	kang ai ji yin	3616
+搞科研	gao ke yan	3616
+数学建模	shu xue jian mo	3616
+概率抽样	gai lv chou yang	3616
+江天化学	jiang tian hua xue	3616
+离子水	li zi shui	3616
+科研区	ke yan qu	3616
+科研室	ke yan shi	3616
+科研楼	ke yan lou	3616
+科研管	ke yan guan	3616
+三菱化学	san ling hua xue	3577
+元素微粒	yuan su wei li	3577
+元素抗性	yuan su kang xing	3539
+化学当量	hua xue dang liang	3539
+物理天平	wu li tian ping	3539
+物理弹球	wu li tan qiu	3539
+物理抗性	wu li kang xing	3539
+表皮细胞	biao pi xi bao	3539
+黑素细胞	hei su xi bao	3539
+元素附着	yuan su fu zhuo	3500
+化学阉割	hua xue yan ge	3500
+细胞肿胀	xi bao zhong zhang	3500
+上皮细胞	shang pi xi bao	3462
+副研究员	fu yan jiu yuan	3462
+化学抛光	hua xue pao guang	3462
+化学溶蚀	hua xue rong shi	3462
+卵原细胞	luan yuan xi bao	3462
+卵母细胞	luan mu xi bao	3462
+原癌基因	yuan ai ji yin	3462
+去离子水	qu li zi shui	3462
+后基因组	hou ji yin zu	3462
+后概率	hou gai lv	3462
+嗜铬细胞	shi ge xi bao	3462
+基因图谱	ji yin tu pu	3462
+小概率	xiao gai lv	3462
+巨噬细胞	ju shi xi bao	3462
+巨核细胞	ju he xi bao	3462
+心肌细胞	xin ji xi bao	3462
+成红细胞	cheng hong xi bao	3462
+成釉细胞	cheng you xi bao	3462
+成骨细胞	cheng gu xi bao	3462
+有概率	you gai lv	3462
+概率法	gai lv fa	3462
+潜心研究	qian xin yan jiu	3462
+的概率	de gai lv	3462
+离子棒	li zi bang	3462
+离子流	li zi liu	3462
+离子烫	li zi tang	3462
+离子镀	li zi du	3462
+粗蛋白质	cu dan bai zhi	3462
+粘附分子	nian fu fen zi	3462
+精原细胞	jing yuan xi bao	3462
+精母细胞	jing mu xi bao	3462
+络离子	luo li zi	3462
+聚阴离子	ju yin li zi	3462
+肥大细胞	fei da xi bao	3462
+胶体化学	jiao ti hua xue	3462
+视杆细胞	shi gan xi bao	3462
+论文范文	lun wen fan wen	3462
+贴壁细胞	tie bi xi bao	3462
+锥体细胞	zhui ti xi bao	3462
+间皮细胞	jian pi xi bao	3462
+顽劣分子	wan lie fen zi	3462
+元素试炼	yuan su shi lian	3424
+化学防晒	hua xue fang shai	3424
+物理防晒	wu li fang shai	3424
+致病基因	zhi bing ji yin	3424
+七彩化学	qi cai hua xue	3385
+羊水细胞	yang shui xi bao	3385
+元素满潮	yuan su man chao	3347
+利尔化学	li er hua xue	3347
+物理加成	wu li jia cheng	3347
+细胞基质	xi bao ji zhi	3347
+郁离子	yu li zi	3347
+钙离子	gai li zi	3347
+钾离子	jia li zi	3347
+铁离子	tie li zi	3347
+铜离子	tong li zi	3347
+镁离子	mei li zi	3347
+等离子态	deng li zi tai	3308
+统计套利	tong ji tao li	3308
+华峰化学	hua feng hua xue	3270
+基因探针	ji yin tan zhen	3270
+元素战技	yuan su zhan ji	3193
+准研究生	zhun yan jiu sheng	3116
+性的研究	xing de yan jiu	3116
+我在研究	wo zai yan jiu	3116
+我研究下	wo yan jiu xia	3116
+我研究了	wo yan jiu le	3116
+没研究过	mei yan jiu guo	3116
+研究好了	yan jiu hao le	3116
+研究生了	yan jiu sheng le	3116
+研究生楼	yan jiu sheng lou	3116
+读研究生	du yan jiu sheng	3116
+贝瑞基因	bei rui ji yin	3116
+元素护盾	yuan su hu dun	3077
+生物理疗	sheng wu li liao	3039
+笔杆论文	bi gan lun wen	3039
+基因扩增	ji yin kuo zeng	3000
+元素护罩	yuan su hu zhao	2962
+心衰细胞	xin shuai xi bao	2885
+细胞癌变	xi bao ai bian	2885
+统计台帐	tong ji tai zhang	2847
+统计好了	tong ji hao le	2847
+胶质细胞	jiao zhi xi bao	2847
+薄壁细胞	bao bi xi bao	2808
+上数学课	shang shu xue ke	2731
+你的数学	ni de shu xue	2731
+做数学题	zuo shu xue ti	2731
+写完数学	xie wan shu xue	2731
+小分子肽	xiao fen zi tai	2731
+我写数学	wo xie shu xue	2731
+我的数学	wo de shu xue	2731
+数学写了	shu xue xie le	2731
+数学没写	shu xue mei xie	2731
+陶氏化学	tao shi hua xue	2731
+学术交流	xue shu jiao liu	2700
+百傲化学	bai ao hua xue	2693
+雅本化学	ya ben hua xue	2693
+上物理课	shang wu li ke	2654
+你的论文	ni de lun wen	2654
+写论文了	xie lun wen le	2654
+小细胞癌	xiao xi bao ai	2654
+我的物理	wo de wu li	2654
+我的论文	wo de lun wen	2654
+有核细胞	you he xi bao	2654
+枯否细胞	ku fou xi bao	2654
+母细胞瘤	mu xi bao liu	2654
+细胞外被	xi bao wai bei	2654
+肝细胞癌	gan xi bao ai	2654
+肾细胞癌	shen xi bao ai	2654
+角朊细胞	jiao ruan xi bao	2654
+暴恐分子	bao kong fen zi	2616
+元素之印	yuan su zhi yin	2577
+元素方碑	yuan su fang bei	2577
+多基因病	duo ji yin bing	2577
+抑癌基因	yi ai ji yin	2577
+非转基因	fei zhuan ji yin	2577
+视锥细胞	shi zhui xi bao	2462
+鳞状细胞	lin zhuang xi bao	2462
+统计分析	tong ji fen xi	2460
+元素晶球	yuan su jing qiu	2424
+热平衡	re ping heng	2409
+等离子场	deng li zi chang	2385
+蛋白质粉	dan bai zhi fen	2385
+分子结构	fen zi jie gou	2264
+元素藤蔓	yuan su teng wan	2193
+化学螺栓	hua xue luo shuan	2000
+胰岛细胞	yi dao xi bao	1770
+电感器	dian gan qi	1395
+热对流	re dui liu	1269
+电势差	dian shi cha	1066
+科研项目	ke yan xiang mu	742
+原电池	yuan dian chi	681
+协方差	xie fang cha	640
+热容量	re rong liang	584

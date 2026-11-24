@@ -1,24 +1,48 @@
-# 开心离线输入法分类补充：政务办事
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+# 开心输入法扩展词库：政务社保与应急（420 条）
+# 来源合并：category_government.txt, category_social_insurance.txt, category_emergency.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+人身安全	ren shen an quan	6200
+安全检查	an quan jian cha	6200
+灭火器	mie huo qi	6200
+食品安全	shi pin an quan	6200
 一网通办	yi wang tong ban	6100
 不动产登记	bu dong chan deng ji	6100
+个人账户	ge ren zhang hu	6100
 临时身份证	lin shi shen fen zheng	6100
 产权证明	chan quan zheng ming	6100
+住院报销	zhu yuan bao xiao	6100
 便民服务	bian min fu wu	6100
+公积金余额	gong ji jin yu e	6100
+公积金提取	gong ji jin ti qu	6100
+公积金缴存	gong ji jin jiao cun	6100
+公积金账户	gong ji jin zhang hu	6100
+公积金贷款	gong ji jin dai kuan	6100
+公积金转移	gong ji jin zhuan yi	6100
+养老金领取	yang lao jin ling qu	6100
 出生登记	chu sheng deng ji	6100
 出生证明	chu sheng zheng ming	6100
 办事大厅	ban shi da ting	6100
 办事指南	ban shi zhi nan	6100
 办理进度	ban li jin du	6100
+医保报销	yi bao bao xiao	6100
+医保目录	yi bao mu lu	6100
+医保结算	yi bao jie suan	6100
+医保统筹	yi bao tong chou	6100
+医保缴费	yi bao jiao fei	6100
+医保账户	yi bao zhang hu	6100
+医疗救援	yi liao jiu yuan	6100
 原件复印件	yuan jian fu yin jian	6100
+参保证明	can bao zheng ming	6100
 受理回执	shou li hui zhi	6100
 受理窗口	shou li chuang kou	6100
 受理编号	shou li bian hao	6100
+失业保险	shi ye bao xian	6100
+失业登记	shi ye deng ji	6100
+失业金申领	shi ye jin shen ling	6100
 委托办理	wei tuo ban li	6100
 婚姻登记	hun yin deng ji	6100
+安全出口	an quan chu kou	6100
+安全提醒	an quan ti xing	6100
 实名核验	shi ming he yan	6100
 审批进度	shen pi jin du	6100
 居住所在地	ju zhu suo zai di	6100
@@ -26,38 +50,105 @@
 居住证申请	ju zhu zheng shen qing	6100
 居住证续签	ju zhu zheng xu qian	6100
 居住证补办	ju zhu zheng bu ban	6100
+工伤保险	gong shang bao xian	6100
+工伤认定	gong shang ren ding	6100
+应急出口	ying ji chu kou	6100
+应急处置	ying ji chu zhi	6100
+应急演练	ying ji yan lian	6100
+应急照明	ying ji zhao ming	6100
+应急物资	ying ji wu zi	6100
+应急电话	ying ji dian hua	6100
+应急联系人	ying ji lian xi ren	6100
+应急预案	ying ji yu an	6100
 开具证明	kai ju zheng ming	6100
+异地备案	yi di bei an	6100
+异地就医	yi di jiu yi	6100
+异地结算	yi di jie suan	6100
+急救培训	ji jiu pei xun	6100
+急救电话	ji jiu dian hua	6100
 户口迁入	hu kou qian ru	6100
 户口迁出	hu kou qian chu	6100
 户口迁移	hu kou qian yi	6100
 户籍所在地	hu ji suo zai di	6100
 户籍证明	hu ji zheng ming	6100
 授权委托书	shou quan wei tuo shu	6100
+提取额度	ti qu e du	6100
 政务大厅	zheng wu da ting	6100
 政务服务	zheng wu fu wu	6100
+断电保护	duan dian bao hu	6100
 暂住登记	zan zhu deng ji	6100
 材料清单	cai liao qing dan	6100
 材料补正	cai liao bu zheng	6100
+消防器材	xiao fang qi cai	6100
+消防设施	xiao fang she shi	6100
+漏水报警	lou shui bao jing	6100
+火灾报警	huo zai bao jing	6100
+灵活就业	ling huo jiu ye	6100
+烟雾报警	yan wu bao jing	6100
+燃气报警	ran qi bao jing	6100
+燃气泄漏	ran qi xie lou	6100
+现场救援	xian chang jiu yuan	6100
 现场核验	xian chang he yan	6100
+生产安全	sheng chan an quan	6100
+生育保险	sheng yu bao xian	6100
+生育津贴	sheng yu jin tie	6100
 申请材料	shen qing cai liao	6100
 电子签章	dian zi qian zhang	6100
 电子证照	dian zi zheng zhao	6100
+电气火灾	dian qi huo zai	6100
+疏散指示	shu san zhi shi	6100
+疏散路线	shu san lu xian	6100
+疏散通道	shu san tong dao	6100
+社保卡激活	she bao ka ji huo	6100
+社保卡补办	she bao ka bu ban	6100
+社保断缴	she bao duan jiao	6100
+社保查询	she bao cha xun	6100
+社保缴费	she bao jiao fei	6100
+社保补缴	she bao bu jiao	6100
+社保转移	she bao zhuan yi	6100
+租房提取	zu fang ti qu	6100
+紧急疏散	jin ji shu san	6100
+紧急联系人	jin ji lian xi ren	6100
 线上核验	xian shang he yan	6100
+缴存基数	jiao cun ji shu	6100
+缴存比例	jiao cun bi li	6100
+缴费基数	jiao fei ji shu	6100
+缴费年限	jiao fei nian xian	6100
+缴费记录	jiao fei ji lu	6100
 网上办事	wang shang ban shi	6100
 证件到期	zheng jian dao qi	6100
 证件有效期	zheng jian you xiao qi	6100
 证件照片	zheng jian zhao pian	6100
 证明材料	zheng ming cai liao	6100
+财产安全	cai chan an quan	6100
+贷款额度	dai kuan e du	6100
 跨省通办	kua sheng tong ban	6100
 身份证换领	shen fen zheng huan ling	6100
 身份证补办	shen fen zheng bu ban	6100
+还贷提取	huan dai ti qu	6100
+退休手续	tui xiu shou xu	6100
+退休认证	tui xiu ren zheng	6100
+门诊报销	men zhen bao xiao	6100
+门诊统筹	men zhen tong chou	6100
+防坠落	fang zhui luo	6100
+防溺水	fang ni shui	6100
+防火防盗	fang huo fang dao	6100
+防触电	fang chu dian	6100
+防踩踏	fang cai ta	6100
+隐患排查	yin huan pai cha	6100
+隐患整改	yin huan zheng gai	6100
 预约办理	yu yue ban li	6100
 预约号	yu yue hao	6100
+风险识别	feng xian shi bie	6100
+风险预警	feng xian yu jing	6100
+心肺复苏	xin fei fu su	6000
 政府单位	zheng fu dan wei	6000
+紧急避险	jin ji bi xian	6000
 报告政府	bao gao zheng fu	5924
 政府机构	zheng fu ji gou	5924
 政府银行	zheng fu yin hang	5924
 政府投资	zheng fu tou zi	5847
+养老保险	yang lao bao xian	5816
 政府行政	zheng fu xing zheng	5770
 政府官员	zheng fu guan yuan	5616
 政府委员	zheng fu wei yuan	5500
@@ -67,6 +158,8 @@
 重庆政府	chong qing zheng fu	5347
 政府贷款	zheng fu dai kuan	5231
 政府预算	zheng fu yu suan	5231
+劳动能力鉴定	lao dong neng li jian ding	5200
+灵活就业人员	ling huo jiu ye ren yuan	5200
 申请材料已经提交	shen qing cai liao yi jing ti jiao	5200
 申请材料已经补充	shen qing cai liao yi jing bu chong	5200
 申请材料正在审核	shen qing cai liao zheng zai shen he	5200
@@ -75,6 +168,7 @@
 登记信息已经补充	deng ji xin xi yi jing bu chong	5200
 登记信息正在审核	deng ji xin xi zheng zai shen he	5200
 登记信息需要重新提交	deng ji xin xi xu yao chong xin ti jiao	5200
+自动体外除颤	zi dong ti wai chu chan	5200
 证明材料已经提交	zheng ming cai liao yi jing ti jiao	5200
 证明材料已经补充	zheng ming cai liao yi jing bu chong	5200
 证明材料正在审核	zheng ming cai liao zheng zai shen he	5200
@@ -85,169 +179,15 @@
 富民政策	fu min zheng ce	5116
 政府总部	zheng fu zong bu	5116
 政府性	zheng fu xing	5039
+紧急救援	jin ji jiu yuan	5039
 政府大楼	zheng fu da lou	5000
 政府公告	zheng fu gong gao	4924
-请准备办理资料	qing zhun bei ban li zi liao	4900
-请准备受理编号	qing zhun bei shou li bian hao	4900
-请准备授权委托书	qing zhun bei shou quan wei tuo shu	4900
-请准备申请材料	qing zhun bei shen qing cai liao	4900
-请准备登记信息	qing zhun bei deng ji xin xi	4900
-请准备证件照片	qing zhun bei zheng jian zhao pian	4900
-请准备证明材料	qing zhun bei zheng ming cai liao	4900
-请准备身份信息	qing zhun bei shen fen xin xi	4900
-请帮我准备办理资料	qing bang wo zhun bei ban li zi liao	4900
-请帮我准备受理编号	qing bang wo zhun bei shou li bian hao	4900
-请帮我准备授权委托书	qing bang wo zhun bei shou quan wei tuo shu	4900
-请帮我准备申请材料	qing bang wo zhun bei shen qing cai liao	4900
-请帮我准备登记信息	qing bang wo zhun bei deng ji xin xi	4900
-请帮我准备证件照片	qing bang wo zhun bei zheng jian zhao pian	4900
-请帮我准备证明材料	qing bang wo zhun bei zheng ming cai liao	4900
-请帮我准备身份信息	qing bang wo zhun bei shen fen xin xi	4900
-请帮我提交办理资料	qing bang wo ti jiao ban li zi liao	4900
-请帮我提交受理编号	qing bang wo ti jiao shou li bian hao	4900
-请帮我提交授权委托书	qing bang wo ti jiao shou quan wei tuo shu	4900
-请帮我提交申请材料	qing bang wo ti jiao shen qing cai liao	4900
-请帮我提交登记信息	qing bang wo ti jiao deng ji xin xi	4900
-请帮我提交证件照片	qing bang wo ti jiao zheng jian zhao pian	4900
-请帮我提交证明材料	qing bang wo ti jiao zheng ming cai liao	4900
-请帮我提交身份信息	qing bang wo ti jiao shen fen xin xi	4900
-请帮我提供办理资料	qing bang wo ti gong ban li zi liao	4900
-请帮我提供受理编号	qing bang wo ti gong shou li bian hao	4900
-请帮我提供授权委托书	qing bang wo ti gong shou quan wei tuo shu	4900
-请帮我提供申请材料	qing bang wo ti gong shen qing cai liao	4900
-请帮我提供登记信息	qing bang wo ti gong deng ji xin xi	4900
-请帮我提供证件照片	qing bang wo ti gong zheng jian zhao pian	4900
-请帮我提供证明材料	qing bang wo ti gong zheng ming cai liao	4900
-请帮我提供身份信息	qing bang wo ti gong shen fen xin xi	4900
-请帮我核对办理资料	qing bang wo he dui ban li zi liao	4900
-请帮我核对受理编号	qing bang wo he dui shou li bian hao	4900
-请帮我核对授权委托书	qing bang wo he dui shou quan wei tuo shu	4900
-请帮我核对申请材料	qing bang wo he dui shen qing cai liao	4900
-请帮我核对登记信息	qing bang wo he dui deng ji xin xi	4900
-请帮我核对证件照片	qing bang wo he dui zheng jian zhao pian	4900
-请帮我核对证明材料	qing bang wo he dui zheng ming cai liao	4900
-请帮我核对身份信息	qing bang wo he dui shen fen xin xi	4900
-请帮我补充办理资料	qing bang wo bu chong ban li zi liao	4900
-请帮我补充受理编号	qing bang wo bu chong shou li bian hao	4900
-请帮我补充授权委托书	qing bang wo bu chong shou quan wei tuo shu	4900
-请帮我补充申请材料	qing bang wo bu chong shen qing cai liao	4900
-请帮我补充登记信息	qing bang wo bu chong deng ji xin xi	4900
-请帮我补充证件照片	qing bang wo bu chong zheng jian zhao pian	4900
-请帮我补充证明材料	qing bang wo bu chong zheng ming cai liao	4900
-请帮我补充身份信息	qing bang wo bu chong shen fen xin xi	4900
-请提交办理资料	qing ti jiao ban li zi liao	4900
-请提交受理编号	qing ti jiao shou li bian hao	4900
-请提交授权委托书	qing ti jiao shou quan wei tuo shu	4900
-请提交申请材料	qing ti jiao shen qing cai liao	4900
-请提交登记信息	qing ti jiao deng ji xin xi	4900
-请提交证件照片	qing ti jiao zheng jian zhao pian	4900
-请提交证明材料	qing ti jiao zheng ming cai liao	4900
-请提交身份信息	qing ti jiao shen fen xin xi	4900
-请提供办理资料	qing ti gong ban li zi liao	4900
-请提供受理编号	qing ti gong shou li bian hao	4900
-请提供授权委托书	qing ti gong shou quan wei tuo shu	4900
-请提供申请材料	qing ti gong shen qing cai liao	4900
-请提供登记信息	qing ti gong deng ji xin xi	4900
-请提供证件照片	qing ti gong zheng jian zhao pian	4900
-请提供证明材料	qing ti gong zheng ming cai liao	4900
-请提供身份信息	qing ti gong shen fen xin xi	4900
-请核对办理资料	qing he dui ban li zi liao	4900
-请核对受理编号	qing he dui shou li bian hao	4900
-请核对授权委托书	qing he dui shou quan wei tuo shu	4900
-请核对申请材料	qing he dui shen qing cai liao	4900
-请核对登记信息	qing he dui deng ji xin xi	4900
-请核对证件照片	qing he dui zheng jian zhao pian	4900
-请核对证明材料	qing he dui zheng ming cai liao	4900
-请核对身份信息	qing he dui shen fen xin xi	4900
-请补充办理资料	qing bu chong ban li zi liao	4900
-请补充受理编号	qing bu chong shou li bian hao	4900
-请补充授权委托书	qing bu chong shou quan wei tuo shu	4900
-请补充申请材料	qing bu chong shen qing cai liao	4900
-请补充登记信息	qing bu chong deng ji xin xi	4900
-请补充证件照片	qing bu chong zheng jian zhao pian	4900
-请补充证明材料	qing bu chong zheng ming cai liao	4900
-请补充身份信息	qing bu chong shen fen xin xi	4900
-麻烦准备办理资料	ma fan zhun bei ban li zi liao	4900
-麻烦准备受理编号	ma fan zhun bei shou li bian hao	4900
-麻烦准备授权委托书	ma fan zhun bei shou quan wei tuo shu	4900
-麻烦准备申请材料	ma fan zhun bei shen qing cai liao	4900
-麻烦准备登记信息	ma fan zhun bei deng ji xin xi	4900
-麻烦准备证件照片	ma fan zhun bei zheng jian zhao pian	4900
-麻烦准备证明材料	ma fan zhun bei zheng ming cai liao	4900
-麻烦准备身份信息	ma fan zhun bei shen fen xin xi	4900
-麻烦帮我准备办理资料	ma fan bang wo zhun bei ban li zi liao	4900
-麻烦帮我准备受理编号	ma fan bang wo zhun bei shou li bian hao	4900
-麻烦帮我准备授权委托书	ma fan bang wo zhun bei shou quan wei tuo shu	4900
-麻烦帮我准备申请材料	ma fan bang wo zhun bei shen qing cai liao	4900
-麻烦帮我准备登记信息	ma fan bang wo zhun bei deng ji xin xi	4900
-麻烦帮我准备证件照片	ma fan bang wo zhun bei zheng jian zhao pian	4900
-麻烦帮我准备证明材料	ma fan bang wo zhun bei zheng ming cai liao	4900
-麻烦帮我准备身份信息	ma fan bang wo zhun bei shen fen xin xi	4900
-麻烦帮我提交办理资料	ma fan bang wo ti jiao ban li zi liao	4900
-麻烦帮我提交受理编号	ma fan bang wo ti jiao shou li bian hao	4900
-麻烦帮我提交授权委托书	ma fan bang wo ti jiao shou quan wei tuo shu	4900
-麻烦帮我提交申请材料	ma fan bang wo ti jiao shen qing cai liao	4900
-麻烦帮我提交登记信息	ma fan bang wo ti jiao deng ji xin xi	4900
-麻烦帮我提交证件照片	ma fan bang wo ti jiao zheng jian zhao pian	4900
-麻烦帮我提交证明材料	ma fan bang wo ti jiao zheng ming cai liao	4900
-麻烦帮我提交身份信息	ma fan bang wo ti jiao shen fen xin xi	4900
-麻烦帮我提供办理资料	ma fan bang wo ti gong ban li zi liao	4900
-麻烦帮我提供受理编号	ma fan bang wo ti gong shou li bian hao	4900
-麻烦帮我提供授权委托书	ma fan bang wo ti gong shou quan wei tuo shu	4900
-麻烦帮我提供申请材料	ma fan bang wo ti gong shen qing cai liao	4900
-麻烦帮我提供登记信息	ma fan bang wo ti gong deng ji xin xi	4900
-麻烦帮我提供证件照片	ma fan bang wo ti gong zheng jian zhao pian	4900
-麻烦帮我提供证明材料	ma fan bang wo ti gong zheng ming cai liao	4900
-麻烦帮我提供身份信息	ma fan bang wo ti gong shen fen xin xi	4900
-麻烦帮我核对办理资料	ma fan bang wo he dui ban li zi liao	4900
-麻烦帮我核对受理编号	ma fan bang wo he dui shou li bian hao	4900
-麻烦帮我核对授权委托书	ma fan bang wo he dui shou quan wei tuo shu	4900
-麻烦帮我核对申请材料	ma fan bang wo he dui shen qing cai liao	4900
-麻烦帮我核对登记信息	ma fan bang wo he dui deng ji xin xi	4900
-麻烦帮我核对证件照片	ma fan bang wo he dui zheng jian zhao pian	4900
-麻烦帮我核对证明材料	ma fan bang wo he dui zheng ming cai liao	4900
-麻烦帮我核对身份信息	ma fan bang wo he dui shen fen xin xi	4900
-麻烦帮我补充办理资料	ma fan bang wo bu chong ban li zi liao	4900
-麻烦帮我补充受理编号	ma fan bang wo bu chong shou li bian hao	4900
-麻烦帮我补充授权委托书	ma fan bang wo bu chong shou quan wei tuo shu	4900
-麻烦帮我补充申请材料	ma fan bang wo bu chong shen qing cai liao	4900
-麻烦帮我补充登记信息	ma fan bang wo bu chong deng ji xin xi	4900
-麻烦帮我补充证件照片	ma fan bang wo bu chong zheng jian zhao pian	4900
-麻烦帮我补充证明材料	ma fan bang wo bu chong zheng ming cai liao	4900
-麻烦帮我补充身份信息	ma fan bang wo bu chong shen fen xin xi	4900
-麻烦提交办理资料	ma fan ti jiao ban li zi liao	4900
-麻烦提交受理编号	ma fan ti jiao shou li bian hao	4900
-麻烦提交授权委托书	ma fan ti jiao shou quan wei tuo shu	4900
-麻烦提交申请材料	ma fan ti jiao shen qing cai liao	4900
-麻烦提交登记信息	ma fan ti jiao deng ji xin xi	4900
-麻烦提交证件照片	ma fan ti jiao zheng jian zhao pian	4900
-麻烦提交证明材料	ma fan ti jiao zheng ming cai liao	4900
-麻烦提交身份信息	ma fan ti jiao shen fen xin xi	4900
-麻烦提供办理资料	ma fan ti gong ban li zi liao	4900
-麻烦提供受理编号	ma fan ti gong shou li bian hao	4900
-麻烦提供授权委托书	ma fan ti gong shou quan wei tuo shu	4900
-麻烦提供申请材料	ma fan ti gong shen qing cai liao	4900
-麻烦提供登记信息	ma fan ti gong deng ji xin xi	4900
-麻烦提供证件照片	ma fan ti gong zheng jian zhao pian	4900
-麻烦提供证明材料	ma fan ti gong zheng ming cai liao	4900
-麻烦提供身份信息	ma fan ti gong shen fen xin xi	4900
-麻烦核对办理资料	ma fan he dui ban li zi liao	4900
-麻烦核对受理编号	ma fan he dui shou li bian hao	4900
-麻烦核对授权委托书	ma fan he dui shou quan wei tuo shu	4900
-麻烦核对申请材料	ma fan he dui shen qing cai liao	4900
-麻烦核对登记信息	ma fan he dui deng ji xin xi	4900
-麻烦核对证件照片	ma fan he dui zheng jian zhao pian	4900
-麻烦核对证明材料	ma fan he dui zheng ming cai liao	4900
-麻烦核对身份信息	ma fan he dui shen fen xin xi	4900
-麻烦补充办理资料	ma fan bu chong ban li zi liao	4900
-麻烦补充受理编号	ma fan bu chong shou li bian hao	4900
-麻烦补充授权委托书	ma fan bu chong shou quan wei tuo shu	4900
-麻烦补充申请材料	ma fan bu chong shen qing cai liao	4900
-麻烦补充登记信息	ma fan bu chong deng ji xin xi	4900
-麻烦补充证件照片	ma fan bu chong zheng jian zhao pian	4900
-麻烦补充证明材料	ma fan bu chong zheng ming cai liao	4900
-麻烦补充身份信息	ma fan bu chong shen fen xin xi	4900
+发生火灾	fa sheng huo zai	4885
+应急救援	ying ji jiu yuan	4885
 政府采购	zheng fu cai gou	4885
+森林火灾	sen lin huo zai	4885
+紧急救助	jin ji jiu zhu	4885
+中医保健	zhong yi bao jian	4847
 南非政府	nan fei zheng fu	4847
 政府管制	zheng fu guan zhi	4847
 政府花园	zheng fu hua yuan	4847
@@ -261,14 +201,18 @@
 山西公安	shan xi gong an	4808
 政府垄断	zheng fu long duan	4808
 新疆公安	xin jiang gong an	4808
+消防控制	xiao fang kong zhi	4808
+消防水带	xiao fang shui dai	4808
 丹麦政府	dan mai zheng fu	4770
 政府信用	zheng fu xin yong	4770
 政府债务	zheng fu zhai wu	4770
 政府职能	zheng fu zhi neng	4770
 政府补助	zheng fu bu zhu	4770
 法治政府	fa zhi zheng fu	4770
+消防救援	xiao fang jiu yuan	4770
 贵州公安	gui zhou gong an	4770
 过渡政府	guo du zheng fu	4770
+交通安全	jiao tong an quan	4739
 公安院校	gong an yuan xiao	4731
 反政府	fan zheng fu	4731
 在政府	zai zheng fu	4731
@@ -281,13 +225,42 @@
 老政府	lao zheng fu	4731
 党委政府	dang wei zheng fu	4693
 公安大厦	gong an da sha	4693
+太空救援	tai kong jiu yuan	4693
 市民政局	shi min zheng ju	4693
 政府补贴	zheng fu bu tie	4693
+救援失败	jiu yuan shi bai	4693
+救援工作	jiu yuan gong zuo	4693
+救援成功	jiu yuan cheng gong	4693
+救援现场	jiu yuan xian chang	4693
+救援计划	jiu yuan ji hua	4693
+救援车辆	jiu yuan che liang	4693
+救援部队	jiu yuan bu dui	4693
+救援飞机	jiu yuan fei ji	4693
+最后救援	zui hou jiu yuan	4693
 民政工作	min zheng gong zuo	4693
+灾害救援	zai hai jiu yuan	4693
 政府支出	zheng fu zhi chu	4654
 法制政府	fa zhi zheng fu	4654
 乡镇政府	xiang zhen zheng fu	4616
+救援大队	jiu yuan da dui	4616
+火灾事故	huo zai shi gu	4616
+火灾分类	huo zai fen lei	4616
+火灾现场	huo zai xian chang	4616
+极限救援	ji xian jiu yuan	4577
+中国消防	zhong guo xiao fang	4500
 公安消防	gong an xiao fang	4500
+消防中队	xiao fang zhong dui	4500
+消防人员	xiao fang ren yuan	4500
+消防大队	xiao fang da dui	4500
+消防安全	xiao fang an quan	4500
+消防工作	xiao fang gong zuo	4500
+消防指挥	xiao fang zhi hui	4500
+消防电梯	xiao fang dian ti	4500
+消防系统	xiao fang xi tong	4500
+消防设备	xiao fang she bei	4500
+消防通道	xiao fang tong dao	4500
+火星救援	huo xing jiu yuan	4500
+终极救援	zhong ji jiu yuan	4500
 政务中心	zheng wu zhong xin	4462
 政务信息	zheng wu xin xi	4462
 政务处分	zheng wu chu fen	4462
@@ -296,47 +269,155 @@
 政府担保	zheng fu dan bao	4462
 政府调控	zheng fu tiao kong	4462
 政府首脑	zheng fu shou nao	4462
+消防楼梯	xiao fang lou ti	4462
 民政大厦	min zheng da sha	4424
 民政学校	min zheng xue xiao	4424
+消防龙头	xiao fang long tou	4424
 公安民警	gong an min jing	4385
+急救生活	ji jiu sheng huo	4385
 户籍人口	hu ji ren kou	4385
 户籍制度	hu ji zhi du	4385
 户籍地址	hu ji di zhi	4385
 户籍管理	hu ji guan li	4385
 政府借款	zheng fu jie kuan	4385
+消防官兵	xiao fang guan bing	4385
+消防总队	xiao fang zong dui	4385
+消防演习	xiao fang yan xi	4385
 政府产权	zheng fu chan quan	4347
 流亡政府	liu wang zheng fu	4308
+消防用水	xiao fang yong shui	4308
+河南社保	he nan she bao	4270
+紧急救命	jin ji jiu ming	4270
+应急救护	ying ji jiu hu	4231
+紧急救护	jin ji jiu hu	4231
+紧急救治	jin ji jiu zhi	4231
 政府门户	zheng fu men hu	4193
+消防供水	xiao fang gong shui	4193
+消防支队	xiao fang zhi dui	4193
+火灾隐患	huo zai yin huan	4193
+急救中心	ji jiu zhong xin	4154
+急救小组	ji jiu xiao zu	4154
+急救病房	ji jiu bing fang	4154
+急救网络	ji jiu wang luo	4154
+情绪急救	qing xu ji jiu	4154
 政府储蓄	zheng fu chu xu	4154
 傀儡政府	kui lei zheng fu	4116
 公安特警	gong an te jing	4116
+巅峰救援	dian feng jiu yuan	4116
+救援总队	jiu yuan zong dui	4116
 本市户籍	ben shi hu ji	4116
 政务新区	zheng wu xin qu	4077
 政府绩效	zheng fu ji xiao	4077
+消防水池	xiao fang shui chi	4077
+怒火救援	nu huo jiu yuan	4039
 公安交警	gong an jiao jing	4000
+医保中心	yi bao zhong xin	4000
+医保基金	yi bao ji jin	4000
+医保支付	yi bao zhi fu	4000
+国家医保	guo jia yi bao	4000
+基本医保	ji ben yi bao	4000
+居民医保	ju min yi bao	4000
+常州医保	chang zhou yi bao	4000
+消防演练	xiao fang yan lian	4000
+电子医保	dian zi yi bao	4000
+社保中心	she bao zhong xin	4000
+社保基金	she bao ji jin	4000
+社保大厦	she bao da sha	4000
+社保大楼	she bao da lou	4000
+社保认证	she bao ren zheng	4000
+社保资金	she bao zi jin	4000
+缴纳社保	jiao na she bao	4000
+职工医保	zhi gong yi bao	4000
+重庆医保	chong qing yi bao	4000
+消防联动	xiao fang lian dong	3962
 公安交管	gong an jiao guan	3924
 公安厅长	gong an ting zhang	3924
+大火灾	da huo zai	3924
 政府庄家	zheng fu zhuang jia	3924
+消防水泵	xiao fang shui beng	3924
+救援者	jiu yuan zhe	3885
+消防车库	xiao fang che ku	3885
+院前急救	yuan qian ji jiu	3885
 中非政府	zhong fei zheng fu	3847
 政府外债	zheng fu wai zhai	3847
 政府失灵	zheng fu shi ling	3847
+极速救援	ji su jiu yuan	3847
+消防水	xiao fang shui	3847
+灭火救援	mie huo jiu yuan	3847
+火线救援	huo xian jiu yuan	3693
+社保费率	she bao fei lv	3693
 公安段	gong an duan	3654
 公安派	gong an pai	3654
 公安网	gong an wang	3654
 政府公债	zheng fu gong zhai	3654
+划转社保	hua zhuan she bao	3616
 户籍警	hu ji jing	3616
+雪地救援	xue di jiu yuan	3616
+救援狗	jiu yuan gou	3577
+救援金	jiu yuan jin	3577
+火灾险	huo zai xian	3539
+医保外	yi bao wai	3500
+医保局	yi bao ju	3500
+医保科	yi bao ke	3500
+医保费	yi bao fei	3500
+抢险救援	qiang xian jiu yuan	3500
+社保了	she bao le	3500
+社保费	she bao fei	3500
+社保重仓	she bao zhong cang	3500
 公安干警	gong an gan jing	3462
 县公安局	xian gong an ju	3462
 市政府办	shi zheng fu ban	3462
+救援投手	jiu yuan tou shou	3462
+消防梯	xiao fang ti	3462
+消防池	xiao fang chi	3462
+消防炮	xiao fang pao	3462
+消防犬	xiao fang quan	3462
+消防的	xiao fang de	3462
+消防立管	xiao fang li guan	3462
+消防管	xiao fang guan	3462
+消防箱	xiao fang xiang	3462
+消防船	xiao fang chuan	3462
+消防证	xiao fang zheng	3462
+消防门	xiao fang men	3462
+火速救援	huo su jiu yuan	3462
 省公安厅	sheng gong an ting	3462
 政务区	zheng wu qu	3424
 民政办	min zheng ban	3424
+安全隐患	an quan yin huan	3419
+消防栓	xiao fang shuan	3399
 原户籍	yuan hu ji	3385
 户籍室	hu ji shi	3385
 户籍科	hu ji ke	3385
 限户籍	xian hu ji	3385
+青鸟消防	qing niao xiao fang	3385
+急救部	ji jiu bu	3308
 委市政府	wei shi zheng fu	3231
+怒海救援	nu hai jiu yuan	3231
+惊天救援	jing tian jiu yuan	3231
 政府救市	zheng fu jiu shi	3231
+买社保	mai she bao	3116
+交医保	jiao yi bao	3116
+交社保	jiao she bao	3116
+你社保	ni she bao	3116
+医保办	yi bao ban	3116
+医保城	yi bao cheng	3116
+医保码	yi bao ma	3116
+医保通	yi bao tong	3116
+医社保	yi she bao	3116
+好医保	hao yi bao	3116
+无社保	wu she bao	3116
+有医保	you yi bao	3116
+有社保	you she bao	3116
+没社保	mei she bao	3116
+津医保	jin yi bao	3116
+湘医保	xiang yi bao	3116
+社保吗	she bao ma	3116
+社保所	she bao suo	3116
+社保的	she bao de	3116
+补缴社保	bu jiao she bao	2847
 汪伪政府	wang wei zheng fu	2808
 市公安局	shi gong an ju	2577
+依爱消防	yi ai xiao fang	2462
 省民政厅	sheng min zheng ting	2424
+社保卡	she bao ka	2358
+有公积金	you gong ji jin	2000

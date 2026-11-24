@@ -1,6 +1,7 @@
 use super::*;
 
 const UNSUPPORTED_SHORT_COMBINATION_PENALTY: f64 = 180.0;
+const FOUR_CHAR_ABBREV_PAGE_MIN_FREQ: u64 = MAX_LEXICON_FREQ * 40 / 100;
 
 impl PinyinEngine {
     // Decoder output is useful for composing new text, but matching three to
@@ -172,7 +173,111 @@ impl PinyinEngine {
         if frequency_context == Some((InputIntent::FullPinyin, 2)) {
             self.prefer_complete_two_syllable_words(key, ranked);
         }
+        self.keep_one_exact_code_visible(raw, key, frequency_context, ranked);
         ranked.truncate(LOOKUP_FULL_MAX_CANDIDATES);
+    }
+
+    fn keep_one_exact_code_visible(
+        &self,
+        raw: &str,
+        key: &str,
+        context: Option<(InputIntent, usize)>,
+        ranked: &mut Vec<RankedCandidate>,
+    ) {
+        let Some(lexicon) = &self.phrase_lexicon else {
+            return;
+        };
+        let traditional = self.mode_flags & MODE_TRADITIONAL_OUTPUT != 0;
+        let display = |phrase: &str| {
+            if traditional {
+                crate::traditional::to_traditional(phrase)
+            } else {
+                phrase.to_owned()
+            }
+        };
+        let allowed = |entry: &&ThuoclEntry| !self.user_lexicon.phrase_is_blocked(&entry.phrase);
+        let mut meta = MIXED_HIGH_CANDIDATE_META;
+        let entries = lexicon.lookup_literal_code(raw);
+        let abbrev_entries;
+        let entry = if let Some(entry) = entries
+            .as_ref()
+            .and_then(|entries| entries.iter().find(allowed))
+        {
+            entry
+        } else {
+            if context != Some((InputIntent::ShortAbbrev, 4))
+                || !is_pure_short_abbrev_initial_input(raw, key)
+            {
+                return;
+            }
+            let Some(entries) = lexicon.lookup_hot(key) else {
+                return;
+            };
+            abbrev_entries = entries;
+            let page_size =
+                candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
+            let exact = abbrev_entries
+                .iter()
+                .filter(|entry| phrase_char_count(&entry.phrase) == 4);
+            if exact.clone().any(|entry| {
+                let phrase = display(&entry.phrase);
+                ranked
+                    .iter()
+                    .take(page_size)
+                    .any(|item| item.phrase == phrase)
+            }) {
+                return;
+            }
+            let Some(entry) = exact
+                .filter(|entry| {
+                    matches!(lexicon.phrase_layer(&entry.phrase), LexiconLayer::Ext)
+                        && entry.freq >= FOUR_CHAR_ABBREV_PAGE_MIN_FREQ
+                })
+                .find(allowed)
+            else {
+                return;
+            };
+            meta = ABBREV_CANDIDATE_META;
+            entry
+        };
+        let phrase = display(&entry.phrase);
+        if self.user_lexicon.phrase_is_blocked(&phrase) {
+            return;
+        }
+        let page_size =
+            candidate_prefs::get_effective_candidate_page_size().clamp(3, TSF_PAGE_SIZE);
+        let existing = ranked.iter().position(|item| item.phrase == phrase);
+        if existing.is_some_and(|index| index < page_size) {
+            return;
+        }
+        // Leave the first choices and all explicit user/shortcut slots alone.
+        // Only the last ordinary first-page slot is reserved for the exact hit.
+        let slot = if ranked.len() < page_size {
+            ranked.len()
+        } else if let Some(slot) = ranked.iter().take(page_size).rposition(|item| {
+            !candidate_has_user_priority(item)
+                && !matches!(
+                    item.meta.source,
+                    CandidateSource::Shortcut
+                        | CandidateSource::Direct
+                        | CandidateSource::DateTime
+                        | CandidateSource::UMode
+                )
+        }) {
+            slot
+        } else {
+            return;
+        };
+        let candidate = existing.map_or_else(
+            || RankedCandidate {
+                phrase,
+                score: (entry.freq as f64 + 1.0).ln(),
+                meta: CandidateMeta::legacy(meta)
+                    .with_source_layer(lexicon.phrase_layer(&entry.phrase)),
+            },
+            |index| ranked.remove(index),
+        );
+        ranked.insert(slot, candidate);
     }
 }
 

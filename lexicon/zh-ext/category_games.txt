@@ -1,12 +1,27 @@
-# 开心离线输入法分类补充：游戏电竞
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
-实名认证	shi ming ren zheng	8800
-游戏时间	you xi shi jian	6424
-游戏中心	you xi zhong xin	6385
-排位赛	pai wei sai	6227
+# 开心输入法扩展词库：游戏文娱与运动（1586 条）
+# 来源合并：category_games.txt, category_sports.txt, category_fitness.txt, category_arts.txt, category_crafts.txt, category_social_media.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+内容审核	nei rong shen he	6200
+决赛	jue sai	6200
+加时赛	jia shi sai	6200
+半决赛	ban jue sai	6200
+实名认证	shi ming ren zheng	6200
+小组赛	xiao zu sai	6200
+排位赛	pai wei sai	6200
+淘汰赛	tao tai sai	6200
+游戏中心	you xi zhong xin	6200
+游戏时间	you xi shi jian	6200
+点赞收藏	dian zan shou cang	6200
+热门话题	re men hua ti	6200
+电影票	dian ying piao	6200
+直播间互动	zhi bo jian hu dong	6200
+粉丝关注	fen si guan zhu	6200
+综艺节目	zong yi jie mu	6200
+缝纫机	feng ren ji	6200
+足球比赛	zu qiu bi sai	6200
+转发分享	zhuan fa fen xiang	6200
+运动鞋	yun dong xie	6200
+音乐剧	yin yue ju	6200
 一个游戏	yi ge you xi	6116
 下载游戏	xia zai you xi	6116
 不上游戏	bu shang you xi	6116
@@ -23,27 +38,137 @@
 这个游戏	zhei ge you xi	6116
 这种游戏	zhe zhong you xi	6116
 这种游戏	zhei zhong you xi	6116
+串珠制作	chuan zhu zhi zuo	6100
+主场比赛	zhu chang bi sai	6100
 主线任务	zhu xian ren wu	6100
+主页简介	zhu ye jian jie	6100
+乐器演奏	yue qi yan zou	6100
+乒乓球拍	ping pang qiu pai	6100
+乒乓球比赛	ping pang qiu bi sai	6100
+书法练习	shu fa lian xi	6100
+互动数据	hu dong shu ju	6100
 任务奖励	ren wu jiang li	6100
+体育场馆	ti yu chang guan	6100
+体脂率	ti zhi lv	6100
+体重管理	ti zhong guan li	6100
+健身房会员	jian shen fang hui yuan	6100
+健身计划	jian shen ji hua	6100
 充值记录	chong zhi ji lu	6100
+入场检票	ru chang jian piao	6100
 公会任务	gong hui ren wu	6100
 公会活动	gong hui huo dong	6100
+内容创作	nei rong chuang zuo	6100
+内容发布	nei rong fa bu	6100
+内容复盘	nei rong fu pan	6100
+内容推荐	nei rong tui jian	6100
+内容运营	nei rong yun ying	6100
+创作灵感	chuang zuo ling gan	6100
+创作素材	chuang zuo su cai	6100
+刺绣针法	ci xiu zhen fa	6100
+剧场演出	ju chang yan chu	6100
+剧情简介	ju qing jian jie	6100
+剧情讨论	ju qing tao lun	6100
+剧集更新	ju ji geng xin	6100
 副本挑战	fu ben tiao zhan	6100
+力量训练	li liang xun lian	6100
+动作要领	dong zuo yao ling	6100
+动作规范	dong zuo gui fan	6100
+动态拉伸	dong tai la shen	6100
 匹配模式	pi pei mo shi	6100
+半程马拉松	ban cheng ma la song	6100
+博物馆讲解	bo wu guan jiang jie	6100
+博物馆预约	bo wu guan yu yue	6100
+卧推训练	wo tui xun lian	6100
+印章刻制	yin zhang ke zhi	6100
+吉他和弦	ji ta he xian	6100
 周常任务	zhou chang ren wu	6100
+哑铃训练	ya ling xun lian	6100
+团体课程	tuan ti ke cheng	6100
 团队配合	tuan dui pei he	6100
+国画创作	guo hua chuang zuo	6100
+图文排版	tu wen pai ban	6100
+图文笔记	tu wen bi ji	6100
+场地预约	chang di yu yue	6100
+基础代谢	ji chu dai xie	6100
+增肌减脂	zeng ji jian zhi	6100
+声乐训练	sheng yue xun lian	6100
 好友邀请	hao you yao qing	6100
+客场比赛	ke chang bi sai	6100
+展览导览	zhan lan dao lan	6100
+展览预约	zhan lan yu yue	6100
+布料拼接	bu liao pin jie	6100
+布料裁剪	bu liao cai jian	6100
+布艺制作	bu yi zhi zuo	6100
+干花制作	gan hua zhi zuo	6100
+平板支撑	ping ban zhi cheng	6100
+座位选择	zuo wei xuan ze	6100
+引体向上	yin ti xiang shang	6100
+心肺耐力	xin fei nai li	6100
 战令奖励	zhan ling jiang li	6100
 战队招募	zhan dui zhao mu	6100
+手工制作	shou gong zhi zuo	6100
+手工刺绣	shou gong ci xiu	6100
+手工材料	shou gong cai liao	6100
+手工皂	shou gong zao	6100
+手工皮具	shou gong pi ju	6100
+手工编织	shou gong bian zhi	6100
+手工缝纫	shou gong feng ren	6100
+手账制作	shou zhang zhi zuo	6100
+手账排版	shou zhang pai ban	6100
+手账贴纸	shou zhang tie zhi	6100
+技术统计	ji shu tong ji	6100
 技能冷却	ji neng leng que	6100
 技能升级	ji neng sheng ji	6100
+抗阻训练	kang zu xun lian	6100
+拉伸运动	la shen yun dong	6100
 掉线重连	diao xian zhong lian	6100
+排球比赛	pai qiu bi sai	6100
+插画设计	cha hua she ji	6100
+插花制作	cha hua zhi zuo	6100
 支线任务	zhi xian ren wu	6100
+教练团队	jiao lian tuan dui	6100
+数据看板	shu ju kan ban	6100
+文创产品	wen chuang chan pin	6100
+文化活动	wen hua huo dong	6100
+文艺演出	wen yi yan chu	6100
+无氧训练	wu yang xun lian	6100
 日常任务	ri chang ren wu	6100
+暂停时间	zan ting shi jian	6100
+替补队员	ti bu dui yuan	6100
+最大心率	zui da xin lv	6100
+有氧训练	you yang xun lian	6100
 服务器维护	fu wu qi wei hu	6100
+木工制作	mu gong zhi zuo	6100
+木工工具	mu gong gong ju	6100
+木材打磨	mu cai da mo	6100
+木材拼接	mu cai pin jie	6100
+杠铃训练	gang ling xun lian	6100
+树脂模型	shu zhi mo xing	6100
+核心训练	he xin xun lian	6100
+棒针编织	bang zhen bian zhi	6100
+模型工具	mo xing gong ju	6100
+模型拼装	mo xing pin zhuang	6100
+模型收纳	mo xing shou na	6100
+模型涂装	mo xing tu zhuang	6100
+橡皮章	xiang pi zhang	6100
+歌单分享	ge dan fen xiang	6100
+歌曲翻唱	ge qu fan chang	6100
 每日签到	mei ri qian dao	6100
+比赛回放	bi sai hui fang	6100
+比赛报名	bi sai bao ming	6100
+比赛直播	bi sai zhi bo	6100
+比赛结果	bi sai jie guo	6100
+比赛规则	bi sai gui ze	6100
+比赛赛程	bi sai sai cheng	6100
+比赛阵容	bi sai zhen rong	6100
+毛线编织	mao xian bian zhi	6100
+水彩绘画	shui cai hui hua	6100
+油画创作	you hua chuang zuo	6100
 活动任务	huo dong ren wu	6100
 活动奖励	huo dong jiang li	6100
+活动运营	huo dong yun ying	6100
+浏览数据	liu lan shu ju	6100
+深蹲训练	shen dun xun lian	6100
 游戏副本	you xi fu ben	6100
 游戏客服	you xi ke fu	6100
 游戏延迟	you xi yan chi	6100
@@ -55,25 +180,137 @@
 游戏角色	you xi jue se	6100
 游戏账号	you xi zhang hao	6100
 游戏道具	you xi dao ju	6100
+游泳比赛	you yong bi sai	6100
+游泳训练	you yong xun lian	6100
+演出场地	yan chu chang di	6100
+演出时间	yan chu shi jian	6100
+演出票	yan chu piao	6100
+演唱会门票	yan chang hui men piao	6100
+点击数据	dian ji shu ju	6100
+点球大战	dian qiu da zhan	6100
+热身运动	re shen yun dong	6100
+热量缺口	re liang que kou	6100
+犯规次数	fan gui ci shu	6100
+珠串配饰	zhu chuan pei shi	6100
+球场预约	qiu chang yu yue	6100
+田径比赛	tian jing bi sai	6100
+电子票	dian zi piao	6100
+电影上映	dian ying shang ying	6100
+电影影评	dian ying ying ping	6100
+电影排片	dian ying pai pian	6100
+电影预告	dian ying yu gao	6100
+电视剧集	dian shi ju ji	6100
+画展门票	hua zhan men piao	6100
 皮肤碎片	pi fu sui pian	6100
+皮革工具	pi ge gong ju	6100
+目标心率	mu biao xin lv	6100
+直播回放	zhi bo hui fang	6100
+直播预告	zhi bo yu gao	6100
+直播预约	zhi bo yu yue	6100
+石膏模型	shi gao mo xing	6100
+硬拉训练	ying la xun lian	6100
+社群运营	she qun yun ying	6100
+票务平台	piao wu ping tai	6100
+私信回复	si xin hui fu	6100
+私信通知	si xin tong zhi	6100
+私教课程	si jiao ke cheng	6100
+笔记分享	bi ji fen xiang	6100
+笔记发布	bi ji fa bu	6100
+笔记收藏	bi ji shou cang	6100
+篮球比赛	lan qiu bi sai	6100
+粉丝互动	fen si hu dong	6100
+素材整理	su cai zheng li	6100
 组队邀请	zu dui yao qing	6100
+编织图解	bian zhi tu jie	6100
+编织针法	bian zhi zhen fa	6100
+网球比赛	wang qiu bi sai	6100
 网络延迟	wang luo yan chi	6100
+美术展览	mei shu zhan lan	6100
+羽毛球拍	yu mao qiu pai	6100
+羽毛球比赛	yu mao qiu bi sai	6100
+肌肉力量	ji rou li liang	6100
+肌肉耐力	ji rou nai li	6100
+自重训练	zi zhong xun lian	6100
+舞台表演	wu tai biao yan	6100
+舞蹈演出	wu dao yan chu	6100
+艺术展览	yi shu zhan lan	6100
+节目预告	jie mu yu gao	6100
+花艺设计	hua yi she ji	6100
+蛋白质摄入	dan bai zhi she ru	6100
+蜡烛制作	la zhu zhi zuo	6100
+裁判判罚	cai pan pan fa	6100
 装备升级	zhuang bei sheng ji	6100
 装备属性	zhuang bei shu xing	6100
 装备强化	zhuang bei qiang hua	6100
 装备搭配	zhuang bei da pei	6100
+视频剪辑	shi pin jian ji	6100
+视频发布	shi pin fa bu	6100
+视频字幕	shi pin zi mu	6100
+视频封面	shi pin feng mian	6100
+视频标题	shi pin biao ti	6100
+视频脚本	shi pin jiao ben	6100
+视频配音	shi pin pei yin	6100
 角色养成	jue se yang cheng	6100
 角色创建	jue se chuang jian	6100
 角色技能	jue se ji neng	6100
+训练动作	xun lian dong zuo	6100
+训练基地	xun lian ji di	6100
+训练强度	xun lian qiang du	6100
+训练计划	xun lian ji hua	6100
+训练频率	xun lian pin lv	6100
+评论回复	ping lun hui fu	6100
+评论管理	ping lun guan li	6100
+评论置顶	ping lun zhi ding	6100
+话剧演出	hua ju yan chu	6100
+话题标签	hua ti biao qian	6100
+账号主页	zhang hao zhu ye	6100
 账号找回	zhang hao zhao hui	6100
+账号昵称	zhang hao ni cheng	6100
+账号注销	zhang hao zhu xiao	6100
+账号申诉	zhang hao shen su	6100
+账号绑定	zhang hao bang ding	6100
+账号认证	zhang hao ren zheng	6100
+赛事安排	sai shi an pai	6100
+赛事积分	sai shi ji fen	6100
+赛前热身	sai qian re shen	6100
+赛后采访	sai hou cai fang	6100
 赛季奖励	sai ji jiang li	6100
 赛季更新	sai ji geng xin	6100
 赛季结算	sai ji jie suan	6100
+越野跑比赛	yue ye pao bi sai	6100
+跑步距离	pao bu ju li	6100
+跑步路线	pao bu lu xian	6100
+跑步配速	pao bu pei su	6100
+转化数据	zhuan hua shu ju	6100
+运动心率	yun dong xin lv	6100
+运动恢复	yun dong hui fu	6100
+运动手表	yun dong shou biao	6100
+运动护具	yun dong hu ju	6100
+运动损伤	yun dong sun shang	6100
+运动装备	yun dong zhuang bei	6100
+运动记录	yun dong ji lu	6100
+釉料上色	you liao shang se	6100
+钢琴练习	gang qin lian xi	6100
+钩针编织	gou zhen bian zhi	6100
+间歇训练	jian xie xun lian	6100
 队伍频道	dui wu pin dao	6100
 队友配合	dui you pei he	6100
 防沉迷系统	fang chen mi xi tong	6100
+陶泥塑形	tao ni su xing	6100
+陶瓷烧制	tao ci shao zhi	6100
+陶艺制作	tao yi zhi zuo	6100
+静态拉伸	jing tai la shen	6100
+音乐专辑	yin yue zhuan ji	6100
+音乐推荐	yin yue tui jian	6100
+音乐节门票	yin yue jie men piao	6100
+饮食记录	yin shi ji lu	6100
+首发阵容	shou fa zhen rong	6100
+香薰蜡烛	xiang xun la zhu	6100
+马拉松比赛	ma la song bi sai	6100
+骑行训练	qi xing xun lian	6100
 城市游戏	cheng shi you xi	6077
 朋友游戏	peng you you xi	6077
+瑜伽运动	yu jia yun dong	6039
 选择游戏	xuan ze you xi	6000
 那个游戏	na ge you xi	6000
 游戏里面	you xi li mian	5962
@@ -90,43 +327,79 @@
 晚餐游戏	wan can you xi	5808
 游戏结束	you xi jie shu	5808
 游戏里的	you xi li de	5770
+足球道路	zu qiu dao lu	5770
 警察游戏	jing cha you xi	5731
 没上游戏	mei shang you xi	5693
 游戏学院	you xi xue yuan	5693
+瑜伽学院	yu jia xue yuan	5693
+综合瑜伽	zong he yu jia	5693
+中国足球	zhong guo zu qiu	5654
 免费游戏	mian fei you xi	5654
+再见足球	zai jian zu qiu	5654
+印度瑜伽	yin du yu jia	5654
+大学足球	da xue zu qiu	5654
+德国足球	de guo zu qiu	5654
+快乐足球	kuai le zu qiu	5654
 权力游戏	quan li you xi	5654
 游戏空间	you xi kong jian	5654
 游戏精神	you xi jing shen	5654
 生命游戏	sheng ming you xi	5654
+美国足球	mei guo zu qiu	5654
+足球妈妈	zu qiu ma ma	5654
+足球故事	zu qiu gu shi	5654
+足球环境	zu qiu huan jing	5654
+足球运动	zu qiu yun dong	5654
 死亡游戏	si wang you xi	5616
+艺术创作	yi shu chuang zuo	5616
+天下足球	tian xia zu qiu	5577
 游戏交易	you xi jiao yi	5577
+现代足球	xian dai zu qiu	5577
 真实游戏	zhen shi you xi	5577
 一场游戏	yi chang you xi	5539
 游戏制作	you xi zhi zuo	5539
 儿童游戏	er tong you xi	5500
 危险游戏	wei xian you xi	5500
 数字游戏	shu zi you xi	5500
+瑜伽训练	yu jia xun lian	5500
 资本游戏	zi ben you xi	5500
 团队游戏	tuan dui you xi	5424
 退出游戏	tui chu you xi	5424
 两人游戏	liang ren you xi	5385
 复杂游戏	fu za you xi	5385
 大型游戏	da xing you xi	5385
+女子足球	nv zi zu qiu	5385
 游戏特色	you xi te se	5385
 苹果游戏	ping guo you xi	5385
+足球公园	zu qiu gong yuan	5385
 人生游戏	ren sheng you xi	5347
 游戏人生	you xi ren sheng	5347
+瑜伽课程	yu jia ke cheng	5347
+美丽足球	mei li zu qiu	5347
+足球博士	zu qiu bo shi	5347
 完美游戏	wan mei you xi	5308
 杀人游戏	sha ren you xi	5308
 游戏而已	you xi er yi	5308
+足球队长	zu qiu dui zhang	5308
+什么直播	shen me zhi bo	5270
+体育直播	ti yu zhi bo	5270
 公平游戏	gong ping you xi	5270
 国王游戏	guo wang you xi	5270
 少年游戏	shao nian you xi	5270
+少年足球	shao nian zu qiu	5270
 心理游戏	xin li you xi	5270
+快手直播	kuai shou zhi bo	5270
+抖音直播	dou yin zhi bo	5270
+正在直播	zheng zai zhi bo	5270
+死亡直播	si wang zhi bo	5270
 游戏爱情	you xi ai qing	5270
 游戏直播	you xi zhi bo	5270
 爱情游戏	ai qing you xi	5270
+直播平台	zhi bo ping tai	5270
+直播时代	zhi bo shi dai	5270
 直播游戏	zhi bo you xi	5270
+足球少年	zu qiu shao nian	5270
+足球直播	zu qiu zhi bo	5270
+还在直播	hai zai zhi bo	5270
 动作游戏	dong zuo you xi	5231
 命运游戏	ming yun you xi	5231
 家族游戏	jia zu you xi	5231
@@ -135,29 +408,49 @@
 交换游戏	jiao huan you xi	5193
 别的游戏	bie de you xi	5193
 恐怖游戏	kong bu you xi	5193
+恐怖直播	kong bu zhi bo	5193
 感情游戏	gan qing you xi	5193
 打会游戏	da hui you xi	5193
 游戏体验	you xi ti yan	5193
+篮球部落	lan qiu bu luo	5193
+绿色直播	lv se zhi bo	5193
 大众游戏	da zhong you xi	5154
 女生游戏	nv sheng you xi	5154
 生存游戏	sheng cun you xi	5154
 游戏时光	you xi shi guang	5116
+每日瑜伽	mei ri yu jia	5077
 游戏加速	you xi jia su	5077
 游戏房间	you xi fang jian	5077
 玩会游戏	wan hui you xi	5077
+荷兰足球	he lan zu qiu	5077
+足球大师	zu qiu da shi	5077
+一级联赛	yi ji lian sai	5039
 思维游戏	si wei you xi	5039
 毫无游戏	hao wu you xi	5039
+超级联赛	chao ji lian sai	5039
 超越游戏	chao yue you xi	5039
+足球王子	zu qiu wang zi	5039
+中国联赛	zhong guo lian sai	5000
 多人游戏	duo ren you xi	5000
+天堂直播	tian tang zhi bo	5000
+奥运直播	ao yun zhi bo	5000
+德国联赛	de guo lian sai	5000
+恐惧直播	kong ju zhi bo	5000
 游戏男孩	you xi nan hai	5000
+瑜伽师	yu jia shi	5000
+美国联赛	mei guo lian sai	5000
 色彩游戏	se cai you xi	5000
+韩国联赛	han guo lian sai	5000
 专业玩家	zhuan ye wan jia	4962
 全球玩家	quan qiu wan jia	4962
 国际玩家	guo ji wan jia	4962
+我开直播	wo kai zhi bo	4962
 最佳玩家	zui jia wan jia	4962
 最终玩家	zui zhong wan jia	4962
 游戏玩家	you xi wan jia	4962
 玩家团队	wan jia tuan dui	4962
+瑜伽舞蹈	yu jia wu dao	4962
+舞蹈瑜伽	wu dao yu jia	4962
 街头游戏	jie tou you xi	4962
 超级玩家	chao ji wan jia	4962
 邪恶游戏	xie e you xi	4962
@@ -167,21 +460,35 @@
 开车游戏	kai che you xi	4924
 心灵游戏	xin ling you xi	4924
 情感游戏	qing gan you xi	4924
+整合瑜伽	zheng he yu jia	4924
 杀手游戏	sha shou you xi	4924
-上游戏	shang you xi	4885
-下游戏	xia you xi	4885
-不游戏	bu you xi	4885
-云游戏	yun you xi	4885
-会游戏	hui you xi	4885
+直播奖励	zhi bo jiang li	4924
+足球场地	zu qiu chang di	4924
+足球宝贝	zu qiu bao bei	4924
+一直播	yi zhi bo	4885
 女友游戏	nv you you xi	4885
-我游戏	wo you xi	4885
-来游戏	lai you xi	4885
-游戏中	you xi zhong	4885
-游戏名	you xi ming	4885
+女子篮球	nv zi lan qiu	4885
+快乐篮球	kuai le lan qiu	4885
+明星篮球	ming xing lan qiu	4885
+欧洲篮球	ou zhou lan qiu	4885
 游戏本	you xi ben	4885
-游戏的	you xi de	4885
-游戏里	you xi li	4885
+男子篮球	nan zi lan qiu	4885
 真人游戏	zhen ren you xi	4885
+空中瑜伽	kong zhong yu jia	4885
+篮球兄弟	lan qiu xiong di	4885
+篮球公园	lan qiu gong yuan	4885
+篮球冠军	lan qiu guan jun	4885
+篮球培训	lan qiu pei xun	4885
+篮球宝贝	lan qiu bao bei	4885
+篮球教练	lan qiu jiao lian	4885
+篮球游戏	lan qiu you xi	4885
+篮球直播	lan qiu zhi bo	4885
+篮球规则	lan qiu gui ze	4885
+篮球训练	lan qiu xun lian	4885
+篮球运动	lan qiu yun dong	4885
+街头篮球	jie tou lan qiu	4885
+转发一下	zhuan fa yi xia	4885
+不能转发	bu neng zhuan fa	4847
 严肃游戏	yan su you xi	4847
 夫妻游戏	fu qi you xi	4847
 暂停游戏	zan ting you xi	4847
@@ -190,140 +497,278 @@
 游戏场地	you xi chang di	4847
 游戏女王	you xi nv wang	4847
 游戏好友	you xi hao you	4847
+疯狂粉丝	feng kuang fen si	4847
+粉丝日记	fen si ri ji	4847
 绑架游戏	bang jia you xi	4847
+足球大赛	zu qiu da sai	4847
+足球骑士	zu qiu qi shi	4847
 遗产游戏	yi chan you xi	4847
 金钱游戏	jin qian you xi	4847
+健身中心	jian shen zhong xin	4808
 打过游戏	da guo you xi	4808
 残酷游戏	can ku you xi	4808
 没打游戏	mei da you xi	4808
-游戏者	you xi zhe	4808
 男生游戏	nan sheng you xi	4808
+转发给你	zhuan fa gei ni	4808
+转发给我	zhuan fa gei wo	4808
+青春直播	qing chun zhi bo	4808
+健身教练	jian shen jiao lian	4770
+其他联赛	qi ta lian sai	4770
+冠军联赛	guan jun lian sai	4770
+南非联赛	nan fei lian sai	4770
+地区联赛	di qu lian sai	4770
 射击游戏	she ji you xi	4770
 巨人游戏	ju ren you xi	4770
 抓人游戏	zhua ren you xi	4770
+朝鲜联赛	chao xian lian sai	4770
+欧洲联赛	ou zhou lian sai	4770
 欲望游戏	yu wang you xi	4770
+波兰联赛	bo lan lian sai	4770
 玩个游戏	wan ge you xi	4770
+篮球联赛	lan qiu lian sai	4770
 绝望游戏	jue wang you xi	4770
+职业联赛	zhi ye lian sai	4770
 虚拟游戏	xu ni you xi	4770
 视觉游戏	shi jue you xi	4770
+足球联赛	zu qiu lian sai	4770
+转发微博	zhuan fa wei bo	4770
+黄金联赛	huang jin lian sai	4770
+不直播	bu zhi bo	4731
 人间游戏	ren jian you xi	4731
 兔子游戏	tu zi you xi	4731
+功夫瑜伽	gong fu yu jia	4731
+功夫足球	gong fu zu qiu	4731
+古典瑜伽	gu dian yu jia	4731
+夏天健身	xia tian jian shen	4731
 天台游戏	tian tai you xi	4731
+天天健身	tian tian jian shen	4731
 手指游戏	shou zhi you xi	4731
+每天健身	mei tian jian shen	4731
+瑞士联赛	rui shi lian sai	4731
 谎言游戏	huang yan you xi	4731
+足球万岁	zu qiu wan sui	4731
 鱿鱼游戏	you yu you xi	4731
+龙口粉丝	long kou fen si	4731
 别玩游戏	bie wan you xi	4693
 影子游戏	ying zi you xi	4693
 恋爱游戏	lian ai you xi	4693
 慈善玩家	ci shan wan jia	4693
+足球战术	zu qiu zhan shu	4693
 间谍游戏	jian die you xi	4693
 三人游戏	san ren you xi	4654
+体育锻炼	ti yu duan lian	4654
+加强锻炼	jia qiang duan lian	4654
+劳动锻炼	lao dong duan lian	4654
+参加锻炼	can jia duan lian	4654
+坚持锻炼	jian chi duan lian	4654
+天天锻炼	tian tian duan lian	4654
+好好锻炼	hao hao duan lian	4654
 模仿游戏	mo fang you xi	4654
+活力瑜伽	huo li yu jia	4654
 游戏高手	you xi gao shou	4654
+缺乏锻炼	que fa duan lian	4654
 诱惑游戏	you huo you xi	4654
+足球周刊	zu qiu zhou kan	4654
+运动锻炼	yun dong duan lian	4654
+还能减肥	hai neng jian fei	4654
+锻炼一下	duan lian yi xia	4654
+锻炼方法	duan lian fang fa	4654
+锻炼肌肉	duan lian ji rou	4654
+锻炼自己	duan lian zi ji	4654
+锻炼锻炼	duan lian duan lian	4654
 骚扰游戏	sao rao you xi	4654
 魔法游戏	mo fa you xi	4654
+魔法足球	mo fa zu qiu	4654
+业瑜伽	ye yu jia	4616
+做瑜伽	zuo yu jia	4616
 单身游戏	dan shen you xi	4616
+印瑜伽	yin yu jia	4616
 天才游戏	tian cai you xi	4616
 幕后玩家	mu hou wan jia	4616
+智瑜伽	zhi yu jia	4616
+梦瑜伽	meng yu jia	4616
+流瑜伽	liu yu jia	4616
 游戏影音	you xi ying yin	4616
+热瑜伽	re yu jia	4616
 猎人游戏	lie ren you xi	4616
+王瑜伽	wang yu jia	4616
+瑜伽垫	yu jia dian	4616
+瑜伽带	yu jia dai	4616
+瑜伽教	yu jia jiao	4616
+瑜伽服	yu jia fu	4616
+瑜伽熊	yu jia xiong	4616
+瑜伽球	yu jia qiu	4616
+瑜伽砖	yu jia zhuan	4616
+瑜伽经	yu jia jing	4616
+瑜伽裤	yu jia ku	4616
+瑜伽论	yu jia lun	4616
+瑜伽课	yu jia ke	4616
+瑜伽馆	yu jia guan	4616
+练瑜伽	lian yu jia	4616
 终结游戏	zhong jie you xi	4616
 致命游戏	zhi ming you xi	4616
+足球员	zu qiu yuan	4616
+足球天才	zu qiu tian cai	4616
+足球小子	zu qiu xiao zi	4616
+足球服	zu qiu fu	4616
+足球门	zu qiu men	4616
 野蛮游戏	ye man you xi	4616
+阴瑜伽	yin yu jia	4616
 一流玩家	yi liu wan jia	4577
+五大联赛	wu da lian sai	4577
+室内足球	shi nei zu qiu	4577
 恶魔游戏	e mo you xi	4577
 情侣游戏	qing lv you xi	4577
+情侣瑜伽	qing lv yu jia	4577
 暗杀游戏	an sha you xi	4577
+柏林网球	bo lin wang qiu	4577
 游戏助手	you xi zhu shou	4577
+直播助手	zhi bo zhu shou	4577
+网球王子	wang qiu wang zi	4577
 面子游戏	mian zi you xi	4577
 业余玩家	ye yu wan jia	4539
 失控玩家	shi kong wan jia	4539
+孕妇瑜伽	yun fu yu jia	4539
 游戏主播	you xi zhu bo	4539
 游戏版号	you xi ban hao	4539
 罪恶游戏	zui e you xi	4539
+芬兰联赛	fen lan lian sai	4539
 血腥游戏	xue xing you xi	4539
+足球王者	zu qiu wang zhe	4539
 迷你游戏	mi ni you xi	4539
-个游戏	ge you xi	4500
-买游戏	mai you xi	4500
-你游戏	ni you xi	4500
+钻石联赛	zuan shi lian sai	4539
+高温瑜伽	gao wen yu jia	4539
+一家健身	yi jia jian shen	4500
+东方健身	dong fang jian shen	4500
+休闲健身	xiu xian jian shen	4500
+体育健身	ti yu jian shen	4500
 做游戏	zuo you xi	4500
-充游戏	chong you xi	4500
+健身休闲	jian shen xiu xian	4500
+健身伙伴	jian shen huo ban	4500
+健身学院	jian shen xue yuan	4500
+健身小姐	jian shen xiao jie	4500
+健身广场	jian shen guang chang	4500
+健身活动	jian shen huo dong	4500
+健身游泳	jian shen you yong	4500
+健身瑜伽	jian shen yu jia	4500
+健身用品	jian shen yong pin	4500
+健身联盟	jian shen lian meng	4500
+健身舞蹈	jian shen wu dao	4500
+健身训练	jian shen xun lian	4500
+健身课程	jian shen ke cheng	4500
+健身路径	jian shen lu jing	4500
+健身达人	jian shen da ren	4500
+健身运动	jian shen yun dong	4500
+健身顾问	jian shen gu wen	4500
 先打游戏	xian da you xi	4500
-删游戏	shan you xi	4500
-卸游戏	xie you xi	4500
-和游戏	he you xi	4500
-啥游戏	sha you xi	4500
-在游戏	zai you xi	4500
-大游戏	da you xi	4500
+先锋健身	xian feng jian shen	4500
+全时健身	quan shi jian shen	4500
+全民健身	quan min jian shen	4500
+加州健身	jia zhou jian shen	4500
+动力健身	dong li jian shen	4500
+勇士足球	yong shi zu qiu	4500
+品质健身	pin zhi jian shen	4500
+大众健身	da zhong jian shen	4500
+奇迹健身	qi ji jian shen	4500
 好游戏	hao you xi	4500
-对游戏	dui you xi	4500
-干游戏	gan you xi	4500
-开游戏	kai you xi	4500
-性游戏	xing you xi	4500
-戒游戏	jie you xi	4500
-把游戏	ba you xi	4500
-换游戏	huan you xi	4500
-搞游戏	gao you xi	4500
+康乐健身	kang le jian shen	4500
+快乐健身	kuai le jian shen	4500
+时代健身	shi dai jian shen	4500
+时尚健身	shi shang jian shen	4500
 时空游戏	shi kong you xi	4500
-是游戏	shi you xi	4500
-有游戏	you you xi	4500
-没游戏	mei you xi	4500
-游戏上	you xi shang	4500
-游戏不	you xi bu	4500
-游戏么	you xi me	4500
-游戏了	you xi le	4500
-游戏去	you xi qu	4500
-游戏号	you xi hao	4500
-游戏吗	you xi ma	4500
-游戏呀	you xi ya	4500
-游戏呢	you xi ne	4500
-游戏啊	you xi a	4500
-游戏啦	you xi la	4500
-游戏嘛	you xi ma	4500
-游戏日	you xi ri	4500
-游戏池	you xi chi	4500
-游戏没	you xi mei	4500
-游戏玩	you xi wan	4500
-游戏盒	you xi he	4500
-游戏群	you xi qun	4500
-游戏部	you xi bu	4500
-登游戏	deng you xi	4500
-的游戏	de you xi	4500
+极限健身	ji xian jian shen	4500
+森林健身	sen lin jian shen	4500
+沙滩足球	sha tan zu qiu	4500
+活力健身	huo li jian shen	4500
+温泉健身	wen quan jian shen	4500
+游戏健身	you xi jian shen	4500
+游泳健身	you yong jian shen	4500
+爱上健身	ai shang jian shen	4500
+环球健身	huan qiu jian shen	4500
 看游戏	kan you xi	4500
-破游戏	po you xi	4500
+空中健身	kong zhong jian shen	4500
 童年游戏	tong nian you xi	4500
+篮球网球	lan qiu wang qiu	4500
+篮球风云	lan qiu feng yun	4500
+精英健身	jing ying jian shen	4500
 终极游戏	zhong ji you xi	4500
 终极玩家	zhong ji wan jia	4500
+美洲健身	mei zhou jian shen	4500
 老游戏	lao you xi	4500
-耍游戏	shua you xi	4500
-聊游戏	liao you xi	4500
-这游戏	zhe you xi	4500
-进游戏	jin you xi	4500
-退游戏	tui you xi	4500
-那游戏	na you xi	4500
-非游戏	fei you xi	4500
-鬼游戏	gui you xi	4500
+能量健身	neng liang jian shen	4500
+自然健身	zi ran jian shen	4500
+舞蹈健身	wu dao jian shen	4500
+苹果健身	ping guo jian shen	4500
+超越健身	chao yue jian shen	4500
+足球名词	zu qiu ming ci	4500
+足球风云	zu qiu feng yun	4500
+运动健身	yun dong jian shen	4500
+金牌健身	jin pai jian shen	4500
+阳光健身	yang guang jian shen	4500
+领域健身	ling yu jian shen	4500
+魅力健身	mei li jian shen	4500
+魔鬼健身	mo gui jian shen	4500
 魔鬼游戏	mo gui you xi	4500
 保密游戏	bao mi you xi	4462
+几点直播	ji dian zhi bo	4462
+卓越健身	zhuo yue jian shen	4462
 古筝游戏	gu zheng you xi	4462
+帮忙转发	bang mang zhuan fa	4462
+斗鱼直播	dou yu zhi bo	4462
+河豚直播	he tun zhi bo	4462
+熊猫直播	xiong mao zhi bo	4462
 生死游戏	sheng si you xi	4462
 蓝鲸游戏	lan jing you xi	4462
+足球流氓	zu qiu liu mang	4462
+转发不了	zhuan fa bu liao	4462
+转发转发	zhuan fa zhuan fa	4462
 高端玩家	gao duan wan jia	4462
+鸵鸟足球	tuo niao zu qiu	4462
 副本图层	fu ben tu ceng	4424
 单人游戏	dan ren you xi	4424
 四人游戏	si ren you xi	4424
 智力游戏	zhi li you xi	4424
 游戏疗法	you xi liao fa	4424
+直播伴侣	zhi bo ban lv	4424
 肮脏游戏	ang zang you xi	4424
+跑步向前	pao bu xiang qian	4424
 面具游戏	mian ju you xi	4424
+黑白直播	hei bai zhi bo	4424
+一起减肥	yi qi jian fei	4385
+不用减肥	bu yong jian fei	4385
+不要减肥	bu yao jian fei	4385
+为了减肥	wei le jian fei	4385
+健身器材	jian shen qi cai	4385
 养成游戏	yang cheng you xi	4385
+减肥产品	jian fei chan pin	4385
+减肥减肥	jian fei jian fei	4385
+减肥前后	jian fei qian hou	4385
+减肥反弹	jian fei fan tan	4385
+减肥咖啡	jian fei ka fei	4385
+减肥成功	jian fei cheng gong	4385
+减肥按摩	jian fei an mo	4385
+减肥方法	jian fei fang fa	4385
+减肥期间	jian fei qi jian	4385
+减肥计划	jian fei ji hua	4385
+减肥路上	jian fei lu shang	4385
+可以减肥	ke yi jian fei	4385
+好好减肥	hao hao jian fei	4385
+就当减肥	jiu dang jian fei	4385
+开始减肥	kai shi jian fei	4385
+怎么减肥	zen me jian fei	4385
+怎么减肥	zen mo jian fei	4385
+我要减肥	wo yao jian fei	4385
+按摩减肥	an mo jian fei	4385
 棋牌游戏	qi pai you xi	4385
+正好减肥	zheng hao jian fei	4385
+狂热粉丝	kuang re fen si	4385
 赛车游戏	sai che you xi	4385
 逃脱游戏	tao tuo you xi	4385
 饥饿游戏	ji e you xi	4385
 做饭游戏	zuo fan you xi	4347
 双人游戏	shuang ren you xi	4347
+引领健身	yin ling jian shen	4347
+忠实粉丝	zhong shi fen si	4347
 游戏解说	you xi jie shuo	4347
 游戏超人	you xi chao ren	4347
 玩玩游戏	wan wan you xi	4347
@@ -332,53 +777,163 @@
 打仗游戏	da zhang you xi	4308
 游戏竞技	you xi jing ji	4308
 说谎游戏	shuo huang you xi	4308
+两会直播	liang hui zhi bo	4270
+中原网球	zhong yuan wang qiu	4270
 二号玩家	er hao wan jia	4270
+健身管家	jian shen guan jia	4270
+好动网球	hao dong wang qiu	4270
 杀戮游戏	sha lu you xi	4270
+梦幻篮球	meng huan lan qiu	4270
 欺诈游戏	qi zha you xi	4270
 盗版游戏	dao ban you xi	4270
 禁忌游戏	jin ji you xi	4270
+网球中心	wang qiu zhong xin	4270
+网球培训	wang qiu pei xun	4270
+网球少女	wang qiu shao nv	4270
+网球少年	wang qiu shao nian	4270
+网球规则	wang qiu gui ze	4270
 魔女游戏	mo nv you xi	4270
+剪纸	jian zhi	4257
+上师瑜伽	shang shi yu jia	4231
 亲子游戏	qin zi you xi	4231
 刺杀游戏	ci sha you xi	4231
 复仇游戏	fu chou you xi	4231
 奇特游戏	qi te you xi	4231
+尖叫直播	jian jiao zhi bo	4231
 尽情游戏	jin qing you xi	4231
 末日玩家	mo ri wan jia	4231
+桌上足球	zhuo shang zu qiu	4231
+洛克篮球	luo ke lan qiu	4231
+热血篮球	re xie lan qiu	4231
+热血篮球	re xue lan qiu	4231
+王者健身	wang zhe jian shen	4231
+看足球	kan zu qiu	4231
+精准瑜伽	jing zhun yu jia	4231
+英超联赛	ying chao lian sai	4231
+足球城	zu qiu cheng	4231
+足球梦	zu qiu meng	4231
+足球比分	zu qiu bi fen	4231
+足球袜	zu qiu wa	4231
+足球课	zu qiu ke	4231
+不转发	bu zhuan fa	4193
+养生瑜伽	yang sheng yu jia	4193
 游戏之夜	you xi zhi ye	4193
 王牌游戏	wang pai you xi	4193
+直播加加	zhi bo jia jia	4193
 联机游戏	lian ji you xi	4193
+花样篮球	hua yang lan qiu	4193
+风云足球	feng yun zu qiu	4193
+不减肥	bu jian fei	4154
+再减肥	zai jian fei	4154
 名片游戏	ming pian you xi	4154
+四季健身	si ji jian shen	4154
+图文直播	tu wen zhi bo	4154
 大玩家	da wan jia	4154
 幸存游戏	xing cun you xi	4154
 开罗游戏	kai luo you xi	4154
 无尽游戏	wu jin you xi	4154
 游戏之王	you xi zhi wang	4154
+直播攻略	zhi bo gong lve	4154
+篮球飞人	lan qiu fei ren	4154
+美容健身	mei rong jian shen	4154
+草地网球	cao di wang qiu	4154
 趣味游戏	qu wei you xi	4154
+足球彩票	zu qiu cai piao	4154
+出去跑步	chu qu pao bu	4116
 十日游戏	shi ri you xi	4116
 头号玩家	tou hao wan jia	4116
+头号粉丝	tou hao fen si	4116
 女仆游戏	nv pu you xi	4116
 巅峰玩家	dian feng wan jia	4116
 电竞赛	dian jing sai	4116
+起来跑步	qi lai pao bu	4116
+跑步公园	pao bu gong yuan	4116
+千人健身	qian ren jian shen	4077
+天马健身	tian ma jian shen	4077
+女粉丝	nv fen si	4077
+小粉丝	xiao fen si	4077
 打着游戏	da zhe you xi	4077
+排球技术	pai qiu ji shu	4077
+有粉丝	you fen si	4077
+柠檬健身	ning meng jian shen	4077
 深渊游戏	shen yuan you xi	4077
 玩游戏的	wan you xi de	4077
+瑜伽体式	yu jia ti shi	4077
+篮球服	lan qiu fu	4077
+篮球衣	lan qiu yi	4077
+粉丝带	fen si dai	4077
+转发了	zhuan fa le	4077
+轮椅篮球	lun yi lan qiu	4077
+轮椅网球	lun yi wang qiu	4077
 不玩游戏	bu wan you xi	4039
 副本攻击	fu ben gong ji	4039
 合法副本	he fa fu ben	4039
 执照副本	zhi zhao fu ben	4039
 换个游戏	huan ge you xi	4039
+次级联赛	ci ji lian sai	4039
 游戏光盘	you xi guang pan	4039
 火花游戏	huo hua you xi	4039
+经受锻炼	jing shou duan lian	4039
 经验副本	jing yan fu ben	4039
+美力健身	mei li jian shen	4039
 装扮游戏	zhuang ban you xi	4039
 这破游戏	zhe po you xi	4039
 进入副本	jin ru fu ben	4039
 造梦游戏	zao meng you xi	4039
+健身器械	jian shen qi xie	4000
 告白游戏	gao bai you xi	4000
+实况足球	shi kuang zu qiu	4000
+居家健身	ju jia jian shen	4000
 抢钱游戏	qiang qian you xi	4000
+海派健身	hai pai jian shen	4000
 玩儿游戏	wan er you xi	4000
 窒息游戏	zhi xi you xi	4000
+转发下	zhuan fa xia	4000
+金领健身	jin ling jian shen	4000
+上直播	shang zhi bo	3962
+下直播	xia zhi bo	3962
+亲子瑜伽	qin zi yu jia	3962
+他直播	ta zhi bo	3962
+你直播	ni zhi bo	3962
+做直播	zuo zhi bo	3962
+听直播	ting zhi bo	3962
+在直播	zai zhi bo	3962
+开直播	kai zhi bo	3962
+慢直播	man zhi bo	3962
+我直播	wo zhi bo	3962
 打个游戏	da ge you xi	3962
+是直播	shi zhi bo	3962
+有直播	you zhi bo	3962
+没直播	mei zhi bo	3962
+的直播	de zhi bo	3962
+直播中	zhi bo zhong	3962
+直播了	zhi bo le	3962
+直播卡	zhi bo ka	3962
+直播去	zhi bo qu	3962
+直播号	zhi bo hao	3962
+直播吗	zhi bo ma	3962
+直播吧	zhi bo ba	3962
+直播呀	zhi bo ya	3962
+直播员	zhi bo yuan	3962
+直播呢	zhi bo ne	3962
+直播啊	zhi bo a	3962
+直播啦	zhi bo la	3962
+直播圈	zhi bo quan	3962
+直播家	zhi bo jia	3962
+直播的	zhi bo de	3962
+直播站	zhi bo zhan	3962
+直播粉	zhi bo fen	3962
+直播表	zhi bo biao	3962
+直播课	zhi bo ke	3962
+直播里	zhi bo li	3962
+看直播	kan zhi bo	3962
+要直播	yao zhi bo	3962
+轻重健身	qing zhong jian shen	3962
+还直播	hai zhi bo	3962
+进直播	jin zhi bo	3962
+不锻炼	bu duan lian	3924
+健身会馆	jian shen hui guan	3924
+全名健身	quan ming jian shen	3924
 同桌游戏	tong zhuo you xi	3924
 奇幻游戏	qi huan you xi	3924
 感官游戏	gan guan you xi	3924
@@ -387,50 +942,178 @@
 泡泡游戏	pao pao you xi	3924
 游戏大全	you xi da quan	3924
 游戏滴滴	you xi di di	3924
+笑林足球	xiao lin zu qiu	3924
+篮球之星	lan qiu zhi xing	3924
+网球甜心	wang qiu tian xin	3924
+韦德健身	wei de jian shen	3924
+乐动健身	le dong jian shen	3885
 大亨游戏	da heng you xi	3885
 爱火游戏	ai huo you xi	3885
 玩偶游戏	wan ou you xi	3885
+篮球之神	lan qiu zhi shen	3885
 街机游戏	jie ji you xi	3885
 逃生游戏	tao sheng you xi	3885
+不健身	bu jian shen	3847
+中国排球	zhong guo pai qiu	3847
 乐乐游戏	le le you xi	3847
+伊人直播	yi ren zhi bo	3847
+健身去	jian shen qu	3847
+健身法	jian shen fa	3847
+力量排球	li liang pai qiu	3847
 卸载游戏	xie zai you xi	3847
+坐式排球	zuo shi pai qiu	3847
 外遇游戏	wai yu you xi	3847
+奥本健身	ao ben jian shen	3847
 换装游戏	huan zhuang you xi	3847
+排球少女	pai qiu shao nv	3847
+排球少年	pai qiu shao nian	3847
+排球漫画	pai qiu man hua	3847
 木偶游戏	mu ou you xi	3847
+沙滩排球	sha tan pai qiu	3847
+花样排球	hua yang pai qiu	3847
+莱斯健身	lai si jian shen	3847
 解码游戏	jie ma you xi	3847
+配合排球	pei he pai qiu	3847
 配对游戏	pei dui you xi	3847
+锻炼者	duan lian zhe	3847
+高度排球	gao du pai qiu	3847
+折纸	zhe zhi	3809
+减肥瘦身	jian fei shou shen	3808
+学网球	xue wang qiu	3808
+少儿篮球	shao er lan qiu	3808
+少林足球	shao lin zu qiu	3808
+已转发	yi zhuan fa	3808
 枪战游戏	qiang zhan you xi	3808
+没跑步	mei pao bu	3808
 狼人游戏	lang ren you xi	3808
+甲级联赛	jia ji lian sai	3808
+直播看客	zhi bo kan ke	3808
+西甲联赛	xi jia lian sai	3808
+转发到	zhuan fa dao	3808
 隐秘游戏	yin mi you xi	3808
 云玩家	yun wan jia	3770
 人偶游戏	ren ou you xi	3770
+健身操课	jian shen cao ke	3770
+凯旋健身	kai xuan jian shen	3770
+夜月直播	ye yue zhi bo	3770
 女玩家	nv wan jia	3770
+意甲联赛	yi jia lian sai	3770
 新玩家	xin wan jia	3770
 游戏幻影	you xi huan ying	3770
 游戏神通	you xi shen tong	3770
 纸牌游戏	zhi pai you xi	3770
 老玩家	lao wan jia	3770
+能减肥	neng jian fei	3770
+该减肥	gai jian fei	3770
+足球小将	zu qiu xiao jiang	3770
 高能玩家	gao neng wan jia	3770
 一局游戏	yi ju you xi	3731
+九球直播	jiu qiu zhi bo	3731
 吸血游戏	xi xie you xi	3731
 吸血游戏	xi xue you xi	3731
 密室游戏	mi shi you xi	3731
 拼图游戏	pin tu you xi	3731
 镜像游戏	jing xiang you xi	3731
 魔幻游戏	mo huan you xi	3731
+他粉丝	ta fen si	3693
+你粉丝	ni fen si	3693
+假粉丝	jia fen si	3693
+健身卡	jian shen ka	3693
+加粉丝	jia fen si	3693
 四叶游戏	si ye you xi	3693
+奥力健身	ao li jian shen	3693
+学篮球	xue lan qiu	3693
+宝力健身	bao li jian shen	3693
+我粉丝	wo fen si	3693
+挂职锻炼	gua zhi duan lian	3693
+新粉丝	xin fen si	3693
+有篮球	you lan qiu	3693
 棋盘游戏	qi pan you xi	3693
 武侠游戏	wu xia you xi	3693
+没粉丝	mei fen si	3693
+涨粉丝	zhang fen si	3693
+炒粉丝	chao fen si	3693
+爱篮球	ai lan qiu	3693
+玩篮球	wan lan qiu	3693
+男粉丝	nan fen si	3693
+的粉丝	de fen si	3693
+皓篮球	hao lan qiu	3693
+看篮球	kan lan qiu	3693
+篮球了	lan qiu le	3693
+篮球吗	lan qiu ma	3693
+篮球手环	lan qiu shou huan	3693
+篮球框	lan qiu kuang	3693
+篮球梦	lan qiu meng	3693
+篮球火	lan qiu huo	3693
+篮球班	lan qiu ban	3693
+篮球的	lan qiu de	3693
+篮球社	lan qiu she	3693
+篮球袜	lan qiu wa	3693
+篮球裤	lan qiu ku	3693
+篮球课	lan qiu ke	3693
+粉丝了	fen si le	3693
+粉丝包	fen si bao	3693
+粉丝名	fen si ming	3693
+粉丝多	fen si duo	3693
+粉丝数	fen si shu	3693
+粉丝煲	fen si bao	3693
+粉丝牌	fen si pai	3693
+粉丝的	fen si de	3693
+粉丝群	fen si qun	3693
+粉丝量	fen si liang	3693
+练篮球	lian lan qiu	3693
+老粉丝	lao fen si	3693
+中国乒乓	zhong guo ping pang	3654
+中甲联赛	zhong jia lian sai	3654
+触手直播	chu shou zhi bo	3654
+零七直播	ling qi zhi bo	3654
+一键转发	yi jian zhuan fa	3616
+世联赛	shi lian sai	3616
+乒乓双打	ping pang shuang da	3616
+乒乓外交	ping pang wai jiao	3616
+乒乓小子	ping pang xiao zi	3616
+乒乓小将	ping pang xiao jiang	3616
+乒乓球场	ping pang qiu chang	3616
+乒乓球馆	ping pang qiu guan	3616
+乒乓生活	ping pang sheng huo	3616
+健身气功	jian shen qi gong	3616
+全民乒乓	quan min ping pang	3616
+刚跑步	gang pao bu	3616
+动感健身	dong gan jian shen	3616
+动感篮球	dong gan lan qiu	3616
+巨石健身	ju shi jian shen	3616
 惊魂游戏	jing hun you xi	3616
+打联赛	da lian sai	3616
 灵异游戏	ling yi you xi	3616
+灵异直播	ling yi zhi bo	3616
+百城联赛	bai cheng lian sai	3616
+联赛杯	lian sai bei	3616
+脑残粉丝	nao can fen si	3616
+至善瑜伽	zhi shan yu jia	3616
+荣耀乒乓	rong yao ping pang	3616
+足球尤物	zu qiu you wu	3616
+雪地足球	xue di zu qiu	3616
+土超联赛	tu chao lian sai	3577
 挨饿游戏	ai e you xi	3577
 爱玩游戏	ai wan you xi	3577
+美日健身	mei ri jian shen	3577
 鬼牌游戏	gui pai you xi	3577
 一打游戏	yi da you xi	3539
 企鹅电竞	qi e dian jing	3539
+你锻炼	ni duan lian	3539
 全民电竞	quan min dian jing	3539
+刚锻炼	gang duan lian	3539
+去锻炼	qu duan lian	3539
+在锻炼	zai duan lian	3539
+多锻炼	duo duan lian	3539
+康体健身	kang ti jian shen	3539
+延边足球	yan bian zu qiu	3539
+我锻炼	wo duan lian	3539
+排球女将	pai qiu nv jiang	3539
+来锻炼	lai duan lian	3539
 欲念游戏	yu nian you xi	3539
 正副本	zheng fu ben	3539
+没锻炼	mei duan lian	3539
 电竞主播	dian jing zhu bo	3539
 电竞之王	dian jing zhi wang	3539
 电竞少女	dian jing shao nv	3539
@@ -439,43 +1122,208 @@
 电竞纪元	dian jing ji yuan	3539
 电竞英雄	dian jing ying xiong	3539
 益智游戏	yi zhi you xi	3539
+要锻炼	yao duan lian	3539
+足球大侠	zu qiu da xia	3539
+还锻炼	hai duan lian	3539
 逆境游戏	ni jing you xi	3539
+锻炼下	duan lian xia	3539
+锻炼了	duan lian le	3539
+锻炼人	duan lian ren	3539
+锻炼你	duan lian ni	3539
+锻炼去	duan lian qu	3539
+锻炼吗	duan lian ma	3539
+锻炼吧	duan lian ba	3539
+锻炼呢	duan lian ne	3539
+锻炼好	duan lian hao	3539
+锻炼完	duan lian wan	3539
+锻炼的	duan lian de	3539
 塔防游戏	ta fang you xi	3500
 鬼屋游戏	gui wu you xi	3500
+乐健身	le jian shen	3462
+乒乓球室	ping pang qiu shi	3462
+乒乓网	ping pang wang	3462
+乙级联赛	yi ji lian sai	3462
+享健身	xiang jian shen	3462
+你健身	ni jian shen	3462
+健健身	jian jian shen	3462
+健身了	jian shen le	3462
+健身会	jian shen hui	3462
+健身吗	jian shen ma	3462
+健身吧	jian shen ba	3462
+健身室	jian shen shi	3462
+健身服	jian shen fu	3462
+健身架	jian shen jia	3462
+健身椅	jian shen yi	3462
+健身的	jian shen de	3462
+健身盘	jian shen pan	3462
+健身舞	jian shen wu	3462
+健身苑	jian shen yuan	3462
+健身裤	jian shen ku	3462
+健身跑	jian shen pao	3462
+健身车	jian shen che	3462
+健身餐	jian shen can	3462
+健身馆	jian shen guan	3462
+减肥操	jian fei cao	3462
+力健身	li jian shen	3462
+包转发	bao zhuan fa	3462
+去健身	qu jian shen	3462
+在健身	zai jian shen	3462
+型健身	xing jian shen	3462
 填字游戏	tian zi you xi	3462
+壹健身	yi jian shen	3462
+家健身	jia jian shen	3462
 宾果游戏	bin guo you xi	3462
+巴甲联赛	ba jia lian sai	3462
+开健身	kai jian shen	3462
+德甲联赛	de jia lian sai	3462
+悦健身	yue jian shen	3462
+我健身	wo jian shen	3462
+打乒乓球	da ping pang qiu	3462
 打打游戏	da da you xi	3462
+打打篮球	da da lan qiu	3462
 拼字游戏	pin zi you xi	3462
 掌中游戏	zhang zhong you xi	3462
+排球网	pai qiu wang	3462
 游戏笔墨	you xi bi mo	3462
+潮人篮球	chao ren lan qiu	3462
 爆款游戏	bao kuan you xi	3462
+爱健身	ai jian shen	3462
+秀健身	xiu jian shen	3462
+纯健身	chun jian shen	3462
+网球网	wang qiu wang	3462
+网球肘	wang qiu zhou	3462
+网球装	wang qiu zhuang	3462
+自健身	zi jian shen	3462
+节食减肥	jie shi jian fei	3462
+英式足球	ying shi zu qiu	3462
+越健身	yue jian shen	3462
+跑步走	pao bu zou	3462
+轻健身	qing jian shen	3462
 逢场游戏	feng chang you xi	3462
+锻炼心肺	duan lian xin fei	3462
+亚冠联赛	ya guan lian sai	3424
+你转发	ni zhuan fa	3424
 修仙游戏	xiu xian you xi	3424
+囚徒健身	qiu tu jian shen	3424
+埋线减肥	mai xian jian fei	3424
+小排球	xiao pai qiu	3424
+忙转发	mang zhuan fa	3424
+我转发	wo zhuan fa	3424
+求转发	qiu zhuan fa	3424
+派森健身	pai sen jian shen	3424
 玩命游戏	wan ming you xi	3424
+玩命直播	wan ming zhi bo	3424
+禁入直播	jin ru zhi bo	3424
 缠绵游戏	chan mian you xi	3424
 脑力游戏	nao li you xi	3424
+请转发	qing zhuan fa	3424
+转发的	zhuan fa de	3424
+银座健身	yin zuo jian shen	3424
+也减肥	ye jian fei	3385
+你减肥	ni jian fei	3385
+做减肥	zuo jian fei	3385
+冥想瑜伽	ming xiang yu jia	3385
+减减肥	jian jian fei	3385
+减肥中	jian fei zhong	3385
+减肥了	jian fei le	3385
+减肥去	jian fei qu	3385
+减肥吗	jian fei ma	3385
+减肥吧	jian fei ba	3385
+减肥呀	jian fei ya	3385
+减肥呢	jian fei ne	3385
+减肥啊	jian fei a	3385
+减肥啦	jian fei la	3385
+减肥嘛	jian fei ma	3385
+减肥店	jian fei dian	3385
+减肥机	jian fei ji	3385
+减肥的	jian fei de	3385
+减肥贴	jian fei tie	3385
+别减肥	bie jian fei	3385
+去减肥	qu jian fei	3385
+又减肥	you jian fei	3385
+在减肥	zai jian fei	3385
+好减肥	hao jian fei	3385
+就减肥	jiu jian fei	3385
+当减肥	dang jian fei	3385
 恶狼游戏	e lang you xi	3385
+想减肥	xiang jian fei	3385
+我减肥	wo jian fei	3385
 沙鲁游戏	sha lu you xi	3385
+没减肥	mei jian fei	3385
 游戏停服	you xi ting fu	3385
 猎头游戏	lie tou you xi	3385
 电竞台球	dian jing tai qiu	3385
+耐克篮球	nai ke lan qiu	3385
+要减肥	yao jian fei	3385
 解压游戏	jie ya you xi	3385
+说减肥	shuo jian fei	3385
+还减肥	hai jian fei	3385
+铁杆粉丝	tie gan fen si	3385
+青鸟健身	qing niao jian shen	3385
+领航健身	ling hang jian shen	3385
+哈达瑜伽	ha da yu jia	3347
+康美健身	kang mei jian shen	3347
+泰格健身	tai ge jian shen	3347
+健身铺子	jian shen pu zi	3308
+奥森健身	ao sen jian shen	3308
 惊悚游戏	jing song you xi	3308
+擦网球	ca wang qiu	3308
+李宁篮球	li ning lan qiu	3308
+爱玩篮球	ai wan lan qiu	3308
+穿网球	chuan wang qiu	3308
+菲力健身	fei li jian shen	3308
 跑酷游戏	pao ku you xi	3308
+酷狗直播	ku gou zhi bo	3308
+鸭血粉丝	ya xie fen si	3308
+鸭血粉丝	ya xue fen si	3308
 伴郎游戏	ban lang you xi	3270
 卡牌游戏	ka pai you xi	3270
 坑爹游戏	keng die you xi	3270
 寻宝游戏	xun bao you xi	3270
+星河健身	xing he jian shen	3270
+百顺健身	bai shun jian shen	3270
+花椒直播	hua jiao zhi bo	3270
 破冰游戏	po bing you xi	3231
+虎牙直播	hu ya zhi bo	3231
+锻炼腹肌	duan lian fu ji	3231
+不跑步	bu pao bu	3193
+中乙联赛	zhong yi lian sai	3193
 乙女游戏	yi nv you xi	3193
+你跑步	ni pao bu	3193
+去跑步	qu pao bu	3193
+在跑步	zai pao bu	3193
 夺命游戏	duo ming you xi	3193
+我跑步	wo pao bu	3193
+要跑步	yao pao bu	3193
+跑步不	pao bu bu	3193
+跑步了	pao bu le	3193
+跑步去	pao bu qu	3193
+跑步吗	pao bu ma	3193
+跑步吧	pao bu ba	3193
+跑步呀	pao bu ya	3193
+跑步呢	pao bu ne	3193
+跑步啊	pao bu a	3193
+跑步啦	pao bu la	3193
+跑步时	pao bu shi	3193
+跑步的	pao bu de	3193
+跑步者	pao bu zhe	3193
+跑步鞋	pao bu xie	3193
+还跑步	hai pao bu	3193
+个人主页	ge ren zhu ye	3178
 刷副本	shua fu ben	3154
 副本了	fu ben le	3154
 副本吗	fu ben ma	3154
 副本吧	fu ben ba	3154
 副本的	fu ben de	3154
+哈他瑜伽	ha ta yu jia	3154
+奉爱瑜伽	feng ai yu jia	3154
+庆华健身	qing hua jian shen	3154
 打副本	da fu ben	3154
 新副本	xin fu ben	3154
+禅逸瑜伽	chan yi yu jia	3154
+舞韵瑜伽	wu yun yu jia	3154
+良子健身	liang zi jian shen	3154
+英冠联赛	ying guan lian sai	3154
 上游戏了	shang you xi le	3116
 不打游戏	bu da you xi	3116
 二琳游戏	er lin you xi	3116
@@ -569,6 +1417,7 @@
 玩的游戏	wan de you xi	3116
 玩这游戏	wan zhe you xi	3116
 盛趣游戏	sheng qu you xi	3116
+直播魔盒	zhi bo mo he	3116
 破梦游戏	po meng you xi	3116
 能打游戏	neng da you xi	3116
 能玩游戏	neng wan you xi	3116
@@ -581,19 +1430,160 @@
 还打游戏	hai da you xi	3116
 还玩游戏	hai wan you xi	3116
 这啥游戏	zhe sha you xi	3116
+康博健身	kang bo jian shen	3077
 沙盒游戏	sha he you xi	3077
+打排球	da pai qiu	3039
+排球柱	pai qiu zhu	3039
+排球纸	pai qiu zhi	3039
+气排球	qi pai qiu	3039
+火罐减肥	huo guan jian fei	3000
+百盛健身	bai sheng jian shen	2962
+纯氧健身	chun yang jian shen	2962
+中航健身	zhong hang jian shen	2924
 扮装游戏	ban zhuang you xi	2924
 猫鼠游戏	mao shu you xi	2924
+肆客足球	si ke zu qiu	2924
+踢足球的	ti zu qiu de	2924
+云杉健身	yun shan jian shen	2885
 仙侠游戏	xian xia you xi	2885
+乒乓王	ping pang wang	2847
 副本来人	fu ben lai ren	2847
+打乒乓	da ping pang	2847
 电竞圈	dian jing quan	2847
 电竞房	dian jing fang	2847
 电竞椅	dian jing yi	2847
 电竞社	dian jing she	2847
 电竞馆	dian jing guan	2847
+公众号了	gong zhong hao le	2808
+公众号里	gong zhong hao li	2808
+在公众号	zai gong zhong hao	2808
+宏远篮球	hong yuan lan qiu	2808
+拔罐减肥	ba guan jian fei	2808
 橙光游戏	cheng guang you xi	2808
+笼式足球	long shi zu qiu	2808
+不直播了	bu zhi bo le	2770
+九秀直播	jiu xiu zhi bo	2770
+你开直播	ni kai zhi bo	2770
+你直播间	ni zhi bo jian	2770
+你看直播	ni kan zhi bo	2770
+在直播间	zai zhi bo jian	2770
+在看直播	zai kan zhi bo	2770
+大渔直播	da yu zhi bo	2770
+开直播了	kai zhi bo le	2770
+我在直播	wo zai zhi bo	2770
+我直播呢	wo zhi bo ne	2770
+我直播间	wo zhi bo jian	2770
+我看直播	wo kan zhi bo	2770
+映客直播	ying ke zhi bo	2770
+来直播间	lai zhi bo jian	2770
+直播了吗	zhi bo le ma	2770
+看你直播	kan ni zhi bo	2770
+看球直播	kan qiu zhi bo	2770
+看直播了	kan zhi bo le	2770
+看直播呢	kan zhi bo ne	2770
+进直播间	jin zhi bo jian	2770
 学霸游戏	xue ba you xi	2693
 氪金玩家	ke jin wan jia	2654
 老玩家了	lao wan jia le	2654
+不打篮球	bu da lan qiu	2616
+会打篮球	hui da lan qiu	2616
+你打篮球	ni da lan qiu	2616
+加粉丝团	jia fen si tuan	2616
+去打篮球	qu da lan qiu	2616
+在打篮球	zai da lan qiu	2616
+在篮球场	zai lan qiu chang	2616
+小篮球场	xiao lan qiu chang	2616
+我打篮球	wo da lan qiu	2616
+我是粉丝	wo shi fen si	2616
+我转发了	wo zhuan fa le	2616
+打完篮球	da wan lan qiu	2616
+打篮球不	da lan qiu bu	2616
+打篮球了	da lan qiu le	2616
+打篮球去	da lan qiu qu	2616
+打篮球吗	da lan qiu ma	2616
+打篮球的	da lan qiu de	2616
+新篮球场	xin lan qiu chang	2616
+爱打篮球	ai da lan qiu	2616
 猎捕游戏	lie bu you xi	2616
+理疗瑜伽	li liao yu jia	2616
+粉丝灯牌	fen si deng pai	2616
+葡超联赛	pu chao lian sai	2616
+上轮联赛	shang lun lian sai	2577
+中丙联赛	zhong bing lian sai	2577
+同城联赛	tong cheng lian sai	2577
+排超联赛	pai chao lian sai	2577
+我在锻炼	wo zai duan lian	2539
+锻炼去了	duan lian qu le	2539
+锻炼完了	duan lian wan le	2539
+乐享健身	le xiang jian shen	2462
+乐体健身	le ti jian shen	2462
+乐刻健身	le ke jian shen	2462
+乐劲健身	le jin jian shen	2462
+五象健身	wu xiang jian shen	2462
+倍力健身	bei li jian shen	2462
+健身会所	jian shen hui suo	2462
+健身周卡	jian shen zhou ka	2462
+健身步道	jian shen bu dao	2462
+健身球操	jian shen qiu cao	2462
+健身肌地	jian shen ji di	2462
+力动健身	li dong jian shen	2462
+力康健身	li kang jian shen	2462
+力美健身	li mei jian shen	2462
+动岚健身	dong lan jian shen	2462
+博康健身	bo kang jian shen	2462
+去健身房	qu jian shen fang	2462
+塑形健身	su xing jian shen	2462
+奥世健身	ao shi jian shen	2462
+好恒健身	hao heng jian shen	2462
+帮我转发	bang wo zhuan fa	2462
+康祺健身	kang qi jian shen	2462
+思迈健身	si mai jian shen	2462
+悦动健身	yue dong jian shen	2462
+我转发的	wo zhuan fa de	2462
+星之健身	xing zhi jian shen	2462
+杰仕健身	jie shi jian shen	2462
+浩帆健身	hao fan jian shen	2462
+浩沙健身	hao sha jian shen	2462
+浩泰健身	hao tai jian shen	2462
+潮庭健身	chao ting jian shen	2462
+爱尚健身	ai shang jian shen	2462
+美天健身	mei tian jian shen	2462
+舒华健身	shu hua jian shen	2462
+英乔健身	ying qiao jian shen	2462
+莱美健身	lai mei jian shen	2462
+赛奥健身	sai ao jian shen	2462
+踏月健身	ta yue jian shen	2462
+转发唱吧	zhuan fa chang ba	2462
+辗转发侧	zhan zhuan fa ce	2462
+迈欧健身	mai ou jian shen	2462
+酷动健身	ku dong jian shen	2462
+锐力健身	rui li jian shen	2462
+鼎龙健身	ding long jian shen	2462
+不减肥了	bu jian fei le	2424
+你不减肥	ni bu jian fei	2424
+你要减肥	ni yao jian fei	2424
+别减肥了	bie jian fei le	2424
+当减肥了	dang jian fei le	2424
+我不减肥	wo bu jian fei	2424
+我也减肥	wo ye jian fei	2424
+我减肥呢	wo jian fei ne	2424
+我在减肥	wo zai jian fei	2424
+我想减肥	wo xiang jian fei	2424
+杠铃健身	gang ling jian shen	2424
+要减肥了	yao jian fei le	2424
+该减肥了	gai jian fei le	2424
+轻加减肥	qing jia jian fei	2424
+快易网球	kuai yi wang qiu	2385
+救入网球	jiu ru wang qiu	2385
 诈欺游戏	zha qi you xi	2347
+不跑步了	bu pao bu le	2308
+去跑步了	qu pao bu le	2308
+我去跑步	wo qu pao bu	2308
+我在跑步	wo zai pao bu	2308
+跑步了吗	pao bu le ma	2308
+跑步去了	pao bu qu le	2308
+纤体瑜伽	xian ti yu jia	2000
+网球拍	wang qiu pai	1905
+十字绣	shi zi xiu	1541
+刮痧减肥	gua sha jian fei	1308
+体育中心	ti yu zhong xin	658

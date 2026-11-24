@@ -1,18 +1,40 @@
-# 开心离线输入法分类补充：餐饮外卖
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
+# 开心输入法扩展词库：美食烹饪与餐饮（4765 条）
+# 来源合并：category_dining.txt, category_cooking.txt, category_groceries.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+橄榄油	gan lan you	6200
+电饭煲	dian fan bao	6200
+番茄酱	fan qie jiang	6200
+调味料	tiao wei liao	6200
+食用油	shi yong you	6200
 不放香菜	bu fang xiang cai	6100
 不要葱花	bu yao cong hua	6100
 不要餐具	bu yao can ju	6100
 中辣	zhong la	6100
+临期食品	lin qi shi pin	6100
+产品溯源	chan pin su yuan	6100
+产地直供	chan di zhi gong	6100
+会员价格	hui yuan jia ge	6100
+会员积分	hui yuan ji fen	6100
+低脂牛奶	di zhi niu nai	6100
+保质期限	bao zhi qi xian	6100
+储存条件	chu cun tiao jian	6100
 免辣备注	mian la bei zhu	6100
+全麦面包	quan mai mian bao	6100
+冷冻保存	leng dong bao cun	6100
+冷冻食品	leng dong shi pin	6100
+冷藏保存	leng cang bao cun	6100
+冷藏食品	leng cang shi pin	6100
+净含量	jing han liang	6100
+净菜加工	jing cai jia gong	6100
 到店自取	dao dian zi qu	6100
+剩菜保存	sheng cai bao cun	6100
 加一份饭	jia yi fen fan	6100
 包厢预订	bao xiang yu ding	6100
+即食食品	ji shi shi pin	6100
+厨房秤	chu fang cheng	6100
 去冰饮料	qu bing yin liao	6100
 取餐号码	qu can hao ma	6100
+口感酥脆	kou gan su cui	6100
 叫号通知	jiao hao tong zhi	6100
 堂食自取	tang shi zi qu	6100
 外卖取餐	wai mai qu can	6100
@@ -20,41 +42,105 @@
 外卖订单	wai mai ding dan	6100
 外卖配送	wai mai pei song	6100
 外卖骑手	wai mai qi shou	6100
+外酥里嫩	wai su li nen	6100
+大火收汁	da huo shou zhi	6100
 套餐优惠	tao can you hui	6100
 套餐内容	tao can nei rong	6100
+小火慢炖	xiao huo man dun	6100
 少放辣椒	shao fang la jiao	6100
 少油少盐	shao you shao yan	6100
+少盐少油	shao yan shao you	6100
 少糖饮料	shao tang yin liao	6100
+常温食品	chang wen shi pin	6100
 常温饮料	chang wen yin liao	6100
-我在店里等你	wo zai dian li deng ni	6100
+开封保存	kai feng bao cun	6100
 打包带走	da bao dai zou	6100
 打包费用	da bao fei yong	6100
 扫码点餐	sao ma dian can	6100
 排队取号	pai dui qu hao	6100
+放凉备用	fang liang bei yong	6100
+散装食品	san zhuang shi pin	6100
+新鲜水果	xin xian shui guo	6100
+方便食品	fang bian shi pin	6100
+无公害蔬菜	wu gong hai shu cai	6100
+无糖酸奶	wu tang suan nai	6100
 无糖饮料	wu tang yin liao	6100
+时令水果	shi ling shui guo	6100
+有机蔬菜	you ji shu cai	6100
+杂粮米	za liang mi	6100
+植物奶	zhi wu nai	6100
+水果成熟度	shui guo cheng shu du	6100
+水果礼盒	shui guo li he	6100
+水淀粉	shui dian fen	6100
+沥干水分	li gan shui fen	6100
+油温控制	you wen kong zhi	6100
+活鲜水产	huo xian shui chan	6100
+淀粉勾芡	dian fen gou qian	6100
+火候控制	huo hou kong zhi	6100
 点餐小程序	dian can xiao cheng xu	6100
+烤箱预热	kao xiang yu re	6100
+焯水去腥	chao shui qu xing	6100
+熟食卤味	shu shi lu wei	6100
+燕麦奶	yan mai nai	6100
 甜度选择	tian du xuan ze	6100
+生产日期	sheng chan ri qi	6100
+生熟分开	sheng shu fen kai	6100
+生鲜蔬菜	sheng xian shu cai	6100
+生鲜超市	sheng xian chao shi	6100
+生鲜配送	sheng xian pei song	6100
 用餐人数	yong can ren shu	6100
 用餐时间	yong can shi jian	6100
 用餐评价	yong can ping jia	6100
+空气炸锅	kong qi zha guo	6100
+翻炒均匀	fan chao jun yun	6100
+肉类分切	rou lei fen qie	6100
+脱脂牛奶	tuo zhi niu nai	6100
+膳食纤维	shan shi xian wei	6100
 菜品分量	cai pin fen liang	6100
 菜品口味	cai pin kou wei	6100
 菜品推荐	cai pin tui jian	6100
+营养成分	ying yang cheng fen	6100
+蒜蓉酱	suan rong jiang	6100
+蒸汽烹饪	zheng qi peng ren	6100
+蒸烤箱	zheng kao xiang	6100
+蔬菜拼盘	shu cai pin pan	6100
+计量称重	ji liang cheng zhong	6100
 请帮我打包	qing bang wo da bao	6100
 请放在门口	qing fang zai men kou	6100
-送到楼下即可	song dao lou xia ji ke	6100
+豆奶饮料	dou nai yin liao	6100
+购物清单	gou wu qing dan	6100
+超市会员	chao shi hui yuan	6100
+进口水果	jin kou shui guo	6100
+速冻水饺	su dong shui jiao	6100
+速冻汤圆	su dong tang yuan	6100
+配料表	pei liao biao	6100
+量勺	liang shao	6100
+铸铁锅	zhu tie guo	6100
+面粉发酵	mian fen fa jiao	6100
 预约订餐	yu yue ding can	6100
+食品批次	shi pin pi ci	6100
+食品标签	shi pin biao qian	6100
 食品过敏	shi pin guo min	6100
+食材保存	shi cai bao cun	6100
+食材切配	shi cai qie pei	6100
+食材处理	shi cai chu li	6100
+食材清洗	shi cai qing xi	6100
+食材腌制	shi cai yan zhi	6100
+食材解冻	shi cai jie dong	6100
+食材采购	shi cai cai gou	6100
 食物禁忌	shi wu jin ji	6100
 餐位预订	can wei yu ding	6100
 餐具数量	can ju shu liang	6100
 餐具费用	can ju fei yong	6100
 餐厅预订	can ting yu ding	6100
 麻烦快一点	ma fan kuai yi dian	6100
+花生油	hua sheng you	5668
 我点外卖	wo dian wai mai	5424
 不点外卖	bu dian wai mai	5385
 你点外卖	ni dian wai mai	5385
 想点外卖	xiang dian wai mai	5270
+我在店里等你	wo zai dian li deng ni	5200
+送到楼下即可	song dao lou xia ji ke	5200
 点的外卖	dian de wai mai	5077
 动物餐厅	dong wu can ting	5039
 点了外卖	dian le wai mai	5039
@@ -62,8 +148,10 @@
 音乐餐厅	yin yue can ting	5039
 地下餐厅	di xia can ting	5000
 离婚餐厅	li hun can ting	5000
+平底锅	ping di guo	4978
 天空餐厅	tian kong can ting	4962
 点个外卖	dian ge wai mai	4962
+辣椒粉	la jiao fen	4893
 交通饭店	jiao tong fan dian	4847
 叫个外卖	jiao ge wai mai	4847
 和平饭店	he ping fan dian	4847
@@ -86,15 +174,4279 @@
 点外卖	dian wai mai	4693
 送外卖	song wai mai	4693
 外卖情人	wai mai qing ren	4654
+老抽	lao chou	4624
 杀手餐厅	sha shou can ting	4616
 美味餐厅	mei wei can ting	4616
+量杯	liang bei	4603
+8424西瓜	ba si er si xi gua	4600
+Dirty咖啡	dirty ka fei	4600
+Q弹	q tan	4600
+XO酱	xo jiang	4600
+丁丁炒面	ding ding chao mian	4600
+丁香	ding xiang	4600
+七分熟	qi fen shu	4600
+七分糖	qi fen tang	4600
+万州烤鱼	wan zhou kao yu	4600
+三分糖	san fen tang	4600
+三华李	san hua li	4600
+三大炮	san da pao	4600
+三头一掌	san tou yi zhang	4600
+三文鱼	san wen yu	4600
+三文鱼刺身	san wen yu ci shen	4600
+三文鱼寿司	san wen yu shou si	4600
+三文鱼腩	san wen yu nan	4600
+三文鱼饭团	san wen yu fan tuan	4600
+三明治	san ming zhi	4600
+三明治机	san ming zhi ji	4600
+三色藜麦	san se li mai	4600
+三花趾	san hua zhi	4600
+三角饭团	san jiao fan tuan	4600
+三鲜炒面	san xian chao mian	4600
+三鲜米线	san xian mi xian	4600
+三鲜粉	san xian fen	4600
+三鲜锅	san xian guo	4600
+三鲜饺子	san xian jiao zi	4600
+三黄鸡	san huang ji	4600
+上校鸡块	shang xiao ji kuai	4600
+上汤娃娃菜	shang tang wa wa cai	4600
+上浆	shang jiang	4600
+上海菜饭	shang hai cai fan	4600
+上海青	shang hai qing	4600
+上脑	shang nao	4600
+上色	shang se	4600
+下午茶	xia wu cha	4600
+不好吃	bu hao chi	4600
+不知火	bu zhi huo	4600
+不要姜	bu yao jiang	4600
+不要葱	bu yao cong	4600
+不要蒜	bu yao suan	4600
+不要辣	bu yao la	4600
+不要香菜	bu yao xiang cai	4600
+不锈钢铲	bu xiu gang chan	4600
+不锈钢锅	bu xiu gang guo	4600
+丑耳	chou er	4600
+东北乱炖	dong bei luan dun	4600
+东北凉菜	dong bei liang cai	4600
+东北大拉皮	dong bei da la pi	4600
+东北大米	dong bei da mi	4600
+东北烤冷面	dong bei kao leng mian	4600
+东北烧烤	dong bei shao kao	4600
+东北菜	dong bei cai	4600
+东北酱大骨	dong bei jiang da gu	4600
+东北酸菜炖粉条	dong bei suan cai dun fen tiao	4600
+东北锅包肉	dong bei guo bao rou	4600
+东北饭包	dong bei fan bao	4600
+东北黑木耳	dong bei hei mu er	4600
+东南亚菜	dong nan ya cai	4600
+东坡肉	dong po rou	4600
+东坡肘子	dong po zhou zi	4600
+东安子鸡	dong an zi ji	4600
+东方美人	dong fang mei ren	4600
+东星斑	dong xing ban	4600
+东风螺	dong feng luo	4600
+东魁杨梅	dong kui yang mei	4600
+丝娃娃	si wa wa	4600
+丝瓜	si gua	4600
+丝瓜炒油条	si gua chao you tiao	4600
+丝瓜炒蛋	si gua chao dan	4600
+丝瓜蛋汤	si gua dan tang	4600
+丝瓜鸡蛋汤	si gua ji dan tang	4600
+丝绒拿铁	si rong na tie	4600
+丝苗米	si miao mi	4600
+中华海草	zhong hua hai cao	4600
+中和汤	zhong he tang	4600
+中火焖煮	zhong huo men zhu	4600
+中烘	zhong hong	4600
+中筋面粉	zhong jin mian fen	4600
+丰水梨	feng shui li	4600
+串串香	chuan chuan xiang	4600
+临武鸭	lin wu ya	4600
+临沂炒鸡	lin yi chao ji	4600
+丸子汤	wan zi tang	4600
+丹东草莓	dan dong cao mei	4600
+丹麦面包	dan mai mian bao	4600
+义乌红糖麻花	yi wu hong tang ma hua	4600
+乌冬面	wu dong mian	4600
+乌梅	wu mei	4600
+乌贼	wu zei	4600
+乌鸡	wu ji	4600
+乌鸡蛋	wu ji dan	4600
+乌龙奶茶	wu long nai cha	4600
+乌龙茶	wu long cha	4600
+乐山炸串	le shan zha chuan	4600
+乐山甜皮鸭	le shan tian pi ya	4600
+乐山豆腐脑	le shan dou fu nao	4600
+乐山钵钵鸡	le shan bo bo ji	4600
+九制话梅	jiu zhi hua mei	4600
+九宫格	jiu gong ge	4600
+九层塔	jiu ceng ta	4600
+九肚鱼	jiu du yu	4600
+九节虾	jiu jie xia	4600
+九转大肠	jiu zhuan da chang	4600
+乡里腊肉	xiang li la rou	4600
+乳山生蚝	ru shan sheng hao	4600
+乳猪	ru zhu	4600
+乳酸菌饮料	ru suan jun yin liao	4600
+乳鸽	ru ge	4600
+乾隆白菜	qian long bai cai	4600
+二八酱	er ba jiang	4600
+二米饭	er mi fan	4600
+二荆条	er jing tiao	4600
+二荆条辣椒面	er jing tiao la jiao mian	4600
+二锅头	er guo tou	4600
+云南小粒咖啡	yun nan xiao li ka fei	4600
+云南菜	yun nan cai	4600
+云南过桥米线	yun nan guo qiao mi xian	4600
+云南鲜花饼	yun nan xian hua bing	4600
+云吞	yun tun	4600
+云吞面	yun tun mian	4600
+云片糕	yun pian gao	4600
+云腿月饼	yun tui yue bing	4600
+五仁月饼	wu ren yue bing	4600
+五分熟	wu fen shu	4600
+五分糖	wu fen tang	4600
+五常大米	wu chang da mi	4600
+五指毛桃鸡汤	wu zhi mao tao ji tang	4600
+五花肉	wu hua rou	4600
+五花肉卷金针菇	wu hua rou juan jin zhen gu	4600
+五花趾	wu hua zhi	4600
+五香兔头	wu xiang tu tou	4600
+五香卤料	wu xiang lu liao	4600
+五香牛肉	wu xiang niu rou	4600
+五香瓜子	wu xiang gua zi	4600
+五香花生	wu xiang hua sheng	4600
+五香豆干	wu xiang dou gan	4600
+亚麻籽油	ya ma zi you	4600
+京东肉饼	jing dong rou bing	4600
+京菜	jing cai	4600
+京葱鸡肉串	jing cong ji rou chuan	4600
+京酱肉丝	jing jiang rou si	4600
+亲亲肠	qin qin chang	4600
+亲嘴烧	qin zui shao	4600
+亲子丼	qin zi dan	4600
+人参果	ren shen guo	4600
+什锦	shi jin	4600
+什锦炒饭	shi jin chao fan	4600
+仔姜	zai jiang	4600
+仔姜蛙	zai jiang wa	4600
+仔姜鸭	zai jiang ya	4600
+仙居杨梅	xian ju yang mei	4600
+仙草冻	xian cao dong	4600
+仙贝	xian bei	4600
+仙进奉	xian jin feng	4600
+代糖	dai tang	4600
+伊面	yi mian	4600
+伏特加	fu te jia	4600
+伤心凉粉	shang xin liang fen	4600
+伦教糕	lun jiao gao	4600
+伯爵红茶	bo jue hong cha	4600
+伯爵红茶卷	bo jue hong cha juan	4600
+伯牙绝弦	bo ya jue xian	4600
+低卡餐	di ka can	4600
+低温酸奶	di wen suan nai	4600
+低筋面粉	di jin mian fen	4600
+低钠盐	di na yan	4600
+佛手瓜	fo shou gua	4600
+佛跳墙	fu tiao qiang	4600
+便当	bian dang	4600
+保宁醋	bao ning cu	4600
+保温杯	bao wen bei	4600
+保温饭盒	bao wen fan he	4600
+保鲜盒	bao xian he	4600
+保鲜膜	bao xian mo	4600
+信阳毛尖	xin yang mao jian	4600
+倒蒸红薯干	dao zheng hong shu gan	4600
+偏口鱼	pian kou yu	4600
+健康餐	jian kang can	4600
+傣味手抓饭	dai wei shou zhua fan	4600
+傣味烤鱼	dai wei kao yu	4600
+催一下菜	cui yi xia cai	4600
+儿菜	er cai	4600
+元宵	yuan xiao	4600
+元贝	yuan bei	4600
+光盘行动	guang pan xing dong	4600
+免辣	mian la	4600
+兔肉	tu rou	4600
+入口即化	ru kou ji hua	4600
+全熟	quan shu	4600
+全糖	quan tang	4600
+全脂奶	quan zhi nai	4600
+全自动咖啡机	quan zi dong ka fei ji	4600
+全麦吐司	quan mai tu si	4600
+全麦贝果	quan mai bei guo	4600
+全麦面粉	quan mai mian fen	4600
+全麦馒头	quan mai man tou	4600
+八宝粥	ba bao zhou	4600
+八宝粽	ba bao zong	4600
+八宝辣酱	ba bao la jiang	4600
+八宝鸭	ba bao ya	4600
+八爪鱼	ba zhao yu	4600
+八珍糕	ba zhen gao	4600
+八珍豆腐	ba zhen dou fu	4600
+八角	ba jiao	4600
+公勺	gong shao	4600
+公筷	gong kuai	4600
+公蟹	gong xie	4600
+公道杯	gong dao bei	4600
+六堡茶	liu bao cha	4600
+六安瓜片	lu an gua pian	4600
+兰州拉面	lan zhou la mian	4600
+兰州牛肉面	lan zhou niu rou mian	4600
+兰溪牛肉面	lan xi niu rou mian	4600
+兰花干	lan hua gan	4600
+兰花蟹	lan hua xie	4600
+兰花豆	lan hua dou	4600
+关东煮	guan dong zhu	4600
+兴化炒米粉	xing hua chao mi fen	4600
+养生壶	yang sheng hu	4600
+兼香型白酒	jian xiang xing bai jiu	4600
+内蒙手把肉	nei meng shou ba rou	4600
+内酯豆腐	nei zhi dou fu	4600
+冒烤鸭	mao kao ya	4600
+冒脑花	mao nao hua	4600
+冒节子肥肠粉	mao jie zi fei chang fen	4600
+冒菜	mao cai	4600
+军屯锅盔	jun tun guo kui	4600
+军舰寿司	jun jian shou si	4600
+农家乐	nong jia le	4600
+农家小炒肉	nong jia xiao chao rou	4600
+冬枣	dong zao	4600
+冬桃	dong tao	4600
+冬瓜	dong gua	4600
+冬瓜丸子汤	dong gua wan zi tang	4600
+冬瓜排骨汤	dong gua pai gu tang	4600
+冬瓜海带排骨汤	dong gua hai dai pai gu tang	4600
+冬瓜片	dong gua pian	4600
+冬瓜茶	dong gua cha	4600
+冬瓜薏米老鸭汤	dong gua yi mi lao ya tang	4600
+冬笋	dong sun	4600
+冬阴功汤	dong yin gong tang	4600
+冬阴功海鲜汤	dong yin gong hai xian tang	4600
+冬阴功酱	dong yin gong jiang	4600
+冬阴功锅	dong yin gong guo	4600
+冰峰汽水	bing feng qi shui	4600
+冰拿铁	bing na tie	4600
+冰棍	bing gun	4600
+冰棒	bing bang	4600
+冰沙	bing sha	4600
+冰浆	bing jiang	4600
+冰淇淋	bing qi lin	4600
+冰淇淋机	bing qi lin ji	4600
+冰激凌	bing ji ling	4600
+冰火菠萝油	bing huo bo luo you	4600
+冰煮羊	bing zhu yang	4600
+冰皮月饼	bing pi yue bing	4600
+冰粉	bing fen	4600
+冰粉粉	bing fen fen	4600
+冰糖	bing tang	4600
+冰糖橙	bing tang cheng	4600
+冰糖甲鱼	bing tang jia yu	4600
+冰糖葫芦	bing tang hu lu	4600
+冰糖雪梨	bing tang xue li	4600
+冰美式	bing mei shi	4600
+冰花煎饺	bing hua jian jiao	4600
+冰草	bing cao	4600
+冰酒	bing jiu	4600
+冰镇小龙虾	bing zhen xiao long xia	4600
+冰阔落	bing kuo luo	4600
+冰面包	bing mian bao	4600
+冰鲜柠檬水	bing xian ning meng shui	4600
+冷冻	leng dong	4600
+冷吃兔	leng chi tu	4600
+冷萃	leng cui	4600
+冷萃咖啡	leng cui ka fei	4600
+冷藏	leng cang	4600
+冷链配送	leng lian pei song	4600
+冷锅串串	leng guo chuan chuan	4600
+冷面	leng mian	4600
+冻干咖啡	dong gan ka fei	4600
+冻干草莓	dong gan cao mei	4600
+冻柿	dong shi	4600
+冻柿子	dong shi zi	4600
+冻梨	dong li	4600
+冻虾	dong xia	4600
+冻豆腐	dong dou fu	4600
+冻顶乌龙	dong ding wu long	4600
+净水器	jing shui qi	4600
+准时达	zhun shi da	4600
+凉了	liang le	4600
+凉拌	liang ban	4600
+凉拌三丝	liang ban san si	4600
+凉拌土豆丝	liang ban tu dou si	4600
+凉拌折耳根	liang ban zhe er gen	4600
+凉拌木耳	liang ban mu er	4600
+凉拌汁	liang ban zhi	4600
+凉拌海带丝	liang ban hai dai si	4600
+凉拌皮蛋	liang ban pi dan	4600
+凉拌穿心莲	liang ban chuan xin lian	4600
+凉拌粉丝	liang ban fen si	4600
+凉拌腐竹	liang ban fu zhu	4600
+凉拌苦菊	liang ban ku ju	4600
+凉拌菠菜	liang ban bo cai	4600
+凉拌藕片	liang ban ou pian	4600
+凉拌西红柿	liang ban xi hong shi	4600
+凉拌豆皮	liang ban dou pi	4600
+凉拌金针菇	liang ban jin zhen gu	4600
+凉拌黄瓜	liang ban huang gua	4600
+凉瓜	liang gua	4600
+凉皮	liang pi	4600
+凉米线	liang mi xian	4600
+凉茶	liang cha	4600
+凉菜	liang cai	4600
+凉虾	liang xia	4600
+凉面	liang mian	4600
+减脂便当	jian zhi bian dang	4600
+减脂餐	jian zhi can	4600
+凝固型酸奶	ning gu xing suan nai	4600
+凤凰单丛	feng huang dan cong	4600
+凤尾菇	feng wei gu	4600
+凤尾虾	feng wei xia	4600
+凤尾鱼	feng wei yu	4600
+凤梨	feng li	4600
+凤梨酥	feng li su	4600
+凤爪	feng zhao	4600
+凤香型白酒	feng xiang xing bai jiu	4600
+凯撒沙拉	kai sa sha la	4600
+凯撒酱	kai sa jiang	4600
+凯特芒	kai te mang	4600
+凯里酸汤鱼	kai li suan tang yu	4600
+出前一丁	chu qian yi ding	4600
+刀切馒头	dao qie man tou	4600
+刀削面	dao xiao mian	4600
+刀叉	dao cha	4600
+刀豆	dao dou	4600
+刀鱼	dao yu	4600
+分葱	fen cong	4600
+分量太少	fen liang tai shao	4600
+分量很足	fen liang hen zu	4600
+切丁	qie ding	4600
+切丝	qie si	4600
+切块	qie kuai	4600
+切片	qie pian	4600
+切片面包	qie pian mian bao	4600
+创意菜	chuang yi cai	4600
+初生蛋	chu sheng dan	4600
+刨丝器	bao si qi	4600
+刨冰	bao bing	4600
+刮凉粉	gua liang fen	4600
+刮刀	gua dao	4600
+到了打我电话	dao le da wo dian hua	4600
+刺梨	ci li	4600
+刺身	ci shen	4600
+刺身拼盘	ci shen pin pan	4600
+剁椒蒸芋头	duo jiao zheng yu tou	4600
+剁椒酱	duo jiao jiang	4600
+剁椒金针菇	duo jiao jin zhen gu	4600
+剁椒鱼头	duo jiao yu tou	4600
+削皮刀	xue pi dao	4600
+前腿肉	qian tui rou	4600
+前蹄	qian ti	4600
+剔尖	ti jian	4600
+剔骨	ti gu	4600
+功夫茶具	gong fu cha ju	4600
+功能饮料	gong neng yin liao	4600
+加个蛋	jia ge dan	4600
+加仙草	jia xian cao	4600
+加份肉	jia fen rou	4600
+加份青菜	jia fen qing cai	4600
+加吉鱼	jia ji yu	4600
+加奶盖	jia nai gai	4600
+加布丁	jia bu ding	4600
+加椰果	jia ye guo	4600
+加波霸	jia bo ba	4600
+加珍珠	jia zhen zhu	4600
+加碘盐	jia dian yan	4600
+加红豆	jia hong dou	4600
+加脆波波	jia cui bo bo	4600
+加芋圆	jia yu yuan	4600
+加菜	jia cai	4600
+加饭酒	jia fan jiu	4600
+加麻加辣	jia ma jia la	4600
+动物奶油	dong wu nai you	4600
+动物奶油蛋糕	dong wu nai you dan gao	4600
+动物饼干	dong wu bing gan	4600
+勺子	shao zi	4600
+勾芡	gou qian	4600
+包子	bao zi	4600
+包心鱼丸	bao xin yu wan	4600
+包浆豆腐	bao jiang dou fu	4600
+包菜	bao cai	4600
+包菜炒粉丝	bao cai chao fen si	4600
+包间预订	bao jian yu ding	4600
+包馅	bao xian	4600
+化皮烧肉	hua pi shao rou	4600
+北京烤鸭	bei jing kao ya	4600
+北极甜虾	bei ji tian xia	4600
+北极贝	bei ji bei	4600
+北极贝刺身	bei ji bei ci shen	4600
+北舞渡胡辣汤	bei wu du hu la tang	4600
+北豆腐	bei dou fu	4600
+匙仁	shi ren	4600
+匙柄	shi bing	4600
+十三香	shi san xiang	4600
+十三香小龙虾	shi san xiang xiao long xia	4600
+千层肚	qian ceng du	4600
+千层蛋糕	qian ceng dan gao	4600
+千层饼	qian ceng bing	4600
+千岛酱	qian dao jiang	4600
+千张	qian zhang	4600
+千禧果	qian xi guo	4600
+千里香馄饨	qian li xiang hun tun	4600
+千页豆腐	qian ye dou fu	4600
+升学宴	sheng xue yan	4600
+午餐肉	wu can rou	4600
+半熟芝士	ban shu zhi shi	4600
+半自动咖啡机	ban zi dong ka fei ji	4600
+华夫饼	hua fu bing	4600
+单一麦芽威士忌	dan yi mai ya wei shi ji	4600
+单县羊肉汤	shan xian yang rou tang	4600
+单晶冰糖	dan jing bing tang	4600
+南丰蜜橘	nan feng mi ju	4600
+南京烤鸭	nan jing kao ya	4600
+南京盐水鸭	nan jing yan shui ya	4600
+南充米粉	nan chong mi fen	4600
+南充锅盔	nan chong guo kui	4600
+南姜	nan jiang	4600
+南昌拌粉	nan chang ban fen	4600
+南果梨	nan guo li	4600
+南煎肝	nan jian gan	4600
+南瓜	nan gua	4600
+南瓜浓汤	nan gua nong tang	4600
+南瓜粥	nan gua zhou	4600
+南瓜藤	nan gua teng	4600
+南翔小笼包	nan xiang xiao long bao	4600
+南豆腐	nan dou fu	4600
+博山炸肉	bo shan zha rou	4600
+博山酥锅	bo shan su guo	4600
+卡布奇诺	ka bu qi nuo	4600
+卤制	lu zhi	4600
+卤千张	lu qian zhang	4600
+卤味	lu wei	4600
+卤土豆	lu tu dou	4600
+卤料包	lu liao bao	4600
+卤毛豆	lu mao dou	4600
+卤水拼盘	lu shui pin pan	4600
+卤水豆腐	lu shui dou fu	4600
+卤海带	lu hai dai	4600
+卤煮火烧	lu zhu huo shao	4600
+卤牛肉	lu niu rou	4600
+卤牛肚	lu niu du	4600
+卤牛腱	lu niu jian	4600
+卤猪大肠	lu zhu da chang	4600
+卤猪头肉	lu zhu tou rou	4600
+卤猪耳	lu zhu er	4600
+卤猪蹄	lu zhu ti	4600
+卤肉饭	lu rou fan	4600
+卤腐竹	lu fu zhu	4600
+卤花生	lu hua sheng	4600
+卤藕片	lu ou pian	4600
+卤蛋	lu dan	4600
+卤豆干	lu dou gan	4600
+卤鸡爪	lu ji zhua	4600
+卤鸡翅	lu ji chi	4600
+卤鸡胗	lu ji zhen	4600
+卤鸡腿	lu ji tui	4600
+卤鸭头	lu ya tou	4600
+卤鸭掌	lu ya zhang	4600
+卤鸭架	lu ya jia	4600
+卤鸭翅	lu ya chi	4600
+卤鸭肠	lu ya chang	4600
+卤鸭胗	lu ya zhen	4600
+卤鸭脖	lu ya bo	4600
+卤鸭舌	lu ya she	4600
+卤鸭锁骨	lu ya suo gu	4600
+卤鹅	lu e	4600
+卤鹅掌	lu e zhang	4600
+卤鹅翼	lu e yi	4600
+卤鹅肝	lu e gan	4600
+卤鹌鹑蛋	lu an chun dan	4600
+印度飞饼	yin du fei bing	4600
+即食燕麦	ji shi yan mai	4600
+卷心菜	juan xin cai	4600
+压缩饼干	ya suo bing gan	4600
+压面机	ya mian ji	4600
+厚乳拿铁	hou ru na tie	4600
+厚吐司	hou tu si	4600
+厚椰乳	hou ye ru	4600
+厚芡	hou qian	4600
+厚蛋烧	hou dan shao	4600
+原味薯片	yuan wei shu pian	4600
+原味酸奶	yuan wei suan nai	4600
+原汁机	yuan zhi ji	4600
+原浆啤酒	yuan jiang pi jiu	4600
+原浆酒	yuan jiang jiu	4600
+厦门沙茶面	xia men sha cha mian	4600
+厨房剪刀	chu fang jian dao	4600
+厨房湿巾	chu fang shi jin	4600
+厨房纸	chu fang zhi	4600
+去腥	qu xing	4600
+去虾线	qu xia xian	4600
+去骨	qu gu	4600
+去鳞	qu lin	4600
+参鸡汤	shen ji tang	4600
+叉子	cha zi	4600
+叉烧	cha shao	4600
+叉烧包	cha shao bao	4600
+叉烧肉	cha shao rou	4600
+叉烧肠粉	cha shao chang fen	4600
+叉烧酱	cha shao jiang	4600
+叉烧饭	cha shao fan	4600
+及第粥	ji di zhou	4600
+双人下午茶	shuang ren xia wu cha	4600
+双份浓缩	shuang fen nong suo	4600
+双孢菇	shuang bao gu	4600
+双层吉士堡	shuang ceng ji shi bao	4600
+双流老妈兔头	shuang liu lao ma tu tou	4600
+双皮奶	shuang pi nai	4600
+双色鱼头	shuang se yu tou	4600
+双酿团	shuang niang tuan	4600
+反沙芋头	fan sha yu tou	4600
+发丝牛百叶	fa si niu bai ye	4600
+发糕	fa gao	4600
+发菜	fa cai	4600
+发酵	fa jiao	4600
+发酵黄油	fa jiao huang you	4600
+发面饼	fa mian bing	4600
+口味虾	kou wei xia	4600
+口味蛇	kou wei she	4600
+口味蟹	kou wei xie	4600
+口水鸡	kou shui ji	4600
+口蘑	kou mo	4600
+口香糖	kou xiang tang	4600
+古早蛋糕	gu zao dan gao	4600
+古法红糖	gu fa hong tang	4600
+叫化鸡	jiao hua ji	4600
+叫花鸡	jiao hua ji	4600
+可丽饼	ke li bing	4600
+可乐	ke le	4600
+可乐鸡翅	ke le ji chi	4600
+可可粉	ke ke fen	4600
+可生食鸡蛋	ke sheng shi ji dan	4600
+可露丽	ke lu li	4600
+可颂	ke song	4600
+台农芒	tai nong mang	4600
+台州嵌糕	tai zhou qian gao	4600
+台式卤肉饭	tai shi lu rou fan	4600
+台湾手抓饼	tai wan shou zhua bing	4600
+叶儿粑	ye er ba	4600
+叻沙	le sha	4600
+合掌瓜	he zhang gua	4600
+合肥小龙虾	he fei xiao long xia	4600
+吉利丁片	ji li ding pian	4600
+吉利丁粉	ji li ding fen	4600
+吊炉烧饼	diao lu shao bing	4600
+吊高汤	diao gao tang	4600
+吊龙	diao long	4600
+同安封肉	tong an feng rou	4600
+后腿肉	hou tui rou	4600
+后蹄	hou ti	4600
+吐司	tu si	4600
+吐司机	tu si ji	4600
+吐司盒	tu si he	4600
+君山银针	jun shan yin zhen	4600
+吞拿鱼	tun na yu	4600
+吴山酥油饼	wu shan su you bing	4600
+吸油纸	xi you zhi	4600
+呛面馒头	qiang mian man tou	4600
+味增拉面	wei zeng la mian	4600
+味增汤	wei zeng tang	4600
+味极鲜	wei ji xian	4600
+味碟	wei die	4600
+味精	wei jing	4600
+味道不错	wei dao bu cuo	4600
+和面	huo mian	4600
+和面机	huo mian ji	4600
+和面盆	huo mian pen	4600
+咖啡	ka fei	4600
+咖啡机	ka fei ji	4600
+咖啡杯	ka fei bei	4600
+咖啡液	ka fei ye	4600
+咖啡豆	ka fei dou	4600
+咖喱	ga li	4600
+咖喱块	ga li kuai	4600
+咖喱炒饭	ga li chao fan	4600
+咖喱牛肉饭	ga li niu rou fan	4600
+咖喱猪排饭	ga li zhu pai fan	4600
+咖喱粉	ga li fen	4600
+咖喱蟹	ga li xie	4600
+咖喱饭	ga li fan	4600
+咖喱鱼蛋	ga li yu dan	4600
+咖喱鸡肉饭	ga li ji rou fan	4600
+咖喱鸡饭	ga li ji fan	4600
+咸奶茶	xian nai cha	4600
+咸淡适中	xian dan shi zhong	4600
+咸烧白	xian shao bai	4600
+咸肉	xian rou	4600
+咸肉菜饭	xian rou cai fan	4600
+咸菜猪肚汤	xian cai zhu du tang	4600
+咸蛋黄	xian dan huang	4600
+咸蛋黄焗南瓜	xian dan huang ju nan gua	4600
+咸豆浆	xian dou jiang	4600
+咸豆腐脑	xian dou fu nao	4600
+咸鱼	xian yu	4600
+咸鱼鸡粒炒饭	xian yu ji li chao fan	4600
+咸鱼鸡粒茄子煲	xian yu ji li qie zi bao	4600
+咸鸭蛋	xian ya dan	4600
+哈密瓜	ha mi gua	4600
+哈尔滨红肠	ha er bin hong chang	4600
+响油鳝糊	xiang you shan hu	4600
+响螺	xiang luo	4600
+响铃	xiang ling	4600
+响铃卷	xiang ling juan	4600
+唐扬鸡块	tang yang ji kuai	4600
+商务宴请	shang wu yan qing	4600
+啤酒	pi jiu	4600
+啤酒鸭	pi jiu ya	4600
+喉口馒头	hou kou man tou	4600
+嗦粉	suo fen	4600
+嗦螺	suo luo	4600
+嘎巴菜	ga ba cai	4600
+嘎鱼	ga yu	4600
+四喜丸子	si xi wan zi	4600
+四喜烤麸	si xi kao fu	4600
+四季春奶茶	si ji chun nai cha	4600
+四季豆	si ji dou	4600
+四宫格	si gong ge	4600
+四川泡菜	si chuan pao cai	4600
+四果汤	si guo tang	4600
+回味无穷	hui wei wu qiong	4600
+回锅肉	hui guo rou	4600
+团圆饭	tuan yuan fan	4600
+团建聚餐	tuan jian ju can	4600
+团鱼	tuan yu	4600
+围裙	wei qun	4600
+圆白菜	yuan bai cai	4600
+圆糯米	yuan nuo mi	4600
+圆茄子	yuan qie zi	4600
+土家酱香饼	tu jia jiang xiang bing	4600
+土笋冻	tu sun dong	4600
+土菜	tu cai	4600
+土蜂蜜	tu feng mi	4600
+土豆	tu dou	4600
+土豆排骨焖饭	tu dou pai gu men fan	4600
+土豆泥	tu dou ni	4600
+土豆淀粉	tu dou dian fen	4600
+土豆炖牛肉	tu dou dun niu rou	4600
+土豆烧排骨	tu dou shao pai gu	4600
+土豆烧鸡	tu dou shao ji	4600
+土豆片	tu dou pian	4600
+土豆片炒肉	tu dou pian chao rou	4600
+土豆粉	tu dou fen	4600
+土豆饼	tu dou bing	4600
+土锅	tu guo	4600
+土鸡	tu ji	4600
+土鸡蛋	tu ji dan	4600
+圣代	sheng dai	4600
+圣女果	sheng nv guo	4600
+地三鲜盖饭	di san xian gai fan	4600
+地三鲜茄子	di san xian qie zi	4600
+地狱拉面	di yu la mian	4600
+地瓜	di gua	4600
+地瓜干	di gua gan	4600
+均安蒸猪	jun an zheng zhu	4600
+坛子菜	tan zi cai	4600
+培根	pei gen	4600
+培根卷	pei gen juan	4600
+培根披萨	pei gen pi sa	4600
+培根汉堡	pei gen han bao	4600
+培根炒饭	pei gen chao fan	4600
+基围虾	ji wei xia	4600
+塔可	ta ke	4600
+塔吉锅	ta ji guo	4600
+增香	zeng xiang	4600
+墨西哥卷饼	mo xi ge juan bing	4600
+墨鱼	mo yu	4600
+墨鱼仔	mo yu zai	4600
+墨鱼水饺	mo yu shui jiao	4600
+墨鱼滑	mo yu hua	4600
+墨鱼饺子	mo yu jiao zi	4600
+声声乌龙	sheng sheng wu long	4600
+夏夷贝	xia yi bei	4600
+夏威夷披萨	xia wei yi pi sa	4600
+夏威夷果	xia wei yi guo	4600
+夏橙	xia cheng	4600
+夏黑葡萄	xia hei pu tao	4600
+外婆菜	wai po cai	4600
+外婆菜炒鸡蛋	wai po cai chao ji dan	4600
+外焦里嫩	wai jiao li nen	4600
+多功能料理锅	duo gong neng liao li guo	4600
+多加饭	duo jia fan	4600
+多味花生	duo wei hua sheng	4600
+多士炉	duo shi lu	4600
+多宝鱼	duo bao yu	4600
+多层蒸锅	duo ceng zheng guo	4600
+多放葱花	duo fang cong hua	4600
+多放香菜	duo fang xiang cai	4600
+多肉芒芒	duo rou mang mang	4600
+多肉葡萄	duo rou pu tao	4600
+夜宵	ye xiao	4600
+夜市	ye shi	4600
+夜市小吃	ye shi xiao chi	4600
+大冷面	da leng mian	4600
+大列巴	da lie ba	4600
+大头菜	da tou cai	4600
+大排	da pai	4600
+大排档	da pai dang	4600
+大排面	da pai mian	4600
+大料	da liao	4600
+大杂烩	da za hui	4600
+大樱桃	da ying tao	4600
+大油条	da you tiao	4600
+大煮干丝	da zhu gan si	4600
+大白菜	da bai cai	4600
+大盘肚	da pan du	4600
+大盘鸡	da pan ji	4600
+大福	da fu	4600
+大米	da mi	4600
+大米粉	da mi fen	4600
+大米粥	da mi zhou	4600
+大米饭	da mi fan	4600
+大红袍	da hong pao	4600
+大肉包	da rou bao	4600
+大肠面	da chang mian	4600
+大葱	da cong	4600
+大蒜	da suan	4600
+大虾	da xia	4600
+大豆油	da dou you	4600
+大酱汤	da jiang tang	4600
+大闸蟹	da zha xie	4600
+大阪烧	da ban shao	4600
+大面筋	da mian jin	4600
+大饼	da bing	4600
+大馄饨	da hun tun	4600
+大香肠	da xiang chang	4600
+大骨头	da gu tou	4600
+大鸡排	da ji pai	4600
+大麦茶	da mai cha	4600
+大黄鱼	dai huang yu	4600
+大龙虾	da long xia	4600
+天妇罗	tian fu luo	4600
+天津狗不理	tian jin gou bu li	4600
+天然矿泉水	tian ran kuang quan shui	4600
+天蚕土豆	tian can tu dou	4600
+太和板面	tai he ban mian	4600
+太好吃了	tai hao chi le	4600
+太妃糖	tai fei tang	4600
+太平燕	tai ping yan	4600
+太平猴魁	tai ping hou kui	4600
+太谷饼	tai gu bing	4600
+太阳饼	tai yang bing	4600
+夫妻肺片	fu qi fei pian	4600
+夫妻肺片凉菜	fu qi fei pian liang cai	4600
+头抽	tou chou	4600
+头水紫菜	tou shui zi cai	4600
+头脑	tou nao	4600
+夹心巧克力	jia xin qiao ke li	4600
+夹心肉	jia xin rou	4600
+夹心饼干	jia xin bing gan	4600
+奇异果	qi yi guo	4600
+奔驰锅	ben chi guo	4600
+奥利奥奶茶	ao li ao nai cha	4600
+奥利奥雪媚娘	ao li ao xue mei niang	4600
+奥尔良烤翅	ao er liang kao chi	4600
+奥灶面	ao zao mian	4600
+女儿红	nv er hong	4600
+奶汤蒲菜	nai tang pu cai	4600
+奶油培根意面	nai you pei gen yi mian	4600
+奶油奶酪	nai you nai lao	4600
+奶油意面	nai you yi mian	4600
+奶油泡芙	nai you pao fu	4600
+奶油爆米花	nai you bao mi hua	4600
+奶油草莓	nai you cao mei	4600
+奶油蘑菇汤	nai you mo gu tang	4600
+奶油蛋糕	nai you dan gao	4600
+奶泡	nai pao	4600
+奶皮子	nai pi zi	4600
+奶糖	nai tang	4600
+奶绿	nai lv	4600
+奶茶	nai cha	4600
+奶豆腐	nai dou fu	4600
+奶酥包	nai su bao	4600
+奶酪包	nai lao bao	4600
+奶酪贝果	nai lao bei guo	4600
+奶锅	nai guo	4600
+奶香土豆泥	nai xiang tu dou ni	4600
+奶香馒头	nai xiang man tou	4600
+奶黄包	nai huang bao	4600
+奶黄流沙包	nai huang liu sha bao	4600
+妃子笑	fei zi xiao	4600
+姑娘果	gu niang guo	4600
+姜撞奶	jiang zhuang nai	4600
+姜母鸭	jiang mu ya	4600
+姜汤面	jiang tang mian	4600
+姜片	jiang pian	4600
+姜葱炒花螺	jiang cong chao hua luo	4600
+姜葱炒蟹	jiang cong chao xie	4600
+姜黄粉	jiang huang fen	4600
+姬松茸	ji song rong	4600
+威化饼干	wei hua bing gan	4600
+威士忌	wei shi ji	4600
+娃娃菜	wa wa cai	4600
+婚宴	hun yan	4600
+嫩南瓜	nen nan gua	4600
+嫩姜	nen jiang	4600
+嫩煎牛排	nen jian niu pai	4600
+嫩肉	nen rou	4600
+嫩豆腐	nen dou fu	4600
+子姜	zi jiang	4600
+孜然	zi ran	4600
+孜然牛肉	zi ran niu rou	4600
+孜然籽	zi ran zi	4600
+孜然粉	zi ran fen	4600
+孜然粒	zi ran li	4600
+孜然羊肉	zi ran yang rou	4600
+宁夏手抓羊肉	ning xia shou zhua yang rou	4600
+宁式鳝丝	ning shi shan si	4600
+宁波年糕	ning bo nian gao	4600
+宁波汤圆	ning bo tang yuan	4600
+安化黑茶	an hua hei cha	4600
+安吉白茶	an ji bai cha	4600
+安庆炒面	an qing chao mian	4600
+安徽板面	an hui ban mian	4600
+安徽牛肉板面	an hui niu rou ban mian	4600
+安格斯牛肉堡	an ge si niu rou bao	4600
+安琪酵母	an qi jiao mu	4600
+宋嫂鱼羹	song sao yu geng	4600
+定胜糕	ding sheng gao	4600
+宜宾燃面	yi bin ran mian	4600
+客家三杯鸡	ke jia san bei ji	4600
+客家梅菜扣肉	ke jia mei cai kou rou	4600
+客家牛肉兜汤	ke jia niu rou dou tang	4600
+客家盐焗鸡	ke jia yan ju ji	4600
+客家酿豆腐	ke jia niang dou fu	4600
+宣威火腿	xuan wei huo tui	4600
+宫保鸡丁	gong bao ji ding	4600
+宫保鸡丁盖饭	gong bao ji ding gai fan	4600
+宫廷奶酪	gong ting nai lao	4600
+家常豆腐	jia chang dou fu	4600
+家常饼	jia chang bing	4600
+家庭聚餐	jia ting ju can	4600
+家烧带鱼	jia shao dai yu	4600
+家烧鲳鱼	jia shao chang yu	4600
+家烧黄鱼	jia shao huang yu	4600
+宽粉	kuan fen	4600
+宽面	kuan mian	4600
+密封袋	mi feng dai	4600
+密漏	mi lou	4600
+富平柿饼	fu ping shi bing	4600
+对虾	dui xia	4600
+寿司	shou si	4600
+寿喜烧	shou xi shao	4600
+寿喜锅	shou xi guo	4600
+寿宴	shou yan	4600
+封口机	feng kou ji	4600
+小冬瓜	xiao dong gua	4600
+小台农	xiao tai nong	4600
+小吃街	xiao chi jie	4600
+小土豆	xiao tu dou	4600
+小排	xiao pai	4600
+小杨生煎	xiao yang sheng jian	4600
+小油条	xiao you tiao	4600
+小火慢熬	xiao huo man ao	4600
+小火锅	xiao huo guo	4600
+小炒肉	xiao chao rou	4600
+小炒鸡丁	xiao chao ji ding	4600
+小炒黄牛肉	xiao chao huang niu rou	4600
+小煎鸡	xiao jian ji	4600
+小番茄	xiao fan qie	4600
+小白杏	xiao bai xing	4600
+小白菜	xiao bai cai	4600
+小磨香油	xiao mo xiang you	4600
+小章鱼	xiao zhang yu	4600
+小笼包	xiao long bao	4600
+小米	xiao mi	4600
+小米南瓜粥	xiao mi nan gua zhou	4600
+小米椒	xiao mi jiao	4600
+小米粥	xiao mi zhou	4600
+小米蕉	xiao mi jiao	4600
+小米辣	xiao mi la	4600
+小米辣干	xiao mi la gan	4600
+小米锅巴	xiao mi guo ba	4600
+小芋头	xiao yu tou	4600
+小茴香	xiao hui xiang	4600
+小葱	xiao cong	4600
+小酥肉	xiao su rou	4600
+小里脊	xiao li ji	4600
+小银鱼	xiao yin yu	4600
+小锅米线	xiao guo mi xian	4600
+小青柑	xiao qing gan	4600
+小青菜	xiao qing cai	4600
+小饼卷小葱	xiao bing juan xiao cong	4600
+小馄饨	xiao hun tun	4600
+小鱼干	xiao yu gan	4600
+小鸡炖蘑菇	xiao ji dun mo gu	4600
+小麦淀粉	xiao mai dian fen	4600
+小麦粉	xiao mai fen	4600
+小麻花	xiao ma hua	4600
+小黄鱼	xiao huang yu	4600
+小龙虾	xiao long xia	4600
+少冰	shao bing	4600
+少放糖	shao fang tang	4600
+少放饭	shao fang fan	4600
+少辣	shao la	4600
+尖椒	jian jiao	4600
+尖椒干豆腐	jian jiao gan dou fu	4600
+尖椒鸡	jian jiao ji	4600
+山东大包	shan dong da bao	4600
+山东煎饼	shan dong jian bing	4600
+山奈	shan nai	4600
+山核桃	shan he tao	4600
+山核桃味瓜子	shan he tao wei gua zi	4600
+山楂	shan zha	4600
+山楂卷	shan zha juan	4600
+山楂条	shan zha tiao	4600
+山楂片	shan zha pian	4600
+山楂球	shan zha qiu	4600
+山竹	shan zhu	4600
+山羊肉	shan yang rou	4600
+山茶油	shan cha you	4600
+山药	shan yao	4600
+山药排骨汤	shan yao pai gu tang	4600
+山药炒肉	shan yao chao rou	4600
+山药片	shan yao pian	4600
+山药糕	shan yao gao	4600
+山西刀削面	shan xi dao xiao mian	4600
+山西老陈醋	shan xi lao chen cu	4600
+岐山臊子面	qi shan sao zi mian	4600
+岳阳烧烤	yue yang shao kao	4600
+峨眉豆腐脑	e mei dou fu nao	4600
+崇明糕	chong ming gao	4600
+嵌入式烤箱	qian ru shi kao xiang	4600
+川北凉粉	chuan bei liang fen	4600
+川味凉面	chuan wei liang mian	4600
+川味腊肉	chuan wei la rou	4600
+川味腊肠	chuan wei la chang	4600
+川味香肠	chuan wei xiang chang	4600
+川菜	chuan cai	4600
+工作餐	gong zuo can	4600
+巧克力	qiao ke li	4600
+巧克力曲奇	qiao ke li qu qi	4600
+巨峰葡萄	ju feng pu tao	4600
+巨无霸	ju wu ba	4600
+巫山烤鱼	wu shan kao yu	4600
+巴斯克芝士蛋糕	ba si ke zhi shi dan gao	4600
+巴斯克蛋糕	ba si ke dan gao	4600
+巴旦木	ba dan mu	4600
+巴氏鲜奶	ba shi xian nai	4600
+巴沙鱼	ba sha yu	4600
+巴沙鱼柳	ba sha yu liu	4600
+布丁	bu ding	4600
+布丁奶茶	bu ding nai cha	4600
+布拉肠粉	bu la chang fen	4600
+布朗尼	bu lang ni	4600
+希腊酸奶	xi la suan nai	4600
+希鲮鱼	xi ling yu	4600
+帕玛森芝士	pa ma sen zhi shi	4600
+帝王蟹	di wang xie	4600
+带子	dai zi	4600
+带皮五花肉	dai pi wu hua rou	4600
+带鱼	dai yu	4600
+常德牛肉粉	chang de niu rou fen	4600
+常德酱板鸭	chang de jiang ban ya	4600
+常温	chang wen	4600
+干尧榴莲	gan yao liu lian	4600
+干海带	gan hai dai	4600
+干炒牛河	gan chao niu he	4600
+干炸响铃	gan zha xiang ling	4600
+干煸	gan bian	4600
+干煸四季豆	gan bian si ji dou	4600
+干煸土豆丝	gan bian tu dou si	4600
+干煸豆角	gan bian dou jiao	4600
+干碟	gan die	4600
+干红葡萄酒	gan hong pu tao jiu	4600
+干蒸烧卖	gan zheng shao mai	4600
+干豆腐	gan dou fu	4600
+干贝	gan bei	4600
+干贡菜	gan gong cai	4600
+干辣椒	gan la jiao	4600
+干酵母	gan jiao mu	4600
+干锅	gan guo	4600
+干锅包菜	gan guo bao cai	4600
+干锅千页豆腐	gan guo qian ye dou fu	4600
+干锅土豆片	gan guo tu dou pian	4600
+干锅手撕包菜	gan guo shou si bao cai	4600
+干锅排骨	gan guo pai gu	4600
+干锅牛蛙	gan guo niu wa	4600
+干锅肥肠	gan guo fei chang	4600
+干锅肥肠鸡	gan guo fei chang ji	4600
+干锅花菜	gan guo hua cai	4600
+干锅茶树菇	gan guo cha shu gu	4600
+干锅虾	gan guo xia	4600
+干锅鸡	gan guo ji	4600
+干饭人	gan fan ren	4600
+干香菇	gan xiang gu	4600
+平桥豆腐	ping qiao dou fu	4600
+平江酱干	ping jiang jiang gan	4600
+平菇	ping gu	4600
+平遥牛肉	ping yao niu rou	4600
+年夜饭	nian ye fan	4600
+年糕条	nian gao tiao	4600
+年糕火锅	nian gao huo guo	4600
+幽兰拿铁	you lan na tie	4600
+广东菜心	guang dong cai xin	4600
+广式早茶	guang shi zao cha	4600
+广式月饼	guang shi yue bing	4600
+广式烧鸭	guang shi shao ya	4600
+广式牛杂	guang shi niu za	4600
+广式糖水	guang shi tang shui	4600
+广式老火汤	guang shi lao huo tang	4600
+广式腊肠	guang shi la chang	4600
+庆丰包子	qing feng bao zi	4600
+庐州烤鸭	lu zhou kao ya	4600
+库尔勒香梨	ku er le xiang li	4600
+延吉冷面	yan ji leng mian	4600
+延边冷面	yan bian leng mian	4600
+建水烧豆腐	jian shui shao dou fu	4600
+开发票	kai fa piao	4600
+开口松子	kai kou song zi	4600
+开封灌汤包	kai feng guan tang bao	4600
+开心果	kai xin guo	4600
+开水白菜	kai shui bai cai	4600
+开背去虾线	kai bei qu xia xian	4600
+当归乌鸡汤	dang gui wu ji tang	4600
+彩椒	cai jiao	4600
+徐香猕猴桃	xu xiang mi hou tao	4600
+得莫利炖鱼	de mo li dun yu	4600
+微压锅	wei ya guo	4600
+微波炉	wei bo lu	4600
+微蒸烤一体机	wei zheng kao yi ti ji	4600
+微醺小酒	wei xun xiao jiu	4600
+德州扒鸡	de zhou pa ji	4600
+徽菜	hui cai	4600
+心里美	xin li mei	4600
+必吃榜	bi chi bang	4600
+性价比高	xing jia bi gao	4600
+怪味胡豆	guai wei hu dou	4600
+怪味花生	guai wei hua sheng	4600
+怪味豆	guai wei dou	4600
+怪味鸡	guai wei ji	4600
+恋爱豆腐果	lian ai dou fu guo	4600
+恐龙蛋	kong long dan	4600
+恒温壶	heng wen hu	4600
+恰巴塔	qia ba ta	4600
+惠灵顿牛排	hui ling dun niu pai	4600
+意大利面	yi da li mian	4600
+意式浓缩	yi shi nong suo	4600
+意式肉酱披萨	yi shi rou jiang pi sa	4600
+意面	yi mian	4600
+慕斯蛋糕	mu si dan gao	4600
+慢炖	man dun	4600
+成都火锅	cheng du huo guo	4600
+战斧牛排	zhan fu niu pai	4600
+戚风蛋糕	qi feng dan gao	4600
+扁桃仁	bian tao ren	4600
+扁肉	bian rou	4600
+扁豆	bian dou	4600
+扇贝	shan bei	4600
+扇骨	shan gu	4600
+手冲咖啡	shou chong ka fei	4600
+手冲壶	shou chong hu	4600
+手切羊肉	shou qie yang rou	4600
+手工拉面	shou gong la mian	4600
+手工水饺	shou gong shui jiao	4600
+手工芋圆	shou gong yu yuan	4600
+手打柠檬茶	shou da ning meng cha	4600
+手打牛肉丸	shou da niu rou wan	4600
+手打虾滑	shou da xia hua	4600
+手抓羊肉	shou zhua yang rou	4600
+手抓饭	shou zhua fan	4600
+手抓饼	shou zhua bing	4600
+手指饼干	shou zhi bing gan	4600
+手搓冰粉	shou cuo bing fen	4600
+手撕包菜	shou si bao cai	4600
+手撕牛肉	shou si niu rou	4600
+手撕素肉	shou si su rou	4600
+手撕茄子	shou si qie zi	4600
+手撕蟹柳	shou si xie liu	4600
+手撕鱿鱼	shou si you yu	4600
+手撕鸡	shou si ji	4600
+手撕鸡丝	shou si ji si	4600
+手擀面	shou gan mian	4600
+手枪腿	shou qiang tui	4600
+扎啤	zha pi	4600
+扒鸡	pa ji	4600
+打包盒	da bao he	4600
+打卡餐厅	da ka can ting	4600
+打卤面	da lu mian	4600
+打抛猪肉饭	da pao zhu rou fan	4600
+打花刀	da hua dao	4600
+打蛋器	da dan qi	4600
+打蛋盆	da dan pen	4600
+打边炉	da bian lu	4600
+扬州炒饭	yang zhou chao fan	4600
+扬州狮子头	yang zhou shi zi tou	4600
+把子肉	ba zi rou	4600
+折耳根	zhe er gen	4600
+折耳根拌腊肉	zhe er gen ban la rou	4600
+披萨	pi sa	4600
+抱子甘蓝	bao zi gan lan	4600
+抹茶千层	mo cha qian ceng	4600
+抹茶拿铁	mo cha na tie	4600
+抹茶粉	mo cha fen	4600
+担担面	dan dan mian	4600
+拆骨肉	chai gu rou	4600
+拆鱼羹	chai yu geng	4600
+拉条子	la tiao zi	4600
+拉格	la ge	4600
+拉皮	la pi	4600
+拉花	la hua	4600
+拉面	la mian	4600
+拌川	ban chuan	4600
+拌面	ban mian	4600
+拍黄瓜	pai huang gua	4600
+拔丝地瓜	ba si di gua	4600
+拔丝地瓜块	ba si di gua kuai	4600
+拔丝苹果	ba si ping guo	4600
+拔丝香蕉	ba si xiang jiao	4600
+拿破仑蛋糕	na po lun dan gao	4600
+拿铁	na tie	4600
+拿铁咖啡	na tie ka fei	4600
+挂糊	gua hu	4600
+挂耳咖啡	gua er ka fei	4600
+挂面	gua mian	4600
+捞化	lao hua	4600
+捞汁	lao zhi	4600
+换燕麦奶	huan yan mai nai	4600
+换脱脂奶	huan tuo zhi nai	4600
+换骨碟	huan gu die	4600
+掌中宝	zhang zhong bao	4600
+排队等位	pai dui deng wei	4600
+排骨	pai gu	4600
+排骨年糕	pai gu nian gao	4600
+排骨炖玉米	pai gu dun yu mi	4600
+排骨炖豆角	pai gu dun dou jiao	4600
+排骨焖面	pai gu men mian	4600
+排骨焖饭	pai gu men fan	4600
+排骨煲仔饭	pai gu bao zai fan	4600
+排骨酱	pai gu jiang	4600
+揉面	rou mian	4600
+提前预约	ti qian yu yue	4600
+提子	ti zi	4600
+提拉米苏	ti la mi su	4600
+提灯	ti deng	4600
+提鲜	ti xian	4600
+握寿司	wo shou si	4600
+揪面片	jiu mian pian	4600
+摆盘	bai pan	4600
+摩卡	mo ka	4600
+摩卡壶	mo ka hu	4600
+撒尿牛丸	sa niao niu wan	4600
+撸串	lu chuan	4600
+擀皮	gan pi	4600
+擀面杖	gan mian zhang	4600
+擀面皮	gan mian pi	4600
+擂椒拌饭	lei jiao ban fan	4600
+擂椒皮蛋	lei jiao pi dan	4600
+擂辣椒皮蛋	lei la jiao pi dan	4600
+擂辣椒茄子	lei la jiao qie zi	4600
+擦丝器	ca si qi	4600
+收口	shou kou	4600
+收汁	shou zhi	4600
+改刀	gai dao	4600
+放外卖柜	fang wai mai gui	4600
+放门口就行	fang men kou jiu xing	4600
+放题	fang ti	4600
+散白酒	san bai jiu	4600
+文思豆腐	wen si dou fu	4600
+文旦	wen dan	4600
+文昌鸡	wen chang ji	4600
+文火慢炖	wen huo man dun	4600
+文蛤	wen ge	4600
+斑节虾	ban jie xia	4600
+斑鱼火锅	ban yu huo guo	4600
+料理机	liao li ji	4600
+斩骨刀	zhan gu dao	4600
+新丰小吃	xin feng xiao chi	4600
+新加坡叻沙	xin jia po le sha	4600
+新疆大盘鸡	xin jiang da pan ji	4600
+新疆抓饭	xin jiang zhua fan	4600
+新疆炒米粉	xin jiang chao mi fen	4600
+新疆菜	xin jiang cai	4600
+新荣记沙蒜豆面	xin rong ji sha suan dou mian	4600
+方便面	fang bian mian	4600
+方竹笋	fang zhu sun	4600
+旋转小火锅	xuan zhuan xiao huo guo	4600
+无盐黄油	wu yan huang you	4600
+无碘盐	wu dian yan	4600
+无籽西瓜	wu zi xi gua	4600
+无糖	wu tang	4600
+无糖可乐	wu tang ke le	4600
+无糖气泡水	wu tang qi pao shui	4600
+无糖苏打水	wu tang su da shui	4600
+无糖豆浆	wu tang dou jiang	4600
+无花果	wu hua guo	4600
+无花果干	wu hua guo gan	4600
+无菌蛋	wu jun dan	4600
+无醇啤酒	wu chun pi jiu	4600
+无锡小笼包	wu xi xiao long bao	4600
+无锡酱排骨	wu xi jiang pai gu	4600
+无骨鸡柳	wu gu ji liu	4600
+无骨鸡爪	wu gu ji zhao	4600
+日式便当	ri shi bian dang	4600
+日式冷豆腐	ri shi leng dou fu	4600
+日式咖喱饭	ri shi ga li fan	4600
+日式寿喜锅	ri shi shou xi guo	4600
+日式拉面	ri shi la mian	4600
+日式料理	ri shi liao li	4600
+日式清酒	ri shi qing jiu	4600
+日式炸猪排	ri shi zha zhu pai	4600
+日式炸鸡块	ri shi zha ji kuai	4600
+日式烤肉	ri shi kao rou	4600
+日式烧鸟	ri shi shao niao	4600
+日式煎饺	ri shi jian jiao	4600
+日料	ri liao	4600
+日料放题	ri liao fang ti	4600
+日本威士忌	ri ben wei shi ji	4600
+日本豆腐	ri ben dou fu	4600
+早午餐	zao wu can	4600
+早餐机	zao can ji	4600
+旱黄瓜	han huang gua	4600
+旺火快炒	wang huo kuai chao	4600
+昂刺鱼	ang ci yu	4600
+明厨亮灶	ming chu liang zao	4600
+明虾	ming xia	4600
+星洲炒米粉	xing zhou chao mi fen	4600
+春卷	chun juan	4600
+春川铁板鸡	chun chuan tie ban ji	4600
+春笋	chun sun	4600
+春饼	chun bing	4600
+普洱茶	pu er cha	4600
+晴王	qing wang	4600
+暴打柠檬茶	bao da ning meng cha	4600
+暴风雪	bao feng xue	4600
+曲奇	qu qi	4600
+曲奇饼干	qu qi bing gan	4600
+曼特宁	man te ning	4600
+月桂叶	yue gui ye	4600
+月饼	yue bing	4600
+有机花菜	you ji hua cai	4600
+有机酱油	you ji jiang you	4600
+有点咸	you dian xian	4600
+有点油	you dian you	4600
+有点淡	you dian dan	4600
+有点辣	you dian la	4600
+有盐黄油	you yan huang you	4600
+朋友聚餐	peng you ju can	4600
+服务员买单	fu wu yuan mai dan	4600
+朗姆酒	lang mu jiu	4600
+望潮	wang chao	4600
+朝天椒	chao tian jiao	4600
+朝天椒干	chao tian jiao gan	4600
+木桶饭	mu tong fan	4600
+木瓜	mu gua	4600
+木瓜鲫鱼汤	mu gua ji yu tang	4600
+木糖醇	mu tang chun	4600
+木耳	mu er	4600
+木耳炒山药	mu er chao shan yao	4600
+木耳炒肉	mu er chao rou	4600
+木耳炒蛋	mu er chao dan	4600
+木耳菜	mu er cai	4600
+木薯淀粉	mu shu dian fen	4600
+木铲	mu chan	4600
+木须肉	mu xu rou	4600
+本帮熏鱼	ben bang xun yu	4600
+本帮红烧肉	ben bang hong shao rou	4600
+本帮菜	ben bang cai	4600
+杀猪菜	sha zhu cai	4600
+杂烩	za hui	4600
+杂粮煎饼	za liang jian bing	4600
+杂粮饭	za liang fan	4600
+杂粮馒头	za liang man tou	4600
+李子	li zi	4600
+杏仁	xing ren	4600
+杏仁糊	xing ren hu	4600
+杏仁豆腐	xing ren dou fu	4600
+杏仁酥	xing ren su	4600
+杏仁露	xing ren lu	4600
+杏子	xing zi	4600
+杏汁猪肺汤	xing zhi zhu fei tang	4600
+杏鲍菇	xing bao gu	4600
+杏鲍菇炒肉	xing bao gu chao rou	4600
+条头糕	tiao tou gao	4600
+杨枝甘露	yang zhi gan lu	4600
+杨枝甘露奶茶	yang zhi gan lu nai cha	4600
+杨桃	yang tao	4600
+杨梅	yang mei	4600
+杨梅干	yang mei gan	4600
+杨梅汁	yang mei zhi	4600
+杨梅酒	yang mei jiu	4600
+杭州小笼包	hang zhou xiao long bao	4600
+杭椒	hang jiao	4600
+松叶蟹	song ye xie	4600
+松子	song zi	4600
+松花菜	song hua cai	4600
+松花蛋	song hua dan	4600
+松茸	song rong	4600
+松茸炖鸡	song rong dun ji	4600
+松茸鲜	song rong xian	4600
+松露	song lu	4600
+松露巧克力	song lu qiao ke li	4600
+松露油	song lu you	4600
+松饼	song bing	4600
+松鼠桂鱼	song shu gui yu	4600
+松鼠鳜鱼	song shu gui yu	4600
+板栗	ban li	4600
+板栗仁	ban li ren	4600
+板栗南瓜	ban li nan gua	4600
+板栗烧鸡	ban li shao ji	4600
+板栗肉粽	ban li rou zong	4600
+板油	ban you	4600
+板烧鸡腿堡	ban shao ji tui bao	4600
+板腱	ban jian	4600
+板面	ban mian	4600
+板鸭	ban ya	4600
+枇杷	pi pa	4600
+果丹皮	guo dan pi	4600
+果冻	guo dong	4600
+果冻橙	guo dong cheng	4600
+果味啤酒	guo wei pi jiu	4600
+果茶	guo cha	4600
+果蔬脆	guo shu cui	4600
+枣夹核桃	zao jia he tao	4600
+枣庄辣子鸡	zao zhuang la zi ji	4600
+枣泥酥	zao ni su	4600
+枣花蜜	zao hua mi	4600
+枫糖浆	feng tang jiang	4600
+枫镇大肉面	feng zhen da rou mian	4600
+架子肉	jia zi rou	4600
+枸杞叶	gou qi ye	4600
+枸杞茶	gou qi cha	4600
+柚C美式	you c mei shi	4600
+柚子	you zi	4600
+柠檬	ning meng	4600
+柠檬叶	ning meng ye	4600
+柠檬撒撇	ning meng sa pie	4600
+柠檬无骨鸡爪	ning meng wu gu ji zhao	4600
+柠檬水	ning meng shui	4600
+柠檬茶	ning meng cha	4600
+柱侯牛腩	zhu hou niu nan	4600
+柱侯酱	zhu hou jiang	4600
+柳州螺蛳粉	liu zhou luo si fen	4600
+柴鸡	chai ji	4600
+柴鸡蛋	chai ji dan	4600
+柿子	shi zi	4600
+柿子糊塌	shi zi hu ta	4600
+柿饼	shi bing	4600
+树莓	shu mei	4600
+栖凤渡鱼粉	qi feng du yu fen	4600
+栲栳栳	kao lao lao	4600
+核桃	he tao	4600
+核桃仁	he tao ren	4600
+核桃油	he tao you	4600
+核桃酥	he tao su	4600
+核桃露	he tao lu	4600
+格仔饼	ge zai bing	4600
+格瓦斯	ge wa si	4600
+桂圆干	gui yuan gan	4600
+桂林卤菜粉	gui lin lu cai fen	4600
+桂林米粉	gui lin mi fen	4600
+桂皮	gui pi	4600
+桂花拿铁	gui hua na tie	4600
+桂花米糕	gui hua mi gao	4600
+桂花糕	gui hua gao	4600
+桂花糖藕	gui hua tang ou	4600
+桂花茶	gui hua cha	4600
+桂花酒	gui hua jiu	4600
+桂花酸梅汤	gui hua suan mei tang	4600
+桂鱼	gui yu	4600
+桃子	tao zi	4600
+桃红葡萄酒	tao hong pu tao jiu	4600
+桃胶雪燕	tao jiao xue yan	4600
+桃脯	tao fu	4600
+桃酥	tao su	4600
+案板	an ban	4600
+桑拿鱼	sang na yu	4600
+桑拿鸡	sang na ji	4600
+桑葚	sang ren	4600
+桔子	ju zi	4600
+梁山鸡	liang shan ji	4600
+梅头肉	mei tou rou	4600
+梅子	mei zi	4600
+梅子酒	mei zi jiu	4600
+梅干菜	mei gan cai	4600
+梅干菜扣肉	mei gan cai kou rou	4600
+梅干菜扣肉饼	mei gan cai kou rou bing	4600
+梅干菜烧肉	mei gan cai shao rou	4600
+梅干菜肉包	mei gan cai rou bao	4600
+梅干菜饼	mei gan cai bing	4600
+梅花糕	mei hua gao	4600
+梅花肉	mei hua rou	4600
+梅菜扣肉	mei cai kou rou	4600
+梭子蟹	suo zi xie	4600
+梭子蟹炒年糕	suo zi xie chao nian gao	4600
+梳打饼干	shu da bing gan	4600
+棉花糖	mian hua tang	4600
+棒棒糖	bang bang tang	4600
+棒棒鸡	bang bang ji	4600
+棱丝瓜	leng si gua	4600
+植物奶油	zhi wu nai you	4600
+椒盐	jiao yan	4600
+椒盐九肚鱼	jiao yan jiu du yu	4600
+椒盐排条	jiao yan pai tiao	4600
+椒盐排骨	jiao yan pai gu	4600
+椒盐濑尿虾	jiao yan lai niao xia	4600
+椒盐皮皮虾	jiao yan pi pi xia	4600
+椒盐粉	jiao yan fen	4600
+椒盐酥肉	jiao yan su rou	4600
+椒盐龙头鱼	jiao yan long tou yu	4600
+椒麻鱼	jiao ma yu	4600
+椒麻鸡	jiao ma ji	4600
+椰奶	ye nai	4600
+椰奶冻	ye nai dong	4600
+椰子	ye zi	4600
+椰子水	ye zi shui	4600
+椰子油	ye zi you	4600
+椰子鸡	ye zi ji	4600
+椰子鸡火锅	ye zi ji huo guo	4600
+椰果奶茶	ye guo nai cha	4600
+椰汁西米露	ye zhi xi mi lu	4600
+椰浆饭	ye jiang fan	4600
+椰蓉包	ye rong bao	4600
+椰青美式	ye qing mei shi	4600
+椴树蜜	duan shu mi	4600
+榛子	zhen zi	4600
+榛果拿铁	zhen guo na tie	4600
+榨汁机	zha zhi ji	4600
+榨菜	zha cai	4600
+榨菜头	zha cai tou	4600
+榨菜肉丝汤	zha cai rou si tang	4600
+榨菜肉丝面	zha cai rou si mian	4600
+榴莲	liu lian	4600
+榴莲千层	liu lian qian ceng	4600
+榴莲披萨	liu lian pi sa	4600
+榴莲班戟	liu lian ban ji	4600
+榴莲西米露	liu lian xi mi lu	4600
+槐花	huai hua	4600
+槟榔芋泥	bing lang yu ni	4600
+樟茶鸭	zhang cha ya	4600
+樱桃	ying tao	4600
+樱桃肉	ying tao rou	4600
+樱桃萝卜	ying tao luo bo	4600
+橄榄	gan lan	4600
+橘子	ju zi	4600
+橙C美式	cheng c mei shi	4600
+橙子	cheng zi	4600
+橙汁	cheng zhi	4600
+橡皮糖	xiang pi tang	4600
+欧芹	ou qin	4600
+歌乐山辣子鸡	ge le shan la zi ji	4600
+歌剧院蛋糕	ge ju yuan dan gao	4600
+正定八大碗	zheng ding ba da wan	4600
+正山小种	zheng shan xiao zhong	4600
+正常冰	zheng chang bing	4600
+正常糖	zheng chang tang	4600
+武冈卤干	wu gang lu gan	4600
+武夷岩茶	wu yi yan cha	4600
+武昌鱼	wu chang yu	4600
+武汉热干面	wu han re gan mian	4600
+死面饼	si mian bing	4600
+母蟹	mu xie	4600
+每日坚果	mei ri jian guo	4600
+比目鱼	bi mu yu	4600
+毛巾卷	mao jin juan	4600
+毛桃	mao tao	4600
+毛毛虫面包	mao mao chong mian bao	4600
+毛氏红烧肉	mao shi hong shao rou	4600
+毛肚	mao du	4600
+毛芋	mao yu	4600
+毛蛤	mao ge	4600
+毛蟹	mao xie	4600
+毛蟹年糕	mao xie nian gao	4600
+毛血旺	mao xue wang	4600
+毛豆	mao dou	4600
+毛豆腐	mao dou fu	4600
+气泡水	qi pao shui	4600
+水丝瓜	shui si gua	4600
+水仙茶	shui xian cha	4600
+水晶虾仁	shui jing xia ren	4600
+水晶虾饺	shui jing xia jiao	4600
+水杯	shui bei	4600
+水果	shui guo	4600
+水果刀	shui guo dao	4600
+水果捞	shui guo lao	4600
+水果汤圆	shui guo tang yuan	4600
+水果沙拉	shui guo sha la	4600
+水果玉米	shui guo yu mi	4600
+水果糖	shui guo tang	4600
+水果茶	shui guo cha	4600
+水果萝卜	shui guo luo bo	4600
+水果蛋糕	shui guo dan gao	4600
+水果黄瓜	shui guo huang gua	4600
+水煮	shui zhu	4600
+水煮毛肚	shui zhu mao du	4600
+水煮牛肉	shui zhu niu rou	4600
+水煮玉米	shui zhu yu mi	4600
+水煮肉片	shui zhu rou pian	4600
+水煮花生	shui zhu hua sheng	4600
+水煮蛋	shui zhu dan	4600
+水煮鱼	shui zhu yu	4600
+水牛奶	shui niu nai	4600
+水盆羊肉	shui pen yang rou	4600
+水萝卜	shui luo bo	4600
+水蒸蛋	shui zheng dan	4600
+水蜜桃	shui mi tao	4600
+水豆腐	shui dou fu	4600
+水面筋	shui mian jin	4600
+水饺	shui jiao	4600
+永嘉麦饼	yong jia mai bing	4600
+汁水饱满	zhi shui bao man	4600
+汉堡	han bao	4600
+江湖菜	jiang hu cai	4600
+江米条	jiang mi tiao	4600
+江蟹生	jiang xie sheng	4600
+汤勺	tang shao	4600
+汤匙	tang chi	4600
+汤圆	tang yuan	4600
+汤碗	tang wan	4600
+汤锅	tang guo	4600
+汤鲜味美	tang xian wei mei	4600
+汽锅鸡	qi guo ji	4600
+沃柑	wo gan	4600
+沈阳烤鸡架	shen yang kao ji jia	4600
+沙丁鱼	sha ding yu	4600
+沙冰	sha bing	4600
+沙县小吃	sha xian xiao chi	4600
+沙县拌面	sha xian ban mian	4600
+沙县蒸饺	sha xian zheng jiao	4600
+沙姜鸡	sha jiang ji	4600
+沙拉	sha la	4600
+沙棘	sha ji	4600
+沙爹肉串	sha die rou chuan	4600
+沙爹金钱肚	sha die jin qian du	4600
+沙琪玛	sha qi ma	4600
+沙田柚	sha tian you	4600
+沙茶酱	sha cha jiang	4600
+沙茶面	sha cha mian	4600
+沙蒜豆面	sha suan dou mian	4600
+沥水篮	li shui lan	4600
+河南烩面	he nan hui mian	4600
+河虾	he xia	4600
+河蟹	he xie	4600
+沸腾鱼	fei teng yu	4600
+油刷	you shua	4600
+油旋	you xuan	4600
+油条	you tiao	4600
+油果	you guo	4600
+油栗	you li	4600
+油格	you ge	4600
+油桃	you tao	4600
+油泼面	you po mian	4600
+油渣炒青菜	you zha chao qing cai	4600
+油温计	you wen ji	4600
+油炸	you zha	4600
+油炸糕	you zha gao	4600
+油烟机	you yan ji	4600
+油焖大虾	you men da xia	4600
+油焖春笋	you men chun sun	4600
+油焖茄子	you men qie zi	4600
+油爆双脆	you bao shuang cui	4600
+油爆虾	you bao xia	4600
+油碟	you die	4600
+油纸	you zhi	4600
+油茶	you cha	4600
+油茶面	you cha mian	4600
+油茶麻花	you cha ma hua	4600
+油菜	you cai	4600
+油豆皮	you dou pi	4600
+油豆腐	you dou fu	4600
+油豆角	you dou jiao	4600
+油醋汁	you cu zhi	4600
+油面筋	you mian jin	4600
+油面筋塞肉	you mian jin sai rou	4600
+油饼	you bing	4600
+油鸡饭	you ji fan	4600
+油麦菜	you mai cai	4600
+沾化冬枣	zhan hua dong zao	4600
+泉州面线糊	quan zhou mian xian hu	4600
+泉水鸡	quan shui ji	4600
+法压壶	fa ya hu	4600
+法式洋葱汤	fa shi yang cong tang	4600
+法式鹅肝	fa shi e gan	4600
+法棍	fa gun	4600
+法香	fa xiang	4600
+泡椒	pao jiao	4600
+泡椒凤爪	pao jiao feng zhua	4600
+泡椒牛蛙	pao jiao niu wa	4600
+泡椒米线	pao jiao mi xian	4600
+泡椒酱	pao jiao jiang	4600
+泡椒鸡杂	pao jiao ji za	4600
+泡椒鸡爪	pao jiao ji zhao	4600
+泡芙	pao fu	4600
+泡菜	pao cai	4600
+泡菜汤	pao cai tang	4600
+泡菜炒饭	pao cai chao fan	4600
+泡菜豆腐汤	pao cai dou fu tang	4600
+泡菜锅	pao cai guo	4600
+泡菜饼	pao cai bing	4600
+泡面	pao mian	4600
+波士顿龙虾	bo shi dun long xia	4600
+波霸奶茶	bo ba nai cha	4600
+波龙	bo long	4600
+泥鳅	ni qiu	4600
+泰国香米	tai guo xiang mi	4600
+泰式奶茶	tai shi nai cha	4600
+泰式打抛饭	tai shi da pao fan	4600
+泰式料理	tai shi liao li	4600
+泰式炒河粉	tai shi chao he fen	4600
+泰式绿柠檬茶	tai shi lv ning meng cha	4600
+洋槐蜜	yang huai mi	4600
+洋甘菊茶	yang gan ju cha	4600
+洋芋	yang yu	4600
+洋芋粑	yang yu ba	4600
+洋葱	yang cong	4600
+洋葱圈	yang cong quan	4600
+洋葱圈零食	yang cong quan ling shi	4600
+洋葱拌木耳	yang cong ban mu er	4600
+洋葱炒牛肉	yang cong chao niu rou	4600
+洋葱炒肉	yang cong chao rou	4600
+洋葱炒蛋	yang cong chao dan	4600
+洗碗机	xi wan ji	4600
+洗菜盆	xi cai pen	4600
+洛神花茶	luo shen hua cha	4600
+洛阳水席	luo yang shui xi	4600
+洞藏酒	dong cang jiu	4600
+津市牛肉粉	jin shi niu rou fen	4600
+活鱼	huo yu	4600
+流心奶黄月饼	liu xin nai huang yue bing	4600
+流沙包	liu sha bao	4600
+浅烘	qian hong	4600
+浅盘	qian pan	4600
+浆水面	jiang shui mian	4600
+浆面条	jiang mian tiao	4600
+济南把子肉	ji nan ba zi rou	4600
+浓汤宝	nong tang bao	4600
+浓缩咖啡	nong suo ka fei	4600
+浓香型白酒	nong xiang xing bai jiu	4600
+浙菜	zhe cai	4600
+海南鸡饭	hai nan ji fan	4600
+海参	hai shen	4600
+海参崴	hai shen wei	4600
+海带	hai dai	4600
+海带丝	hai dai si	4600
+海带排骨汤	hai dai pai gu tang	4600
+海带汤	hai dai tang	4600
+海带牛肉汤	hai dai niu rou tang	4600
+海带结	hai dai jie	4600
+海带苗	hai dai miao	4600
+海底椰雪梨汤	hai di ye xue li tang	4600
+海棠糕	hai tang gao	4600
+海盐	hai yan	4600
+海盐奶盖	hai yan nai gai	4600
+海米	hai mi	4600
+海绵蛋糕	hai mian dan gao	4600
+海肠捞饭	hai chang lao fan	4600
+海胆	hai dan	4600
+海胆刺身	hai dan ci shen	4600
+海胆黄	hai dan huang	4600
+海苔	hai tai	4600
+海苔碎	hai tai sui	4600
+海苔肉松小贝	hai tai rou song xiao bei	4600
+海菜包子	hai cai bao zi	4600
+海虹	hai hong	4600
+海蛎	hai li	4600
+海蛎子	hai li zi	4600
+海蛎煎	hai li jian	4600
+海蜇	hai zhe	4600
+海蜇头	hai zhe tou	4600
+海蜇皮	hai zhe pi	4600
+海螺	hai luo	4600
+海鱼	hai yu	4600
+海鲈鱼	hai lu yu	4600
+海鲜丼	hai xian dan	4600
+海鲜意面	hai xian yi mian	4600
+海鲜披萨	hai xian pi sa	4600
+海鲜炒面	hai xian chao mian	4600
+海鲜炒饭	hai xian chao fan	4600
+海鲜焖饭	hai xian men fan	4600
+海鲜粉丝煲	hai xian fen si bao	4600
+海鲜粥	hai xian zhou	4600
+海鲜自助	hai xian zi zhu	4600
+海鲜菇	hai xian gu	4600
+海鲜葱饼	hai xian cong bing	4600
+海鲜酱	hai xian jiang	4600
+海鲜酱油	hai xian jiang you	4600
+海鳗	hai man	4600
+海鸭蛋	hai ya dan	4600
+消毒柜	xiao du gui	4600
+润喉糖	run hou tang	4600
+涮毛肚	shuan mao du	4600
+涮火锅	shuan huo guo	4600
+涮羊肉	shuan yang rou	4600
+涮肥牛	shuan fei niu	4600
+淄博烧烤	zi bo shao kao	4600
+淡奶油	dan nai you	4600
+淡水鱼	dan shui yu	4600
+淡糟香螺片	dan zao xiang luo pian	4600
+淡菜	dan cai	4600
+淮南牛肉汤	huai nan niu rou tang	4600
+淮山	huai shan	4600
+淮扬菜	huai yang cai	4600
+深井烧鹅	shen jing shao e	4600
+深烘	shen hong	4600
+深盘	shen pan	4600
+混合坚果	hun he jian guo	4600
+清汤抄手	qing tang chao shou	4600
+清汤牛肉面	qing tang niu rou mian	4600
+清汤锅	qing tang guo	4600
+清油火锅	qing you huo guo	4600
+清淡一点	qing dan yi dian	4600
+清炒	qing chao	4600
+清炒上海青	qing chao shang hai qing	4600
+清炒丝瓜	qing chao si gua	4600
+清炒南瓜	qing chao nan gua	4600
+清炒四季豆	qing chao si ji dou	4600
+清炒小白菜	qing chao xiao bai cai	4600
+清炒山药	qing chao shan yao	4600
+清炒油麦菜	qing chao you mai cai	4600
+清炒空心菜	qing chao kong xin cai	4600
+清炒红菜苔	qing chao hong cai tai	4600
+清炒芦笋	qing chao lu sun	4600
+清炒苋菜	qing chao xian cai	4600
+清炒苦瓜	qing chao ku gua	4600
+清炒茼蒿	qing chao tong hao	4600
+清炒荷兰豆	qing chao he lan dou	4600
+清炒菠菜	qing chao bo cai	4600
+清炒藕片	qing chao ou pian	4600
+清炒虾仁	qing chao xia ren	4600
+清炒西葫芦	qing chao xi hu lu	4600
+清炒豌豆尖	qing chao wan dou jian	4600
+清炖	qing dun	4600
+清炖排骨	qing dun pai gu	4600
+清炖狮子头	qing dun shi zi tou	4600
+清炖羊肉汤	qing dun yang rou tang	4600
+清爽解腻	qing shuang jie ni	4600
+清蒸	qing zheng	4600
+清蒸东星斑	qing zheng dong xing ban	4600
+清蒸多宝鱼	qing zheng duo bao yu	4600
+清蒸小龙虾	qing zheng xiao long xia	4600
+清蒸带鱼	qing zheng dai yu	4600
+清蒸桂鱼	qing zheng gui yu	4600
+清蒸白鲳	qing zheng bai chang	4600
+清蒸石斑鱼	qing zheng shi ban yu	4600
+清蒸老虎斑	qing zheng lao hu ban	4600
+清蒸鲈鱼	qing zheng lu yu	4600
+清蒸鳜鱼	qing zheng gui yu	4600
+清蒸黄花鱼	qing zheng huang hua yu	4600
+清补凉	qing bu liang	4600
+清远鸡	qing yuan ji	4600
+清酒	qing jiu	4600
+清香型白酒	qing xiang xing bai jiu	4600
+渝菜	yu cai	4600
+温州瘦肉丸	wen zhou shou rou wan	4600
+温州糯米饭	wen zhou nuo mi fan	4600
+温州鱼丸	wen zhou yu wan	4600
+温度计	wen du ji	4600
+温热	wen re	4600
+港式茶餐厅	gang shi cha can ting	4600
+港式蛋挞	gang shi dan ta	4600
+湘味小炒	xiang wei xiao chao	4600
+湘潭米粉	xiang tan mi fen	4600
+湘菜	xiang cai	4600
+湘西泡菜	xiang xi pao cai	4600
+湘西烤串	xiang xi kao chuan	4600
+湘西腊肉	xiang xi la rou	4600
+湘阴面	xiang yin mian	4600
+湿巾	shi jin	4600
+湿炒牛河	shi chao niu he	4600
+溏心蛋	tang xin dan	4600
+溜肉段	liu rou duan	4600
+溜肝尖	liu gan jian	4600
+滇红	dian hong	4600
+滑子菇	hua zi gu	4600
+滑炒	hua chao	4600
+滑蛋牛肉饭	hua dan niu rou fan	4600
+滑蛋虾仁	hua dan xia ren	4600
+滑蛋虾仁饭	hua dan xia ren fan	4600
+滑鸡煲仔饭	hua ji bao zai fan	4600
+滑鸡粥	hua ji zhou	4600
+满月酒	man yue jiu	4600
+满杯百香果	man bei bai xiang guo	4600
+滤网	lv wang	4600
+滩羊	tan yang	4600
+漏勺	lou shao	4600
+漏奶华	lou nai hua	4600
+漳州卤面	zhang zhou lu mian	4600
+潍坊朝天锅	wei fang chao tian guo	4600
+潍坊肉火烧	wei fang rou huo shao	4600
+潮汕卤鹅	chao shan lu e	4600
+潮汕牛筋丸	chao shan niu jin wan	4600
+潮汕牛肉丸	chao shan niu rou wan	4600
+潮汕牛肉火锅	chao shan niu rou huo guo	4600
+潮汕牛肉锅	chao shan niu rou guo	4600
+潮汕生腌	chao shan sheng yan	4600
+潮汕砂锅粥	chao shan sha guo zhou	4600
+澄粉	cheng fen	4600
+澳芒	ao mang	4600
+澳龙	ao long	4600
+濑尿虾	lai niao xia	4600
+灌汤包	guan tang bao	4600
+灌肠	guan chang	4600
+火候刚好	huo hou gang hao	4600
+火晶柿子	huo jing shi zi	4600
+火烧	huo shao	4600
+火爆肥肠	huo bao fei chang	4600
+火爆脆肠	huo bao cui chang	4600
+火爆腰花	huo bao yao hua	4600
+火爆黄喉	huo bao huang hou	4600
+火腿	huo tui	4600
+火腿三明治	huo tui san ming zhi	4600
+火腿肠	huo tui chang	4600
+火腿蛋炒饭	huo tui dan chao fan	4600
+火车头河粉	huo che tou he fen	4600
+火锅	huo guo	4600
+火锅底料	huo guo di liao	4600
+火锅自助	huo guo zi zhu	4600
+火锅蘸料	huo guo zhan liao	4600
+火锅鸡	huo guo ji	4600
+火鸡拌面	huo ji ban mian	4600
+火鸡面	huo ji mian	4600
+火龙果	huo long guo	4600
+灯影牛肉	deng ying niu rou	4600
+灯盏糕	deng zhan gao	4600
+灯笼果	deng long guo	4600
+灯笼椒	deng long jiao	4600
+灯笼椒干	deng long jiao gan	4600
+灰枣	hui zao	4600
+灰灰菜	hui hui cai	4600
+灰豆子	hui dou zi	4600
+炒乌冬	chao wu dong	4600
+炒冰	chao bing	4600
+炒凉粉	chao liang fen	4600
+炒年糕	chao nian gao	4600
+炒河粉	chao he fen	4600
+炒牛奶	chao niu nai	4600
+炒米粉	chao mi fen	4600
+炒粉	chao fen	4600
+炒粿条	chao guo tiao	4600
+炒糖色	chao tang se	4600
+炒肝	chao gan	4600
+炒酸奶	chao suan nai	4600
+炒锅	chao guo	4600
+炒面	chao mian	4600
+炒面片	chao mian pian	4600
+炒饭	chao fan	4600
+炒饵块	chao er kuai	4600
+炒饼	chao bing	4600
+炖罐	dun guan	4600
+炖肉料	dun rou liao	4600
+炖蹄花	dun ti hua	4600
+炖鸡料	dun ji liao	4600
+炙子烤肉	zhi zi kao rou	4600
+炙烤	zhi kao	4600
+炙烤三文鱼	zhi kao san wen yu	4600
+炝炒包菜	qiang chao bao cai	4600
+炝蟹	qiang xie	4600
+炝锅	qiang guo	4600
+炝锅面	qiang guo mian	4600
+炫饭	xuan fan	4600
+炭火烤肉	tan huo kao rou	4600
+炭火烧烤	tan huo shao kao	4600
+炭火铜锅	tan huo tong guo	4600
+炭烤	tan kao	4600
+炭烤猪颈肉	tan kao zhu jing rou	4600
+炭烤笋干	tan kao sun gan	4600
+炭烧腰果	tan shao yao guo	4600
+炸串	zha chuan	4600
+炸小黄鱼	zha xiao huang yu	4600
+炸带鱼	zha dai yu	4600
+炸平菇	zha ping gu	4600
+炸年糕	zha nian gao	4600
+炸春卷	zha chun juan	4600
+炸牛奶	zha niu nai	4600
+炸猪排	zha zhu pai	4600
+炸糕	zha gao	4600
+炸腐竹	zha fu zhu	4600
+炸臭豆腐	zha chou dou fu	4600
+炸茄盒	zha qie he	4600
+炸薯条	zha shu tiao	4600
+炸藕盒	zha ou he	4600
+炸蘑菇	zha mo gu	4600
+炸虾	zha xia	4600
+炸酱面	zha jiang mian	4600
+炸鱼薯条	zha yu shu tiao	4600
+炸鲜奶	zha xian nai	4600
+炸鸡	zha ji	4600
+炸鸡排	zha ji pai	4600
+炸鸡架	zha ji jia	4600
+炸鸡柳	zha ji liu	4600
+炸鸡翅	zha ji chi	4600
+炸鸡腿	zha ji tui	4600
+点缀	dian zhui	4600
+炼乳	lian ru	4600
+烂糊肉丝	lan hu rou si	4600
+烘焙	hong bei	4600
+烘焙纸	hong bei zhi	4600
+烙锅	lao guo	4600
+烙饼	lao bing	4600
+烟台焖子	yan tai men zi	4600
+烟台苹果	yan tai ping guo	4600
+烟熏	yan xun	4600
+烟熏三文鱼	yan xun san wen yu	4600
+烟笋炒腊肉	yan sun chao la rou	4600
+烟薯	yan shu	4600
+烤串	kao chuan	4600
+烤乳扇	kao ru shan	4600
+烤乳猪	kao ru zhu	4600
+烤五花肉	kao wu hua rou	4600
+烤全羊	kao quan yang	4600
+烤冷面	kao leng mian	4600
+烤包子	kao bao zi	4600
+烤千页豆腐	kao qian ye dou fu	4600
+烤厚切五花肉	kao hou qie wu hua rou	4600
+烤台湾烤肠	kao tai wan kao chang	4600
+烤吐司	kao tu si	4600
+烤土豆片	kao tu dou pian	4600
+烤多春鱼	kao duo chun yu	4600
+烤大肠	kao da chang	4600
+烤大蒜	kao da suan	4600
+烤大虾	kao da xia	4600
+烤奥尔良鸡翅	kao ao er liang ji chi	4600
+烤奶	kao nai	4600
+烤年糕	kao nian gao	4600
+烤扇贝	kao shan bei	4600
+烤掌中宝	kao zhang zhong bao	4600
+烤排骨	kao pai gu	4600
+烤春鸡	kao chun ji	4600
+烤板筋	kao ban jin	4600
+烤梅花肉	kao mei hua rou	4600
+烤棉花糖	kao mian hua tang	4600
+烤淀粉肠	kao dian fen chang	4600
+烤火腿肠	kao huo tui chang	4600
+烤牛五花	kao niu wu hua	4600
+烤牛油	kao niu you	4600
+烤牛筋	kao niu jin	4600
+烤牛肉筋	kao niu rou jin	4600
+烤牛肋条	kao niu lei tiao	4600
+烤牛胸口	kao niu xiong kou	4600
+烤牛舌	kao niu she	4600
+烤猪皮	kao zhu pi	4600
+烤猪蹄	kao zhu ti	4600
+烤猪颈肉	kao zhu jing rou	4600
+烤玉米	kao yu mi	4600
+烤玉米粒	kao yu mi li	4600
+烤生蚝	kao sheng hao	4600
+烤盘	kao pan	4600
+烤秋刀鱼	kao qiu dao yu	4600
+烤箱	kao xiang	4600
+烤红薯	kao hong shu	4600
+烤网	kao wang	4600
+烤羊排	kao yang pai	4600
+烤羊肉串	kao yang rou chuan	4600
+烤羊腰	kao yang yao	4600
+烤羊腿	kao yang tui	4600
+烤羊蛋	kao yang dan	4600
+烤肉	kao rou	4600
+烤肉拌饭	kao rou ban fan	4600
+烤肉自助	kao rou zi zhu	4600
+烤肠	kao chang	4600
+烤肥肠	kao fei chang	4600
+烤脑花	kao nao hua	4600
+烤花生	kao hua sheng	4600
+烤茄子	kao qie zi	4600
+烤菠萝	kao bo luo	4600
+烤藕片	kao ou pian	4600
+烤豆干	kao dou gan	4600
+烤豆皮	kao dou pi	4600
+烤辣椒	kao la jiao	4600
+烤金针菇	kao jin zhen gu	4600
+烤雪花牛肉	kao xue hua niu rou	4600
+烤青椒	kao qing jiao	4600
+烤面包片	kao mian bao pian	4600
+烤面筋	kao mian jin	4600
+烤韭菜	kao jiu cai	4600
+烤馒头片	kao man tou pian	4600
+烤馕	kao nang	4600
+烤香菇	kao xiang gu	4600
+烤鱼	kao yu	4600
+烤鱼片	kao yu pian	4600
+烤鱼豆腐	kao yu dou fu	4600
+烤鱿鱼	kao you yu	4600
+烤鱿鱼须	kao you yu xu	4600
+烤鲫鱼	kao ji yu	4600
+烤鳗鱼	kao man yu	4600
+烤鳗鱼饭	kao man yu fan	4600
+烤鸡心	kao ji xin	4600
+烤鸡爪	kao ji zhao	4600
+烤鸡翅	kao ji chi	4600
+烤鸡肉串	kao ji rou chuan	4600
+烤鸡胗	kao ji zhen	4600
+烤鸡脆骨	kao ji cui gu	4600
+烤鸭肠	kao ya chang	4600
+烤鸭舌	kao ya she	4600
+烤麸	kao fu	4600
+烤黄花鱼	kao huang hua yu	4600
+烧仙草	shao xian cao	4600
+烧仙草奶茶	shao xian cao nai cha	4600
+烧味双拼	shao wei shuang pin	4600
+烧椒皮蛋	shao jiao pi dan	4600
+烧椒茄子	shao jiao qie zi	4600
+烧烤	shao kao	4600
+烧烤味薯片	shao kao wei shu pian	4600
+烧烤摊	shao kao tan	4600
+烧烤撒料	shao kao sa liao	4600
+烧烤料	shao kao liao	4600
+烧白	shao bai	4600
+烧肉粽	shao rou zong	4600
+烧腊	shao la	4600
+烧腊拼盘	shao la pin pan	4600
+烧酒	shao jiu	4600
+烧饵块	shao er kuai	4600
+烧饼	shao bing	4600
+烧鸡公	shao ji gong	4600
+烧鸭饭	shao ya fan	4600
+烧鹅	shao e	4600
+烧鹅饭	shao e fan	4600
+烩面	hui mian	4600
+烫干丝	tang gan si	4600
+烫面炸糕	tang mian zha gao	4600
+烫面蒸饺	tang mian zheng jiao	4600
+热一下	re yi xia	4600
+热可可	re ke ke	4600
+热巧克力	re qiao ke li	4600
+热干面	re gan mian	4600
+热拿铁	re na tie	4600
+热牛奶	re niu nai	4600
+热狗	re gou	4600
+热狗肠	re gou chang	4600
+热红酒	re hong jiu	4600
+热美式	re mei shi	4600
+热豆浆	re dou jiang	4600
+热锅凉油	re guo liang you	4600
+焖烧	men shao	4600
+焖烧杯	men shao bei	4600
+焖肉面	men rou mian	4600
+焖面	men mian	4600
+焖饭	men fan	4600
+焖饼	men bing	4600
+焗烤	ju kao	4600
+焗蜗牛	ju wo niu	4600
+焗饭	ju fan	4600
+焙煎芝麻酱	bei jian zhi ma jiang	4600
+焦糖化	jiao tang hua	4600
+焦糖奶茶	jiao tang nai cha	4600
+焦糖布丁	jiao tang bu ding	4600
+焦糖拿铁	jiao tang na tie	4600
+焦糖爆米花	jiao tang bao mi hua	4600
+焦糖玛奇朵	jiao tang ma qi duo	4600
+焦糖瓜子	jiao tang gua zi	4600
+焯水	chao shui	4600
+煎烤机	jian kao ji	4600
+煎蛋	jian dan	4600
+煎锅	jian guo	4600
+煎饺	jian jiao	4600
+煎饼	jian bing	4600
+煎饼卷大葱	jian bing juan da cong	4600
+煎饼果子	jian bing guo zi	4600
+煎鸡蛋	jian ji dan	4600
+照烧汁	zhao shao zhi	4600
+照烧鸡腿	zhao shao ji tui	4600
+照烧鸡腿饭	zhao shao ji tui fan	4600
+煮茶器	zhu cha qi	4600
+煲仔饭	bao zai fan	4600
+煲汤	bao tang	4600
+煸炒	bian chao	4600
+熊掌豆腐	xiong zhang dou fu	4600
+熏干	xun gan	4600
+熏肉	xun rou	4600
+熟啤	shu pi	4600
+熟普	shu pu	4600
+熟铁锅	shu tie guo	4600
+熟食	shu shi	4600
+熬汤	ao tang	4600
+燃气灶	ran qi zao	4600
+燕窝果	yan wo guo	4600
+燕麦	yan mai	4600
+燕麦拿铁	yan mai na tie	4600
+燕麦片	yan mai pian	4600
+燕麦粥	yan mai zhou	4600
+燕麦露	yan mai lu	4600
+爆炒	bao chao	4600
+爆炒双脆	bao chao shuang cui	4600
+爆炒腰花	bao chao yao hua	4600
+爆炒花甲	bao chao hua jia	4600
+爆炒鸡杂	bao chao ji za	4600
+爆米花	bao mi hua	4600
+爆香	bao xiang	4600
+爆鱼面	bao yu mian	4600
+爱媛果冻橙	ai yuan guo dong cheng	4600
+片儿川	pian er chuan	4600
+牙签	ya qian	4600
+牛丼	niu dan	4600
+牛仔骨	niu zai gu	4600
+牛奶	niu nai	4600
+牛奶吐司	niu nai tu si	4600
+牛奶巧克力	niu nai qiao ke li	4600
+牛奶燕麦粥	niu nai yan mai zhou	4600
+牛奶青枣	niu nai qing zao	4600
+牛奶鸡蛋醪糟	niu nai ji dan lao zao	4600
+牛尾	niu wei	4600
+牛尾汤	niu wei tang	4600
+牛心	niu xin	4600
+牛心菜	niu xin cai	4600
+牛排	niu pai	4600
+牛排锅	niu pai guo	4600
+牛排骨	niu pai gu	4600
+牛杂煲	niu za bao	4600
+牛柳	niu liu	4600
+牛油	niu you	4600
+牛油果	niu you guo	4600
+牛油果三明治	niu you guo san ming zhi	4600
+牛油果沙拉	niu you guo sha la	4600
+牛油火锅	niu you huo guo	4600
+牛百叶	niu bai ye	4600
+牛筋	niu jin	4600
+牛筋丸	niu jin wan	4600
+牛肉	niu rou	4600
+牛肉串	niu rou chuan	4600
+牛肉包	niu rou bao	4600
+牛肉大葱饺子	niu rou da cong jiao zi	4600
+牛肉干	niu rou gan	4600
+牛肉汉堡	niu rou han bao	4600
+牛肉汤	niu rou tang	4600
+牛肉泡馍	niu rou pao mo	4600
+牛肉滑	niu rou hua	4600
+牛肉炒面	niu rou chao mian	4600
+牛肉炒饭	niu rou chao fan	4600
+牛肉粉	niu rou fen	4600
+牛肉粥	niu rou zhou	4600
+牛肉粿条	niu rou guo tiao	4600
+牛肉肠粉	niu rou chang fen	4600
+牛肉胡萝卜饺子	niu rou hu luo bo jiao zi	4600
+牛肉酱	niu rou jiang	4600
+牛肉锅贴	niu rou guo tie	4600
+牛肉面	niu rou mian	4600
+牛肉饭	niu rou fan	4600
+牛肉馅	niu rou xian	4600
+牛肉馅饼	niu rou xian bing	4600
+牛肋条	niu lei tiao	4600
+牛肚	niu du	4600
+牛肝	niu gan	4600
+牛肝菌	niu gan jun	4600
+牛胸肉	niu xiong rou	4600
+牛腩	niu nan	4600
+牛腩煲	niu nan bao	4600
+牛腩面	niu nan mian	4600
+牛腰	niu yao	4600
+牛腱	niu jian	4600
+牛腱子	niu jian zi	4600
+牛至	niu zhi	4600
+牛舌	niu she	4600
+牛蛙	niu wa	4600
+牛角包	niu jiao bao	4600
+牛蹄筋	niu ti jin	4600
+牛轧糖	niu ya tang	4600
+牛里脊	niu li ji	4600
+牛骨髓	niu gu sui	4600
+牛黄喉	niu huang hou	4600
+牡丹虾	mu dan xia	4600
+牡蛎	mu li	4600
+牦牛肉干	mao niu rou gan	4600
+特级初榨橄榄油	te ji chu zha gan lan you	4600
+特级生抽	te ji sheng chou	4600
+特辣	te la	4600
+狗不理包子	gou bu li bao zi	4600
+狗肉	gou rou	4600
+独头蒜	du tou suan	4600
+狮头鹅	shi tou e	4600
+狼牙土豆	lang ya tu dou	4600
+猕猴桃	mi hou tao	4600
+猪儿粑	zhu er ba	4600
+猪大肠	zhu da chang	4600
+猪头肉	zhu tou rou	4600
+猪小肠	zhu xiao chang	4600
+猪尾	zhu wei	4600
+猪心	zhu xin	4600
+猪扒	zhu pa	4600
+猪扒包	zhu pa bao	4600
+猪排滑蛋饭	zhu pai hua dan fan	4600
+猪排饭	zhu pai fan	4600
+猪杂汤粉	zhu za tang fen	4600
+猪油	zhu you	4600
+猪油拌粉	zhu you ban fen	4600
+猪油拌饭	zhu you ban fan	4600
+猪皮	zhu pi	4600
+猪耳朵	zhu er duo	4600
+猪肉	zhu rou	4600
+猪肉串	zhu rou chuan	4600
+猪肉大葱饺子	zhu rou da cong jiao zi	4600
+猪肉大葱馅饼	zhu rou da cong xian bing	4600
+猪肉干	zhu rou gan	4600
+猪肉松	zhu rou song	4600
+猪肉炖粉条	zhu rou dun fen tiao	4600
+猪肉玉米饺子	zhu rou yu mi jiao zi	4600
+猪肉白菜炖粉条	zhu rou bai cai dun fen tiao	4600
+猪肉白菜饺子	zhu rou bai cai jiao zi	4600
+猪肉粉	zhu rou fen	4600
+猪肉脯	zhu rou fu	4600
+猪肉芹菜饺子	zhu rou qin cai jiao zi	4600
+猪肉茴香饺子	zhu rou hui xiang jiao zi	4600
+猪肉酸菜饺子	zhu rou suan cai jiao zi	4600
+猪肉韭菜饺子	zhu rou jiu cai jiao zi	4600
+猪肉馅	zhu rou xian	4600
+猪肉香菇饺子	zhu rou xiang gu jiao zi	4600
+猪肘子	zhu zhou zi	4600
+猪肚	zhu du	4600
+猪肚鸡	zhu du ji	4600
+猪肚鸡火锅	zhu du ji huo guo	4600
+猪肝	zhu gan	4600
+猪肝粥	zhu gan zhou	4600
+猪肝肠粉	zhu gan chang fen	4600
+猪肝面	zhu gan mian	4600
+猪肺	zhu fei	4600
+猪脑花	zhu nao hua	4600
+猪脚煲	zhu jiao bao	4600
+猪脚面	zhu jiao mian	4600
+猪脚饭	zhu jiao fan	4600
+猪腰	zhu yao	4600
+猪舌头	zhu she tou	4600
+猪血	zhu xue	4600
+猪蹄	zhu ti	4600
+猪里脊	zhu li ji	4600
+猪骨高汤	zhu gu gao tang	4600
+猪黄喉	zhu huang hou	4600
+猫山王	mao shan wang	4600
+猫山王榴莲	mao shan wang liu lian	4600
+猫耳朵	mao er duo	4600
+猫耳朵酥	mao er duo su	4600
+猫耳朵面	mao er duo mian	4600
+猴头菇	hou tou gu	4600
+玄米茶	xuan mi cha	4600
+玉子烧	yu zi shao	4600
+玉子豆腐	yu zi dou fu	4600
+玉米	yu mi	4600
+玉米发糕	yu mi fa gao	4600
+玉米排骨汤	yu mi pai gu tang	4600
+玉米浓汤	yu mi nong tang	4600
+玉米淀粉	yu mi dian fen	4600
+玉米碴	yu mi cha	4600
+玉米笋	yu mi sun	4600
+玉米粒	yu mi li	4600
+玉米胡萝卜排骨汤	yu mi hu luo bo pai gu tang	4600
+玉米面	yu mi mian	4600
+玉米面馒头	yu mi mian man tou	4600
+玛格丽特	ma ge li te	4600
+玛芬蛋糕	ma fen dan gao	4600
+玫瑰盐	mei gui yan	4600
+玫瑰花茶	mei gui hua cha	4600
+玫瑰花馕	mei gui hua nang	4600
+玫瑰香葡萄	mei gui xiang pu tao	4600
+现炒现做	xian chao xian zuo	4600
+现炸小酥肉	xian zha xiao su rou	4600
+现磨咖啡	xian mo ka fei	4600
+现磨豆浆	xian mo dou jiang	4600
+玻璃保鲜盒	bo li bao xian he	4600
+珍宝蟹	zhen bao xie	4600
+珍珠奶茶	zhen zhu nai cha	4600
+珍珠米	zhen zhu mi	4600
+珍珠龙胆	zhen zhu long dan	4600
+珐琅锅	fa lang guo	4600
+班戟	ban ji	4600
+球生菜	qiu sheng cai	4600
+琵琶腿	pi pa tui	4600
+瑞士卷	rui shi juan	4600
+瑰夏咖啡	gui xia ka fei	4600
+瑶柱	yao zhu	4600
+瑶柱蛋白炒饭	yao zhu dan bai chao fan	4600
+瓜子	gua zi	4600
+瓠子	gu zi	4600
+瓦罐	wa guan	4600
+瓦罐汤	wa guan tang	4600
+甑糕	zeng gao	4600
+甘栗仁	gan li ren	4600
+甘草	gan cao	4600
+甘蓝	gan lan	4600
+甘蔗	gan zhe	4600
+甘蔗汁	gan zhe zhi	4600
+甘蔗马蹄水	gan zhe ma ti shui	4600
+甜柿	tian shi	4600
+甜烧白	tian shao bai	4600
+甜玉米	tian yu mi	4600
+甜王西瓜	tian wang xi gua	4600
+甜瓜	tian gua	4600
+甜甜圈	tian tian quan	4600
+甜白葡萄酒	tian bai pu tao jiu	4600
+甜皮鸭	tian pi ya	4600
+甜筒	tian tong	4600
+甜胚子	tian pei zi	4600
+甜胚子奶茶	tian pei zi nai cha	4600
+甜茶	tian cha	4600
+甜虾刺身	tian xia ci shen	4600
+甜豆	tian dou	4600
+甜豆浆	tian dou jiang	4600
+甜豆腐脑	tian dou fu nao	4600
+甜辣炸鸡	tian la zha ji	4600
+甜酒酿	tian jiu niang	4600
+甜面酱	tian mian jiang	4600
+生吐司	sheng tu si	4600
+生啤	sheng pi	4600
+生姜	sheng jiang	4600
+生巧	sheng qiao	4600
+生打椰椰	sheng da ye ye	4600
+生日蛋糕	sheng ri dan gao	4600
+生普	sheng pu	4600
+生椰抹茶	sheng ye mo cha	4600
+生椰拿铁	sheng ye na tie	4600
+生滚粥	sheng gun zhou	4600
+生炒仔鸡	sheng chao zai ji	4600
+生煎包	sheng jian bao	4600
+生燕麦	sheng yan mai	4600
+生牛肉河粉	sheng niu rou he fen	4600
+生粉	sheng fen	4600
+生腌	sheng yan	4600
+生腌虾	sheng yan xia	4600
+生腌蟹	sheng yan xie	4600
+生菜	sheng cai	4600
+生菜包肉	sheng cai bao rou	4600
+生蚝	sheng hao	4600
+生铁锅	sheng tie guo	4600
+生鱼	sheng yu	4600
+田螺	tian luo	4600
+田鸡	tian ji	4600
+田鸡煲仔饭	tian ji bao zai fan	4600
+甲鱼	jia yu	4600
+电动打蛋器	dian dong da dan qi	4600
+电压力锅	dian ya li guo	4600
+电火锅	dian huo guo	4600
+电炖锅	dian dun guo	4600
+电烤串	dian kao chuan	4600
+电烤炉	dian kao lu	4600
+电热水壶	dian re shui hu	4600
+电磁炉	dian ci lu	4600
+电解质水	dian jie zhi shui	4600
+电陶炉	dian tao lu	4600
+电饭锅	dian fan guo	4600
+电饼铛	dian bing cheng	4600
+番石榴	fan shi liu	4600
+番茄	fan qie	4600
+番茄味薯片	fan qie wei shu pian	4600
+番茄意面	fan qie yi mian	4600
+番茄汁	fan qie zhi	4600
+番茄沙司	fan qie sha si	4600
+番茄炒蛋	fan qie chao dan	4600
+番茄炒蛋盖饭	fan qie chao dan gai fan	4600
+番茄焖饭	fan qie men fan	4600
+番茄牛肉面	fan qie niu rou mian	4600
+番茄牛腩	fan qie niu nan	4600
+番茄米线	fan qie mi xian	4600
+番茄肉酱意面	fan qie rou jiang yi mian	4600
+番茄蛋花汤	fan qie dan hua tang	4600
+番茄酿肉	fan qie niang rou	4600
+番茄锅	fan qie guo	4600
+番茄鸡蛋面	fan qie ji dan mian	4600
+番荔枝	fan li zhi	4600
+番薯	fan shu	4600
+番薯叶	fan shu ye	4600
+番鸭	fan ya	4600
+疙瘩汤	ge da tang	4600
+瘦肉肠粉	shou rou chang fen	4600
+白兰地	bai lan di	4600
+白兰瓜	bai lan gua	4600
+白凉粉	bai liang fen	4600
+白切鸡	bai qie ji	4600
+白切鸡饭	bai qie ji fan	4600
+白吉馍	bai ji mo	4600
+白啤	bai pi	4600
+白巧克力	bai qiao ke li	4600
+白心柚	bai xin you	4600
+白心火龙果	bai xin huo long guo	4600
+白扁豆	bai bian dou	4600
+白斩鸡	bai zhan ji	4600
+白木耳	bai mu er	4600
+白条鱼	bai tiao yu	4600
+白果	bai guo	4600
+白果腐竹粥	bai guo fu zhu zhou	4600
+白桃气泡水	bai tao qi pao shui	4600
+白毫银针	bai hao yin zhen	4600
+白洋葱	bai yang cong	4600
+白灼	bai zhuo	4600
+白灼响螺	bai zhuo xiang luo	4600
+白灼基围虾	bai zhuo ji wei xia	4600
+白灼汁	bai zhuo zhi	4600
+白灼生菜	bai zhuo sheng cai	4600
+白灼秋葵	bai zhuo qiu kui	4600
+白灼芥兰	bai zhuo jie lan	4600
+白灼芦笋	bai zhuo lu sun	4600
+白灼菜心	bai zhuo cai xin	4600
+白灼虾	bai zhuo xia	4600
+白灼西兰花	bai zhuo xi lan hua	4600
+白灼鱿鱼	bai zhuo you yu	4600
+白牡丹	bai mu dan	4600
+白玉枇杷	bai yu pi pa	4600
+白玉菇	bai yu gu	4600
+白砂糖	bai sha tang	4600
+白粥	bai zhou	4600
+白糖	bai tang	4600
+白糖罂	bai tang ying	4600
+白糯玉米	bai nuo yu mi	4600
+白胡椒粉	bai hu jiao fen	4600
+白腐乳	bai fu ru	4600
+白芦笋	bai lu sun	4600
+白芷	bai zhi	4600
+白芸豆	bai yun dou	4600
+白茶	bai cha	4600
+白草莓	bai cao mei	4600
+白菜炖粉条	bai cai dun fen tiao	4600
+白菜炖豆腐	bai cai dun dou fu	4600
+白菜肉包	bai cai rou bao	4600
+白菜豆腐汤	bai cai dou fu tang	4600
+白菜饭包	bai cai fan bao	4600
+白萝卜	bai luo bo	4600
+白萝卜片	bai luo bo pian	4600
+白薯	bai shu	4600
+白蘑菇	bai mo gu	4600
+白虾	bai xia	4600
+白蛤	bai ge	4600
+白豆干	bai dou gan	4600
+白豆蔻	bai dou kou	4600
+白酒	bai jiu	4600
+白酱	bai jiang	4600
+白醋	bai cu	4600
+白馒头	bai man tou	4600
+白鲢	bai lian	4600
+白鲳	bai chang	4600
+百叶	bai ye	4600
+百合酱蒸凤爪	bai he jiang zheng feng zhao	4600
+百花蜜	bai hua mi	4600
+百里香	bai li xiang	4600
+百香果	bai xiang guo	4600
+百香果双响炮	bai xiang guo shuang xiang pao	4600
+百香果汁	bai xiang guo zhi	4600
+皇冠梨	huang guan li	4600
+皇帝柑	huang di gan	4600
+皇帝菜	huang di cai	4600
+皮皮虾	pi pi xia	4600
+皮肚面	pi du mian	4600
+皮蛋	pi dan	4600
+皮蛋上汤娃娃菜	pi dan shang tang wa wa cai	4600
+皮蛋瘦肉粥	pi dan shou rou zhou	4600
+皮蛋豆腐	pi dan dou fu	4600
+益阳麻辣烫	yi yang ma la tang	4600
+盐帮菜	yan bang cai	4600
+盐水毛豆	yan shui mao dou	4600
+盐水鸭	yan shui ya	4600
+盐烤青花鱼	yan kao qing hua yu	4600
+盐焗	yan ju	4600
+盐焗乳鸽	yan ju ru ge	4600
+盐焗鸡	yan ju ji	4600
+盐煎肉	yan jian rou	4600
+盐酥鸡	yan su ji	4600
+盖浇饭	gai jiao fan	4600
+盖碗	gai wan	4600
+盛汤	cheng tang	4600
+盛饭	cheng fan	4600
+眉豆	mei dou	4600
+真姬菇	zhen ji gu	4600
+真空封口机	zhen kong feng kou ji	4600
+真香	zhen xiang	4600
+真鳕鱼	zhen xue yu	4600
+眼肉牛排	yan rou niu pai	4600
+石屏豆腐	shi ping dou fu	4600
+石斑鱼	shi ban yu	4600
+石榴	shi liu	4600
+石榴汁	shi liu zhi	4600
+石硖龙眼	shi xia long yan	4600
+石耳	shi er	4600
+石花菜	shi hua cai	4600
+石锅拌饭	shi guo ban fan	4600
+矿泉水	kuang quan shui	4600
+码味	ma wei	4600
+砂仁	sha ren	4600
+砂糖橘	sha tang ju	4600
+砂锅	sha guo	4600
+砂锅拆骨肉	sha guo chai gu rou	4600
+砂锅煲	sha guo bao	4600
+砂锅米线	sha guo mi xian	4600
+砂锅粥	sha guo zhou	4600
+砂锅鱼头	sha guo yu tou	4600
+砍骨刀	kan gu dao	4600
+砧板	zhen ban	4600
+破壁机	po bi ji	4600
+破酥包	po su bao	4600
+硅胶刮刀	gui jiao gua dao	4600
+硅胶铲	gui jiao chan	4600
+碗仔翅	wan zai chi	4600
+碗筷	wan kuai	4600
+碧根果	bi gen guo	4600
+碧螺春	bi luo chun	4600
+碱水粽	jian shui zong	4600
+碱水结	jian shui jie	4600
+碱水面包	jian shui mian bao	4600
+碳酸饮料	tan suan yin liao	4600
+磅蛋糕	bang dan gao	4600
+磨刀器	mo dao qi	4600
+磨刀石	mo dao shi	4600
+磨豆机	mo dou ji	4600
+祁门红茶	qi men hong cha	4600
+福寿螺	fu shou luo	4600
+福州鱼丸	fu zhou yu wan	4600
+福建佛跳墙	fu jian fu tiao qiang	4600
+福建炒饭	fu jian chao fan	4600
+福鼎白茶	fu ding bai cha	4600
+秀珍菇	xiu zhen gu	4600
+私房菜	si fang cai	4600
+秋刀鱼	qiu dao yu	4600
+秋月梨	qiu yue li	4600
+秋木耳	qiu mu er	4600
+秋葵	qiu kui	4600
+秋葵干	qiu kui gan	4600
+秋葵炒蛋	qiu kui chao dan	4600
+秘制卤味	mi zhi lu wei	4600
+秘制小龙虾	mi zhi xiao long xia	4600
+秘制烤翅	mi zhi kao chi	4600
+秘制烤鱼	mi zhi kao yu	4600
+秘制红烧肉	mi zhi hong shao rou	4600
+秘制蘸料	mi zhi zhan liao	4600
+秦镇米皮	qin zhen mi pi	4600
+稻米油	dao mi you	4600
+空心菜	kong xin cai	4600
+空气炸锅纸	kong qi zha guo zhi	4600
+穿心莲	chuan xin lian	4600
+突尼斯软籽石榴	tu ni si ruan zi shi liu	4600
+窝窝头	wo wo tou	4600
+窝蛋牛肉煲仔饭	wo dan niu rou bao zai fan	4600
+章鱼	zhang yu	4600
+章鱼小丸子	zhang yu xiao wan zi	4600
+章鱼烧	zhang yu shao	4600
+童子鸡	tong zi ji	4600
+竹升面	zhu sheng mian	4600
+竹叶青	zhu ye qing	4600
+竹笋	zhu sun	4600
+竹筒饭	zhu tong fan	4600
+竹荪	zhu sun	4600
+竹蛏	zhu cheng	4600
+笋干	sun gan	4600
+笋片	sun pian	4600
+笋片炒肉	sun pian chao rou	4600
+笔管鱼	bi guan yu	4600
+符离集烧鸡	fu li ji shao ji	4600
+筋饼	jin bing	4600
+筒骨	tong gu	4600
+筛网	shai wang	4600
+米其林餐厅	mi qi lin can ting	4600
+米果	mi guo	4600
+米浆	mi jiang	4600
+米皮	mi pi	4600
+米糕	mi gao	4600
+米线	mi xian	4600
+米豆腐	mi dou fu	4600
+米酒	mi jiu	4600
+米醋	mi cu	4600
+米饭	mi fan	4600
+米饼	mi bing	4600
+籼米	xian mi	4600
+粉丝	fen si	4600
+粉丝包	fen si bao	4600
+粉丝煲	fen si bao	4600
+粉葛鲮鱼汤	fen ge ling yu tang	4600
+粉蒸	fen zheng	4600
+粉蒸南瓜	fen zheng nan gua	4600
+粉蒸排骨	fen zheng pai gu	4600
+粉蒸牛肉	fen zheng niu rou	4600
+粉蒸肉	fen zheng rou	4600
+粉藕	fen ou	4600
+粗盐	cu yan	4600
+粗辣椒面	cu la jiao mian	4600
+粘米粉	zhan mi fen	4600
+粘豆包	nian dou bao	4600
+粢饭团	ci fan tuan	4600
+粢饭糕	ci fan gao	4600
+粤菜	yue cai	4600
+粥底火锅	zhou di huo guo	4600
+粳米	jing mi	4600
+粽子	zong zi	4600
+精品五花肉	jing pin wu hua rou	4600
+精盐	jing yan	4600
+精酿啤酒	jing niang pi jiu	4600
+粿条	guo tiao	4600
+糊辣椒	hu la jiao	4600
+糌粑	zan ba	4600
+糖三角	tang san jiao	4600
+糖不甩	tang bu shuai	4600
+糖拌西红柿	tang ban xi hong shi	4600
+糖水	tang shui	4600
+糖油粑粑	tang you ba ba	4600
+糖油饼	tang you bing	4600
+糖火烧	tang huo shao	4600
+糖粉	tang fen	4600
+糖耳朵	tang er duo	4600
+糖芋苗	tang yu miao	4600
+糖蒜	tang suan	4600
+糖醋小排	tang cu xiao pai	4600
+糖醋排骨	tang cu pai gu	4600
+糖醋藕片	tang cu ou pian	4600
+糖醋里脊	tang cu li ji	4600
+糖醋鲤鱼	tang cu li yu	4600
+糙米	cao mi	4600
+糙米饭	cao mi fan	4600
+糟毛豆	zao mao dou	4600
+糟溜鱼片	zao liu yu pian	4600
+糟辣椒	zao la jiao	4600
+糯玉米	nuo yu mi	4600
+糯米	nuo mi	4600
+糯米烧麦	nuo mi shao mai	4600
+糯米粉	nuo mi fen	4600
+糯米糍	nuo mi ci	4600
+糯米糖藕	nuo mi tang ou	4600
+糯米酒	nuo mi jiu	4600
+糯米锅巴	nuo mi guo ba	4600
+素三鲜饺子	su san xian jiao zi	4600
+素毛肚	su mao du	4600
+素炒西葫芦	su chao xi hu lu	4600
+素鸡	su ji	4600
+紫洋葱	zi yang cong	4600
+紫甘蓝	zi gan lan	4600
+紫皮腰果	zi pi yao guo	4600
+紫皮蒜	zi pi suan	4600
+紫米	zi mi	4600
+紫苏	zi su	4600
+紫苏叶	zi su ye	4600
+紫苏桃子姜	zi su tao zi jiang	4600
+紫苏炒田螺	zi su chao tian luo	4600
+紫苏煎黄瓜	zi su jian huang gua	4600
+紫苏牛蛙	zi su niu wa	4600
+紫茄子	zi qie zi	4600
+紫菜	zi cai	4600
+紫菜包饭	zi cai bao fan	4600
+紫菜苔	zi cai tai	4600
+紫菜蛋花汤	zi cai dan hua tang	4600
+紫薯	zi shu	4600
+紫薯粥	zi shu zhou	4600
+红丝绒蛋糕	hong si rong dan gao	4600
+红富士	hong fu shi	4600
+红小豆	hong xiao dou	4600
+红尖椒	hong jian jiao	4600
+红心木瓜	hong xin mu gua	4600
+红心柚	hong xin you	4600
+红心火龙果	hong xin huo long guo	4600
+红心猕猴桃	hong xin mi hou tao	4600
+红心芭乐	hong xin ba le	4600
+红提	hong ti	4600
+红枣	hong zao	4600
+红枣枸杞茶	hong zao gou qi cha	4600
+红枣豆浆	hong zao dou jiang	4600
+红柳大串	hong liu da chuan	4600
+红柳烤肉	hong liu kao rou	4600
+红椒	hong jiao	4600
+红毛丹	hong mao dan	4600
+红毛蟹	hong mao xie	4600
+红油	hong you	4600
+红油抄手	hong you chao shou	4600
+红油水饺	hong you shui jiao	4600
+红油猪耳	hong you zhu er	4600
+红油笋丝	hong you sun si	4600
+红油耳丝	hong you er si	4600
+红烧	hong shao	4600
+红烧乳鸽	hong shao ru ge	4600
+红烧冬瓜	hong shao dong gua	4600
+红烧划水	hong shao hua shui	4600
+红烧土豆	hong shao tu dou	4600
+红烧大骨棒	hong shao da gu bang	4600
+红烧排骨	hong shao pai gu	4600
+红烧料	hong shao liao	4600
+红烧牛肉泡面	hong shao niu rou pao mian	4600
+红烧牛肉面	hong shao niu rou mian	4600
+红烧狮子头	hong shao shi zi tou	4600
+红烧肉	hong shao rou	4600
+红烧肉炖蛋	hong shao rou dun dan	4600
+红烧肉盖饭	hong shao rou gai fan	4600
+红烧肉面	hong shao rou mian	4600
+红烧茄子	hong shao qie zi	4600
+红烧豆腐	hong shao dou fu	4600
+红烧酱油	hong shao jiang you	4600
+红烧鮰鱼	hong shao hui yu	4600
+红烧鳗鱼	hong shao man yu	4600
+红烧鸡翅	hong shao ji chi	4600
+红煨甲鱼	hong wei jia yu	4600
+红秋葵	hong qiu kui	4600
+红米	hong mi	4600
+红米肠	hong mi chang	4600
+红糖	hong tang	4600
+红糖冰粉	hong tang bing fen	4600
+红糖凉糕	hong tang liang gao	4600
+红糖包	hong tang bao	4600
+红糖发糕	hong tang fa gao	4600
+红糖姜茶	hong tang jiang cha	4600
+红糖糍粑	hong tang ci ba	4600
+红糖锅盔	hong tang guo kui	4600
+红糖馒头	hong tang man tou	4600
+红肠	hong chang	4600
+红腐乳	hong fu ru	4600
+红膏炝蟹	hong gao qiang xie	4600
+红花椒	hong hua jiao	4600
+红苋菜	hong xian cai	4600
+红茶	hong cha	4600
+红茶拿铁	hong cha na tie	4600
+红菜苔	hong cai tai	4600
+红萝卜	hong luo bo	4600
+红葱头	hong cong tou	4600
+红薯	hong shu	4600
+红薯叶	hong shu ye	4600
+红薯干	hong shu gan	4600
+红薯淀粉	hong shu dian fen	4600
+红薯粉	hong shu fen	4600
+红薯粥	hong shu zhou	4600
+红豆	hong dou	4600
+红豆包	hong dou bao	4600
+红豆奶茶	hong dou nai cha	4600
+红豆沙	hong dou sha	4600
+红豆粥	hong dou zhou	4600
+红豆粽	hong dou zong	4600
+红豆糕	hong dou gao	4600
+红豆薏米粥	hong dou yi mi zhou	4600
+红豆薏米茶	hong dou yi mi cha	4600
+红酒	hong jiu	4600
+红醋	hong cu	4600
+红颜草莓	hong yan cao mei	4600
+纯净水	chun jing shui	4600
+纯牛奶	chun niu nai	4600
+纯芝麻酱	chun zhi ma jiang	4600
+纳豆	na dou	4600
+纸包鱼	zhi bao yu	4600
+纸巾	zhi jin	4600
+纸杯蛋糕	zhi bei dan gao	4600
+纸皮核桃	zhi pi he tao	4600
+线上取号	xian shang qu hao	4600
+线椒	xian jiao	4600
+细砂糖	xi sha tang	4600
+细辣椒面	xi la jiao mian	4600
+细面	xi mian	4600
+绍兴醉虾	shao xing zui xia	4600
+绍兴醉蟹	shao xing zui xie	4600
+绍兴醉鸡	shao xing zui ji	4600
+绍兴黄酒	shao xing huang jiu	4600
+结球生菜	jie qiu sheng cai	4600
+结账买单	jie zhang mai dan	4600
+绞肉机	jiao rou ji	4600
+绢豆腐	juan dou fu	4600
+绣球菌	xiu qiu jun	4600
+绵白糖	mian bai tang	4600
+绵绵冰	mian mian bing	4600
+绵羊肉	mian yang rou	4600
+绵阳米粉	mian yang mi fen	4600
+绿茶	lv cha	4600
+绿豆	lv dou	4600
+绿豆沙	lv dou sha	4600
+绿豆粥	lv dou zhou	4600
+绿豆糕	lv dou gao	4600
+绿豆芽	lv dou ya	4600
+缙云烧饼	jin yun shao bing	4600
+缠丝兔	chan si tu	4600
+缸子肉	gang zi rou	4600
+网红餐厅	wang hong can ting	4600
+网纹瓜	wang wen gua	4600
+罗勒	luo le	4600
+罗宋汤	luo song tang	4600
+罗氏虾	luo shi xia	4600
+罗汉果	luo han guo	4600
+罗汉果瘦肉汤	luo han guo shou rou tang	4600
+罗汉果糖	luo han guo tang	4600
+罗汉果茶	luo han guo cha	4600
+罗非鱼	luo fei yu	4600
+罗马生菜	luo ma sheng cai	4600
+罾蹦鲤鱼	zeng beng li yu	4600
+羊前腿	yang qian tui	4600
+羊后腿	yang hou tui	4600
+羊奶	yang nai	4600
+羊排	yang pai	4600
+羊杂	yang za	4600
+羊杂碎	yang za sui	4600
+羊肉	yang rou	4600
+羊肉串	yang rou chuan	4600
+羊肉包	yang rou bao	4600
+羊肉卷	yang rou juan	4600
+羊肉大葱饺子	yang rou da cong jiao zi	4600
+羊肉汤	yang rou tang	4600
+羊肉泡馍	yang rou pao mo	4600
+羊肉火锅	yang rou huo guo	4600
+羊肉烧麦	yang rou shao mai	4600
+羊肉烩面	yang rou hui mian	4600
+羊肉粉	yang rou fen	4600
+羊肉胡萝卜饺子	yang rou hu luo bo jiao zi	4600
+羊肉萝卜汤	yang rou luo bo tang	4600
+羊肋排	yang le pai	4600
+羊肚	yang du	4600
+羊肚菌	yang du jun	4600
+羊肝	yang gan	4600
+羊肠面	yang chang mian	4600
+羊腩	yang nan	4600
+羊腰子	yang yao zi	4600
+羊腱子	yang jian zi	4600
+羊腿	yang tui	4600
+羊蝎子	yang xie zi	4600
+羊蝎子火锅	yang xie zi huo guo	4600
+羊角包	yang jiao bao	4600
+羊角蜜	yang jiao mi	4600
+羊颈肉	yang jing rou	4600
+美人椒	mei ren jiao	4600
+美式咖啡	mei shi ka fei	4600
+美拉德反应	mei la de fan ying	4600
+美早樱桃	mei zao ying tao	4600
+美蛙	mei wa	4600
+美蛙鱼	mei wa yu	4600
+美蛙鱼头	mei wa yu tou	4600
+美蛙鱼头锅	mei wa yu tou guo	4600
+美食攻略	mei shi gong lve	4600
+美食街	mei shi jie	4600
+美龄粥	mei ling zhou	4600
+羔羊肉	gao yang rou	4600
+羽衣甘蓝	yu yi gan lan	4600
+翘嘴鱼	qiao zui yu	4600
+翠冠梨	cui guan li	4600
+翠香猕猴桃	cui xiang mi hou tao	4600
+翻炒	fan chao	4600
+老公饼	lao gong bing	4600
+老冬瓜	lao dong gua	4600
+老冰糖	lao bing tang	4600
+老北京涮羊肉	lao bei jing shuan yang rou	4600
+老北京炸酱面	lao bei jing zha jiang mian	4600
+老北京爆肚	lao bei jing bao du	4600
+老北京葱油饼	lao bei jing cong you bing	4600
+老北京酸梅汤	lao bei jing suan mei tang	4600
+老北京门钉肉饼	lao bei jing men ding rou bing	4600
+老南瓜	lao nan gua	4600
+老卤面	lao lu mian	4600
+老坛酸菜面	lao tan suan cai mian	4600
+老妈蹄花	lao ma ti hua	4600
+老姜	lao jiang	4600
+老婆饼	lao po bing	4600
+老字号	lao zi hao	4600
+老干妈炒饭	lao gan ma chao fan	4600
+老椰子	lao ye zi	4600
+老母鸡	lao mu ji	4600
+老潼关肉夹馍	lao tong guan rou jia mo	4600
+老火汤	lao huo tang	4600
+老火靓汤	lao huo liang tang	4600
+老爆三	lao bao san	4600
+老白茶	lao bai cha	4600
+老豆腐	lao dou fu	4600
+老酸奶	lao suan nai	4600
+老醋花生	lao cu hua sheng	4600
+老鸭汤	lao ya tang	4600
+老麻抄手	lao ma chao shou	4600
+耐高糖酵母	nai gao tang jiao mu	4600
+耗油	hao you	4600
+耙耙柑	pa pa gan	4600
+耳朵眼炸糕	er duo yan zha gao	4600
+耶加雪菲	ye jia xue fei	4600
+肉丁	rou ding	4600
+肉丝	rou si	4600
+肉丝炒年糕	rou si chao nian gao	4600
+肉丝炒豆芽	rou si chao dou ya	4600
+肉丝炒面	rou si chao mian	4600
+肉丸	rou wan	4600
+肉圆	rou yuan	4600
+肉夹馍	rou jia mo	4600
+肉末	rou mo	4600
+肉末四季豆	rou mo si ji dou	4600
+肉末粉条	rou mo fen tiao	4600
+肉末茄子	rou mo qie zi	4600
+肉末茄子煲	rou mo qie zi bao	4600
+肉末蒸蛋	rou mo zheng dan	4600
+肉末豆腐	rou mo dou fu	4600
+肉末豇豆	rou mo jiang dou	4600
+肉松包	rou song bao	4600
+肉松寿司	rou song shou si	4600
+肉松小贝	rou song xiao bei	4600
+肉松蛋糕	rou song dan gao	4600
+肉松饭团	rou song fan tuan	4600
+肉枣	rou zao	4600
+肉桂粉	rou gui fen	4600
+肉桂茶	rou gui cha	4600
+肉汤泡饭	rou tang pao fan	4600
+肉沫	rou mo	4600
+肉燕	rou yan	4600
+肉片	rou pian	4600
+肉片丝瓜汤	rou pian si gua tang	4600
+肉眼	rou yan	4600
+肉眼牛排	rou yan niu pai	4600
+肉豆蔻	rou dou kou	4600
+肉酱意面	rou jiang yi mian	4600
+肉馅	rou xian	4600
+肉骨茶	rou gu cha	4600
+肋排	le pai	4600
+肝腰合炒	gan yao he chao	4600
+肝膏汤	gan gao tang	4600
+肠旺面	chang wang mian	4600
+肠粉	chang fen	4600
+肥牛	fei niu	4600
+肥牛卷	fei niu juan	4600
+肥牛面	fei niu mian	4600
+肥牛饭	fei niu fan	4600
+肥羊	fei yang	4600
+肥羊卷	fei yang juan	4600
+肥而不腻	fei er bu ni	4600
+肥肠	fei chang	4600
+肥肠粉	fei chang fen	4600
+肥肠面	fei chang mian	4600
+胎菊	tai ju	4600
+胖大海茶	pang da hai cha	4600
+胖头鱼	pang tou yu	4600
+胡椒猪肚鸡	hu jiao zhu du ji	4600
+胡萝卜	hu luo bo	4600
+胡萝卜汁	hu luo bo zhi	4600
+胡辣汤	hu la tang	4600
+胡适一品锅	hu shi yi pin guo	4600
+胶囊咖啡机	jiao nang ka fei ji	4600
+胸口朥	xiong kou lao	4600
+胸口油	xiong kou you	4600
+脆柿	cui shi	4600
+脆桃	cui tao	4600
+脆皮烧肉	cui pi shao rou	4600
+脆皮烧鹅	cui pi shao e	4600
+脆皮肠	cui pi chang	4600
+脆皮豆腐	cui pi dou fu	4600
+脆皮金桔	cui pi jin ju	4600
+脆皮鸡拌饭	cui pi ji ban fan	4600
+脆红李	cui hong li	4600
+脆藕	cui ou	4600
+脊骨土豆汤	ji gu tu dou tang	4600
+脏咖啡	zang ka fei	4600
+脏脏包	zang zang bao	4600
+脐橙	qi cheng	4600
+脱脂奶	tuo zhi nai	4600
+腊八粥	la ba zhou	4600
+腊八蒜	la ba suan	4600
+腊味合蒸	la wei he zheng	4600
+腊味焖饭	la wei men fan	4600
+腊味煲仔饭	la wei bao zai fan	4600
+腊汁肉夹馍	la zhi rou jia mo	4600
+腊肉	la rou	4600
+腊肉炒蒜苗	la rou chao suan miao	4600
+腊肠炒荷兰豆	la chang chao he lan dou	4600
+腊肠炒饭	la chang chao fan	4600
+腌制	yan zhi	4600
+腌笃鲜	yan du xian	4600
+腐乳	fu ru	4600
+腐乳汁	fu ru zhi	4600
+腐乳空心菜	fu ru kong xin cai	4600
+腐皮	fu pi	4600
+腐竹	fu zhu	4600
+腐竹炒肉	fu zhu chao rou	4600
+腰果	yao guo	4600
+腰花面	yao hua mian	4600
+臊子面	sao zi mian	4600
+自助点餐	zi zhu dian can	4600
+自助餐	zi zhu can	4600
+自发粉	zi fa fen	4600
+自热火锅	zi re huo guo	4600
+自由古巴	zi you gu ba	4600
+自贡冷吃兔	zi gong leng chi tu	4600
+臭干子	chou gan zi	4600
+臭豆腐	chou dou fu	4600
+臭豆腐乳	chou dou fu ru	4600
+臭豆腐蒸毛豆	chou dou fu zheng mao dou	4600
+臭鳜鱼	chou gui yu	4600
+舂鸡脚	chong ji jiao	4600
+舒芙蕾	shu fu lei	4600
+舟山带鱼	zhou shan dai yu	4600
+艇仔粥	ting zai zhou	4600
+良姜	liang jiang	4600
+艾尔	ai er	4600
+艾糍	ai ci	4600
+芋儿鸡	yu er ji	4600
+芋圆	yu yuan	4600
+芋头	yu tou	4600
+芋头糕	yu tou gao	4600
+芋泥	yu ni	4600
+芋泥啵啵	yu ni bo bo	4600
+芋泥奶茶	yu ni nai cha	4600
+芋泥波波	yu ni bo bo	4600
+芋泥波波奶茶	yu ni bo bo nai cha	4600
+芋泥面包	yu ni mian bao	4600
+芋泥麻薯包	yu ni ma shu bao	4600
+芋艿	yu nai	4600
+芒果	mang guo	4600
+芒果千层	mang guo qian ceng	4600
+芒果布丁	mang guo bu ding	4600
+芒果干	mang guo gan	4600
+芒果汁	mang guo zhi	4600
+芒果班戟	mang guo ban ji	4600
+芒果糯米饭	mang guo nuo mi fan	4600
+芒果西米露	mang guo xi mi lu	4600
+芒果雪媚娘	mang guo xue mei niang	4600
+芜湖渣肉蒸饭	wu hu zha rou zheng fan	4600
+芝士丸	zhi shi wan	4600
+芝士奶盖	zhi shi nai gai	4600
+芝士年糕	zhi shi nian gao	4600
+芝士年糕火锅	zhi shi nian gao huo guo	4600
+芝士披萨	zhi shi pi sa	4600
+芝士排骨	zhi shi pai gu	4600
+芝士海鲜焗饭	zhi shi hai xian ju fan	4600
+芝士炒年糕	zhi shi chao nian gao	4600
+芝士焗饭	zhi shi ju fan	4600
+芝士片	zhi shi pian	4600
+芝士牛肉焗饭	zhi shi niu rou ju fan	4600
+芝士碎	zhi shi sui	4600
+芝士蛋糕	zhi shi dan gao	4600
+芝士面包	zhi shi mian bao	4600
+芝芝桃桃	zhi zhi tao tao	4600
+芝芝莓莓	zhi zhi mei mei	4600
+芝麻包	zhi ma bao	4600
+芝麻烧饼	zhi ma shao bing	4600
+芝麻糊	zhi ma hu	4600
+芝麻糕	zhi ma gao	4600
+芝麻菜	zhi ma cai	4600
+芝麻酱	zhi ma jiang	4600
+芝麻馕	zhi ma nang	4600
+芡实	qian shi	4600
+芥兰	jie lan	4600
+芥末	jie mo	4600
+芥末墩	jie mo dun	4600
+芥末章鱼	jie mo zhang yu	4600
+芥菜	jie cai	4600
+芥蓝	jie lan	4600
+芦柑	lu gan	4600
+芦笋	lu sun	4600
+芦笋炒虾仁	lu sun chao xia ren	4600
+芫荽	yan sui	4600
+芭乐	ba le	4600
+芭蕉	ba jiao	4600
+花卷	hua juan	4600
+花椒	hua jiao	4600
+花椒油	hua jiao you	4600
+花椒粉	hua jiao fen	4600
+花椒面	hua jiao mian	4600
+花溪牛肉粉	hua xi niu rou fen	4600
+花生奶	hua sheng nai	4600
+花生汤圆	hua sheng tang yuan	4600
+花生碎	hua sheng sui	4600
+花生米	hua sheng mi	4600
+花生糊	hua sheng hu	4600
+花生芽	hua sheng ya	4600
+花生酥	hua sheng su	4600
+花生酱	hua sheng jiang	4600
+花甲粉	hua jia fen	4600
+花胶	hua jiao	4600
+花胶鸡汤	hua jiao ji tang	4600
+花茶	hua cha	4600
+花螺	hua luo	4600
+花蟹	hua xie	4600
+花豆	hua dou	4600
+花雕料酒	hua diao liao jiu	4600
+花雕酒	hua diao jiu	4600
+花香蓝莓	hua xiang lan mei	4600
+花鲢	hua lian	4600
+芸豆	yun dou	4600
+芹菜	qin cai	4600
+芹菜汁	qin cai zhi	4600
+芹菜炒牛肉	qin cai chao niu rou	4600
+芹菜炒肉	qin cai chao rou	4600
+芹菜肉包	qin cai rou bao	4600
+芽菜扣肉	ya cai kou rou	4600
+苋菜	xian cai	4600
+苍蝇馆子	cang ying guan zi	4600
+苏式月饼	su shi yue bing	4600
+苏式汤面	su shi tang mian	4600
+苏打水	su da shui	4600
+苏打饼干	su da bing gan	4600
+苏格兰威士忌	su ge lan wei shi ji	4600
+苏菜	su cai	4600
+苔菜拖黄鱼	tai cai tuo huang yu	4600
+苜蓿芽	mu xu ya	4600
+苦瓜	ku gua	4600
+苦瓜排骨汤	ku gua pai gu tang	4600
+苦瓜炒蛋	ku gua chao dan	4600
+苦瓜煲	ku gua bao	4600
+苦瓜酿肉	ku gua niang rou	4600
+苦荞茶	ku qiao cha	4600
+苦菊	ku ju	4600
+英德红茶	ying de hong cha	4600
+苹果	ping guo	4600
+苹果干	ping guo gan	4600
+苹果汁	ping guo zhi	4600
+苹果醋	ping guo cu	4600
+茄子	qie zi	4600
+茄盒	qie he	4600
+茉莉奶绿	mo li nai lv	4600
+茉莉花茶	mo li hua cha	4600
+茭瓜	jiao gua	4600
+茭白	jiao bai	4600
+茯苓糕	fu ling gao	4600
+茶叶蛋	cha ye dan	4600
+茶壶	cha hu	4600
+茶干	cha gan	4600
+茶杯	cha bei	4600
+茶树菇	cha shu gu	4600
+茶油炒土鸡	cha you chao tu ji	4600
+茶泡饭	cha pao fan	4600
+茶碗蒸	cha wan zheng	4600
+茶籽油	cha zi you	4600
+茼蒿	tong hao	4600
+草头圈子	cao tou quan zi	4600
+草寇	cao kou	4600
+草果	cao guo	4600
+草莓	cao mei	4600
+草莓啵啵	cao mei bo bo	4600
+草莓大福	cao mei da fu	4600
+草莓干	cao mei gan	4600
+草菇	cao gu	4600
+草虾	cao xia	4600
+草鱼	cao yu	4600
+草鸡蛋	cao ji dan	4600
+荔枝	li zhi	4600
+荔枝干	li zhi gan	4600
+荔枝肉	li zhi rou	4600
+荔枝酒	li zhi jiu	4600
+荔浦芋头	li pu yu tou	4600
+荜拨	bi bo	4600
+荞麦	qiao mai	4600
+荞麦冷面	qiao mai leng mian	4600
+荞麦茶	qiao mai cha	4600
+荞麦面	qiao mai mian	4600
+荠菜	qi cai	4600
+荠菜炒年糕	qi cai chao nian gao	4600
+荠菜猪肉馄饨	qi cai zhu rou hun tun	4600
+荷兰豆	he lan dou	4600
+荷兰豆炒山药	he lan dou chao shan yao	4600
+荷兰豆炒肉	he lan dou chao rou	4600
+荷包蛋	he bao dan	4600
+荷叶饼	he ye bing	4600
+荸荠	bi qi	4600
+荸荠杨梅	bi qi yang mei	4600
+莆田卤面	pu tian lu mian	4600
+莜面栲栳栳	you mian kao lao lao	4600
+莫吉托	mo ji tuo	4600
+莲子	lian zi	4600
+莲子糕	lian zi gao	4600
+莲蓉蛋黄月饼	lian rong dan huang yue bing	4600
+莲蓬	lian peng	4600
+莲藕	lian ou	4600
+莲藕排骨汤	lian ou pai gu tang	4600
+莲藕炒肉	lian ou chao rou	4600
+莴笋	wo sun	4600
+莴笋炒肉	wo sun chao rou	4600
+莴苣	wo ju	4600
+菊花茶	ju hua cha	4600
+菌汤锅	jun tang guo	4600
+菌菇	jun gu	4600
+菌菇火锅	jun gu huo guo	4600
+菌菇豆腐汤	jun gu dou fu tang	4600
+菌菇酱	jun gu jiang	4600
+菌菇鸡汤	jun gu ji tang	4600
+菜刀	cai dao	4600
+菜团子	cai tuan zi	4600
+菜山药	cai shan yao	4600
+菜干猪骨粥	cai gan zhu gu zhou	4600
+菜盘	cai pan	4600
+菜籽油	cai zi you	4600
+菜脯蛋	cai pu dan	4600
+菜花	cai hua	4600
+菜苔	cai tai	4600
+菜饭	cai fan	4600
+菜齐了	cai qi le	4600
+菠菜	bo cai	4600
+菠菜拌粉丝	bo cai ban fen si	4600
+菠菜豆腐汤	bo cai dou fu tang	4600
+菠菜面	bo cai mian	4600
+菠菜鸡蛋汤	bo cai ji dan tang	4600
+菠萝	bo luo	4600
+菠萝包	bo luo bao	4600
+菠萝油	bo luo you	4600
+菠萝泡芙	bo luo pao fu	4600
+菠萝海鲜炒饭	bo luo hai xian chao fan	4600
+菠萝炒饭	bo luo chao fan	4600
+菠萝紫米饭	bo luo zi mi fan	4600
+菠萝蜜	bo luo mi	4600
+菱角	ling jiao	4600
+菲力	fei li	4600
+菲力牛排	fei li niu pai	4600
+萝卜关东煮	luo bo guan dong zhu	4600
+萝卜干	luo bo gan	4600
+萝卜炖牛腩	luo bo dun niu nan	4600
+萝卜牛杂	luo bo niu za	4600
+萝卜牛腩煲	luo bo niu nan bao	4600
+萝卜糕	luo bo gao	4600
+萝卜老鸭汤	luo bo lao ya tang	4600
+葡式蛋挞	pu shi dan ta	4600
+葡萄	pu tao	4600
+葡萄干	pu tao gan	4600
+葡萄柚	pu tao you	4600
+葡萄汁	pu tao zhi	4600
+葡萄酒	pu tao jiu	4600
+葫芦头泡馍	hu lu tou pao mo	4600
+葫芦瓜	hu lu gua	4600
+葱丝	cong si	4600
+葱包桧	cong bao hui	4600
+葱姜料酒	cong jiang liao jiu	4600
+葱段	cong duan	4600
+葱油拌面	cong you ban mian	4600
+葱油粑粑	cong you ba ba	4600
+葱油花卷	cong you hua juan	4600
+葱油面	cong you mian	4600
+葱油饼	cong you bing	4600
+葱烤大排	cong kao da pai	4600
+葱烧	cong shao	4600
+葱烧海参	cong shao hai shen	4600
+葱烧豆腐	cong shao dou fu	4600
+葱爆牛肉	cong bao niu rou	4600
+葱爆猪肉	cong bao zhu rou	4600
+葱爆羊肉	cong bao yang rou	4600
+葱花	cong hua	4600
+葱花炒蛋	cong hua chao dan	4600
+葱花香菜	cong hua xiang cai	4600
+葱香面包	cong xiang mian bao	4600
+葵花籽	kui hua zi	4600
+葵花籽油	kui hua zi you	4600
+蒜末	suan mo	4600
+蒜油	suan you	4600
+蒜泥	suan ni	4600
+蒜泥油碟	suan ni you die	4600
+蒜泥白肉	suan ni bai rou	4600
+蒜片	suan pian	4600
+蒜瓣	suan ban	4600
+蒜苔	suan tai	4600
+蒜苔炒肉	suan tai chao rou	4600
+蒜苔炒腊肉	suan tai chao la rou	4600
+蒜苗	suan miao	4600
+蒜蓉	suan rong	4600
+蒜蓉南瓜	suan rong nan gua	4600
+蒜蓉娃娃菜	suan rong wa wa cai	4600
+蒜蓉小龙虾	suan rong xiao long xia	4600
+蒜蓉广东菜心	suan rong guang dong cai xin	4600
+蒜蓉拌面	suan rong ban mian	4600
+蒜蓉油麦菜	suan rong you mai cai	4600
+蒜蓉烤扇贝	suan rong kao shan bei	4600
+蒜蓉烤生蚝	suan rong kao sheng hao	4600
+蒜蓉烤茄子	suan rong kao qie zi	4600
+蒜蓉生菜	suan rong sheng cai	4600
+蒜蓉生蚝	suan rong sheng hao	4600
+蒜蓉空心菜	suan rong kong xin cai	4600
+蒜蓉粉丝蒸娃娃菜	suan rong fen si zheng wa wa cai	4600
+蒜蓉粉丝蒸扇贝	suan rong fen si zheng shan bei	4600
+蒜蓉粉丝蒸生蚝	suan rong fen si zheng sheng hao	4600
+蒜蓉红薯叶	suan rong hong shu ye	4600
+蒜蓉芥兰	suan rong jie lan	4600
+蒜蓉菠菜	suan rong bo cai	4600
+蒜蓉蒸大虾	suan rong zheng da xia	4600
+蒜蓉蒸蛏子	suan rong zheng cheng zi	4600
+蒜蓉蒸鲍鱼	suan rong zheng bao yu	4600
+蒜蓉西兰花	suan rong xi lan hua	4600
+蒜蓉辣酱	suan rong la jiang	4600
+蒜薹	suan tai	4600
+蒜香排骨	suan xiang pai gu	4600
+蒜香法棍	suan xiang fa gun	4600
+蒜香酱油炸鸡	suan xiang jiang you zha ji	4600
+蒜香青豆	suan xiang qing dou	4600
+蒜香鸡翅	suan xiang ji chi	4600
+蒜黄	suan huang	4600
+蒜黄炒蛋	suan huang chao dan	4600
+蒲公英	pu gong ying	4600
+蒸南瓜	zheng nan gua	4600
+蒸卤面	zheng lu mian	4600
+蒸山药	zheng shan yao	4600
+蒸紫薯	zheng zi shu	4600
+蒸红薯	zheng hong shu	4600
+蒸芋头	zheng yu tou	4600
+蒸锅	zheng guo	4600
+蒸饺	zheng jiao	4600
+蒸鱼豉油	zheng yu chi you	4600
+蓝宝石葡萄	lan bao shi pu tao	4600
+蓝山咖啡	lan shan ka fei	4600
+蓝莓	lan mei	4600
+蓝莓山药	lan mei shan yao	4600
+蓝莓干	lan mei gan	4600
+蓝莓汁	lan mei zhi	4600
+蓬莱小面	peng lai xiao mian	4600
+蔓越莓曲奇	man yue mei qu qi	4600
+蔬之鲜	shu zhi xian	4600
+蔬菜沙拉	shu cai sha la	4600
+蔬菜瘦肉粥	shu cai shou rou zhou	4600
+蕨菜	jue cai	4600
+蕹菜	weng cai	4600
+薄底披萨	bao di pi sa	4600
+薄盐生抽	bao yan sheng chou	4600
+薄芡	bao qian	4600
+薄荷	bo he	4600
+薄荷叶	bo he ye	4600
+薄荷糖	bo he tang	4600
+薏仁	yi ren	4600
+薏米	yi mi	4600
+薯格	shu ge	4600
+薯片	shu pian	4600
+藕尖	ou jian	4600
+藕带	ou dai	4600
+藕片	ou pian	4600
+藕盒	ou he	4600
+藜蒿炒腊肉	li hao chao la rou	4600
+藜麦	li mai	4600
+藜麦饭	li mai fan	4600
+藤椒油	teng jiao you	4600
+藤椒鱼	teng jiao yu	4600
+藤椒鸡	teng jiao ji	4600
+蘑菇	mo gu	4600
+蘑菇精	mo gu jing	4600
+蘸料	zhan liao	4600
+蘸水面	zhan shui mian	4600
+蘸酱	zhan jiang	4600
+虎皮凤爪	hu pi feng zhao	4600
+虎皮卷	hu pi juan	4600
+虎皮尖椒	hu pi jian jiao	4600
+虎皮青椒	hu pi qing jiao	4600
+虎皮鸡蛋	hu pi ji dan	4600
+虫草花	chong cao hua	4600
+虫草花鸡汤	chong cao hua ji tang	4600
+虾仁	xia ren	4600
+虾仁三鲜饺子	xia ren san xian jiao zi	4600
+虾仁炒蛋	xia ren chao dan	4600
+虾仁炒饭	xia ren chao fan	4600
+虾仁蒸蛋	xia ren zheng dan	4600
+虾仁馄饨	xia ren hun tun	4600
+虾堡	xia bao	4600
+虾条	xia tiao	4600
+虾滑	xia hua	4600
+虾爆鳝面	xia bao shan mian	4600
+虾爬子	xia pa zi	4600
+虾皮	xia pi	4600
+虾皮冬瓜	xia pi dong gua	4600
+虾米	xia mi	4600
+虾蟹砂锅粥	xia xie sha guo zhou	4600
+虾酱	xia jiang	4600
+虾饺	xia jiao	4600
+虾饺皇	xia jiao huang	4600
+蚂蚁上树	ma yi shang shu	4600
+蚕豆	can dou	4600
+蚝油生菜	hao you sheng cai	4600
+蚝烙	hao lao	4600
+蛇果	she guo	4600
+蛇皮果	she pi guo	4600
+蛋卷	dan juan	4600
+蛋挞	dan ta	4600
+蛋挞托	dan ta tuo	4600
+蛋散	dan san	4600
+蛋炒饭	dan chao fan	4600
+蛋烘糕	dan hong gao	4600
+蛋糕	dan gao	4600
+蛋糕模具	dan gao mu ju	4600
+蛋糕粉	dan gao fen	4600
+蛋黄	dan huang	4600
+蛋黄凤梨酥	dan huang feng li su	4600
+蛋黄烧麦	dan huang shao mai	4600
+蛋黄焗南瓜	dan huang ju nan gua	4600
+蛋黄肉松青团	dan huang rou song qing tuan	4600
+蛋黄肉粽	dan huang rou zong	4600
+蛋黄酥	dan huang su	4600
+蛋黄酱	dan huang jiang	4600
+蛏子	cheng zi	4600
+蛤蜊	ge li	4600
+蛤蜊蒸蛋	ge li zheng dan	4600
+蜂糖李	feng tang li	4600
+蜂蜜	feng mi	4600
+蜂蜜柚子茶	feng mi you zi cha	4600
+蜂蜜芥末炸鸡	feng mi jie mo zha ji	4600
+蜂蜜芥末酱	feng mi jie mo jiang	4600
+蜜本南瓜	mi ben nan gua	4600
+蜜枣粽	mi zao zong	4600
+蜜柚	mi you	4600
+蜜桃酒	mi tao jiu	4600
+蜜橘	mi ju	4600
+蜜汁叉烧	mi zhi cha shao	4600
+蜜汁烤翅	mi zhi kao chi	4600
+蜜薯	mi shu	4600
+蜜饯	mi jian	4600
+蝴蝶酥	hu die su	4600
+蝴蝶饼	hu die bing	4600
+螃蟹	pang xie	4600
+融合菜	rong he cai	4600
+螺丝椒	luo si jiao	4600
+螺蛳粉	luo si fen	4600
+蟠桃	pan tao	4600
+蟹味菇	xie wei gu	4600
+蟹柳	xie liu	4600
+蟹籽烧卖	xie zi shao mai	4600
+蟹粉小笼包	xie fen xiao long bao	4600
+蟹粉狮子头	xie fen shi zi tou	4600
+蟹粉豆腐	xie fen dou fu	4600
+蟹肉	xie rou	4600
+蟹肉棒	xie rou bang	4600
+蟹醋	xie cu	4600
+蟹钳	xie qian	4600
+蟹黄	xie huang	4600
+蟹黄拌面	xie huang ban mian	4600
+蟹黄汤包	xie huang tang bao	4600
+蟹黄面	xie huang mian	4600
+血橙	xue cheng	4600
+血糯米	xue nuo mi	4600
+血糯米奶茶	xue nuo mi nai cha	4600
+血肠	xue chang	4600
+衡阳鱼粉	heng yang yu fen	4600
+衢州兔头	qu zhou tu tou	4600
+衢州烤饼	qu zhou kao bing	4600
+衢州鸭头	qu zhou ya tou	4600
+裙带菜	qun dai cai	4600
+裤带面	ku dai mian	4600
+裱花嘴	biao hua zui	4600
+裱花袋	biao hua dai	4600
+褚橙	chu cheng	4600
+西兰花	xi lan hua	4600
+西兰花炒牛肉	xi lan hua chao niu rou	4600
+西兰花炒肉	xi lan hua chao rou	4600
+西冷	xi leng	4600
+西冷牛排	xi leng niu pai	4600
+西北菜	xi bei cai	4600
+西多士	xi duo shi	4600
+西州蜜	xi zhou mi	4600
+西柚	xi you	4600
+西梅干	xi mei gan	4600
+西湖牛肉羹	xi hu niu rou geng	4600
+西湖醋鱼	xi hu cu yu	4600
+西湖龙井	xi hu long jing	4600
+西班牙海鲜饭	xi ban ya hai xian fan	4600
+西瓜	xi gua	4600
+西瓜汁	xi gua zhi	4600
+西米	xi mi	4600
+西红柿	xi hong shi	4600
+西红柿炒蛋	xi hong shi chao dan	4600
+西红柿炒鸡蛋	xi hong shi chao ji dan	4600
+西红柿炖牛腩	xi hong shi dun niu nan	4600
+西红柿疙瘩汤	xi hong shi ge da tang	4600
+西红柿鸡蛋汤	xi hong shi ji dan tang	4600
+西红柿鸡蛋面	xi hong shi ji dan mian	4600
+西芹	xi qin	4600
+西葫芦	xi hu lu	4600
+西葫芦炒蛋	xi hu lu chao dan	4600
+西葫芦鸡蛋饺子	xi hu lu ji dan jiao zi	4600
+覆盆子	fu pen zi	4600
+见手青	jian shou qing	4600
+解腻	jie ni	4600
+计时器	ji shi qi	4600
+试味	shi wei	4600
+话梅	hua mei	4600
+诸葛烤鱼	zhu ge kao yu	4600
+调味	tiao wei	4600
+调和油	tiao he you	4600
+调料	tiao liao	4600
+豆制品	dou zhi pin	4600
+豆奶	dou nai	4600
+豆干	dou gan	4600
+豆汁	dou zhi	4600
+豆沙包	dou sha bao	4600
+豆沙汤圆	dou sha tang yuan	4600
+豆沙青团	dou sha qing tuan	4600
+豆泡	dou pao	4600
+豆浆	dou jiang	4600
+豆浆机	dou jiang ji	4600
+豆渣	dou zha	4600
+豆瓣鱼	dou ban yu	4600
+豆腐	dou fu	4600
+豆腐包	dou fu bao	4600
+豆腐圆子	dou fu yuan zi	4600
+豆腐干	dou fu gan	4600
+豆腐泡	dou fu pao	4600
+豆腐皮	dou fu pi	4600
+豆腐脑	dou fu nao	4600
+豆花	dou hua	4600
+豆花米线	dou hua mi xian	4600
+豆花鱼	dou hua yu	4600
+豆芽	dou ya	4600
+豆苗	dou miao	4600
+豆蔻	dou kou	4600
+豆角	dou jiao	4600
+豆角炒肉	dou jiao chao rou	4600
+豆角焖面	dou jiao men mian	4600
+豆豉	dou chi	4600
+豆豉炒花甲	dou chi chao hua jia	4600
+豆豉蒸鱼	dou chi zheng yu	4600
+豆豉辣椒蒸排骨	dou chi la jiao zheng pai gu	4600
+豆豉鲮鱼油麦菜	dou chi ling yu you mai cai	4600
+豇豆	jiang dou	4600
+豉汁排骨	chi zhi pai gu	4600
+豉汁蒸凤爪	chi zhi zheng feng zhao	4600
+豉油鸡	chi you ji	4600
+豌杂面	wan za mian	4600
+豌豆	wan dou	4600
+豌豆尖	wan dou jian	4600
+豌豆淀粉	wan dou dian fen	4600
+豌豆苗	wan dou miao	4600
+豌豆黄	wan dou huang	4600
+豚骨拉面	tun gu la mian	4600
+象拔蚌	xiang ba bang	4600
+贝壳	bei ke	4600
+贝果	bei guo	4600
+贝类	bei lei	4600
+贝贝南瓜	bei bei nan gua	4600
+贡丸	gong wan	4600
+贡柑	gong gan	4600
+贡梨	gong li	4600
+贡菊	gong ju	4600
+贡菜	gong cai	4600
+贵妃芒	gui fei mang	4600
+贵妃蚌	gui fei bang	4600
+贵州菜	gui zhou cai	4600
+贵阳丝娃娃	gui yang si wa wa	4600
+贵阳烙锅	gui yang lao guo	4600
+贻贝	yi bei	4600
+赖汤圆	lai tang yuan	4600
+赣南脐橙	gan nan qi cheng	4600
+赤小豆	chi xiao dou	4600
+赤砂糖	chi sha tang	4600
+赤藓糖醇	chi xian tang chun	4600
+赤豆元宵	chi dou yuan xiao	4600
+走地鸡	zou di ji	4600
+起泡酒	qi pao jiu	4600
+起酥油	qi su you	4600
+起锅	qi guo	4600
+超时赔付	chao shi pei fu	4600
+超级至尊披萨	chao ji zhi zun pi sa	4600
+越南春卷	yue nan chun juan	4600
+越南河粉	yue nan he fen	4600
+跷脚牛肉	qiao jiao niu rou	4600
+跷脚牛肉汤	qiao jiao niu rou tang	4600
+踩雷了	cai lei le	4600
+蹄髈	ti bang	4600
+车仔面	che zai mian	4600
+车厘子	che li zi	4600
+车轮饼	che lun bing	4600
+软兜长鱼	ruan dou chang yu	4600
+软欧包	ruan ou bao	4600
+软籽石榴	ruan zi shi liu	4600
+软糖	ruan tang	4600
+软糯香甜	ruan nuo xiang tian	4600
+轻乳茶	qing ru cha	4600
+轻乳酪蛋糕	qing ru lao dan gao	4600
+轻食沙拉	qing shi sha la	4600
+辅食机	fu shi ji	4600
+辛拉面	xin la mian	4600
+辣子肉	la zi rou	4600
+辣子鸡	la zi ji	4600
+辣条	la tiao	4600
+辣根	la gen	4600
+辣椒油	la jiao you	4600
+辣椒炒肉	la jiao chao rou	4600
+辣椒酱	la jiao jiang	4600
+辣椒面	la jiao mian	4600
+辣炒年糕	la chao nian gao	4600
+辣炒蛏子	la chao cheng zi	4600
+辣炒蛤蜊	la chao ge li	4600
+辣炒鸡丁	la chao ji ding	4600
+辣白菜	la bai cai	4600
+辣白菜炒五花肉	la bai cai chao wu hua rou	4600
+辣糊糊	la hu hu	4600
+辣肉面	la rou mian	4600
+迁西板栗	qian xi ban li	4600
+过凉水	guo liang shui	4600
+过桥米线	guo qiao mi xian	4600
+过油肉	guo you rou	4600
+过油肉拌面	guo you rou ban mian	4600
+运动饮料	yun dong yin liao	4600
+连山回锅肉	lian shan hui guo rou	4600
+迷迭香	mi die xiang	4600
+退菜	tui cai	4600
+逍遥镇胡辣汤	xiao yao zhen hu la tang	4600
+速溶咖啡	su rong ka fei	4600
+道口烧鸡	dao kou shao ji	4600
+遵义羊肉粉	zun yi yang rou fen	4600
+避风塘炒虾	bi feng tang chao xia	4600
+避风塘炒蟹	bi feng tang chao xie	4600
+邵阳米粉	shao yang mi fen	4600
+部队火锅	bu dui huo guo	4600
+部队锅	bu dui guo	4600
+郫县豆瓣酱	pi xian dou ban jiang	4600
+酒水	jiu shui	4600
+酒鬼花生	jiu gui hua sheng	4600
+酥油茶	su you cha	4600
+酥肉	su rou	4600
+酥脆掉渣	su cui diao zha	4600
+酱大骨	jiang da gu	4600
+酱板鸭	jiang ban ya	4600
+酱油	jiang you	4600
+酱油炒饭	jiang you chao fan	4600
+酱焖	jiang men	4600
+酱焖鸡腿	jiang men ji tui	4600
+酱牛肉	jiang niu rou	4600
+酱肉包	jiang rou bao	4600
+酱蟹	jiang xie	4600
+酱香型白酒	jiang xiang xing bai jiu	4600
+酱香拿铁	jiang xiang na tie	4600
+酱香饼	jiang xiang bing	4600
+酱骨头	jiang gu tou	4600
+酱鸭	jiang ya	4600
+酱黄瓜	jiang huang gua	4600
+酸奶	suan nai	4600
+酸奶机	suan nai ji	4600
+酸奶水果捞	suan nai shui guo lao	4600
+酸奶疙瘩	suan nai ge da	4600
+酸奶碗	suan nai wan	4600
+酸梅汤	suan mei tang	4600
+酸汤水饺	suan tang shui jiao	4600
+酸汤牛肉火锅	suan tang niu rou huo guo	4600
+酸汤肥牛	suan tang fei niu	4600
+酸汤面	suan tang mian	4600
+酸汤鱼	suan tang yu	4600
+酸甜可口	suan tian ke kou	4600
+酸菜包	suan cai bao	4600
+酸菜炒肥肠	suan cai chao fei chang	4600
+酸菜白肉	suan cai bai rou	4600
+酸菜米线	suan cai mi xian	4600
+酸菜肉丝面	suan cai rou si mian	4600
+酸菜锅	suan cai guo	4600
+酸菜鱼	suan cai yu	4600
+酸萝卜	suan luo bo	4600
+酸萝卜老鸭汤	suan luo bo lao ya tang	4600
+酸豆角	suan dou jiao	4600
+酸豆角炒肉末	suan dou jiao chao rou mo	4600
+酸豆角肉泥	suan dou jiao rou ni	4600
+酸辣土豆丝	suan la tu dou si	4600
+酸辣汤	suan la tang	4600
+酸辣白菜	suan la bai cai	4600
+酸辣粉	suan la fen	4600
+酸辣藕丁	suan la ou ding	4600
+酸辣藕尖	suan la ou jian	4600
+酸辣藕片	suan la ou pian	4600
+酸辣鸡杂	suan la ji za	4600
+酸辣鸡爪	suan la ji zhao	4600
+酿皮	niang pi	4600
+酿皮子	niang pi zi	4600
+酿苦瓜	niang ku gua	4600
+酿茄子	niang qie zi	4600
+酿青椒	niang qing jiao	4600
+醉排骨	zui pai gu	4600
+醉蟹	zui xie	4600
+醋溜土豆丝	cu liu tu dou si	4600
+醋溜白菜	cu liu bai cai	4600
+醋溜豆芽	cu liu dou ya	4600
+醒发	xing fa	4600
+醒面	xing mian	4600
+醪糟	lao zao	4600
+醪糟汤圆	lao zao tang yuan	4600
+醪糟粉子	lao zao fen zi	4600
+释迦	shi jia	4600
+里脊肉	li ji rou	4600
+重庆小面	chong qing xiao mian	4600
+重庆火锅	chong qing huo guo	4600
+重芝士蛋糕	zhong zhi shi dan gao	4600
+野山椒	ye shan jiao	4600
+野生菌火锅	ye sheng jun huo guo	4600
+金华火腿	jin hua huo tui	4600
+金华酥饼	jin hua su bing	4600
+金太阳杏	jin tai yang xing	4600
+金枕榴莲	jin zhen liu lian	4600
+金枪鱼	jin qiang yu	4600
+金枪鱼三明治	jin qiang yu san ming zhi	4600
+金枪鱼刺身	jin qiang yu ci shen	4600
+金枪鱼寿司	jin qiang yu shou si	4600
+金枪鱼沙拉	jin qiang yu sha la	4600
+金枪鱼紫菜包饭	jin qiang yu zi cai bao fan	4600
+金枪鱼饭团	jin qiang yu fan tuan	4600
+金桔	jin ju	4600
+金桔柠檬	jin ju ning meng	4600
+金汤力	jin tang li	4600
+金汤肥牛	jin tang fei niu	4600
+金汤花胶鸡	jin tang hua jiao ji	4600
+金煌芒	jin huang mang	4600
+金酒	jin jiu	4600
+金针菇	jin zhen gu	4600
+金钱肚	jin qian du	4600
+金钱腱	jin qian jian	4600
+金钱蛋	jin qian dan	4600
+金钻凤梨	jin zuan feng li	4600
+金银花茶	jin yin hua cha	4600
+金骏眉	jin jun mei	4600
+金鲳鱼	jin chang yu	4600
+钉螺	ding luo	4600
+钟水饺	zhong shui jiao	4600
+钦蜜九号	qin mi jiu hao	4600
+钵仔糕	bo zai gao	4600
+钵钵鸡	bo bo ji	4600
+铁板日本豆腐	tie ban ri ben dou fu	4600
+铁板鱿鱼	tie ban you yu	4600
+铁棍山药	tie gun shan yao	4600
+铁观音	tie guan yin	4600
+铁锅	tie guo	4600
+铁锅炖	tie guo dun	4600
+铁锅炖大鹅	tie guo dun da e	4600
+铁锅炖排骨	tie guo dun pai gu	4600
+铁锅炖鱼	tie guo dun yu	4600
+铜锅涮肉	tong guo shuan rou	4600
+铜锣烧	tong luo shao	4600
+银耳	yin er	4600
+银耳莲子羹	yin er lian zi geng	4600
+银鱼	yin yu	4600
+银鳕鱼	yin xue yu	4600
+锅包肉	guo bao rou	4600
+锅塌豆腐	guo ta dou fu	4600
+锅巴	guo ba	4600
+锅巴土豆	guo ba tu dou	4600
+锅巴菜	guo ba cai	4600
+锅气十足	guo qi shi zu	4600
+锅盔	guo kui	4600
+锅贴	guo tie	4600
+锅边糊	guo bian hu	4600
+锅铲	guo chan	4600
+锡兰红茶	xi lan hong cha	4600
+锡箔纸	xi bo zhi	4600
+锡纸	xi zhi	4600
+锡纸娃娃菜	xi zhi wa wa cai	4600
+锡纸烤脑花	xi zhi kao nao hua	4600
+锡纸肥牛	xi zhi fei niu	4600
+锡纸花甲	xi zhi hua jia	4600
+锡纸花甲粉	xi zhi hua jia fen	4600
+锡纸金针菇	xi zhi jin zhen gu	4600
+锡纸鸭血	xi zhi ya xue	4600
+锦州烧烤	jin zhou shao kao	4600
+镇江肴肉	zhen jiang yao rou	4600
+镇江锅盖面	zhen jiang guo gai mian	4600
+镇江香醋	zhen jiang xiang cu	4600
+镜糕	jing gao	4600
+长岛冰茶	chang dao bing cha	4600
+长沙米粉	chang sha mi fen	4600
+长沙臭豆腐	chang sha chou dou fu	4600
+长粒香	chang li xiang	4600
+长糯米	chang nuo mi	4600
+长茄子	chang qie zi	4600
+长豆角	chang dou jiao	4600
+长豆角烧茄子	chang dou jiao shao qie zi	4600
+门钉肉饼	men ding rou bing	4600
+闪电泡芙	shan dian pao fu	4600
+问政山笋	wen zheng shan sun	4600
+闽南咸饭	min nan xian fan	4600
+闽菜	min cai	4600
+阜阳格拉条	fu yang ge la tiao	4600
+阳光玫瑰	yang guang mei gui	4600
+阳山水蜜桃	yang shan shui mi tao	4600
+阳春面	yang chun mian	4600
+阳澄湖大闸蟹	yang cheng hu da zha xie	4600
+阿克苏苹果	a ke su ping guo	4600
+阿胶糕	e jiao gao	4600
+陈村粉	chen cun fen	4600
+陈皮	chen pi	4600
+陈皮普洱	chen pi pu er	4600
+陈皮梅	chen pi mei	4600
+陈皮茶	chen pi cha	4600
+陈醋	chen cu	4600
+陕西凉皮	shan xi liang pi	4600
+陕西菜	shan xi cai	4600
+隆江猪脚饭	long jiang zhu jiao fan	4600
+隔水炖	ge shui dun	4600
+隔水蒸	ge shui zheng	4600
+隔热垫	ge re dian	4600
+隔热手套	ge re shou tao	4600
+集成灶	ji cheng zao	4600
+雪媚娘	xue mei niang	4600
+雪梨	xue li	4600
+雪碧	xue bi	4600
+雪糕	xue gao	4600
+雪花牛肉	xue hua niu rou	4600
+雪花肥牛	xue hua fei niu	4600
+雪花酥	xue hua su	4600
+雪菜大黄鱼	xue cai dai huang yu	4600
+雪菜肉丝面	xue cai rou si mian	4600
+雪菜黄鱼面	xue cai huang yu mian	4600
+雪蟹	xue xie	4600
+雪衣豆沙	xue yi dou sha	4600
+雪里红	xue li hong	4600
+雪里蕻	xue li hong	4600
+零度可乐	ling du ke le	4600
+雷笋	lei sun	4600
+霉千张	mei qian zhang	4600
+霸王花猪骨汤	ba wang hua zhu gu tang	4600
+青口贝	qing kou bei	4600
+青团	qing tuan	4600
+青头菌	qing tou jun	4600
+青尖椒	qing jian jiao	4600
+青岛海鲜	qing dao hai xian	4600
+青提	qing ti	4600
+青木瓜沙拉	qing mu gua sha la	4600
+青梅	qing mei	4600
+青梅酒	qing mei jiu	4600
+青椒	qing jiao	4600
+青椒土豆丝	qing jiao tu dou si	4600
+青椒炒牛肉	qing jiao chao niu rou	4600
+青椒炒肉	qing jiao chao rou	4600
+青椒炒荷包蛋	qing jiao chao he bao dan	4600
+青椒炒蛋	qing jiao chao dan	4600
+青椒焖排骨	qing jiao men pai gu	4600
+青椒皮蛋	qing jiao pi dan	4600
+青椒肉丝	qing jiao rou si	4600
+青椒肉丝盖饭	qing jiao rou si gai fan	4600
+青椒酿肉	qing jiao niang rou	4600
+青橄榄	qing gan lan	4600
+青海酸奶	qing hai suan nai	4600
+青瓜	qing gua	4600
+青皮甘蔗	qing pi gan zhe	4600
+青稞	qing ke	4600
+青稞酒	qing ke jiu	4600
+青红萝卜猪骨汤	qing hong luo bo zhu gu tang	4600
+青芒	qing mang	4600
+青芥末	qing jie mo	4600
+青花椒	qing hua jiao	4600
+青花椒油	qing hua jiao you	4600
+青花鱼	qing hua yu	4600
+青苹果	qing ping guo	4600
+青菜	qing cai	4600
+青菜粥	qing cai zhou	4600
+青菜肉丝汤	qing cai rou si tang	4600
+青萝卜	qing luo bo	4600
+青虾	qing xia	4600
+青虾仁	qing xia ren	4600
+青虾滑	qing xia hua	4600
+青蛤	qing ge	4600
+青蟹	qing xie	4600
+青豆	qing dou	4600
+青酱	qing jiang	4600
+青鱼	qing yu	4600
+靖江蟹黄汤包	jing jiang xie huang tang bao	4600
+靠窗位置	kao chuang wei zhi	4600
+面包机	mian bao ji	4600
+面包粉	mian bao fen	4600
+面包蟹	mian bao xie	4600
+面板	mian ban	4600
+面片	mian pian	4600
+面碗	mian wan	4600
+面筋	mian jin	4600
+面粉	mian fen	4600
+面粉筛	mian fen shai	4600
+面线糊	mian xian hu	4600
+韧性饼干	ren xing bing gan	4600
+韩国泡菜	han guo pao cai	4600
+韩国烧酒	han guo shao jiu	4600
+韩式冷面	han shi leng mian	4600
+韩式大酱汤	han shi da jiang tang	4600
+韩式料理	han shi liao li	4600
+韩式炒年糕	han shi chao nian gao	4600
+韩式炸酱面	han shi zha jiang mian	4600
+韩式炸鸡	han shi zha ji	4600
+韩式烤肉	han shi kao rou	4600
+韩式石锅拌饭	han shi shi guo ban fan	4600
+韩餐	han can	4600
+韭叶面	jiu ye mian	4600
+韭菜	jiu cai	4600
+韭菜炒蛋	jiu cai chao dan	4600
+韭菜炒豆芽	jiu cai chao dou ya	4600
+韭菜盒子	jiu cai he zi	4600
+韭菜花	jiu cai hua	4600
+韭菜鸡蛋饺子	jiu cai ji dan jiao zi	4600
+韭黄	jiu huang	4600
+顺德菜	shun de cai	4600
+顺德鱼生	shun de yu sheng	4600
+预制菜	yu zhi cai	4600
+颗粒花生酱	ke li hua sheng jiang	4600
+颠勺	dian shao	4600
+风吃海带	feng chi hai dai	4600
+风味酸奶	feng wei suan nai	4600
+风干牛肉干	feng gan niu rou gan	4600
+风干肉	feng gan rou	4600
+飞水	fei shui	4600
+食品安全	shi pin an quan	4600
+食用碱	shi yong jian	4600
+食盐	shi yan	4600
+食醋	shi cu	4600
+食饼筒	shi bing tong	4600
+餐具	can ju	4600
+餐盘	can pan	4600
+饭团	fan tuan	4600
+饭盒	fan he	4600
+饭碗	fan wan	4600
+饵丝	er si	4600
+饵块	er kuai	4600
+饺子	jiao zi	4600
+饺子粉	jiao zi fen	4600
+饺子醋	jiao zi cu	4600
+饼干	bing gan	4600
+馄饨	hun tun	4600
+馅饼	xian bing	4600
+馒头	man tou	4600
+馕坑肉	nang keng rou	4600
+香干	xiang gan	4600
+香干炒肉	xiang gan chao rou	4600
+香梨	xiang li	4600
+香椿炒蛋	xiang chun chao dan	4600
+香椿芽	xiang chun ya	4600
+香槟	xiang bin	4600
+香水柠檬	xiang shui ning meng	4600
+香水菠萝	xiang shui bo luo	4600
+香油	xiang you	4600
+香油蒜泥	xiang you suan ni	4600
+香煎	xiang jian	4600
+香煎豆腐	xiang jian dou fu	4600
+香瓜	xiang gua	4600
+香米	xiang mi	4600
+香肠	xiang chang	4600
+香芋	xiang yu	4600
+香芹	xiang qin	4600
+香茅	xiang mao	4600
+香茅草烤鱼	xiang mao cao kao yu	4600
+香草拿铁	xiang cao na tie	4600
+香草精	xiang cao jing	4600
+香菇	xiang gu	4600
+香菇滑鸡	xiang gu hua ji	4600
+香菇炒肉	xiang gu chao rou	4600
+香菇炖鸡汤	xiang gu dun ji tang	4600
+香菇脆	xiang gu cui	4600
+香菇酱	xiang gu jiang	4600
+香菇酿肉	xiang gu niang rou	4600
+香菇青菜	xiang gu qing cai	4600
+香菇青菜包	xiang gu qing cai bao	4600
+香菇鸡肉焖饭	xiang gu ji rou men fan	4600
+香菜	xiang cai	4600
+香葱	xiang cong	4600
+香蕉	xiang jiao	4600
+香蕉片	xiang jiao pian	4600
+香螺	xiang luo	4600
+香辣蟹	xiang la xie	4600
+香辣过瘾	xiang la guo yin	4600
+香辣鸡腿堡	xiang la ji tui bao	4600
+馥芮白	fu rui bai	4600
+马克杯	ma ke bei	4600
+马兰头	ma lan tou	4600
+马卡龙	ma ka long	4600
+马天尼	ma tian ni	4600
+马奶葡萄	ma nai pu tao	4600
+马拉糕	ma la gao	4600
+马来炒贵刁	ma lai chao gui diao	4600
+马苏里拉芝士	ma su li la zhi shi	4600
+马蹄	ma ti	4600
+马蹄糕	ma ti gao	4600
+马铃薯	ma ling shu	4600
+马铃薯淀粉	ma ling shu dian fen	4600
+马鲛鱼	ma jiao yu	4600
+马齿苋	ma chi xian	4600
+驴打滚	lv da gun	4600
+驴肉	lv rou	4600
+驴肉火烧	lv rou huo shao	4600
+骆驼奶	luo tuo nai	4600
+骑手小哥	qi shou xiao ge	4600
+骨汤锅	gu tang guo	4600
+骨汤面	gu tang mian	4600
+高筋面粉	gao jin mian fen	4600
+高粱米	gao liang mi	4600
+高粱酒	gao liang jiu	4600
+高良姜	gao liang jiang	4600
+高钙奶	gao gai nai	4600
+魔芋	mo yu	4600
+魔芋丝	mo yu si	4600
+魔芋丝关东煮	mo yu si guan dong zhu	4600
+魔芋烧鸭	mo yu shao ya	4600
+魔芋爽	mo yu shuang	4600
+魔芋结	mo yu jie	4600
+魔芋豆腐	mo yu dou fu	4600
+鱼丸	yu wan	4600
+鱼唇	yu chun	4600
+鱼头	yu tou	4600
+鱼头豆腐汤	yu tou dou fu tang	4600
+鱼子酱	yu zi jiang	4600
+鱼干	yu gan	4600
+鱼火锅	yu huo guo	4600
+鱼片	yu pian	4600
+鱼片粥	yu pian zhou	4600
+鱼皮	yu pi	4600
+鱼皮花生	yu pi hua sheng	4600
+鱼籽福袋	yu zi fu dai	4600
+鱼粉	yu fen	4600
+鱼糕	yu gao	4600
+鱼肚	yu du	4600
+鱼胶	yu jiao	4600
+鱼腥草	yu xing cao	4600
+鱼豆腐	yu dou fu	4600
+鱼豆腐零食	yu dou fu ling shi	4600
+鱼露	yu lu	4600
+鱼面	yu mian	4600
+鱼香肉丝	yu xiang rou si	4600
+鱼香肉丝盖饭	yu xiang rou si gai fan	4600
+鱼香肝尖	yu xiang gan jian	4600
+鱼香茄子	yu xiang qie zi	4600
+鱼香豆腐	yu xiang dou fu	4600
+鱼鳔	yu biao	4600
+鱿鱼	you yu	4600
+鱿鱼丝	you yu si	4600
+鱿鱼圈	you yu quan	4600
+鱿鱼花	you yu hua	4600
+鱿鱼须	you yu xu	4600
+鲁菜	lu cai	4600
+鲅鱼	ba yu	4600
+鲅鱼水饺	ba yu shui jiao	4600
+鲅鱼饺子	ba yu jiao zi	4600
+鲈鱼	lu yu	4600
+鲍鱼	bao yu	4600
+鲍鱼汁	bao yu zhi	4600
+鲜切牛肉	xian qie niu rou	4600
+鲜啤	xian pi	4600
+鲜奶茶	xian nai cha	4600
+鲜嫩多汁	xian nen duo zhi	4600
+鲜核桃	xian he tao	4600
+鲜椒肥牛	xian jiao fei niu	4600
+鲜榨椰汁	xian zha ye zhi	4600
+鲜榨橙汁	xian zha cheng zhi	4600
+鲜毛肚	xian mao du	4600
+鲜牛奶	xian niu nai	4600
+鲜百合	xian bai he	4600
+鲜笋	xian sun	4600
+鲜肉包	xian rou bao	4600
+鲜肉小馄饨	xian rou xiao hun tun	4600
+鲜肉月饼	xian rou yue bing	4600
+鲜肉粽	xian rou zong	4600
+鲜腐竹	xian fu zhu	4600
+鲜花饼	xian hua bing	4600
+鲜莲子	xian lian zi	4600
+鲜虾云吞	xian xia yun tun	4600
+鲜虾云吞面	xian xia yun tun mian	4600
+鲜虾红米肠	xian xia hong mi chang	4600
+鲜虾肠粉	xian xia chang fen	4600
+鲜银杏	xian yin xing	4600
+鲜银耳	xian yin er	4600
+鲜锅兔	xian guo tu	4600
+鲜香菇	xian xiang gu	4600
+鲜香麻辣	xian xiang ma la	4600
+鲜鱼	xian yu	4600
+鲜鱿鱼	xian you yu	4600
+鲜鲍	xian bao	4600
+鲜鸭肠	xian ya chang	4600
+鲜鸭血	xian ya xue	4600
+鲜鹅肠	xian e chang	4600
+鲢鱼	lian yu	4600
+鲤鱼	li yu	4600
+鲫鱼	ji yu	4600
+鲫鱼豆腐汤	ji yu dou fu tang	4600
+鲳鱼	chang yu	4600
+鲶鱼	nian yu	4600
+鲷鱼	diao yu	4600
+鲷鱼烧	diao yu shao	4600
+鳊鱼	bian yu	4600
+鳌虾	ao xia	4600
+鳕鱼	xue yu	4600
+鳕鱼丝	xue yu si	4600
+鳕鱼堡	xue yu bao	4600
+鳗鱼	man yu	4600
+鳗鱼丼	man yu dan	4600
+鳗鱼寿司	man yu shou si	4600
+鳗鱼饭	man yu fan	4600
+鳜鱼	gui yu	4600
+鳝丝面	shan si mian	4600
+鳝鱼	shan yu	4600
+鸟贝	niao bei	4600
+鸡丝凉面	ji si liang mian	4600
+鸡全腿	ji quan tui	4600
+鸡小胸	ji xiao xiong	4600
+鸡尾酒	ji wei jiu	4600
+鸡屁股	ji pi gu	4600
+鸡心	ji xin	4600
+鸡扒	ji pa	4600
+鸡扒饭	ji pa fan	4600
+鸡排饭	ji pai fan	4600
+鸡杂	ji za	4600
+鸡杂面	ji za mian	4600
+鸡枞菌	ji zong jun	4600
+鸡架	ji jia	4600
+鸡汁	ji zhi	4600
+鸡汤面	ji tang mian	4600
+鸡皮串	ji pi chuan	4600
+鸡米花	ji mi hua	4600
+鸡精	ji jing	4600
+鸡翅	ji chi	4600
+鸡翅中	ji chi zhong	4600
+鸡翅尖	ji chi jian	4600
+鸡翅根	ji chi gen	4600
+鸡肉	ji rou	4600
+鸡肠	ji chang	4600
+鸡胗	ji zhen	4600
+鸡胸肉	ji xiong rou	4600
+鸡胸肉三明治	ji xiong rou san ming zhi	4600
+鸡胸肉干	ji xiong rou gan	4600
+鸡胸肉沙拉	ji xiong rou sha la	4600
+鸡脆骨	ji cui gu	4600
+鸡脖子	ji bo zi	4600
+鸡腿	ji tui	4600
+鸡腿堡	ji tui bao	4600
+鸡腿菇	ji tui gu	4600
+鸡蛋	ji dan	4600
+鸡蛋三明治	ji dan san ming zhi	4600
+鸡蛋仔	ji dan zai	4600
+鸡蛋布丁	ji dan bu ding	4600
+鸡蛋灌饼	ji dan guan bing	4600
+鸡蛋炒面	ji dan chao mian	4600
+鸡蛋羹	ji dan geng	4600
+鸡蛋肠粉	ji dan chang fen	4600
+鸡豆花	ji dou hua	4600
+鸡软骨串	ji ruan gu chuan	4600
+鸭头	ya tou	4600
+鸭屎香	ya shi xiang	4600
+鸭屎香柠檬茶	ya shi xiang ning meng cha	4600
+鸭掌	ya zhang	4600
+鸭梨	ya li	4600
+鸭翅	ya chi	4600
+鸭肉	ya rou	4600
+鸭肝	ya gan	4600
+鸭肠	ya chang	4600
+鸭胗	ya zhen	4600
+鸭胸	ya xiong	4600
+鸭脖	ya bo	4600
+鸭脖零食	ya bo ling shi	4600
+鸭腿	ya tui	4600
+鸭舌	ya she	4600
+鸭蛋	ya dan	4600
+鸭血	ya xue	4600
+鸭血粉丝汤	ya xue fen si tang	4600
+鸭锁骨	ya suo gu	4600
+鸳鸯锅	yuan yang guo	4600
+鸽子	ge zi	4600
+鸽子蛋	ge zi dan	4600
+鹅掌	e zhang	4600
+鹅翅	e chi	4600
+鹅肉	e rou	4600
+鹅肝寿司	e gan shou si	4600
+鹅肠	e chang	4600
+鹅胗	e zhen	4600
+鹅腿	e tui	4600
+鹅蛋	e dan	4600
+鹌鹑	an chun	4600
+鹌鹑蛋	an chun dan	4600
+鹰嘴桃	ying zui tao	4600
+鹰嘴豆	ying zui dou	4600
+鹿茸菇	lu rong gu	4600
+麒麟瓜	qi lin gua	4600
+麦乐鸡	mai le ji	4600
+麦旋风	mai xuan feng	4600
+麦芽糖	mai ya tang	4600
+麦虾	mai xia	4600
+麦饭石锅	mai fan shi guo	4600
+麻团	ma tuan	4600
+麻婆脑花	ma po nao hua	4600
+麻婆豆腐	ma po dou fu	4600
+麻花	ma hua	4600
+麻薯	ma shu	4600
+麻豆腐	ma dou fu	4600
+麻辣兔头	ma la tu tou	4600
+麻辣小龙虾	ma la xiao long xia	4600
+麻辣火锅	ma la huo guo	4600
+麻辣烫	ma la tang	4600
+麻辣米线	ma la mi xian	4600
+麻辣豆腐脑	ma la dou fu nao	4600
+麻辣香锅	ma la xiang guo	4600
+麻辣鲜香	ma la xian xiang	4600
+麻酱凉面	ma jiang liang mian	4600
+麻酱拌面	ma jiang ban mian	4600
+麻酱烧饼	ma jiang shao bing	4600
+麻酱花卷	ma jiang hua juan	4600
+麻酱蘸料	ma jiang zhan liao	4600
+麻鸭	ma ya	4600
+黄冰糖	huang bing tang	4600
+黄啤	huang pi	4600
+黄喉	huang hou	4600
+黄小米	huang xiao mi	4600
+黄山毛峰	huang shan mao feng	4600
+黄山烧饼	huang shan shao bing	4600
+黄心奇异果	huang xin qi yi guo	4600
+黄柠檬	huang ning meng	4600
+黄桃	huang tao	4600
+黄桃干	huang tao gan	4600
+黄樱桃	huang ying tao	4600
+黄油	huang you	4600
+黄油曲奇	huang you qu qi	4600
+黄焖土鸡	huang men tu ji	4600
+黄焖鸡	huang men ji	4600
+黄焖鸡米饭	huang men ji mi fan	4600
+黄瓜	huang gua	4600
+黄瓜味薯片	huang gua wei shu pian	4600
+黄瓜炒蛋	huang gua chao dan	4600
+黄瓤西瓜	huang rang xi gua	4600
+黄皮	huang pi	4600
+黄秋葵	huang qiu kui	4600
+黄粑	huang ba	4600
+黄糯玉米	huang nuo yu mi	4600
+黄芥末	huang jie mo	4600
+黄花鱼	huang hua yu	4600
+黄芽菜	huang ya cai	4600
+黄茶	huang cha	4600
+黄豆	huang dou	4600
+黄豆芽	huang dou ya	4600
+黄豆酱	huang dou jiang	4600
+黄辣丁	huang la ding	4600
+黄酒	huang jiu	4600
+黄酒料酒	huang jiu liao jiu	4600
+黄金瓜	huang jin gua	4600
+黄金百香果	huang jin bai xiang guo	4600
+黄金蛋炒饭	huang jin dan chao fan	4600
+黄颡鱼	huang sang yu	4600
+黄鱼	huang yu	4600
+黄鳝	huang shan	4600
+黄鳝煲仔饭	huang shan bao zai fan	4600
+黏豆包	nian dou bao	4600
+黑刺榴莲	hei ci liu lian	4600
+黑啤	hei pi	4600
+黑小米	hei xiao mi	4600
+黑巧克力	hei qiao ke li	4600
+黑提	hei ti	4600
+黑木耳	hei mu er	4600
+黑松露	hei song lu	4600
+黑森林蛋糕	hei sen lin dan gao	4600
+黑椒汁	hei jiao zhi	4600
+黑椒牛仔骨	hei jiao niu zai gu	4600
+黑椒牛排	hei jiao niu pai	4600
+黑椒牛柳	hei jiao niu liu	4600
+黑椒牛柳意面	hei jiao niu liu yi mian	4600
+黑毛肚	hei mao du	4600
+黑玉米	hei yu mi	4600
+黑珍珠餐厅	hei zhen zhu can ting	4600
+黑皮甘蔗	hei pi gan zhe	4600
+黑米	hei mi	4600
+黑米粥	hei mi zhou	4600
+黑糖	hei tang	4600
+黑糖波霸	hei tang bo ba	4600
+黑糖珍珠奶茶	hei tang zhen zhu nai cha	4600
+黑糯玉米	hei nuo yu mi	4600
+黑美人	hei mei ren	4600
+黑胡椒碎	hei hu jiao sui	4600
+黑胡椒粉	hei hu jiao fen	4600
+黑胡椒酱	hei hu jiao jiang	4600
+黑色经典臭豆腐	hei se jing dian chou dou fu	4600
+黑芝麻汤圆	hei zhi ma tang yuan	4600
+黑茶	hei cha	4600
+黑莓	hei mei	4600
+黑虎虾	hei hu xia	4600
+黑豆	hei dou	4600
+黑豆浆	hei dou jiang	4600
+黑豆芽	hei dou ya	4600
+黑鱼	hei yu	4600
+黑鱼片	hei yu pian	4600
+鼎边糊	ding bian hu	4600
+鼠尾草	shu wei cao	4600
+齐齐哈尔烤肉	qi qi ha er kao rou	4600
+龙井茶	long jing cha	4600
+龙井虾仁	long jing xia ren	4600
+龙利鱼	long li yu	4600
+龙口粉丝	long kou fen si	4600
+龙抄手	long chao shou	4600
+龙眼	long yan	4600
+龙舌兰	long she lan	4600
+龙须菜	long xu cai	4600
+龙须面	long xu mian	4600
+龙骨	long gu	4600
+龟苓膏	gui ling gao	4600
+龟苓膏奶茶	gui ling gao nai cha	4600
+菜油	cai you	4594
+布林	bu lin	4591
+蟹膏	xie gao	4588
+脊骨	ji gu	4587
+生抽	sheng chou	4583
+高压锅	gao ya guo	4583
+电子秤	dian zi cheng	4577
+欧包	ou bao	4574
+青枣	qing zao	4543
 旋转餐厅	xuan zhuan can ting	4539
+花菇	hua gu	4538
+蛋清	dan qing	4529
+鸡肝	ji gan	4522
 菜单设置	cai dan she zhi	4500
 菜单设计	cai dan she ji	4500
 菜单选项	cai dan xuan xiang	4500
+菜心	cai xin	4500
+笋尖	sun jian	4488
+辣螺	la luo	4483
+寿眉	shou mei	4465
+麻球	ma qiu	4465
 猫咪餐厅	mao mi can ting	4462
 蜗牛餐厅	wo niu can ting	4462
+拌粉	ban fen	4458
+开洋	kai yang	4453
+抄手	chao shou	4439
+鸡爪	ji zhao	4430
+石蟹	shi xie	4420
+慈姑	ci gu	4399
+茨菇	ci gu	4399
+鹅肝	e gan	4392
 餐厅家具	can ting jia ju	4385
+春见	chun jian	4352
+干肠	gan chang	4349
+变蛋	bian dan	4329
 你外卖	ni wai mai	4308
 吃外卖	chi wai mai	4308
 外卖了	wai mai le	4308
@@ -107,11 +4459,25 @@
 外卖呢	wai mai ne	4308
 外卖柜	wai mai gui	4308
 外卖的	wai mai de	4308
+完美烹饪	wan mei peng ren	4308
 我外卖	wo wai mai	4308
 拿外卖	na wai mai	4308
+烹饪中心	peng ren zhong xin	4308
+烹饪技巧	peng ren ji qiao	4308
+烹饪方式	peng ren fang shi	4308
+烹饪时间	peng ren shi jian	4308
+烹饪步骤	peng ren bu zhou	4308
 等外卖	deng wai mai	4308
 订外卖	ding wai mai	4308
 跑外卖	pao wai mai	4308
+腊制	la zhi	4297
+香椿	xiang chun	4280
+料酒	liao jiu	4278
+手卷	shou juan	4230
+盖菜	gai cai	4228
+通菜	tong cai	4212
+鳄梨	e li	4202
+桂味	gui wei	4197
 一级菜单	yi ji cai dan	4193
 一餐厅	yi can ting	4193
 上级菜单	shang ji cai dan	4193
@@ -122,15 +4488,44 @@
 菜单命令	cai dan ming ling	4193
 菜单按钮	cai dan an niu	4193
 菜单界面	cai dan jie mian	4193
+熏鱼	xun yu	4177
+靓汤	liang tang	4176
+岩盐	yan yan	4156
+牛骨	niu gu	4156
+莲雾	lian wu	4152
+菜板	cai ban	4113
+姜丝	jiang si	4106
+花生汤	hua sheng tang	4104
 下饭店	xia fan dian	4077
 小饭店	xiao fan dian	4077
 有饭店	you fan dian	4077
 火锅外卖	huo guo wai mai	4077
 风味餐厅	feng wei can ting	4077
 饭店里	fan dian li	4077
+雪平锅	xue ping guo	4045
+香叶	xiang ye	4041
 自助餐厅	zi zhu can ting	4039
+厨师机	chu shi ji	4015
+姜末	jiang mo	4013
+鸭架	ya jia	4005
+花菜	hua cai	3972
+蛋液	dan ye	3972
+咸鸭	xian ya	3971
+减肥食谱	jian fei shi pu	3962
+秘密食谱	mi mi shi pu	3962
+小苏打	xiao su da	3958
+花蛤	hua ge	3957
 五星饭店	wu xing fan dian	3924
 星级饭店	xing ji fan dian	3924
+甜椒	tian jiao	3906
+嫩鸭	nen ya	3905
+甜沫	tian mo	3876
+切末	qie mo	3850
+骏枣	jun zao	3847
+剁馅	duo xian	3846
+虾膏	xia gao	3836
+艾窝窝	ai wo wo	3827
+中式烹饪	zhong shi peng ren	3808
 去餐厅	qu can ting	3808
 在餐厅	zai can ting	3808
 客餐厅	ke can ting	3808
@@ -139,8 +4534,11 @@
 餐厅了	can ting le	3808
 餐厅灯	can ting deng	3808
 餐厅的	can ting de	3808
+桂圆	gui yuan	3782
+葱油	cong you	3763
 金陵饭店	jin ling fan dian	3731
 冷饮	leng yin	3707
+榆钱	yu qian	3698
 上饭店	shang fan dian	3693
 到饭店	dao fan dian	3693
 去饭店	qu fan dian	3693
@@ -153,20 +4551,155 @@
 饭店吧	fan dian ba	3693
 饭店呢	fan dian ne	3693
 饭店的	fan dian de	3693
+鱼籽	yu zi	3668
+探店	tan dian	3653
+沙姜	sha jiang	3645
 迷糊餐厅	mi hu can ting	3616
 热饮	re yin	3606
+BBQ烧烤	bbq shao kao	3600
+Brunch早午餐	brunch zao wu can	3600
+Burger	burger	3600
+Espresso	espresso	3600
+Latte	latte	3600
+Matcha	matcha	3600
+Pizza	pizza	3600
+Q弹爽滑	q tan shuang hua	3600
+Salad	salad	3600
+Steak	steak	3600
+Sushi	sushi	3600
+Taco	taco	3600
+什锦火锅	shi jin huo guo	3600
+什锦蔬菜	shi jin shu cai	3600
+保定驴肉火烧	bao ding lv rou huo shao	3600
+党参鸡汤	dang shen ji tang	3600
+冰滴咖啡	bing di ka fei	3600
+切片刀	qie pian dao	3600
+加州卷	jia zhou juan	3600
+半煎炸	ban jian zha	3600
+即食海参	ji shi hai shen	3600
+卷边披萨	juan bian pi sa	3600
+咖喱角	ga li jiao	3600
+啫啫排骨	zhe zhe pai gu	3600
+啫啫煲	zhe zhe bao	3600
+啫啫牛蛙	zhe zhe niu wa	3600
+啫啫生肠	zhe zhe sheng chang	3600
+啫啫通菜	zhe zhe tong cai	3600
+啫啫鸡煲	zhe zhe ji bao	3600
+复炸	fu zha	3600
+干巴菌	gan ba jun	3600
+干拌抄手	gan ban chao shou	3600
+干烧伊面	gan shao yi mian	3600
+干煸牛肉丝	gan bian niu rou si	3600
+干白葡萄酒	gan bai pu tao jiu	3600
+干虾	gan xia	3600
+干贝冬瓜汤	gan bei dong gua tang	3600
+干贝瘦肉粥	gan bei shou rou zhou	3600
+干邑	gan yi	3600
+干鱿鱼	gan you yu	3600
+干鲍	gan bao	3600
+扒肘子	pa zhou zi	3600
+普宁豆干	pu ning dou gan	3600
+杏脯	xing fu	3600
+杭茄	hang qie	3600
+果脯	guo fu	3600
+枝竹羊腩煲	zhi zhu yang nan bao	3600
+核桃包	he tao bao	3600
+核桃糕	he tao gao	3600
+永州血鸭	yong zhou xue ya	3600
+河间驴肉火烧	he jian lv rou huo shao	3600
+油炸串串	you zha chuan chuan	3600
+泡椒藕带	pao jiao ou dai	3600
+泡茶机	pao cha ji	3600
+泡鲁达	pao lu da	3600
+海苔夹心脆	hai tai jia xin cui	3600
+消化饼干	xiao hua bing gan	3600
+炸两	zha liang	3600
+炸汤圆	zha tang yuan	3600
+炸洋芋	zha yang yu	3600
+炸香蕉	zha xiang jiao	3600
+烩面片	hui mian pian	3600
+焯烫	chao tang	3600
+熏拌鸡架	xun ban ji jia	3600
+牛油果卷	niu you guo juan	3600
+特调鸡尾酒	te tiao ji wei jiu	3600
+白豆角	bai dou jiao	3600
+盛菜	cheng cai	3600
+线茄	xian qie	3600
+细卷	xi juan	3600
+绿咖喱鸡	lv ga li ji	3600
+绿心奇异果	lv xin qi yi guo	3600
+绿芦笋	lv lu sun	3600
+绿苋菜	lv xian cai	3600
+绿菜花	lv cai hua	3600
+羊血	yang xue	3600
+腌渍	yan zi	3600
+花旗参乌鸡汤	hua qi shen wu ji tang	3600
+芸豆卷	yun dou juan	3600
+蔓越莓干	man yue mei gan	3600
+薄脆饼干	bao cui bing gan	3600
+藏红花	zang hong hua	3600
+蘸料碟	zhan liao die	3600
+血腥玛丽	xue xing ma li	3600
+血豆腐	xue dou fu	3600
+角瓜	jiao gua	3600
+调和威士忌	tiao he wei shi ji	3600
+酱卤	jiang lu	3600
+雪茄	xue jia	3600
+青茄子	qing qie zi	3600
+靖江猪肉脯	jing jiang zhu rou fu	3600
+驴肉汤	lv rou tang	3600
+鱼泡	yu pao	3600
+鸡胸脯	ji xiong pu	3600
+鸡胸脯肉	ji xiong pu rou	3600
+鹅血	e xue	3600
+黄咖喱鸡	huang ga li ji	3600
+保鲜袋	bao xian dai	3599
+去冰	qu bing	3586
+加汤	jia tang	3563
+红酱	hong jiang	3551
+烧麦	shao mai	3549
 微辣	wei la	3544
+橄榄菜	gan lan cai	3541
 订个外卖	ding ge wai mai	3539
+鲜枣	xian zao	3473
+高汤	gao tang	3471
+虾片	xia pian	3470
 下拉菜单	xia la cai dan	3462
 国宾饭店	guo bin fan dian	3462
 外卖小哥	wai mai xiao ge	3462
+炒菜锅	chao cai guo	3462
+南瓜子	nan gua zi	3440
+芝麻油	zhi ma you	3439
+焦圈	jiao quan	3389
 糖糖餐厅	tang tang can ting	3385
+龙头鱼	long tou yu	3372
+椰汁	ye zhi	3363
+老鸭	lao ya	3346
+河鳗	he man	3343
+黄椒	huang jiao	3311
 凯伦饭店	kai lun fan dian	3308
+煮饭菜	zhu fan cai	3308
+地三鲜	di san xian	3301
+刺参	ci shen	3299
+西梅	xi mei	3292
 假面饭店	jia mian fan dian	3270
 菜单键	cai dan jian	3270
 饭店迷情	fan dian mi qing	3270
+川粉	chuan fen	3266
+麻椒	ma jiao	3237
+美食菜谱	mei shi cai pu	3231
+椰青	ye qing	3227
+水芹	shui qin	3178
+冬菇	dong gu	3160
 招牌菜	zhao pai cai	3120
+雪饼	xue bing	3113
+太白粉	tai bai fen	3106
+薯角	shu jiao	3103
+青柠	qing ning	3100
+桶子鸡	tong zi ji	3074
+凉糕	liang gao	3044
 点餐助手	dian can zhu shou	3039
+丑橘	chou ju	3005
 你的外卖	ni de wai mai	3000
 外卖到了	wai mai dao le	3000
 我叫外卖	wo jiao wai mai	3000
@@ -175,9 +4708,42 @@
 点外卖吧	dian wai mai ba	3000
 订外卖了	ding wai mai le	3000
 送外卖的	song wai mai de	3000
+活虾	huo xia	2979
+辽参	liao shen	2968
+炒菜花	chao cai hua	2962
+干饭	gan fan	2949
+不煮饭	bu zhu fan	2924
+你煮饭	ni zhu fan	2924
+在煮饭	zai zhu fan	2924
+我煮饭	wo zhu fan	2924
+没煮饭	mei zhu fan	2924
+煮饭了	zhu fan le	2924
+煮饭吃	zhu fan chi	2924
+煮饭吗	zhu fan ma	2924
+煮饭机	zhu fan ji	2924
+煮饭的	zhu fan de	2924
+要煮饭	yao zhu fan	2924
+西瓜子	xi gua zi	2920
+干煎	gan jian	2895
+澳白	ao bai	2875
+羊肺	yang fei	2867
+黑胡椒	hei hu jiao	2817
+女皇蒸凉面	nv huang zheng liang mian	2800
+掠油	lve you	2800
+略微偏甜	lve wei pian tian	2800
 浮华饭店	fu hua fan dian	2731
+不炒菜	bu chao cai	2654
 为你点餐	wei ni dian can	2654
+你炒菜	ni chao cai	2654
+吃炒菜	chi chao cai	2654
+在炒菜	zai chao cai	2654
 我在餐厅	wo zai can ting	2654
+我炒菜	wo chao cai	2654
+没炒菜	mei chao cai	2654
+炒菜了	chao cai le	2654
+炒菜吧	chao cai ba	2654
+炒菜呢	chao cai ne	2654
+炒菜的	chao cai de	2654
 到饭店了	dao fan dian le	2616
 开饭店的	kai fan dian de	2616
 我在饭店	wo zai fan dian	2616
@@ -185,4 +4751,18 @@
 柳京饭店	liu jing fan dian	2616
 礼查饭店	li cha fan dian	2616
 翠宫饭店	cui gong fan dian	2616
+豆瓣酱	dou ban jiang	2305
+我在煮饭	wo zai zhu fan	2116
+我煮饭了	wo zhu fan le	2116
+煮饭了吗	zhu fan le ma	2116
+煮饭去了	zhu fan qu le	2116
+我在炒菜	wo zai chao cai	1962
 为您点餐	wei nin dian can	1885
+沙拉酱	sha la jiang	1651
+蚝油	hao you	1630
+不粘锅	bu nian guo	1133
+酵母粉	jiao mu fen	808
+玉米油	yu mi you	780
+五香粉	wu xiang fen	605
+泡打粉	pao da fen	241
+白胡椒	bai hu jiao	91

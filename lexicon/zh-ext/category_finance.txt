@@ -1,65 +1,211 @@
-# 开心离线输入法分类补充：金融投资
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
-收益率	shou yi lv	8500
-市盈率	shi ying lv	7248
+# 开心输入法扩展词库：金融财会与保险（1576 条）
+# 来源合并：category_finance.txt, category_accounting.txt, category_insurance.txt, professional_finance.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+医疗保险	yi liao bao xian	6200
+受益人	shou yi ren	6200
+市盈率	shi ying lv	6200
+收益率	shou yi lv	6200
+事故证明	shi gu zheng ming	6100
 交易型基金	jiao yi xing ji jin	6100
 交易账户	jiao yi zhang hu	6100
+交通报销	jiao tong bao xiao	6100
+会计凭证	kuai ji ping zheng	6100
+住院费用	zhu yuan fei yong	6100
+保单变更	bao dan bian geng	6100
+保单号码	bao dan hao ma	6100
+保单查询	bao dan cha xun	6100
+保单续保	bao dan xu bao	6100
+保单贷款	bao dan dai kuan	6100
+保单退保	bao dan tui bao	6100
+保险合同	bao xian he tong	6100
+保险期间	bao xian qi jian	6100
+保险条款	bao xian tiao kuan	6100
+保险责任	bao xian ze ren	6100
+保险费用	bao xian fei yong	6100
+保险金额	bao xian jin e	6100
 债券利率	zhai quan li lv	6100
 债券收益	zhai quan shou yi	6100
 债券期限	zhai quan qi xian	6100
 债券评级	zhai quan ping ji	6100
 债权融资	zhai quan rong zi	6100
+健康告知	jian kang gao zhi	6100
+免责条款	mian ze tiao kuan	6100
+免赔率	mian pei lv	6100
+免赔额	mian pei e	6100
+公众责任险	gong zhong ze ren xian	6100
 净值估算	jing zhi gu suan	6100
-净资产收益率	jing zi chan shou yi lv	6100
+凭证审核	ping zheng shen he	6100
+凭证装订	ping zheng zhuang ding	6100
+出险报案	chu xian bao an	6100
 分红派息	fen hong pai xi	6100
+医疗证明	yi liao zheng ming	6100
 单位净值	dan wei jing zhi	6100
+原始凭证	yuan shi ping zheng	6100
+原材料盘点	yuan cai liao pan dian	6100
+商业保险	shang ye bao xian	6100
 回撤幅度	hui che fu du	6100
+坏账准备	huai zhang zhun bei	6100
+坏账损失	huai zhang sun shi	6100
 基金定投	ji jin ding tou	6100
 基金申购	ji jin shen gou	6100
 基金账户	ji jin zhang hu	6100
 基金赎回	ji jin shu hui	6100
 大额存单	da e cun dan	6100
 存款利率	cun kuan li lv	6100
+存货盘点	cun huo pan dian	6100
+存货跌价	cun huo die jia	6100
+定损评估	ding sun ping gu	6100
 定期存款	ding qi cun kuan	6100
 宽基指数	kuan ji zhi shu	6100
+寿险保单	shou xian bao dan	6100
+差旅报销	chai lv bao xiao	6100
 年化收益	nian hua shou yi	6100
+年末结账	nian mo jie zhang	6100
+库存商品	ku cun shang pin	6100
+应付票据	ying fu piao ju	6100
+应付账款	ying fu zhang kuan	6100
+应收票据	ying shou piao ju	6100
+应收账款	ying shou zhang kuan	6100
 开户申请	kai hu shen qing	6100
+待摊费用	dai tan fei yong	6100
+总账明细	zong zhang ming xi	6100
+意外保险	yi wai bao xian	6100
+成本分摊	cheng ben fen tan	6100
+成本核算	cheng ben he suan	6100
+所得税汇算	suo de shui hui suan	6100
 投资回报	tou zi hui bao	6100
 投资收益	tou zi shou yi	6100
 投资期限	tou zi qi xian	6100
+报案号码	bao an hao ma	6100
+报销凭证	bao xiao ping zheng	6100
+报销单据	bao xiao dan ju	6100
+报销流程	bao xiao liu cheng	6100
 最大回撤	zui da hui che	6100
+月末结账	yue mo jie zhang	6100
+未分配利润	wei fen pei li run	6100
+核保结果	he bao jie guo	6100
+汇算清缴	hui suan qing jiao	6100
 波动率	bo dong lv	6100
 流动资产	liu dong zi chan	6100
+犹豫期	you yu qi	6100
 现金管理	xian jin guan li	6100
+理赔审核	li pei shen he	6100
+理赔材料	li pei cai liao	6100
+理赔申请	li pei shen qing	6100
+理赔结案	li pei jie an	6100
+理赔进度	li pei jin du	6100
+理赔金额	li pei jin e	6100
+科目余额	ke mu yu e	6100
+税额抵扣	shui e di kou	6100
+等待期	deng dai qi	6100
 累计净值	lei ji jing zhi	6100
+累计折旧	lei ji zhe jiu	6100
+纳税申报	na shui shen bao	6100
 股东权益	gu dong quan yi	6100
 股权激励	gu quan ji li	6100
 股权融资	gu quan rong zi	6100
 股权转让	gu quan zhuan rang	6100
 股票回购	gu piao hui gou	6100
+营业利润	ying ye li run	6100
+营业成本	ying ye cheng ben	6100
+营业收入	ying ye shou ru	6100
 融资成本	rong zi cheng ben	6100
 融资渠道	rong zi qu dao	6100
 融资融券	rong zi rong quan	6100
 融资轮次	rong zi lun ci	6100
 行业指数	hang ye zhi shu	6100
+被保险人	bei bao xian ren	6100
+计提折旧	ji ti zhe jiu	6100
+记账凭证	ji zhang ping zheng	6100
 证券账户	zheng quan zhang hu	6100
+财产保险	cai chan bao xian	6100
+财务分析	cai wu fen xi	6100
+财务审计	cai wu shen ji	6100
+财务报表	cai wu bao biao	6100
+财务预算	cai wu yu suan	6100
+责任免除	ze ren mian chu	6100
+账实核对	zhang shi he dui	6100
 账户注销	zhang hu zhu xiao	6100
 货币基金	huo bi ji jin	6100
+费用报销	fei yong bao xiao	6100
 资产负债	zi chan fu zhai	6100
+车辆定损	che liang ding sun	6100
+车险续保	che xian xu bao	6100
+进项税额	jin xiang shui e	6100
 配股增发	pei gu zeng fa	6100
+重疾保险	zhong ji bao xian	6100
+银行对账	yin hang dui zhang	6100
+销项税额	xiao xiang shui e	6100
+门诊费用	men zhen fei yong	6100
+雇主责任险	gu zhu ze ren xian	6100
 非流动资产	fei liu dong zi chan	6100
+预付账款	yu fu zhang kuan	6100
+预提费用	yu ti fei yong	6100
+预收账款	yu shou zhang kuan	6100
+预算执行	yu suan zhi xing	6100
+预算编制	yu suan bian zhi	6100
+预算调整	yu suan tiao zheng	6100
 风险偏好	feng xian pian hao	6100
-风险承受能力	feng xian cheng shou neng li	6100
 风险提示	feng xian ti shi	6100
+久期	jiu qi	6000
+估值	gu zhi	6000
+保证金	bao zheng jin	6000
+信托	xin tuo	6000
+信用风险	xin yong feng xian	6000
+债券	zhai quan	6000
+公募基金	gong mu ji jin	6000
+内部收益率	nei bu shou yi lv	6000
+再贴现	zai tie xian	6000
+净现值	jing xian zhi	6000
+凸性	tu xing	6000
+分散投资	fen san tou zi	6000
+利润表	li run biao	6000
+利率	li lv	6000
+基金	ji jin	6000
+复利	fu li	6000
+外汇	wai hui	6000
+套期保值	tao qi bao zhi	6000
+存款准备金	cun kuan zhun bei jin	6000
+对冲	dui chong	6000
+市值	shi zhi	6000
 市净率	shi jing lv	6000
+市场风险	shi chang feng xian	6000
 投资组合	tou zi zu he	6000
 指数基金	zhi shu ji jin	6000
+操作风险	cao zuo feng xian	6000
+无风险利率	wu feng xian li lv	6000
+期权	qi quan	6000
+期货	qi huo	6000
+杠杆	gang gan	6000
+汇率	hui lv	6000
+流动性	liu dong xing	6000
+现金流	xian jin liu	6000
+现金流量表	xian jin liu liang biao	6000
+私募基金	si mu ji jin	6000
+系统性风险	xi tong xing feng xian	6000
+股息	gu xi	6000
+股票	gu piao	6000
+融资租赁	rong zi zu lin	6000
+行为金融	xing wei jin rong	6000
+衍生品	yan sheng pin	6000
+证券市场	zheng quan shi chang	6000
+财政政策	cai zheng zheng ce	6000
+货币市场	huo bi shi chang	6000
+货币政策	huo bi zheng ce	6000
+贴现率	tie xian lv	6000
+资产证券化	zi chan zheng quan hua	6000
+资产负债表	zi chan fu zhai biao	6000
 资产配置	zi chan pei zhi	6000
+资本充足率	zi ben chong zu lv	6000
+资本市场	zi ben shi chang	6000
+通货紧缩	tong huo jin suo	6000
+通货膨胀	tong huo peng zhang	6000
+量化宽松	liang hua kuan song	6000
+金融市场	jin rong shi chang	6000
 风险溢价	feng xian yi jia	6000
+风险管理	feng xian guan li	6000
 金融资源	jin rong zi yuan	5962
+投保人	tou bao ren	5738
 土地基金	tu di ji jin	5731
 基金行业	ji jin hang ye	5731
 基金项目	ji jin xiang mu	5693
@@ -68,9 +214,12 @@
 基金价格	ji jin jia ge	5654
 福利基金	fu li ji jin	5616
 基金革命	ji jin ge ming	5577
+健康保险	jian kang bao xian	5539
 天天基金	tian tian ji jin	5500
 联邦基金	lian bang ji jin	5500
 东方证券	dong fang zheng quan	5424
+个人保险	ge ren bao xian	5424
+合作保险	he zuo bao xian	5424
 股票价值	gu piao jia zhi	5424
 股票价格	gu piao jia ge	5424
 专业基金	zhuan ye ji jin	5385
@@ -78,6 +227,7 @@
 事业基金	shi ye ji jin	5385
 产业基金	chan ye ji jin	5385
 企业基金	qi ye ji jin	5385
+保险关系	bao xian guan xi	5385
 全球基金	quan qiu ji jin	5385
 公共基金	gong gong ji jin	5385
 共同基金	gong tong ji jin	5385
@@ -131,6 +281,7 @@
 基金资产	ji jin zi chan	5308
 股票证券	gu piao zheng quan	5308
 东方基金	dong fang ji jin	5270
+军人保险	jun ren bao xian	5270
 南方证券	nan fang zheng quan	5270
 基金费用	ji jin fei yong	5270
 石油基金	shi you ji jin	5270
@@ -139,6 +290,13 @@
 国有股权	guo you gu quan	5231
 管理财务	guan li cai wu	5231
 股份基金	gu fen ji jin	5231
+公开市场操作	gong kai shi chang cao zuo	5200
+净资产收益率	jing zi chan shou yi lv	5200
+固定资产折旧	gu ding zi chan zhe jiu	5200
+无形资产摊销	wu xing zi chan tan xiao	5200
+第三者责任险	di san zhe ze ren xian	5200
+非系统性风险	fei xi tong xing feng xian	5200
+风险承受能力	feng xian cheng shou neng li	5200
 上市基金	shang shi ji jin	5193
 交换基金	jiao huan ji jin	5193
 单一股票	dan yi gu piao	5193
@@ -177,11 +335,65 @@
 金融证券	jin rong zheng quan	5154
 银行证券	yin hang zheng quan	5154
 香港证券	xiang gang zheng quan	5154
+事故保险	shi gu bao xian	5116
+人民保险	ren min bao xian	5116
+企业保险	qi ye bao xian	5116
 住房基金	zhu fang ji jin	5116
+保证保险	bao zheng bao xian	5116
+保险一点	bao xian yi dian	5116
+保险事故	bao xian shi gu	5116
+保险产品	bao xian chan pin	5116
+保险代理	bao xian dai li	5116
+保险价值	bao xian jia zhi	5116
+保险制度	bao xian zhi du	5116
+保险原则	bao xian yuan ze	5116
+保险商品	bao xian shang pin	5116
+保险基金	bao xian ji jin	5116
+保险客户	bao xian ke hu	5116
+保险对象	bao xian dui xiang	5116
+保险市场	bao xian shi chang	5116
+保险成本	bao xian cheng ben	5116
+保险投资	bao xian tou zi	5116
+保险服务	bao xian fu wu	5116
+保险机构	bao xian ji gou	5116
+保险条例	bao xian tiao li	5116
+保险管理	bao xian guan li	5116
+保险经营	bao xian jing ying	5116
+保险行业	bao xian hang ye	5116
+保险资金	bao xian zi jin	5116
+保险销售	bao xian xiao shou	5116
+保险需求	bao xian xu qiu	5116
+保险风险	bao xian feng xian	5116
+全国会计	quan guo kuai ji	5116
+共同保险	gong tong bao xian	5116
+农业保险	nong ye bao xian	5116
+大众保险	da zhong bao xian	5116
+投资保险	tou zi bao xian	5116
+旅行保险	lv xing bao xian	5116
 旅行基金	lv xing ji jin	5116
+普通保险	pu tong bao xian	5116
+死亡保险	si wang bao xian	5116
+汽车保险	qi che bao xian	5116
+没有保险	mei you bao xian	5116
+爱情保险	ai qing bao xian	5116
+生命保险	sheng ming bao xian	5116
+生存保险	sheng cun bao xian	5116
+社会会计	she hui kuai ji	5116
+绝对保险	jue dui bao xian	5116
+综合保险	zong he bao xian	5116
+网上保险	wang shang bao xian	5116
+网络保险	wang luo bao xian	5116
+职业保险	zhi ye bao xian	5116
+联合保险	lian he bao xian	5116
 证券日报	zheng quan ri bao	5116
+责任保险	ze ren bao xian	5116
+运输保险	yun shu bao xian	5116
+金融保险	jin rong bao xian	5116
+银行保险	yin hang bao xian	5116
+飞机保险	fei ji bao xian	5116
 上市股票	shang shi gu piao	5077
 保证股票	bao zheng gu piao	5077
+保险装置	bao xian zhuang zhi	5077
 发行股票	fa xing gu piao	5077
 国际股票	guo ji gu piao	5077
 基金指数	ji jin zhi shu	5077
@@ -190,6 +402,8 @@
 多数股票	duo shu gu piao	5077
 大型股票	da xing gu piao	5077
 工业股票	gong ye gu piao	5077
+成本会计	cheng ben kuai ji	5077
+房屋保险	fang wu bao xian	5077
 推荐股票	tui jian gu piao	5077
 普通股票	pu tong gu piao	5077
 概念股票	gai nian gu piao	5077
@@ -219,38 +433,63 @@
 股票预测	gu piao yu ce	5077
 股票风格	gu piao feng ge	5077
 股票风险	gu piao feng xian	5077
-融资策略	rong zi ce lue	5077
+融资策略	rong zi ce lve	5077
 表示股票	biao shi gu piao	5077
 黄金基金	huang jin ji jin	5077
 黄金股票	huang jin gu piao	5077
+主办会计	zhu ban kuai ji	5039
+主管会计	zhu guan kuai ji	5039
+内部会计	nei bu kuai ji	5039
+华安保险	hua an bao xian	5039
 基金经理	ji jin jing li	5039
+外部会计	wai bu kuai ji	5039
 平衡基金	ping heng ji jin	5039
+现金会计	xian jin kuai ji	5039
 股权变动	gu quan bian dong	5039
 股票模型	gu piao mo xing	5039
 退休基金	tui xiu ji jin	5039
+代理会计	dai li kuai ji	5000
+保险监管	bao xian jian guan	5000
+保险顾问	bao xian gu wen	5000
 出售股票	chu shou gu piao	5000
 创业基金	chuang ye ji jin	5000
 南方基金	nan fang ji jin	5000
 基金合同	ji jin he tong	5000
 基金监管	ji jin jian guan	5000
 大通证券	da tong zheng quan	5000
+强制保险	qiang zhi bao xian	5000
 指标股票	zhi biao gu piao	5000
 援助基金	yuan zhu ji jin	5000
+普通会计	pu tong kuai ji	5000
+管理会计	guan li kuai ji	5000
 股权证书	gu quan zheng shu	5000
 股票代码	gu piao dai ma	5000
 股票指标	gu piao zhi biao	5000
 融资策划	rong zi ce hua	5000
 证券代码	zheng quan dai ma	5000
 证券监管	zheng quan jian guan	5000
+重复保险	chong fu bao xian	5000
+阳光保险	yang guang bao xian	5000
 优先股票	you xian gu piao	4962
+会计分析	kuai ji fen xi	4962
+会计学校	kuai ji xue xiao	4962
+会计学院	kuai ji xue yuan	4962
+会计成本	kuai ji cheng ben	4962
+会计收益	kuai ji shou yi	4962
+会计数据	kuai ji shu ju	4962
+会计法规	kuai ji fa gui	4962
+保险深度	bao xian shen du	4962
 国开证券	guo kai zheng quan	4962
 基金税收	ji jin shui shou	4962
+大地保险	da di bao xian	4962
 天使基金	tian shi ji jin	4962
 某种证券	mou zhong zheng quan	4962
 种子基金	zhong zi ji jin	4962
 股市调整	gu shi tiao zheng	4962
 股票合并	gu piao he bing	4962
 配置基金	pei zhi ji jin	4962
+会计程序	kuai ji cheng xu	4924
+司法会计	si fa kuai ji	4924
 基金转换	ji jin zhuan huan	4924
 外汇基金	wai hui ji jin	4924
 奖励基金	jiang li ji jin	4924
@@ -313,33 +552,45 @@
 贸易融资	mao yi rong zi	4885
 银行融资	yin hang rong zi	4885
 项目融资	xiang mu rong zi	4885
+保险总额	bao xian zong e	4847
 基金帐户	ji jin zhang hu	4847
 外国债券	wai guo zhai quan	4847
+定期保险	ding qi bao xian	4847
 短期融资	duan qi rong zi	4847
 短期证券	duan qi zheng quan	4847
 股票买卖	gu piao mai mai	4847
 证券买卖	zheng quan mai mai	4847
 证券时报	zheng quan shi bao	4847
+货物保险	huo wu bao xian	4847
+金融会计	jin rong kuai ji	4847
 题材股票	ti cai gu piao	4847
+住房保险	zhu fang bao xian	4808
 基金回报	ji jin hui bao	4808
 基金收益	ji jin shou yi	4808
 棉花期货	mian hua qi huo	4808
 欧元基金	ou yuan ji jin	4808
 流通基金	liu tong ji jin	4808
+海上保险	hai shang bao xian	4808
 维修基金	wei xiu ji jin	4808
 股权收益	gu quan shou yi	4808
 股票收益	gu piao shou yi	4808
 股票账户	gu piao zhang hu	4808
 西南证券	xi nan zheng quan	4808
+附加保险	fu jia bao xian	4808
 黄金期货	huang jin qi huo	4808
+信用保险	xin yong bao xian	4770
 信用证券	xin yong zheng quan	4770
 债务基金	zhai wu ji jin	4770
 债务融资	zhai wu rong zi	4770
 债务证券	zhai wu zheng quan	4770
 受让股权	shou rang gu quan	4770
 国内债券	guo nei zhai quan	4770
+审计程序	shen ji cheng xu	4770
 封闭基金	feng bi ji jin	4770
 平安证券	ping an zheng quan	4770
+未经审计	wei jing shen ji	4770
+社会审计	she hui shen ji	4770
+自愿保险	zi yuan bao xian	4770
 虚拟股票	xu ni gu piao	4770
 补偿基金	bu chang ji jin	4770
 长江证券	chang jiang zheng quan	4770
@@ -355,6 +606,7 @@
 华龙证券	hua long zheng quan	4731
 基金终止	ji jin zhong zhi	4731
 大同证券	da tong zheng quan	4731
+新华保险	xin hua bao xian	4731
 方正证券	fang zheng zheng quan	4731
 期货价格	qi huo jia ge	4731
 期货商品	qi huo shang pin	4731
@@ -363,23 +615,108 @@
 热门股票	re men gu piao	4731
 白银基金	bai yin ji jin	4731
 白银股票	bai yin gu piao	4731
+签证保险	qian zheng bao xian	4731
 红塔证券	hong ta zheng quan	4731
+财政审计	cai zheng shen ji	4731
 集合理财	ji he li cai	4731
 业绩股票	ye ji gu piao	4693
+保险大厦	bao xian da sha	4693
+保险类别	bao xian lei bie	4693
 先锋基金	xian feng ji jin	4693
+外资保险	wai zi bao xian	4693
 慈善基金	ci shan ji jin	4693
+灾害保险	zai hai bao xian	4693
 理财经理	li cai jing li	4693
 股票财经	gu piao cai jing	4693
 证券大厦	zheng quan da sha	4693
 财经证券	cai jing zheng quan	4693
+不保险	bu bao xian	4654
 中国股市	zhong guo gu shi	4654
+企业会计	qi ye kuai ji	4654
+会计专业	kuai ji zhuan ye	4654
+会计业务	kuai ji ye wu	4654
+会计主体	kuai ji zhu ti	4654
+会计主管	kuai ji zhu guan	4654
+会计事项	kuai ji shi xiang	4654
+会计人员	kuai ji ren yuan	4654
+会计代理	kuai ji dai li	4654
+会计任务	kuai ji ren wu	4654
+会计估计	kuai ji gu ji	4654
+会计信息	kuai ji xin xi	4654
+会计假设	kuai ji jia she	4654
+会计公司	kuai ji gong si	4654
+会计决策	kuai ji jue ce	4654
+会计利润	kuai ji li run	4654
+会计制度	kuai ji zhi du	4654
+会计助理	kuai ji zhu li	4654
+会计单位	kuai ji dan wei	4654
+会计原则	kuai ji yuan ze	4654
+会计基础	kuai ji ji chu	4654
+会计对象	kuai ji dui xiang	4654
+会计年度	kuai ji nian du	4654
+会计循环	kuai ji xun huan	4654
+会计技术	kuai ji ji shu	4654
+会计报告	kuai ji bao gao	4654
+会计指标	kuai ji zhi biao	4654
+会计控制	kuai ji kong zhi	4654
+会计政策	kuai ji zheng ce	4654
+会计方法	kuai ji fang fa	4654
+会计服务	kuai ji fu wu	4654
+会计期间	kuai ji qi jian	4654
+会计本质	kuai ji ben zhi	4654
+会计机构	kuai ji ji gou	4654
+会计标准	kuai ji biao zhun	4654
+会计档案	kuai ji dang an	4654
+会计检查	kuai ji jian cha	4654
+会计概念	kuai ji gai nian	4654
+会计模式	kuai ji mo shi	4654
+会计环境	kuai ji huan jing	4654
+会计理论	kuai ji li lun	4654
+会计监督	kuai ji jian du	4654
+会计目标	kuai ji mu biao	4654
+会计研究	kuai ji yan jiu	4654
+会计确认	kuai ji que ren	4654
+会计系统	kuai ji xi tong	4654
+会计经理	kuai ji jing li	4654
+会计统计	kuai ji tong ji	4654
+会计职业	kuai ji zhi ye	4654
+会计职能	kuai ji zhi neng	4654
+会计行为	kuai ji xing wei	4654
+会计要素	kuai ji yao su	4654
+会计规则	kuai ji gui ze	4654
+会计规范	kuai ji gui fan	4654
+会计记录	kuai ji ji lu	4654
+会计论坛	kuai ji lun tan	4654
+会计论文	kuai ji lun wen	4654
+会计责任	kuai ji ze ren	4654
+会计账户	kuai ji zhang hu	4654
+会计资料	kuai ji zi liao	4654
+会计软件	kuai ji ruan jian	4654
+会计道德	kuai ji dao de	4654
+会计预测	kuai ji yu ce	4654
+会计风险	kuai ji feng xian	4654
+保险起见	bao xian qi jian	4654
 全球股市	quan qiu gu shi	4654
+兼职会计	jian zhi kuai ji	4654
+农业会计	nong ye kuai ji	4654
+决策会计	jue ce kuai ji	4654
+古代会计	gu dai kuai ji	4654
 台湾股市	tai wan gu shi	4654
+商业会计	shang ye kuai ji	4654
 国元证券	guo yuan zheng quan	4654
+国际会计	guo ji kuai ji	4654
+基础会计	ji chu kuai ji	4654
 基金变更	ji jin bian geng	4654
 复制基金	fu zhi ji jin	4654
+政府会计	zheng fu kuai ji	4654
 日本股市	ri ben gu shi	4654
 水利基金	shui li ji jin	4654
+环境会计	huan jing kuai ji	4654
+现代会计	xian dai kuai ji	4654
+电子会计	dian zi kuai ji	4654
+税收会计	shui shou kuai ji	4654
+绿色会计	lv se kuai ji	4654
+网络会计	wang luo kuai ji	4654
 美国股市	mei guo gu shi	4654
 股市垄断	gu shi long duan	4654
 股市安全	gu shi an quan	4654
@@ -388,20 +725,33 @@
 股市生态	gu shi sheng tai	4654
 股市风险	gu shi feng xian	4654
 虚拟股市	xu ni gu shi	4654
+财务会计	cai wu kuai ji	4654
+责任会计	ze ren kuai ji	4654
 追踪股票	zhui zong gu piao	4654
 隔离基金	ge li ji jin	4654
+预算会计	yu suan kuai ji	4654
 专项基金	zhuan xiang ji jin	4616
 个人理财	ge ren li cai	4616
 养老基金	yang lao ji jin	4616
 华夏基金	hua xia ji jin	4616
+存款保险	cun kuan bao xian	4616
+火灾保险	huo zai bao xian	4616
 老虎基金	lao hu ji jin	4616
 老虎证券	lao hu zheng quan	4616
 股权纠纷	gu quan jiu fen	4616
 股权约束	gu quan yue shu	4616
 间接融资	jian jie rong zi	4616
+中国税务	zhong guo shui wu	4577
+会计词汇	kuai ji ci hui	4577
+保险契约	bao xian qi yue	4577
+保险期限	bao xian qi xian	4577
 储备基金	chu bei ji jin	4577
+初级会计	chu ji kuai ji	4577
+双重保险	shuang chong bao xian	4577
 双重基金	shuang chong ji jin	4577
 基金契约	ji jin qi yue	4577
+法定保险	fa ding bao xian	4577
+税务局长	shui wu ju zhang	4577
 股权契约	gu quan qi yue	4577
 股票头部	gu piao tou bu	4577
 股票帐户	gu piao zhang hu	4577
@@ -411,6 +761,8 @@
 专项债券	zhuan xiang zhai quan	4539
 主权债券	zhu quan zhai quan	4539
 企业债券	qi ye zhai quan	4539
+会计诚信	kuai ji cheng xin	4539
+保险中介	bao xian zhong jie	4539
 信用债券	xin yong zhai quan	4539
 信贷融资	xin dai rong zi	4539
 债券上市	zhai quan shang shi	4539
@@ -449,14 +801,90 @@
 长城证券	chang cheng zheng quan	4539
 长期债券	chang qi zhai quan	4539
 一手股票	yi shou gu piao	4500
+万能保险	wan neng bao xian	4500
+专项审计	zhuan xiang shen ji	4500
+中级会计	zhong ji kuai ji	4500
+事后审计	shi hou shen ji	4500
+会计准则	kuai ji zhun ze	4500
+会计审计	kuai ji shen ji	4500
+会计用品	kuai ji yong pin	4500
+会计科目	kuai ji ke mu	4500
+传统审计	chuan tong shen ji	4500
+内部审计	nei bu shen ji	4500
 剩余股权	sheng yu gu quan	4500
+国家审计	guo jia shen ji	4500
+外部审计	wai bu shen ji	4500
+大会计	da kuai ji	4500
+定期审计	ding qi shen ji	4500
+审计主管	shen ji zhu guan	4500
+审计人员	shen ji ren yuan	4500
+审计信息	shen ji xin xi	4500
+审计准则	shen ji zhun ze	4500
+审计准备	shen ji zhun bei	4500
+审计制度	shen ji zhi du	4500
+审计失败	shen ji shi bai	4500
+审计对象	shen ji dui xiang	4500
+审计工作	shen ji gong zuo	4500
+审计市场	shen ji shi chang	4500
+审计意见	shen ji yi jian	4500
+审计报告	shen ji bao gao	4500
+审计文化	shen ji wen hua	4500
+审计方案	shen ji fang an	4500
+审计方法	shen ji fang fa	4500
+审计服务	shen ji fu wu	4500
+审计机构	shen ji ji gou	4500
+审计档案	shen ji dang an	4500
+审计流程	shen ji liu cheng	4500
+审计环境	shen ji huan jing	4500
+审计监督	shen ji jian du	4500
+审计目标	shen ji mu biao	4500
+审计目的	shen ji mu di	4500
+审计管辖	shen ji guan xia	4500
+审计经理	shen ji jing li	4500
+审计结果	shen ji jie guo	4500
+审计结论	shen ji jie lun	4500
+审计职责	shen ji zhi ze	4500
+审计范围	shen ji fan wei	4500
+审计计划	shen ji ji hua	4500
+审计记录	shen ji ji lu	4500
+审计证据	shen ji zheng ju	4500
+审计评价	shen ji ping jia	4500
+审计调整	shen ji tiao zheng	4500
+审计责任	shen ji ze ren	4500
+审计质量	shen ji zhi liang	4500
+审计资源	shen ji zi yuan	4500
+审计跟踪	shen ji gen zong	4500
+审计软件	shen ji ruan jian	4500
+审计阶段	shen ji jie duan	4500
+审计项目	shen ji xiang mu	4500
+审计风暴	shen ji feng bao	4500
+审计风险	shen ji feng xian	4500
+工程审计	gong cheng shen ji	4500
+年度审计	nian du shen ji	4500
 捐赠基金	juan zeng ji jin	4500
+政府审计	zheng fu shen ji	4500
+效益审计	xiao yi shen ji	4500
+民间审计	min jian shen ji	4500
+法定审计	fa ding shen ji	4500
+独立审计	du li shen ji	4500
+环境审计	huan jing shen ji	4500
+现场审计	xian chang shen ji	4500
+租赁会计	zu lin kuai ji	4500
 租赁融资	zu lin rong zi	4500
+管理审计	guan li shen ji	4500
+经营审计	jing ying shen ji	4500
+联合审计	lian he shen ji	4500
 股权冻结	gu quan dong jie	4500
 股权捐赠	gu quan juan zeng	4500
 股票兑换	gu piao dui huan	4500
 股票冻结	gu piao dong jie	4500
+能源审计	neng yuan shen ji	4500
+详细审计	xiang xi shen ji	4500
+资产审计	zi chan shen ji	4500
+金融审计	jin rong shen ji	4500
 镜子基金	jing zi ji jin	4500
+高压保险	gao ya bao xian	4500
+会计等式	kuai ji deng shi	4462
 信托基金	xin tuo ji jin	4462
 信托融资	xin tuo rong zi	4462
 债券利息	zhai quan li xi	4462
@@ -516,6 +944,8 @@
 银河基金	yin he ji jin	4462
 银河证券	yin he zheng quan	4462
 中海基金	zhong hai ji jin	4424
+会计学堂	kuai ji xue tang	4424
+保险经纪	bao xian jing ji	4424
 僵尸基金	jiang shi ji jin	4424
 基金科	ji jin ke	4424
 大基金	da ji jin	4424
@@ -524,10 +954,14 @@
 股票板块	gu piao ban kuai	4424
 股票经纪	gu piao jing ji	4424
 证券经纪	zheng quan jing ji	4424
+会计惯例	kuai ji guan li	4385
+做会计	zuo kuai ji	4385
+华夏保险	hua xia bao xian	4385
 华夏债券	hua xia zhai quan	4385
 华夏证券	hua xia zheng quan	4385
 国金证券	guo jin zheng quan	4385
 基金份额	ji jin fen e	4385
+学会计	xue kuai ji	4385
 批发基金	pi fa ji jin	4385
 股市行情	gu shi hang qing	4385
 股票行情	gu piao hang qing	4385
@@ -535,16 +969,65 @@
 订单融资	ding dan rong zi	4385
 证券行情	zheng quan hang qing	4385
 九州证券	jiu zhou zheng quan	4347
+云南税务	yun nan shui wu	4347
+互助保险	hu zhu bao xian	4347
 互助基金	hu zhu ji jin	4347
+保险术语	bao xian shu yu	4347
+厦门税务	xia men shui wu	4347
+吉林税务	ji lin shui wu	4347
+四川税务	si chuan shui wu	4347
+国家税务	guo jia shui wu	4347
+国际税务	guo ji shui wu	4347
+大连税务	da lian shui wu	4347
+山东税务	shan dong shui wu	4347
+山西税务	shan xi shui wu	4347
 市政债券	shi zheng zhai quan	4347
+广东税务	guang dong shui wu	4347
+广西税务	guang xi shui wu	4347
+新疆税务	xin jiang shui wu	4347
 期货投机	qi huo tou ji	4347
+江苏税务	jiang su shui wu	4347
+江西税务	jiang xi shui wu	4347
+河北税务	he bei shui wu	4347
+河南税务	he nan shui wu	4347
+浙江税务	zhe jiang shui wu	4347
+海南税务	hai nan shui wu	4347
+深圳税务	shen zhen shui wu	4347
+电子税务	dian zi shui wu	4347
+福建税务	fu jian shui wu	4347
+税务代理	shui wu dai li	4347
+税务会计	shui wu kuai ji	4347
+税务信息	shui wu xin xi	4347
+税务处理	shui wu chu li	4347
+税务大楼	shui wu da lou	4347
+税务审计	shui wu shen ji	4347
+税务律师	shui wu lv shi	4347
+税务机关	shui wu ji guan	4347
+税务检查	shui wu jian cha	4347
+税务登记	shui wu deng ji	4347
+税务监督	shui wu jian du	4347
+税务策划	shui wu ce hua	4347
+税务管理	shui wu guan li	4347
+税务系统	shui wu xi tong	4347
+税务经理	shui wu jing li	4347
+税务罚款	shui wu fa kuan	4347
+税务负担	shui wu fu dan	4347
+税务部门	shui wu bu men	4347
+税务顾问	shui wu gu wen	4347
+税务风险	shui wu feng xian	4347
 股权改制	gu quan gai zhi	4347
 股票投机	gu piao tou ji	4347
 融资产	rong zi chan	4347
 衍生证券	yan sheng zheng quan	4347
 证券投机	zheng quan tou ji	4347
+辽宁税务	liao ning shui wu	4347
+重庆税务	chong qing shui wu	4347
 量子基金	liang zi ji jin	4347
 金元证券	jin yuan zheng quan	4347
+陕西税务	shan xi shui wu	4347
+青海税务	qing hai shui wu	4347
+人身保险	ren shen bao xian	4308
+保险理财	bao xian li cai	4308
 信托理财	xin tuo li cai	4308
 全民理财	quan min li cai	4308
 国信证券	guo xin zheng quan	4308
@@ -555,6 +1038,7 @@
 平行基金	ping xing ji jin	4308
 投资理财	tou zi li cai	4308
 理财专家	li cai zhuan jia	4308
+理财保险	li cai bao xian	4308
 理财周刊	li cai zhou kan	4308
 理财意识	li cai yi shi	4308
 理财收入	li cai shou ru	4308
@@ -567,31 +1051,45 @@
 股票派送	gu piao pai song	4308
 股票缺口	gu piao que kou	4308
 股票走势	gu piao zou shi	4308
+赠送保险	zeng song bao xian	4308
 金融理财	jin rong li cai	4308
 买入股票	mai ru gu piao	4270
+交保险	jiao bao xian	4270
+保险欺诈	bao xian qi zha	4270
 基金募集	ji jin mu ji	4270
 并购基金	bing gou ji jin	4270
 并购融资	bing gou rong zi	4270
+当会计	dang kuai ji	4270
+最保险	zui bao xian	4270
 股权并购	gu quan bing gou	4270
 股票大单	gu piao da dan	4270
 证券欺诈	zheng quan qi zha	4270
+会计计量	kuai ji ji liang	4231
+基建会计	ji jian kuai ji	4231
 基金清算	ji jin qing suan	4231
 基金评级	ji jin ping ji	4231
 基金负债	ji jin fu zhai	4231
+清算审计	qing suan shen ji	4231
 股权制衡	gu quan zhi heng	4231
 股票数	gu piao shu	4231
 股票清算	gu piao qing suan	4231
 股票评级	gu piao ping ji	4231
 负债融资	fu zhai rong zi	4231
+货运保险	huo yun bao xian	4231
 低价股票	di jia gu piao	4193
 分级基金	fen ji ji jin	4193
+审计专员	shen ji zhuan yuan	4193
+审计风云	shen ji feng yun	4193
 抵押债券	di ya zhai quan	4193
 抵押融资	di ya rong zi	4193
 抵押证券	di ya zheng quan	4193
+税务专员	shui wu zhuan yuan	4193
 红利股票	hong li gu piao	4193
 股市风云	gu shi feng yun	4193
 股票红利	gu piao hong li	4193
 中投证券	zhong tou zheng quan	4154
+会计规章	kuai ji gui zhang	4154
+保险标的	bao xian biao di	4154
 债券违约	zhai quan wei yue	4154
 周转基金	zhou zhuan ji jin	4154
 宝马股票	bao ma gu piao	4154
@@ -599,28 +1097,38 @@
 招商证券	zhao shang zheng quan	4154
 标的股票	biao di gu piao	4154
 标的证券	biao di zheng quan	4154
+海运保险	hai yun bao xian	4154
 股权增值	gu quan zeng zhi	4154
 股票震荡	gu piao zhen dang	4154
+会计委派	kuai ji wei pai	4116
+会计职称	kuai ji zhi cheng	4116
 后备基金	hou bei ji jin	4116
 国债基金	guo zhai ji jin	4116
 国债期货	guo zhai qi huo	4116
 基准股票	ji zhun gu piao	4116
 天风证券	tian feng zheng quan	4116
+总会计	zong kuai ji	4116
+总会计师	zong kuai ji shi	4116
 真格基金	zhen ge ji jin	4116
+税务筹划	shui wu chou hua	4116
 股指期货	gu zhi qi huo	4116
 股权变易	gu quan bian yi	4116
 股票注销	gu piao zhu xiao	4116
 配比基金	pei bi ji jin	4116
 配股权	pei gu quan	4116
 高价股票	gao jia gu piao	4116
+保险凭证	bao xian ping zheng	4077
 凭证证券	ping zheng zheng quan	4077
 国海证券	guo hai zheng quan	4077
 海通证券	hai tong zheng quan	4077
 炒作股票	chao zuo gu piao	4077
+电算会计	dian suan kuai ji	4077
+绩效审计	ji xiao shen ji	4077
 股票凭证	gu piao ping zheng	4077
 表外融资	biao wai rong zi	4077
 中泰证券	zhong tai zheng quan	4039
 买基金	mai ji jin	4039
+会计分录	kuai ji fen lu	4039
 基金吧	ji jin ba	4039
 基金法	ji jin fa	4039
 基金部	ji jin bu	4039
@@ -634,16 +1142,26 @@
 中欧基金	zhong ou ji jin	4000
 孵化基金	fu hua ji jin	4000
 安信证券	an xin zheng quan	4000
+定值保险	ding zhi bao xian	4000
 富国基金	fu guo ji jin	4000
+小额保险	xiao e bao xian	4000
+山村会计	shan cun kuai ji	4000
+扣除保险	kou chu bao xian	4000
+老会计	lao kuai ji	4000
 股市大户	gu shi da hu	4000
 股票除权	gu piao chu quan	4000
 融资性	rong zi xing	4000
 量化基金	liang hua ji jin	4000
+众安保险	zhong an bao xian	3962
+会计刺客	kuai ji ci ke	3962
+周会计	zhou hui ji	3962
 基金分红	ji jin fen hong	3962
 基金托管	ji jin tuo guan	3962
 基金黑幕	ji jin hei mu	3962
 建信基金	jian xin ji jin	3962
+张会计	zhang kuai ji	3962
 期货开户	qi huo kai hu	3962
+王会计	wang kuai ji	3962
 票据融资	piao ju rong zi	3962
 股权托管	gu quan tuo guan	3962
 股票现货	gu piao xian huo	3962
@@ -651,26 +1169,71 @@
 股票送股	gu piao song gu	3962
 证券开户	zheng quan kai hu	3962
 证券托管	zheng quan tuo guan	3962
+会计实务	kuai ji shi wu	3924
 理财周报	li cai zhou bao	3924
 股本融资	gu ben rong zi	3924
 股票佣金	gu piao yong jin	3924
 股票庄家	gu piao zhuang jia	3924
 股票星级	gu piao xing ji	3924
+舞弊审计	wu bi shen ji	3924
 诺德基金	nuo de ji jin	3924
 调剂基金	tiao ji ji jin	3924
+上保险	shang bao xian	3885
+买保险	mai bao xian	3885
+会计差错	kuai ji cha cuo	3885
+会计报表	kuai ji bao biao	3885
+你保险	ni bao xian	3885
+保险了	bao xian le	3885
+保险公	bao xian gong	3885
+保险吗	bao xian ma	3885
+保险吧	bao xian ba	3885
+保险呢	bao xian ne	3885
+保险师	bao xian shi	3885
+保险期	bao xian qi	3885
+保险点	bao xian dian	3885
+保险的	bao xian de	3885
+保险盒	bao xian he	3885
+保险管	bao xian guan	3885
+保险粉	bao xian fen	3885
+保险网	bao xian wang	3885
+保险裤	bao xian ku	3885
+保险说	bao xian shuo	3885
+保险钱	bao xian qian	3885
+做保险	zuo bao xian	3885
+入保险	ru bao xian	3885
+办保险	ban bao xian	3885
+卖保险	mai bao xian	3885
+原保险	yuan bao xian	3885
+啥保险	sha bao xian	3885
+天安保险	tian an bao xian	3885
+干保险	gan bao xian	3885
+我保险	wo bao xian	3885
+报保险	bao bao xian	3885
+更保险	geng bao xian	3885
+有保险	you bao xian	3885
+没保险	mei bao xian	3885
 瑕疵股权	xia ci gu quan	3885
+疗保险	liao bao xian	3885
+的保险	de bao xian	3885
+老保险	lao bao xian	3885
 股票估价	gu piao gu jia	3885
 股票被套	gu piao bei tao	3885
+被保险	bei bao xian	3885
 证券卡	zheng quan ka	3885
 证券界	zheng quan jie	3885
 证券股	zheng quan gu	3885
 证券行	zheng quan hang	3885
+走保险	zou bao xian	3885
+跑保险	pao bao xian	3885
+车保险	che bao xian	3885
 里昂证券	li ang zheng quan	3885
 买股票	mai gu piao	3847
+保险索赔	bao xian suo pei	3847
 卖股票	mai gu piao	3847
 基金认购	ji jin ren gou	3847
 好股票	hao gu piao	3847
 存股票	cun gu piao	3847
+审计费	shen ji fei	3847
 看股票	kan gu piao	3847
 离岸基金	li an ji jin	3847
 私募股权	si mu gu quan	3847
@@ -685,10 +1248,13 @@
 股票配送	gu piao pei song	3847
 认购股票	ren gou gu piao	3847
 代管基金	dai guan ji jin	3808
+会计核算	kuai ji he suan	3808
 实收基金	shi shou ji jin	3808
+少儿保险	shao er bao xian	3808
 期货价	qi huo jia	3808
 渤海证券	bo hai zheng quan	3808
 股权置换	gu quan zhi huan	3808
+超额保险	chao e bao xian	3808
 中银基金	zhong yin ji jin	3770
 中银证券	zhong yin zheng quan	3770
 主板股票	zhu ban gu piao	3770
@@ -702,6 +1268,7 @@
 增资股票	zeng zi gu piao	3731
 广发证券	guang fa zheng quan	3731
 次级债券	ci ji zhai quan	3731
+税务稽查	shui wu ji cha	3731
 股权增资	gu quan zeng zi	3731
 股权稀释	gu quan xi shi	3731
 股权证	gu quan zheng	3731
@@ -716,7 +1283,9 @@
 基金团购	ji jin tuan gou	3693
 基金直销	ji jin zhi xiao	3693
 大福基金	da fu ji jin	3693
+失恋保险	shi lian bao xian	3693
 理财金	li cai jin	3693
+离任审计	li ren shen ji	3693
 股市多头	gu shi duo tou	3693
 股权筹资	gu quan chou zi	3693
 股票均价	gu piao jun jia	3693
@@ -726,9 +1295,12 @@
 轮融资	lun rong zi	3693
 黑马股票	hei ma gu piao	3693
 互惠基金	hu hui ji jin	3654
+保险单证	bao xian dan zheng	3654
 债券回购	zhai quan hui gou	3654
 华商基金	hua shang ji jin	3654
 回购股票	hui gou gu piao	3654
+外币会计	wai bi kuai ji	3654
+大病保险	da bing bao xian	3654
 平准基金	ping zhun ji jin	3654
 股市大跌	gu shi da die	3654
 股权回购	gu quan hui gou	3654
@@ -738,14 +1310,29 @@
 华宝证券	hua bao zheng quan	3616
 基金清盘	ji jin qing pan	3616
 大修基金	da xiu ji jin	3616
+审计抽样	shen ji chou yang	3616
 库藏股票	ku cang gu piao	3616
+情爱保险	qing ai bao xian	3616
 股票点数	gu piao dian shu	3616
 配股融资	pei gu rong zi	3616
 金边债券	jin bian zhai quan	3616
+会计了	kuai ji le	3577
+会计期	kuai ji qi	3577
+会计的	kuai ji de	3577
+会计网	kuai ji wang	3577
+会计账	kuai ji zhang	3577
 保理融资	bao li rong zi	3577
+刘会计	liu kuai ji	3577
+吴会计	wu kuai ji	3577
 基金确权	ji jin que quan	3577
 增发股权	zeng fa gu quan	3577
 增发股票	zeng fa gu piao	3577
+孙会计	sun kuai ji	3577
+小会计	xiao kuai ji	3577
+徐会计	xu kuai ji	3577
+李会计	li kuai ji	3577
+杨会计	yang kuai ji	3577
+水滴保险	shui di bao xian	3577
 联接基金	lian jie ji jin	3577
 股市利空	gu shi li kong	3577
 股票增发	gu piao zeng fa	3577
@@ -753,9 +1340,13 @@
 诺安基金	nuo an ji jin	3577
 诺安股票	nuo an gu piao	3577
 赎回基金	shu hui ji jin	3577
+赵会计	zhao kuai ji	3577
+陈会计	chen kuai ji	3577
+黄会计	huang kuai ji	3577
 东吴证券	dong wu zheng quan	3539
 丝路基金	si lu ji jin	3539
 代客理财	dai ke li cai	3539
+保险理赔	bao xian li pei	3539
 华创证券	hua chuang zheng quan	3539
 股市涨停	gu shi zhang ting	3539
 股权分立	gu quan fen li	3539
@@ -765,25 +1356,46 @@
 转手证券	zhuan shou zheng quan	3539
 进股市	jin gu shi	3539
 银华基金	yin hua ji jin	3539
+会计期末	kuai ji qi mo	3500
+会计网校	kuai ji wang xiao	3500
 保底基金	bao di ji jin	3500
 华福证券	hua fu zheng quan	3500
 华西证券	hua xi zheng quan	3500
 无价证券	wu jia zheng quan	3500
+涉外会计	she wai kuai ji	3500
 股市散户	gu shi san hu	3500
 股权质押	gu quan zhi ya	3500
 股票质押	gu piao zhi ya	3500
 买债券	mai zhai quan	3462
+人寿保单	ren shou bao dan	3462
+保单借款	bao dan jie kuan	3462
+保单失效	bao dan shi xiao	3462
+保单年度	bao dan nian du	3462
+保险展业	bao xian zhan ye	3462
+保险核保	bao xian he bao	3462
 偿债基金	chang zhai ji jin	3462
 冷门股票	leng men gu piao	3462
 博时基金	bo shi ji jin	3462
+友邦保险	you bang bao xian	3462
 宏源证券	hong yuan zheng quan	3462
+审计厅	shen ji ting	3462
+审计官	shen ji guan	3462
+待业保险	dai ye bao xian	3462
+总账会计	zong zhang kuai ji	3462
+投保单	tou bao dan	3462
 折旧基金	zhe jiu ji jin	3462
 沪深股市	hu shen gu shi	3462
+泰康保险	tai kang bao xian	3462
 理财师	li cai shi	3462
+电子保单	dian zi bao dan	3462
+税务报	shui wu bao	3462
+税务网	shui wu wang	3462
 联讯证券	lian xun zheng quan	3462
 股票振幅	gu piao zhen fu	3462
 股票箱体	gu piao xiang ti	3462
 记名股票	ji ming gu piao	3462
+足额保险	zu e bao xian	3462
+车险理赔	che xian li pei	3462
 过桥融资	guo qiao rong zi	3462
 铜期货	tong qi huo	3462
 长线股票	chang xian gu piao	3462
@@ -793,6 +1405,7 @@
 国联证券	guo lian zheng quan	3424
 基金分拆	ji jin fen chai	3424
 基金拆分	ji jin chai fen	3424
+大额保险	da e bao xian	3424
 股票仓位	gu piao cang wei	3424
 股票分拆	gu piao fen chai	3424
 股票后市	gu piao hou shi	3424
@@ -804,6 +1417,7 @@
 避险基金	bi xian ji jin	3347
 买理财	mai li cai	3308
 五矿证券	wu kuang zheng quan	3308
+保险承保	bao xian cheng bao	3308
 债券折价	zhai quan zhe jia	3308
 国泰基金	guo tai ji jin	3308
 在岸基金	zai an ji jin	3308
@@ -811,10 +1425,12 @@
 夹层基金	jia ceng ji jin	3308
 夹层融资	jia ceng rong zi	3308
 期货交割	qi huo jiao ge	3308
+法务会计	fa wu kuai ji	3308
 焦炭期货	jiao tan qi huo	3308
 理财学	li cai xue	3308
 理财通	li cai tong	3308
 理财险	li cai xian	3308
+理赔款	li pei kuan	3308
 股权过户	gu quan guo hu	3308
 股票交割	gu piao jiao ge	3308
 股票双头	gu piao shuang tou	3308
@@ -825,6 +1441,7 @@
 赠与股票	zeng yu gu piao	3308
 信诚基金	xin cheng ji jin	3270
 债券溢价	zhai quan yi jia	3270
+华泰保险	hua tai bao xian	3270
 华泰期货	hua tai qi huo	3270
 华泰证券	hua tai zheng quan	3270
 社科基金	she ke ji jin	3270
@@ -838,15 +1455,19 @@
 基金互认	ji jin hu ren	3231
 基金配售	ji jin pei shou	3231
 奖券基金	jiang quan ji jin	3231
+安邦保险	an bang bao xian	3231
 股票止损	gu piao zhi sun	3231
 股票涨跌	gu piao zhang die	3231
 股票转债	gu piao zhuan zhai	3231
+自考会计	zi kao kuai ji	3231
+质保单	zhi bao dan	3231
 野村证券	ye cun zheng quan	3231
 银泰证券	yin tai zheng quan	3231
 基金仓位	ji jin cang wei	3193
 基金重仓	ji jin zhong cang	3193
 短债基金	duan zhai ji jin	3193
 股票持仓	gu piao chi cang	3193
+会计帐务	kuai ji zhang wu	3154
 伞型基金	san xing ji jin	3154
 嘉实基金	jia shi ji jin	3154
 股票建仓	gu piao jian cang	3154
@@ -859,13 +1480,17 @@
 蓝筹股票	lan chou gu piao	3077
 房企融资	fang qi rong zi	3039
 股票包销	gu piao bao xiao	3039
+永诚保险	yong cheng bao xian	3000
 瑞银证券	rui yin zheng quan	3000
 证券代销	zheng quan dai xiao	3000
 上柜股票	shang gui gu piao	2962
+报税表	bao shui biao	2962
 育林基金	yu lin ji jin	2962
 豆油期货	dou you qi huo	2962
 股票承销	gu piao cheng xiao	2924
 证券承销	zheng quan cheng xiao	2924
+保险内勤	bao xian nei qin	2885
+保险公估	bao xian gong gu	2847
 中融基金	zhong rong ji jin	2808
 中邮基金	zhong you ji jin	2808
 免佣基金	mian yong ji jin	2808
@@ -878,6 +1503,9 @@
 年金基金	nian jin ji jin	2808
 打新基金	da xin ji jin	2808
 特赋基金	te fu ji jin	2808
+理赔了	li pei le	2808
+理赔员	li pei yuan	2808
+理赔的	li pei de	2808
 留本基金	liu ben ji jin	2808
 盈富基金	ying fu ji jin	2808
 直投基金	zhi tou ji jin	2808
@@ -885,6 +1513,7 @@
 纾困基金	shu kun ji jin	2808
 莙政基金	jun zheng ji jin	2808
 财通基金	cai tong ji jin	2808
+暂保单	zan bao dan	2770
 湘财证券	xiang cai zheng quan	2770
 鹏华基金	peng hua ji jin	2770
 万联证券	wan lian zheng quan	2731
@@ -898,6 +1527,14 @@
 设权证券	she quan zheng quan	2731
 证券化率	zheng quan hua lv	2731
 证权证券	zheng quan zheng quan	2731
+会计账簿	kuai ji zhang bu	2693
+保险丝座	bao xian si zuo	2693
+保险电销	bao xian dian xiao	2693
+再保险人	zai bao xian ren	2693
+前保险杠	qian bao xian gang	2693
+后保险杠	hou bao xian gang	2693
+年金保险	nian jin bao xian	2693
+新保险法	xin bao xian fa	2693
 破净股票	po jing gu piao	2693
 股票停盘	gu piao ting pan	2693
 股票回测	gu piao hui ce	2693
@@ -917,6 +1554,9 @@
 股权分置	gu quan fen zhi	2654
 股权切离	gu quan qie li	2654
 浙商证券	zhe shang zheng quan	2577
+会计专硕	kuai ji zhuan shuo	2539
+会计做账	kuai ji zuo zhang	2539
+内账会计	nei zhang kuai ji	2539
 天弘基金	tian hong ji jin	2539
 寒窗基金	han chuang ji jin	2500
 中大期货	zhong da qi huo	2462
@@ -931,5 +1571,9 @@
 徽商期货	hui shang qi huo	2308
 可转债	ke zhuan zhai	2196
 秃鹫基金	tu jiu ji jin	2077
+保单复效	bao dan fu xiao	2039
 公募债券	gong mu zhai quan	2000
+明细账	ming xi zhang	1613
 豆粕期货	dou po qi huo	1500
+交强险	jiao qiang xian	1090
+车损险	che sun xian	118

@@ -1,9 +1,6 @@
-# 开心离线输入法分类补充：语料机构名称补充
-# 项目词表与匹配模板：项目整理，生成式 AI 辅助；不使用私人消息或用户输入。
-# 语料：jieba 0.42.1 本地词典及项目分类词条；完整来源与许可见项目词库说明。
-# 拼音：实际无声调拼音，保留项目校正读音。
-# 格式：词语<TAB>实际无声调拼音<TAB>基础排序分数；不扩散错拼别名。
-# 排序分层：entity-v1；专名作为低优先级召回，保留原有相对顺序。
+# 开心输入法扩展词库：机构与组织名称（1114 条）
+# 来源合并：category_proper_organizations.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
 人民代表大会常务委员会	ren min dai biao da hui chang wu wei yuan hui	3850
 湖北省人民政府	hu bei sheng ren min zheng fu	3850
 苏维埃政府	su wei ai zheng fu	3839
@@ -183,9 +180,9 @@
 索尼公司	suo ni gong si	2893
 国防科工委	guo fang ke gong wei	2889
 国际奥委会	guo ji ao wei hui	2889
+北海舰队	bei hai jian dui	2881
 汉城大学	han cheng da xue	2881
 福特公司	fu te gong si	2881
-北海舰队	bei hai jian dui	2881
 南京临时政府	nan jing lin shi zheng fu	2876
 中国作家协会	zhong guo zuo jia xie hui	2868
 中国网通	zhong guo wang tong	2868

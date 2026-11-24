@@ -16,6 +16,9 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = json.loads((ROOT / "shared/lexicon_quality.json").read_text(encoding="utf-8"))
 CORRECTIONS = {(r["phrase"], r["rejected"]): r["reading"] for r in POLICY["reading_corrections"]}
+THREE_CHAR_SCORE_OVERRIDES = {
+    (r["phrase"], r["reading"]): r["score"] for r in POLICY["three_char_score_overrides"]
+}
 SHORT_POLICY = json.loads((ROOT / "shared/short_phrase_quality.json").read_text(encoding="utf-8"))
 SHORT_REJECTIONS = {
     phrase: reason
@@ -39,11 +42,21 @@ MISPLACED_YIXIA = re.compile(
 ABSTRACT_DESTINATION = re.compile(
     r"先去(?:时间|地点|内容|安排|计划|事情|问题|情况|消息|电话|短信|文件|资料|材料)$"
 )
+FULLWIDTH_PUNCT_RE = re.compile(r"[（）【】《》，。！？、；：“”‘’]")
+HANZI_ONLY_RE = re.compile(r"^[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\U00020000-\U000323af]+$")
+# Reviewed low-weight terms must not regain priority through a Core overlay.
+CORE_BLOCKED_TERMS = {"操你妈", "傻逼"} | {phrase for phrase, _ in THREE_CHAR_SCORE_OVERRIDES}
+CORE_CURATED_FILES = {
+    "life_hot_3char_curated.txt",
+    "life_hot_4char_curated.txt",
+}
 
 
-def phrase_rejection_reason(phrase: str) -> str | None:
+def phrase_rejection_reason(phrase: str, *, core: bool = False) -> str | None:
     # Match reviewed words exactly. Short fragments must never become substring
     # filters that remove legitimate longer phrases, names or idioms.
+    if core and phrase in CORE_BLOCKED_TERMS:
+        return "blocked vulgar/sensitive term in Core layer"
     if phrase in REJECTED_PHRASES:
         return "reviewed_lexical_fragment"
     if MISPLACED_YIXIA.search(phrase):
@@ -212,7 +225,34 @@ def update_category_catalog() -> None:
         f'        "{c["tag"]}" => Some({str(c.get("default_enabled", True)).lower()}),'
         for c in manifest["categories"]
     )
-    generated.extend(["        _ => None,", "    }", "}"])
+    generated.extend(
+        ["        _ => None,", "    }", "}", "", "const CATEGORY_LEXICON_TAGS: &[&str] = &["]
+    )
+    generated.extend(f'    "{c["tag"]}",' for c in manifest["categories"])
+    generated.extend(
+        [
+            "];",
+            "",
+            "fn merged_category_defaults(tag: &str) -> &'static [(&'static str, bool)] {",
+            "    match tag {",
+        ]
+    )
+    for category in manifest["categories"]:
+        defaults = [
+            f'("{tag}", {str(enabled).lower()})'
+            for tag, enabled in category.get("legacy_defaults", {}).items()
+        ]
+        if not defaults:
+            continue
+        arm = f'        "{category["tag"]}" => &['
+        inline_arm = f"{arm}{', '.join(defaults)}],"
+        if len(inline_arm) <= 100:
+            generated.append(inline_arm)
+        else:
+            generated.append(arm)
+            generated.extend(f"            {default}," for default in defaults)
+            generated.append("        ],")
+    generated.extend(["        _ => &[],", "    }", "}"])
     (ROOT / "crates/kaixin-core/src/category_lexicons.generated.rs").write_text(
         "\n".join(generated) + "\n", encoding="utf-8", newline="\n"
     )
@@ -222,22 +262,50 @@ def update_category_catalog() -> None:
 
 
 def check_quality(root: Path) -> list[str]:
+    from lexicon_maintenance import THREE_CHAR_BASE, check_maintained_sources
+
     errors = []
     reference = character_readings(root)
     found_readings = set()
+    zh_best_by_py: dict[str, tuple[int, str]] = {}
+    ext_rows_by_file: dict[str, list[tuple[str, str, int]]] = {}
     for path in sorted((root / "lexicon").rglob("*.txt")):
-        if "en" in path.relative_to(root / "lexicon").parts:
+        rel_path = path.relative_to(root)
+        rel_parts = rel_path.parts[1:]
+        if "en" in rel_parts:
             continue
+        is_core_layer = rel_parts[0] == "core" or path.name in CORE_CURATED_FILES
+        is_zh_or_ext = rel_parts[0] in ("zh", "zh-ext")
+        is_three_char_base = rel_path.as_posix() == THREE_CHAR_BASE
+        prev_2char_score = 10_001
+        two_char_hot_count = 0
         for number, line in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
             if not line.strip() or line.startswith("#"):
                 continue
             fields = line.split("\t")
             phrase = fields[0]
+            if FULLWIDTH_PUNCT_RE.search(phrase):
+                errors.append(
+                    f"{path.relative_to(root)}:{number}: fullwidth punctuation in phrase: {phrase}"
+                )
             if len(fields) >= 3:
-                found_readings.add((phrase, fields[1]))
-                if not reading_matches_characters(phrase, fields[1], reference):
+                reading = fields[1]
+                found_readings.add((phrase, reading))
+                if not reading_matches_characters(phrase, reading, reference):
                     errors.append(
-                        f"{path.relative_to(root)}:{number}: word/character reading mismatch: {phrase} {fields[1]}"
+                        f"{path.relative_to(root)}:{number}: word/character reading mismatch: {phrase} {reading}"
+                    )
+                if is_zh_or_ext and any(syl in ("lue", "nue") for syl in reading.split()):
+                    errors.append(
+                        f"{path.relative_to(root)}:{number}: noncanonical lue/nue (use lve/nve): {phrase} {reading}"
+                    )
+                if (
+                    not HANZI_ONLY_RE.match(phrase)
+                    and len(reading.strip()) == 1
+                    and reading.strip().isascii()
+                ):
+                    errors.append(
+                        f"{path.relative_to(root)}:{number}: single-letter non-hanzi code: {phrase} -> {reading}"
                     )
             if phrase in SPELLING_CORRECTIONS:
                 errors.append(
@@ -249,13 +317,43 @@ def check_quality(root: Path) -> list[str]:
                     raise ValueError("out of range")
             except (ValueError, IndexError):
                 errors.append(f"{path.relative_to(root)}:{number}: expected a 1-10000 score")
-            reason = phrase_rejection_reason(phrase)
+                score = 0
+            if is_three_char_base and len(fields) >= 3:
+                expected_score = THREE_CHAR_SCORE_OVERRIDES.get((phrase, fields[1]))
+                if expected_score is not None and score != expected_score:
+                    errors.append(
+                        f"{rel_path}:{number}: expected reviewed score {expected_score}: {phrase} {fields[1]}"
+                    )
+            if path.name == "life_common_2char_125000.txt" and len(fields) >= 3:
+                if score > prev_2char_score:
+                    errors.append(
+                        f"{path.relative_to(root)}:{number}: score inversion ({score} > {prev_2char_score}): {phrase}"
+                    )
+                prev_2char_score = score
+                if score >= 3500:
+                    two_char_hot_count += 1
+            if (
+                rel_parts[0] == "zh"
+                and len(fields) >= 3
+                and path.name != "single_char_common_8105.txt"
+            ):
+                py = fields[1]
+                prev = zh_best_by_py.get(py)
+                if prev is None or score > prev[0]:
+                    zh_best_by_py[py] = (score, phrase)
+            elif rel_parts[0] == "zh-ext" and len(fields) >= 3:
+                ext_rows_by_file.setdefault(path.name, []).append((phrase, fields[1], score))
+            reason = phrase_rejection_reason(phrase, core=is_core_layer)
             if reason:
                 errors.append(f"{path.relative_to(root)}:{number}: {reason}: {phrase}")
             if len(fields) >= 3 and corrected_reading(phrase, fields[1]) != fields[1]:
                 errors.append(
                     f"{path.relative_to(root)}:{number}: rejected reading: {phrase} {fields[1]}"
                 )
+        if path.name == "life_common_2char_125000.txt" and two_char_hot_count > 30_000:
+            errors.append(
+                f"{path.relative_to(root)}: hot mixed-index slice (>=3500) too large: {two_char_hot_count} > 30000"
+            )
     # Compare membership, readings and weights: accidentally running the legacy
     # quota generator must fail packaging, even if its rows look grammatical.
     path = root / "lexicon/zh/life_common_phrases.txt"
@@ -279,10 +377,15 @@ def check_quality(root: Path) -> list[str]:
         )
         if count != item["rows"] or hashlib.sha256(data).hexdigest() != item["sha256"]:
             errors.append(f"{item['file']}: maintained category manifest has stale count/hash")
+        if item.get("default_enabled", False):
+            for phrase, py, score in ext_rows_by_file.get(item["file"], []):
+                zh_best = zh_best_by_py.get(py)
+                if zh_best and zh_best[1] != phrase and score - zh_best[0] > 3500:
+                    errors.append(
+                        f"lexicon/zh-ext/{item['file']}: default-on ext entry {phrase}({score}) severely outranks zh {zh_best[1]}({zh_best[0]}) on '{py}'"
+                    )
     for phrase, reading in sorted(RETAINED_READINGS - found_readings):
         errors.append(f"Protected word-specific reading was lost: {phrase} {reading}")
-    from lexicon_maintenance import check_maintained_sources
-
     errors.extend(check_maintained_sources(root))
     # Fixture membership is a source invariant, not an engine evaluation.
     path = root / "tests/popular_three_char_cases.tsv"
@@ -297,7 +400,7 @@ def check_quality(root: Path) -> list[str]:
 
 
 def apply_quality() -> dict:
-    from lexicon_maintenance import apply_maintained_sources
+    from lexicon_maintenance import THREE_CHAR_BASE, apply_maintained_sources
 
     report = {
         "removed": [],
@@ -308,11 +411,12 @@ def apply_quality() -> dict:
         "maintenance": apply_maintained_sources(ROOT),
     }
     for path in sorted((ROOT / "lexicon").rglob("*.txt")):
-        if (
-            "en" in path.relative_to(ROOT / "lexicon").parts
-            or path.name == "life_common_phrases.txt"
-        ):
+        rel_path = path.relative_to(ROOT)
+        rel_parts = rel_path.parts[1:]
+        if "en" in rel_parts or path.name == "life_common_phrases.txt":
             continue
+        is_core_layer = rel_parts[0] == "core" or path.name in CORE_CURATED_FILES
+        is_three_char_base = rel_path.as_posix() == THREE_CHAR_BASE
         lines = path.read_text(encoding="utf-8-sig").splitlines()
         output = []
         seen = {}
@@ -332,7 +436,7 @@ def apply_quality() -> dict:
                     }
                 )
                 fields[0], fields[1] = phrase, reading
-            if phrase_rejection_reason(fields[0]):
+            if phrase_rejection_reason(fields[0], core=is_core_layer):
                 report["removed"].append({"file": path.relative_to(ROOT).as_posix(), "row": line})
                 continue
             if len(fields) >= 3:
@@ -342,6 +446,10 @@ def apply_quality() -> dict:
                         {"file": path.relative_to(ROOT).as_posix(), "row": line, "reading": reading}
                     )
                     fields[1] = reading
+                if is_three_char_base:
+                    score = THREE_CHAR_SCORE_OVERRIDES.get((fields[0], reading))
+                    if score is not None:
+                        fields[2] = str(score)
             revised = "\t".join(fields)
             # Merge only the same phrase, explicit reading AND reading class.
             # In particular, lue/lve and colloquial/primary rows remain distinct.

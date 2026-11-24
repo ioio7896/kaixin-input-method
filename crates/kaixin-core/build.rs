@@ -198,7 +198,7 @@ fn write_compiled_model(
     corpus: &str,
     syllables: &str,
 ) -> Result<(), String> {
-    let dict = dict::build_dict(chars);
+    let dict = dict::build_dict_with_supplements(chars);
     let vocab: HashSet<char> = dict.values().flatten().copied().collect();
     let syllable_list = load_syllables(syllables);
     let (unigram, bigram) = build_lm_counts(corpus, &vocab);

@@ -58,10 +58,10 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     }
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("应用推荐配置并保存").clicked() {
+                        if ui.add(button("应用推荐配置并保存", ButtonKind::Primary)).clicked() {
                             action = Some(GameTestWizardAction::ApplyRecommended);
                         }
-                        if ui.button("取消").clicked() {
+                        if outline_button(ui, "取消").clicked() {
                             action = Some(GameTestWizardAction::Close);
                         }
                     });
@@ -78,10 +78,10 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                         ui.label("日志可能来自上一次游戏会话；请以当前游戏里的实际表现为准。");
                     }
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("切换到游戏窗口").clicked() { action = Some(GameTestWizardAction::ActivateGame); }
-                        if ui.button("学习此游戏的输入栏").clicked() { action = Some(GameTestWizardAction::LearnInputField); }
-                        if ui.button("已进入中文输入").clicked() { action = Some(GameTestWizardAction::InputReady); }
-                        if ui.button("无法启用中文").clicked() { action = Some(GameTestWizardAction::InputMissing); }
+                        if outline_button(ui, "切换到游戏窗口").clicked() { action = Some(GameTestWizardAction::ActivateGame); }
+                        if outline_button(ui, "学习此游戏的输入栏").clicked() { action = Some(GameTestWizardAction::LearnInputField); }
+                        if ui.add(button("已进入中文输入", ButtonKind::Primary)).clicked() { action = Some(GameTestWizardAction::InputReady); }
+                        if outline_button(ui, "无法启用中文").clicked() { action = Some(GameTestWizardAction::InputMissing); }
                     });
                 }
                 GameTestStep::CandidateVisibility => {
@@ -96,16 +96,16 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     );
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("切换到游戏窗口").clicked() {
+                        if outline_button(ui, "切换到游戏窗口").clicked() {
                             action = Some(GameTestWizardAction::ActivateGame);
                         }
-                        if ui.button("能看到候选").clicked() {
+                        if ui.add(button("能看到候选", ButtonKind::Primary)).clicked() {
                             action = Some(GameTestWizardAction::CandidateVisible);
                         }
-                        if ui.button("看不到候选，尝试独立 Overlay").clicked() {
+                        if outline_button(ui, "看不到候选，尝试独立 Overlay").clicked() {
                             action = Some(GameTestWizardAction::CandidateMissing);
                         }
-                        if ui.button("候选位置不合适，立即调整").clicked() {
+                        if outline_button(ui, "候选位置不合适，立即调整").clicked() {
                             action = Some(GameTestWizardAction::CandidatePosition);
                         }
                     });
@@ -135,13 +135,13 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                         let (response, painter) = ui.allocate_painter(egui::vec2(ui.available_width().min(440.0), 120.0), egui::Sense::drag());
                         let bounds = response.rect;
                         let painter = painter.with_clip_rect(bounds);
-                        painter.rect_filled(bounds, 3.0, egui::Color32::from_rgb(35, 42, 53));
+                        painter.rect_filled(bounds, palette.control_radius, palette.plate_bg);
                         let origin = egui::pos2(bounds.left() + 16.0, bounds.bottom() - 32.0);
                         let offset = egui::vec2(rule.overlay_offset_x as f32 * 0.1, rule.overlay_offset_y as f32 * 0.1);
                         let pos = origin + offset;
                         let candidate = egui::Rect::from_min_size(pos, egui::vec2(140.0, 24.0));
-                        painter.rect_filled(candidate, 3.0, egui::Color32::from_rgb(45, 104, 190));
-                        painter.text(candidate.center(), egui::Align2::CENTER_CENTER, "1 你好   2 拟好", egui::FontId::proportional(13.0), egui::Color32::WHITE);
+                        painter.rect_filled(candidate, palette.control_radius, palette.accent);
+                        painter.text(candidate.center(), egui::Align2::CENTER_CENTER, "1 你好   2 拟好", egui::FontId::proportional(13.0), palette.accent_text);
                         if response.dragged() {
                             let delta = response.drag_delta();
                             rule.overlay_offset_x = (rule.overlay_offset_x + (delta.x * 10.0).round() as i32).clamp(-4000, 4000);
@@ -157,13 +157,13 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     }
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("位置合适").clicked() {
+                        if ui.add(button("位置合适", ButtonKind::Primary)).clicked() {
                             action = Some(GameTestWizardAction::PositionGood);
                         }
-                        if ui.button("保存位置并回游戏测试").clicked() {
+                        if outline_button(ui, "保存位置并回游戏测试").clicked() {
                             action = Some(GameTestWizardAction::SavePosition);
                         }
-                        if ui.button("返回规则页调整位置").clicked() {
+                        if outline_button(ui, "返回规则页调整位置").clicked() {
                             action = Some(GameTestWizardAction::AdjustPosition);
                         }
                     });
@@ -173,13 +173,13 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     ui.label("请在游戏聊天框输入 nihao，选“你好”，确认没有重复；测试时不要发送聊天消息。");
                     ui.add_space(8.0);
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("中文上屏一次，继续").clicked() {
+                        if ui.add(button("中文上屏一次，继续", ButtonKind::Primary)).clicked() {
                             action = Some(GameTestWizardAction::CommitGood);
                         }
-                        if ui.button("尝试 Unicode SendInput").clicked() {
+                        if outline_button(ui, "尝试 Unicode SendInput").clicked() {
                             action = Some(GameTestWizardAction::UseUnicode);
                         }
-                        if ui.button("尝试剪贴板粘贴").clicked() {
+                        if outline_button(ui, "尝试剪贴板粘贴").clicked() {
                             action = Some(GameTestWizardAction::UseClipboard);
                         }
                     });
@@ -188,9 +188,9 @@ pub(super) fn game_test_wizard_ui(ctx: &egui::Context, app: &mut SettingsApp) {
                     ui.label("第六步：有拼音时 Enter 选词、Esc 取消拼音；无拼音时发送或关闭输入栏。检查移动、Shift、数字键恢复正常，切换窗口后没有残留候选或重复文字。");
                     ui.label("若游戏发送后保留输入栏，请把“空 Enter 后”设为“保留中文聊天”或“根据输入栏状态判断”。");
                     ui.horizontal_wrapped(|ui| {
-                        if ui.button("切换到游戏窗口").clicked() { action = Some(GameTestWizardAction::ActivateGame); }
-                        if ui.button("退出与操作恢复正常，保存结果").clicked() { action = Some(GameTestWizardAction::ExitGood); }
-                        if ui.button("返回设置调整").clicked() { action = Some(GameTestWizardAction::AdjustPosition); }
+                        if outline_button(ui, "切换到游戏窗口").clicked() { action = Some(GameTestWizardAction::ActivateGame); }
+                        if ui.add(button("退出与操作恢复正常，保存结果", ButtonKind::Primary)).clicked() { action = Some(GameTestWizardAction::ExitGood); }
+                        if outline_button(ui, "返回设置调整").clicked() { action = Some(GameTestWizardAction::AdjustPosition); }
                     });
                 }
             }
@@ -403,11 +403,11 @@ pub(super) fn game_test_metadata_ui(ui: &mut egui::Ui, chat: &mut GameChatOption
     ui.horizontal_wrapped(|ui| {
         ui.label("游戏版本")
             .on_hover_text("填写实际人工验证时的游戏版本；修改后会清除旧的验证结果。");
-        ui.add(
+        ui.add(text_field(
             TextEdit::singleline(&mut chat.tested_game_version)
                 .char_limit(80)
                 .hint_text("可选，手动填写"),
-        );
+        ));
     });
     if before
         != (
@@ -455,18 +455,40 @@ pub(super) fn game_chat_options_ui(
         }
         if !per_app {
             setting_row(ui, "聊天提示时长", "控制游戏聊天状态提示的显示时间。", |ui| {
-                ui.add(egui::Slider::new(&mut chat.status_duration_ms, 500..=5000).suffix(" 毫秒"));
+                let numeric_width = 88.0;
+                let track_width = (bounded_control_width(ui, SETTINGS_CONTROL_WIDTH)
+                    - numeric_width
+                    - ui.spacing().item_spacing.x)
+                    .max(40.0);
+                controls::slider(ui, &mut chat.status_duration_ms, 500..=5000, track_width);
+                ui.add_sized(
+                    [numeric_width, SETTINGS_ROW_HEIGHT],
+                    egui::DragValue::new(&mut chat.status_duration_ms)
+                        .range(500..=5000)
+                        .suffix(" 毫秒"),
+                );
             });
             setting_row(ui, "聊天提示大小", "按比例调整游戏聊天状态提示，不改变候选栏大小。", |ui| {
-                ui.add(egui::Slider::new(&mut chat.status_scale_percent, 70..=200).suffix("%"));
+                let numeric_width = 80.0;
+                let track_width = (bounded_control_width(ui, SETTINGS_CONTROL_WIDTH)
+                    - numeric_width
+                    - ui.spacing().item_spacing.x)
+                    .max(40.0);
+                controls::slider(ui, &mut chat.status_scale_percent, 70..=200, track_width);
+                ui.add_sized(
+                    [numeric_width, SETTINGS_ROW_HEIGHT],
+                    egui::DragValue::new(&mut chat.status_scale_percent)
+                        .range(70..=200)
+                        .suffix("%"),
+                );
             });
         }
         if per_app {
             setting_row(ui, "游戏聊天开启键", "例如 Enter、T 或 Y；off 关闭。按键交给游戏，确认输入栏后才开启中文。", |ui| {
-                ui.add(TextEdit::singleline(&mut chat.open_key).char_limit(48));
+                ui.add(text_field(TextEdit::singleline(&mut chat.open_key).char_limit(48)));
             });
             setting_row(ui, "游戏聊天关闭键", "默认 Escape；有拼音时先取消拼音。", |ui| {
-                ui.add(TextEdit::singleline(&mut chat.close_key).char_limit(48));
+                ui.add(text_field(TextEdit::singleline(&mut chat.close_key).char_limit(48)));
             });
             setting_toggle(ui, "强制显示输入法候选", "覆盖游戏的隐藏要求。仅在游戏没有自行绘制候选时开启；独立候选窗不能保证覆盖独占全屏。状态提示尊重 UI-less 宿主。", &mut chat.force_ui);
         }
@@ -947,7 +969,7 @@ pub(super) fn compatibility_recent_logs_ui(ui: &mut egui::Ui) {
     egui::Frame::none()
         .fill(palette.surface_alt)
         .stroke(Stroke::new(1.0_f32, palette.border))
-        .rounding(SETTINGS_RADIUS_CARD)
+        .rounding(palette.card_radius)
         .inner_margin(egui::Margin::same(12.0))
         .show(ui, |ui| {
             for line in lines {
@@ -1018,7 +1040,9 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 
             for (idx, rule) in app.model.compat_rules.iter_mut().enumerate() {
                 ui.checkbox(&mut rule.enabled, "");
-                ui.add(TextEdit::singleline(&mut rule.process).desired_width(180.0));
+                ui.add(text_field(
+                    TextEdit::singleline(&mut rule.process).desired_width(180.0),
+                ));
                 ComboBox::from_id_salt(("compat_policy", idx))
                     .selected_text(rule.policy.label())
                     .width(170.0)
@@ -1054,11 +1078,7 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     if ui
                         .add_enabled(
                             !rule.process.trim().is_empty(),
-                            egui::Button::new("测试")
-                                .fill(Color32::TRANSPARENT)
-                                .stroke(Stroke::new(1.0_f32, fluent_palette(ui).border))
-                                .rounding(SETTINGS_RADIUS_CONTROL)
-                                .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT)),
+                            button("测试", ButtonKind::Secondary),
                         )
                         .clicked()
                     {
@@ -1318,11 +1338,7 @@ pub(super) fn compatibility_rules_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
                     if ui
                         .add_enabled(
                             !rule.process.trim().is_empty(),
-                            egui::Button::new("测试该游戏")
-                                .fill(Color32::TRANSPARENT)
-                                .stroke(Stroke::new(1.0_f32, fluent_palette(ui).border))
-                                .rounding(SETTINGS_RADIUS_CONTROL)
-                                .min_size(egui::vec2(SETTINGS_BUTTON_WIDTH, SETTINGS_ROW_HEIGHT)),
+                            button("测试该游戏", ButtonKind::Secondary),
                         )
                         .clicked()
                     {

@@ -144,12 +144,12 @@ pub(super) fn privacy_process_list_row(
 ) {
     let help = format!("{description}\n每行或用逗号分隔进程名，可使用 * 通配符。名单以明文保存到 config.ini；需要隐藏使用痕迹时请留空。");
     setting_path_row(ui, title, &help, |ui| {
-        ui.add(
+        ui.add(text_field(
             TextEdit::multiline(value)
                 .desired_width(ui.available_width().max(1.0))
                 .desired_rows(2)
                 .hint_text("app.exe, password*.exe"),
-        );
+        ));
     });
 }
 
@@ -174,10 +174,12 @@ pub(super) fn data_location_row(
         let mut readonly_path = path.display().to_string();
         ui.add_sized(
             [field_width, SETTINGS_ROW_HEIGHT],
-            TextEdit::singleline(&mut readonly_path)
-                .desired_width((field_width - 8.0).max(1.0))
-                .font(TextStyle::Monospace)
-                .interactive(false),
+            text_field(
+                TextEdit::singleline(&mut readonly_path)
+                    .desired_width((field_width - 8.0).max(1.0))
+                    .font(TextStyle::Monospace)
+                    .interactive(false),
+            ),
         )
         .on_hover_text(&readonly_path);
         if outline_button(ui, "复制").clicked() {
@@ -210,9 +212,11 @@ pub(super) fn folder_path_row(
         let field_width = path_field_width(ui, 1);
         ui.add_sized(
             [field_width, SETTINGS_ROW_HEIGHT],
-            TextEdit::singleline(value)
-                .desired_width((field_width - 8.0).max(1.0))
-                .hint_text(empty_hint),
+            text_field(
+                TextEdit::singleline(value)
+                    .desired_width((field_width - 8.0).max(1.0))
+                    .hint_text(empty_hint),
+            ),
         );
         if outline_button(ui, "浏览").clicked() {
             if let Some(path) = rfd::FileDialog::new().pick_folder() {
@@ -234,9 +238,11 @@ pub(super) fn executable_path_row(
         let field_width = path_field_width(ui, buttons);
         ui.add_sized(
             [field_width, SETTINGS_ROW_HEIGHT],
-            TextEdit::singleline(value)
-                .desired_width((field_width - 8.0).max(1.0))
-                .hint_text(empty_hint),
+            text_field(
+                TextEdit::singleline(value)
+                    .desired_width((field_width - 8.0).max(1.0))
+                    .hint_text(empty_hint),
+            ),
         );
         if outline_button(ui, "浏览").clicked() {
             if let Some(path) = rfd::FileDialog::new()
@@ -265,9 +271,13 @@ pub(super) fn filename_pattern_row(
                 bounded_control_width(ui, SETTINGS_CONTROL_WIDTH),
                 SETTINGS_ROW_HEIGHT,
             ],
-            TextEdit::singleline(value)
-                .desired_width((bounded_control_width(ui, SETTINGS_CONTROL_WIDTH) - 8.0).max(1.0))
-                .hint_text(empty_hint),
+            text_field(
+                TextEdit::singleline(value)
+                    .desired_width(
+                        (bounded_control_width(ui, SETTINGS_CONTROL_WIDTH) - 8.0).max(1.0),
+                    )
+                    .hint_text(empty_hint),
+            ),
         );
     });
 }

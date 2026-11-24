@@ -20,6 +20,8 @@ HRESULT SrfTip_RegisterServer(HMODULE hModule);
 HRESULT SrfTip_UnregisterServer();
 HRESULT SrfTip_RegisterServerEx(HMODULE hModule, BOOL machineScope);
 HRESULT SrfTip_UnregisterServerEx(BOOL machineScope);
+HRESULT SrfTip_EnableCurrentUser();
+void SrfTip_NotifyLanguageChange();
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID /*lpReserved*/) {
   switch (dwReason) {
@@ -57,15 +59,20 @@ STDAPI DllUnregisterServer(void) {
 }
 
 STDAPI DllInstall(BOOL bInstall, LPCWSTR pszCmdLine) {
+  if (pszCmdLine && _wcsicmp(pszCmdLine, L"enable-profile") == 0)
+    return bInstall ? SrfTip_EnableCurrentUser() : E_INVALIDARG;
+  if (pszCmdLine && _wcsicmp(pszCmdLine, L"notify-language") == 0) {
+    if (!bInstall) return E_INVALIDARG;
+    SrfTip_NotifyLanguageChange();
+    return S_OK;
+  }
+  const BOOL machine = pszCmdLine && _wcsicmp(pszCmdLine, L"machine") == 0;
+  if (pszCmdLine && *pszCmdLine && !machine && _wcsicmp(pszCmdLine, L"user") != 0)
+    return E_INVALIDARG;
   HMODULE mod = g_hModule;
   if (!mod) {
     (void)GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
                              reinterpret_cast<LPCWSTR>(&DllInstall), &mod);
-  }
-  BOOL machine = FALSE;
-  if (pszCmdLine) {
-    if (wcsstr(pszCmdLine, L"machine") != nullptr || wcsstr(pszCmdLine, L"Machine") != nullptr)
-      machine = TRUE;
   }
   if (bInstall) return SrfTip_RegisterServerEx(mod, machine);
   return SrfTip_UnregisterServerEx(machine);

@@ -1992,18 +1992,10 @@ fn reconcile_discovered_lexicon_tags(
     discovered: &BTreeSet<String>,
 ) {
     for tag in discovered {
-        if states.contains_key(tag) {
-            continue;
-        }
-        let legacy: Vec<bool> = pinyin_ime::lexicon_prefs::legacy_optional_lexicon_tags(tag)
-            .iter()
-            .filter_map(|old| states.get(*old).copied())
-            .collect();
-        let enabled = if legacy.is_empty() {
-            pinyin_ime::lexicon_prefs::default_optional_lexicon_tag_enabled(tag)
-        } else {
-            legacy.into_iter().all(|value| value)
-        };
+        let enabled =
+            pinyin_ime::lexicon_prefs::resolve_optional_lexicon_tag_enabled(tag, |name| {
+                states.get(name).copied()
+            });
         states.insert(tag.clone(), enabled);
     }
     states.retain(|tag, _| discovered.contains(tag));
@@ -3002,17 +2994,45 @@ mod lexicon_migration_tests {
     fn discovery_preserves_explicit_and_legacy_choices() {
         let mut states = BTreeMap::from([
             ("animal_common_5000".to_string(), false),
-            ("category_ai".to_string(), true),
+            ("technology".to_string(), true),
         ]);
         let tags = BTreeSet::from([
             "animals".to_string(),
-            "category_ai".to_string(),
-            "category_chat_daily".to_string(),
+            "technology".to_string(),
+            "daily_communication".to_string(),
         ]);
         reconcile_discovered_lexicon_tags(&mut states, &tags);
         assert_eq!(states.get("animals"), Some(&false));
-        assert_eq!(states.get("category_ai"), Some(&true));
-        assert_eq!(states.get("category_chat_daily"), Some(&true));
+        assert_eq!(states.get("technology"), Some(&true));
+        assert_eq!(states.get("daily_communication"), Some(&true));
         assert!(!states.contains_key("animal_common_5000"));
+    }
+
+    #[test]
+    fn merged_choices_are_saved_under_active_tags() {
+        let config = parse_ini(
+            "[lexicon]\n\
+             lexicon_daily_communication=1\nlexicon_category_chat_daily=0\n\
+             lexicon_technology=0\nlexicon_professional_computing=1\n\
+             lexicon_professional_math=1\nlexicon_professional_physics=0\n",
+        );
+        let mut model = model_from_config(&config);
+        let tags = ["daily_communication", "technology", "category_science"]
+            .map(str::to_string)
+            .into_iter()
+            .collect();
+        reconcile_discovered_lexicon_tags(&mut model.lexicon_tags, &tags);
+        assert_eq!(model.lexicon_tags.get("daily_communication"), Some(&false));
+        assert_eq!(model.lexicon_tags.get("technology"), Some(&true));
+        assert_eq!(model.lexicon_tags.get("category_science"), Some(&true));
+
+        let saved = parse_ini(&rendered_config_for_model(&config, &model));
+        assert_eq!(read_lexicon_tags(&saved), model.lexicon_tags);
+        assert!(saved
+            .get("lexicon", "lexicon_category_chat_daily")
+            .is_none());
+        assert!(saved
+            .get("lexicon", "lexicon_professional_computing")
+            .is_none());
     }
 }

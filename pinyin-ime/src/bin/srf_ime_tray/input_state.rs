@@ -93,7 +93,7 @@ fn tray_tooltip_text(state: &TrayVisualState) -> String {
     let mode = match state.input_mode() {
         TrayInputMode::Chinese => "中文",
         TrayInputMode::English => "英文",
-        TrayInputMode::Unknown => "状态未知",
+        TrayInputMode::Unknown => "当前输入状态未知",
     };
     let punctuation = match state.chinese_punctuation {
         Some(true) => "中文",

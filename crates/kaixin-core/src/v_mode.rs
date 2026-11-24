@@ -40,6 +40,7 @@ const VV_COMMAND_ALIASES: &[(&str, &[&str])] = &[
     ("markdown", &["md", "markdown"]),
     ("clipboard", &["cb", "clip", "clipboard", "paste"]),
     ("handwrite", &["hw", "handwrite", "sx", "shouxie"]),
+    ("translate", &["tr", "fanyi", "fy", "en", "ja", "ko"]),
 ];
 
 #[derive(Clone, Copy)]
@@ -2295,8 +2296,66 @@ pub fn lookup_detailed_with_options(
             }
             return Some(emoji_panel_candidates_detailed(arg));
         }
+        if command_matches(&cmd_lower, "translate") {
+            return Some(translate_direct_candidates(&cmd_lower, arg));
+        }
     }
     lookup_with_options(t, options).map(scored_to_direct)
+}
+
+fn translate_direct_candidates(cmd: &str, arg: &str) -> Vec<DirectCandidate> {
+    let text = arg.trim();
+    let (primary_code, primary_label) = match cmd {
+        "en" => ("en", "英语"),
+        "ja" => ("ja", "日语"),
+        "ko" => ("ko", "韩语"),
+        _ => ("auto-opposite", "自动互译"),
+    };
+    if text.is_empty() {
+        return vec![
+            DirectCandidate {
+                phrase: format!("translate://{primary_code}/"),
+                score: 220.0,
+                meta: Some(format!(
+                    "{CLIPBOARD_DISPLAY_META_PREFIX}翻译剪贴板（{primary_label}）\t{DIRECT_NO_LEARN_META}"
+                )),
+            },
+            DirectCandidate {
+                phrase: "vv tr 文本 - 自动互译".to_string(),
+                score: 210.0,
+                meta: Some(DIRECT_NO_LEARN_META.to_string()),
+            },
+            DirectCandidate {
+                phrase: "vv en 文本 / vv ja 文本 - 指定目标语言翻译".to_string(),
+                score: 200.0,
+                meta: Some(DIRECT_NO_LEARN_META.to_string()),
+            },
+        ];
+    }
+    let preview: String = text.chars().take(28).collect();
+    let suffix = if text.chars().count() > 28 { "…" } else { "" };
+    let mut out = vec![DirectCandidate {
+        phrase: format!("translate://{primary_code}/{text}"),
+        score: 230.0,
+        meta: Some(format!(
+            "{CLIPBOARD_DISPLAY_META_PREFIX}译→{primary_label}：{preview}{suffix}\t{DIRECT_NO_LEARN_META}"
+        )),
+    }];
+    if primary_code == "auto-opposite" {
+        for (idx, (code, label)) in [("en", "英语"), ("zh", "简体中文"), ("ja", "日语")]
+            .iter()
+            .enumerate()
+        {
+            out.push(DirectCandidate {
+                phrase: format!("translate://{code}/{text}"),
+                score: 220.0 - idx as f64 * 5.0,
+                meta: Some(format!(
+                    "{CLIPBOARD_DISPLAY_META_PREFIX}译→{label}：{preview}{suffix}\t{DIRECT_NO_LEARN_META}"
+                )),
+            });
+        }
+    }
+    out
 }
 
 pub fn lookup(rest: &str) -> Option<Vec<(String, f64)>> {
@@ -2327,6 +2386,7 @@ pub fn lookup_with_options(rest: &str, options: LookupOptions) -> Option<Vec<(St
             "vv url openai - 网址模板".to_string(),
             "vv md h1 标题 - Markdown 片段".to_string(),
             "vv cb - 文本剪贴板历史/置顶".to_string(),
+            "vv tr 文本 - HY-MT2 本地翻译".to_string(),
             "vv hw - 打开手写查字".to_string(),
             format!("vvu - 剪贴板前 {CLIPBOARD_QUICK_LIMIT} 条快粘"),
             "vv 数字 - 中文读法".to_string(),

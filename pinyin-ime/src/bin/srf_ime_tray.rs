@@ -8,6 +8,10 @@ fn main() {}
 mod tray_menu_style;
 
 #[cfg(windows)]
+#[path = "srf_ime_tray/status_icon.rs"]
+mod tray_status_icon;
+
+#[cfg(windows)]
 #[path = "srf_ime_tray/translation_preview.rs"]
 mod translation_preview;
 
@@ -16,6 +20,7 @@ mod win {
     use crate::tray_menu_style::{
         self, Icon as TrayMenuIcon, Item as TrayMenuItem, Kind as TrayMenuKind,
     };
+    use crate::tray_status_icon::{self, IconKey as TrayIconKey, Mode as TrayIconMode};
     use chrono::{DateTime, FixedOffset, Local};
     use pinyin_ime::runtime_log::{self, RuntimeLogLevel};
     use pinyin_ime::screenshot_trace::ScreenshotTrace;
@@ -38,12 +43,7 @@ mod win {
         CloseHandle, GetLastError, COLORREF, ERROR_ALREADY_EXISTS, HANDLE, HWND, LPARAM, LRESULT,
         POINT, RECT, WPARAM,
     };
-    use windows_sys::Win32::Graphics::Gdi::{
-        CreateBitmap, CreateCompatibleBitmap, CreateCompatibleDC, CreateFontW, CreateSolidBrush,
-        DeleteDC, DeleteObject, DrawTextW, FillRect, GetDC, ReleaseDC, SelectObject, SetBkMode,
-        SetTextColor, CLEARTYPE_QUALITY, CLIP_DEFAULT_PRECIS, DEFAULT_CHARSET, DEFAULT_PITCH,
-        DT_CENTER, DT_SINGLELINE, DT_VCENTER, FF_SWISS, HBITMAP, OUT_DEFAULT_PRECIS, TRANSPARENT,
-    };
+    use windows_sys::Win32::Graphics::Gdi::{GetDC, ReleaseDC};
     use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
     use windows_sys::Win32::System::Registry::{
         RegCloseKey, RegCreateKeyExW, RegGetValueW, RegSetValueExW, HKEY_CURRENT_USER,
@@ -63,17 +63,18 @@ mod win {
         NIM_ADD, NIM_DELETE, NIM_MODIFY, NIM_SETVERSION, NOTIFYICONDATAW, NOTIFYICON_VERSION_4,
     };
     use windows_sys::Win32::UI::WindowsAndMessaging::{
-        CreateIconIndirect, CreateWindowExW, DefWindowProcW, DestroyIcon, DestroyWindow,
-        DispatchMessageW, GetAncestor, GetClassNameW, GetCursorPos, GetForegroundWindow,
-        GetMessageW, GetWindowLongPtrW, GetWindowRect, GetWindowTextW, GetWindowThreadProcessId,
-        IsIconic, IsWindow, IsWindowVisible, KillTimer, LoadCursorW, LoadIconW, MessageBoxW,
-        PostMessageW, PostQuitMessage, RegisterClassW, RegisterWindowMessageW, SetForegroundWindow,
-        SetTimer, SetWindowLongPtrW, TranslateMessage, CS_HREDRAW, CS_VREDRAW, GA_ROOT,
-        GWLP_USERDATA, ICONINFO, IDC_ARROW, IDI_APPLICATION, IDYES, MB_ICONERROR, MB_ICONWARNING,
-        MB_OK, MB_YESNO, MSG, PBT_APMRESUMEAUTOMATIC, PBT_APMRESUMECRITICAL, PBT_APMRESUMESUSPEND,
-        SW_SHOWNORMAL, WM_APP, WM_COMMAND, WM_CONTEXTMENU, WM_CREATE, WM_DESTROY, WM_DISPLAYCHANGE,
+        CreateWindowExW, DefWindowProcW, DestroyIcon, DestroyWindow, DispatchMessageW, GetAncestor,
+        GetClassNameW, GetCursorPos, GetForegroundWindow, GetMessageW, GetWindowLongPtrW,
+        GetWindowRect, GetWindowTextW, GetWindowThreadProcessId, IsIconic, IsWindow,
+        IsWindowVisible, KillTimer, LoadCursorW, LoadIconW, MessageBoxW, PostMessageW,
+        PostQuitMessage, RegisterClassW, RegisterWindowMessageW, SetForegroundWindow, SetTimer,
+        SetWindowLongPtrW, TranslateMessage, CS_HREDRAW, CS_VREDRAW, GA_ROOT, GWLP_USERDATA,
+        IDC_ARROW, IDI_APPLICATION, IDYES, MB_ICONERROR, MB_ICONWARNING, MB_OK, MB_YESNO, MSG,
+        PBT_APMRESUMEAUTOMATIC, PBT_APMRESUMECRITICAL, PBT_APMRESUMESUSPEND, SW_SHOWNORMAL, WM_APP,
+        WM_COMMAND, WM_CONTEXTMENU, WM_CREATE, WM_DESTROY, WM_DISPLAYCHANGE, WM_DPICHANGED,
         WM_DRAWITEM, WM_HOTKEY, WM_LBUTTONDBLCLK, WM_LBUTTONUP, WM_MEASUREITEM, WM_NCCREATE,
-        WM_NULL, WM_POWERBROADCAST, WM_RBUTTONUP, WM_TIMER, WM_USER, WNDCLASSW, WS_OVERLAPPED,
+        WM_NULL, WM_POWERBROADCAST, WM_RBUTTONUP, WM_SETTINGCHANGE, WM_TIMER, WM_USER, WNDCLASSW,
+        WS_OVERLAPPED,
     };
 
     use std::sync::atomic::AtomicIsize;
@@ -133,7 +134,6 @@ mod win {
     const ID_SYMBOLS: usize = 1013;
     const ID_ENGINE_RESTART: usize = 1014;
     const ID_PURE_GAME_MODE: usize = 1015;
-    const ICON_SIZE: i32 = 32;
     const SETTINGS_EXE: &str = "srf_ime_settings.exe";
     const CLIPBOARD_MANAGER_EXE: &str = "srf_ime_clipboard.exe";
     const ENGINE_EXE: &str = "srf_ime_engine.exe";
@@ -181,6 +181,34 @@ mod win {
     static SCREENSHOT_HANDOFF_COUNTER: AtomicU64 = AtomicU64::new(0);
     const SETTINGS_OPEN_DEBOUNCE: Duration = Duration::from_millis(1200);
 
+    fn schedule_deferred_runtime_cleanup() {
+        let Ok(exe) = std::env::current_exe() else {
+            return;
+        };
+        let Some(root) = exe.parent().map(Path::to_path_buf) else {
+            return;
+        };
+        let setup_exe = root.join("srf_ime_setup.exe");
+        if !setup_exe.is_file() {
+            return;
+        }
+        let _ = thread::Builder::new()
+            .name("kaixin-runtime-cleanup".to_string())
+            .spawn(move || {
+                thread::sleep(Duration::from_secs(4));
+                use std::os::windows::process::CommandExt;
+                let _ = Command::new(&setup_exe)
+                    .arg("cleanup-runtime")
+                    .arg("--root")
+                    .arg(&root)
+                    .creation_flags(0x0800_0000)
+                    .stdin(std::process::Stdio::null())
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .status();
+            });
+    }
+
     pub fn run() {
         if let Some(code) = screenshot_capture::run_helper_from_args() {
             std::process::exit(code);
@@ -208,7 +236,7 @@ mod win {
                 .unwrap_or(ID_CLIPBOARD_MANAGER);
             let pure_game = args.iter().any(|v| v == "--game-on");
             apply_pure_game_visual_override(&mut state, pure_game);
-            let items = build_tray_menu_items(&state, pure_game, true, true);
+            let items = build_tray_menu_items(&state, true, true);
             if unsafe { tray_menu_style::preview(Path::new(path), items, dpi, theme, selected) }
                 .is_err()
             {
@@ -236,6 +264,7 @@ mod win {
                 ),
             );
             ensure_engine_helper_running();
+            schedule_deferred_runtime_cleanup();
             let class_name = wide(CLASS_NAME);
             let title = wide(WINDOW_TITLE);
             let hinstance = GetModuleHandleW(std::ptr::null());
@@ -319,12 +348,6 @@ mod win {
     }
 
     #[derive(Clone, Copy, PartialEq, Eq)]
-    struct TrayIconKey {
-        input_mode: TrayInputMode,
-        engine_state: TrayEngineState,
-    }
-
-    #[derive(Clone, Copy, PartialEq, Eq)]
     enum TrayInputMode {
         Chinese,
         English,
@@ -374,15 +397,6 @@ mod win {
                 Self::Unknown => "未知",
             }
         }
-
-        fn accent_color(self) -> COLORREF {
-            match self {
-                Self::Ready => rgb(31, 154, 96),
-                Self::Loading => rgb(245, 158, 11),
-                Self::Failed => rgb(220, 38, 38),
-                Self::Idle | Self::Unknown => rgb(107, 114, 128),
-            }
-        }
     }
 
     impl TrayVisualState {
@@ -394,10 +408,20 @@ mod win {
             }
         }
 
-        fn icon_key(&self) -> TrayIconKey {
+        fn icon_key(&self, size: i32) -> TrayIconKey {
+            let mode = if self.mode_source.as_deref() == Some("pure_game") {
+                TrayIconMode::Gamepad
+            } else {
+                match self.input_mode() {
+                    TrayInputMode::Chinese => TrayIconMode::Chinese,
+                    TrayInputMode::English => TrayIconMode::English,
+                    TrayInputMode::Unknown => TrayIconMode::Unknown,
+                }
+            };
             TrayIconKey {
-                input_mode: self.input_mode(),
-                engine_state: self.engine_state,
+                mode,
+                failed: self.engine_state == TrayEngineState::Failed,
+                size,
             }
         }
     }
@@ -604,12 +628,12 @@ mod win {
                 return true;
             }
 
-            let next_key = state.icon_key();
+            let next_key = state.icon_key(tray_status_icon::taskbar_icon_size());
             let icon_changed = self.last_icon_key != Some(next_key) || self.icon == 0;
             let old_icon = self.icon;
             let old_icon_owned = self.icon_owned;
             let (next_icon, next_icon_owned) = if icon_changed {
-                let icon = create_status_icon(next_key);
+                let icon = tray_status_icon::create(next_key);
                 (
                     icon.unwrap_or_else(|| LoadIconW(0, IDI_APPLICATION)),
                     icon.is_some(),
@@ -897,7 +921,7 @@ mod win {
                 (*app).refresh_icon_if_needed(hwnd);
                 (*app).refresh_screenshot_hotkey_if_needed(hwnd, true);
                 (*app).refresh_clipboard_background_if_needed(true);
-                // 轮询注册表中的 AsciiMode，更新托盘图标为「中 / 英」。
+                // 图标跟随前台输入状态和引擎状态。
                 HOTKEY_TRAY_HWND.store(hwnd, Ordering::Relaxed);
                 (*app).foreground_hook =
                     SetWinEventHook(3, 3, 0, Some(on_foreground_changed), 0, 0, 0);
@@ -976,7 +1000,16 @@ mod win {
             WM_DISPLAYCHANGE => {
                 screenshot_capture::display_changed();
                 SCREENSHOT_RESUME_RECOVERY_PENDING.store(true, Ordering::Release);
+                if !app.is_null() {
+                    (*app).set_visual_state(hwnd, read_tray_visual_state(), true);
+                }
                 0
+            }
+            WM_DPICHANGED | WM_SETTINGCHANGE => {
+                if !app.is_null() {
+                    (*app).set_visual_state(hwnd, read_tray_visual_state(), true);
+                }
+                DefWindowProcW(hwnd, msg, wparam, lparam)
             }
             WM_POWERBROADCAST => {
                 if matches!(
@@ -1099,32 +1132,37 @@ mod win {
 
     fn build_tray_menu_items(
         state: &TrayVisualState,
-        pure_game: bool,
         translate_available: bool,
         recent_screenshot: bool,
     ) -> Vec<TrayMenuItem> {
-        let mode = match state.input_mode() {
-            TrayInputMode::Chinese => "中文模式",
-            TrayInputMode::English => "英文模式",
-            TrayInputMode::Unknown => "状态未知",
-        };
-        let mut items = vec![TrayMenuItem::header(
-            mode,
-            &format!("引擎{}", state.engine_state.label()),
-            matches!(state.engine_state, TrayEngineState::Ready),
-        )];
-        let mut retry = TrayMenuItem::action(
-            ID_ENGINE_RESTART,
-            if matches!(state.engine_state, TrayEngineState::Ready) {
-                "重启输入引擎"
+        let pure_game = state.mode_source.as_deref() == Some("pure_game");
+        let failed = state.engine_state == TrayEngineState::Failed;
+        let status = if pure_game {
+            "纯游戏模式 · 键盘直通".to_owned()
+        } else {
+            let mode = match state.input_mode() {
+                TrayInputMode::Chinese => "中文输入",
+                TrayInputMode::English => "英文输入",
+                TrayInputMode::Unknown => "当前输入状态未知",
+            };
+            if state.engine_state == TrayEngineState::Ready {
+                mode.to_owned()
             } else {
-                "重试输入引擎"
-            },
-            TrayMenuIcon::Status,
-        );
-        retry.attention = !matches!(state.engine_state, TrayEngineState::Ready);
-        items.push(retry);
-        items.push(TrayMenuItem::section("输入与设置"));
+                format!("{mode} · 引擎{}", state.engine_state.label())
+            }
+        };
+        let mut items = vec![TrayMenuItem::header(&status, failed && !pure_game)];
+        if failed {
+            let mut retry =
+                TrayMenuItem::action(ID_ENGINE_RESTART, "重试输入引擎", TrayMenuIcon::Status);
+            retry.attention = true;
+            items.push(retry);
+        }
+        items.push(TrayMenuItem::action(
+            ID_SETTINGS,
+            "输入法设置…",
+            TrayMenuIcon::Settings,
+        ));
         let mut game = TrayMenuItem::action(ID_PURE_GAME_MODE, "纯游戏模式", TrayMenuIcon::Gamepad);
         game.subtitle = wide("键盘完全直通");
         game.checked = pure_game;
@@ -1136,12 +1174,37 @@ mod win {
             Some("game" | "game_chat" | "fullscreen")
         );
         items.push(compat);
+        items.push(TrayMenuItem::section("截图与识别"));
         items.push(TrayMenuItem::action(
-            ID_SETTINGS,
-            "输入法设置…",
-            TrayMenuIcon::Settings,
+            ID_SCREENSHOT,
+            "截图",
+            TrayMenuIcon::Screenshot,
         ));
-        items.push(TrayMenuItem::section("常用工具"));
+        items.push(TrayMenuItem::action(
+            ID_OCR,
+            "截图识字（OCR）",
+            TrayMenuIcon::Ocr,
+        ));
+        items.push(TrayMenuItem::action(
+            ID_OCR_TRANSLATE,
+            "截图翻译",
+            TrayMenuIcon::Translate,
+        ));
+        if recent_screenshot {
+            items.push(TrayMenuItem::submenu(
+                "最近截图",
+                TrayMenuIcon::Recent,
+                vec![
+                    TrayMenuItem::action(ID_LAST_SCREENSHOT_OCR, "识别最近截图", TrayMenuIcon::Ocr),
+                    TrayMenuItem::action(
+                        ID_LAST_SCREENSHOT_TRANSLATE,
+                        "翻译最近截图",
+                        TrayMenuIcon::Translate,
+                    ),
+                ],
+            ));
+        }
+        items.push(TrayMenuItem::section("其他工具"));
         items.push(TrayMenuItem::action(
             ID_CLIPBOARD_MANAGER,
             "剪贴板管理器",
@@ -1169,30 +1232,18 @@ mod win {
             "计算器",
             TrayMenuIcon::Calculator,
         ));
-        items.push(TrayMenuItem::section("截图与识别"));
-        items.push(TrayMenuItem::action(
-            ID_SCREENSHOT,
-            "截图",
-            TrayMenuIcon::Screenshot,
-        ));
-        if recent_screenshot {
+        if !failed {
+            items.push(TrayMenuItem::section("输入引擎维护"));
             items.push(TrayMenuItem::action(
-                ID_LAST_SCREENSHOT_OCR,
-                "识别最近截图",
-                TrayMenuIcon::Ocr,
-            ));
-            items.push(TrayMenuItem::action(
-                ID_LAST_SCREENSHOT_TRANSLATE,
-                "翻译最近截图",
-                TrayMenuIcon::Translate,
+                ID_ENGINE_RESTART,
+                if state.engine_state == TrayEngineState::Ready {
+                    "重启输入引擎"
+                } else {
+                    "重试输入引擎"
+                },
+                TrayMenuIcon::Status,
             ));
         }
-        items.push(TrayMenuItem::action(ID_OCR, "截图 OCR", TrayMenuIcon::Ocr));
-        items.push(TrayMenuItem::action(
-            ID_OCR_TRANSLATE,
-            "截图翻译",
-            TrayMenuIcon::Translate,
-        ));
         let mut exit = TrayMenuItem::action(ID_EXIT, "退出托盘图标", TrayMenuIcon::Exit);
         exit.kind = TrayMenuKind::Footer;
         items.push(exit);
@@ -1223,11 +1274,25 @@ mod win {
 
         #[test]
         fn every_existing_command_survives_the_visual_reorganization() {
-            let items = build_tray_menu_items(&state(), false, true, true);
-            let mut commands: Vec<_> = items
-                .iter()
-                .filter_map(|item| (item.command != 0).then_some(item.command))
-                .collect();
+            let items = build_tray_menu_items(&state(), true, true);
+            assert_eq!(items[1].command, ID_SETTINGS);
+            assert_eq!(items[items.len() - 2].command, ID_ENGINE_RESTART);
+            let mut commands = Vec::new();
+            for item in &items {
+                if item.command != 0 {
+                    commands.push(item.command);
+                }
+                if let TrayMenuKind::Submenu(children) = &item.kind {
+                    assert_eq!(
+                        children
+                            .iter()
+                            .map(|child| child.command)
+                            .collect::<Vec<_>>(),
+                        [ID_LAST_SCREENSHOT_OCR, ID_LAST_SCREENSHOT_TRANSLATE]
+                    );
+                    commands.extend(children.iter().map(|child| child.command));
+                }
+            }
             commands.sort_unstable();
             assert_eq!(
                 commands,
@@ -1253,14 +1318,11 @@ mod win {
 
         #[test]
         fn optional_tools_follow_the_same_availability_rules() {
-            let items = build_tray_menu_items(&state(), false, false, false);
-            for command in [
-                ID_TRANSLATE,
-                ID_LAST_SCREENSHOT_OCR,
-                ID_LAST_SCREENSHOT_TRANSLATE,
-            ] {
-                assert!(!items.iter().any(|item| item.command == command));
-            }
+            let items = build_tray_menu_items(&state(), false, false);
+            assert!(!items.iter().any(|item| item.command == ID_TRANSLATE));
+            assert!(!items
+                .iter()
+                .any(|item| matches!(item.kind, TrayMenuKind::Submenu(_))));
             for command in [
                 ID_SETTINGS,
                 ID_SCREENSHOT,
@@ -1277,14 +1339,9 @@ mod win {
             let mut state = state();
             state.engine_state = TrayEngineState::Failed;
             state.mode_source = Some("game_chat".into());
-            let items = build_tray_menu_items(&state, true, false, false);
-            assert!(
-                items
-                    .iter()
-                    .find(|i| i.command == ID_PURE_GAME_MODE)
-                    .unwrap()
-                    .checked
-            );
+            let items = build_tray_menu_items(&state, false, false);
+            assert_eq!(items[1].command, ID_ENGINE_RESTART);
+            assert!(items[1].attention);
             assert!(
                 items
                     .iter()
@@ -1292,16 +1349,31 @@ mod win {
                     .unwrap()
                     .checked
             );
+            apply_pure_game_visual_override(&mut state, true);
+            let items = build_tray_menu_items(&state, false, false);
+            assert_eq!(
+                state.icon_key(16),
+                TrayIconKey {
+                    mode: TrayIconMode::Gamepad,
+                    failed: true,
+                    size: 16,
+                }
+            );
+            assert!(
+                matches!(&items[0].kind, TrayMenuKind::Header(status) if *status == wide("纯游戏模式 · 键盘直通"))
+            );
             assert!(
                 items
                     .iter()
-                    .find(|i| i.command == ID_ENGINE_RESTART)
+                    .find(|i| i.command == ID_PURE_GAME_MODE)
                     .unwrap()
-                    .attention
+                    .checked
             );
+            apply_pure_game_visual_override(&mut state, false);
+            state.ascii_mode = Some(false);
             state.engine_state = TrayEngineState::Ready;
             state.mode_source = Some("chinese".into());
-            let items = build_tray_menu_items(&state, false, false, false);
+            let items = build_tray_menu_items(&state, false, false);
             assert!(
                 !items
                     .iter()
@@ -1342,7 +1414,6 @@ mod win {
         };
         for item in build_tray_menu_items(
             &read_tray_visual_state(),
-            pure_game_mode_enabled(),
             is_translate_available(),
             last_screenshot_path().is_some(),
         ) {
@@ -1640,6 +1711,7 @@ mod win {
         cmd.arg("--image").arg(image_path);
         cmd.args(["--target-hwnd", &target_hwnd.to_string()]);
         if translate_after_ocr {
+            external_translation::preload_translator_async();
             cmd.arg("--translate");
         }
         if delete_source_after_import {
@@ -1651,6 +1723,15 @@ mod win {
     }
 
     fn open_translate(target_hwnd: HWND) {
+        if let Some(reason) = external_translation::privacy_block_reason_for_window(target_hwnd) {
+            runtime_log::log_tray(
+                RuntimeLogLevel::Basic,
+                "translate_blocked_privacy",
+                format!("target_hwnd={target_hwnd} reason={reason}"),
+            );
+            show_error_message(&reason);
+            return;
+        }
         thread::spawn(move || {
             let selection = capture_selected_text(target_hwnd)
                 .ok()
@@ -2269,6 +2350,7 @@ mod win {
             ScreenshotFlowAction::Translate => {
                 prefs.ocr_after_capture = true;
                 prefs.translate_after_capture = true;
+                external_translation::preload_translator_async();
             }
         }
         let target_hwnd = if prefs.mode == ScreenshotModePref::CurrentWindow {
@@ -3434,134 +3516,6 @@ mod win {
         }
     }
 
-    unsafe fn create_status_icon(key: TrayIconKey) -> Option<isize> {
-        let screen_dc = GetDC(0);
-        if screen_dc == 0 {
-            return None;
-        }
-
-        let mem_dc = CreateCompatibleDC(screen_dc);
-        let color_bitmap = CreateCompatibleBitmap(screen_dc, ICON_SIZE, ICON_SIZE);
-        let mask_bitmap = CreateBitmap(ICON_SIZE, ICON_SIZE, 1, 1, std::ptr::null());
-        let _ = ReleaseDC(0, screen_dc);
-        if mem_dc == 0 || color_bitmap == 0 || mask_bitmap == 0 {
-            if mem_dc != 0 {
-                let _ = DeleteDC(mem_dc);
-            }
-            if color_bitmap != 0 {
-                let _ = DeleteObject(color_bitmap as _);
-            }
-            if mask_bitmap != 0 {
-                let _ = DeleteObject(mask_bitmap as _);
-            }
-            return None;
-        }
-
-        let old_bitmap = SelectObject(mem_dc, color_bitmap as _);
-        let bg_color = match key.input_mode {
-            TrayInputMode::English => rgb(39, 50, 64),
-            TrayInputMode::Chinese => rgb(17, 103, 122),
-            TrayInputMode::Unknown => rgb(75, 82, 92),
-        };
-        let bg_brush = CreateSolidBrush(bg_color);
-        let accent_brush = CreateSolidBrush(key.engine_state.accent_color());
-        let font_name = wide("Segoe UI");
-        let font = CreateFontW(
-            -22,
-            0,
-            0,
-            0,
-            700,
-            0,
-            0,
-            0,
-            DEFAULT_CHARSET as u32,
-            OUT_DEFAULT_PRECIS as u32,
-            CLIP_DEFAULT_PRECIS as u32,
-            CLEARTYPE_QUALITY as u32,
-            (DEFAULT_PITCH | FF_SWISS) as u32,
-            font_name.as_ptr(),
-        );
-        let old_font = if font != 0 {
-            SelectObject(mem_dc, font as _)
-        } else {
-            0
-        };
-
-        let background = RECT {
-            left: 0,
-            top: 0,
-            right: ICON_SIZE,
-            bottom: ICON_SIZE,
-        };
-        let accent = RECT {
-            left: 0,
-            top: ICON_SIZE - 5,
-            right: ICON_SIZE,
-            bottom: ICON_SIZE,
-        };
-        let badge = RECT {
-            left: ICON_SIZE - 9,
-            top: 0,
-            right: ICON_SIZE,
-            bottom: 9,
-        };
-        let _ = FillRect(mem_dc, &background, bg_brush);
-        let _ = FillRect(mem_dc, &accent, accent_brush);
-        let _ = FillRect(mem_dc, &badge, accent_brush);
-        let _ = SetBkMode(mem_dc, TRANSPARENT as i32);
-        let _ = SetTextColor(mem_dc, rgb(247, 250, 255));
-        let text = match key.input_mode {
-            TrayInputMode::English => "A",
-            TrayInputMode::Chinese => "中",
-            TrayInputMode::Unknown => "?",
-        };
-        let text_w = wide(text);
-        let mut text_rect = RECT {
-            left: 0,
-            top: 1,
-            right: ICON_SIZE,
-            bottom: ICON_SIZE - 5,
-        };
-        let _ = DrawTextW(
-            mem_dc,
-            text_w.as_ptr(),
-            (text_w.len().saturating_sub(1)) as i32,
-            &mut text_rect,
-            DT_CENTER | DT_VCENTER | DT_SINGLELINE,
-        );
-
-        let icon_info = ICONINFO {
-            fIcon: 1,
-            xHotspot: 0,
-            yHotspot: 0,
-            hbmMask: mask_bitmap as HBITMAP,
-            hbmColor: color_bitmap as HBITMAP,
-        };
-        let icon = CreateIconIndirect(&icon_info);
-
-        if old_font != 0 {
-            let _ = SelectObject(mem_dc, old_font);
-        }
-        if old_bitmap != 0 {
-            let _ = SelectObject(mem_dc, old_bitmap);
-        }
-        if font != 0 {
-            let _ = DeleteObject(font as _);
-        }
-        if bg_brush != 0 {
-            let _ = DeleteObject(bg_brush as _);
-        }
-        if accent_brush != 0 {
-            let _ = DeleteObject(accent_brush as _);
-        }
-        let _ = DeleteObject(color_bitmap as _);
-        let _ = DeleteObject(mask_bitmap as _);
-        let _ = DeleteDC(mem_dc);
-
-        (icon != 0).then_some(icon)
-    }
-
     include!("srf_ime_tray/input_state.rs");
 
     fn wide(value: &str) -> Vec<u16> {
@@ -3590,9 +3544,9 @@ mod win {
         use screenshot_region_selector::RegionAction;
         use std::sync::mpsc::{self, Receiver, TryRecvError};
         use windows_sys::Win32::Graphics::Gdi::{
-            BeginPaint, EndPaint, GetSysColor, GetSysColorBrush, SetBkColor, StretchDIBits,
-            BITMAPINFO, BITMAPINFOHEADER, BI_RGB, COLOR_WINDOW, COLOR_WINDOWTEXT, DIB_RGB_COLORS,
-            PAINTSTRUCT, SRCCOPY,
+            BeginPaint, DeleteObject, EndPaint, GetSysColor, GetSysColorBrush, SetBkColor,
+            SetTextColor, StretchDIBits, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, COLOR_WINDOW,
+            COLOR_WINDOWTEXT, DIB_RGB_COLORS, PAINTSTRUCT, SRCCOPY,
         };
         use windows_sys::Win32::UI::Accessibility::{HCF_HIGHCONTRASTON, HIGHCONTRASTW};
         use windows_sys::Win32::UI::HiDpi::{GetDpiForSystem, GetDpiForWindow};

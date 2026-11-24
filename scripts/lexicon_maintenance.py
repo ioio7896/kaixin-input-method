@@ -11,12 +11,19 @@ from pathlib import Path
 
 COMMON_SOURCE = "data_sources/kaixin/reviewed_common_phrases.tsv"
 COMMON_OUTPUT = "lexicon/core/kaixin_reviewed_common.txt"
-HOT_SOURCE = "data_sources/kaixin/hot_terms_20261027.tsv"
-HOT_OUTPUT = "lexicon/zh/hot_terms_20261027.txt"
+MODERN_SOURCE = "data_sources/kaixin/modern_life.tsv"
+MODERN_OUTPUT = "lexicon/zh/modern_life.txt"
+SEASONAL_SOURCE = "data_sources/kaixin/seasonal_hot_terms.tsv"
+SEASONAL_OUTPUT = "lexicon/zh/seasonal_hot_terms.txt"
+THREE_CHAR_BASE = "lexicon/zh/life_common_3char.txt"
 FOLD_TARGETS = {
     "lexicon/zh/life_common_2char_125000.txt",
-    "lexicon/zh/life_common_3char.txt",
+    THREE_CHAR_BASE,
     "lexicon/zh/life_common_4char.txt",
+}
+REVIEWED_READING_SOURCES = {
+    "lexicon/core/kaixin_polyphone.txt": "data_sources/kaixin/reviewed_core_polyphones.tsv",
+    "lexicon/zh/kaixin_recall.txt": "data_sources/kaixin/reviewed_recall_readings.tsv",
 }
 
 
@@ -45,6 +52,21 @@ def maintained_rows(root: Path, relative: str, columns: int):
     return result
 
 
+def hot_sources(root: Path):
+    return maintained_rows(root, MODERN_SOURCE, 5), maintained_rows(root, SEASONAL_SOURCE, 5)
+
+
+def folded_hot_scores(rows):
+    owners = {}
+    for phrase, reading, score, owner, _ in rows:
+        if owner == "-":
+            continue
+        if owner not in FOLD_TARGETS:
+            raise ValueError(f"Unsafe hot-word fold destination: {owner}")
+        owners.setdefault(owner, {})[(phrase, reading)] = score
+    return owners
+
+
 def generated_text(title: str, source: str, rows) -> str:
     return (
         f"# {title}\n# Source: {source}; scripts/lexicon_quality.py --apply\n"
@@ -64,52 +86,82 @@ def apply_maintained_sources(root: Path) -> dict:
         encoding="utf-8",
         newline="\n",
     )
-    hot = maintained_rows(root, HOT_SOURCE, 5)
-    output = []
-    owners = {}
+    modern, seasonal = hot_sources(root)
+    modern_output = []
+    seasonal_output = []
+    owners = folded_hot_scores(modern + seasonal)
     folded = []
-    for phrase, reading, score, owner, basis in hot:
-        if owner == "-":
-            output.append((phrase, reading, score))
-            continue
-        if owner not in FOLD_TARGETS:
-            raise ValueError(f"Unsafe hot-word fold destination: {owner}")
-        owners.setdefault(owner, {})[(phrase, reading)] = score
-        folded.append(
-            {"phrase": phrase, "reading": reading, "score": score, "owner": owner, "basis": basis}
-        )
+    for source_kind, rows_list, out_bucket in (
+        ("modern", modern, modern_output),
+        ("seasonal", seasonal, seasonal_output),
+    ):
+        for phrase, reading, score, owner, basis in rows_list:
+            if owner == "-":
+                out_bucket.append((phrase, reading, score))
+                continue
+            folded.append(
+                {
+                    "source": source_kind,
+                    "phrase": phrase,
+                    "reading": reading,
+                    "score": score,
+                    "owner": owner,
+                    "basis": basis,
+                }
+            )
     for owner, replacements in owners.items():
         path = root / owner
-        result = []
+        headers = []
+        rows = []
         found = set()
         for line in path.read_text(encoding="utf-8-sig").splitlines():
             if not line.strip() or line.startswith("#"):
-                result.append(line)
+                headers.append(line)
                 continue
             fields = line.split("\t")
             key = (fields[0], fields[1])
             if key in replacements:
                 fields[2] = str(replacements[key])
                 found.add(key)
-            result.append("\t".join(fields))
+            rows.append(fields)
         for key in sorted(replacements.keys() - found):
-            result.append(f"{key[0]}\t{key[1]}\t{replacements[key]}")
-        path.write_text("\n".join(result) + "\n", encoding="utf-8", newline="\n")
-    (root / HOT_OUTPUT).write_text(
+            rows.append([key[0], key[1], str(replacements[key])])
+        if owner in (
+            "lexicon/zh/life_common_2char_125000.txt",
+            "lexicon/zh/life_common_4char.txt",
+        ):
+            rows.sort(key=lambda f: (-int(f[2]), f[0], f[1]))
+        path.write_text(
+            "\n".join(headers + ["\t".join(r) for r in rows]) + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+    (root / MODERN_OUTPUT).write_text(
         generated_text(
-            f"用户选定热词 {len(hot)} 条；本文件 {len(output)} 条，普通基础库合并 {len(folded)} 条",
-            HOT_SOURCE,
-            output,
+            f"常青现代生活与科技高频词 {len(modern)} 条；本文件 {len(modern_output)} 条，普通基础库合并 {len(folded)} 条",
+            MODERN_SOURCE,
+            sorted(modern_output, key=lambda r: (-r[2], r[0], r[1])),
         ),
         encoding="utf-8",
         newline="\n",
     )
+    (root / SEASONAL_OUTPUT).write_text(
+        generated_text(
+            f"阶段性网络热词 {len(seasonal_output)} 条（温和权重，按季度复审归档）",
+            SEASONAL_SOURCE,
+            sorted(seasonal_output, key=lambda r: (-r[2], r[0], r[1])),
+        ),
+        encoding="utf-8",
+        newline="\n",
+    )
+    all_hot = modern + seasonal
     return {
         "common_rows": len(common),
-        "hot_source_rows": len(hot),
-        "hot_output_rows": len(output),
+        "modern_source_rows": len(modern),
+        "modern_output_rows": len(modern_output),
+        "seasonal_output_rows": len(seasonal_output),
         "folded": folded,
-        "hot_score_distribution": dict(sorted(Counter(row[2] for row in hot).items())),
+        "hot_score_distribution": dict(sorted(Counter(row[2] for row in all_hot).items())),
     }
 
 
@@ -119,20 +171,35 @@ def check_maintained_sources(root: Path) -> list[str]:
     actual = [tuple(fields[:3]) for _, fields in data_rows(root / COMMON_OUTPUT)]
     if actual != [(p, r, str(s)) for p, r, s, _ in common]:
         errors.append("Reviewed common lexicon differs from maintained source")
-    hot = maintained_rows(root, HOT_SOURCE, 5)
-    output = [tuple(fields[:3]) for _, fields in data_rows(root / HOT_OUTPUT)]
-    expected = [(p, r, str(s)) for p, r, s, owner, _ in hot if owner == "-"]
-    if output != expected:
-        errors.append("Hot lexicon differs from authored priorities/deduplication ownership")
+    modern, seasonal = hot_sources(root)
+    for label, src_rows, out_rel in (
+        ("Modern life", modern, MODERN_OUTPUT),
+        ("Seasonal hot", seasonal, SEASONAL_OUTPUT),
+    ):
+        output = [tuple(fields[:3]) for _, fields in data_rows(root / out_rel)]
+        expected = [
+            (p, r, str(s))
+            for p, r, s in sorted(
+                ((p, r, s) for p, r, s, owner, _ in src_rows if owner == "-"),
+                key=lambda row: (-row[2], row[0], row[1]),
+            )
+        ]
+        if output != expected:
+            errors.append(f"{label} lexicon differs from maintained source")
     owner_rows = {
         owner: {(f[0], f[1]): int(f[2]) for _, f in data_rows(root / owner)}
         for owner in FOLD_TARGETS
     }
-    for phrase, reading, score, owner, _ in hot:
+    for phrase, reading, score, owner, _ in modern + seasonal:
         if owner != "-" and (
             owner not in owner_rows or owner_rows[owner].get((phrase, reading)) != score
         ):
             errors.append(f"Missing/stale folded hot priority: {phrase} {reading} in {owner}")
+    for output, source in REVIEWED_READING_SOURCES.items():
+        actual = {(f[0], f[1]): int(f[2]) for _, f in data_rows(root / output)}
+        for phrase, reading, score in maintained_rows(root, source, 3):
+            if actual.get((phrase, reading)) != score:
+                errors.append(f"Missing/stale reviewed reading: {phrase} {reading} in {output}")
     return errors
 
 

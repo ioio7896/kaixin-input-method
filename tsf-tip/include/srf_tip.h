@@ -114,7 +114,9 @@ class CSrfTip : public ITfTextInputProcessorEx,
   std::wstring m_candidatesReading;
   bool m_candidateHasMore = false;
   bool m_candidateFullLookupPending = false;
+  unsigned long long m_candidateFullLookupSerial = 0;
   UINT m_candidatePageAfterLoad = 0;
+  UINT m_candidateIndexAfterLoad = 0;
   std::wstring m_clipboardQuickLastPageReading;
   enum class SrfCandidateViewState : UINT {
     Empty = 0,
@@ -381,7 +383,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
                                           unsigned long long requestId);
   void RememberPrefixCandidateCache(const std::wstring& reading);
   void RebuildCandidateRows();
+  bool IsCandidateFullLookupPending();
+  void ResetCandidateFullLookupState();
+  bool CompleteCandidateFullLookupState(unsigned long long requestId);
   bool RequestMoreCandidatesForPage(UINT targetPage);
+  bool RequestMoreCandidatesForIndex(UINT targetIndex);
   bool RequestMoreCandidatesToFillCurrentPage();
   void ApplyAsyncCandidateResult(TfEditCookie ec);
   bool CurrentCandidatesPartial() const;

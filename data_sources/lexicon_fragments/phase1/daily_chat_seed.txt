@@ -1,0 +1,1767 @@
+# 开心输入法 Phase-1 聊天与社交扩充词表（人工整理 + AI 辅助；Apache-2.0）
+# 原则：只收自然、完整、真实日常会打的表达；绝不收残缺片段、语序别扭模板句或低俗骂人词。
+
+# === 问候、寒暄与关心 ===
+[high]
+早安|午安|晚安|早上好|中午好|下午好|晚上好|早呀|早上好呀|中午好呀|下午好呀|晚上好呀|晚安呀|早安打工人|起床了吗|刚起床|刚醒|刚睡醒|刚洗漱完|刚吃完饭|吃了吗|吃饭了吗|吃早饭了吗|吃午饭了吗|吃晚饭了吗|吃的什么|今天吃啥|中午吃啥|晚上吃啥|下班了吗|刚下班|准备下班|快下班了|还在加班吗|今天加班吗|到家了吗|刚到家|已经到家了|刚进门|在干嘛|在干嘛呢|在忙什么|在忙什么呢|今天忙不忙|最近忙不忙|最近怎么样|最近还好吗|最近过得好吗|最近在忙啥|最近有空吗|好久不见|好久没见了|好久没联系了|好久没聊了|想你了|好想你|挺想你的|有空出来聚聚|改天一起聚聚|周末怎么过|周末有什么安排|周末去哪玩|周末在家休息|周末愉快|祝你周末愉快|假期愉快|假期怎么安排|假期去哪玩|过年回老家吗|什么时候放假|什么时候返程|什么时候回来|买到票了吗|抢到票了吗|路上顺不顺利|路上堵不堵车|到了吗|快到了吗|还有多久到|安全到了吗|到家发个消息|到家报个平安|到了说一声|到了告诉我|路上小心|路上注意安全|开车注意安全|开车慢一点|骑车小心点|慢点走|慢点开车|注意安全|今天好冷|今天好热|今天天气真好|降温了多穿点|变天了注意保暖|下雨了记得带伞|出门带伞|紫外线强注意防晒|外面风好大|注意防暑|多喝热水|多喝点水|多喝温水|多吃点水果|好好吃饭|别饿着自己|按时吃饭|吃饭别太晚|别光顾着忙|注意休息|别太累了|累了就歇会儿|早点休息|早点睡吧|别熬夜了|熬夜伤身体|睡个好觉|做个好梦|晚安好梦|明天见|回头见|下回见|下次见|保重身体|照顾好自己|记得照顾好自己|身体好点了吗|感冒好了吗|发烧退了吗|还难受吗|好多了吗|记得按时吃药|去医院看看吧|多休息几天|注意身体呀|祝你早日康复|祝你一切顺利|祝你开心|祝你天天开心|祝你生日快乐|生日快乐呀|新年快乐|新春快乐|元旦快乐|春节快乐|元宵快乐|端午安康|中秋快乐|国庆快乐|节日快乐|恭喜发财|万事如意|心想事成|身体健康|平安喜乐|顺顺利利|岁岁平安|工作顺利|学业有成|前程似锦|金榜题名|面试顺利|考试顺利|逢考必过|一路顺风|旅途愉快|玩得开心|吃得开心|新婚快乐|百年好合|早生贵子|乔迁之喜|开业大吉|生意兴隆|步步高升
+
+# === 回应、确认、答应与推辞 ===
+[high]
+好的|好呀|好滴|好哒|好嘞|好吧|好的呢|好的呀|好的收到|好的没问题|收到|收到了|收到谢谢|明白|明白了|了解|了解了|知道|知道了|懂了|我懂了|我明白了|我知道了|行|行呀|行吧|可以|可以呀|可以的|完全可以|没问题|完全没问题|绝对没问题|包在我身上|交给我吧|放心吧|放心交给我|稳妥|妥妥的|搞定|搞定了|弄好了|办好了|安排好了|已经安排好了|已经发过去了|发给你了|你查收一下|发你微信了|发你邮箱了|截图发你了|链接发你了|文件发你了|照片发你了|原图发你了|定位发你了|转你了|转账了收一下|发你红包了|钱转你了|看看收到没有|你看一下对不对|看下没问题吧|确认一下|麻烦确认一下|帮我确认一下|看好了告诉我|有变化随时说|有事随时联系|有需要随时叫我|随时找我|我随时在|一直都在|我马上看|我这就看|我马上处理|马上弄好|马上就来|马上就到|马上出发|马上出门|这就出门|在路上了|正在赶过去|还有十分钟|还有五分钟|快到了|已经到了|我在门口|我在楼下|我在门口等你|到门口了|你下来吧|你出来吧|我看到你了|稍等一下|稍等片刻|等我一下|等我一分钟|等我两分钟|等我五分钟|等我十分钟|等我一会儿|稍微等我一下|我先忙一会儿|忙完找你|忙完回你|忙完给你回电话|等我空了联系你|稍后回复你|晚点回复你|晚上再聊|回头再说|回头联系|改天再说|改天再聊|下次再说|先这样吧|那就这样吧|就这么定了|一言为定|说定了|拉钩|听你的|听你安排|按你说的办|你说了算|你决定就好|你定时间|你定地点|我都行|我随便|我都可以|我没意见|我都听你的|看你方便|看你时间|什么时候都行|哪天都行|都可以商量|再商量商量|我考虑一下|让我想想|容我想想|我想一想再回复|我先看看|我先了解一下|我问问看|我帮你想想办法|我查一下|我去看看|我试一下|我来试试|让我试试|不一定|说不准|看情况吧|到时候再看|视情况而定|可能不行|估计来不及|恐怕不太方便|这次去不了了|实在抽不开身|撞时间了|临时有事|临时加班|计划有变|不好意思去不了|下次一定去|下次补上|不用了谢谢|真不用客气|别破费了|太破费了|心意领了|不用这么麻烦|别麻烦了|我自己来就行|我自己能搞定|没事我自己弄|真的不用|谢谢你的好意|改天我请你
+
+# === 感谢、道歉与礼貌表达 ===
+[high]
+谢谢|谢谢你|谢谢啦|谢谢呀|太谢谢你了|非常感谢|十分感谢|万分感谢|衷心感谢|多谢|多谢啦|多谢帮忙|感谢感谢|太感谢了|真心感谢|感激不尽|辛苦了|辛苦你了|你辛苦了|大家辛苦了|辛苦跑一趟|辛苦帮忙|麻烦你了|真麻烦你了|给你添麻烦了|太不好意思了|不好意思|不好意思啊|不好意思呀|不好意思打扰了|打扰一下|打扰你了|抱歉|非常抱歉|实在抱歉|真的很抱歉|对不起|对不起啦|对不住了|实在对不住|抱歉让你久等了|不好意思让你等太久|不好意思回晚了|不好意思刚看到|不好意思才看到消息|刚才没看手机|刚才在忙没看到|刚才在开会没接|刚才手机静音了|刚才漏看了|不好意思忘记回复了|真是不好意思|是我的问题|我的错|怪我怪我|我搞错了|我记错了|我弄混了|我理解错了|我说错了|不好意思看错了|不好意思发错了|发错群了|撤回一下|抱歉打错字了|抱歉手滑了|没事|没事没事|没关系|没关系的|不要紧|没啥事|别客气|不用客气|不客气|不用谢|应该的|小事一桩|小意思|举手之劳|客气啥|跟我还客气|太客气了|太见外了|别这么客气|别放在心上|别往心里去|别介意|我没介意|我没生气|真的没关系|都过去了|翻篇了|以后注意就好|下次注意|没事慢慢来|不着急|一点都不急|你慢慢弄|不用赶|安全第一|不急不急|慢慢说|你慢慢讲|不打扰你了|你先忙|你先忙你的|那你先忙吧|快去忙吧|有空再聊|打扰了先撤了
+
+# === 情绪表达、夸赞、安慰与吐槽 ===
+[high]
+太棒了|太好了|太赞了|真棒|真厉害|厉害了|好厉害|你太厉害了|牛啊|太牛了|绝了|绝绝子|太绝了|太优秀了|佩服佩服|膜拜大佬|大佬带带我|厉害厉害|不愧是你|还得是你|眼光真好|品味真不错|真好看|超好看|太好看了|好漂亮|真帅|太帅了|好可爱|太可爱了|萌化了|心都化了|爱了爱了|太喜欢了|好喜欢|超喜欢|狠狠心动|真不错|感觉不错|挺好的|蛮好的|相当不错|很舒服|好惬意|好放松|太爽了|真痛快|真解压|好治愈|太治愈了|好温暖|太暖心了|感动死了|好感动|热泪盈眶|真替你开心|为你高兴|恭喜恭喜|恭喜你呀|太值得庆祝了|必须庆祝一下|今天运气真好|运气爆棚|锦鲤附体|欧气满满|心想事成|终于搞定了|终于结束了|终于放假了|终于等到这一天|总算完成了|松了一口气|大功告成|圆满完成|完美收官|哈哈|哈哈哈|哈哈哈哈|笑死我了|笑不活了|笑出声了|笑得肚子疼|笑喷了|太好笑了|这也太搞笑了吧|幽默感十足|段子手|有意思|挺有意思的|太有趣了|长见识了|学到了|涨知识了|受教了|说得太对了|说得有道理|深表赞同|完全同意|英雄所见略同|我也这么觉得|我也这么想|正合我意|想到一块去了|心有灵犀|一拍即合|太真实了|人间真实|说出了我的心声|太有共鸣了|狠狠共情了|确实如此|确实是这样|可不是嘛|谁说不是呢|可不就是嘛|没错没错|对对对|是的呀|确实|真的吗|真的假的|不是吧|不会吧|不可能吧|开玩笑的吧|你认真的吗|逗我呢吧|别逗了|别开玩笑了|吓我一跳|吓死我了|惊呆了|目瞪口呆|大吃一惊|万万没想到|没想到啊|出乎意料|意想不到|天呐|我的天呐|我的天|天哪|老天爷|救命啊|救大命|离谱|太离谱了|离大谱|真离谱|无语|无语了|彻底无语|无话可说|服了|我服了|真是服了|醉了|我也是醉了|崩溃了|要崩溃了|心态崩了|破防了|头大了|头疼|头都大了|烦死了|好烦啊|真让人头疼|太难了|我太难了|太不容易了|好委屈|好难过|难过死了|伤心了|心累|好累啊|累死了|累瘫了|快累垮了|困死了|好困啊|睁不开眼了|好想睡觉|还没睡醒|不想起床|不想上班|不想动弹|好想放假|好想退休|周末过得太快了|又要周一了|时间过得真快|一转眼就年底了|怎么又下雨了|怎么这么热|怎么这么冷|冻死我了|热死了|热化了|饿死了|好饿啊|饿扁了|撑死了|吃撑了|吃太饱了|好馋啊|流口水了|馋哭了|太香了|真好吃|好好吃|太难吃了|踩雷了|后悔了|早知道就不买了|血亏|亏大了|太贵了|买不起|钱包空了|穷死了|吃土了|该省省该花花|别难过了|别伤心了|别哭了|抱抱你|摸摸头|拍拍肩|给你一个拥抱|会好起来的|都会好起来的|一切都会过去的|雨过天晴|明天会更好|别想太多|别胡思乱想|别钻牛角尖|别自责了|不是你的错|你已经很努力了|你已经做得很好了|你已经很棒了|别给自己太大压力|放轻松一点|放宽心|看开点|想开点|顺其自然就好|开心最重要|健康最重要|平安就好|有什么事跟我说|随时可以找我聊|我陪着你|我一直在|我支持你|我相信你|加油你可以的|加油加油|冲鸭|奥利给|干就完了|慢慢来不着急|一步一步来|稳住别慌|沉住气|冷静一点|别着急上火|深呼吸|先消消气|别跟人生气|不值得生气|退一步海阔天空
+
+# === 提问、沟通与讨论 ===
+[high]
+怎么了|怎么回事|发生什么事了|出什么事了|这是怎么了|到底怎么回事|啥情况|什么情况|怎么搞的|怎么弄的|为什么呀|为啥呀|因为什么|怎么会这样|是谁干的|什么时候|几点钟|几点开始|几点结束|几点出发|几点见面|在哪儿|在哪里|在哪个位置|怎么走|怎么去|坐几号线|哪个出口|远不远|要多久|大概多久|多少钱|贵不贵|划不划算|值不值得|好不好用|好不好吃|好不好玩|好不好看|推荐哪一个|你觉得怎么样|你怎么看|你觉得呢|你的意见呢|你有什么建议|帮我参谋一下|帮我挑一下|选哪个比较好|哪个更合适|这两个有什么区别|差在哪里|怎么操作|怎么用|怎么设置|怎么打开|怎么关闭|怎么安装|怎么卸载|怎么下载|怎么注册|怎么登录|怎么绑定|怎么解绑|怎么退款|怎么退货|怎么换货|怎么投诉|怎么联系客服|怎么预约|怎么挂号|怎么报销|怎么缴费|怎么查余额|怎么查物流|为什么打不开|为什么登不上|为什么连不上|为什么没反应|为什么卡住了|怎么解决|有办法解决吗|还能修吗|能退吗|可以换吗|可以改吗|可以加吗|可以取消吗|可以推迟吗|可以提前吗|现在方便吗|方便说话吗|方便接电话吗|方便语音吗|方便视频吗|你在听吗|能听到吗|听得清吗|声音大不大|有回音吗|卡不卡|能看到屏幕吗|字太小看不清|放大一点|再说一遍好吗|刚才没听清|信号不好断断续续|网络不太稳|卡住了听不见|断网了|重新连一下|换个地方打|等会儿再打给你|你是说这个吗|我理解的对不对|你的意思是|换句话说|也就是说|简单来说|说白了|说到底|归根结底|总而言之|不管怎么说|话说回来|不过话说回来|顺便问一下|顺便说一下|对了差点忘了|突然想起来|提个醒|别忘了|千万别忘了|记着点|一定要记得|提醒我一下|帮我记一下|明天提醒我|我怕我忘了|说实话|老实说|讲真的|实话实说|不瞒你说|偷偷告诉你|悄悄跟你说|别告诉别人|保密哈|就咱俩知道|别外传|我跟你讲|听我说|听我解释|不是你想的那样|你听我把话说完|别打断我|让我说完|你先说|你先讲|请继续|还有呢|后来呢|然后呢|结果呢|最后怎么样了|真假呀|展开说说|详细说说|细说一下|吃瓜|前排吃瓜|啥瓜|什么瓜|怎么回事快说说
+
+# === 约饭、聚会、出行、购物与生活社交 ===
+[high]
+一起吃饭吧|晚上一起吃饭吗|中午一起吃吗|请你吃饭|我请客|别跟我抢买单|下次你请|平摊吧|算一下多少钱|每个人多少钱|扫我码就行|直接转微信|收款码发我|想吃什么|吃火锅去吗|吃烧烤去吗|吃日料吗|吃烤肉吗|吃川菜吗|吃湘菜吗|吃粤菜吗|吃小龙虾吗|喝奶茶吗|拼个奶茶|点外卖吗|拼个外卖|凑个满减|帮我带杯咖啡|帮我带份饭|顺路帮我拿个快递|取件码发你了|帮我寄个快递|快递到了吗|外卖到了吗|去楼下拿外卖|去拿个快递|下楼取一下|周末出来玩吗|有空出来逛逛吗|去看电影吗|看哪场电影|买几点的票|选中间的座位|去逛街吗|去买衣服|去超市买菜|去逛山姆|去逛宜家|去公园散步|去爬山吗|去骑行吗|去露营吗|去野餐吗|去海边玩|去泡温泉|去滑雪吗|去游乐场|去动物园|去博物馆|去看展吗|去看演唱会|抢到演唱会票了吗|一起去旅游吧|做一下旅游攻略|订机票了吗|订高铁票了吗|订酒店了吗|行李收拾好了吗|身份证带了吗|护照带了吗|充电宝带了吗|数据线带了吗|伞带了吗|钥匙带了吗|门锁好了吗|灯关了吗|空调关了吗|燃气关了吗|窗户关了吗|几点集合|在哪里集合|谁开车|拼车过去吧|打车过去吧|坐地铁方便|坐高铁快|坐飞机去|机场大巴|去接机|去送机|去高铁站接你|好堵车啊|堵在路上了|高架堵死了|早高峰太堵了|晚高峰太堵了|找停车位|停在地下车库|停车费好贵|加油去了|去充电了|车快没电了|手机快没电了|借我充会儿电|有充电线吗|有苹果线吗|有安卓线吗|连一下无线网|密码是多少|开个热点|帮我拍张照|帮我拍一张|拍得真好看|修一下图|发朋友圈了|给你点赞了|评论你了|转发给你看|刷到一个视频|太好笑了快看|分享给你|这个链接点进去|帮我砍一刀|帮我点个赞|帮我投一票|帮我助力一下|有优惠券吗|领券了吗|有折扣吗|打几折|满减活动|双十一买了啥|六一八买了啥|买买买|剁手了|种草了|拔草了|已下单|发货了吗|在派送了|签收了|申请退货了|寄回去了|退款到账了|买大了|买小了|尺码不合适|质量不错|性价比很高|物超所值|物美价廉|货不对板|图文不符|给个好评|给个差评|一起打游戏吗|开黑吗|来一把|再来一局|最后一局|上号上号|拉我进队|等我上线|等我更新完|带我飞|抱紧大腿|这把稳了|赢了赢了|又输了|差一点就赢了|打得不错|配合得很好|太坑了|网卡了|延迟太高|掉线了|先下了明天玩|去健身吗|去跑步吗|去游泳吗|去打羽毛球|去打篮球|去打乒乓球|去打网球|去骑单车|去练瑜伽|去撸铁|打卡运动|今天走了两万步|减脂中|控糖中|戒奶茶了|明天开始减肥|吃饱了才有力气减肥|去看牙|去洗牙|去体检|去剪头发|去做美容|去做美甲|去按摩|去足疗|去推拿|去理发店|洗剪吹|烫头发|染头发
+
+# === 家庭、亲友、情感与宠物 ===
+[high]
+爸妈身体还好吗|代我问候叔叔阿姨|帮我问候一下|家里一切都好吗|什么时候回家|过节回家吗|回家吃饭|回家陪陪爸妈|给家里打个电话|家庭群|亲戚朋友|老同学|大学室友|高中同学|发小|闺蜜|死党|哥们儿|铁哥们|好朋友|好伙伴|同事们|邻居|对象|男朋友|女朋友|老公|老婆|爱人|伴侣|相亲|约会|表白|求婚|领证|结婚|办婚礼|拍婚纱照|度蜜月|纪念日|结婚纪念日|恋爱纪念日|情人节|七夕节|过生日|买礼物|送花|送礼物|准备惊喜|吵架了|哄一下|和好了|冷战了|分手了|复合了|脱单了|单身贵族|撒狗粮|秀恩爱|吃醋了|想见面|抱抱|亲亲|么么哒|宝贝|亲爱的|宝宝|孩子|小孩|娃|带娃|遛娃|辅导作业|写作业|接送孩子|开家长会|报兴趣班|幼儿园|小学|初中|高中|大学|中考|高考|考研|考公|考编|考证|考驾照|科一|科二|科三|科四|拿驾照了|实习|找工作|投简历|去面试|拿到录用了|入职了|转正了|涨薪了|升职了|跳槽了|辞职了|裸辞了|搬家了|租房|买房|装修|交房|验房|收房|添置家具|养猫|养狗|小猫咪|小狗狗|喵星人|汪星人|铲屎官|猫主子|毛孩子|遛狗|撸猫|吸猫|喂猫粮|喂狗粮|铲猫砂|换猫砂|给猫洗澡|给狗洗澡|打疫苗|驱虫|绝育|宠物医院|宠物寄养|宠物美容|猫猫好可爱|狗狗好乖|拆家了|太黏人了|撒娇卖萌
+
+# === 聊天常用四字至八字自然短句 ===
+[high]
+一言难尽|一言为定|一举两得|一帆风顺|一路平安|一如既往|一拍即合|一见如故|一见钟情|一模一样|一视同仁|一清二楚|一干二净|一塌糊涂|一头雾水|一筹莫展|一无所知|一笑了之|一笔勾销|一厢情愿|不知所措|不计其数|不约而同|不辞而别|不谋而合|不负众望|不可思议|不可或缺|不值一提|不以为然|不言而喻|不折不扣|不翼而飞|不寒而栗|不甘示弱|不相上下|不由自主|不知不觉|不紧不慢|不慌不忙|不厌其烦|不远万里|不遗余力|不屈不挠|不胫而走|不动声色|不声不响|不痛不痒|不冷不热|不伦不类|不三不四|不偏不倚|不卑不亢|不屈不折|不亦乐乎|乐此不疲|乐不可支|乐极生悲|乐善好施|乐于助人|喜出望外|喜笑颜开|喜气洋洋|喜闻乐见|心旷神怡|心平气和|心安理得|心满意足|心花怒放|心甘情愿|心领神会|心照不宣|心心相印|心有余悸|心急如焚|心灰意冷|心服口服|心直口快|心细如发|心血来潮|心不在焉|心神不宁|心烦意乱|心乱如麻|心惊肉跳|心知肚明|心想事成|全心全意|全力以赴|全神贯注|尽心尽力|尽职尽责|尽善尽美|尽力而为|顺理成章|顺水推舟|顺风顺水|顺心如意|水到渠成|水落石出|风平浪静|风和日丽|风尘仆仆|风雨无阻|风驰电掣|风趣幽默|风度翩翩|津津有味|津津乐道|念念不忘|恋恋不舍|依依不舍|格格不入|息息相关|遥遥领先|遥不可及|绰绰有余|寥寥无几|井井有条|头头是道|滔滔不绝|娓娓道来|侃侃而谈|绘声绘色|栩栩如生|活灵活现|历历在目|记忆犹新|恍然大悟|茅塞顿开|豁然开朗|受益匪浅|满载而归|大开眼界|拍案叫绝|赞不绝口|叹为观止|爱不释手|情不自禁|迫不及待|翘首以盼|望眼欲穿|拭目以待|如愿以偿|得偿所愿|实至名归|名副其实|当之无愧|理所当然|理直气壮|义不容辞|义无反顾|责无旁贷|问心无愧|光明磊落|实事求是|脚踏实地|兢兢业业|勤勤恳恳|任劳任怨|一丝不苟|精益求精|锲而不舍|持之以恒|坚持不懈|再接再厉|自强不息|厚积薄发|循序渐进|稳扎稳打|游刃有余|得心应手|轻车熟路|驾轻就熟|如鱼得水|左右逢源|八面玲珑|随机应变|见机行事|审时度势|未雨绸缪|防患未然|有备无患|居安思危|雪中送炭|锦上添花|画龙点睛|事半功倍|事倍功半|适得其反|弄巧成拙|画蛇添足|多此一举|半途而废|前功尽弃|功亏一篑|功德圆满|马到成功|旗开得胜|凯旋归来|大获全胜|平安无事|安然无恙|化险为夷|转危为安|有惊无险|虚惊一场|逢凶化吉|因祸得福|塞翁失马|否极泰来|苦尽甘来|柳暗花明|峰回路转|绝处逢生|死里逃生|脱胎换骨|焕然一新|刮目相看|耳目一新|别开生面|独树一帜|独一无二|鹤立鸡群|出类拔萃|首屈一指|数一数二|屈指可数|寥若晨星|凤毛麟角|百里挑一|万里挑一|千载难逢|机不可失|稍纵即逝|争分夺秒|分秒必争|刻不容缓|迫在眉睫|燃眉之急|当务之急|十万火急|千钧一发|箭在弦上|势在必行|水深火热|焦头烂额|手忙脚乱|措手不及|猝不及防|惊慌失措|六神无主|进退两难|左右为难|骑虎难下|无可奈何|无能为力|无济于事|爱莫能助|力不从心|杯水车薪|螳臂当车|以卵击石|自作自受|自食其果|咎由自取|追悔莫及|后悔莫及|痛心疾首|耿耿于怀|念兹在兹|如坐针毡|如履薄冰|战战兢兢|提心吊胆|胆战心惊|毛骨悚然|不寒而栗|啼笑皆非|哭笑不得|忍俊不禁|捧腹大笑|哄堂大笑|哑然失笑|破涕为笑|喜极而泣|热泪盈眶|泣不成声|声泪俱下|痛哭流涕|勃然大怒|恼羞成怒|火冒三丈|气急败坏|咬牙切齿|怒不可遏|义愤填膺|大发雷霆|暴跳如雷|冷若冰霜|面无表情|若无其事|泰然自若|淡定自若|从容不迫|镇定自若|处变不惊|临危不乱|面不改色|谈笑风生|妙语连珠|口若悬河|能言善辩|巧舌如簧|油嘴滑舌|花言巧语|甜言蜜语|冷言冷语|风言风语|胡言乱语|自言自语|窃窃私语|语重心长|苦口婆心|循循善诱|言传身教|耳濡目染|潜移默化|润物无声|感同身受|设身处地|将心比心|推己及人|以己度人|换位思考|与人为善|宽宏大量|大度能容|既往不咎|冰释前嫌|重归于好|破镜重圆|和睦相处|相敬如宾|举案齐眉|白头偕老|天长地久|海枯石烂|山盟海誓|同甘共苦|患难与共|风雨同舟|守望相助|同舟共济|休戚与共|唇齿相依|血浓于水|情同手足|肝胆相照|志同道合|惺惺相惜|相见恨晚|莫逆之交|忘年之交|萍水相逢|素昧平生|擦肩而过|失之交臂|阴差阳错|鬼使神差|误打误撞|歪打正着|无心插柳|顺手牵羊|投桃报李|礼尚往来|知恩图报|滴水之恩|饮水思源|不忘初心|牢记使命|砥砺前行|勇往直前|披荆斩棘|乘风破浪|破釜沉舟|背水一战|孤注一掷|全力以赴|奋发图强|发愤图强|卧薪尝胆|悬梁刺股|囊萤映雪|凿壁偷光|韦编三绝|手不释卷|博览群书|学富五车|才高八斗|博学多才|多才多艺|文武双全|德才兼备|品学兼优|出人头地|光宗耀祖|衣锦还乡|荣华富贵|平步青云|飞黄腾达|功成名就|名利双收|家喻户晓|妇孺皆知|人尽皆知|众所周知|有目共睹|显而易见|一目了然|了如指掌|心照不宣|不言自明|毋庸置疑|毫无疑问|确凿无疑|铁证如山|无可辩驳|不容置疑|千真万确|货真价实|童叟无欺|物有所值|物超所值|价廉物美|经济实惠|精打细算|开源节流|勤俭节约|省吃俭用|大手大脚|挥金如土|铺张浪费|入不敷出|捉襟见肘|囊中羞涩|一贫如洗|家徒四壁|丰衣足食|安居乐业|国泰民安|繁荣昌盛|蒸蒸日上|欣欣向荣|日新月异|突飞猛进|与时俱进|推陈出新|革故鼎新|继往开来|承前启后|薪火相传|源远流长|博大精深|底蕴深厚|古色古香|富丽堂皇|金碧辉煌|美轮美奂|巧夺天工|鬼斧神工|别具一格|别出心裁|匠心独运|独具匠心|精雕细琢|精巧绝伦|琳琅满目|应接不暇|目不暇接|眼花缭乱|五花八门|包罗万象|应有尽有|一应俱全|面面俱到|无微不至|体贴入微|关怀备至|嘘寒问暖|无怨无悔|在所不辞|赴汤蹈火|竭尽全力|不遗余力|全心全意|真心实意|诚心诚意|实心实意|推心置腹|披肝沥胆|开诚布公|直言不讳|开门见山|单刀直入|直截了当|言简意赅|一针见血|切中要害|入木三分|发人深省|耐人寻味|意味深长|回味无穷|余音绕梁|扣人心弦|动人心魄|感人肺腑|催人泪下|荡气回肠|惊心动魄|跌宕起伏|波澜壮阔|气势磅礴|气壮山河|排山倒海|势不可挡|所向披靡|锐不可当|无坚不摧|坚不可摧|铜墙铁壁|固若金汤|稳如泰山|安如磐石|岿然不动|纹丝不动|雷打不动|坚定不移|矢志不渝|忠贞不渝|至死不渝|百折不挠|坚韧不拔|顽强拼搏|迎难而上|知难而进|力挽狂澜|中流砥柱|顶天立地|光明正大|堂堂正正|正大光明|刚正不阿|铁面无私|大公无私|公私分明|廉洁奉公|两袖清风|一尘不染|洁身自好|出淤泥而不染|严于律己|宽以待人|以身作则|率先垂范|身体力行|言行一致|表里如一|名正言顺|天经地义|合情合理|情理之中|意料之外|顺理成章|水乳交融|相辅相成|相得益彰|相映成趣|珠联璧合|天作之合|琴瑟和鸣|比翼双飞|夫唱妇随|父慈子孝|兄友弟恭|尊老爱幼|敬老爱幼|扶老携幼|助人为乐|见义勇为|舍己为人|拾金不昧|诚实守信|一诺千金|言而有信|言出必行|信守承诺|恪守信用|言必信行必果|真抓实干|务实求真|求真务实|实干兴邦|脚踏实地|仰望星空|志存高远|胸怀大志|雄心壮志|壮志凌云|豪情万丈|意气风发|朝气蓬勃|生机勃勃|活力四射|神采奕奕|容光焕发|精神焕发|精神抖擞|兴高采烈|兴致勃勃|眉飞色舞|手舞足蹈|欢呼雀跃|欢天喜地|普天同庆|张灯结彩|喜气盈门|宾至如归|门庭若市|车水马龙|人山人海|人声鼎沸|熙熙攘攘|川流不息|络绎不绝|摩肩接踵|水泄不通|鸦雀无声|悄无声息|万籁俱寂|宁静致远|淡泊明志|世外桃源|人间仙境|鸟语花香|春暖花开|草长莺飞|百花齐放|万紫千红|生机盎然|绿意盎然|绿树成荫|烈日炎炎|骄阳似火|秋高气爽|天高云淡|硕果累累|层林尽染|金风送爽|冰天雪地|白雪皑皑|银装素裹|寒风凛冽|滴水成冰|大雪纷飞|鹅毛大雪|倾盆大雨|瓢泼大雨|细雨绵绵|春雨绵绵|风调雨顺|阳光明媚|晴空万里|万里无云|碧空如洗|电闪雷鸣|狂风暴雨|乌云密布|阴云密布|云开雾散|拨云见日|雨过天晴|彩虹当空|星河璀璨|月明星稀|花好月圆|良辰美景|赏心悦目|美不胜收|流连忘返|乐而忘返|依依惜别|后会有期|江湖再见
+
+# === 日常聊天与社交常见中英混写及专读显式项 ===
+OK	ok	high
+OK的	ok de	high
+OK没问题	ok mei wen ti	high
+Fine	fine	mid
+Nice	nice	high
+Sorry	sorry	high
+Thanks	thanks	high
+Hello	hello	high
+Hi	hi	mid
+Bye	bye	high
+Good	good	mid
+Cool	cool	mid
+Yeah	yeah	mid
+Emoji	emoji	high
+EMO	emo	high
+EMO了	emo le	high
+BGM	bgm	high
+NPC	npc	high
+MBTI	mbti	high
+MBTI测试	mbti ce shi	high
+I人	i ren	high
+E人	e ren	high
+P人	p ren	high
+J人	j ren	high
+INTJ	intj	mid
+INFP	infp	mid
+ENFP	enfp	mid
+ENTP	entp	mid
+ISTJ	istj	mid
+ISFJ	isfj	mid
+INFJ	infj	mid
+ESTJ	estj	mid
+Citywalk	city walk	high
+OOTD	ootd	high
+OOTD穿搭	ootd chuan da	mid
+Live图	live tu	high
+Vlog	vlog	high
+Vlog日常	vlog ri chang	high
+Vlogger	vlogger	mid
+CP	cp	high
+CP粉	cp fen	high
+嗑CP	ke cp	high
+UP主	up zhu	high
+B站	b zhan	high
+KTV	ktv	high
+KTV唱歌	ktv chang ge	high
+VIP	vip	high
+VIP会员	vip hui yuan	high
+SVIP	svip	high
+AA制	aa zhi	high
+咱们AA吧	zan men aa ba	high
+DIY	diy	high
+DIY手工	diy shou gong	mid
+Flag	flag	high
+立Flag	li flag	high
+YYDS	yyds	high
+BUFF	buff	high
+BUFF叠满	buff die man	high
+DEBUFF	debuff	high
+GG	gg	high
+MVP	mvp	high
+PK	pk	high
+PK赛	pk sai	mid
+Carry全场	carry quan chang	high
+Solo	solo	mid
+AFK	afk	std
+Cosplay	cos play	high
+Coser	coser	mid
+二次元	er ci yuan	high
+ACG	acg	mid
+VTuber	vtuber	mid
+ASMR	asmr	mid
+Vlog拍摄	vlog pai she	mid
+APP	app	high
+APP下载	app xia zai	high
+Wi-Fi密码	wi fi mi ma	high
+WiFi密码	wifi mi ma	high
+WiFi信号	wifi xin hao	high
+5G信号	wu g xin hao	high
+5G网络	wu g wang luo	high
+NFC	nfc	high
+NFC刷卡	nfc shua ka	high
+NFC门禁	nfc men jin	high
+Type-C	type c	high
+Type-C线	type c xian	high
+USB接口	usb jie kou	high
+HDMI线	hdmi xian	high
+GPS定位	gps ding wei	high
+QR码	qr ma	mid
+SIM卡	sim ka	high
+eSIM	esim	high
+ICU	icu	high
+CT检查	ct jian cha	high
+B超	b chao	high
+B超检查	b chao jian cha	high
+DNA检测	dna jian ce	mid
+HPV疫苗	hpv yi miao	high
+BMI指数	bmi zhi shu	high
+UV防晒	uv fang shai	mid
+SPF防晒	spf fang shai	mid
+早C晚A	zao c wan a	high
+KOL	kol	high
+KOC	koc	high
+IP联名	ip lian ming	high
+周边	zhou bian	high
+盲盒	mang he	high
+吧唧	ba ji	high
+痛包	tong bao	high
+谷子	gu zi	high
+谷子店	gu zi dian	high
+吃谷	chi gu	high
+拍立得	pai li de	high
+CCD相机	ccd xiang ji	high
+Livehouse	live house	high
+脱口秀	tuo kou xiu	high
+剧本杀	ju ben sha	high
+密室逃脱	mi shi tao tuo	high
+桌游	zhuo you	high
+狼人杀	lang ren sha	high
+飞盘	fei pan	high
+陆冲	lu chong	mid
+腰旗橄榄球	yao qi gan lan qiu	mid
+桨板	jiang ban	mid
+攀岩	pan yan	high
+抱石	bao shi	mid
+徒步	tu bu	high
+露营	lu ying	high
+野餐	ye can	high
+骑行	qi xing	high
+马拉松	ma la song	high
+半马	ban ma	high
+全马	quan ma	high
+越野跑	yue ye pao	high
+普拉提	pu la ti	high
+帕梅拉	pa mei la	mid
+八段锦	ba duan jin	high
+太极拳	tai ji quan	high
+金刚功	jin gang gong	mid
+冥想	ming xiang	high
+正念	zheng nian	high
+搞钱	gao qian	high
+摸鱼	mo yu	high
+带薪摸鱼	dai xin mo yu	high
+躺平	tang ping	high
+摆烂	bai lan	high
+内卷	nei juan	high
+卷王	juan wang	high
+打工人	da gong ren	high
+社畜	she chu	high
+牛马	niu ma	high
+早八	zao ba	high
+早八人	zao ba ren	high
+特种兵旅游	te zhong bing lv you	high
+反向旅游	fan xiang lv you	high
+松弛感	song chi gan	high
+仪式感	yi shi gan	high
+氛围感	fen wei gan	high
+原生家庭	yuan sheng jia ting	high
+边界感	bian jie gan	high
+钝感力	dun gan li	high
+复原力	fu yuan li	mid
+生命力	sheng ming li	high
+配得感	pei de gan	high
+安全感	an quan gan	high
+归属感	gui shu gan	high
+获得感	huo de gan	high
+幸福感	xing fu gan	high
+满足感	man zu gan	high
+成就感	cheng jiu gan	high
+参与感	can yu gan	high
+体验感	ti yan gan	high
+存在感	cun zai gan	high
+幽默感	you mo gan	high
+分寸感	fen cun gan	high
+少年感	shao nian gan	high
+高级感	gao ji gan	high
+质感	zhi gan	high
+性价比	xing jia bi	high
+质价比	zhi jia bi	high
+心价比	xin jia bi	mid
+平替	ping ti	high
+大牌平替	da pai ping ti	high
+智商税	zhi shang shui	high
+避坑指南	bi keng zhi nan	high
+踩坑	cai keng	high
+排雷	pai lei	high
+拔草	ba cao	high
+种草	zhong cao	high
+安利	an li	high
+强烈安利	qiang lie an li	high
+真心推荐	zhen xin tui jian	high
+闭眼入	bi yan ru	high
+无限回购	wu xian hui gou	high
+空瓶记	kong ping ji	mid
+开箱测评	kai xiang ce ping	high
+深度测评	shen du ce ping	high
+红黑榜	hong hei bang	high
+薅羊毛	hao yang mao	high
+拼单	pin dan	high
+凑单	cou dan	high
+囤货	tun huo	high
+断舍离	duan she li	high
+极简生活	ji jian sheng huo	high
+长期主义	chang qi zhu yi	high
+极繁主义	ji fan zhu yi	mid
+延迟满足	yan chi man zu	high
+及时行乐	ji shi xing le	high
+活在当下	huo zai dang xia	high
+爱自己	ai zi ji	high
+悦己消费	yue ji xiao fei	high
+情绪消费	qing xu xiao fei	high
+搭子	da zi	high
+饭搭子	fan da zi	high
+旅游搭子	lv you da zi	high
+运动搭子	yun dong da zi	high
+健身搭子	jian shen da zi	high
+拍照搭子	pai zhao da zi	high
+电影搭子	dian ying da zi	high
+逛街搭子	guang jie da zi	high
+聊天搭子	liao tian da zi	high
+上班搭子	shang ban da zi	high
+遛狗搭子	liu gou da zi	mid
+嘴替	zui ti	high
+电子宠物	dian zi chong wu	high
+电子木鱼	dian zi mu yu	high
+赛博朋克	sai bo peng ke	high
+赛博烧香	sai bo shao xiang	mid
+显眼包	xian yan bao	high
+社恐	she kong	high
+社牛	she niu	high
+颜控	yan kong	high
+声控	sheng kong	high
+细节控	xi jie kong	high
+强迫症	qiang po zheng	high
+拖延症	tuo yan zheng	high
+选择困难症	xuan ze kun nan zheng	high
+信息茧房	xin xi jian fang	high
+信息差	xin xi cha	high
+认知差	ren zhi cha	high
+降维打击	jiang wei da ji	high
+双向奔赴	shuang xiang ben fu	high
+顶峰相见	ding feng xiang jian	high
+人间清醒	ren jian qing xing	high
+人间烟火	ren jian yan huo	high
+烟火气	yan huo qi	high
+宝藏男孩	bao zang nan hai	mid
+宝藏女孩	bao zang nv hai	mid
+神仙颜值	shen xian yan zhi	mid
+颜值天花板	yan zhi tian hua ban	mid
+天花板	tian hua ban	high
+yyds	yyds	mid
+差一点	cha yi dian	high
+差点忘了	cha dian wang le	high
+差不多	cha bu duo	high
+出差	chu chai	high
+差评	cha ping	high
+给个差评	gei ge cha ping	high
+信息差	xin xi cha	high
+时差	shi cha	high
+倒时差	dao shi cha	high
+行不行	xing bu xing	high
+行吧	xing ba	high
+行呀	xing ya	high
+行业	hang ye	high
+长胖了	zhang pang le	high
+长高了	zhang gao le	high
+长大了	zhang da le	high
+长见识了	zhang jian shi le	high
+涨知识了	zhang zhi shi le	high
+头发长长了	tou fa zhang chang le	mid
+重来	chong lai	high
+重新来	chong xin lai	high
+重复一遍	chong fu yi bian	high
+重要的人	zhong yao de ren	high
+着火了	zhao huo le	high
+着急了	zhao ji le	high
+别着急	bie zhao ji	high
+睡着了	shui zhao le	high
+找不着	zhao bu zhao	high
+穿着好看	chuan zhe hao kan	high
+看着办	kan zhe ban	high
+盯着看	ding zhe kan	mid
+便宜点	pian yi dian	high
+真便宜	zhen pian yi	high
+占便宜	zhan pian yi	high
+方便吗	fang bian ma	high
+有空吗	you kong ma	high
+没空	mei kong	high
+抽空	chou kong	high
+抽空聊聊	chou kong liao liao	high
+还行	hai xing	high
+还可以	hai ke yi	high
+还好	hai hao	high
+还不错	hai bu cuo	high
+还钱	huan qian	high
+还给你	huan gei ni	high
+得了吧	de le ba	high
+得了	de le	high
+值得	zhi de	high
+觉得	jue de	high
+睡觉	shui jiao	high
+睡午觉	shui wu jiao	high
+睡懒觉	shui lan jiao	high
+补觉	bu jiao	high
+乐呵乐呵	le he le he	high
+找乐子	zhao le zi	mid
+听音乐	ting yin yue	high
+发朋友圈	fa peng you quan	high
+洗头发	xi tou fa	high
+剪头发	jian tou fa	high
+染头发	ran tou fa	high
+烫头发	tang tou fa	high
+掉头发	diao tou fa	high
+脱发	tuo fa	high
+头发	tou fa	high
+打折	da zhe	high
+折腾	zhe teng	high
+别折腾了	bie zhe teng le	high
+背锅	bei guo	high
+甩锅	shuai guo	high
+背单词	bei dan ci	high
+背包	bei bao	high
+倒霉	dao mei	high
+真倒霉	zhen dao mei	high
+倒计时	dao ji shi	high
+倒车	dao che	high
+倒茶	dao cha	high
+散步	san bu	high
+散心	san xin	high
+出来散散心	chu lai san san xin	high
+解散	jie san	high
+挑食	tiao shi	high
+挑三拣四	tiao san jian si	high
+挑战一下	tiao zhan yi xia	high
+调皮	tiao pi	high
+低调	di diao	high
+空调	kong tiao	high
+调休	tiao xiu	high
+调音	tiao yin	mid
+卡顿	ka dun	high
+打卡	da ka	high
+刷卡	shua ka	high
+卡住了	ka zhu le	high
+卡壳了	ka ke le	high
+卡路里	ka lu li	high
+发卡	fa qia	mid
+发夹	fa jia	high
+粘人	nian ren	high
+太粘人了	tai nian ren le	high
+粘贴	zhan tie	high
+省钱	sheng qian	high
+省心	sheng xin	high
+省事	sheng shi	high
+省力	sheng li	high
+反省	fan xing	high
+露营去	lu ying qu	high
+露一手	lou yi shou	high
+露馅了	lou xian le	high
+露脸	lou lian	high
+暴露	bao lu	high
+透露	tou lu	high
+模范	mo fan	high
+模仿	mo fang	high
+模糊	mo hu	high
+模样	mu yang	high
+一模一样	yi mu yi yang	high
+像模像样	xiang mu xiang yang	high
+数一数二	shu yi shu er	high
+数不清	shu bu qing	high
+心里有数	xin li you shu	high
+没数	mei shu	high
+相亲	xiang qin	high
+相信	xiang xin	high
+相处	xiang chu	high
+好看	hao kan	high
+好玩	hao wan	high
+好吃	hao chi	high
+好听	hao ting	high
+好喝	hao he	high
+好笑	hao xiao	high
+好用	hao yong	high
+好奇	hao qi	high
+好强	hao qiang	high
+爱好	ai hao	high
+好客	hao ke	high
+中奖了	zhong jiang le	high
+中暑了	zhong shu le	high
+中毒了	zhong du le	high
+猜中了	cai zhong le	high
+说中了	shuo zhong le	high
+命中注定	ming zhong zhu ding	high
+正中下怀	zheng zhong xia huai	high
+划算	hua suan	high
+不划算	bu hua suan	high
+划得来	hua de lai	high
+计划	ji hua	high
+划船	hua chuan	high
+划水	hua shui	high
+划重点	hua zhong dian	high
+转圈	zhuan quan	high
+朋友圈	peng you quan	high
+出圈了	chu quan le	high
+破圈	po quan	high
+生活圈	sheng huo quan	high
+社交圈	she jiao quan	high
+转告	zhuan gao	high
+转发	zhuan fa	high
+转账	zhuan zhang	high
+转行	zhuan hang	high
+转正	zhuan zheng	high
+转弯	zhuan wan	high
+转一转	zhuan yi zhuan	high
+逛一逛	guang yi guang	high
+溜达溜达	liu da liu da	high
+遛弯	liu wan	high
+遛狗	liu gou	high
+遛娃	liu wa	high
+咱俩	zan lia	high
+咱们	zan men	high
+咱就是说	zan jiu shi shuo	high
+咋回事	za hui shi	high
+咋办	za ban	high
+咋了	za le	high
+咋样	za yang	high
+啥时候	sha shi hou	high
+啥意思	sha yi si	high
+啥玩意	sha wan yi	high
+没啥事	mei sha shi	high
+干嘛呢	gan ma ne	high
+你在干嘛	ni zai gan ma	high
+嗯嗯	en en	high
+嗯哼	en heng	high
+嗯好的	en hao de	high
+哦哦	o o	high
+哦这样啊	o zhe yang a	high
+啊这	a zhe	high
+哇塞	wa sai	high
+哇塞好厉害	wa sai hao li hai	mid
+嘿嘿	hei hei	high
+呵呵	he he	high
+嘻嘻	xi xi	high
+切	qie	mid
+嘘	xu	mid
+哼	heng	high
+唉	ai	high
+哎呀	ai ya	high
+哎哟	ai yo	high
+哎呦	ai you	high
+哟	yo	mid
+呦	you	mid
+咯	ge	std
+喽	lou	mid
+呗	bei	high
+嘛	ma	high
+咧	lie	mid
+啦	la	high
+呀	ya	high
+哇	wa	high
+呢	ne	high
+吧	ba	high
+哈	ha	high
+咯咯笑	ge ge xiao	mid
+笑嘻嘻	xiao xi xi	high
+乐呵呵	le he he	high
+美滋滋	mei zi zi	high
+急匆匆	ji cong cong	high
+慢悠悠	man you you	high
+晃悠悠	huang you you	mid
+懒洋洋	lan yang yang	high
+暖洋洋	nuan yang yang	high
+喜洋洋	xi yang yang	high
+气鼓鼓	qi gu gu	high
+气呼呼	qi hu hu	high
+亮晶晶	liang jing jing	high
+软绵绵	ruan mian mian	high
+毛茸茸	mao rong rong	high
+胖嘟嘟	pang du du	high
+圆滚滚	yuan gun gun	high
+傻乎乎	sha hu hu	high
+憨厚	han hou	high
+呆萌	dai meng	high
+社死	she si	high
+社死现场	she si xian chang	high
+大型社死	da xing she si	high
+真香警告	zhen xiang jing gao	high
+打脸了	da lian le	high
+大型真香	da xing zhen xiang	mid
+原地起飞	yuan di qi fei	high
+原地爆炸	yuan di bao zha	high
+原地踏步	yuan di ta bu	high
+直接起飞	zhi jie qi fei	high
+拉满	la man	high
+氛围拉满	fen wei la man	high
+期待拉满	qi dai la man	high
+诚意拉满	cheng yi la man	high
+排面拉满	pai mian la man	high
+拿捏了	na nie le	high
+狠狠拿捏	hen hen na nie	high
+精准拿捏	jing zhun na nie	high
+轻松拿捏	qing song na nie	high
+稳稳拿捏	wen wen na nie	high
+主打一个	zhu da yi ge	high
+遥遥领先	yao yao ling xian	high
+格局打开	ge ju da kai	high
+格局小了	ge ju xiao le	high
+上头了	shang tou le	high
+太上头了	tai shang tou le	high
+下头了	xia tou le	high
+太下头了	tai xia tou le	high
+破防	po fang	high
+泪目	lei mu	high
+看哭了	kan ku le	high
+太好哭了	tai hao ku le	high
+太好嗑了	tai hao ke le	high
+甜死了	tian si le	high
+甜度超标	tian du chao biao	high
+含糖量超标	han tang liang chao biao	mid
+杀疯了	sha feng le	high
+赢麻了	ying ma le	high
+麻了	ma le	high
+看麻了	kan ma le	high
+笑麻了	xiao ma le	high
+绝配	jue pei	high
+神仙组合	shen xian zu he	high
+梦幻联动	meng huan lian dong	high
+双厨狂喜	shuang chu kuang xi	high
+DNA动了	dna dong le	high
+爷青回	ye qing hui	high
+时代眼泪	shi dai yan lei	high
+青春回忆	qing chun hui yi	high
+我的青春	wo de qing chun	high
+回忆杀	hui yi sha	high
+情怀拉满	qing huai la man	high
+宝藏店铺	bao zang dian pu	high
+宝藏好物	bao zang hao wu	high
+无限循环	wu xian xun huan	high
+单曲循环	dan qu xun huan	high
+耳朵怀孕	er duo huai yun	mid
+开口跪	kai kou gui	mid
+神仙翻唱	shen xian fan chang	mid
+自带bgm	zi dai bgm	mid
+名场面	ming chang mian	high
+高能预警	gao neng yu jing	high
+前方高能	qian fang gao neng	high
+全程高能	quan cheng gao neng	high
+神反转	shen fan zhuan	high
+意难平	yi nan ping	high
+白月光	bai yue guang	high
+朱砂痣	zhu sha zhi	high
+纯爱战神	chun ai zhan shen	high
+恋爱脑	lian ai nao	high
+事业脑	shi ye nao	high
+清醒独立	qing xing du li	high
+人间富贵花	ren jian fu gui hua	mid
+氛围感帅哥	fen wei gan shuai ge	mid
+氛围感美女	fen wei gan mei nv	mid
+纯欲风	chun yu feng	mid
+甜酷风	tian ku feng	mid
+多巴胺穿搭	duo ba an chuan da	high
+美拉德穿搭	mei la de chuan da	high
+老钱风	lao qian feng	high
+新中式	xin zhong shi	high
+新中式穿搭	xin zhong shi chuan da	high
+国潮风	guo chao feng	high
+极简风	ji jian feng	high
+法式复古	fa shi fu gu	mid
+港风复古	gang feng fu gu	mid
+奶油风	nai you feng	high
+原木风	yuan mu feng	high
+中古风	zhong gu feng	high
+侘寂风	cha ji feng	mid
+工业风	gong ye feng	high
+轻奢风	qing she feng	high
+现代简约	xian dai jian yue	high
+小清新	xiao qing xin	high
+文艺范	wen yi fan	high
+高级灰	gao ji hui	high
+显白	xian bai	high
+显瘦	xian shou	high
+显高	xian gao	high
+显年轻	xian nian qing	high
+百搭	bai da	high
+不挑人	bu tiao ren	high
+不踩雷	bu cai lei	high
+闭眼冲	bi yan chong	high
+冲就完了	chong jiu wan le	high
+值得入手	zhi de ru shou	high
+值得拥有	zhi de yong you	high
+入手不亏	ru shou bu kui	high
+早买早享受	zao mai zao xiang shou	high
+晚买享折扣	wan mai xiang zhe kou	high
+等等党	deng deng dang	high
+等等党胜利	deng deng dang sheng li	high
+真香定律	zhen xiang ding lv	high
+真香现场	zhen xiang xian chang	high
+真香	zhen xiang	high
+真香啊	zhen xiang a	high
+太值了	tai zhi le	high
+超值	chao zhi	high
+巨好用	ju hao yong	high
+巨好吃	ju hao chi	high
+巨好看	ju hao kan	high
+巨划算	ju hua suan	high
+巨舒服	ju shu fu	high
+超舒服	chao shu fu	high
+超好玩	chao hao wan	high
+超好用	chao hao yong	high
+超划算	chao hua suan	high
+超解压	chao jie ya	high
+超治愈	chao zhi yu	high
+绝绝子	jue jue zi	mid
+好家伙	hao jia huo	high
+笑死	xiao si	high
+笑疯了	xiao feng le	high
+笑裂了	xiao lie le	mid
+笑晕了	xiao yun le	mid
+给我看乐了	gei wo kan le le	mid
+乐死了	le si le	high
+好离谱	hao li pu	high
+真绝了	zhen jue le	high
+绝了绝了	jue le jue le	high
+太猛了	tai meng le	high
+太强了	tai qiang le	high
+太稳了	tai wen le	high
+稳如老狗	wen ru lao gou	mid
+稳了稳了	wen le wen le	high
+稳赢	wen ying	high
+拿捏	na nie	high
+绝杀	jue sha	high
+逆风翻盘	ni feng fan pan	high
+绝地反击	jue di fan ji	high
+极限拉扯	ji xian la che	high
+极限操作	ji xian cao zuo	high
+天秀	tian xiu	high
+神操作	shen cao zuo	high
+骚操作	sao cao zuo	mid
+下饭操作	xia fan cao zuo	mid
+神预判	shen yu pan	high
+神补刀	shen bu dao	high
+扎心了	zha xin le	high
+扎心了老铁	zha xin le lao tie	high
+老铁	lao tie	high
+没毛病	mei mao bing	high
+妥妥的	tuo tuo de	high
+安排上	an pai shang	high
+安排明白	an pai ming bai	high
+安排妥当	an pai tuo dang	high
+给你安排	gei ni an pai	high
+这就安排	zhe jiu an pai	high
+整挺好	zheng ting hao	high
+整一个	zheng yi ge	high
+搞起来	gao qi lai	high
+冲起来	chong qi lai	high
+卷起来	juan qi lai	high
+动起来	dong qi lai	high
+燃起来了	ran qi lai le	high
+热泪盈眶	re lei ying kuang	high
+心潮澎湃	xin chao peng pai	high
+热血沸腾	re xue fei teng	high
+激情澎湃	ji qing peng pai	high
+满满的干货	man man de gan huo	high
+干货满满	gan huo man man	high
+纯干货	chun gan huo	high
+保姆级教程	bao mu ji jiao cheng	high
+手把手教学	shou ba shou jiao xue	high
+零基础入门	ling ji chu ru men	high
+小白也能懂	xiao bai ye neng dong	high
+一看就会	yi kan jiu hui	high
+一学就会	yi xue jiu hui	high
+收藏吃灰	shou cang chi hui	high
+先马后看	xian ma hou kan	mid
+点赞收藏	dian zan shou cang	high
+一键三连	yi jian san lian	high
+关注不迷路	guan zhu bu mi lu	high
+评论区见	ping lun qu jian	high
+欢迎留言	huan ying liu yan	high
+感谢关注	gan xie guan zhu	high
+下期再见	xia qi zai jian	high
+未完待续	wei wan dai xu	high
+敬请期待	jing qing qi dai	high
+持续更新	chi xu geng xin	high
+干杯	gan bei	high
+干杯朋友	gan bei peng you	mid
+不醉不归	bu zui bu gui	high
+小酌几杯	xiao zhuo ji bei	high
+喝两杯	he liang bei	high
+微醺	wei xun	high
+微醺时刻	wei xun shi ke	high
+深夜emo	shen ye emo	high
+深夜放毒	shen ye fang du	high
+深夜食堂	shen ye shi tang	high
+周末宅家	zhou mo zhai jia	high
+宅家追剧	zhai jia zhui ju	high
+追剧日常	zhui ju ri chang	high
+熬夜追剧	ao ye zhui ju	high
+刷剧	shua ju	high
+剧荒了	ju huang le	high
+求推荐好看的剧	qiu tui jian hao kan de ju	mid
+求推荐电影	qiu tui jian dian ying	high
+求推荐书单	qiu tui jian shu dan	high
+求推荐好歌	qiu tui jian hao ge	mid
+最近在追什么剧	zui jin zai zhui shen me ju	high
+更新了吗	geng xin le ma	high
+大结局了	da jie ju le	high
+烂尾了	lan wei le	high
+封神了	feng shen le	high
+神作	shen zuo	high
+必看神作	bi kan shen zuo	high
+强推	qiang tui	high
+强烈推荐	qiang lie tui jian	high
+五星好评	wu xing hao ping	high
+满分推荐	man fen tui jian	high
+口碑爆棚	kou bei bao peng	high
+票房大卖	piao fang da mai	high
+一票难求	yi piao nan qiu	high
+场场爆满	chang chang bao man	high
+座无虚席	zuo wu xu xi	high
+人从众	ren cong zhong	high
+人挤人	ren ji ren	high
+排队两小时	pai dui liang xiao shi	high
+等位太久了	deng wei tai jiu le	high
+不用排队	bu yong pai dui	high
+错峰出行	cuo feng chu xing	high
+错峰旅游	cuo feng lv you	high
+说走就走	shuo zou jiu zou	high
+自驾游	zi jia you	high
+周边游	zhou bian you	high
+短途游	duan tu you	high
+亲子游	qin zi you	high
+毕业旅行	bi ye lv xing	high
+蜜月旅行	mi yue lv xing	high
+穷游	qiong you	high
+自由行	zi you xing	high
+跟团游	gen tuan you	high
+定制游	ding zhi you	high
+打卡圣地	da ka sheng di	high
+拍照打卡	pai zhao da ka	high
+网红打卡地	wang hong da ka di	high
+小众景点	xiao zhong jing dian	high
+宝藏城市	bao zang cheng shi	high
+宝藏小城	bao zang xiao cheng	high
+出片	chu pian	high
+很出片	hen chu pian	high
+太出片了	tai chu pian le	high
+随手一拍	sui shou yi pai	high
+原图直出	yuan tu zhi chu	high
+大片既视感	da pian ji shi gan	high
+绝美风景	jue mei feng jing	high
+美到失语	mei dao shi yu	high
+不虚此行	bu xu ci xing	high
+值得一去	zhi de yi qu	high
+下次还来	xia ci hai lai	high
+念念不忘	nian nian bu wang	high
+流连忘返	liu lian wang fan	high
+欢迎光临	huan ying guang lin	high
+欢迎再来	huan ying zai lai	high
+常联系	chang lian xi	high
+保持联系	bao chi lian xi	high
+随时联系	sui shi lian xi	high
+有空常聚	you kong chang ju	high
+聚一聚	ju yi ju	high
+聊一聊	liao yi liao	high
+喝杯茶	he bei cha	high
+喝杯咖啡	he bei ka fei	high
+吃顿好的	chi dun hao de	high
+犒劳一下自己	kao lao yi xia zi ji	high
+奖励自己	jiang li zi ji	high
+善待自己	shan dai zi ji	high
+照顾好自己	zhao gu hao zi ji	high
+开开心心	kai kai xin xin	high
+平平安安	ping ping an an	high
+健健康康	jian jian kang kang	high
+顺顺利利	shun shun li li	high
+高高兴兴	gao gao xing xing	high
+快快乐乐	kuai kuai le le	high
+幸幸福福	xing xing fu fu	high
+甜甜蜜蜜	tian tian mi mi	high
+和和美美	he he mei mei	high
+团团圆圆	tuan tuan yuan yuan	high
+红红火火	hong hong huo huo	high
+热热闹闹	re re nao nao	high
+清清静静	qing qing jing jing	high
+踏踏实实	ta ta shi shi	high
+安安稳稳	an an wen wen	high
+认认真真	ren ren zhen zhen	high
+仔仔细细	zi zi xi xi	high
+清清楚楚	qing qing chu chu	high
+明明白白	ming ming bai bai	high
+干干净净	gan gan jing jing	high
+整整齐齐	zheng zheng qi qi	high
+利利索索	li li suo suo	high
+痛痛快快	tong tong kuai kuai	high
+漂漂亮亮	piao piao liang liang	high
+帅帅气气	shuai shuai qi qi	high
+体体面面	ti ti mian mian	high
+大大方方	da da fang fang	high
+客客气气	ke ke qi qi	high
+和和气气	he he qi qi	high
+实实在在	shi shi zai zai	high
+老老实实	lao lao shi shi	high
+勤勤恳恳	qin qin ken ken	high
+兢兢业业	jing jing ye ye	high
+忙忙碌碌	mang mang lu lu	high
+匆匆忙忙	cong cong mang mang	high
+急急忙忙	ji ji mang mang	high
+慌慌张张	huang huang zhang zhang	high
+马马虎虎	ma ma hu hu	high
+随随便便	sui sui bian bian	high
+简简单单	jian jian dan dan	high
+轻轻松松	qing qing song song	high
+舒舒服服	shu shu fu fu	high
+自自在在	zi zi zai zai	high
+悠悠闲闲	you you xian xian	high
+晃晃悠悠	huang huang you you	high
+摇摇晃晃	yao yao huang huang	high
+蹦蹦跳跳	beng beng tiao tiao	high
+吵吵闹闹	chao chao nao nao	high
+说说笑笑	shuo shuo xiao xiao	high
+打打闹闹	da da nao nao	high
+疯疯癫癫	feng feng dian dian	mid
+嘻嘻哈哈	xi xi ha ha	high
+哭哭啼啼	ku ku ti ti	mid
+磨磨蹭蹭	mo mo ceng ceng	high
+拖拖拉拉	tuo tuo la la	high
+犹犹豫豫	you you yu yu	high
+吞吞吐吐	tun tun tu tu	high
+支支吾吾	zhi zhi wu wu	high
+鬼鬼祟祟	gui gui sui sui	mid
+偷偷摸摸	tou tou mo mo	high
+悄无声息	qiao wu sheng xi	high
+恍恍惚惚	huang huang hu hu	high
+迷迷糊糊	mi mi hu hu	high
+晕晕乎乎	yun yun hu hu	high
+晕头转向	yun tou zhuan xiang	high
+稀里糊涂	xi li hu tu	high
+糊里糊涂	hu li hu tu	high
+乱七八糟	luan qi ba zao	high
+七零八落	qi ling ba luo	high
+东倒西歪	dong dao xi wai	high
+歪歪扭扭	wai wai niu niu	high
+坑坑洼洼	keng keng wa wa	high
+密密麻麻	mi mi ma ma	high
+层层叠叠	ceng ceng die die	high
+郁郁葱葱	yu yu cong cong	high
+浩浩荡荡	hao hao dang dang	high
+轰轰烈烈	hong hong lie lie	high
+跌跌撞撞	die die zhuang zhuang	high
+磕磕绊绊	ke ke ban ban	high
+断断续续	duan duan xu xu	high
+陆陆续续	lu lu xu xu	high
+反反复复	fan fan fu fu	high
+来来回回	lai lai hui hui	high
+上上下下	shang shang xia xia	high
+里里外外	li li wai wai	high
+前前后后	qian qian hou hou	high
+左左右右	zuo zuo you you	high
+方方面面	fang fang mian mian	high
+点点滴滴	dian dian di di	high
+林林总总	lin lin zong zong	high
+形形色色	xing xing se se	high
+花花绿绿	hua hua lv lv	high
+五颜六色	wu yan liu se	high
+五彩斑斓	wu cai ban lan	high
+绚丽多彩	xuan li duo cai	high
+丰富多彩	feng fu duo cai	high
+多姿多彩	duo zi duo cai	high
+有声有色	you sheng you se	high
+有滋有味	you zi you wei	high
+有板有眼	you ban you yan	high
+有条不紊	you tiao bu wen	high
+有模有样	you mu you yang	high
+有头有尾	you tou you wei	high
+有始有终	you shi you zhong	high
+有来有往	you lai you wang	high
+有说有笑	you shuo you xiao	high
+有情有义	you qing you yi	high
+有血有肉	you xue you rou	high
+有理有据	you li you ju	high
+有凭有据	you ping you ju	high
+有勇有谋	you yong you mou	high
+有声有影	you sheng you ying	mid
+不声不响	bu sheng bu xiang	high
+不慌不忙	bu huang bu mang	high
+不骄不躁	bu jiao bu zao	high
+不卑不亢	bu bei bu kang	high
+不屈不挠	bu qu bu nao	high
+不折不扣	bu zhe bu kou	high
+不离不弃	bu li bu qi	high
+不依不饶	bu yi bu rao	high
+不偏不倚	bu pian bu yi	high
+不闻不问	bu wen bu wen	high
+不理不睬	bu li bu cai	high
+不痛不痒	bu tong bu yang	high
+不冷不热	bu leng bu re	high
+不咸不淡	bu xian bu dan	high
+不胖不瘦	bu pang bu shou	high
+不高不矮	bu gao bu ai	high
+不长不短	bu chang bu duan	high
+不大不小	bu da bu xiao	high
+不多不少	bu duo bu shao	high
+不早不晚	bu zao bu wan	high
+不快不慢	bu kuai bu man	high
+不紧不慢	bu jin bu man	high
+不温不火	bu wen bu huo	high
+不瘟不火	bu wen bu huo	high
+不死不活	bu si bu huo	mid
+不伦不类	bu lun bu lei	high
+不三不四	bu san bu si	high
+不清不楚	bu qing bu chu	high
+不明不白	bu ming bu bai	high
+不知不觉	bu zhi bu jue	high
+不由自主	bu you zi zhu	high
+自给自足	zi ji zi zu	high
+自生自灭	zi sheng zi mie	mid
+自私自利	zi si zi li	high
+自言自语	zi yan zi yu	high
+自吹自擂	zi chui zi lei	high
+自怨自艾	zi yuan zi yi	mid
+自暴自弃	zi bao zi qi	high
+自作自受	zi zuo zi shou	high
+自导自演	zi dao zi yan	high
+自编自导	zi bian zi dao	high
+自产自销	zi chan zi xiao	high
+自娱自乐	zi yu zi le	high
+自由自在	zi you zi zai	high
+自高自大	zi gao zi da	high
+自轻自贱	zi qing zi jian	mid
+自强自立	zi qiang zi li	high
+自力更生	zi li geng sheng	high
+一心一意	yi xin yi yi	high
+一生一世	yi sheng yi shi	high
+一五一十	yi wu yi shi	high
+一举一动	yi ju yi dong	high
+一言一行	yi yan yi xing	high
+一点一滴	yi dian yi di	high
+一朝一夕	yi zhao yi xi	high
+一步一个脚印	yi bu yi ge jiao yin	high
+一分耕耘一分收获	yi fen geng yun yi fen shou huo	high
+一分钱一分货	yi fen qian yi fen huo	high
+一寸光阴一寸金	yi cun guang yin yi cun jin	high
+一年之计在于春	yi nian zhi ji zai yu chun	high
+一日之计在于晨	yi ri zhi ji zai yu chen	high
+百闻不如一见	bai wen bu ru yi jian	high
+眼见为实	yan jian wei shi	high
+耳听为虚	er ting wei xu	high
+事实胜于雄辩	shi shi sheng yu xiong bian	high
+时间会证明一切	shi jian hui zheng ming yi qie	high
+日久见人心	ri jiu jian ren xin	high
+路遥知马力	lu yao zhi ma li	high
+患难见真情	huan nan jian zhen qing	high
+君子之交淡如水	jun zi zhi jiao dan ru shui	high
+海内存知己	hai nei cun zhi ji	high
+天涯若比邻	tian ya ruo bi lin	high
+有朋自远方来	you peng zi yuan fang lai	high
+不亦乐乎	bu yi le hu	high
+千里送鹅毛	qian li song e mao	high
+礼轻情意重	li qing qing yi zhong	high
+授人以鱼不如授人以渔	shou ren yi yu bu ru shou ren yi yu	high
+吃一堑长一智	chi yi qian zhang yi zhi	high
+失败乃成功之母	shi bai nai cheng gong zhi mu	high
+世上无难事	shi shang wu nan shi	high
+只怕有心人	zhi pa you xin ren	high
+有志者事竟成	you zhi zhe shi jing cheng	high
+功夫不负有心人	gong fu bu fu you xin ren	high
+天道酬勤	tian dao chou qin	high
+宁静致远	ning jing zhi yuan	high
+海纳百川	hai na bai chuan	high
+有容乃大	you rong nai da	high
+上善若水	shang shan ruo shui	high
+厚德载物	hou de zai wu	high
+知足常乐	zhi zu chang le	high
+难得糊涂	nan de hu tu	high
+顺其自然	shun qi zi ran	high
+随遇而安	sui yu er an	high
+既来之则安之	ji lai zhi ze an zhi	high
+车到山前必有路	che dao shan qian bi you lu	high
+船到桥头自然直	chuan dao qiao tou zi ran zhi	high
+留得青山在	liu de qing shan zai	high
+不怕没柴烧	bu pa mei chai shao	high
+退一步海阔天空	tui yi bu hai kuo tian kong	high
+忍一时风平浪静	ren yi shi feng ping lang jing	high
+家和万事兴	jia he wan shi xing	high
+和气生财	he qi sheng cai	high
+善有善报	shan you shan bao	high
+好人一生平安	hao ren yi sheng ping an	high
+福无双至	fu wu shuang zhi	mid
+祸不单行	huo bu dan xing	high
+屋漏偏逢连夜雨	wu lou pian feng lian ye yu	high
+善解人意	shan jie ren yi	high
+温柔体贴	wen rou ti tie	high
+热情大方	re qing da fang	high
+阳光开朗	yang guang kai lang	high
+乐观积极	le guan ji ji	high
+真诚善良	zhen cheng shan liang	high
+靠谱踏实	kao pu ta shi	high
+细心周到	xi xin zhou dao	high
+通情达理	tong qing da li	high
+平易近人	ping yi jin ren	high
+和蔼可亲	he ai ke qin	high
+落落大方	luo luo da fang	high
+知书达理	zhi shu da li	high
+温文尔雅	wen wen er ya	high
+气宇轩昂	qi yu xuan ang	high
+英俊潇洒	ying jun xiao sa	high
+端庄典雅	duan zhuang dian ya	high
+亭亭玉立	ting ting yu li	high
+秀外慧中	xiu wai hui zhong	high
+聪明伶俐	cong ming ling li	high
+机智过人	ji zhi guo ren	high
+足智多谋	zu zhi duo mou	high
+冰雪聪明	bing xue cong ming	high
+古灵精怪	gu ling jing guai	high
+天真无邪	tian zhen wu xie	high
+活泼可爱	huo po ke ai	high
+乖巧懂事	guai qiao dong shi	high
+善始善终	shan shi shan zhong	high
+善作善成	shan zuo shan cheng	high
+知行合一	zhi xing he yi	high
+学以致用	xue yi zhi yong	high
+融会贯通	rong hui guan tong	high
+举一反三	ju yi fan san	high
+温故知新	wen gu zhi xin	high
+触类旁通	chu lei pang tong	high
+集思广益	ji si guang yi	high
+群策群力	qun ce qun li	high
+齐心协力	qi xin xie li	high
+众志成城	zhong zhi cheng cheng	high
+万众一心	wan zhong yi xin	high
+精诚团结	jing cheng tuan jie	high
+同心同德	tong xin tong de	high
+风雨同舟	feng yu tong zhou	high
+互帮互助	hu bang hu zhu	high
+互利共赢	hu li gong ying	high
+合作共赢	he zuo gong ying	high
+携手并进	xie shou bing jin	high
+共同进步	gong tong jin bu	high
+共同成长	gong tong cheng zhang	high
+互相成就	hu xiang cheng jiu	high
+互相理解	hu xiang li jie	high
+互相尊重	hu xiang zun zhong	high
+互相包容	hu xiang bao rong	high
+互相体谅	hu xiang ti liang	high
+彼此信任	bi ci xin ren	high
+彼此珍惜	bi ci zhen xi	high
+珍惜当下	zhen xi dang xia	high
+珍惜眼前人	zhen xi yan qian ren	high
+不负韶华	bu fu shao hua	high
+未来可期	wei lai ke qi	high
+前途无量	qian tu wu liang	high
+大展宏图	da zhan hong tu	high
+鹏程万里	peng cheng wan li	high
+蒸蒸日上	zheng zheng ri shang	high
+越来越好	yue lai yue hao	high
+越做越好	yue zuo yue hao	high
+越走越远	yue zou yue yuan	high
+越来越棒	yue lai yue bang	high
+越来越开心	yue lai yue kai xin	high
+越来越顺利	yue lai yue shun li	high
+越来越幸福	yue lai yue xing fu	high
+越来越漂亮	yue lai yue piao liang	high
+越来越年轻	yue lai yue nian qing	high
+越来越厉害	yue lai yue li hai	high
+越来越优秀	yue lai yue you xiu	high
+越来越成熟	yue lai yue cheng shu	high
+越来越稳重	yue lai yue wen zhong	high
+越来越自信	yue lai yue zi xin	high
+越来越从容	yue lai yue cong rong	high
+越来越强大	yue lai yue qiang da	high
+越来越有钱	yue lai yue you qian	high
+越来越忙	yue lai yue mang	high
+越来越冷	yue lai yue leng	high
+越来越热	yue lai yue re	high
+越来越快	yue lai yue kuai	high
+越来越近	yue lai yue jin	high
+越来越远	yue lai yue yuan	high
+越来越清楚	yue lai yue qing chu	high
+越来越方便	yue lai yue fang bian	high
+越来越丰富	yue lai yue feng fu	high
+越来越喜欢	yue lai yue xi huan	high
+越来越默契	yue lai yue mo qi	high
+越来越离不开	yue lai yue li bu kai	high
+越来越顺手	yue lai yue shun shou	high
+越来越习惯	yue lai yue xi guan	high
+越来越好了	yue lai yue hao le	high
+好久没见	hao jiu mei jian	high
+好久没聊	hao jiu mei liao	high
+好久没吃	hao jiu mei chi	high
+好久没去	hao jiu mei qu	high
+好久没回去了	hao jiu mei hui qu le	high
+好久没放假了	hao jiu mei fang jia le	high
+好久没运动了	hao jiu mei yun dong le	high
+好久没看电影了	hao jiu mei kan dian ying le	high
+好久没睡懒觉了	hao jiu mei shui lan jiao le	high
+真想你呀	zhen xiang ni ya	high
+太久没见了	tai jiu mei jian le	high
+啥时候聚聚	sha shi hou ju ju	high
+约个时间	yue ge shi jian	high
+约个饭	yue ge fan	high
+约起来	yue qi lai	high
+走起	zou qi	high
+出发啦	chu fa la	high
+到地方了	dao di fang le	high
+上车了	shang che le	high
+下车了	xia che le	high
+上飞机了	shang fei ji le	high
+下飞机了	xia fei ji le	high
+落地了	luo di le	high
+登机了	deng ji le	high
+过安检了	guo an jian le	high
+候机中	hou ji zhong	high
+延误了	yan wu le	high
+晚点了	wan dian le	high
+检票了	jian piao le	high
+上高铁了	shang gao tie le	high
+出站了	chu zhan le	high
+进站了	jin zhan le	high
+坐上地铁了	zuo shang di tie le	high
+换乘中	huan cheng zhong	high
+出地铁口了	chu di tie kou le	high
+在打车	zai da che	high
+叫到车了	jiao dao che le	high
+上出租车了	shang chu zu che le	high
+还有两站	hai you liang zhan	high
+还有一站	hai you yi zhan	high
+快下车了	kuai xia che le	high
+马上进门	ma shang jin men	high
+开门吧	kai men ba	high
+帮我开一下门	bang wo kai yi xia men	high
+我忘带钥匙了	wo wang dai yao shi le	high
+没带门禁卡	mei dai men jin ka	high
+马上下来	ma shang xia lai	high
+你先上去吧	ni xian shang qu ba	high
+我找个车位	wo zhao ge che wei	high
+停好车了	ting hao che le	high
+我来接你	wo lai jie ni	high
+我去接你	wo qu jie ni	high
+我送你回去	wo song ni hui qu	high
+顺路送你	shun lu song ni	high
+不用接我	bu yong jie wo	high
+我自己打车回去	wo zi ji da che hui qu	high
+我自己坐地铁	wo zi ji zuo di tie	high
+已经上车了	yi jing shang che le	high
+放心吧到家了	fang xin ba dao jia le	high
+睡了吗	shui le ma	high
+还没睡呢	hai mei shui ne	high
+准备睡了	zhun bei shui le	high
+这就去睡	zhe jiu qu shui	high
+晚安明天聊	wan an ming tian liao	high
+明天再聊	ming tian zai liao	high
+明天见呀	ming tian jian ya	high
+明早见	ming zao jian	high
+明天早上见	ming tian zao shang jian	high
+下午见	xia wu jian	high
+晚上见	wan shang jian	high
+周末见	zhou mo jian	high
+节后见	jie hou jian	high
+年后见	nian hou jian	high
+回来再聚	hui lai zai ju	high
+等你回来	deng ni hui lai	high
+等你消息	deng ni xiao xi	high
+等你好消息	deng ni hao xiao xi	high
+有消息告诉我	you xiao xi gao su wo	high
+有情况随时说	you qing kuang sui shi shuo	high
+随时保持联系	sui shi bao chi lian xi	high
+记得回复	ji de hui fu	high
+记得回电话	ji de hui dian hua	high
+记得查收	ji de cha shou	high
+记得打卡	ji de da ka	high
+记得吃药	ji de chi yao	high
+记得带伞	ji de dai san	high
+记得带身份证	ji de dai shen fen zheng	high
+记得锁门	ji de suo men	high
+记得关灯	ji de guan deng	high
+记得关空调	ji de guan kong tiao	high
+记得充电	ji de chong dian	high
+记得备份	ji de bei fen	high
+记得保存	ji de bao cun	high
+千万别忘了	qian wan bie wang le	high
+差点给忘了	cha dian gei wang le	high
+完全忘记了	wan quan wang ji le	high
+记性越来越差了	ji xing yue lai yue cha le	high
+脑子不好使了	nao zi bu hao shi le	high
+突然卡壳了	tu ran ka ke le	high
+想不起来了	xiang bu qi lai le	high
+嘴边就是想不起	zui bian jiu shi xiang bu qi	mid
+我想起来了	wo xiang qi lai le	high
+终于想起来了	zhong yu xiang qi lai le	high
+就是这个	jiu shi zhe ge	high
+没错就是它	mei cuo jiu shi ta	high
+找了半天	zhao le ban tian	high
+终于找到了	zhong yu zhao dao le	high
+原来在这里	yuan lai zai zhe li	high
+藏得真深	cang de zhen shen	high
+眼皮子底下	yan pi zi di xia	high
+找不到了	zhao bu dao le	high
+放哪儿去了	fang na er qu le	high
+你看见了吗	ni kan jian le ma	high
+帮我找找	bang wo zhao zhao	high
+在桌子上	zai zhuo zi shang	high
+在抽屉里	zai chou ti li	high
+在包里	zai bao li	high
+在口袋里	zai kou dai li	high
+在客厅	zai ke ting	high
+在卧室	zai wo shi	high
+在厨房	zai chu fang	high
+在阳台	zai yang tai	high
+在门口	zai men kou	high
+在车上	zai che shang	high
+在公司	zai gong si	high
+在家里	zai jia li	high
+在外面	zai wai mian	high
+在楼下	zai lou xia	high
+在楼上	zai lou shang	high
+在对面	zai dui mian	high
+在旁边	zai pang bian	high
+在附近	zai fu jin	high
+就在前面	jiu zai qian mian	high
+拐个弯就到	guai ge wan jiu dao	high
+直走就到了	zhi zou jiu dao le	high
+左转	zuo zhuan	high
+右转	you zhuan	high
+掉头	diao tou	high
+上高架	shang gao jia	high
+下高架	xia gao jia	high
+进隧道	jin sui dao	high
+出隧道	chu sui dao	high
+上高速	shang gao su	high
+下高速	xia gao su	high
+进服务区	jin fu wu qu	high
+过收费站	guo shou fei zhan	high
+走错路了	zou cuo lu le	high
+导航导错了	dao hang dao cuo le	high
+重新规划路线	chong xin gui hua lu xian	high
+绕路了	rao lu le	high
+抄近路	chao jin lu	high
+走这边快	zou zhe bian kuai	high
+这边不堵车	zhe bian bu du che	high
+前面修路	qian mian xiu lu	high
+前面堵车	qian mian du che	high
+前面有事故	qian mian you shi gu	high
+慢慢开不着急	man man kai bu zhao ji	high
+安全第一	an quan di yi	high
+平安最重要	ping an zui zhong yao	high
+身体健康最重要	shen ti jian kang zui zhong yao	high
+开心最重要	kai xin zui zhong yao	high
+别太拼了	bie tai pin le	high
+劳逸结合	lao yi jie he	high
+张弛有度	zhang chi you du	high
+保重自己	bao zhong zi ji	high
+天天开心	tian tian kai xin	high
+万事顺遂	wan shi shun sui	high
+一切安好	yi qie an hao	high
+平安顺遂	ping an shun sui	high
+喜乐安康	xi le an kang	high
+岁岁欢愉	sui sui huan yu	high
+年年胜意	nian nian sheng yi	high
+所愿皆所得	suo yuan jie suo de	high
+所行化坦途	suo xing hua tan tu	high
+未来皆可期	wei lai jie ke qi	high
+加油冲呀	jia you chong ya	high
+今天也很棒	jin tian ye hen bang	high
+明天继续加油	ming tian ji xu jia you	high
+辛苦啦早点睡	xin ku la zao dian shui	high
+晚安明天见	wan an ming tian jian	high
+早安新的一天	zao an xin de yi tian	high
+元气满满	yuan qi man man	high
+活力满满	huo li man man	high
+收获满满	shou huo man man	high
+诚意满满	cheng yi man man	high
+幸福满满	xing fu man man	high
+仪式感满满	yi shi gan man man	high
+安全感满满	an quan gan man man	high
+成就感满满	cheng jiu gan man man	high
+满满正能量	man man zheng neng liang	high
+正能量	zheng neng liang	high
+好心情	hao xin qing	high
+好状态	hao zhuang tai	high
+好消息	hao xiao xi	high
+好主意	hao zhu yi	high
+好办法	hao ban fa	high
+好机会	hao ji hui	high
+好兆头	hao zhao tou	high
+好彩头	hao cai tou	high
+开门红	kai men hong	high
+好福气	hao fu qi	high
+好眼光	hao yan guang	high
+好手艺	hao shou yi	high
+好厨艺	hao chu yi	high
+好人品	hao ren pin	high
+好脾气	hao pi qi	high
+好心态	hao xin tai	high
+好身体	hao shen ti	high
+好睡眠	hao shui mian	high
+好胃口	hao wei kou	high
+好天气	hao tian qi	high
+好风景	hao feng jing	high
+好地方	hao di fang	high
+好去处	hao qu chu	high
+好伙伴	hao huo ban	high
+好搭档	hao da dang	high
+好队友	hao dui you	high
+好哥们	hao ge men	high
+好姐妹	hao jie mei	high
+好闺蜜	hao gui mi	high
+好邻居	hao lin ju	high
+好同事	hao tong shi	high
+好领导	hao ling dao	high
+好老板	hao lao ban	high
+好老师	hao lao shi	high
+好家长	hao jia zhang	high
+好孩子	hao hai zi	high
+好宝宝	hao bao bao	high
+好样的	hao yang de	high
+真给力	zhen gei li	high
+太给力了	tai gei li le	high
+非常给力	fei chang gei li	high
+特别靠谱	te bie kao pu	high
+真靠谱	zhen kao pu	high
+太靠谱了	tai kao pu le	high
+不靠谱	bu kao pu	high
+很省心	hen sheng xin	high
+特别省心	te bie sheng xin	high
+太贴心了	tai tie xin le	high
+真贴心	zhen tie xin	high
+太细心了	tai xi xin le	high
+真细心	zhen xi xin	high
+太周到了	tai zhou dao le	high
+想得真周到	xiang de zhen zhou dao	high
+太用心了	tai yong xin le	high
+真用心	zhen yong xin	high
+很实在	hen shi zai	high
+太实在了	tai shi zai le	high
+太客气了	tai ke qi le	high
+真客气	zhen ke qi	high
+太热情了	tai re qing le	high
+真热情	zhen re qing	high
+真大方	zhen da fang	high
+太大方了	tai da fang le	high
+真幽默	zhen you mo	high
+太幽默了	tai you mo le	high
+真有趣	zhen you qu	high
+太有意思了	tai you yi si le	high
+真好玩	zhen hao wan	high
+真好看	zhen hao kan	high
+真好听	zhen hao ting	high
+真好喝	zhen hao he	high
+真好用	zhen hao yong	high
+真舒服	zhen shu fu	high
+真凉快	zhen liang kuai	high
+真暖和	zhen nuan huo	high
+真干净	zhen gan jing	high
+真整齐	zhen zheng qi	high
+真宽敞	zhen kuan chang	high
+真明亮	zhen ming liang	high
+真安静	zhen an jing	high
+真热闹	zhen re nao	high
+真方便	zhen fang bian	high
+真省事	zhen sheng shi	high
+真快啊	zhen kuai a	high
+真慢啊	zhen man a	high
+真早啊	zhen zao a	high
+真晚啊	zhen wan a	high
+真巧啊	zhen qiao a	high
+太巧了吧	tai qiao le ba	high
+无巧不成书	wu qiao bu cheng shu	high
+缘分啊	yuan fen a	high
+真有缘	zhen you yuan	high
+太有缘分了	tai you yuan fen le	high
+有缘再见	you yuan zai jian	high
+有缘千里来相会	you yuan qian li lai xiang hui	high
+世界真小	shi jie zhen xiao	high
+人生如戏	ren sheng ru xi	high
+生活不易	sheng huo bu yi	high
+且行且珍惜	qie xing qie zhen xi	high
+知足者常乐	zhi zu zhe chang le	high
+开心每一天	kai xin mei yi tian	high
+平安每一天	ping an mei yi tian	high
+顺利每一天	shun li mei yi tian	high
+加油打工人	jia you da gong ren	high
+早点下班	zao dian xia ban	high
+准时下班	zhun shi xia ban	high
+按时下班	an shi xia ban	high
+拒绝加班	ju jue jia ban	high
+快乐下班	kuai le xia ban	high
+下班快乐	xia ban kuai le	high
+周五快乐	zhou wu kuai le	high
+终于周五了	zhong yu zhou wu le	high
+明天周六	ming tian zhou liu	high
+明天放假	ming tian fang jia	high
+明天不上班	ming tian bu shang ban	high
+明天不用早起	ming tian bu yong zao qi	high
+睡到自然醒	shui dao zi ran xing	high
+自然醒	zi ran xing	high
+懒觉睡爽了	lan jiao shui shuang le	high
+精力充沛	jing li chong pei	high
+满血复活	man xue fu huo	high
+电量满格	dian liang man ge	high
+重新出发	chong xin chu fa	high
+整装待发	zheng zhuang dai fa	high
+全力冲刺	quan li chong ci	high
+胜利在望	sheng li zai wang	high
+指日可待	zhi ri ke dai	high
+静候佳音	jing hou jia yin	high
+拭目以待	shi mu yi dai	high
+静待花开	jing dai hua kai	high
+岁月静好	sui yue jing hao	high
+来日方长	lai ri fang chang	high
+后会有期	hou hui you qi	high
+青山不改	qing shan bu gai	high
+绿水长流	lv shui chang liu	high
+一路生花	yi lu sheng hua	high
+前路浩浩荡荡	qian lu hao hao dang dang	high
+万事尽可期待	wan shi jin ke qi dai	high
+保持热爱	bao chi re ai	high
+奔赴山海	ben fu shan hai	high
+山高水长	shan gao shui chang	high
+星辰大海	xing chen da hai	high
+诗和远方	shi he yuan fang	high
+人间值得	ren jian zhi de	high
+未来可期	wei lai ke qi	high
+一切顺利	yi qie shun li	high
+越来越顺	yue lai yue shun	high
+事事顺心	shi shi shun xin	high
+天天向上	tian tian xiang shang	high
+步步为营	bu bu wei ying	high
+稳步前进	wen bu qian jin	high
+日积月累	ri ji yue lei	high
+水滴石穿	shui di shi chuan	high
+久久为功	jiu jiu wei gong	high
+行稳致远	xing wen zhi yuan	high
+笃行致远	du xing zhi yuan	high
+不负期待	bu fu qi dai	high
+不负遇见	bu fu yu jian	high
+感恩遇见	gan en yu jian	high
+感谢陪伴	gan xie pei ban	high
+一路相伴	yi lu xiang ban	high
+相伴同行	xiang ban tong xing	high
+携手同行	xie shou tong xing	high
+共度难关	gong du nan guan	high
+共创未来	gong chuang wei lai	high
+共赏美景	gong shang mei jing	high
+共享美食	gong xiang mei shi	high
+共赴美好	gong fu mei hao	high
+时光不老	shi guang bu lao	high
+我们不散	wo men bu san	high
+友谊长存	you yi chang cun	high
+友谊万岁	you yi wan sui	high
+干了这杯	gan le zhe bei	high
+敬友谊	jing you yi	high
+敬明天	jing ming tian	high
+敬自己	jing zi ji	high
+敬自由	jing zi you	high
+敬生活	jing sheng huo	high
+敬热爱	jing re ai	high
+祝好	zhu hao	high
+安好	an hao	high
+珍重	zhen zhong	high
+保重	bao zhong	high
+再见	zai jian	high
+拜拜	bai bai	high
+回见	hui jian	high
+明儿见	ming er jian	high
+回头聊	hui tou liao	high
+改天聊	gai tian liao	high
+晚点聊	wan dian liao	high
+有空聊	you kong liao	high
+常联系呀	chang lian xi ya	high
+别太累啦	bie tai lei la	high
+早点歇着	zao dian xie zhe	high
+注意保暖呀	zhu yi bao nuan ya	high
+别着凉了	bie zhao liang le	high
+别感冒了	bie gan mao le	high
+别中暑了	bie zhong shu le	high
+别淋雨了	bie lin yu le	high
+别吃坏肚子	bie chi huai du zi	high
+少吃点冰的	shao chi dian bing de	high
+少吃点辣的	shao chi dian la de	high
+少喝点酒	shao he dian jiu	high
+少抽点烟	shao chou dian yan	high
+少熬夜多睡觉	shao ao ye duo shui jiao	high
+少看手机	shao kan shou ji	high
+保护眼睛	bao hu yan jing	high
+多出去走走	duo chu qu zou zou	high
+晒晒太阳	shai shai tai yang	high
+呼吸新鲜空气	hu xi xin xian kong qi	high
+放松一下心情	fang song yi xia xin qing	high
+调整好状态	tiao zheng hao zhuang tai	high
+规律作息	gui lv zuo xi	high
+健康饮食	jian kang yin shi	high
+适量运动	shi liang yun dong	high
+保持微笑	bao chi wei xiao	high
+心态放平	xin tai fang ping	high
+顺心顺意	shun xin shun yi	high
+平安喜乐	ping an xi le	high
+万事胜意	wan shi sheng yi	high
+得偿所愿	de chang suo yuan	high
+如你所愿	ru ni suo yuan	high
+心安即是归处	xin an ji shi gui chu	high
+知足常乐	zhi zu chang le	high
+平安是福	ping an shi fu	high
+健康是福	jian kang shi fu	high
+吃亏是福	chi kui shi fu	high
+笑口常开	xiao kou chang kai	high
+好运连连	hao yun lian lian	high
+好事成双	hao shi cheng shuang	high
+喜事连连	xi shi lian lian	high
+吉星高照	ji xing gao zhao	high
+大吉大利	da ji da li	high
+五福临门	wu fu lin men	high
+财源广进	cai yuan guang jin	high
+财源滚滚	cai yuan gun gun	high
+日进斗金	ri jin dou jin	high
+八方来财	ba fang lai cai	high
+发大财	fa da cai	high
+暴富	bao fu	high
+一夜暴富	yi ye bao fu	high
+升职加薪	sheng zhi jia xin	high
+事业有成	shi ye you cheng	high
+学业进步	xue ye jin bu	high
+工作开心	gong zuo kai xin	high
+生活美满	sheng huo mei man	high
+家庭幸福	jia ting xing fu	high
+阖家幸福	he jia xing fu	high
+阖家欢乐	he jia huan le	high
+阖家安康	he jia an kang	high
+身体健康	shen ti jian kang	high
+长命百岁	chang ming bai sui	high
+福如东海	fu ru dong hai	high
+寿比南山	shou bi nan shan	high
+松鹤延年	song he yan nian	high
+笑颜常在	xiao yan chang zai	high
+青春永驻	qing chun yong zhu	high
+永远年轻	yong yuan nian qing	high
+永远热泪盈眶	yong yuan re lei ying kuang	high
+永远开心	yong yuan kai xin	high
+永远幸福	yong yuan xing fu	high
+永远顺利	yong yuan shun li	high
+永远自由	yong yuan zi you	high
+永远热爱	yong yuan re ai	high
+永远相信美好	yong yuan xiang xin mei hao	high
+生活明朗	sheng huo ming lang	high
+万物可爱	wan wu ke ai	high
+人间值得	ren jian zhi de	high
+未来可期	wei lai ke qi	high
+一切都会好的	yi qie dou hui hao de	high
+明天会更好	ming tian hui geng hao	high
+加油往前走	jia you wang qian zou	high
+别回头往前看	bie hui tou wang qian kan	high
+一切向前看	yi qie xiang qian kan	high
+翻篇往前走	fan pian wang qian zou	high
+新的开始	xin de kai shi	high
+重新开始	chong xin kai shi	high
+全新出发	quan xin chu fa	high
+大步向前	da bu xiang qian	high
+一路向前	yi lu xiang qian	high
+勇往直前	yong wang zhi qian	high
+无所畏惧	wu suo wei ju	high
+光芒万丈	guang mang wan zhang	high
+闪闪发光	shan shan fa guang	high
+熠熠生辉	yi yi sheng hui	high
+星光不负赶路人	xing guang bu fu gan lu ren	high
+时光不负有心人	shi guang bu fu you xin ren	high
+越努力越幸运	yue nu li yue xing yun	high
+爱笑的人运气好	ai xiao de ren yun qi hao	high
+努力就有回报	nu li jiu you hui bao	high
+付出终有收获	fu chu zhong you shou huo	high
+坚持就是胜利	jian chi jiu shi sheng li	high
+机会留给有准备的人	ji hui liu gei you zhun bei de ren	high
+细节决定成败	xi jie jue ding cheng bai	high
+态度决定一切	tai du jue ding yi qie	high
+选择大于努力	xuan ze da yu nu li	high
+方向比努力重要	fang xiang bi nu li zhong yao	high
+认知决定上限	ren zhi jue ding shang xian	high
+格局决定结局	ge ju jue ding jie ju	high
+心态决定状态	xin tai jue ding zhuang tai	high
+行动治愈焦虑	xing dong zhi yu jiao lv	high
+自律给我自由	zi lv gei wo zi you	high
+优秀是一种习惯	you xiu shi yi zhong xi guan	high
+读书改变命运	du shu gai bian ming yun	high
+知识改变命运	zhi shi gai bian ming yun	high
+科技改变生活	ke ji gai bian sheng huo	high
+创新引领未来	chuang xin yin ling wei lai	high
+细节见人品	xi jie jian ren pin	high
+患难见人心	huan nan jian ren xin	high
+日久见真情	ri jiu jian zhen qing	high
+真诚是必杀技	zhen cheng shi bi sha ji	high
+永远保持真诚	yong yuan bao chi zhen cheng	high
+善良自带光芒	shan liang zi dai guang mang	high
+温暖彼此	wen nuan bi ci	high
+照亮彼此	zhao liang bi ci	high
+互相照亮	hu xiang zhao liang	high
+双向奔赴	shuang xiang ben fu	high
+彼此成就	bi ci cheng jiu	high
+共同奔赴	gong tong ben fu	high
+一路同行	yi lu tong xing	high
+感恩有你	gan en you ni	high
+感谢有你	gan xie you ni	high
+幸好有你	xing hao you ni	high
+有你真好	you ni zhen hao	high
+认识你真好	ren shi ni zhen hao	high
+遇见你真好	yu jian ni zhen hao	high
+和你在一起真开心	he ni zai yi qi zhen kai xin	high
+聊得真开心	liao de zhen kai xin	high
+玩得真开心	wan de zhen kai xin	high
+吃得真开心	chi de zhen kai xin	high
+今天真开心	jin tian zhen kai xin	high
+今天过得真充实	jin tian guo de zhen chong shi	high
+度过愉快的一天	du guo yu kuai de yi tian	high
+周末过得很充实	zhou mo guo de hen chong shi	high
+假期过得很开心	jia qi guo de hen kai xin	high
+期待下次见面	qi dai xia ci jian mian	high
+期待下次合作	qi dai xia ci he zuo	high
+期待下次相聚	qi dai xia ci xiang ju	high
+期待下次旅行	qi dai xia ci lv xing	high
+期待你的好消息	qi dai ni de hao xiao xi	high
+祝你前程似锦	zhu ni qian cheng si jin	high
+祝你一路顺风	zhu ni yi lu shun feng	high
+祝你旅途愉快	zhu ni lv tu yu kuai	high
+祝你玩得开心	zhu ni wan de kai xin	high
+祝你吃得开心	zhu ni chi de kai xin	high
+祝你睡个好觉	zhu ni shui ge hao jiao	high
+祝你美梦成真	zhu ni mei meng cheng zhen	high
+祝你愿望成真	zhu ni yuan wang cheng zhen	high
+祝你平安健康	zhu ni ping an jian kang	high
+祝你幸福美满	zhu ni xing fu mei man	high
+祝你顺风顺水	zhu ni shun feng shun shui	high
+祝你越来越好	zhu ni yue lai yue hao	high
+祝咱们越来越好	zhu zan men yue lai yue hao	high
+祝大家一切顺利	zhu da jia yi qie shun li	high
+祝大家周末愉快	zhu da jia zhou mo yu kuai	high
+祝大家假期愉快	zhu da jia jia qi yu kuai	high
+祝大家新年快乐	zhu da jia xin nian kuai le	high
+祝大家身体健康	zhu da jia shen ti jian kang	high
+祝大家工作顺利	zhu da jia gong zuo shun li	high
+祝大家万事如意	zhu da jia wan shi ru yi	high
+祝大家天天开心	zhu da jia tian tian kai xin	high
+祝大家平安喜乐	zhu da jia ping an xi le	high
+祝大家心想事成	zhu da jia xin xiang shi cheng	high
+祝大家财源广进	zhu da jia cai yuan guang jin	high
+祝大家步步高升	zhu da jia bu bu gao sheng	high
+祝大家阖家幸福	zhu da jia he jia xing fu	high
+祝大家龙马精神	zhu da jia long ma jing shen	high
+祝大家事事顺心	zhu da jia shi shi shun xin	high
+祝大家好运连连	zhu da jia hao yun lian lian	high
+祝大家平安顺遂	zhu da jia ping an shun sui	high
+祝大家前程似锦	zhu da jia qian cheng si jin	high
+祝大家笑口常开	zhu da jia xiao kou chang kai	high
+祝大家福星高照	zhu da jia fu xing gao zhao	high
+祝大家大吉大利	zhu da jia da ji da li	high
+祝大家喜乐安康	zhu da jia xi le an kang	high
+祝大家吉祥如意	zhu da jia ji xiang ru yi	high
+祝大家幸福安康	zhu da jia xing fu an kang	high
+祝大家顺顺利利	zhu da jia shun shun li li	high
+祝大家开开心心	zhu da jia kai kai xin xin	high
+祝大家平平安安	zhu da jia ping ping an an	high
+祝大家健健康康	zhu da jia jian jian kang kang	high
+祝大家团团圆圆	zhu da jia tuan tuan yuan yuan	high
+祝大家红红火火	zhu da jia hong hong huo huo	high
+祝大家越过越好	zhu da jia yue guo yue hao	high
+祝你新的一岁开心	zhu ni xin de yi sui kai xin	mid
+祝你生日快乐呀	zhu ni sheng ri kuai le ya	high
+祝你永远十八岁	zhu ni yong yuan shi ba sui	high
+祝你永远开心快乐	zhu ni yong yuan kai xin kuai le	high
+祝你永远被爱包围	zhu ni yong yuan bei ai bao wei	high
+祝你永远自由洒脱	zhu ni yong yuan zi you sa tuo	high
+祝你永远眼中带光	zhu ni yong yuan yan zhong dai guang	high
+祝你永远心怀热爱	zhu ni yong yuan xin huai re ai	high
+祝你所求皆如愿	zhu ni suo qiu jie ru yuan	high
+祝你所行皆坦途	zhu ni suo xing jie tan tu	high
+祝你多喜乐长安宁	zhu ni duo xi le chang an ning	high
+祝你岁岁常欢愉	zhu ni sui sui chang huan yu	high
+祝你年年皆胜意	zhu ni nian nian jie sheng yi	high
+祝你平安喜乐顺遂	zhu ni ping an xi le shun sui	high
+祝你一切顺遂无忧	zhu ni yi qie shun sui wu you	high
+祝你前路坦荡光明	zhu ni qian lu tan dang guang ming	high
+祝你未来一片光明	zhu ni wei lai yi pian guang ming	high
+祝你梦想早日成真	zhu ni meng xiang zao ri cheng zhen	high
+祝你努力终有回报	zhu ni nu li zhong you hui bao	high
+祝你每天都有好心情	zhu ni mei tian dou you hao xin qing	high
+祝你每天都被温柔以待	zhu ni mei tian dou bei wen rou yi dai	high
+祝你每天都元气满满	zhu ni mei tian dou yuan qi man man	high
+祝你每天都顺顺利利	zhu ni mei tian dou shun shun li li	high
+祝你每天都开开心心	zhu ni mei tian dou kai kai xin xin	high
+祝你每天都笑口常开	zhu ni mei tian dou xiao kou chang kai	high
+祝你每天都睡个好觉	zhu ni mei tian dou shui ge hao jiao	high
+祝你每天都吃得香睡得稳	zhu ni mei tian dou chi de xiang shui de wen	mid
+祝你生活甜甜蜜蜜	zhu ni sheng huo tian tian mi mi	high
+祝你日子红红火火	zhu ni ri zi hong hong huo huo	high
+祝你事业蒸蒸日上	zhu ni shi ye zheng zheng ri shang	high
+祝你财源滚滚而来	zhu ni cai yuan gun gun er lai	high
+祝你升职加薪发大财	zhu ni sheng zhi jia xin fa da cai	high
+祝你考上理想学校	zhu ni kao shang li xiang xue xiao	high
+祝你拿到理想录用	zhu ni na dao li xiang lu yong	high
+祝你找到满意工作	zhu ni zhao dao man yi gong zuo	high
+祝你遇到对的人	zhu ni yu dao dui de ren	high
+祝你们白头偕老	zhu ni men bai tou xie lao	high
+祝你们永结同心	zhu ni men yong jie tong xin	high
+祝你们新婚快乐	zhu ni men xin hun kuai le	high
+祝你们百年好合	zhu ni men bai nian hao he	high
+祝你们幸福一辈子	zhu ni men xing fu yi bei zi	high
+祝宝宝健康成长	zhu bao bao jian kang cheng zhang	high
+祝宝宝快乐长大	zhu bao bao kuai le zhang da	high
+祝宝宝聪明伶俐	zhu bao bao cong ming ling li	high
+祝老人家健康长寿	zhu lao ren jia jian kang chang shou	high
+祝叔叔阿姨身体健康	zhu shu shu a yi shen ti jian kang	high
+祝爸妈身体健康	zhu ba ma shen ti jian kang	high
+祝家人平安健康	zhu jia ren ping an jian kang	high
+祝全家人幸福安康	zhu quan jia ren xing fu an kang	high
+祝我们友谊地久天长	zhu wo men you yi di jiu tian chang	high
+祝我们越来越好	zhu wo men yue lai yue hao	high
+祝我们合作愉快	zhu wo men he zuo yu kuai	high
+祝我们旅途愉快	zhu wo men lv tu yu kuai	high
+祝我们一切顺利	zhu wo men yi qie shun li	high
+祝我们顶峰相见	zhu wo men ding feng xiang jian	high
+祝我们未来可期	zhu wo men wei lai ke qi	high
+祝自己生日快乐	zhu zi ji sheng ri kuai le	high
+祝自己越来越好	zhu zi ji yue lai yue hao	high
+祝自己平安喜乐	zhu zi ji ping an xi le	high
+祝自己一切顺利	zhu zi ji yi qie shun li	high
+祝自己暴富暴美	zhu zi ji bao fu bao mei	mid
+祝自己早日暴富	zhu zi ji zao ri bao fu	high
+祝自己心想事成	zhu zi ji xin xiang shi cheng	high
+祝自己万事胜意	zhu zi ji wan shi sheng yi	high
+祝自己前程似锦	zhu zi ji qian cheng si jin	high
+祝自己不负热爱	zhu zi ji bu fu re ai	high
+祝自己永远开心	zhu zi ji yong yuan kai xin	high
+祝自己永远自由	zhu zi ji yong yuan zi you	high
+祝自己永远年轻	zhu zi ji yong yuan nian qing	high
+祝自己永远健康	zhu zi ji yong yuan jian kang	high
+祝自己每天都开心	zhu zi ji mei tian dou kai xin	high
+祝自己所愿皆所得	zhu zi ji suo yuan jie suo de	high

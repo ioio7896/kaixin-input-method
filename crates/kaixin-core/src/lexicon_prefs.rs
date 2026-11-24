@@ -168,13 +168,16 @@ fn parse_lexicon_section_bool(text: &str) -> HashMap<String, bool> {
         }
         if let Some((k, v)) = line.split_once('=') {
             let key = k.trim().to_ascii_lowercase();
+            let Some(tag) = key.strip_prefix("lexicon_") else {
+                continue;
+            };
             let val = v.trim().to_ascii_lowercase();
             let on = matches!(val.as_str(), "1" | "true" | "yes" | "on");
             let off = matches!(val.as_str(), "0" | "false" | "no" | "off");
             if on {
-                out.insert(key, true);
+                out.insert(tag.to_string(), true);
             } else if off {
-                out.insert(key, false);
+                out.insert(tag.to_string(), false);
             }
         }
     }
@@ -438,23 +441,44 @@ pub fn legacy_optional_lexicon_tags(tag: &str) -> &'static [&'static str] {
     }
 }
 
-fn optional_lexicon_tag_enabled_from_map(tag: &str, map: &HashMap<String, bool>) -> bool {
+/// Resolve a switch from saved, unprefixed tags for both the engine and settings.
+pub fn resolve_optional_lexicon_tag_enabled(
+    tag: &str,
+    saved: impl Fn(&str) -> Option<bool>,
+) -> bool {
     if is_retired_optional_lexicon_tag(tag) {
         return false;
     }
-    let key = format!("lexicon_{}", tag.to_ascii_lowercase());
-    if let Some(enabled) = map.get(&key).copied() {
+    let default = default_optional_lexicon_tag_enabled(tag);
+    let current = saved(tag);
+    if let Some(enabled) = current.filter(|&enabled| enabled != default) {
         return enabled;
     }
-    let legacy_values = legacy_optional_lexicon_tags(tag)
+    // Older settings persisted every switch, including defaults. When a category
+    // kept its tag, its saved default should not hide a change to a merged switch.
+    let merged = merged_category_defaults(tag)
         .iter()
-        .filter_map(|legacy| map.get(&format!("lexicon_{legacy}")).copied())
-        .collect::<Vec<_>>();
-    if legacy_values.is_empty() {
-        default_optional_lexicon_tag_enabled(tag)
-    } else {
-        legacy_values.into_iter().all(|enabled| enabled)
+        .filter_map(|&(legacy, former_default)| {
+            saved(legacy).filter(|&enabled| enabled != former_default)
+        })
+        .reduce(|left, right| left && right);
+    merged
+        .or(current)
+        .or_else(|| {
+            legacy_optional_lexicon_tags(tag)
+                .iter()
+                .copied()
+                .filter_map(saved)
+                .reduce(|left, right| left && right)
+        })
+        .unwrap_or(default)
+}
+
+fn optional_lexicon_tag_enabled_from_map(tag: &str, map: &HashMap<String, bool>) -> bool {
+    if map.is_empty() {
+        return default_optional_lexicon_tag_enabled(tag);
     }
+    resolve_optional_lexicon_tag_enabled(&tag.to_ascii_lowercase(), |name| map.get(name).copied())
 }
 
 pub fn is_optional_lexicon_tag_enabled(tag: &str) -> bool {
@@ -469,15 +493,18 @@ pub fn is_thuocl_tag_enabled(tag: &str) -> bool {
 }
 
 pub fn has_custom_optional_lexicon_prefs() -> bool {
-    lexicon_toggle_map().is_some_and(|map| {
-        map.into_iter().any(|(key, enabled)| {
-            let Some(tag) = key.strip_prefix("lexicon_") else {
-                return false;
-            };
+    lexicon_toggle_map().is_some_and(|map| has_custom_optional_lexicon_prefs_from_map(&map))
+}
+
+fn has_custom_optional_lexicon_prefs_from_map(map: &HashMap<String, bool>) -> bool {
+    !map.is_empty()
+        && (map.iter().any(|(tag, &enabled)| {
             !is_retired_optional_lexicon_tag(tag)
                 && enabled != default_optional_lexicon_tag_enabled(tag)
-        })
-    })
+        }) || CATEGORY_LEXICON_TAGS.iter().any(|tag| {
+            optional_lexicon_tag_enabled_from_map(tag, map)
+                != default_optional_lexicon_tag_enabled(tag)
+        }))
 }
 
 /// Return enabled names from a precomputed set using one settings-file read.
@@ -568,12 +595,61 @@ mod retirement_tests {
     }
 
     #[test]
+    fn merged_categories_inherit_changed_switches_from_an_old_full_profile() {
+        let map = parse_lexicon_section_bool(
+            "[lexicon]\n\
+             lexicon_daily_communication=1\nlexicon_category_chat_daily=0\n\
+             lexicon_category_chat_emotions=1\nlexicon_technology=0\n\
+             lexicon_professional_computing=1\nlexicon_category_devices=0\n",
+        );
+        assert!(!optional_lexicon_path_enabled(
+            Path::new("lexicon/zh-ext/daily_communication.txt"),
+            Some(&map),
+        ));
+        assert!(optional_lexicon_path_enabled(
+            Path::new("lexicon/zh-ext/technology.txt"),
+            Some(&map),
+        ));
+        assert!(!optional_lexicon_path_enabled(
+            Path::new("lexicon/zh-ext/professional_computing.txt"),
+            Some(&map),
+        ));
+        assert!(has_custom_optional_lexicon_prefs_from_map(&map));
+    }
+
+    #[test]
+    fn merged_categories_ignore_old_defaults_and_resolve_conflicts() {
+        let mut map = HashMap::new();
+        for tag in CATEGORY_LEXICON_TAGS {
+            for &(legacy, former_default) in merged_category_defaults(tag) {
+                assert!(is_retired_optional_lexicon_tag(legacy));
+                assert!(map.insert(legacy.to_string(), former_default).is_none());
+            }
+        }
+        assert!(!has_custom_optional_lexicon_prefs_from_map(&map));
+
+        map.insert("category_social_media".to_string(), true);
+        map.insert("category_sports".to_string(), false);
+        assert!(!optional_lexicon_tag_enabled_from_map(
+            "category_games",
+            &map
+        ));
+
+        map.insert("category_proper_places".to_string(), true);
+        map.insert("geography_admin".to_string(), false);
+        assert!(!optional_lexicon_tag_enabled_from_map(
+            "geography_admin",
+            &map
+        ));
+    }
+
+    #[test]
     fn imported_category_defaults_are_applied() {
-        assert!(default_optional_lexicon_tag_enabled("category_chat_daily"));
+        assert!(default_optional_lexicon_tag_enabled("daily_communication"));
         assert!(!default_optional_lexicon_tag_enabled(
             "category_common_three"
         ));
-        assert!(!default_optional_lexicon_tag_enabled("category_ai"));
+        assert!(!default_optional_lexicon_tag_enabled("technology"));
         assert!(!default_optional_lexicon_tag_enabled(
             "professional_architecture"
         ));

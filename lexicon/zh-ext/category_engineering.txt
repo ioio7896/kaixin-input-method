@@ -1,0 +1,976 @@
+# 开心输入法扩展词库：建筑制造与能源环保（973 条）
+# 来源合并：category_architecture.txt, category_manufacturing.txt, category_energy.txt, category_environment.txt, category_agriculture.txt, category_warehousing.txt, professional_architecture.txt
+# 格式：词语<TAB>全拼或输入码<TAB>万分制排序分数（1-10000，按分数降序分层）。
+变电站	bian dian zhan	6200
+大气污染	da qi wu ran	6200
+断路器	duan lu qi	6200
+新能源	xin neng yuan	6200
+热处理	re chu li	6200
+不合格品	bu he ge pin	6100
+临边防护	lin bian fang hu	6100
+交货周期	jiao huo zhou qi	6100
+交货日期	jiao huo ri qi	6100
+产能利用	chan neng li yong	6100
+仓储管理	cang chu guan li	6100
+仓库出入库	cang ku chu ru ku	6100
+仓库盘点	cang ku pan dian	6100
+仓库管理	cang ku guan li	6100
+低碳生活	di tan sheng huo	6100
+作业指导书	zuo ye zhi dao shu	6100
+作物轮作	zuo wu lun zuo	6100
+供应商交付	gong ying shang jiao fu	6100
+供应商评估	gong ying shang ping gu	6100
+保护装置	bao hu zhuang zhi	6100
+保温工程	bao wen gong cheng	6100
+储能电池	chu neng dian chi	6100
+储能电站	chu neng dian zhan	6100
+储能系统	chu neng xi tong	6100
+先进先出	xian jin xian chu	6100
+光伏发电	guang fu fa dian	6100
+光伏电站	guang fu dian zhan	6100
+光伏组件	guang fu zu jian	6100
+光伏逆变器	guang fu ni bian qi	6100
+光照条件	guang zhao tiao jian	6100
+入库单	ru ku dan	6100
+入库登记	ru ku deng ji	6100
+入库验收	ru ku yan shou	6100
+再生资源	zai sheng zi yuan	6100
+农产品检测	nong chan pin jian ce	6100
+农产品溯源	nong chan pin su yuan	6100
+农作物种植	nong zuo wu zhong zhi	6100
+农机作业	nong ji zuo ye	6100
+农药残留	nong yao can liu	6100
+冷链仓储	leng lian cang chu	6100
+出库单	chu ku dan	6100
+出库复核	chu ku fu he	6100
+出库登记	chu ku deng ji	6100
+到货计划	dao huo ji hua	6100
+到货验收	dao huo yan shou	6100
+功率因数	gong lv yin shu	6100
+加工精度	jia gong jing du	6100
+加工误差	jia gong wu cha	6100
+包装作业	bao zhuang zuo ye	6100
+医疗废物	yi liao fei wu	6100
+危险废物	wei xian fei wu	6100
+压铸成型	ya zhu cheng xing	6100
+发货清单	fa huo qing dan	6100
+变频控制	bian pin kong zhi	6100
+叶面施肥	ye mian shi fei	6100
+吊装作业	diao zhuang zuo ye	6100
+噪声污染	zao sheng wu ran	6100
+噪声监测	zao sheng jian ce	6100
+园艺工具	yuan yi gong ju	6100
+固体废物	gu ti fei wu	6100
+固废处理	gu fei chu li	6100
+图纸会审	tu zhi hui shen	6100
+土壤墒情	tu rang shang qing	6100
+土壤改良	tu rang gai liang	6100
+土壤肥力	tu rang fei li	6100
+土方工程	tu fang gong cheng	6100
+在线监测	zai xian jian ce	6100
+地基处理	di ji chu li	6100
+垃圾分类	la ji fen lei	6100
+基坑开挖	ji keng kai wa	6100
+基坑支护	ji keng zhi hu	6100
+备件管理	bei jian guan li	6100
+多肉植物	duo rou zhi wu	6100
+安全交底	an quan jiao di	6100
+安全库存	an quan ku cun	6100
+小麦种植	xiao mai zhong zhi	6100
+尺寸公差	chi cun gong chai	6100
+峰谷电价	feng gu dian jia	6100
+工业机器人	gong ye ji qi ren	6100
+工程变更	gong cheng bian geng	6100
+工程监理	gong cheng jian li	6100
+工程签证	gong cheng qian zheng	6100
+工程结算	gong cheng jie suan	6100
+工程质量	gong cheng zhi liang	6100
+工程量清单	gong cheng liang qing dan	6100
+工程预算	gong cheng yu suan	6100
+工程验收	gong cheng yan shou	6100
+工艺优化	gong yi you hua	6100
+工艺参数	gong yi can shu	6100
+工艺文件	gong yi wen jian	6100
+工艺流程	gong yi liu cheng	6100
+工装夹具	gong zhuang jia ju	6100
+幕墙工程	mu qiang gong cheng	6100
+库位管理	ku wei guan li	6100
+库存冻结	ku cun dong jie	6100
+库存周转	ku cun zhou zhuan	6100
+库存差异	ku cun cha yi	6100
+库存数量	ku cun shu liang	6100
+库存积压	ku cun ji ya	6100
+库存调拨	ku cun diao bo	6100
+库存预警	ku cun yu jing	6100
+废气处理	fei qi chu li	6100
+废水处理	fei shui chu li	6100
+形位公差	xing wei gong chai	6100
+循环利用	xun huan li yong	6100
+循环经济	xun huan jing ji	6100
+成品检验	cheng pin jian yan	6100
+打包作业	da bao zuo ye	6100
+扦插繁殖	qian cha fan zhi	6100
+扬尘治理	yang chen zhi li	6100
+批次管理	pi ci guan li	6100
+批次追溯	pi ci zhui su	6100
+技术交底	ji shu jiao di	6100
+抽样检验	chou yang jian yan	6100
+拣货任务	jian huo ren wu	6100
+拣货单	jian huo dan	6100
+拣货复核	jian huo fu he	6100
+换盆换土	huan pen huan tu	6100
+排放标准	pai fang biao zhun	6100
+排污登记	pai wu deng ji	6100
+排污许可	pai wu xu ke	6100
+接地保护	jie di bao hu	6100
+接地电阻	jie di dian zu	6100
+播种时间	bo zhong shi jian	6100
+操作规程	cao zuo gui cheng	6100
+故障排查	gu zhang pai cha	6100
+数控加工	shu kong jia gong	6100
+文明施工	wen ming shi gong	6100
+施工围挡	shi gong wei dang	6100
+施工图纸	shi gong tu zhi	6100
+施工方案	shi gong fang an	6100
+施工日志	shi gong ri zhi	6100
+施工组织	shi gong zu zhi	6100
+施工进度	shi gong jin du	6100
+无功补偿	wu gong bu chang	6100
+智慧农业	zhi hui nong ye	6100
+机械加工	ji xie jia gong	6100
+材料报验	cai liao bao yan	6100
+材料送检	cai liao song jian	6100
+来料检验	lai liao jian yan	6100
+构件安装	gou jian an zhuang	6100
+果实成熟	guo shi cheng shu	6100
+果树修剪	guo shu xiu jian	6100
+果树嫁接	guo shu jia jie	6100
+标准作业	biao zhun zuo ye	6100
+核能发电	he neng fa dian	6100
+根系生长	gen xi sheng zhang	6100
+桩基施工	zhuang ji shi gong	6100
+植物补光	zhi wu bu guang	6100
+模板安装	mu ban an zhuang	6100
+模板拆除	mu ban chai chu	6100
+水体污染	shui ti wu ran	6100
+水溶肥	shui rong fei	6100
+水稻种植	shui dao zhong zhi	6100
+水质监测	shui zhi jian ce	6100
+污染防治	wu ran fang zhi	6100
+污水管网	wu shui guan wang	6100
+油烟治理	you yan zhi li	6100
+注塑成型	zhu su cheng xing	6100
+浇水频率	jiao shui pin lv	6100
+消防工程	xiao fang gong cheng	6100
+混凝土养护	hun ning tu yang hu	6100
+混凝土浇筑	hun ning tu jiao zhu	6100
+清洁能源	qing jie neng yuan	6100
+温室大棚	wen shi da peng	6100
+温室气体	wen shi qi ti	6100
+漏电保护	lou dian bao hu	6100
+灌溉管理	guan gai guan li	6100
+火力发电	huo li fa dian	6100
+焊接工艺	han jie gong yi	6100
+玉米种植	yu mi zhong zhi	6100
+环保设施	huan bao she shi	6100
+环保验收	huan bao yan shou	6100
+环境检测	huan jing jian ce	6100
+环境治理	huan jing zhi li	6100
+环境管理	huan jing guan li	6100
+现场管理	xian chang guan li	6100
+生产工艺	sheng chan gong yi	6100
+生产排程	sheng chan pai cheng	6100
+生产效率	sheng chan xiao lv	6100
+生产计划	sheng chan ji hua	6100
+生产订单	sheng chan ding dan	6100
+生产进度	sheng chan jin du	6100
+生态保护	sheng tai bao hu	6100
+生态修复	sheng tai xiu fu	6100
+生物防治	sheng wu fang zhi	6100
+用电负荷	yong dian fu he	6100
+电力检修	dian li jian xiu	6100
+电力调度	dian li diao du	6100
+电机驱动	dian ji qu dong	6100
+电气图纸	dian qi tu zhi	6100
+电气安全	dian qi an quan	6100
+电气工程	dian qi gong cheng	6100
+电气接线	dian qi jie xian	6100
+电气绝缘	dian qi jue yuan	6100
+电缆接头	dian lan jie tou	6100
+电缆敷设	dian lan fu she	6100
+电缆桥架	dian lan qiao jia	6100
+电能质量	dian neng zhi liang	6100
+病叶清理	bing ye qing li	6100
+病虫害防治	bing chong hai fang zhi	6100
+盆土透气	pen tu tou qi	6100
+盆栽种植	pen zai zhong zhi	6100
+短路保护	duan lu bao hu	6100
+砂浆配比	sha jiang pei bi	6100
+碳中和	tan zhong he	6100
+碳排放	tan pai fang	6100
+碳核算	tan he suan	6100
+碳足迹	tan zu ji	6100
+碳达峰	tan da feng	6100
+磨削加工	mo xue jia gong	6100
+种子发芽	zhong zi fa ya	6100
+种植密度	zhong zhi mi du	6100
+种植管理	zhong zhi guan li	6100
+空气监测	kong qi jian ce	6100
+给排水工程	ji pai shui gong cheng	6100
+绝缘电阻	jue yuan dian zu	6100
+继电保护	ji dian bao hu	6100
+绿植养护	lv zhi yang hu	6100
+绿色发展	lv se fa zhan	6100
+绿色防控	lv se fang kong	6100
+育苗管理	yu miao guan li	6100
+能源管理	neng yuan guan li	6100
+自动化产线	zi dong hua chan xian	6100
+节能减排	jie neng jian pai	6100
+节能改造	jie neng gai zao	6100
+花卉养护	hua hui yang hu	6100
+花期管理	hua qi guan li	6100
+营养土	ying yang tu	6100
+虫害处理	chong hai chu li	6100
+表面处理	biao mian chu li	6100
+装卸作业	zhuang xie zuo ye	6100
+装箱清单	zhuang xiang qing dan	6100
+设备保养	she bei bao yang	6100
+设备台账	she bei tai zhang	6100
+设备故障	she bei gu zhang	6100
+设备点检	she bei dian jian	6100
+设备维护	she bei wei hu	6100
+设施农业	she shi nong ye	6100
+谐波治理	xie bo zhi li	6100
+货位管理	huo wei guan li	6100
+货架管理	huo jia guan li	6100
+质量体系	zhi liang ti xi	6100
+质量改进	zhi liang gai jin	6100
+质量检验	zhi liang jian yan	6100
+质量追溯	zhi liang zhui su	6100
+资源回收	zi yuan hui shou	6100
+车削加工	che xiao jia gong	6100
+车辆调度	che liang diao du	6100
+输电线路	shu dian xian lu	6100
+过程检验	guo cheng jian yan	6100
+过载保护	guo zai bao hu	6100
+运力调度	yun li diao du	6100
+运输时效	yun shu shi xiao	6100
+运输计划	yun shu ji hua	6100
+运输路线	yun shu lu xian	6100
+返工返修	fan gong fan xiu	6100
+追肥施肥	zhui fei shi fei	6100
+通风工程	tong feng gong cheng	6100
+配电房	pei dian fang	6100
+配电柜	pei dian gui	6100
+配电线路	pei dian xian lu	6100
+配载计划	pei zai ji hua	6100
+配送计划	pei song ji hua	6100
+采购周期	cai gou zhou qi	6100
+采购成本	cai gou cheng ben	6100
+采购验收	cai gou yan shou	6100
+钢筋加工	gang jin jia gong	6100
+钢筋绑扎	gang jin bang zha	6100
+钢筋连接	gang jin lian jie	6100
+钣金加工	ban jin jia gong	6100
+钻孔加工	zuan kong jia gong	6100
+铣削加工	xi xue jia gong	6100
+防水工程	fang shui gong cheng	6100
+阳台种菜	yang tai zhong cai	6100
+隐蔽验收	yin bi yan shou	6100
+雨污分流	yu wu fen liu	6100
+风力发电	feng li fa dian	6100
+风电机组	feng dian ji zu	6100
+验收资料	yan shou zi liao	6100
+高处作业	gao chu zuo ye	6100
+传统建筑	chuan tong jian zhu	6039
+保温	bao wen	6000
+剖面图	pou mian tu	6000
+剪力墙	jian li qiang	6000
+地基	di ji	6000
+垃圾回收	la ji hui shou	6000
+城市规划	cheng shi gui hua	6000
+基础	ji chu	6000
+室内设计	shi nei she ji	6000
+容积率	rong ji lv	6000
+屋面	wu mian	6000
+工程量	gong cheng liang	6000
+幕墙	mu qiang	6000
+平面图	ping mian tu	6000
+建筑学	jian zhu xue	6000
+建筑密度	jian zhu mi du	6000
+建筑施工	jian zhu shi gong	6000
+建筑材料	jian zhu cai liao	6000
+建筑结构	jian zhu jie gou	6000
+建筑节能	jian zhu jie neng	6000
+建筑设计	jian zhu she ji	6000
+建筑面积	jian zhu mian ji	6000
+总平面图	zong ping mian tu	6000
+恒载	heng zai	6000
+承重墙	cheng zhong qiang	6000
+抗震设计	kang zhen she ji	6000
+施工图	shi gong tu	6000
+无障碍设计	wu zhang ai she ji	6000
+日照分析	ri zhao fen xi	6000
+景观设计	jing guan she ji	6000
+板	ban	6000
+柱	zhu	6000
+框架结构	kuang jia jie gou	6000
+桩基础	zhuang ji chu	6000
+梁	liang	6000
+楼梯	lou ti	6000
+模板	mu ban	6000
+水泥	shui ni	6000
+活载	huo zai	6000
+消防疏散	xiao fang shu san	6000
+混凝土强度	hun ning tu qiang du	6000
+生物多样性	sheng wu duo yang xing	6000
+砂浆	sha jiang	6000
+砌体结构	qi ti jie gou	6000
+立面图	li mian tu	6000
+竣工验收	jun gong yan shou	6000
+结构荷载	jie gou he zai	6000
+绿地率	lv di lv	6000
+绿色建筑	lv se jian zhu	6000
+脚手架	jiao shou jia	6000
+被动式建筑	bei dong shi jian zhu	6000
+装配式建筑	zhuang pei shi jian zhu	6000
+配筋	pei jin	6000
+钢筋混凝土	gang jin hun ning tu	6000
+钢结构	gang jie gou	6000
+门窗	men chuang	6000
+防水	fang shui	6000
+防火分区	fang huo fen qu	6000
+隔声	ge sheng	6000
+隔热	ge re	6000
+雪荷载	xue he zai	6000
+风荷载	feng he zai	6000
+现代建筑	xian dai jian zhu	5885
+人生态度	ren sheng tai du	5808
+中国建筑	zhong guo jian zhu	5770
+城市建筑	cheng shi jian zhu	5770
+大学建筑	da xue jian zhu	5770
+工业建筑	gong ye jian zhu	5770
+建筑专业	jian zhu zhuan ye	5770
+建筑公司	jian zhu gong si	5770
+建筑大学	jian zhu da xue	5770
+建筑安全	jian zhu an quan	5770
+建筑市场	jian zhu shi chang	5770
+建筑年代	jian zhu nian dai	5770
+建筑文化	jian zhu wen hua	5770
+建筑环境	jian zhu huan jing	5770
+建筑科学	jian zhu ke xue	5770
+建筑管理	jian zhu guan li	5770
+建筑艺术	jian zhu yi shu	5770
+建筑行业	jian zhu hang ye	5770
+教育建筑	jiao yu jian zhu	5770
+文化建筑	wen hua jian zhu	5770
+表现建筑	biao xian jian zhu	5770
+公共建筑	gong gong jian zhu	5731
+建筑条件	jian zhu tiao jian	5731
+建筑标准	jian zhu biao zhun	5731
+建筑语言	jian zhu yu yan	5731
+中国农业	zhong guo nong ye	5693
+健康建筑	jian kang jian zhu	5693
+农业中学	nong ye zhong xue	5693
+农业企业	nong ye qi ye	5693
+农业发展	nong ye fa zhan	5693
+农业工程	nong ye gong cheng	5693
+农业技术	nong ye ji shu	5693
+农业投资	nong ye tou zi	5693
+农业新闻	nong ye xin wen	5693
+农业革命	nong ye ge ming	5693
+学院建筑	xue yuan jian zhu	5693
+建筑功能	jian zhu gong neng	5693
+建筑学院	jian zhu xue yuan	5693
+农业产业	nong ye chan ye	5654
+建筑设备	jian zhu she bei	5654
+建筑职业	jian zhu zhi ye	5616
+一种植物	yi zhong zhi wu	5577
+农业知识	nong ye zhi shi	5577
+建筑形式	jian zhu xing shi	5577
+现代农业	xian dai nong ye	5577
+交通建筑	jiao tong jian zhu	5539
+体育建筑	ti yu jian zhu	5539
+保护生态	bao hu sheng tai	5539
+中国电力	zhong guo dian li	5500
+今日建筑	jin ri jian zhu	5500
+医疗建筑	yi liao jian zhu	5500
+古代建筑	gu dai jian zhu	5500
+商业建筑	shang ye jian zhu	5500
+山东电力	shan dong dian li	5500
+电力大学	dian li da xue	5500
+电力学院	dian li xue yuan	5500
+建筑创作	jian zhu chuang zuo	5462
+建筑维护	jian zhu wei hu	5462
+电力行业	dian li hang ye	5462
+铁路建筑	tie lu jian zhu	5462
+农业劳动	nong ye lao dong	5424
+农业工人	nong ye gong ren	5424
+普通建筑	pu tong jian zhu	5424
+农业公园	nong ye gong yuan	5385
+南京农业	nan jing nong ye	5385
+建筑类型	jian zhu lei xing	5385
+特色建筑	te se jian zhu	5385
+绿色环保	lv se huan bao	5385
+农业投入	nong ye tou ru	5347
+建筑设施	jian zhu she shi	5347
+建筑评价	jian zhu ping jia	5347
+农业实验	nong ye shi yan	5308
+农业机器	nong ye ji qi	5308
+农业机械	nong ye ji xie	5308
+城市生态	cheng shi sheng tai	5308
+建筑机械	jian zhu ji xie	5308
+建筑规范	jian zhu gui fan	5308
+政治生态	zheng zhi sheng tai	5308
+施工人员	shi gong ren yuan	5308
+施工程序	shi gong cheng xu	5308
+环境生态	huan jing sheng tai	5308
+生态体系	sheng tai ti xi	5308
+生态公园	sheng tai gong yuan	5308
+生态农业	sheng tai nong ye	5308
+生态区域	sheng tai qu yu	5308
+生态危机	sheng tai wei ji	5308
+生态广场	sheng tai guang chang	5308
+生态建设	sheng tai jian she	5308
+生态文化	sheng tai wen hua	5308
+生态文明	sheng tai wen ming	5308
+生态条件	sheng tai tiao jian	5308
+生态艺术	sheng tai yi shu	5308
+电力大楼	dian li da lou	5308
+美丽生态	mei li sheng tai	5308
+自然生态	zi ran sheng tai	5308
+金融生态	jin rong sheng tai	5308
+工厂建筑	gong chang jian zhu	5270
+建筑费用	jian zhu fei yong	5270
+建筑高度	jian zhu gao du	5270
+环保局长	huan bao ju zhang	5270
+农业贷款	nong ye dai kuan	5231
+建筑预算	jian zhu yu suan	5231
+建筑信息模型	jian zhu xin xi mo xing	5200
+施工组织设计	shi gong zu zhi she ji	5200
+环境影响评价	huan jing ying xiang ping jia	5200
+电池管理系统	dian chi guan li xi tong	5200
+农业高中	nong ye gao zhong	5193
+城市污染	cheng shi wu ran	5193
+居住建筑	ju zhu jian zhu	5193
+工业污染	gong ye wu ran	5193
+污染环境	wu ran huan jing	5193
+病毒污染	bing du wu ran	5193
+社会污染	she hui wu ran	5193
+绿色生态	lv se sheng tai	5193
+污水处理	wu shui chu li	5163
+上海电力	shang hai dian li	5154
+农业地理	nong ye di li	5154
+农业装备	nong ye zhuang bei	5154
+施工要求	shi gong yao qiu	5154
+智能建筑	zhi neng jian zhu	5154
+电力企业	dian li qi ye	5154
+电力工业	dian li gong ye	5154
+电力工程	dian li gong cheng	5154
+电力改革	dian li gai ge	5154
+电力机械	dian li ji xie	5154
+电力电子	dian li dian zi	5154
+电力设备	dian li she bei	5154
+电力设施	dian li she shi	5154
+一群垃圾	yi qun la ji	5116
+什么垃圾	shen me la ji	5116
+什么垃圾	shen mo la ji	5116
+农业化学	nong ye hua xue	5116
+医疗垃圾	yi liao la ji	5116
+垃圾一个	la ji yi ge	5116
+垃圾东西	la ji dong xi	5116
+垃圾垃圾	la ji la ji	5116
+垃圾文件	la ji wen jian	5116
+垃圾游戏	la ji you xi	5116
+垃圾视频	la ji shi pin	5116
+垃圾食品	la ji shi pin	5116
+就是垃圾	jiu shi la ji	5116
+建筑垃圾	jian zhu la ji	5116
+建筑安装	jian zhu an zhuang	5116
+建筑摄影	jian zhu she ying	5116
+施工安全	shi gong an quan	5116
+无人施工	wu ren shi gong	5116
+明星电力	ming xing dian li	5116
+污染空气	wu ran kong qi	5116
+环保中心	huan bao zhong xin	5116
+环保产业	huan bao chan ye	5116
+环保家庭	huan bao jia ting	5116
+环保少女	huan bao shao nv	5116
+环保标准	huan bao biao zhun	5116
+环保植物	huan bao zhi wu	5116
+环保设备	huan bao she bei	5116
+生态摄影	sheng tai she ying	5116
+生态环保	sheng tai huan bao	5116
+生活垃圾	sheng huo la ji	5116
+街道建筑	jie dao jian zhu	5116
+这么垃圾	zhe me la ji	5116
+建筑大师	jian zhu da shi	5077
+建筑群体	jian zhu qun ti	5077
+房屋建筑	fang wu jian zhu	5077
+施工技术	shi gong ji shu	5077
+海洋污染	hai yang wu ran	5077
+农业大厦	nong ye da sha	5039
+农业气候	nong ye qi hou	5039
+原始农业	yuan shi nong ye	5039
+建筑模型	jian zhu mo xing	5039
+建筑细节	jian zhu xi jie	5039
+桂东电力	gui dong dian li	5039
+电力大厦	dian li da sha	5039
+典型建筑	dian xing jian zhu	5000
+创业环保	chuang ye huan bao	5000
+地下建筑	di xia jian zhu	5000
+垃圾男孩	la ji nan hai	5000
+建筑主体	jian zhu zhu ti	5000
+建筑大楼	jian zhu da lou	5000
+生态福建	sheng tai fu jian	5000
+电力通信	dian li tong xin	4962
+白色垃圾	bai se la ji	4962
+种植制度	zhong zhi zhi du	4962
+种植设计	zhong zhi she ji	4962
+住宅建筑	zhu zhai jian zhu	4924
+农业布局	nong ye bu ju	4924
+建筑性能	jian zhu xing neng	4924
+建筑测量	jian zhu ce liang	4924
+建筑造型	jian zhu zao xing	4924
+生态难民	sheng tai nan min	4924
+发电话	fa dian hua	4885
+混合农业	hun he nong ye	4885
+清理垃圾	qing li la ji	4885
+高层建筑	gao ceng jian zhu	4885
+工程施工	gong cheng shi gong	4847
+建筑时报	jian zhu shi bao	4847
+建筑玻璃	jian zhu bo li	4847
+建筑装饰	jian zhu zhuang shi	4847
+施工中心	shi gong zhong xin	4847
+施工公司	shi gong gong si	4847
+施工单位	shi gong dan wei	4847
+施工工艺	shi gong gong yi	4847
+施工建设	shi gong jian she	4847
+施工文件	shi gong wen jian	4847
+施工方式	shi gong fang shi	4847
+施工方法	shi gong fang fa	4847
+施工机械	shi gong ji xie	4847
+施工检查	shi gong jian cha	4847
+施工测量	shi gong ce liang	4847
+施工监控	shi gong jian kong	4847
+施工监督	shi gong jian du	4847
+施工阶段	shi gong jie duan	4847
+施工面积	shi gong mian ji	4847
+施工项目	shi gong xiang mu	4847
+施工预算	shi gong yu suan	4847
+正在施工	zheng zai shi gong	4847
+生态灾难	sheng tai zai nan	4847
+人工地貌	ren gong di mao	4808
+华北电力	hua bei dian li	4808
+建筑策划	jian zhu ce hua	4808
+环保风暴	huan bao feng bao	4808
+产地生态	chan di sheng tai	4770
+发电设备	fa dian she bei	4770
+封闭施工	feng bi shi gong	4770
+建筑构造	jian zhu gou zao	4770
+建筑风景	jian zhu feng jing	4770
+旅馆建筑	lv guan jian zhu	4770
+暴露垃圾	bao lu la ji	4770
+视觉污染	shi jue wu ran	4770
+长江电力	chang jiang dian li	4770
+东湖生态	dong hu sheng tai	4731
+中原环保	zhong yuan huan bao	4731
+乐山电力	le shan dian li	4731
+农业科研	nong ye ke yan	4731
+农业院校	nong ye yuan xiao	4731
+南湖生态	nan hu sheng tai	4731
+古典建筑	gu dian jian zhu	4731
+垃圾王子	la ji wang zi	4731
+徽州建筑	hui zhou jian zhu	4731
+惠城环保	hui cheng huan bao	4731
+文山电力	wen shan dian li	4731
+永清环保	yong qing huan bao	4731
+海兴电力	hai xing dian li	4731
+涪陵电力	fu ling dian li	4731
+西昌电力	xi chang dian li	4731
+郊区农业	jiao qu nong ye	4731
+农业户口	nong ye hu kou	4693
+办公建筑	ban gong jian zhu	4693
+建筑大厦	jian zhu da sha	4693
+水力发电	shui li fa dian	4661
+垃圾处置	la ji chu zhi	4654
+建筑用途	jian zhu yong tu	4654
+施工用地	shi gong yong di	4654
+海峡环保	hai xia huan bao	4654
+农业户	nong ye hu	4616
+冬季施工	dong ji shi gong	4616
+建筑缺陷	jian zhu que xian	4616
+污染伤口	wu ran shang kou	4616
+观光农业	guan guang nong ye	4616
+生态效益	sheng tai xiao yi	4577
+农业化	nong ye hua	4539
+建筑制品	jian zhu zhi pin	4539
+建筑平面	jian zhu ping mian	4539
+有害垃圾	you hai la ji	4539
+环保总局	huan bao zong ju	4539
+生态乐园	sheng tai le yuan	4539
+细菌污染	xi jun wu ran	4539
+附属建筑	fu shu jian zhu	4539
+生态家园	sheng tai jia yuan	4500
+生态景观	sheng tai jing guan	4500
+垃圾队友	la ji dui you	4462
+建筑光学	jian zhu guang xue	4462
+建筑声学	jian zhu sheng xue	4462
+建筑隔热	jian zhu ge re	4462
+未受污染	wei shou wu ran	4462
+潮汐发电	chao xi fa dian	4462
+农药污染	nong yao wu ran	4424
+建筑概况	jian zhu gai kuang	4424
+建筑装修	jian zhu zhuang xiu	4424
+二次污染	er ci wu ran	4385
+农业专科	nong ye zhuan ke	4385
+农业用地	nong ye yong di	4385
+国家电网	guo jia dian wang	4385
+微生态	wei sheng tai	4385
+水利电力	shui li dian li	4385
+水生态	shui sheng tai	4385
+电力机车	dian li ji che	4385
+节能环保	jie neng huan bao	4385
+噪音污染	zao yin wu ran	4347
+基本农田	ji ben nong tian	4347
+市政建筑	shi zheng jian zhu	4347
+建筑电气	jian zhu dian qi	4347
+垃圾大王	la ji da wang	4308
+垃圾玩意	la ji wan yi	4308
+建筑体积	jian zhu ti ji	4308
+电力之战	dian li zhi zhan	4308
+电力十足	dian li shi zu	4308
+农田灌溉	nong tian guan gai	4270
+建筑分	jian zhu fen	4270
+建筑楼	jian zhu lou	4270
+建筑法	jian zhu fa	4270
+建筑的	jian zhu de	4270
+建筑税	jian zhu shui	4270
+建筑类	jian zhu lei	4270
+建筑线	jian zhu xian	4270
+搞建筑	gao jian zhu	4270
+民用建筑	min yong jian zhu	4270
+电力学	dian li xue	4270
+老建筑	lao jian zhu	4270
+远达环保	yuan da huan bao	4270
+不垃圾	bu la ji	4231
+农业品	nong ye pin	4231
+农业路	nong ye lu	4231
+建筑照明	jian zhu zhao ming	4231
+很垃圾	hen la ji	4231
+最垃圾	zui la ji	4231
+海上风电	hai shang feng dian	4231
+环保卫士	huan bao wei shi	4231
+环保督察	huan bao du cha	4231
+还在工地	hai zai gong di	4231
+这个工地	zhe ge gong di	4231
+连环保	lian huan bao	4231
+道教建筑	dao jiao jian zhu	4231
+集约农业	ji yue nong ye	4231
+园林建筑	yuan lin jian zhu	4193
+园林施工	yuan lin shi gong	4193
+园林生态	yuan lin sheng tai	4193
+生态园林	sheng tai yuan lin	4193
+生态风光	sheng tai feng guang	4193
+电力电缆	dian li dian lan	4193
+工地上	gong di shang	4154
+广电网络	guang dian wang luo	4154
+国投电力	guo tou dian li	4116
+建筑线条	jian zhu xian tiao	4116
+建筑防火	jian zhu fang huo	4116
+所有楼盘	suo you lou pan	4116
+南方电网	nan fang dian wang	4077
+在建楼盘	zai jian lou pan	4077
+施工的	shi gong de	4077
+明清建筑	ming qing jian zhu	4077
+智能电网	zhi neng dian wang	4077
+乡土建筑	xiang tu jian zhu	4039
+掌上电力	zhang shang dian li	4039
+中环环保	zhong huan huan bao	4000
+光面钢筋	guang mian gang jin	4000
+农业丰收	nong ye feng shou	4000
+分布钢筋	fen bu gang jin	4000
+受力钢筋	shou li gang jin	4000
+大唐发电	da tang fa dian	4000
+施工者	shi gong zhe	4000
+核发电	he fa dian	4000
+生态兴	sheng tai xing	4000
+生态城	sheng tai cheng	4000
+生态家	sheng tai jia	4000
+生态木	sheng tai mu	4000
+生态板	sheng tai ban	4000
+生态箱	sheng tai xiang	4000
+生态群	sheng tai qun	4000
+生态链	sheng tai lian	4000
+生态门	sheng tai men	4000
+神马电力	shen ma dian li	4000
+种植大户	zhong zhi da hu	4000
+钢筋水泥	gang jin shui ni	4000
+钢筋网片	gang jin wang pian	4000
+节能风电	jie neng feng dian	3962
+圣元环保	sheng yuan huan bao	3924
+室外建筑	shi wai jian zhu	3924
+建筑小品	jian zhu xiao pin	3924
+建筑红线	jian zhu hong xian	3924
+施工定额	shi gong ding e	3924
+倾倒垃圾	qing dao la ji	3885
+垃圾围城	la ji wei cheng	3885
+抗污染	kang wu ran	3885
+放射污染	fang she wu ran	3885
+污染了	wu ran le	3885
+污染光	wu ran guang	3885
+污染带	wu ran dai	3885
+电力厂	dian li chang	3885
+电力室	dian li shi	3885
+电力法	dian li fa	3885
+电力站	dian li zhan	3885
+电力间	dian li jian	3885
+藏式建筑	zang shi jian zhu	3885
+重污染	zhong wu ran	3885
+防污染	fang wu ran	3885
+丢垃圾	diu la ji	3847
+中创环保	zhong chuang huan bao	3847
+你垃圾	ni la ji	3847
+倒垃圾	dao la ji	3847
+到垃圾	dao la ji	3847
+可垃圾	ke la ji	3847
+垃圾了	la ji le	3847
+垃圾人	la ji ren	3847
+垃圾侠	la ji xia	3847
+垃圾号	la ji hao	3847
+垃圾吧	la ji ba	3847
+垃圾坑	la ji keng	3847
+垃圾房	la ji fang	3847
+垃圾斗	la ji dou	3847
+垃圾池	la ji chi	3847
+垃圾狗	la ji gou	3847
+垃圾的	la ji de	3847
+垃圾篓	la ji lou	3847
+垃圾群	la ji qun	3847
+垃圾虫	la ji chong	3847
+垃圾街	la ji jie	3847
+垃圾话	la ji hua	3847
+垃圾货	la ji huo	3847
+垃圾费	la ji fei	3847
+垃圾道	la ji dao	3847
+垃圾鱼	la ji yu	3847
+多垃圾	duo la ji	3847
+大垃圾	da la ji	3847
+太垃圾	tai la ji	3847
+好垃圾	hao la ji	3847
+小垃圾	xiao la ji	3847
+当垃圾	dang la ji	3847
+我垃圾	wo la ji	3847
+扔垃圾	reng la ji	3847
+扫垃圾	sao la ji	3847
+把垃圾	ba la ji	3847
+拉垃圾	la la ji	3847
+捡垃圾	jian la ji	3847
+收垃圾	shou la ji	3847
+是垃圾	shi la ji	3847
+更垃圾	geng la ji	3847
+有垃圾	you la ji	3847
+查环保	cha huan bao	3847
+清垃圾	qing la ji	3847
+湿垃圾	shi la ji	3847
+环保剑	huan bao jian	3847
+环保厅	huan bao ting	3847
+环保币	huan bao bi	3847
+环保漆	huan bao qi	3847
+环保网	huan bao wang	3847
+环保袋	huan bao dai	3847
+生产废水	sheng chan fei shui	3847
+生态家居	sheng tai jia ju	3847
+的垃圾	de la ji	3847
+真垃圾	zhen la ji	3847
+装垃圾	zhuang la ji	3847
+贼垃圾	zei la ji	3847
+还垃圾	hai la ji	3847
+这垃圾	zhe la ji	3847
+违章建筑	wei zhang jian zhu	3847
+都垃圾	dou la ji	3847
+黑暗收割	hei an shou ge	3847
+地标建筑	di biao jian zhu	3808
+大千生态	da qian sheng tai	3770
+建筑奇观	jian zhu qi guan	3770
+楼盘销售	lou pan xiao shou	3770
+热点楼盘	re dian lou pan	3770
+生态农庄	sheng tai nong zhuang	3770
+种植体	zhong zhi ti	3770
+种植户	zhong zhi hu	3770
+种植牙	zhong zhi ya	3770
+高端楼盘	gao duan lou pan	3770
+建筑之美	jian zhu zhi mei	3731
+重度污染	zhong du wu ran	3731
+有机肥	you ji fei	3698
+京能电力	jing neng dian li	3693
+华英农业	hua ying nong ye	3693
+回音建筑	hui yin jian zhu	3693
+在施工	zai shi gong	3693
+垃圾清运	la ji qing yun	3693
+施工中	shi gong zhong	3693
+施工了	shi gong le	3693
+施工员	shi gong yuan	3693
+施工架	shi gong jia	3693
+施工缝	shi gong feng	3693
+施工证	shi gong zheng	3693
+施工费	shi gong fei	3693
+未施工	wei shi gong	3693
+诱发电位	you fa dian wei	3693
+上工地	shang gong di	3654
+下工地	xia gong di	3654
+东江环保	dong jiang huan bao	3654
+做工地	zuo gong di	3654
+务工地	wu gong di	3654
+包工地	bao gong di	3654
+多层建筑	duo ceng jian zhu	3654
+大工地	da gong di	3654
+新工地	xin gong di	3654
+轻度污染	qing du wu ran	3654
+家电网	jia dian wang	3616
+爱发电	ai fa dian	3616
+生态宜居	sheng tai yi ju	3616
+新楼盘	xin lou pan	3577
+民居建筑	min ju jian zhu	3577
+先河环保	xian he huan bao	3539
+华银电力	hua yin dian li	3539
+土建施工	tu jian shi gong	3539
+土木建筑	tu mu jian zhu	3539
+广电网	guang dian wang	3539
+建筑制图	jian zhu zhi tu	3539
+建筑间距	jian zhu jian ju	3539
+秦丰农业	qin feng nong ye	3539
+废水管	fei shui guan	3500
+乱丢垃圾	luan diu la ji	3462
+乱倒垃圾	luan dao la ji	3462
+农业学大	nong ye xue da	3462
+古建筑群	gu jian zhu qun	3462
+废水槽	fei shui cao	3462
+建筑模数	jian zhu mo shu	3462
+建筑细部	jian zhu xi bu	3462
+收割期	shou ge qi	3462
+旱地农业	han di nong ye	3462
+欧式建筑	ou shi jian zhu	3462
+汽轮发电	qi lun fa dian	3462
+甲醛污染	jia quan wu ran	3462
+省农业厅	sheng nong ye ting	3462
+种植义齿	zhong zhi yi chi	3462
+螺纹钢筋	luo wen gang jin	3462
+覆土建筑	fu tu jian zhu	3462
+铁汉生态	tie han sheng tai	3462
+闽东电力	min dong dian li	3462
+龙净环保	long jing huan bao	3462
+低碳环保	di tan huan bao	3385
+单层建筑	dan ceng jian zhu	3385
+建筑抗震	jian zhu kang zhen	3385
+臭氧污染	chou yang wu ran	3385
+菲达环保	fei da huan bao	3385
+华润电力	hua run dian li	3347
+三聚环保	san ju huan bao	3308
+桂冠电力	gui guan dian li	3308
+生态茶园	sheng tai cha yuan	3308
+生态补水	sheng tai bu shui	3308
+配电网	pei dian wang	3308
+中度污染	zhong du wu ran	3270
+住工地	zhu gong di	3270
+你工地	ni gong di	3270
+到工地	dao gong di	3270
+去工地	qu gong di	3270
+回工地	hui gong di	3270
+在工地	zai gong di	3270
+工地了	gong di le	3270
+工地吗	gong di ma	3270
+工地呢	gong di ne	3270
+工地的	gong di de	3270
+干工地	gan gong di	3270
+我工地	wo gong di	3270
+有工地	you gong di	3270
+来工地	lai gong di	3270
+看工地	kan gong di	3270
+胶原种植	jiao yuan zhong zhi	3270
+跑工地	pao gong di	3270
+这工地	zhe gong di	3270
+天域生态	tian yu sheng tai	3231
+富春环保	fu chun huan bao	3231
+电力技校	dian li ji xiao	3231
+生态茶楼	sheng tai cha lou	3193
+仿古建筑	fang gu jian zhu	3154
+扎钢筋	zha gang jin	3116
+绑钢筋	bang gang jin	3116
+钢筋头	gang jin tou	3116
+钢筋工	gang jin gong	3116
+钢筋砼	gang jin tong	3116
+钢筋笼	gang jin long	3116
+钢筋网	gang jin wang	3116
+垃圾填埋	la ji tian mai	3077
+光伏产业	guang fu chan ye	3039
+光伏扶贫	guang fu fu pin	3039
+核废水	he fei shui	3039
+海润光伏	hai run guang fu	3039
+收割者	shou ge zhe	3000
+拍古建筑	pai gu jian zhu	2962
+复合肥	fu he fei	2944
+生态廊道	sheng tai lang dao	2924
+喷灌	pen guan	2893
+凯迪生态	kai di sheng tai	2885
+发电子版	fa dian zi ban	2885
+环境监测	huan jing jian ce	2799
+滴灌	di guan	2771
+东珠生态	dong zhu sheng tai	2770
+古生态园	gu sheng tai yuan	2770
+美晨生态	mei chen sheng tai	2770
+蒙草生态	meng cao sheng tai	2770
+迪沟生态	di gou sheng tai	2770
+晋控电力	jin kong dian li	2731
+浙能电力	zhe neng dian li	2731
+皖能电力	wan neng dian li	2731
+长源电力	chang yuan dian li	2731
+面源污染	mian yuan wu ran	2731
+黔源电力	qian yuan dian li	2731
+风电场	feng dian chang	2722
+中电环保	zhong dian huan bao	2693
+乱扔垃圾	luan reng la ji	2693
+伟明环保	wei ming huan bao	2693
+你个垃圾	ni ge la ji	2693
+倒个垃圾	dao ge la ji	2693
+傻不垃圾	sha bu la ji	2693
+同兴环保	tong xing huan bao	2693
+嘉澳环保	jia ao huan bao	2693
+垃圾桶了	la ji tong le	2693
+垃圾桶里	la ji tong li	2693
+大垃圾袋	da la ji dai	2693
+太垃圾了	tai la ji le	2693
+市环保局	shi huan bao ju	2693
+德创环保	de chuang huan bao	2693
+我是垃圾	wo shi la ji	2693
+扔个垃圾	reng ge la ji	2693
+扔垃圾桶	reng la ji tong	2693
+景津环保	jing jin huan bao	2693
+盛运环保	sheng yun huan bao	2693
+神雾环保	shen wu huan bao	2693
+联泰环保	lian tai huan bao	2693
+荣晟环保	rong cheng huan bao	2693
+都是垃圾	dou shi la ji	2693
+餐厨垃圾	can chu la ji	2693
+鹏鹞环保	peng yao huan bao	2693
+在工地上	zai gong di shang	2654
+可燃垃圾	ke ran la ji	2616
+扬尘污染	yang chen wu ran	2616
+凯发电气	kai fa dian qi	2577
+厨余垃圾	chu yu la ji	2577
+易腐垃圾	yi fu la ji	2577
+光伏板	guang fu ban	2500
+你在工地	ni zai gong di	2347
+到工地了	dao gong di le	2347
+去工地了	qu gong di le	2347
+工地搬砖	gong di ban zhuan	2347
+工地记工	gong di ji gong	2347
+徽派建筑	hui pai jian zhu	2347
+我在工地	wo zai gong di	2347
+顺鑫农业	shun xin nong ye	2347
+板底钢筋	ban di gang jin	2270
+绿茵生态	lv yin sheng tai	2116
+自动控制	zi dong kong zhi	1210
+土壤污染	tu rang wu ran	803
+配电箱	pei dian xiang	533
+排污口	pai wu kou	209

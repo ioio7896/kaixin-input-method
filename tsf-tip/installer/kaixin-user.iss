@@ -35,6 +35,8 @@ AppId={{2B91F956-7D55-4D85-B3A6-456A4A5DBB84}-User
 AppName={#KXBaseAppName}
 AppVerName={#KXAppName} {#KXAppVersion}
 AppVersion={#KXAppVersion}
+VersionInfoVersion={#KXAppVersion}.0
+VersionInfoTextVersion={#KXAppVersion}
 AppPublisher={#KXBaseAppName}
 UninstallDisplayName={#KXBaseAppName}
 VersionInfoDescription={#KXAppName} 安装程序
@@ -59,7 +61,8 @@ RestartIfNeededByRun=no
 Name: "chinesesimp"; MessagesFile: "ChineseSimplified.isl"
 
 [Files]
-Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "runtime\*,.python-runtime\*,.python-packages\*,.venv-rapidocr\*,.venv-translate\*,RapidOCRLite\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete
+Source: "{#KXPackageDir}\srf_ime_setup.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace uninsrestartdelete
+Source: "{#KXPackageDir}\*"; DestDir: "{app}"; Excludes: "srf_ime_setup.exe,runtime\*,.python-runtime\*,.python-packages\*,.venv-rapidocr\*,.venv-translate\*,RapidOCRLite\*,models\*,component_manifest.ini"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete solidbreak
 Source: "{#KXPackageDir}\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion onlyifdoesntexist recursesubdirs createallsubdirs uninsrestartdelete solidbreak
 Source: "{#KXPackageDir}\.python-runtime\*"; DestDir: "{app}\.python-runtime"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallPythonRuntime
 Source: "{#KXPackageDir}\.python-packages\*"; DestDir: "{app}\.python-packages"; Flags: ignoreversion recursesubdirs createallsubdirs restartreplace uninsrestartdelete skipifsourcedoesntexist solidbreak; Check: ShouldInstallRapidOcrPackages
@@ -93,6 +96,14 @@ Type: files; Name: "{app}\lexicon\translate\cedict_ts.u8"
 Type: files; Name: "{app}\lexicon\translate\stardict_slim.db"
 Type: dirifempty; Name: "{app}\lexicon\translate"
 Type: dirifempty; Name: "{app}\models"
+Type: files; Name: "{app}\install_dev.ps1"
+Type: files; Name: "{app}\install_current_user.ps1"
+Type: files; Name: "{app}\install_common.ps1"
+Type: files; Name: "{app}\config_defaults.generated.ps1"
+Type: files; Name: "{app}\invoke_registration.ps1"
+Type: files; Name: "{app}\repair_install.ps1"
+Type: files; Name: "{app}\uninstall_dev.ps1"
+Type: files; Name: "{app}\uninstall_current_user.ps1"
 
 [UninstallDelete]
 Type: files; Name: "{app}\install_machine.log"
@@ -105,13 +116,10 @@ Name: "{group}\开心输入法剪贴板"; Filename: "{app}\srf_ime_clipboard.exe
 Name: "{group}\开心输入法手写查字"; Filename: "{app}\srf_ime_handwrite.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法符号大全"; Filename: "{app}\srf_ime_symbols.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法 OCR"; Filename: "{app}\srf_ime_ocr.exe"; IconFilename: "{app}\assets\kaixin-input.ico"; Check: OcrIncluded
-Name: "{group}\修复开心输入法"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\repair_install.ps1"" -InstallationRoot ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\修复开心输入法"; Filename: "{app}\srf_ime_setup.exe"; Parameters: "repair --root ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法日志"; Filename: "{win}\explorer.exe"; Parameters: """{localappdata}\kaixin"""; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\导出开心输入法诊断包"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\export_diagnostics.ps1"" -InstallationRoot ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\卸载开心输入法"; Filename: "{uninstallexe}"; IconFilename: "{app}\assets\kaixin-input.ico"
-
-[Run]
-Filename: "{sys}\shutdown.exe"; Parameters: "/r /t 0"; Description: "立即重启电脑"; Flags: postinstall skipifsilent unchecked runhidden
 
 [Code]
 const
@@ -120,9 +128,6 @@ const
   KaixinInstallMaintenanceTickValue = 'InstallMaintenanceTick';
 
 #include "kaixin-common-code.iss"
-
-function WindowsGetTickCount(): LongWord;
-  external 'GetTickCount@kernel32.dll stdcall';
 
 function TranslationIncluded(): Boolean;
 begin
@@ -150,24 +155,6 @@ function ShouldInstallRapidOcrPayload(): Boolean;
 begin
   InitializeComponentChecks();
   Result := OcrIncluded() and InstallRapidOcrPayloadComponent;
-end;
-
-function ProcessRunning(const ImageName: string): Boolean;
-var
-  ResultCode: Integer;
-  TempFile: string;
-  Text: AnsiString;
-begin
-  Result := False;
-  TempFile := ExpandConstant('{tmp}\kaixin-tasklist-') + ImageName + '.txt';
-  if Exec(ExpandConstant('{sys}\cmd.exe'),
-    '/C tasklist /FI "IMAGENAME eq ' + ImageName + '" /NH > "' + TempFile + '"',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
-  begin
-    if LoadStringFromFile(TempFile, Text) then
-      Result := Pos(ImageName, Text) > 0;
-  end;
-  DeleteFile(TempFile);
 end;
 
 function StatusText(const Ok: Boolean): string;
@@ -203,7 +190,7 @@ begin
     Result := Result + '外部翻译联动：未启用' + #13#10;
   Result := Result + #13#10 +
     '日志目录：' + ExpandConstant('{localappdata}\kaixin') + #13#10 +
-    '开始菜单提供“修复开心输入法”和“开心输入法日志”。';
+    '按 Win + 空格选择开心输入法。升级后，已打开的软件可在重新打开后使用新版。';
 end;
 
 function InitializeSetup(): Boolean;
@@ -211,161 +198,17 @@ begin
   Result := InitializeSetupShared();
 end;
 
-procedure SetInstallMaintenance(Enabled: Boolean);
-begin
-  if Enabled then begin
-    RegWriteDWordValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceTickValue,
-      WindowsGetTickCount());
-    RegWriteDWordValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceValue, 1);
-  end else begin
-    RegDeleteValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceValue);
-    RegDeleteValue(HKCU, KaixinStateRegKey, KaixinInstallMaintenanceTickValue);
-  end;
-end;
-
-procedure WaitForProcessExit(const ImageName: string; Attempts: Integer);
-var
-  I: Integer;
-begin
-  for I := 1 to Attempts do
-  begin
-    if not ProcessRunning(ImageName) then
-      exit;
-    Sleep(100);
-  end;
-end;
-
-procedure StopHelperProcess(const ImageName: string);
-var
-  ResultCode: Integer;
-begin
-  if not ProcessRunning(ImageName) then
-    exit;
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/T /IM "' + ImageName + '"',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  WaitForProcessExit(ImageName, 5);
-  if not ProcessRunning(ImageName) then
-    exit;
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /T /IM "' + ImageName + '"',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  WaitForProcessExit(ImageName, 10);
-end;
-
-procedure RequestCloseHelperProcess(const ImageName: string);
-var
-  ResultCode: Integer;
-begin
-  if not ProcessRunning(ImageName) then
-    exit;
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/T /IM "' + ImageName + '"',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-end;
-
-procedure StopInputStackProcess(const ImageName: string);
-var
-  ResultCode: Integer;
-begin
-  if not ProcessRunning(ImageName) then
-    exit;
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/T /IM "' + ImageName + '"',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  WaitForProcessExit(ImageName, 5);
-  if not ProcessRunning(ImageName) then
-    exit;
-  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /T /IM "' + ImageName + '"',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  WaitForProcessExit(ImageName, 10);
-end;
-
-procedure RepairExistingAppAcl();
-var
-  ResultCode: Integer;
-  AppDir: string;
-  ProbeFile: string;
-begin
-  AppDir := ExpandConstant('{app}');
-  if not DirExists(AppDir) then
-    exit;
-  ProbeFile := AddBackslash(AppDir) + '.kaixin-write-probe.tmp';
-  if SaveStringToFile(ProbeFile, 'probe', False) then
-  begin
-    DeleteFile(ProbeFile);
-    exit;
-  end;
-  Exec(ExpandConstant('{sys}\icacls.exe'), '"' + AppDir + '" /reset /T /C /Q',
-    '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-end;
-
-function PrepareToInstall(var NeedsRestart: Boolean): String;
-begin
-  SetInstallMaintenance(True);
-  RepairExistingAppAcl();
-  StopInputStackProcess('TextInputHost.exe');
-  StopInputStackProcess('ctfmon.exe');
-  StopHelperProcess('srf_ime_engine.exe');
-  StopHelperProcess('srf_ime_tray.exe');
-  StopHelperProcess('KaixinShareX.exe');
-  RequestCloseHelperProcess('srf_ime_settings.exe');
-  RequestCloseHelperProcess('srf_ime_clipboard.exe');
-  RequestCloseHelperProcess('srf_ime_handwrite.exe');
-  RequestCloseHelperProcess('srf_ime_symbols.exe');
-  RequestCloseHelperProcess('srf_ime_ocr.exe');
-  RequestCloseHelperProcess('srf_ime_translate_result.exe');
-  RequestCloseHelperProcess('srf_ime_translate.exe');
-  StopHelperProcess('srf_ime_clipboard_svc.exe');
-  WaitForProcessExit('srf_ime_settings.exe', 10);
-  WaitForProcessExit('srf_ime_clipboard.exe', 10);
-  WaitForProcessExit('srf_ime_handwrite.exe', 10);
-  WaitForProcessExit('srf_ime_symbols.exe', 10);
-  WaitForProcessExit('srf_ime_ocr.exe', 10);
-  WaitForProcessExit('srf_ime_translate_result.exe', 10);
-  WaitForProcessExit('srf_ime_translate.exe', 10);
-  WaitForProcessExit('srf_ime_clipboard_svc.exe', 10);
-  StopHelperProcess('srf_ime_settings.exe');
-  StopHelperProcess('srf_ime_clipboard.exe');
-  StopHelperProcess('srf_ime_handwrite.exe');
-  StopHelperProcess('srf_ime_symbols.exe');
-  StopHelperProcess('srf_ime_ocr.exe');
-  StopHelperProcess('srf_ime_translate_result.exe');
-  StopHelperProcess('srf_ime_translate.exe');
-  StopHelperProcess('srf_ime_clipboard_svc.exe');
-  Result := '';
-end;
-
-function GetInstallPs1Params(): string;
+function GetInstallUserParams(): string;
 var
   AppDir: string;
 begin
   AppDir := ExpandConstant('{app}');
-  Result := '-NoProfile -ExecutionPolicy Bypass -File "' + AppDir + '\install_dev.ps1" ' +
-    '-InstallationRoot "' + AppDir + '" -SkipFileCopy -SkipUninstallEntry -SkipStaleHostDiagnostics';
-end;
-
-function RunPowerShell(const Params: string; const StepName: string): Boolean;
-var
-  ResultCode: Integer;
-  AppDir: string;
-  LogMessage: string;
-begin
-  AppDir := ExpandConstant('{app}');
-  Result := Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
-    Params, AppDir, SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  if (not Result) or (ResultCode <> 0) then begin
-    LogMessage :=
-      '安装步骤失败：' + StepName + #13#10 #13#10 +
-      '退出码：' + IntToStr(ResultCode) + #13#10 +
-      '当前用户日志：' + ExpandConstant('{localappdata}\kaixin\install_user.log') + #13#10 +
-      '语言列表日志：' + ExpandConstant('{localappdata}\kaixin\install_language_list.log');
-    MsgBox(LogMessage, mbError, MB_OK);
-    Result := False;
-  end else begin
-    Result := True;
-  end;
+  Result := 'install-user --root "' + AppDir + '" --verify-core-only --report-setup-status --skip-runtime-cleanup';
 end;
 
 procedure CurPageChanged(CurPageID: Integer);
 begin
-  if CurPageID = wpFinished then
+  if (CurPageID = wpFinished) and not WizardForm.YesRadio.Visible then
     WizardForm.FinishedLabel.Caption := BuildFinishedSummary();
 end;
 
@@ -373,8 +216,7 @@ procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then begin
     SetInstallMaintenance(False);
-    if not RunPowerShell(GetInstallPs1Params(), 'current-user install') then
-      RaiseException('Install failed during current-user install.');
+    RunSetupHelper(GetInstallUserParams(), '正在校验核心文件、注册输入法并刷新语言栏…', False);
   end;
 end;
 

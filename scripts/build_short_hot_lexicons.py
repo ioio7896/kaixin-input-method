@@ -69,13 +69,14 @@ def build_one(
     high: int,
     title: str,
 ) -> None:
-    from lexicon_quality import phrase_rejection_reason
+    from lexicon_quality import CORE_CURATED_FILES, phrase_rejection_reason
 
     # A filename's length is a real membership contract, including hand edits.
+    is_core_layer = output.name in CORE_CURATED_FILES
     curated = [
         row
         for row in rows(output)[:curated_count]
-        if len(row[0]) == fill_length and not phrase_rejection_reason(row[0])
+        if len(row[0]) == fill_length and not phrase_rejection_reason(row[0], core=is_core_layer)
     ]
     selected: list[tuple[str, str, int, bool]] = []
     seen: set[str] = set()
@@ -92,7 +93,9 @@ def build_one(
     additions = [
         (p, r, s)
         for p, r, s in candidates
-        if p not in seen and len(p) == fill_length and not phrase_rejection_reason(p)
+        if p not in seen
+        and len(p) == fill_length
+        and not phrase_rejection_reason(p, core=is_core_layer)
     ][:needed]
     if len(additions) != needed:
         raise RuntimeError(f"{output}: only found {len(additions)} of {needed} required rows")
@@ -122,7 +125,7 @@ def build_four_char_hot() -> None:
     selected = [
         row
         for row in rows(source)
-        if len(row[0]) == 4 and row[2] >= 9_500 and not phrase_rejection_reason(row[0])
+        if len(row[0]) == 4 and row[2] >= 9_500 and not phrase_rejection_reason(row[0], core=True)
     ]
     selected.sort(key=lambda row: (-row[2], row[0], row[1]))
     body = "\n".join(f"{phrase}\t{reading}\t{score}" for phrase, reading, score in selected)

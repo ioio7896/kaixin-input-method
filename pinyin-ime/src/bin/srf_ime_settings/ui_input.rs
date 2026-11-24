@@ -201,13 +201,13 @@ pub(super) fn input_tools_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
 
 pub(super) fn custom_shortcuts_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
     section_panel(ui, "自定义短语 / 快捷码", |ui| {
-        let response = ui.add(
+        let response = ui.add(text_field(
             TextEdit::multiline(&mut app.model.custom_shortcuts)
                 .font(TextStyle::Monospace)
                 .desired_width(f32::INFINITY)
                 .desired_rows(5)
                 .hint_text(";qq = name@example.com\n;;r = 此致，敬礼"),
-        );
+        ));
         setting_row_help(response, "每行一个：快捷码 = 候选文本。多个候选用 | 分隔；换行可写成 \\n。保存后直接输入 ;qq 或 ;;r 即可出候选，也可输入 vv ;qq 调出同一组候选。");
     });
 }
