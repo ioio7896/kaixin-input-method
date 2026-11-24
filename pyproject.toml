@@ -27,13 +27,12 @@ packages = []
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-include = ["build.py", "scripts/**/*.py", "tools/*.py"]
+include = ["build.py", "scripts/**/*.py"]
 exclude = ["dist", "third_party", "RapidOCRLite", "_archived_python_legacy"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]
 
-# Imports after sys.path setup are needed by standalone repository tools.
+# Some tests import workspace modules after setting up sys.path.
 [tool.ruff.lint.per-file-ignores]
 "scripts/test_*.py" = ["E402"]
-"tools/*.py" = ["E402"]

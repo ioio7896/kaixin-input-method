@@ -1,6 +1,6 @@
 [package]
 name = "pinyin-ime"
-version = "2026.1124.1802"
+version = "2026.1124.1826"
 edition = "2021"
 rust-version = "1.99"
 build = "build.rs"

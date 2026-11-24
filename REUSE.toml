@@ -9,7 +9,6 @@ path = [
     "pinyin-ime/**",
     "scripts/**",
     "skins/**",
-    "tools/**",
     "tsf-tip/**",
 ]
 precedence = "aggregate"

@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2026.1124.1802**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1124.1826**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -470,7 +470,6 @@ lexicon/         运行时中文及英文词库
 pinyin-ime/      Rust 引擎、GUI 工具和评测程序
 scripts/         验证、词库生成和安装检查脚本
 skins/           候选窗主题
-tools/           本地 OCR 辅助脚本
 tsf-tip/         C++ TSF 前端、候选覆盖层和安装器
 build.py         一键构建、验证、stage、签名和打包
 ```
