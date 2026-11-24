@@ -2076,7 +2076,7 @@ version = "2.0.0"
 
 [[package]]
 name = "kaixin-core"
-version = "2026.1124.1826"
+version = "2026.1124.1848"
 dependencies = [
  "base64",
  "bincode",
@@ -2099,6 +2099,16 @@ dependencies = [
  "windows 0.62.2",
  "windows-sys 0.52.0",
  "xcap",
+]
+
+[[package]]
+name = "kaixin-release"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "flate2",
+ "serde_json",
+ "sha2",
 ]
 
 [[package]]
@@ -3066,7 +3076,7 @@ checksum = "16f2611cd06a1ac239a0cea4521de9eb068a6ca110324ee00631aa68daa74fc0"
 
 [[package]]
 name = "pinyin-ime"
-version = "2026.1124.1826"
+version = "2026.1124.1848"
 dependencies = [
  "base64",
  "bincode",

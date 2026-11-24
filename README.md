@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2026.1124.1826**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1124.1848**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -315,37 +315,36 @@ log_level=error
 导入源快照保留原始内容，分类重建会应用维护规则；当前发布内容的数量与哈希见
 `shared/category_lexicons.json`，历史导入报告不随清理改写。
 
-构建脚本仅支持 Windows。基础依赖：
+从 Git 克隆源码后，可在 64 位 Windows 上用 PowerShell 和 Rust 打包。基础依赖：
 
-- Python 3.12+
-- Rust/Cargo（MSVC 工具链及 `i686-pc-windows-msvc` 目标）
+- Git
+- Rust/Cargo 1.99.0（x64 MSVC 工具链，含 rustfmt 和 Clippy）
 - CMake 3.20 或更高版本
 - Visual Studio C++/MSVC 构建工具
-- PowerShell
+- Windows PowerShell 5.1
 - Inno Setup 6（生成安装包时）
 - OCR 变体所需的本地 RapidOCRLite 原生库及模型
 
-正式发布统一使用：
+正式发布直接运行以下命令，无需安装 Python：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_dev_tools.ps1
-python scripts/release.py
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1
 ```
 
-也可运行 `build_latest_installers.cmd`。发布入口一次生成上海时间戳版本，强制源码规范、
-Rust 全目标/功能组合、x64/x86 原生测试及冒烟验证，产出 `ime` 和 `ocr` 两个安装器，
-并写入包含版本、大小和 SHA-256 的 `dist/release-<版本>.json`。
+也可运行 `build_latest_installers.cmd`。发布入口生成上海时间戳版本，检查源码和词库，运行
+Rust 全目标、x64/x86 原生测试和暂存包冒烟测试，产出两个安装器、项目根目录的源码 ZIP，
+以及包含安装器版本、大小和 SHA-256 的 `dist/release-<版本>.json`。
 自动化调用前设置 `KX_BUILD_NO_PAUSE=1` 可关闭结束暂停。
 
-`build.py` 保留开发构建选项；完整 Release 打包默认执行正确性检查，
-开发时可显式传入 `--no-verify`。发布入口明确传入 `--skip-tests` 时跳过代码测试和冒烟检查，
-并在发布报告中记录；双安装器及包体完整性校验仍执行。
+`release.ps1 -Check` 可单独检查源码、语料生成和词库。`-UserInstaller` 生成当前用户范围的两个安装器。
+传入 `-SkipTests` 会跳过代码测试和冒烟检查，并在发布报告中记录；词库、安装器版本及包体哈希仍会校验。
+Python 3.12+ 仅用于下文的可选开发构建、离线词库维护和额外开发检查。
 
 安装包先在临时目录全部生成并完成配置的签名步骤，再发布到 `dist/`。
 被替换变体的旧安装包保存在 `dist/previous-installers/`，其他变体保持原位置。
 归档不自动删除，可按需手动清理；构建或签名失败不会提前删除旧安装包。
 
-没有 OCR 运行时或只需要输入法时：
+使用可选开发构建单独生成纯输入法包：
 
 ```powershell
 python build.py --package-variants ime
@@ -370,7 +369,7 @@ python build.py --dry-run
 
 ```powershell
 $env:KX_SIGN_CERT_SHA1 = '<certificate thumbprint>'
-python build.py --sign --sign-required
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1 -SignRequired
 ```
 
 也可通过 `KX_SIGN_PFX` 和相关密码环境变量使用 PFX；执行
@@ -541,8 +540,8 @@ HY-MT2 使用独立的 `\\.\pipe\HyMT2.IME.Request`，不会占用旧 `WinTransl
 
 ## 发布版本与验证
 
-发布前运行 `python scripts/release_version.py`，按上海时间生成 `年.月日.时分` 时间戳，数字段自动去除前导零，同步应用 Cargo 清单、锁文件和本文版本。C++ 和安装器直接读取 `VERSION`。`python scripts/release_version.py --check` 检查同步状态。
+`scripts/release.ps1` 按上海时间生成 `年.月日.时分` 时间戳，数字段自动去除前导零，同步应用 Cargo 清单、锁文件和本文版本。C++ 和安装器直接读取 `VERSION`。
 
-发布 Rust/Cargo 固定为 `release-toolchain.json` 中的 1.99.0，CI 使用同一版本；本地工具链不一致时构建立即报错。运行 `python build.py` 完整编译并生成输入法、输入法 + OCR 两个安装器。
+发布 Rust/Cargo 固定为 `release-toolchain.json` 中的 1.99.0，CI 使用同一版本。本地工具链不一致时，打包会在编译前报错。
 
-正式打包必须通过暂存引擎和 x64/x86 TSF 的结构化版本、协议校验及真实 `nihao` 握手。缺少校验探针、旧 DLL 或任一候选查询失败都会阻止生成安装器，`--quick` 等选项也不能跳过该门槛。每次 Release 构建同时输出速度、内存和候选质量报告，详见 [分类评测说明](docs/category-ranking-evaluation.md)。
+正式打包默认检查暂存引擎和 x64/x86 TSF 的版本、协议及真实 `nihao` 握手，并运行三档 OCR 冒烟测试。可选开发构建还可输出速度、内存和候选质量报告，详见 [分类评测说明](docs/category-ranking-evaluation.md)。

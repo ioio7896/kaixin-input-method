@@ -2341,8 +2341,6 @@ def step_stage(
         profile_cap,
         "-IncludeOcr",
         "1" if include_ocr else "0",
-        "-PythonExecutable",
-        sys.executable,
         "-FinalizeInBuild",
     ]
     if prepared_lexicon_dir is not None:

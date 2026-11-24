@@ -6,11 +6,11 @@ Apache-2.0 许可证授权贡献。复制或改编第三方代码、模型、字
 
 ## 开发环境
 
-项目当前只支持在 Windows 上完整构建。需要 Python 3.12+、Rust 1.99.0、
-MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6。OCR
+项目当前只支持在 Windows 上完整构建。正式打包需要 Git、Rust 1.99.0、
+MSVC C++ 工具链、CMake 3.20+、Windows PowerShell 5.1 和 Inno Setup 6。OCR
 使用原生 RapidOCRLite DLL 和模型，桌面辅助程序均随 Rust 工作区构建。
 
-首次开发运行 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_dev_tools.ps1`，
+可选开发工具需要 Python 3.12+。运行 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_dev_tools.ps1`，
 将固定版本的 Ruff、clang-format 和 PSScriptAnalyzer 安装到 `dist/dev-tools/`。
 正式检查缺少工具或版本不符时必须失败，不能静默跳过。
 
@@ -29,10 +29,10 @@ MSVC C++ 工具链、CMake 3.20+ 和 PowerShell。打包还需要 Inno Setup 6�
 
 ## 发布
 
-代码修改完成后运行 `build_latest_installers.cmd` 或 `python scripts/release.py`。
+代码修改完成后运行 `build_latest_installers.cmd` 或 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1`。
 该入口一次生成上海时间的时间戳版本，强制源码/Rust/C++ 检查及冒烟检查，产出纯输入法和输入法＋OCR 两个安装器，
-核对版本、数量和包体清单并写入 `dist/release-<版本>.json`。签名参数支持 `--sign` 和 `--sign-required`。
-明确要求跳过测试时可传 `--skip-tests`，发布报告会记录 `verification: skipped_by_request`；编译及包体完整性校验仍执行。
+核对版本、数量和包体清单，生成源码备份并写入 `dist/release-<版本>.json`。签名参数支持 `-Sign` 和 `-SignRequired`。
+明确要求跳过测试时可传 `-SkipTests`，发布报告会记录 `verification: skipped_by_request`；编译及包体完整性校验仍执行。
 单组件开发构建继续使用 `build.py`；正式交付必须走双安装器发布入口。
 
 建议从独立分支开始，保持一次提交只解决一个主题。不要提交 `dist/`、虚拟环境、
@@ -53,7 +53,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-fast.ps1
 cargo check --manifest-path pinyin-ime/Cargo.toml --lib --locked
 ```
 
-本地、CI 和打包统一调用 `scripts/verify.py`，检查矩阵由 `shared/verification.json` 维护：
+开发检查和 CI 使用 `scripts/verify.py`，正式打包使用 `scripts/release.ps1`，Rust 检查矩阵由 `shared/verification.json` 维护：
 `source` 检查格式和契约，`rust` 对无界面/桌面两种配置执行工作区全部目标的 Clippy 与测试，
 `native` 构建 CMake 的 `kaixin_check_targets` 并运行 x64/x86 CTest。`verify-full.ps1` 另保留词库质量与性能评估。
 

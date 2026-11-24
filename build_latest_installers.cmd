@@ -2,12 +2,7 @@
 setlocal
 cd /d "%~dp0" || exit /b 1
 
-set "VENV_PYTHON=%~dp0.venv\Scripts\python.exe"
-if exist "%VENV_PYTHON%" (
-  "%VENV_PYTHON%" "%~dp0scripts\release.py" %*
-) else (
-  python "%~dp0scripts\release.py" %*
-)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\release.ps1" %*
 
 set "BUILD_EXIT_CODE=%ERRORLEVEL%"
 if "%BUILD_EXIT_CODE%"=="130" (

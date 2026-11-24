@@ -22,6 +22,7 @@ jobs:
           python -m unittest discover -s scripts -p test_public_privacy.py
           python -m unittest discover -s scripts -p test_build_privacy.py
           python scripts/generate_shared_contracts.py --check
+          python scripts/lexicon_quality.py
       - name: Check Python syntax
         run: python -m py_compile scripts/check_open_source_readiness.py scripts/check_public_privacy.py scripts/generate_shared_contracts.py scripts/lexicon_pack.py scripts/trim_package.py
       - name: Test OCR image planning, budgets, and model cache
@@ -37,6 +38,26 @@ jobs:
           command: check
           arguments: ""
           command-arguments: licenses sources
+
+  release-preparation:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.99.0
+        with:
+          components: rustfmt
+      - name: Prepare source build without Python
+        shell: pwsh
+        run: |
+          $pythonPaths = @(Get-Command python,python3,py -All -ErrorAction SilentlyContinue |
+            ForEach-Object { Split-Path -Parent $_.Source })
+          $env:Path = (($env:Path -split ';') | Where-Object {
+            $_ -and ($pythonPaths -notcontains $_.TrimEnd('\')) -and $_ -notmatch '\\WindowsApps(?:\\|$)'
+          }) -join ';'
+          if (Get-Command python,python3,py -ErrorAction SilentlyContinue) { throw 'Python is on PATH' }
+          $env:KX_BUILD_NO_PAUSE = '1'
+          cmd /d /c build_latest_installers.cmd -Check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
   source-build:
     runs-on: windows-latest

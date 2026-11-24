@@ -1,5 +1,5 @@
 [workspace]
-members = ["pinyin-ime", "crates/kaixin-common", "crates/kaixin-core"]
+members = ["pinyin-ime", "crates/kaixin-common", "crates/kaixin-core", "crates/kaixin-release"]
 resolver = "2"
 
 [profile.release]
