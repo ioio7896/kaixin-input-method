@@ -149,7 +149,8 @@ function Invoke-ReleaseInstallers {
             if ($job.Program.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $job.Path -PathType Leaf)) {
                 throw "Inno Setup failed. See $($job.Log)"
             }
-            if ((Get-Item -LiteralPath $job.Path).VersionInfo.ProductVersion -ne $Version) {
+            $productVersion = [string](Get-Item -LiteralPath $job.Path).VersionInfo.ProductVersion
+            if ($productVersion.Trim() -ne $Version) {
                 throw "Installer version differs: $($job.Path)"
             }
         }

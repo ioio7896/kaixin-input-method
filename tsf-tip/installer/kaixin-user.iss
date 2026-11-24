@@ -1,5 +1,5 @@
 ﻿#ifndef KXAppVersion
-#error KXAppVersion must be passed by build.py with /DKXAppVersion=<version>
+#error The release build must pass /DKXAppVersion=<version>
 #endif
 #ifndef KXPackageDir
 #define KXPackageDir "..\..\dist\kaixin-package"
