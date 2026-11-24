@@ -46,6 +46,8 @@ jobs:
         with:
           python-version: "3.12"
       - uses: dtolnay/rust-toolchain@1.99.0
+        with:
+          components: rustfmt, clippy
       - name: Verify pinned release toolchain and versions
         run: |
           python scripts/check_release_toolchain.py
