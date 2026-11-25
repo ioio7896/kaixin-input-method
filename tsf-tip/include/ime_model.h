@@ -330,10 +330,11 @@ struct SrfScreenshotOptions {
 };
 
 struct SrfCompatibilityOptions {
-  SrfGameInputMode gameInputMode = SrfGameInputMode::Manual;
+  SrfGameInputMode gameInputMode = SrfGameInputMode::AutoText;
   SrfGameEnterBehavior gameEnterBehavior = SrfGameEnterBehavior::Auto;
   bool gameAutoUia = true;
   bool gameStatusIndicator = true;
+  bool gameShiftToggle = false;
   UINT gameStatusDurationMs = 1600;
   UINT gameStatusScalePercent = 100;
   bool fullscreenDetection = true;
@@ -351,6 +352,8 @@ struct SrfAppOptions {
   bool gameAutoUia = true;
   bool hasGameStatusIndicator = false;
   bool gameStatusIndicator = true;
+  bool hasGameShiftToggle = false;
+  bool gameShiftToggle = false;
   SrfHotkeyOptions gameChatOpenKey = {};
   SrfHotkeyOptions gameChatCloseKey = {true, VK_ESCAPE, 0};
   bool overlayForceUi = false;

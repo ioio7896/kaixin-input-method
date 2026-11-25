@@ -300,7 +300,7 @@ var
   ResultCode: Integer;
 begin
   Result := '';
-  if not FileExists(ExpandConstant('{app}\srf_ime_tray.exe')) then exit;
+  if not FileExists(ExpandConstant('{app}\srf_ime_setup.exe')) then exit;
   SetInstallMaintenance(True);
   try
     ExtractTemporaryFile('srf_ime_setup.exe');

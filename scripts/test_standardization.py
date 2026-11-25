@@ -1,12 +1,13 @@
 """Failure-path coverage for generated contracts and the dual-installer release gate."""
 
 import json
+import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 
 from generate_engine_contract import render_engine_contract
-from release import validate_pair
 from build_support.manifests import write_package_hash_manifest, verify_package_hash_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -46,12 +47,33 @@ class StandardizationTests(unittest.TestCase):
             path = stage.parent / f"kaixin-setup-{variant}-{version}-20261111-120000.exe"
             path.write_bytes(b"test installer fixture")
             paths.append(path)
-        self.assertEqual(validate_pair(self.root, version, set()), paths)
-        with self.assertRaises(RuntimeError):
-            validate_pair(self.root, version, {paths[0]})
+        command = [
+            "powershell.exe",
+            "-NoProfile",
+            "-NonInteractive",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$ErrorActionPreference = 'Stop'; . ./scripts/release-build.ps1; "
+            ". ./scripts/package-manifest.ps1; "
+            "Assert-ReleaseInstallerPair -Repo $env:KX_TEST_RELEASE_ROOT "
+            "-Pending (Join-Path $env:KX_TEST_RELEASE_ROOT 'dist') "
+            "-Version 2026.1111.1200 -Stamp 20261111-120000 -UserInstaller $false",
+        ]
+        environment = dict(os.environ, KX_TEST_RELEASE_ROOT=str(self.root))
+
+        def check_pair() -> subprocess.CompletedProcess:
+            return subprocess.run(command, cwd=ROOT, env=environment, capture_output=True)
+
+        result = check_pair()
+        self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
+        for path in paths:
+            self.assertIn(path.name.encode(), result.stdout)
+        paths[0].unlink()
+        self.assertNotEqual(check_pair().returncode, 0)
+        paths[0].write_bytes(b"test installer fixture")
         (self.root / "dist/kaixin-package-ocr/VERSION").write_text("old", encoding="utf-8")
-        with self.assertRaises(RuntimeError):
-            validate_pair(self.root, version, set())
+        self.assertNotEqual(check_pair().returncode, 0)
 
     def test_integrity_manifest_rejects_corruption_and_parent_traversal(self):
         payload = self.root / "payload.bin"

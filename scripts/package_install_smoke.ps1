@@ -106,7 +106,7 @@ try {
     Assert-PathExists (Join-Path $payload 'x64\srf_tsf_tip.dll')
     Assert-PathExists (Join-Path $payload 'x86\srf_tsf_tip.dll')
     Assert-PathExists (Join-Path $installRoot 'srf_ime_setup.exe')
-    Assert-PathExists (Join-Path $installRoot 'srf_ime_settings.exe')
+    Assert-PathExists (Join-Path $installRoot 'srf_ime_desktop.exe')
     Assert-PathExists (Join-Path $installRoot 'user_data_manifest.json')
     Assert-PathExists (Join-Path $installRoot 'component_manifest.ini')
 
@@ -127,7 +127,7 @@ try {
         throw "TIP was not added to the current user's language list"
     }
 
-    $settings = Join-Path $installRoot 'srf_ime_settings.exe'
+    $settings = Join-Path $installRoot 'srf_ime_desktop.exe'
     $process = Start-Process -FilePath $settings -PassThru -WindowStyle Hidden
     Start-Sleep -Milliseconds 900
     if ($process.HasExited -and $process.ExitCode -ne 0) {
@@ -170,7 +170,7 @@ try {
     Write-Host "package install smoke passed: $installRoot"
 } finally {
     $env:LOCALAPPDATA = $previousLocalAppData
-    foreach ($name in @('srf_ime_engine', 'srf_ime_tray', 'srf_ime_settings', 'srf_ime_clipboard', 'srf_ime_handwrite', 'srf_ime_symbols', 'srf_ime_ocr')) {
+    foreach ($name in @('srf_ime_engine', 'srf_ime_desktop')) {
         Stop-Process -Name $name -Force -ErrorAction SilentlyContinue
     }
     if (-not $KeepSmokeRoot -and (Test-Path -LiteralPath $SmokeRoot)) {

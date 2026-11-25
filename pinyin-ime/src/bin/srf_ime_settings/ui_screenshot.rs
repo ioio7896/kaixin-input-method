@@ -89,7 +89,7 @@ pub(super) fn screenshot_settings_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         if app.model.screenshot_translate_after_capture {
             app.model.screenshot_ocr_after_capture = true;
         }
-        if app.model.screenshot_ocr_after_capture && resolve_runtime_exe_path(OCR_EXE).is_none() {
+        if app.model.screenshot_ocr_after_capture && resolve_desktop_tool("ocr").is_none() {
             ui.label(
                 RichText::new("未找到 OCR 程序；自动识别需要安装输入法 + OCR 版。")
                     .small()

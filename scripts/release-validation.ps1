@@ -30,19 +30,18 @@ function Assert-ReleasePayload {
     foreach ($file in 'LICENSE', 'LICENSE_SCOPE.md', 'NOTICE', 'THIRD_PARTY_NOTICES.md', 'user_data_manifest.json', 'lexicon/lexicon.pack', 'lexicon/cold_lexicon.sqlite', 'assets/kaixin-input.ico') {
         if ((Get-Item -LiteralPath (Join-Path $Stage $file)).Length -lt 1) { throw "Empty package file: $file" }
     }
-    $ocrExe = Join-Path $Stage 'srf_ime_ocr.exe'
+    Assert-ReleasePeMachine -Path (Join-Path $Stage 'srf_ime_desktop.exe') -Machine 0x8664
     $ocrDirectory = Join-Path $Stage 'RapidOCRLite'
     if ($IncludeOcr) {
-        Assert-ReleasePeMachine -Path $ocrExe -Machine 0x8664
         Assert-ReleasePeMachine -Path (Join-Path $ocrDirectory 'rapidocrlite.dll') -Machine 0x8664
         foreach ($file in 'PP-OCRv6_det_medium.onnx', 'PP-OCRv6_det_small.onnx', 'PP-OCRv6_rec_medium.onnx', 'PP-OCRv6_rec_small.onnx', 'ppocrv6_dict.txt') {
             if ((Get-Item -LiteralPath (Join-Path $ocrDirectory "models/$file")).Length -lt 1) { throw "Empty OCR model or dictionary: $file" }
         }
-    } elseif ((Test-Path -LiteralPath $ocrExe) -or (Test-Path -LiteralPath $ocrDirectory)) {
+    } elseif (Test-Path -LiteralPath $ocrDirectory) {
         throw 'IME-only package contains OCR files'
     }
     $privateFiles = Get-ChildItem -LiteralPath $Stage -Recurse -Force | Where-Object {
-        $_.Name -match '(?i)^\.?python.*|\.py[cdow]?$|^(user_dict|clipboard_store|ocr_history|runtime_events)\.sqlite|^engine_capability\.' -or
+        $_.Name -match '(?i)^\.?python.*|\.py[cdow]?$|^(user_dict|clipboard_store|ocr_history|runtime_events)\.(sqlite|kxj)|^engine_capability\.' -or
         ($_.Attributes -band [IO.FileAttributes]::ReparsePoint)
     }
     if ($privateFiles) { throw "Unexpected runtime files: $($privateFiles.Name -join ', ')" }
@@ -50,11 +49,11 @@ function Assert-ReleasePayload {
 }
 
 function Test-StagedEngine {
-    param([string]$Repo, [string]$Stage, [string]$Runtime, [string]$Version, [string]$Work, [string]$Commit)
+    param([string]$Repo, [string]$Stage, [string]$Runtime, [string]$Version, [string]$Work, [string]$Commit, [string]$Profile)
     $protocol = [int][IO.File]::ReadAllText((Join-Path $Repo 'shared/engine_protocol_version.txt')).Trim()
     $probes = [ordered]@{
-        x64 = Join-Path $Repo 'tsf-tip/build-package/Release/srf_release_probe.exe'
-        x86 = Join-Path $Repo 'tsf-tip/build-package-x86/Release/srf_release_probe.exe'
+        x64 = Join-Path $Repo "tsf-tip/build-package/$Profile/srf_release_probe.exe"
+        x86 = Join-Path $Repo "tsf-tip/build-package-x86/$Profile/srf_release_probe.exe"
     }
     $engine = Join-Path $Stage 'srf_ime_engine.exe'
     $components = [ordered]@{
@@ -81,6 +80,7 @@ function Test-StagedEngine {
     [IO.Directory]::CreateDirectory($isolated) | Out-Null
     $sources = @($engine, (Join-Path $Stage 'VERSION'), (Join-Path $Stage 'current_runtime_payload.txt'))
     $sources += @(Get-ChildItem -LiteralPath (Join-Path $Stage 'lexicon') -File -Recurse | ForEach-Object FullName)
+    $sources += @(Get-ChildItem -LiteralPath (Join-Path $Stage 'model-data') -File | ForEach-Object FullName)
     $sources += @($probes.Keys | ForEach-Object { Join-Path $Runtime "$_/srf_tsf_tip.dll" })
     $payload = [ordered]@{}
     foreach ($source in $sources) {
@@ -130,7 +130,7 @@ function Test-StagedOcr {
     $inputText = ($inputLines + '{"command":"quit"}' -join "`n") + "`n"
     $isolated = Join-Path $Work 'ocr-user'
     $raw = Invoke-IsolatedReleaseTest -Directory $isolated -Command {
-        Invoke-ReleaseCapture -Program (Join-Path $Stage 'srf_ime_ocr.exe') -Arguments @('--ocr-worker', '--stdio', '--validate-installed', '--no-fast-mode') -Directory $Stage -InputText $inputText -TimeoutSeconds 180
+        Invoke-ReleaseCapture -Program (Join-Path $Stage 'srf_ime_desktop.exe') -Arguments @('--tool=ocr', '--ocr-worker', '--stdio', '--validate-installed', '--no-fast-mode') -Directory $Stage -InputText $inputText -TimeoutSeconds 180
     }
     $responses = @($raw -split '\r?\n' | Where-Object { $_.Trim() } | ForEach-Object { $_ | ConvertFrom-Json })
     if ($responses.Count -ne 9) { throw 'Incomplete OCR smoke responses' }

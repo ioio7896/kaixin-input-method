@@ -13,6 +13,12 @@ const CJK_FONT_KEY: &str = "microsoft_yahei";
 pub const CANDIDATE_PREVIEW_FONT_FAMILY: &str = "kaixin_candidate_preview";
 const CANDIDATE_PREVIEW_FONT_FAMILY_PREFIX: &str = "kaixin_candidate_preview_";
 pub const SIMSUN_FONT_FAMILY: &str = "kaixin_clipboard_simsun";
+#[allow(dead_code)]
+pub const KEYBOARD_RU_FONT_FAMILY: &str = "kaixin_keyboard_ru";
+#[allow(dead_code)]
+pub const KEYBOARD_JA_FONT_FAMILY: &str = "kaixin_keyboard_ja";
+#[allow(dead_code)]
+pub const KEYBOARD_KO_FONT_FAMILY: &str = "kaixin_keyboard_ko";
 
 struct LoadedFont {
     key: &'static str,
@@ -163,6 +169,24 @@ pub fn install_cjk_fonts_with_candidate_preview(
                 .cloned(),
         );
     }
+    register_preferred_font_family(
+        &mut fonts,
+        KEYBOARD_RU_FONT_FAMILY,
+        &["segoe_ui", CJK_FONT_KEY],
+        &registered_keys,
+    );
+    register_preferred_font_family(
+        &mut fonts,
+        KEYBOARD_JA_FONT_FAMILY,
+        &["yu_gothic_ui", "meiryo", "hiragino", CJK_FONT_KEY],
+        &registered_keys,
+    );
+    register_preferred_font_family(
+        &mut fonts,
+        KEYBOARD_KO_FONT_FAMILY,
+        &["malgun_gothic", CJK_FONT_KEY],
+        &registered_keys,
+    );
     ctx.set_fonts(fonts);
     Some(InstalledCjkFonts {
         label: primary.label,
@@ -179,6 +203,31 @@ fn register_candidate_preview_families(fonts: &mut FontDefinitions, registered_k
             key,
             registered_keys,
         );
+    }
+}
+
+fn register_preferred_font_family(
+    fonts: &mut FontDefinitions,
+    family_name: &str,
+    preferred_keys: &[&str],
+    registered_keys: &[String],
+) {
+    let family_fonts = fonts
+        .families
+        .entry(FontFamily::Name(family_name.into()))
+        .or_default();
+    family_fonts.clear();
+    for preferred in preferred_keys {
+        if registered_keys.iter().any(|key| key == preferred)
+            && !family_fonts.iter().any(|key| key == preferred)
+        {
+            family_fonts.push((*preferred).to_owned());
+        }
+    }
+    for key in registered_keys {
+        if !family_fonts.iter().any(|existing| existing == key) {
+            family_fonts.push(key.clone());
+        }
     }
 }
 
@@ -461,6 +510,7 @@ fn cjk_fallback_font_paths() -> &'static [(&'static str, &'static str)] {
             ("segui_symbol", r"C:\Windows\Fonts\seguisym.ttf"),
             ("cambria_math", r"C:\Windows\Fonts\cambria.ttc"),
             ("segui_emoji", r"C:\Windows\Fonts\seguiemj.ttf"),
+            ("segoe_ui", r"C:\Windows\Fonts\segoeui.ttf"),
         ]
     } else if cfg!(target_os = "macos") {
         &[

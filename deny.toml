@@ -17,6 +17,18 @@ allow = [
     "Zlib",
 ]
 
+[[licenses.exceptions]]
+name = "im"
+allow = ["MPL-2.0"]
+
+[[licenses.exceptions]]
+name = "bitmaps"
+allow = ["MPL-2.0"]
+
+[[licenses.exceptions]]
+name = "sized-chunks"
+allow = ["MPL-2.0"]
+
 [bans]
 multiple-versions = "warn"
 wildcards = "allow"

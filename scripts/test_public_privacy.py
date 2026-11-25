@@ -15,6 +15,8 @@ class PublicPrivacyTests(unittest.TestCase):
         for name in (
             "user_dict.sqlite-wal",
             "clipboard_store.sqlite",
+            "user_dict.kxj",
+            "clipboard_store.kxj.tmp",
             "clipboard_manager_window.sqlite-journal",
             "ocr_history.sqlite",
             "runtime_events.sqlite-wal",

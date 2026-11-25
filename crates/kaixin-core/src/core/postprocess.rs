@@ -270,7 +270,7 @@ impl PinyinEngine {
 
         if let Some(entries) = self
             .phrase_lexicon
-            .as_ref()
+            .as_deref()
             .and_then(|lex| lex.lookup_pinyin(syllable))
         {
             merge_phrase_entries(
@@ -283,7 +283,7 @@ impl PinyinEngine {
                 &self.user_lexicon,
                 now,
                 Some(PINYIN_CANDIDATE_META),
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
                 None,
             );
         }
@@ -368,7 +368,7 @@ impl PinyinEngine {
     ) {
         let mixed_hot_entries = self
             .phrase_lexicon
-            .as_ref()
+            .as_deref()
             .filter(|_| self.mixed_pinyin_enabled() && compact_key.chars().count() >= 4)
             .and_then(|lex| lex.lookup_mixed_hot(compact_key));
         let mixed_hot_phrases = mixed_hot_entries
@@ -479,7 +479,7 @@ impl PinyinEngine {
             apply_short_intent_final_candidate_density(
                 ranked,
                 Some(intent_chars),
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
             );
             if intent_chars == 2 {
                 arrange_two_char_intent_page_density(ranked, page_size);
@@ -509,7 +509,7 @@ impl PinyinEngine {
         };
         let exact_pinyin_phrases: HashSet<String> = self
             .phrase_lexicon
-            .as_ref()
+            .as_deref()
             .and_then(|lex| lex.lookup_pinyin(full_compact_key))
             .map(|entries| entries.iter().map(|entry| entry.phrase.clone()).collect())
             .unwrap_or_default();
@@ -641,7 +641,7 @@ impl PinyinEngine {
                         candidate_has_user_priority(item)
                             || self
                                 .phrase_lexicon
-                                .as_ref()
+                                .as_deref()
                                 .map(|lex| {
                                     matches!(
                                         lex.phrase_layer(&item.phrase),
@@ -726,7 +726,7 @@ impl PinyinEngine {
             }
             let freq = self
                 .phrase_lexicon
-                .as_ref()
+                .as_deref()
                 .map(|lex| lex.phrase_frequency(&item.phrase))
                 .unwrap_or(0);
             let below_freq_floor = head.len() >= head_min && freq < MULTI_SYLL_PHRASE_HEAD_FREQ_MIN;
@@ -756,7 +756,7 @@ impl PinyinEngine {
         if syllables.len() < 3 {
             return Vec::new();
         }
-        let Some(lex) = self.phrase_lexicon.as_ref() else {
+        let Some(lex) = self.phrase_lexicon.as_deref() else {
             return Vec::new();
         };
         let mut out = Vec::new();
@@ -879,7 +879,7 @@ impl PinyinEngine {
             } else if alternate_fallback.is_none() {
                 alternate_fallback = Some(variant.clone());
             }
-            let Some(lex) = self.phrase_lexicon.as_ref() else {
+            let Some(lex) = self.phrase_lexicon.as_deref() else {
                 continue;
             };
             let key = variant.syllables.join("");
@@ -990,7 +990,7 @@ impl PinyinEngine {
         if syllable_count < 2 {
             return Vec::new();
         }
-        let Some(lex) = self.phrase_lexicon.as_ref() else {
+        let Some(lex) = self.phrase_lexicon.as_deref() else {
             return Vec::new();
         };
         let Some(entries) = lex.lookup_pinyin(compact_key) else {

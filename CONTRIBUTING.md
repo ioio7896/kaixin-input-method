@@ -29,11 +29,11 @@ MSVC C++ 工具链、CMake 3.20+、Windows PowerShell 5.1 和 Inno Setup 6。OCR
 
 ## 发布
 
-代码修改完成后运行 `build_latest_installers.cmd` 或 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1`。
+代码修改完成后运行 `cargo xtask release` 或 `build_latest_installers.cmd`。
 该入口一次生成上海时间的时间戳版本，强制源码/Rust/C++ 检查及冒烟检查，产出纯输入法和输入法＋OCR 两个安装器，
-核对版本、数量和包体清单，生成源码备份并写入 `dist/release-<版本>.json`。签名参数支持 `-Sign` 和 `-SignRequired`。
-明确要求跳过测试时可传 `-SkipTests`，发布报告会记录 `verification: skipped_by_request`；编译及包体完整性校验仍执行。
-单组件开发构建继续使用 `build.py`；正式交付必须走双安装器发布入口。
+核对版本、数量和包体清单，生成源码备份并写入 `dist/release-<版本>.json`。签名参数支持 `--sign` 和 `--sign-required`。
+明确要求跳过测试时可传 `--skip-tests`，发布报告会记录 `verification: skipped_by_request`；编译及包体完整性校验仍执行。
+开发时可用 `cargo xtask build --package-variants ime` 暂存纯输入法，或用 `cargo xtask build --quick` 复用上次构建的产物。
 
 建议从独立分支开始，保持一次提交只解决一个主题。不要提交 `dist/`、虚拟环境、
 诊断包、日志、PDB、签名证书、用户数据库或其他本机生成内容。
@@ -53,7 +53,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-fast.ps1
 cargo check --manifest-path pinyin-ime/Cargo.toml --lib --locked
 ```
 
-开发检查和 CI 使用 `scripts/verify.py`，正式打包使用 `scripts/release.ps1`，Rust 检查矩阵由 `shared/verification.json` 维护：
+开发检查和 CI 使用 `scripts/verify.py`，正式打包使用 `cargo xtask release`，Rust 检查矩阵由 `shared/verification.json` 维护：
 `source` 检查格式和契约，`rust` 对无界面/桌面两种配置执行工作区全部目标的 Clippy 与测试，
 `native` 构建 CMake 的 `kaixin_check_targets` 并运行 x64/x86 CTest。`verify-full.ps1` 另保留词库质量与性能评估。
 

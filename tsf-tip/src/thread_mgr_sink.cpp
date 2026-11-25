@@ -48,7 +48,7 @@ STDMETHODIMP CThreadMgrEventSink::OnInitDocumentMgr(ITfDocumentMgr* /*pdim*/) {
 STDMETHODIMP CThreadMgrEventSink::OnUninitDocumentMgr(ITfDocumentMgr* pdim) {
   if (!m_pTip || !pdim) return S_OK;
   const bool focused = ContextBelongsToDocument(m_pTip->m_pFocusContext, pdim);
-  if (ContextBelongsToDocument(m_pTip->m_pCompositionContext, pdim)) {
+  if (ContextBelongsToDocument(m_pTip->m_compositionState.pCompositionContext, pdim)) {
     m_pTip->ScheduleHostCompositionEnd(false);
   }
   if (focused) m_pTip->SetFocusContext(nullptr);
@@ -111,7 +111,8 @@ STDMETHODIMP CThreadMgrEventSink::OnPushContext(ITfContext* pic) {
 STDMETHODIMP CThreadMgrEventSink::OnPopContext(ITfContext* pic) {
   if (!m_pTip || !pic) return S_OK;
   const bool focused = m_pTip->m_pFocusContext == pic;
-  if (m_pTip->m_pCompositionContext == pic) m_pTip->ScheduleHostCompositionEnd(false);
+  if (m_pTip->m_compositionState.pCompositionContext == pic)
+    m_pTip->ScheduleHostCompositionEnd(false);
   if (!focused) return S_OK;
   m_pTip->SetFocusContext(nullptr);
   ITfDocumentMgr* document = nullptr;

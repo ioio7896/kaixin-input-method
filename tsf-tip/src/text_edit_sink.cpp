@@ -75,8 +75,8 @@ class CEditSessionFinishComposition final : public ITfEditSession {
     // If focus moved to another context, the captured object's range still
     // belongs to the old field. Never clear it when a newer composition is
     // active in that same context.
-    const bool differentContext =
-        m_tip->m_pFocusContext != m_context && m_tip->m_pCompositionContext != m_context;
+    const bool differentContext = m_tip->m_pFocusContext != m_context &&
+                                  m_tip->m_compositionState.pCompositionContext != m_context;
     if (m_clear && (sameSession || differentContext)) {
       ITfRange* range = nullptr;
       if (SUCCEEDED(m_composition->GetRange(&range)) && range) {
@@ -115,11 +115,13 @@ STDMETHODIMP_(ULONG) CTextEditSink::Release() {
 STDMETHODIMP CTextEditSink::OnEndEdit(ITfContext* context, TfEditCookie cookie,
                                       ITfEditRecord* record) {
   if (!m_tip || !record || context != m_tip->m_pFocusContext ||
-      context != m_tip->m_pCompositionContext || !m_tip->m_pComposition ||
-      m_tip->m_internalCompositionEndDepth)
+      context != m_tip->m_compositionState.pCompositionContext ||
+      !m_tip->m_compositionState.pComposition || m_tip->m_internalCompositionEndDepth)
     return S_OK;
   ITfRange* compositionRange = nullptr;
-  if (FAILED(m_tip->m_pComposition->GetRange(&compositionRange)) || !compositionRange) return S_OK;
+  if (FAILED(m_tip->m_compositionState.pComposition->GetRange(&compositionRange)) ||
+      !compositionRange)
+    return S_OK;
   bool outside = false;
   BOOL selectionChanged = FALSE;
   if (SUCCEEDED(record->GetSelectionStatus(&selectionChanged)) && selectionChanged) {
@@ -162,14 +164,15 @@ STDMETHODIMP CTextEditSink::OnEndEdit(ITfContext* context, TfEditCookie cookie,
 
 STDMETHODIMP CTextEditSink::OnLayoutChange(ITfContext* context, TfLayoutCode code,
                                            ITfContextView*) {
-  if (!m_tip || context != m_tip->m_pFocusContext || context != m_tip->m_pCompositionContext ||
-      !m_tip->m_pComposition)
+  if (!m_tip || context != m_tip->m_pFocusContext ||
+      context != m_tip->m_compositionState.pCompositionContext ||
+      !m_tip->m_compositionState.pComposition)
     return S_OK;
   if (code == TF_LC_DESTROY) {
     m_tip->ScheduleHostCompositionEnd(false);
   } else if (code == TF_LC_CHANGE) {
-    m_tip->m_hasStickyCandidateRect = false;
-    m_tip->m_hasLastCandidateRect = false;
+    m_tip->m_anchor.hasStickyCandidateRect = false;
+    m_tip->m_anchor.hasLastCandidateRect = false;
     if (!m_tip->RequestCandidateWindowAnchorRefresh())
       m_tip->ScheduleCandidateWindowAnchorRefreshRetry();
   }
@@ -224,10 +227,10 @@ void CSrfTip::BindTextContextSinks(ITfContext* context) {
 }
 
 void CSrfTip::ScheduleHostCompositionEnd(bool clearPreedit) {
-  if (!m_pComposition || !m_pCompositionContext) return;
+  if (!m_compositionState.pComposition || !m_compositionState.pCompositionContext) return;
   const std::wstring expected = BuildCompositionDisplay();
-  ITfComposition* composition = m_pComposition;
-  ITfContext* context = m_pCompositionContext;
+  ITfComposition* composition = m_compositionState.pComposition;
+  ITfContext* context = m_compositionState.pCompositionContext;
   composition->AddRef();
   context->AddRef();
   EndInputSession(L"host-text-or-layout-change", TF_INVALID_COOKIE, false);
@@ -248,9 +251,9 @@ void CSrfTip::ScheduleHostCompositionEnd(bool clearPreedit) {
 }
 
 HRESULT CSrfTip::FinishCompositionPreservingText(TfEditCookie cookie) {
-  if (!m_pComposition || !m_pCompositionContext) return S_OK;
-  ITfComposition* composition = m_pComposition;
-  ITfContext* context = m_pCompositionContext;
+  if (!m_compositionState.pComposition || !m_compositionState.pCompositionContext) return S_OK;
+  ITfComposition* composition = m_compositionState.pComposition;
+  ITfContext* context = m_compositionState.pCompositionContext;
   composition->AddRef();
   context->AddRef();
   // Detach the old identity before a host can synchronously call the sink.

@@ -234,4 +234,5 @@ ConfigEntry { section: "compatibility", key: "game_auto_uia", default: "1", kind
 ConfigEntry { section: "compatibility", key: "game_status_indicator", default: "1", kind: "bool", options: &[] },
 ConfigEntry { section: "compatibility", key: "game_status_duration_ms", default: "1600", kind: "integer", options: &[] },
 ConfigEntry { section: "compatibility", key: "game_status_scale_percent", default: "100", kind: "integer", options: &[] },
+ConfigEntry { section: "compatibility", key: "game_shift_toggle", default: "0", kind: "bool", options: &[] },
 ];

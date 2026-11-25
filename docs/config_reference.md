@@ -116,8 +116,8 @@ Shared path and process naming rules:
 | Config path | `%LOCALAPPDATA%\kaixin\kaixin.ini` |
 | Log directory | `%LOCALAPPDATA%\kaixin\logs` |
 | IPC capability token | `%LOCALAPPDATA%\kaixin\engine_capability.dat` |
-| User dictionary database | `%LOCALAPPDATA%\kaixin\user_dict.sqlite` (local SQLite protected with Windows DPAPI) |
-| Clipboard history database | `%LOCALAPPDATA%\kaixin\clipboard_store.sqlite` (local SQLite protected with Windows DPAPI) |
+| User dictionary journal | `%LOCALAPPDATA%\kaixin\user_dict.kxj` (AES-256-GCM records with a DPAPI-protected key) |
+| Clipboard history journal | `%LOCALAPPDATA%\kaixin\clipboard_store.kxj` (AES-256-GCM records with a DPAPI-protected key) |
 | OCR history database | `%LOCALAPPDATA%\kaixin\ocr_history.sqlite` (local SQLite protected with Windows DPAPI) |
 | Screenshot library index | `%LOCALAPPDATA%\kaixin\screenshot_library.sqlite` |
 | Runtime event database | `%LOCALAPPDATA%\kaixin\runtime_events.sqlite` (structured diagnostics mirror; text logs are still written under `logs`) |
@@ -146,7 +146,7 @@ Font and clipboard notes:
 | --- | --- |
 | Default UI font | Microsoft YaHei is preferred by the settings app, clipboard manager, and candidate window. |
 | Font precedence | Explicit user `candidate_font_file` wins over the Microsoft YaHei default; skin `font_file` is only a recommendation when no user font was saved. |
-| Clipboard background capture | Disabled by default. Set `[clipboard] background_enabled=1` to opt in to a listener/poller that writes text history to the local DPAPI-protected SQLite database on Windows. |
+| Clipboard background capture | Disabled by default. Set `[clipboard] background_enabled=1` to opt in to a listener/poller that writes text history to the local encrypted journal through the engine service on Windows. |
 | Global privacy mode | `[privacy] enabled=1` forces ASCII input, suppresses candidates and learning, and prevents clipboard capture or history disclosure. |
 | Clipboard on-demand capture | Opening the clipboard manager, pressing refresh, or using `vvu` reads the current system text clipboard once even when background capture is off. |
 

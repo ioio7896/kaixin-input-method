@@ -95,7 +95,7 @@ mod cli {
             RUNTIME_PAYLOAD_MANIFEST_NAME.to_string(),
             "VERSION".to_string(),
             "srf_ime_setup.exe".to_string(),
-            "srf_ime_tray.exe".to_string(),
+            "srf_ime_desktop.exe".to_string(),
             "srf_ime_engine.exe".to_string(),
             relative_to_root(root, dll_x64),
             relative_to_root(root, dll_x86),

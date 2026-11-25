@@ -1440,6 +1440,13 @@
       "default": "100",
       "type": "integer",
       "options": []
+    },
+    {
+      "section": "compatibility",
+      "key": "game_shift_toggle",
+      "default": "0",
+      "type": "bool",
+      "options": []
     }
   ],
   "cpp_default_entries": {

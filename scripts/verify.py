@@ -79,7 +79,7 @@ def rust_checks() -> None:
     with tempfile.TemporaryDirectory(prefix="rust-", dir=parent) as directory:
         env = dict(os.environ)
         env["LOCALAPPDATA"] = directory
-        env["SRF_USER_DICT_PATH"] = str(Path(directory) / "user_dict.sqlite")
+        env["SRF_USER_DICT_PATH"] = str(Path(directory) / "user_dict.kxj")
         for name, features in plan()["rust_profiles"].items():
             print(f"Rust profile: {name}", flush=True)
             common = ["--workspace", "--all-targets", "--locked", *features]

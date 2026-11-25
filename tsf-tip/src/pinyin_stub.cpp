@@ -45,9 +45,8 @@ extern "C" void SrfTip_BackgroundWorkerRelease();
 
 namespace {
 
-constexpr size_t kRustRowTextUnits = 512;
-constexpr size_t kRustRowMetaUnits = 512;
-constexpr size_t kRustRowWidth = kRustRowTextUnits + kRustRowMetaUnits;
+constexpr size_t kLookupRowMaxBytes =
+    4 + 4 + 2 * 4 + 9 * (2 + srf_engine_contract::ROW_MAX_FIELD_UNITS * sizeof(uint16_t));
 constexpr uint32_t kEnginePipeMagic = 0x31504653;  // "SFP1"
 constexpr uint16_t kEnginePipeVersion = SRF_ENGINE_PROTOCOL_VERSION;
 constexpr DWORD kEnginePipeRetrySleepMs = 60;
@@ -95,8 +94,7 @@ constexpr size_t kMaxLexiconPathUnits = 4096;
 constexpr uint32_t kRustModeTraditionalOutput = srf_engine_contract::MODE_TRADITIONAL_OUTPUT;
 constexpr size_t kEnginePipeResponseHeaderBytes = 16;
 constexpr size_t kEnginePipeMaxResponseBytes =
-    kEnginePipeResponseHeaderBytes + 4 +
-    srf_candidate_limits::kFullResult * kRustRowWidth * sizeof(uint16_t) + 4;
+    kEnginePipeResponseHeaderBytes + 3 + srf_candidate_limits::kFullResult * kLookupRowMaxBytes;
 constexpr int kRustFfiPanicRc = -100;
 constexpr int kRustEngineBusyRc = -5;
 constexpr int kRustLearnPendingRc = -7;
@@ -125,17 +123,8 @@ struct EngineHealthRecordV1 {
 static_assert(sizeof(EngineHealthRecordV1) == 24);
 constexpr DWORD kEngineHealthRecordMagic = 0x4845584B;  // "KXEH" on disk.
 constexpr DWORD kEngineHealthFailureUnspecified = 0xE0010001;
-std::atomic<DWORD> g_engineHealthErrorCode{ERROR_SUCCESS};
 constexpr DWORD kEngineHealthVersionMismatch = 0xE0010002;
 constexpr DWORD kEngineHealthStartupFailed = 0xE0010003;
-
-// Preserve the originating launch/access error if a subsequent connection
-// attempt merely times out. Success clears it before the next failure cycle.
-void RememberEngineFailure(DWORD code) {
-  DWORD expected = ERROR_SUCCESS;
-  g_engineHealthErrorCode.compare_exchange_strong(expected, code, std::memory_order_acq_rel);
-}
-std::atomic<DWORD> g_engineHelperPid{0};
 
 enum class EnginePipeCommand : uint16_t {
   Init = 1,
@@ -170,27 +159,6 @@ struct RustBridge {
   std::wstring cacheSignature;
 };
 
-std::mutex g_mutex;
-RustBridge g_bridge;
-std::atomic<uint32_t> g_pendingModeFlagsMirror{0};
-std::atomic<SrfEngineState> g_engineState = SrfEngineState::Idle;
-std::atomic<bool> g_warmupInFlight = false;
-std::atomic<bool> g_retryOnFailureEnabled = false;
-SrfEngineRecoveryBudget g_recoveryBudget;
-std::atomic<bool> g_retryLoopInFlight = false;
-std::atomic<unsigned long long> g_retryLoopGeneration = 0;
-std::atomic<unsigned long long> g_recoveryTriggerRequestId{0};
-std::atomic<ULONGLONG> g_lastInteractiveLookupTick{0};
-std::atomic<ULONGLONG> g_lastUserTriggeredWarmupTick{0};
-std::atomic<unsigned> g_consecutiveLookupTimeouts{0};
-std::atomic<ULONGLONG> g_lastLookupTimeoutRestartTick{0};
-std::atomic<unsigned long long> g_latestLookupRequestId{0};
-std::atomic<unsigned long long> g_latestLookupCancelRequestId{0};
-std::atomic<unsigned long long> g_remoteLookupInFlight{0};
-std::atomic<bool> g_lookupCancelWorkerRunning{false};
-std::atomic<bool> g_trayWatchdogRunning{false};
-std::wstring g_lastEngineFailure;
-
 struct LocalLookupCacheKey {
   std::wstring reading;
   uint32_t modeFlags = 0;
@@ -219,30 +187,21 @@ struct LocalLookupCacheKeyHash {
 struct LocalLookupCacheEntry {
   LocalLookupCacheKey key;
   std::vector<std::wstring> candidates;
-  std::vector<std::wstring> meta;
+  std::vector<CandidateMetaParts> meta;
   ULONGLONG tick = 0;
   bool hasMore = false;
   size_t bytes = 0;
 };
 
-std::mutex g_localLookupCacheMutex;
-std::unordered_map<LocalLookupCacheKey, LocalLookupCacheEntry, LocalLookupCacheKeyHash>
-    g_localLookupCache;
-std::wstring g_localLookupCacheSignature;
 constexpr size_t kLocalLookupCacheCapacity = 512;
 constexpr size_t kLocalLookupCacheMaxBytes = 8 * 1024 * 1024;
 constexpr ULONGLONG kLocalLookupCacheTtlMs = 60 * 1000;
 constexpr ULONGLONG kLocalLookupCacheStaleTtlMs = 5 * 60 * 1000;
-std::array<LocalLookupCacheEntry, 26> g_singleLetterLookupCache;
-std::array<bool, 26> g_singleLetterLookupCacheValid = {};
-std::atomic<ULONGLONG> g_lastRuntimePayloadCacheCheckTick{0};
-std::atomic<bool> g_runtimePayloadStaleForCache{false};
 constexpr ULONGLONG kSingleLetterLookupCacheTtlMs = 5 * 60 * 1000;
 constexpr ULONGLONG kSingleLetterLookupCacheStaleTtlMs = 10 * 60 * 1000;
 constexpr DWORD kSingleLetterReadyWaitMs = 8;
 constexpr DWORD kLookupBusyWaitMs = 16;
 constexpr ULONGLONG kPrewarmQuietAfterInteractiveLookupMs = 1500;
-std::atomic<bool> g_singleLetterPrewarmInFlight{false};
 constexpr const wchar_t* kHotLookupPrewarmReadings[] = {
     L"ni",  L"wo",   L"shi",   L"de",  L"le",  L"bu",    L"zai",  L"you", L"hao",  L"ma",  L"yao",
     L"dao", L"shuo", L"kan",   L"lai", L"qu",  L"hui",   L"neng", L"mei", L"yi",   L"ge",  L"he",
@@ -296,12 +255,84 @@ struct PendingLearnRequest {
   unsigned long long completionId = 0;
 };
 
-std::mutex g_learnQueueMutex;
-std::deque<PendingLearnRequest> g_learnQueue;
-std::atomic<bool> g_learnWorkerRunning{false};
-std::atomic<unsigned long long> g_nextLearnCompletionId{1};
 constexpr size_t kLearnQueueCapacity = 128;
 constexpr unsigned int kLearnQueueMaxRepeatCount = 16;
+
+// The bridge belongs to this TSF module. Background workers hold the module
+// alive while using it, and teardown closes the last local pipe handle.
+class EngineBridgeClient {
+ public:
+  static EngineBridgeClient& Instance() {
+    static EngineBridgeClient client;
+    return client;
+  }
+
+  void InvalidateRemoteBackendLocked();
+  bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs,
+                                    std::wstring* error);
+  bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>& payload,
+                               int* status, std::vector<BYTE>* responsePayload, std::wstring* error,
+                               unsigned long long requestId = 0);
+  void ResetBridgeLocked();
+  bool EnsureLoadedLocked();
+
+  void ClosePipeLocked() {
+    if (connection.pipe == nullptr || connection.pipe == INVALID_HANDLE_VALUE) return;
+    CloseHandle(connection.pipe);
+    connection.pipe = INVALID_HANDLE_VALUE;
+    engineHelperPid.store(0, std::memory_order_release);
+  }
+
+  std::atomic<DWORD> engineHealthErrorCode{ERROR_SUCCESS};
+  std::atomic<DWORD> engineHelperPid{0};
+  std::mutex connectionMutex;
+  RustBridge connection;
+  std::atomic<uint32_t> pendingModeFlagsMirror{0};
+  std::atomic<SrfEngineState> engineState = SrfEngineState::Idle;
+  std::atomic<bool> warmupInFlight = false;
+  std::atomic<bool> retryOnFailureEnabled = false;
+  SrfEngineRecoveryBudget recoveryBudget;
+  std::atomic<bool> retryLoopInFlight = false;
+  std::atomic<unsigned long long> retryLoopGeneration = 0;
+  std::atomic<unsigned long long> recoveryTriggerRequestId{0};
+  std::atomic<ULONGLONG> lastInteractiveLookupTick{0};
+  std::atomic<ULONGLONG> lastUserTriggeredWarmupTick{0};
+  std::atomic<unsigned> consecutiveLookupTimeouts{0};
+  std::atomic<ULONGLONG> lastLookupTimeoutRestartTick{0};
+  std::atomic<unsigned long long> latestLookupRequestId{0};
+  std::atomic<unsigned long long> latestLookupCancelRequestId{0};
+  std::atomic<unsigned long long> remoteLookupInFlight{0};
+  std::atomic<bool> lookupCancelWorkerRunning{false};
+  std::atomic<bool> trayWatchdogRunning{false};
+  std::wstring lastEngineFailure;
+  std::mutex localLookupCacheMutex;
+  std::unordered_map<LocalLookupCacheKey, LocalLookupCacheEntry, LocalLookupCacheKeyHash>
+      localLookupCache;
+  std::wstring localLookupCacheSignature;
+  std::array<LocalLookupCacheEntry, 26> singleLetterLookupCache;
+  std::array<bool, 26> singleLetterLookupCacheValid = {};
+  std::atomic<ULONGLONG> lastRuntimePayloadCacheCheckTick{0};
+  std::atomic<bool> runtimePayloadStaleForCache{false};
+  std::atomic<bool> singleLetterPrewarmInFlight{false};
+  std::mutex learnQueueMutex;
+  std::deque<PendingLearnRequest> learnQueue;
+  std::atomic<bool> learnWorkerRunning{false};
+  std::atomic<unsigned long long> nextLearnCompletionId{1};
+  std::mutex resolvedClipboardMutex;
+  std::map<std::wstring, std::wstring> resolvedClipboardCache;
+
+ private:
+  EngineBridgeClient() = default;
+  ~EngineBridgeClient() { ClosePipeLocked(); }
+};
+
+// Preserve the originating launch/access error if a subsequent connection
+// attempt merely times out. Success clears it before the next failure cycle.
+void RememberEngineFailure(DWORD code) {
+  DWORD expected = ERROR_SUCCESS;
+  EngineBridgeClient::Instance().engineHealthErrorCode.compare_exchange_strong(
+      expected, code, std::memory_order_acq_rel);
+}
 
 std::vector<BYTE>& RemoteLookupPayloadScratch() {
   thread_local std::vector<BYTE> scratch;
@@ -392,10 +423,10 @@ bool IsHotLocalLookupCacheReading(const std::wstring& lower) {
   return false;
 }
 
-bool LookupResultHasPartialMeta(const std::vector<std::wstring>* metaScores) {
+bool LookupResultHasPartialMeta(const std::vector<CandidateMetaParts>* metaScores) {
   if (!metaScores) return false;
-  for (const std::wstring& meta : *metaScores) {
-    if (meta.find(L"partial=1") != std::wstring::npos) return true;
+  for (const auto& meta : *metaScores) {
+    if (meta.partialResult) return true;
   }
   return false;
 }
@@ -403,20 +434,21 @@ bool LookupResultHasPartialMeta(const std::vector<std::wstring>* metaScores) {
 bool IsLoadedRuntimePayloadStaleForCache();
 
 void ClearLocalLookupCache() {
-  std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
-  g_localLookupCache.clear();
-  g_singleLetterLookupCacheValid.fill(false);
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().localLookupCacheMutex);
+  EngineBridgeClient::Instance().localLookupCache.clear();
+  EngineBridgeClient::Instance().singleLetterLookupCacheValid.fill(false);
 }
 
 void ClearLocalLookupCacheInternal() {
-  g_localLookupCache.clear();
-  g_singleLetterLookupCacheValid.fill(false);
+  EngineBridgeClient::Instance().localLookupCache.clear();
+  EngineBridgeClient::Instance().singleLetterLookupCacheValid.fill(false);
 }
 
 void PruneLocalLookupCachePreservingHotInternal() {
-  for (auto it = g_localLookupCache.begin(); it != g_localLookupCache.end();) {
+  for (auto it = EngineBridgeClient::Instance().localLookupCache.begin();
+       it != EngineBridgeClient::Instance().localLookupCache.end();) {
     if (!IsHotLocalLookupCacheReading(it->second.key.reading)) {
-      it = g_localLookupCache.erase(it);
+      it = EngineBridgeClient::Instance().localLookupCache.erase(it);
     } else {
       ++it;
     }
@@ -424,21 +456,23 @@ void PruneLocalLookupCachePreservingHotInternal() {
 }
 
 void PruneLocalLookupCachePreservingHot() {
-  std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().localLookupCacheMutex);
   PruneLocalLookupCachePreservingHotInternal();
 }
 
 void InvalidateLocalLookupCacheReading(const std::wstring& reading) {
   const std::wstring lower = LowerAsciiWide(reading);
   if (lower.empty()) return;
-  std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().localLookupCacheMutex);
   const int singleIndex = SingleLetterIndex(lower);
   if (singleIndex >= 0) {
-    g_singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] = false;
+    EngineBridgeClient::Instance().singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] =
+        false;
   }
-  for (auto it = g_localLookupCache.begin(); it != g_localLookupCache.end();) {
+  for (auto it = EngineBridgeClient::Instance().localLookupCache.begin();
+       it != EngineBridgeClient::Instance().localLookupCache.end();) {
     if (it->second.key.reading == lower) {
-      it = g_localLookupCache.erase(it);
+      it = EngineBridgeClient::Instance().localLookupCache.erase(it);
     } else {
       ++it;
     }
@@ -446,14 +480,14 @@ void InvalidateLocalLookupCacheReading(const std::wstring& reading) {
 }
 
 void SetLocalLookupCacheSignature(const std::wstring& signature) {
-  std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
-  if (g_localLookupCacheSignature == signature) return;
-  g_localLookupCacheSignature = signature;
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().localLookupCacheMutex);
+  if (EngineBridgeClient::Instance().localLookupCacheSignature == signature) return;
+  EngineBridgeClient::Instance().localLookupCacheSignature = signature;
   ClearLocalLookupCacheInternal();
 }
 
 std::wstring CurrentLocalLookupCacheSignatureLocked() {
-  return g_localLookupCacheSignature;
+  return EngineBridgeClient::Instance().localLookupCacheSignature;
 }
 
 bool LocalLookupCacheSignatureMatchesCurrentTip(const std::wstring& signature) {
@@ -464,22 +498,24 @@ bool LocalLookupCacheSignatureMatchesCurrentTip(const std::wstring& signature) {
 
 bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFlags,
                                     std::vector<std::wstring>& candidates,
-                                    std::vector<std::wstring>* metaScores, bool allowExpired,
+                                    std::vector<CandidateMetaParts>* metaScores, bool allowExpired,
                                     bool fullResult, bool* hasMore) {
   if (!IsLocalLookupCacheableReading(reading)) return false;
   if (IsLoadedRuntimePayloadStaleForCache()) return false;
-  std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().localLookupCacheMutex);
   const std::wstring signature = CurrentLocalLookupCacheSignatureLocked();
   if (!LocalLookupCacheSignatureMatchesCurrentTip(signature)) {
-    g_localLookupCacheSignature.clear();
+    EngineBridgeClient::Instance().localLookupCacheSignature.clear();
     ClearLocalLookupCacheInternal();
     return false;
   }
   const LocalLookupCacheKey key{LowerAsciiWide(reading), modeFlags, signature, fullResult};
   const ULONGLONG now = GetTickCount64();
   const int singleIndex = SingleLetterIndex(key.reading);
-  if (singleIndex >= 0 && g_singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)]) {
-    LocalLookupCacheEntry& entry = g_singleLetterLookupCache[static_cast<size_t>(singleIndex)];
+  if (singleIndex >= 0 && EngineBridgeClient::Instance()
+                              .singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)]) {
+    LocalLookupCacheEntry& entry =
+        EngineBridgeClient::Instance().singleLetterLookupCache[static_cast<size_t>(singleIndex)];
     const ULONGLONG age = now >= entry.tick ? now - entry.tick : 0;
     const bool expired = age > kSingleLetterLookupCacheTtlMs;
     const bool staleAllowed = expired && allowExpired &&
@@ -494,11 +530,12 @@ bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFl
       return true;
     }
     if (expired && !staleAllowed) {
-      g_singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] = false;
+      EngineBridgeClient::Instance()
+          .singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] = false;
     }
   }
-  auto cached = g_localLookupCache.find(key);
-  if (cached == g_localLookupCache.end()) return false;
+  auto cached = EngineBridgeClient::Instance().localLookupCache.find(key);
+  if (cached == EngineBridgeClient::Instance().localLookupCache.end()) return false;
   LocalLookupCacheEntry& entry = cached->second;
   const ULONGLONG age = now >= entry.tick ? now - entry.tick : 0;
   const bool expired = age > kLocalLookupCacheTtlMs;
@@ -506,7 +543,7 @@ bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFl
                             IsExpiredLocalLookupCacheAllowed(key.reading) &&
                             age <= kLocalLookupCacheStaleTtlMs;
   if (expired && !staleAllowed) {
-    g_localLookupCache.erase(cached);
+    EngineBridgeClient::Instance().localLookupCache.erase(cached);
     return false;
   }
   candidates = entry.candidates;
@@ -520,7 +557,7 @@ bool TryGetLocalLookupCacheInternal(const std::wstring& reading, uint32_t modeFl
 
 bool TryGetLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
                             std::vector<std::wstring>& candidates,
-                            std::vector<std::wstring>* metaScores, bool fullResult = false,
+                            std::vector<CandidateMetaParts>* metaScores, bool fullResult = false,
                             bool* hasMore = nullptr) {
   return TryGetLocalLookupCacheInternal(reading, modeFlags, candidates, metaScores, false,
                                         fullResult, hasMore);
@@ -528,15 +565,15 @@ bool TryGetLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
 
 bool TryGetStaleLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
                                  std::vector<std::wstring>& candidates,
-                                 std::vector<std::wstring>* metaScores, bool fullResult = false,
-                                 bool* hasMore = nullptr) {
+                                 std::vector<CandidateMetaParts>* metaScores,
+                                 bool fullResult = false, bool* hasMore = nullptr) {
   return TryGetLocalLookupCacheInternal(reading, modeFlags, candidates, metaScores, true,
                                         fullResult, hasMore);
 }
 
 void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
                          const std::vector<std::wstring>& candidates,
-                         const std::vector<std::wstring>* metaScores, bool fullResult = false,
+                         const std::vector<CandidateMetaParts>* metaScores, bool fullResult = false,
                          bool hasMore = false) {
   if (candidates.empty() || !IsLocalLookupCacheableReading(reading)) return;
   if (IsLoadedRuntimePayloadStaleForCache()) return;
@@ -546,13 +583,14 @@ void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
   entry.key.modeFlags = modeFlags;
   entry.key.fullResult = fullResult;
 
-  std::lock_guard<std::mutex> guard(g_localLookupCacheMutex);
-  if (!LocalLookupCacheSignatureMatchesCurrentTip(g_localLookupCacheSignature)) {
-    g_localLookupCacheSignature.clear();
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().localLookupCacheMutex);
+  if (!LocalLookupCacheSignatureMatchesCurrentTip(
+          EngineBridgeClient::Instance().localLookupCacheSignature)) {
+    EngineBridgeClient::Instance().localLookupCacheSignature.clear();
     ClearLocalLookupCacheInternal();
     return;
   }
-  entry.key.cacheSignature = g_localLookupCacheSignature;
+  entry.key.cacheSignature = EngineBridgeClient::Instance().localLookupCacheSignature;
   entry.candidates = candidates;
   if (metaScores) entry.meta = *metaScores;
   entry.tick = GetTickCount64();
@@ -560,29 +598,38 @@ void PutLocalLookupCache(const std::wstring& reading, uint32_t modeFlags,
   entry.bytes =
       sizeof(LocalLookupCacheEntry) +
       (entry.key.reading.capacity() + entry.key.cacheSignature.capacity()) * sizeof(wchar_t) +
-      (entry.candidates.capacity() + entry.meta.capacity()) * sizeof(std::wstring);
+      entry.candidates.capacity() * sizeof(std::wstring) +
+      entry.meta.capacity() * sizeof(CandidateMetaParts);
   for (const auto& text : entry.candidates)
     entry.bytes += text.capacity() * sizeof(wchar_t);
-  for (const auto& text : entry.meta)
-    entry.bytes += text.capacity() * sizeof(wchar_t);
+  for (const auto& meta : entry.meta) {
+    for (const auto* field : {&meta.display, &meta.annotation, &meta.score, &meta.correctedReading,
+                              &meta.clipboardId, &meta.clipboardSource, &meta.clipboardTime,
+                              &meta.clipboardType, &meta.clipboardFilter, &meta.userSourceLabel}) {
+      entry.bytes += field->capacity() * sizeof(wchar_t);
+    }
+  }
   if (entry.bytes > kLocalLookupCacheMaxBytes / 4) return;
   const int singleIndex = SingleLetterIndex(entry.key.reading);
   if (singleIndex >= 0 && entry.bytes <= 128 * 1024) {
-    g_singleLetterLookupCache[static_cast<size_t>(singleIndex)] = entry;
-    g_singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] = true;
+    EngineBridgeClient::Instance().singleLetterLookupCache[static_cast<size_t>(singleIndex)] =
+        entry;
+    EngineBridgeClient::Instance().singleLetterLookupCacheValid[static_cast<size_t>(singleIndex)] =
+        true;
   }
-  g_localLookupCache.insert_or_assign(entry.key, entry);
+  EngineBridgeClient::Instance().localLookupCache.insert_or_assign(entry.key, entry);
   size_t cacheBytes = 0;
-  for (const auto& item : g_localLookupCache)
+  for (const auto& item : EngineBridgeClient::Instance().localLookupCache)
     cacheBytes += item.second.bytes;
-  while (g_localLookupCache.size() > kLocalLookupCacheCapacity ||
+  while (EngineBridgeClient::Instance().localLookupCache.size() > kLocalLookupCacheCapacity ||
          cacheBytes > kLocalLookupCacheMaxBytes) {
-    auto oldest = g_localLookupCache.begin();
-    for (auto it = std::next(g_localLookupCache.begin()); it != g_localLookupCache.end(); ++it) {
+    auto oldest = EngineBridgeClient::Instance().localLookupCache.begin();
+    for (auto it = std::next(EngineBridgeClient::Instance().localLookupCache.begin());
+         it != EngineBridgeClient::Instance().localLookupCache.end(); ++it) {
       if (it->second.tick < oldest->second.tick) oldest = it;
     }
     cacheBytes -= oldest->second.bytes;
-    g_localLookupCache.erase(oldest);
+    EngineBridgeClient::Instance().localLookupCache.erase(oldest);
   }
 }
 
@@ -652,11 +699,28 @@ std::wstring EngineInstanceSuffixForModuleDir(const std::filesystem::path& modul
   return Hex64(StablePathHash(installRoot));
 }
 
+bool IsCurrentProcessAppContainer() {
+  static const bool kIsAppContainer = []() {
+    HANDLE token = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) return false;
+    DWORD value = 0;
+    DWORD bytes = 0;
+    const BOOL ok = GetTokenInformation(token, TokenIsAppContainer, &value, sizeof(value), &bytes);
+    CloseHandle(token);
+    return ok != FALSE && value != 0;
+  }();
+  return kIsAppContainer;
+}
+
 std::wstring EnginePipeNameForModuleDir(const std::filesystem::path& moduleDir) {
   const std::wstring suffix = EngineInstanceSuffixForModuleDir(moduleDir);
   const std::wstring version = WideFromUtf8(SRF_APP_VERSION);
-  if (suffix.empty()) return std::wstring(kDefaultEnginePipeName) + L"_" + version;
-  return std::wstring(kEnginePipePrefix) + version + L"_" + suffix;
+  std::wstring name = suffix.empty() ? (std::wstring(kDefaultEnginePipeName) + L"_" + version)
+                                     : (std::wstring(kEnginePipePrefix) + version + L"_" + suffix);
+  if (IsCurrentProcessAppContainer()) {
+    name += L"_Sandbox";
+  }
+  return name;
 }
 
 std::wstring EngineMutexNameForModuleDir(const std::filesystem::path& moduleDir) {
@@ -708,6 +772,7 @@ bool InstallMaintenanceActive() {
 }
 
 bool EnsureEngineHelperRunning(const std::filesystem::path& moduleDir) {
+  if (IsCurrentProcessAppContainer()) return false;
   if (InstallMaintenanceActive()) return false;
 
   const std::wstring mutexName = EngineMutexNameForModuleDir(moduleDir);
@@ -809,6 +874,12 @@ std::filesystem::path UserInstallRoot(const wchar_t* appName) {
   return localAppData.empty() ? std::filesystem::path() : localAppData / L"Programs" / appName;
 }
 
+std::filesystem::path UnredirectedUserInstallRoot(const wchar_t* appName) {
+  const auto profile = GetEnvPath(L"USERPROFILE");
+  return profile.empty() ? std::filesystem::path()
+                         : profile / L"AppData" / L"Local" / L"Programs" / appName;
+}
+
 std::vector<std::filesystem::path> MachineInstallRoots(const wchar_t* appName) {
   std::vector<std::filesystem::path> roots;
   const wchar_t* envNames[] = {L"ProgramW6432", L"ProgramFiles", L"ProgramFiles(x86)"};
@@ -878,6 +949,10 @@ bool ResolveTrustedInstallLayout(const std::filesystem::path& moduleDir,
                                  std::filesystem::path* runtimeRoot) {
   if (TryResolveTrustedInstallLayoutForRoot(moduleDir, UserInstallRoot(kAppPathName), installRoot,
                                             runtimeRoot)) {
+    return true;
+  }
+  if (TryResolveTrustedInstallLayoutForRoot(moduleDir, UnredirectedUserInstallRoot(kAppPathName),
+                                            installRoot, runtimeRoot)) {
     return true;
   }
   for (const auto& machineRoot : MachineInstallRoots(kAppPathName)) {
@@ -950,11 +1025,14 @@ bool IsStaleRuntimePayload(const std::filesystem::path& installRoot,
 
 bool IsLoadedRuntimePayloadStaleForCache() {
   const ULONGLONG now = GetTickCount64();
-  const ULONGLONG last = g_lastRuntimePayloadCacheCheckTick.load(std::memory_order_acquire);
+  const ULONGLONG last = EngineBridgeClient::Instance().lastRuntimePayloadCacheCheckTick.load(
+      std::memory_order_acquire);
   if (last != 0 && now >= last && now - last < 1000) {
-    return g_runtimePayloadStaleForCache.load(std::memory_order_acquire);
+    return EngineBridgeClient::Instance().runtimePayloadStaleForCache.load(
+        std::memory_order_acquire);
   }
-  g_lastRuntimePayloadCacheCheckTick.store(now, std::memory_order_release);
+  EngineBridgeClient::Instance().lastRuntimePayloadCacheCheckTick.store(now,
+                                                                        std::memory_order_release);
 
   bool stale = false;
   const auto moduleDir = ModuleDir();
@@ -965,7 +1043,8 @@ bool IsLoadedRuntimePayloadStaleForCache() {
       stale = IsStaleRuntimePayload(installRoot, runtimeRoot);
     }
   }
-  g_runtimePayloadStaleForCache.store(stale, std::memory_order_release);
+  EngineBridgeClient::Instance().runtimePayloadStaleForCache.store(stale,
+                                                                   std::memory_order_release);
   if (stale) ClearLocalLookupCache();
   return stale;
 }
@@ -1155,12 +1234,13 @@ std::wstring FormatSystemError(DWORD error) {
 }
 
 void SetFailureDetailLocked(const std::wstring& detail) {
-  g_lastEngineFailure = detail;
+  EngineBridgeClient::Instance().lastEngineFailure = detail;
 }
 
 void ClearFailureDetailLocked() {
-  g_lastEngineFailure.clear();
-  g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
+  EngineBridgeClient::Instance().lastEngineFailure.clear();
+  EngineBridgeClient::Instance().engineHealthErrorCode.store(ERROR_SUCCESS,
+                                                             std::memory_order_release);
 }
 
 std::string Utf8FromWide(const std::wstring& w) {
@@ -1250,6 +1330,7 @@ void WriteStateStringValue(const wchar_t* name, const std::wstring& value) {
   (void)value;
   return;
 #endif
+  if (IsCurrentProcessAppContainer()) return;
   HKEY key = nullptr;
   if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
                       nullptr) != ERROR_SUCCESS) {
@@ -1266,6 +1347,7 @@ void WriteStateDwordValue(const wchar_t* name, DWORD value) {
   (void)value;
   return;
 #endif
+  if (IsCurrentProcessAppContainer()) return;
   HKEY key = nullptr;
   if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
                       nullptr) != ERROR_SUCCESS) {
@@ -1282,6 +1364,7 @@ void WriteStateBinaryValue(const wchar_t* name, const BYTE* value, DWORD bytes) 
   (void)bytes;
   return;
 #endif
+  if (IsCurrentProcessAppContainer()) return;
   HKEY key = nullptr;
   if (RegCreateKeyExW(HKEY_CURRENT_USER, kStateRegPath, 0, nullptr, 0, KEY_SET_VALUE, nullptr, &key,
                       nullptr) != ERROR_SUCCESS) {
@@ -1293,28 +1376,32 @@ void WriteStateBinaryValue(const wchar_t* name, const BYTE* value, DWORD bytes) 
 
 void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS,
                         const wchar_t* reasonCode = L"unspecified") {
-  const SrfEngineState previous = g_engineState.exchange(state, std::memory_order_acq_rel);
+  const SrfEngineState previous =
+      EngineBridgeClient::Instance().engineState.exchange(state, std::memory_order_acq_rel);
   if (previous != state) {
     WriteStateDwordValue(kStateEngineStateValue, static_cast<DWORD>(state));
   }
   if (state == SrfEngineState::Failed) {
     if (errorCode != ERROR_SUCCESS) {
-      g_engineHealthErrorCode.store(errorCode, std::memory_order_release);
+      EngineBridgeClient::Instance().engineHealthErrorCode.store(errorCode,
+                                                                 std::memory_order_release);
     } else {
       DWORD expected = ERROR_SUCCESS;
-      g_engineHealthErrorCode.compare_exchange_strong(expected, kEngineHealthFailureUnspecified,
-                                                      std::memory_order_acq_rel);
+      EngineBridgeClient::Instance().engineHealthErrorCode.compare_exchange_strong(
+          expected, kEngineHealthFailureUnspecified, std::memory_order_acq_rel);
     }
   } else {
-    g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
+    EngineBridgeClient::Instance().engineHealthErrorCode.store(ERROR_SUCCESS,
+                                                               std::memory_order_release);
   }
-  const EngineHealthRecordV1 record{kEngineHealthRecordMagic,
-                                    1,
-                                    static_cast<BYTE>(state),
-                                    0,
-                                    GetCurrentProcessId(),
-                                    GetTickCount64(),
-                                    g_engineHealthErrorCode.load(std::memory_order_acquire)};
+  const EngineHealthRecordV1 record{
+      kEngineHealthRecordMagic,
+      1,
+      static_cast<BYTE>(state),
+      0,
+      GetCurrentProcessId(),
+      GetTickCount64(),
+      EngineBridgeClient::Instance().engineHealthErrorCode.load(std::memory_order_acquire)};
   const std::wstring healthValue = L"EngineHealthV2_" + WideFromUtf8(SRF_APP_VERSION);
   WriteStateBinaryValue(healthValue.c_str(), reinterpret_cast<const BYTE*>(&record),
                         sizeof(record));
@@ -1323,8 +1410,9 @@ void PublishEngineState(SrfEngineState state, DWORD errorCode = ERROR_SUCCESS,
         state == SrfEngineState::Failed ? L"error" : L"basic", L"tsf_bridge_transition",
         L"from=" + std::to_wstring(static_cast<unsigned>(previous)) + L" to=" +
             std::to_wstring(static_cast<unsigned>(state)) + L" helper_pid=" +
-            std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) + L" error_code=" +
-            std::to_wstring(record.errorCode) + L" reason_code=" + reasonCode);
+            std::to_wstring(
+                EngineBridgeClient::Instance().engineHelperPid.load(std::memory_order_acquire)) +
+            L" error_code=" + std::to_wstring(record.errorCode) + L" reason_code=" + reasonCode);
   }
 }
 
@@ -1616,6 +1704,13 @@ std::wstring LoadOrCreateEngineCapabilityToken() {
 }
 
 bool AppendCapabilityToken(std::vector<BYTE>& out, std::wstring* error) {
+  if (IsCurrentProcessAppContainer()) {
+    // AppContainer hosts talk to the dedicated read-only sandbox pipe, which
+    // authenticates via same-user/same-session impersonation and strips
+    // clipboard/write commands rather than reading desktop DPAPI secrets.
+    AppendWideString(out, L"");
+    return true;
+  }
   std::wstring token = LoadOrCreateEngineCapabilityToken();
   if (!LooksLikeCapabilityToken(token)) {
     SecureZeroWideString(token);
@@ -1749,66 +1844,99 @@ bool ReadPayloadString(const std::vector<BYTE>& payload, size_t* offset, std::ws
 
 bool ParseCompactLookupResponse(const std::vector<BYTE>& response,
                                 std::vector<std::wstring>* candidates,
-                                std::vector<std::wstring>* metaScores, int* count,
+                                std::vector<CandidateMetaParts>* metaScores, int* count,
                                 std::wstring* error, bool* hasMore = nullptr) {
+  using namespace srf_engine_contract;
   if (!candidates || !count) return false;
+  auto fail = [error](const wchar_t* message) {
+    if (error) *error = message;
+    return false;
+  };
   candidates->clear();
   if (metaScores) metaScores->clear();
   *count = 0;
   if (hasMore) *hasMore = false;
 
   size_t offset = 0;
-  uint32_t rawCount = 0;
-  if (!ReadPayloadU32(response, &offset, &rawCount)) {
-    if (error) *error = L"shared engine compact lookup response was truncated";
-    return false;
+  uint16_t rawCount = 0;
+  if (!ReadPayloadU16(response, &offset, &rawCount) || offset >= response.size() ||
+      response[offset] > 1 || rawCount > srf_candidate_limits::kFullResult) {
+    return fail(L"invalid shared engine lookup frame header");
   }
-  if (rawCount > srf_candidate_limits::kFullResult) {
-    if (error) *error = L"shared engine compact lookup response contained too many candidates";
-    return false;
-  }
+  const bool more = response[offset++] != 0;
+  auto readText = [&](std::wstring* text) {
+    uint16_t units = 0;
+    return ReadPayloadU16(response, &offset, &units) &&
+           ReadPayloadUtf16Units(response, &offset, units, ROW_MAX_FIELD_UNITS, text);
+  };
 
+  constexpr uint32_t knownFlags =
+      ROW_NO_LEARN | ROW_CLIPBOARD_QUICK | ROW_PARTIAL | ROW_CORRECTION | ROW_PINNED | ROW_EXT |
+      ROW_VERTICAL | ROW_CLIPBOARD_PINNED | ROW_USER_COMMON | ROW_USER_FRESH | ROW_USER_MIXED |
+      ROW_USER_OBSERVED | ROW_DISPLAY | ROW_ANNOTATION | ROW_CORRECTED_READING | ROW_CLIPBOARD_ID |
+      ROW_CLIPBOARD_SOURCE | ROW_CLIPBOARD_TIME | ROW_CLIPBOARD_TYPE | ROW_CLIPBOARD_FILTER |
+      ROW_CLIPBOARD_PAGE | ROW_CLIPBOARD_PAGES | ROW_PLACEHOLDER;
   candidates->reserve(rawCount);
   if (metaScores) metaScores->reserve(rawCount);
-  for (uint32_t i = 0; i < rawCount; ++i) {
-    uint16_t textUnits = 0;
-    if (!ReadPayloadU16(response, &offset, &textUnits)) {
-      if (error) *error = L"shared engine compact lookup response text length was truncated";
-      return false;
-    }
+  for (uint16_t i = 0; i < rawCount; ++i) {
+    uint32_t flags = 0;
+    uint32_t rawScore = 0;
     std::wstring text;
-    if (!ReadPayloadUtf16Units(response, &offset, textUnits, kRustRowTextUnits, &text)) {
-      if (error) *error = L"shared engine compact lookup response text was truncated";
-      return false;
+    if (!ReadPayloadU32(response, &offset, &flags) || (flags & ~knownFlags) != 0 ||
+        !ReadPayloadU32(response, &offset, &rawScore) || !readText(&text)) {
+      return fail(L"invalid shared engine lookup row");
     }
-    uint16_t metaUnits = 0;
-    if (!ReadPayloadU16(response, &offset, &metaUnits)) {
-      if (error) *error = L"shared engine compact lookup response meta length was truncated";
-      return false;
-    }
-    std::wstring meta;
-    if (!ReadPayloadUtf16Units(response, &offset, metaUnits, kRustRowMetaUnits, &meta)) {
-      if (error) *error = L"shared engine compact lookup response meta was truncated";
-      return false;
-    }
-    candidates->push_back(std::move(text));
-    if (metaScores) metaScores->push_back(std::move(meta));
-  }
 
-  // New helpers append a u32 continuation flag. Older helpers omit it, so the
-  // parser deliberately treats an absent flag as "no more".
-  if (offset + sizeof(uint32_t) == response.size()) {
-    uint32_t more = 0;
-    if (!ReadPayloadU32(response, &offset, &more)) {
-      if (error) *error = L"shared engine lookup continuation flag was truncated";
-      return false;
+    CandidateMetaParts meta;
+    meta.noLearn = (flags & ROW_NO_LEARN) != 0;
+    meta.clipboardQuick = (flags & ROW_CLIPBOARD_QUICK) != 0;
+    meta.partialResult = (flags & ROW_PARTIAL) != 0;
+    meta.correctionCandidate = (flags & ROW_CORRECTION) != 0;
+    meta.pinnedExactInput = (flags & ROW_PINNED) != 0;
+    meta.extCandidate = (flags & ROW_EXT) != 0;
+    meta.forceVerticalLayout = (flags & ROW_VERTICAL) != 0;
+    meta.clipboardPinned = (flags & ROW_CLIPBOARD_PINNED) != 0;
+    meta.prefixPlaceholder = (flags & ROW_PLACEHOLDER) != 0;
+    if (flags & ROW_USER_COMMON) meta.userSourceLabel = L"用户常用";
+    if (flags & ROW_USER_FRESH) meta.userSourceLabel = L"用户生词";
+    if (flags & ROW_USER_MIXED) meta.userSourceLabel = L"混拼记忆";
+    if (flags & ROW_USER_OBSERVED) meta.userSourceLabel = L"观察中";
+    meta.userCandidate = meta.pinnedExactInput || !meta.userSourceLabel.empty();
+
+    const std::pair<uint32_t, std::wstring*> fields[] = {
+        {ROW_DISPLAY, &meta.display},
+        {ROW_ANNOTATION, &meta.annotation},
+        {ROW_CORRECTED_READING, &meta.correctedReading},
+        {ROW_CLIPBOARD_ID, &meta.clipboardId},
+        {ROW_CLIPBOARD_SOURCE, &meta.clipboardSource},
+        {ROW_CLIPBOARD_TIME, &meta.clipboardTime},
+        {ROW_CLIPBOARD_TYPE, &meta.clipboardType},
+        {ROW_CLIPBOARD_FILTER, &meta.clipboardFilter},
+    };
+    for (const auto& field : fields) {
+      if ((flags & field.first) && !readText(field.second)) {
+        return fail(L"invalid shared engine lookup text field");
+      }
     }
-    if (hasMore) *hasMore = more != 0;
+    if (((flags & ROW_CLIPBOARD_PAGE) && !ReadPayloadU32(response, &offset, &meta.clipboardPage)) ||
+        ((flags & ROW_CLIPBOARD_PAGES) &&
+         !ReadPayloadU32(response, &offset, &meta.clipboardPages))) {
+      return fail(L"invalid shared engine lookup clipboard page");
+    }
+
+    candidates->push_back(std::move(text));
+    if (metaScores) {
+      const auto score = static_cast<int64_t>(rawScore) - ((rawScore >> 31) ? (1LL << 32) : 0);
+      const auto magnitude = score < 0 ? -score : score;
+      meta.score = score < 0 ? L"-" : L"";
+      meta.score += std::to_wstring(magnitude / 100);
+      meta.score += magnitude % 100 < 10 ? L".0" : L".";
+      meta.score += std::to_wstring(magnitude % 100);
+      metaScores->push_back(std::move(meta));
+    }
   }
-  if (offset != response.size()) {
-    if (error) *error = L"shared engine compact lookup response contained trailing bytes";
-    return false;
-  }
+  if (offset != response.size()) return fail(L"shared engine lookup frame has trailing bytes");
+  if (hasMore) *hasMore = more;
   *count = static_cast<int>(candidates->size());
   return true;
 }
@@ -1863,16 +1991,18 @@ bool IsRemoteEngineBusyError(const std::wstring& error) {
 void PublishLatestLookupRequestId(unsigned long long requestId) {
   if (requestId == 0) return;
   const ULONGLONG now = GetTickCount64();
-  g_lastInteractiveLookupTick.store(now, std::memory_order_release);
-  unsigned long long current = g_latestLookupRequestId.load(std::memory_order_acquire);
+  EngineBridgeClient::Instance().lastInteractiveLookupTick.store(now, std::memory_order_release);
+  unsigned long long current =
+      EngineBridgeClient::Instance().latestLookupRequestId.load(std::memory_order_acquire);
   while (requestId > current &&
-         !g_latestLookupRequestId.compare_exchange_weak(
+         !EngineBridgeClient::Instance().latestLookupRequestId.compare_exchange_weak(
              current, requestId, std::memory_order_acq_rel, std::memory_order_acquire)) {
   }
 }
 
 bool IsLookupRequestSuperseded(unsigned long long requestId) {
-  return requestId != 0 && g_latestLookupRequestId.load(std::memory_order_acquire) > requestId;
+  return requestId != 0 && EngineBridgeClient::Instance().latestLookupRequestId.load(
+                               std::memory_order_acquire) > requestId;
 }
 
 bool IsLookupSupersededError(const std::wstring& error) {
@@ -1880,11 +2010,13 @@ bool IsLookupSupersededError(const std::wstring& error) {
 }
 
 void ResetLookupTimeoutStreak() {
-  g_consecutiveLookupTimeouts.store(0, std::memory_order_release);
+  EngineBridgeClient::Instance().consecutiveLookupTimeouts.store(0, std::memory_order_release);
 }
 
 bool ShouldRestartHelperAfterLookupTimeout() {
-  const unsigned streak = g_consecutiveLookupTimeouts.fetch_add(1, std::memory_order_acq_rel) + 1;
+  const unsigned streak = EngineBridgeClient::Instance().consecutiveLookupTimeouts.fetch_add(
+                              1, std::memory_order_acq_rel) +
+                          1;
   if (streak < kLookupTimeoutRestartThreshold) return false;
 
   const ULONGLONG now = GetTickCount64();
@@ -1896,10 +2028,11 @@ bool ShouldRestartHelperAfterLookupTimeout() {
     restarts.pop_front();
   }
   if (restarts.size() >= kLookupRestartWindowLimit) return false;
-  ULONGLONG last = g_lastLookupTimeoutRestartTick.load(std::memory_order_acquire);
+  ULONGLONG last =
+      EngineBridgeClient::Instance().lastLookupTimeoutRestartTick.load(std::memory_order_acquire);
   while (last == 0 || now < last || now - last >= kLookupTimeoutRestartCooldownMs) {
-    if (g_lastLookupTimeoutRestartTick.compare_exchange_weak(last, now, std::memory_order_acq_rel,
-                                                             std::memory_order_acquire)) {
+    if (EngineBridgeClient::Instance().lastLookupTimeoutRestartTick.compare_exchange_weak(
+            last, now, std::memory_order_acq_rel, std::memory_order_acquire)) {
       ResetLookupTimeoutStreak();
       restarts.push_back(now);
       return true;
@@ -1965,24 +2098,16 @@ DWORD RetryTimeoutMsForCommand(EnginePipeCommand command, DWORD timeoutMs) {
   return timeoutMs;
 }
 
-void CloseRemotePipeOnlyLocked() {
-  if (g_bridge.pipe != nullptr && g_bridge.pipe != INVALID_HANDLE_VALUE) {
-    CloseHandle(g_bridge.pipe);
-    g_bridge.pipe = INVALID_HANDLE_VALUE;
-    g_engineHelperPid.store(0, std::memory_order_release);
-  }
-}
-
-void InvalidateRemoteBackendLocked() {
+void EngineBridgeClient::InvalidateRemoteBackendLocked() {
   ClearLocalLookupCache();
   SetLocalLookupCacheSignature(std::wstring());
-  CloseRemotePipeOnlyLocked();
-  if (g_bridge.backend == EngineBackend::Remote) {
-    g_bridge.backend = EngineBackend::None;
-    g_bridge.initialized = false;
-    g_bridge.loadedLexiconDir.clear();
-    g_bridge.buildId.clear();
-    g_bridge.cacheSignature.clear();
+  ClosePipeLocked();
+  if (connection.backend == EngineBackend::Remote) {
+    connection.backend = EngineBackend::None;
+    connection.initialized = false;
+    connection.loadedLexiconDir.clear();
+    connection.buildId.clear();
+    connection.cacheSignature.clear();
   }
 }
 
@@ -2114,8 +2239,9 @@ bool ReadPipeMessageWithTimeout(HANDLE handle, void* buffer, size_t bytes, DWORD
   return true;
 }
 
-bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, std::wstring* error) {
-  if (g_bridge.pipe != nullptr && g_bridge.pipe != INVALID_HANDLE_VALUE) return true;
+bool EngineBridgeClient::EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs,
+                                                      std::wstring* error) {
+  if (connection.pipe != nullptr && connection.pipe != INVALID_HANDLE_VALUE) return true;
 
   const std::wstring pipeName = EnginePipeNameForModuleDir(ModuleDir());
   const ULONGLONG deadline = GetTickCount64() + timeoutMs;
@@ -2130,10 +2256,10 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
         CloseHandle(pipe);
         return false;
       }
-      g_bridge.pipe = pipe;
+      connection.pipe = pipe;
       DWORD helperPid = 0;
       (void)GetNamedPipeServerProcessId(pipe, &helperPid);
-      g_engineHelperPid.store(helperPid, std::memory_order_release);
+      engineHelperPid.store(helperPid, std::memory_order_release);
       return true;
     }
 
@@ -2176,14 +2302,16 @@ bool EnsureRemoteConnectionLocked(EnginePipeCommand command, DWORD timeoutMs, st
   }
 }
 
-bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>& payload,
-                             int* status, std::vector<BYTE>* responsePayload, std::wstring* error,
-                             unsigned long long requestId = 0) {
+bool EngineBridgeClient::SendRemoteRequestLocked(EnginePipeCommand command,
+                                                 const std::vector<BYTE>& payload, int* status,
+                                                 std::vector<BYTE>* responsePayload,
+                                                 std::wstring* error,
+                                                 unsigned long long requestId) {
   const auto logFailure = [&](const wchar_t* stage, int result) {
     AppendEngineLogDeduped(L"error", L"tsf_bridge_request_failed",
                            L"command=" + std::to_wstring(static_cast<unsigned>(command)) +
                                L" request_id=" + std::to_wstring(requestId) + L" helper_pid=" +
-                               std::to_wstring(g_engineHelperPid.load(std::memory_order_acquire)) +
+                               std::to_wstring(engineHelperPid.load(std::memory_order_acquire)) +
                                L" stage=" + stage + L" status=" + std::to_wstring(result));
   };
   if (status) *status = -1;
@@ -2200,10 +2328,10 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
   AppendU16(header, kEnginePipeVersion);
   AppendU16(header, static_cast<uint16_t>(command));
   AppendU32(header, static_cast<uint32_t>(payload.size()));
-  if (!WritePipeMessageWithTimeout(g_bridge.pipe, header.data(), header.size(), timeoutMs, command,
-                                   L"request-header", error) ||
+  if (!WritePipeMessageWithTimeout(connection.pipe, header.data(), header.size(), timeoutMs,
+                                   command, L"request-header", error) ||
       (!payload.empty() &&
-       !WritePipeMessageWithTimeout(g_bridge.pipe, payload.data(), payload.size(), timeoutMs,
+       !WritePipeMessageWithTimeout(connection.pipe, payload.data(), payload.size(), timeoutMs,
                                     command, L"request-payload", error))) {
     logFailure(L"write", -1);
     InvalidateRemoteBackendLocked();
@@ -2211,7 +2339,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
   }
 
   BYTE responseHeader[kEnginePipeResponseHeaderBytes] = {};
-  bool readOk = ReadPipeMessageWithTimeout(g_bridge.pipe, responseHeader, sizeof(responseHeader),
+  bool readOk = ReadPipeMessageWithTimeout(connection.pipe, responseHeader, sizeof(responseHeader),
                                            timeoutMs, command, L"response-header", error);
   if (!readOk && error && error->find(L" timed out after ") != std::wstring::npos &&
       (command == EnginePipeCommand::Lookup || command == EnginePipeCommand::Init)) {
@@ -2219,7 +2347,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
     // engine; Init can contend with lexicon loading or warmup.
     if (error) error->clear();
     const DWORD retryTimeoutMs = RetryTimeoutMsForCommand(command, timeoutMs);
-    readOk = ReadPipeMessageWithTimeout(g_bridge.pipe, responseHeader, sizeof(responseHeader),
+    readOk = ReadPipeMessageWithTimeout(connection.pipe, responseHeader, sizeof(responseHeader),
                                         retryTimeoutMs, command, L"response-header(retry)", error);
   }
   if (!readOk) {
@@ -2255,7 +2383,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
   if (magic != kEnginePipeMagic || version != kEnginePipeVersion ||
       echoedCommand != static_cast<uint16_t>(command)) {
     if (version != kEnginePipeVersion) {
-      g_engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
+      engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
     }
     logFailure(L"response_header", responseStatus);
     if (error) *error = L"shared engine pipe returned an invalid response header";
@@ -2265,15 +2393,16 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
 
   if (responsePayload && responseSize > 0) {
     responsePayload->resize(responseSize);
-    if (!ReadPipeMessageWithTimeout(g_bridge.pipe, responsePayload->data(), responsePayload->size(),
-                                    timeoutMs, command, L"response-payload", error)) {
+    if (!ReadPipeMessageWithTimeout(connection.pipe, responsePayload->data(),
+                                    responsePayload->size(), timeoutMs, command,
+                                    L"response-payload", error)) {
       logFailure(L"read_payload", responseStatus);
       InvalidateRemoteBackendLocked();
       return false;
     }
   } else if (responseSize > 0) {
     std::vector<BYTE> sink(responseSize);
-    if (!ReadPipeMessageWithTimeout(g_bridge.pipe, sink.data(), sink.size(), timeoutMs, command,
+    if (!ReadPipeMessageWithTimeout(connection.pipe, sink.data(), sink.size(), timeoutMs, command,
                                     L"response-payload", error)) {
       logFailure(L"read_payload", responseStatus);
       InvalidateRemoteBackendLocked();
@@ -2286,7 +2415,7 @@ bool SendRemoteRequestLocked(EnginePipeCommand command, const std::vector<BYTE>&
                                responseStatus == kRustEngineBusyRc)) {
     logFailure(L"remote_status", responseStatus);
   }
-  if (command == EnginePipeCommand::Shutdown) CloseRemotePipeOnlyLocked();
+  if (command == EnginePipeCommand::Shutdown) ClosePipeLocked();
   return true;
 }
 
@@ -2296,7 +2425,8 @@ bool SendLookupCancelRequest(unsigned long long supersedingRequestId) {
   HANDLE pipe = INVALID_HANDLE_VALUE;
   for (int attempt = 0; attempt < 2; ++attempt) {
     pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING,
-                       FILE_FLAG_OVERLAPPED, nullptr);
+                       FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION,
+                       nullptr);
     if (pipe != INVALID_HANDLE_VALUE) break;
     if (GetLastError() != ERROR_PIPE_BUSY || attempt != 0) return false;
     if (!WaitNamedPipeW(pipeName.c_str(), kEnginePipeCancelTimeoutMs)) return false;
@@ -2365,15 +2495,21 @@ bool SendLookupCancelRequest(unsigned long long supersedingRequestId) {
 
 void LookupCancelWorkerMain() {
   for (;;) {
-    const unsigned long long target = g_latestLookupCancelRequestId.load(std::memory_order_acquire);
+    const unsigned long long target =
+        EngineBridgeClient::Instance().latestLookupCancelRequestId.load(std::memory_order_acquire);
     (void)SendLookupCancelRequest(target);
-    if (g_latestLookupCancelRequestId.load(std::memory_order_acquire) != target) continue;
+    if (EngineBridgeClient::Instance().latestLookupCancelRequestId.load(
+            std::memory_order_acquire) != target)
+      continue;
 
-    g_lookupCancelWorkerRunning.store(false, std::memory_order_release);
-    if (g_latestLookupCancelRequestId.load(std::memory_order_acquire) == target) return;
+    EngineBridgeClient::Instance().lookupCancelWorkerRunning.store(false,
+                                                                   std::memory_order_release);
+    if (EngineBridgeClient::Instance().latestLookupCancelRequestId.load(
+            std::memory_order_acquire) == target)
+      return;
 
     bool expected = false;
-    if (!g_lookupCancelWorkerRunning.compare_exchange_strong(
+    if (!EngineBridgeClient::Instance().lookupCancelWorkerRunning.compare_exchange_strong(
             expected, true, std::memory_order_acq_rel, std::memory_order_acquire)) {
       return;
     }
@@ -2381,15 +2517,20 @@ void LookupCancelWorkerMain() {
 }
 
 bool RequestRemoteHelperShutdownLocked(std::wstring* error) {
+  if (IsCurrentProcessAppContainer()) {
+    if (error) *error = L"sandboxed host cannot shut down shared engine";
+    return false;
+  }
   std::vector<BYTE> payload;
   if (!AppendCapabilityToken(payload, error)) return false;
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::Shutdown, payload, &status, &response, error)) {
-    InvalidateRemoteBackendLocked();
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::Shutdown, payload,
+                                                              &status, &response, error)) {
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
-  InvalidateRemoteBackendLocked();
+  EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
   if (status != 0) {
     if (error) *error = RemoteStatusError(EnginePipeCommand::Shutdown, status, &response);
     return false;
@@ -2398,41 +2539,47 @@ bool RequestRemoteHelperShutdownLocked(std::wstring* error) {
 }
 
 bool EnsureRemoteLoadedLocked(const std::filesystem::path& lexiconDir, std::wstring* error) {
-  if (g_bridge.initialized && g_bridge.backend == EngineBackend::Remote &&
-      PathEquals(g_bridge.loadedLexiconDir, lexiconDir)) {
+  const bool appContainer = IsCurrentProcessAppContainer();
+  if (EngineBridgeClient::Instance().connection.initialized &&
+      EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote &&
+      (appContainer ||
+       PathEquals(EngineBridgeClient::Instance().connection.loadedLexiconDir, lexiconDir))) {
     return true;
   }
 
+  const std::wstring requestedLexicon = appContainer ? std::wstring() : lexiconDir.wstring();
   std::vector<BYTE> payload;
-  payload.reserve(4 + lexiconDir.wstring().size() * sizeof(uint16_t));
-  AppendWideString(payload, lexiconDir.wstring());
+  payload.reserve(4 + requestedLexicon.size() * sizeof(uint16_t));
+  AppendWideString(payload, requestedLexicon);
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::Init, payload, &status, &response, error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::Init, payload,
+                                                              &status, &response, error)) {
     return false;
   }
   if (status != 0) {
     if (error) *error = RemoteStatusError(EnginePipeCommand::Init, status, &response);
-    InvalidateRemoteBackendLocked();
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
 
-  g_bridge.backend = EngineBackend::Remote;
-  g_bridge.initialized = true;
-  g_bridge.loadedLexiconDir = lexiconDir;
+  EngineBridgeClient::Instance().connection.backend = EngineBackend::Remote;
+  EngineBridgeClient::Instance().connection.initialized = true;
+  EngineBridgeClient::Instance().connection.loadedLexiconDir = lexiconDir;
   return true;
 }
 
 bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wstring* error) {
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::Health, {}, &status, &response, error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::Health, {},
+                                                              &status, &response, error)) {
     return false;
   }
   if (status != 0) {
     if (error) *error = RemoteStatusError(EnginePipeCommand::Health, status, &response);
-    InvalidateRemoteBackendLocked();
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
 
@@ -2459,10 +2606,11 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
                       ReadPayloadU32(response, &offset, &loaded);
   if (!parsed || version != kEnginePipeVersion) {
     if (parsed && version != kEnginePipeVersion) {
-      g_engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
+      EngineBridgeClient::Instance().engineHealthErrorCode.store(kEngineHealthVersionMismatch,
+                                                                 std::memory_order_release);
     }
     if (error) *error = L"shared engine health response was invalid";
-    InvalidateRemoteBackendLocked();
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
 
@@ -2474,7 +2622,7 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
         !ReadPayloadString(response, &offset, &modelHash) ||
         !ReadPayloadString(response, &offset, &cacheSignature)) {
       if (error) *error = L"shared engine health response was truncated";
-      InvalidateRemoteBackendLocked();
+      EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
       return false;
     }
   }
@@ -2483,7 +2631,8 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
   // Git revision differences should invalidate caches and leave a log trail, but
   // protocol/app-version compatibility is enough for the shared helper handshake.
   if (!EngineBuildIdHasExpectedVersion(buildId)) {
-    g_engineHealthErrorCode.store(kEngineHealthVersionMismatch, std::memory_order_release);
+    EngineBridgeClient::Instance().engineHealthErrorCode.store(kEngineHealthVersionMismatch,
+                                                               std::memory_order_release);
     std::wstring mismatch = L"shared engine helper build id version mismatch: helper=";
     mismatch += buildId.empty() ? L"(empty)" : buildId;
     mismatch += L", expected=";
@@ -2491,7 +2640,7 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
     // A foreign version may be serving another still-running host. Never
     // stop it from a failed handshake; version-scoped IPC isolates upgrades.
     if (error) *error = mismatch;
-    InvalidateRemoteBackendLocked();
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
   if (_wcsicmp(buildId.c_str(), expectedBuildId.c_str()) != 0) {
@@ -2517,7 +2666,7 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
       *error += L", expected_mutex=";
       *error += expectedMutexName;
     }
-    InvalidateRemoteBackendLocked();
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
 
@@ -2531,11 +2680,11 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
       *error += L", tip=";
       *error += expectedInstallRoot.wstring();
     }
-    InvalidateRemoteBackendLocked();
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     return false;
   }
   if (_wcsicmp(lexiconState.c_str(), L"busy") == 0) {
-    g_bridge.buildId = buildId;
+    EngineBridgeClient::Instance().connection.buildId = buildId;
     AppendEngineStateLogDeduped(L"shared helper health busy: build=" + buildId);
     return true;
   }
@@ -2543,8 +2692,8 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
     cacheSignature = L"build=" + buildId + L";model=" + modelHash + L";lexicon_state=" +
                      lexiconState + L";lexicon=" + targetLexicon;
   }
-  g_bridge.buildId = buildId;
-  g_bridge.cacheSignature = cacheSignature;
+  EngineBridgeClient::Instance().connection.buildId = buildId;
+  EngineBridgeClient::Instance().connection.cacheSignature = cacheSignature;
   SetLocalLookupCacheSignature(cacheSignature);
   AppendEngineStateLogDeduped(L"shared helper health ok: build=" + buildId + L"; lexicon_state=" +
                               lexiconState + L"; full_in_flight=" + std::to_wstring(fullInFlight));
@@ -2553,8 +2702,8 @@ bool VerifyRemoteInstanceLocked(const std::filesystem::path& moduleDir, std::wst
 
 bool RemoteLookupLocked(const std::wstring& reading, unsigned long long requestId,
                         std::vector<std::wstring>* candidates,
-                        std::vector<std::wstring>* metaScores, int* count, std::wstring* error,
-                        bool fullResult = false, bool* hasMore = nullptr) {
+                        std::vector<CandidateMetaParts>* metaScores, int* count,
+                        std::wstring* error, bool fullResult = false, bool* hasMore = nullptr) {
   if (!candidates || !count) return false;
   candidates->clear();
   if (metaScores) metaScores->clear();
@@ -2565,26 +2714,21 @@ bool RemoteLookupLocked(const std::wstring& reading, unsigned long long requestI
   payload.clear();
   payload.reserve(96 + reading.size() * sizeof(uint16_t));
   if (!AppendCapabilityToken(payload, error)) return false;
-  AppendU32(payload, g_bridge.pendingModeFlags);
+  AppendU32(payload, EngineBridgeClient::Instance().connection.pendingModeFlags);
   AppendWideString(payload, reading);
   AppendU64(payload, static_cast<uint64_t>(requestId));
   AppendU32(payload, fullResult ? 1u : 0u);
 
   int status = -1;
   std::vector<BYTE>& response = RemoteLookupResponseScratch();
-  if (!SendRemoteRequestLocked(EnginePipeCommand::Lookup, payload, &status, &response, error,
-                               requestId)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(
+          EnginePipeCommand::Lookup, payload, &status, &response, error, requestId)) {
     return false;
   }
   if (status != 0) {
     if (error) *error = RemoteStatusError(EnginePipeCommand::Lookup, status, &response);
     return false;
   }
-  if (response.size() < 4) {
-    if (error) *error = L"shared engine lookup response was truncated";
-    return false;
-  }
-
   std::wstring parseError;
   if (ParseCompactLookupResponse(response, candidates, metaScores, count, &parseError, hasMore)) {
     return true;
@@ -2608,8 +2752,8 @@ bool RemoteLearnStatusLocked(uint64_t completionId, bool* pending, std::wstring*
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::LearnStatus, payload, &status, &response,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::LearnStatus,
+                                                              payload, &status, &response, error)) {
     return false;
   }
   if (status == kRustLearnPendingRc) {
@@ -2678,7 +2822,8 @@ bool RemoteLearnLocked(const std::wstring& reading, const std::wstring& committe
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::Learn, payload, &status, &response, error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::Learn, payload,
+                                                              &status, &response, error)) {
     return false;
   }
   if (status != 0) {
@@ -2708,8 +2853,8 @@ bool RemoteLearnCorrectionLocked(const std::wstring& rawReading,
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::LearnCorrection, payload, &status, &response,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::LearnCorrection,
+                                                              payload, &status, &response, error)) {
     return false;
   }
   if (status != 0) {
@@ -2763,8 +2908,8 @@ bool RemoteLearnSelectionFeedbackLocked(const std::wstring& reading,
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::LearnSelectionFeedback, payload, &status,
-                               &response, error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(
+          EnginePipeCommand::LearnSelectionFeedback, payload, &status, &response, error)) {
     return false;
   }
   if (status != 0) {
@@ -2790,8 +2935,8 @@ bool RemoteSetCandidatePinLocked(const std::wstring& reading, const std::wstring
     AppendU16(payload, static_cast<uint16_t>(ch));
 
   int status = -1;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::SetCandidatePin, payload, &status, nullptr,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::SetCandidatePin,
+                                                              payload, &status, nullptr, error)) {
     return false;
   }
   if (status != 0) {
@@ -2815,8 +2960,8 @@ bool RemoteCandidateActionLocked(const std::wstring& reading, const std::wstring
     AppendU16(payload, static_cast<uint16_t>(ch));
 
   int status = -1;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::CandidateAction, payload, &status, nullptr,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::CandidateAction,
+                                                              payload, &status, nullptr, error)) {
     return false;
   }
   if (status != 0) {
@@ -2832,8 +2977,8 @@ bool RemoteResetLearningContextLocked(std::wstring* error) {
   if (!AppendCapabilityToken(payload, error)) return false;
 
   int status = -1;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::ResetLearningContext, payload, &status, nullptr,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(
+          EnginePipeCommand::ResetLearningContext, payload, &status, nullptr, error)) {
     return false;
   }
   if (status != 0) {
@@ -2850,8 +2995,8 @@ bool RemoteRecordClipboardLocked(const std::wstring& text, std::wstring* error) 
   AppendWideString(payload, text);
 
   int status = -1;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::RecordClipboard, payload, &status, nullptr,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::RecordClipboard,
+                                                              payload, &status, nullptr, error)) {
     return false;
   }
   if (status != 0) {
@@ -2871,8 +3016,8 @@ bool RemoteResolveClipboardLocked(const std::wstring& id, std::wstring* text, st
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::ResolveClipboard, payload, &status, &response,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::ResolveClipboard,
+                                                              payload, &status, &response, error)) {
     return false;
   }
   if (status != 0) {
@@ -2903,8 +3048,8 @@ bool RemoteSyllableBoundsLocked(const wchar_t* text, size_t unitCount, uint32_t*
 
   int status = -1;
   std::vector<BYTE> response;
-  if (!SendRemoteRequestLocked(EnginePipeCommand::SyllableBounds, payload, &status, &response,
-                               error)) {
+  if (!EngineBridgeClient::Instance().SendRemoteRequestLocked(EnginePipeCommand::SyllableBounds,
+                                                              payload, &status, &response, error)) {
     return false;
   }
   if (status != 0) {
@@ -2935,14 +3080,14 @@ bool RemoteSyllableBoundsLocked(const wchar_t* text, size_t unitCount, uint32_t*
   return true;
 }
 
-void ResetBridgeLocked() {
-  const uint32_t pendingModeFlags = g_bridge.pendingModeFlags;
+void EngineBridgeClient::ResetBridgeLocked() {
+  const uint32_t pendingModeFlags = connection.pendingModeFlags;
   ClearLocalLookupCache();
   SetLocalLookupCacheSignature(std::wstring());
-  CloseRemotePipeOnlyLocked();
-  g_bridge = {};
-  g_bridge.pendingModeFlags = pendingModeFlags;
-  g_pendingModeFlagsMirror.store(pendingModeFlags, std::memory_order_release);
+  ClosePipeLocked();
+  connection = {};
+  connection.pendingModeFlags = pendingModeFlags;
+  pendingModeFlagsMirror.store(pendingModeFlags, std::memory_order_release);
 }
 
 void EnsureEngineWatchdogStarted(const std::filesystem::path& moduleDir);
@@ -2950,12 +3095,12 @@ void EnsureRetryLoopScheduled();
 bool ShouldStartUserTriggeredWarmup();
 bool StartWarmupWorkerAsync();
 
-bool EnsureLoadedLocked() {
-  if (g_bridge.initialized) {
-    if (g_bridge.backend == EngineBackend::Remote) return true;
+bool EngineBridgeClient::EnsureLoadedLocked() {
+  if (connection.initialized) {
+    if (connection.backend == EngineBackend::Remote) return true;
   }
 
-  g_engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
+  engineHealthErrorCode.store(ERROR_SUCCESS, std::memory_order_release);
   const auto moduleDir = ModuleDir();
   if (moduleDir.empty()) {
     RememberEngineFailure(kEngineHealthStartupFailed);
@@ -2966,9 +3111,10 @@ bool EnsureLoadedLocked() {
 
   const bool helperStarted = EnsureEngineHelperRunning(moduleDir);
   EnsureEngineWatchdogStarted(moduleDir);
+  const bool appContainer = IsCurrentProcessAppContainer();
   std::wstring lexiconError;
   const auto lexiconDir = ResolveTrustedLexiconDir(moduleDir, &lexiconError);
-  if (lexiconDir.empty()) {
+  if (lexiconDir.empty() && !appContainer) {
     RememberEngineFailure(ERROR_PATH_NOT_FOUND);
     ResetBridgeLocked();
     const std::wstring detail =
@@ -2978,7 +3124,9 @@ bool EnsureLoadedLocked() {
                                   L" (moduleDir=" + moduleDir.wstring() + L")");
     return false;
   }
-  AppendEngineStateLogDeduped(L"engine init: lexiconDir=" + lexiconDir.wstring());
+  AppendEngineStateLogDeduped(
+      L"engine init: lexiconDir=" +
+      (lexiconDir.empty() ? std::wstring(L"(sandbox-default)") : lexiconDir.wstring()));
 
   // The helper claims its single-instance mutex before its listener thread has
   // created the first named-pipe instance. Warmup runs off the keystroke path,
@@ -3023,24 +3171,28 @@ bool EnsureLoadedLocked() {
 // read-only lookup. Other commands may have side effects and must not be replayed.
 bool RemoteLookupWithReconnectLocked(const std::wstring& reading, unsigned long long requestId,
                                      std::vector<std::wstring>* candidates,
-                                     std::vector<std::wstring>* metaScores, int* count,
+                                     std::vector<CandidateMetaParts>* metaScores, int* count,
                                      std::wstring* error, bool fullResult, bool* hasMore) {
   struct LookupFlight {
     explicit LookupFlight(unsigned long long id) {
-      g_remoteLookupInFlight.store(id, std::memory_order_release);
+      EngineBridgeClient::Instance().remoteLookupInFlight.store(id, std::memory_order_release);
     }
-    ~LookupFlight() { g_remoteLookupInFlight.store(0, std::memory_order_release); }
+    ~LookupFlight() {
+      EngineBridgeClient::Instance().remoteLookupInFlight.store(0, std::memory_order_release);
+    }
   } flight(requestId);
   if (IsLookupRequestSuperseded(requestId)) {
     if (error) *error = L"lookup superseded before sending";
     return false;
   }
-  const auto lexiconDir = g_bridge.loadedLexiconDir;
+  const auto lexiconDir = EngineBridgeClient::Instance().connection.loadedLexiconDir;
   if (RemoteLookupLocked(reading, requestId, candidates, metaScores, count, error, fullResult,
                          hasMore)) {
     return true;
   }
-  if (!error || !IsPipeDisconnectError(*error) || lexiconDir.empty()) return false;
+  if (!error || !IsPipeDisconnectError(*error) ||
+      (!IsCurrentProcessAppContainer() && lexiconDir.empty()))
+    return false;
   if (IsLookupRequestSuperseded(requestId)) {
     *error = L"lookup superseded during pipe reconnect";
     return false;
@@ -3062,14 +3214,37 @@ bool RemoteLookupWithReconnectLocked(const std::wstring& reading, unsigned long 
 }
 
 void EngineWatchdogWorker(std::filesystem::path moduleDir) {
-  while (g_trayWatchdogRunning.load(std::memory_order_acquire)) {
+  const bool appContainer = IsCurrentProcessAppContainer();
+  while (EngineBridgeClient::Instance().trayWatchdogRunning.load(std::memory_order_acquire)) {
     Sleep(kEngineWatchdogIntervalMs);
-    if (!g_trayWatchdogRunning.load(std::memory_order_acquire)) break;
+    if (!EngineBridgeClient::Instance().trayWatchdogRunning.load(std::memory_order_acquire)) break;
+    if (appContainer) {
+      // AppContainer isolates Local\ kernel mutex namespaces, so probe the
+      // global read-only sandbox pipe instead of OpenMutexW.
+      const std::wstring pipeName = EnginePipeNameForModuleDir(moduleDir);
+      const BOOL pipeReady = WaitNamedPipeW(pipeName.c_str(), 1);
+      const DWORD error = pipeReady ? ERROR_SUCCESS : GetLastError();
+      if (pipeReady || error == ERROR_PIPE_BUSY || error == ERROR_SEM_TIMEOUT) {
+        const SrfEngineState currentState =
+            EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
+        if (currentState == SrfEngineState::Failed && ShouldStartUserTriggeredWarmup()) {
+          (void)StartWarmupWorkerAsync();
+          continue;
+        }
+        continue;
+      }
+      if (error == ERROR_FILE_NOT_FOUND || error == ERROR_INVALID_NAME) {
+        PublishEngineState(SrfEngineState::Failed, error, L"watchdog_sandbox_pipe_missing");
+        EnsureRetryLoopScheduled();
+      }
+      continue;
+    }
     const std::wstring mutexName = EngineMutexNameForModuleDir(moduleDir);
     HANDLE mutex = OpenMutexW(SYNCHRONIZE, FALSE, mutexName.c_str());
     if (mutex) {
       CloseHandle(mutex);
-      const SrfEngineState currentState = g_engineState.load(std::memory_order_acquire);
+      const SrfEngineState currentState =
+          EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
       if (currentState == SrfEngineState::Failed && ShouldStartUserTriggeredWarmup()) {
         // The helper process is alive again (e.g. restarted by tray or another
         // host). Wake this host out of a Failed/cooldown state immediately.
@@ -3103,18 +3278,19 @@ void EngineWatchdogWorker(std::filesystem::path moduleDir) {
 
 void EnsureEngineWatchdogStarted(const std::filesystem::path& moduleDir) {
   bool expected = false;
-  if (g_trayWatchdogRunning.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+  if (EngineBridgeClient::Instance().trayWatchdogRunning.compare_exchange_strong(
+          expected, true, std::memory_order_acq_rel)) {
     if (!StartDetachedBackgroundWorker([moduleDir] { EngineWatchdogWorker(moduleDir); })) {
-      g_trayWatchdogRunning.store(false, std::memory_order_release);
+      EngineBridgeClient::Instance().trayWatchdogRunning.store(false, std::memory_order_release);
     }
   }
 }
 
 void ResetRetryLoopState() {
-  g_recoveryBudget.Reset();
-  g_recoveryTriggerRequestId.store(0, std::memory_order_release);
-  g_retryLoopGeneration.fetch_add(1, std::memory_order_acq_rel);
-  g_retryLoopInFlight.store(false, std::memory_order_release);
+  EngineBridgeClient::Instance().recoveryBudget.Reset();
+  EngineBridgeClient::Instance().recoveryTriggerRequestId.store(0, std::memory_order_release);
+  EngineBridgeClient::Instance().retryLoopGeneration.fetch_add(1, std::memory_order_acq_rel);
+  EngineBridgeClient::Instance().retryLoopInFlight.store(false, std::memory_order_release);
 }
 
 DWORD RetryBackoffMsForAttempt(size_t attempt) {
@@ -3129,9 +3305,14 @@ void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRe
   size_t attempt = 0;
   const ULONGLONG startedTick = GetTickCount64();
   while (attempt < kRetryBackoffMs.size()) {
-    if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) break;
-    if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) break;
-    if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
+    if (generation !=
+        EngineBridgeClient::Instance().retryLoopGeneration.load(std::memory_order_acquire))
+      break;
+    if (!EngineBridgeClient::Instance().retryOnFailureEnabled.load(std::memory_order_acquire))
+      break;
+    if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+        SrfEngineState::Ready)
+      break;
 
     const DWORD delayMs = RetryBackoffMsForAttempt(attempt);
     AppendEngineLogDeduped(L"basic", L"tsf_bridge_recovery",
@@ -3141,39 +3322,53 @@ void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRe
                                std::to_wstring(delayMs));
     Sleep(delayMs);
 
-    if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) break;
-    if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) break;
-    if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
+    if (generation !=
+        EngineBridgeClient::Instance().retryLoopGeneration.load(std::memory_order_acquire))
+      break;
+    if (!EngineBridgeClient::Instance().retryOnFailureEnabled.load(std::memory_order_acquire))
+      break;
+    if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+        SrfEngineState::Ready)
+      break;
 
-    if (g_warmupInFlight.exchange(true, std::memory_order_acq_rel)) continue;
-    if (!g_recoveryBudget.TryAcquire()) {
+    if (EngineBridgeClient::Instance().warmupInFlight.exchange(true, std::memory_order_acq_rel))
+      continue;
+    if (!EngineBridgeClient::Instance().recoveryBudget.TryAcquire()) {
       AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
                              L"generation=" + std::to_wstring(generation) +
                                  L" trigger_request_id=" + std::to_wstring(triggerRequestId) +
                                  L" phase=budget_exhausted attempts=" + std::to_wstring(attempt));
-      g_warmupInFlight.store(false, std::memory_order_release);
+      EngineBridgeClient::Instance().warmupInFlight.store(false, std::memory_order_release);
       break;
     }
     PublishEngineState(SrfEngineState::Loading, ERROR_SUCCESS, L"recovery_attempt");
     WarmupEngineWorker();
     AppendEngineLogDeduped(
-        g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"basic"
-                                                                               : L"error",
+        EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+                SrfEngineState::Ready
+            ? L"basic"
+            : L"error",
         L"tsf_bridge_recovery",
         L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
             std::to_wstring(triggerRequestId) + L" attempt=" + std::to_wstring(attempt + 1) +
             L" phase=result status=" +
-            (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready ? L"ready"
-                                                                                    : L"failed") +
+            (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+                     SrfEngineState::Ready
+                 ? L"ready"
+                 : L"failed") +
             L" elapsed_ms=" + std::to_wstring(GetTickCount64() - startedTick));
-    if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) break;
+    if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+        SrfEngineState::Ready)
+      break;
     ++attempt;
   }
 
-  if (generation == g_retryLoopGeneration.load(std::memory_order_acquire) &&
-      g_retryOnFailureEnabled.load(std::memory_order_acquire) &&
-      g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready &&
-      g_recoveryBudget.Exhausted()) {
+  if (generation ==
+          EngineBridgeClient::Instance().retryLoopGeneration.load(std::memory_order_acquire) &&
+      EngineBridgeClient::Instance().retryOnFailureEnabled.load(std::memory_order_acquire) &&
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) !=
+          SrfEngineState::Ready &&
+      EngineBridgeClient::Instance().recoveryBudget.Exhausted()) {
     AppendEngineLogDeduped(L"error", L"tsf_bridge_recovery",
                            L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
                                std::to_wstring(triggerRequestId) + L" phase=cooldown delay_ms=" +
@@ -3183,38 +3378,48 @@ void RetryLoopWorker(unsigned long long generation, unsigned long long triggerRe
     // loop or requiring the user to restart Windows.
     if (StartDetachedBackgroundWorker([generation] {
           Sleep(kEngineRecoveryCooldownMs);
-          if (generation != g_retryLoopGeneration.load(std::memory_order_acquire)) return;
-          if (!g_retryOnFailureEnabled.load(std::memory_order_acquire) ||
-              g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) {
-            g_retryLoopInFlight.store(false, std::memory_order_release);
+          if (generation !=
+              EngineBridgeClient::Instance().retryLoopGeneration.load(std::memory_order_acquire))
+            return;
+          if (!EngineBridgeClient::Instance().retryOnFailureEnabled.load(
+                  std::memory_order_acquire) ||
+              EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+                  SrfEngineState::Ready) {
+            EngineBridgeClient::Instance().retryLoopInFlight.store(false,
+                                                                   std::memory_order_release);
             return;
           }
-          g_recoveryBudget.Reset();
-          g_retryLoopInFlight.store(false, std::memory_order_release);
+          EngineBridgeClient::Instance().recoveryBudget.Reset();
+          EngineBridgeClient::Instance().retryLoopInFlight.store(false, std::memory_order_release);
           EnsureRetryLoopScheduled();
         })) {
       return;
     }
   }
 
-  if (generation == g_retryLoopGeneration.load(std::memory_order_acquire)) {
-    g_retryLoopInFlight.store(false, std::memory_order_release);
+  if (generation ==
+      EngineBridgeClient::Instance().retryLoopGeneration.load(std::memory_order_acquire)) {
+    EngineBridgeClient::Instance().retryLoopInFlight.store(false, std::memory_order_release);
   }
 }
 
 void EnsureRetryLoopScheduled() {
-  if (!g_retryOnFailureEnabled.load(std::memory_order_acquire)) return;
-  if (g_recoveryBudget.Exhausted()) return;
-  if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) return;
+  if (!EngineBridgeClient::Instance().retryOnFailureEnabled.load(std::memory_order_acquire)) return;
+  if (EngineBridgeClient::Instance().recoveryBudget.Exhausted()) return;
+  if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+      SrfEngineState::Ready)
+    return;
 
   bool expected = false;
-  if (!g_retryLoopInFlight.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+  if (!EngineBridgeClient::Instance().retryLoopInFlight.compare_exchange_strong(
+          expected, true, std::memory_order_acq_rel)) {
     return;
   }
 
-  const unsigned long long generation = g_retryLoopGeneration.load(std::memory_order_acquire);
+  const unsigned long long generation =
+      EngineBridgeClient::Instance().retryLoopGeneration.load(std::memory_order_acquire);
   const unsigned long long triggerRequestId =
-      g_recoveryTriggerRequestId.load(std::memory_order_acquire);
+      EngineBridgeClient::Instance().recoveryTriggerRequestId.load(std::memory_order_acquire);
   AppendEngineLogDeduped(L"basic", L"tsf_bridge_recovery",
                          L"generation=" + std::to_wstring(generation) + L" trigger_request_id=" +
                              std::to_wstring(triggerRequestId) + L" phase=scheduled");
@@ -3223,16 +3428,17 @@ void EnsureRetryLoopScheduled() {
     AppendEngineLogDeduped(
         L"error", L"tsf_bridge_recovery",
         L"generation=" + std::to_wstring(generation) + L" phase=worker_start_failed");
-    g_retryLoopInFlight.store(false, std::memory_order_release);
+    EngineBridgeClient::Instance().retryLoopInFlight.store(false, std::memory_order_release);
   }
 }
 
 bool ShouldStartUserTriggeredWarmup() {
   const ULONGLONG now = GetTickCount64();
-  ULONGLONG last = g_lastUserTriggeredWarmupTick.load(std::memory_order_acquire);
+  ULONGLONG last =
+      EngineBridgeClient::Instance().lastUserTriggeredWarmupTick.load(std::memory_order_acquire);
   while (last == 0 || now < last || now - last >= kFailedStateWarmupCooldownMs) {
-    if (g_lastUserTriggeredWarmupTick.compare_exchange_weak(last, now, std::memory_order_acq_rel,
-                                                            std::memory_order_acquire)) {
+    if (EngineBridgeClient::Instance().lastUserTriggeredWarmupTick.compare_exchange_weak(
+            last, now, std::memory_order_acq_rel, std::memory_order_acquire)) {
       return true;
     }
   }
@@ -3240,12 +3446,13 @@ bool ShouldStartUserTriggeredWarmup() {
 }
 
 bool StartWarmupWorkerAsync() {
-  if (g_warmupInFlight.exchange(true, std::memory_order_acq_rel)) return false;
+  if (EngineBridgeClient::Instance().warmupInFlight.exchange(true, std::memory_order_acq_rel))
+    return false;
 
   PublishEngineState(SrfEngineState::Loading, ERROR_SUCCESS, L"warmup_started");
   if (StartDetachedBackgroundWorker([] { WarmupEngineWorker(); })) return true;
 
-  g_warmupInFlight.store(false, std::memory_order_release);
+  EngineBridgeClient::Instance().warmupInFlight.store(false, std::memory_order_release);
   PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"warmup_worker_start_failed");
   EnsureRetryLoopScheduled();
   return false;
@@ -3254,17 +3461,17 @@ bool StartWarmupWorkerAsync() {
 void WarmupEngineWorker() {
   std::wstring failureSnap;
   const bool initialized = [&] {
-    std::lock_guard<std::mutex> guard(g_mutex);
-    const bool ok = EnsureLoadedLocked();
-    if (!ok) failureSnap = g_lastEngineFailure;
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex);
+    const bool ok = EngineBridgeClient::Instance().EnsureLoadedLocked();
+    if (!ok) failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
     return ok;
   }();
 
   PublishEngineState(initialized ? SrfEngineState::Ready : SrfEngineState::Failed, ERROR_SUCCESS,
                      initialized ? L"warmup_succeeded" : L"warmup_failed");
-  g_warmupInFlight.store(false, std::memory_order_release);
+  EngineBridgeClient::Instance().warmupInFlight.store(false, std::memory_order_release);
   if (initialized) {
-    g_lastUserTriggeredWarmupTick.store(0, std::memory_order_release);
+    EngineBridgeClient::Instance().lastUserTriggeredWarmupTick.store(0, std::memory_order_release);
     ResetRetryLoopState();
     SrfTip_PrewarmSingleLetterLookupCacheAsync();
   } else {
@@ -3276,15 +3483,15 @@ void WarmupEngineWorker() {
 bool EnsureReadyNow() {
   std::wstring failureSnap;
   const bool initialized = [&] {
-    std::lock_guard<std::mutex> guard(g_mutex);
-    const bool ok = EnsureLoadedLocked();
-    if (!ok) failureSnap = g_lastEngineFailure;
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex);
+    const bool ok = EngineBridgeClient::Instance().EnsureLoadedLocked();
+    if (!ok) failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
     return ok;
   }();
 
   PublishEngineState(initialized ? SrfEngineState::Ready : SrfEngineState::Failed, ERROR_SUCCESS,
                      initialized ? L"load_succeeded" : L"load_failed");
-  g_warmupInFlight.store(false, std::memory_order_release);
+  EngineBridgeClient::Instance().warmupInFlight.store(false, std::memory_order_release);
   if (initialized) {
     ResetRetryLoopState();
   } else {
@@ -3308,7 +3515,7 @@ extern "C" const char* __cdecl KxGetBuildInfo() {
 // The build owns the isolated helper; this probe never registers COM, launches
 // a watchdog or publishes health into the user's TSF state.
 extern "C" int __cdecl KxReleaseProbe(wchar_t* detail, unsigned capacity) {
-  std::lock_guard<std::mutex> guard(g_mutex);
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex);
   const auto moduleDir = ModuleDir();
   std::wstring error;
   std::vector<std::wstring> candidates;
@@ -3330,7 +3537,7 @@ extern "C" int __cdecl KxReleaseProbe(wchar_t* detail, unsigned capacity) {
       result = 14;
     }
   }
-  ResetBridgeLocked();
+  EngineBridgeClient::Instance().ResetBridgeLocked();
   if (detail && capacity) wcsncpy_s(detail, capacity, error.c_str(), _TRUNCATE);
   return result;
 }
@@ -3338,7 +3545,7 @@ extern "C" int __cdecl KxReleaseProbe(wchar_t* detail, unsigned capacity) {
 #ifdef SRF_IDLE_RECOVERY_TEST
 // Compiled only into the standalone test executable, never the TSF DLL.
 int SrfTip_TestIdleRecovery(DWORD idleMs, std::wstring* detail) {
-  std::unique_lock<std::mutex> guard(g_mutex);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex);
   const auto moduleDir = ModuleDir();
   std::wstring error;
   if (!WaitForEnginePipeReady(moduleDir, 10000) || !VerifyRemoteInstanceLocked(moduleDir, &error)) {
@@ -3357,23 +3564,27 @@ int SrfTip_TestIdleRecovery(DWORD idleMs, std::wstring* detail) {
     if (detail) *detail = L"initial lookup: " + error;
     return 12;
   }
-  const DWORD originalPid = g_engineHelperPid.load(std::memory_order_acquire);
+  const DWORD originalPid =
+      EngineBridgeClient::Instance().engineHelperPid.load(std::memory_order_acquire);
   Sleep(idleMs);
-  if (PeekNamedPipe(g_bridge.pipe, nullptr, 0, nullptr, nullptr, nullptr) ||
+  if (PeekNamedPipe(EngineBridgeClient::Instance().connection.pipe, nullptr, 0, nullptr, nullptr,
+                    nullptr) ||
       !IsPipeDisconnectSystemError(GetLastError())) {
     if (detail) *detail = L"server did not close the idle connection";
     return 13;
   }
   // Leave automatic retries disabled to prove a stale pipe is recovered by the
   // first lookup itself, without waiting for a background recovery cycle.
-  g_engineState.store(SrfEngineState::Ready, std::memory_order_release);
+  EngineBridgeClient::Instance().engineState.store(SrfEngineState::Ready,
+                                                   std::memory_order_release);
   guard.unlock();
   candidates.clear();
   const auto status = SrfTip_LookupCandidates(L"nihao", candidates);
   if (status != SrfLookupCandidatesStatus::Ok ||
       std::find(candidates.begin(), candidates.end(), L"你好") == candidates.end() ||
       SrfTip_GetEngineState() != SrfEngineState::Ready ||
-      g_engineHelperPid.load(std::memory_order_acquire) != originalPid) {
+      EngineBridgeClient::Instance().engineHelperPid.load(std::memory_order_acquire) !=
+          originalPid) {
     if (detail) {
       *detail = L"lookup after idle failed: status=" + std::to_wstring(static_cast<int>(status));
     }
@@ -3392,11 +3603,12 @@ unsigned long long SrfTip_NextLookupRequestId() {
     candidate = static_cast<unsigned long long>(GetTickCount64());
   }
 
-  unsigned long long current = g_latestLookupRequestId.load(std::memory_order_acquire);
+  unsigned long long current =
+      EngineBridgeClient::Instance().latestLookupRequestId.load(std::memory_order_acquire);
   for (;;) {
     const unsigned long long next = (std::max)(candidate, current + 1);
-    if (g_latestLookupRequestId.compare_exchange_weak(current, next, std::memory_order_acq_rel,
-                                                      std::memory_order_acquire)) {
+    if (EngineBridgeClient::Instance().latestLookupRequestId.compare_exchange_weak(
+            current, next, std::memory_order_acq_rel, std::memory_order_acquire)) {
       return next;
     }
   }
@@ -3404,17 +3616,22 @@ unsigned long long SrfTip_NextLookupRequestId() {
 
 void SrfTip_CancelPendingLookupBefore(unsigned long long requestId) {
   if (requestId == 0) return;
-  const auto inFlight = g_remoteLookupInFlight.load(std::memory_order_acquire);
+  const auto inFlight =
+      EngineBridgeClient::Instance().remoteLookupInFlight.load(std::memory_order_acquire);
   if (inFlight == 0 || inFlight >= requestId) return;
-  unsigned long long current = g_latestLookupCancelRequestId.load(std::memory_order_acquire);
+  unsigned long long current =
+      EngineBridgeClient::Instance().latestLookupCancelRequestId.load(std::memory_order_acquire);
   while (requestId > current &&
-         !g_latestLookupCancelRequestId.compare_exchange_weak(
+         !EngineBridgeClient::Instance().latestLookupCancelRequestId.compare_exchange_weak(
              current, requestId, std::memory_order_acq_rel, std::memory_order_acquire)) {
   }
   if (requestId < current) return;
-  if (g_lookupCancelWorkerRunning.exchange(true, std::memory_order_acq_rel)) return;
+  if (EngineBridgeClient::Instance().lookupCancelWorkerRunning.exchange(true,
+                                                                        std::memory_order_acq_rel))
+    return;
   if (!StartDetachedBackgroundWorker([] { LookupCancelWorkerMain(); })) {
-    g_lookupCancelWorkerRunning.store(false, std::memory_order_release);
+    EngineBridgeClient::Instance().lookupCancelWorkerRunning.store(false,
+                                                                   std::memory_order_release);
   }
 }
 
@@ -3423,24 +3640,28 @@ void SrfTip_ClearLookupCache() {
 }
 
 bool SrfTip_InitializeEngine() {
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state == SrfEngineState::Ready) return true;
   SrfTip_WarmupEngineAsync();
   return false;
 }
 
 void SrfTip_SetRetryOnFailureEnabled(bool enabled) {
-  const bool previous = g_retryOnFailureEnabled.exchange(enabled, std::memory_order_acq_rel);
+  const bool previous = EngineBridgeClient::Instance().retryOnFailureEnabled.exchange(
+      enabled, std::memory_order_acq_rel);
   if (previous != enabled) {
     ResetRetryLoopState();
   }
-  if (enabled && g_engineState.load(std::memory_order_acquire) == SrfEngineState::Failed) {
+  if (enabled && EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+                     SrfEngineState::Failed) {
     EnsureRetryLoopScheduled();
   }
 }
 
 void SrfTip_WarmupEngineAsync() {
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state == SrfEngineState::Ready) return;
   if (state == SrfEngineState::Failed) {
     if (ShouldStartUserTriggeredWarmup()) {
@@ -3454,33 +3675,35 @@ void SrfTip_WarmupEngineAsync() {
 }
 
 SrfEngineState SrfTip_GetEngineState() {
-  return g_engineState.load(std::memory_order_acquire);
+  return EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
 }
 
 std::wstring SrfTip_GetEngineFailureDetail() {
-  std::lock_guard<std::mutex> guard(g_mutex);
-  return g_lastEngineFailure;
+  std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex);
+  return EngineBridgeClient::Instance().lastEngineFailure;
 }
 
 size_t SrfTip_SyllableBoundaryOffsetsUtf16(const wchar_t* text, size_t unitCount, uint32_t* out,
                                            size_t cap) {
   if (!text || !out || cap == 0 || unitCount > kMaxBridgeInputUnits) return 0;
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
     return 0;
   }
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::try_to_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::try_to_lock);
   if (!guard.owns_lock()) return 0;
-  if (!EnsureLoadedLocked()) return 0;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (!EngineBridgeClient::Instance().EnsureLoadedLocked()) return 0;
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     size_t written = 0;
     std::wstring error;
     if (RemoteSyllableBoundsLocked(text, unitCount, out, cap, &written, &error)) return written;
     SetFailureDetailLocked(error.empty() ? L"shared engine syllable bounds failed" : error);
-    failureSnap = g_lastEngineFailure;
-    InvalidateRemoteBackendLocked();
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"syllable_bounds_failed");
     EnsureRetryLoopScheduled();
   }
@@ -3490,22 +3713,27 @@ size_t SrfTip_SyllableBoundaryOffsetsUtf16(const wchar_t* text, size_t unitCount
 
 bool SrfTip_TryGetCachedLookupCandidates(const std::wstring& reading,
                                          std::vector<std::wstring>& candidates,
-                                         std::vector<std::wstring>* metaScores, bool* hasMore) {
+                                         std::vector<CandidateMetaParts>* metaScores,
+                                         bool* hasMore) {
   candidates.clear();
   if (metaScores) metaScores->clear();
   if (hasMore) *hasMore = false;
   if (reading.empty() || reading.size() > kMaxBridgeInputUnits) return false;
-  const uint32_t modeFlags = g_pendingModeFlagsMirror.load(std::memory_order_acquire);
+  const uint32_t modeFlags =
+      EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire);
   return TryGetLocalLookupCache(reading, modeFlags, candidates, metaScores, false, hasMore);
 }
 
 void SrfTip_SetEngineModeFlags(unsigned long flags) {
-  g_pendingModeFlagsMirror.store(static_cast<uint32_t>(flags), std::memory_order_release);
-  std::unique_lock<std::mutex> guard(g_mutex, std::try_to_lock);
+  EngineBridgeClient::Instance().pendingModeFlagsMirror.store(static_cast<uint32_t>(flags),
+                                                              std::memory_order_release);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::try_to_lock);
   if (guard.owns_lock()) {
-    g_bridge.pendingModeFlags = static_cast<uint32_t>(flags);
+    EngineBridgeClient::Instance().connection.pendingModeFlags = static_cast<uint32_t>(flags);
   }
-  if (g_engineState.load(std::memory_order_acquire) == SrfEngineState::Ready) {
+  if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) ==
+      SrfEngineState::Ready) {
     SrfTip_PrewarmSingleLetterLookupCacheAsync();
   }
 }
@@ -3514,11 +3742,12 @@ bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
   unsigned int busyAttempt = 0;
   for (;;) {
     const ULONGLONG deadline = GetTickCount64() + kAsyncLearnReadyWaitMs;
-    SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+    SrfEngineState state =
+        EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
     while (state != SrfEngineState::Ready && GetTickCount64() < deadline) {
       SrfTip_WarmupEngineAsync();
       Sleep(10);
-      state = g_engineState.load(std::memory_order_acquire);
+      state = EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
     }
     if (state != SrfEngineState::Ready) {
       SrfTip_WarmupEngineAsync();
@@ -3531,9 +3760,9 @@ bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
     bool engineBusy = false;
     bool madeProgress = false;
     {
-      std::unique_lock<std::mutex> guard(g_mutex);
-      if (!EnsureLoadedLocked()) return false;
-      if (g_bridge.backend == EngineBackend::Remote) {
+      std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex);
+      if (!EngineBridgeClient::Instance().EnsureLoadedLocked()) return false;
+      if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
         switch (request.kind) {
           case PendingLearnKind::Commit:
             if (RemoteLearnLocked(request.reading, request.committedText, request.flags, &error)) {
@@ -3566,8 +3795,8 @@ bool ProcessQueuedLearnRequest(PendingLearnRequest request) {
         }
         if (!completed && !engineBusy) {
           SetFailureDetailLocked(error.empty() ? L"shared engine learning request failed" : error);
-          failureSnap = g_lastEngineFailure;
-          InvalidateRemoteBackendLocked();
+          failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+          EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
           PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"learning_request_failed");
           EnsureRetryLoopScheduled();
         }
@@ -3610,13 +3839,13 @@ void LearnCommitWorkerMain() {
   for (;;) {
     PendingLearnRequest request;
     {
-      std::lock_guard<std::mutex> guard(g_learnQueueMutex);
-      if (g_learnQueue.empty()) {
-        g_learnWorkerRunning.store(false, std::memory_order_release);
+      std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().learnQueueMutex);
+      if (EngineBridgeClient::Instance().learnQueue.empty()) {
+        EngineBridgeClient::Instance().learnWorkerRunning.store(false, std::memory_order_release);
         return;
       }
-      request = std::move(g_learnQueue.front());
-      g_learnQueue.pop_front();
+      request = std::move(EngineBridgeClient::Instance().learnQueue.front());
+      EngineBridgeClient::Instance().learnQueue.pop_front();
     }
     const bool completed = ProcessQueuedLearnRequest(request);
     PostLearnCompletion(request, completed);
@@ -3625,11 +3854,12 @@ void LearnCommitWorkerMain() {
 
 void EnsureLearnCommitWorkerRunning() {
   bool expected = false;
-  if (!g_learnWorkerRunning.compare_exchange_strong(expected, true, std::memory_order_acq_rel)) {
+  if (!EngineBridgeClient::Instance().learnWorkerRunning.compare_exchange_strong(
+          expected, true, std::memory_order_acq_rel)) {
     return;
   }
   if (!StartDetachedBackgroundWorker([] { LearnCommitWorkerMain(); })) {
-    g_learnWorkerRunning.store(false, std::memory_order_release);
+    EngineBridgeClient::Instance().learnWorkerRunning.store(false, std::memory_order_release);
   }
 }
 
@@ -3642,10 +3872,11 @@ int LearnRequestPriority(const PendingLearnRequest& request) {
 }
 
 void DropLowestPriorityLearnRequestLocked() {
-  if (g_learnQueue.empty()) return;
-  auto dropIt = g_learnQueue.begin();
+  if (EngineBridgeClient::Instance().learnQueue.empty()) return;
+  auto dropIt = EngineBridgeClient::Instance().learnQueue.begin();
   int dropPriority = LearnRequestPriority(*dropIt);
-  for (auto it = std::next(g_learnQueue.begin()); it != g_learnQueue.end(); ++it) {
+  for (auto it = std::next(EngineBridgeClient::Instance().learnQueue.begin());
+       it != EngineBridgeClient::Instance().learnQueue.end(); ++it) {
     const int priority = LearnRequestPriority(*it);
     if (priority < dropPriority) {
       dropPriority = priority;
@@ -3654,7 +3885,7 @@ void DropLowestPriorityLearnRequestLocked() {
     }
   }
   PostLearnCompletion(*dropIt, false);
-  g_learnQueue.erase(dropIt);
+  EngineBridgeClient::Instance().learnQueue.erase(dropIt);
 }
 
 unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
@@ -3663,25 +3894,29 @@ unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
                                          UINT completionMessage = 0) {
   const unsigned long long completionId =
       completionWindow && completionMessage != 0
-          ? g_nextLearnCompletionId.fetch_add(1, std::memory_order_relaxed)
+          ? EngineBridgeClient::Instance().nextLearnCompletionId.fetch_add(
+                1, std::memory_order_relaxed)
           : 0;
   {
-    std::lock_guard<std::mutex> guard(g_learnQueueMutex);
-    for (auto it = g_learnQueue.begin(); it != g_learnQueue.end(); ++it) {
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().learnQueueMutex);
+    for (auto it = EngineBridgeClient::Instance().learnQueue.begin();
+         it != EngineBridgeClient::Instance().learnQueue.end(); ++it) {
       if (completionId == 0 && it->completionId == 0 && it->kind == PendingLearnKind::Commit &&
           it->flags == flags && it->reading == reading && it->committedText == committedText) {
         it->repeatCount = (std::min)(it->repeatCount + 1, kLearnQueueMaxRepeatCount);
         PendingLearnRequest merged = std::move(*it);
-        g_learnQueue.erase(it);
-        g_learnQueue.push_back(std::move(merged));
+        EngineBridgeClient::Instance().learnQueue.erase(it);
+        EngineBridgeClient::Instance().learnQueue.push_back(std::move(merged));
         break;
       }
     }
-    if (completionId != 0 || g_learnQueue.empty() || g_learnQueue.back().completionId != 0 ||
-        g_learnQueue.back().kind != PendingLearnKind::Commit ||
-        g_learnQueue.back().reading != reading ||
-        g_learnQueue.back().committedText != committedText || g_learnQueue.back().flags != flags) {
-      while (g_learnQueue.size() >= kLearnQueueCapacity) {
+    if (completionId != 0 || EngineBridgeClient::Instance().learnQueue.empty() ||
+        EngineBridgeClient::Instance().learnQueue.back().completionId != 0 ||
+        EngineBridgeClient::Instance().learnQueue.back().kind != PendingLearnKind::Commit ||
+        EngineBridgeClient::Instance().learnQueue.back().reading != reading ||
+        EngineBridgeClient::Instance().learnQueue.back().committedText != committedText ||
+        EngineBridgeClient::Instance().learnQueue.back().flags != flags) {
+      while (EngineBridgeClient::Instance().learnQueue.size() >= kLearnQueueCapacity) {
         DropLowestPriorityLearnRequestLocked();
       }
       PendingLearnRequest request;
@@ -3693,7 +3928,7 @@ unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
       request.completionWindow = completionWindow;
       request.completionMessage = completionMessage;
       request.completionId = completionId;
-      g_learnQueue.push_back(std::move(request));
+      EngineBridgeClient::Instance().learnQueue.push_back(std::move(request));
     }
   }
   EnsureLearnCommitWorkerRunning();
@@ -3703,8 +3938,8 @@ unsigned long long QueueLearnCommitAsync(const std::wstring& reading,
 void QueueLearnCorrectionAsync(const std::wstring& rawReading, const std::wstring& correctedReading,
                                const std::wstring& committedText) {
   {
-    std::lock_guard<std::mutex> guard(g_learnQueueMutex);
-    while (g_learnQueue.size() >= kLearnQueueCapacity) {
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().learnQueueMutex);
+    while (EngineBridgeClient::Instance().learnQueue.size() >= kLearnQueueCapacity) {
       DropLowestPriorityLearnRequestLocked();
     }
     PendingLearnRequest request;
@@ -3712,7 +3947,7 @@ void QueueLearnCorrectionAsync(const std::wstring& rawReading, const std::wstrin
     request.reading = rawReading;
     request.correctedReading = correctedReading;
     request.committedText = committedText;
-    g_learnQueue.push_back(std::move(request));
+    EngineBridgeClient::Instance().learnQueue.push_back(std::move(request));
   }
   EnsureLearnCommitWorkerRunning();
 }
@@ -3722,8 +3957,8 @@ void QueueLearnSelectionFeedbackAsync(const std::wstring& reading,
                                       unsigned long selectedIndex, unsigned long page,
                                       std::vector<std::wstring> skippedCandidates) {
   {
-    std::lock_guard<std::mutex> guard(g_learnQueueMutex);
-    while (g_learnQueue.size() >= kLearnQueueCapacity) {
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().learnQueueMutex);
+    while (EngineBridgeClient::Instance().learnQueue.size() >= kLearnQueueCapacity) {
       DropLowestPriorityLearnRequestLocked();
     }
     PendingLearnRequest request;
@@ -3733,7 +3968,7 @@ void QueueLearnSelectionFeedbackAsync(const std::wstring& reading,
     request.selectedIndex = selectedIndex;
     request.page = page;
     request.skippedCandidates = std::move(skippedCandidates);
-    g_learnQueue.push_back(std::move(request));
+    EngineBridgeClient::Instance().learnQueue.push_back(std::move(request));
   }
   EnsureLearnCommitWorkerRunning();
 }
@@ -3744,10 +3979,11 @@ void SrfTip_LearnCommit(const std::wstring& reading, const std::wstring& committ
 
 void SrfTip_LearnCommitEx(const std::wstring& reading, const std::wstring& committedText,
                           unsigned long flags) {
+  if (IsCurrentProcessAppContainer()) return;
   if (reading.empty() || committedText.empty()) return;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return;
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
@@ -3761,14 +3997,15 @@ unsigned long long SrfTip_LearnCommitExWithCompletion(const std::wstring& readin
                                                       const std::wstring& committedText,
                                                       unsigned long flags, HWND completionWindow,
                                                       UINT completionMessage) {
+  if (IsCurrentProcessAppContainer()) return 0;
   if (reading.empty() || committedText.empty() || !completionWindow || completionMessage == 0) {
     return 0;
   }
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) {
     return 0;
   }
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return 0;
   }
   PruneLocalLookupCachePreservingHot();
@@ -3780,13 +4017,14 @@ unsigned long long SrfTip_LearnCommitExWithCompletion(const std::wstring& readin
 
 void SrfTip_LearnCorrection(const std::wstring& rawReading, const std::wstring& correctedReading,
                             const std::wstring& committedText) {
+  if (IsCurrentProcessAppContainer()) return;
   if (rawReading.empty() || correctedReading.empty() || committedText.empty()) return;
   if (rawReading.size() > kMaxBridgeInputUnits || correctedReading.size() > kMaxBridgeInputUnits ||
       committedText.size() > kMaxLearnPhraseUnits) {
     return;
   }
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
@@ -3799,12 +4037,13 @@ void SrfTip_LearnCorrection(const std::wstring& rawReading, const std::wstring& 
 void SrfTip_LearnSelectionFeedback(const std::wstring& reading, const std::wstring& committedText,
                                    unsigned long selectedIndex, unsigned long page,
                                    const std::vector<std::wstring>& skippedCandidates) {
+  if (IsCurrentProcessAppContainer()) return;
   if (reading.empty() || committedText.empty()) return;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) {
     return;
   }
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
@@ -3827,22 +4066,25 @@ void SrfTip_LearnSelectionFeedback(const std::wstring& reading, const std::wstri
 }
 
 void SrfTip_ResetLearningContext() {
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if (IsCurrentProcessAppContainer()) return;
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return;
   }
   PruneLocalLookupCachePreservingHot();
 
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     return;
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::try_to_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::try_to_lock);
   if (!guard.owns_lock()) return;
-  if (!EnsureLoadedLocked()) return;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (!EngineBridgeClient::Instance().EnsureLoadedLocked()) return;
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteResetLearningContextLocked(&error)) {
       guard.unlock();
@@ -3850,8 +4092,8 @@ void SrfTip_ResetLearningContext() {
       return;
     }
     SetFailureDetailLocked(error.empty() ? L"shared engine reset learning context failed" : error);
-    failureSnap = g_lastEngineFailure;
-    InvalidateRemoteBackendLocked();
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"reset_learning_failed");
     EnsureRetryLoopScheduled();
   }
@@ -3860,31 +4102,34 @@ void SrfTip_ResetLearningContext() {
 
 bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& committedText,
                             bool pinned) {
+  if (IsCurrentProcessAppContainer()) return false;
   if (reading.empty() || committedText.empty()) return false;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits)
     return false;
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return false;
   }
   InvalidateLocalLookupCacheReading(reading);
 
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
     return false;
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::try_to_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::try_to_lock);
   if (!guard.owns_lock()) return false;
-  if (!EnsureLoadedLocked()) return false;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (!EngineBridgeClient::Instance().EnsureLoadedLocked()) return false;
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteSetCandidatePinLocked(reading, committedText, pinned, &error)) return true;
     SetFailureDetailLocked(error.empty() ? L"shared engine candidate pin failed" : error);
-    failureSnap = g_lastEngineFailure;
-    InvalidateRemoteBackendLocked();
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"candidate_pin_failed");
     EnsureRetryLoopScheduled();
   }
@@ -3894,25 +4139,28 @@ bool SrfTip_SetCandidatePin(const std::wstring& reading, const std::wstring& com
 
 void SrfTip_ApplyCandidateAction(const std::wstring& reading, const std::wstring& committedText,
                                  SrfCandidateAction action) {
+  if (IsCurrentProcessAppContainer()) return;
   if (reading.empty() || committedText.empty()) return;
   if (reading.size() > kMaxBridgeInputUnits || committedText.size() > kMaxLearnPhraseUnits) return;
-  if ((g_pendingModeFlagsMirror.load(std::memory_order_acquire) & kRustModeTraditionalOutput) !=
-      0) {
+  if ((EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire) &
+       kRustModeTraditionalOutput) != 0) {
     return;
   }
   InvalidateLocalLookupCacheReading(reading);
 
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
     return;
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::try_to_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::try_to_lock);
   if (!guard.owns_lock()) return;
-  if (!EnsureLoadedLocked()) return;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (!EngineBridgeClient::Instance().EnsureLoadedLocked()) return;
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteCandidateActionLocked(reading, committedText, action, &error)) {
       guard.unlock();
@@ -3920,8 +4168,8 @@ void SrfTip_ApplyCandidateAction(const std::wstring& reading, const std::wstring
       return;
     }
     SetFailureDetailLocked(error.empty() ? L"shared engine candidate action failed" : error);
-    failureSnap = g_lastEngineFailure;
-    InvalidateRemoteBackendLocked();
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"candidate_action_failed");
     EnsureRetryLoopScheduled();
   }
@@ -3929,27 +4177,32 @@ void SrfTip_ApplyCandidateAction(const std::wstring& reading, const std::wstring
 }
 
 void SrfTip_RecordClipboardText(const std::wstring& text) {
+  if (IsCurrentProcessAppContainer()) return;
   if (text.empty() || text.size() > kMaxClipboardTextUnits) return;
 
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
     return;
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::defer_lock);
   const ULONGLONG deadline = GetTickCount64() + kLookupBusyWaitMs;
   while (!guard.try_lock() && GetTickCount64() < deadline)
     Sleep(0);
   if (!guard.owns_lock()) return;
-  if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) !=
+      SrfEngineState::Ready)
+    return;
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteRecordClipboardLocked(text, &error)) return;
     SetFailureDetailLocked(error.empty() ? L"shared engine clipboard record failed" : error);
-    failureSnap = g_lastEngineFailure;
-    InvalidateRemoteBackendLocked();
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"clipboard_record_failed");
     EnsureRetryLoopScheduled();
   }
@@ -3958,27 +4211,32 @@ void SrfTip_RecordClipboardText(const std::wstring& text) {
 
 bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text) {
   if (text) text->clear();
+  if (IsCurrentProcessAppContainer()) return false;
   if (id.empty() || !text) return false;
 
-  const SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  const SrfEngineState state =
+      EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   if (state != SrfEngineState::Ready) {
     SrfTip_WarmupEngineAsync();
     return false;
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::defer_lock);
   const ULONGLONG deadline = GetTickCount64() + kLookupBusyWaitMs;
   while (!guard.try_lock() && GetTickCount64() < deadline)
     Sleep(0);
   if (!guard.owns_lock()) return false;
-  if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return false;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) !=
+      SrfEngineState::Ready)
+    return false;
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     std::wstring error;
     if (RemoteResolveClipboardLocked(id, text, &error)) return true;
     SetFailureDetailLocked(error.empty() ? L"shared engine clipboard resolve failed" : error);
-    failureSnap = g_lastEngineFailure;
-    InvalidateRemoteBackendLocked();
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"clipboard_resolve_failed");
     EnsureRetryLoopScheduled();
   }
@@ -3992,8 +4250,6 @@ bool SrfTip_ResolveClipboardText(const std::wstring& id, std::wstring* text) {
 // ids are immutable and never reused, and a removed id can no longer appear
 // in a fresh candidate list, so a cached text stays valid for its id.
 namespace {
-std::mutex g_resolvedClipboardMutex;
-std::map<std::wstring, std::wstring> g_resolvedClipboardCache;
 constexpr size_t kResolvedClipboardCacheCapacity = 64;
 }  // namespace
 
@@ -4001,20 +4257,21 @@ bool SrfTip_ResolveClipboardTextCached(const std::wstring& id, std::wstring* tex
   if (text) text->clear();
   if (id.empty() || !text) return false;
   {
-    std::lock_guard<std::mutex> guard(g_resolvedClipboardMutex);
-    const auto it = g_resolvedClipboardCache.find(id);
-    if (it != g_resolvedClipboardCache.end()) {
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().resolvedClipboardMutex);
+    const auto it = EngineBridgeClient::Instance().resolvedClipboardCache.find(id);
+    if (it != EngineBridgeClient::Instance().resolvedClipboardCache.end()) {
       *text = it->second;
       return true;
     }
   }
   if (!SrfTip_ResolveClipboardText(id, text)) return false;
   if (!text->empty()) {
-    std::lock_guard<std::mutex> guard(g_resolvedClipboardMutex);
-    if (g_resolvedClipboardCache.size() >= kResolvedClipboardCacheCapacity) {
-      g_resolvedClipboardCache.clear();
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().resolvedClipboardMutex);
+    if (EngineBridgeClient::Instance().resolvedClipboardCache.size() >=
+        kResolvedClipboardCacheCapacity) {
+      EngineBridgeClient::Instance().resolvedClipboardCache.clear();
     }
-    g_resolvedClipboardCache[id] = *text;
+    EngineBridgeClient::Instance().resolvedClipboardCache[id] = *text;
   }
   return true;
 }
@@ -4024,32 +4281,34 @@ void SrfTip_PrefetchClipboardTexts(const std::vector<std::wstring>& ids) {
   std::vector<std::wstring> missing;
   missing.reserve(ids.size());
   {
-    std::lock_guard<std::mutex> guard(g_resolvedClipboardMutex);
+    std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().resolvedClipboardMutex);
     for (const std::wstring& id : ids) {
-      if (g_resolvedClipboardCache.find(id) == g_resolvedClipboardCache.end()) {
+      if (EngineBridgeClient::Instance().resolvedClipboardCache.find(id) ==
+          EngineBridgeClient::Instance().resolvedClipboardCache.end()) {
         missing.push_back(id);
       }
     }
   }
   if (missing.empty()) return;
   // Runs off the key thread; SrfTip_ResolveClipboardText serializes pipe
-  // access through g_mutex itself.
+  // access through EngineBridgeClient::Instance().connectionMutex itself.
   StartDetachedBackgroundWorker([missing = std::move(missing)]() {
     for (const std::wstring& id : missing) {
       std::wstring text;
       if (!SrfTip_ResolveClipboardText(id, &text) || text.empty()) continue;
-      std::lock_guard<std::mutex> guard(g_resolvedClipboardMutex);
-      if (g_resolvedClipboardCache.size() >= kResolvedClipboardCacheCapacity) {
-        g_resolvedClipboardCache.clear();
+      std::lock_guard<std::mutex> guard(EngineBridgeClient::Instance().resolvedClipboardMutex);
+      if (EngineBridgeClient::Instance().resolvedClipboardCache.size() >=
+          kResolvedClipboardCacheCapacity) {
+        EngineBridgeClient::Instance().resolvedClipboardCache.clear();
       }
-      g_resolvedClipboardCache[id] = std::move(text);
+      EngineBridgeClient::Instance().resolvedClipboardCache[id] = std::move(text);
     }
   });
 }
 
 bool TryServeLookupFromStaleCache(const std::wstring& reading, uint32_t modeFlags,
                                   std::vector<std::wstring>& candidates,
-                                  std::vector<std::wstring>* metaScores,
+                                  std::vector<CandidateMetaParts>* metaScores,
                                   unsigned long long requestId, const wchar_t* reason,
                                   bool fullResult = false, bool* hasMore = nullptr) {
   if (!TryGetStaleLocalLookupCache(reading, modeFlags, candidates, metaScores, fullResult,
@@ -4070,7 +4329,7 @@ bool TryServeLookupFromStaleCache(const std::wstring& reading, uint32_t modeFlag
 
 SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
                                                   std::vector<std::wstring>& candidates,
-                                                  std::vector<std::wstring>* metaScores,
+                                                  std::vector<CandidateMetaParts>* metaScores,
                                                   unsigned long long requestId, bool fullResult,
                                                   bool* hasMore) {
   candidates.clear();
@@ -4081,7 +4340,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
   }
   if (requestId == 0) requestId = SrfTip_NextLookupRequestId();
   PublishLatestLookupRequestId(requestId);
-  const uint32_t modeFlags = g_pendingModeFlagsMirror.load(std::memory_order_acquire);
+  const uint32_t modeFlags =
+      EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire);
   auto tryStale = [&](const wchar_t* reason) {
     return TryServeLookupFromStaleCache(reading, modeFlags, candidates, metaScores, requestId,
                                         reason, fullResult, hasMore);
@@ -4092,11 +4352,11 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
 
   const bool singleLetterLookup = SingleLetterIndex(reading) >= 0;
   const ULONGLONG singleLetterDeadline = GetTickCount64() + kSingleLetterReadyWaitMs;
-  SrfEngineState state = g_engineState.load(std::memory_order_acquire);
+  SrfEngineState state = EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   while (singleLetterLookup && state != SrfEngineState::Ready &&
          GetTickCount64() < singleLetterDeadline) {
     Sleep(0);
-    state = g_engineState.load(std::memory_order_acquire);
+    state = EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire);
   }
   if (state != SrfEngineState::Ready) {
     // Lookup never blocks the key path. If the engine is idle we kick off
@@ -4109,7 +4369,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
   }
 
   std::wstring failureSnap;
-  std::unique_lock<std::mutex> guard(g_mutex, std::defer_lock);
+  std::unique_lock<std::mutex> guard(EngineBridgeClient::Instance().connectionMutex,
+                                     std::defer_lock);
   const ULONGLONG lockDeadline =
       GetTickCount64() + (singleLetterLookup ? kSingleLetterReadyWaitMs : kLookupBusyWaitMs);
   while (!guard.try_lock() && GetTickCount64() < lockDeadline) {
@@ -4125,9 +4386,10 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
     }
     return SrfLookupCandidatesStatus::BridgeBusy;
   }
-  if (!EnsureLoadedLocked()) {
-    failureSnap = g_lastEngineFailure;
-    g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+  if (!EngineBridgeClient::Instance().EnsureLoadedLocked()) {
+    failureSnap = EngineBridgeClient::Instance().lastEngineFailure;
+    EngineBridgeClient::Instance().recoveryTriggerRequestId.store(requestId,
+                                                                  std::memory_order_release);
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_ensure_failed");
     guard.unlock();
     EnsureRetryLoopScheduled();
@@ -4137,10 +4399,10 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
     }
     return SrfLookupCandidatesStatus::EnsureFailed;
   }
-  g_bridge.pendingModeFlags = modeFlags;
+  EngineBridgeClient::Instance().connection.pendingModeFlags = modeFlags;
 
   int count = 0;
-  if (g_bridge.backend == EngineBackend::Remote) {
+  if (EngineBridgeClient::Instance().connection.backend == EngineBackend::Remote) {
     std::wstring error;
     if (!RemoteLookupWithReconnectLocked(reading, requestId, &candidates, metaScores, &count,
                                          &error, fullResult, hasMore)) {
@@ -4156,7 +4418,7 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
         return SrfLookupCandidatesStatus::Superseded;
       }
       const bool remoteBusy = IsRemoteEngineBusyError(failureSnap);
-      if (!remoteBusy) InvalidateRemoteBackendLocked();
+      if (!remoteBusy) EngineBridgeClient::Instance().InvalidateRemoteBackendLocked();
       if (remoteBusy) {
         ResetLookupTimeoutStreak();
         AppendEngineFailureLogDeduped(failureSnap);
@@ -4179,7 +4441,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
           SetFailureDetailLocked(restartDetail);
           WriteEngineRecoveryState(restartDetail);
         }
-        g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+        EngineBridgeClient::Instance().recoveryTriggerRequestId.store(requestId,
+                                                                      std::memory_order_release);
         PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_timeout_restart");
         guard.unlock();
         EnsureRetryLoopScheduled();
@@ -4191,7 +4454,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
       }
       if (IsTransientRemoteLookupError(failureSnap)) {
         if (!IsLookupTimeoutError(failureSnap)) ResetLookupTimeoutStreak();
-        g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+        EngineBridgeClient::Instance().recoveryTriggerRequestId.store(requestId,
+                                                                      std::memory_order_release);
         PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_transient_error");
         guard.unlock();
         EnsureRetryLoopScheduled();
@@ -4203,7 +4467,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
       }
       ResetLookupTimeoutStreak();
       SetFailureDetailLocked(failureSnap);
-      g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+      EngineBridgeClient::Instance().recoveryTriggerRequestId.store(requestId,
+                                                                    std::memory_order_release);
       PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_failed");
       EnsureRetryLoopScheduled();
       if (tryStale(L"lookup_failed")) {
@@ -4217,7 +4482,8 @@ SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
   } else {
     ResetLookupTimeoutStreak();
     failureSnap = L"shared engine backend is not connected";
-    g_recoveryTriggerRequestId.store(requestId, std::memory_order_release);
+    EngineBridgeClient::Instance().recoveryTriggerRequestId.store(requestId,
+                                                                  std::memory_order_release);
     PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"lookup_backend_disconnected");
     EnsureRetryLoopScheduled();
     if (tryStale(L"backend_not_connected")) {
@@ -4238,56 +4504,69 @@ finish_lookup:
 
 void SrfTip_PrewarmSingleLetterLookupCacheAsync() {
   bool expected = false;
-  if (!g_singleLetterPrewarmInFlight.compare_exchange_strong(expected, true,
-                                                             std::memory_order_acq_rel)) {
+  if (!EngineBridgeClient::Instance().singleLetterPrewarmInFlight.compare_exchange_strong(
+          expected, true, std::memory_order_acq_rel)) {
     return;
   }
 
   if (!StartDetachedBackgroundWorker([] {
         struct PrewarmFlagGuard {
           ~PrewarmFlagGuard() {
-            g_singleLetterPrewarmInFlight.store(false, std::memory_order_release);
+            EngineBridgeClient::Instance().singleLetterPrewarmInFlight.store(
+                false, std::memory_order_release);
           }
         } guard;
 
         const ULONGLONG deadline = GetTickCount64() + 2500;
-        while (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready &&
+        while (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) !=
+                   SrfEngineState::Ready &&
                GetTickCount64() < deadline) {
           SrfTip_WarmupEngineAsync();
           Sleep(25);
         }
-        if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return;
+        if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) !=
+            SrfEngineState::Ready)
+          return;
 
-        const uint32_t modeFlags = g_pendingModeFlagsMirror.load(std::memory_order_acquire);
+        const uint32_t modeFlags =
+            EngineBridgeClient::Instance().pendingModeFlagsMirror.load(std::memory_order_acquire);
         auto interactiveLookupQuiet = []() {
-          const ULONGLONG last = g_lastInteractiveLookupTick.load(std::memory_order_acquire);
+          const ULONGLONG last = EngineBridgeClient::Instance().lastInteractiveLookupTick.load(
+              std::memory_order_acquire);
           if (last == 0) return true;
           const ULONGLONG now = GetTickCount64();
           return now < last || now - last >= kPrewarmQuietAfterInteractiveLookupMs;
         };
         auto prewarmReading = [&](const std::wstring& reading) {
-          if (g_engineState.load(std::memory_order_acquire) != SrfEngineState::Ready) return false;
-          if (g_pendingModeFlagsMirror.load(std::memory_order_acquire) != modeFlags) return false;
+          if (EngineBridgeClient::Instance().engineState.load(std::memory_order_acquire) !=
+              SrfEngineState::Ready)
+            return false;
+          if (EngineBridgeClient::Instance().pendingModeFlagsMirror.load(
+                  std::memory_order_acquire) != modeFlags)
+            return false;
 
           std::vector<std::wstring> candidates;
-          std::vector<std::wstring> meta;
+          std::vector<CandidateMetaParts> meta;
           if (TryGetLocalLookupCache(reading, modeFlags, candidates, &meta)) return true;
           if (!interactiveLookupQuiet()) return false;
 
-          std::unique_lock<std::mutex> bridgeGuard(g_mutex, std::try_to_lock);
+          std::unique_lock<std::mutex> bridgeGuard(EngineBridgeClient::Instance().connectionMutex,
+                                                   std::try_to_lock);
           if (!bridgeGuard.owns_lock()) return false;
           if (!interactiveLookupQuiet()) return false;
-          if (!g_bridge.initialized || g_bridge.backend != EngineBackend::Remote) return false;
+          if (!EngineBridgeClient::Instance().connection.initialized ||
+              EngineBridgeClient::Instance().connection.backend != EngineBackend::Remote)
+            return false;
 
-          g_bridge.pendingModeFlags = modeFlags;
+          EngineBridgeClient::Instance().connection.pendingModeFlags = modeFlags;
           int count = 0;
           bool hasMore = false;
           std::wstring error;
           if (!RemoteLookupWithReconnectLocked(reading, 0, &candidates, &meta, &count, &error,
                                                false, &hasMore)) {
-            if (!g_bridge.initialized) {
+            if (!EngineBridgeClient::Instance().connection.initialized) {
               SetFailureDetailLocked(error.empty() ? L"shared engine prewarm failed" : error);
-              const std::wstring failure = g_lastEngineFailure;
+              const std::wstring failure = EngineBridgeClient::Instance().lastEngineFailure;
               PublishEngineState(SrfEngineState::Failed, ERROR_SUCCESS, L"prewarm_lookup_failed");
               bridgeGuard.unlock();
               EnsureRetryLoopScheduled();
@@ -4310,6 +4589,7 @@ void SrfTip_PrewarmSingleLetterLookupCacheAsync() {
           if (!prewarmReading(reading)) return;
         }
       })) {
-    g_singleLetterPrewarmInFlight.store(false, std::memory_order_release);
+    EngineBridgeClient::Instance().singleLetterPrewarmInFlight.store(false,
+                                                                     std::memory_order_release);
   }
 }

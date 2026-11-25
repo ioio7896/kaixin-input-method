@@ -1,6 +1,6 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
 
-//! 剪贴板管理器无头服务：为 Rust 界面（srf_ime_clipboard.exe）提供数据操作与
+//! 剪贴板管理器无头服务：为 Rust 界面（srf_ime_desktop.exe --tool=clipboard）提供数据操作与
 //! 粘贴链。数据层（DPAPI 加密 SQLite、剪贴板捕获、跨进程锁）全部留在本进程，
 //! UI 进程只通过命名管道 JSON 协议调用。服务随 UI 进程启动，UI 崩溃后 10s
 //! 无连接自动退出；管道已存在（另一实例存活）时静默退出由旧实例接管。

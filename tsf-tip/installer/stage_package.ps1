@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$OutputRoot,
     [string]$TipDllPath,
     [string]$OverlayExePath,
@@ -260,16 +260,21 @@ $tipDll = if ($TipDllPath) {
 }
 $bakeLexiconExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\bake_lexicon.exe"
 $setupExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_setup.exe"
-$settingsExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_settings.exe"
-$trayExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_tray.exe"
+$desktopExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_desktop.exe"
+$desktopManifest = Join-Path $PSScriptRoot 'srf_ime_desktop.exe.manifest'
+$modelSource = Join-Path $RepoRoot 'pinyin-ime/target/model-data'
+$modelManifest = Join-Path $modelSource 'manifest.sha256'
+$modelFiles = @('compiled_model.bin', 's2t_chars.tsv', 'symbol_catalog.tsv', 'pronunciation_aliases.tsv', 'pronunciation_exclusions.tsv')
+$modelEntries = @{}
+foreach ($entry in Get-Content -LiteralPath $modelManifest) {
+    if ($entry -cnotmatch '^([0-9a-f]{64})\t([a-z0-9_.]+)$' -or $Matches[2] -cnotin $modelFiles -or $modelEntries.ContainsKey($Matches[2])) {
+        throw "Invalid model resource manifest entry: $entry"
+    }
+    $modelEntries[$Matches[2]] = "$($Matches[1])-$($Matches[2])"
+}
+if ($modelEntries.Count -ne $modelFiles.Count) { throw "Incomplete model resource manifest: $modelManifest" }
 $engineExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_engine.exe"
-$clipboardExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_clipboard.exe"
 $clipboardSvcExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_clipboard_svc.exe"
-$handwriteExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_handwrite.exe"
-$symbolsExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_symbols.exe"
-$ocrExe = Join-Path $RepoRoot "pinyin-ime\target\$profileLower\srf_ime_ocr.exe"
-$settingsManifest = Join-Path $PSScriptRoot 'srf_ime_settings.exe.manifest'
-$trayManifest = Join-Path $PSScriptRoot 'srf_ime_tray.exe.manifest'
 $userDataManifest = Join-Path $PSScriptRoot 'user_data_manifest.json'
 $versionFile = Join-Path $RepoRoot 'VERSION'
 $projectLicenseFile = Join-Path $RepoRoot 'LICENSE'
@@ -284,11 +289,7 @@ $skinDir = Join-Path $RepoRoot 'skins'
 $assetsDir = Join-Path $RepoRoot 'assets'
 $rapidOcrDir = Join-Path $RepoRoot 'RapidOCRLite'
 
-$requiredOutputs = @($tipDll, $bakeLexiconExe, $setupExe, $settingsExe, $trayExe, $engineExe, $clipboardExe, $clipboardSvcExe, $handwriteExe, $settingsManifest, $trayManifest, $userDataManifest, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
-$requiredOutputs += $symbolsExe
-if ($IncludeOcr) {
-    $requiredOutputs += $ocrExe
-}
+$requiredOutputs = @($desktopExe, $desktopManifest, $tipDll, $bakeLexiconExe, $setupExe, $engineExe, $clipboardSvcExe, $userDataManifest, $versionFile, $projectLicenseFile, $licenseScopeFile, $projectNoticeFile, $thirdPartyNoticesFile)
 foreach ($path in $requiredOutputs) {
     if (-not (Test-Path -LiteralPath $path)) {
         throw "Missing build output: $path"
@@ -360,15 +361,11 @@ $managedRootEntries = @(
     'export_diagnostics.ps1',
     'runtime',
     'srf_ime_setup.exe',
-    'srf_ime_settings.exe',
-    'srf_ime_settings.exe.manifest',
-    'srf_ime_tray.exe',
-    'srf_ime_tray.exe.manifest',
+    'srf_ime_desktop.exe',
+    'srf_ime_desktop.exe.manifest',
+    'model-data',
     'srf_ime_engine.exe',
-    'srf_ime_clipboard.exe',
     'srf_ime_clipboard_svc.exe',
-    'srf_ime_handwrite.exe',
-    'srf_ime_symbols.exe',
     'user_data_manifest.json',
     'LICENSE',
     'LICENSE_SCOPE.md',
@@ -377,9 +374,6 @@ $managedRootEntries = @(
     'THIRD_PARTY_NOTICES.md',
     $lexiconDir.Name
 )
-if ($IncludeOcr) {
-    $managedRootEntries += 'srf_ime_ocr.exe'
-}
 if (Test-Path -LiteralPath $fontDir) {
     $managedRootEntries += 'font1'
 }
@@ -413,20 +407,18 @@ Copy-FileIfChanged -SourcePath $x86TipDll -DestinationPath (Join-Path $runtimeOu
 Copy-FileIfChanged -SourcePath $overlayExe -DestinationPath (Join-Path $runtimeOutputX64 'srf_ime_overlay.exe')
 Copy-FileIfChanged -SourcePath $x86OverlayExe -DestinationPath (Join-Path $runtimeOutputX86 'srf_ime_overlay.exe')
 Copy-FileIfChanged -SourcePath $setupExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_setup.exe')
-Copy-FileIfChanged -SourcePath $settingsExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_settings.exe')
-Copy-FileIfChanged -SourcePath $settingsManifest -DestinationPath (Join-Path $OutputRoot 'srf_ime_settings.exe.manifest')
-Copy-FileIfChanged -SourcePath $trayExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_tray.exe')
-Copy-FileIfChanged -SourcePath $trayManifest -DestinationPath (Join-Path $OutputRoot 'srf_ime_tray.exe.manifest')
-Copy-FileIfChanged -SourcePath $engineExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_engine.exe')
-Copy-FileIfChanged -SourcePath $clipboardExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard.exe')
-Copy-FileIfChanged -SourcePath $clipboardSvcExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard_svc.exe')
-Copy-FileIfChanged -SourcePath $handwriteExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_handwrite.exe')
-Copy-FileIfChanged -SourcePath $symbolsExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_symbols.exe')
-if ($IncludeOcr) {
-    Copy-FileIfChanged -SourcePath $ocrExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_ocr.exe')
-} else {
-    Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_ocr.exe')
+$modelOutput = Join-Path $OutputRoot 'model-data'
+Remove-ItemWithRetry -Path $modelOutput
+New-Item -ItemType Directory -Path $modelOutput -Force | Out-Null
+foreach ($name in $modelFiles) {
+    $fileName = $modelEntries[$name]
+    Copy-FileIfChanged -SourcePath (Join-Path $modelSource $fileName) -DestinationPath (Join-Path $modelOutput $fileName)
 }
+Copy-FileIfChanged -SourcePath $modelManifest -DestinationPath (Join-Path $modelOutput 'manifest.sha256')
+Copy-FileIfChanged -SourcePath $desktopExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_desktop.exe')
+Copy-FileIfChanged -SourcePath $desktopManifest -DestinationPath (Join-Path $OutputRoot 'srf_ime_desktop.exe.manifest')
+Copy-FileIfChanged -SourcePath $engineExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_engine.exe')
+Copy-FileIfChanged -SourcePath $clipboardSvcExe -DestinationPath (Join-Path $OutputRoot 'srf_ime_clipboard_svc.exe')
 Remove-ItemWithRetry -Path (Join-Path $OutputRoot 'srf_ime_translate.exe')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'restart_stale_hosts.ps1') -DestinationPath (Join-Path $OutputRoot 'restart_stale_hosts.ps1')
 Copy-PowerShellScriptUtf8Bom -SourcePath (Join-Path $PSScriptRoot 'export_diagnostics.ps1') -DestinationPath (Join-Path $OutputRoot 'export_diagnostics.ps1')
@@ -531,7 +523,7 @@ if ($PreparedLexiconDir) {
     } else {
         Push-Location -LiteralPath $RepoRoot
         try {
-            & cargo run --locked --release -p kaixin-release -- pack-lexicons $lexiconTarget
+            & cargo xtask pack-lexicons $lexiconTarget
         } finally {
             Pop-Location
         }

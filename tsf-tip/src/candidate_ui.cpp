@@ -167,14 +167,15 @@ STDMETHODIMP CSrfCandidateListUIElement::GetPageIndex(UINT* pIndex, UINT uSize, 
 
 STDMETHODIMP CSrfCandidateListUIElement::SetPageIndex(UINT* pIndex, UINT uPageCnt) {
   if (!m_tip || !pIndex || uPageCnt == 0) return E_INVALIDARG;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return S_OK;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return S_OK;
   OnCandidateInteractionStarted();
   const UINT requestedPage = std::min(uPageCnt - 1, m_tip->CandidatePageForIndex(pIndex[0]));
-  m_tip->m_candPage = std::min(requestedPage, m_tip->MaxCandidatePage());
-  const UINT pageStart = m_tip->CandidatePageStart(m_tip->m_candPage);
-  const UINT pageEndExclusive = m_tip->CandidatePageEndExclusive(m_tip->m_candPage);
-  if (m_tip->m_candSel < pageStart || m_tip->m_candSel >= pageEndExclusive) {
-    m_tip->m_candSel = pageStart;
+  m_tip->m_candidateView.candPage = std::min(requestedPage, m_tip->MaxCandidatePage());
+  const UINT pageStart = m_tip->CandidatePageStart(m_tip->m_candidateView.candPage);
+  const UINT pageEndExclusive = m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage);
+  if (m_tip->m_candidateView.candSel < pageStart ||
+      m_tip->m_candidateView.candSel >= pageEndExclusive) {
+    m_tip->m_candidateView.candSel = pageStart;
   }
   m_tip->ClampCandidateState();
   m_tip->SyncCandidateContextState();
@@ -184,16 +185,16 @@ STDMETHODIMP CSrfCandidateListUIElement::SetPageIndex(UINT* pIndex, UINT uPageCn
 
 STDMETHODIMP CSrfCandidateListUIElement::GetCurrentPage(UINT* puPage) {
   if (!puPage) return E_POINTER;
-  *puPage = m_tip ? m_tip->m_candPage : 0;
+  *puPage = m_tip ? m_tip->m_candidateView.candPage : 0;
   return S_OK;
 }
 
 STDMETHODIMP CSrfCandidateListUIElement::SetSelection(UINT nIndex) {
   if (!m_tip) return E_FAIL;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return S_OK;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return S_OK;
   if (nIndex >= m_tip->m_context.candidates.items.size()) return E_INVALIDARG;
   OnCandidateInteractionStarted();
-  m_tip->m_candSel = nIndex;
+  m_tip->m_candidateView.candSel = nIndex;
   m_tip->ClampCandidateState();
   m_tip->SyncCandidateContextState();
   m_tip->RedrawCandidateUi();
@@ -202,7 +203,7 @@ STDMETHODIMP CSrfCandidateListUIElement::SetSelection(UINT nIndex) {
 
 STDMETHODIMP CSrfCandidateListUIElement::Finalize() {
   if (!m_tip) return E_FAIL;
-  return m_tip->RequestCommitCandidate(m_tip->m_candSel);
+  return m_tip->RequestCommitCandidate(m_tip->m_candidateView.candSel);
 }
 
 STDMETHODIMP CSrfCandidateListUIElement::Abort() {
@@ -212,37 +213,39 @@ STDMETHODIMP CSrfCandidateListUIElement::Abort() {
 }
 
 void CSrfCandidateListUIElement::OnCandidateInteractionStarted() {
-  if (m_tip && m_tip->m_candidatesReading == m_tip->m_reading) {
+  if (m_tip && m_tip->m_candidateView.candidatesReading == m_tip->m_compositionState.reading) {
     // Mouse-down is already an interaction, even if the selected index is 0.
     // Freeze the selectable snapshot before an asynchronous batch can arrive.
-    ++m_tip->m_candidateInteractionVersion;
+    ++m_tip->m_candidateView.candidateInteractionVersion;
   }
 }
 
 void CSrfCandidateListUIElement::OnCandidateClicked(UINT indexInPage) {
   if (!m_tip) return;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return;
   const size_t idx =
-      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
-  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
-  m_tip->m_candSel = static_cast<UINT>(idx);
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candidateView.candPage)) + indexInPage;
+  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage)) return;
+  m_tip->m_candidateView.candSel = static_cast<UINT>(idx);
   (void)m_tip->RequestCommitCandidate(idx);
 }
 
 void CSrfCandidateListUIElement::OnCandidateSelected(UINT indexInPage) {
-  if (!m_tip || m_tip->m_candidatesReading != m_tip->m_reading) return;
-  const UINT index = m_tip->CandidatePageStart(m_tip->m_candPage) + indexInPage;
-  if (index < m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) (void)SetSelection(index);
+  if (!m_tip || m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading)
+    return;
+  const UINT index = m_tip->CandidatePageStart(m_tip->m_candidateView.candPage) + indexInPage;
+  if (index < m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage))
+    (void)SetSelection(index);
 }
 
 void CSrfCandidateListUIElement::OnCandidateRightClicked(UINT indexInPage, POINT screenPoint) {
   (void)screenPoint;
   if (!m_tip) return;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return;
   const size_t idx =
-      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
-  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
-  m_tip->m_candSel = static_cast<UINT>(idx);
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candidateView.candPage)) + indexInPage;
+  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage)) return;
+  m_tip->m_candidateView.candSel = static_cast<UINT>(idx);
   m_tip->ClampCandidateState();
   m_tip->SyncCandidateContextState();
   m_tip->RedrawCandidateUi();
@@ -250,51 +253,52 @@ void CSrfCandidateListUIElement::OnCandidateRightClicked(UINT indexInPage, POINT
 
 void CSrfCandidateListUIElement::OnCandidatePinRequested(UINT indexInPage, bool pinned) {
   if (!m_tip) return;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return;
   const size_t idx =
-      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
-  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
-  m_tip->m_candSel = static_cast<UINT>(idx);
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candidateView.candPage)) + indexInPage;
+  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage)) return;
+  m_tip->m_candidateView.candSel = static_cast<UINT>(idx);
   m_tip->ApplyCandidatePinChoice(idx, pinned);
 }
 
 void CSrfCandidateListUIElement::OnCandidateMenuCommand(UINT indexInPage, int command) {
   if (!m_tip) return;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return;
   const size_t idx =
-      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candPage)) + indexInPage;
-  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candPage)) return;
-  m_tip->m_candSel = static_cast<UINT>(idx);
+      static_cast<size_t>(m_tip->CandidatePageStart(m_tip->m_candidateView.candPage)) + indexInPage;
+  if (idx >= m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage)) return;
+  m_tip->m_candidateView.candSel = static_cast<UINT>(idx);
   m_tip->ApplyCandidateMenuCommand(idx, command);
 }
 
 void CSrfCandidateListUIElement::OnCandidateWheel(int wheelDelta) {
   if (!m_tip || m_tip->m_context.candidates.items.empty()) return;
-  if (m_tip->m_candidatesReading != m_tip->m_reading) return;
+  if (m_tip->m_candidateView.candidatesReading != m_tip->m_compositionState.reading) return;
 
   if (m_tip->m_uiStyle.pagingOnScroll) {
-    const UINT offset = m_tip->CandidateIndexInPage(m_tip->m_candSel);
+    const UINT offset = m_tip->CandidateIndexInPage(m_tip->m_candidateView.candSel);
     if (wheelDelta > 0) {
-      if (m_tip->m_candPage > 0) --m_tip->m_candPage;
+      if (m_tip->m_candidateView.candPage > 0) --m_tip->m_candidateView.candPage;
     } else if (wheelDelta < 0) {
-      if (m_tip->m_candPage >= m_tip->MaxCandidatePage() &&
-          m_tip->RequestMoreCandidatesForPage(m_tip->m_candPage + 1)) {
+      if (m_tip->m_candidateView.candPage >= m_tip->MaxCandidatePage() &&
+          m_tip->RequestMoreCandidatesForPage(m_tip->m_candidateView.candPage + 1)) {
         return;
       }
-      if (m_tip->m_candPage < m_tip->MaxCandidatePage()) ++m_tip->m_candPage;
+      if (m_tip->m_candidateView.candPage < m_tip->MaxCandidatePage())
+        ++m_tip->m_candidateView.candPage;
     }
-    const UINT pageStart = m_tip->CandidatePageStart(m_tip->m_candPage);
-    const UINT pageEndExclusive = m_tip->CandidatePageEndExclusive(m_tip->m_candPage);
-    m_tip->m_candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+    const UINT pageStart = m_tip->CandidatePageStart(m_tip->m_candidateView.candPage);
+    const UINT pageEndExclusive = m_tip->CandidatePageEndExclusive(m_tip->m_candidateView.candPage);
+    m_tip->m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
   } else {
     if (wheelDelta > 0) {
-      if (m_tip->m_candSel > 0) --m_tip->m_candSel;
+      if (m_tip->m_candidateView.candSel > 0) --m_tip->m_candidateView.candSel;
     } else if (wheelDelta < 0) {
-      if (m_tip->RequestMoreCandidatesForIndex(m_tip->m_candSel + 1)) {
+      if (m_tip->RequestMoreCandidatesForIndex(m_tip->m_candidateView.candSel + 1)) {
         return;
       }
-      if (m_tip->m_candSel + 1 < m_tip->m_context.candidates.items.size()) {
-        ++m_tip->m_candSel;
+      if (m_tip->m_candidateView.candSel + 1 < m_tip->m_context.candidates.items.size()) {
+        ++m_tip->m_candidateView.candSel;
       }
     }
   }
@@ -589,13 +593,13 @@ void CSrfCandidateListUIElement::RefreshWindow() {
                        ? TRUE
                        : FALSE;
   if (!m_tip || m_tip->ShouldHideUiForCompatibility() || !m_showWindow ||
-      !m_tip->m_hasLastCandidateRect || !m_tip->m_status.composing ||
+      !m_tip->m_anchor.hasLastCandidateRect || !m_tip->m_status.composing ||
       m_tip->m_context.candidates.Empty()) {
     const bool fullscreenShowUi =
         m_tip && m_tip->m_fullscreenCompatActive &&
         m_tip->EffectiveCompatibilityPolicy() == SrfFullscreenPolicy::ShowUi;
     if (fullscreenShowUi && m_tip->m_status.composing && !m_tip->m_context.candidates.Empty() &&
-        m_showWindow && !m_tip->m_hasLastCandidateRect) {
+        m_showWindow && !m_tip->m_anchor.hasLastCandidateRect) {
       m_tip->RecordCompatibilityUiFallback(L"CandidateAnchorMissing", E_FAIL);
     }
     std::wstring line = L"tip=";
@@ -607,7 +611,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
     line += L", showWindow=";
     line += m_showWindow ? L"1" : L"0";
     line += L", hasAnchor=";
-    line += (m_tip && m_tip->m_hasLastCandidateRect) ? L"1" : L"0";
+    line += (m_tip && m_tip->m_anchor.hasLastCandidateRect) ? L"1" : L"0";
     line += L", composing=";
     line += (m_tip && m_tip->m_status.composing) ? L"1" : L"0";
     line += L", candidateEmpty=";
@@ -645,7 +649,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   const auto& displayItems = m_tip->BuildCandidateDisplayItems();
   m_window.SetPerfLogging(SrfTsfPerfLogEnabled());
   m_tip->m_notificationWindow.Hide();
-  const RECT& anchor = m_tip->m_lastCandidateRect;
+  const RECT& anchor = m_tip->m_anchor.lastCandidateRect;
   const SrfUIStyle st = m_tip->EffectiveCandidateUiStyle();
   const bool gameOverlay = m_tip->CandidateGameOverlayActive();
   const bool fullscreenOverlay = m_tip->FullscreenCandidateOverlayActive();
@@ -755,10 +759,10 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   }
 
   const CandidatePageLayoutMetrics& layout = m_cachedLayout;
-  const UINT clampedPage =
-      layout.pageStarts.empty()
-          ? 0u
-          : std::min(m_tip->m_candPage, static_cast<UINT>(layout.pageStarts.size() - 1));
+  const UINT clampedPage = layout.pageStarts.empty()
+                               ? 0u
+                               : std::min(m_tip->m_candidateView.candPage,
+                                          static_cast<UINT>(layout.pageStarts.size() - 1));
   const UINT start = layout.pageStarts.empty() ? 0u : layout.pageStarts[clampedPage];
   const UINT end = clampedPage + 1 < layout.pageStarts.size()
                        ? layout.pageStarts[clampedPage + 1]
@@ -767,7 +771,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   const bool samePageData = m_pageDataCacheValid &&
                             m_cachedPageDataVersion == m_tip->CandidateDisplayVersion() &&
                             m_cachedPageDataStart == start && m_cachedPageDataEnd == end &&
-                            m_cachedPageDataSelected == m_tip->m_candSel &&
+                            m_cachedPageDataSelected == m_tip->m_candidateView.candSel &&
                             m_cachedPageDataHorizontal == st.candidateHorizontal &&
                             m_cachedPageDataClipboardPanel == clipboardPanel;
   std::vector<std::wstring> pageItems;
@@ -807,7 +811,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
                                          : (i < m_tip->m_context.candidates.items.size()
                                                 ? m_tip->m_context.candidates.items[i].str
                                                 : std::wstring()));
-      const bool selectedItem = i == m_tip->m_candSel;
+      const bool selectedItem = i == m_tip->m_candidateView.candSel;
       if (selectedItem && !clipboardItem) {
         pageItems.back() = m_tip->FormatCandidateDisplayText(i);
       }
@@ -833,7 +837,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
     m_cachedPageDataVersion = m_tip->CandidateDisplayVersion();
     m_cachedPageDataStart = start;
     m_cachedPageDataEnd = end;
-    m_cachedPageDataSelected = m_tip->m_candSel;
+    m_cachedPageDataSelected = m_tip->m_candidateView.candSel;
     m_cachedPageDataHorizontal = st.candidateHorizontal;
     m_cachedPageDataClipboardPanel = clipboardPanel;
     m_cachedPageDataHasClipboardPage = hasClipboardPage;
@@ -843,7 +847,9 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   }
 
   const UINT selectedInPage =
-      (m_tip->m_candSel >= start && m_tip->m_candSel < end) ? (m_tip->m_candSel - start) : 0u;
+      (m_tip->m_candidateView.candSel >= start && m_tip->m_candidateView.candSel < end)
+          ? (m_tip->m_candidateView.candSel - start)
+          : 0u;
   const UINT totalPages = std::max(1u, static_cast<UINT>(layout.pageStarts.size()));
   // CCandidateWindow stores the current page as a zero-based index. Clipboard
   // metadata is user-facing (1-based), so normalize it at this boundary.
@@ -886,10 +892,10 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       m_cachedRenderInteractive == interactive && m_cachedRenderPendingVisual == pendingVisual &&
       m_cachedRenderPage == renderPage && m_cachedRenderTotalPages == renderTotalPages &&
       m_cachedRenderSelected == selectedInPage &&
-      m_cachedRenderAnchor.left == m_tip->m_lastCandidateRect.left &&
-      m_cachedRenderAnchor.top == m_tip->m_lastCandidateRect.top &&
-      m_cachedRenderAnchor.right == m_tip->m_lastCandidateRect.right &&
-      m_cachedRenderAnchor.bottom == m_tip->m_lastCandidateRect.bottom;
+      m_cachedRenderAnchor.left == m_tip->m_anchor.lastCandidateRect.left &&
+      m_cachedRenderAnchor.top == m_tip->m_anchor.lastCandidateRect.top &&
+      m_cachedRenderAnchor.right == m_tip->m_anchor.lastCandidateRect.right &&
+      m_cachedRenderAnchor.bottom == m_tip->m_anchor.lastCandidateRect.bottom;
   if (sameRender && !wantsExternalOverlay && m_window.IsVisible()) {
     SrfTsfPerfLog(L"candidate-window.skip", L"render state unchanged");
     return;
@@ -917,8 +923,9 @@ void CSrfCandidateListUIElement::RefreshWindow() {
     HWND targetHwnd = m_tip->CandidateOverlayTargetWindow();
     DWORD targetProcessId = 0;
     if (targetHwnd) GetWindowThreadProcessId(targetHwnd, &targetProcessId);
-    ITfContext* focusContext =
-        m_tip->m_pCompositionContext ? m_tip->m_pCompositionContext : m_tip->m_pFocusContext;
+    ITfContext* focusContext = m_tip->m_compositionState.pCompositionContext
+                                   ? m_tip->m_compositionState.pCompositionContext
+                                   : m_tip->m_pFocusContext;
     const SrfFocusSnapshot focus = m_tip->CaptureFocusSnapshot(focusContext);
     if (targetHwnd && targetProcessId != 0 && m_tip->FocusSnapshotMatches(focus)) {
       SrfCandidateOverlaySnapshot snapshot = {};
@@ -931,8 +938,8 @@ void CSrfCandidateListUIElement::RefreshWindow() {
       snapshot.horizontalCompact = st.candidateHorizontalCompact;
       snapshot.anchorPhysical = anchorPhysical;
       snapshot.caretAnchor = !gameOverlay || st.candidateOverlayAnchor == SrfOverlayAnchor::Caret ||
-                             m_tip->m_lastCandidateAnchorQuality >= 3 ||
-                             m_tip->m_lastCandidateAnchorSource == L"game-cursor";
+                             m_tip->m_anchor.lastCandidateAnchorQuality >= 3 ||
+                             m_tip->m_anchor.lastCandidateAnchorSource == L"game-cursor";
       snapshot.fieldWidthDip = st.candidateFieldWidthDip;
       snapshot.targetProcessId = targetProcessId;
       snapshot.targetHwnd = targetHwnd;
@@ -984,7 +991,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   } else {
     if (!externalAccepted) HideExternalOverlay();
     m_window.Show(title, pageItems, pageComments, pageLabels, pagePinnedItems, pageClipboardItems,
-                  renderPage, renderTotalPages, selectedInPage, m_tip->m_lastCandidateRect,
+                  renderPage, renderTotalPages, selectedInPage, m_tip->m_anchor.lastCandidateRect,
                   modeTags, interactive, pendingVisual);
   }
   m_cachedStyle = st;
@@ -998,7 +1005,7 @@ void CSrfCandidateListUIElement::RefreshWindow() {
   m_cachedRenderModeTags = std::move(modeTags);
   m_cachedRenderInteractive = interactive;
   m_cachedRenderPendingVisual = pendingVisual;
-  m_cachedRenderAnchor = m_tip->m_lastCandidateRect;
+  m_cachedRenderAnchor = m_tip->m_anchor.lastCandidateRect;
   m_cachedRenderPage = renderPage;
   m_cachedRenderTotalPages = renderTotalPages;
   m_cachedRenderSelected = selectedInPage;

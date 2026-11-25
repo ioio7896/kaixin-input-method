@@ -1,0 +1,217 @@
+use crate::model_resources::{MappedResource, BIGRAM_ENTRY_BYTES};
+use crate::text_norm::strip_bom_str;
+use std::collections::{HashMap, HashSet};
+use std::ops::Range;
+use std::sync::{Arc, Mutex};
+
+#[derive(Clone)]
+pub struct Lm {
+    vocab: HashSet<char>,
+    v_size: f64,
+    alpha: f64,
+    u_total: f64,
+    u_count: HashMap<char, usize>,
+    /// Precomputed log-unigram for every observed char.  Avoids `ln()` in the
+    /// hot decode path.
+    u_logprob: HashMap<char, f64>,
+    /// Observed bigram log-probabilities, precomputed at build time.
+    bigram_logprob: BigramTable,
+    /// Fallback log-bigram for unobserved (prev, c) pairs — depends only on
+    /// `prev`, so one precomputed value per observed predecessor.
+    bigram_unobserved_fallback: HashMap<char, f64>,
+    /// Character pools are queried repeatedly by the incremental and word
+    /// graph decoders. Cache their unigram order so every keystroke does not
+    /// clone and sort the same pool again.
+    ranked_char_cache: Arc<Mutex<HashMap<Vec<char>, Arc<[char]>>>>,
+}
+
+#[derive(Clone)]
+enum BigramTable {
+    Owned(HashMap<(char, char), f64>),
+    Mapped {
+        model: Arc<MappedResource>,
+        range: Range<usize>,
+    },
+}
+
+impl BigramTable {
+    fn get(&self, prev: char, next: char) -> Option<f64> {
+        match self {
+            Self::Owned(entries) => entries.get(&(prev, next)).copied(),
+            Self::Mapped { model, range } => {
+                let (rows, _) = model[range.clone()].as_chunks::<BIGRAM_ENTRY_BYTES>();
+                let needle = (prev as u32, next as u32);
+                let index = rows
+                    .binary_search_by_key(&needle, |row| {
+                        (
+                            u32::from_le_bytes(row[..4].try_into().unwrap()),
+                            u32::from_le_bytes(row[4..8].try_into().unwrap()),
+                        )
+                    })
+                    .ok()?;
+                Some(f64::from_le_bytes(rows[index][8..].try_into().unwrap()))
+            }
+        }
+    }
+}
+
+impl Lm {
+    pub fn from_corpus(corpus: &str, vocab: &HashSet<char>) -> Self {
+        let mut u_count: HashMap<char, usize> = HashMap::new();
+        let mut b_count: HashMap<(char, char), usize> = HashMap::new();
+        for line in corpus.lines() {
+            let line = strip_bom_str(line);
+            let chars: Vec<char> = line.chars().filter(|c| vocab.contains(c)).collect();
+            for &c in &chars {
+                *u_count.entry(c).or_insert(0) += 1;
+            }
+            for window in chars.windows(2) {
+                *b_count.entry((window[0], window[1])).or_insert(0) += 1;
+            }
+        }
+        Self::from_counts(vocab.clone(), u_count, b_count)
+    }
+
+    pub fn from_counts(
+        vocab: HashSet<char>,
+        u_count: HashMap<char, usize>,
+        b_count: HashMap<(char, char), usize>,
+    ) -> Self {
+        let smoothing = Self::smoothing_mass(vocab.len());
+        let bigrams = b_count
+            .into_iter()
+            .map(|((prev, next), count)| {
+                let predecessor_count = u_count.get(&prev).copied().unwrap_or(0);
+                (
+                    (prev, next),
+                    Self::observed_bigram_logprob(count, predecessor_count, smoothing),
+                )
+            })
+            .collect();
+        Self::from_table(vocab, u_count, BigramTable::Owned(bigrams))
+    }
+
+    pub(crate) fn from_mapped_bigrams(
+        vocab: HashSet<char>,
+        unigrams: HashMap<char, usize>,
+        model: Arc<MappedResource>,
+        range: Range<usize>,
+    ) -> Self {
+        Self::from_table(vocab, unigrams, BigramTable::Mapped { model, range })
+    }
+
+    pub fn smoothing_mass(vocab_size: usize) -> f64 {
+        0.01 * vocab_size.max(1) as f64
+    }
+
+    pub fn observed_bigram_logprob(count: usize, predecessor_count: usize, smoothing: f64) -> f64 {
+        ((count as f64 + 0.01) / (predecessor_count as f64 + smoothing).max(1e-12)).ln()
+    }
+
+    fn from_table(
+        vocab: HashSet<char>,
+        u_count: HashMap<char, usize>,
+        bigram_logprob: BigramTable,
+    ) -> Self {
+        let alpha = 0.01_f64;
+        let v_size = vocab.len().max(1) as f64;
+        let u_total: f64 = u_count.values().map(|&count| count as f64).sum();
+
+        // Precompute unigram log-probabilities for every observed character.
+        let denom = u_total + alpha * v_size;
+        let u_logprob: HashMap<char, f64> = u_count
+            .iter()
+            .map(|(&c, &cnt)| {
+                let prob = (cnt as f64 + alpha) / denom;
+                (c, prob.ln())
+            })
+            .collect();
+
+        // For unobserved (prev, c) pairs: P(c|prev) ≈ alpha / (count(prev) + alpha·V).
+        let bigram_unobserved_fallback: HashMap<char, f64> = u_count
+            .iter()
+            .map(|(&prev, &cnt)| {
+                let prev_cnt = cnt as f64 + alpha * v_size;
+                (prev, (alpha / prev_cnt.max(1e-12)).ln())
+            })
+            .collect();
+
+        Self {
+            vocab,
+            v_size,
+            alpha,
+            u_total,
+            u_count,
+            u_logprob,
+            bigram_logprob,
+            bigram_unobserved_fallback,
+            ranked_char_cache: Arc::new(Mutex::new(HashMap::new())),
+        }
+    }
+
+    #[inline]
+    pub fn log_unigram(&self, c: char) -> f64 {
+        if !self.vocab.contains(&c) {
+            return -25.0;
+        }
+        self.u_logprob.get(&c).copied().unwrap_or_else(|| {
+            // Character is in vocab but unobserved in corpus — fall back to
+            // the Laplace-smoothed minimum.
+            let prob = self.alpha / (self.u_total + self.alpha * self.v_size);
+            prob.ln()
+        })
+    }
+
+    #[inline]
+    pub fn log_bigram(&self, prev: char, c: char) -> f64 {
+        if !self.vocab.contains(&c) {
+            return -25.0;
+        }
+        // Fast path: observed bigram → precomputed log-prob.
+        if let Some(logprob) = self.bigram_logprob.get(prev, c) {
+            return logprob;
+        }
+        // Fallback: unobserved pair → precomputed per-prev floor, or compute
+        // once for unseen predecessors.
+        if let Some(&fallback) = self.bigram_unobserved_fallback.get(&prev) {
+            return fallback;
+        }
+        let prev_cnt = *self.u_count.get(&prev).unwrap_or(&0) as f64 + self.alpha * self.v_size;
+        (self.alpha / prev_cnt.max(1e-12)).ln()
+    }
+
+    pub fn rank_chars_by_unigram_with_limit(&self, chars: &[char], limit: usize) -> Vec<char> {
+        if chars.is_empty() || limit == 0 {
+            return Vec::new();
+        }
+        let key = chars.to_vec();
+        if let Ok(cache) = self.ranked_char_cache.lock() {
+            if let Some(ranked) = cache.get(&key) {
+                return ranked.iter().take(limit).copied().collect();
+            }
+        }
+
+        let mut ranked = key.clone();
+        ranked.sort_by(|a, b| {
+            self.log_unigram(*b)
+                .partial_cmp(&self.log_unigram(*a))
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.cmp(b))
+        });
+        let ranked: Arc<[char]> = Arc::from(ranked);
+        if let Ok(mut cache) = self.ranked_char_cache.lock() {
+            // The syllable dictionary is small, but custom test/runtime
+            // dictionaries can contain arbitrary pools. Bound memory without
+            // adding an LRU dependency to the language model.
+            if cache.len() >= 512 {
+                cache.clear();
+            }
+            cache.insert(key, Arc::clone(&ranked));
+        }
+        ranked.iter().take(limit).copied().collect()
+    }
+
+    pub fn rank_chars_by_unigram(&self, chars: &[char]) -> Vec<char> {
+        self.rank_chars_by_unigram_with_limit(chars, 64)
+    }
+}

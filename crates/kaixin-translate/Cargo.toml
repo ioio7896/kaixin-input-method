@@ -1,0 +1,16 @@
+[package]
+name = "kaixin-translate"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[dependencies]
+kaixin-platform = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+fs2 = { workspace = true }
+sha2 = { workspace = true }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { workspace = true }
+clipboard-win = { workspace = true }

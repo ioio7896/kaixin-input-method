@@ -68,6 +68,14 @@ pub fn engine_pipe_name_for_install_root(path: &Path) -> String {
     engine_pipe_name_for_suffix(&engine_instance_suffix_for_install_root(path))
 }
 
+pub fn sandbox_engine_pipe_name(pipe_name: &str) -> String {
+    if pipe_name.ends_with("_Sandbox") {
+        pipe_name.to_string()
+    } else {
+        format!("{pipe_name}_Sandbox")
+    }
+}
+
 pub fn engine_mutex_name_for_install_root(path: &Path) -> String {
     engine_mutex_name_for_suffix(&engine_instance_suffix_for_install_root(path))
 }
@@ -86,6 +94,12 @@ mod engine_namespace_tests {
         assert_eq!(
             engine_scoped_name(base, "2026.1105.1", ""),
             format!("{base}_2026.1105.1")
+        );
+        let pipe = engine_scoped_name(base, "2026.1105.1", "1234");
+        assert_eq!(sandbox_engine_pipe_name(&pipe), format!("{pipe}_Sandbox"));
+        assert_eq!(
+            sandbox_engine_pipe_name(&sandbox_engine_pipe_name(&pipe)),
+            format!("{pipe}_Sandbox")
         );
     }
 }

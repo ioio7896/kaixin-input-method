@@ -123,16 +123,12 @@ PACKAGE_VARIANT_ALIASES: dict[str, str] = {
 PACKAGE_BUILD_TOOL_RUST_ARTIFACTS = ("bake_lexicon.exe", "input_perf.exe", "input_eval.exe")
 BASE_STAGED_RUST_ARTIFACTS = (
     "srf_ime_setup.exe",
-    "srf_ime_settings.exe",
-    "srf_ime_tray.exe",
+    "srf_ime_desktop.exe",
     "srf_ime_engine.exe",
-    "srf_ime_clipboard.exe",
     "srf_ime_clipboard_svc.exe",
-    "srf_ime_handwrite.exe",
-    "srf_ime_symbols.exe",
 )
 BASE_PACKAGE_RUST_ARTIFACTS = PACKAGE_BUILD_TOOL_RUST_ARTIFACTS + BASE_STAGED_RUST_ARTIFACTS
-OPTIONAL_OCR_RUST_ARTIFACTS = ("srf_ime_ocr.exe",)
+OPTIONAL_OCR_RUST_ARTIFACTS: tuple[str, ...] = ()
 SMOKE_RUST_ARTIFACTS = ("input_smoke.exe", "input_eval.exe")
 PERF_RUST_ARTIFACT = "input_perf.exe"
 DEV_TOOL_RUST_BINS = {

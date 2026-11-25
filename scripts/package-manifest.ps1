@@ -36,7 +36,8 @@ function Write-PackageHashManifest {
         [void]$lines.Add(('{0} *{1}' -f $hash, $relative))
     }
 
-    Set-Content -LiteralPath $manifestPath -Value ([string[]]$lines) -Encoding UTF8
+    # Windows PowerShell's UTF8 encoding adds a BOM that the Rust reader rejects.
+    [IO.File]::WriteAllLines($manifestPath, [string[]]$lines)
 }
 
 function Get-StringSha256Hex {
@@ -83,11 +84,12 @@ function Write-ComponentManifestFromPackageManifest {
         }
         [void]$output.Add(('{0}={1}' -f $entry.Key, $componentId))
     }
-    Set-Content -LiteralPath $componentManifestPath -Value ([string[]]$output) -Encoding UTF8
+    [IO.File]::WriteAllLines($componentManifestPath, [string[]]$output)
 
     $relative = [System.IO.Path]::GetFileName($componentManifestPath)
     $componentHash = Get-Sha256Hex -Path $componentManifestPath
-    Add-Content -LiteralPath $packageManifestPath -Value ('{0} *{1}' -f $componentHash, $relative) -Encoding UTF8
+    $componentLine = '{0} *{1}' -f $componentHash, $relative
+    [IO.File]::AppendAllText($packageManifestPath, $componentLine + [Environment]::NewLine)
 }
 
 function Write-StageManifests {

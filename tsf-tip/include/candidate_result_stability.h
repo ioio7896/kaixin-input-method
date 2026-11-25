@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "candidate_limits.h"
+#include "candidate_metadata.h"
 
 namespace srf_candidate_stability {
 
@@ -60,14 +61,19 @@ inline std::wstring RemovePartialMetaFlag(const std::wstring& raw) {
   return out;
 }
 
+inline CandidateMetaParts RemovePartialMetaFlag(CandidateMetaParts meta) {
+  meta.partialResult = false;
+  return meta;
+}
+
 // The partial batch is already interactive: number keys and mouse clicks refer
 // to its visible positions.  Preserve those positions when the completed batch
 // arrives, while still appending newly discovered completed candidates.
+template <typename Meta>
 inline bool StabilizeCompletedBatch(const std::vector<std::wstring>& currentCandidates,
-                                    const std::vector<std::wstring>& currentMeta,
+                                    const std::vector<Meta>& currentMeta,
                                     std::vector<std::wstring>* completedCandidates,
-                                    std::vector<std::wstring>* completedMeta,
-                                    size_t candidateLimit) {
+                                    std::vector<Meta>* completedMeta, size_t candidateLimit) {
   if (!completedCandidates || !completedMeta || currentCandidates.empty() ||
       completedCandidates->empty() || candidateLimit == 0) {
     return false;
@@ -75,12 +81,12 @@ inline bool StabilizeCompletedBatch(const std::vector<std::wstring>& currentCand
   (void)currentMeta;
 
   const std::vector<std::wstring> incomingCandidates = std::move(*completedCandidates);
-  std::vector<std::wstring> incomingMeta = std::move(*completedMeta);
+  std::vector<Meta> incomingMeta = std::move(*completedMeta);
   incomingMeta.resize(incomingCandidates.size());
   std::vector<bool> incomingUsed(incomingCandidates.size(), false);
 
   std::vector<std::wstring> stableCandidates;
-  std::vector<std::wstring> stableMeta;
+  std::vector<Meta> stableMeta;
   stableCandidates.reserve(
       std::min(candidateLimit, currentCandidates.size() + incomingCandidates.size()));
   stableMeta.reserve(stableCandidates.capacity());
@@ -131,23 +137,23 @@ inline bool StabilizeCompletedBatch(const std::vector<std::wstring>& currentCand
 // phrases the user saw. Keep that selectable prefix stable, then append new
 // candidates from the completed batch so a one-page partial result can still
 // expose later pages after the full lookup finishes.
+template <typename Meta>
 inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandidates,
-                                   const std::vector<std::wstring>& currentMeta,
+                                   const std::vector<Meta>& currentMeta,
                                    std::vector<std::wstring>* completedCandidates,
-                                   std::vector<std::wstring>* completedMeta,
-                                   size_t candidateLimit) {
+                                   std::vector<Meta>* completedMeta, size_t candidateLimit) {
   if (!completedCandidates || !completedMeta || currentCandidates.empty() ||
       completedCandidates->empty() || candidateLimit == 0) {
     return false;
   }
 
   const std::vector<std::wstring> incomingCandidates = std::move(*completedCandidates);
-  std::vector<std::wstring> incomingMeta = std::move(*completedMeta);
+  std::vector<Meta> incomingMeta = std::move(*completedMeta);
   incomingMeta.resize(incomingCandidates.size());
 
   const size_t frozenCount = std::min(candidateLimit, currentCandidates.size());
   std::vector<std::wstring> frozenCandidates;
-  std::vector<std::wstring> frozenMeta;
+  std::vector<Meta> frozenMeta;
   frozenCandidates.reserve(
       std::min(candidateLimit, currentCandidates.size() + incomingCandidates.size()));
   frozenMeta.reserve(frozenCandidates.capacity());
@@ -166,8 +172,7 @@ inline bool FreezeInteractiveBatch(const std::vector<std::wstring>& currentCandi
       const size_t index = match->second;
       frozenMeta.push_back(RemovePartialMetaFlag(incomingMeta[index]));
     } else {
-      frozenMeta.push_back(
-          RemovePartialMetaFlag(i < currentMeta.size() ? currentMeta[i] : std::wstring()));
+      frozenMeta.push_back(RemovePartialMetaFlag(i < currentMeta.size() ? currentMeta[i] : Meta{}));
     }
   }
 

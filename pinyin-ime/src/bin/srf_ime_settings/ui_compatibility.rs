@@ -437,15 +437,25 @@ pub(super) fn game_chat_options_ui(
                 }
             });
         });
-        for (key, label, value) in [("game_auto_uia", "辅助识别输入栏", &mut chat.auto_uia),
-            ("game_status_indicator", "中文聊天状态提示", &mut chat.status_indicator)] {
-            let description = if key == "game_auto_uia" {
-                "通过应用提供的可访问性接口辅助判断输入栏是否可编辑；无法确认时使用手动聊天快捷键。"
-            } else {
-                "进入中文聊天时显示状态提示；遵守应用隐藏输入法界面的要求。"
+        for (key, label, value) in [
+            ("game_auto_uia", "辅助识别输入栏", &mut chat.auto_uia),
+            ("game_status_indicator", "中文聊天状态提示", &mut chat.status_indicator),
+            ("game_shift_toggle", "游戏直通时轻按 Shift 开关中文", &mut chat.shift_toggle),
+        ] {
+            let description = match key {
+                "game_auto_uia" => "通过应用提供的可访问性接口辅助判断输入栏是否可编辑；无法确认时使用手动聊天快捷键。",
+                "game_shift_toggle" => "关闭时仅在已进入游戏聊天框后允许轻按 Shift 切中英文，避免奔跑/下蹲误触；开启后在游戏直通状态也可轻按 Shift 直接开关中文（且始终透传 Shift 给游戏）。",
+                _ => "进入中文聊天时显示状态提示；遵守应用隐藏输入法界面的要求。",
             };
             setting_row(ui, label, description, |ui| {
-                ComboBox::from_id_salt(key).selected_text(match value.as_str() { "0" => "关闭", "inherit" => "使用全局设置", _ => "开启" })
+                let selected = match value.as_str() {
+                    "1" => "开启",
+                    "0" => "关闭",
+                    "inherit" => "使用全局设置",
+                    _ if key == "game_shift_toggle" => "关闭",
+                    _ => "开启",
+                };
+                ComboBox::from_id_salt(key).selected_text(selected)
                     .show_settings(ui, |ui| {
                         if per_app { ui.selectable_value(value, "inherit".to_string(), "使用全局设置"); }
                         ui.selectable_value(value, "1".to_string(), "开启");

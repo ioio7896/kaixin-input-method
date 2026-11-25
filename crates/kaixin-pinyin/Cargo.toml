@@ -1,0 +1,16 @@
+[package]
+name = "kaixin-pinyin"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[dependencies]
+kaixin-common = { workspace = true }
+pinyin = { workspace = true }
+rusqlite = { workspace = true }
+memmap2 = { workspace = true }
+sha2 = { workspace = true }
+
+[[bin]]
+name = "bake_model"
+path = "src/bake_model.rs"

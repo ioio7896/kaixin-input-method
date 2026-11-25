@@ -216,6 +216,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "arc-swap"
+version = "1.9.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84a22b5d51209f6de83d37a0b33d320acb8da88823e42a94c075140708f032a5"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -540,6 +549,15 @@ name = "bitflags"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
+
+[[package]]
+name = "bitmaps"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "031043d04099746d8db04daf1fa424b2bc8bd69d92b25962dcde24da39ab64a2"
+dependencies = [
+ "typenum",
+]
 
 [[package]]
 name = "block"
@@ -1252,7 +1270,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1942,6 +1960,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "im"
+version = "15.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0acd33ff0285af998aaf9b57342af478078f53492322fafc47450e09397e0e9"
+dependencies = [
+ "bitmaps",
+ "rand_core 0.6.4",
+ "rand_xoshiro",
+ "serde",
+ "sized-chunks",
+ "typenum",
+ "version_check",
+]
+
+[[package]]
 name = "image"
 version = "0.25.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2071,23 +2104,57 @@ dependencies = [
 ]
 
 [[package]]
+name = "kaixin-capture"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "fs2",
+ "image",
+ "kaixin-platform",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "windows 0.62.2",
+ "windows-sys 0.52.0",
+ "xcap",
+]
+
+[[package]]
+name = "kaixin-clipboard"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "clipboard-win",
+ "kaixin-platform",
+ "regex",
+ "serde",
+ "windows 0.62.2",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
 name = "kaixin-common"
 version = "2.0.0"
 
 [[package]]
 name = "kaixin-core"
-version = "2026.1124.1848"
+version = "2026.1125.1833"
 dependencies = [
+ "arc-swap",
  "base64",
  "bincode",
  "chrono",
  "clipboard-win",
- "egui",
  "encoding_rs",
  "flate2",
  "fs2",
- "image",
+ "im",
+ "kaixin-capture",
+ "kaixin-clipboard",
  "kaixin-common",
+ "kaixin-pinyin",
+ "kaixin-platform",
+ "kaixin-translate",
  "lru",
  "memmap2",
  "pinyin",
@@ -2098,17 +2165,62 @@ dependencies = [
  "sha2",
  "windows 0.62.2",
  "windows-sys 0.52.0",
- "xcap",
+ "zeroize",
+]
+
+[[package]]
+name = "kaixin-pinyin"
+version = "0.1.0"
+dependencies = [
+ "kaixin-common",
+ "memmap2",
+ "pinyin",
+ "rusqlite",
+ "sha2",
+]
+
+[[package]]
+name = "kaixin-platform"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "bincode",
+ "chrono",
+ "clipboard-win",
+ "encoding_rs",
+ "fs2",
+ "kaixin-common",
+ "ring",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2",
+ "windows-sys 0.52.0",
+ "zeroize",
 ]
 
 [[package]]
 name = "kaixin-release"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "encoding_rs",
  "flate2",
  "serde_json",
  "sha2",
+]
+
+[[package]]
+name = "kaixin-translate"
+version = "0.1.0"
+dependencies = [
+ "clipboard-win",
+ "fs2",
+ "kaixin-platform",
+ "serde",
+ "serde_json",
+ "sha2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3076,7 +3188,7 @@ checksum = "16f2611cd06a1ac239a0cea4521de9eb068a6ca110324ee00631aa68daa74fc0"
 
 [[package]]
 name = "pinyin-ime"
-version = "2026.1124.1848"
+version = "2026.1125.1833"
 dependencies = [
  "base64",
  "bincode",
@@ -3354,6 +3466,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand_xoshiro"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f97cdb2a36ed4183de61b2f824cc45c9f1037f28afe0a322e9fff4c108b5aaa"
+dependencies = [
+ "rand_core 0.6.4",
+]
+
+[[package]]
 name = "raw-window-handle"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3446,6 +3567,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ring"
+version = "0.17.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4689e6c2294d81e88dc6261c768b63bc4fcdb852be6d1352498b114f61383b7"
+dependencies = [
+ "cc",
+ "cfg-if",
+ "getrandom 0.2.17",
+ "libc",
+ "untrusted",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
 name = "roxmltree"
 version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3509,7 +3644,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.12.1",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -3680,6 +3815,16 @@ name = "simdutf8"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
+
+[[package]]
+name = "sized-chunks"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "16d69225bde7a69b235da73377861095455d298f2b970996eec25ddbb42b3d1e"
+dependencies = [
+ "bitmaps",
+ "typenum",
+]
 
 [[package]]
 name = "slab"
@@ -3863,7 +4008,7 @@ dependencies = [
  "getrandom 0.4.2",
  "once_cell",
  "rustix 1.1.4",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4104,7 +4249,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset",
  "tempfile",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4136,6 +4281,12 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "untrusted"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "url"
@@ -4653,7 +4804,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5532,6 +5683,12 @@ dependencies = [
  "syn 2.0.117",
  "synstructure",
 ]
+
+[[package]]
+name = "zeroize"
+version = "1.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85ccff8a4805aba1eaa4cd4afcd49f7557dd2cf5fd79ffc37f8959466effc5aa"
 
 [[package]]
 name = "zerotrie"

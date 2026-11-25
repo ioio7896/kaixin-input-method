@@ -67,6 +67,7 @@ const DOMAIN_ALIAS_RID_ADMINS: u32 = 0x0000_0220;
 
 pub const HELPER_PROCESS_NAMES: &[&str] = &[
     "srf_ime_engine.exe",
+    "srf_ime_desktop.exe",
     "srf_ime_tray.exe",
     "srf_ime_clipboard_svc.exe",
     "srf_ime_overlay.exe",
@@ -74,6 +75,7 @@ pub const HELPER_PROCESS_NAMES: &[&str] = &[
     "srf_ime_clipboard.exe",
     "srf_ime_handwrite.exe",
     "srf_ime_symbols.exe",
+    "srf_ime_keyboard.exe",
     "srf_ime_ocr.exe",
     "srf_ime_translate.exe",
     "srf_ime_translate_result.exe",
@@ -973,9 +975,9 @@ pub fn check_profile_registry(machine_scope: bool) -> String {
 
 pub fn write_tray_run_entry(install_root: &Path, log: &mut dyn FnMut(&str)) -> Result<(), String> {
     let run_key = r"Software\Microsoft\Windows\CurrentVersion\Run";
-    let tray_exe = install_root.join("srf_ime_tray.exe");
+    let tray_exe = install_root.join("srf_ime_desktop.exe");
     if tray_exe.is_file() {
-        let cmd = format!("\"{}\"", tray_exe.display());
+        let cmd = format!("\"{}\" --tool=tray", tray_exe.display());
         reg_write_sz(HKEY_CURRENT_USER, run_key, TRAY_RUN_ENTRY_NAME, &cmd)?;
     }
     reg_delete_value(HKEY_CURRENT_USER, run_key, ENGINE_RUN_ENTRY_NAME);
@@ -1000,12 +1002,13 @@ pub fn remove_tray_run_entries(log: &mut dyn FnMut(&str)) {
 }
 
 pub fn start_tray_helper(install_root: &Path, log: &mut dyn FnMut(&str)) {
-    let tray_exe = install_root.join("srf_ime_tray.exe");
+    let tray_exe = install_root.join("srf_ime_desktop.exe");
     if !tray_exe.is_file() {
-        log("WARN: srf_ime_tray.exe missing; skipped starting tray helper");
+        log("WARN: srf_ime_desktop.exe missing; skipped starting tray helper");
         return;
     }
     match Command::new(&tray_exe)
+        .arg("--tool=tray")
         .current_dir(install_root)
         .creation_flags(CREATE_NO_WINDOW)
         .stdin(Stdio::null())

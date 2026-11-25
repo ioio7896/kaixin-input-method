@@ -2139,7 +2139,7 @@ fn tools_page_ui(ui: &mut egui::Ui, app: &mut SettingsApp) {
         ToolSettingsPage::Clipboard => clipboard_settings_ui(ui, app),
         ToolSettingsPage::Screenshot => screenshot_page_ui(ui, app),
         ToolSettingsPage::Ocr => {
-            if resolve_runtime_exe_path(OCR_EXE).is_none() {
+            if resolve_desktop_tool("ocr").is_none() {
                 inline_notice(
                     ui,
                     StatusTone::Warning,

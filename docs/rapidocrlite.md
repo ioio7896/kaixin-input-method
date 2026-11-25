@@ -37,6 +37,6 @@ python -B scripts/ocr_benchmark.py --tune --repeats 2
 
 生成评测图片时，需在执行评测的 Python 环境中安装 Pillow。评测覆盖普通、单字、暗色、低对比度、小字、4K、接缝、长图和空白图。`--baseline <旧辅助脚本>` 可比较旧版本，`--manifest <json>` 可使用人工标注图片。报告包含 CER、整行文本覆盖率、冷启动到预热完成、P50/P95 和 Windows 推理进程峰值工作集。整行覆盖率不等于检测召回率，合成样本不代表真实截图准确率。
 
-生成安装器前，`build.py` 使用 OCR 暂存包内的 Rust 子进程、DLL 和模型运行三个档位，检查真实文字输出、检测和识别预热、语言缓存复用和两套缓存上限。结果写入 `dist/ocr-validation-kaixin-package-ocr.json`，失败会阻止打包。
+生成安装器前，`cargo xtask release` 使用 OCR 暂存包内的 Rust 子进程、DLL 和模型运行三个档位，检查真实文字输出、检测和识别预热、语言缓存复用和两套缓存上限。结果写入 `dist/ocr-validation-kaixin-package-ocr.json`，失败会阻止打包。
 
 参考：[上游模型选型](https://rapidai.github.io/RapidOCRDocs/main/en/model_list/)、[原生识别快速模式](https://github.com/RapidAI/RapidOCRLite#recognition-fast-mode)。

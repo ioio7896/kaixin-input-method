@@ -65,17 +65,17 @@ class InstallerDiagnosticsTests(unittest.TestCase):
                 $ErrorActionPreference = 'Stop'
                 $root = $env:KX_TEST_DIR
                 $exe = $env:KX_SETUP_EXE
-                $original = Get-Acl -LiteralPath $root
                 & $exe ensure-acl --root $root --machine
                 if ($LASTEXITCODE -ne 0) { throw 'ensure-acl machine failed' }
-                if ((Get-Acl -LiteralPath $root).Sddl -ne $original.Sddl) { throw 'fresh machine ACL changed' }
+                $original = Get-Acl -LiteralPath $root
+                & $exe ensure-acl --root $root --machine
+                if ($LASTEXITCODE -ne 0) { throw 'ensure-acl machine repeat failed' }
+                if ((Get-Acl -LiteralPath $root).Sddl -ne $original.Sddl) { throw 'non-idempotent machine ACL' }
                 $original.SetAccessRuleProtection($true, $true)
                 [IO.DirectoryInfo]::new($root).SetAccessControl($original)
                 & $exe ensure-acl --root $root --machine
                 if ($LASTEXITCODE -ne 0) { throw 'ensure-acl machine upgrade failed' }
                 if ((Get-Acl -LiteralPath $root).AreAccessRulesProtected) { throw 'legacy inheritance still disabled' }
-                & $exe ensure-acl --root $root
-                if ($LASTEXITCODE -ne 0) { throw 'ensure-acl user failed' }
                 $acl = Get-Acl -LiteralPath (Join-Path $root 'child.dll')
                 $rx = [Security.AccessControl.FileSystemRights]::ReadAndExecute
                 foreach ($sid in 'S-1-15-2-1', 'S-1-15-2-2') {
@@ -85,6 +85,8 @@ class InstallerDiagnosticsTests(unittest.TestCase):
                         ($_.FileSystemRights -band $rx) -eq $rx -and -not ($_.FileSystemRights -band 2)
                     })) { throw "missing inherited read/execute grant for $sid" }
                 }
+                & $exe ensure-acl --root $root
+                if ($LASTEXITCODE -ne 0) { throw 'ensure-acl user failed' }
                 $before = (Get-Acl -LiteralPath $root).Sddl
                 & $exe ensure-acl --root $root
                 if ($LASTEXITCODE -ne 0) { throw 'ensure-acl user repeat failed' }

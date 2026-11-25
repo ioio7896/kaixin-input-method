@@ -25,7 +25,12 @@ impl WorkerPool {
     ) -> Result<T, String> {
         let executable = std::env::current_exe().map_err(|err| err.to_string())?;
         let mut command = Command::new(executable);
-        command.args(["--ocr-worker", "--stdio", "--validate-installed"]);
+        command.args([
+            "--tool=ocr",
+            "--ocr-worker",
+            "--stdio",
+            "--validate-installed",
+        ]);
         #[cfg(windows)]
         {
             use std::os::windows::process::CommandExt;

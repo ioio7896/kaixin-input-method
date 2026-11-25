@@ -21,9 +21,9 @@ COMPONENT_MANIFEST = "component_manifest.ini"
 REQUIRED_FILES = {
     "srf_ime_setup.exe",
     "srf_ime_engine.exe",
-    "srf_ime_tray.exe",
-    "srf_ime_settings.exe",
+    "srf_ime_desktop.exe",
     "current_runtime_payload.txt",
+    "model-data/manifest.sha256",
     PACKAGE_HASH_MANIFEST,
     COMPONENT_MANIFEST,
     "build-manifest.json",
@@ -155,7 +155,7 @@ def validate_slim_package_layout(package: Path, errors: list[str]) -> None:
         if (package / relative).exists():
             errors.append(f"removed translation runtime is still packaged: {relative}")
 
-    errors.extend(validate_rapidocr_layout(package, (package / "srf_ime_ocr.exe").is_file()))
+    errors.extend(validate_rapidocr_layout(package, (package / "RapidOCRLite").is_dir()))
 
 
 def validate_component_manifest(package: Path, errors: list[str]) -> None:

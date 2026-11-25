@@ -70,23 +70,6 @@ function Set-ReleaseFileSignature {
     }
 }
 
-function Set-ReleaseRustFlags {
-    param([string]$Repo)
-    $separator = [char]31
-    $flags = @(if (Test-Path Env:CARGO_ENCODED_RUSTFLAGS) { $env:CARGO_ENCODED_RUSTFLAGS.Split($separator) | Where-Object { $_ } } else { $env:RUSTFLAGS -split '\s+' | Where-Object { $_ } })
-    $user = [Environment]::GetFolderPath('UserProfile')
-    $cargoHome = if ($env:CARGO_HOME) { $env:CARGO_HOME } else { Join-Path $user '.cargo' }
-    $rustupHome = if ($env:RUSTUP_HOME) { $env:RUSTUP_HOME } else { Join-Path $user '.rustup' }
-    $mappings = [ordered]@{ '/build/user' = $user; '/build/kaixin' = $Repo; '/build/cargo' = $cargoHome; '/build/rustup' = $rustupHome }
-    foreach ($key in $mappings.Keys) {
-        $path = [IO.Path]::GetFullPath($mappings[$key])
-        foreach ($spelling in @($path, $path.Replace('\', '/')) | Select-Object -Unique) {
-            $flags += "--remap-path-prefix=$spelling=$key"
-        }
-    }
-    $env:CARGO_ENCODED_RUSTFLAGS = $flags -join $separator
-}
-
 function Invoke-ReleaseRustTests {
     param([string]$Repo, [string]$Cargo, [string]$Work)
     $plan = [IO.File]::ReadAllText((Join-Path $Repo 'shared/verification.json')) | ConvertFrom-Json
@@ -101,30 +84,57 @@ function Invoke-ReleaseRustTests {
 }
 
 function Invoke-ReleaseNativeBuild {
-    param([string]$Repo, [string]$CMake, [bool]$SkipTests)
+    param([string]$Repo, [string]$CMake, [string]$Profile, [bool]$SkipTests)
     $testSetting = if ($SkipTests) { 'OFF' } else { 'ON' }
     $source = Join-Path $Repo 'tsf-tip'
     $directories = [ordered]@{ x64 = 'build-package'; Win32 = 'build-package-x86' }
     foreach ($arch in $directories.Keys) {
         $build = Join-Path $source $directories[$arch]
         Invoke-ReleaseCommand -Program $CMake -Arguments @('-S', $source, '-B', $build, '-A', $arch, "-DBUILD_TESTING=$testSetting")
-        Invoke-ReleaseCommand -Program $CMake -Arguments @('--build', $build, '--config', 'Release', '--parallel', '1', '--', '/nodeReuse:false')
+        Invoke-ReleaseCommand -Program $CMake -Arguments @('--build', $build, '--config', $Profile, '--parallel', '1', '--', '/nodeReuse:false')
         if (-not $SkipTests) {
             $ctest = Join-Path (Split-Path -Parent $CMake) 'ctest.exe'
-            Invoke-ReleaseCommand -Program $ctest -Arguments @('--test-dir', $build, '-C', 'Release', '--output-on-failure')
+            Invoke-ReleaseCommand -Program $ctest -Arguments @('--test-dir', $build, '-C', $Profile, '--output-on-failure')
         }
+    }
+}
+
+function Get-ReleaseInstallerNames {
+    param([string]$Version, [string]$Stamp, [bool]$UserInstaller)
+    $setup = if ($UserInstaller) { 'kaixin-user-setup' } else { 'kaixin-setup' }
+    [ordered]@{
+        ime = "$setup-ime-$Version-$Stamp.exe"
+        ocr = "$setup-ocr-$Version-$Stamp.exe"
+    }
+}
+
+function Assert-ReleaseInstallerPair {
+    param([string]$Repo, [string]$Pending, [string]$Version, [string]$Stamp, [bool]$UserInstaller)
+    $names = Get-ReleaseInstallerNames -Version $Version -Stamp $Stamp -UserInstaller $UserInstaller
+    foreach ($variant in $names.Keys) {
+        $installer = Join-Path $Pending $names[$variant]
+        if (-not (Test-Path -LiteralPath $installer -PathType Leaf) -or
+            (Get-Item -LiteralPath $installer).Length -eq 0) {
+            throw "Missing or empty $variant installer: $installer"
+        }
+        $stage = Join-Path $Repo "dist/kaixin-package-$variant"
+        if ([IO.File]::ReadAllText((Join-Path $stage 'VERSION')).Trim() -ne $Version) {
+            throw "Staged VERSION mismatch: $stage"
+        }
+        Assert-StageManifests -Root $stage
+        $installer
     }
 }
 
 function Invoke-ReleaseInstallers {
     param([string]$Repo, [string]$Inno, [string]$Pending, [string]$Version, [string]$Stamp, [bool]$UserInstaller)
     $script = if ($UserInstaller) { 'kaixin-user.iss' } else { 'kaixin.iss' }
-    $setup = if ($UserInstaller) { 'kaixin-user-setup' } else { 'kaixin-setup' }
+    $names = Get-ReleaseInstallerNames -Version $Version -Stamp $Stamp -UserInstaller $UserInstaller
     $jobs = [Collections.Generic.List[object]]::new()
     try {
         foreach ($variant in 'ime', 'ocr') {
             $stage = Join-Path $Repo "dist/kaixin-package-$variant"
-            $baseName = "$setup-$variant-$Version-$Stamp"
+            $baseName = [IO.Path]::GetFileNameWithoutExtension($names[$variant])
             $component = [IO.File]::ReadAllText((Join-Path $stage 'component_manifest.ini'))
             if ($component -notmatch '(?m)^rapidocr_payload=(absent|[a-f0-9]{64})\r?$') { throw "Invalid OCR component manifest: $stage" }
             $componentId = $Matches[1]
@@ -154,7 +164,7 @@ function Invoke-ReleaseInstallers {
                 throw "Installer version differs: $($job.Path)"
             }
         }
-        $jobs.Path
+        Assert-ReleaseInstallerPair -Repo $Repo -Pending $Pending -Version $Version -Stamp $Stamp -UserInstaller $UserInstaller
     } finally {
         foreach ($job in $jobs) {
             if (-not $job.Program.HasExited) { $job.Program.Kill(); $job.Program.WaitForExit() }

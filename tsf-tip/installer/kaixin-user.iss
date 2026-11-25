@@ -68,7 +68,15 @@ Type: filesandordirs; Name: "{app}\RapidOCRLite"; Check: ShouldInstallRapidOcrPa
 Type: filesandordirs; Name: "{app}\models\translate"
 Type: filesandordirs; Name: "{app}\ShareX-Source"
 Type: files; Name: "{group}\开心输入法 OCR.lnk"; Check: not OcrIncluded
-Type: files; Name: "{app}\srf_ime_ocr.exe"; Check: not OcrIncluded
+Type: files; Name: "{app}\srf_ime_settings.exe"
+Type: files; Name: "{app}\srf_ime_tray.exe"
+Type: files; Name: "{app}\srf_ime_clipboard.exe"
+Type: files; Name: "{app}\srf_ime_handwrite.exe"
+Type: files; Name: "{app}\srf_ime_symbols.exe"
+Type: files; Name: "{app}\srf_ime_keyboard.exe"
+Type: files; Name: "{app}\srf_ime_ocr.exe"
+Type: files; Name: "{app}\srf_ime_settings.exe.manifest"
+Type: files; Name: "{app}\srf_ime_tray.exe.manifest"
 Type: filesandordirs; Name: "{app}\RapidOCRLite"; Check: not OcrIncluded
 Type: files; Name: "{group}\开心输入法中英翻译.lnk"
 Type: files; Name: "{app}\srf_ime_translate.exe"
@@ -103,11 +111,12 @@ Type: files; Name: "{app}\tip_registration.log"
 Type: files; Name: "{app}\tip_registration_user.log"
 
 [Icons]
-Name: "{group}\开心输入法设置"; Filename: "{app}\srf_ime_settings.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
-Name: "{group}\开心输入法剪贴板"; Filename: "{app}\srf_ime_clipboard.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
-Name: "{group}\开心输入法手写查字"; Filename: "{app}\srf_ime_handwrite.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
-Name: "{group}\开心输入法符号大全"; Filename: "{app}\srf_ime_symbols.exe"; IconFilename: "{app}\assets\kaixin-input.ico"
-Name: "{group}\开心输入法 OCR"; Filename: "{app}\srf_ime_ocr.exe"; IconFilename: "{app}\assets\kaixin-input.ico"; Check: OcrIncluded
+Name: "{group}\开心输入法设置"; Filename: "{app}\srf_ime_desktop.exe"; Parameters: "--tool=settings"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\开心输入法剪贴板"; Filename: "{app}\srf_ime_desktop.exe"; Parameters: "--tool=clipboard"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\开心输入法手写查字"; Filename: "{app}\srf_ime_desktop.exe"; Parameters: "--tool=handwrite"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\开心输入法符号大全"; Filename: "{app}\srf_ime_desktop.exe"; Parameters: "--tool=symbols"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\开心输入法屏幕键盘"; Filename: "{app}\srf_ime_desktop.exe"; Parameters: "--tool=keyboard"; IconFilename: "{app}\assets\kaixin-input.ico"
+Name: "{group}\开心输入法 OCR"; Filename: "{app}\srf_ime_desktop.exe"; Parameters: "--tool=ocr"; IconFilename: "{app}\assets\kaixin-input.ico"; Check: OcrIncluded
 Name: "{group}\修复开心输入法"; Filename: "{app}\srf_ime_setup.exe"; Parameters: "repair --root ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\开心输入法日志"; Filename: "{win}\explorer.exe"; Parameters: """{localappdata}\kaixin"""; IconFilename: "{app}\assets\kaixin-input.ico"
 Name: "{group}\导出开心输入法诊断包"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\export_diagnostics.ps1"" -InstallationRoot ""{app}"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaixin-input.ico"

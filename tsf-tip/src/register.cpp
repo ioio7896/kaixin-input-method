@@ -250,16 +250,9 @@ HRESULT RegisterProfiles(const WCHAR* dllPath, BOOL machineScope) {
       }
       if (selectedIcon) break;
 
-      const std::filesystem::path settingsExe = probeDir / L"srf_ime_settings.exe";
-      if (std::filesystem::exists(settingsExe)) {
-        iconFilePath = settingsExe.wstring();
-        selectedIcon = true;
-        break;
-      }
-
-      const std::filesystem::path trayExe = probeDir / L"srf_ime_tray.exe";
-      if (std::filesystem::exists(trayExe)) {
-        iconFilePath = trayExe.wstring();
+      const std::filesystem::path desktopExe = probeDir / L"srf_ime_desktop.exe";
+      if (std::filesystem::exists(desktopExe)) {
+        iconFilePath = desktopExe.wstring();
         selectedIcon = true;
         break;
       }

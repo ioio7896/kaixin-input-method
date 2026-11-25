@@ -26,8 +26,7 @@ use windows_sys::Win32::{
     UI::{Input::KeyboardAndMouse::GetAsyncKeyState, WindowsAndMessaging::*},
 };
 
-#[path = "../../fonts.rs"]
-mod fonts;
+use crate::fonts;
 
 const PREVIEW_MUTEX_NAME: &str = "Local\\KaixinInput_TranslationPreview_Mutex";
 const IDLE_EXIT_TIMEOUT: Duration = Duration::from_secs(10 * 60);

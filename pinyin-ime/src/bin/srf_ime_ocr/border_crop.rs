@@ -2,7 +2,7 @@
 //!
 //! Direct port of the former `tools/kaixin_cv_crop.py` without OpenCV.
 
-use crate::ocr_policy::{connected_components_8, rgb_to_gray, ComponentStat};
+use super::ocr_policy::{connected_components_8, rgb_to_gray, ComponentStat};
 use image::RgbImage;
 
 const MAX_OUTER_BORDER_INSET_RATIO: f64 = 0.04;

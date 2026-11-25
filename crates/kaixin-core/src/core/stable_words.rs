@@ -83,7 +83,7 @@ impl PinyinEngine {
         if key.len() < 2 || self.is_effective_direct_input_shortcut(raw) {
             return Vec::new();
         }
-        let Some(lex) = self.phrase_lexicon.as_ref() else {
+        let Some(lex) = self.phrase_lexicon.as_deref() else {
             return Vec::new();
         };
         let variants = self.parse_exact_variants_cached(raw).unwrap_or_default();
@@ -319,7 +319,7 @@ impl PinyinEngine {
                 &self.user_lexicon,
                 now,
                 Some(word.meta),
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
                 (word.meta == ABBREV_CANDIDATE_META).then_some(key.len()),
             );
         }
@@ -416,7 +416,7 @@ impl PinyinEngine {
                     &self.user_lexicon,
                     now,
                     Some(word.meta),
-                    self.phrase_lexicon.as_ref(),
+                    self.phrase_lexicon.as_deref(),
                     (word.meta == ABBREV_CANDIDATE_META).then_some(key.len()),
                 );
                 if let Some((_, candidate)) = merged.drain_candidates().pop() {
@@ -449,7 +449,7 @@ impl PinyinEngine {
                 demote_cold_non_full_lexicon_candidates(
                     ranked,
                     intent,
-                    self.phrase_lexicon.as_ref(),
+                    self.phrase_lexicon.as_deref(),
                 );
                 if !self.has_selection_feedback_for_reading(key)
                     && ranked.iter().all(|item| {
@@ -467,7 +467,7 @@ impl PinyinEngine {
                         key,
                         intent,
                         len,
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                         traditional,
                     );
                 }
@@ -493,7 +493,7 @@ impl PinyinEngine {
                 apply_short_intent_final_candidate_density(
                     ranked,
                     Some(len),
-                    self.phrase_lexicon.as_ref(),
+                    self.phrase_lexicon.as_deref(),
                 );
                 if len == 2 {
                     if strongest_quality == 3 {
@@ -552,7 +552,7 @@ impl PinyinEngine {
             }
         }
         if let Some((intent, _)) = context {
-            demote_cold_non_full_lexicon_candidates(ranked, intent, self.phrase_lexicon.as_ref());
+            demote_cold_non_full_lexicon_candidates(ranked, intent, self.phrase_lexicon.as_deref());
         }
         // Unambiguous complete spelling should fill ordinary slots with real
         // whole words before fallback singles, correction and decoder output.
@@ -639,7 +639,7 @@ mod tests {
                 LexiconLayer::Base
             ));
         }
-        engine.phrase_lexicon = Some(lexicon);
+        engine.phrase_lexicon = Some(Arc::new(lexicon));
         let fallback = |phrase: &str| RankedCandidate {
             phrase: phrase.to_string(),
             score: 1000.0,

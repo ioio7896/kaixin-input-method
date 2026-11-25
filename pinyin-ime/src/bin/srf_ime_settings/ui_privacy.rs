@@ -331,7 +331,7 @@ pub(crate) fn diagnostic_log_paths() -> Vec<PathBuf> {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum UserDictEncryptionState {
     Encrypted,
-    Plain,
+    Unrecognized,
     Missing,
 }
 
@@ -340,7 +340,7 @@ fn user_dict_encryption_component_state(
 ) -> Result<UserDictEncryptionState, std::io::Error> {
     match pinyin_ime::user_dict_io::user_dict_file_is_encrypted(path) {
         Ok(true) => Ok(UserDictEncryptionState::Encrypted),
-        Ok(false) => Ok(UserDictEncryptionState::Plain),
+        Ok(false) => Ok(UserDictEncryptionState::Unrecognized),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
             Ok(UserDictEncryptionState::Missing)
         }
@@ -353,46 +353,21 @@ fn user_dict_encryption_status_text(path: &Path) -> String {
         Ok(state) => state,
         Err(err) => return format!("无法读取用户词库加密状态：{err}"),
     };
-    let encryption_enabled = pinyin_ime::user_dict_io::user_dict_encryption_enabled();
-    if !encryption_enabled {
-        return if state == UserDictEncryptionState::Missing {
-            "未启用：用户词库 SQLite 尚未生成。".to_string()
-        } else {
-            "未启用：用户词库 SQLite 以明文文件保存。".to_string()
-        };
-    }
-
     match state {
         UserDictEncryptionState::Encrypted => {
-            "已加密：用户词库 SQLite 受 Windows DPAPI 保护。".to_string()
+            "已启用：用户词库使用加密日志，密钥由 Windows DPAPI 保护。".to_owned()
         }
-        UserDictEncryptionState::Plain => {
-            "需迁移：用户词库 SQLite 仍是明文或空文件；下次读取/写入会使用 Windows DPAPI。"
-                .to_string()
-        }
-        UserDictEncryptionState::Missing => {
-            "已启用：用户词库 SQLite 尚未生成，首次写入会使用 Windows DPAPI。".to_string()
-        }
+        UserDictEncryptionState::Unrecognized => "无法识别用户词库日志格式。".to_owned(),
+        UserDictEncryptionState::Missing => "用户词库加密日志尚未生成。".to_owned(),
     }
 }
 
 pub(super) fn clipboard_storage_status_text(path: &Path) -> String {
-    if !pinyin_ime::clipboard_store::clipboard_store_encryption_enabled() {
-        return if path.is_file() {
-            "本地 SQLite 数据库，当前平台未启用 DPAPI 加密。".to_string()
-        } else {
-            "本地 SQLite 数据库尚未生成；当前平台未启用 DPAPI 加密。".to_string()
-        };
-    }
     match pinyin_ime::clipboard_store::clipboard_store_file_is_encrypted(path) {
-        Ok(true) => "已加密：本地 SQLite 数据库受 Windows DPAPI 保护。".to_string(),
-        Ok(false) if path.is_file() => {
-            "需迁移：剪贴板 SQLite 仍是明文或空文件；下次读取/写入会使用 Windows DPAPI。"
-                .to_string()
-        }
-        Ok(false) => "已启用：剪贴板历史尚未生成，首次写入会使用 Windows DPAPI。".to_string(),
+        Ok(true) => "已启用：剪贴板历史使用加密日志，密钥由 Windows DPAPI 保护。".to_owned(),
+        Ok(false) => "无法识别剪贴板历史日志格式。".to_owned(),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
-            "已启用：剪贴板历史尚未生成，首次写入会使用 Windows DPAPI。".to_string()
+            "剪贴板历史加密日志尚未生成。".to_owned()
         }
         Err(err) => format!("无法读取剪贴板加密状态：{err}"),
     }
@@ -441,7 +416,7 @@ pub(crate) fn privacy_statement_text(config_path: &Path, model: &SettingsModel) 
 \n\
 本地数据用途：\n\
 - 用户词库用于学习上屏词、词频和上下文排序信号。\n\
-- 剪贴板历史仅在后台保存剪贴板开启时写入本地 SQLite 数据库，Windows 上使用 DPAPI 保护。\n\
+- 剪贴板历史由引擎写入本地加密日志，密钥由 Windows DPAPI 保护。\n\
 - TSF 日志默认只记录脱敏诊断和性能事件。\n\
 - 截图文件只保存到用户选择的本地目录；开启静默副本时会额外复制到副本目录。\n\
 \n\

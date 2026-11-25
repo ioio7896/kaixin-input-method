@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Run all OCR profiles with the native srf_ime_ocr.exe worker and models inside a staged package."""
+"""Run all OCR profiles with the native srf_ime_desktop.exe worker and models inside a staged package."""
 
 from __future__ import annotations
 
@@ -37,7 +37,8 @@ def verify_ocr_package(repo: Path, package: Path) -> Path:
     )
     env.pop("PPOCR_REC_FAST", None)
     command = [
-        str(package / "srf_ime_ocr.exe"),
+        str(package / "srf_ime_desktop.exe"),
+        "--tool=ocr",
         "--ocr-worker",
         "--stdio",
         "--validate-installed",

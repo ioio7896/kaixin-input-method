@@ -25,8 +25,7 @@ $required = @(
     "kaixin.iss",
     "kaixin-user.iss",
     "kaixin-common-code.iss",
-    "srf_ime_settings.exe.manifest",
-    "srf_ime_tray.exe.manifest"
+    "srf_ime_desktop.exe.manifest"
 )
 foreach ($name in $required) {
     $path = Join-Path $installer $name
@@ -73,8 +72,8 @@ Assert-PathContains -Path (Join-Path $installer "kaixin-user.iss") -Needle "Arch
 Assert-PathContains -Path (Join-Path $installer "kaixin-user.iss") -Needle "RemoveCurrentUserData()"
 Assert-PathContains -Path (Join-Path $installer "kaixin-user.iss") -Needle "srf_ime_setup.exe"
 
-[xml]$settingsManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_settings.exe.manifest") -Raw
-[xml]$trayManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_tray.exe.manifest") -Raw
+[xml]$settingsManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_desktop.exe.manifest") -Raw
+[xml]$trayManifest = Get-Content -LiteralPath (Join-Path $installer "srf_ime_desktop.exe.manifest") -Raw
 $null = $settingsManifest.assembly
 $null = $trayManifest.assembly
 

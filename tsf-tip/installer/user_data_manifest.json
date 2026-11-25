@@ -1,6 +1,9 @@
 {
   "files": [
     "kaixin.ini",
+    "user_dict.kxj",
+    "user_dict.kxj.lock",
+    "user_dict.kxj.tmp",
     "user_dict.sqlite",
     "user_dict.sqlite.partial",
     "user_dict.sqlite.previous",
@@ -15,6 +18,10 @@
     "runtime_events.sqlite-journal",
     "cedict_cache.sqlite",
     "cedict_cache.sqlite-journal",
+    "clipboard_store.kxj",
+    "clipboard_store.kxj.lock",
+    "clipboard_store.kxj.tmp",
+    "clipboard_store.sqlite",
     "clipboard_store.sqlite.tmp",
     "clipboard_store.sqlite.write.tmp",
     "clipboard_store.sqlite.lock",

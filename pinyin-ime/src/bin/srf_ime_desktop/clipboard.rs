@@ -1,0 +1,2263 @@
+use super::fonts;
+
+use chrono::{Local, TimeZone};
+use eframe::egui::{self, Align, Frame, Key, Layout, RichText, ScrollArea, Sense, Stroke};
+use pinyin_ime::ui_theme::{
+    apply_tool_style, empty_state, status_pill, UiPalette, CARD_RADIUS, SPACE_LG, SPACE_MD,
+    SPACE_SM, SPACE_XS,
+};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
+use std::collections::{HashMap, HashSet};
+use std::path::{Path, PathBuf};
+use std::process::{Child, Command};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{self, Receiver, Sender, TryRecvError};
+use std::sync::Arc;
+use std::thread;
+use std::thread::JoinHandle;
+use std::time::{Duration, Instant};
+
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
+use windows_sys::Win32::Foundation::{
+    GetLastError, ERROR_IO_PENDING, GENERIC_READ, GENERIC_WRITE, HANDLE, INVALID_HANDLE_VALUE,
+    WAIT_TIMEOUT,
+};
+#[cfg(windows)]
+#[cfg(windows)]
+use windows_sys::Win32::Storage::FileSystem::{
+    CreateFileW, ReadFile, WriteFile, FILE_FLAG_OVERLAPPED, OPEN_EXISTING,
+};
+#[cfg(windows)]
+use windows_sys::Win32::System::Pipes::WaitNamedPipeW;
+#[cfg(windows)]
+use windows_sys::Win32::System::Threading::CREATE_NO_WINDOW;
+#[cfg(windows)]
+use windows_sys::Win32::System::IO::{
+    CancelIoEx, GetOverlappedResult, GetOverlappedResultEx, OVERLAPPED,
+};
+#[cfg(windows)]
+use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+
+const WINDOW_TITLE: &str = "开心输入法 剪贴板";
+const SERVICE_EXE: &str = "srf_ime_clipboard_svc.exe";
+const CAPABILITY_ENV: &str = "KAIXIN_CLIPBOARD_CAPABILITY";
+const PIPE_NAME_PREFIX: &str = r"\\.\pipe\KaixinClipboardSvc_v1";
+const MAX_FRAME_BYTES: usize = 32 * 1024 * 1024;
+const REFRESH_INTERVAL: Duration = Duration::from_millis(900);
+const PIPE_CONNECT_TIMEOUT_MS: u32 = 250;
+const PIPE_REQUEST_TIMEOUT_MS: u32 = 5_000;
+const PIPE_PASTE_TIMEOUT_MS: u32 = 15_000;
+const SINGLE_INSTANCE_MUTEX: &str = "Local\\KaixinInput_Clipboard_SingleInstance_v2";
+const WINDOW_DEFAULT_SIZE: [f64; 2] = [860.0, 640.0];
+const WINDOW_MIN_SIZE: [f64; 2] = [620.0, 440.0];
+const WINDOW_WORK_AREA_MARGIN_PX: i32 = 12;
+
+#[derive(Clone, Deserialize)]
+struct ClipboardEntry {
+    #[serde(default)]
+    id: String,
+    #[serde(default)]
+    text: String,
+    #[serde(default)]
+    captured_at: u64,
+    #[serde(default)]
+    copy_count: u64,
+    #[serde(default)]
+    source_app: Option<String>,
+}
+
+#[derive(Default, Deserialize)]
+struct Snapshot {
+    #[serde(default)]
+    history: Vec<ClipboardEntry>,
+    #[serde(default)]
+    pinned: Vec<ClipboardEntry>,
+}
+
+#[derive(Serialize)]
+struct Request {
+    req: u64,
+    method: String,
+    capability: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    force: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    last_modified: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    target_hwnd: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    was_pinned: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    days: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    value: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    keys: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    rect: Option<RectDto>,
+}
+
+#[derive(Clone, Copy, Serialize)]
+struct RectDto {
+    x: f64,
+    y: f64,
+    w: f64,
+    h: f64,
+}
+
+impl Request {
+    fn new(req: u64, method: &str) -> Self {
+        Self {
+            req,
+            method: method.to_string(),
+            capability: String::new(),
+            force: None,
+            last_modified: None,
+            text: None,
+            target_hwnd: None,
+            was_pinned: None,
+            days: None,
+            key: None,
+            value: None,
+            keys: None,
+            rect: None,
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct Response {
+    req: u64,
+    ok: bool,
+    #[serde(default)]
+    error: Option<String>,
+    #[serde(default)]
+    data: Value,
+}
+
+enum WorkerCommand {
+    Call(Box<Request>),
+    Stop,
+}
+
+struct WorkerCompletion {
+    req: u64,
+    result: Result<Value, String>,
+}
+
+struct AsyncServiceClient {
+    commands: Sender<WorkerCommand>,
+    completions: Receiver<WorkerCompletion>,
+    next_req: u64,
+    stopping: Arc<AtomicBool>,
+    worker: Option<JoinHandle<()>>,
+    capability: String,
+}
+
+impl AsyncServiceClient {
+    fn new(ctx: egui::Context) -> Self {
+        let (command_tx, command_rx) = mpsc::channel();
+        let (completion_tx, completion_rx) = mpsc::channel();
+        let stopping = Arc::new(AtomicBool::new(false));
+        let worker_stopping = Arc::clone(&stopping);
+        let capability = generate_capability();
+        let worker_capability = capability.clone();
+        let worker = thread::Builder::new()
+            .name("kaixin-clipboard-client".to_string())
+            .spawn(move || {
+                service_worker(
+                    command_rx,
+                    completion_tx,
+                    ctx,
+                    worker_stopping,
+                    worker_capability,
+                )
+            })
+            .ok();
+        Self {
+            commands: command_tx,
+            completions: completion_rx,
+            next_req: 1,
+            stopping,
+            worker,
+            capability,
+        }
+    }
+
+    fn call(&mut self, method: &str, configure: impl FnOnce(&mut Request)) -> u64 {
+        self.next_req = self.next_req.wrapping_add(1).max(1);
+        let mut request = Request::new(self.next_req, method);
+        request.capability.clone_from(&self.capability);
+        configure(&mut request);
+        let req = request.req;
+        let _ = self.commands.send(WorkerCommand::Call(Box::new(request)));
+        req
+    }
+
+    fn try_recv(&self) -> Result<WorkerCompletion, TryRecvError> {
+        self.completions.try_recv()
+    }
+
+    fn shutdown(&mut self) {
+        self.stopping.store(true, Ordering::Release);
+        let _ = self.commands.send(WorkerCommand::Stop);
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
+    }
+}
+
+fn service_worker(
+    commands: Receiver<WorkerCommand>,
+    completions: Sender<WorkerCompletion>,
+    ctx: egui::Context,
+    stopping: Arc<AtomicBool>,
+    capability: String,
+) {
+    let mut worker = ServiceWorker::new(Arc::clone(&stopping), capability);
+    while let Ok(command) = commands.recv() {
+        match command {
+            WorkerCommand::Call(request) => {
+                let req = request.req;
+                let result = worker.call(&request);
+                let _ = completions.send(WorkerCompletion { req, result });
+                ctx.request_repaint();
+                if stopping.load(Ordering::Acquire) {
+                    worker.shutdown_owned_service();
+                    break;
+                }
+            }
+            WorkerCommand::Stop => {
+                worker.shutdown_owned_service();
+                break;
+            }
+        }
+    }
+}
+
+struct ServiceWorker {
+    pipe: Option<PipeConnection>,
+    child: Option<Child>,
+    owns_service: bool,
+    stopping: Arc<AtomicBool>,
+    capability: String,
+}
+
+impl ServiceWorker {
+    fn new(stopping: Arc<AtomicBool>, capability: String) -> Self {
+        Self {
+            pipe: None,
+            child: None,
+            owns_service: false,
+            stopping,
+            capability,
+        }
+    }
+
+    fn call(&mut self, request: &Request) -> Result<Value, String> {
+        let timeout = if request.method == "paste" {
+            PIPE_PASTE_TIMEOUT_MS
+        } else {
+            PIPE_REQUEST_TIMEOUT_MS
+        };
+        let response = match self.call_once(request, timeout, true) {
+            Ok(response) => response,
+            Err(first_error) => {
+                self.pipe = None;
+                self.ensure_service_running()?;
+                if request_is_retry_safe(&request.method) {
+                    self.call_once(request, timeout, true)?
+                } else {
+                    return Err(first_error);
+                }
+            }
+        };
+        if response.req != request.req {
+            return Err("剪贴板服务响应序号不匹配".to_string());
+        }
+        if response.ok {
+            Ok(response.data)
+        } else {
+            Err(response
+                .error
+                .unwrap_or_else(|| format!("服务请求失败：{}", request.method)))
+        }
+    }
+
+    fn call_once(
+        &mut self,
+        request: &Request,
+        timeout_ms: u32,
+        cancellable: bool,
+    ) -> Result<Response, String> {
+        if self.pipe.is_none() {
+            self.pipe = Some(PipeConnection::connect(&self.capability)?);
+        }
+        self.pipe.as_mut().expect("pipe initialized").call(
+            request,
+            timeout_ms,
+            cancellable.then_some(self.stopping.as_ref()),
+        )
+    }
+
+    fn ensure_service_running(&mut self) -> Result<(), String> {
+        if self.owns_service {
+            if let Some(mut child) = self.child.take() {
+                if child.try_wait().ok().flatten().is_none() {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                }
+            }
+            self.owns_service = false;
+        }
+        let service =
+            find_service_exe().ok_or_else(|| format!("未找到剪贴板服务：{SERVICE_EXE}"))?;
+        let mut command = Command::new(&service);
+        command.current_dir(service.parent().unwrap_or_else(|| Path::new(".")));
+        command.env(CAPABILITY_ENV, &self.capability);
+        #[cfg(windows)]
+        command.creation_flags(CREATE_NO_WINDOW);
+        self.child = Some(
+            command
+                .spawn()
+                .map_err(|err| format!("启动剪贴板服务失败：{err}"))?,
+        );
+        self.owns_service = true;
+        self.wait_for_pipe()?;
+        if self
+            .child
+            .as_mut()
+            .is_some_and(|child| child.try_wait().ok().flatten().is_some())
+        {
+            self.child = None;
+            self.owns_service = false;
+        }
+        Ok(())
+    }
+
+    fn wait_for_pipe(&mut self) -> Result<(), String> {
+        for _ in 0..20 {
+            if self.stopping.load(Ordering::Acquire) {
+                return Err("剪贴板服务连接已取消".to_string());
+            }
+            match PipeConnection::connect(&self.capability) {
+                Ok(pipe) => {
+                    self.pipe = Some(pipe);
+                    return Ok(());
+                }
+                Err(_) => thread::sleep(Duration::from_millis(100)),
+            }
+        }
+        Err("剪贴板服务启动或重连超时".to_string())
+    }
+
+    fn shutdown_owned_service(&mut self) {
+        if !self.owns_service {
+            self.pipe = None;
+            return;
+        }
+        let mut request = Request::new(u64::MAX, "shutdown");
+        request.capability.clone_from(&self.capability);
+        request.force = Some(false);
+        let _ = self.call_once(&request, 2_000, false);
+        self.pipe = None;
+        if let Some(mut child) = self.child.take() {
+            let deadline = Instant::now() + Duration::from_secs(2);
+            while Instant::now() < deadline {
+                if child.try_wait().ok().flatten().is_some() {
+                    self.owns_service = false;
+                    return;
+                }
+                thread::sleep(Duration::from_millis(50));
+            }
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+        self.owns_service = false;
+    }
+}
+
+fn request_is_retry_safe(method: &str) -> bool {
+    matches!(
+        method,
+        "ping"
+            | "refresh"
+            | "get_prefs"
+            | "set_pref"
+            | "get_window_rect"
+            | "set_window_rect"
+            | "pin"
+            | "unpin"
+            | "clear_history"
+            | "clear_older_than"
+            | "clear_all"
+            | "pin_current"
+    )
+}
+
+fn generate_capability() -> String {
+    #[cfg(windows)]
+    {
+        pinyin_ime::windows_security::generate_capability_token()
+            .expect("Windows cryptographic random generator unavailable")
+    }
+    #[cfg(not(windows))]
+    {
+        use sha2::{Digest, Sha256};
+        format!(
+            "{:x}",
+            Sha256::digest(format!("{}-{:#?}", std::process::id(), Instant::now()))
+        )
+    }
+}
+
+#[cfg(windows)]
+fn wide(value: &str) -> Vec<u16> {
+    value.encode_utf16().chain(std::iter::once(0)).collect()
+}
+
+#[cfg(windows)]
+struct PipeConnection(pinyin_ime::win_handle::OwnedWinHandle);
+
+#[cfg(windows)]
+impl PipeConnection {
+    fn connect(capability: &str) -> Result<Self, String> {
+        let pipe_name = wide(&format!(
+            "{PIPE_NAME_PREFIX}.{}",
+            capability.get(..16).unwrap_or(capability)
+        ));
+        if unsafe { WaitNamedPipeW(pipe_name.as_ptr(), PIPE_CONNECT_TIMEOUT_MS) } == 0 {
+            return Err(format!(
+                "等待剪贴板服务失败：{}",
+                std::io::Error::last_os_error()
+            ));
+        }
+        let handle = unsafe {
+            CreateFileW(
+                pipe_name.as_ptr(),
+                GENERIC_READ | GENERIC_WRITE,
+                0,
+                std::ptr::null_mut(),
+                OPEN_EXISTING,
+                FILE_FLAG_OVERLAPPED,
+                0,
+            )
+        };
+        if handle == INVALID_HANDLE_VALUE {
+            return Err(format!(
+                "连接剪贴板服务失败：{}",
+                std::io::Error::last_os_error()
+            ));
+        }
+        let handle = unsafe { pinyin_ime::win_handle::OwnedWinHandle::try_from_raw(handle) }
+            .expect("validated clipboard pipe handle");
+        Ok(Self(handle))
+    }
+
+    fn call(
+        &mut self,
+        request: &Request,
+        timeout_ms: u32,
+        stopping: Option<&AtomicBool>,
+    ) -> Result<Response, String> {
+        let payload =
+            serde_json::to_vec(request).map_err(|err| format!("序列化请求失败：{err}"))?;
+        if payload.is_empty() || payload.len() > MAX_FRAME_BYTES {
+            return Err("剪贴板请求大小非法".to_string());
+        }
+        write_all_timeout(
+            self.0.as_raw(),
+            &(payload.len() as u32).to_le_bytes(),
+            timeout_ms,
+            stopping,
+        )?;
+        write_all_timeout(self.0.as_raw(), &payload, timeout_ms, stopping)?;
+        let mut header = [0u8; 4];
+        read_exact_timeout(self.0.as_raw(), &mut header, timeout_ms, stopping)?;
+        let length = u32::from_le_bytes(header) as usize;
+        if length == 0 || length > MAX_FRAME_BYTES {
+            return Err(format!("剪贴板响应大小非法：{length}"));
+        }
+        let mut response = vec![0u8; length];
+        read_exact_timeout(self.0.as_raw(), &mut response, timeout_ms, stopping)?;
+        serde_json::from_slice(&response).map_err(|err| format!("解析剪贴板响应失败：{err}"))
+    }
+}
+
+#[cfg(windows)]
+fn write_all_timeout(
+    handle: HANDLE,
+    mut bytes: &[u8],
+    timeout_ms: u32,
+    stopping: Option<&AtomicBool>,
+) -> Result<(), String> {
+    while !bytes.is_empty() {
+        let mut overlapped: OVERLAPPED = unsafe { std::mem::zeroed() };
+        let started = unsafe {
+            WriteFile(
+                handle,
+                bytes.as_ptr(),
+                bytes.len().min(u32::MAX as usize) as u32,
+                std::ptr::null_mut(),
+                &mut overlapped,
+            )
+        };
+        let written = finish_overlapped(
+            handle,
+            &mut overlapped,
+            started,
+            timeout_ms,
+            "写入",
+            stopping,
+        )?;
+        if written == 0 {
+            return Err("剪贴板服务写入返回 0 字节".to_string());
+        }
+        bytes = &bytes[written as usize..];
+    }
+    Ok(())
+}
+
+#[cfg(windows)]
+fn read_exact_timeout(
+    handle: HANDLE,
+    mut bytes: &mut [u8],
+    timeout_ms: u32,
+    stopping: Option<&AtomicBool>,
+) -> Result<(), String> {
+    while !bytes.is_empty() {
+        let mut overlapped: OVERLAPPED = unsafe { std::mem::zeroed() };
+        let started = unsafe {
+            ReadFile(
+                handle,
+                bytes.as_mut_ptr(),
+                bytes.len().min(u32::MAX as usize) as u32,
+                std::ptr::null_mut(),
+                &mut overlapped,
+            )
+        };
+        let read = finish_overlapped(
+            handle,
+            &mut overlapped,
+            started,
+            timeout_ms,
+            "读取",
+            stopping,
+        )?;
+        if read == 0 {
+            return Err("剪贴板服务已断开".to_string());
+        }
+        let (_, rest) = bytes.split_at_mut(read as usize);
+        bytes = rest;
+    }
+    Ok(())
+}
+
+#[cfg(not(windows))]
+struct PipeConnection;
+
+#[cfg(not(windows))]
+impl PipeConnection {
+    fn connect() -> Result<Self, String> {
+        Err("剪贴板管理器仅支持 Windows".to_string())
+    }
+
+    fn call(
+        &mut self,
+        _request: &Request,
+        _timeout_ms: u32,
+        _stopping: Option<&AtomicBool>,
+    ) -> Result<Response, String> {
+        Err("剪贴板管理器仅支持 Windows".to_string())
+    }
+}
+
+#[cfg(windows)]
+fn finish_overlapped(
+    handle: HANDLE,
+    overlapped: &mut OVERLAPPED,
+    started: i32,
+    timeout_ms: u32,
+    phase: &str,
+    stopping: Option<&AtomicBool>,
+) -> Result<u32, String> {
+    if started == 0 {
+        let error = unsafe { GetLastError() };
+        if error != ERROR_IO_PENDING {
+            return Err(format!(
+                "剪贴板服务管道{phase}失败：{}",
+                std::io::Error::from_raw_os_error(error as i32)
+            ));
+        }
+    }
+    let deadline = Instant::now() + Duration::from_millis(timeout_ms as u64);
+    let mut transferred = 0u32;
+    loop {
+        if stopping.is_some_and(|flag| flag.load(Ordering::Acquire)) {
+            unsafe {
+                CancelIoEx(handle, overlapped);
+                GetOverlappedResult(handle, overlapped, &mut transferred, 1);
+            }
+            return Err(format!("剪贴板服务管道{phase}已取消"));
+        }
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            unsafe {
+                CancelIoEx(handle, overlapped);
+                GetOverlappedResult(handle, overlapped, &mut transferred, 1);
+            }
+            return Err(format!("剪贴板服务无响应（管道{phase}超时）"));
+        }
+        let slice_ms = remaining.as_millis().clamp(1, 100) as u32;
+        let completed =
+            unsafe { GetOverlappedResultEx(handle, overlapped, &mut transferred, slice_ms, 0) };
+        if completed != 0 {
+            return Ok(transferred);
+        }
+        let error = unsafe { GetLastError() };
+        if error != WAIT_TIMEOUT {
+            return Err(format!(
+                "剪贴板服务管道{phase}失败：{}",
+                std::io::Error::from_raw_os_error(error as i32)
+            ));
+        }
+    }
+}
+
+fn find_service_exe() -> Option<PathBuf> {
+    let mut candidates = Vec::new();
+    if let Ok(current) = std::env::current_exe() {
+        if let Some(parent) = current.parent() {
+            candidates.push(parent.join(SERVICE_EXE));
+        }
+    }
+    if let Some(local) = std::env::var_os("LOCALAPPDATA") {
+        candidates.push(
+            PathBuf::from(local)
+                .join("Programs/kaixin")
+                .join(SERVICE_EXE),
+        );
+    }
+    for key in ["ProgramFiles(x86)", "ProgramFiles"] {
+        if let Some(root) = std::env::var_os(key) {
+            candidates.push(PathBuf::from(root).join("kaixin").join(SERVICE_EXE));
+        }
+    }
+    candidates.into_iter().find(|path| path.is_file())
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum Tab {
+    Recent,
+    Pinned,
+}
+
+#[derive(Clone, Copy)]
+enum Action {
+    Paste,
+    Copy,
+    TogglePin,
+    Remove,
+}
+
+#[derive(Clone, Copy)]
+enum ClearKind {
+    History,
+    Older,
+    All,
+}
+
+enum PendingKind {
+    Refresh,
+    Mutation {
+        removed: Option<(String, bool)>,
+        close_on_success: bool,
+    },
+    Preferences,
+    WindowRect,
+    Quiet,
+}
+
+struct ClipboardApp {
+    client: AsyncServiceClient,
+    pending: HashMap<u64, PendingKind>,
+    snapshot: Snapshot,
+    pinned_texts: HashSet<String>,
+    tab: Tab,
+    search: String,
+    filter: String,
+    selected: usize,
+    target_hwnd: isize,
+    modified: String,
+    max_age_days: u64,
+    last_refresh: Instant,
+    status: String,
+    status_error: bool,
+    notice_until: Option<Instant>,
+    last_removed: Option<(String, bool)>,
+    undo_until: Option<Instant>,
+    hovered: Option<usize>,
+    confirm_clear: Option<ClearKind>,
+    dark: bool,
+    dense: bool,
+    quick_paste: bool,
+    refresh_pending: bool,
+    window_rect_loaded: bool,
+    last_saved_rect: Option<RectDto>,
+    last_window_save: Instant,
+    background_enabled: bool,
+    privacy_enabled: bool,
+    capture_notice: Option<String>,
+    search_focused: bool,
+    list_focused: bool,
+    preview: Option<ClipboardEntry>,
+    scroll_to_latest: bool,
+    latest_unseen: bool,
+    near_top: bool,
+    refresh_force_requested: bool,
+}
+
+impl ClipboardApp {
+    fn new(cc: &eframe::CreationContext<'_>, target_hwnd: isize) -> Self {
+        let _ = fonts::install_cjk_fonts(&cc.egui_ctx);
+        let mut app = Self::with_client(AsyncServiceClient::new(cc.egui_ctx.clone()), target_hwnd);
+        app.request_refresh(true);
+        let prefs = app.client.call("get_prefs", |request| {
+            request.keys = Some(vec![
+                "theme_mode".to_string(),
+                "dense_rows".to_string(),
+                "quick_paste".to_string(),
+            ]);
+        });
+        app.pending.insert(prefs, PendingKind::Preferences);
+        let rect = app.client.call("get_window_rect", |_| {});
+        app.pending.insert(rect, PendingKind::WindowRect);
+        app
+    }
+
+    fn with_client(client: AsyncServiceClient, target_hwnd: isize) -> Self {
+        Self {
+            client,
+            pending: HashMap::new(),
+            snapshot: Snapshot::default(),
+            pinned_texts: HashSet::new(),
+            tab: Tab::Recent,
+            search: String::new(),
+            filter: String::new(),
+            selected: 0,
+            target_hwnd,
+            modified: String::new(),
+            max_age_days: 30,
+            last_refresh: Instant::now() - REFRESH_INTERVAL,
+            status: "正在连接剪贴板服务…".to_string(),
+            status_error: false,
+            notice_until: None,
+            last_removed: None,
+            undo_until: None,
+            hovered: None,
+            confirm_clear: None,
+            dark: false,
+            dense: false,
+            quick_paste: true,
+            refresh_pending: false,
+            window_rect_loaded: false,
+            last_saved_rect: None,
+            last_window_save: Instant::now(),
+            background_enabled: false,
+            privacy_enabled: false,
+            capture_notice: None,
+            search_focused: false,
+            list_focused: true,
+            preview: None,
+            scroll_to_latest: false,
+            latest_unseen: false,
+            near_top: true,
+            refresh_force_requested: false,
+        }
+    }
+
+    fn request_refresh(&mut self, force: bool) {
+        if self.refresh_pending {
+            self.refresh_force_requested |= force;
+            return;
+        }
+        let previous = self.modified.clone();
+        let req = self.client.call("refresh", |request| {
+            request.force = Some(force);
+            request.last_modified = Some(previous);
+        });
+        self.pending.insert(req, PendingKind::Refresh);
+        self.refresh_pending = true;
+        self.last_refresh = Instant::now();
+    }
+
+    fn apply_refresh(&mut self, data: Value) -> Result<(), String> {
+        self.background_enabled = data
+            .get("background_enabled")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+        self.privacy_enabled = data
+            .get("privacy_enabled")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+        if self.privacy_enabled {
+            self.preview = None;
+        }
+        self.capture_notice = data
+            .get("capture_notice")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        let selected_id = self.selected_entry().map(|entry| entry.id);
+        let old_latest = self
+            .snapshot
+            .history
+            .first()
+            .map(|entry| (entry.id.clone(), entry.captured_at, entry.copy_count));
+        let modified = data
+            .get("modified")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_string();
+        self.max_age_days = data
+            .get("max_age_days")
+            .and_then(Value::as_u64)
+            .unwrap_or(30);
+        if data.get("changed").and_then(Value::as_bool).unwrap_or(true) {
+            let snapshot: Snapshot =
+                serde_json::from_value(data.get("snapshot").cloned().unwrap_or_else(|| json!({})))
+                    .map_err(|err| format!("解析剪贴板记录失败：{err}"))?;
+            self.snapshot = snapshot;
+            let latest = self
+                .snapshot
+                .history
+                .first()
+                .map(|entry| (entry.id.clone(), entry.captured_at, entry.copy_count));
+            if old_latest.is_some() && old_latest != latest && self.tab == Tab::Recent {
+                self.latest_unseen = !self.near_top;
+                if self.near_top {
+                    self.scroll_to_latest = true;
+                }
+            }
+            self.pinned_texts = self
+                .snapshot
+                .pinned
+                .iter()
+                .map(|entry| entry.text.clone())
+                .collect();
+            if let Some(id) = selected_id {
+                if let Some(index) = self.entries().iter().position(|entry| entry.id == id) {
+                    self.selected = index;
+                }
+            }
+            self.clamp_selection();
+        }
+        // Publish the revision only after successful parsing.
+        self.modified = modified;
+        if self.notice_until.is_none() {
+            self.status = "就绪".to_string();
+            self.status_error = false;
+        }
+        Ok(())
+    }
+
+    fn entries(&self) -> Vec<&ClipboardEntry> {
+        let source = if self.tab == Tab::Recent {
+            &self.snapshot.history
+        } else {
+            &self.snapshot.pinned
+        };
+        source
+            .iter()
+            .filter(|entry| entry_matches(entry, &self.search, &self.filter))
+            .collect()
+    }
+
+    fn selected_entry(&self) -> Option<ClipboardEntry> {
+        self.entries()
+            .get(self.selected)
+            .map(|entry| (*entry).clone())
+    }
+
+    fn clamp_selection(&mut self) {
+        let len = self.entries().len();
+        self.selected = self.selected.min(len.saturating_sub(1));
+    }
+
+    fn mutate(
+        &mut self,
+        method: &str,
+        configure: impl FnOnce(&mut Request),
+        removed: Option<(String, bool)>,
+        close_on_success: bool,
+    ) {
+        let req = self.client.call(method, configure);
+        self.pending.insert(
+            req,
+            PendingKind::Mutation {
+                removed,
+                close_on_success,
+            },
+        );
+        self.status = "正在处理…".to_string();
+        self.status_error = false;
+        self.notice_until = None;
+    }
+
+    fn save_pref(&mut self, key: &str, value: &str) {
+        let key_owned = key.to_string();
+        let value_owned = value.to_string();
+        let req = self.client.call("set_pref", |request| {
+            request.key = Some(key_owned);
+            request.value = Some(value_owned);
+        });
+        self.pending.insert(req, PendingKind::Quiet);
+    }
+
+    fn process_completions(&mut self, ctx: &egui::Context) {
+        let mut completed = Vec::new();
+        while let Ok(completion) = self.client.try_recv() {
+            completed.push(completion);
+        }
+        for completion in completed {
+            let Some(kind) = self.pending.remove(&completion.req) else {
+                continue;
+            };
+            if matches!(kind, PendingKind::Refresh) {
+                self.refresh_pending = false;
+            }
+            let data = match completion.result {
+                Ok(data) => data,
+                Err(err) => {
+                    self.set_error(err);
+                    continue;
+                }
+            };
+            match kind {
+                PendingKind::Refresh => {
+                    if let Err(err) = self.apply_refresh(data) {
+                        self.set_error(err);
+                    }
+                    if self.refresh_force_requested {
+                        self.refresh_force_requested = false;
+                        self.request_refresh(true);
+                    }
+                }
+                PendingKind::Mutation {
+                    removed,
+                    close_on_success,
+                } => {
+                    self.status = data
+                        .get("message")
+                        .and_then(Value::as_str)
+                        .unwrap_or("操作完成")
+                        .to_string();
+                    self.status_error = false;
+                    self.notice_until = Some(Instant::now() + Duration::from_secs(3));
+                    if let Some(removed) = removed
+                        .filter(|_| data.get("removed").and_then(Value::as_bool) == Some(true))
+                    {
+                        self.last_removed = Some(removed);
+                        self.undo_until = Some(Instant::now() + Duration::from_secs(6));
+                    }
+                    self.modified.clear();
+                    self.request_refresh(false);
+                    if close_on_success {
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    }
+                }
+                PendingKind::Preferences => self.apply_preferences(&data),
+                PendingKind::WindowRect => self.apply_window_rect(&data, ctx),
+                PendingKind::Quiet => {}
+            }
+        }
+    }
+
+    fn apply_preferences(&mut self, data: &Value) {
+        let Some(values) = data.get("prefs").and_then(Value::as_array) else {
+            return;
+        };
+        for pair in values {
+            let Some(pair) = pair.as_array() else {
+                continue;
+            };
+            let (Some(key), Some(value)) = (
+                pair.first().and_then(Value::as_str),
+                pair.get(1).and_then(Value::as_str),
+            ) else {
+                continue;
+            };
+            match key {
+                "theme_mode" => self.dark = value == "dark",
+                "dense_rows" => self.dense = value == "1",
+                "quick_paste" => self.quick_paste = value != "0",
+                _ => {}
+            }
+        }
+    }
+
+    fn apply_window_rect(&mut self, data: &Value, ctx: &egui::Context) {
+        if let Some(rect) = data.get("rect").filter(|value| value.is_object()) {
+            let saved = RectDto {
+                x: rect.get("x").and_then(Value::as_f64).unwrap_or(0.0),
+                y: rect.get("y").and_then(Value::as_f64).unwrap_or(0.0),
+                w: rect.get("w").and_then(Value::as_f64).unwrap_or(860.0),
+                h: rect.get("h").and_then(Value::as_f64).unwrap_or(640.0),
+            };
+            let pixels_per_point = ctx
+                .input(|input| input.viewport().native_pixels_per_point)
+                .unwrap_or(1.0);
+            let restored = constrain_window_rect_to_work_area(saved, pixels_per_point);
+            if restored.w > 0.0 && restored.h > 0.0 {
+                ctx.send_viewport_cmd(egui::ViewportCommand::MinInnerSize(egui::vec2(
+                    WINDOW_MIN_SIZE[0].min(restored.w) as f32,
+                    WINDOW_MIN_SIZE[1].min(restored.h) as f32,
+                )));
+                ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(egui::pos2(
+                    restored.x as f32,
+                    restored.y as f32,
+                )));
+                ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(
+                    restored.w as f32,
+                    restored.h as f32,
+                )));
+                if !rect_close(saved, restored) {
+                    let req = self.client.call("set_window_rect", |request| {
+                        request.rect = Some(restored);
+                    });
+                    self.pending.insert(req, PendingKind::Quiet);
+                }
+                self.last_saved_rect = Some(restored);
+            }
+        }
+        self.window_rect_loaded = true;
+    }
+
+    fn maybe_save_window_rect(&mut self, ctx: &egui::Context) {
+        if !self.window_rect_loaded || self.last_window_save.elapsed() < Duration::from_secs(1) {
+            return;
+        }
+        let Some((outer, inner)) =
+            ctx.input(|input| input.viewport().outer_rect.zip(input.viewport().inner_rect))
+        else {
+            return;
+        };
+        let current = RectDto {
+            x: outer.min.x as f64,
+            y: outer.min.y as f64,
+            w: inner.width() as f64,
+            h: inner.height() as f64,
+        };
+        if self
+            .last_saved_rect
+            .is_some_and(|saved| rect_close(saved, current))
+        {
+            return;
+        }
+        let req = self.client.call("set_window_rect", |request| {
+            request.rect = Some(current);
+        });
+        self.pending.insert(req, PendingKind::Quiet);
+        self.last_saved_rect = Some(current);
+        self.last_window_save = Instant::now();
+    }
+
+    fn apply_action(&mut self, action: Action, entry: ClipboardEntry, _ctx: &egui::Context) {
+        let text = entry.text.clone();
+        match action {
+            Action::Paste => {
+                let target = self.target_hwnd as i64;
+                self.mutate(
+                    "paste",
+                    |request| {
+                        request.text = Some(text);
+                        request.target_hwnd = Some(target);
+                    },
+                    None,
+                    true,
+                );
+            }
+            Action::Copy => {
+                self.mutate("copy", |request| request.text = Some(text), None, false);
+            }
+            Action::TogglePin => {
+                let pinned = self.pinned_texts.contains(&text);
+                self.mutate(
+                    if pinned { "unpin" } else { "pin" },
+                    |request| request.text = Some(text),
+                    None,
+                    false,
+                );
+            }
+            Action::Remove => {
+                let pinned = self.pinned_texts.contains(&text);
+                let request_text = text.clone();
+                self.mutate(
+                    "remove",
+                    |request| request.text = Some(request_text),
+                    Some((text, pinned)),
+                    false,
+                );
+            }
+        }
+    }
+
+    fn set_error(&mut self, error: String) {
+        self.status = error;
+        self.status_error = true;
+        self.notice_until = None;
+    }
+
+    fn handle_keys(&mut self, ctx: &egui::Context) {
+        if self.preview.is_some() {
+            if ctx.input(|input| input.key_pressed(Key::Escape)) {
+                self.preview = None;
+            }
+            return;
+        }
+        if self.search_focused && ctx.input(|input| input.key_pressed(Key::Escape)) {
+            self.search.clear();
+            self.selected = 0;
+            self.list_focused = true;
+            ctx.memory_mut(|memory| memory.surrender_focus(egui::Id::new("clipboard-search")));
+            return;
+        }
+        if !self.list_focused
+            || self.search_focused
+            || self.confirm_clear.is_some()
+            || ctx.memory(|memory| memory.any_popup_open())
+            || self
+                .pending
+                .values()
+                .any(|kind| matches!(kind, PendingKind::Mutation { .. }))
+            || ctx.input(|input| !input.modifiers.is_none())
+        {
+            return;
+        }
+        if ctx.input(|input| input.key_pressed(Key::ArrowDown)) {
+            self.selected = (self.selected + 1).min(self.entries().len().saturating_sub(1));
+        }
+        if ctx.input(|input| input.key_pressed(Key::ArrowUp)) {
+            self.selected = self.selected.saturating_sub(1);
+        }
+        if ctx.input(|input| input.key_pressed(Key::Enter)) {
+            if let Some(entry) = self.selected_entry() {
+                self.apply_action(Action::Paste, entry, ctx);
+                return;
+            }
+        }
+        if ctx.input(|input| input.key_pressed(Key::Delete)) {
+            if let Some(entry) = self.selected_entry() {
+                self.apply_action(Action::Remove, entry, ctx);
+                return;
+            }
+        }
+        if ctx.input(|input| input.key_pressed(Key::Escape)) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
+        if self.tab == Tab::Recent && self.quick_paste {
+            let keys = [
+                Key::Num1,
+                Key::Num2,
+                Key::Num3,
+                Key::Num4,
+                Key::Num5,
+                Key::Num6,
+                Key::Num7,
+                Key::Num8,
+                Key::Num9,
+            ];
+            for (index, key) in keys.into_iter().enumerate() {
+                if ctx.input(|input| input.key_pressed(key)) {
+                    if let Some(entry) = self.entries().get(index).map(|entry| (*entry).clone()) {
+                        self.apply_action(Action::Paste, entry, ctx);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    fn top_bar(&mut self, ui: &mut egui::Ui, compact: bool) {
+        let palette = UiPalette::from_visuals(ui.visuals());
+        ui.horizontal(|ui| {
+            ui.vertical(|ui| {
+                ui.label(
+                    RichText::new("剪贴板记录")
+                        .strong()
+                        .size(20.0)
+                        .color(palette.text),
+                );
+                ui.label(
+                    RichText::new(format!(
+                        "最近 {} 条 · 置顶 {} 条",
+                        self.snapshot.history.len(),
+                        self.snapshot.pinned.len()
+                    ))
+                    .small()
+                    .color(palette.muted),
+                );
+            });
+            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                if ui.button("↻").on_hover_text("刷新").clicked() {
+                    self.request_refresh(true);
+                }
+                ui.menu_button("•••", |ui| {
+                    if ui
+                        .button(if self.dark {
+                            "☀  使用浅色主题"
+                        } else {
+                            "☾  使用深色主题"
+                        })
+                        .clicked()
+                    {
+                        self.dark = !self.dark;
+                        let value = if self.dark { "dark" } else { "light" };
+                        self.save_pref("theme_mode", value);
+                        ui.close_menu();
+                    }
+                    if ui.button("置顶当前剪贴板").clicked() {
+                        self.mutate("pin_current", |_| {}, None, false);
+                        ui.close_menu();
+                    }
+                    if ui.checkbox(&mut self.dense, "紧凑行高").changed() {
+                        let value = if self.dense { "1" } else { "0" };
+                        self.save_pref("dense_rows", value);
+                    }
+                    if ui
+                        .checkbox(&mut self.quick_paste, "数字键快速粘贴")
+                        .changed()
+                    {
+                        let value = if self.quick_paste { "1" } else { "0" };
+                        self.save_pref("quick_paste", value);
+                    }
+                    if ui.button("清空未置顶历史").clicked() {
+                        self.confirm_clear = Some(ClearKind::History);
+                        ui.close_menu();
+                    }
+                    if ui
+                        .add_enabled(
+                            self.max_age_days > 0,
+                            egui::Button::new(if self.max_age_days == 0 {
+                                "不按天数清理".to_string()
+                            } else {
+                                format!("清空 {} 天前记录", self.max_age_days)
+                            }),
+                        )
+                        .clicked()
+                    {
+                        self.confirm_clear = Some(ClearKind::Older);
+                        ui.close_menu();
+                    }
+                    if ui.button("清空全部").clicked() {
+                        self.confirm_clear = Some(ClearKind::All);
+                        ui.close_menu();
+                    }
+                });
+            });
+        });
+        ui.horizontal_wrapped(|ui| {
+            ui.label(if self.privacy_enabled {
+                "隐私模式：暂停读取和保存"
+            } else if self.background_enabled {
+                "后台记录已开启"
+            } else {
+                "后台记录已关闭 · 打开本窗口或刷新时读取当前文本"
+            });
+            if ui.link("剪贴板设置").clicked() {
+                self.open_settings();
+            }
+            ui.label(if self.quick_paste {
+                "数字键快粘：开启（列表操作时 1–9）"
+            } else {
+                "数字键快粘：关闭"
+            });
+        });
+        if let Some(notice) = &self.capture_notice {
+            ui.label(RichText::new(notice).color(palette.accent));
+        }
+        if self.latest_unseen && ui.button("有新记录 · 回到最新").clicked() {
+            self.tab = Tab::Recent;
+            self.filter.clear();
+            self.search.clear();
+            self.selected = 0;
+            self.scroll_to_latest = true;
+            self.latest_unseen = false;
+            self.list_focused = true;
+        }
+        ui.add_space(SPACE_MD);
+        ui.horizontal(|ui| {
+            let response = ui.add_sized(
+                [(ui.available_width() - 48.0).max(120.0), 34.0],
+                egui::TextEdit::singleline(&mut self.search)
+                    .id(egui::Id::new("clipboard-search"))
+                    .hint_text("⌕  搜索内容、网址、代码或路径…"),
+            );
+            self.search_focused = response.has_focus();
+            if self.search_focused {
+                self.list_focused = false;
+            }
+            if response.changed() {
+                self.selected = 0;
+            }
+            if !self.search.is_empty() && ui.button("×").on_hover_text("清除搜索").clicked() {
+                self.search.clear();
+                self.selected = 0;
+            }
+        });
+        if compact {
+            ui.add_space(SPACE_SM);
+            self.compact_navigation(ui);
+        } else if !self.filter.is_empty() {
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("当前筛选").small().color(palette.muted));
+                if ui
+                    .button(format!("{}  ×", filter_label(&self.filter)))
+                    .clicked()
+                {
+                    self.filter.clear();
+                    self.selected = 0;
+                }
+            });
+        }
+    }
+
+    fn compact_navigation(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal_wrapped(|ui| {
+            for (tab, label, count) in [
+                (Tab::Recent, "最近", self.snapshot.history.len()),
+                (Tab::Pinned, "置顶", self.snapshot.pinned.len()),
+            ] {
+                if ui
+                    .selectable_label(self.tab == tab, format!("{label}  {count}"))
+                    .clicked()
+                {
+                    self.tab = tab;
+                    self.selected = 0;
+                }
+            }
+            ui.separator();
+            egui::ComboBox::from_id_salt("compact_filter")
+                .selected_text(filter_label(&self.filter))
+                .show_ui(ui, |ui| self.filter_options(ui));
+        });
+    }
+
+    fn filter_options(&mut self, ui: &mut egui::Ui) {
+        for (label, value) in clipboard_filters() {
+            if ui.selectable_label(self.filter == value, label).clicked() {
+                self.filter = value.to_string();
+                self.selected = 0;
+                ui.close_menu();
+            }
+        }
+    }
+
+    fn sidebar(&mut self, ui: &mut egui::Ui) {
+        let palette = UiPalette::from_visuals(ui.visuals());
+        ui.set_width(112.0);
+        ui.label(RichText::new("查看").strong().color(palette.text));
+        if ui
+            .selectable_label(
+                self.tab == Tab::Recent,
+                format!("最近  {}", self.snapshot.history.len()),
+            )
+            .clicked()
+        {
+            self.tab = Tab::Recent;
+            self.selected = 0;
+        }
+        if ui
+            .selectable_label(
+                self.tab == Tab::Pinned,
+                format!("置顶  {}", self.snapshot.pinned.len()),
+            )
+            .clicked()
+        {
+            self.tab = Tab::Pinned;
+            self.selected = 0;
+        }
+        ui.add_space(SPACE_LG);
+        ui.label(RichText::new("筛选").strong().color(palette.text));
+        for (label, value) in clipboard_filters() {
+            if ui.selectable_label(self.filter == value, label).clicked() {
+                self.filter = value.to_string();
+                self.selected = 0;
+            }
+        }
+    }
+
+    fn list(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        let entries: Vec<ClipboardEntry> = self.entries().into_iter().cloned().collect();
+        if entries.is_empty() {
+            ui.centered_and_justified(|ui| {
+                let (symbol, title, hint) = self.empty_state_copy();
+                empty_state(ui, symbol, title, hint);
+                if self.status_error && ui.button("重新连接").clicked() {
+                    self.request_refresh(true);
+                } else if (!self.search.is_empty() || !self.filter.is_empty())
+                    && ui.button("清除搜索和筛选").clicked()
+                {
+                    self.search.clear();
+                    self.filter.clear();
+                }
+            });
+            return;
+        }
+        let previously_hovered = self.hovered;
+        self.hovered = None;
+        let scroll_to_latest = std::mem::take(&mut self.scroll_to_latest);
+        let mut scroll = ScrollArea::vertical().id_salt("clipboard-record-list");
+        if scroll_to_latest {
+            scroll = scroll.vertical_scroll_offset(0.0);
+        }
+        let scroll_output = scroll.show(ui, |ui| {
+            for (index, entry) in entries.into_iter().enumerate() {
+                let selected = index == self.selected;
+                let was_hovered = previously_hovered == Some(index);
+                let card =
+                    clipboard_card(ui, index, selected, was_hovered, self.dense, |ui| {
+                        ui.horizontal(|ui| {
+                            if self.tab == Tab::Recent && self.quick_paste && index < 9 {
+                                keycap(ui, index + 1);
+                            }
+                            ui.label(RichText::new(kind_label(&entry.text)).small().color(
+                                kind_color(&entry.text, UiPalette::from_visuals(ui.visuals())),
+                            ));
+                            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                                let pin = if self.pinned_texts.contains(&entry.text) {
+                                    "★"
+                                } else {
+                                    "☆"
+                                };
+                                if ui.small_button(pin).clicked() {
+                                    self.apply_action(Action::TogglePin, entry.clone(), ctx);
+                                }
+                                if selected || was_hovered {
+                                    ui.menu_button("⋯", |ui| {
+                                        if ui.button("完整预览").clicked() {
+                                            self.preview = Some(entry.clone());
+                                            ui.close_menu();
+                                        }
+                                        if ui.button("复制").clicked() {
+                                            self.apply_action(Action::Copy, entry.clone(), ctx);
+                                            ui.close_menu();
+                                        }
+                                        if ui.button("删除").clicked() {
+                                            self.apply_action(Action::Remove, entry.clone(), ctx);
+                                            ui.close_menu();
+                                        }
+                                    });
+                                    if ui.button("预览").clicked() {
+                                        self.preview = Some(entry.clone());
+                                    }
+                                    if ui.button("粘贴").clicked() {
+                                        self.apply_action(Action::Paste, entry.clone(), ctx);
+                                    }
+                                }
+                            });
+                        });
+                        let preview = display_text(&entry.text);
+                        let preview_limit = if self.dense { 100 } else { 180 };
+                        let preview = if preview.chars().count() > preview_limit {
+                            format!(
+                                "{}…",
+                                preview.chars().take(preview_limit).collect::<String>()
+                            )
+                        } else {
+                            preview
+                        };
+                        let text = if looks_like_code(&entry.text) || looks_like_path(&entry.text) {
+                            RichText::new(preview).monospace()
+                        } else {
+                            RichText::new(preview)
+                        };
+                        ui.add(egui::Label::new(text).wrap());
+                        ui.add_space(SPACE_XS);
+                        ui.label(RichText::new(entry_meta(&entry)).small().weak());
+                    });
+                if card.hovered() {
+                    self.hovered = Some(index);
+                }
+                if card.clicked() {
+                    self.selected = index;
+                    self.list_focused = true;
+                    ui.memory_mut(|memory| {
+                        memory.surrender_focus(egui::Id::new("clipboard-search"))
+                    });
+                }
+                if card.double_clicked() {
+                    self.apply_action(Action::Paste, entry, ctx);
+                }
+                ui.add_space(5.0);
+            }
+        });
+        self.near_top = scroll_output.state.offset.y < 8.0;
+        if self.near_top {
+            self.latest_unseen = false;
+        }
+    }
+
+    fn open_settings(&mut self) {
+        let path = std::env::current_exe().ok();
+        let Some(path) = path.filter(|path| path.is_file()) else {
+            self.set_error("未找到设置程序".into());
+            return;
+        };
+        let mut command = Command::new(path);
+        command.args(["--tool=settings", "--section=clipboard"]);
+        #[cfg(windows)]
+        command.creation_flags(CREATE_NO_WINDOW);
+        if let Err(err) = command.spawn() {
+            self.set_error(format!("打开设置失败：{err}"));
+        }
+    }
+
+    fn preview_window(&mut self, ctx: &egui::Context) {
+        let Some(entry) = self.preview.clone() else {
+            return;
+        };
+        let mut open = true;
+        egui::Window::new("完整文本预览")
+            .open(&mut open)
+            .default_size(egui::vec2(680.0, 480.0))
+            .show(ctx, |ui| {
+                ui.label(entry_meta(&entry));
+                let mut selected = String::new();
+                ScrollArea::both().max_height(380.0).show(ui, |ui| {
+                    // &str TextBuffer is read-only while retaining native text
+                    // selection and Ctrl+C, including newlines and tabs.
+                    let mut text = entry.text.as_str();
+                    let is_code = looks_like_code(text) || looks_like_path(text);
+                    let mut editor = egui::TextEdit::multiline(&mut text)
+                        .desired_width(f32::INFINITY)
+                        .desired_rows(16);
+                    if is_code {
+                        editor = editor.code_editor();
+                    }
+                    let output = editor.show(ui);
+                    if let Some(range) = output.cursor_range {
+                        let range = range.as_sorted_char_range();
+                        selected = entry
+                            .text
+                            .chars()
+                            .skip(range.start)
+                            .take(range.len())
+                            .collect();
+                    }
+                });
+                ui.horizontal(|ui| {
+                    if ui.button("复制全文").clicked() {
+                        self.apply_action(Action::Copy, entry.clone(), ctx);
+                    }
+                    if ui
+                        .add_enabled(!selected.is_empty(), egui::Button::new("复制选中文字"))
+                        .clicked()
+                    {
+                        self.mutate("copy", |request| request.text = Some(selected), None, false);
+                    }
+                    if ui.button("粘贴全文").clicked() {
+                        self.apply_action(Action::Paste, entry.clone(), ctx);
+                    }
+                });
+            });
+        if !open {
+            self.preview = None;
+        }
+    }
+
+    fn empty_state_copy(&self) -> (&'static str, &'static str, &'static str) {
+        if self.status_error {
+            ("!", "剪贴板服务暂不可用", "请检查服务状态后点击刷新重试")
+        } else if !self.search.is_empty() || !self.filter.is_empty() {
+            ("⌕", "没有匹配内容", "尝试其他关键词，或清除当前筛选")
+        } else if self.tab == Tab::Pinned {
+            ("☆", "还没有置顶内容", "置顶常用内容，之后可以快速粘贴")
+        } else if self.privacy_enabled {
+            (
+                "▢",
+                "隐私模式已开启",
+                "退出隐私模式后可读取和保存剪贴板文本",
+            )
+        } else if !self.background_enabled {
+            (
+                "▢",
+                "后台记录已关闭",
+                "复制文本后点击刷新；可通过“剪贴板设置”开启后台记录",
+            )
+        } else {
+            ("▢", "还没有剪贴板记录", "复制文字后，内容会自动出现在这里")
+        }
+    }
+
+    fn clear_confirmation(&mut self, ctx: &egui::Context) {
+        let Some(kind) = self.confirm_clear else {
+            return;
+        };
+        let (title, message) = match kind {
+            ClearKind::History => ("清空未置顶历史？", "置顶内容会被保留。"),
+            ClearKind::Older => ("清理旧记录？", "将删除超过保留期限的记录。"),
+            ClearKind::All => ("清空全部记录？", "历史和置顶内容都会被删除。"),
+        };
+        egui::Window::new(title)
+            .collapsible(false)
+            .resizable(false)
+            .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+            .show(ctx, |ui| {
+                ui.label(message);
+                ui.add_space(SPACE_MD);
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    if ui.button("取消").clicked() {
+                        self.confirm_clear = None;
+                    }
+                    if ui
+                        .button(
+                            RichText::new("确认清空")
+                                .color(UiPalette::from_visuals(ui.visuals()).danger),
+                        )
+                        .clicked()
+                    {
+                        match kind {
+                            ClearKind::History => self.mutate("clear_history", |_| {}, None, false),
+                            ClearKind::Older => {
+                                let days = self.max_age_days;
+                                self.mutate(
+                                    "clear_older_than",
+                                    |request| request.days = Some(days),
+                                    None,
+                                    false,
+                                );
+                            }
+                            ClearKind::All => self.mutate("clear_all", |_| {}, None, false),
+                        }
+                        self.confirm_clear = None;
+                    }
+                });
+            });
+    }
+}
+
+impl eframe::App for ClipboardApp {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.process_completions(ctx);
+        if self.dark {
+            ctx.set_visuals(egui::Visuals::dark());
+        } else {
+            ctx.set_visuals(egui::Visuals::light());
+        }
+        apply_tool_style(ctx);
+        if self.last_refresh.elapsed() >= REFRESH_INTERVAL {
+            self.request_refresh(false);
+        }
+        self.maybe_save_window_rect(ctx);
+        if self
+            .undo_until
+            .is_some_and(|deadline| Instant::now() >= deadline)
+        {
+            self.last_removed = None;
+            self.undo_until = None;
+        }
+        let compact = ctx.screen_rect().width() < 720.0;
+        egui::TopBottomPanel::top("top")
+            .frame(Frame::side_top_panel(&ctx.style()).inner_margin(12.0))
+            .show(ctx, |ui| self.top_bar(ui, compact));
+        let show_notice = self.status_error
+            || self
+                .notice_until
+                .is_some_and(|deadline| Instant::now() < deadline)
+            || self.status == "正在处理…"
+            || self.last_removed.is_some();
+        if show_notice {
+            egui::TopBottomPanel::bottom("status").show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    if self.status_error || self.status != "就绪" {
+                        status_pill(ui, &self.status, self.status_error);
+                    }
+                    ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                        if let Some((text, pinned)) = self.last_removed.clone() {
+                            if ui.button("撤销删除").clicked() {
+                                self.mutate(
+                                    "restore",
+                                    |request| {
+                                        request.text = Some(text);
+                                        request.was_pinned = Some(pinned);
+                                    },
+                                    None,
+                                    false,
+                                );
+                                self.last_removed = None;
+                                self.undo_until = None;
+                            }
+                        } else if self.quick_paste {
+                            ui.label("数字键 1–9 快粘");
+                        }
+                    });
+                });
+            });
+        }
+        if !compact {
+            egui::SidePanel::left("sidebar")
+                .resizable(false)
+                .frame(Frame::side_top_panel(&ctx.style()).inner_margin(12.0))
+                .show(ctx, |ui| self.sidebar(ui));
+        }
+        egui::CentralPanel::default().show(ctx, |ui| self.list(ui, ctx));
+        self.clear_confirmation(ctx);
+        self.handle_keys(ctx);
+        self.preview_window(ctx);
+        ctx.request_repaint_after(REFRESH_INTERVAL);
+    }
+
+    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        self.client.shutdown();
+    }
+}
+
+fn clipboard_filters() -> [(&'static str, &'static str); 7] {
+    [
+        ("全部", ""),
+        ("今天", "今天"),
+        ("近 7 天", "7d"),
+        ("网址", "type:url"),
+        ("代码", "type:code"),
+        ("路径", "type:path"),
+        ("邮箱", "type:email"),
+    ]
+}
+
+fn filter_label(value: &str) -> &'static str {
+    clipboard_filters()
+        .into_iter()
+        .find_map(|(label, filter)| (filter == value).then_some(label))
+        .unwrap_or("全部")
+}
+
+fn clipboard_card(
+    ui: &mut egui::Ui,
+    index: usize,
+    selected: bool,
+    hovered: bool,
+    dense: bool,
+    add: impl FnOnce(&mut egui::Ui),
+) -> egui::Response {
+    let palette = UiPalette::from_visuals(ui.visuals());
+    let active = selected || hovered;
+    let progress = ui.ctx().animate_bool_with_time(
+        ui.make_persistent_id(("clipboard-card", index)),
+        active,
+        0.14,
+    );
+    let fill = egui::Color32::from(egui::lerp(
+        egui::Rgba::from(palette.surface)..=egui::Rgba::from(palette.accent_soft),
+        progress,
+    ));
+    let frame = Frame::none()
+        .fill(fill)
+        .stroke(Stroke::new(
+            1.0_f32,
+            if selected {
+                palette.accent
+            } else {
+                palette.border_subtle
+            },
+        ))
+        .rounding(CARD_RADIUS)
+        .inner_margin(egui::Margin::symmetric(
+            SPACE_MD,
+            if dense { SPACE_XS } else { 10.0 },
+        ))
+        .show(ui, add);
+    if selected {
+        let stripe = egui::Rect::from_min_max(
+            frame.response.rect.left_top() + egui::vec2(1.0, CARD_RADIUS),
+            frame.response.rect.left_bottom() + egui::vec2(4.0, -CARD_RADIUS),
+        );
+        ui.painter().rect_filled(stripe, 2.0, palette.accent);
+    }
+    ui.interact(
+        frame.response.rect,
+        ui.make_persistent_id(("clipboard-card-interaction", index)),
+        Sense::click(),
+    )
+}
+
+fn keycap(ui: &mut egui::Ui, number: usize) {
+    let palette = UiPalette::from_visuals(ui.visuals());
+    Frame::none()
+        .fill(palette.surface_alt)
+        .stroke(Stroke::new(1.0_f32, palette.border))
+        .rounding(4.0)
+        .inner_margin(egui::Margin::symmetric(6.0, 2.0))
+        .show(ui, |ui| {
+            ui.label(RichText::new(number.to_string()).strong().small());
+        });
+}
+
+fn kind_color(text: &str, palette: UiPalette) -> egui::Color32 {
+    if looks_like_url(text) || looks_like_email(text) {
+        palette.accent
+    } else if looks_like_path(text) || looks_like_code(text) {
+        palette.muted
+    } else {
+        palette.text
+    }
+}
+
+fn rect_close(left: RectDto, right: RectDto) -> bool {
+    (left.x - right.x).abs() < 1.0
+        && (left.y - right.y).abs() < 1.0
+        && (left.w - right.w).abs() < 1.0
+        && (left.h - right.h).abs() < 1.0
+}
+
+#[cfg(windows)]
+fn constrain_window_rect_to_work_area(saved: RectDto, pixels_per_point: f32) -> RectDto {
+    use windows_sys::Win32::Foundation::RECT;
+    use windows_sys::Win32::Graphics::Gdi::{
+        GetMonitorInfoW, MonitorFromRect, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONULL,
+        MONITOR_DEFAULTTOPRIMARY,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        AdjustWindowRectEx, WS_EX_APPWINDOW, WS_OVERLAPPEDWINDOW,
+    };
+
+    let scale = if pixels_per_point.is_finite() {
+        f64::from(pixels_per_point).clamp(0.25, 8.0)
+    } else {
+        1.0
+    };
+    let finite_position = saved.x.is_finite() && saved.y.is_finite();
+    let desired_width = if saved.w.is_finite() && saved.w > 0.0 {
+        saved.w
+    } else {
+        WINDOW_DEFAULT_SIZE[0]
+    };
+    let desired_height = if saved.h.is_finite() && saved.h > 0.0 {
+        saved.h
+    } else {
+        WINDOW_DEFAULT_SIZE[1]
+    };
+    let desired_x_px = if finite_position {
+        (saved.x * scale).round() as i32
+    } else {
+        0
+    };
+    let desired_y_px = if finite_position {
+        (saved.y * scale).round() as i32
+    } else {
+        0
+    };
+    let desired_rect = RECT {
+        left: desired_x_px,
+        top: desired_y_px,
+        right: desired_x_px.saturating_add((desired_width * scale).round() as i32),
+        bottom: desired_y_px.saturating_add((desired_height * scale).round() as i32),
+    };
+    let saved_monitor = if finite_position {
+        unsafe { MonitorFromRect(&desired_rect, MONITOR_DEFAULTTONULL) }
+    } else {
+        0
+    };
+    let monitor = if saved_monitor != 0 {
+        saved_monitor
+    } else {
+        unsafe { MonitorFromWindow(0, MONITOR_DEFAULTTOPRIMARY) }
+    };
+    if monitor == 0 {
+        return RectDto {
+            x: 0.0,
+            y: 0.0,
+            w: WINDOW_DEFAULT_SIZE[0],
+            h: WINDOW_DEFAULT_SIZE[1],
+        };
+    }
+    let mut info: MONITORINFO = unsafe { std::mem::zeroed() };
+    info.cbSize = std::mem::size_of::<MONITORINFO>() as u32;
+    if unsafe { GetMonitorInfoW(monitor, &mut info) } == 0 {
+        return RectDto {
+            x: 0.0,
+            y: 0.0,
+            w: WINDOW_DEFAULT_SIZE[0],
+            h: WINDOW_DEFAULT_SIZE[1],
+        };
+    }
+
+    let mut decoration = RECT {
+        left: 0,
+        top: 0,
+        right: (WINDOW_DEFAULT_SIZE[0] * scale).round() as i32,
+        bottom: (WINDOW_DEFAULT_SIZE[1] * scale).round() as i32,
+    };
+    let adjusted =
+        unsafe { AdjustWindowRectEx(&mut decoration, WS_OVERLAPPEDWINDOW, 0, WS_EX_APPWINDOW) }
+            != 0;
+    let chrome_width = if adjusted {
+        (decoration.right - decoration.left)
+            .saturating_sub((WINDOW_DEFAULT_SIZE[0] * scale).round() as i32)
+            .max(0)
+    } else {
+        0
+    };
+    let chrome_height = if adjusted {
+        (decoration.bottom - decoration.top)
+            .saturating_sub((WINDOW_DEFAULT_SIZE[1] * scale).round() as i32)
+            .max(0)
+    } else {
+        0
+    };
+    let available_outer_width = (info.rcWork.right - info.rcWork.left)
+        .saturating_sub(WINDOW_WORK_AREA_MARGIN_PX * 2)
+        .max(1);
+    let available_outer_height = (info.rcWork.bottom - info.rcWork.top)
+        .saturating_sub(WINDOW_WORK_AREA_MARGIN_PX * 2)
+        .max(1);
+    let max_inner_width = available_outer_width.saturating_sub(chrome_width).max(1);
+    let max_inner_height = available_outer_height.saturating_sub(chrome_height).max(1);
+    let min_inner_width = ((WINDOW_MIN_SIZE[0] * scale).round() as i32).min(max_inner_width);
+    let min_inner_height = ((WINDOW_MIN_SIZE[1] * scale).round() as i32).min(max_inner_height);
+    let inner_width =
+        ((desired_width * scale).round() as i32).clamp(min_inner_width.max(1), max_inner_width);
+    let inner_height =
+        ((desired_height * scale).round() as i32).clamp(min_inner_height.max(1), max_inner_height);
+    let outer_width = inner_width.saturating_add(chrome_width);
+    let outer_height = inner_height.saturating_add(chrome_height);
+    let min_x = info.rcWork.left.saturating_add(WINDOW_WORK_AREA_MARGIN_PX);
+    let min_y = info.rcWork.top.saturating_add(WINDOW_WORK_AREA_MARGIN_PX);
+    let max_x = info
+        .rcWork
+        .right
+        .saturating_sub(WINDOW_WORK_AREA_MARGIN_PX)
+        .saturating_sub(outer_width)
+        .max(min_x);
+    let max_y = info
+        .rcWork
+        .bottom
+        .saturating_sub(WINDOW_WORK_AREA_MARGIN_PX)
+        .saturating_sub(outer_height)
+        .max(min_y);
+    let (x_px, y_px) = if saved_monitor == 0 {
+        (
+            min_x.saturating_add((max_x - min_x) / 2),
+            min_y.saturating_add((max_y - min_y) / 2),
+        )
+    } else {
+        (
+            desired_x_px.clamp(min_x, max_x),
+            desired_y_px.clamp(min_y, max_y),
+        )
+    };
+    RectDto {
+        x: f64::from(x_px) / scale,
+        y: f64::from(y_px) / scale,
+        w: f64::from(inner_width) / scale,
+        h: f64::from(inner_height) / scale,
+    }
+}
+
+#[cfg(not(windows))]
+fn constrain_window_rect_to_work_area(saved: RectDto, _pixels_per_point: f32) -> RectDto {
+    RectDto {
+        x: if saved.x.is_finite() { saved.x } else { 0.0 },
+        y: if saved.y.is_finite() { saved.y } else { 0.0 },
+        w: if saved.w.is_finite() {
+            saved.w.max(WINDOW_MIN_SIZE[0])
+        } else {
+            WINDOW_DEFAULT_SIZE[0]
+        },
+        h: if saved.h.is_finite() {
+            saved.h.max(WINDOW_MIN_SIZE[1])
+        } else {
+            WINDOW_DEFAULT_SIZE[1]
+        },
+    }
+}
+
+fn entry_matches(entry: &ClipboardEntry, search: &str, filter: &str) -> bool {
+    let search = search.trim().to_lowercase();
+    if !search.is_empty()
+        && !entry.text.to_lowercase().contains(&search)
+        && !entry
+            .source_app
+            .as_deref()
+            .unwrap_or_default()
+            .to_lowercase()
+            .contains(&search)
+    {
+        return false;
+    }
+    match filter {
+        "" => true,
+        "今天" => timestamp_within_days(entry.captured_at, 0),
+        "7d" => timestamp_within_days(entry.captured_at, 7),
+        "type:url" => looks_like_url(&entry.text),
+        "type:email" => looks_like_email(&entry.text),
+        "type:path" => looks_like_path(&entry.text),
+        "type:code" => looks_like_code(&entry.text),
+        _ => entry.text.to_lowercase().contains(&filter.to_lowercase()),
+    }
+}
+
+fn timestamp_within_days(timestamp: u64, days: i64) -> bool {
+    Local
+        .timestamp_opt(timestamp as i64, 0)
+        .single()
+        .is_some_and(|when| {
+            let age = Local::now()
+                .date_naive()
+                .signed_duration_since(when.date_naive())
+                .num_days();
+            age >= 0 && age <= days
+        })
+}
+
+fn entry_meta(entry: &ClipboardEntry) -> String {
+    let mut parts = vec![
+        timestamp_label(entry.captured_at),
+        format!("{} 字", entry.text.chars().count()),
+    ];
+    if entry.copy_count > 1 {
+        parts.push(format!("复制 {} 次", entry.copy_count));
+    }
+    if let Some(source) = entry
+        .source_app
+        .as_deref()
+        .filter(|value| !value.is_empty())
+    {
+        parts.push(source.to_string());
+    }
+    parts.join(" · ")
+}
+
+fn timestamp_label(timestamp: u64) -> String {
+    let Some(when) = Local.timestamp_opt(timestamp as i64, 0).single() else {
+        return "-".to_string();
+    };
+    let now = Local::now();
+    let seconds = (now - when).num_seconds().max(0);
+    if seconds < 10 {
+        "刚刚".to_string()
+    } else if seconds < 60 {
+        format!("{seconds} 秒前")
+    } else if seconds < 3600 {
+        format!("{} 分钟前", seconds / 60)
+    } else if seconds < 86400 && when.date_naive() == now.date_naive() {
+        format!("{} 小时前", seconds / 3600)
+    } else {
+        when.format("%m-%d %H:%M").to_string()
+    }
+}
+
+fn kind_label(text: &str) -> &'static str {
+    if looks_like_url(text) {
+        "网址"
+    } else if looks_like_email(text) {
+        "邮箱"
+    } else if looks_like_path(text) {
+        "路径"
+    } else if looks_like_code(text) {
+        "代码"
+    } else {
+        "文本"
+    }
+}
+
+fn looks_like_url(text: &str) -> bool {
+    let value = text.trim_start().to_lowercase();
+    value.starts_with("http://")
+        || value.starts_with("https://")
+        || value.starts_with("www.")
+        || value.contains("://")
+}
+
+fn looks_like_email(text: &str) -> bool {
+    text.split_once('@')
+        .is_some_and(|(left, right)| !left.is_empty() && right.contains('.'))
+}
+
+fn looks_like_path(text: &str) -> bool {
+    let value = text.trim();
+    (value.len() > 1 && value.as_bytes().get(1) == Some(&b':'))
+        || value.starts_with("\\\\")
+        || value.starts_with('/')
+        || value.contains('\\')
+}
+
+fn looks_like_code(text: &str) -> bool {
+    let value = text.trim();
+    value.contains("```")
+        || value.contains("=>")
+        || value.contains("::")
+        || value.contains("fn ")
+        || value.contains("function ")
+        || (value.contains('{') && value.contains('}'))
+        || (value.contains(';') && value.contains('='))
+}
+
+fn display_text(text: &str) -> String {
+    text.chars()
+        .map(|ch| {
+            if ch == '\t' || (ch < ' ' && ch != '\n' && ch != '\r') {
+                ' '
+            } else {
+                ch
+            }
+        })
+        .collect()
+}
+
+pub(super) fn run() -> eframe::Result<()> {
+    let _single_instance_guard = match pinyin_ime::win_single_instance::claim_or_activate_existing(
+        SINGLE_INSTANCE_MUTEX,
+        WINDOW_TITLE,
+    ) {
+        Ok(Some(guard)) => Some(guard),
+        Ok(None) => return Ok(()),
+        Err(_) => None,
+    };
+    #[cfg(windows)]
+    let target_hwnd = unsafe { GetForegroundWindow() } as isize;
+    #[cfg(not(windows))]
+    let target_hwnd = 0;
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_title(WINDOW_TITLE)
+            .with_inner_size(WINDOW_DEFAULT_SIZE.map(|value| value as f32))
+            .with_min_inner_size(WINDOW_MIN_SIZE.map(|value| value as f32)),
+        ..Default::default()
+    };
+    eframe::run_native(
+        WINDOW_TITLE,
+        options,
+        Box::new(move |cc| Ok(Box::new(ClipboardApp::new(cc, target_hwnd)))),
+    )
+}
+
+#[cfg(test)]
+mod clipboard_ui_tests {
+    use super::*;
+
+    fn fixture() -> ClipboardApp {
+        let (commands, _) = mpsc::channel();
+        let (_, completions) = mpsc::channel();
+        let client = AsyncServiceClient {
+            commands,
+            completions,
+            next_req: 1,
+            stopping: Arc::new(AtomicBool::new(false)),
+            worker: None,
+            capability: String::new(),
+        };
+        let mut app = ClipboardApp::with_client(client, 0);
+        app.snapshot = serde_json::from_value(json!({
+            "history": [{"id":"A","text":"existing A","captured_at":10}]
+        }))
+        .unwrap();
+        app
+    }
+
+    fn key(app: &mut ClipboardApp, key: Key, modifiers: egui::Modifiers) {
+        let ctx = egui::Context::default();
+        let mut input = egui::RawInput {
+            modifiers,
+            ..Default::default()
+        };
+        input.events.push(egui::Event::Key {
+            key,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        });
+        let _ = ctx.run(input, |ctx| app.handle_keys(ctx));
+    }
+
+    #[test]
+    fn search_and_preview_never_trigger_paste_or_delete() {
+        for key_value in [Key::Num1, Key::Enter, Key::Delete] {
+            let mut app = fixture();
+            app.search_focused = true;
+            key(&mut app, key_value, egui::Modifiers::NONE);
+            assert!(app.pending.is_empty());
+            let mut app = fixture();
+            app.preview = app.selected_entry();
+            key(&mut app, key_value, egui::Modifiers::NONE);
+            assert!(app.pending.is_empty());
+        }
+    }
+
+    #[test]
+    fn quick_paste_requires_list_focus_unmodified_keys_and_enabled_switch() {
+        for state in 0..4 {
+            let mut app = fixture();
+            let mut modifiers = egui::Modifiers::NONE;
+            match state {
+                0 => app.list_focused = false,
+                1 => app.quick_paste = false,
+                2 => modifiers.ctrl = true,
+                _ => app.confirm_clear = Some(ClearKind::All),
+            }
+            key(&mut app, Key::Num1, modifiers);
+            assert!(app.pending.is_empty());
+        }
+        let mut app = fixture();
+        key(&mut app, Key::Num1, egui::Modifiers::NONE);
+        assert_eq!(app.pending.len(), 1);
+    }
+
+    #[test]
+    fn refresh_keeps_selected_record_and_signals_latest_above_scroll() {
+        let mut app = fixture();
+        app.near_top = false;
+        app.apply_refresh(json!({
+            "modified":"next", "changed":true, "background_enabled":true,
+            "snapshot":{"history":[
+                {"id":"B","text":"new B","captured_at":11},
+                {"id":"A","text":"existing A","captured_at":10}
+            ]}
+        }))
+        .unwrap();
+        assert_eq!(app.selected_entry().unwrap().id, "A");
+        assert_eq!(app.selected, 1);
+        assert!(app.latest_unseen);
+        assert!(app.background_enabled);
+        app.near_top = true;
+        app.apply_refresh(json!({
+            "modified":"next2", "changed":true,
+            "snapshot":{"history":[
+                {"id":"C","text":"new C","captured_at":12},
+                {"id":"B","text":"new B","captured_at":11},
+                {"id":"A","text":"existing A","captured_at":10}
+            ]}
+        }))
+        .unwrap();
+        assert!(app.scroll_to_latest);
+    }
+
+    #[test]
+    fn parse_failure_does_not_acknowledge_revision_or_discard_old_records() {
+        let mut app = fixture();
+        app.modified = "previous".into();
+        assert!(app
+            .apply_refresh(json!({
+                "modified":"broken", "snapshot":{"history":"invalid"}
+            }))
+            .is_err());
+        assert_eq!(app.modified, "previous");
+        assert_eq!(app.snapshot.history[0].id, "A");
+    }
+
+    #[test]
+    fn forced_refresh_is_retained_while_previous_refresh_is_pending() {
+        let mut app = fixture();
+        app.refresh_pending = true;
+        app.request_refresh(true);
+        assert!(app.refresh_force_requested);
+        assert!(app.pending.is_empty());
+    }
+}

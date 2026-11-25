@@ -34,7 +34,7 @@ Colors use `#RRGGBB`.
 | `chip_active_bg`, `chip_active_border`, `chip_active_text` | Active mode chip. |
 | `selected_outline` | Accent color for selected indicator and selected number badge. |
 
-Runtime will correct text colors when contrast is too low. `build.py` also
+Runtime will correct text colors when contrast is too low. `python scripts/build_extras.py skins`
 prints warnings for low-contrast theme pairs so theme files can match runtime
 display more closely.
 

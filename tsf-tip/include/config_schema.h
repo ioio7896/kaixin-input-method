@@ -193,6 +193,7 @@ inline constexpr Entry entries[] = {
 {L"compatibility",L"game_status_indicator",L"1"},
 {L"compatibility",L"game_status_duration_ms",L"1600"},
 {L"compatibility",L"game_status_scale_percent",L"100"},
+{L"compatibility",L"game_shift_toggle",L"0"},
 };
 inline const wchar_t* DefaultValue(const wchar_t* section, const wchar_t* key) {
 for (const auto& e : entries) if (_wcsicmp(e.section, section)==0 && _wcsicmp(e.key,key)==0) return e.value;

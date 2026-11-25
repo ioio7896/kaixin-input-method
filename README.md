@@ -12,7 +12,7 @@ TSF（Text Services Framework）接入系统输入法，Rust 进程负责拼音�
 - **行为可控**：学习、剪贴板采集、功能热键、应用排除和诊断级别均可配置。
 - **可验证**：词库来源、构建流程、候选质量、IPC 和候选窗均有检查。
 
-当前版本为 **2026.1124.1848**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
+当前版本为 **2026.1125.1833**，目标平台为 64 位 Windows；安装包同时包含 64 位和 32 位
 TSF/辅助组件，以适配不同位数的宿主程序。
 
 当前支持 Windows 10 和 Windows 11。Windows Server、Windows on ARM、Wine
@@ -70,11 +70,7 @@ tsf-tip/srf_tsf_tip.dll       C++：按键、composition、候选窗、应用兼
         ▼
 srf_ime_engine.exe            Rust：解析、候选、学习、词库和剪贴板查询
         │
-        ├── srf_ime_settings.exe
-        ├── srf_ime_tray.exe
-        ├── srf_ime_clipboard.exe
-        ├── srf_ime_handwrite.exe
-        └── srf_ime_ocr.exe
+        ├── srf_ime_desktop.exe    托盘、设置、剪贴板、手写、符号、软键盘、OCR
         └── 翻译请求（候选词 / 托盘 / OCR） ──► 外部 HY-MT2 / WinTranslator
 ```
 
@@ -93,6 +89,16 @@ srf_ime_engine.exe            Rust：解析、候选、学习、词库和剪贴�
 往返延迟，也不包含绘制时间。verbose 级别新增 `srf_candidate_stage`，记录阶段名称、
 候选数量和首屏位置变化，新增字段不记录输入或候选正文。
 
+Rust 工作区由 kaixin-core 调度查词、排序和学习。kaixin-pinyin 提供分词、词表和语言模型，
+kaixin-platform 提供 Windows IPC 和本地存储支撑。截图、翻译和剪贴板分别由
+kaixin-capture、kaixin-translate 和 kaixin-clipboard 管理。桌面宿主通过 --tool 参数选择工具。
+引擎候选响应采用协议 v6 的变长二进制帧，仅传输每条候选实际包含的字段。
+
+语言模型、单字读音、简繁映射和符号目录存放在安装目录的 `model-data` 中。运行时通过
+SHA-256 清单选择并只读映射数据。二元语言模型直接在映射上查分。开发时可运行
+`cargo run --release -p kaixin-pinyin --bin bake_model` 重新生成数据，默认写入
+`pinyin-ime/target/model-data`。应用在进程启动后使用同一份数据快照，更新数据后重启相应进程即可加载。
+
 ## 安装
 
 完整构建会在 `dist/` 生成两类安装包：
@@ -106,7 +112,7 @@ kaixin-setup-ocr-<version>-<timestamp>.exe   输入法 + 本地 OCR
 立即出现在列表中，可注销并重新登录，或在 Windows 语言设置中检查
 “中文（简体，中国）”下的键盘。
 
-默认生成机器范围安装包。开发者也可使用 `python build.py --user-installer` 生成
+默认生成机器范围安装包。开发者也可使用 `cargo xtask release --user-installer` 生成
 当前用户安装包。
 
 普通卸载和静默卸载都会删除当前 Windows 用户的开心输入法数据，包括配置、学习词库、
@@ -259,13 +265,15 @@ log_level=error
 | --- | --- | --- |
 | 配置 | `%LOCALAPPDATA%\kaixin\kaixin.ini` | 当前用户目录 ACL；内容为明文 |
 | IPC capability | `%LOCALAPPDATA%\kaixin\engine_capability.dat` | DPAPI + 文件 ACL |
-| 用户词库 | `%LOCALAPPDATA%\kaixin\user_dict.sqlite` | 整库 DPAPI |
-| 剪贴板历史 | `%LOCALAPPDATA%\kaixin\clipboard_store.sqlite` | 整库 DPAPI |
+| 用户词库 | `%LOCALAPPDATA%\kaixin\user_dict.kxj` | AES-256-GCM 增量日志，密钥由 DPAPI 保护 |
+| 剪贴板历史 | `%LOCALAPPDATA%\kaixin\clipboard_store.kxj` | AES-256-GCM 增量日志，密钥由 DPAPI 保护 |
 | OCR 历史 | `%LOCALAPPDATA%\kaixin\ocr_history.sqlite` | 整库 DPAPI |
 | 截图库索引 | `%LOCALAPPDATA%\kaixin\screenshot_library.sqlite` | 整库 DPAPI |
 | 运行事件 | `%LOCALAPPDATA%\kaixin\runtime_events.sqlite` | 消息及详情字段 DPAPI |
 | 截图图片 | 用户设置目录 | 普通 PNG/JPEG，不加密 |
 | 诊断日志 | `%LOCALAPPDATA%\kaixin\logs` | 可能包含明文诊断信息 |
+
+用户词库和剪贴板历史均由引擎进程管理，桌面工具通过已认证的本地管道访问。升级后这两项使用新的日志文件并从空状态开始，旧 SQLite 文件不会自动导入。
 
 当前开发格式会拒绝旧版明文用户词库、剪贴板、OCR 和截图库数据库，不再自动读取或
 迁移。升级本开发版本前，如不需要旧数据，可关闭输入法相关进程后删除对应旧文件。
@@ -328,52 +336,52 @@ log_level=error
 正式发布直接运行以下命令，无需安装 Python：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1
+cargo xtask release
 ```
 
-也可运行 `build_latest_installers.cmd`。发布入口生成上海时间戳版本，检查源码和词库，运行
+也可运行 `build_latest_installers.cmd` 或 `scripts/release.ps1`，两者均转发到同一构建工具。发布入口生成上海时间戳版本，检查源码和词库，运行
 Rust 全目标、x64/x86 原生测试和暂存包冒烟测试，产出两个安装器、项目根目录的源码 ZIP，
 以及包含安装器版本、大小和 SHA-256 的 `dist/release-<版本>.json`。
 自动化调用前设置 `KX_BUILD_NO_PAUSE=1` 可关闭结束暂停。
 
-`release.ps1 -Check` 可单独检查源码、语料生成和词库。`-UserInstaller` 生成当前用户范围的两个安装器。
-传入 `-SkipTests` 会跳过代码测试和冒烟检查，并在发布报告中记录；词库、安装器版本及包体哈希仍会校验。
-Python 3.12+ 仅用于下文的可选开发构建、离线词库维护和额外开发检查。
+`cargo xtask check` 可单独检查源码、语料生成和词库。`--user-installer` 生成当前用户范围的两个安装器。
+传入 `--skip-tests` 会跳过代码测试和冒烟检查，并在发布报告中记录。词库、安装器版本及包体哈希仍会校验。
+Python 3.12+ 用于开发暂存时的皮肤检查、离线词库维护和其他可选开发检查。
 
 安装包先在临时目录全部生成并完成配置的签名步骤，再发布到 `dist/`。
 被替换变体的旧安装包保存在 `dist/previous-installers/`，其他变体保持原位置。
 归档不自动删除，可按需手动清理；构建或签名失败不会提前删除旧安装包。
 
-使用可选开发构建单独生成纯输入法包：
+开发时可单独暂存纯输入法包：
 
 ```powershell
-python build.py --package-variants ime
+cargo xtask build --package-variants ime
 ```
 
 常用参数：
 
 ```powershell
-python build.py --debug
-python build.py --clean
-python build.py --no-inno
-python build.py --user-installer
-python build.py --package-variants ime
-python build.py --package-variants ocr
-python build.py --portable-zip
-python build.py --perf-smoke
-python build.py --dry-run
+cargo xtask build --debug --package-variants ime
+cargo xtask build --clean --no-inno
+cargo xtask build --no-inno
+cargo xtask release --user-installer
+cargo xtask build --package-variants ime
+cargo xtask build --package-variants ocr
+cargo xtask build --no-inno --portable-zip
+cargo xtask build --no-inno --perf-smoke
+cargo xtask build --dry-run
 ```
 
-`--quick` 仅复用已有 Rust/C++ 产物重新 stage/package，不适合首次或正式构建。
+`cargo xtask build --quick` 复用同一版本下已记录指纹的 Rust 和 x64/x86 C++ 产物，重新生成暂存包。源码、产物或编译参数变化后需重建相应组件。`--skip-cargo` 和 `--skip-cmake` 可单独复用一个组件。
 正式发布建议强制代码签名：
 
 ```powershell
 $env:KX_SIGN_CERT_SHA1 = '<certificate thumbprint>'
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1 -SignRequired
+cargo xtask release --sign-required
 ```
 
 也可通过 `KX_SIGN_PFX` 和相关密码环境变量使用 PFX；执行
-`python build.py --help` 查看当前参数。
+`cargo xtask build --help` 查看当前参数。`python build.py` 仍可作为转发入口。
 
 主要产物：
 
@@ -413,7 +421,7 @@ cargo run --bin phrase_len_eval -- --limit 500
 性能检查：
 
 ```powershell
-python build.py --perf-smoke
+cargo xtask build --no-inno --perf-smoke
 ```
 
 需要交互桌面的截图/WGC 测试在无桌面环境中会跳过。
@@ -470,7 +478,7 @@ pinyin-ime/      Rust 引擎、GUI 工具和评测程序
 scripts/         验证、词库生成和安装检查脚本
 skins/           候选窗主题
 tsf-tip/         C++ TSF 前端、候选覆盖层和安装器
-build.py         一键构建、验证、stage、签名和打包
+crates/kaixin-release/  开发构建、验证、暂存和双安装器发布
 ```
 
 ## 相关文档
@@ -540,8 +548,8 @@ HY-MT2 使用独立的 `\\.\pipe\HyMT2.IME.Request`，不会占用旧 `WinTransl
 
 ## 发布版本与验证
 
-`scripts/release.ps1` 按上海时间生成 `年.月日.时分` 时间戳，数字段自动去除前导零，同步应用 Cargo 清单、锁文件和本文版本。C++ 和安装器直接读取 `VERSION`。
+`cargo xtask release` 按上海时间生成 `年.月日.时分` 时间戳，数字段自动去除前导零，同步应用 Cargo 清单、锁文件和本文版本。C++ 和安装器直接读取 `VERSION`。
 
 发布 Rust/Cargo 固定为 `release-toolchain.json` 中的 1.99.0，CI 使用同一版本。本地工具链不一致时，打包会在编译前报错。
 
-正式打包默认检查暂存引擎和 x64/x86 TSF 的版本、协议及真实 `nihao` 握手，并运行三档 OCR 冒烟测试。可选开发构建还可输出速度、内存和候选质量报告，详见 [分类评测说明](docs/category-ranking-evaluation.md)。
+正式打包默认检查暂存引擎和 x64/x86 TSF 的版本、协议及真实 `nihao` 握手，并运行三档 OCR 冒烟测试。可单独生成速度、内存和候选质量报告，详见 [分类评测说明](docs/category-ranking-evaluation.md)。

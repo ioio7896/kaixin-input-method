@@ -269,6 +269,7 @@ class Worker:
         else:
             command = [
                 str(helper),
+                "--tool=ocr",
                 "--ocr-worker",
                 "--stdio",
                 "--rapidocr-root",
@@ -397,13 +398,13 @@ def main() -> None:
         (
             p
             for p in (
-                ROOT / "pinyin-ime/target/release/srf_ime_ocr.exe",
-                ROOT / "pinyin-ime/target/debug/srf_ime_ocr.exe",
-                ROOT / "dist/kaixin-package-ocr/srf_ime_ocr.exe",
+                ROOT / "pinyin-ime/target/release/srf_ime_desktop.exe",
+                ROOT / "pinyin-ime/target/debug/srf_ime_desktop.exe",
+                ROOT / "dist/kaixin-package-ocr/srf_ime_desktop.exe",
             )
             if p.is_file()
         ),
-        ROOT / "pinyin-ime/target/release/srf_ime_ocr.exe",
+        ROOT / "pinyin-ime/target/release/srf_ime_desktop.exe",
     )
     parser.add_argument("--helper", type=Path, default=default_worker)
     parser.add_argument("--rapidocr-root", type=Path, default=ROOT / "RapidOCRLite")

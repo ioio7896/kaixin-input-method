@@ -23,7 +23,9 @@ WORKSPACE_PATH = re.compile(rb"(?i)G:[\\/]+code1[\\/]+")
 LOCAL_ROOT_FILES = ("kaixin-source-*.zip", "20??_??_??-??_??_??*")
 PRIVATE_NAMES = (
     "user_dict.sqlite",
+    "user_dict.kxj",
     "clipboard_store.sqlite",
+    "clipboard_store.kxj",
     "clipboard_manager_window.sqlite",
     "ocr_history.sqlite",
     "runtime_events.sqlite",

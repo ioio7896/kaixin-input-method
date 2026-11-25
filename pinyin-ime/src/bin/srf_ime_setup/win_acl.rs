@@ -78,7 +78,7 @@ mod imp {
         false
     }
 
-    pub fn set_install_directory_access(path: &Path, machine: bool) -> Result<(), String> {
+    pub fn set_install_directory_access(path: &Path, _machine: bool) -> Result<(), String> {
         let mut wide_path = to_wide(path.as_os_str());
         let mut dacl: *mut ACL = null_mut();
         let mut sd: PSECURITY_DESCRIPTOR = null_mut();
@@ -114,34 +114,35 @@ mod imp {
                 let mut sids_to_free: Vec<PsId> = Vec::new();
                 let mut explicit_entries: Vec<EXPLICIT_ACCESS_W> = Vec::new();
 
-                if !machine {
-                    for sid_str in APP_PACKAGE_SIDS {
-                        let wide_sid = str_to_wide(sid_str);
-                        let mut sid: PsId = null_mut();
-                        if ConvertStringSidToSidW(wide_sid.as_ptr(), &mut sid) == 0 || sid.is_null()
-                        {
-                            for s in &sids_to_free {
-                                LocalFree(*s as HLOCAL);
-                            }
-                            return Err(format!("ConvertStringSidToSidW({sid_str}) failed"));
+                // Both machine and user installs must ensure ALL APPLICATION PACKAGES
+                // (S-1-15-2-1) and ALL RESTRICTED APPLICATION PACKAGES (S-1-15-2-2)
+                // have RX access so Win10 Start Menu / SearchApp / UWP hosts can load
+                // the TSF TIP DLL even when Program Files inheritance lacks S-1-15-2-2.
+                for sid_str in APP_PACKAGE_SIDS {
+                    let wide_sid = str_to_wide(sid_str);
+                    let mut sid: PsId = null_mut();
+                    if ConvertStringSidToSidW(wide_sid.as_ptr(), &mut sid) == 0 || sid.is_null() {
+                        for s in &sids_to_free {
+                            LocalFree(*s as HLOCAL);
                         }
-                        if dacl_grants_rx(dacl, sid) {
-                            LocalFree(sid as HLOCAL);
-                        } else {
-                            sids_to_free.push(sid);
-                            explicit_entries.push(EXPLICIT_ACCESS_W {
-                                grfAccessPermissions: FILE_GENERIC_READ | FILE_GENERIC_EXECUTE,
-                                grfAccessMode: GRANT_ACCESS,
-                                grfInheritance: SUB_CONTAINERS_AND_OBJECTS_INHERIT,
-                                Trustee: TRUSTEE_W {
-                                    pMultipleTrustee: null_mut(),
-                                    MultipleTrusteeOperation: 0,
-                                    TrusteeForm: TRUSTEE_IS_SID,
-                                    TrusteeType: TRUSTEE_IS_UNKNOWN,
-                                    ptstrName: sid as *mut u16,
-                                },
-                            });
-                        }
+                        return Err(format!("ConvertStringSidToSidW({sid_str}) failed"));
+                    }
+                    if dacl_grants_rx(dacl, sid) {
+                        LocalFree(sid as HLOCAL);
+                    } else {
+                        sids_to_free.push(sid);
+                        explicit_entries.push(EXPLICIT_ACCESS_W {
+                            grfAccessPermissions: FILE_GENERIC_READ | FILE_GENERIC_EXECUTE,
+                            grfAccessMode: GRANT_ACCESS,
+                            grfInheritance: SUB_CONTAINERS_AND_OBJECTS_INHERIT,
+                            Trustee: TRUSTEE_W {
+                                pMultipleTrustee: null_mut(),
+                                MultipleTrusteeOperation: 0,
+                                TrusteeForm: TRUSTEE_IS_SID,
+                                TrusteeType: TRUSTEE_IS_UNKNOWN,
+                                ptstrName: sid as *mut u16,
+                            },
+                        });
                     }
                 }
 

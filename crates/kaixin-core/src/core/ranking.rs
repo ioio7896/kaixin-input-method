@@ -458,7 +458,7 @@ impl PinyinEngine {
             return 0.0;
         }
 
-        let Some(lexicon) = self.phrase_lexicon.as_ref() else {
+        let Some(lexicon) = self.phrase_lexicon.as_deref() else {
             return 0.0;
         };
         let freq = lexicon.phrase_frequency(phrase);
@@ -532,7 +532,7 @@ impl PinyinEngine {
 
                 let lex_freq = self
                     .phrase_lexicon
-                    .as_ref()
+                    .as_deref()
                     .map(|lex| lex.phrase_frequency(&piece))
                     .unwrap_or(0);
                 let user_signal = self.user_lexicon.phrase_signal(&piece);
@@ -765,7 +765,7 @@ impl PinyinEngine {
                 }
                 let lex_freq = self
                     .phrase_lexicon
-                    .as_ref()
+                    .as_deref()
                     .map(|lex| lex.phrase_frequency(&piece))
                     .unwrap_or(0);
                 let user_signal = self.user_lexicon.phrase_signal(&piece);
@@ -1008,7 +1008,7 @@ impl PinyinEngine {
     pub(super) fn word_graph_user_edge_bonus(&self, entry: &LearnedEntry, now: u64) -> f64 {
         let lex_freq = self
             .phrase_lexicon
-            .as_ref()
+            .as_deref()
             .map(|lex| lex.phrase_frequency(&entry.phrase))
             .unwrap_or(0);
         phrase_span_bonus(entry.phrase.chars().count(), lex_freq, entry.stats(), now)

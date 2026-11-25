@@ -1,0 +1,1054 @@
+#include "srf_tip_detail.h"
+
+using namespace srf_tip_detail;
+
+#include "wintranslator_protocol.h"
+
+namespace {
+
+class SrfScopedPerfTimer {
+ public:
+  explicit SrfScopedPerfTimer(const wchar_t* stage) : m_stage(stage), m_start(GetTickCount64()) {}
+  ~SrfScopedPerfTimer() { DebugLogPerfMs(m_stage, m_start); }
+
+ private:
+  const wchar_t* m_stage = nullptr;
+  ULONGLONG m_start = 0;
+};
+
+}  // namespace
+
+namespace srf_tip_detail {
+
+bool IsShiftedDirectSymbolText(const std::wstring& text) {
+  if (text.size() != 1) return false;
+  const wchar_t ch = text[0];
+  if (ch == L' ') return false;
+  if ((ch >= L'0' && ch <= L'9') || (ch >= L'a' && ch <= L'z') || (ch >= L'A' && ch <= L'Z')) {
+    return false;
+  }
+  return IsDirectInsertPreferredChar(ch);
+}
+
+std::wstring JsonEscapeTranslationText(const std::wstring& text) {
+  std::wstring escaped;
+  escaped.reserve(text.size() + 16);
+  for (wchar_t ch : text) {
+    switch (ch) {
+      case L'\\':
+        escaped += L"\\\\";
+        break;
+      case L'\"':
+        escaped += L"\\\"";
+        break;
+      case L'\r':
+        escaped += L"\\r";
+        break;
+      case L'\n':
+        escaped += L"\\n";
+        break;
+      case L'\t':
+        escaped += L"\\t";
+        break;
+      default:
+        if (ch < 0x20) {
+          wchar_t encoded[7] = {};
+          swprintf_s(encoded, L"\\u%04x", static_cast<unsigned>(ch));
+          escaped += encoded;
+        } else {
+          escaped.push_back(ch);
+        }
+    }
+  }
+  return escaped;
+}
+
+std::atomic<unsigned long long> g_candidateTranslationRequestCounter{1};
+
+bool WideTextToUtf8(const std::wstring& text, std::string* output) {
+  if (!output) return false;
+  output->clear();
+  if (text.empty()) return true;
+  const int bytes =
+      WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(), static_cast<int>(text.size()),
+                          nullptr, 0, nullptr, nullptr);
+  if (bytes <= 0) return false;
+  output->resize(static_cast<size_t>(bytes));
+  return WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, text.data(),
+                             static_cast<int>(text.size()), output->data(), bytes, nullptr,
+                             nullptr) == bytes;
+}
+
+bool IsContinuousTranslateFlagPresent() {
+  static std::atomic<ULONGLONG> lastCheckedTick{0};
+  static std::atomic<bool> cachedEnabled{false};
+  const ULONGLONG now = GetTickCount64();
+  const ULONGLONG prev = lastCheckedTick.load(std::memory_order_relaxed);
+  if (prev != 0 && now - prev < 500) {
+    return cachedEnabled.load(std::memory_order_relaxed);
+  }
+  wchar_t localRoot[MAX_PATH] = {};
+  bool enabled = false;
+  if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
+    const auto flag = std::filesystem::path(localRoot) / L"kaixin" / L"translate_continuous.flag";
+    const DWORD attrs = GetFileAttributesW(flag.c_str());
+    enabled = attrs != INVALID_FILE_ATTRIBUTES && (attrs & FILE_ATTRIBUTE_DIRECTORY) == 0;
+  }
+  cachedEnabled.store(enabled, std::memory_order_relaxed);
+  lastCheckedTick.store(now, std::memory_order_relaxed);
+  return enabled;
+}
+
+bool IsTranslatorLikelyAvailable() {
+  if (WaitNamedPipeW(wintranslator_protocol::kHyMtRequestPipe, 0) != 0 ||
+      WaitNamedPipeW(wintranslator_protocol::kRequestPipe, 0) != 0) {
+    return true;
+  }
+  wchar_t envBuf[MAX_PATH] = {};
+  if (GetEnvironmentVariableW(L"HYMT_TRANSLATOR_EXE", envBuf, MAX_PATH) &&
+      GetFileAttributesW(envBuf) != INVALID_FILE_ATTRIBUTES) {
+    return true;
+  }
+  if (GetEnvironmentVariableW(L"WINTRANSLATOR_EXE", envBuf, MAX_PATH) &&
+      GetFileAttributesW(envBuf) != INVALID_FILE_ATTRIBUTES) {
+    return true;
+  }
+  wchar_t localRoot[MAX_PATH] = {};
+  if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
+    const auto ini = std::filesystem::path(localRoot) / L"kaixin" / L"kaixin.ini";
+    wchar_t configured[MAX_PATH] = {};
+    GetPrivateProfileStringW(L"tools", L"wintranslator_path", L"", configured, MAX_PATH,
+                             ini.c_str());
+    if (configured[0] != L'\0' && GetFileAttributesW(configured) != INVALID_FILE_ATTRIBUTES) {
+      return true;
+    }
+    const auto defaultHyMt =
+        std::filesystem::path(localRoot) / L"Programs" / L"Hy-MT2" / L"hy-mt2-desktop.exe";
+    if (GetFileAttributesW(defaultHyMt.c_str()) != INVALID_FILE_ATTRIBUTES) return true;
+    const auto defaultWinTr =
+        std::filesystem::path(localRoot) / L"Programs" / L"WinTranslator" / L"WinTranslator.exe";
+    if (GetFileAttributesW(defaultWinTr.c_str()) != INVALID_FILE_ATTRIBUTES) return true;
+  }
+  const wchar_t* regPath =
+      L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\hy-mt2-desktop.exe";
+  for (HKEY hive : {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE}) {
+    wchar_t regVal[MAX_PATH] = {};
+    DWORD regSize = sizeof(regVal);
+    if (RegGetValueW(hive, regPath, nullptr, RRF_RT_REG_SZ, nullptr, regVal, &regSize) ==
+            ERROR_SUCCESS &&
+        regVal[0] != L'\0' && GetFileAttributesW(regVal) != INVALID_FILE_ATTRIBUTES) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool TryHandoffToRunningPreview(const std::string& request) {
+  constexpr wchar_t kPreviewPipe[] = LR"(\\.\pipe\Kaixin.TranslationPreview.Control)";
+  if (WaitNamedPipeW(kPreviewPipe, 80) == 0) return false;
+  HANDLE pipe = CreateFileW(kPreviewPipe, GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+  if (pipe == INVALID_HANDLE_VALUE) return false;
+  DWORD written = 0;
+  const BOOL ok =
+      WriteFile(pipe, request.data(), static_cast<DWORD>(request.size()), &written, nullptr);
+  CloseHandle(pipe);
+  return ok != 0 && written == request.size();
+}
+
+bool LaunchCandidateTranslation(const std::wstring& text, HWND targetHwnd, uint64_t focusGeneration,
+                                const RECT* caretRect, const wchar_t* targetOverride,
+                                const wchar_t* originOverride, bool ephemeral,
+                                bool allowClipboardFallback) {
+  if (!targetHwnd) return false;
+  if (text.empty() && !allowClipboardFallback) return false;
+  if (!IsTranslatorLikelyAvailable()) return false;
+
+  const auto executable = FindTrayHelper(
+      ModuleDirFromAddress(reinterpret_cast<const void*>(&LaunchCandidateTranslation)));
+  if (executable.empty()) return false;
+
+  DWORD targetProcessId = 0;
+  GetWindowThreadProcessId(targetHwnd, &targetProcessId);
+  const unsigned long long counter =
+      g_candidateTranslationRequestCounter.fetch_add(1, std::memory_order_relaxed);
+  const std::wstring requestId = std::to_wstring(GetCurrentProcessId()) + L"-" +
+                                 std::to_wstring(GetTickCount64()) + L"-" +
+                                 std::to_wstring(counter);
+  std::wstring target = L"auto-opposite", resultAction = L"show";
+  wchar_t localRoot[MAX_PATH] = {}, language[64] = {};
+  if (GetEnvironmentVariableW(L"LOCALAPPDATA", localRoot, MAX_PATH)) {
+    const auto ini = std::filesystem::path(localRoot) / L"kaixin" / L"kaixin.ini";
+    GetPrivateProfileStringW(L"tools", L"translate_target_language", L"auto-opposite", language, 64,
+                             ini.c_str());
+    target = language;
+    GetPrivateProfileStringW(L"tools", L"translate_result_action", L"show", language, 64,
+                             ini.c_str());
+    resultAction = language;
+  }
+  if (targetOverride && targetOverride[0] != L'\0') {
+    target = targetOverride;
+  }
+  std::wstring effectiveText = text;
+  if (effectiveText.empty()) {
+    // Allow `vv tr` with no argument to translate current clipboard text safely.
+    if (OpenClipboard(nullptr)) {
+      HANDLE clip = GetClipboardData(CF_UNICODETEXT);
+      if (clip) {
+        if (const wchar_t* ptr = static_cast<const wchar_t*>(GlobalLock(clip))) {
+          effectiveText = ptr;
+          GlobalUnlock(clip);
+        }
+      }
+      CloseClipboard();
+    }
+    if (effectiveText.empty()) return false;
+  }
+  const std::wstring origin =
+      (originOverride && originOverride[0] != L'\0') ? originOverride : L"kaixin-ime-candidate";
+  std::wstring caretJson;
+  if (caretRect && (caretRect->left != 0 || caretRect->bottom != 0)) {
+    caretJson = L",\"caret_rect\":[" + std::to_wstring(caretRect->left) + L"," +
+                std::to_wstring(caretRect->top) + L"," + std::to_wstring(caretRect->right) + L"," +
+                std::to_wstring(caretRect->bottom) + L"]";
+  }
+  const std::wstring json =
+      L"{\"protocol_version\":" + std::to_wstring(wintranslator_protocol::kVersion) +
+      L",\"request_id\":\"" + requestId + L"\",\"action\":\"translate\",\"text\":\"" +
+      JsonEscapeTranslationText(effectiveText) + L"\",\"source\":\"auto\",\"target\":\"" +
+      JsonEscapeTranslationText(target) + L"\",\"origin\":\"" + JsonEscapeTranslationText(origin) +
+      L"\",\"target_hwnd\":" + std::to_wstring(reinterpret_cast<uintptr_t>(targetHwnd)) +
+      L",\"target_process_id\":" + std::to_wstring(targetProcessId) + L",\"result_action\":\"" +
+      JsonEscapeTranslationText(resultAction) + L"\",\"interactive\":true," +
+      L"\"presentation\":\"compact\",\"delivery\":\"show\"," + L"\"focus_generation\":" +
+      std::to_wstring(focusGeneration) + L",\"replace_selection\":false,\"ephemeral\":" +
+      (ephemeral ? L"true" : L"false") + caretJson + L"}";
+  std::string request;
+  if (!WideTextToUtf8(json, &request)) return false;
+  if (request.size() + 1 > wintranslator_protocol::kMaximumRequestBytes) return false;
+  request.push_back('\n');
+
+  try {
+    return StartDetachedBackgroundWorker([request = std::move(request), executable]() {
+      if (TryHandoffToRunningPreview(request)) return;
+      SECURITY_ATTRIBUTES security{sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
+      HANDLE reader = nullptr, writer = nullptr;
+      if (!CreatePipe(&reader, &writer, &security, 0)) return;
+      SetHandleInformation(writer, HANDLE_FLAG_INHERIT, 0);
+      STARTUPINFOEXW startup{};
+      startup.StartupInfo.cb = sizeof(startup);
+      startup.StartupInfo.dwFlags = STARTF_USESTDHANDLES;
+      startup.StartupInfo.hStdInput = reader;
+      SIZE_T bytes = 0;
+      InitializeProcThreadAttributeList(nullptr, 1, 0, &bytes);
+      std::vector<unsigned char> attributes(bytes);
+      startup.lpAttributeList = reinterpret_cast<LPPROC_THREAD_ATTRIBUTE_LIST>(attributes.data());
+      if (!InitializeProcThreadAttributeList(startup.lpAttributeList, 1, 0, &bytes)) {
+        CloseHandle(reader);
+        CloseHandle(writer);
+        return;
+      }
+      if (!UpdateProcThreadAttribute(startup.lpAttributeList, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+                                     &reader, sizeof(reader), nullptr, nullptr)) {
+        DeleteProcThreadAttributeList(startup.lpAttributeList);
+        CloseHandle(reader);
+        CloseHandle(writer);
+        return;
+      }
+      std::wstring command = L"\"" + executable.wstring() + L"\" --tool=tray --translation-preview";
+      PROCESS_INFORMATION process{};
+      const BOOL launched =
+          CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, TRUE,
+                         CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT, nullptr,
+                         executable.parent_path().c_str(), &startup.StartupInfo, &process);
+      DeleteProcThreadAttributeList(startup.lpAttributeList);
+      CloseHandle(reader);
+      if (launched) {
+        DWORD written = 0;
+        WriteFile(writer, request.data(), static_cast<DWORD>(request.size()), &written, nullptr);
+        CloseHandle(process.hThread);
+        CloseHandle(process.hProcess);
+      }
+      CloseHandle(writer);
+    });
+  } catch (...) {
+    return false;
+  }
+}
+
+}  // namespace srf_tip_detail
+
+void CSrfTip::CommitReadingAndToggleImeOpen(ITfContext* /*pic*/) {
+  if (m_imeOpen && !m_compositionState.reading.empty()) {
+    const HRESULT hrCommit = RequestCommitReadingText(true);
+    if (SUCCEEDED(hrCommit)) return;
+  }
+  ToggleImeOpen();
+}
+
+void CSrfTip::HandleObservedShiftTap(ITfContext* pic) {
+  RefreshKeyHotPathState();
+  if (m_pureGameMode) return;
+  if (!EnsureEngineInputReady()) return;
+
+  const bool gameActive = IsGameHotkeyPassthroughActive();
+  const SrfGameInputMode gameMode = EffectiveGameInputMode();
+  const bool forceAsciiNonGame =
+      !gameActive && (ShouldForceAsciiForCompatibility() || m_status.disabled);
+  const SrfShiftTapAction action =
+      SrfResolveShiftTapAction(m_config.input.shiftTapHotkeyEnabled, m_pureGameMode, gameActive,
+                               gameMode, m_gameChat.chatActive, EffectiveGameShiftToggle(),
+                               forceAsciiNonGame, ShouldHandleImeHotkeys());
+  if (action == SrfShiftTapAction::None) return;
+
+  if (action == SrfShiftTapAction::ToggleGameChat) {
+    m_gameChat.autoGameChatDismissedFocus = m_gameChat.autoGameChatFocus;
+    m_gameChat.autoGameChatFocus = nullptr;
+    m_gameChat.chatSource = SrfGameTextSource::Manual;
+    m_gameChat.dismissedIdentity = 0;
+    SetGameChatActive(true);
+    SrfTsfDiagnosticLog(L"game-chat.shift-toggle", L"action=open");
+    return;
+  }
+
+  if (action == SrfShiftTapAction::HintGamePassthrough) {
+    if (m_shiftTapTracker.ObservePassthroughHintTap(GetTickCount64())) {
+      ShowGameInputStatus(L"游戏直通中，按聊天热键或开启设置中Shift切换");
+    }
+    return;
+  }
+
+  // ToggleImeOpen: if this game chat session was opened manually via Shift
+  // toggle on an unverified self-drawn input box, tapping Shift again in
+  // Chinese mode cleanly returns to game passthrough.
+  if (gameActive && m_gameChat.chatActive && EffectiveGameShiftToggle() &&
+      !m_gameChat.editableVerified && m_imeOpen) {
+    if (!m_compositionState.reading.empty()) {
+      (void)RequestCommitReadingText(false);
+    }
+    SetGameChatActive(false);
+    SrfTsfDiagnosticLog(L"game-chat.shift-toggle", L"action=close");
+    return;
+  }
+
+  CommitReadingAndToggleImeOpen(pic);
+}
+
+bool CSrfTip::WouldEatKey(UINT vk) {
+  SrfScopedPerfTimer perf(L"Key/WouldEat");
+  RefreshKeyHotPathState();
+  if (m_pureGameMode) return false;
+  if (!EnsureEngineInputReady()) return false;
+  const bool allowImeHotkeys = ShouldHandleImeHotkeys();
+  if (ShouldHandleGameChatHotkey() && IsConfiguredHotkey(vk, m_config.input.gameModeHotkey))
+    return true;
+  if (allowImeHotkeys && (IsConfiguredHotkey(vk, m_config.input.traditionalHotkey) ||
+                          IsConfiguredHotkey(vk, m_config.input.gameModeHotkey) ||
+                          IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey))) {
+    return true;
+  }
+  if (ShouldForceAsciiForCompatibility()) return false;
+  if (m_status.disabled) return false;
+
+  const bool gameCompatibilityActive = IsGameHotkeyPassthroughActive();
+  if (gameCompatibilityActive && m_gameChat.chatActive && m_pKeySink &&
+      m_pKeySink->m_pendingKeyEdits.Pending() && (vk == VK_RETURN || vk == VK_ESCAPE))
+    return true;
+
+  // Transparent Shift-tap observation: when ITfKeyTraceEventSink is active,
+  // never eat physical Shift so games (sprint/crouch/Steam overlay) and
+  // desktop apps always receive authentic Shift edges while Shift-tap still
+  // toggles Chinese/English cleanly on release.
+  if (IsVkShift(vk)) {
+    if (m_pKeySink && m_pKeySink->m_traceAvailable) {
+      m_shiftTapActive = false;
+      m_shiftTapUsedWithOtherKey = false;
+      return false;
+    }
+    if (gameCompatibilityActive && !m_gameChat.chatActive &&
+        EffectiveGameInputMode() != SrfGameInputMode::Chinese) {
+      m_shiftTapActive = false;
+      m_shiftTapUsedWithOtherKey = false;
+      return false;
+    }
+    return allowImeHotkeys && m_config.input.shiftTapHotkeyEnabled;
+  }
+
+  // Fallback path only when key trace is unavailable and Shift was eaten.
+  if ((!m_pKeySink || !m_pKeySink->m_traceAvailable) && allowImeHotkeys &&
+      m_config.input.shiftTapHotkeyEnabled && m_shiftTapActive) {
+    m_shiftTapUsedWithOtherKey = true;
+    if (HasCtrlOrAltDown()) return false;
+    if (m_compositionState.reading.empty()) return m_imeOpen && ShouldHandleDirectKey(vk);
+    return true;
+  }
+
+  if (!m_compositionState.reading.empty()) {
+    const bool translateCandidate = vk == VK_RETURN && (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
+                                    (GetKeyState(VK_SHIFT) & 0x8000) != 0 &&
+                                    (GetKeyState(VK_MENU) & 0x8000) == 0;
+    if (translateCandidate) return true;
+    const bool ctrlArrow = (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
+                           (GetKeyState(VK_MENU) & 0x8000) == 0 &&
+                           (vk == VK_LEFT || vk == VK_RIGHT);
+    if (!ctrlArrow && HasCtrlOrAltDown()) return false;
+
+    if (IsPrintableDirectVk(vk)) return true;
+    switch (vk) {
+      case VK_BACK:
+      case VK_ESCAPE:
+      case VK_RETURN:
+      case VK_UP:
+      case VK_DOWN:
+      case VK_LEFT:
+      case VK_RIGHT:
+      case VK_HOME:
+      case VK_END:
+      case VK_PRIOR:
+      case VK_NEXT:
+      case VK_TAB:
+      case VK_OEM_MINUS:
+      case VK_OEM_PLUS:
+        return true;
+      default:
+        break;
+    }
+    switch (vk) {
+      case VK_OEM_COMMA:
+      case VK_OEM_PERIOD:
+      case VK_OEM_4:
+      case VK_OEM_6:
+        return true;
+      default:
+        break;
+    }
+    return false;
+  }
+
+  if (vk == VK_BACK) return false;
+  if (!m_imeOpen) return false;
+  // 右侧小键盘数字/符号在中文模式下也应像普通直输键一样交给宿主应用。
+  // 若由 TSF 接管再插入，部分宿主会短暂渲染成带下划线的预编辑文本。
+  if (IsNumpadPrintableVk(vk)) return false;
+  return ShouldHandleDirectKey(vk);
+}
+
+HRESULT CSrfTip::ProcessKey(TfEditCookie ec, ITfContext* pic, UINT vk, LPARAM lParam,
+                            bool shiftDown, bool* pHandled) {
+  SrfScopedPerfTimer perf(L"Key/ProcessKey");
+  if (!pHandled) return E_POINTER;
+  *pHandled = false;
+  if (!pic) return E_INVALIDARG;
+
+  RefreshKeyHotPathState();
+  if (m_pureGameMode) return S_OK;
+  const bool keyDownTransition = (lParam & 0x40000000) == 0;
+  const bool allowImeHotkeys = ShouldHandleImeHotkeys();
+  if (allowImeHotkeys && IsConfiguredHotkey(vk, m_config.input.traditionalHotkey)) {
+    if (keyDownTransition) ToggleTraditionalOutput();
+    *pHandled = true;
+    return S_OK;
+  }
+  if ((allowImeHotkeys || ShouldHandleGameChatHotkey()) &&
+      IsConfiguredHotkey(vk, m_config.input.gameModeHotkey)) {
+    if (keyDownTransition) ToggleManualGameCompat(ec);
+    *pHandled = true;
+    return S_OK;
+  }
+  if (allowImeHotkeys && IsConfiguredHotkey(vk, m_config.input.temporaryAsciiHotkey)) {
+    if (keyDownTransition) ToggleManualAsciiMode(ec);
+    *pHandled = true;
+    return S_OK;
+  }
+  if (ShouldForceAsciiForCompatibility()) {
+    m_compatibilityAsciiCleanupPending = false;
+    if (m_candidateUi) m_candidateUi->End();
+    if (m_compositionState.pComposition) {
+      CancelCompositionEdit(ec);
+    } else {
+      ReleaseCompositionState();
+    }
+    RebuildContextModel();
+    SyncStatusModel();
+    *pHandled = false;
+    return S_OK;
+  }
+  ClampReadingCursor();
+
+  const bool translateCandidate = !m_compositionState.reading.empty() && vk == VK_RETURN &&
+                                  (GetKeyState(VK_CONTROL) & 0x8000) != 0 &&
+                                  (GetKeyState(VK_SHIFT) & 0x8000) != 0 &&
+                                  (GetKeyState(VK_MENU) & 0x8000) == 0;
+  if (translateCandidate) {
+    if (keyDownTransition) {
+      if (m_sensitiveInputActive || m_config.privacy.enabled) {
+        MessageBeep(MB_ICONWARNING);
+        *pHandled = true;
+        return S_OK;
+      }
+      const std::wstring candidate = m_candidateView.candSel < m_candidateView.candidates.size()
+                                         ? m_candidateView.candidates[m_candidateView.candSel]
+                                         : m_compositionState.reading;
+      const HWND target = GetForegroundWindow();
+      RECT anchorRect = {};
+      const RECT* anchorPtr = nullptr;
+      if (pic && m_compositionState.pComposition) {
+        ITfRange* range = nullptr;
+        if (SUCCEEDED(m_compositionState.pComposition->GetRange(&range)) && range) {
+          if (TryGetTextExtRect(ec, pic, range, &anchorRect)) {
+            anchorPtr = &anchorRect;
+          }
+          range->Release();
+        }
+      }
+      if (!anchorPtr && m_anchor.hasLastCandidateRect) {
+        anchorPtr = &m_anchor.lastCandidateRect;
+      }
+      if (LaunchCandidateTranslation(candidate, target, m_compositionGeneration, anchorPtr, nullptr,
+                                     L"kaixin-ime-candidate",
+                                     ShouldSuppressClipboardForPrivacy())) {
+        CancelCompositionEdit(ec);
+        RebuildContextModel();
+        SyncStatusModel();
+      } else {
+        MessageBeep(MB_ICONERROR);
+      }
+    }
+    *pHandled = true;
+    return S_OK;
+  }
+
+  // Shift-tap toggles Chinese/English。
+  // lParam bit31：0=按下 1=释放（KeyUp 上完成轻按判定，见 key_sink OnKeyUp）。
+  if (allowImeHotkeys && m_config.input.shiftTapHotkeyEnabled && IsVkShift(vk)) {
+    const bool wasDown = (lParam & 0x80000000) != 0;
+    if (!wasDown) {
+      m_shiftTapActive = true;
+      m_shiftTapUsedWithOtherKey = false;
+      m_shiftTapStartTick = GetTickCount64();
+      *pHandled = true;
+      return S_OK;
+    }
+
+    const ULONGLONG now = GetTickCount64();
+    const ULONGLONG heldMs = now >= m_shiftTapStartTick ? (now - m_shiftTapStartTick) : 0;
+    const bool shouldToggle =
+        m_shiftTapActive && !m_shiftTapUsedWithOtherKey && heldMs <= 420 && !HasCtrlOrAltDown();
+    m_shiftTapActive = false;
+    m_shiftTapUsedWithOtherKey = false;
+
+    if (shouldToggle) {
+      if (m_imeOpen && !m_compositionState.reading.empty()) {
+        const HRESULT hr = CommitReadingText(ec, pic);
+        *pHandled = true;
+        if (FAILED(hr)) return hr;
+      }
+      ToggleImeOpen();
+    }
+    *pHandled = true;
+    return S_OK;
+  } else if (allowImeHotkeys && m_config.input.shiftTapHotkeyEnabled && m_shiftTapActive) {
+    // WouldEatKey 已经避开 Ctrl/Alt 组合；进入这里的后续键均是 IME 需要处理的键。
+    m_shiftTapUsedWithOtherKey = true;
+    if (!m_imeOpen && m_compositionState.reading.empty()) {
+      *pHandled = false;
+      return S_OK;
+    }
+  }
+
+  if (!m_compositionState.reading.empty()) {
+    auto invalidateUserPhraseCompose = [&]() {
+      const bool hadUserPhraseCompose = m_compositionState.userPhraseComposeActive ||
+                                        m_compositionState.userPhraseComposeValid ||
+                                        !m_compositionState.userPhraseComposeCommitted.empty();
+      m_compositionState.userPhraseComposeActive = false;
+      m_compositionState.userPhraseComposeValid = false;
+      m_compositionState.userPhraseComposeOriginalReading.clear();
+      m_compositionState.userPhraseComposeCommitted.clear();
+      ApplyRustModeFlags();
+      if (hadUserPhraseCompose) SrfTip_ResetLearningContext();
+    };
+
+    if (shiftDown && !HasCtrlOrAltDown() &&
+        (IsLetterVk(vk) ||
+         (m_config.input.shiftSymbolTemporaryAscii && (IsDigitVk(vk) || IsOemPrintableVk(vk))))) {
+      std::wstring directAscii = TranslateDirectKey(vk, lParam, shiftDown);
+      if (directAscii.empty() && IsLetterVk(vk)) {
+        wchar_t ch = 0;
+        if (vk >= 'a' && vk <= 'z') {
+          ch = static_cast<wchar_t>(vk - 'a' + L'A');
+        } else if (vk >= 'A' && vk <= 'Z') {
+          ch = static_cast<wchar_t>(vk);
+        }
+        if (ch != 0) directAscii.assign(1, ch);
+      }
+      if (!directAscii.empty()) {
+        invalidateUserPhraseCompose();
+        const HRESULT hrCommit = CommitReadingText(ec, pic);
+        if (FAILED(hrCommit)) {
+          *pHandled = true;
+          return hrCommit;
+        }
+        // CommitCandidate may have started a continuation composition (single-char
+        // commit with remaining syllables). Cancel and release it for clean insertion.
+        if (m_compositionState.pComposition) {
+          CancelCompositionEdit(ec);
+          ReleaseCompositionObjects();
+        }
+        // Shift with letters, and optionally symbols, is temporary ASCII input.
+        const HRESULT hr = CommitDirectText(ec, pic, directAscii);
+        *pHandled = true;
+        return hr;
+      }
+    }
+
+    std::wstring directText;
+    bool directTextResolved = false;
+    auto resolveDirectText = [&]() -> const std::wstring& {
+      if (!directTextResolved) {
+        directText = TranslateDirectKey(vk, lParam, shiftDown);
+        directTextResolved = true;
+      }
+      return directText;
+    };
+    auto commitShiftedDirectSymbol = [&]() -> HRESULT {
+      const std::wstring rawText = resolveDirectText();
+      if (!shiftDown || HasCtrlOrAltDown() || !IsShiftedDirectSymbolText(rawText)) {
+        return S_FALSE;
+      }
+      invalidateUserPhraseCompose();
+      *pHandled = true;
+      // Shift-number/OEM is handled before candidate number selection. By default
+      // it still follows Chinese punctuation/fullwidth conversion; users can opt
+      // into old temporary-ASCII behavior with shift_symbol_temporary_ascii=1.
+      if (m_config.input.shiftSymbolTemporaryAscii) {
+        return CommitReadingThenDirectTextWithCursor(ec, pic, rawText, -1);
+      }
+      LONG cursorOffset = -1;
+      std::wstring output = ConvertDirectTextWithCompletion(rawText, &cursorOffset);
+      return CommitReadingThenDirectTextWithCursor(ec, pic, output, cursorOffset);
+    };
+    auto currentCandidatesContainPrefixPlaceholder = [&]() {
+      for (const auto& rawMeta : m_candidateView.candidateMeta) {
+        if (rawMeta.prefixPlaceholder) return true;
+      }
+      return false;
+    };
+    auto candidatesReadyForCurrentReading = [&]() {
+      return !m_candidateView.candidates.empty() &&
+             m_candidateView.candidatesReading == m_compositionState.reading &&
+             !currentCandidatesContainPrefixPlaceholder();
+    };
+    auto selectionCandidatesReadyForCurrentReading = [&]() {
+      if (candidatesReadyForCurrentReading()) return true;
+      if (EnsureBlindCommitCandidatesReady()) return true;
+      RefreshCandidates();
+      return candidatesReadyForCurrentReading();
+    };
+
+    const HRESULT shiftedSymbolHr = commitShiftedDirectSymbol();
+    if (shiftedSymbolHr != S_FALSE) return shiftedSymbolHr;
+
+    const wchar_t digitCh = DigitCharFromVk(vk);
+    if (digitCh != 0 && IsFunctionKeyTokenPrefix(m_compositionState.reading)) {
+      std::wstring next = m_compositionState.reading;
+      next.insert(m_compositionState.readingCursor, 1, digitCh);
+      if (IsValidFunctionKeyToken(next)) {
+        invalidateUserPhraseCompose();
+        m_compositionState.reading = std::move(next);
+        ++m_compositionState.readingCursor;
+        *pHandled = true;
+        return SyncCompositionText(ec, pic, true);
+      }
+    }
+
+    HRESULT clipboardQuickPageHr = S_OK;
+    auto applyClipboardQuickPageControl = [&](bool nextPage) -> bool {
+      UINT page = 0;
+      std::wstring filter;
+      if (!ParseClipboardQuickReading(m_compositionState.reading, &page, &filter)) return false;
+      const bool hasQuickCandidates =
+          std::any_of(m_candidateView.candidateMeta.begin(), m_candidateView.candidateMeta.end(),
+                      [](const CandidateMetaParts& meta) { return meta.clipboardQuick; });
+      if (!hasQuickCandidates && page == 0 && m_compositionState.reading != L"vvu") return false;
+      if (!candidatesReadyForCurrentReading()) return true;
+      if (!ShouldChangeClipboardQuickBatch(nextPage, m_candidateView.candPage,
+                                           MaxCandidatePage())) {
+        return false;
+      }
+
+      if (!nextPage && page == 0) return true;
+      if (nextPage) {
+        bool hasNextBatch = false;
+        for (const auto& rawMeta : m_candidateView.candidateMeta) {
+          const auto& meta = rawMeta;
+          if (meta.clipboardQuick && ClipboardQuickBatchHasNext(page, meta.clipboardPages)) {
+            hasNextBatch = true;
+            break;
+          }
+        }
+        if (!hasNextBatch) return true;
+      }
+      const UINT targetPage = nextPage ? page + 1 : page - 1;
+      m_compositionState.reading = BuildClipboardQuickReading(targetPage, filter);
+      m_candidateView.clipboardQuickLastPageReading = nextPage ? L"" : m_compositionState.reading;
+      m_compositionState.readingCursor = m_compositionState.reading.size();
+      clipboardQuickPageHr = SyncCompositionText(ec, pic, true);
+      return true;
+    };
+
+    switch (vk) {
+      case VK_BACK:
+        invalidateUserPhraseCompose();
+        if (m_compositionState.readingCursor > 0) {
+          m_compositionState.reading.erase(m_compositionState.readingCursor - 1, 1);
+          --m_compositionState.readingCursor;
+          if (m_compositionState.reading.empty()) {
+            CancelCompositionEdit(ec);
+          } else {
+            (void)SyncCompositionText(ec, pic, true);
+          }
+          *pHandled = true;
+        } else {
+          *pHandled = true;
+        }
+        return S_OK;
+      case VK_ESCAPE:
+        invalidateUserPhraseCompose();
+        CancelCompositionEdit(ec);
+        *pHandled = true;
+        return S_OK;
+      case VK_LEFT: {
+        invalidateUserPhraseCompose();
+        const bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+        if (ctrl) {
+          MoveReadingCaretBySyllable(false);
+        } else if (m_compositionState.readingCursor > 0) {
+          --m_compositionState.readingCursor;
+        }
+        RebuildContextModel();
+        UpdateCandidateWindow(ec);
+        *pHandled = true;
+        return S_OK;
+      }
+      case VK_RIGHT: {
+        invalidateUserPhraseCompose();
+        const bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+        if (ctrl) {
+          MoveReadingCaretBySyllable(true);
+        } else if (m_compositionState.readingCursor < m_compositionState.reading.size()) {
+          ++m_compositionState.readingCursor;
+        }
+        RebuildContextModel();
+        UpdateCandidateWindow(ec);
+        *pHandled = true;
+        return S_OK;
+      }
+      case VK_HOME:
+        invalidateUserPhraseCompose();
+        m_compositionState.readingCursor = 0;
+        RebuildContextModel();
+        UpdateCandidateWindow(ec);
+        *pHandled = true;
+        return S_OK;
+      case VK_END:
+        invalidateUserPhraseCompose();
+        m_compositionState.readingCursor = m_compositionState.reading.size();
+        RebuildContextModel();
+        UpdateCandidateWindow(ec);
+        *pHandled = true;
+        return S_OK;
+      case VK_UP:
+        if (!candidatesReadyForCurrentReading()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (m_candidateView.candSel > 0) --m_candidateView.candSel;
+        ClampCandidateState();
+        SyncCandidateContextState();
+        RedrawCandidateUi();
+        *pHandled = true;
+        return S_OK;
+      case VK_DOWN:
+        if (!candidatesReadyForCurrentReading()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (RequestMoreCandidatesForIndex(m_candidateView.candSel + 1)) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (m_candidateView.candSel + 1 < m_candidateView.candidates.size())
+          ++m_candidateView.candSel;
+        ClampCandidateState();
+        SyncCandidateContextState();
+        RedrawCandidateUi();
+        *pHandled = true;
+        return S_OK;
+      case VK_PRIOR:
+        if (!candidatesReadyForCurrentReading()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (m_candidateView.candPage == 0 && applyClipboardQuickPageControl(false)) {
+          *pHandled = true;
+          return clipboardQuickPageHr;
+        }
+        if (!m_config.input.pagePgUpDown && !CurrentCandidatesClipboardQuickMode()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (m_candidateView.candPage > 0) {
+          const UINT offset = CandidateIndexInPage(m_candidateView.candSel);
+          --m_candidateView.candPage;
+          const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+          const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+          m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+          ClampCandidateState();
+          SyncCandidateContextState();
+          RedrawCandidateUi();
+        }
+        *pHandled = true;
+        return S_OK;
+      case VK_NEXT:
+        if (!candidatesReadyForCurrentReading()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (m_candidateView.candPage >= MaxCandidatePage() &&
+            applyClipboardQuickPageControl(true)) {
+          *pHandled = true;
+          return clipboardQuickPageHr;
+        }
+        if (m_candidateView.candPage >= MaxCandidatePage() &&
+            RequestMoreCandidatesForPage(m_candidateView.candPage + 1)) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (!m_config.input.pagePgUpDown && !CurrentCandidatesClipboardQuickMode()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (m_candidateView.candPage < MaxCandidatePage()) {
+          const UINT offset = CandidateIndexInPage(m_candidateView.candSel);
+          ++m_candidateView.candPage;
+          const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+          const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+          m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+          ClampCandidateState();
+          SyncCandidateContextState();
+          RedrawCandidateUi();
+        }
+        *pHandled = true;
+        return S_OK;
+      case VK_OEM_MINUS:
+        if (!m_candidateView.candidates.empty()) {
+          if (!candidatesReadyForCurrentReading()) {
+            *pHandled = true;
+            return S_OK;
+          }
+          if (applyClipboardQuickPageControl(false)) {
+            *pHandled = true;
+            return clipboardQuickPageHr;
+          }
+          if (m_config.input.pageMinusEqual || CurrentCandidatesClipboardQuickMode()) {
+            if (m_candidateView.candPage > 0) {
+              const UINT offset = CandidateIndexInPage(m_candidateView.candSel);
+              --m_candidateView.candPage;
+              const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+              const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+              m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+              ClampCandidateState();
+              SyncCandidateContextState();
+              RedrawCandidateUi();
+            }
+            *pHandled = true;
+            return S_OK;
+          }
+          break;
+        }
+        break;
+      case VK_OEM_PLUS:
+        if (!m_candidateView.candidates.empty()) {
+          if (!candidatesReadyForCurrentReading()) {
+            *pHandled = true;
+            return S_OK;
+          }
+          if (applyClipboardQuickPageControl(true)) {
+            *pHandled = true;
+            return clipboardQuickPageHr;
+          }
+          if (m_candidateView.candPage >= MaxCandidatePage() &&
+              RequestMoreCandidatesForPage(m_candidateView.candPage + 1)) {
+            *pHandled = true;
+            return S_OK;
+          }
+          if (m_config.input.pageMinusEqual || CurrentCandidatesClipboardQuickMode()) {
+            if (m_candidateView.candPage < MaxCandidatePage()) {
+              const UINT offset = CandidateIndexInPage(m_candidateView.candSel);
+              ++m_candidateView.candPage;
+              const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+              const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+              m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+              ClampCandidateState();
+              SyncCandidateContextState();
+              RedrawCandidateUi();
+            }
+            *pHandled = true;
+            return S_OK;
+          }
+          break;
+        }
+        break;
+      case VK_OEM_COMMA:
+      case VK_OEM_4:
+        if (!m_candidateView.candidates.empty()) {
+          if (m_config.input.pageCommaPeriod && m_candidateView.candPage > 0 &&
+              resolveDirectText().empty()) {
+            const UINT offset = CandidateIndexInPage(m_candidateView.candSel);
+            --m_candidateView.candPage;
+            const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+            const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+            m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+            ClampCandidateState();
+            SyncCandidateContextState();
+            RedrawCandidateUi();
+            *pHandled = true;
+            return S_OK;
+          }
+          break;
+        }
+        break;
+      case VK_OEM_PERIOD:
+      case VK_OEM_6:
+        if (!m_candidateView.candidates.empty()) {
+          if (m_config.input.pageCommaPeriod && m_candidateView.candPage >= MaxCandidatePage() &&
+              resolveDirectText().empty() &&
+              RequestMoreCandidatesForPage(m_candidateView.candPage + 1)) {
+            *pHandled = true;
+            return S_OK;
+          }
+          if (m_config.input.pageCommaPeriod && m_candidateView.candPage < MaxCandidatePage() &&
+              resolveDirectText().empty()) {
+            const UINT offset = CandidateIndexInPage(m_candidateView.candSel);
+            ++m_candidateView.candPage;
+            const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+            const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+            m_candidateView.candSel = std::min(pageStart + offset, pageEndExclusive - 1);
+            ClampCandidateState();
+            SyncCandidateContextState();
+            RedrawCandidateUi();
+            *pHandled = true;
+            return S_OK;
+          }
+          break;
+        }
+        break;
+      case VK_TAB:
+        if (!candidatesReadyForCurrentReading()) {
+          *pHandled = true;
+          return S_OK;
+        }
+        if (shiftDown) {
+          if (m_candidateView.candSel > 0) --m_candidateView.candSel;
+        } else if (m_candidateView.candSel + 1 < m_candidateView.candidates.size()) {
+          ++m_candidateView.candSel;
+        }
+        ClampCandidateState();
+        SyncCandidateContextState();
+        RedrawCandidateUi();
+        *pHandled = true;
+        return S_OK;
+      case VK_SPACE: {
+        *pHandled = true;
+        const bool hadVisibleCandidates = !m_candidateView.candidates.empty();
+        const SrfEngineState stateBefore = SrfTip_GetEngineState();
+        if (selectionCandidatesReadyForCurrentReading()) {
+          return CommitCandidate(ec, m_candidateView.candSel);
+        }
+        const bool shouldWaitForCandidates = hadVisibleCandidates ||
+                                             ShouldUseBlindCommitForCompatibility() ||
+                                             stateBefore != SrfEngineState::Ready ||
+                                             SrfTip_GetEngineState() == SrfEngineState::Loading;
+        if (shouldWaitForCandidates) return S_OK;
+        return CommitCandidate(ec, static_cast<size_t>(-1));
+      }
+      case VK_RETURN:
+        *pHandled = true;
+        return CommitReadingText(ec, pic);
+      default:
+        break;
+    }
+
+    const int candidateNumberIndex = CandidateNumberIndexFromVk(vk);
+    const bool candidateNumberSelectKey =
+        m_config.input.candidateNumberSelect && candidateNumberIndex >= 0 && IsDigitVk(vk);
+    if (candidateNumberSelectKey) {
+      *pHandled = true;
+      if (!selectionCandidatesReadyForCurrentReading()) {
+        std::wstring line = L"reading=";
+        line += ShortenForLog(m_compositionState.reading, 24);
+        line += L", vk=";
+        line += std::to_wstring(vk);
+        line += L", reason=candidates_not_ready";
+        SrfTsfDiagnosticLog(L"candidate-number-select.defer", line.c_str());
+        return S_OK;
+      }
+      const UINT pageStart = CandidatePageStart(m_candidateView.candPage);
+      const UINT pageEndExclusive = CandidatePageEndExclusive(m_candidateView.candPage);
+      const size_t idx = pageStart + static_cast<size_t>(candidateNumberIndex);
+      if (idx >= pageEndExclusive) return S_OK;
+      return CommitCandidate(ec, idx, true);
+    }
+
+    std::wstring reading = resolveDirectText();
+    if (reading.empty() && IsLetterVk(vk)) reading.push_back(static_cast<wchar_t>(vk));
+
+    if (!reading.empty()) {
+      const bool continueComposition = IsLetterVk(vk) || vk == VK_OEM_7;
+      if (!continueComposition) {
+        invalidateUserPhraseCompose();
+        *pHandled = true;
+        LONG cursorOffset = -1;
+        std::wstring output = ConvertDirectTextWithCompletion(std::move(reading), &cursorOffset);
+        return CommitReadingThenDirectTextWithCursor(ec, pic, output, cursorOffset);
+      }
+      for (wchar_t& ch : reading)
+        ch = static_cast<wchar_t>(towlower(ch));
+      invalidateUserPhraseCompose();
+      m_compositionState.reading.insert(m_compositionState.readingCursor, reading);
+      m_compositionState.readingCursor += reading.size();
+      *pHandled = true;
+      return SyncCompositionText(ec, pic, true);
+    }
+
+    return S_OK;
+  }
+
+  if (!m_imeOpen || !ShouldHandleDirectKey(vk)) return S_OK;
+
+  if (ShouldUseTemporaryEnglish(vk, shiftDown)) {
+    std::wstring text = TranslateDirectKey(vk, lParam, shiftDown);
+    if (text.empty()) return S_OK;
+    *pHandled = true;
+    return CommitDirectText(ec, pic, text);
+  }
+
+  if (IsLetterVk(vk)) {
+    std::wstring reading = TranslateDirectKey(vk, lParam, shiftDown);
+    if (reading.empty()) reading.push_back(static_cast<wchar_t>(vk));
+    for (wchar_t& ch : reading)
+      ch = static_cast<wchar_t>(towlower(ch));
+    m_compositionState.reading = reading;
+    m_compositionState.readingCursor = m_compositionState.reading.size();
+    *pHandled = true;
+    return SyncCompositionText(ec, pic, true);
+  }
+
+  std::wstring text = TranslateDirectKey(vk, lParam, shiftDown);
+  LONG cursorOffset = -1;
+  text = ConvertDirectTextWithCompletion(std::move(text), &cursorOffset);
+  if (text.empty()) return S_OK;
+
+  *pHandled = true;
+  return CommitDirectTextWithCursor(ec, pic, text, cursorOffset);
+}

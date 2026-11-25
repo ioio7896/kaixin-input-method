@@ -71,7 +71,7 @@ function Invoke-IsolatedReleaseTest {
     try {
         $env:LOCALAPPDATA = $Directory
         $env:APPDATA = $Directory
-        $env:SRF_USER_DICT_PATH = Join-Path $Directory 'user_dict.sqlite'
+        $env:SRF_USER_DICT_PATH = Join-Path $Directory 'user_dict.kxj'
         $env:SRF_IME_LOG_LEVEL = 'error'
         & $Command
     } finally {

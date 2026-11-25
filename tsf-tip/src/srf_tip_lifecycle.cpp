@@ -1,0 +1,825 @@
+#include "srf_tip_detail.h"
+
+using namespace srf_tip_detail;
+
+namespace {
+
+class CEditSessionCancelFocus final : public ITfEditSession {
+  LONG m_cRef = 1;
+  CSrfTip* m_tip = nullptr;
+  uint64_t m_generation = 0;
+  uint64_t m_cancelSequence = 0;
+
+ public:
+  CEditSessionCancelFocus(CSrfTip* tip, uint64_t generation, uint64_t cancelSequence)
+      : m_tip(tip), m_generation(generation), m_cancelSequence(cancelSequence) {
+    if (m_tip) m_tip->AddRef();
+  }
+
+  ~CEditSessionCancelFocus() {
+    if (m_tip) m_tip->Release();
+  }
+
+  STDMETHODIMP QueryInterface(REFIID riid, void** ppv) override {
+    if (!ppv) return E_POINTER;
+    *ppv = nullptr;
+    if (riid == IID_IUnknown || riid == IID_ITfEditSession) {
+      *ppv = static_cast<ITfEditSession*>(this);
+      AddRef();
+      return S_OK;
+    }
+    return E_NOINTERFACE;
+  }
+
+  STDMETHODIMP_(ULONG) AddRef() override { return InterlockedIncrement(&m_cRef); }
+
+  STDMETHODIMP_(ULONG) Release() override {
+    const ULONG count = InterlockedDecrement(&m_cRef);
+    if (count == 0) delete this;
+    return count;
+  }
+
+  STDMETHODIMP DoEditSession(TfEditCookie ec) override {
+    if (!m_tip) return E_FAIL;
+    m_tip->HandleFocusLossCancelEditSession(ec, m_generation, m_cancelSequence);
+    return S_OK;
+  }
+};
+
+}  // namespace
+
+/// 延迟候选刷新编辑会话：在定时器触发后以 ASYNC 方式请求编辑会话，
+/// 重新查询候选列表并刷新 UI。
+/// Re-samples the TSF text/caret rectangle after a DPI, monitor, or window-mode
+/// transition. Candidate ranking is intentionally left untouched.
+/// 后台候选查询完成后，通过异步 EditSession 回到 TSF 线程应用结果。
+CSrfTip::CSrfTip() {
+  LoadConfiguration();
+  SyncStatusModel();
+  m_candidateUi = new (std::nothrow) CSrfCandidateListUIElement(this);
+  InterlockedIncrement(&g_cSrfTipObjects);
+}
+
+CSrfTip::~CSrfTip() {
+  _UnadviseSinks();
+  if (m_deferredTimerHwnd) {
+    DestroyWindow(m_deferredTimerHwnd);
+    m_deferredTimerHwnd = nullptr;
+  }
+  if (m_candidateUi) {
+    m_candidateUi->End();
+    m_candidateUi->Release();
+    m_candidateUi = nullptr;
+  }
+  m_notificationWindow.Destroy();
+  InterlockedDecrement(&g_cSrfTipObjects);
+}
+
+STDMETHODIMP CSrfTip::QueryInterface(REFIID riid, void** ppv) {
+  if (!ppv) return E_POINTER;
+  *ppv = nullptr;
+  if (riid == IID_IUnknown || riid == IID_ITfTextInputProcessor ||
+      riid == IID_ITfTextInputProcessorEx) {
+    *ppv = static_cast<ITfTextInputProcessorEx*>(this);
+  } else if (riid == IID_ITfDisplayAttributeProvider) {
+    *ppv = static_cast<ITfDisplayAttributeProvider*>(this);
+  } else if (riid == IID_ITfFunctionProvider) {
+    *ppv = static_cast<ITfFunctionProvider*>(this);
+  } else if (riid == IID_ITfFnConfigure) {
+    *ppv = static_cast<ITfFnConfigure*>(this);
+  } else if (riid == IID_ITfFnGetPreferredTouchKeyboardLayout) {
+    *ppv = static_cast<ITfFnGetPreferredTouchKeyboardLayout*>(this);
+  } else {
+    return E_NOINTERFACE;
+  }
+  AddRef();
+  return S_OK;
+}
+
+STDMETHODIMP_(ULONG) CSrfTip::AddRef() {
+  return InterlockedIncrement(&m_cRef);
+}
+
+STDMETHODIMP_(ULONG) CSrfTip::Release() {
+  const ULONG count = InterlockedDecrement(&m_cRef);
+  if (count == 0) delete this;
+  return count;
+}
+
+STDMETHODIMP CSrfTip::Activate(ITfThreadMgr* ptim, TfClientId tid) {
+  return ActivateEx(ptim, tid, 0);
+}
+
+STDMETHODIMP CSrfTip::Deactivate() {
+  return _UnadviseSinks();
+}
+
+STDMETHODIMP CSrfTip::GetType(GUID* pguid) {
+  if (!pguid) return E_POINTER;
+  *pguid = CLSID_SrfTsfTip;
+  return S_OK;
+}
+
+STDMETHODIMP CSrfTip::GetDescription(BSTR* pbstrDesc) {
+  if (!pbstrDesc) return E_POINTER;
+  *pbstrDesc = SysAllocString(L"\u5f00\u5fc3\u8f93\u5165\u6cd5");
+  return *pbstrDesc ? S_OK : E_OUTOFMEMORY;
+}
+
+STDMETHODIMP CSrfTip::GetFunction(REFGUID rguid, REFIID riid, IUnknown** ppunk) {
+  if (!ppunk) return E_POINTER;
+  *ppunk = nullptr;
+  if (!IsEqualGUID(rguid, GUID_NULL) && !IsEqualGUID(rguid, GUID_FUNCTION_SRF_CONFIGURE) &&
+      !IsEqualGUID(rguid, IID_ITfFnConfigure)) {
+    return E_INVALIDARG;
+  }
+  return QueryInterface(riid, reinterpret_cast<void**>(ppunk));
+}
+
+STDMETHODIMP CSrfTip::GetLayout(TKBLayoutType* type, WORD* layout) {
+  if (!type || !layout) return E_POINTER;
+  *type = TKBLT_OPTIMIZED;
+  *layout = 0x0804;  // TKBL_OPT_SIMPLIFIED_CHINESE_PINYIN
+  return S_OK;
+}
+
+STDMETHODIMP CSrfTip::GetDisplayName(BSTR* pbstrName) {
+  if (!pbstrName) return E_POINTER;
+  *pbstrName = SysAllocString(L"\u8f93\u5165\u6cd5\u8bbe\u7f6e");
+  return *pbstrName ? S_OK : E_OUTOFMEMORY;
+}
+
+STDMETHODIMP CSrfTip::Show(HWND hwndParent, LANGID /*langid*/, REFGUID /*rguidProfile*/) {
+  return LaunchSettingsHelper(hwndParent);
+}
+
+STDMETHODIMP CSrfTip::ActivateEx(ITfThreadMgr* ptim, TfClientId tid, DWORD dwFlags) {
+  if (!ptim) return E_INVALIDARG;
+  const ULONGLONG activateStart = GetTickCount64();
+  ULONGLONG stageStart = activateStart;
+
+  // TF_TMAE_UIELEMENTENABLEDONLY (0x4) 表示宿主要求仅通过 UIElement 接口交互，
+  // 不应弹出独立候选窗口（常见于游戏、沉浸式全屏应用）。
+  m_uiLessMode = (dwFlags & 0x4) != 0;  // TF_TMAE_UIELEMENTENABLEDONLY
+  LogActivationEnvironment(dwFlags);
+
+  HRESULT hr = _UnadviseSinks();
+  if (FAILED(hr)) return hr;
+  DebugLogPerfMs(L"ActivateEx/unadvise", stageStart);
+  stageStart = GetTickCount64();
+
+  m_pThreadMgr = ptim;
+  m_pThreadMgr->AddRef();
+  m_tid = tid;
+
+  hr =
+      m_pThreadMgr->QueryInterface(IID_ITfKeystrokeMgr, reinterpret_cast<void**>(&m_pKeystrokeMgr));
+  if (FAILED(hr)) {
+    _UnadviseSinks();
+    return hr;
+  }
+
+  hr = m_pThreadMgr->QueryInterface(IID_ITfSource, reinterpret_cast<void**>(&m_pSource));
+  if (FAILED(hr)) {
+    _UnadviseSinks();
+    return hr;
+  }
+
+  hr = m_pThreadMgr->QueryInterface(IID_ITfCompartmentMgr,
+                                    reinterpret_cast<void**>(&m_pCompartmentMgr));
+  if (FAILED(hr)) {
+    _UnadviseSinks();
+    return hr;
+  }
+
+  m_pCompSink = new (std::nothrow) CCompositionSink(this);
+  m_pKeySink = new (std::nothrow) CKeyEventSink(this);
+  m_pThreadMgrSink = new (std::nothrow) CThreadMgrEventSink(this);
+  if (!m_pCompSink || !m_pKeySink || !m_pThreadMgrSink) {
+    _UnadviseSinks();
+    return E_OUTOFMEMORY;
+  }
+
+  hr = m_pSource->AdviseSink(
+      IID_ITfThreadMgrEventSink,
+      static_cast<IUnknown*>(static_cast<ITfThreadMgrEventSink*>(m_pThreadMgrSink)),
+      &m_dwThreadMgrSinkCookie);
+  if (FAILED(hr)) {
+    _UnadviseSinks();
+    return hr;
+  }
+
+  hr = m_pKeystrokeMgr->AdviseKeyEventSink(tid, static_cast<ITfKeyEventSink*>(m_pKeySink), TRUE);
+  if (FAILED(hr)) {
+    _UnadviseSinks();
+    return hr;
+  }
+  DebugLogPerfMs(L"ActivateEx/advise-sinks", stageStart);
+  hr = m_pSource->AdviseSink(IID_ITfKeyTraceEventSink,
+                             static_cast<ITfKeyTraceEventSink*>(m_pKeySink),
+                             &m_dwKeyTraceSinkCookie);
+  m_pKeySink->m_traceAvailable = SUCCEEDED(hr);
+  if (FAILED(hr)) SrfTsfDiagnosticLog(L"game-key.trace", L"status=unavailable");
+  stageStart = GetTickCount64();
+
+  EnsureDisplayAttributeAtom();
+  LoadConfiguration();
+  LoadCompartmentState();
+  ITfDocumentMgr* focusedDocument = nullptr;
+  if (SUCCEEDED(m_pThreadMgr->GetFocus(&focusedDocument)) && focusedDocument) {
+    ITfContext* context = nullptr;
+    if (SUCCEEDED(focusedDocument->GetTop(&context)) && context) {
+      SetFocusContext(context);
+      context->Release();
+    }
+    focusedDocument->Release();
+  }
+  ApplyAppOptionsForFocusedContext(false);
+  SyncCompartmentState();
+  RebuildContextModel();
+  SyncStatusModel();
+  BeginPreservedKeyGuardAfterActivation();
+  EnsureTrayHelperRunningAsync();
+  DebugLogPerfMs(L"ActivateEx/app-options+state", stageStart);
+  stageStart = GetTickCount64();
+
+  hr = RegisterPreservedKeys();
+  if (FAILED(hr)) {
+    _UnadviseSinks();
+    return hr;
+  }
+  DebugLogPerfMs(L"ActivateEx/register-preserved-keys", stageStart);
+  UpdatePreservedKeysForHotkeyScope();
+
+  // 在切到本 IME 线程后即异步加载 Rust 引擎，避免首键才触发 warmup 造成首击无候选。
+  if (!ShouldForceAsciiForCompatibility()) {
+    SrfTip_WarmupEngineAsync();
+    SrfTip_PrewarmSingleLetterLookupCacheAsync();
+  }
+  if (EnsureDeferredTimerWindow()) {
+    SetTimer(m_deferredTimerHwnd, kEngineInputHealthTimerId, 250, nullptr);
+  }
+  DebugLogPerfMs(L"ActivateEx/total", activateStart);
+
+  return S_OK;
+}
+
+void CSrfTip::EndInputSession(const wchar_t* reason, TfEditCookie ec, bool cancelComposition) {
+  if (m_endingInputSession) return;
+  m_endingInputSession = true;
+  // Invalidate all input work without changing physical focus identity.
+  m_inputSession.End();
+  // Preserve physical key ownership while ending input in the same window.
+  // Actual focus loss/deactivation resets it explicitly.
+  m_shiftTapActive = false;
+  m_shiftTapUsedWithOtherKey = false;
+  m_shiftTapStartTick = 0;
+  CancelDeferredCandidateRefresh();
+  CancelDeferredFocusContextClear();
+  m_pendingLearnNotifications.clear();
+  CancelScheduledCandidateUiRedraw();
+  CancelCandidateWindowAnchorRefreshRetry();
+  SrfTip_CancelPendingLookupBefore(SrfTip_NextLookupRequestId());
+  ClearFocusBoundCandidateState(reason);
+  ClearCompositionBufferState();
+  if (cancelComposition) {
+    if (ec != TF_INVALID_COOKIE)
+      CancelCompositionEdit(ec);
+    else if (m_compositionState.pComposition)
+      RequestCancelCompositionOnFocusLoss();
+  }
+  m_endingInputSession = false;
+}
+
+bool CSrfTip::EnsureEngineInputReady() {
+  const auto state = SrfTip_GetEngineState();
+  if (state == SrfEngineState::Ready) {
+    m_engineInputSuspended = false;
+    // The old composition must finish cancellation before starting a new one.
+    return m_compositionState.reading.empty() ? !m_compositionState.pComposition : true;
+  }
+  if (!m_engineInputSuspended) {
+    m_engineInputSuspended = true;
+    EndInputSession(L"engine-unavailable");
+    ShowNotification(SrfNotificationKind::Ime, L"输入引擎暂不可用，键盘已放行");
+  }
+  SrfTip_WarmupEngineAsync();
+  return false;
+}
+
+void CSrfTip::ClearFocusBoundCandidateState(const wchar_t* reason) {
+  m_shiftTapActive = false;
+  m_shiftTapUsedWithOtherKey = false;
+  m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel);
+  CancelDeferredCandidateRefresh();
+  m_candidateView.candidates.clear();
+  m_candidateView.candidateMeta.clear();
+  m_candidateView.candidateRows.clear();
+  m_candidateView.candidateHasMore = false;
+  ResetCandidateFullLookupState();
+  m_candidateView.candidatesReading.clear();
+  m_candidateView.clipboardQuickLastPageReading.clear();
+  SetCandidateViewState(SrfCandidateViewState::Empty, reason ? reason : L"focus-bound-clear");
+  m_candidateView.candSel = 0;
+  m_candidateView.candPage = 0;
+  m_anchor.Reset();
+  InvalidateCandidatePageLayoutCache();
+  m_engineHealthNotifiedThisComposition = false;
+
+  {
+    std::lock_guard<std::mutex> guard(m_asyncCandidateMutex);
+    m_asyncCandidatePending = false;
+    m_asyncCandidatePendingSerial = 0;
+    m_asyncCandidatePendingReading.clear();
+    m_asyncCandidatePendingItems.clear();
+    m_asyncCandidatePendingMeta.clear();
+    m_asyncCandidatePendingRequestTick = 0;
+    m_asyncCandidatePendingFocus = {};
+  }
+  {
+    std::lock_guard<std::mutex> guard(m_candidateWorkerMutex);
+    m_candidateWorkerHasRequest = false;
+    m_candidateWorkerRequestReading.clear();
+    m_candidateWorkerRequestSerial = 0;
+    m_candidateWorkerNotifyHwnd = nullptr;
+    m_candidateWorkerRequestTick = 0;
+    m_candidateWorkerRequestFocus = {};
+  }
+
+  RebuildContextModel();
+  SyncStatusModel();
+  if (m_candidateUi) m_candidateUi->End();
+  m_notificationWindow.Hide();
+
+  std::wstring line = L"reason=";
+  line += reason ? reason : L"(none)";
+  line += L", focus=";
+  line += FormatFocusSnapshotForLog(CaptureFocusSnapshot(m_pFocusContext));
+  line += L", reading=";
+  line += ShortenForLog(m_compositionState.reading, 24);
+  SrfTsfDiagnosticLog(L"focus-bound-state.clear", line.c_str());
+}
+
+void CSrfTip::SetFocusContext(ITfContext* pic) {
+  CancelDeferredFocusContextClear();
+  if (m_pFocusContext == pic) return;
+  if (m_pKeySink) m_pKeySink->m_pendingKeyEdits.Cancel();
+  const SrfFocusSnapshot oldFocus = CaptureFocusSnapshot(m_pFocusContext);
+  // Queue cleanup against the old composition identity before changing focus.
+  // The new field must not wait for that host to grant an asynchronous lock.
+  // Capture the preedit before leaving game chat clears the reading buffer.
+  if (m_compositionState.pComposition) ScheduleHostCompositionEnd(true);
+  const bool awaitingInSameGame =
+      m_gameChat.chatPhase == SrfGameChatPhase::Awaiting && m_gameChat.chatOwner &&
+      GetAncestor(GetForegroundWindow(), GA_ROOT) == m_gameChat.chatOwner;
+  if (m_gameChat.chatActive ||
+      (m_gameChat.chatPhase == SrfGameChatPhase::Awaiting && !awaitingInSameGame))
+    SetGameChatActive(false);
+  m_gameChat.autoGameChatFocus = nullptr;
+  ++m_focusGeneration;
+  m_gameChat.tsfEvidence = {};
+  ++m_gameChat.tsfProbeSerial;
+  m_gameChat.tsfProbePending = false;
+  m_gameChat.tsfProbeTick = 0;
+  if (m_pFocusContext) m_pFocusContext->Release();
+  m_pFocusContext = pic;
+  if (m_pFocusContext) m_pFocusContext->AddRef();
+  m_cachedFocusedHwnd = nullptr;
+  m_cachedFocusedProcessId = 0;
+  m_cachedFocusedProcessName.clear();
+  EndInputSession(L"focus-context-change");
+  BindTextContextSinks(m_pFocusContext);
+  InvalidateHotPathStateCache();
+  const SrfFocusSnapshot newFocus = CaptureFocusSnapshot(m_pFocusContext);
+  std::wstring line = L"old=";
+  line += FormatFocusSnapshotForLog(oldFocus);
+  line += L", new=";
+  line += FormatFocusSnapshotForLog(newFocus);
+  SrfTsfDiagnosticLog(L"focus-context.changed", line.c_str());
+}
+
+void CSrfTip::BeginPreservedKeyGuardAfterActivation() {
+  m_lastActivationTick = GetTickCount64();
+  m_ignoreImeToggleUntilModifiersReleased = HasCtrlOrShiftDown();
+}
+
+void CSrfTip::LogActivationEnvironment(DWORD dwFlags) {
+  HWND hwnd = GetForegroundWindow();
+  HWND root = hwnd ? GetAncestor(hwnd, GA_ROOT) : nullptr;
+  if (root && IsWindowVisible(root)) hwnd = root;
+
+  DWORD processId = 0;
+  if (hwnd) (void)GetWindowThreadProcessId(hwnd, &processId);
+
+  bool appContainerKnown = false;
+  const bool appContainer = CurrentProcessAppContainerState(&appContainerKnown);
+
+  wchar_t flags[32] = {};
+  swprintf_s(flags, L"0x%08lX", static_cast<unsigned long>(dwFlags));
+
+  std::wstring processName = m_activeAppName;
+  if (processName.empty()) processName = FocusedProcessName();
+
+  std::wstring line = L"flags=";
+  line += flags;
+  line += L", uiless=";
+  line += m_uiLessMode ? L"1" : L"0";
+  line += L", appcontainer=";
+  line += appContainerKnown ? (appContainer ? L"1" : L"0") : L"unknown";
+  line += L", integrity=";
+  line += CurrentProcessIntegrityLabel();
+  line += L", pid=";
+  line += processId == 0 ? L"0" : std::to_wstring(processId);
+  line += L", process=";
+  line += SanitizeDiagnosticValue(processName);
+  line += L", class=";
+  line += SanitizeDiagnosticValue(WindowClassName(hwnd));
+  line += L", sensitive=";
+  line += m_sensitiveInputActive ? L"1" : L"0";
+  line += L", uielement=1";
+  line += L", immersive=1";
+  line += L", secure=1";
+  SrfTsfDiagnosticLog(L"activate.environment", line.c_str());
+}
+
+bool CSrfTip::ShouldSuppressImeTogglePreservedKey() {
+  const bool modifiersDown = HasCtrlOrShiftDown();
+
+  if (m_ignoreImeToggleUntilModifiersReleased) {
+    if (modifiersDown) return true;
+    m_ignoreImeToggleUntilModifiersReleased = false;
+  }
+
+  if (!modifiersDown || m_lastActivationTick == 0) return false;
+  return GetTickCount64() - m_lastActivationTick <= kImeTogglePreservedKeyGuardMs;
+}
+
+void CSrfTip::ApplyAppOptionsForFocusedContext(bool showNotification) {
+  const ULONGLONG start = GetTickCount64();
+  ULONGLONG stageStart = start;
+  InvalidateHotPathStateCache();
+  const bool prevImeOpen = m_imeOpen;
+  const bool prevInlinePreedit = m_uiStyle.inlinePreedit;
+  const bool prevEnhancedPosition = m_uiStyle.enhancedPosition;
+  const std::wstring prevAppName = m_activeAppName;
+
+  RefreshRuntimeConfig();
+  m_activeAppName = FocusedProcessName();
+  m_uiStyle = ResolveUiStyleForApp(m_activeAppName);
+  InvalidateCandidatePageLayoutCache();
+  RefreshCompatibilityState();
+  m_lastCompatibilityRefreshTick = GetTickCount64();
+  if (ShouldUseExternalCandidateOverlay()) {
+    GetExternalCandidateOverlayClient().Prewarm();
+  }
+  DebugLogPerfMs(L"AppOptions/load+resolve-app", stageStart);
+  stageStart = GetTickCount64();
+
+  bool usedAppOptions = false;
+  if (m_gameChat.chatActive || m_manualCompatibilityBypass) {
+    // “恢复中文”暂时覆盖应用的 ASCII 兼容配置；窗口离开后由 owner
+    // reconciliation 清掉该覆盖，下一次聚焦会重新应用原配置。
+    m_imeOpen = true;
+    usedAppOptions = true;
+  } else if (const SrfAppOptions* options = FindAppOptions(m_config, m_activeAppName)) {
+    if (options->hasAsciiMode) {
+      m_imeOpen = !options->asciiMode;
+      usedAppOptions = true;
+    }
+  } else if (m_config.globalAscii) {
+    m_imeOpen = !LoadGlobalAsciiState();
+  }
+  if (prevImeOpen != m_imeOpen) {
+    ApplyDefaultPunctuationForImeMode();
+  }
+  DebugLogPerfMs(L"AppOptions/apply-ime-mode", stageStart);
+  stageStart = GetTickCount64();
+
+  SyncCompartmentState();
+  SyncStatusModel();
+  DebugLogPerfMs(L"AppOptions/sync-status", stageStart);
+  stageStart = GetTickCount64();
+
+  if (showNotification && !ShouldHideUiForCompatibility() &&
+      m_config.ShouldShowNotification(SrfNotificationKind::AppOptions)) {
+    if (prevAppName != m_activeAppName || prevImeOpen != m_imeOpen ||
+        prevInlinePreedit != m_uiStyle.inlinePreedit ||
+        prevEnhancedPosition != m_uiStyle.enhancedPosition) {
+      std::wstring text =
+          m_activeAppName.empty() ? L"App defaults updated" : (m_activeAppName + L": ");
+      text += m_imeOpen ? L"Chinese" : L"English";
+      if (usedAppOptions) text += m_uiStyle.inlinePreedit ? L", inline" : L", popup";
+      ShowNotification(SrfNotificationKind::AppOptions, text);
+    }
+  }
+
+  if (!m_compositionState.reading.empty()) {
+    RebuildContextModel();
+    RedrawCandidateUi();
+  }
+  DebugLogPerfMs(L"AppOptions/rebuild+redraw", stageStart);
+  DebugLogPerfMs(L"AppOptions/total", start);
+}
+
+void CSrfTip::RequestCancelCompositionOnFocusLoss() {
+  if (!m_compositionState.pComposition || !m_compositionState.pCompositionContext || m_tid == 0)
+    return;
+  ++m_focusCancelSequence;
+  const uint64_t seq = m_focusCancelSequence;
+  const uint64_t gen = m_compositionGeneration;
+  CEditSessionCancelFocus* edit = new (std::nothrow) CEditSessionCancelFocus(this, gen, seq);
+  if (!edit) return;
+
+  HRESULT hrSession = E_FAIL;
+  const ULONGLONG requestStart = GetTickCount64();
+  const HRESULT hr = m_compositionState.pCompositionContext->RequestEditSession(
+      m_tid, edit, TF_ES_ASYNC | TF_ES_READWRITE, &hrSession);
+  const ULONGLONG requestElapsed = GetTickCount64() - requestStart;
+  edit->Release();
+  if (SrfTsfDebugTraceEnabled()) {
+    wchar_t buf[176] = {};
+    swprintf_s(buf,
+               L"RequestCancelCompositionOnFocusLoss async wait=%llums hr=0x%08lX session=0x%08lX "
+               L"seq=%llu gen=%llu",
+               static_cast<unsigned long long>(requestElapsed), static_cast<unsigned long>(hr),
+               static_cast<unsigned long>(hrSession), static_cast<unsigned long long>(seq),
+               static_cast<unsigned long long>(gen));
+    SrfTsfDebugLog(buf);
+  }
+}
+
+void CSrfTip::HandleFocusLossCancelEditSession(TfEditCookie ec, uint64_t generation,
+                                               uint64_t cancelSequence) {
+  if (cancelSequence != m_focusCancelSequence) {
+    if (SrfTsfDebugTraceEnabled()) {
+      wchar_t buf[120] = {};
+      swprintf_s(buf, L"HandleFocusLossCancel stale seq (got %llu cur %llu)",
+                 static_cast<unsigned long long>(cancelSequence),
+                 static_cast<unsigned long long>(m_focusCancelSequence));
+      SrfTsfDebugLog(buf);
+    }
+    return;
+  }
+  if (generation != m_compositionGeneration) {
+    if (SrfTsfDebugTraceEnabled()) {
+      SrfTsfDebugLog(L"HandleFocusLossCancel stale generation");
+    }
+    return;
+  }
+  if (!m_compositionState.pComposition) return;
+  if (SrfTsfDebugTraceEnabled()) {
+    SrfTsfDebugLog(L"HandleFocusLossCancel -> CancelCompositionEdit");
+  }
+  CancelCompositionEdit(ec);
+}
+
+void CSrfTip::CancelCompositionEdit(TfEditCookie ec) {
+  if (!m_compositionState.pComposition) {
+    ReleaseCompositionState();
+    return;
+  }
+
+  if (m_candidateUi) m_candidateUi->End();
+
+  ITfRange* range = nullptr;
+  if (SUCCEEDED(m_compositionState.pComposition->GetRange(&range)) && range) {
+    (void)range->SetText(ec, 0, L"", 0);
+    range->Release();
+  }
+  const HRESULT endHr = FinishCompositionPreservingText(ec);
+  if (SUCCEEDED(endHr)) {
+    // EndComposition does not require a termination callback. Drop our
+    // references explicitly so EnsureEngineInputReady can accept the next key.
+    ReleaseCompositionState();
+    if (SrfTsfDebugTraceEnabled()) {
+      SrfTsfDebugLog(L"CancelCompositionEdit EndComposition OK + ClearCompositionBufferState");
+    }
+  } else {
+    // Cleanup retries hold the original object. Do not keep it attached and
+    // block new input while waiting for the host to grant another lock.
+    ReleaseCompositionState();
+    if (SrfTsfDebugTraceEnabled()) {
+      wchar_t buf[96] = {};
+      swprintf_s(buf,
+                 L"CancelCompositionEdit EndComposition FAILED hr=0x%08lX, cleared buffer anyway",
+                 static_cast<unsigned long>(endHr));
+      SrfTsfDebugLog(buf);
+    }
+  }
+}
+
+HRESULT CSrfTip::RegisterPreservedKeys() {
+  if (!m_pKeystrokeMgr || m_tid == 0) return E_FAIL;
+
+  struct PreservedKeyEntry {
+    const GUID* guid;
+    TF_PRESERVEDKEY key;
+    const wchar_t* description;
+  };
+
+  const bool suppressOrdinary =
+      (IsGameHotkeyPassthroughActive() && !IsGameChatImeHotkeysAllowed()) ||
+      ShouldForceAsciiForCompatibility() || EffectiveHotkeyScope() == SrfHotkeyScope::PerApp;
+  std::vector<PreservedKeyEntry> entries;
+  if (m_config.input.cnEnHotkey == 0 || m_config.input.cnEnHotkey == 1) {
+    entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_IME,
+                       {VK_SHIFT, TF_MOD_CONTROL},
+                       L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Chinese/English"});
+  }
+  if (m_config.input.cnEnHotkey == 0 || m_config.input.cnEnHotkey == 2) {
+    entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_IME_CTRL_SPACE,
+                       {VK_SPACE, TF_MOD_CONTROL},
+                       L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Chinese/English (Ctrl+Space)"});
+  }
+  if (ShouldRegisterFullShapeHotkey(m_config.input.defaultFullShape,
+                                    m_config.input.fullShapeHotkeyEnabled)) {
+    entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_FULLSHAPE,
+                       {VK_SPACE, TF_MOD_SHIFT},
+                       L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Full Shape"});
+  }
+  if (m_config.input.punctHotkeyEnabled) {
+    entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_PUNCT,
+                       {VK_OEM_PERIOD, TF_MOD_CONTROL},
+                       L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Chinese Punctuation"});
+  }
+  if (m_config.input.fuzzyHotkeyEnabled) {
+    entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_FUZZY,
+                       {'F', TF_MOD_CONTROL | TF_MOD_SHIFT},
+                       L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Fuzzy Pinyin"});
+  }
+  if (m_config.input.doubleHotkeyEnabled) {
+    entries.push_back({&GUID_PRESERVEDKEY_SRF_TOGGLE_DOUBLE,
+                       {'D', TF_MOD_CONTROL | TF_MOD_SHIFT},
+                       L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Double Pinyin"});
+  }
+
+  if (suppressOrdinary) entries.clear();
+  for (const auto& entry : entries) {
+    const HRESULT hr =
+        m_pKeystrokeMgr->PreserveKey(m_tid, *entry.guid, &entry.key, entry.description,
+                                     static_cast<ULONG>(wcslen(entry.description)));
+    if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+  }
+
+  m_hasRegisteredScreenshotKey = false;
+  if (!suppressOrdinary && m_config.screenshot.hotkey.enabled &&
+      m_config.screenshot.hotkey.vk != 0) {
+    const TF_PRESERVEDKEY key = {m_config.screenshot.hotkey.vk,
+                                 m_config.screenshot.hotkey.modifiers};
+    const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Screenshot";
+    const HRESULT hr =
+        m_pKeystrokeMgr->PreserveKey(m_tid, GUID_PRESERVEDKEY_SRF_SCREENSHOT, &key, description,
+                                     static_cast<ULONG>(wcslen(description)));
+    if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+    if (SUCCEEDED(hr)) {
+      // TF_E_ALREADY_EXISTS \u8868\u793a\u8be5\u7ec4\u5408\u5df2\u88ab\u5176\u4ed6 TIP
+      // \u6ce8\u518c\uff1b\u4e0d\u7f6e\u4f4d\uff0c
+      // \u907f\u514d\u6ce8\u9500\u65f6\u8bef\u5220\u4ed6\u4eba\u7ec4\u5408\u3002\u6b63\u5e38\u6309\u952e\u6d41\u7a0b\u4ecd\u53ef\u515c\u5e95\u5904\u7406\u3002
+      m_registeredScreenshotKey = key;
+      m_hasRegisteredScreenshotKey = true;
+    }
+  }
+
+  // \u6e38\u620f\u517c\u5bb9\u4e0e\u4e34\u65f6\u82f1\u6587\u70ed\u952e\u6ce8\u518c\u4e3a preserved
+  // key\uff1a\u7981\u7528 TSF \u4e0a\u4e0b\u6587\u7684\u6e38\u620f
+  // \uff08ImmAssociateContext/TF_DISABLECONTEXT\uff09\u4e0d\u6d3e\u53d1\u6b63\u5e38\u6309\u952e\uff0c\u70ed\u952e\u6070\u5728\u8be5\u7c7b
+  // \u573a\u666f\u6700\u9700\u8981\uff1bpreserved key \u4e0e OnKeyDown
+  // \u662f\u4e92\u65a5\u8def\u5f84\uff0c\u4e0d\u4f1a\u53cc\u89e6\u53d1\u3002
+  m_hasRegisteredGameModeKey = false;
+  m_registeredGameChatPolicy = ShouldHandleGameChatHotkey();
+  if ((ShouldHandleGameChatHotkey() || ShouldHandleImeHotkeys()) &&
+      m_config.input.gameModeHotkey.enabled && m_config.input.gameModeHotkey.vk != 0) {
+    const TF_PRESERVEDKEY key = {m_config.input.gameModeHotkey.vk,
+                                 m_config.input.gameModeHotkey.modifiers};
+    const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Game Compatibility";
+    const HRESULT hr =
+        m_pKeystrokeMgr->PreserveKey(m_tid, GUID_PRESERVEDKEY_SRF_GAME_MODE, &key, description,
+                                     static_cast<ULONG>(wcslen(description)));
+    if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+    if (SUCCEEDED(hr)) {
+      m_registeredGameModeKey = key;
+      m_hasRegisteredGameModeKey = true;
+    }
+  }
+  m_hasRegisteredTemporaryAsciiKey = false;
+  if (!suppressOrdinary && m_config.input.temporaryAsciiHotkey.enabled &&
+      m_config.input.temporaryAsciiHotkey.vk != 0) {
+    const TF_PRESERVEDKEY key = {m_config.input.temporaryAsciiHotkey.vk,
+                                 m_config.input.temporaryAsciiHotkey.modifiers};
+    const wchar_t description[] = L"\u5f00\u5fc3\u8f93\u5165\u6cd5 Toggle Temporary ASCII";
+    const HRESULT hr =
+        m_pKeystrokeMgr->PreserveKey(m_tid, GUID_PRESERVEDKEY_SRF_TEMP_ASCII, &key, description,
+                                     static_cast<ULONG>(wcslen(description)));
+    if (FAILED(hr) && hr != TF_E_ALREADY_EXISTS) return hr;
+    if (SUCCEEDED(hr)) {
+      m_registeredTemporaryAsciiKey = key;
+      m_hasRegisteredTemporaryAsciiKey = true;
+    }
+  }
+
+  m_preservedKeysRegistered = true;
+  m_preservedKeysSuppressedForHotkeyScope = suppressOrdinary;
+  return S_OK;
+}
+
+void CSrfTip::UnregisterPreservedKeys() {
+  if (!m_pKeystrokeMgr) return;
+
+  const std::pair<const GUID*, TF_PRESERVEDKEY> entries[] = {
+      {&GUID_PRESERVEDKEY_SRF_TOGGLE_IME, {VK_SHIFT, TF_MOD_CONTROL}},
+      {&GUID_PRESERVEDKEY_SRF_TOGGLE_IME_CTRL_SPACE, {VK_SPACE, TF_MOD_CONTROL}},
+      {&GUID_PRESERVEDKEY_SRF_TOGGLE_FULLSHAPE, {VK_SPACE, TF_MOD_SHIFT}},
+      {&GUID_PRESERVEDKEY_SRF_TOGGLE_PUNCT, {VK_OEM_PERIOD, TF_MOD_CONTROL}},
+      {&GUID_PRESERVEDKEY_SRF_TOGGLE_FUZZY, {'F', TF_MOD_CONTROL | TF_MOD_SHIFT}},
+      {&GUID_PRESERVEDKEY_SRF_TOGGLE_DOUBLE, {'D', TF_MOD_CONTROL | TF_MOD_SHIFT}},
+  };
+
+  for (const auto& entry : entries) {
+    (void)m_pKeystrokeMgr->UnpreserveKey(*entry.first, &entry.second);
+  }
+  if (m_hasRegisteredScreenshotKey) {
+    (void)m_pKeystrokeMgr->UnpreserveKey(GUID_PRESERVEDKEY_SRF_SCREENSHOT,
+                                         &m_registeredScreenshotKey);
+    m_hasRegisteredScreenshotKey = false;
+    m_registeredScreenshotKey = {};
+  }
+  if (m_hasRegisteredGameModeKey) {
+    (void)m_pKeystrokeMgr->UnpreserveKey(GUID_PRESERVEDKEY_SRF_GAME_MODE, &m_registeredGameModeKey);
+    m_hasRegisteredGameModeKey = false;
+    m_registeredGameModeKey = {};
+  }
+  if (m_hasRegisteredTemporaryAsciiKey) {
+    (void)m_pKeystrokeMgr->UnpreserveKey(GUID_PRESERVEDKEY_SRF_TEMP_ASCII,
+                                         &m_registeredTemporaryAsciiKey);
+    m_hasRegisteredTemporaryAsciiKey = false;
+    m_registeredTemporaryAsciiKey = {};
+  }
+  m_preservedKeysRegistered = false;
+}
+
+void CSrfTip::ClearCompositionBufferState() {
+  ++m_compositionGeneration;
+  m_candidateLookupSerial.fetch_add(1, std::memory_order_acq_rel);
+  CancelCandidateWindowAnchorRefreshRetry();
+  m_compositionState.reading.clear();
+  m_gameChat.pendingPaste.clear();
+  m_compositionState.readingCursor = 0;
+  m_candidateView.candidates.clear();
+  m_candidateView.candidateMeta.clear();
+  m_candidateView.candidateRows.clear();
+  m_candidateView.candidateHasMore = false;
+  ResetCandidateFullLookupState();
+  m_candidateView.candidatesReading.clear();
+  m_candidateView.clipboardQuickLastPageReading.clear();
+  SetCandidateViewState(SrfCandidateViewState::Empty, L"composition-clear");
+  m_candidateView.candSel = 0;
+  m_candidateView.candPage = 0;
+  m_anchor.Reset();
+  InvalidateCandidatePageLayoutCache();
+  m_engineHealthNotifiedThisComposition = false;
+  m_compositionState.userPhraseComposeActive = false;
+  m_compositionState.userPhraseComposeValid = false;
+  m_compositionState.userPhraseComposeOriginalReading.clear();
+  m_compositionState.userPhraseComposeCommitted.clear();
+  ApplyRustModeFlags();
+  m_context.Clear();
+  {
+    std::lock_guard<std::mutex> guard(m_asyncCandidateMutex);
+    m_asyncCandidatePending = false;
+    m_asyncCandidatePendingReading.clear();
+    m_asyncCandidatePendingItems.clear();
+    m_asyncCandidatePendingMeta.clear();
+    m_asyncCandidatePendingRequestTick = 0;
+    m_asyncCandidatePendingFocus = {};
+  }
+  {
+    std::lock_guard<std::mutex> guard(m_candidateWorkerMutex);
+    m_candidateWorkerHasRequest = false;
+    m_candidateWorkerRequestReading.clear();
+    m_candidateWorkerRequestSerial = 0;
+    m_candidateWorkerNotifyHwnd = nullptr;
+    m_candidateWorkerRequestTick = 0;
+    m_candidateWorkerRequestFocus = {};
+  }
+  SyncStatusModel();
+  if (m_candidateUi) m_candidateUi->End();
+  if (SrfTsfDebugTraceEnabled()) {
+    SrfTsfDebugLog(L"ClearCompositionBufferState");
+  }
+  if (!m_endingInputSession) ApplyPendingRuntimeConfigIfSafe();
+}
+
+void CSrfTip::ReleaseCompositionObjects() {
+  ITfComposition* composition = m_compositionState.pComposition;
+  ITfContext* context = m_compositionState.pCompositionContext;
+  m_compositionState.pComposition = nullptr;
+  m_compositionState.pCompositionContext = nullptr;
+  // COM Release can reenter a host callback. Detach both identities first.
+  if (composition) composition->Release();
+  if (context) context->Release();
+}
+
+void CSrfTip::ReleaseCompositionState() {
+  ClearCompositionBufferState();
+  ReleaseCompositionObjects();
+}

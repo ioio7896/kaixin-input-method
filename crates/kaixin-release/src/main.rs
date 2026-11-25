@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 
 mod corpus;
 mod lexicon_checks;
+mod options;
 mod pack;
+mod workflow;
 
 type Result<T> = std::result::Result<T, Box<dyn Error>>;
 
@@ -42,14 +44,26 @@ fn is_han(ch: char) -> bool {
 }
 
 fn run() -> Result<()> {
-    let args: Vec<_> = env::args_os().skip(1).collect();
+    let args: Vec<_> = env::args().skip(1).collect();
     match args.as_slice() {
         [command, path] if command == "corpus" => corpus::build(Path::new(path)),
         [command, path] if command == "check-lexicons" => lexicon_checks::check(Path::new(path)),
         [command, path] if command == "pack-lexicons" => pack::create(Path::new(path)),
-        _ => Err(
-            "usage: kaixin-release (corpus|check-lexicons) REPO | pack-lexicons DIRECTORY".into(),
-        ),
+        [command, args @ ..] if matches!(command.as_str(), "build" | "release" | "check") => {
+            let options = options::parse(command, args)?;
+            if options.help {
+                print!("{}", options::HELP);
+                Ok(())
+            } else {
+                workflow::run(&options)
+            }
+        }
+        [] => workflow::run(&options::parse("release", &[])?),
+        [help] if help == "--help" || help == "-h" => {
+            print!("{}", options::HELP);
+            Ok(())
+        }
+        _ => Err("usage: cargo xtask --help".into()),
     }
 }
 

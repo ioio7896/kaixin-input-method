@@ -19,3 +19,12 @@ ignore-dev-dependencies = false
 
 [private]
 ignore = true
+
+[im]
+accepted = ["MPL-2.0"]
+
+[bitmaps]
+accepted = ["MPL-2.0"]
+
+[sized-chunks]
+accepted = ["MPL-2.0"]

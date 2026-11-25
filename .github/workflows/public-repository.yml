@@ -20,7 +20,6 @@ jobs:
           python scripts/check_open_source_readiness.py --release
           python scripts/check_public_privacy.py
           python -m unittest discover -s scripts -p test_public_privacy.py
-          python -m unittest discover -s scripts -p test_build_privacy.py
           python scripts/generate_shared_contracts.py --check
           python scripts/lexicon_quality.py
       - name: Check Python syntax

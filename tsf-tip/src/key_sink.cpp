@@ -29,6 +29,23 @@ bool IsKeyDownNow(int vk) {
   return (GetKeyState(vk) & 0x8000) != 0 || (GetAsyncKeyState(vk) & 0x8000) != 0;
 }
 
+bool HasNonShiftModifiersDown() {
+  return IsKeyDownNow(VK_CONTROL) || IsKeyDownNow(VK_MENU) || IsKeyDownNow(VK_LWIN) ||
+         IsKeyDownNow(VK_RWIN);
+}
+
+bool IsMouseButtonDownNow() {
+  return (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0 ||
+         (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0 ||
+         (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+}
+
+bool WasMouseButtonUsedSincePrime() {
+  return (GetAsyncKeyState(VK_LBUTTON) & 0x8001) != 0 ||
+         (GetAsyncKeyState(VK_RBUTTON) & 0x8001) != 0 ||
+         (GetAsyncKeyState(VK_MBUTTON) & 0x8001) != 0;
+}
+
 bool CaptureShiftDown(UINT vk, LPARAM lParam, bool trackedShiftDown) {
   if (IsVkShift(vk)) {
     const bool keyUp = (lParam & 0x80000000) != 0;
@@ -72,12 +89,12 @@ void LaunchSystemScreenshot() {
   if (len > 0 && len < _countof(modulePath)) {
     std::filesystem::path probe = std::filesystem::path(modulePath).parent_path();
     for (int i = 0; i < 6 && !probe.empty(); ++i) {
-      const std::filesystem::path trayPath = probe / L"srf_ime_tray.exe";
+      const std::filesystem::path trayPath = probe / L"srf_ime_desktop.exe";
       std::error_code trayEc;
       if (std::filesystem::is_regular_file(trayPath, trayEc)) {
         const HWND targetHwnd = GetForegroundWindow();
         wchar_t params[128] = {};
-        swprintf_s(params, L"--screenshot-capture --target-hwnd %Id",
+        swprintf_s(params, L"--tool=tray --screenshot-capture --target-hwnd %Id",
                    reinterpret_cast<INT_PTR>(targetHwnd));
         HINSTANCE helperResult =
             ShellExecuteW(nullptr, L"open", trayPath.c_str(), params, probe.c_str(), SW_SHOWNORMAL);
@@ -261,6 +278,7 @@ STDMETHODIMP CKeyEventSink::OnSetFocus(BOOL fForeground) {
     if (m_pTip) {
       m_pTip->m_shiftTapActive = false;
       m_pTip->m_shiftTapUsedWithOtherKey = false;
+      m_pTip->m_shiftTapTracker.Reset();
       m_pTip->SetGameChatActive(false);
       m_pTip->EndInputSession(L"key-sink-focus-loss");
     }
@@ -273,18 +291,21 @@ STDMETHODIMP CKeyEventSink::OnKeyTraceDown(WPARAM wParam, LPARAM lParam) {
   const UINT vk = static_cast<UINT>(wParam);
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (m_pTip->RefreshPureGameModeFromRegistry()) {
+    m_pTip->m_shiftTapTracker.Reset();
     m_keyOwnership.ObserveDown(vk, (lParam & 0x40000000) != 0, true);
     return S_OK;
   }
-  if (vk == m_pTip->m_config.input.gameModeHotkey.vk)
-    m_gameToggleRepeated = (lParam & 0x40000000) != 0;
-  if (vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk)
-    m_asciiToggleRepeated = (lParam & 0x40000000) != 0;
+  const bool repeated = (lParam & 0x40000000) != 0;
+  if (m_traceAvailable) {
+    m_pTip->m_shiftTapTracker.ObserveKeyDown(IsVkShift(vk), repeated, HasNonShiftModifiersDown(),
+                                             IsMouseButtonDownNow(), GetTickCount64());
+  }
+  if (vk == m_pTip->m_config.input.gameModeHotkey.vk) m_gameToggleRepeated = repeated;
+  if (vk == m_pTip->m_config.input.temporaryAsciiHotkey.vk) m_asciiToggleRepeated = repeated;
   if (IsVkShift(vk)) UpdateTrackedShiftState(vk, lParam, true, &m_leftShiftDown, &m_rightShiftDown);
   // Trace notifications describe a real keyboard event. TestKey callbacks can
   // be repeated or abandoned and therefore must not exit a chat or own a key.
   const bool exited = m_pTip->ObserveGameChatExit(vk, lParam);
-  const bool repeated = (lParam & 0x40000000) != 0;
   if (!m_keyOwnership.KeepDown(vk, repeated, m_pTip->IsGameHotkeyPassthroughActive())) {
     m_keyOwnership.ObserveDown(vk, repeated, exited || !m_pTip->WouldEatKey(vk));
   }
@@ -304,8 +325,16 @@ STDMETHODIMP CKeyEventSink::OnKeyTraceUp(WPARAM wParam, LPARAM lParam) {
     m_asciiToggleRepeated = false;
   }
   m_keyOwnership.ObserveUp(vk);
-  if (IsVkShift(vk))
+  if (IsVkShift(vk)) {
     UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
+    if (m_traceAvailable && m_pTip && !m_pTip->RefreshPureGameModeFromRegistry()) {
+      const bool pureShiftTap = m_pTip->m_shiftTapTracker.ObserveShiftUp(
+          HasNonShiftModifiersDown(), WasMouseButtonUsedSincePrime(), GetTickCount64());
+      if (pureShiftTap) {
+        m_pTip->HandleObservedShiftTap(m_pTip->m_pFocusContext);
+      }
+    }
+  }
   return S_OK;
 }
 
@@ -317,7 +346,8 @@ STDMETHODIMP CKeyEventSink::OnTestKeyDown(ITfContext* pic, WPARAM wParam, LPARAM
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
   const UINT vk = static_cast<UINT>(wParam);
   if (const UINT pageKey = SrfReadTouchKeyboardPageKey(vk)) {
-    *pfEaten = pic && m_pTip->m_pFocusContext == pic && !m_pTip->m_reading.empty() &&
+    *pfEaten = pic && m_pTip->m_pFocusContext == pic &&
+               !m_pTip->m_compositionState.reading.empty() &&
                !m_pTip->m_context.candidates.Empty() && m_pTip->WouldEatKey(pageKey);
     return S_OK;
   }
@@ -351,9 +381,9 @@ STDMETHODIMP CKeyEventSink::OnTestKeyUp(ITfContext* /*pic*/, WPARAM wParam, LPAR
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   const bool passedDown = m_keyOwnership.PassRelease(vk);
   if (passedDown) return S_OK;
-  // Only Shift KeyUp is handled by the IME. If it will be handled, keep the
-  // tracked state until OnKeyUp consumes the real release event.
-  if (IsVkShift(vk)) {
+  // When ITfKeyTraceEventSink is available, Shift-tap is observed transparently
+  // without eating physical Shift edges so games and shortcuts never lose Shift.
+  if (!m_traceAvailable && IsVkShift(vk)) {
     const bool wouldEat = m_pTip->WouldEatKey(vk);
     if (wouldEat) {
       *pfEaten = TRUE;
@@ -374,7 +404,8 @@ STDMETHODIMP CKeyEventSink::OnKeyDown(ITfContext* pic, WPARAM wParam, LPARAM lPa
 
   const UINT packetPageKey = SrfReadTouchKeyboardPageKey(static_cast<UINT>(wParam));
   const UINT vk = packetPageKey ? packetPageKey : static_cast<UINT>(wParam);
-  if (packetPageKey && (m_pTip->m_reading.empty() || m_pTip->m_context.candidates.Empty()))
+  if (packetPageKey &&
+      (m_pTip->m_compositionState.reading.empty() || m_pTip->m_context.candidates.Empty()))
     return S_OK;
   if (!packetPageKey && SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceDown(wParam, lParam);
@@ -435,7 +466,7 @@ STDMETHODIMP CKeyEventSink::OnKeyUp(ITfContext* pic, WPARAM wParam, LPARAM lPara
   if (SrfIsInjectedTextEvent(vk, GetMessageExtraInfo())) return S_OK;
   if (!m_traceAvailable) OnKeyTraceUp(wParam, lParam);
   if (m_pTip->RefreshPureGameModeFromRegistry()) return S_OK;
-  if (!IsVkShift(vk)) return S_OK;
+  if (!IsVkShift(vk) || m_traceAvailable) return S_OK;
   const bool shiftDown = CaptureShiftDown(vk, lParam, m_leftShiftDown || m_rightShiftDown);
   UpdateTrackedShiftState(vk, lParam, false, &m_leftShiftDown, &m_rightShiftDown);
   if (!m_pTip->WouldEatKey(vk)) return S_OK;
@@ -463,7 +494,7 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
       IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_GAME_MODE) && m_pTip->ShouldHandleGameChatHotkey();
   if (!gameChatKey && !m_pTip->ShouldHandleImeHotkeys()) return S_OK;
 
-  const bool hasReading = m_pTip->m_imeOpen && !m_pTip->m_reading.empty();
+  const bool hasReading = m_pTip->m_imeOpen && !m_pTip->m_compositionState.reading.empty();
   if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_IME) ||
       IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_IME_CTRL_SPACE)) {
     if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_IME) && !hasReading) {
@@ -473,14 +504,7 @@ STDMETHODIMP CKeyEventSink::OnPreservedKey(ITfContext* /*pic*/, REFGUID rguid, B
       *pfEaten = TRUE;
       return S_OK;
     }
-    if (hasReading) {
-      const HRESULT hrCommit = m_pTip->RequestCommitReadingText();
-      if (FAILED(hrCommit)) {
-        *pfEaten = TRUE;
-        return hrCommit;
-      }
-    }
-    m_pTip->ToggleImeOpen();
+    m_pTip->CommitReadingAndToggleImeOpen(m_pTip->m_pFocusContext);
   } else if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_FULLSHAPE)) {
     m_pTip->ToggleFullShape();
   } else if (IsEqualGUID(rguid, GUID_PRESERVEDKEY_SRF_TOGGLE_PUNCT)) {

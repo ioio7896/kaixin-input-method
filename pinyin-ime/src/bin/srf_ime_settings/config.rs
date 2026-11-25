@@ -1304,6 +1304,11 @@ pub(crate) fn apply_model_to_config(config: &mut IniDoc, model: &SettingsModel) 
     );
     config.set(
         "compatibility",
+        "game_shift_toggle",
+        normalize_game_option_bool_default(&model.game_chat.shift_toggle, false, false),
+    );
+    config.set(
+        "compatibility",
         "game_status_duration_ms",
         model
             .game_chat
@@ -2173,6 +2178,7 @@ pub(crate) fn app_rules_from_config(config: &IniDoc) -> String {
                     "game_enter_behavior"
                         | "game_auto_uia"
                         | "game_status_indicator"
+                        | "game_shift_toggle"
                         | "overlay_force_ui"
                 )
         }) {
@@ -2218,11 +2224,19 @@ pub(crate) fn normalize_game_enter_behavior(value: &str, per_app: bool) -> Strin
     .to_string()
 }
 pub(crate) fn normalize_game_option_bool(value: &str, per_app: bool) -> String {
+    normalize_game_option_bool_default(value, per_app, true)
+}
+pub(crate) fn normalize_game_option_bool_default(
+    value: &str,
+    per_app: bool,
+    default_on: bool,
+) -> String {
     match value.trim().to_ascii_lowercase().as_str() {
         "1" | "true" | "on" | "yes" => "1",
         "0" | "false" | "off" | "no" => "0",
         _ if per_app => "inherit",
-        _ => "1",
+        _ if default_on => "1",
+        _ => "0",
     }
     .to_string()
 }
@@ -2246,6 +2260,9 @@ fn game_chat_options_from_values(
     }
     if let Some(v) = values.get("game_status_indicator") {
         result.status_indicator = normalize_game_option_bool(v, per_app);
+    }
+    if let Some(v) = values.get("game_shift_toggle") {
+        result.shift_toggle = normalize_game_option_bool_default(v, per_app, false);
     }
     if !per_app {
         if let Some(v) = values
@@ -2303,6 +2320,12 @@ fn append_game_chat_parts(chat: &GameChatOptions, parts: &mut Vec<String>) {
         parts.push(format!(
             "game_status_indicator={}",
             normalize_game_option_bool(&chat.status_indicator, true)
+        ));
+    }
+    if chat.shift_toggle != "inherit" {
+        parts.push(format!(
+            "game_shift_toggle={}",
+            normalize_game_option_bool_default(&chat.shift_toggle, true, false)
         ));
     }
     let clean_key = |v: &str| v.trim().replace([',', '\n', '\r', '='], " ");
@@ -2750,6 +2773,7 @@ pub(crate) fn apply_app_rules(config: &mut IniDoc, rules: &str) {
                 "game_enter_behavior"
                 | "game_auto_uia"
                 | "game_status_indicator"
+                | "game_shift_toggle"
                 | "game_chat_open_key"
                 | "game_chat_close_key"
                 | "overlay_force_ui"

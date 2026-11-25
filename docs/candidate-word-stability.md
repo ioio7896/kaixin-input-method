@@ -32,7 +32,7 @@
 
 ## 构建与人工验收
 
-词库 pack schema 为 v13，构建会校验主词库与热词库；冷词库 SQLite schema 为 v2，按必选来源和可选分类保存精确读音回退。旧冷词库版本会安全停用并需重新烘焙。发布门禁使用 `build.py --verify` 执行格式、全目标编译、Rust 单测、评测工具测试、Clippy、严格拼音检查及 x64/x86 原生测试；`--smoke` 另行运行安装包烟测。`build_latest_installers.cmd` 透传参数和构建退出码。
+词库 pack schema 为 v13，构建会校验主词库与热词库；冷词库 SQLite schema 为 v2，按必选来源和可选分类保存精确读音回退。旧冷词库版本会安全停用并需重新烘焙。发布入口 `cargo xtask release` 执行格式、全目标编译、Rust 单测、Clippy、严格拼音检查、x64/x86 原生测试及暂存包冒烟测试。`build_latest_installers.cmd` 透传参数和构建退出码。
 
 人工验收时，在相应拼音模式开启的情况下，检查：
 

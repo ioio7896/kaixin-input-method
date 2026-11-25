@@ -495,16 +495,32 @@ std::filesystem::path LocalConfigPath() {
   return std::filesystem::path(localAppData) / kLocalConfigSubdir / kConfigFileName;
 }
 
+std::filesystem::path UnredirectedLocalConfigPath() {
+  wchar_t userProfile[MAX_PATH] = {};
+  DWORD len = GetEnvironmentVariableW(L"USERPROFILE", userProfile, MAX_PATH);
+  if (len == 0 || len >= MAX_PATH) return {};
+  return std::filesystem::path(userProfile) / L"AppData" / L"Local" / kLocalConfigSubdir /
+         kConfigFileName;
+}
+
 std::filesystem::path ModuleConfigPath() {
   return ModuleDir() / kConfigFileName;
 }
 
 std::filesystem::path ResolveSrfConfigPathInternal() {
+  std::error_code ec;
   const std::filesystem::path local = LocalConfigPath();
-  if (!local.empty() && std::filesystem::exists(local)) return local;
+  if (!local.empty() && std::filesystem::exists(local, ec) && !ec) return local;
 
+  ec.clear();
+  const std::filesystem::path profileLocal = UnredirectedLocalConfigPath();
+  if (!profileLocal.empty() && std::filesystem::exists(profileLocal, ec) && !ec) {
+    return profileLocal;
+  }
+
+  ec.clear();
   const std::filesystem::path module = ModuleConfigPath();
-  if (!module.empty() && std::filesystem::exists(module)) return module;
+  if (!module.empty() && std::filesystem::exists(module, ec) && !ec) return module;
 
   return module;
 }
@@ -1032,6 +1048,8 @@ void LoadCompatibility(const std::filesystem::path& path, SrfConfig& config) {
       ParseBool(ReadIniString(path, L"compatibility", L"game_auto_uia", L"1"), true);
   config.compatibility.gameStatusIndicator =
       ParseBool(ReadIniString(path, L"compatibility", L"game_status_indicator", L"1"), true);
+  config.compatibility.gameShiftToggle =
+      ParseBool(ReadIniString(path, L"compatibility", L"game_shift_toggle", L"0"), false);
   int statusSetting = 0;
   if (TryParseInt(ReadIniString(path, L"compatibility", L"game_status_duration_ms", L"1600"),
                   &statusSetting))
@@ -1144,6 +1162,12 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
       if (!indicator.empty() && indicator != L"inherit") {
         options.hasGameStatusIndicator = true;
         options.gameStatusIndicator = ParseBool(indicator, true);
+      }
+      const auto shiftToggle =
+          ToLower(Trim(ReadIniString(path, section.c_str(), L"game_shift_toggle")));
+      if (!shiftToggle.empty() && shiftToggle != L"inherit") {
+        options.hasGameShiftToggle = true;
+        options.gameShiftToggle = ParseBool(shiftToggle, false);
       }
       (void)TryParseHotkey(ReadIniString(path, section.c_str(), L"game_chat_open_key", L"off"), 'T',
                            0, &options.gameChatOpenKey);
@@ -1279,7 +1303,8 @@ void LoadAppOptions(const std::filesystem::path& path, SrfConfig& config) {
 
 SrfConfig LoadSrfConfigFromPathInternal(const std::filesystem::path& path) {
   SrfConfig config = {};
-  if (path.empty() || !std::filesystem::exists(path)) return config;
+  std::error_code ec;
+  if (path.empty() || !std::filesystem::exists(path, ec) || ec) return config;
 
   const IniDocument ini = LoadIniDocument(path);
   ActiveIniDocumentScope activeIni(ini);

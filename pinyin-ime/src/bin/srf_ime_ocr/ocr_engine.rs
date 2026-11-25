@@ -2,13 +2,13 @@
 //!
 //! Replaces `tools/kaixin_ocr_engine.py` by calling `rapidocrlite.dll` directly via FFI.
 
-use crate::border_crop::detect_window_border;
-use crate::ocr_policy::{
+use super::border_crop::detect_window_border;
+use super::ocr_policy::{
     analyze_image, image_tiles, intersection, line_bounds, lines_in_region, needs_detector_retry,
     rect_area, refinement_regions, should_retry_preprocess, ImageAnalysisSummary, PolicyLine,
     PolicyProfile, Rect, WorkBudget,
 };
-use crate::rapidocr_ffi::{
+use super::rapidocr_ffi::{
     NativeRapidOcr, RapidOcrDll, RpocrOptions, RPOCR_BACKEND_CPU, RPOCR_MODEL_PPOCR,
     RPOCR_TASK_DET, RPOCR_TASK_REC,
 };

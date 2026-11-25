@@ -9,7 +9,7 @@ pub(in crate::core) struct KnownMixedWordPartition {
     right_freq: u64,
 }
 
-pub(crate) fn load_phrase_lexicon_core(dir: &Path) -> Result<AbbrevLexicon, String> {
+fn load_phrase_lexicon_core(dir: &Path) -> Result<AbbrevLexicon, String> {
     load_phrase_lexicon_core_with_prefs(
         dir,
         crate::lexicon_prefs::has_custom_optional_lexicon_prefs(),
@@ -37,7 +37,7 @@ pub(super) fn load_phrase_lexicon_core_with_prefs(
     Ok(lex.with_load_options(options))
 }
 
-pub(crate) fn load_hot_phrase_lexicon_core(dir: &Path) -> Result<AbbrevLexicon, String> {
+fn load_hot_phrase_lexicon_core(dir: &Path) -> Result<AbbrevLexicon, String> {
     let options = crate::thuocl::LexiconLoadOptions::default();
     let has_custom_optional_prefs = crate::lexicon_prefs::has_custom_optional_lexicon_prefs();
     if !has_custom_optional_prefs {
@@ -120,6 +120,10 @@ impl PinyinEngine {
         );
         if !crate::lexicon_prefs::has_custom_optional_lexicon_prefs() {
             engine.cold_lexicon = dir.and_then(crate::cold_lexicon::ColdLexicon::open);
+            #[cfg(windows)]
+            {
+                engine.cold_lexicon_dir = dir.map(Path::to_owned);
+            }
         }
         engine
     }
@@ -136,9 +140,6 @@ impl PinyinEngine {
         let mut single_char_common = single_char_common;
         Arc::make_mut(&mut single_char_common).extend_supported(model.dict.as_ref());
         let model_us = model_started.elapsed().as_micros();
-        let user_lexicon = UserLexicon::load_default();
-        let user_lexicon_stamp = user_lexicon_disk_stamp();
-        let user_lexicon_generation = start_user_lexicon_watcher(user_lexicon_stamp.clone());
         let total_us = started.elapsed().as_micros();
         if perf_log_enabled() {
             let lex_state = if phrase_lexicon.is_some() {
@@ -160,6 +161,19 @@ impl PinyinEngine {
                 format!("mode={lexicon_mode} phrase_lexicon={lex_state}"),
             );
         }
+        Self::new_decoder(
+            phrase_lexicon.map(Arc::new),
+            single_char_common,
+            UserLexicon::default(),
+        )
+    }
+
+    fn new_decoder(
+        phrase_lexicon: Option<Arc<AbbrevLexicon>>,
+        single_char_common: Arc<single_char_common::SingleCharCommonIndex>,
+        user_lexicon: UserLexicon,
+    ) -> Self {
+        let model = shared_engine_model();
         let shared_data_generation = next_shared_data_generation();
         let runtime_config_generation = crate::runtime_config::snapshot().generation;
         Self {
@@ -170,8 +184,9 @@ impl PinyinEngine {
             phrase_lexicon,
             cold_lexicon: None,
             user_lexicon,
-            user_lexicon_stamp,
-            user_lexicon_generation,
+            #[cfg(windows)]
+            cold_lexicon_dir: None,
+            snapshot_decoder: false,
             mode_flags: DEFAULT_MODE_FLAGS,
             char_count: model.char_count,
             prefix_cache_abbrev: Mutex::new(PrefixLruCache::default()),
@@ -193,116 +208,90 @@ impl PinyinEngine {
             ranked_buf: Vec::with_capacity(128),
             last_lookup: None,
             shared_data_generation,
-            active_session_generation: shared_data_generation,
         }
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn attach_user_dictionary(&mut self, dictionary: UserLexicon) {
+        self.user_lexicon = dictionary;
+        self.note_user_lexicon_updated();
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn storage_dictionary_mut(&mut self) -> &mut UserLexicon {
+        &mut self.user_lexicon
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn lookup_snapshot(&self) -> EngineLookupSnapshot {
+        EngineLookupSnapshot {
+            phrase_lexicon: self.phrase_lexicon.clone(),
+            cold_lexicon_dir: self.cold_lexicon_dir.clone(),
+            single_char_common: self.single_char_common.clone(),
+            user_lexicon: self.user_lexicon.snapshot_for_lookup(),
+            generation: self.shared_data_generation,
+        }
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn reader(snapshot: &EngineLookupSnapshot) -> Self {
+        let mut engine = Self::new_decoder(
+            snapshot.phrase_lexicon.clone(),
+            snapshot.single_char_common.clone(),
+            snapshot.user_lexicon.snapshot_for_lookup(),
+        );
+        engine.snapshot_decoder = true;
+        engine.refresh_lookup_snapshot(snapshot);
+        engine
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn refresh_lookup_snapshot(&mut self, snapshot: &EngineLookupSnapshot) {
+        if self.shared_data_generation == snapshot.generation {
+            return;
+        }
+        self.shared_data_generation = snapshot.generation;
+        self.clear_lookup_caches();
+        self.last_lookup = None;
+        self.phrase_lexicon.clone_from(&snapshot.phrase_lexicon);
+        self.single_char_common
+            .clone_from(&snapshot.single_char_common);
+        if self.cold_lexicon_dir != snapshot.cold_lexicon_dir {
+            self.cold_lexicon = snapshot
+                .cold_lexicon_dir
+                .as_deref()
+                .and_then(crate::cold_lexicon::ColdLexicon::open);
+            self.cold_lexicon_dir.clone_from(&snapshot.cold_lexicon_dir);
+        }
+        self.user_lexicon = snapshot.user_lexicon.snapshot_for_lookup();
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn install_service_model(&mut self, replacement: Self) {
+        self.phrase_lexicon = replacement.phrase_lexicon;
+        self.single_char_common = replacement.single_char_common;
+        self.cold_lexicon = replacement.cold_lexicon;
+        self.cold_lexicon_dir = replacement.cold_lexicon_dir;
+        self.clear_lookup_caches();
+        self.last_lookup = None;
+        self.advance_shared_data_generation();
     }
 
     pub(super) fn advance_shared_data_generation(&mut self) {
         self.shared_data_generation = next_shared_data_generation();
-        self.active_session_generation = self.shared_data_generation;
     }
 
-    fn swap_lookup_session(&mut self, session: &mut LookupSession) {
-        std::mem::swap(&mut self.mode_flags, &mut session.mode_flags);
-        std::mem::swap(
-            &mut self.prefix_cache_abbrev,
-            &mut session.prefix_cache_abbrev,
-        );
-        std::mem::swap(
-            &mut self.prefix_cache_pinyin,
-            &mut session.prefix_cache_pinyin,
-        );
-        std::mem::swap(
-            &mut self.mixed_expansion_cache,
-            &mut session.mixed_expansion_cache,
-        );
-        std::mem::swap(
-            &mut self.mixed_incremental_cache,
-            &mut session.mixed_incremental_cache,
-        );
-        std::mem::swap(
-            &mut self.mixed_completion_score_cache,
-            &mut session.mixed_completion_score_cache,
-        );
-        std::mem::swap(
-            &mut self.incremental_parse_cache,
-            &mut session.incremental_parse_cache,
-        );
-        std::mem::swap(
-            &mut self.incremental_decode_cache,
-            &mut session.incremental_decode_cache,
-        );
-        std::mem::swap(
-            &mut self.incremental_word_graph_cache,
-            &mut session.incremental_word_graph_cache,
-        );
-        std::mem::swap(
-            &mut self.rerank_score_cache,
-            &mut session.rerank_score_cache,
-        );
-        std::mem::swap(
-            &mut self.final_lookup_cache,
-            &mut session.final_lookup_cache,
-        );
-        std::mem::swap(
-            &mut self.short_lookup_cache,
-            &mut session.short_lookup_cache,
-        );
-        std::mem::swap(
-            &mut self.pending_lookup_continuation,
-            &mut session.pending_lookup_continuation,
-        );
-        std::mem::swap(
-            &mut self.pending_full_retry_keys,
-            &mut session.pending_full_retry_keys,
-        );
-        std::mem::swap(&mut self.cache_epoch, &mut session.cache_epoch);
-        std::mem::swap(
-            &mut self.runtime_config_generation,
-            &mut session.runtime_config_generation,
-        );
-        std::mem::swap(&mut self.merged_buf, &mut session.merged_buf);
-        std::mem::swap(&mut self.ranked_buf, &mut session.ranked_buf);
-        std::mem::swap(&mut self.last_lookup, &mut session.last_lookup);
-        std::mem::swap(
-            &mut self.active_session_generation,
-            &mut session.shared_data_generation,
-        );
-    }
-
-    /// Run one lookup with composition-local mutable state while retaining the
-    /// engine's global model and learned dictionary. The swap is restored even
-    /// if a decoder panics so the shared engine remains usable.
-    pub(crate) fn lookup_with_session(
+    #[cfg(windows)]
+    pub(crate) fn lookup_for_client(
         &mut self,
-        session: &mut LookupSession,
+        cancellation: LookupCancellationToken,
         mode_flags: u32,
         reading: &str,
-        request_id: u64,
+        generation: u64,
     ) -> (Vec<RankedCandidate>, Option<String>) {
-        let _cancellation_scope =
-            LookupCancellationScope::enter(session.cancellation_token(), request_id);
-        self.swap_lookup_session(session);
-        if self.active_session_generation != self.shared_data_generation {
-            self.clear_lookup_caches();
-            self.last_lookup = None;
-            self.active_session_generation = self.shared_data_generation;
-        }
+        let _scope = LookupCancellationScope::enter(cancellation, generation);
         self.set_mode_flags(mode_flags);
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            self.lookup_full_detailed_with_request_id(reading, request_id)
-        }));
-        self.active_session_generation = self.shared_data_generation;
-        self.swap_lookup_session(session);
-        if self.active_session_generation != self.shared_data_generation {
-            self.clear_lookup_caches();
-            self.last_lookup = None;
-            self.active_session_generation = self.shared_data_generation;
-        }
-        match result {
-            Ok(result) => result,
-            Err(payload) => std::panic::resume_unwind(payload),
-        }
+        self.lookup_full_detailed_with_request_id(reading, generation)
     }
 
     pub(super) fn clear_lookup_caches(&mut self) {
@@ -388,8 +377,12 @@ impl PinyinEngine {
         };
         Arc::make_mut(&mut next_single_chars).extend_supported(self.dict.as_ref());
         self.clear_lookup_caches();
-        self.phrase_lexicon = next_lexicon;
+        self.phrase_lexicon = next_lexicon.map(Arc::new);
         self.cold_lexicon = None;
+        #[cfg(windows)]
+        {
+            self.cold_lexicon_dir = None;
+        }
         self.single_char_common = next_single_chars;
         self.last_lookup = None;
         self.advance_shared_data_generation();
@@ -398,13 +391,9 @@ impl PinyinEngine {
 
     pub(crate) fn install_phrase_lexicon(&mut self, lexicon: Option<AbbrevLexicon>) {
         self.clear_lookup_caches();
-        self.phrase_lexicon = lexicon;
+        self.phrase_lexicon = lexicon.map(Arc::new);
         self.last_lookup = None;
         self.advance_shared_data_generation();
-    }
-
-    pub(crate) fn take_phrase_lexicon(&mut self) -> Option<AbbrevLexicon> {
-        self.phrase_lexicon.take()
     }
 
     pub(crate) fn has_phrase_lexicon(&self) -> bool {
@@ -417,18 +406,18 @@ impl PinyinEngine {
             self.last_lookup = None;
         }
         self.mode_flags = flags;
-        crate::clipboard_store::set_background_polling_enabled(
-            clipboard_background_enabled_for_mode_flags(flags),
-        );
+        if self.snapshot_decoder {
+            crate::clipboard_store::observe_engine_mode(
+                clipboard_background_enabled_for_mode_flags(flags),
+            );
+        }
     }
 
     pub fn syllable_set(&self) -> &HashSet<String> {
         self.syllables.as_ref()
     }
 
-    pub(super) fn note_user_lexicon_updated(&mut self) {
-        self.user_lexicon_stamp = user_lexicon_disk_stamp();
-        self.user_lexicon_generation = notify_user_lexicon_changed(self.user_lexicon_stamp.clone());
+    pub(crate) fn note_user_lexicon_updated(&mut self) {
         self.clear_user_sensitive_lookup_caches();
         self.last_lookup = None;
         self.advance_shared_data_generation();
@@ -442,8 +431,6 @@ impl PinyinEngine {
     /// 参与的缓存结果：按短语定向驱逐，而不是整表清空。外部磁盘重载等
     /// 未知范围的变化仍走 note_user_lexicon_updated 的整表失效。
     pub(super) fn note_user_phrases_updated(&mut self, affected: &[String]) {
-        self.user_lexicon_stamp = user_lexicon_disk_stamp();
-        self.user_lexicon_generation = notify_user_lexicon_changed(self.user_lexicon_stamp.clone());
         self.invalidate_user_sensitive_lookup_caches_for(affected);
         self.last_lookup = None;
         self.advance_shared_data_generation();
@@ -485,7 +472,7 @@ impl PinyinEngine {
     }
 
     pub(crate) fn warmup_correction_indexes(&self) {
-        if let Some(lexicon) = self.phrase_lexicon.as_ref() {
+        if let Some(lexicon) = self.phrase_lexicon.as_deref() {
             lexicon.warmup_approx_indexes();
         }
     }
@@ -615,7 +602,7 @@ impl PinyinEngine {
         }
         let mut partial_mixed_hot_phrases = self
             .phrase_lexicon
-            .as_ref()
+            .as_deref()
             .filter(|_| self.mixed_pinyin_enabled() && compact_key.chars().count() >= 4)
             .and_then(|lex| lex.lookup_mixed_hot(compact_key))
             .map(|entries| {
@@ -641,7 +628,7 @@ impl PinyinEngine {
         drop_disabled_english_word_candidates(
             &mut ranked,
             self.english_word_input_enabled(),
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         self.shape_partial_first_page_candidates(&mut ranked, raw, compact_key, now);
         let page_size =
@@ -824,7 +811,7 @@ impl PinyinEngine {
     }
 
     fn has_hot_two_char_abbrev_conflict(&self, raw: &str) -> bool {
-        let Some(lexicon) = self.phrase_lexicon.as_ref() else {
+        let Some(lexicon) = self.phrase_lexicon.as_deref() else {
             return false;
         };
         let key = compact_lookup_key(raw);
@@ -889,26 +876,28 @@ impl PinyinEngine {
         profiler: &mut Option<LookupProfiler>,
     ) -> LookupPipelineStart {
         self.refresh_runtime_config_generation();
-        self.reload_user_lexicon_if_changed();
-        // Try a fast swap-in of a background-loaded lexicon first.
-        // If none is ready but a reload is pending, trigger a deferred
-        // background load and fall through with the current lexicon.
-        if let Some(prepared) = crate::lexicon_prefs::take_prepared_lexicon() {
-            self.install_phrase_lexicon(Some(prepared));
-        } else if crate::lexicon_prefs::take_phrase_lexicon_reload_flag() {
-            let default_dir = trusted_default_phrase_dir();
-            if let Some(dir) = default_dir.as_deref().map(|p| p.to_path_buf()) {
-                std::thread::Builder::new()
-                    .name("srf-lexicon-bg-load".to_string())
-                    .spawn(move || {
-                        if let Ok(lex) = load_phrase_lexicon_core(&dir) {
-                            if let Ok(mut prepared) = crate::lexicon_prefs::PREPARED_LEXICON.lock()
-                            {
-                                *prepared = Some(lex);
+        if !self.snapshot_decoder {
+            // Try a fast swap-in of a background-loaded lexicon first.
+            // If none is ready but a reload is pending, trigger a deferred
+            // background load and fall through with the current lexicon.
+            if let Some(prepared) = crate::lexicon_prefs::take_prepared_lexicon() {
+                self.install_phrase_lexicon(Some(prepared));
+            } else if crate::lexicon_prefs::take_phrase_lexicon_reload_flag() {
+                let default_dir = trusted_default_phrase_dir();
+                if let Some(dir) = default_dir.as_deref().map(|p| p.to_path_buf()) {
+                    std::thread::Builder::new()
+                        .name("srf-lexicon-bg-load".to_string())
+                        .spawn(move || {
+                            if let Ok(lex) = load_phrase_lexicon_core(&dir) {
+                                if let Ok(mut prepared) =
+                                    crate::lexicon_prefs::PREPARED_LEXICON.lock()
+                                {
+                                    *prepared = Some(lex);
+                                }
                             }
-                        }
-                    })
-                    .ok();
+                        })
+                        .ok();
+                }
             }
         }
 
@@ -1021,7 +1010,7 @@ impl PinyinEngine {
                 drop_disabled_english_word_candidates(
                     &mut cached,
                     self.english_word_input_enabled(),
-                    self.phrase_lexicon.as_ref(),
+                    self.phrase_lexicon.as_deref(),
                 );
                 if let Some(intent_chars) = visible_short_intent {
                     let page_size = candidate_prefs::get_effective_candidate_page_size()
@@ -1029,7 +1018,7 @@ impl PinyinEngine {
                     apply_short_intent_final_candidate_density(
                         &mut cached,
                         Some(intent_chars),
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                     );
                     replay_two_char_intent_density(
                         &mut cached,
@@ -1048,7 +1037,7 @@ impl PinyinEngine {
                         raw,
                         &compact_key,
                         self.syllables.as_ref(),
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                     );
                 }
                 self.reserve_datetime_collision_slot(raw, &mut cached);
@@ -1078,7 +1067,7 @@ impl PinyinEngine {
                 drop_disabled_english_word_candidates(
                     &mut cached,
                     self.english_word_input_enabled(),
-                    self.phrase_lexicon.as_ref(),
+                    self.phrase_lexicon.as_deref(),
                 );
                 if let Some(intent_chars) = visible_short_intent {
                     let page_size = candidate_prefs::get_effective_candidate_page_size()
@@ -1086,7 +1075,7 @@ impl PinyinEngine {
                     apply_short_intent_final_candidate_density(
                         &mut cached,
                         Some(intent_chars),
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                     );
                     replay_two_char_intent_density(
                         &mut cached,
@@ -1105,7 +1094,7 @@ impl PinyinEngine {
                         raw,
                         &compact_key,
                         self.syllables.as_ref(),
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                     );
                 }
                 self.reserve_datetime_collision_slot(raw, &mut cached);
@@ -1260,7 +1249,7 @@ impl PinyinEngine {
         {
             let hot_count = self
                 .phrase_lexicon
-                .as_ref()
+                .as_deref()
                 .and_then(|lex| lex.lookup_pinyin(&compact_key))
                 .map_or(0, |entries| entries.len());
             if hot_count < 3 && !lookup_request_superseded(request_id) {
@@ -1279,7 +1268,7 @@ impl PinyinEngine {
                                 &self.user_lexicon,
                                 now,
                                 Some("全拼\tcold_exact=1"),
-                                self.phrase_lexicon.as_ref(),
+                                self.phrase_lexicon.as_deref(),
                                 None,
                             );
                         }
@@ -1356,7 +1345,7 @@ impl PinyinEngine {
                         12,
                         now,
                         Some(USER_CANDIDATE_META),
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                         exact_user_hotword_syllables,
                     );
                 }
@@ -1375,7 +1364,7 @@ impl PinyinEngine {
                                 1,
                                 now,
                                 Some(MIXED_USER_CANDIDATE_META),
-                                self.phrase_lexicon.as_ref(),
+                                self.phrase_lexicon.as_deref(),
                                 None,
                             );
                         } else if (self.mixed_pinyin_enabled()
@@ -1445,7 +1434,7 @@ impl PinyinEngine {
                         4,
                         now,
                         Some(OBSERVED_USER_CANDIDATE_META),
-                        self.phrase_lexicon.as_ref(),
+                        self.phrase_lexicon.as_deref(),
                         None,
                     );
                 }
@@ -1457,7 +1446,7 @@ impl PinyinEngine {
             // lower-confidence interpretation of an already complete input.
             if let Some(syllables) = exact_full_pinyin_syllables.as_ref() {
                 let before_exact = merged.len();
-                if let Some(lex) = self.phrase_lexicon.as_ref() {
+                if let Some(lex) = self.phrase_lexicon.as_deref() {
                     if let Some(entries) = lex.lookup_pinyin(&compact_key) {
                         preserved_exact_lexicon_phrases.extend(
                             entries
@@ -1530,7 +1519,7 @@ impl PinyinEngine {
                     .filter(|(_, tail)| tail.chars().count() >= 2)
                 {
                     let before_prefix = merged.len();
-                    if let Some(lex) = self.phrase_lexicon.as_ref() {
+                    if let Some(lex) = self.phrase_lexicon.as_deref() {
                         let entries = self.cached_prefix_pinyin_flat(lex, &compact_key);
                         preserved_exact_lexicon_phrases.extend(
                             entries
@@ -1671,7 +1660,7 @@ impl PinyinEngine {
                 && short_ascii_input
                 && (2..=3).contains(&compact_key.chars().count())
             {
-                if let Some(lex) = self.phrase_lexicon.as_ref() {
+                if let Some(lex) = self.phrase_lexicon.as_deref() {
                     if let Some(entries) = lex.lookup_hot(&compact_key) {
                         let abbrev_char_count = compact_key.chars().count();
                         let daily_entries = entries
@@ -2990,7 +2979,7 @@ impl PinyinEngine {
                 + primary_lexicon_score_adjustment(
                     &phrase,
                     &merged_candidate.meta,
-                    self.phrase_lexicon.as_ref(),
+                    self.phrase_lexicon.as_deref(),
                     input_intent,
                 )
                 + self.single_syllable_common_char_prior(
@@ -3032,7 +3021,7 @@ impl PinyinEngine {
         drop_disabled_english_word_candidates(
             &mut ranked,
             self.english_word_input_enabled(),
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         if exact_single_syllable_input {
             keep_only_single_char_candidates(&mut ranked);
@@ -3042,27 +3031,27 @@ impl PinyinEngine {
         dedup_preserved_phrase_order(&mut preserved_mixed_hot_phrases);
         sort_preserved_phrases_by_lexicon_frequency(
             &mut preserved_short_phrases,
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         dedup_preserved_phrase_order(&mut preserved_high_priority_two_char_phrases);
         sort_preserved_phrases_by_lexicon_frequency(
             &mut preserved_high_priority_two_char_phrases,
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         dedup_preserved_phrase_order(&mut preserved_chat_priority_two_char_phrases);
         sort_preserved_phrases_by_lexicon_frequency(
             &mut preserved_chat_priority_two_char_phrases,
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         dedup_preserved_phrase_order(&mut preserved_daily_short_two_char_phrases);
         sort_preserved_phrases_by_lexicon_frequency(
             &mut preserved_daily_short_two_char_phrases,
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         dedup_preserved_phrase_order(&mut preserved_daily_short_three_char_phrases);
         sort_preserved_phrases_by_lexicon_frequency(
             &mut preserved_daily_short_three_char_phrases,
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         prioritize_preserved_phrase_length(
             &mut preserved_short_phrases,
@@ -3226,7 +3215,7 @@ impl PinyinEngine {
                 raw,
                 &compact_key,
                 self.syllables.as_ref(),
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
             );
         }
         demote_corrections_below_priority_hits(
@@ -3257,7 +3246,7 @@ impl PinyinEngine {
         drop_disabled_english_word_candidates(
             &mut ranked,
             self.english_word_input_enabled(),
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         limit_english_candidates_for_non_english_intent(&mut ranked, input_intent);
         let final_negative_feedback_applied =

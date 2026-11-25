@@ -626,7 +626,7 @@ pub(crate) fn export_diagnostic_package_to(
     append_clipboard_store_summary(&mut summary);
     summary.push_str(&format!(
         "process_srf_ime_tray_running={}\n",
-        process_running_summary("srf_ime_tray.exe")
+        process_running_summary("srf_ime_desktop.exe")
     ));
     summary.push_str(&format!(
         "process_srf_ime_engine_running={}\n",

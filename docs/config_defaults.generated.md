@@ -150,3 +150,4 @@ Edit `shared/config_schema.json`, then run `python scripts/generate_shared_contr
 | compatibility | game_status_indicator | 1 | bool |  |
 | compatibility | game_status_duration_ms | 1600 | integer |  |
 | compatibility | game_status_scale_percent | 100 | integer |  |
+| compatibility | game_shift_toggle | 0 | bool |  |

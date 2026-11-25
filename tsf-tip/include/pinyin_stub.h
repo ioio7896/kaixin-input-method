@@ -1,5 +1,7 @@
 #pragma once
 
+#include "candidate_metadata.h"
+
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -81,14 +83,13 @@ unsigned long long SrfTip_NextLookupRequestId();
 // Best-effort, non-blocking publication of a newer request. The helper only
 // cancels an active lookup from this TIP process whose request id is older.
 void SrfTip_CancelPendingLookupBefore(unsigned long long requestId);
-SrfLookupCandidatesStatus SrfTip_LookupCandidates(const std::wstring& reading,
-                                                  std::vector<std::wstring>& candidates,
-                                                  std::vector<std::wstring>* metaScores = nullptr,
-                                                  unsigned long long requestId = 0,
-                                                  bool fullResult = false, bool* hasMore = nullptr);
+SrfLookupCandidatesStatus SrfTip_LookupCandidates(
+    const std::wstring& reading, std::vector<std::wstring>& candidates,
+    std::vector<CandidateMetaParts>* metaScores = nullptr, unsigned long long requestId = 0,
+    bool fullResult = false, bool* hasMore = nullptr);
 bool SrfTip_TryGetCachedLookupCandidates(const std::wstring& reading,
                                          std::vector<std::wstring>& candidates,
-                                         std::vector<std::wstring>* metaScores = nullptr,
+                                         std::vector<CandidateMetaParts>* metaScores = nullptr,
                                          bool* hasMore = nullptr);
 void SrfTip_PrewarmSingleLetterLookupCacheAsync();
 

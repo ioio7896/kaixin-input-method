@@ -26,7 +26,7 @@ def render_engine_contract(root: Path) -> dict[str, str]:
     }.items():
         rust += f"pub const {name}: usize = {value};\n"
         cpp += f"inline constexpr std::size_t {name} = {value};\n"
-    for group in (modes, contract["learn_flags"]):
+    for group in (modes, contract["learn_flags"], contract["candidate_frame"]):
         for name, value in group.items():
             rust += f"pub const {name}: u32 = {value};\n"
             cpp += f"inline constexpr std::uint32_t {name} = {value};\n"

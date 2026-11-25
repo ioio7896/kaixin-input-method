@@ -6,11 +6,6 @@ project(srf_tsf_tip LANGUAGES CXX)
 
 include(CTest)
 
-set(SRF_CANDIDATE_WINDOW_SOURCES
-  src/candidate_window.cpp
-  src/candidate_window_animation.cpp
-  src/candidate_window_interaction.cpp)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -21,6 +16,27 @@ if(MSVC)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     add_link_options(/HIGHENTROPYVA)
   endif()
+endif()
+
+add_library(srf_tip_shared STATIC
+  src/candidate_accessibility.cpp
+  src/candidate_input_pane.cpp
+  src/candidate_overlay_placement.cpp
+  src/candidate_window.cpp
+  src/candidate_window_animation.cpp
+  src/candidate_window_interaction.cpp
+  src/ime_config.cpp
+)
+target_include_directories(srf_tip_shared PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_compile_definitions(srf_tip_shared PUBLIC UNICODE _UNICODE)
+target_link_libraries(srf_tip_shared PRIVATE
+  ole32 oleaut32 uuid advapi32 d2d1 dwmapi dwrite user32 shell32 gdi32
+  uiautomationcore msimg32
+)
+if(MSVC)
+  set_property(TARGET srf_tip_shared PROPERTY
+    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  target_compile_options(srf_tip_shared PRIVATE /W4 /EHsc /utf-8)
 endif()
 
 if(BUILD_TESTING)
@@ -44,10 +60,8 @@ if(BUILD_TESTING)
     target_compile_options(srf_policy_tests PRIVATE /W4 /EHsc /utf-8)
   endif()
   add_test(NAME srf_policy_tests COMMAND srf_policy_tests)
-  add_executable(srf_game_config_tests tests/game_config_tests.cpp src/ime_config.cpp)
-  target_include_directories(srf_game_config_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-  target_compile_definitions(srf_game_config_tests PRIVATE UNICODE _UNICODE)
-  target_link_libraries(srf_game_config_tests PRIVATE user32 advapi32 shell32 ole32)
+  add_executable(srf_game_config_tests tests/game_config_tests.cpp)
+  target_link_libraries(srf_game_config_tests PRIVATE srf_tip_shared)
   if(MSVC)
     set_property(TARGET srf_game_config_tests PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     target_compile_options(srf_game_config_tests PRIVATE /W4 /EHsc /utf-8)
@@ -130,16 +144,19 @@ add_library(srf_tsf_tip SHARED
   src/guids.cpp
   src/game_focus_probe.cpp
   src/candidate_overlay_client.cpp
-  src/candidate_overlay_placement.cpp
   src/candidate_ui.cpp
-  ${SRF_CANDIDATE_WINDOW_SOURCES}
-  src/candidate_accessibility.cpp
-  src/candidate_input_pane.cpp
   src/composition_sink.cpp
-  src/ime_config.cpp
   src/pinyin_stub.cpp
   src/privacy_sensitive_context.cpp
-  src/srf_tip.cpp
+  src/srf_tip_candidates.cpp
+  src/srf_tip_commit.cpp
+  src/srf_tip_deferred_refresh.cpp
+  src/srf_tip_display_attribute.cpp
+  src/srf_tip_internal.cpp
+  src/srf_tip_key_input.cpp
+  src/srf_tip_lifecycle.cpp
+  src/srf_tip_modes_config.cpp
+  src/srf_tip_ui_composition.cpp
   src/key_sink.cpp
   src/notification_window.cpp
   src/thread_mgr_sink.cpp
@@ -147,11 +164,8 @@ add_library(srf_tsf_tip SHARED
   src/register.cpp
 )
 
-target_include_directories(srf_tsf_tip PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-target_compile_definitions(srf_tsf_tip PRIVATE
-  UNICODE
-  _UNICODE
+# Version stamping only changes the bridge translation unit.
+set_property(SOURCE src/pinyin_stub.cpp APPEND PROPERTY COMPILE_DEFINITIONS
   SRF_APP_VERSION="${SRF_APP_VERSION}"
   SRF_GIT_COMMIT="${SRF_GIT_COMMIT}"
   SRF_GIT_DIRTY=${SRF_GIT_DIRTY}
@@ -163,33 +177,14 @@ if(MSVC)
     MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
-target_link_libraries(srf_tsf_tip PRIVATE
-  ole32
-  oleaut32
-  uuid
-  advapi32
-  crypt32
-  d2d1
-  dwmapi
-  dwrite
-  user32
-  shell32
-  gdi32
-  uiautomationcore
-  msimg32
-)
+target_link_libraries(srf_tsf_tip PRIVATE srf_tip_shared crypt32)
 
 if(BUILD_TESTING)
   # This executable compiles the real bridge with a test-only entry point.
   # It is run separately against an isolated helper after the real idle timeout.
   add_executable(srf_idle_recovery_probe tests/idle_recovery_probe.cpp src/pinyin_stub.cpp)
   target_include_directories(srf_idle_recovery_probe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-  target_compile_definitions(srf_idle_recovery_probe PRIVATE
-    UNICODE _UNICODE SRF_IDLE_RECOVERY_TEST
-    SRF_APP_VERSION="${SRF_APP_VERSION}"
-    SRF_GIT_COMMIT="${SRF_GIT_COMMIT}"
-    SRF_GIT_DIRTY=${SRF_GIT_DIRTY}
-    SRF_ENGINE_PROTOCOL_VERSION=${SRF_ENGINE_PROTOCOL_VERSION})
+  target_compile_definitions(srf_idle_recovery_probe PRIVATE UNICODE _UNICODE SRF_IDLE_RECOVERY_TEST)
   target_link_libraries(srf_idle_recovery_probe PRIVATE ole32 advapi32 crypt32 user32 shell32)
   if(MSVC)
     set_property(TARGET srf_idle_recovery_probe PROPERTY
@@ -207,32 +202,8 @@ if(MSVC)
     /DELAYLOAD:dwrite.dll)
 endif()
 
-add_executable(srf_ime_overlay WIN32
-  src/candidate_overlay_main.cpp
-  src/candidate_overlay_placement.cpp
-  ${SRF_CANDIDATE_WINDOW_SOURCES}
-  src/candidate_accessibility.cpp
-  src/candidate_input_pane.cpp
-  src/ime_config.cpp
-)
-
-target_include_directories(srf_ime_overlay PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_compile_definitions(srf_ime_overlay PRIVATE UNICODE _UNICODE)
-target_link_libraries(srf_ime_overlay PRIVATE
-  ole32
-  oleaut32
-  uuid
-  advapi32
-  crypt32
-  d2d1
-  dwmapi
-  dwrite
-  user32
-  shell32
-  gdi32
-  uiautomationcore
-  msimg32
-)
+add_executable(srf_ime_overlay WIN32 src/candidate_overlay_main.cpp)
+target_link_libraries(srf_ime_overlay PRIVATE srf_tip_shared)
 
 if(MSVC)
   set_property(TARGET srf_ime_overlay PROPERTY
@@ -241,18 +212,8 @@ if(MSVC)
 endif()
 
 if(BUILD_TESTING)
-  add_executable(srf_candidate_window_tests
-    tests/candidate_window_tests.cpp
-    ${SRF_CANDIDATE_WINDOW_SOURCES}
-  src/candidate_accessibility.cpp
-  src/candidate_input_pane.cpp
-    src/candidate_overlay_placement.cpp
-    src/ime_config.cpp
-  )
-  target_include_directories(srf_candidate_window_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-  target_compile_definitions(srf_candidate_window_tests PRIVATE UNICODE _UNICODE)
-  target_link_libraries(srf_candidate_window_tests PRIVATE
-    ole32 oleaut32 uuid advapi32 crypt32 d2d1 dwmapi dwrite user32 shell32 gdi32 msimg32 uiautomationcore)
+  add_executable(srf_candidate_window_tests tests/candidate_window_tests.cpp)
+  target_link_libraries(srf_candidate_window_tests PRIVATE srf_tip_shared)
   if(MSVC)
     set_property(TARGET srf_candidate_window_tests PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     target_compile_options(srf_candidate_window_tests PRIVATE /W4 /EHsc /utf-8)

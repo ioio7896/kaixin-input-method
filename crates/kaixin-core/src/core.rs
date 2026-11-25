@@ -17,10 +17,7 @@ use crate::thuocl::{
     try_load_hot_prebaked_near, try_load_prebaked_near, AbbrevLexicon, LexiconBuildProfile,
     LexiconLayer, ThuoclEntry, MAX_LEXICON_FREQ,
 };
-use crate::user_dict::{
-    default_user_dict_path, CommitSource, LearnedEntry, LearnedStats, UserLexicon,
-};
-use crate::user_dict_io::user_dict_reset_stamp;
+use crate::user_dict::{CommitSource, LearnedEntry, LearnedStats, UserLexicon};
 use crate::user_hotword_prefs;
 use lru::LruCache;
 use std::cell::RefCell;
@@ -32,7 +29,7 @@ use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc, Mutex, OnceLock,
 };
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, Instant};
 mod cache;
 mod learning;
 mod lookup;
@@ -61,6 +58,11 @@ const DEFAULT_MODE_FLAGS: u32 = MODE_JIANPIN | MODE_MIXED_PINYIN;
 
 static RADICAL_PINYIN_CACHE: OnceLock<Vec<(String, String)>> = OnceLock::new();
 static NEXT_SHARED_DATA_GENERATION: AtomicU64 = AtomicU64::new(1);
+
+#[cfg(windows)]
+pub(crate) fn shared_engine_model_syllables() -> &'static HashSet<String> {
+    &shared_engine_model().syllables
+}
 
 fn next_shared_data_generation() -> u64 {
     NEXT_SHARED_DATA_GENERATION
@@ -373,11 +375,12 @@ pub struct PinyinEngine {
     syllables: Arc<HashSet<String>>,
     lm: Arc<Lm>,
     single_char_common: Arc<single_char_common::SingleCharCommonIndex>,
-    pub(crate) phrase_lexicon: Option<AbbrevLexicon>,
+    pub(crate) phrase_lexicon: Option<Arc<AbbrevLexicon>>,
     cold_lexicon: Option<crate::cold_lexicon::ColdLexicon>,
     user_lexicon: UserLexicon,
-    user_lexicon_stamp: UserLexiconDiskStamp,
-    user_lexicon_generation: u64,
+    #[cfg(windows)]
+    cold_lexicon_dir: Option<PathBuf>,
+    snapshot_decoder: bool,
     mode_flags: u32,
     pub char_count: usize,
     prefix_cache_abbrev: Mutex<PrefixLruCache>,
@@ -405,80 +408,19 @@ pub struct PinyinEngine {
     merged_buf: MergedCandidateMap,
     ranked_buf: Vec<RankedCandidate>,
     last_lookup: Option<LookupStabilityState>,
-    /// Generation of shared lexicon/user data. Lookup sessions compare their
-    /// local generation before being attached so a learning event cannot
-    /// leave another client's final cache stale.
-    shared_data_generation: u64,
-    active_session_generation: u64,
-}
-
-/// Mutable state owned by one TSF composition client.
-///
-/// The compiled model, system lexicon and user dictionary stay on
-/// `PinyinEngine`; everything whose value depends on the current reading or
-/// mode travels with this object. The IPC service keeps one instance per pipe
-/// connection, which prevents interleaved applications from replacing each
-/// other's mode, continuation and incremental decoder state.
-pub(crate) struct LookupSession {
-    cancellation: LookupCancellationToken,
-    mode_flags: u32,
-    prefix_cache_abbrev: Mutex<PrefixLruCache>,
-    prefix_cache_pinyin: Mutex<PrefixLruCache>,
-    mixed_expansion_cache: Mutex<MixedExpansionLruCache>,
-    mixed_incremental_cache: Mutex<MixedPinyinIncrementalCache>,
-    mixed_completion_score_cache: Mutex<MixedCompletionScoreCache>,
-    incremental_parse_cache: RefCell<IncrementalParseCache>,
-    incremental_decode_cache: RefCell<IncrementalDecodeCache>,
-    incremental_word_graph_cache: RefCell<IncrementalWordGraphCache>,
-    rerank_score_cache: Mutex<RerankScoreCache>,
-    final_lookup_cache: FinalLookupCache,
-    short_lookup_cache: ShortLookupCache,
-    pending_lookup_continuation: Option<PendingLookupContinuation>,
-    pending_full_retry_keys: VecDeque<(String, u32)>,
-    cache_epoch: u64,
-    runtime_config_generation: u64,
-    merged_buf: MergedCandidateMap,
-    ranked_buf: Vec<RankedCandidate>,
-    last_lookup: Option<LookupStabilityState>,
+    /// Readers invalidate their local caches when a new model or user
+    /// dictionary snapshot has been published.
     shared_data_generation: u64,
 }
 
-impl Default for LookupSession {
-    fn default() -> Self {
-        Self {
-            cancellation: LookupCancellationToken::default(),
-            mode_flags: DEFAULT_MODE_FLAGS,
-            prefix_cache_abbrev: Mutex::new(PrefixLruCache::default()),
-            prefix_cache_pinyin: Mutex::new(PrefixLruCache::default()),
-            mixed_expansion_cache: Mutex::new(MixedExpansionLruCache::default()),
-            mixed_incremental_cache: Mutex::new(MixedPinyinIncrementalCache::default()),
-            mixed_completion_score_cache: Mutex::new(MixedCompletionScoreCache::default()),
-            incremental_parse_cache: RefCell::new(IncrementalParseCache::default()),
-            incremental_decode_cache: RefCell::new(IncrementalDecodeCache::default()),
-            incremental_word_graph_cache: RefCell::new(IncrementalWordGraphCache::default()),
-            rerank_score_cache: Mutex::new(RerankScoreCache::default()),
-            final_lookup_cache: FinalLookupCache::default(),
-            short_lookup_cache: ShortLookupCache::default(),
-            pending_lookup_continuation: None,
-            pending_full_retry_keys: VecDeque::new(),
-            cache_epoch: 0,
-            runtime_config_generation: 0,
-            merged_buf: MergedCandidateMap::with_capacity(256),
-            ranked_buf: Vec::with_capacity(128),
-            last_lookup: None,
-            shared_data_generation: 0,
-        }
-    }
-}
-
-impl LookupSession {
-    pub(crate) fn next_lookup_generation(&self) -> u64 {
-        self.cancellation.next_generation()
-    }
-
-    pub(crate) fn cancellation_token(&self) -> LookupCancellationToken {
-        self.cancellation.clone()
-    }
+/// Immutable data observed for the entire duration of one lookup.
+#[cfg(windows)]
+pub(crate) struct EngineLookupSnapshot {
+    phrase_lexicon: Option<Arc<AbbrevLexicon>>,
+    cold_lexicon_dir: Option<PathBuf>,
+    single_char_common: Arc<single_char_common::SingleCharCommonIndex>,
+    user_lexicon: UserLexicon,
+    generation: u64,
 }
 
 #[derive(Clone, Debug, Default)]

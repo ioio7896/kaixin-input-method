@@ -1,16 +1,33 @@
 use crate::clipboard_store;
 use crate::core::{
-    default_phrase_lexicon_dir, validate_trusted_phrase_dir, CandidateMeta,
-    LookupCancellationToken, LookupSession, PinyinEngine, LOOKUP_FULL_MAX_CANDIDATES,
-    TSF_MAX_CANDIDATES,
+    default_phrase_lexicon_dir, validate_trusted_phrase_dir, CandidateMatchKind, CandidateMeta,
+    CandidateSource, EngineLookupSnapshot, LookupCancellationToken, PinyinEngine,
+    LOOKUP_FULL_MAX_CANDIDATES, TSF_MAX_CANDIDATES,
 };
 use crate::runtime_log::{self, RuntimeLogLevel};
 use crate::segment::syllable_boundary_offsets_utf16;
 use crate::shared_rules::strip_windows_verbatim_prefix;
+use crate::thuocl::LexiconLayer;
+use crate::user_dict::{DictionaryRequest, UserLexicon};
 use crate::win_handle::OwnedWinHandle;
 use crate::ENGINE_PANIC_RC;
+use arc_swap::ArcSwapOption;
+use bincode::Options;
+use kaixin_common::engine_contract::{
+    ROW_ANNOTATION, ROW_CLIPBOARD_FILTER, ROW_CLIPBOARD_ID, ROW_CLIPBOARD_PAGE,
+    ROW_CLIPBOARD_PAGES, ROW_CLIPBOARD_PINNED, ROW_CLIPBOARD_QUICK, ROW_CLIPBOARD_SOURCE,
+    ROW_CLIPBOARD_TIME, ROW_CLIPBOARD_TYPE, ROW_CORRECTED_READING, ROW_CORRECTION, ROW_DISPLAY,
+    ROW_EXT, ROW_MAX_FIELD_UNITS, ROW_NO_LEARN, ROW_PARTIAL, ROW_PINNED, ROW_PLACEHOLDER,
+    ROW_USER_COMMON, ROW_USER_FRESH, ROW_USER_MIXED, ROW_USER_OBSERVED, ROW_VERTICAL,
+};
+use kaixin_common::engine_wire::*;
+use kaixin_platform::storage_client::{
+    capability_path, open_pipe_client, read_engine_capability_token,
+};
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, VecDeque};
 use std::ffi::OsStr;
+#[cfg(test)]
 use std::fs::OpenOptions;
 use std::io::{self, Read, Write};
 use std::os::windows::ffi::OsStrExt;
@@ -18,7 +35,7 @@ use std::path::{Path, PathBuf};
 use std::ptr::null_mut;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
-use std::sync::{Condvar, Mutex, MutexGuard, OnceLock, TryLockError};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant, SystemTime};
 use windows_sys::Win32::Foundation::{
     GetLastError, BOOL, ERROR_IO_INCOMPLETE, ERROR_IO_PENDING, ERROR_MORE_DATA, ERROR_PIPE_BUSY,
@@ -36,16 +53,10 @@ use windows_sys::Win32::System::IO::{
     CancelIoEx, GetOverlappedResult, GetOverlappedResultEx, OVERLAPPED,
 };
 
-const PIPE_NAME_ENV: &str = "SRF_ENGINE_PIPE_NAME";
 const MUTEX_NAME_ENV: &str = "SRF_ENGINE_MUTEX_NAME";
-const CAPABILITY_FILE_NAME: &str = "engine_capability.dat";
-const CAPABILITY_MAGIC: &[u8] = b"KXIPC-DPAPI-1\n";
-const PROTOCOL_MAGIC: u32 = 0x31504653; // "SFP1"
-include!(concat!(env!("OUT_DIR"), "/engine_protocol.rs"));
 const ENGINE_APP_VERSION: &str = env!("SRF_APP_VERSION");
 const ENGINE_GIT_COMMIT: &str = env!("SRF_ENGINE_GIT_COMMIT");
 const ENGINE_GIT_DIRTY: &str = env!("SRF_ENGINE_GIT_DIRTY");
-const ENGINE_MODEL_HASH: &str = env!("SRF_ENGINE_MODEL_HASH");
 const PIPE_CLIENT_IO_TIMEOUT: Duration = Duration::from_secs(30);
 const PIPE_HEADER_IO_TIMEOUT: Duration = Duration::from_secs(5 * 60);
 // A TIP process keeps its engine pipe open for the lifetime of the host process.
@@ -62,36 +73,22 @@ const MAX_SELECTION_FEEDBACK_SKIPPED: usize = 64;
 const MAX_CLIPBOARD_TEXT_UNITS: usize = 20_000;
 const MAX_LEXICON_PATH_UNITS: usize = 4096;
 const MAX_REQUEST_BYTES: usize = 256 * 1024;
-const ROW_TEXT_UNITS: usize = 512;
-const ROW_META_UNITS: usize = 512;
+const LOOKUP_ROW_STRING_FIELDS: usize = 9;
+const LOOKUP_ROW_MAX_BYTES: usize =
+    4 + 4 + 2 * 4 + LOOKUP_ROW_STRING_FIELDS * (2 + ROW_MAX_FIELD_UNITS as usize * 2);
 // The first candidate page should be cheap to transfer and paint.  Additional
 // rows are requested only when the user reaches the end of the visible batch.
 const LOOKUP_FIRST_BATCH_CANDIDATES: usize = 18;
-const LOOKUP_RESPONSE_BYTES: usize = 4
-    + LOOKUP_FULL_MAX_CANDIDATES * (2 + (ROW_TEXT_UNITS - 1) * 2 + 2 + (ROW_META_UNITS - 1) * 2)
-    + 4;
+const LOOKUP_RESPONSE_BYTES: usize = 3 + LOOKUP_FULL_MAX_CANDIDATES * LOOKUP_ROW_MAX_BYTES;
 const LOOKUP_SLOW_THRESHOLD_US: u128 = 20_000;
 const LOOKUP_FAST_SAMPLE_MASK: usize = 0x3f;
 const LOOKUP_INTERACTIVE_BUSY_WAIT: Duration = Duration::from_millis(20);
-const LOOKUP_BACKGROUND_BUSY_WAIT: Duration = Duration::from_millis(3);
-const FULL_LOAD_INSTALL_IDLE: Duration = Duration::from_millis(1500);
-const FULL_LOAD_INSTALL_RETRY_SLEEP: Duration = Duration::from_millis(25);
-// The full prebaked lexicon is deliberately not promoted into the interactive
-// shared engine.  It is much larger than the hot lexicon and loading it in the
-// background can briefly create two complete lexicon graphs, while the later
-// install holds the same mutex used by key lookups.  Interactive candidates
-// stay on the bounded hot index; offline/evaluation callers can still use the
-// full PinyinEngine constructor directly.
-const BACKGROUND_FULL_LEXICON_LOAD_ENABLED: bool = false;
+const LOOKUP_WORKERS: usize = 4;
 const PIPE_LISTENER_MAX_CONSECUTIVE_FAILURES: usize = 120;
-const PIPE_BUFFER_BYTES: u32 = if LOOKUP_RESPONSE_BYTES as u32 + 4096 > 64 * 1024 {
-    LOOKUP_RESPONSE_BYTES as u32 + 4096
-} else {
-    64 * 1024
-};
+const PIPE_BUFFER_BYTES: u32 = 64 * 1024;
 static ACTIVE_PIPE_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static LOOKUP_FAST_SAMPLE_COUNTER: AtomicUsize = AtomicUsize::new(0);
-static DEFAULT_ENGINE_READY: AtomicBool = AtomicBool::new(false);
+static SERVICE_OWNER: AtomicBool = AtomicBool::new(false);
 static NEXT_LOOKUP_SESSION_ID: AtomicU64 = AtomicU64::new(1);
 
 const SCHEDULER_WAIT_BUCKET_US: [u64; 12] = [
@@ -139,10 +136,6 @@ fn zeroize_bytes(bytes: &mut [u8]) {
     std::sync::atomic::compiler_fence(Ordering::SeqCst);
 }
 
-fn zeroize_vec(bytes: &mut Vec<u8>) {
-    zeroize_bytes(bytes.as_mut_slice());
-}
-
 fn zeroize_string(text: &mut String) {
     unsafe {
         zeroize_bytes(text.as_mut_vec().as_mut_slice());
@@ -181,7 +174,7 @@ fn engine_cache_signature(
     format!(
         "build={};model={};lexicon_state={};lexicon={}",
         engine_build_id(),
-        ENGINE_MODEL_HASH,
+        crate::model_resources::model_hash(),
         lexicon_state,
         lexicon_signature(target_dir)
     )
@@ -233,6 +226,7 @@ enum EngineCommand {
     ResetLearningContext = 13,
     CancelLookup = 14,
     LearnStatus = 15,
+    Storage = 16,
 }
 
 impl EngineCommand {
@@ -253,37 +247,25 @@ impl EngineCommand {
             13 => Some(Self::ResetLearningContext),
             14 => Some(Self::CancelLookup),
             15 => Some(Self::LearnStatus),
+            16 => Some(Self::Storage),
             _ => None,
         }
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-enum LexiconRuntimeState {
-    #[default]
-    Core,
-    Hot,
-    Full,
+struct PublishedLookup {
+    data: EngineLookupSnapshot,
+    target_dir: Option<PathBuf>,
+    lexicon_state: &'static str,
 }
 
-impl LexiconRuntimeState {
-    fn as_str(self) -> &'static str {
-        match self {
-            Self::Core => "core",
-            Self::Hot => "hot",
-            Self::Full => "full",
-        }
-    }
-}
+static LOOKUP_MODEL: ArcSwapOption<PublishedLookup> = ArcSwapOption::const_empty();
 
 #[derive(Default)]
 struct SharedEngine {
     engine: Option<PinyinEngine>,
-    loaded_dir: Option<PathBuf>,
     target_dir: Option<PathBuf>,
-    lexicon_state: LexiconRuntimeState,
-    full_load_in_flight: bool,
-    last_lookup_at: Option<Instant>,
+    dictionary_error: Option<String>,
 }
 
 fn perf_log_enabled() -> bool {
@@ -309,56 +291,73 @@ impl SharedEngine {
         }
     }
 
-    fn install_fast_engine(&mut self, engine: PinyinEngine, trusted_dir: Option<PathBuf>) {
-        let lexicon_state = if engine.has_phrase_lexicon() {
-            LexiconRuntimeState::Hot
+    fn install_model(&mut self, mut engine: PinyinEngine, trusted_dir: Option<PathBuf>) {
+        if let Some(current) = &mut self.engine {
+            current.install_service_model(engine);
         } else {
-            LexiconRuntimeState::Core
-        };
-        self.engine = Some(engine);
-        self.loaded_dir = None;
+            if SERVICE_OWNER.load(Ordering::Acquire) {
+                match UserLexicon::open_default() {
+                    Ok(dictionary) => engine.attach_user_dictionary(dictionary),
+                    Err(error) => {
+                        runtime_log::log_engine(
+                            RuntimeLogLevel::Error,
+                            "srf_user_dict_open_failed",
+                            error.to_string(),
+                        );
+                        self.dictionary_error = Some(error.to_string());
+                    }
+                }
+            }
+            if let Some(error) = crate::compiled_data::compiled_model_error() {
+                runtime_log::log_engine(
+                    RuntimeLogLevel::Error,
+                    "srf_compiled_model_unavailable",
+                    error,
+                );
+            }
+            self.engine = Some(engine);
+        }
         self.target_dir = trusted_dir;
-        self.lexicon_state = lexicon_state;
-        update_default_engine_ready(self.target_dir.as_deref());
+
+        self.publish();
     }
 
-    fn schedule_full_load_if_needed(&mut self) {
-        if !BACKGROUND_FULL_LEXICON_LOAD_ENABLED {
-            return;
-        }
-        if self.full_load_in_flight {
-            return;
-        }
-        let Some(dir) = self.target_dir.clone() else {
-            return;
-        };
-        if self.lexicon_state == LexiconRuntimeState::Full && self.loaded_dir.as_ref() == Some(&dir)
-        {
-            return;
-        }
-        self.full_load_in_flight = true;
-        if !spawn_full_lexicon_load(dir) {
-            self.full_load_in_flight = false;
-            DEFAULT_ENGINE_READY.store(false, Ordering::Release);
+    fn publish(&self) {
+        if let Some(engine) = &self.engine {
+            LOOKUP_MODEL.store(Some(Arc::new(PublishedLookup {
+                data: engine.lookup_snapshot(),
+                target_dir: self.target_dir.clone(),
+                lexicon_state: if engine.has_phrase_lexicon() {
+                    "hot"
+                } else {
+                    "core"
+                },
+            })));
         }
     }
 
     fn engine_mut(&mut self) -> Result<&mut PinyinEngine, String> {
+        if let Some(error) = &self.dictionary_error {
+            return Err(format!("user dictionary unavailable: {error}"));
+        }
         self.engine
             .as_mut()
             .ok_or_else(|| "shared engine is not initialized".to_string())
+    }
+
+    fn commit_learning(&mut self) -> Result<(), String> {
+        self.engine_mut()?
+            .flush_pending_learning()
+            .map_err(|error| error.to_string())?;
+        self.publish();
+        Ok(())
     }
 }
 
 /// Learning is feedback, not part of the request/response critical path.
 ///
-/// The TSF side already coalesces duplicate learn events, but the old IPC
-/// handlers still performed the SQLite-backed mutation before sending the
-/// response. A slow user-dictionary write could therefore make the TSF bridge
-/// hit its 750 ms learn timeout and tear down an otherwise healthy pipe. Keep
-/// one bounded, FIFO worker in the helper so mutations remain serialized with
-/// the shared engine. The IPC response contains a completion id; the TSF polls
-/// that id before treating the learning operation as successful.
+/// One bounded FIFO worker handles feedback and appends a durable journal
+/// batch before publishing learned state and completing the operation.
 enum AsyncLearningRequest {
     Commit {
         reading: String,
@@ -426,6 +425,13 @@ struct AsyncLearningTask {
     request: AsyncLearningRequest,
 }
 
+type WriterJob = Box<dyn FnOnce(&mut SharedEngine) -> Result<Vec<u8>, String> + Send>;
+
+enum EngineWriterTask {
+    Feedback(AsyncLearningTask),
+    Command(WriterJob, mpsc::Sender<Result<Vec<u8>, String>>),
+}
+
 const ASYNC_LEARNING_QUEUE_CAPACITY: usize = 256;
 const ASYNC_LEARNING_STATUS_CAPACITY: usize = ASYNC_LEARNING_QUEUE_CAPACITY * 4;
 const ASYNC_LEARNING_PENDING_RC: i32 = -7;
@@ -462,8 +468,8 @@ fn finish_async_learning_task(id: u64, outcome: AsyncLearningOutcome) {
     notify_async_learning_drain();
 }
 
-fn async_learning_sender() -> Option<&'static SyncSender<AsyncLearningTask>> {
-    static SENDER: OnceLock<Option<SyncSender<AsyncLearningTask>>> = OnceLock::new();
+fn async_learning_sender() -> Option<&'static SyncSender<EngineWriterTask>> {
+    static SENDER: OnceLock<Option<SyncSender<EngineWriterTask>>> = OnceLock::new();
     SENDER
         .get_or_init(|| {
             let (sender, receiver) = mpsc::sync_channel(ASYNC_LEARNING_QUEUE_CAPACITY);
@@ -506,19 +512,22 @@ fn enqueue_async_learning(request: AsyncLearningRequest) -> Result<u64, &'static
         statuses.reserve(id, ASYNC_LEARNING_STATUS_CAPACITY)?;
     }
     ASYNC_LEARNING_ACTIVE.fetch_add(1, Ordering::AcqRel);
-    match sender.try_send(AsyncLearningTask { id, request }) {
+    match sender.try_send(EngineWriterTask::Feedback(AsyncLearningTask {
+        id,
+        request,
+    })) {
         Ok(()) => Ok(id),
-        Err(TrySendError::Full(task)) => {
+        Err(TrySendError::Full(_)) => {
             if let Ok(mut statuses) = async_learning_statuses().lock() {
-                statuses.cancel(task.id);
+                statuses.cancel(id);
             }
             ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
             notify_async_learning_drain();
             Err("shared engine busy")
         }
-        Err(TrySendError::Disconnected(task)) => {
+        Err(TrySendError::Disconnected(_)) => {
             if let Ok(mut statuses) = async_learning_statuses().lock() {
-                statuses.cancel(task.id);
+                statuses.cancel(id);
             }
             ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
             notify_async_learning_drain();
@@ -536,30 +545,62 @@ fn async_learning_outcome_from_result(
     }
 }
 
-fn async_learning_worker_loop(receiver: Receiver<AsyncLearningTask>) {
+fn run_writer_command(
+    job: impl FnOnce(&mut SharedEngine) -> Result<Vec<u8>, String> + Send + 'static,
+) -> Result<Vec<u8>, String> {
+    let (reply, result) = mpsc::channel();
+    {
+        let _gate = async_learning_lifecycle_gate()
+            .lock()
+            .map_err(|_| "learning lifecycle unavailable")?;
+        if ASYNC_LEARNING_SHUTDOWN.load(Ordering::Acquire) {
+            return Err("learning worker shutting down".to_owned());
+        }
+        let sender = async_learning_sender().ok_or("learning worker unavailable")?;
+        ASYNC_LEARNING_ACTIVE.fetch_add(1, Ordering::AcqRel);
+        if sender
+            .try_send(EngineWriterTask::Command(Box::new(job), reply))
+            .is_err()
+        {
+            ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
+            notify_async_learning_drain();
+            return Err("learning worker busy or disconnected".to_owned());
+        }
+    }
+    result
+        .recv_timeout(PIPE_CLIENT_IO_TIMEOUT)
+        .map_err(|error| error.to_string())?
+}
+
+fn async_learning_worker_loop(receiver: Receiver<EngineWriterTask>) {
     while let Ok(task) = receiver.recv() {
-        let id = task.id;
-        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            process_async_learning_request(task.request)
-        }));
-        let outcome = match result {
-            Ok(result) => {
+        match task {
+            EngineWriterTask::Feedback(task) => {
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    process_async_learning_request(task.request)
+                }))
+                .unwrap_or_else(|_| {
+                    Err((
+                        "srf_async_learning_failed",
+                        "learning worker panicked".to_owned(),
+                    ))
+                });
                 if let Err((event, error)) = &result {
                     runtime_log::log_engine(RuntimeLogLevel::Error, event, error);
                 }
-                async_learning_outcome_from_result(result)
+                finish_async_learning_task(task.id, async_learning_outcome_from_result(result));
             }
-            Err(_) => {
-                let error = "learning worker panicked".to_string();
-                runtime_log::log_engine(
-                    RuntimeLogLevel::Error,
-                    "srf_async_learning_failed",
-                    &error,
-                );
-                AsyncLearningOutcome::Failed(error)
+            EngineWriterTask::Command(job, reply) => {
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    ensure_shared_engine_loaded(None)?;
+                    job(&mut lock_shared_engine_recover())
+                }))
+                .unwrap_or_else(|_| Err("dictionary command panicked".to_owned()));
+                let _ = reply.send(result);
+                ASYNC_LEARNING_ACTIVE.fetch_sub(1, Ordering::AcqRel);
+                notify_async_learning_drain();
             }
-        };
-        finish_async_learning_task(id, outcome);
+        }
     }
 }
 
@@ -599,15 +640,6 @@ fn process_async_learning_request(
         ));
     }
 
-    // Give queued keystrokes a short head start before mutating shared data.
-    // Bound the yield so continuous typing cannot starve learning or shutdown.
-    let yield_started = Instant::now();
-    while lookup_scheduler().has_interactive_pressure()
-        && yield_started.elapsed() < Duration::from_millis(50)
-        && !ASYNC_LEARNING_SHUTDOWN.load(Ordering::Acquire)
-    {
-        std::thread::sleep(Duration::from_millis(2));
-    }
     let mut state = lock_shared_engine_recover();
     let engine = state.engine_mut().map_err(|err| {
         (
@@ -616,7 +648,7 @@ fn process_async_learning_request(
         )
     })?;
 
-    match request {
+    let result = match request {
         AsyncLearningRequest::Commit {
             reading,
             committed,
@@ -671,7 +703,11 @@ fn process_async_learning_request(
                     format!("operation=selection_feedback error={err}"),
                 )
             }),
-    }
+    };
+    result?;
+    state
+        .commit_learning()
+        .map_err(|error| ("srf_async_learning_failed", error))
 }
 
 fn shared_engine() -> &'static Mutex<SharedEngine> {
@@ -692,7 +728,7 @@ fn recover_shared_engine_poison(
     let mut guard = poison.into_inner();
     let old_engine = std::mem::take(&mut *guard);
     shared_engine().clear_poison();
-    DEFAULT_ENGINE_READY.store(false, Ordering::Release);
+    LOOKUP_MODEL.store(None);
     runtime_log::log_engine(
         RuntimeLogLevel::Error,
         "srf_shared_engine_lock_recovered",
@@ -726,7 +762,8 @@ struct ScheduledLookup {
 #[derive(Default)]
 struct LookupSchedulerState {
     next_ticket: u64,
-    running: Option<LookupPriority>,
+    running: usize,
+    interactive: usize,
     queue: VecDeque<ScheduledLookup>,
 }
 
@@ -835,6 +872,7 @@ enum SchedulerAcquireError {
 struct LookupPermit {
     scheduler: &'static LookupScheduler,
     queue_wait_us: u64,
+    priority: LookupPriority,
 }
 
 impl LookupPermit {
@@ -846,7 +884,8 @@ impl LookupPermit {
 impl Drop for LookupPermit {
     fn drop(&mut self) {
         if let Ok(mut state) = self.scheduler.state.lock() {
-            state.running = None;
+            state.running -= 1;
+            state.interactive -= usize::from(self.priority == LookupPriority::Interactive);
             self.scheduler
                 .metrics
                 .active_workers
@@ -907,7 +946,7 @@ impl LookupScheduler {
                 return Err(SchedulerAcquireError::Superseded);
             }
 
-            if state.running.is_none() && Self::selected_ticket(&state) == Some(ticket) {
+            if state.running < LOOKUP_WORKERS && Self::selected_ticket(&state) == Some(ticket) {
                 let position = state
                     .queue
                     .iter()
@@ -918,7 +957,8 @@ impl LookupScheduler {
                     .remove(position)
                     .expect("selected scheduler ticket must be removable");
                 debug_assert_eq!(admitted.generation, generation);
-                state.running = Some(priority);
+                state.running += 1;
+                state.interactive += usize::from(priority == LookupPriority::Interactive);
                 let waited_us = started.elapsed().as_micros().min(u64::MAX as u128) as u64;
                 self.metrics.record_wait(waited_us);
                 self.metrics.admitted.fetch_add(1, Ordering::Relaxed);
@@ -926,6 +966,7 @@ impl LookupScheduler {
                 return Ok(LookupPermit {
                     scheduler: self,
                     queue_wait_us: waited_us,
+                    priority,
                 });
             }
 
@@ -949,23 +990,24 @@ impl LookupScheduler {
 
     fn try_acquire_background(&'static self) -> Option<LookupPermit> {
         let mut state = self.state.lock().ok()?;
-        if state.running.is_some() || !state.queue.is_empty() {
+        if state.running != 0 || !state.queue.is_empty() {
             self.metrics
                 .background_yields
                 .fetch_add(1, Ordering::Relaxed);
             return None;
         }
-        state.running = Some(LookupPriority::Background);
+        state.running += 1;
         self.metrics.active_workers.fetch_add(1, Ordering::AcqRel);
         Some(LookupPermit {
             scheduler: self,
             queue_wait_us: 0,
+            priority: LookupPriority::Background,
         })
     }
 
     fn has_interactive_pressure(&self) -> bool {
         self.state.lock().is_ok_and(|state| {
-            state.running == Some(LookupPriority::Interactive)
+            state.interactive != 0
                 || state
                     .queue
                     .iter()
@@ -991,7 +1033,8 @@ struct ClientLookupSession {
     id: u64,
     last_request_id: u64,
     client_process_id: u32,
-    lookup: LookupSession,
+    cancellation: LookupCancellationToken,
+    decoder: Option<PinyinEngine>,
 }
 
 impl Default for ClientLookupSession {
@@ -1008,7 +1051,8 @@ impl ClientLookupSession {
                 .max(1),
             client_process_id,
             last_request_id: 0,
-            lookup: LookupSession::default(),
+            cancellation: LookupCancellationToken::default(),
+            decoder: None,
         }
     }
 }
@@ -1075,7 +1119,7 @@ fn register_active_lookup(
     if session.client_process_id == 0 || request_id == 0 {
         return None;
     }
-    let token = session.lookup.cancellation_token();
+    let token = session.cancellation.clone();
     let mut registry = lookup_cancellation_registry().lock().ok()?;
     let cancelled_before_registration = registry
         .latest_superseding_request_ids
@@ -1127,332 +1171,53 @@ fn cancel_registered_lookup(client_process_id: u32, superseding_request_id: u64)
     true
 }
 
-fn lock_shared_engine_for_lookup(
-    reading: &str,
-    request_id: u64,
-    lookup_generation: u64,
-    cancellation: Option<&LookupCancellationToken>,
-    after_ensure: bool,
-) -> Result<MutexGuard<'static, SharedEngine>, (i32, Vec<u8>)> {
-    let started = Instant::now();
-    let busy_wait = if request_id == 0 {
-        LOOKUP_BACKGROUND_BUSY_WAIT
-    } else {
-        LOOKUP_INTERACTIVE_BUSY_WAIT
-    };
-    let mut waited = false;
-    loop {
-        if cancellation.map_or_else(
-            || crate::core::lookup_request_superseded(lookup_generation),
-            |token| token.is_superseded(lookup_generation),
-        ) {
-            return Err((-8, error_payload("lookup superseded")));
-        }
-        match shared_engine().try_lock() {
-            Ok(guard) => {
-                if waited && perf_log_enabled() {
-                    runtime_log::log_engine(
-                        RuntimeLogLevel::Perf,
-                        "srf_ipc_lookup_waited",
-                        format!(
-                            "request_id={} {} waited_us={} after_ensure={}",
-                            request_id,
-                            runtime_log::input_fingerprint(reading),
-                            started.elapsed().as_micros(),
-                            if after_ensure { 1 } else { 0 }
-                        ),
-                    );
-                }
-                return Ok(guard);
-            }
-            Err(TryLockError::WouldBlock) if started.elapsed() < busy_wait => {
-                waited = true;
-                let superseded = cancellation.map_or_else(
-                    || crate::core::lookup_request_superseded(lookup_generation),
-                    |token| token.is_superseded(lookup_generation),
-                );
-                if superseded {
-                    return Err((-8, error_payload("lookup superseded")));
-                }
-                std::thread::yield_now();
-            }
-            Err(TryLockError::WouldBlock) => {
-                runtime_log::log_engine(
-                    RuntimeLogLevel::Error,
-                    "srf_ipc_lookup_busy",
-                    format!(
-                        "request_id={} {} status=busy waited_us={} after_ensure={}",
-                        request_id,
-                        runtime_log::input_fingerprint(reading),
-                        started.elapsed().as_micros(),
-                        if after_ensure { 1 } else { 0 }
-                    ),
-                );
-                return Err((-5, error_payload("shared engine busy")));
-            }
-            Err(TryLockError::Poisoned(poison)) => {
-                return Ok(recover_shared_engine_poison(poison, "lookup"));
-            }
-        }
-    }
-}
-
 fn engine_init_mutex() -> &'static Mutex<()> {
     static INIT_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
     INIT_MUTEX.get_or_init(|| Mutex::new(()))
 }
 
-fn lock_engine_init_recover() -> MutexGuard<'static, ()> {
-    match engine_init_mutex().lock() {
-        Ok(guard) => guard,
-        Err(poison) => poison.into_inner(),
-    }
-}
-
 fn ensure_shared_engine_loaded(requested_dir: Option<&Path>) -> Result<(), String> {
-    if requested_dir.is_none() && DEFAULT_ENGINE_READY.load(Ordering::Acquire) {
+    static DEFAULT_DIR: OnceLock<Result<Option<PathBuf>, String>> = OnceLock::new();
+    let target = if let Some(path) = requested_dir {
+        SharedEngine::trusted_dir(Some(path))?
+    } else {
+        DEFAULT_DIR
+            .get_or_init(|| SharedEngine::trusted_dir(None))
+            .clone()?
+    };
+    let loaded = || {
+        LOOKUP_MODEL
+            .load()
+            .as_ref()
+            .is_some_and(|model| model.target_dir == target)
+    };
+    if loaded() {
         return Ok(());
     }
-    let started = Instant::now();
-    let trusted_dir = match requested_dir {
-        Some(path) => SharedEngine::trusted_dir(Some(path))?,
-        None => default_trusted_dir()?,
-    };
-    let already_loaded = {
-        let state = lock_shared_engine_recover();
-        state.engine.is_some() && state.target_dir == trusted_dir
-    };
-
-    if !already_loaded {
-        let _init_guard = lock_engine_init_recover();
-        if requested_dir.is_none() && DEFAULT_ENGINE_READY.load(Ordering::Acquire) {
-            return Ok(());
-        }
-        let already_loaded_after_wait = {
-            let state = lock_shared_engine_recover();
-            state.engine.is_some() && state.target_dir == trusted_dir
-        };
-        if !already_loaded_after_wait {
-            let engine = PinyinEngine::with_hot_phrase_dir(trusted_dir.as_deref());
-            let mut state = lock_shared_engine_recover();
-            let reused = state.engine.is_some() && state.target_dir == trusted_dir;
-            if !reused {
-                state.install_fast_engine(engine, trusted_dir);
-            }
-            state.schedule_full_load_if_needed();
-
-            if perf_log_enabled() {
-                runtime_log::log_engine(
-                    RuntimeLogLevel::Perf,
-                    "srf_engine_ensure_loaded",
-                    format!(
-                        "reused={} state={} full_in_flight={} elapsed={}us",
-                        if reused { 1 } else { 0 },
-                        state.lexicon_state.as_str(),
-                        if state.full_load_in_flight { 1 } else { 0 },
-                        started.elapsed().as_micros()
-                    ),
-                );
-            }
-            return Ok(());
-        }
-    }
-
-    let mut state = lock_shared_engine_recover();
-    state.schedule_full_load_if_needed();
-
-    if perf_log_enabled() {
-        runtime_log::log_engine(
-            RuntimeLogLevel::Perf,
-            "srf_engine_ensure_loaded",
-            format!(
-                "reused=1 state={} full_in_flight={} elapsed={}us",
-                state.lexicon_state.as_str(),
-                if state.full_load_in_flight { 1 } else { 0 },
-                started.elapsed().as_micros()
-            ),
-        );
+    let _initializing = engine_init_mutex()
+        .lock()
+        .unwrap_or_else(|poison| poison.into_inner());
+    if !loaded() {
+        let engine = PinyinEngine::with_hot_phrase_dir(target.as_deref());
+        lock_shared_engine_recover().install_model(engine, target);
     }
     Ok(())
 }
 
-fn default_trusted_dir() -> Result<Option<PathBuf>, String> {
-    static DEFAULT_DIR: OnceLock<Result<Option<PathBuf>, String>> = OnceLock::new();
-    DEFAULT_DIR
-        .get_or_init(|| SharedEngine::trusted_dir(None))
-        .clone()
-}
-
-fn update_default_engine_ready(target_dir: Option<&Path>) {
-    let ready = default_trusted_dir()
-        .ok()
-        .is_some_and(|default_dir| default_dir.as_deref() == target_dir);
-    DEFAULT_ENGINE_READY.store(ready, Ordering::Release);
-}
-
-fn spawn_full_lexicon_load(dir: PathBuf) -> bool {
-    std::thread::Builder::new()
-        .name("srf-engine-full-lexicon".to_string())
-        .spawn(move || {
-            let started = Instant::now();
-            runtime_log::log_engine(
-                RuntimeLogLevel::Basic,
-                "srf_engine_full_warmup_start",
-                format!("dir={}", dir.display()),
-            );
-
-            let mut full_engine = PinyinEngine::with_phrase_dir(Some(&dir));
-            full_engine.warmup_correction_indexes();
-            let loaded = full_engine.has_phrase_lexicon();
-            let mut phrase_lexicon = full_engine.take_phrase_lexicon();
-            let mut full_engine = Some(full_engine);
-            let elapsed_us = started.elapsed().as_micros();
-
-            let install_started = Instant::now();
-            let mut installed = false;
-            loop {
-                let Some(permit) = lookup_scheduler().try_acquire_background() else {
-                    std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                    continue;
-                };
-                match shared_engine().try_lock() {
-                    Ok(mut state) => {
-                        let recently_used = match state.last_lookup_at {
-                            Some(last) => last.elapsed() < FULL_LOAD_INSTALL_IDLE,
-                            None => false,
-                        };
-                        if recently_used {
-                            drop(state);
-                            drop(permit);
-                            std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                            continue;
-                        }
-
-                        if state.target_dir.as_ref() == Some(&dir) && loaded {
-                            // Installing the optional phrase lexicon is a
-                            // performance enhancement.  Keep a panic here
-                            // from unwinding through the mutex and poisoning
-                            // every later health request.
-                            let install_result =
-                                std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                                    if let Some(engine) = state.engine.as_mut() {
-                                        engine.install_phrase_lexicon(phrase_lexicon.take());
-                                    } else if let Some(mut engine) = full_engine.take() {
-                                        engine.install_phrase_lexicon(phrase_lexicon.take());
-                                        state.engine = Some(engine);
-                                    }
-                                }));
-                            if install_result.is_ok() {
-                                state.loaded_dir = Some(dir.clone());
-                                state.lexicon_state = LexiconRuntimeState::Full;
-                                installed = true;
-                            } else {
-                                state.engine = None;
-                                state.loaded_dir = None;
-                                state.lexicon_state = LexiconRuntimeState::Core;
-                                DEFAULT_ENGINE_READY.store(false, Ordering::Release);
-                                runtime_log::log_engine(
-                                    RuntimeLogLevel::Error,
-                                    "srf_engine_full_warmup_install_panic",
-                                    format!("dir={}", dir.display()),
-                                );
-                            }
-                        }
-                        state.full_load_in_flight = false;
-                        break;
-                    }
-                    Err(TryLockError::WouldBlock) => {
-                        drop(permit);
-                        std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                    }
-                    Err(TryLockError::Poisoned(poison)) => {
-                        let mut state = recover_shared_engine_poison(poison, "full-load-install");
-                        state.full_load_in_flight = false;
-                        break;
-                    }
-                }
-            }
-
-            runtime_log::log_engine(
-                RuntimeLogLevel::Basic,
-                "srf_engine_full_warmup_finish",
-                format!(
-                    "loaded={} installed={} elapsed={}us install_delay={}us dir={}",
-                    if loaded { 1 } else { 0 },
-                    if installed { 1 } else { 0 },
-                    elapsed_us,
-                    install_started.elapsed().as_micros(),
-                    dir.display()
-                ),
-            );
-
-            if installed {
-                warmup_installed_full_engine();
-            }
-        })
-        .is_ok()
-}
-
-fn warmup_installed_full_engine() {
-    const READINGS: &[&str] = &[
-        "ni",
-        "nihao",
-        "jintian",
-        "mingtian",
-        "shur",
-        "shurufa",
-        "bejing",
-        "beijing",
-        "anguan",
-        "angui",
-        "hangzhou",
-        "nihaoshijie",
-        "zhonghuarenmingongheguo",
-    ];
-
-    for reading in READINGS {
-        loop {
-            let Some(permit) = lookup_scheduler().try_acquire_background() else {
-                std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                continue;
-            };
-            match shared_engine().try_lock() {
-                Ok(mut state) => {
-                    let recently_used = state
-                        .last_lookup_at
-                        .is_some_and(|last| last.elapsed() < FULL_LOAD_INSTALL_IDLE);
-                    if recently_used {
-                        drop(state);
-                        drop(permit);
-                        std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                        continue;
-                    }
-                    if state.lexicon_state != LexiconRuntimeState::Full {
-                        return;
-                    }
-                    if let Ok(engine) = state.engine_mut() {
-                        engine.warmup_interactive_prefixes_until(reading, || {
-                            !lookup_scheduler().has_interactive_pressure()
-                        });
-                    }
-                    let preempted = lookup_scheduler().has_interactive_pressure();
-                    drop(state);
-                    if preempted {
-                        drop(permit);
-                        std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                        continue;
-                    }
-                    break;
-                }
-                Err(TryLockError::WouldBlock) => {
-                    drop(permit);
-                    std::thread::sleep(FULL_LOAD_INSTALL_RETRY_SLEEP);
-                }
-                Err(TryLockError::Poisoned(poison)) => {
-                    drop(recover_shared_engine_poison(poison, "full-load-warmup"));
-                    return;
-                }
-            }
+fn watch_lexicon_configuration() {
+    loop {
+        std::thread::sleep(Duration::from_millis(250));
+        if !crate::lexicon_prefs::take_phrase_lexicon_reload_flag() {
+            continue;
+        }
+        let Some(current) = LOOKUP_MODEL.load_full() else {
+            continue;
+        };
+        let target = current.target_dir.clone();
+        let model = PinyinEngine::with_hot_phrase_dir(target.as_deref());
+        let mut state = lock_shared_engine_recover();
+        if state.engine.is_some() && state.target_dir == target {
+            state.install_model(model, target);
         }
     }
 }
@@ -1470,6 +1235,18 @@ fn engine_pipe_name_from_env() -> String {
 pub fn start_engine_service() {
     static STARTED: OnceLock<()> = OnceLock::new();
     STARTED.get_or_init(|| {
+        if let Err(error) = ensure_engine_capability_file() {
+            runtime_log::log_engine(
+                RuntimeLogLevel::Error,
+                "srf_ipc_capability_unavailable",
+                error.to_string(),
+            );
+        }
+        SERVICE_OWNER.store(true, Ordering::Release);
+        clipboard_store::start_store_owner();
+        let _ = std::thread::Builder::new()
+            .name("srf-engine-lexicon-config".to_owned())
+            .spawn(watch_lexicon_configuration);
         // Start this before the first client request so the first learn event
         // cannot pay thread-creation latency on the named-pipe handler.
         let _ = async_learning_sender();
@@ -1502,6 +1279,22 @@ pub fn start_engine_service() {
                 format!("status=failed listener=spawn reason={err}"),
             ),
         }
+        let sandbox_pipe = crate::shared_rules::sandbox_engine_pipe_name(&pipe_name);
+        match std::thread::Builder::new()
+            .name("srf-engine-sandbox-pipe-listener".to_string())
+            .spawn(listen_loop_sandbox)
+        {
+            Ok(_) => runtime_log::log_engine(
+                RuntimeLogLevel::Basic,
+                "engine_sandbox_service_start",
+                format!("status=ok listener=spawned pipe={sandbox_pipe}"),
+            ),
+            Err(err) => runtime_log::log_engine(
+                RuntimeLogLevel::Error,
+                "engine_sandbox_service_start",
+                format!("status=failed listener=spawn pipe={sandbox_pipe} reason={err}"),
+            ),
+        }
     });
 }
 
@@ -1531,11 +1324,10 @@ pub fn probe_shared_engine(input: &str) -> Result<usize, String> {
     }
 
     ensure_shared_engine_loaded(None)?;
-    let mut state = lock_shared_engine_recover();
-    state.schedule_full_load_if_needed();
-    let lexicon_state = state.lexicon_state.as_str().to_string();
-    let full_in_flight = state.full_load_in_flight;
-    let engine = state.engine_mut()?;
+    let model = LOOKUP_MODEL.load_full().ok_or("missing lookup model")?;
+    let lexicon_state = model.lexicon_state;
+    let full_in_flight = false;
+    let mut engine = PinyinEngine::reader(&model.data);
     let started = Instant::now();
     let (ranked, warning) = engine.lookup_full_detailed_with_request_id(reading, 0);
     let elapsed_us = started.elapsed().as_micros();
@@ -1690,11 +1482,13 @@ impl EnginePipeClient {
         if status != 0 {
             return Err(format!("pipe lookup failed status={status}"));
         }
-        if response.len() < 4 {
-            return Err("pipe lookup response was truncated".to_string());
+        if response.len() < 3 || response[2] > 1 {
+            return Err("invalid pipe lookup response header".to_string());
         }
-        let count =
-            u32::from_le_bytes([response[0], response[1], response[2], response[3]]) as usize;
+        let count = u16::from_le_bytes([response[0], response[1]]) as usize;
+        if count > LOOKUP_FULL_MAX_CANDIDATES {
+            return Err("pipe lookup response contains too many candidates".to_string());
+        }
         Ok((count, response.len()))
     }
 
@@ -1743,25 +1537,14 @@ impl EnginePipeClient {
     }
 }
 
-fn open_pipe_client(pipe_name: &str) -> Result<std::fs::File, String> {
-    let deadline = Instant::now() + Duration::from_secs(5);
-    loop {
-        match OpenOptions::new().read(true).write(true).open(pipe_name) {
-            Ok(file) => return Ok(file),
-            Err(err) if Instant::now() < deadline => {
-                let last = err;
-                std::thread::sleep(Duration::from_millis(25));
-                if Instant::now() >= deadline {
-                    return Err(format!("pipe open failed: {last}"));
-                }
-            }
-            Err(err) => return Err(format!("pipe open failed: {err}")),
-        }
-    }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PipeAccessMode {
+    Full,
+    SandboxReadOnly,
 }
 
 fn listen_loop() {
-    if std::panic::catch_unwind(listen_loop_inner).is_err() {
+    if std::panic::catch_unwind(|| listen_loop_inner(PipeAccessMode::Full)).is_err() {
         runtime_log::log_engine(
             RuntimeLogLevel::Error,
             "srf_ipc_listener_panic",
@@ -1771,18 +1554,46 @@ fn listen_loop() {
     }
 }
 
-fn listen_loop_inner() {
-    let pipe_name_text = engine_pipe_name_from_env();
+fn listen_loop_sandbox() {
+    if std::panic::catch_unwind(|| listen_loop_inner(PipeAccessMode::SandboxReadOnly)).is_err() {
+        runtime_log::log_engine(
+            RuntimeLogLevel::Error,
+            "srf_ipc_sandbox_listener_panic",
+            "sandbox listener loop panicked",
+        );
+    }
+}
+
+fn listen_loop_inner(access_mode: PipeAccessMode) {
+    let base_pipe_name = engine_pipe_name_from_env();
+    let pipe_name_text = match access_mode {
+        PipeAccessMode::Full => base_pipe_name,
+        PipeAccessMode::SandboxReadOnly => {
+            crate::shared_rules::sandbox_engine_pipe_name(&base_pipe_name)
+        }
+    };
     let pipe_name = wide(&pipe_name_text);
-    let security = match crate::windows_security::LocalLogonPipeSecurity::for_ime_engine() {
+    let security_result = match access_mode {
+        PipeAccessMode::Full => crate::windows_security::LocalLogonPipeSecurity::for_ime_engine(),
+        PipeAccessMode::SandboxReadOnly => {
+            crate::windows_security::LocalLogonPipeSecurity::for_ime_engine_sandbox()
+        }
+    };
+    let security = match security_result {
         Ok(security) => security,
         Err(err) => {
             runtime_log::log_engine(
                 RuntimeLogLevel::Error,
                 "srf_ipc_security_init_failed",
-                format!("reason=token_unavailable io_kind={:?}", err.kind()),
+                format!(
+                    "mode={access_mode:?} reason=token_unavailable io_kind={:?}",
+                    err.kind()
+                ),
             );
-            std::process::exit(1);
+            if access_mode == PipeAccessMode::Full {
+                std::process::exit(1);
+            }
+            return;
         }
     };
     let mut consecutive_create_failures = 0usize;
@@ -1815,12 +1626,15 @@ fn listen_loop_inner() {
                     RuntimeLogLevel::Error,
                     "srf_ipc_create_pipe_failed",
                     format!(
-                        "pipe={} consecutive_failures={} last_error={}",
+                        "mode={access_mode:?} pipe={} consecutive_failures={} last_error={}",
                         pipe_name_text, consecutive_create_failures, last_error
                     ),
                 );
-                crate::engine_health::publish_listener_failure(last_error);
-                std::process::exit(1);
+                if access_mode == PipeAccessMode::Full {
+                    crate::engine_health::publish_listener_failure(last_error);
+                    std::process::exit(1);
+                }
+                return;
             }
             std::thread::sleep(Duration::from_millis(500));
             continue;
@@ -1839,7 +1653,7 @@ fn listen_loop_inner() {
                     RuntimeLogLevel::Error,
                     "srf_ipc_client_limit",
                     format!(
-                        "active={} limit={}",
+                        "mode={access_mode:?} active={} limit={}",
                         ACTIVE_PIPE_CLIENTS.load(Ordering::Acquire),
                         PIPE_MAX_ACTIVE_CLIENTS
                     ),
@@ -1851,8 +1665,11 @@ fn listen_loop_inner() {
                 continue;
             };
             if std::thread::Builder::new()
-                .name("srf-engine-pipe-client".to_string())
-                .spawn(move || handle_client(pipe, client_guard))
+                .name(match access_mode {
+                    PipeAccessMode::Full => "srf-engine-pipe-client".to_string(),
+                    PipeAccessMode::SandboxReadOnly => "srf-engine-sandbox-client".to_string(),
+                })
+                .spawn(move || handle_client(pipe, client_guard, access_mode))
                 .is_err()
             {
                 std::thread::sleep(Duration::from_millis(50));
@@ -1863,97 +1680,72 @@ fn listen_loop_inner() {
     }
 }
 
-fn capability_path() -> Option<PathBuf> {
-    crate::app_paths::local_data_dir().map(|dir| dir.join(CAPABILITY_FILE_NAME))
-}
-
-#[cfg(windows)]
-fn dpapi_unprotect_capability(data: &[u8]) -> io::Result<Vec<u8>> {
-    use std::ptr::{null, null_mut};
-    use windows_sys::Win32::Foundation::LocalFree;
-    use windows_sys::Win32::Security::Cryptography::{
-        CryptUnprotectData, CRYPTPROTECT_UI_FORBIDDEN, CRYPT_INTEGER_BLOB,
+fn ensure_engine_capability_file() -> io::Result<()> {
+    use std::os::windows::io::FromRawHandle;
+    use windows_sys::Win32::Foundation::GENERIC_WRITE;
+    use windows_sys::Win32::Storage::FileSystem::{
+        CreateFileW, MoveFileExW, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, MOVEFILE_WRITE_THROUGH,
     };
 
-    let payload = data.strip_prefix(CAPABILITY_MAGIC).ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidData,
-            "missing engine capability token header",
+    let path =
+        capability_path().ok_or_else(|| io::Error::other("missing engine capability path"))?;
+    if path.is_file() {
+        return Ok(());
+    }
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let token = zeroize::Zeroizing::new(crate::windows_security::generate_capability_token()?);
+    let protected =
+        crate::windows_security::dpapi_protect_with_magic(CAPABILITY_MAGIC, token.as_bytes())?;
+    let temp = path.with_extension(format!("{}.tmp", std::process::id()));
+    let temp_wide = wide_os_path(&temp);
+    let path_wide = wide_os_path(&path);
+    let security = crate::windows_security::LocalLogonPipeSecurity::new()?;
+    let handle = unsafe {
+        CreateFileW(
+            temp_wide.as_ptr(),
+            GENERIC_WRITE,
+            0,
+            security.as_ptr(),
+            CREATE_NEW,
+            FILE_ATTRIBUTE_NORMAL,
+            0,
         )
-    })?;
-    let input = CRYPT_INTEGER_BLOB {
-        cbData: payload.len() as u32,
-        pbData: payload.as_ptr() as *mut u8,
     };
-    let mut output = CRYPT_INTEGER_BLOB {
-        cbData: 0,
-        pbData: null_mut(),
-    };
-    let ok = unsafe {
-        CryptUnprotectData(
-            &input,
-            null_mut(),
-            null(),
-            null(),
-            null(),
-            CRYPTPROTECT_UI_FORBIDDEN,
-            &mut output,
-        )
-    };
-    if ok == 0 {
+    if handle == INVALID_HANDLE_VALUE {
         return Err(io::Error::last_os_error());
     }
-    let unprotected = unsafe {
-        let slice = std::slice::from_raw_parts_mut(output.pbData, output.cbData as usize);
-        let copied = slice.to_vec();
-        zeroize_bytes(slice);
-        let _ = LocalFree(output.pbData.cast());
-        copied
-    };
-    Ok(unprotected)
-}
-
-#[cfg(not(windows))]
-fn dpapi_unprotect_capability(data: &[u8]) -> io::Result<Vec<u8>> {
-    Ok(data.to_vec())
-}
-
-fn read_engine_capability_token() -> io::Result<String> {
-    let path = capability_path().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::NotFound,
-            "engine capability token path is unavailable",
-        )
-    })?;
-    let bytes = std::fs::read(path)?;
-    let mut decoded = if bytes.starts_with(CAPABILITY_MAGIC) {
-        dpapi_unprotect_capability(&bytes)?
-    } else {
-        bytes
-    };
-    let mut token = match String::from_utf8(std::mem::take(&mut decoded)) {
-        Ok(token) => token,
-        Err(err) => {
-            let mut bytes = err.into_bytes();
-            zeroize_vec(&mut bytes);
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "invalid capability token",
-            ));
+    // CREATE_NEW confines writes to our temporary file. Publication never
+    // replaces a capability another TIP or engine already installed.
+    let mut file = unsafe { std::fs::File::from_raw_handle(handle as _) };
+    let written = file.write_all(&protected).and_then(|()| file.sync_all());
+    drop(file);
+    let result = written.and_then(|()| {
+        if unsafe {
+            MoveFileExW(
+                temp_wide.as_ptr(),
+                path_wide.as_ptr(),
+                MOVEFILE_WRITE_THROUGH,
+            )
+        } == 0
+        {
+            let error = io::Error::last_os_error();
+            if path.is_file() {
+                Ok(())
+            } else {
+                Err(error)
+            }
+        } else {
+            Ok(())
         }
-    };
-    zeroize_vec(&mut decoded);
-    let trimmed = token.trim().to_string();
-    zeroize_string(&mut token);
-    let token = trimmed;
-    if token.is_empty() {
-        Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "empty capability token",
-        ))
-    } else {
-        Ok(token)
-    }
+    });
+    let _ = std::fs::remove_file(temp);
+    result
+}
+
+fn wide_os_path(path: &Path) -> Vec<u16> {
+    path.as_os_str().encode_wide().chain([0]).collect()
 }
 
 fn verify_capability_token(cursor: &mut PayloadCursor<'_>) -> Result<(), i32> {
@@ -2020,7 +1812,11 @@ fn cached_engine_capability_token() -> io::Result<String> {
     Ok(token)
 }
 
-fn handle_client(mut server: ServerPipe, _client_guard: ActivePipeClient) {
+fn handle_client(
+    mut server: ServerPipe,
+    _client_guard: ActivePipeClient,
+    access_mode: PipeAccessMode,
+) {
     let pipe = server.handle.as_raw();
     // A persistent pipe is owned by one TIP process. Keep composition-local
     // lookup state on that connection without changing the V5 wire format.
@@ -2030,23 +1826,36 @@ fn handle_client(mut server: ServerPipe, _client_guard: ActivePipeClient) {
     }
     let mut lookup_session = ClientLookupSession::new(client_process_id);
     while let Some((command, payload)) = read_request(&mut server) {
-        if crate::windows_security::verify_ime_pipe_client(pipe).is_err() {
+        let identity_ok = match access_mode {
+            PipeAccessMode::Full => crate::windows_security::verify_ime_pipe_client(pipe),
+            PipeAccessMode::SandboxReadOnly => {
+                crate::windows_security::verify_ime_sandbox_pipe_client(pipe)
+            }
+        };
+        if identity_ok.is_err() {
             runtime_log::log_engine(
                 RuntimeLogLevel::Error,
                 "srf_ipc_identity_denied",
-                "status=denied",
+                format!("mode={access_mode:?} status=denied"),
             );
             break;
         }
         lookup_session.last_request_id = 0;
         let (status, response) =
             match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                dispatch_request_with_session(command, &payload, Some(&mut lookup_session))
+                dispatch_request_with_session(
+                    command,
+                    &payload,
+                    Some(&mut lookup_session),
+                    access_mode,
+                )
             })) {
                 Ok(result) => result,
                 Err(_) => (ENGINE_PANIC_RC, Vec::new()),
             };
-        let shutdown_requested = command == EngineCommand::Shutdown && status == 0;
+        let shutdown_requested = access_mode == PipeAccessMode::Full
+            && command == EngineCommand::Shutdown
+            && status == 0;
         if status != 0
             && !(command == EngineCommand::Lookup
                 && (status == -8 || (status == -5 && lookup_session.last_request_id == 0)))
@@ -2126,7 +1935,12 @@ fn read_request(pipe: &mut ServerPipe) -> Option<(EngineCommand, Vec<u8>)> {
     }
 
     let command = EngineCommand::from_u16(command_raw)?;
-    if payload_len > MAX_REQUEST_BYTES {
+    let limit = if command == EngineCommand::Storage {
+        MAX_STORAGE_REQUEST_BYTES
+    } else {
+        MAX_REQUEST_BYTES
+    };
+    if payload_len > limit {
         return None;
     }
     let mut payload = vec![0u8; payload_len];
@@ -2168,15 +1982,28 @@ fn dispatch_request_with_session(
     command: EngineCommand,
     payload: &[u8],
     mut lookup_session: Option<&mut ClientLookupSession>,
+    access_mode: PipeAccessMode,
 ) -> (i32, Vec<u8>) {
+    if access_mode == PipeAccessMode::SandboxReadOnly {
+        return match command {
+            EngineCommand::Init => handle_init(payload, access_mode),
+            EngineCommand::Lookup => {
+                handle_lookup(payload, lookup_session.as_deref_mut(), access_mode)
+            }
+            EngineCommand::SyllableBounds => handle_syllable_bounds(payload),
+            EngineCommand::Health => handle_health(access_mode),
+            EngineCommand::CancelLookup => handle_cancel_lookup(payload, lookup_session.as_deref()),
+            _ => (-6, error_payload("sandbox pipe denies privileged command")),
+        };
+    }
     match command {
-        EngineCommand::Init => handle_init(payload),
-        EngineCommand::Lookup => handle_lookup(payload, lookup_session.as_deref_mut()),
+        EngineCommand::Init => handle_init(payload, access_mode),
+        EngineCommand::Lookup => handle_lookup(payload, lookup_session.as_deref_mut(), access_mode),
         EngineCommand::Learn => handle_learn(payload),
         EngineCommand::SyllableBounds => handle_syllable_bounds(payload),
         EngineCommand::RecordClipboard => handle_record_clipboard(payload),
         EngineCommand::SetCandidatePin => handle_set_candidate_pin(payload),
-        EngineCommand::Health => handle_health(),
+        EngineCommand::Health => handle_health(access_mode),
         EngineCommand::ResolveClipboard => handle_resolve_clipboard(payload),
         EngineCommand::Shutdown => handle_shutdown(payload),
         EngineCommand::LearnCorrection => handle_learn_correction(payload),
@@ -2185,7 +2012,51 @@ fn dispatch_request_with_session(
         EngineCommand::ResetLearningContext => handle_reset_learning_context(payload),
         EngineCommand::CancelLookup => handle_cancel_lookup(payload, lookup_session.as_deref()),
         EngineCommand::LearnStatus => handle_learn_status(payload),
+        EngineCommand::Storage => handle_storage(payload),
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) enum StorageRequest {
+    Dictionary(DictionaryRequest),
+    Clipboard(clipboard_store::ClipboardRequest),
+}
+
+fn handle_storage(payload: &[u8]) -> (i32, Vec<u8>) {
+    let mut cursor = PayloadCursor::new(payload);
+    if let Err(status) = verify_capability_token(&mut cursor) {
+        return (status, Vec::new());
+    }
+    let request = bincode::DefaultOptions::new()
+        .with_fixint_encoding()
+        .with_limit(MAX_STORAGE_REQUEST_BYTES as u64)
+        .deserialize(&payload[cursor.offset..]);
+    let result = match request {
+        Ok(StorageRequest::Dictionary(request)) => manage_dictionary(request),
+        Ok(StorageRequest::Clipboard(request)) => clipboard_store::handle_storage_request(request),
+        Err(_) => return (-1, Vec::new()),
+    };
+    match result {
+        Ok(payload) if payload.len() <= MAX_STORAGE_RESPONSE_BYTES => (0, payload),
+        Ok(_) => (-3, b"storage response exceeds the size limit".to_vec()),
+        Err(error) => (-3, error.into_bytes()),
+    }
+}
+
+fn manage_dictionary(request: DictionaryRequest) -> Result<Vec<u8>, String> {
+    run_writer_command(move |state| {
+        let changes = request.changes_data();
+        let engine = state.engine_mut()?;
+        let response = engine
+            .storage_dictionary_mut()
+            .manage(request)
+            .map_err(|error| error.to_string())?;
+        if changes {
+            engine.note_user_lexicon_updated();
+            state.commit_learning()?;
+        }
+        Ok(response)
+    })
 }
 
 fn handle_cancel_lookup(
@@ -2255,39 +2126,33 @@ fn handle_shutdown(payload: &[u8]) -> (i32, Vec<u8>) {
     (0, Vec::new())
 }
 
-fn append_utf16_field_u16(out: &mut Vec<u8>, value: &str, max_units: usize) {
-    let units: Vec<u16> = value
-        .encode_utf16()
-        .take(max_units.min(u16::MAX as usize))
-        .collect();
-    out.extend_from_slice(&(units.len() as u16).to_le_bytes());
-    for unit in units {
-        out.extend_from_slice(&unit.to_le_bytes());
+fn append_lookup_text(out: &mut Vec<u8>, value: &str) {
+    let start = out.len();
+    out.extend_from_slice(&[0; 2]);
+    let mut units = 0_u16;
+    for ch in value.chars() {
+        let mut buffer = [0_u16; 2];
+        let encoded = ch.encode_utf16(&mut buffer);
+        if units as usize + encoded.len() > ROW_MAX_FIELD_UNITS as usize {
+            break;
+        }
+        for unit in encoded {
+            out.extend_from_slice(&unit.to_le_bytes());
+            units += 1;
+        }
     }
+    out[start..start + 2].copy_from_slice(&units.to_le_bytes());
 }
 
-fn handle_health() -> (i32, Vec<u8>) {
-    let (loaded, target_dir, lexicon_state, full_in_flight) = match shared_engine().try_lock() {
-        Ok(state) => {
-            let lexicon_state = state.lexicon_state.as_str().to_string();
-            (
-                state.engine.is_some(),
-                state.target_dir.clone(),
-                lexicon_state,
-                state.full_load_in_flight,
-            )
-        }
-        Err(std::sync::TryLockError::WouldBlock) => (false, None, "busy".to_string(), true),
-        Err(std::sync::TryLockError::Poisoned(poison)) => {
-            let state = recover_shared_engine_poison(poison, "health");
-            (
-                false,
-                state.target_dir.clone(),
-                "poison-recovered".to_string(),
-                false,
-            )
-        }
-    };
+fn handle_health(access_mode: PipeAccessMode) -> (i32, Vec<u8>) {
+    let model = LOOKUP_MODEL.load();
+    let loaded = model.is_some();
+    let target_dir = model.as_ref().and_then(|model| model.target_dir.clone());
+    let lexicon_state = model
+        .as_ref()
+        .map_or("core", |model| model.lexicon_state)
+        .to_string();
+    let full_in_flight = false;
     let cache_signature =
         engine_cache_signature(&lexicon_state, full_in_flight, target_dir.as_deref());
 
@@ -2298,6 +2163,12 @@ fn handle_health() -> (i32, Vec<u8>) {
                 .map(|name| name.to_string_lossy().to_string())
         })
         .unwrap_or_default();
+    let advertised_pipe = match access_mode {
+        PipeAccessMode::Full => engine_pipe_name_from_env(),
+        PipeAccessMode::SandboxReadOnly => {
+            crate::shared_rules::sandbox_engine_pipe_name(&engine_pipe_name_from_env())
+        }
+    };
 
     let mut out = Vec::new();
     append_u32(&mut out, PROTOCOL_VERSION as u32);
@@ -2305,18 +2176,18 @@ fn handle_health() -> (i32, Vec<u8>) {
     append_utf16_string(&mut out, &exe);
     append_utf16_string(&mut out, "");
     append_utf16_string(&mut out, "");
-    append_utf16_string(&mut out, &engine_pipe_name_from_env());
+    append_utf16_string(&mut out, &advertised_pipe);
     append_utf16_string(&mut out, &engine_mutex_name_from_env());
     append_u32(&mut out, if loaded { 1 } else { 0 });
     append_utf16_string(&mut out, &lexicon_state);
     append_utf16_string(&mut out, "");
     append_u32(&mut out, if full_in_flight { 1 } else { 0 });
-    append_utf16_string(&mut out, ENGINE_MODEL_HASH);
+    append_utf16_string(&mut out, crate::model_resources::model_hash());
     append_utf16_string(&mut out, &cache_signature);
     (0, out)
 }
 
-fn handle_init(payload: &[u8]) -> (i32, Vec<u8>) {
+fn handle_init(payload: &[u8], access_mode: PipeAccessMode) -> (i32, Vec<u8>) {
     let mut cursor = PayloadCursor::new(payload);
     let len = match cursor.read_u32() {
         Some(v) => v as usize,
@@ -2330,7 +2201,9 @@ fn handle_init(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    let requested_dir = if path.is_empty() {
+    // Never allow a sandboxed AppContainer client to redirect the shared
+    // engine's lexicon directory; always bind it to the engine's trusted default.
+    let requested_dir = if access_mode == PipeAccessMode::SandboxReadOnly || path.is_empty() {
         None
     } else {
         Some(PathBuf::from(path))
@@ -2345,20 +2218,40 @@ fn handle_init(payload: &[u8]) -> (i32, Vec<u8>) {
 fn handle_lookup(
     payload: &[u8],
     mut lookup_session: Option<&mut ClientLookupSession>,
+    access_mode: PipeAccessMode,
 ) -> (i32, Vec<u8>) {
     static FIRST_LOOKUP_LOGGED: OnceLock<()> = OnceLock::new();
     let lookup_started = Instant::now();
     let mut cursor = PayloadCursor::new(payload);
-    // Lookup can enter clipboard utility modes and return clipboard previews.
-    // Authenticate every lookup rather than trying to classify readings here:
-    // classification after parsing has repeatedly left alternate query paths
-    // capable of exposing the same protected store.
-    if let Err(status) = verify_capability_token(&mut cursor) {
-        return (status, Vec::new());
+    if access_mode == PipeAccessMode::SandboxReadOnly {
+        // Keep the V6 wire framing intact while authenticating via same-user /
+        // same-session pipe impersonation and unconditionally disabling
+        // clipboard access below.
+        let len = match cursor.read_u32() {
+            Some(v) => v as usize,
+            None => return (-1, Vec::new()),
+        };
+        if cursor.read_utf16_string(len, 128).is_none() {
+            return (-1, Vec::new());
+        }
+    } else {
+        // Lookup can enter clipboard utility modes and return clipboard previews.
+        // Authenticate every lookup rather than trying to classify readings here:
+        // classification after parsing has repeatedly left alternate query paths
+        // capable of exposing the same protected store.
+        if let Err(status) = verify_capability_token(&mut cursor) {
+            return (status, Vec::new());
+        }
     }
-    let mode_flags = match cursor.read_u32() {
+    let raw_mode_flags = match cursor.read_u32() {
         Some(v) => v,
         None => return (-1, Vec::new()),
+    };
+    let mode_flags = if access_mode == PipeAccessMode::SandboxReadOnly {
+        (raw_mode_flags | kaixin_common::engine_contract::MODE_CLIPBOARD_DISABLED)
+            & !kaixin_common::engine_contract::MODE_CLIPBOARD_BACKGROUND
+    } else {
+        raw_mode_flags
     };
     let len = match cursor.read_u32() {
         Some(v) => v as usize,
@@ -2395,12 +2288,8 @@ fn handle_lookup(
     }
     let (session_id, lookup_generation, cancellation) =
         if let Some(session) = lookup_session.as_deref() {
-            let generation = session.lookup.next_lookup_generation();
-            (
-                session.id,
-                generation,
-                Some(session.lookup.cancellation_token()),
-            )
+            let generation = session.cancellation.next_generation();
+            (session.id, generation, Some(session.cancellation.clone()))
         } else {
             (0, crate::core::next_lookup_request_generation(), None)
         };
@@ -2421,35 +2310,21 @@ fn handle_lookup(
     if priority == LookupPriority::Background && lookup_scheduler().has_interactive_pressure() {
         return (-5, error_payload("shared engine busy"));
     }
-    // Do first-time model construction outside the scheduler permit. Building
-    // the fast engine can take much longer than a lookup and must not make a
-    // background probe the head-of-line owner for all interactive clients.
-    match shared_engine().try_lock() {
-        Ok(state) if state.engine.is_none() => {
-            drop(state);
-            if priority == LookupPriority::Background {
-                return (-5, error_payload("shared engine busy"));
-            }
-            if let Err(err) = ensure_shared_engine_loaded(None) {
-                return (-3, error_payload(&err));
-            }
+    let init_started = Instant::now();
+    let mut model = LOOKUP_MODEL.load_full();
+    if model.is_none() {
+        if priority == LookupPriority::Background {
+            return (-5, error_payload("shared engine busy"));
         }
-        Ok(_) | Err(TryLockError::WouldBlock) => {}
-        Err(TryLockError::Poisoned(poison)) => {
-            drop(recover_shared_engine_poison(poison, "lookup-ensure"));
-            if priority == LookupPriority::Background {
-                return (-5, error_payload("shared engine busy"));
-            }
-            if let Err(err) = ensure_shared_engine_loaded(None) {
-                return (-3, error_payload(&err));
-            }
+        if let Err(error) = ensure_shared_engine_loaded(None) {
+            return (-3, error_payload(&error));
         }
+        model = LOOKUP_MODEL.load_full();
     }
-    let scheduler_wait = if priority == LookupPriority::Interactive {
-        LOOKUP_INTERACTIVE_BUSY_WAIT
-    } else {
-        LOOKUP_BACKGROUND_BUSY_WAIT
-    };
+    if model.is_none() {
+        return (-3, error_payload("missing lookup model"));
+    }
+    let init_us = init_started.elapsed().as_micros();
     let permit_result = if priority == LookupPriority::Background {
         if lookup_scheduler().has_interactive_pressure() {
             Err(SchedulerAcquireError::Busy)
@@ -2464,7 +2339,7 @@ fn handle_lookup(
             lookup_generation,
             cancellation.as_ref(),
             priority,
-            scheduler_wait,
+            LOOKUP_INTERACTIVE_BUSY_WAIT,
         )
     };
     let permit = match permit_result {
@@ -2530,74 +2405,34 @@ fn handle_lookup(
         return (-5, error_payload("shared engine busy"));
     }
 
-    let lock_started = Instant::now();
-    let (ranked, lexicon_state, full_in_flight, engine_us, lock_wait_us, init_us) = {
-        let mut state = match lock_shared_engine_for_lookup(
-            &reading,
-            request_id,
-            lookup_generation,
-            cancellation.as_ref(),
-            false,
-        ) {
-            Ok(guard) => guard,
-            Err(result) => return result,
-        };
-        let mut lock_wait_us = lock_started.elapsed().as_micros();
-        let mut init_us = 0;
-        if state.engine.is_none() {
-            drop(state);
-            let init_started = Instant::now();
-            if let Err(err) = ensure_shared_engine_loaded(None) {
-                return (-3, error_payload(&err));
-            }
-            init_us = init_started.elapsed().as_micros();
-            let retry_lock_started = Instant::now();
-            state = match lock_shared_engine_for_lookup(
-                &reading,
-                request_id,
-                lookup_generation,
-                cancellation.as_ref(),
-                true,
-            ) {
-                Ok(guard) => guard,
-                Err(result) => return result,
-            };
-            lock_wait_us += retry_lock_started.elapsed().as_micros();
-        } else {
-            state.schedule_full_load_if_needed();
-        }
-        state.last_lookup_at = Some(Instant::now());
-        let lexicon_state = state.lexicon_state.as_str().to_string();
-        let full_in_flight = state.full_load_in_flight;
-        let engine = match state.engine_mut() {
-            Ok(engine) => engine,
-            Err(_) => return (-3, Vec::new()),
-        };
-        let engine_started = Instant::now();
-        let (ranked, warning) = if let Some(session) = lookup_session {
-            engine.lookup_with_session(
-                &mut session.lookup,
-                mode_flags,
-                reading.trim(),
-                lookup_generation,
-            )
-        } else {
-            engine.set_mode_flags(mode_flags);
-            engine.lookup_full_detailed_with_request_id(reading.trim(), lookup_generation)
-        };
-        if warning.as_deref() == Some("lookup superseded") {
-            lookup_scheduler().note_superseded();
-            return (-8, error_payload("lookup superseded"));
-        }
-        (
-            ranked,
-            lexicon_state,
-            full_in_flight,
-            engine_started.elapsed().as_micros(),
-            lock_wait_us,
-            init_us,
-        )
+    let Some(model) = LOOKUP_MODEL.load_full() else {
+        return (-3, error_payload("missing lookup model"));
     };
+    let lexicon_state = model.lexicon_state;
+    let full_in_flight = false;
+    let engine_started = Instant::now();
+    let (ranked, warning) = if let Some(session) = lookup_session {
+        let decoder = session
+            .decoder
+            .get_or_insert_with(|| PinyinEngine::reader(&model.data));
+        decoder.refresh_lookup_snapshot(&model.data);
+        decoder.lookup_for_client(
+            session.cancellation.clone(),
+            mode_flags,
+            reading.trim(),
+            lookup_generation,
+        )
+    } else {
+        let mut decoder = PinyinEngine::reader(&model.data);
+        decoder.set_mode_flags(mode_flags);
+        decoder.lookup_full_detailed_with_request_id(reading.trim(), lookup_generation)
+    };
+    if warning.as_deref() == Some("lookup superseded") {
+        lookup_scheduler().note_superseded();
+        return (-8, error_payload("lookup superseded"));
+    }
+    let engine_us = engine_started.elapsed().as_micros();
+    let lock_wait_us = 0;
     let scheduler_after_engine = lookup_scheduler().snapshot();
     drop(permit);
 
@@ -2617,14 +2452,17 @@ fn handle_lookup(
     };
     let count = ranked.len().min(result_limit);
     let has_more = !full_result && ranked.len() > count;
-    let mut payload = Vec::with_capacity(4 + count * 48);
-    append_u32(&mut payload, count as u32);
+    let mut payload = Vec::with_capacity(3 + count * 32);
+    payload.extend_from_slice(&(count as u16).to_le_bytes());
+    payload.push(u8::from(has_more));
     for candidate in ranked.iter().take(count) {
-        append_utf16_field_u16(&mut payload, &candidate.phrase, ROW_TEXT_UNITS - 1);
-        let meta = lookup_row_meta(&candidate.meta, candidate.score);
-        append_utf16_field_u16(&mut payload, &meta, ROW_META_UNITS - 1);
+        append_lookup_row(
+            &mut payload,
+            &candidate.phrase,
+            &candidate.meta,
+            candidate.score,
+        );
     }
-    append_u32(&mut payload, if has_more { 1 } else { 0 });
     let serialize_us = serialize_started.elapsed().as_micros();
     let total_us = lookup_started.elapsed().as_micros();
     if perf_log_enabled() {
@@ -2717,25 +2555,126 @@ fn handle_lookup(
     (0, payload)
 }
 
-fn lookup_row_meta(meta: &CandidateMeta, score: f64) -> String {
-    let mut parts = Vec::new();
-    if let Some(text) = meta.display_text().filter(|text| !text.is_empty()) {
-        parts.push(text.to_string());
-    }
-    parts.push(format!("source={}", meta.source.label()));
-    parts.push(format!("match={}", meta.match_kind.label()));
-    parts.push(format!("layer={}", meta.source_layer.label()));
+// Protocol v6. Each row has a flag word, an i32 score in hundredths and its
+// UTF-16LE phrase. Optional strings follow in flag order, then optional u32
+// clipboard page numbers. Strings carry a u16 count of UTF-16 code units.
+fn append_lookup_row(out: &mut Vec<u8>, phrase: &str, meta: &CandidateMeta, score: f64) {
+    const USER_MASK: u32 = ROW_USER_COMMON | ROW_USER_FRESH | ROW_USER_MIXED | ROW_USER_OBSERVED;
+    const STRING_FLAGS: [u32; 8] = [
+        ROW_DISPLAY,
+        ROW_ANNOTATION,
+        ROW_CORRECTED_READING,
+        ROW_CLIPBOARD_ID,
+        ROW_CLIPBOARD_SOURCE,
+        ROW_CLIPBOARD_TIME,
+        ROW_CLIPBOARD_TYPE,
+        ROW_CLIPBOARD_FILTER,
+    ];
+    let mut flags = 0;
     if meta.pinned {
-        parts.push("pinned=1".to_string());
+        flags |= ROW_PINNED;
     }
     if meta.partial {
-        parts.push("partial=1".to_string());
+        flags |= ROW_PARTIAL;
     }
-    if meta.user_signal {
-        parts.push("user_signal=1".to_string());
+    if meta.source == CandidateSource::Correction
+        || meta.match_kind == CandidateMatchKind::Correction
+    {
+        flags |= ROW_CORRECTION;
     }
-    parts.push(format!("{score:.2}"));
-    parts.join("\t")
+    if matches!(meta.source_layer, LexiconLayer::Ext | LexiconLayer::Large) {
+        flags |= ROW_EXT;
+    }
+
+    let mut strings = [""; STRING_FLAGS.len()];
+    let mut annotations = Vec::new();
+    let mut page = None;
+    let mut pages = None;
+    for token in meta
+        .display_text()
+        .unwrap_or_default()
+        .split('\t')
+        .map(str::trim)
+    {
+        if let Some((key, value)) = token.split_once('=') {
+            let value = value.trim();
+            match key {
+                "display" => strings[0] = value,
+                "corrected_reading" => strings[2] = value,
+                "clipboard_key" => strings[3] = value,
+                "clipboard_source" => strings[4] = value,
+                "clipboard_time" => strings[5] = value,
+                "clipboard_type" => strings[6] = value,
+                "clipboard_filter" => strings[7] = value,
+                "clipboard_page" => page = Some(lookup_clipboard_page(value)),
+                "clipboard_pages" => pages = Some(lookup_clipboard_page(value)),
+                _ => {}
+            }
+        }
+        match token {
+            "no_learn" | "no_learn=1" | "learn=0" => flags |= ROW_NO_LEARN,
+            "clipboard_quick" | "clipboard_quick=1" => flags |= ROW_CLIPBOARD_QUICK,
+            "clipboard_pinned" | "clipboard_pinned=1" => flags |= ROW_CLIPBOARD_PINNED,
+            "layout=vertical" | "force_vertical=1" => flags |= ROW_VERTICAL,
+            "partial" | "partial=1" => flags |= ROW_PARTIAL,
+            "pinned" | "pinned=1" | "pin=1" => flags |= ROW_PINNED,
+            "prefix_placeholder" | "prefix_placeholder=1" | "placeholder=prefix" => {
+                flags |= ROW_PLACEHOLDER
+            }
+            "source=correction" | "match=correction" | "typo" | "typo=1" => flags |= ROW_CORRECTION,
+            "layer=ext" | "layer=large" => flags |= ROW_EXT,
+            "source=user_fresh" => flags = (flags & !USER_MASK) | ROW_USER_FRESH,
+            "mixed_pinyin_user" | "source=user_mixed" => {
+                flags = (flags & !USER_MASK) | ROW_USER_MIXED
+            }
+            "observed_user" | "source=user_observed" => {
+                flags = (flags & !USER_MASK) | ROW_USER_OBSERVED
+            }
+            "user" | "user=1" | "用户词" | "source=user" | "source=user_common" => {
+                if flags & USER_MASK == 0 {
+                    flags |= ROW_USER_COMMON;
+                }
+            }
+            _ if token.starts_with("correction=") => flags |= ROW_CORRECTION,
+            _ if token.starts_with("纠错") || token.starts_with("音近") => {
+                flags |= ROW_CORRECTION;
+                annotations.push(token);
+            }
+            _ if token.starts_with("Emoji:") || token.starts_with("符号:") => {
+                annotations.push(token)
+            }
+            _ => {}
+        }
+    }
+    let annotation = annotations.join(" | ");
+    strings[1] = &annotation;
+    if meta.source == CandidateSource::User && flags & USER_MASK == 0 {
+        flags |= ROW_USER_COMMON;
+    }
+    for (value, flag) in strings.iter().zip(STRING_FLAGS) {
+        if !value.is_empty() {
+            flags |= flag;
+        }
+    }
+    if page.is_some() {
+        flags |= ROW_CLIPBOARD_PAGE;
+    }
+    if pages.is_some() {
+        flags |= ROW_CLIPBOARD_PAGES;
+    }
+    out.extend_from_slice(&flags.to_le_bytes());
+    out.extend_from_slice(&((score * 100.0).round() as i32).to_le_bytes());
+    append_lookup_text(out, phrase);
+    for value in strings.iter().filter(|value| !value.is_empty()) {
+        append_lookup_text(out, value);
+    }
+    for number in [page, pages].into_iter().flatten() {
+        out.extend_from_slice(&number.to_le_bytes());
+    }
+}
+
+fn lookup_clipboard_page(value: &str) -> u32 {
+    value.parse::<u32>().unwrap_or(1).clamp(1, 100_000)
 }
 
 fn handle_learn(payload: &[u8]) -> (i32, Vec<u8>) {
@@ -2948,17 +2887,15 @@ fn handle_set_candidate_pin(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    if let Err(err) = ensure_shared_engine_loaded(None) {
-        return (-3, error_payload(&err));
-    }
-    let mut state = lock_shared_engine_recover();
-    let engine = match state.engine_mut() {
-        Ok(engine) => engine,
-        Err(_) => return (-3, Vec::new()),
-    };
-    match engine.set_candidate_pin(reading.trim(), committed.trim(), pinned) {
-        Ok(()) => (0, Vec::new()),
-        Err(_) => (-3, Vec::new()),
+    match run_writer_command(move |state| {
+        state
+            .engine_mut()?
+            .set_candidate_pin(reading.trim(), committed.trim(), pinned)?;
+        state.commit_learning()?;
+        Ok(Vec::new())
+    }) {
+        Ok(response) => (0, response),
+        Err(error) => (-3, error_payload(&error)),
     }
 }
 
@@ -2991,30 +2928,22 @@ fn handle_candidate_action(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    if let Err(err) = ensure_shared_engine_loaded(None) {
-        return (-3, error_payload(&err));
+    if !matches!(action, 1..=3) {
+        return (-1, Vec::new());
     }
-    let mut state = lock_shared_engine_recover();
-    let engine = match state.engine_mut() {
-        Ok(engine) => engine,
-        Err(_) => return (-3, Vec::new()),
-    };
-    let result = match action {
-        1 => engine.remove_user_phrase(reading.trim(), phrase.trim()),
-        2 => engine.block_user_phrase(phrase.trim()),
-        3 => engine.unblock_user_phrase(phrase.trim()),
-        _ => return (-1, Vec::new()),
-    };
-    match result {
-        Ok(_) => (0, Vec::new()),
-        Err(err) => {
-            runtime_log::log_engine(
-                RuntimeLogLevel::Error,
-                "srf_ipc_candidate_action_failed",
-                &err,
-            );
-            (-3, Vec::new())
-        }
+    match run_writer_command(move |state| {
+        let engine = state.engine_mut()?;
+        match action {
+            1 => engine.remove_user_phrase(reading.trim(), phrase.trim())?,
+            2 => engine.block_user_phrase(phrase.trim())?,
+            3 => engine.unblock_user_phrase(phrase.trim())?,
+            _ => unreachable!(),
+        };
+        state.commit_learning()?;
+        Ok(Vec::new())
+    }) {
+        Ok(response) => (0, response),
+        Err(error) => (-3, error_payload(&error)),
     }
 }
 
@@ -3027,11 +2956,14 @@ fn handle_reset_learning_context(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    let mut state = lock_shared_engine_recover();
-    if let Ok(engine) = state.engine_mut() {
-        engine.reset_learning_context();
+    match run_writer_command(|state| {
+        state.engine_mut()?.reset_learning_context();
+        state.publish();
+        Ok(Vec::new())
+    }) {
+        Ok(response) => (0, response),
+        Err(error) => (-3, error_payload(&error)),
     }
-    (0, Vec::new())
 }
 
 fn handle_syllable_bounds(payload: &[u8]) -> (i32, Vec<u8>) {
@@ -3048,15 +2980,8 @@ fn handle_syllable_bounds(payload: &[u8]) -> (i32, Vec<u8>) {
         return (-1, Vec::new());
     }
 
-    if let Err(err) = ensure_shared_engine_loaded(None) {
-        return (-3, error_payload(&err));
-    }
-    let mut state = lock_shared_engine_recover();
-    let engine = match state.engine_mut() {
-        Ok(engine) => engine,
-        Err(_) => return (-3, Vec::new()),
-    };
-    let offsets = syllable_boundary_offsets_utf16(text.trim(), engine.syllable_set());
+    let offsets =
+        syllable_boundary_offsets_utf16(text.trim(), crate::core::shared_engine_model_syllables());
     let mut out = Vec::with_capacity(4 + offsets.len() * 4);
     out.extend_from_slice(&(offsets.len() as u32).to_le_bytes());
     for value in offsets {
@@ -3231,6 +3156,7 @@ impl ServerPipe {
         timeout_ms: u32,
     ) -> Result<(), u32> {
         if started != 0 {
+            *transferred = operation.InternalHigh as u32;
             return Ok(());
         }
         let error = unsafe { GetLastError() };
@@ -3261,18 +3187,24 @@ impl ServerPipe {
                     self.handle.as_raw(),
                     buf.as_mut_ptr(),
                     buf.len() as u32,
-                    &mut read,
+                    null_mut(),
                     &mut operation,
                 )
             };
             let timeout_ms = deadline
                 .saturating_duration_since(Instant::now())
                 .as_millis() as u32;
-            match self.complete(started, &mut operation, &mut read, timeout_ms) {
-                Ok(()) if read != 0 => buf = &mut buf[read as usize..],
-                Err(ERROR_MORE_DATA) => return true,
-                _ => return false,
+            let transferred = match self.complete(started, &mut operation, &mut read, timeout_ms) {
+                Ok(()) => read as usize,
+                // Message mode reports this after filling the requested buffer.
+                // Bytes after that buffer remain available to the next read.
+                Err(ERROR_MORE_DATA) => buf.len(),
+                Err(_) => return false,
+            };
+            if transferred == 0 || transferred > buf.len() {
+                return false;
             }
+            buf = &mut buf[transferred..];
         }
         true
     }
@@ -3287,7 +3219,7 @@ impl ServerPipe {
                     self.handle.as_raw(),
                     buf.as_ptr(),
                     buf.len() as u32,
-                    &mut written,
+                    null_mut(),
                     &mut operation,
                 )
             };
@@ -3298,6 +3230,7 @@ impl ServerPipe {
                 .complete(started, &mut operation, &mut written, timeout_ms)
                 .is_err()
                 || written == 0
+                || written as usize > buf.len()
             {
                 return false;
             }
@@ -3451,5 +3384,32 @@ mod tests {
 
         wait_for_async_learning_drain_state(&active, &event);
         assert_eq!(active.load(Ordering::Acquire), 0);
+    }
+
+    #[test]
+    fn sandbox_pipe_denies_privileged_and_write_commands() {
+        for cmd in [
+            EngineCommand::Learn,
+            EngineCommand::RecordClipboard,
+            EngineCommand::SetCandidatePin,
+            EngineCommand::ResolveClipboard,
+            EngineCommand::Shutdown,
+            EngineCommand::LearnCorrection,
+            EngineCommand::LearnSelectionFeedback,
+            EngineCommand::CandidateAction,
+            EngineCommand::ResetLearningContext,
+            EngineCommand::LearnStatus,
+        ] {
+            let (status, _payload) =
+                dispatch_request_with_session(cmd, &[], None, PipeAccessMode::SandboxReadOnly);
+            assert_eq!(status, -6, "sandbox pipe must deny command {}", cmd as u16);
+        }
+        let (health_status, _) = dispatch_request_with_session(
+            EngineCommand::Health,
+            &[],
+            None,
+            PipeAccessMode::SandboxReadOnly,
+        );
+        assert_eq!(health_status, 0, "sandbox pipe must allow Health");
     }
 }

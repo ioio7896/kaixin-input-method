@@ -204,7 +204,7 @@ impl PinyinEngine {
             && compact_key.chars().count() >= 4
             && self
                 .phrase_lexicon
-                .as_ref()
+                .as_deref()
                 .and_then(|lexicon| lexicon.lookup_mixed_hot(&compact_key))
                 .is_some_and(|entries| !entries.is_empty());
         let mixed_prefix_intent =

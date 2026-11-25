@@ -215,14 +215,6 @@ pub(crate) fn current_lookup_request_superseded() -> bool {
     })
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(super) struct UserLexiconDiskStamp {
-    pub(super) dict_mtime: Option<SystemTime>,
-    pub(super) dict_len: Option<u64>,
-    pub(super) reset_mtime: Option<SystemTime>,
-    pub(super) reset_len: Option<u64>,
-}
-
 /// LRU cache keyed by abbreviation or pinyin prefix, yielding pre-ranked
 /// phrase lists.  Backed by the `lru` crate for O(1) access and eviction.
 pub(super) struct PrefixLruCache {

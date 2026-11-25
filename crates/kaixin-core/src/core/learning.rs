@@ -5,124 +5,6 @@ fn selection_feedback_decay(now: u64, last_used: u64, half_life_ticks: f64) -> f
     2.0f64.powf(-age / half_life_ticks.max(1.0))
 }
 
-pub(super) fn user_lexicon_disk_stamp() -> UserLexiconDiskStamp {
-    fn file_stamp(path: &Path) -> (Option<SystemTime>, Option<u64>) {
-        match std::fs::metadata(path) {
-            Ok(meta) => (meta.modified().ok(), Some(meta.len())),
-            Err(_) => (None, None),
-        }
-    }
-
-    let path = default_user_dict_path();
-    let (dict_mtime, dict_len) = file_stamp(&path);
-    let reset_stamp = user_dict_reset_stamp(&path);
-    UserLexiconDiskStamp {
-        dict_mtime,
-        dict_len,
-        reset_mtime: reset_stamp.modified,
-        reset_len: reset_stamp.len,
-    }
-}
-
-static USER_LEXICON_GENERATION: AtomicU64 = AtomicU64::new(1);
-static USER_LEXICON_WATCHER: OnceLock<()> = OnceLock::new();
-static USER_LEXICON_OBSERVED_STAMP: OnceLock<Mutex<UserLexiconDiskStamp>> = OnceLock::new();
-static USER_LEXICON_PREPARED_RELOAD: OnceLock<Mutex<Option<PreparedUserLexiconReload>>> =
-    OnceLock::new();
-
-struct PreparedUserLexiconReload {
-    stamp: UserLexiconDiskStamp,
-    lexicon: UserLexicon,
-}
-
-fn observed_user_lexicon_stamp() -> &'static Mutex<UserLexiconDiskStamp> {
-    USER_LEXICON_OBSERVED_STAMP.get_or_init(|| Mutex::new(UserLexiconDiskStamp::default()))
-}
-
-fn prepared_user_lexicon_reload() -> &'static Mutex<Option<PreparedUserLexiconReload>> {
-    USER_LEXICON_PREPARED_RELOAD.get_or_init(|| Mutex::new(None))
-}
-
-fn retire_user_lexicon(lexicon: UserLexicon) {
-    static RETIRE_TX: OnceLock<std::sync::mpsc::Sender<UserLexicon>> = OnceLock::new();
-    let tx = RETIRE_TX.get_or_init(|| {
-        let (tx, rx) = std::sync::mpsc::channel::<UserLexicon>();
-        let _ = std::thread::Builder::new()
-            .name("kaixin-user-dict-retire".to_string())
-            .spawn(move || {
-                while let Ok(lexicon) = rx.recv() {
-                    drop(lexicon);
-                }
-            });
-        tx
-    });
-    if let Err(err) = tx.send(lexicon) {
-        // The retire thread is unavailable; preserving correctness is more
-        // important than leaking the old persistence worker.
-        drop(err.0);
-    }
-}
-
-pub(super) fn start_user_lexicon_watcher(initial: UserLexiconDiskStamp) -> u64 {
-    if let Ok(mut observed) = observed_user_lexicon_stamp().lock() {
-        *observed = initial;
-    }
-    USER_LEXICON_WATCHER.get_or_init(|| {
-        let _ = std::thread::Builder::new()
-            .name("kaixin-user-dict-watch".to_string())
-            .spawn(|| loop {
-                std::thread::sleep(Duration::from_millis(800));
-                let next = user_lexicon_disk_stamp();
-                let changed = observed_user_lexicon_stamp()
-                    .lock()
-                    .map(|observed| *observed != next)
-                    .unwrap_or(false);
-                if !changed {
-                    continue;
-                }
-
-                // Parse external changes away from the interactive lookup
-                // thread. Publish the generation only after the replacement is
-                // ready, so the next key only performs a cheap move/swap.
-                let lexicon = UserLexicon::load_default();
-                let loaded_stamp = user_lexicon_disk_stamp();
-                if loaded_stamp != next {
-                    continue;
-                }
-                if let Ok(mut prepared) = prepared_user_lexicon_reload().lock() {
-                    *prepared = Some(PreparedUserLexiconReload {
-                        stamp: next.clone(),
-                        lexicon,
-                    });
-                }
-                if let Ok(mut observed) = observed_user_lexicon_stamp().lock() {
-                    *observed = next;
-                }
-                USER_LEXICON_GENERATION.fetch_add(1, Ordering::AcqRel);
-            });
-    });
-    USER_LEXICON_GENERATION.load(Ordering::Acquire)
-}
-
-pub(super) fn notify_user_lexicon_changed(stamp: UserLexiconDiskStamp) -> u64 {
-    // An in-process learning operation already updated the live UserLexicon.
-    // Teach the watcher about its new disk stamp so it does not report the
-    // same write as an external change 800ms later and force a full reload.
-    if let Ok(mut observed) = observed_user_lexicon_stamp().lock() {
-        *observed = stamp;
-    }
-    let stale = prepared_user_lexicon_reload()
-        .lock()
-        .ok()
-        .and_then(|mut prepared| prepared.take());
-    if let Some(stale) = stale {
-        retire_user_lexicon(stale.lexicon);
-    }
-    USER_LEXICON_GENERATION
-        .fetch_add(1, Ordering::AcqRel)
-        .wrapping_add(1)
-}
-
 #[derive(Clone, Copy)]
 struct LearnCommitProfile {
     exact_delta: u64,
@@ -161,6 +43,7 @@ impl PinyinEngine {
         self.user_lexicon.clear_context_history();
         self.clear_user_sensitive_lookup_caches();
         self.last_lookup = None;
+        self.advance_shared_data_generation();
     }
 
     pub fn learn_commit_with_flags(
@@ -173,7 +56,7 @@ impl PinyinEngine {
             return Ok(());
         }
         if flags & LEARN_FLAG_NO_LEARN != 0 {
-            self.user_lexicon.clear_context_history();
+            self.reset_learning_context();
             return Ok(());
         }
         let phrase = phrase.trim();
@@ -185,7 +68,6 @@ impl PinyinEngine {
             return Ok(());
         }
         if is_learnable_single_user_char(phrase) {
-            self.reload_user_lexicon_if_changed_now();
             let delta = self.single_user_char_delta(flags);
             self.user_lexicon
                 .learn_exact_input_without_phrase_signal(&key, phrase, delta)
@@ -199,7 +81,6 @@ impl PinyinEngine {
         if !is_learnable_user_phrase(phrase) {
             return Ok(());
         }
-        self.reload_user_lexicon_if_changed_now();
         self.invalidate_lookup_readings(std::slice::from_ref(&key));
         let word_tokens = self.best_phrase_tokens(phrase, self.user_lexicon.current_clock());
         let composed_phrase = flags & LEARN_FLAG_COMPOSED_PHRASE != 0;
@@ -443,7 +324,6 @@ impl PinyinEngine {
         if raw.is_empty() || corrected.is_empty() {
             return Ok(());
         }
-        self.reload_user_lexicon_if_changed_now();
         self.user_lexicon
             .learn_correction(raw, corrected)
             .map_err(|e| format!("save correction pair: {}", e))?;
@@ -534,7 +414,6 @@ impl PinyinEngine {
             return Ok(());
         }
 
-        self.reload_user_lexicon_if_changed_now();
         if !adjustments.is_empty() {
             self.user_lexicon
                 .record_selection_feedback(
@@ -744,7 +623,7 @@ impl PinyinEngine {
                 selection_feedback_decay(now, entry.last_used, SELECTION_FEEDBACK_HALF_LIFE_TICKS);
             let mut bonus = SELECTION_POSITIVE_FEEDBACK_BONUS * capped as f64 * decay;
             if !item.meta.pinned
-                && self.phrase_lexicon.as_ref().is_some_and(|lex| {
+                && self.phrase_lexicon.as_deref().is_some_and(|lex| {
                     lex.phrase_frequency(&item.phrase) < USER_LOW_LEXICON_FREQ_THRESHOLD
                 })
             {
@@ -900,7 +779,7 @@ impl PinyinEngine {
     }
 
     pub(super) fn system_phrase_exists(&self, key: &str, phrase: &str) -> bool {
-        let Some(lex) = self.phrase_lexicon.as_ref() else {
+        let Some(lex) = self.phrase_lexicon.as_deref() else {
             return false;
         };
         if lex.phrase_frequency(phrase) > 0 {
@@ -927,7 +806,6 @@ impl PinyinEngine {
         if self.is_effective_direct_input_shortcut(&key) {
             return Ok(());
         }
-        self.reload_user_lexicon_if_changed_now();
 
         if pinned {
             self.user_lexicon
@@ -954,7 +832,6 @@ impl PinyinEngine {
         if key.is_empty() || phrase.is_empty() {
             return Ok(false);
         }
-        self.reload_user_lexicon_if_changed_now();
         let removed = self
             .user_lexicon
             .remove_exact_input(&key, phrase)
@@ -972,7 +849,6 @@ impl PinyinEngine {
         if self.mode_flags & MODE_TRADITIONAL_OUTPUT != 0 {
             return Ok(false);
         }
-        self.reload_user_lexicon_if_changed_now();
         let blocked = self
             .user_lexicon
             .block_phrase(phrase)
@@ -987,7 +863,6 @@ impl PinyinEngine {
         if self.mode_flags & MODE_TRADITIONAL_OUTPUT != 0 {
             return Ok(false);
         }
-        self.reload_user_lexicon_if_changed_now();
         let unblocked = self
             .user_lexicon
             .unblock_phrase(phrase)
@@ -998,18 +873,8 @@ impl PinyinEngine {
         Ok(unblocked)
     }
 
-    pub(super) fn reload_user_lexicon_if_changed(&mut self) {
-        self.reload_user_lexicon_if_changed_impl(false);
-    }
-
-    pub(super) fn reload_user_lexicon_if_changed_now(&mut self) {
-        self.reload_user_lexicon_if_changed_impl(true);
-    }
-
     pub fn clear_user_lexicon_for_eval(&mut self) {
         self.user_lexicon = UserLexicon::default();
-        self.user_lexicon_stamp = user_lexicon_disk_stamp();
-        self.user_lexicon_generation = notify_user_lexicon_changed(self.user_lexicon_stamp.clone());
         self.clear_user_sensitive_lookup_caches();
         self.advance_shared_data_generation();
     }
@@ -1018,41 +883,6 @@ impl PinyinEngine {
     /// by the offline replay evaluator to test recency/decay behavior.
     pub fn advance_learning_clock_for_eval(&mut self, ticks: u64) {
         self.user_lexicon.advance_clock_for_eval(ticks);
-        self.clear_user_sensitive_lookup_caches();
-        self.last_lookup = None;
-        self.advance_shared_data_generation();
-    }
-
-    pub(super) fn reload_user_lexicon_if_changed_impl(&mut self, force_check: bool) {
-        let generation = USER_LEXICON_GENERATION.load(Ordering::Acquire);
-        if !force_check && generation == self.user_lexicon_generation {
-            return;
-        }
-        let stamp = user_lexicon_disk_stamp();
-        self.user_lexicon_generation = generation;
-        if stamp == self.user_lexicon_stamp {
-            return;
-        }
-        let prepared = (!force_check)
-            .then(|| {
-                prepared_user_lexicon_reload()
-                    .lock()
-                    .ok()
-                    .and_then(|mut slot| slot.take())
-            })
-            .flatten();
-        let prepared = match prepared {
-            Some(prepared) if prepared.stamp == stamp => Some(prepared.lexicon),
-            Some(stale) => {
-                retire_user_lexicon(stale.lexicon);
-                None
-            }
-            None => None,
-        };
-        let replacement = prepared.unwrap_or_else(UserLexicon::load_default);
-        let retired = std::mem::replace(&mut self.user_lexicon, replacement);
-        retire_user_lexicon(retired);
-        self.user_lexicon_stamp = stamp;
         self.clear_user_sensitive_lookup_caches();
         self.last_lookup = None;
         self.advance_shared_data_generation();

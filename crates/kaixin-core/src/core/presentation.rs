@@ -38,7 +38,7 @@ impl PinyinEngine {
             return false;
         }
         self.phrase_lexicon
-            .as_ref()
+            .as_deref()
             .is_some_and(|lexicon| lexicon.phrase_frequency(phrase) == 0)
     }
 
@@ -136,7 +136,7 @@ impl PinyinEngine {
         self.finalize_stable_word_candidates(raw, key, ranked, frequency_context);
         if let Some((intent, _)) = frequency_context {
             prefer_short_abbrev_words_over_five_char_predictions(ranked, intent, key.len());
-            demote_cold_non_full_lexicon_candidates(ranked, intent, self.phrase_lexicon.as_ref());
+            demote_cold_non_full_lexicon_candidates(ranked, intent, self.phrase_lexicon.as_deref());
         }
         let phrases = self
             .user_lexicon
@@ -358,13 +358,13 @@ mod tests {
                 LexiconLayer::Base,
             ));
         }
-        engine.phrase_lexicon = Some(lexicon);
+        engine.phrase_lexicon = Some(Arc::new(lexicon));
         engine
     }
 
     fn two_word_engine() -> PinyinEngine {
         let mut engine = short_word_engine();
-        let lexicon = engine.phrase_lexicon.as_mut().unwrap();
+        let lexicon = Arc::make_mut(engine.phrase_lexicon.as_mut().unwrap());
         for (phrase, reading, freq) in [
             ("现实", "xian shi", 100),
             ("西安市", "xi an shi", 900000),

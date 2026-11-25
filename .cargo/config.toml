@@ -1,2 +1,5 @@
 [build]
 target-dir = "pinyin-ime/target"
+
+[alias]
+xtask = ["run", "--locked", "--release", "-p", "kaixin-release", "--target-dir", "dist/release-tool-target", "--"]

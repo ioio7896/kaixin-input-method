@@ -7,7 +7,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque};
 use std::fs;
 use std::io::{self, BufReader, BufWriter, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, OnceLock};
 
 /// Packaged lexicon without a source-path digest.
 const PREBAKED_MAGIC: &[u8; 8] = b"SRFLX002";
@@ -731,10 +732,8 @@ impl PrebakedDeletionIndex {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug)]
 enum LazyDeletionIndex {
-    #[default]
-    Uninitialized,
     Disabled,
     Ready(DeletionIndex),
     Prebaked(PrebakedDeletionIndex),
@@ -774,13 +773,22 @@ impl<V: Clone> FifoCache<V> {
 
 #[derive(Debug, Clone, Default)]
 struct RuntimeIndexes {
-    abbrev_delete: LazyDeletionIndex,
-    pinyin_delete: LazyDeletionIndex,
     abbrev_exact: FifoCache<Arc<[ThuoclEntry]>>,
     pinyin_exact: FifoCache<Arc<[ThuoclEntry]>>,
     hot_abbrev_exact: FifoCache<Arc<[ThuoclEntry]>>,
     hot_pinyin_exact: FifoCache<Arc<[ThuoclEntry]>>,
     mixed_hot_exact: FifoCache<Arc<[ThuoclEntry]>>,
+}
+
+thread_local! {
+    // Each pipe worker caches materialized results locally. Large immutable
+    // indexes live on the lexicon shared by all workers.
+    static LOOKUP_EXACT_CACHE: RefCell<(u64, RuntimeIndexes)> = RefCell::default();
+}
+
+fn next_lexicon_cache_id() -> u64 {
+    static NEXT: AtomicU64 = AtomicU64::new(1);
+    NEXT.fetch_add(1, Ordering::Relaxed)
 }
 
 // Keep a wider exact-abbreviation head for short, high-collision keys. The
@@ -1035,7 +1043,9 @@ pub struct AbbrevLexicon {
     /// `None` means a mandatory source also provides this reading.
     cold_source_tags: BTreeMap<(String, u32), Option<BTreeSet<String>>>,
     phrase_ids: Option<HashMap<Arc<str>, u32>>,
-    runtime: RefCell<RuntimeIndexes>,
+    cache_id: u64,
+    abbrev_delete: OnceLock<LazyDeletionIndex>,
+    pinyin_delete: OnceLock<LazyDeletionIndex>,
     /// Build-time counter: number of Base entries skipped from mixed-hot index
     /// because their frequency was below MIXED_HOT_BASE_MIN_FREQ.
     pub mixed_hot_base_skipped: usize,
@@ -1056,7 +1066,9 @@ impl Default for AbbrevLexicon {
             phrase_layer: Vec::new(),
             cold_source_tags: BTreeMap::new(),
             phrase_ids: Some(HashMap::new()),
-            runtime: RefCell::new(RuntimeIndexes::default()),
+            cache_id: next_lexicon_cache_id(),
+            abbrev_delete: OnceLock::new(),
+            pinyin_delete: OnceLock::new(),
             mixed_hot_base_skipped: 0,
         }
     }
@@ -1077,13 +1089,25 @@ impl Clone for AbbrevLexicon {
             phrase_layer: self.phrase_layer.clone(),
             cold_source_tags: self.cold_source_tags.clone(),
             phrase_ids: self.phrase_ids.clone(),
-            runtime: RefCell::new(RuntimeIndexes::default()),
+            cache_id: next_lexicon_cache_id(),
+            abbrev_delete: OnceLock::new(),
+            pinyin_delete: OnceLock::new(),
             mixed_hot_base_skipped: self.mixed_hot_base_skipped,
         }
     }
 }
 
 impl AbbrevLexicon {
+    fn with_exact_cache<R>(&self, f: impl FnOnce(&mut RuntimeIndexes) -> R) -> R {
+        LOOKUP_EXACT_CACHE.with(|cache| {
+            let mut cache = cache.borrow_mut();
+            if cache.0 != self.cache_id {
+                *cache = (self.cache_id, RuntimeIndexes::default());
+            }
+            f(&mut cache.1)
+        })
+    }
+
     pub fn with_load_options(mut self, options: LexiconLoadOptions) -> Self {
         self.apply_load_options(options);
         self
@@ -1422,21 +1446,20 @@ impl AbbrevLexicon {
     /// system phrase. Explicit 2–4-syllable Core/frequent Base codes and curated
     /// 5–7-syllable long hotwords are indexed without runtime beam expansion.
     pub(crate) fn lookup_mixed_hot(&self, mixed_lower: &str) -> Option<Arc<[ThuoclEntry]>> {
+        if let Some(entries) =
+            self.with_exact_cache(|cache| cache.mixed_hot_exact.get(mixed_lower).cloned())
         {
-            let runtime = self.runtime.borrow();
-            if let Some(entries) = runtime.mixed_hot_exact.get(mixed_lower) {
-                return Some(Arc::clone(entries));
-            }
+            return Some(entries);
         }
-
         let compact = self.mixed_hot_inner.get(mixed_lower)?;
         let materialized = self.materialize_entries(&compact[..compact.len().min(HOT_EXACT_TOP_K)]);
-        let mut runtime = self.runtime.borrow_mut();
-        runtime.mixed_hot_exact.insert(
-            mixed_lower.to_string(),
-            Arc::clone(&materialized),
-            HOT_EXACT_CACHE_MAX_KEYS,
-        );
+        self.with_exact_cache(|cache| {
+            cache.mixed_hot_exact.insert(
+                mixed_lower.to_string(),
+                Arc::clone(&materialized),
+                HOT_EXACT_CACHE_MAX_KEYS,
+            );
+        });
         Some(materialized)
     }
 
@@ -1741,7 +1764,9 @@ impl AbbrevLexicon {
     fn mark_runtime_dirty(&mut self) {
         self.prefix_inner.clear();
         self.pinyin_prefix_inner.clear();
-        *self.runtime.borrow_mut() = RuntimeIndexes::default();
+        self.cache_id = next_lexicon_cache_id();
+        self.abbrev_delete = OnceLock::new();
+        self.pinyin_delete = OnceLock::new();
     }
 
     fn candidate_keys_for_approx_until(
@@ -1755,54 +1780,29 @@ impl AbbrevLexicon {
             return None;
         }
 
-        {
-            let runtime = self.runtime.borrow();
-            let slot = if pinyin {
-                &runtime.pinyin_delete
-            } else {
-                &runtime.abbrev_delete
-            };
-            match slot {
-                LazyDeletionIndex::Ready(index) => {
-                    return Some(index.candidate_keys(key));
-                }
-                LazyDeletionIndex::Prebaked(index) => {
-                    return Some(deletion_candidate_keys(&index.keys, key, |variant| {
-                        index.indices_for(variant)
-                    }));
-                }
-                LazyDeletionIndex::Disabled => {
-                    return Some(Vec::new());
-                }
-                LazyDeletionIndex::Uninitialized => {}
-            }
-        }
-
-        let map = if pinyin {
-            &self.pinyin_inner
+        let (slot, map) = if pinyin {
+            (&self.pinyin_delete, &self.pinyin_inner)
         } else {
-            &self.inner
+            (&self.abbrev_delete, &self.inner)
         };
+        if let Some(index) = slot.get() {
+            return Some(match index {
+                LazyDeletionIndex::Ready(index) => index.candidate_keys(key),
+                LazyDeletionIndex::Prebaked(index) => {
+                    deletion_candidate_keys(&index.keys, key, |variant| index.indices_for(variant))
+                }
+                LazyDeletionIndex::Disabled => Vec::new(),
+            });
+        }
         if map.len() > DELETION_INDEX_MAX_KEYS_TO_BUILD {
-            let mut runtime = self.runtime.borrow_mut();
-            let slot = if pinyin {
-                &mut runtime.pinyin_delete
-            } else {
-                &mut runtime.abbrev_delete
-            };
-            *slot = LazyDeletionIndex::Disabled;
+            let _ = slot.set(LazyDeletionIndex::Disabled);
             return Some(Vec::new());
         }
-
-        let built = DeletionIndex::build_from_until(map, should_stop)?;
-        let out = built.candidate_keys(key);
-        let mut runtime = self.runtime.borrow_mut();
-        let slot = if pinyin {
-            &mut runtime.pinyin_delete
-        } else {
-            &mut runtime.abbrev_delete
-        };
-        *slot = LazyDeletionIndex::Ready(built);
+        // Build outside the once cell so a cancelled worker cannot hold up
+        // another lookup. The first completed index becomes shared.
+        let index = DeletionIndex::build_from_until(map, should_stop)?;
+        let out = index.candidate_keys(key);
+        let _ = slot.set(LazyDeletionIndex::Ready(index));
         Some(out)
     }
 
@@ -1863,18 +1863,17 @@ impl AbbrevLexicon {
     }
 
     fn lookup_exact(&self, key: &str, pinyin: bool) -> Option<Arc<[ThuoclEntry]>> {
-        {
-            let runtime = self.runtime.borrow();
+        let cached = self.with_exact_cache(|runtime| {
             let cache = if pinyin {
                 &runtime.pinyin_exact
             } else {
                 &runtime.abbrev_exact
             };
-            if let Some(entries) = cache.get(key) {
-                return Some(Arc::clone(entries));
-            }
+            cache.get(key).cloned()
+        });
+        if cached.is_some() {
+            return cached;
         }
-
         let materialized = if pinyin {
             let compact = self.merged_pinyin_entries(key, PREBAKED_ENTRIES_PER_KEY_TOP_K)?;
             self.materialize_entries(&compact)
@@ -1882,33 +1881,33 @@ impl AbbrevLexicon {
             let compact = self.inner.get(key)?;
             self.materialize_entries(compact)
         };
-        let mut runtime = self.runtime.borrow_mut();
-        let cache = if pinyin {
-            &mut runtime.pinyin_exact
-        } else {
-            &mut runtime.abbrev_exact
-        };
-        cache.insert(
-            key.to_string(),
-            Arc::clone(&materialized),
-            EXACT_CACHE_MAX_KEYS,
-        );
+        self.with_exact_cache(|runtime| {
+            let cache = if pinyin {
+                &mut runtime.pinyin_exact
+            } else {
+                &mut runtime.abbrev_exact
+            };
+            cache.insert(
+                key.to_string(),
+                Arc::clone(&materialized),
+                EXACT_CACHE_MAX_KEYS,
+            );
+        });
         Some(materialized)
     }
 
     fn lookup_hot_exact(&self, key: &str, pinyin: bool) -> Option<Arc<[ThuoclEntry]>> {
-        {
-            let runtime = self.runtime.borrow();
+        let cached = self.with_exact_cache(|runtime| {
             let cache = if pinyin {
                 &runtime.hot_pinyin_exact
             } else {
                 &runtime.hot_abbrev_exact
             };
-            if let Some(entries) = cache.get(key) {
-                return Some(Arc::clone(entries));
-            }
+            cache.get(key).cloned()
+        });
+        if cached.is_some() {
+            return cached;
         }
-
         let materialized = if pinyin {
             let compact = self.merged_pinyin_entries(key, HOT_EXACT_TOP_K)?;
             self.materialize_entries(&compact)
@@ -1916,17 +1915,18 @@ impl AbbrevLexicon {
             let compact = self.inner.get(key)?;
             self.materialize_entries(&compact[..compact.len().min(HOT_EXACT_TOP_K)])
         };
-        let mut runtime = self.runtime.borrow_mut();
-        let cache = if pinyin {
-            &mut runtime.hot_pinyin_exact
-        } else {
-            &mut runtime.hot_abbrev_exact
-        };
-        cache.insert(
-            key.to_string(),
-            Arc::clone(&materialized),
-            HOT_EXACT_CACHE_MAX_KEYS,
-        );
+        self.with_exact_cache(|runtime| {
+            let cache = if pinyin {
+                &mut runtime.hot_pinyin_exact
+            } else {
+                &mut runtime.hot_abbrev_exact
+            };
+            cache.insert(
+                key.to_string(),
+                Arc::clone(&materialized),
+                HOT_EXACT_CACHE_MAX_KEYS,
+            );
+        });
         Some(materialized)
     }
 
@@ -2594,14 +2594,13 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
         (HashMap::new(), HashMap::new())
     };
 
-    let runtime = if version >= 7 {
-        RuntimeIndexes {
-            abbrev_delete: read_deletion_index(reader)?,
-            pinyin_delete: read_deletion_index(reader)?,
-            ..RuntimeIndexes::default()
-        }
+    let (abbrev_delete, pinyin_delete) = if version >= 7 {
+        (
+            OnceLock::from(read_deletion_index(reader)?),
+            OnceLock::from(read_deletion_index(reader)?),
+        )
     } else {
-        RuntimeIndexes::default()
+        (OnceLock::new(), OnceLock::new())
     };
     let mixed_hot_inner = if version >= 8 {
         read_compact_map(reader, &phrases, &phrase_freq)?
@@ -2633,7 +2632,9 @@ fn read_compact_prebaked<R: Read>(reader: &mut R, version: u32) -> io::Result<Ab
         phrase_freq,
         phrase_layer,
         cold_source_tags: BTreeMap::new(),
-        runtime: RefCell::new(runtime),
+        cache_id: next_lexicon_cache_id(),
+        abbrev_delete,
+        pinyin_delete,
         mixed_hot_base_skipped: 0,
     })
 }

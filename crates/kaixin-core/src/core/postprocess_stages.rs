@@ -157,7 +157,7 @@ impl PinyinEngine {
             limit_short_input_first_page_density(
                 ranked,
                 ctx.short_phrase_intent,
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
             );
         }
 
@@ -186,12 +186,12 @@ impl PinyinEngine {
                 ranked,
                 ctx.compact_key,
                 ctx.final_short_phrase_intent,
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
             );
             apply_short_intent_final_candidate_density(
                 ranked,
                 ctx.final_short_phrase_intent,
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
             );
         }
     }
@@ -212,7 +212,7 @@ impl PinyinEngine {
                 ctx.raw,
                 ctx.compact_key,
                 self.syllables.as_ref(),
-                self.phrase_lexicon.as_ref(),
+                self.phrase_lexicon.as_deref(),
             );
         }
 
@@ -372,7 +372,7 @@ impl PinyinEngine {
                 ctx.preserved_daily_short_two_char_phrases,
                 ctx.preserved_daily_short_three_char_phrases,
             ],
-            self.phrase_lexicon.as_ref(),
+            self.phrase_lexicon.as_deref(),
         );
         promote_learned_short_abbrev_hotwords_front(
             ranked,

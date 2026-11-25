@@ -42,7 +42,7 @@ class OcrPipelineTests(unittest.TestCase):
 
     def test_rust_native_ocr_policy_crop_and_merge_unit_tests(self):
         completed = subprocess.run(
-            ["cargo", "test", "--bin", "srf_ime_ocr"],
+            ["cargo", "test", "--bin", "srf_ime_desktop", "ocr::"],
             cwd=ROOT,
             capture_output=True,
             text=True,
@@ -52,7 +52,7 @@ class OcrPipelineTests(unittest.TestCase):
         self.assertEqual(
             completed.returncode,
             0,
-            f"cargo test --bin srf_ime_ocr failed:\n{completed.stdout}\n{completed.stderr}",
+            f"cargo test --bin srf_ime_desktop ocr:: failed:\n{completed.stdout}\n{completed.stderr}",
         )
 
 

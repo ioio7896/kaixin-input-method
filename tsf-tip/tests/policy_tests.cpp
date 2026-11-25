@@ -245,6 +245,65 @@ void TestGameInputPolicy() {
         "modified keys retain session");
   Check(!SrfGameShouldExitChat(true, true, false, true, false, true),
         "held Enter cannot close chat");
+
+  // Transparent Shift-tap and in-game chat Shift policy tests.
+  Check(SrfGameAllowChatImeHotkeys(false, false, M::Manual, false),
+        "desktop always allows IME hotkeys");
+  Check(!SrfGameAllowChatImeHotkeys(true, false, M::Manual, false),
+        "game passthrough blocks ordinary IME hotkeys");
+  Check(SrfGameAllowChatImeHotkeys(true, false, M::Manual, true),
+        "active game chat re-enables IME hotkeys");
+  Check(SrfGameAllowChatImeHotkeys(true, false, M::Chinese, false),
+        "always-Chinese game allows IME hotkeys");
+  Check(!SrfGameAllowChatImeHotkeys(true, false, M::Passthrough, true),
+        "strict passthrough game never enables IME hotkeys");
+  Check(!SrfGameAllowChatImeHotkeys(true, true, M::Chinese, true),
+        "pure game override never enables IME hotkeys");
+
+  Check(SrfResolveShiftTapAction(true, false, false, M::AutoText, false, false, false, true) ==
+            SrfShiftTapAction::ToggleImeOpen,
+        "desktop Shift tap toggles CN/EN");
+  Check(SrfResolveShiftTapAction(true, false, true, M::AutoText, true, false, false, true) ==
+            SrfShiftTapAction::ToggleImeOpen,
+        "active game chat Shift tap toggles CN/EN even when game_shift_toggle is off");
+  Check(SrfResolveShiftTapAction(true, false, true, M::Chinese, false, false, false, true) ==
+            SrfShiftTapAction::ToggleImeOpen,
+        "always-Chinese game Shift tap toggles CN/EN");
+  Check(SrfResolveShiftTapAction(true, false, true, M::AutoText, false, false, false, false) ==
+            SrfShiftTapAction::HintGamePassthrough,
+        "game passthrough with game_shift_toggle off hints instead of toggling");
+  Check(SrfResolveShiftTapAction(true, false, true, M::AutoText, false, true, false, false) ==
+            SrfShiftTapAction::ToggleGameChat,
+        "game passthrough with game_shift_toggle on opens game chat");
+  Check(SrfResolveShiftTapAction(true, false, true, M::Passthrough, false, true, false, false) ==
+            SrfShiftTapAction::None,
+        "strict passthrough game ignores Shift tap even with game_shift_toggle on");
+  Check(SrfResolveShiftTapAction(true, true, true, M::Chinese, true, true, false, true) ==
+            SrfShiftTapAction::None,
+        "pure game override ignores Shift tap");
+
+  SrfShiftTapTracker tracker;
+  tracker.ObserveKeyDown(true, false, false, false, 100);
+  Check(tracker.ObserveShiftUp(false, false, 105),
+        "fast 5ms Shift tap succeeds without GetTickCount64 quantum rejection");
+  tracker.ObserveKeyDown(true, false, false, false, 200);
+  tracker.ObserveKeyDown(true, true, false, false, 350);
+  Check(!tracker.ObserveShiftUp(false, false, 380),
+        "repeated/held Shift (sprint/crouch) never triggers tap toggle");
+  tracker.ObserveKeyDown(true, false, false, false, 500);
+  tracker.ObserveKeyDown(false, false, false, false, 550);
+  Check(!tracker.ObserveShiftUp(false, false, 600), "Shift+key chord never triggers tap toggle");
+  tracker.ObserveKeyDown(true, false, false, false, 700);
+  Check(!tracker.ObserveShiftUp(false, true, 750), "Shift+mouse click never triggers tap toggle");
+  tracker.ObserveKeyDown(true, false, false, false, 900);
+  Check(!tracker.ObserveShiftUp(false, false, 1400),
+        "long Shift hold beyond 420ms never triggers tap toggle");
+  Check(!tracker.ObservePassthroughHintTap(1000), "single passthrough Shift tap stays silent");
+  Check(tracker.ObservePassthroughHintTap(1300), "double passthrough Shift tap shows hint");
+  Check(!tracker.ObservePassthroughHintTap(1600) && !tracker.ObservePassthroughHintTap(1800),
+        "passthrough Shift hint respects cooldown");
+  Check(!tracker.ObservePassthroughHintTap(20000) && tracker.ObservePassthroughHintTap(20200),
+        "passthrough Shift hint works again after cooldown");
 }
 
 void TestClipboardQuickPolicy() {

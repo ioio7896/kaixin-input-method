@@ -23,7 +23,7 @@
 #include "ime_model.h"
 #include "notification_window.h"
 #include "pinyin_stub.h"
-#include "game_focus_probe.h"
+#include "srf_tip_state.h"
 
 struct CKeyEventSink;
 struct CThreadMgrEventSink;
@@ -39,39 +39,6 @@ struct SrfFocusSnapshot {
   std::wstring processName;
   uint64_t generation = 0;
   uint64_t inputSession = 0;
-};
-
-// Parsed once when a lookup result is accepted.  Candidate UI, commit and
-// context-model paths can then share the same metadata without repeatedly
-// splitting the tab-delimited wire string during rapid typing.
-struct CandidateMetaParts {
-  std::wstring display;
-  std::wstring annotation;
-  std::wstring score;
-  std::wstring correctedReading;
-  bool noLearn = false;
-  bool clipboardQuick = false;
-  std::wstring clipboardId;
-  std::wstring clipboardSource;
-  std::wstring clipboardTime;
-  std::wstring clipboardType;
-  std::wstring clipboardFilter;
-  UINT clipboardPage = 1;
-  UINT clipboardPages = 1;
-  bool clipboardPinned = false;
-  bool forceVerticalLayout = false;
-  bool partialResult = false;
-  bool correctionCandidate = false;
-  bool prefixPlaceholder = false;
-  bool pinnedExactInput = false;
-  bool userCandidate = false;
-  std::wstring userSourceLabel;
-  bool extCandidate = false;
-};
-
-struct CandidateRow {
-  std::wstring text;
-  CandidateMetaParts meta;
 };
 
 class CSrfTip : public ITfTextInputProcessorEx,
@@ -103,56 +70,12 @@ class CSrfTip : public ITfTextInputProcessorEx,
 
   ITfContext* m_pFocusContext = nullptr;
 
-  ITfComposition* m_pComposition = nullptr;
-  ITfContext* m_pCompositionContext = nullptr;
+  CompositionState m_compositionState;
 
-  std::wstring m_reading;
-  size_t m_readingCursor = 0;
-  std::vector<std::wstring> m_candidates;
-  std::vector<std::wstring> m_candidateMeta;
-  std::vector<CandidateRow> m_candidateRows;
-  std::wstring m_candidatesReading;
-  bool m_candidateHasMore = false;
-  bool m_candidateFullLookupPending = false;
-  unsigned long long m_candidateFullLookupSerial = 0;
-  UINT m_candidatePageAfterLoad = 0;
-  UINT m_candidateIndexAfterLoad = 0;
-  std::wstring m_clipboardQuickLastPageReading;
-  enum class SrfCandidateViewState : UINT {
-    Empty = 0,
-    Stable = 1,
-    Pending = 2,
-    Stale = 3,
-    PartialCurrent = 4,
-  };
-  SrfCandidateViewState m_candidateViewState = SrfCandidateViewState::Empty;
-  ULONGLONG m_candidateViewStateSinceTick = 0;
-  UINT m_candSel = 0;
-  UINT m_candPage = 0;
-  UINT m_lastSyncedCandSel = 0;
-  UINT m_lastSyncedCandPage = 0;
-  unsigned long long m_candidateInteractionVersion = 0;
-  unsigned long long m_partialCandidateInteractionVersion = 0;
-  std::wstring m_partialCandidateInteractionReading;
-  RECT m_lastCandidateRect = {};
-  bool m_hasLastCandidateRect = false;
-  // 逐字组词提交首字时，保留当前锚点直到“剩余拼音”的首批候选落地，
-  // 避免候选窗先消失、再因新 composition 的临时坐标跳位。
-  std::wstring m_preserveCandidateAnchorReading;
-  RECT m_stickyCandidateRect = {};
-  bool m_hasStickyCandidateRect = false;
-  UINT m_stickyCandidateAnchorQuality = 0;
-  std::wstring m_lastCandidateAnchorSource;
-  UINT m_lastCandidateAnchorQuality = 0;
-  ULONGLONG m_lastCandidateAnchorSourceSwitchTick = 0;
-  unsigned int m_candidateAnchorSourceSwitchCount = 0;
+  using SrfCandidateViewState = CandidateViewController::SrfCandidateViewState;
+  CandidateViewController m_candidateView;
 
-  // 逐字拼词（单字上屏后保留剩余拼音）时，累计用户造的新词。
-  // 目的：即使词库没有该多字词，用户也能逐字拼出，并在结束时把整词写入用户词典。
-  bool m_userPhraseComposeActive = false;
-  bool m_userPhraseComposeValid = false;
-  std::wstring m_userPhraseComposeOriginalReading;
-  std::wstring m_userPhraseComposeCommitted;
+  AnchorStabilizer m_anchor;
 
   /// 在 CommitCandidate 复杂分支中保存/恢复逐字拼词状态，避免手动恢复遗漏。
   class SrfPhraseComposeStateGuard {
@@ -177,48 +100,12 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_doublePinyin = false;
   bool m_traditionalOutput = false;
   bool m_pureGameMode = false;
-  bool m_gameChatActive = false;
-  SrfGameChatPhase m_gameChatPhase = SrfGameChatPhase::Passive;
-  SrfGameTextSource m_gameChatSource = SrfGameTextSource::None;
-  std::uint64_t m_gameEditableIdentity = 0;
-  std::uint64_t m_gameChatEditableIdentity = 0;
-  std::uint64_t m_gameDismissedIdentity = 0;
-  RECT m_gameEditableBounds = {};
-  UINT m_gameCandidateFieldWidthDip = 0;
+  using LearnedGameField = GameChatPolicyState::LearnedGameField;
+  GameChatPolicyState m_gameChat;
   mutable RECT m_clipboardPageMonitorRect = {};
   mutable UINT m_clipboardPageSize = 0;
   mutable bool m_clipboardPageUsesAnchor = false;
-  bool m_gameEditableVerified = false;
-  SrfGameFocusEvidence m_gameTsfEvidence = {};
-  ULONGLONG m_gameTsfProbeTick = 0;
-  bool m_gameTsfProbePending = false;
-  std::uint64_t m_gameTsfProbeSerial = 0;
-  ULONGLONG m_gameAwaitingUntil = 0;
-  ULONGLONG m_gameAwaitingHintAt = 0;
-  struct LearnedGameField {
-    std::wstring app;
-    std::vector<std::wstring> windowClasses;
-    DWORD processId = 0;
-    std::uint64_t element = 0;
-  };
-  std::vector<LearnedGameField> m_gameLearnedFields;
-  HWND m_gameLastNativeFocus = nullptr;
-  HWND m_gameLearningTarget = nullptr;
-  DWORD m_gameLearningProcessId = 0;
-  std::uint64_t m_gameLearnedNativeSignature = 0;
-  HWND m_gameOpeningFocus = nullptr;
-  HWND m_gameGeometryFocus = nullptr;
-  RECT m_gameGeometryBounds = {};
-  ULONGLONG m_gameGeometrySince = 0;
-  ULONGLONG m_gameChatOpenedAt = 0;
-  ULONGLONG m_gameOpenAttemptAt = 0;
-  HWND m_gameNativeEdit = nullptr;
-  std::wstring m_gamePendingPaste;
-  bool m_gameChatSavedImeOpen = true;
-  HWND m_gameChatOwner = nullptr;
-  DWORD m_gameChatOwnerProcessId = 0;
-  HWND m_autoGameChatFocus = nullptr;
-  HWND m_autoGameChatDismissedFocus = nullptr;
+
   HWND m_keyHotPathForeground = nullptr;
   bool m_manualGameCompatActive = false;
   bool m_manualAsciiModeActive = false;
@@ -251,6 +138,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool m_shiftTapActive = false;
   bool m_shiftTapUsedWithOtherKey = false;
   ULONGLONG m_shiftTapStartTick = 0;
+  SrfShiftTapTracker m_shiftTapTracker;
   ULONGLONG m_lastActivationTick = 0;
   bool m_ignoreImeToggleUntilModifiersReleased = false;
   /// 每次请求失焦取消时递增；异步 EditSession 完成时若与当前值不一致则丢弃（避免乱序重复取消）。
@@ -314,10 +202,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
   HRESULT CommitCandidate(TfEditCookie ec, size_t idx, bool explicitSelection = false);
   HRESULT CommitCandidateSnapshot(TfEditCookie ec, ITfContext* requestContext, size_t idx,
                                   const std::wstring& reading, const std::wstring& committedText,
-                                  const std::wstring& metaText,
+                                  const CandidateMetaParts& metaText,
                                   const std::vector<std::wstring>& skippedCandidates,
                                   bool explicitSelection);
   HRESULT CommitReadingText(TfEditCookie ec, ITfContext* pic);
+  HRESULT CommitReadingTextAndToggle(TfEditCookie ec, ITfContext* pic, bool toggleImeAfterCommit);
   UINT CandidatePageSize() const;
   std::wstring CandidateBarMainTitle() const;
   std::vector<std::wstring> CandidateBarModeTags() const;
@@ -374,7 +263,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool RefreshCandidatesAsync(bool fullResult = false);
   bool ApplyCandidateRefreshResult(const std::wstring& reading,
                                    std::vector<std::wstring> nextCandidates,
-                                   std::vector<std::wstring> nextMeta,
+                                   std::vector<CandidateMetaParts> nextMeta,
                                    SrfEngineState stateAfterLookup,
                                    SrfLookupCandidatesStatus lookupStatus, bool asyncResult,
                                    unsigned long long requestId, bool hasMore = false,
@@ -447,6 +336,10 @@ class CSrfTip : public ITfTextInputProcessorEx,
   bool IsConfiguredHotkey(UINT vk, const SrfHotkeyOptions& hotkey) const;
   SrfHotkeyScope EffectiveHotkeyScope() const;
   bool IsGameHotkeyPassthroughActive() const;
+  bool IsGameChatImeHotkeysAllowed() const;
+  bool EffectiveGameShiftToggle() const;
+  void HandleObservedShiftTap(ITfContext* pic);
+  void CommitReadingAndToggleImeOpen(ITfContext* pic);
   bool RefreshPureGameModeFromRegistry();
   SrfGameInputMode EffectiveGameInputMode() const;
   bool ShouldHandleGameChatHotkey() const;
@@ -463,11 +356,11 @@ class CSrfTip : public ITfTextInputProcessorEx,
   HRESULT CommitCandidateResolved(TfEditCookie ec, ITfContext* requestContext, size_t idx,
                                   const std::wstring* snapshotReading,
                                   const std::wstring* snapshotCommitted,
-                                  const std::wstring* snapshotMeta,
+                                  const CandidateMetaParts* snapshotMeta,
                                   const std::vector<std::wstring>* snapshotSkippedCandidates,
                                   bool explicitSelection);
   HRESULT RequestCommitCandidate(size_t idx);
-  HRESULT RequestCommitReadingText();
+  HRESULT RequestCommitReadingText(bool toggleImeAfterCommit = false);
   std::wstring TranslateDirectKey(UINT vk, LPARAM lParam, bool shiftDown) const;
   std::wstring ConvertDirectText(std::wstring text);
   std::wstring ConvertDirectTextWithCompletion(std::wstring text, LONG* cursorOffset);
@@ -594,7 +487,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   unsigned long long m_asyncCandidatePendingSerial = 0;
   std::wstring m_asyncCandidatePendingReading;
   std::vector<std::wstring> m_asyncCandidatePendingItems;
-  std::vector<std::wstring> m_asyncCandidatePendingMeta;
+  std::vector<CandidateMetaParts> m_asyncCandidatePendingMeta;
   bool m_asyncCandidatePendingHasMore = false;
   bool m_asyncCandidatePendingFullResult = false;
   SrfEngineState m_asyncCandidatePendingEngineState = SrfEngineState::Idle;
@@ -628,7 +521,7 @@ class CSrfTip : public ITfTextInputProcessorEx,
   struct PrefixCandidateCacheEntry {
     std::wstring reading;
     std::vector<std::wstring> candidates;
-    std::vector<std::wstring> meta;
+    std::vector<CandidateMetaParts> meta;
     ULONGLONG tick = 0;
   };
   std::vector<PrefixCandidateCacheEntry> m_prefixCandidateCache;

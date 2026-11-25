@@ -1,22 +1,15 @@
-use crate::runtime_log::{self, RuntimeLogLevel};
-use crate::user_dict_io::{
-    read_user_dict_sqlite_export_text, read_user_dict_sqlite_text, user_dict_reset_stamp,
-    write_plain_user_dict_sqlite, write_user_dict_sqlite_snapshot_checked,
-    write_user_dict_sqlite_snapshot_unlocked, write_user_dict_sqlite_snapshot_with_reset,
-    UserDictExclusiveGuard, UserDictResetStamp, UserDictSharedGuard,
-};
-use std::collections::{BTreeMap, HashMap, HashSet};
+use crate::encrypted_journal::Journal;
+use crate::user_dict_io::{read_user_dict_sqlite_export_text, write_plain_user_dict_sqlite};
+use im::{HashMap, OrdMap};
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, HashSet};
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::sync::{
-    atomic::{AtomicU64, Ordering},
-    mpsc, Arc, Mutex, OnceLock,
-};
-use std::thread;
-use std::time::{Duration, Instant};
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) const USER_JOURNAL_MAGIC: [u8; 8] = *b"KXUDJNL1";
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LearnedStats {
     pub freq: u64,
     pub last_used: u64,
@@ -66,7 +59,7 @@ impl LearnedStats {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum SuggestionConfidence {
     #[default]
@@ -93,7 +86,7 @@ impl SuggestionConfidence {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LearnedEntry {
     pub phrase: String,
     pub freq: u64,
@@ -147,7 +140,7 @@ struct RecentCommit {
     source: CommitSource,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SelectionFeedbackEntry {
     pub phrase: String,
     /// 正数为正反馈（选中/置顶），负数为负反馈（删除/忽略）。
@@ -165,7 +158,7 @@ impl SelectionFeedbackEntry {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ManagedUserPhrase {
     pub key: String,
     pub phrase: String,
@@ -173,7 +166,7 @@ pub struct ManagedUserPhrase {
     pub last_used: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ManagedNovelPhrase {
     pub key: String,
     pub phrase: String,
@@ -181,51 +174,50 @@ pub struct ManagedNovelPhrase {
     pub last_used: u64,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ManagedBlockedPhrase {
     pub phrase: String,
     pub last_used: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserLexicon {
-    path: PathBuf,
     clock: u64,
-    exact_input: BTreeMap<String, Vec<LearnedEntry>>,
-    mixed_input: BTreeMap<String, Vec<LearnedEntry>>,
-    observed_input: BTreeMap<String, Vec<LearnedEntry>>,
+    exact_input: OrdMap<String, Vec<LearnedEntry>>,
+    mixed_input: OrdMap<String, Vec<LearnedEntry>>,
+    observed_input: OrdMap<String, Vec<LearnedEntry>>,
     /// 个人纠错记忆：raw_input -> [(corrected_pinyin, freq, last_used)]。
-    correction_pairs: BTreeMap<String, Vec<LearnedEntry>>,
+    correction_pairs: OrdMap<String, Vec<LearnedEntry>>,
     /// 自动发现的生词：reading -> [(phrase, freq, last_used)]。
-    novel_phrases: BTreeMap<String, Vec<LearnedEntry>>,
+    novel_phrases: OrdMap<String, Vec<LearnedEntry>>,
     /// 永远不学：phrase -> last_used。
-    blocked_phrases: BTreeMap<String, u64>,
+    blocked_phrases: OrdMap<String, u64>,
     /// 候选交互反馈：reading -> [(phrase, score, last_used)]。
     /// score > 0 表示用户曾选择/置顶该候选，score < 0 表示删除/忽略。
-    selection_feedback: BTreeMap<String, Vec<SelectionFeedbackEntry>>,
+    selection_feedback: OrdMap<String, Vec<SelectionFeedbackEntry>>,
     /// 上下文候选反馈：(prev_phrase, reading) -> [(phrase, score, last_used)]。
-    context_selection_feedback: BTreeMap<(String, String), Vec<SelectionFeedbackEntry>>,
+    context_selection_feedback: OrdMap<(String, String), Vec<SelectionFeedbackEntry>>,
     /// 可见页未选候选的弱观察：reading -> [(phrase, negative_count, last_used)]。
-    weak_unselected_feedback: BTreeMap<String, Vec<SelectionFeedbackEntry>>,
+    weak_unselected_feedback: OrdMap<String, Vec<SelectionFeedbackEntry>>,
     /// 上下文可见页未选弱观察：(prev_phrase, reading) -> [(phrase, negative_count, last_used)]。
-    context_weak_unselected_feedback: BTreeMap<(String, String), Vec<SelectionFeedbackEntry>>,
+    context_weak_unselected_feedback: OrdMap<(String, String), Vec<SelectionFeedbackEntry>>,
+    #[serde(skip)]
     approx_index: HashMap<String, Vec<String>>,
-    phrase_stats: BTreeMap<String, LearnedStats>,
-    context_links: BTreeMap<String, Vec<LearnedEntry>>,
-    context_trigrams: BTreeMap<(String, String), Vec<LearnedEntry>>,
+    phrase_stats: OrdMap<String, LearnedStats>,
+    context_links: OrdMap<String, Vec<LearnedEntry>>,
+    context_trigrams: OrdMap<(String, String), Vec<LearnedEntry>>,
+    #[serde(skip)]
     recent_commits: Vec<RecentCommit>,
+    #[serde(skip)]
     recent_word_tokens: Vec<String>,
-    persistence: Option<PersistenceWorker>,
-    reset_stamp: SharedResetStamp,
+    #[serde(skip)]
+    persistence: Option<UserDictPersistence>,
 }
 
 /// 最多解析行数（超长文件尾部忽略）。
 const MAX_USER_DICT_LINES: usize = 2_000_000;
 /// 单行最大字节（超长行跳过）。
 const MAX_USER_DICT_LINE_BYTES: usize = 65_536;
-/// 后台写线程的攒批窗口，减少高频 commit 的磁盘抖动。
-const PERSIST_BATCH_WINDOW_MS: u64 = 160;
-const PERSIST_FAILURE_LOG_INTERVAL: Duration = Duration::from_secs(60);
 
 /// 全角/中文语句标点：相邻生词合并不应当把它们带进词条。
 const CJK_PHRASE_PUNCTUATION: &[char] = &[
@@ -253,134 +245,61 @@ const NEGATIVE_FEEDBACK_DEMOTE_THRESHOLD: i64 = -4;
 const SHORT_COUNT_HALF_LIFE_TICKS: f64 = 24.0;
 const LONG_COUNT_HALF_LIFE_TICKS: f64 = 4000.0;
 
-type SharedResetStamp = Arc<Mutex<UserDictResetStamp>>;
-
-#[derive(Debug)]
-struct PersistenceWorker {
-    reset_stamp: SharedResetStamp,
-    tx: mpsc::Sender<PersistenceCommand>,
-    join: Option<thread::JoinHandle<()>>,
+#[derive(Deserialize)]
+enum DictionaryRecord {
+    Updates(Vec<String>),
+    Checkpoint(Box<UserLexicon>),
 }
 
-#[derive(Debug)]
-enum PersistenceCommand {
-    Append(Vec<String>, UserDictResetStamp),
-    Snapshot(Box<UserLexicon>, UserDictResetStamp),
-    Flush(mpsc::Sender<Result<(), String>>),
-    Shutdown,
+#[derive(Serialize)]
+enum DictionaryWrite<'a> {
+    Updates(&'a [String]),
+    Checkpoint(&'a UserLexicon),
+}
+
+struct UserDictPersistence {
+    journal: Journal,
+    updates: Vec<String>,
+    checkpoint: bool,
+}
+
+impl std::fmt::Debug for UserDictPersistence {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("UserDictPersistence")
+            .finish_non_exhaustive()
+    }
 }
 
 impl Default for UserLexicon {
     fn default() -> Self {
         Self {
-            path: PathBuf::new(),
             clock: 0,
-            exact_input: BTreeMap::new(),
-            mixed_input: BTreeMap::new(),
-            observed_input: BTreeMap::new(),
-            correction_pairs: BTreeMap::new(),
-            novel_phrases: BTreeMap::new(),
-            blocked_phrases: BTreeMap::new(),
-            selection_feedback: BTreeMap::new(),
-            context_selection_feedback: BTreeMap::new(),
-            weak_unselected_feedback: BTreeMap::new(),
-            context_weak_unselected_feedback: BTreeMap::new(),
+            exact_input: OrdMap::new(),
+            mixed_input: OrdMap::new(),
+            observed_input: OrdMap::new(),
+            correction_pairs: OrdMap::new(),
+            novel_phrases: OrdMap::new(),
+            blocked_phrases: OrdMap::new(),
+            selection_feedback: OrdMap::new(),
+            context_selection_feedback: OrdMap::new(),
+            weak_unselected_feedback: OrdMap::new(),
+            context_weak_unselected_feedback: OrdMap::new(),
             approx_index: HashMap::new(),
-            phrase_stats: BTreeMap::new(),
-            context_links: BTreeMap::new(),
-            context_trigrams: BTreeMap::new(),
+            phrase_stats: OrdMap::new(),
+            context_links: OrdMap::new(),
+            context_trigrams: OrdMap::new(),
             recent_commits: Vec::new(),
             recent_word_tokens: Vec::new(),
             persistence: None,
-            reset_stamp: Arc::new(Mutex::new(UserDictResetStamp::default())),
         }
     }
-}
-
-fn reset_stamp_registry() -> &'static Mutex<HashMap<PathBuf, SharedResetStamp>> {
-    static REGISTRY: OnceLock<Mutex<HashMap<PathBuf, SharedResetStamp>>> = OnceLock::new();
-    REGISTRY.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
-fn reset_stamp_path_key(path: &Path) -> PathBuf {
-    if path.as_os_str().is_empty() {
-        return PathBuf::new();
-    }
-    fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf())
-}
-
-fn shared_reset_stamp_for_path(path: &Path) -> SharedResetStamp {
-    let key = reset_stamp_path_key(path);
-    let Ok(mut registry) = reset_stamp_registry().lock() else {
-        return Arc::new(Mutex::new(user_dict_reset_stamp(path)));
-    };
-    registry
-        .entry(key)
-        .or_insert_with(|| Arc::new(Mutex::new(user_dict_reset_stamp(path))))
-        .clone()
-}
-
-fn current_reset_stamp(stamp: &SharedResetStamp) -> UserDictResetStamp {
-    stamp.lock().map(|guard| *guard).unwrap_or_default()
-}
-
-fn set_reset_stamp(stamp: &SharedResetStamp, value: UserDictResetStamp) {
-    if let Ok(mut guard) = stamp.lock() {
-        *guard = value;
-    }
-}
-
-fn refresh_reset_stamp(path: &Path, stamp: &SharedResetStamp) -> UserDictResetStamp {
-    let value = user_dict_reset_stamp(path);
-    set_reset_stamp(stamp, value);
-    value
-}
-
-fn update_shared_reset_stamp_for_path(path: &Path, value: UserDictResetStamp) {
-    let stamp = shared_reset_stamp_for_path(path);
-    set_reset_stamp(&stamp, value);
-}
-
-fn log_user_dict_error(event: &str, message: impl AsRef<str>) {
-    runtime_log::log_engine(RuntimeLogLevel::Error, event, message);
 }
 
 impl UserLexicon {
-    fn empty_for_path(path: PathBuf) -> Self {
-        let reset_stamp = shared_reset_stamp_for_path(&path);
-        Self {
-            path,
-            clock: 0,
-            exact_input: BTreeMap::new(),
-            mixed_input: BTreeMap::new(),
-            observed_input: BTreeMap::new(),
-            correction_pairs: BTreeMap::new(),
-            novel_phrases: BTreeMap::new(),
-            blocked_phrases: BTreeMap::new(),
-            selection_feedback: BTreeMap::new(),
-            context_selection_feedback: BTreeMap::new(),
-            weak_unselected_feedback: BTreeMap::new(),
-            context_weak_unselected_feedback: BTreeMap::new(),
-            approx_index: HashMap::new(),
-            phrase_stats: BTreeMap::new(),
-            context_links: BTreeMap::new(),
-            context_trigrams: BTreeMap::new(),
-            recent_commits: Vec::new(),
-            recent_word_tokens: Vec::new(),
-            persistence: None,
-            reset_stamp,
-        }
-    }
-
-    pub fn load_default() -> Self {
-        let path = default_user_dict_path();
-        Self::load_from_path(path.clone()).unwrap_or_else(|err| {
-            log_user_dict_error(
-                "srf_user_dict_load_failed",
-                format!("path={} error={err}", path.display()),
-            );
-            Self::default()
-        })
+    #[cfg(windows)]
+    pub(crate) fn open_default() -> io::Result<Self> {
+        Self::open_journal(&default_user_dict_path())
     }
 
     fn parse_text_lines(&mut self, text: &str) {
@@ -397,46 +316,26 @@ impl UserLexicon {
         }
     }
 
-    pub fn load_from_path(path: PathBuf) -> io::Result<Self> {
-        let mut lex = Self::empty_for_path(path);
-        {
-            let _lock = UserDictSharedGuard::new(&lex.path)?;
-            set_reset_stamp(&lex.reset_stamp, user_dict_reset_stamp(&lex.path));
-
-            match read_user_dict_sqlite_text(&lex.path) {
-                Ok(Some(text)) => lex.parse_text_lines(&text),
-                Ok(None) => {}
-                Err(err) => {
-                    return Err(io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        format!("read user dictionary sqlite: {err}"),
-                    ));
+    #[cfg(windows)]
+    fn open_journal(path: &Path) -> io::Result<Self> {
+        let mut lex = Self::default();
+        let journal = Journal::open(path, USER_JOURNAL_MAGIC, |record| match record {
+            DictionaryRecord::Updates(lines) => {
+                for line in lines {
+                    lex.parse_line(&line);
                 }
             }
-        }
-        lex.prune_for_memory();
-
-        let needs_encryption_rewrite = crate::user_dict_io::user_dict_encryption_enabled()
-            && lex.path.is_file()
-            && !crate::user_dict_io::user_dict_file_is_encrypted(&lex.path).unwrap_or(true);
-        if needs_encryption_rewrite && !lex.path.as_os_str().is_empty() {
-            match write_user_dict_sqlite_snapshot_with_reset(
-                &lex.path,
-                lex.serialize_snapshot().as_bytes(),
-            ) {
-                Ok(stamp) => update_shared_reset_stamp_for_path(&lex.path, stamp),
-                Err(err) => log_user_dict_error(
-                    "srf_user_dict_sqlite_migration_write_failed",
-                    format!("path={} error={err}", lex.path.display()),
-                ),
+            DictionaryRecord::Checkpoint(state) => {
+                lex = *state;
+                rebuild_approx_index(&mut lex);
             }
-        }
-        if !lex.path.as_os_str().is_empty() {
-            lex.persistence = Some(PersistenceWorker::spawn(
-                lex.path.clone(),
-                lex.reset_stamp.clone(),
-            ));
-        }
+        })?;
+        lex.prune_for_memory();
+        lex.persistence = Some(UserDictPersistence {
+            journal,
+            updates: Vec::new(),
+            checkpoint: false,
+        });
         Ok(lex)
     }
 
@@ -1673,7 +1572,7 @@ impl UserLexicon {
         let novel_removed = remove_novel_phrase(self, &key, &phrase);
         if removed || mixed_removed || observed_removed || novel_removed {
             prune_phrase_related_stats(self, &phrase);
-            self.write_snapshot_sync()?;
+            self.persist_snapshot_now()?;
         }
         Ok(removed || mixed_removed || observed_removed || novel_removed)
     }
@@ -2102,11 +2001,28 @@ impl UserLexicon {
     }
 
     pub fn flush_pending(&mut self) -> io::Result<()> {
-        if let Some(persistence) = &self.persistence {
-            persistence.flush()
+        let Some(mut state) = self.persistence.take() else {
+            return Ok(());
+        };
+        let result = if state.checkpoint || state.journal.needs_compaction() {
+            state
+                .journal
+                .replace(&DictionaryWrite::Checkpoint(self))
+                .map(|()| {
+                    state.checkpoint = false;
+                })
+        } else if !state.updates.is_empty() {
+            state
+                .journal
+                .append(&DictionaryWrite::Updates(&state.updates))
         } else {
-            self.write_snapshot_sync()
+            Ok(())
+        };
+        if result.is_ok() {
+            state.updates.clear();
         }
+        self.persistence = Some(state);
+        result
     }
 
     fn serialize_snapshot(&self) -> String {
@@ -2260,25 +2176,9 @@ impl UserLexicon {
         lines.join("\n")
     }
 
-    fn write_snapshot_sync(&self) -> io::Result<()> {
-        if self.path.as_os_str().is_empty() {
-            return Ok(());
-        }
-        let wrote = write_user_dict_sqlite_snapshot_checked(
-            &self.path,
-            current_reset_stamp(&self.reset_stamp),
-            self.serialize_snapshot().as_bytes(),
-        )?;
-        if !wrote {
-            refresh_reset_stamp(&self.path, &self.reset_stamp);
-        }
-        Ok(())
-    }
-
-    // Copy only persisted state; formatting and joining happen on the worker.
-    // The worker has no watcher, file path, or persistence thread of its own.
-    fn snapshot_state(&self) -> Box<UserLexicon> {
-        let mut snapshot = Box::new(UserLexicon::default());
+    #[cfg(windows)]
+    pub(crate) fn snapshot_for_lookup(&self) -> Self {
+        let mut snapshot = Self::default();
         snapshot.exact_input = self.exact_input.clone();
         snapshot.mixed_input = self.mixed_input.clone();
         snapshot.observed_input = self.observed_input.clone();
@@ -2293,53 +2193,33 @@ impl UserLexicon {
         snapshot.context_links = self.context_links.clone();
         snapshot.context_trigrams = self.context_trigrams.clone();
         snapshot.clock = self.clock;
+        snapshot.approx_index = self.approx_index.clone();
+        snapshot.recent_commits.clone_from(&self.recent_commits);
+        snapshot
+            .recent_word_tokens
+            .clone_from(&self.recent_word_tokens);
         snapshot
     }
 
     fn persist_snapshot_now(&mut self) -> io::Result<()> {
-        if self.path.as_os_str().is_empty() {
-            return Ok(());
+        if let Some(persistence) = &mut self.persistence {
+            persistence.updates.clear();
+            persistence.checkpoint = true;
         }
-        let snapshot = self.snapshot_state();
-        if let Some(persistence) = &self.persistence {
-            if persistence.snapshot(snapshot).is_ok() {
-                return Ok(());
+        Ok(())
+    }
+
+    fn persist_updates(&mut self, mut updates: Vec<String>) -> io::Result<()> {
+        if self
+            .persistence
+            .as_ref()
+            .is_some_and(|state| !state.checkpoint)
+        {
+            updates.extend(self.metadata_updates_for_lines(&updates));
+            if let Some(state) = &mut self.persistence {
+                state.updates.extend(updates);
             }
         }
-        self.restart_persistence()
-    }
-
-    fn restart_persistence(&mut self) -> io::Result<()> {
-        self.persistence = Some(PersistenceWorker::spawn(
-            self.path.clone(),
-            self.reset_stamp.clone(),
-        ));
-        self.persistence
-            .as_ref()
-            .ok_or_else(|| io::Error::other("persistence unavailable"))?
-            .snapshot(self.snapshot_state())
-    }
-
-    fn persist_updates(&mut self, updates: Vec<String>) -> io::Result<()> {
-        if self.path.as_os_str().is_empty() {
-            return Ok(());
-        }
-
-        let mut updates = updates;
-        let metadata_updates = self.metadata_updates_for_lines(&updates);
-        updates.extend(metadata_updates);
-
-        let Some(persistence) = &self.persistence else {
-            return self.write_snapshot_sync();
-        };
-
-        if persistence.append(updates).is_err() {
-            return self.restart_persistence();
-        }
-
-        // Each worker batch already reads, prunes and writes a complete SQLite
-        // snapshot. A second full snapshot every 48 learns duplicated that work
-        // and formatted the entire dictionary under the shared engine lock.
         Ok(())
     }
 
@@ -2351,93 +2231,24 @@ impl UserLexicon {
         let mut changed = false;
         let mut exact_index_changed = false;
 
-        self.exact_input.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-                exact_index_changed = true;
-            }
-            !entries.is_empty()
-        });
-        self.mixed_input.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-        self.observed_input.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.correction_pairs.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.novel_phrases.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.selection_feedback.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.weak_unselected_feedback.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.context_selection_feedback.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.context_weak_unselected_feedback.retain(|_, entries| {
-            if entries.len() > MAX_USER_ENTRIES_PER_KEY {
-                entries.truncate(MAX_USER_ENTRIES_PER_KEY);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.context_links.retain(|_, entries| {
-            if entries.len() > MAX_CONTEXT_ENTRIES_PER_PREV {
-                entries.truncate(MAX_CONTEXT_ENTRIES_PER_PREV);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
-        self.context_trigrams.retain(|_, entries| {
-            if entries.len() > MAX_CONTEXT_ENTRIES_PER_PREV {
-                entries.truncate(MAX_CONTEXT_ENTRIES_PER_PREV);
-                changed = true;
-            }
-            !entries.is_empty()
-        });
-
+        exact_index_changed |= prune_entry_lists(&mut self.exact_input, MAX_USER_ENTRIES_PER_KEY);
+        changed |= exact_index_changed;
+        changed |= prune_entry_lists(&mut self.mixed_input, MAX_USER_ENTRIES_PER_KEY);
+        changed |= prune_entry_lists(&mut self.observed_input, MAX_USER_ENTRIES_PER_KEY);
+        changed |= prune_entry_lists(&mut self.correction_pairs, MAX_USER_ENTRIES_PER_KEY);
+        changed |= prune_entry_lists(&mut self.novel_phrases, MAX_USER_ENTRIES_PER_KEY);
+        changed |= prune_entry_lists(&mut self.selection_feedback, MAX_USER_ENTRIES_PER_KEY);
+        changed |= prune_entry_lists(&mut self.weak_unselected_feedback, MAX_USER_ENTRIES_PER_KEY);
+        changed |= prune_entry_lists(
+            &mut self.context_selection_feedback,
+            MAX_USER_ENTRIES_PER_KEY,
+        );
+        changed |= prune_entry_lists(
+            &mut self.context_weak_unselected_feedback,
+            MAX_USER_ENTRIES_PER_KEY,
+        );
+        changed |= prune_entry_lists(&mut self.context_links, MAX_CONTEXT_ENTRIES_PER_PREV);
+        changed |= prune_entry_lists(&mut self.context_trigrams, MAX_CONTEXT_ENTRIES_PER_PREV);
         if prune_total_exact_entries(&mut self.exact_input, MAX_TOTAL_EXACT_ENTRIES) {
             changed = true;
             exact_index_changed = true;
@@ -2499,13 +2310,130 @@ pub fn default_user_dict_path() -> PathBuf {
         return PathBuf::from(path);
     }
     if let Some(base) = crate::app_paths::local_data_dir() {
-        return base.join("user_dict.sqlite");
+        return base.join("user_dict.kxj");
     }
-    PathBuf::from("user_dict.sqlite")
+    PathBuf::from("user_dict.kxj")
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) enum DictionaryRequest {
+    List,
+    ListNovel(usize),
+    ListBlocked(usize),
+    Block(String),
+    Unblock(String),
+    Add(String, String),
+    Pin(String, String),
+    Remove(String, String),
+    RemoveEverywhere(String),
+    Clear,
+    Export,
+    Preview(String),
+    Import(String, UserDictImportMode),
+}
+
+impl DictionaryRequest {
+    #[cfg(windows)]
+    pub(crate) fn changes_data(&self) -> bool {
+        !matches!(
+            self,
+            Self::List
+                | Self::ListNovel(_)
+                | Self::ListBlocked(_)
+                | Self::Export
+                | Self::Preview(_)
+        )
+    }
+}
+
+fn request<T: serde::de::DeserializeOwned>(request: DictionaryRequest) -> io::Result<T> {
+    #[cfg(windows)]
+    {
+        kaixin_platform::storage_client::request(
+            kaixin_platform::storage_client::StorageDomain::Dictionary,
+            request,
+        )
+        .map_err(io::Error::other)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = request;
+        Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "user dictionary service requires Windows",
+        ))
+    }
 }
 
 pub fn list_user_phrases() -> io::Result<Vec<ManagedUserPhrase>> {
-    let lex = UserLexicon::load_default();
+    request(DictionaryRequest::List)
+}
+
+pub fn list_recent_novel_phrases(limit: usize) -> io::Result<Vec<ManagedNovelPhrase>> {
+    request(DictionaryRequest::ListNovel(limit))
+}
+
+pub fn list_blocked_phrases(limit: usize) -> io::Result<Vec<ManagedBlockedPhrase>> {
+    request(DictionaryRequest::ListBlocked(limit))
+}
+
+pub fn block_user_phrase(phrase: &str) -> io::Result<bool> {
+    request(DictionaryRequest::Block(phrase.to_owned()))
+}
+
+pub fn unblock_user_phrase(phrase: &str) -> io::Result<bool> {
+    request(DictionaryRequest::Unblock(phrase.to_owned()))
+}
+
+pub fn add_user_phrase(key: &str, phrase: &str) -> io::Result<()> {
+    request(DictionaryRequest::Add(key.to_owned(), phrase.to_owned()))
+}
+
+pub fn pin_user_phrase(key: &str, phrase: &str) -> io::Result<()> {
+    request(DictionaryRequest::Pin(key.to_owned(), phrase.to_owned()))
+}
+
+pub fn remove_user_phrase(key: &str, phrase: &str) -> io::Result<bool> {
+    request(DictionaryRequest::Remove(key.to_owned(), phrase.to_owned()))
+}
+
+pub fn remove_user_phrase_everywhere(phrase: &str) -> io::Result<bool> {
+    request(DictionaryRequest::RemoveEverywhere(phrase.to_owned()))
+}
+
+pub fn clear_user_dict() -> io::Result<()> {
+    request(DictionaryRequest::Clear)
+}
+
+pub fn export_user_dict(path: &Path) -> io::Result<()> {
+    let text: String = request(DictionaryRequest::Export)?;
+    write_plain_user_dict_sqlite(path, &text)
+}
+
+pub fn export_decrypted_user_dict(path: &Path) -> io::Result<()> {
+    export_user_dict(path)
+}
+
+pub fn export_user_dict_tsv(path: &Path) -> io::Result<()> {
+    let text: String = request(DictionaryRequest::Export)?;
+    let lex = lexicon_from_export_text(&text);
+    let mut out = String::from("# 开心输入法便携用户词库 v1\n# phrase\tpinyin\tweight\tpinned\n");
+    for (key, entries) in &lex.exact_input {
+        for entry in entries {
+            out.push_str(&format!(
+                "{}\t{}\t{}\t{}\n",
+                entry.phrase,
+                key,
+                entry.freq,
+                u8::from(entry.pinned)
+            ));
+        }
+    }
+    fs::write(path, out)
+}
+
+#[cfg(windows)]
+fn collect_list_user_phrases(lex: &UserLexicon) -> Vec<ManagedUserPhrase> {
     let mut out = Vec::new();
     for (key, entries) in &lex.exact_input {
         for entry in entries {
@@ -2524,11 +2452,10 @@ pub fn list_user_phrases() -> io::Result<Vec<ManagedUserPhrase>> {
             .then_with(|| a.key.cmp(&b.key))
             .then_with(|| a.phrase.cmp(&b.phrase))
     });
-    Ok(out)
+    out
 }
-
-pub fn list_recent_novel_phrases(limit: usize) -> io::Result<Vec<ManagedNovelPhrase>> {
-    let lex = UserLexicon::load_default();
+#[cfg(windows)]
+fn collect_list_recent_novel_phrases(lex: &UserLexicon, limit: usize) -> Vec<ManagedNovelPhrase> {
     let mut out = Vec::new();
     for (key, entries) in &lex.novel_phrases {
         for entry in entries {
@@ -2550,11 +2477,10 @@ pub fn list_recent_novel_phrases(limit: usize) -> io::Result<Vec<ManagedNovelPhr
     if limit > 0 && out.len() > limit {
         out.truncate(limit);
     }
-    Ok(out)
+    out
 }
-
-pub fn list_blocked_phrases(limit: usize) -> io::Result<Vec<ManagedBlockedPhrase>> {
-    let lex = UserLexicon::load_default();
+#[cfg(windows)]
+fn collect_list_blocked_phrases(lex: &UserLexicon, limit: usize) -> Vec<ManagedBlockedPhrase> {
     let mut out: Vec<_> = lex
         .blocked_phrases
         .iter()
@@ -2571,94 +2497,16 @@ pub fn list_blocked_phrases(limit: usize) -> io::Result<Vec<ManagedBlockedPhrase
     if limit > 0 && out.len() > limit {
         out.truncate(limit);
     }
-    Ok(out)
+    out
 }
 
-pub fn block_user_phrase(phrase: &str) -> io::Result<bool> {
-    let mut lex = UserLexicon::load_default();
-    lex.block_phrase(phrase)
-}
-
-pub fn unblock_user_phrase(phrase: &str) -> io::Result<bool> {
-    let mut lex = UserLexicon::load_default();
-    lex.unblock_phrase(phrase)
-}
-
-pub fn add_user_phrase(key: &str, phrase: &str) -> io::Result<()> {
-    let mut lex = UserLexicon::load_default();
-    let _ = lex.unblock_phrase(phrase)?;
-    lex.learn(key, phrase)?;
-    lex.flush_pending()
-}
-
-pub fn pin_user_phrase(key: &str, phrase: &str) -> io::Result<()> {
-    let mut lex = UserLexicon::load_default();
-    let _ = lex.unblock_phrase(phrase)?;
-    lex.pin_exact_input(key, phrase)?;
-    lex.flush_pending()
-}
-
-pub fn remove_user_phrase(key: &str, phrase: &str) -> io::Result<bool> {
-    let mut lex = UserLexicon::load_default();
-    lex.remove_exact_input(key, phrase)
-}
-
-pub fn remove_user_phrase_everywhere(phrase: &str) -> io::Result<bool> {
-    let Some(phrase) = normalize_selection_feedback_phrase(phrase) else {
-        return Ok(false);
-    };
-    let mut lex = UserLexicon::load_default();
-    let removed = remove_phrase_everywhere(&mut lex, &phrase);
-    if removed {
-        lex.write_snapshot_sync()?;
-    }
-    Ok(removed)
-}
-
-pub fn clear_user_dict() -> io::Result<()> {
-    let path = default_user_dict_path();
-    clear_user_dict_at_path(&path)
-}
-
-fn clear_user_dict_at_path(path: &Path) -> io::Result<()> {
-    write_user_dict_sqlite_snapshot_with_reset(path, b"").map(|stamp| {
-        update_shared_reset_stamp_for_path(path, stamp);
-    })
-}
-
-pub fn export_user_dict(path: &Path) -> io::Result<()> {
-    let lex = UserLexicon::load_from_path(default_user_dict_path())?;
-    write_plain_user_dict_sqlite(path, &lex.serialize_snapshot())
-}
-
-pub fn export_decrypted_user_dict(path: &Path) -> io::Result<()> {
-    export_user_dict(path)
-}
-
-pub fn export_user_dict_tsv(path: &Path) -> io::Result<()> {
-    let lex = UserLexicon::load_from_path(default_user_dict_path())?;
-    let mut out = String::from("# 开心输入法便携用户词库 v1\n# phrase\tpinyin\tweight\tpinned\n");
-    for (key, entries) in &lex.exact_input {
-        for entry in entries {
-            out.push_str(&format!(
-                "{}\t{}\t{}\t{}\n",
-                entry.phrase,
-                key,
-                entry.freq,
-                u8::from(entry.pinned)
-            ));
-        }
-    }
-    fs::write(path, out)
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UserDictImportMode {
     Merge,
     Replace,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct UserDictImportPreview {
     pub total_entries: usize,
     pub new_entries: usize,
@@ -2671,7 +2519,7 @@ pub struct UserDictImportPreview {
 }
 
 fn lexicon_from_export_text(text: &str) -> UserLexicon {
-    let mut lex = UserLexicon::empty_for_path(PathBuf::new());
+    let mut lex = UserLexicon::default();
     lex.parse_text_lines(text);
     lex.prune_for_memory();
     lex
@@ -2725,9 +2573,14 @@ fn read_user_dict_import_text(path: &Path) -> io::Result<String> {
 }
 
 pub fn preview_user_dict_import(path: &Path) -> io::Result<UserDictImportPreview> {
-    let contents = read_user_dict_import_text(path)?;
-    let incoming = lexicon_from_export_text(&contents);
-    let current = UserLexicon::load_from_path(default_user_dict_path())?;
+    request(DictionaryRequest::Preview(read_user_dict_import_text(
+        path,
+    )?))
+}
+
+#[cfg(windows)]
+fn preview_import(current: &UserLexicon, contents: &str) -> UserDictImportPreview {
+    let incoming = lexicon_from_export_text(contents);
     let mut preview = UserDictImportPreview {
         blocked_entries: incoming.blocked_phrases.len(),
         context_entries: incoming.context_links.values().map(Vec::len).sum::<usize>()
@@ -2755,12 +2608,13 @@ pub fn preview_user_dict_import(path: &Path) -> io::Result<UserDictImportPreview
             }
         }
     }
-    Ok(preview)
+    preview
 }
 
+#[cfg(windows)]
 fn merge_imported_entries(
-    target: &mut BTreeMap<String, Vec<LearnedEntry>>,
-    incoming: BTreeMap<String, Vec<LearnedEntry>>,
+    target: &mut OrdMap<String, Vec<LearnedEntry>>,
+    incoming: OrdMap<String, Vec<LearnedEntry>>,
 ) {
     for (key, entries) in incoming {
         let target_entries = target.entry(key).or_default();
@@ -2787,91 +2641,113 @@ fn merge_imported_entries(
     }
 }
 
-fn create_pre_import_backup(target: &Path) -> io::Result<()> {
-    if !target.is_file() {
-        return Ok(());
-    }
-    let _guard = UserDictSharedGuard::new(target)?;
-    let stamp = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
-    let backup = target.with_file_name(format!("user_dict_import_backup_{stamp}.sqlite"));
-    fs::copy(target, backup)?;
-    let Some(parent) = target.parent() else {
-        return Ok(());
-    };
-    let mut backups = fs::read_dir(parent)?
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.file_name()
-                .and_then(|name| name.to_str())
-                .is_some_and(|name| name.starts_with("user_dict_import_backup_"))
-        })
-        .collect::<Vec<_>>();
-    backups.sort();
-    let remove_count = backups.len().saturating_sub(5);
-    for stale in backups.into_iter().take(remove_count) {
-        let _ = fs::remove_file(stale);
-    }
-    Ok(())
-}
-
 pub fn import_user_dict(path: &Path) -> io::Result<()> {
     import_user_dict_with_mode(path, UserDictImportMode::Merge)
 }
 
 pub fn import_user_dict_with_mode(path: &Path, mode: UserDictImportMode) -> io::Result<()> {
-    let contents = read_user_dict_import_text(path)?;
-    let target = default_user_dict_path();
-    let snapshot = if mode == UserDictImportMode::Replace {
-        contents
-    } else {
-        let mut current = UserLexicon::load_from_path(target.clone())?;
-        let mut incoming = lexicon_from_export_text(&contents);
+    request(DictionaryRequest::Import(
+        read_user_dict_import_text(path)?,
+        mode,
+    ))
+}
+
+#[cfg(windows)]
+impl UserLexicon {
+    pub(crate) fn manage(&mut self, request: DictionaryRequest) -> io::Result<Vec<u8>> {
+        use DictionaryRequest::*;
+        let response = match request {
+            List => bincode::serialize(&collect_list_user_phrases(self)),
+            ListNovel(limit) => bincode::serialize(&collect_list_recent_novel_phrases(self, limit)),
+            ListBlocked(limit) => bincode::serialize(&collect_list_blocked_phrases(self, limit)),
+            Block(phrase) => bincode::serialize(&self.block_phrase(&phrase)?),
+            Unblock(phrase) => bincode::serialize(&self.unblock_phrase(&phrase)?),
+            Add(key, phrase) => {
+                self.unblock_phrase(&phrase)?;
+                bincode::serialize(&self.learn(&key, &phrase)?)
+            }
+            Pin(key, phrase) => {
+                self.unblock_phrase(&phrase)?;
+                bincode::serialize(&self.pin_exact_input(&key, &phrase)?)
+            }
+            Remove(key, phrase) => bincode::serialize(&self.remove_exact_input(&key, &phrase)?),
+            RemoveEverywhere(phrase) => {
+                let removed = normalize_selection_feedback_phrase(&phrase)
+                    .is_some_and(|phrase| remove_phrase_everywhere(self, &phrase));
+                if removed {
+                    self.persist_snapshot_now()?;
+                }
+                bincode::serialize(&removed)
+            }
+            Clear => {
+                self.replace_state(UserLexicon::default())?;
+                bincode::serialize(&())
+            }
+            Export => bincode::serialize(&self.serialize_snapshot()),
+            Preview(text) => bincode::serialize(&preview_import(self, &text)),
+            Import(text, mode) => {
+                self.apply_import(&text, mode)?;
+                bincode::serialize(&())
+            }
+        };
+        response.map_err(io::Error::other)
+    }
+
+    fn replace_state(&mut self, mut next: Self) -> io::Result<()> {
+        if let Some(persistence) = &mut self.persistence {
+            persistence
+                .journal
+                .replace(&DictionaryWrite::Checkpoint(&next))?;
+            persistence.updates.clear();
+            persistence.checkpoint = false;
+
+            next.persistence = self.persistence.take();
+        }
+        *self = next;
+        Ok(())
+    }
+
+    fn apply_import(&mut self, text: &str, mode: UserDictImportMode) -> io::Result<()> {
+        let mut incoming = lexicon_from_export_text(text);
+        if incoming.exact_input.is_empty()
+            && incoming.mixed_input.is_empty()
+            && incoming.observed_input.is_empty()
+            && incoming.novel_phrases.is_empty()
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "import contains no valid user dictionary entries",
+            ));
+        }
+        if mode == UserDictImportMode::Replace {
+            return self.replace_state(incoming);
+        }
+        let mut merged = self.snapshot_for_lookup();
+        merged.clock = merged.clock.max(incoming.clock);
         merge_imported_entries(
-            &mut current.exact_input,
+            &mut merged.exact_input,
             std::mem::take(&mut incoming.exact_input),
         );
         merge_imported_entries(
-            &mut current.mixed_input,
+            &mut merged.mixed_input,
             std::mem::take(&mut incoming.mixed_input),
         );
         merge_imported_entries(
-            &mut current.observed_input,
+            &mut merged.observed_input,
             std::mem::take(&mut incoming.observed_input),
         );
         merge_imported_entries(
-            &mut current.correction_pairs,
+            &mut merged.correction_pairs,
             std::mem::take(&mut incoming.correction_pairs),
         );
         merge_imported_entries(
-            &mut current.novel_phrases,
+            &mut merged.novel_phrases,
             std::mem::take(&mut incoming.novel_phrases),
         );
-        // Local block/negative-feedback policy wins. Context signals are not
-        // imported by default because they may expose old writing habits and
-        // can distort ranking on a different machine.
-        rebuild_approx_index(&mut current);
-        current.prune_for_memory();
-        current.serialize_snapshot()
-    };
-    let prepared = lexicon_from_export_text(&snapshot);
-    if prepared.exact_input.is_empty()
-        && prepared.mixed_input.is_empty()
-        && prepared.observed_input.is_empty()
-        && prepared.novel_phrases.is_empty()
-    {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "import contains no valid user dictionary entries",
-        ));
+        rebuild_approx_index(&mut merged);
+        merged.prune_for_memory();
+        self.replace_state(merged)
     }
-    create_pre_import_backup(&target)?;
-    write_user_dict_sqlite_snapshot_with_reset(&target, snapshot.as_bytes()).map(|stamp| {
-        update_shared_reset_stamp_for_path(&target, stamp);
-    })
 }
 
 fn prune_phrase_related_stats(lex: &mut UserLexicon, phrase: &str) {
@@ -2948,7 +2824,7 @@ fn remove_phrase_everywhere(lex: &mut UserLexicon, phrase: &str) -> bool {
 }
 
 fn remove_phrase_from_learned_map(
-    map: &mut BTreeMap<String, Vec<LearnedEntry>>,
+    map: &mut OrdMap<String, Vec<LearnedEntry>>,
     phrase: &str,
 ) -> bool {
     let mut removed = false;
@@ -2962,7 +2838,7 @@ fn remove_phrase_from_learned_map(
 }
 
 fn remove_phrase_from_selection_feedback(
-    map: &mut BTreeMap<String, Vec<SelectionFeedbackEntry>>,
+    map: &mut OrdMap<String, Vec<SelectionFeedbackEntry>>,
     phrase: &str,
 ) -> bool {
     let mut removed = false;
@@ -2976,7 +2852,7 @@ fn remove_phrase_from_selection_feedback(
 }
 
 fn remove_phrase_from_context_selection_feedback(
-    map: &mut BTreeMap<(String, String), Vec<SelectionFeedbackEntry>>,
+    map: &mut OrdMap<(String, String), Vec<SelectionFeedbackEntry>>,
     phrase: &str,
 ) -> bool {
     let mut removed = false;
@@ -3088,303 +2964,61 @@ fn validate_user_phrase_parts(key: &str, phrase: &str) -> io::Result<Option<(Str
 
 impl Drop for UserLexicon {
     fn drop(&mut self) {
-        if let Some(mut persistence) = self.persistence.take() {
-            let _ = persistence.shutdown();
+        if let Err(error) = self.flush_pending() {
+            crate::runtime_log::log_engine(
+                crate::runtime_log::RuntimeLogLevel::Error,
+                "srf_user_dict_persist_failed",
+                error.to_string(),
+            );
         }
     }
 }
 
-impl PersistenceWorker {
-    fn spawn(path: PathBuf, reset_stamp: SharedResetStamp) -> Self {
-        let (tx, rx) = mpsc::channel();
-        let worker_reset = reset_stamp.clone();
-        let join = thread::spawn(move || persistence_worker_loop(path, worker_reset, rx));
-        Self {
-            reset_stamp,
-            tx,
-            join: Some(join),
-        }
-    }
-
-    fn append(&self, lines: Vec<String>) -> io::Result<()> {
-        self.tx
-            .send(PersistenceCommand::Append(
-                lines,
-                current_reset_stamp(&self.reset_stamp),
-            ))
-            .map_err(persistence_send_error)
-    }
-
-    fn snapshot(&self, snapshot: Box<UserLexicon>) -> io::Result<()> {
-        self.tx
-            .send(PersistenceCommand::Snapshot(
-                snapshot,
-                current_reset_stamp(&self.reset_stamp),
-            ))
-            .map_err(persistence_send_error)
-    }
-
-    fn flush(&self) -> io::Result<()> {
-        let (tx, rx) = mpsc::channel();
-        self.tx
-            .send(PersistenceCommand::Flush(tx))
-            .map_err(persistence_send_error)?;
-        match rx.recv() {
-            Ok(Ok(())) => Ok(()),
-            Ok(Err(msg)) => Err(io::Error::other(msg)),
-            Err(err) => Err(io::Error::new(
-                io::ErrorKind::BrokenPipe,
-                format!("wait user dict flush: {err}"),
-            )),
-        }
-    }
-
-    fn shutdown(&mut self) -> io::Result<()> {
-        let _ = self.flush();
-        let _ = self.tx.send(PersistenceCommand::Shutdown);
-        if let Some(join) = self.join.take() {
-            let _ = join.join();
-        }
-        Ok(())
-    }
+trait RetainEntries<K, V> {
+    fn retain(&mut self, keep: impl FnMut(&K, &mut V) -> bool);
 }
 
-fn persistence_send_error<T>(err: mpsc::SendError<T>) -> io::Error {
-    io::Error::new(
-        io::ErrorKind::BrokenPipe,
-        format!("queue user dict persistence: {err}"),
-    )
-}
-
-fn persistence_worker_loop(
-    path: PathBuf,
-    reset_stamp: SharedResetStamp,
-    rx: mpsc::Receiver<PersistenceCommand>,
-) {
-    let mut pending_lines: Vec<String> = Vec::new();
-    let mut pending_snapshot: Option<Box<UserLexicon>> = None;
-    let mut retry_at = None;
-    let mut retry_delay = Duration::from_millis(PERSIST_BATCH_WINDOW_MS);
-    let mut pending_reset = None;
-
-    loop {
-        let mut should_stop = false;
-        let mut flush_waiters = Vec::new();
-
-        if pending_reset.is_some_and(|stamp| stamp != current_reset_stamp(&reset_stamp)) {
-            pending_lines.clear();
-            pending_snapshot = None;
-            retry_at = None;
-            pending_reset = None;
-        }
-
-        match rx.recv_timeout(Duration::from_millis(PERSIST_BATCH_WINDOW_MS)) {
-            Ok(cmd) => handle_persistence_command(
-                cmd,
-                &mut pending_lines,
-                &mut pending_snapshot,
-                &mut pending_reset,
-                &reset_stamp,
-                &mut flush_waiters,
-                &mut should_stop,
-            ),
-            Err(mpsc::RecvTimeoutError::Timeout) => {
-                if pending_lines.is_empty() && pending_snapshot.is_none() {
-                    continue;
+impl<K: Ord + Clone, V: Clone + PartialEq> RetainEntries<K, V> for OrdMap<K, V> {
+    fn retain(&mut self, mut keep: impl FnMut(&K, &mut V) -> bool) {
+        let changes: Vec<_> = self
+            .iter()
+            .filter_map(|(key, value)| {
+                let mut candidate = value.clone();
+                if !keep(key, &mut candidate) {
+                    Some((key.clone(), None))
+                } else if &candidate != value {
+                    Some((key.clone(), Some(candidate)))
+                } else {
+                    None
                 }
+            })
+            .collect();
+        for (key, value) in changes {
+            if let Some(value) = value {
+                self.insert(key, value);
+            } else {
+                self.remove(&key);
             }
-            Err(mpsc::RecvTimeoutError::Disconnected) => {
-                should_stop = true;
-            }
-        }
-
-        // Coalesce for a real, bounded window rather than merely draining
-        // messages that happened to arrive before the first recv returned.
-        let batch_deadline = Instant::now() + Duration::from_millis(PERSIST_BATCH_WINDOW_MS);
-        for _ in 0..256 {
-            if should_stop || !flush_waiters.is_empty() {
-                break;
-            }
-            let remaining = batch_deadline.saturating_duration_since(Instant::now());
-            if remaining.is_zero() {
-                break;
-            }
-            match rx.recv_timeout(remaining) {
-                Ok(cmd) => handle_persistence_command(
-                    cmd,
-                    &mut pending_lines,
-                    &mut pending_snapshot,
-                    &mut pending_reset,
-                    &reset_stamp,
-                    &mut flush_waiters,
-                    &mut should_stop,
-                ),
-                Err(mpsc::RecvTimeoutError::Timeout) => break,
-                Err(mpsc::RecvTimeoutError::Disconnected) => {
-                    should_stop = true;
-                    break;
-                }
-            }
-        }
-
-        if !should_stop
-            && flush_waiters.is_empty()
-            && retry_at.is_some_and(|deadline| Instant::now() < deadline)
-        {
-            continue;
-        }
-        let batch_reset = pending_reset.unwrap_or_else(|| current_reset_stamp(&reset_stamp));
-        let result = flush_persistence_batch(
-            &path,
-            &reset_stamp,
-            batch_reset,
-            &mut pending_lines,
-            &mut pending_snapshot,
-        );
-        let status = match &result {
-            Ok(()) => {
-                USER_DICT_DURABILITY_FAILURES.store(0, Ordering::Relaxed);
-                retry_at = None;
-                pending_reset = None;
-                retry_delay = Duration::from_millis(PERSIST_BATCH_WINDOW_MS);
-                Ok(())
-            }
-            Err(err) => {
-                pending_reset = Some(batch_reset);
-                retry_at = Some(Instant::now() + retry_delay);
-                retry_delay = (retry_delay * 2).min(Duration::from_secs(5));
-                let failures = USER_DICT_DURABILITY_FAILURES.fetch_add(1, Ordering::Relaxed) + 1;
-                // 学习在内存模型里已生效，但落盘失败会让重启后的用户词丢失。
-                // 定期写 engine 日志（磁盘满等持续失败按 60 秒合并成一条），
-                // 避免静默丢失；flush 等待者（重启/清空）仍收到逐次失败。
-                memory_log_persist_failure(err, failures, pending_lines.len());
-                Err(err.to_string())
-            }
-        };
-        for waiter in flush_waiters {
-            let _ = waiter.send(status.clone());
-        }
-
-        if should_stop {
-            break;
         }
     }
 }
 
-/// 落盘失败计数（成功落盘后清零）。用于诊断“学习成功但重启丢失”。
-pub(crate) static USER_DICT_DURABILITY_FAILURES: AtomicU64 = AtomicU64::new(0);
-
-fn memory_log_persist_failure(err: &io::Error, failures: u64, pending: usize) {
-    static LAST_LOG_AT: OnceLock<Mutex<Instant>> = OnceLock::new();
-    let last = LAST_LOG_AT.get_or_init(|| Mutex::new(Instant::now() - Duration::from_secs(120)));
-    let mut guard = match last.lock() {
-        Ok(guard) => guard,
-        Err(poison) => poison.into_inner(),
-    };
-    if guard.elapsed() < PERSIST_FAILURE_LOG_INTERVAL {
-        return;
-    }
-    *guard = Instant::now();
-    runtime_log::log_engine(
-        RuntimeLogLevel::Error,
-        "srf_user_dict_persist_failed",
-        format!(
-            "error={} failures={failures} pending_lines={pending} note=in-memory learning still applies until restart",
-            err
-        ),
-    );
-}
-
-fn handle_persistence_command(
-    cmd: PersistenceCommand,
-    pending_lines: &mut Vec<String>,
-    pending_snapshot: &mut Option<Box<UserLexicon>>,
-    pending_reset: &mut Option<UserDictResetStamp>,
-    reset_stamp: &SharedResetStamp,
-    flush_waiters: &mut Vec<mpsc::Sender<Result<(), String>>>,
-    should_stop: &mut bool,
-) {
-    // Bind every queued mutation to the reset epoch observed by its producer.
-    // A reset during batching or retry must not revive an older dictionary.
-    if let PersistenceCommand::Append(_, stamp) | PersistenceCommand::Snapshot(_, stamp) = &cmd {
-        if *stamp != current_reset_stamp(reset_stamp) {
-            return;
-        }
-        if pending_reset.as_ref() != Some(stamp) {
-            pending_lines.clear();
-            *pending_snapshot = None;
-            *pending_reset = Some(*stamp);
+fn prune_entry_lists<K: Ord + Clone, T: Clone>(map: &mut OrdMap<K, Vec<T>>, limit: usize) -> bool {
+    let keys: Vec<_> = map
+        .iter()
+        .filter(|(_, entries)| entries.is_empty() || entries.len() > limit)
+        .map(|(key, _)| key.clone())
+        .collect();
+    for key in &keys {
+        if let Some(entries) = map.get_mut(key) {
+            if entries.is_empty() {
+                map.remove(key);
+            } else {
+                entries.truncate(limit);
+            }
         }
     }
-    match cmd {
-        PersistenceCommand::Append(lines, _) => pending_lines.extend(lines),
-        PersistenceCommand::Snapshot(snapshot, _) => {
-            pending_lines.clear();
-            *pending_snapshot = Some(snapshot);
-        }
-        PersistenceCommand::Flush(waiter) => flush_waiters.push(waiter),
-        PersistenceCommand::Shutdown => *should_stop = true,
-    }
-}
-
-fn flush_persistence_batch(
-    path: &Path,
-    reset_stamp: &SharedResetStamp,
-    expected_reset: UserDictResetStamp,
-    pending_lines: &mut Vec<String>,
-    pending_snapshot: &mut Option<Box<UserLexicon>>,
-) -> io::Result<()> {
-    if let Some(snapshot) = pending_snapshot.as_mut() {
-        // A snapshot supersedes preceding updates, never the following ones.
-        for line in pending_lines.iter() {
-            snapshot.parse_line(line);
-        }
-        pending_lines.clear();
-        let wrote = write_user_dict_sqlite_snapshot_checked(
-            path,
-            expected_reset,
-            snapshot.serialize_snapshot().as_bytes(),
-        )?;
-        if !wrote {
-            refresh_reset_stamp(path, reset_stamp);
-        }
-        *pending_snapshot = None;
-        return Ok(());
-    }
-    if pending_lines.is_empty() {
-        return Ok(());
-    }
-    let wrote = apply_user_dict_sqlite_updates_checked(path, expected_reset, pending_lines)?;
-    if !wrote {
-        // A reset invalidates queued data; do not resurrect cleared phrases.
-        refresh_reset_stamp(path, reset_stamp);
-    }
-    pending_lines.clear();
-    Ok(())
-}
-
-fn apply_user_dict_sqlite_updates_checked(
-    path: &Path,
-    expected_reset: UserDictResetStamp,
-    lines: &[String],
-) -> io::Result<bool> {
-    if lines.is_empty() {
-        return Ok(true);
-    }
-    let _lock = UserDictExclusiveGuard::new(path)?;
-    if user_dict_reset_stamp(path) != expected_reset {
-        return Ok(false);
-    }
-    let mut lex = UserLexicon::empty_for_path(PathBuf::new());
-    if let Some(text) = read_user_dict_sqlite_text(path)? {
-        lex.parse_text_lines(&text);
-    }
-    for line in lines {
-        lex.parse_line(line);
-    }
-    lex.prune_for_memory();
-    write_user_dict_sqlite_snapshot_unlocked(path, lex.serialize_snapshot().as_bytes())?;
-    Ok(true)
+    !keys.is_empty()
 }
 
 fn parse_u64(part: Option<&str>) -> u64 {
@@ -3664,7 +3298,7 @@ fn sort_entries(entries: &mut [LearnedEntry]) {
 }
 
 fn prune_total_exact_entries(
-    map: &mut BTreeMap<String, Vec<LearnedEntry>>,
+    map: &mut OrdMap<String, Vec<LearnedEntry>>,
     max_entries: usize,
 ) -> bool {
     let total: usize = map.values().map(Vec::len).sum();
@@ -3697,7 +3331,7 @@ fn prune_total_exact_entries(
 }
 
 fn prune_total_context_links(
-    map: &mut BTreeMap<String, Vec<LearnedEntry>>,
+    map: &mut OrdMap<String, Vec<LearnedEntry>>,
     max_entries: usize,
 ) -> bool {
     let total: usize = map.values().map(Vec::len).sum();
@@ -3730,7 +3364,7 @@ fn prune_total_context_links(
 }
 
 fn prune_total_selection_feedback(
-    map: &mut BTreeMap<String, Vec<SelectionFeedbackEntry>>,
+    map: &mut OrdMap<String, Vec<SelectionFeedbackEntry>>,
     max_entries: usize,
 ) -> bool {
     let total: usize = map.values().map(Vec::len).sum();
@@ -3763,7 +3397,7 @@ fn prune_total_selection_feedback(
 }
 
 fn prune_total_context_selection_feedback(
-    map: &mut BTreeMap<(String, String), Vec<SelectionFeedbackEntry>>,
+    map: &mut OrdMap<(String, String), Vec<SelectionFeedbackEntry>>,
     max_entries: usize,
 ) -> bool {
     let total: usize = map.values().map(Vec::len).sum();
@@ -3838,7 +3472,7 @@ fn contains_triple_prune_key(
 }
 
 fn prune_total_context_trigrams(
-    map: &mut BTreeMap<(String, String), Vec<LearnedEntry>>,
+    map: &mut OrdMap<(String, String), Vec<LearnedEntry>>,
     max_entries: usize,
 ) -> bool {
     let total: usize = map.values().map(Vec::len).sum();
@@ -3873,7 +3507,7 @@ fn prune_total_context_trigrams(
     true
 }
 
-fn prune_phrase_stats(map: &mut BTreeMap<String, LearnedStats>, max_entries: usize) -> bool {
+fn prune_phrase_stats(map: &mut OrdMap<String, LearnedStats>, max_entries: usize) -> bool {
     if map.len() <= max_entries {
         return false;
     }
@@ -3892,7 +3526,7 @@ fn prune_phrase_stats(map: &mut BTreeMap<String, LearnedStats>, max_entries: usi
     true
 }
 
-fn prune_blocked_phrases(map: &mut BTreeMap<String, u64>, max_entries: usize) -> bool {
+fn prune_blocked_phrases(map: &mut OrdMap<String, u64>, max_entries: usize) -> bool {
     if map.len() <= max_entries {
         return false;
     }
@@ -3911,7 +3545,7 @@ fn prune_blocked_phrases(map: &mut BTreeMap<String, u64>, max_entries: usize) ->
     true
 }
 
-fn upsert_stats(map: &mut BTreeMap<String, LearnedStats>, phrase: String, now: u64, delta: u64) {
+fn upsert_stats(map: &mut OrdMap<String, LearnedStats>, phrase: String, now: u64, delta: u64) {
     let stats = map.entry(phrase).or_default();
     stats.add_decayed(
         now,
@@ -3921,11 +3555,7 @@ fn upsert_stats(map: &mut BTreeMap<String, LearnedStats>, phrase: String, now: u
     );
 }
 
-fn merge_loaded_stats(
-    map: &mut BTreeMap<String, LearnedStats>,
-    phrase: String,
-    stats: LearnedStats,
-) {
+fn merge_loaded_stats(map: &mut OrdMap<String, LearnedStats>, phrase: String, stats: LearnedStats) {
     let current = map.entry(phrase).or_default();
     if stats.last_used > current.last_used
         || (stats.last_used == current.last_used && stats.freq >= current.freq)
@@ -3935,7 +3565,7 @@ fn merge_loaded_stats(
 }
 
 fn approximate_lookup_scored(
-    map: &BTreeMap<String, Vec<LearnedEntry>>,
+    map: &OrdMap<String, Vec<LearnedEntry>>,
     approx_index: &HashMap<String, Vec<String>>,
     key: &str,
     max_distance: usize,
@@ -4092,77 +3722,51 @@ fn bounded_edit_distance(left: &str, right: &str, max_distance: usize) -> Option
     (distance <= max_distance).then_some(distance)
 }
 
-#[cfg(test)]
+#[cfg(all(test, windows))]
 mod persistence_tests {
     use super::*;
-    use std::time::{SystemTime, UNIX_EPOCH};
 
     fn unique_test_path() -> PathBuf {
-        let nonce = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system clock")
-            .as_nanos();
-        std::env::temp_dir().join(format!(
-            "kaixin-restart-recovery-{}-{nonce}.sqlite",
-            std::process::id()
-        ))
-    }
-
-    fn cleanup_test_files(path: &Path) {
-        for suffix in ["", ".partial", ".lock", ".previous", ".bak", ".reset"] {
-            let candidate = PathBuf::from(format!("{}{}", path.display(), suffix));
-            let _ = fs::remove_file(candidate);
-        }
-    }
-
-    #[test]
-    fn explicit_flush_persists_before_drop_and_retries_failed_batch() {
-        let path = unique_test_path();
-        let mut lexicon = UserLexicon::load_from_path(path.clone()).expect("open test dict");
-        // A directory at the file path makes the first disk write fail.
-        if path.exists() {
-            fs::remove_file(&path).unwrap();
-        }
-        fs::create_dir(&path).unwrap();
-        lexicon.learn_with_delta("ceshi", "测试", 3).unwrap();
-        assert!(lexicon.flush_pending().is_err());
-        fs::remove_dir(&path).unwrap();
-        // An explicit flush must retry despite the worker backoff.
-        lexicon.flush_pending().expect("force retry");
-        let reloaded = UserLexicon::load_from_path(path.clone()).unwrap();
-        assert!(reloaded
-            .lookup_input("ceshi")
+        let nonce = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
-            .iter()
-            .any(|e| e.phrase == "测试"));
-        drop(reloaded);
-        drop(lexicon);
-        cleanup_test_files(&path);
+            .as_nanos();
+        std::env::temp_dir().join(format!("kaixin-dict-{}-{nonce}.kxj", std::process::id()))
     }
 
     #[test]
-    fn learned_pinyin_path_survives_flush_drop_and_reload() {
+    fn journal_appends_then_replays_and_rejects_a_second_owner() {
         let path = unique_test_path();
-        {
-            let mut lexicon = UserLexicon::load_from_path(path.clone()).expect("open test dict");
-            lexicon
-                .learn_with_delta("ceshilujing", "\u{6d4b}\u{8bd5}\u{8def}\u{5f84}", 3)
-                .expect("learn pinyin path");
-            lexicon.flush_pending().expect("flush learned path");
-        }
-
-        let reloaded = UserLexicon::load_from_path(path.clone()).expect("reload test dict");
-        let entry = reloaded
+        let mut lexicon = UserLexicon::open_journal(&path).unwrap();
+        let header = fs::read(&path).unwrap();
+        lexicon
+            .learn_with_delta("ceshilujing", "测试路径", 3)
+            .unwrap();
+        lexicon.flush_pending().unwrap();
+        let first_write = fs::read(&path).unwrap();
+        assert!(first_write.starts_with(&header) && first_write.len() > header.len());
+        lexicon
+            .learn_with_delta("ceshilujing", "测试路径", 2)
+            .unwrap();
+        lexicon.flush_pending().unwrap();
+        let bytes = fs::read(&path).unwrap();
+        assert!(bytes.starts_with(&first_write) && bytes.len() > first_write.len());
+        assert!(!bytes
+            .windows("测试路径".len())
+            .any(|part| part == "测试路径".as_bytes()));
+        assert_eq!(
+            UserLexicon::open_journal(&path).unwrap_err().kind(),
+            io::ErrorKind::WouldBlock
+        );
+        drop(lexicon);
+        let mut reopened = UserLexicon::open_journal(&path).unwrap();
+        assert_eq!(reopened.lookup_input("ceshilujing").unwrap()[0].freq, 5);
+        reopened.replace_state(UserLexicon::default()).unwrap();
+        drop(reopened);
+        assert!(UserLexicon::open_journal(&path)
+            .unwrap()
             .lookup_input("ceshilujing")
-            .and_then(|entries| {
-                entries
-                    .iter()
-                    .find(|entry| entry.phrase == "\u{6d4b}\u{8bd5}\u{8def}\u{5f84}")
-            })
-            .expect("learned path after restart");
-        assert_eq!(entry.freq, 3);
-        drop(reloaded);
-
-        cleanup_test_files(&path);
+            .is_none());
+        fs::remove_file(path).unwrap();
     }
 }

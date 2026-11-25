@@ -40,7 +40,7 @@ impl PinyinEngine {
 
         let lex_freq_score = self
             .phrase_lexicon
-            .as_ref()
+            .as_deref()
             .and_then(|lex| lex.lookup_pinyin_hot(&full_key))
             .map(|entries| {
                 entries
@@ -72,7 +72,7 @@ impl PinyinEngine {
             0.0
         } else {
             self.phrase_lexicon
-                .as_ref()
+                .as_deref()
                 .map(|lex| {
                     let min_start = full_key.len().saturating_sub(12);
                     (min_start..full_key.len())
@@ -104,7 +104,7 @@ impl PinyinEngine {
             0.0
         } else {
             self.phrase_lexicon
-                .as_ref()
+                .as_deref()
                 .map(|lex| {
                     let phrase_key_score = |key: &str| {
                         lex.lookup_pinyin_hot(key)
@@ -363,7 +363,7 @@ impl PinyinEngine {
         if compact_key.len() < 9 || !compact_key.is_ascii() {
             return false;
         }
-        let Some(lex) = self.phrase_lexicon.as_ref() else {
+        let Some(lex) = self.phrase_lexicon.as_deref() else {
             return false;
         };
         // A known full-pinyin prefix followed by two to four initials is the
@@ -386,7 +386,7 @@ impl PinyinEngine {
         &self,
         expansion: &MixedPinyinKeyExpansion,
     ) -> Option<KnownMixedWordPartition> {
-        let lex = self.phrase_lexicon.as_ref()?;
+        let lex = self.phrase_lexicon.as_deref()?;
         let mut best: Option<KnownMixedWordPartition> = None;
         let mut split = 0usize;
         for syllable_index in 1..expansion.syllables.len() {
@@ -451,7 +451,7 @@ impl PinyinEngine {
             .map(|(index, _)| index)
             .unwrap_or(phrase.len());
         let (left_phrase, right_phrase) = phrase.split_at(split_byte);
-        let Some(lex) = self.phrase_lexicon.as_ref() else {
+        let Some(lex) = self.phrase_lexicon.as_deref() else {
             return 0.0;
         };
         let left_matches = lex

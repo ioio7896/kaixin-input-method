@@ -15,26 +15,41 @@ pub struct Symbol {
 }
 
 pub fn load() -> Vec<Symbol> {
-    include_str!("../../../data/symbol_catalog.tsv")
-        .lines()
-        .filter(|line| !line.starts_with('#') && !line.is_empty())
-        .map(|line| {
-            let fields: Vec<_> = line.split('\t').collect();
-            assert_eq!(fields.len(), 4, "invalid bundled symbol row");
-            let code = fields[1]
-                .chars()
-                .map(|c| format!("U+{:04X}", c as u32))
-                .collect::<Vec<_>>()
-                .join(" ");
-            Symbol {
-                category: fields[0],
-                text: fields[1],
-                name: fields[2],
-                search: format!("{} {}", fields.join(" "), code).to_lowercase(),
-                code,
-            }
+    use pinyin_ime::model_resources::{open_resource, MappedResource, SYMBOL_FILE};
+    static DATA: std::sync::OnceLock<Option<MappedResource>> = std::sync::OnceLock::new();
+    DATA.get_or_init(|| match open_resource(SYMBOL_FILE) {
+        Ok(mapped) => Some(mapped),
+        Err(err) => {
+            eprintln!("symbol catalog unavailable: {err}");
+            None
+        }
+    })
+    .as_ref()
+    .map(|mapped| &mapped[..])
+    .and_then(|bytes| std::str::from_utf8(bytes).ok())
+    .unwrap_or_default()
+    .lines()
+    .filter(|line| !line.starts_with('#') && !line.is_empty())
+    .filter_map(|line| {
+        let mut fields = line.split('\t');
+        let category = fields.next()?;
+        let text = fields.next()?;
+        let name = fields.next()?;
+        let keywords = fields.next()?;
+        let code = text
+            .chars()
+            .map(|c| format!("U+{:04X}", c as u32))
+            .collect::<Vec<_>>()
+            .join(" ");
+        Some(Symbol {
+            category,
+            text,
+            name,
+            search: format!("{category} {text} {name} {keywords} {code}").to_lowercase(),
+            code,
         })
-        .collect()
+    })
+    .collect()
 }
 
 pub fn categories(symbols: &[Symbol]) -> Vec<&'static str> {

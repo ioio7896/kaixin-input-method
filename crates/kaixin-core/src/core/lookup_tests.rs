@@ -21,7 +21,7 @@ fn short_abbrev_lookup_keeps_fitting_words_ahead_of_hot_five_char_predictions() 
             LexiconLayer::Base,
         ));
     }
-    engine.phrase_lexicon = Some(lexicon);
+    engine.phrase_lexicon = Some(Arc::new(lexicon));
     // Exercise first-batch, complete lookup, and subsequent cache replay.
     for _ in 0..2 {
         for (input, expected) in [("jsj", "计算机"), ("jsjx", "计算机系")] {
@@ -588,4 +588,34 @@ fn umlaut_alias_and_supplemental_single_chars_are_reachable_in_full_pinyin() {
             "{input} did not recall {expected}"
         );
     }
+}
+
+#[cfg(windows)]
+#[test]
+fn published_lookup_state_is_stable_while_the_writer_learns_and_clears() {
+    let mut writer = PinyinEngine::with_phrase_dir(None);
+    let old = writer.lookup_snapshot();
+    let reader = std::thread::spawn(move || {
+        let mut decoder = PinyinEngine::reader(&old);
+        let (candidates, _) = decoder.lookup_full_detailed("kaixinceshi");
+        assert!(candidates.iter().all(|row| row.phrase != "开心快照测试"));
+        decoder
+    });
+    writer
+        .storage_dictionary_mut()
+        .learn_with_delta("kaixinceshi", "开心快照测试", 128)
+        .unwrap();
+    writer.note_user_lexicon_updated();
+    let learned = writer.lookup_snapshot();
+    let mut decoder = reader.join().unwrap();
+    // The first lookup used the retained snapshot. The next successfully
+    // loaded generation also invalidates composition-local ranking caches.
+    decoder.refresh_lookup_snapshot(&learned);
+    assert_eq!(
+        decoder.user_lexicon.lookup_input("kaixinceshi").unwrap()[0].phrase,
+        "开心快照测试"
+    );
+    writer.clear_user_lexicon_for_eval();
+    decoder.refresh_lookup_snapshot(&writer.lookup_snapshot());
+    assert!(decoder.user_lexicon.lookup_input("kaixinceshi").is_none());
 }

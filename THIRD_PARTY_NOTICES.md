@@ -18,6 +18,8 @@ OCR 引擎、OCR 模型、系统 API、外部词库和第三方手写数据不�
 
 ## 主要第三方作品的开源声明
 
+实时存储使用 `arc-swap`（MIT 或 Apache-2.0）、`ring`（Apache-2.0 和 ISC）、`zeroize`（Apache-2.0 或 MIT）以及持久化集合 `im`。随二进制分发的 MPL 2.0 许可文本位于 `licenses/MPL-2.0.txt`。相应上游源码可从以下固定版本获取：[im 15.1.0](https://crates.io/api/v1/crates/im/15.1.0/download)、[bitmaps 2.1.0](https://crates.io/api/v1/crates/bitmaps/2.1.0/download)、[sized-chunks 0.6.5](https://crates.io/api/v1/crates/sized-chunks/0.6.5/download)。
+
 | 第三方作品 | 许可证 | 你可以做什么 | 需要保留/声明什么 |
 | --- | --- | --- | --- |
 | RapidOCR | Apache License 2.0 | 可使用、复制、修改和再分发工程代码；可随商业软件分发 | 保留 Apache-2.0 许可证、版权和 NOTICE/README；说明 OCR 模型版权另属模型方；如修改 RapidOCR 源码，标明修改 |

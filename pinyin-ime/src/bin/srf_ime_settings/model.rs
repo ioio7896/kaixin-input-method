@@ -415,6 +415,7 @@ pub(crate) struct GameChatOptions {
     pub(crate) enter_behavior: String,
     pub(crate) auto_uia: String,
     pub(crate) status_indicator: String,
+    pub(crate) shift_toggle: String,
     pub(crate) status_duration_ms: u32,
     pub(crate) status_scale_percent: u32,
     pub(crate) open_key: String,
@@ -434,6 +435,7 @@ impl Default for GameChatOptions {
             enter_behavior: "auto".to_string(),
             auto_uia: "1".to_string(),
             status_indicator: "1".to_string(),
+            shift_toggle: "0".to_string(),
             status_duration_ms: 1600,
             status_scale_percent: 100,
             open_key: "off".to_string(),
@@ -455,6 +457,7 @@ impl GameChatOptions {
             enter_behavior: "inherit".to_string(),
             auto_uia: "inherit".to_string(),
             status_indicator: "inherit".to_string(),
+            shift_toggle: "inherit".to_string(),
             ..Self::default()
         }
     }
@@ -504,11 +507,14 @@ pub(crate) fn invalidate_changed_game_test_results(
             || old.game_input_mode != rule.game_input_mode
             || old_chat.open_key != chat.open_key
             || old_chat.auto_uia != chat.auto_uia
+            || old_chat.shift_toggle != chat.shift_toggle
             || before.game_mode_hotkey != after.game_mode_hotkey
             || (rule.game_input_mode == "inherit"
                 && before.game_input_mode != after.game_input_mode)
             || (chat.auto_uia == "inherit"
-                && before.game_chat.auto_uia != after.game_chat.auto_uia);
+                && before.game_chat.auto_uia != after.game_chat.auto_uia)
+            || (chat.shift_toggle == "inherit"
+                && before.game_chat.shift_toggle != after.game_chat.shift_toggle);
         let candidate_changed = input_changed
             || old_chat.force_ui != chat.force_ui
             || old.overlay_anchor != rule.overlay_anchor

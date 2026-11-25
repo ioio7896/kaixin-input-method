@@ -1561,11 +1561,11 @@ fn clipboard_help_candidates() -> Vec<(String, f64)> {
 }
 
 fn clipboard_manager_path() -> Option<PathBuf> {
-    runtime_helper_path("srf_ime_clipboard.exe")
+    runtime_helper_path("srf_ime_desktop.exe")
 }
 
 fn handwrite_path() -> Option<PathBuf> {
-    runtime_helper_path("srf_ime_handwrite.exe")
+    runtime_helper_path("srf_ime_desktop.exe")
 }
 
 fn runtime_helper_path(exe_name: &str) -> Option<PathBuf> {
@@ -1604,13 +1604,14 @@ fn open_clipboard_manager_candidates(initial_filter: &str) -> Vec<(String, f64)>
     let Some(path) = clipboard_manager_path() else {
         return score_candidates(
             vec![
-                "未找到 srf_ime_clipboard.exe".to_string(),
+                "未找到 srf_ime_desktop.exe".to_string(),
                 "可从托盘菜单打开剪贴板管理器（安装后）".to_string(),
             ],
             200.0,
         );
     };
     let mut cmd = std::process::Command::new(&path);
+    cmd.arg("--tool=clipboard");
     if !initial_filter.trim().is_empty() {
         cmd.arg("--search").arg(initial_filter.trim());
     }
@@ -2009,13 +2010,14 @@ fn open_handwrite_candidates() -> Vec<(String, f64)> {
     let Some(path) = handwrite_path() else {
         return score_candidates(
             vec![
-                "未找到 srf_ime_handwrite.exe".to_string(),
+                "未找到 srf_ime_desktop.exe".to_string(),
                 "可从托盘菜单或设置页打开手写查字（安装后）".to_string(),
             ],
             200.0,
         );
     };
     let mut cmd = std::process::Command::new(&path);
+    cmd.arg("--tool=handwrite");
     if let Some(dir) = path.parent() {
         cmd.current_dir(dir);
     }
