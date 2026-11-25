@@ -78,6 +78,11 @@ jobs:
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup_dev_tools.ps1
       - name: Check source conventions
         run: python scripts/verify.py source
+      - name: Prepare pinyin model data for Rust tests
+        run: |
+          cargo xtask check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo run --locked --release -p kaixin-pinyin --bin bake_model
       - name: Check and test all Rust targets and feature profiles
         run: python scripts/verify.py rust
 
