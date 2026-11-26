@@ -52,6 +52,8 @@ CloseApplications=no
 RestartApplications=no
 RestartIfNeededByRun=no
 
+#include "kaixin-legal.iss"
+
 [Languages]
 Name: "chinesesimp"; MessagesFile: "ChineseSimplified.isl"
 

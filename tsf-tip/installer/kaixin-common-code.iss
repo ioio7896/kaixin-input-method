@@ -227,6 +227,13 @@ var
 begin
   Result := True;
 
+  if WizardSilent and (ExpandConstant('{param:ACCEPTTERMS|0}') <> '1') then
+  begin
+    Log('Silent installation requires /ACCEPTTERMS=1 to accept the installation terms.');
+    Result := False;
+    exit;
+  end;
+
   if QueryOtherScopeInstall(OtherVersion, OtherLocation) then
   begin
     MessageText :=
@@ -249,6 +256,13 @@ begin
       Log('Detected downgrade install; continuing directly. Installed=' + CurrentVersion + ' New={#KXAppVersion}');
     end;
   end;
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+  Result := not UninstallSilent or (ExpandConstant('{param:CONFIRMDATAREMOVAL|0}') = '1');
+  if not Result then
+    Log('Silent uninstall requires /CONFIRMDATAREMOVAL=1 to confirm deletion of current-user data.');
 end;
 
 function WindowsGetTickCount(): LongWord;

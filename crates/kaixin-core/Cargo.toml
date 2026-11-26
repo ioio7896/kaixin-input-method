@@ -1,6 +1,6 @@
 [package]
 name = "kaixin-core"
-version = "2026.1125.1833"
+version = "2026.1126.1123"
 edition = "2021"
 rust-version = "1.99"
 license = "Apache-2.0"
